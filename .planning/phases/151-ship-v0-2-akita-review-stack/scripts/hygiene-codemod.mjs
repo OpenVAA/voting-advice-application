@@ -61,9 +61,11 @@
  *  (e) MARKDOWN FILES. Prose end to end, with different comment semantics — the whole file
  *      is effectively a comment span, so the classifier's safety argument does not hold.
  *      Routed whole to the agent pass.
- *  (f) ALPHABETIC SECTION ANCHORS. `§Context Destructuring Rule`, `§Pitfall 7` — a titled
- *      anchor has no mechanical end boundary, so deleting `§`+token mangles the prose that
- *      follows. Numeric-leading anchors DO have one and are rule 2. The rest is residue.
+ *  (f) UNSTRIPPABLE SECTION ANCHORS. `§Context Destructuring Rule`, `§Pitfall 7`,
+ *      `§"Seeding local data"` — a TITLED anchor has no mechanical end boundary, so deleting
+ *      `§`+token mangles the prose that follows. Numeric-leading anchors DO have one and
+ *      are rule 2; everything else is residue. The pattern set ends in a bare `§` so it is
+ *      EXHAUSTIVE over the sign: an anchor shape nobody anticipated is reported, not dropped.
  *  (h) ATTRIBUTIVE REFERENCES. D-14's collapsed form reads correctly in CITATION
  *      position (`see phase 61.`) and incorrectly in ATTRIBUTIVE position: `Mirrors the
  *      Phase 64 fix` would become `Mirrors the see phase 64 fix`, and `went bare in Phase
@@ -255,13 +257,22 @@ const RULES = [
     patterns: [/`?\.planning\/[^\s`)\]]*`?/g, /\b\d{2,3}(?:-\d{2})?-[A-Z][A-Z0-9-]*\.md\b/g]
   },
   { id: 'section-anchor', kind: 'delete', patterns: [/§[ \t]*\d[\w.–-]*/g] },
-  { id: 'section-anchor-alpha', kind: 'residue', reason: 'alphabetic-section-anchor', patterns: [/§[ \t]*[A-Za-z][^\s,;)]*/g] },
+  {
+    id: 'section-anchor-alpha',
+    kind: 'residue',
+    reason: 'unstrippable-section-anchor',
+    // The trailing bare `§` makes the set EXHAUSTIVE. Without it `§"Seeding local data"`
+    // matched no rule at all and six occurrences were reported by nobody (threat
+    // T-151-07-03), which a raw-grep reconciliation caught and the report's own
+    // arithmetic could not have.
+    patterns: [/§[ \t]*[A-Za-z][^\s,;)]*/g, /§/g]
+  },
   { id: 'plan-number', kind: 'delete', patterns: [/\bplans?\s+\d+[-.]\d+\b/gi] },
   { id: 'decision-id-long', kind: 'delete', patterns: [/\bD-\d{2,3}-\d{2}\b/g] },
   { id: 'decision-id-bare', kind: 'delete', patterns: [/\bD-\d{2}\b(?!-\d{2})/g] },
   { id: 'task-id', kind: 'delete', patterns: [/\b[A-Z]{3,}-\d{2}\b/g] },
   { id: 'milestone-ver', kind: 'residue', reason: 'milestone-version', patterns: [/\bv\d+\.\d+\b/g] },
-  { id: 'phase-ref', kind: 'collapse', patterns: [/(?:\bsee\s+)?\bphases?\s+(\d+)/gi], to: (m) => `see phase ${m[1]}` },
+  { id: 'phase-ref', kind: 'collapse', patterns: [/(?:\bsee\s+)?\bphases?\s+(\d+)(?:-\d{2}\b)?/gi], to: (m) => `see phase ${m[1]}` },
   { id: 'spike-ref', kind: 'collapse', patterns: [/(?:\bsee\s+)?\bspikes?[\s–/-](\d+)/gi], to: (m) => `see spike ${m[1]}` },
   { id: 'todo-class', kind: 'residue', reason: 'todo-class', patterns: [/\b(?:TODO|FIXME|HACK|XXX)\b/g] }
 ];
@@ -271,7 +282,7 @@ const RESIDUE_REASONS = [
   'markdown-file',
   'milestone-version',
   'todo-class',
-  'alphabetic-section-anchor',
+  'unstrippable-section-anchor',
   'ambiguous-reference',
   'attributive-reference'
 ];
@@ -465,6 +476,12 @@ function repair(text, guardEnd) {
     /[ \t]+\b(?:at|in|on|to|from|per|see|and|of|for|with|via|by|under)\b[ \t]*\u0000[ \t]*([,;:])/i,
     '$1'
   );
+  // 0c. A deletion sandwiched between two connectives takes the FIRST of them, which was
+  //    its own preposition:  `refinement of <ref> for the seam`  ->  `refinement for the`.
+  s = s.replace(
+    /[ \t]+\b(?:at|in|on|to|from|per|of|for|with|via|by|under)\b[ \t]*\u0000[ \t]*(?=\b(?:at|in|on|to|from|per|of|for|with|via|by|under)\b)/i,
+    ' '
+  );
   // 1. Two deletions that were joined by a separator collapse to one sentinel.
   while (new RegExp(NUL + SEP + '*' + NUL).test(s)) {
     s = s.replace(new RegExp(NUL + SEP + '*' + NUL, 'g'), SENTINEL);
@@ -476,7 +493,18 @@ function repair(text, guardEnd) {
   //    trailing whitespace already separates it from what follows.
   s = s.replace(/^\u0000[ \t]*/, '');
   // 3. A sentinel hard against an opening bracket takes the orphaned separators with it.
-  s = s.replace(new RegExp('([([{])' + SEP + '*' + NUL + SEP + '*[,;:]?[ \\t]*', 'g'), '$1');
+  s = s.replace(
+    new RegExp(
+      '([([{])[ \\t]*(?:\\b(?:at|in|on|to|from|per|see|of|for|with|via|by|under|cf)\\b[ \\t]*)?' +
+        SEP +
+        '*' +
+        NUL +
+        SEP +
+        '*[,;:]?[ \\t]*',
+      'gi'
+    ),
+    '$1'
+  );
   // 4. Same against a closing bracket.
   s = s.replace(new RegExp(SEP + '*' + NUL + SEP + '*([)\\]}])', 'g'), '$1');
   // 4b. An INFIX separator whose other operand was deleted is orphaned:
@@ -492,8 +520,9 @@ function repair(text, guardEnd) {
   //    collapse: aligned comment tables elsewhere on the line stay byte-identical.
   s = s.replace(/[ \t]*\u0000[ \t]*/g, ' ');
   // 7. Enclosures the deletion emptied, absorbing one adjacent space.
-  s = s.replace(/[ \t]*\(\s*\)[ \t]*/g, ' ');
-  s = s.replace(/[ \t]*\[\s*\][ \t]*/g, ' ');
+  const dropEnclosure = (m, offset) => (offset === 0 ? /^[ \t]*/.exec(m)[0] : ' ');
+  s = s.replace(/[ \t]*\(\s*\)[ \t]*/g, dropEnclosure);
+  s = s.replace(/[ \t]*\[\s*\][ \t]*/g, dropEnclosure);
   s = s.replace(/``/g, '');
   //    ...and the connective the now-empty enclosure was attached to:
   //    `  (D-05), which auto-scopes`  ->  `  which auto-scopes`.
@@ -532,13 +561,21 @@ const PROSE_SUSPECT_RES = [
   /\b(?:as of|according to|introduced by|documented in|described in|defined in)\s+(?:the|a|an|and|is|are|was|were|it|its|this|that)\b/i,
   /\b(?:see|per|cf)\s+(?:for|the|a|an|and|in|at|to|is|are)\b/i,
   /\b(?:see|per|cf)\s+\u00a7/i,
+  /\b(?:of|for|in|at|to|from|with|by|per|on)\s+(?:of|for|in|at|to|from|with|by|per|on)\b/i,
   /\b(?:at|in|on|to|from|of|for|with|via|by|under)[ \t]*[,;:]/i,
   /\([ \t]*[,;:/|]/,
   /[,;][ \t]*[)\]]/
 ];
 
-function proseSuspect(text) {
-  return PROSE_SUSPECT_RES.some((re) => re.test(text));
+function proseSignature(text) {
+  return PROSE_SUSPECT_RES.map((re) => (re.test(text) ? '1' : '0')).join('');
+}
+
+/** True when `after` trips a suspicion `before` did not — not merely "trips any". */
+function newlyProseSuspect(before, after) {
+  const b = proseSignature(before);
+  const a = proseSignature(after);
+  return [...a].some((bit, i) => bit === '1' && b[i] === '0');
 }
 
 /** Rule 6's de-duplication clause: `see phase 62 see phase 62` -> one pointer. */
@@ -588,6 +625,10 @@ function transform(relPath, original) {
 
   for (let li = 0; li < lines.length; li++) {
     const line = lines[li];
+    // Snapshot BEFORE the classifier advances: rule 7's re-classification of the rewritten
+    // line must start from the same block state this line started from, or a `*`
+    // continuation line inside a block comment classifies as code and can never be deleted.
+    const stateBefore = { ...state };
     const spans = commentSpans(line, fam, state);
 
     // 1. Enumerate every occurrence, in rule order, discarding overlaps with an
@@ -671,13 +712,13 @@ function transform(relPath, original) {
     next = dedupePointers(repair(next, openerEnd(next, spans)));
 
     // 4. Rule 7 — drop the line if it is now a degenerate comment-only line.
-    const probe = { inBlockC: false, inBlockHtml: false, inTemplate: false };
+    const probe = { ...stateBefore };
     const nextSpans = commentSpans(next, fam, probe);
     if (isDegenerateCommentLine(next, nextSpans)) {
       deletedLines.push({ path: relPath, line: li + 1, before: line });
       continue;
     }
-    if (proseSuspect(next) && !proseSuspect(line)) {
+    if (newlyProseSuspect(line, next)) {
       prose.push({ path: relPath, line: li + 1, before: line.trim(), after: next.trim() });
     }
     out.push(next);
