@@ -41,6 +41,11 @@ import { Writer } from '../src/writer';
 // Tests can reassign these on the last instance (via getMockedAdminClient)
 // to customize per-test behavior (e.g., returning candidates or throwing).
 vi.mock('../src/supabaseAdminClient', () => {
+  // `any` reason: this array holds the ad-hoc object literals the factory below
+  // returns, which are structurally unrelated to SupabaseAdminClient — typing it
+  // as that class would be a false claim, and the alternative (naming the literal's
+  // shape) duplicates the factory. Nothing reads these elements as a typed value;
+  // `__getLastInstance` re-types at its own boundary, where the reason is stated.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const instances: Array<any> = [];
   return {

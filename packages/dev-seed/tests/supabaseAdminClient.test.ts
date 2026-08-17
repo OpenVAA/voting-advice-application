@@ -52,9 +52,18 @@ const mockState: MockState = {
 // terminal resolves to selectResult (if .select was called last) or updateResult
 // (if .update was called last). Chain methods push to mockState for assertions.
 vi.mock('@supabase/supabase-js', () => {
+  // `any` reason: the object faked here is supabase-js's PostgrestFilterBuilder,
+  // whose real type is a deep generic over the Database schema that resolves
+  // differently at every call site and is not exported in a nameable form. The
+  // fake is also a self-referential thenable — see `b` below — so it cannot be
+  // written as a typed literal in one expression. `@ts-expect-error` is not the
+  // alternative here: there is no single erroring line to annotate.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const makeBuilder = (): any => {
     let terminalKind: 'select' | 'update' = 'select';
+    // `any` reason: `b` is built by assigning its own methods onto it after
+    // construction, each closing over `b`. A typed empty literal cannot express
+    // that cycle without declaring the full builder shape first.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const b: any = {};
     b.select = vi.fn((cols: string) => {

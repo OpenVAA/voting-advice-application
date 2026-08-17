@@ -44,6 +44,11 @@ const storageState: StorageMockState = {
 };
 
 vi.mock('@supabase/supabase-js', () => {
+  // `any` reason: the object faked here is supabase-js's PostgrestFilterBuilder,
+  // a deep generic over the Database schema with no nameable exported form, and
+  // the fake is a thenable whose chain methods return `this`. Naming its type
+  // would restate the whole builder to satisfy a mock these tests never read a
+  // typed value out of.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function makeBuilder(): any {
     return {
