@@ -7,6 +7,12 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { UniversalAdapter } from '$lib/api/base/universalAdapter';
 import type { SupabaseAdapter, SupabaseAdapterConfig } from './supabaseAdapter.type';
 
+// reason: the TypeScript mixin pattern requires a constructor signature whose rest
+// parameter is `any[]`; `unknown[]` makes `extends base` unassignable for every base
+// class with typed constructor parameters. The lint rule does not fire here because
+// `@typescript-eslint/no-explicit-any` is configured with `ignoreRestArgs: true`
+// (shared-config/eslint.config.mjs:98-102) — so this `any` is exempted by
+// configuration, not by conformance, and is documented rather than suppressed.
 type Constructor<TClass = UniversalAdapter> = abstract new (...args: Array<any>) => TClass;
 
 /**

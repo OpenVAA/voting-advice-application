@@ -178,6 +178,13 @@ text="Add to list">
   });
 </script>
 
+<!--
+  a11y note: the element is `<button>` or `<a>` — both interactive — but
+  `<svelte:element>` resolves `this` at runtime, so the compiler cannot see that and
+  reports the tag as static. The explicit `role="button"`, `tabindex`, `disabled` /
+  `aria-disabled` and `aria-label` below carry the semantics on both branches.
+  `NavItem.svelte` uses the same construct for the same reason.
+-->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <svelte:element
   this={href == null ? 'button' : 'a'}
