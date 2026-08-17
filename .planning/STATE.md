@@ -5,15 +5,15 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 151
 current_phase_name: ship-v0-2-akita-review-stack
 status: executing
-stopped_at: "Completed 151-13-PLAN.md — slice 05 cut at 545cc26c8, PR #867 open"
-last_updated: "2026-08-17T12:30:02.532Z"
+stopped_at: Completed 151-14-PLAN.md
+last_updated: "2026-08-17T13:11:26.552Z"
 last_activity: 2026-08-16
 last_activity_desc: Phase 151 execution started
 progress:
   total_phases: 15
   completed_phases: 4
   total_plans: 43
-  completed_plans: 37
+  completed_plans: 38
   percent: 27
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-151, 15 phases, 38 requirements)
 Phase: 151 (ship-v0-2-akita-review-stack) — EXECUTING
-Plan: 14 of 19
+Plan: 15 of 19
 Status: Ready to execute
 Last activity: 2026-08-16 — Phase 151 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-17T12:30:02.510Z
-Stopped at: Completed 151-13-PLAN.md — slice 05 cut at 545cc26c8, PR #867 open
+Last session: 2026-08-17T13:11:16.768Z
+Stopped at: Completed 151-14-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -162,6 +162,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 151 P11 | ~1h40m | 3 tasks | 9 files |
 | Phase 151 P12 | ~1h25m | 3 tasks | 10 files |
 | Phase 151 P13 | 96 | 3 tasks | 26 files |
+| Phase 151 P14 | 118 | 3 tasks | 533 files |
 
 ## Deferred Items
 
@@ -699,6 +700,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: [Phase 151-13]: Item 14 (keyboard + screen-reader) is DEFERRED, not MET: the keyboard half has no gate anywhere — axe is a static-DOM auditor, so keyboard is uncovered on the 5 scanned routes as much as on the other 31.
 - [Phase ?]: [Phase 151-13]: F-44 (hygiene gate reports plan-number occ=0 over a tree with 35 plan references) is recorded, not patched: widening a pattern mid-stack would move operator-approved counts, the F-39 failure mode. Routed to 151-19; 151-14/15/16 must run the three patterns themselves.
 - [Phase ?]: [Phase 151-13]: PR-title format stabilised at 'N/12 <slices.tsv subject verbatim>' from 151-14 onward; PRs #863, #864 and #866 are NOT retitled — editing a live PR's title to match a later convention is churn.
+- [Phase ?]: F-24 is escalated, not fixed: the decisive fact about Signicat's response is external knowledge the repo does not contain; question narrowed for the operator at 151-18
+- [Phase ?]: The three context-destructuring / dataRoot-alias violations found are all in slice 07 and are deferred to 151-15, because a reactivity fix must name a covering test and that test is an unrunnable E2E spec
+- [Phase ?]: The Supabase Adapter checklist block is CLOSED by 151-14, proven by enumeration over 24 files with the unsafe-session-accessor-in-a-guard count asserted at 0
 
 ### Quick Tasks Completed
 

@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 30
+open_count: 33
 waived_count: 0
 fixed_count: 0
-total_count: 30
-last_updated: 2026-08-17T12:30:33.379Z
+total_count: 33
+last_updated: 2026-08-17T13:11:37.478Z
 ---
 
 # Broken Windows Ledger
@@ -45,6 +45,9 @@ last_updated: 2026-08-17T12:30:33.379Z
 | 28 | 151 | unrun-verify | tests/ |  | 43 E2E specs not run during the slice-05 sweep (no dev server / no seeded Supabase); per CLAUDE.md a did-not-run counts as a failure until D-24's full-suite run at 151-18 | open |  | 2026-08-17T12:30:33.131Z |  |
 | 29 | 151 | lint-warning | tests/tests/support/mockOidcIssuerEntry.ts | 33 | F-49: eslint-disable directive for no-console that the rule reports no problems for; deferred because fixing it moves the 20-warning baseline eight later plans compare against | open |  | 2026-08-17T12:30:33.261Z |  |
 | 30 | 151 | deviation | tests/playwright.config.ts | 307 | F-50: CI retries:3 can green a flaky test; accepted because determinism-batch.sh refuses to run under CI for exactly this reason and fails on flaky!=0 | open |  | 2026-08-17T12:30:33.379Z |  |
+| 31 | 151 | deviation | apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte | 73 | F-61: destructures the reactive accessors appSettings and dataRoot while its own comment asserts the destructure is correct; dataRoot.elections read at :349 never re-evaluates. Deferred to 151-15. | open |  | 2026-08-17T13:11:37.190Z |  |
+| 32 | 151 | unrun-verify | tests/ |  | The 43 E2E specs were not run by plan 151-14; D-24's full-suite run at 151-18 discharges them. | open |  | 2026-08-17T13:11:37.359Z |  |
+| 33 | 151 | deviation | apps/frontend/src/lib/dynamic-components/entityList/EntityListControls.svelte | 98 | F-60: duplicate filter handlers shared with EntityListWithControls.svelte:144-161; extraction excluded by D-13. | open |  | 2026-08-17T13:11:37.478Z |  |
 
 ````json
 [
@@ -406,6 +409,42 @@ last_updated: 2026-08-17T12:30:33.379Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-08-17T12:30:33.379Z",
+    "resolved_at": null
+  },
+  {
+    "id": 31,
+    "kind": "deviation",
+    "phase": "151",
+    "file": "apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte",
+    "line": 73,
+    "description": "F-61: destructures the reactive accessors appSettings and dataRoot while its own comment asserts the destructure is correct; dataRoot.elections read at :349 never re-evaluates. Deferred to 151-15.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T13:11:37.190Z",
+    "resolved_at": null
+  },
+  {
+    "id": 32,
+    "kind": "unrun-verify",
+    "phase": "151",
+    "file": "tests/",
+    "line": null,
+    "description": "The 43 E2E specs were not run by plan 151-14; D-24's full-suite run at 151-18 discharges them.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T13:11:37.359Z",
+    "resolved_at": null
+  },
+  {
+    "id": 33,
+    "kind": "deviation",
+    "phase": "151",
+    "file": "apps/frontend/src/lib/dynamic-components/entityList/EntityListControls.svelte",
+    "line": 98,
+    "description": "F-60: duplicate filter handlers shared with EntityListWithControls.svelte:144-161; extraction excluded by D-13.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T13:11:37.478Z",
     "resolved_at": null
   }
 ]

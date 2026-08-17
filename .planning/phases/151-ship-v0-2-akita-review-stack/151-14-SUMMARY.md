@@ -353,3 +353,13 @@ reviewer's diff, and they are there because they were defective.
 - **151-18** — **F-24 needs an operator decision**, alongside F-21, F-29, F-30 and F-36's locality
   half. F-60 (duplication) and F-63 (blocked by a published slice) are yours. The Supabase Adapter
   block is **closed** — do not re-derive it.
+
+## Self-Check: PASSED
+
+Files asserted present: `151-14-SUMMARY.md`, `pr-bodies/05.md`, `151-DISPOSITION.md`,
+`151-STACK-MANIFEST.md`, `apps/frontend/src/lib/server/api/README.md` — all FOUND; the pre-rename path
+`README.md 21-40-30-014.md` asserted GONE. Commits asserted reachable: `77ab326f9`, `c98ec04d2`,
+`e32b4031f`, `873e1a7f8`, `021d37218`, `a75b87e4c`, `d8e75d868`, `72109c11d`, `2666dcf7b`, `01b6d942a`
+and the slice commit `8c613634b` — all FOUND. Branch `ship/v0.2-akita-06-frontend-lib` exists at
+`8c613634b` with `^ == 545cc26c8`. PR #868 OPEN with base `ship/v0.2-akita-04-dev-seed`. Worktree
+clean.
