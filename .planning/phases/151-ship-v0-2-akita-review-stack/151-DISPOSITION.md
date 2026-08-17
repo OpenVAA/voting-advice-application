@@ -13,8 +13,8 @@ criterion_3: closed-by-plan-151-08
 criterion_3_gate_red_is_expected: true
 per_slice_items: 12
 cells_expected: 163
-cells_filled: 123
-cells_pending: 40
+cells_filled: 147
+cells_pending: 16
 blank_cells: 0
 db_slice: "03"
 adapter_slice: "06"
@@ -26,10 +26,11 @@ dropped_finding_class_slice_06: 492
 dropped_finding_class_slice_07: 0  # the first slice whose diff IS its whole surface, proven two ways
 dropped_finding_class_slice_08: 0
 invisible_to_review_files: 1202
-unclaimed_by_any_pathspec: 120
-comparable_total: 4296  # re-measured at 151-15; every rise attributed by set difference, zero files ever leaving
-slices_dispositioned: ["01a", "01b", "02", "03", "04", "05", "06", "07", "08"]
-findings_total: 72
+unclaimed_by_any_pathspec: 120  # re-confirmed at 151-16 by a SECOND, independent method: 5070 tracked, 4950 claimed, 120 unclaimed, enumerated file for file
+f_15_operator_gate: prepared-at-151-16-awaiting-decision
+comparable_total: 4413  # re-measured at 151-16; every rise attributed by set difference, zero files ever leaving
+slices_dispositioned: ["01a", "01b", "02", "03", "04", "05", "06", "07", "08", "09", "10"]
+findings_total: 82
 status: in-progress
 approval: pending
 ---
@@ -196,18 +197,18 @@ Columns are slices. Every cell holds a verdict token or `PENDING→NN` (the plan
 
 | # | Item | Reach | 01a | 01b | 02 | 03 | 04 | 05 | 06 | 07 | 08 | 09 | 10 | 11 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **2** | OWASP Top 10 review | `none` | N/A | MET | MET | FIXED | FIXED | MET | MET | FIXED | MET | P→16 | P→16 | P→17 |
-| **3** | Follows the Code style guide | `partial` | N/A | N/A | FIXED | MET | MET | FIXED | FIXED | FIXED | FIXED | P→16 | P→16 | P→17 |
-| **4** | Avoid `any`; document or `@ts-expect-error` | `partial` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | MET | N/A | P→16 | P→16 | P→17 |
-| **5** | No repeated code in the PR or elsewhere in the repo | `none` | DEF | FIXED | MET | DEF | DEF | MET | DEF | DEF | DEF | P→16 | P→16 | P→17 |
-| **6** | New components / functions / entities documented | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | FIXED | FIXED | P→16 | P→16 | P→17 |
-| **7** | Repo documentation markdown updated | `none` | DEF | DEF | FIXED | FIXED | FIXED | FIXED | FIXED | FIXED | N/A | P→16 | P→16 | P→17 |
-| **8** | Tracking events for new user-facing functions | `none` | N/A | N/A | N/A | N/A | N/A | N/A | MET | MET | N/A | P→16 | P→16 | P→17 |
-| **9** | New Svelte components follow the guidelines | `partial` | N/A | N/A | N/A | N/A | N/A | N/A | FIXED | MET | N/A | P→16 | P→16 | P→17 |
-| **10** | Errors handled and logged | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | FIXED | N/A | P→16 | P→16 | P→17 |
-| **13** | WCAG A and AA | `partial` | N/A | N/A | N/A | N/A | N/A | MET | MET | FIXED | MET | P→16 | P→16 | P→17 |
-| **14** | Keyboard + screen-reader usable | `partial` | N/A | N/A | N/A | N/A | N/A | DEF | DEF | DEF | N/A | P→16 | P→16 | P→17 |
-| **15** | Developers'/Publishers' Guide entries updated | `none` | DEF | DEF | DEF | DEF | FIXED | FIXED | DEF | DEF | DEF | P→16 | P→16 | P→17 |
+| **2** | OWASP Top 10 review | `none` | N/A | MET | MET | FIXED | FIXED | MET | MET | FIXED | MET | FIXED | MET | P→17 |
+| **3** | Follows the Code style guide | `partial` | N/A | N/A | FIXED | MET | MET | FIXED | FIXED | FIXED | FIXED | FIXED | MET | P→17 |
+| **4** | Avoid `any`; document or `@ts-expect-error` | `partial` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | MET | N/A | MET | MET | P→17 |
+| **5** | No repeated code in the PR or elsewhere in the repo | `none` | DEF | FIXED | MET | DEF | DEF | MET | DEF | DEF | DEF | DEF | DEF | P→17 |
+| **6** | New components / functions / entities documented | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | FIXED | FIXED | MET | DEF | P→17 |
+| **7** | Repo documentation markdown updated | `none` | DEF | DEF | FIXED | FIXED | FIXED | FIXED | FIXED | FIXED | N/A | FIXED | FIXED | P→17 |
+| **8** | Tracking events for new user-facing functions | `none` | N/A | N/A | N/A | N/A | N/A | N/A | MET | MET | N/A | N/A | N/A | P→17 |
+| **9** | New Svelte components follow the guidelines | `partial` | N/A | N/A | N/A | N/A | N/A | N/A | FIXED | MET | N/A | N/A | N/A | P→17 |
+| **10** | Errors handled and logged | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | FIXED | N/A | MET | MET | P→17 |
+| **13** | WCAG A and AA | `partial` | N/A | N/A | N/A | N/A | N/A | MET | MET | FIXED | MET | MET | N/A | P→17 |
+| **14** | Keyboard + screen-reader usable | `partial` | N/A | N/A | N/A | N/A | N/A | DEF | DEF | DEF | N/A | DEF | N/A | P→17 |
+| **15** | Developers'/Publishers' Guide entries updated | `none` | DEF | DEF | DEF | DEF | FIXED | FIXED | DEF | DEF | DEF | FIXED | FIXED | P→17 |
 
 `P→NN` abbreviates the pending marker `PENDING→NN`. Count: 12 × 12 = **144 cells, 0 blank**.
 
@@ -445,12 +446,12 @@ under `apps/supabase/supabase/functions/`. Small enough that exhaustive agent re
 
 | Group | Cells | Filled | Pending | Blank |
 |---|---:|---:|---:|---:|
-| Per-slice general (12 × 12) | 144 | 84 | 60 | **0** |
+| Per-slice general (12 × 12) | 144 | **132** | 12 | **0** |
 | Phase-level (4 × 1) | 4 | 0 | 4 | **0** |
 | Supabase Backend (9, slice 03) | 9 | 9 | 0 | **0** |
 | Supabase Adapter (3, slice 06) | 3 | **3** | 0 | **0** |
 | Edge Functions (3, slice 03) | 3 | 3 | 0 | **0** |
-| **Total** | **163** | **99** | **64** | **0** |
+| **Total** | **163** | **147** | **16** | **0** |
 
 **Slice 06** (plan 151-14) — 6 `FIXED` + 3 `MET` + 3 `DEFERRED`, and **0 `NOT-SWEPT`: it is the first
 slice in the stack where every one of the 12 general items has a real surface.** It also closes the
@@ -582,6 +583,9 @@ already RED on two cosmetic prettier files — PD-03 fences those out of D-05's 
 | 2 | The plan's `cells_expected` formula yields 207; its own action text yields 163. | **163.** Arithmetic shown above; the formula double-counts the 4 phase-level items. |
 | 3 | `151-STACK-MANIFEST.md` says **151-17** must run the taxonomy gate over `C1..TIP`; `151-18`'s objective explicitly names "commit taxonomy" among the phase's closing proofs. | Item 16 cites **151-18**. Flagged so whichever plan runs it does so knowingly rather than both assuming the other did. |
 | 4 | **`CLAUDE.md` is stale on all three `apps/supabase/` paths** — it cites `apps/supabase/migrations/`, `apps/supabase/functions/` and `apps/supabase/tests/`; every one of them is really nested one level deeper (`apps/supabase/supabase/…`). Measured: `git ls-files 'apps/supabase/migrations/*'` → **0 files**, `apps/supabase/supabase/migrations/*` → **3**. The code-review checklist has the Edge Functions path right; `CLAUDE.md` has it wrong. | Recorded under F-04's family for slice 11's sweep (`CLAUDE.md` rides slice 11 per D-15). **Load-bearing for PD-02**: the migration gate as written in `151-06-PLAN.md` matches a directory that does not exist, so an unqualified reading of it would never fire — see the path note under PD-02. |
+| 6 | The **cell census table was one plan stale** — it read `84 / 99` after plans 151-14 and 151-15 had filled 24 further cells, while the frontmatter correctly read `cells_filled: 123`. Two views of the same number disagreeing is the shape of every self-consistent-and-wrong artifact this phase has caught, and here the *table* was the wrong one. | Recomputed at 151-16 from the matrix itself: per-slice general **132 / 144**, total **147 / 163**, pending **16** — the twelve slice-11 cells plus the four phase-level ones. Frontmatter and table now agree. |
+| 7 | `151-16-PLAN.md` instructs that `pr-bodies/08.md` note that "a markdown-only pull request fires no workflow at all, because the repository's continuous-integration configuration ignores markdown paths". **Both halves are wrong for these slices.** `pr-bodies/08.md` is the **messages** slice — 329 `.json` files and one `.md`, not markdown-only. Slice 09 is not markdown-only either: 7 of its 39 original files are `.svelte`, `.ts`, `.mjs` and `.json`. And `paths-ignore` is irrelevant to both, because `main.yaml`'s `pull_request` trigger is `branches: [main]` and every stacked PR's base is a sibling. | The bodies state the **measured** reason — sibling base — and do not repeat the paths-filter claim. This is the **thirteenth** plan-encoded claim in this phase to be wrong as written. |
+| 8 | The plan's acceptance criterion for the stale-path class asserts over `git grep -l -F 'docs/src/routes'`, which **also matches the correct `apps/docs/src/routes`**. | Superseded by the `-P '(?<!apps/)docs/src/routes'` form. See the correction note under the reconciled list (F-85). |
 | 5 | The standing sum-check `Σ files == 4255` now reads **4257**. | **Benign and fully attributed.** Reconstructing plan 151-05's own target at its measurement tip `faf55161b` reproduces tree `e424d633e` and total **4255** exactly; the delta is exactly two files — `151-05-SUMMARY.md` and `151-STACK-MANIFEST.md` — written by 151-05's own doc commits. **Zero files left the set.** The assertion is re-baselined to **4257** and will keep growing as each plan writes its own `.planning/` artifacts (which ride slice 11). **Re-measured by plan 151-09 at `TARGET` `27193876e`: 4274**, and Σ per-slice `files=` equals it exactly (gap 0). The whole +19 delta is slice 11's `.planning/` growth — every other slice's count is unchanged from the manifest's table, file for file — so the drift remains fully attributed and the assertion is re-baselined again to **4274**. |
 
 ---
@@ -2239,3 +2243,361 @@ after its own fix landed.
 ---
 
 *Phase 151 · Plan 06 · scaffold created 2026-08-17 · cells filled by plans 151-09 … 151-18*
+
+## Slices 09 and 10 — `-09-docs` and `-10-root-config` — cell-by-cell evidence
+
+**Filled by plan 151-16.** The 24 per-slice general cells for the stack's last two code slices. All
+three conditional blocks read `n/a — outside block pathspec` for both: neither touches
+`apps/supabase/`, `apps/supabase/supabase/functions/` or
+`apps/frontend/src/lib/api/adapters/supabase/`. The four phase-level items (1, 11, 12, 16) are
+**not** re-run here; evidence is contributed below and their cells stay `PENDING→18`.
+
+Measured refs for this pass:
+
+| ref | value |
+|---|---|
+| `BASE` = `origin/main` | `ac30f132a` — **still unmoved**, at every measurement point in this phase |
+| `PARENT` for slice 09 | `6a810df8a` — slice 08, cut by 151-15, **not** pushed |
+| `TARGET` = `feat-gsd-roadmap` at sweep start | `d31b2e68b` |
+| `TARGET` after this plan's nine fixes | `e2fa2c31c` |
+| slice 09 at sweep start | **39** files (`2 A / 37 M`), +519 / −97 |
+| slice 09 after the fixes | **151** files (`2 A / 149 M`), **+776 / −346** |
+| slice 10 at sweep start | **37** files (`9 A / 4 D / 24 M`), +8,661 / −25,535 |
+| slice 10 after the fixes | **39** files (`9 A / 4 D / 26 M`), **+8,664 / −25,538** |
+| local Supabase / dev server | **not running.** No spec was executed; every verdict below is static, except the four gates and the docs-site build and link validator, which were run. |
+
+### Slice 10's file count matched its prediction exactly, and that mattered
+
+The plan makes this a halt condition: *"a surprise here means the partition is wrong and slice 11
+will not save it."* Measured **before** any fix landed, slice 10 is **37** files against the
+manifest's predicted **37** — deviation **0.000%**, against a 1% halt threshold. Slice 09 likewise
+measured **39** against a predicted **39**. **Both of the last two code slices were unchanged from
+the dry run's table, file for file, after eight intervening plans.** The +112 and +2 that follow are
+this plan's own fixes, attributed below by set difference.
+
+### Sweep surface, stated before any verdict (D-20)
+
+| Slice | Reviewable surface | Declared out of surface, with reason |
+|---|---|---|
+| **09** | The 151 changed files, **plus** the whole `apps/docs/` tree reached from the target tree, per the standing instruction — the slice's pathspec claims **239** members of the dropped-finding class, and the sweep found real defects in them (98 generated component pages, the two build scripts and 12 hand-authored pages were all outside the diff before this plan and are inside it now). | Nothing under the pathspec. The 12 permalink targets that no longer exist (F-80) are *inside* the surface and are dispositioned, not excluded. |
+| **10** | The 39 changed files, **plus** `.github/` reached from the target tree: `PULL_REQUEST_TEMPLATE`, `claude.yml`, `claude-code-review.yml` and `claude-solve-issue.yml` are byte-identical across the move and were in **no** slice's diff. Three defects were found there and two of the four files are now in the diff. | **The 120 files claimed by no pathspec** — including `apps/frontend/{android,ios}` (89) and `jest.config.json`, which are slice 10's *subject matter* but not its pathspec. **NOT-SWEPT for fixing, swept for finding**: they are enumerated and dispositioned below, and the remedy is the F-15 operator decision, not an agent's. |
+
+### The 120 unclaimed files, re-derived by a second and independent method
+
+151-06 derived the class from the diff (`comm -13` over `diff --name-only` vs the rename commit's
+own file list) and reported **110** unclaimed under the dropped-finding class; 151-09's F-17 widened
+the invisible-to-review count to 1,202 and the unclaimed count to **120**. This plan derived the
+same number the other way round — from `git ls-files`, running **all eleven** `slices.tsv` pathspecs
+over the tracked set and subtracting:
+
+| measurement | value |
+|---|---:|
+| tracked files at `TARGET` | **5,070** |
+| claimed by at least one slice pathspec | **4,950** |
+| **claimed by none** | **120** |
+
+**The two methods agree on 120 exactly**, and the census method additionally *enumerates* them,
+which the diff method could not: `apps/frontend/android/` 55, `apps/frontend/ios/` 34,
+`apps/frontend/static/` 10, `apps/frontend/tools/` 3, `apps/frontend/tests/` 2,
+`apps/frontend/{jest.config.json, prettier.config.mjs, .prettierignore, .npmrc, .env.example, .dockerignore}` 6,
+and **11 root-level files the earlier enumeration did not reach at all** — `README.md`, `LICENSE`,
+`.editorconfig`, `.dockerignore`, `eslint.config.mjs`, `prettier.config.mjs`,
+`vitest.workspace.ts`, `images/youthvaa-animation.gif`, `images/ee24-vaa-animation.gif`,
+`design/icons/custom-icons.ai`. Per-file probes confirm the claim status one file at a time:
+`README.md`, `apps/frontend/jest.config.json`, `apps/frontend/android/build.gradle`,
+`apps/frontend/ios/App/Podfile` and `apps/frontend/tools/translationKey/generateTranslationKeyType.ts`
+each return **claimed by: none** when every row of `slices.tsv` is run against them individually.
+
+### Slice 09 — general items (12 cells)
+
+| # | Item | Verdict | Evidence |
+|---|---|---|---|
+| **2** | OWASP Top 10 | **FIXED** | The slice's only executable surface is the static docs site plus six build scripts, so the register is short and was worked to the end rather than sampled. **A05 — reverse tabnabbing, FIXED.** `apps/docs/src/routes/+page.svelte:176` carried `<a … target="_blank" class="link">` with **no `rel`**, while the sibling `apps/docs/src/lib/components/GithubIcon.svelte:5` in the same app carries `rel="noopener noreferrer"` — so the codebase's own convention, not a general principle, is the argument. The block arrived from `origin/main` through the **D-22 integration merge** and is produced by no v0.2 commit, which is exactly why this record flagged it for this plan rather than leaving it to a slice diff. Fixed in **`d6f2a8d3e`**. Modern browsers imply `noopener` for `target=_blank`, so severity is low and the cell says so. **A03 — `{@html}` occurrences across the whole docs app: 0** (measured, `git grep -c '{@html'`), so the injection sink the frontend slices had to count does not exist here. **A02/A05 — secret-shaped literals over all 151 files: 0.** The one grep hit is `bind:password={passwordOfContext}` in a *generated component-doc example* (`…/generated/candidate/components/passwordField/PasswordField/+page.md:18`) — a property name in documentation, not a literal. **Complement:** the docs site is statically adapted (`@sveltejs/adapter-static`, confirmed by its own build output), so it has no request path, no auth and no server code to review; that is why this cell is short rather than because the review was. |
+| **3** | Follows the Code style guide | **FIXED** | **The docs workspace's own `format:check` was RED at `HEAD` and is now green** — a gate `151-BASELINE.md` does not record, for a measured reason: root `format:check` is `prettier --check . && yarn workspace @openvaa/docs format:check`, so it **short-circuits** on the two PD-03-fenced files and the docs half has never run in this phase (F-82). Two files: `src/routes/+page.svelte`, whose merged D-22 block opens with **one** leading space where its siblings use two — precisely the risk this record predicted in the D-22 row — and `…/frontend/contexts/+page.md`, which **this plan's own permalink rewrite** made non-conforming by widening a markdown table cell. The first was pre-existing and is fixed in **`d6f2a8d3e`**; the second was verified pre-existing-or-not before being blamed, by running prettier over the `HEAD` blob through `--stdin-filepath` (it was **clean** at `HEAD`, so the plan caused it) and re-padded in **`b510aafb4`**. **F-44's three gate blind spots run over this slice, because the gate will not:** bare two-part plan numbers, `plan NN`, and `\b[A-Z]{3,}-\d{1,2}[a-z]?\b` — **0 planning references** in text files; every match is SVG path data (`OpenVAALogo.svelte:74-86`), an academic citation range (`publishers-guide/preparing/matching/+page.md:40,50,54,72`) or a PNG byte sequence, which is why `-I` is load-bearing. Hygiene gate **byte-identical** before and after all nine commits: `phase-ref` 660 occ / 235 files / **bare 11**, `spike-ref` 40/30/0, `task-id` 84/46, `milestone-ver` 43/30 — the `occ` columns checked, not only the gated `bare` ones, per 151-15's standing habit. **Complement, and it is large: `yarn lint:check` does not reach this slice at all.** `apps/docs/package.json` defines `lint:local` and `lint:full` but **no `lint` task**, so `turbo run lint` skips the workspace silently — asserted, not assumed (`'lint' in scripts` → **false**). |
+| **4** | Avoid `any`; document or `@ts-expect-error` | **MET** | Exhaustive: `git grep -nw 'any'` over the slice's pathspec returns **0 occurrences in type position**, and `@ts-expect-error` / `@ts-ignore` are **0 / 0**. Real result rather than absent surface: the slice contains six TypeScript build scripts plus `navigation.config.ts` and `docs-scripts.config.ts`. **Complement: `lint:check` could not have proven this either** — see item 3; the workspace has no `lint` task, so `no-explicit-any` never runs over it. The proof is the grep, not the gate. |
+| **5** | No repeated code in the PR or elsewhere in the repo | **DEFERRED** | A real, structural duplication, deferred because its remedy is broken rather than because it is small. **98 of the slice's 151 files are generated component pages** under `developers-guide/frontend/components/generated/`, one per component, sharing one template — duplication by construction, and correct as long as the generator is the source of truth. It is not currently reachable: **5 of the 7 root `docs:*` scripts call workspace scripts that do not exist** (F-79) — `yarn docs:generate` → `Couldn't find a script named "generate"`, `yarn docs:routes` → `"generate:routes"`, run and quoted rather than reasoned about. So the 98 pages cannot be regenerated from the documented entry points, which is also the mechanism behind F-64's staleness. Pre-existing at `origin/main` in identical form, therefore outside D-05's fix bar and recorded with its exact remedy instead. |
+| **6** | New components / functions / entities documented | **MET** | The slice adds exactly **2** files and both are prose — `ROADMAP.md` (169 lines, new on the branch: absent at `origin/main` **and** at `C1`, asserted by `ls-tree`) and `docs/key-generation.md` (144 lines). No new exported entity, component or function ships in this slice, so the item's trigger is a real negative rather than an omission. The two build-script docblocks that *were* wrong are fixed under item 7. |
+| **7** | Repo documentation markdown updated | **FIXED** | **This is the cell where items 7 and 15 are discharged phase-wide; the reconciled list is the section below and is the evidence half of this cell.** 9 fixes landed, 1 cross-slice landing recorded, 3 terminal deferrals. Headline numbers: **273** stale `blob/main/frontend/…` permalinks across **117** files repointed (**`b510aafb4`**), **48** references to `apps/strapi` — a path that has never existed at either end of this stack — restored to `backend/vaa-strapi` across 15 files (**`9c359cd11`**), the workspace inventory corrected against `yarn workspaces list --json` (**`e2fa2c31c`**), and `ROADMAP.md` plus the two `apps/docs/scripts` docblocks corrected (**`6ce42e930`**). **Cross-slice landing:** `.agents/code-review-checklist.md`'s four stale guide links are fixed in **`debdfdec2`** but **ship in slice 11**, because `.agents` is slice 11's pathspec — a slice-09 reviewer will not see them, and this is where that is said. **Verification is a second method, not the fix's own grep:** the docs app's own link validator reports `Files scanned 191, Internal links 166, Broken links 0`. |
+| **8** | Tracking events for new user-facing functions | **NOT-SWEPT** | `n/a — no applicable surface in this slice.` The docs site has no tracking layer: `startEvent(` over the whole pathspec → **0**, and the `TrackingEventName` union that gates the frontend's events lives in slice 06. The slice adds no user-facing application function; it adds documentation. |
+| **9** | New Svelte components follow the guidelines | **NOT-SWEPT** | `n/a — no new Svelte component in this slice.` The slice's 2 added files are both markdown; the docs app's 16 `.svelte` files are all pre-existing and only 2 are modified (`+page.svelte`, `lib/components/Header.svelte`). Both were checked rather than waved through: **0** `svelte/store` imports anywhere in `apps/docs`, and the app is deliberately on a different Svelte version from the frontend — which is *why* `.prettierignore` excludes it from the root prettier run, comment included — so the Svelte 5 rune rules in `CLAUDE.md` do not apply to it. Claiming `MET` here would be claiming conformance to a guideline that does not govern the file. |
+| **10** | Errors handled and logged | **MET** | The slice's error surface is six build scripts, and it is real: **16 `catch` blocks across 8 files** (`generate-all-docs-and-validate.ts` 2, `generate-component-docs.ts` 3, `generate-navigation-config.ts` 2, `generate-route-map.ts` 1, `move-generated.ts` 2, `utils/links.ts` 4, `utils/routes.ts` 1, `validate-links.ts` 1) and **65 `console.*` calls**, which in a CLI are the reporting channel rather than debug residue — the opposite of slice 07's F-68, and the distinction is the surface, not the count. Executable evidence: `yarn workspace @openvaa/docs validate:links` runs to completion and reports its result set explicitly (`Broken links: 0`). **Complement:** none of this is exercised by any gate — `test:unit` for this workspace is `vitest run --passWithNoTests`, an **empty pass**, and `test:e2e` is a bare `playwright test` over **0 spec files** (`git ls-files 'apps/docs/tests' '**/*.spec.ts'` → 0). Three of the workspace's four test-shaped scripts assert nothing. |
+| **13** | WCAG A and AA | **MET** | Enumerated over the whole docs app rather than the diff, because the app is one rendering surface: `<img>` **13**, of which **13 carry `alt`** — checked per file (`+page.svelte` 5/5, `publishers-guide/preparing/matching` 2/2, `the-voter-see-when-using` 4/4, `the-specifics-of-the-elections` 1/1, `what-other-information-is-collected` 1/1), so the difference is **0**. Positive `tabindex` **0**; non-semantic interactive elements (`<div>`/`<span>`/`<li>` with a click handler) **0**; `autofocus` **0** in code (both matches are prose inside a generated component page); `svelte-ignore` directives **0**, so nothing is suppressed. ARIA attributes are present in 7 of the app's components. **Complement, and it is total: no automated accessibility gate reaches this slice.** `assertAxeScan`'s route table is the frontend's five URLs; the docs site is in no scan, has no E2E spec, and its `test:unit` is an empty pass. This cell is a static hand sweep over an enumerated class list and says so. |
+| **14** | Keyboard + screen-reader usable | **DEFERRED** | The reason is the complement above, stated as a verdict rather than hidden in one: **the docs site has no keyboard or screen-reader coverage of any kind — no axe scan, no E2E spec, no unit test that renders a component.** The static classes that *predict* keyboard trouble are all clean (0 positive tabindex, 0 non-semantic handlers, 0 `autofocus`, 0 suppressions), and the two modified components were read, but no path was traversed. **DEFERRED rather than MET because authoring the first spec for this workspace is net-new test authorship, which D-13 excludes**, and because one measured absence of bad signals is not a pass. |
+| **15** | Developers'/Publishers' Guide entries updated | **FIXED** | The item's whole target set is this slice, and it is discharged in the reconciled list below. Four sites where a guide named a **script that no longer exists** are corrected against `CLAUDE.md` § Database & Stack Commands and the root `package.json`'s actual script list — `yarn dev:down` / `yarn dev:stop` (3 sites) → `yarn db:stop` / `yarn db:reset`, `yarn build:app-shared` → `yarn build --filter=@openvaa/app-shared`, `yarn prod` → the command that `docker-compose.dev.yml`'s own header documents — plus the paragraph that described the dev stack as Docker images for "frontend, backend and DB", which stopped being true when v0.2 replaced it with local Supabase (**`7cebe7baa`**). The workspace inventory routed here by 151-09 and 151-14 is corrected (**`e2fa2c31c`**). **Deferred residue, named rather than implied:** the eleven legacy backend pages keep v0.2's own "documents the legacy Strapi backend" banner as their disposition, and **12 permalink targets no longer exist at all** (F-80). |
+
+### Slice 10 — general items (12 cells)
+
+| # | Item | Verdict | Evidence |
+|---|---|---|---|
+| **2** | OWASP Top 10 | **MET** | Swept as *supply chain and CI*, which is what a plumbing slice's threat surface is. **Workflow injection: 0.** No workflow uses `pull_request_target` (asserted over all six). Every one of the **13** user-controlled `github.event.*` values in `claude.yml` is passed through `env:` (`:36-40`, `:82-90`) rather than interpolated into a `run:` body — the documented anti-injection shape, and it is the pre-existing files that get this right, so the cell credits them rather than the plan. **Secrets: 10 `secrets.*` references** across the six workflows (`ANTHROPIC_API_KEY`, `GITHUB_TOKEN`, `TURBO_TOKEN`), none echoed, none written to an artifact. **`release.yml` (new in this slice) publishes to npm with no npm token anywhere in the tree** — `permissions: id-token: write`, `registry-url: https://registry.npmjs.org`, `NPM_CONFIG_PROVENANCE: true` and `changesets/action@v1`. That is **npm trusted publishing (OIDC)**, and it matches the project's own recorded decision to use trusted publishing instead of an `NPM_TOKEN`; it is **deliberate, and must not be "fixed" by adding a token**. `.changeset/config.json` sets `"access": "public"`, consistent with it. **Secret-shaped literals across `.env.example`, `render.example.yaml`, both compose files and all of `.github/`: 0.** |
+| **3** | Follows the Code style guide | **MET** | The slice is configuration, YAML and one vendored yarn release; the style surface is the gates, and both are unchanged from `151-BASELINE.md` under forced, uncached runs: `yarn lint:check` **0 errors / 20 warnings** (11/11 tasks, 0 cached; per-package 2 + 15 + 1 + 2, the baseline's exact split) and `yarn format:check` **red on exactly the two PD-03-fenced files**. **The warning count is not reduced** — F-39's rule — and was verified by counting per package rather than by reading a summary line. F-44's three blind-spot patterns over the slice: **0 planning references** (the only matches are `yarn.lock`, excluded, and PNG bytes). |
+| **4** | Avoid `any`; document or `@ts-expect-error` | **MET** | `git grep -nw 'any'` over all 39 files, every file type: **0 occurrences**, in type position or otherwise. `@ts-expect-error` / `@ts-ignore`: **0 / 0**. |
+| **5** | No repeated code in the PR or elsewhere in the repo | **DEFERRED** | Four dead-code findings sit in this slice and **none can be fixed here**, for two different reasons that must not be collapsed. **Blocked by F-15, the operator gate:** `apps/frontend/jest.config.json` (F-01 — jest is a dependency of nothing, the file is referenced by nothing) and the **89 orphaned Capacitor files** under `apps/frontend/{android,ios}` (F-10 — `capacitor.config.ts` is deleted by this very slice, `@capacitor/*` is in no `package.json`, `yarn.lock` has 0 capacitor entries, and the only `@capacitor` references in the tree are inside the orphaned scaffolding itself: `android/capacitor.settings.gradle`, `ios/App/Podfile`). **No pathspec claims those paths**, so a deletion would land in the catch-all and break criterion 7 — see the F-15 decision package below. **Shipping by the operator-approved framing:** the two dead one-shot codemods (F-03) and the tracked `tsconfig.tsbuildinfo` (F-08) are *in* this slice's diff and could be deleted, but the manifest's approved slice-10 justification names all three explicitly as this slice's contested-but-justified files and instructs the plan that writes its PR body to defend them to a cold reviewer. Deleting them would contradict the approval it is the operator's to change. **Recorded, with the obligation restated for 151-17.** |
+| **6** | New components / functions / entities documented | **DEFERRED** | Nine files are added and the documentation is uneven in a way worth naming rather than averaging. Well documented: `main.yaml`'s new jobs carry substantial rationale comments — `:115-137` explains why `dev-seed-integration` is a separate job with deliberately **no** `paths-filter` and names the incident that caused it, `:178-180` why the connection details are read off the running instance, `:261-276` why visual regression is opt-in at the Playwright level but blocking in CI. Not documented: **`.github/workflows/release.yml` ships with no comment at all** — a new publish-to-npm workflow whose OIDC trusted-publishing mechanism is the least obvious thing in the slice and the one a reviewer is most likely to misread as a missing token; and **`.bg-shell/manifest.json` is the two-byte literal `[]`, referenced by nothing in the tree** (`git grep -ln 'bg-shell'` outside `.planning`/`.claude` → 0 hits) and not gitignored (F-81). Neither is fixed: a docblock for `release.yml` is worth writing but is the kind of addition a reviewer should see attributed to the author, and deleting a manifest whose owning tool cannot be identified from the repository is not an agent's call. |
+| **7** | Repo documentation markdown updated | **FIXED** | Three dead documentation links, all found **from the target tree** because all three files are byte-identical across the layout move and appear in **no** slice's diff — the standing instruction's exact case, and the third slice in a row where it produced real findings. `.github/PULL_REQUEST_TEMPLATE:9,19` pointed at `docs/contributing/self-review.md` and `docs/contributing/CONTRIBUTING.md`, **neither of which exists at either end of this stack** (`ls-tree -r origin/main` → absent), so this is pre-existing drift rather than a v0.2 regression; repointed at the live guide pages, with the target anchors verified to exist (`contributing/pull-request/+page.md:17` `### Self-review`, `contributing/contribute/+page.md:9` `### Commit your update`). `.github/workflows/claude-solve-issue.yml:55` instructed the agent to follow `docs/code-review-checklist.md`; the checklist is at `.agents/code-review-checklist.md`. Commit **`3fa38158b`**. |
+| **8** | Tracking events for new user-facing functions | **NOT-SWEPT** | `n/a — no applicable surface in this slice.` The slice adds no function available to a user; it is build, lint, CI, container and release configuration. |
+| **9** | New Svelte components follow the guidelines | **NOT-SWEPT** | `n/a — no applicable surface in this slice.` **0** `.svelte` files among the 39. |
+| **10** | Errors handled and logged | **MET** | The slice's error handling is CI's, and it is deliberately fail-loud in the two places that matter. `main.yaml:187-188` guards both values it exports with `test -n "$API_URL" \|\| { echo "::error::API_URL missing from supabase status"; exit 1; }` rather than exporting an empty string and failing confusingly later. `:143-147` sets `DEV_SEED_INTEGRATION_REQUIRED: "1"` **so that losing the Supabase wiring turns the job red instead of silently reverting to a green skip** — a guard against the exact fake-green the job was created to fix, and its comment says so. Every `supabase stop` carries `if: always()`. **Complement: none of this is verifiable from here** — these jobs do not exist at any *published* head of this stack (see the phase-level contribution below), so their first real execution is after slice 10 merges. |
+| **13** | WCAG A and AA | **NOT-SWEPT** | `n/a — no applicable surface in this slice.` No rendered surface: 0 `.svelte`, 0 `.html`, 0 markdown pages served to a user. |
+| **14** | Keyboard + screen-reader usable | **NOT-SWEPT** | `n/a — no applicable surface in this slice.` Same reason. |
+| **15** | Developers'/Publishers' Guide entries updated | **FIXED** | The guide entries that document **this** slice's subject matter were corrected — and the fixes land in **slice 09's** files, which is the cross-slice landing this cell exists to record so that neither reviewer thinks the other saw it. `developers-guide/deployment/+page.md` documented `yarn prod` and a backend container for a stack that now has neither; it now names `docker compose -f docker-compose.dev.yml up --build`, the command **this slice's own compose file** documents in its header, and `yarn db:start` as its prerequisite. `development/running-the-development-environment/+page.md` described the dev stack as Docker images for frontend, backend and DB; it now describes what `package.json`'s `dev` script in **this slice** actually does. `troubleshooting/+page.md` named `yarn dev:down` / `yarn dev:stop` / `yarn build:app-shared`, none of which is in this slice's `package.json`. All in **`7cebe7baa`**, inside slice 09's diff. |
+
+### The reconciled item 7 and item 15 list — discharged here, phase-wide
+
+**This is the terminal list.** Items 7 and 15 have accumulated cross-slice landings since 151-09;
+every one is collected here with the enumerated stale-path set, and **no entry is left without a
+verdict.** This is the last slice in which they can be discharged, and the acceptance criterion is
+completeness, not cleanliness.
+
+| # | Target | Occ | Source | Verdict | Where it landed / why not |
+|---|---|---:|---|---|---|
+| 1 | `blob/main/frontend/…` permalinks in `apps/docs/` | **273** in **117** files | F-64 (151-14), specifics added by 151-15 | **FIXED** | `b510aafb4`. 240 of the 252 distinct targets resolve after the `apps/` prefix. |
+| 2 | `apps/strapi/…`, a path that never existed | **48** in **15** files | **F-77, new this plan** | **FIXED** | `9c359cd11`. Restored to `backend/vaa-strapi/…`. Same defect shape as F-16. |
+| 3 | Workspace inventory: 2 dead entries, 4 missing workspaces | 6 | 151-09 (F-15 note), 151-14 | **FIXED** | `e2fa2c31c`. Verified by set difference against `yarn workspaces list --json`. |
+| 4 | `ROADMAP.md:28,135` — `docs/src/routes` | 2 | F-04 | **FIXED** | `6ce42e930`. |
+| 5 | `apps/docs/scripts/{generate-navigation-config,validate-links}.ts:6` | 2 | F-04 rows 3–4 | **FIXED** | `6ce42e930`, in the workspace-relative form § 3.1 recommended. |
+| 6 | `.agents/code-review-checklist.md:7,13,19,20` | 5 | F-04 row 1 + § 3.1a | **FIXED — cross-slice** | `debdfdec2`, **ships in slice 11** (`.agents` is slice 11's pathspec). Recorded in slice 09's cell 7. |
+| 7 | `.github/PULL_REQUEST_TEMPLATE:9,19` | 2 | new this plan (F-84) | **FIXED** | `3fa38158b`, ships in **slice 10**. Pre-existing at both ends. |
+| 8 | `.github/workflows/claude-solve-issue.yml:55` | 1 | new this plan (F-84) | **FIXED** | `3fa38158b`, ships in **slice 10**. |
+| 9 | `troubleshooting/+page.md:27` — `docs/docker-setup-guide.md` | 1 | new this plan | **FIXED** | `b510aafb4`; repointed at the in-site `/developers-guide/development/requirements` route, the target the same repo already uses. |
+| 10 | `tree/main/{frontend,docs}` references | 2 | new this plan | **FIXED** | `b510aafb4`. The i18n one needed a semantic re-target (`src/lib/i18n/translations` → `messages/`), not a prefix. |
+| 11 | Four guides naming removed yarn scripts | 6 sites | new this plan | **FIXED** | `7cebe7baa`. |
+| 12 | `packages/app-shared/src/settings/README.md:5,6` | 2 | F-04 row 13 | **DEFERRED** | **Its owning slice 02 is PUBLISHED as PR #865.** A fix would reach no slice — slice 02 is cut, and no later pathspec claims the file — so it would land in the catch-all and break criterion 7, and re-cutting means force-pushing a PR under review, which the phase forbids. Routed to 151-18 / post-merge. |
+| 13 | `README.md:12` — the repo's front-page mascot image | 1 | F-15 (151-09) | **AWAITING OPERATOR DECISION** | Blocked by F-15: `README.md` is claimed by **no** pathspec. Prepared below; **not taken.** |
+| 14 | 12 permalink targets that no longer exist | 12 distinct, 9 pages | **F-80, new this plan** | **DEFERRED** | Each needs a semantic re-target, not a prefix, and several of the carrying pages are themselves legacy-banner-marked. Enumerated below so no later plan re-derives them. |
+| 15 | 11 legacy backend / Strapi pages | 11 pages | v0.2's own choice | **DEFERRED — by v0.2's recorded banner** | Each carries "documents the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release." That is a documented deferral with an owner, not silence. Recorded as a verdict so the reader can disagree with it. |
+| 16 | 8 `backend/vaa-strapi/…` targets dead at `origin/main` too | 8 distinct | new this plan | **DEFERRED — pre-existing** | e.g. `src/util/acl.ts`, `src/extensions/users-permissions/strapi-server.js` (the real file is `.ts`), `…/adminsrc/components/*.tsx` (real path `admin/src`). Dead **before** v0.2, so outside the phase's net-diff boundary. |
+| 17 | 5 broken root `docs:*` scripts | 5 | **F-79, new this plan** | **DEFERRED — pre-existing** | Identical at `origin/main`, and two (`generate:typedoc`, `generate:typedoc-frontend`) have **no** correct target in `apps/docs/package.json`, so the fix is not mechanical. Load-bearing context for entry 1: it is why the generated pages were never regenerated. |
+
+> **A correction to F-04 that a later plan would otherwise re-derive wrongly, and it changes the
+> acceptance command.** F-04 is recorded as **13 files / 20 occurrences** of `docs/src/routes`. That
+> count is a **substring artefact**: `git grep -F 'docs/src/routes'` also matches the *correct*
+> `apps/docs/src/routes`, and **8 of the 13 files were already correct** — 151-14's F-57 repaired
+> them. Measured with a negative lookbehind, `git grep -P '(?<!apps/)docs/src/routes'`, the genuinely
+> stale set is **5 files / 11 occurrences**, and after this plan it is **1 file / 2 occurrences**
+> (entry 12, deferred). **The plan's acceptance criterion as written — that
+> `git grep -l -F 'docs/src/routes'` return only deferred paths — is unsatisfiable on a correct tree,
+> because the correct path contains the stale one as a substring.** The `-P` form is the assertion;
+> the `-F` form is the twelfth self-consistent-and-wrong measurement this phase has caught.
+
+**The 12 dead permalink targets (F-80), enumerated with their carrying pages:** `frontend/data`
+(`frontend/data-api`), `src/lib/api/adapters/strapi` + `…/dataProvider/strapiDataProvider.ts` +
+`…/strapiData.type.ts` (`configuration/app-customization`, `configuration/app-settings`,
+`frontend/data-api`), `src/lib/components/icon/base/IconBase.{svelte,type.ts}`
+(`contributing/code-style-guide`), `src/lib/components/passwordValidator/PasswordValidator.svelte`
+and `src/routes/candidate/{password-reset/PasswordResetPage,register/PasswordSetPage}.svelte`
+(`candidate-user-management/password-validation`), `src/lib/contexts/app/getRoute.ts`
+(`frontend/routing`), `src/lib/stores/stores.ts` (`configuration/app-settings`),
+`src/lib/utils/authenticationStore.ts` (`candidate-user-management/registration-process-in-strapi`).
+**All 12 are in hand-authored pages; the 98 generated pages rewrite cleanly.** They were dead in
+both directions — `blob/main/frontend/…` resolves on `main` **today** and stops resolving the moment
+v0.2 merges, because v0.2 both moves the tree and deletes these files — so the prefix rewrite makes
+nothing worse and the residue is a content question, not a path question.
+
+### Findings queued by this sweep
+
+| ID | Verdict | Item(s) | Finding | Landing |
+|---|---|---|---|---|
+| **F-77** | FIXED `9c359cd11` | 7, 15 | 48 references across 15 `apps/docs/` pages to `apps/strapi/`, a path that has never existed at either end of this stack. v0.2 rewrote the Strapi source links instead of retiring them with the tree — the same defect as F-16, from the same blanket rewrite. | slice 09 |
+| **F-78** | FIXED `d6f2a8d3e` | 2, 3 | The docs landing page's external anchor carried no `rel`, and the D-22-merged block's one-space indentation made the docs workspace's own `format:check` red at `HEAD`. | slice 09 |
+| **F-79** | DEFERRED — pre-existing | 5, 7 | 5 of the 7 root `docs:*` scripts call workspace scripts that do not exist; two have no correct target at all. Run, not reasoned: `yarn docs:generate` → `Couldn't find a script named "generate"`. This is why F-64's generated pages were never regenerated. | 151-18 / later phase |
+| **F-80** | DEFERRED | 7, 15 | 12 distinct permalink targets across 9 hand-authored docs pages point at files v0.2 deleted; each needs a semantic re-target rather than a path prefix. Enumerated above. | 151-18 / later phase |
+| **F-81** | DEFERRED | 5, 6 | `.bg-shell/manifest.json` — the literal `[]`, newly tracked by v0.2, referenced by nothing in the tree, not gitignored. Deleting a manifest whose owning tool cannot be identified from the repository is not an agent's call. | 151-17 / operator |
+| **F-82** | FIXED `d6f2a8d3e` (the file); recorded (the gate) | 3, 11 | Root `format:check` is `prettier --check . && yarn workspace @openvaa/docs format:check`, so it **short-circuits** on the two PD-03-fenced files and **the docs workspace's own format check has never run in this phase.** It was red. `151-BASELINE.md`'s "red on exactly 2 files" is true of the first half only. | gate reach |
+| **F-83** | DEFERRED → gate design | 3, 4, 12 | `yarn lint:check` does not reach `apps/docs` at all: the workspace defines `lint:local` and `lint:full` but no `lint` task, so `turbo run lint` skips it silently. Its `test:unit` is `vitest run --passWithNoTests` and its `test:e2e` is a bare `playwright test` over 0 spec files. **Three of the workspace's four test-shaped scripts assert nothing.** | 151-19 / later phase |
+| **F-84** | FIXED `3fa38158b` | 7 | Three dead documentation links under `.github/` — two in `PULL_REQUEST_TEMPLATE`, one telling an agent to read a checklist at a path it does not occupy. All three files byte-identical across the move, so in no slice's diff. | slice 10 |
+| **F-85** | CORRECTION, not a defect | 7 | F-04's "13 files / 20 occurrences" is a substring artefact; 8 of the 13 were already correct. The genuinely stale set was 5 files / 11 occurrences, and the plan's acceptance grep cannot express it. | record |
+| **F-86** | DEFERRED — pre-existing | 3, 5 | Root `package.json` declares `"engine"` (singular), not `"engines"`, so its Node/yarn floor is **inert** — no package manager reads that key. Pre-existing at `origin/main`, but **v0.2 edits its values** (`node: 20.18.1 → >=22`, `yarn: 4.6 → 4.13`), so a slice-10 reviewer sees the block and would reasonably assume it is enforced. Not fixed here: activating it changes install behaviour for every contributor and every CI job, which is a decision rather than a typo fix. | 151-17 / operator |
+
+### Evidence contributed to the phase-level cells (which stay `PENDING→18`)
+
+- **Item 11 (failing checks).** **Slice 10 is where the CI story changes, and it was verified rather
+  than inherited.** `main.yaml` at the branch tip defines **six** jobs — `skill-drift-check`,
+  `frontend-and-shared-module-validation`, `supabase-tests`, `dev-seed-integration`, `e2e-tests`,
+  `e2e-visual` — on **Yarn 4.13 / Node 22.22.1**, where `origin/main`'s version (blob `c2fdcedb2`,
+  byte-identical at every published head) defines **three** on Yarn 4.6. So `skill-drift-check`,
+  `supabase-tests`, `dev-seed-integration` and `e2e-visual` **arrive with this slice**, and research's
+  Pitfall 7 stays refuted for every head published so far. **The `Setup Yarn 4.6` signature also stops
+  being true at this slice**, because the step is named `Setup Yarn 4.13` here and the root
+  `package.json` fix that ends the `YN0028` failure is in this slice's diff. Neither slice 09's nor
+  slice 10's PR can demonstrate any of this: their bases are sibling branches, so
+  `main.yaml`'s `pull_request: branches: [main]` trigger does not fire.
+- **Item 12 (shared-dependency blast radius).** **The workspace globs resolve every workspace, proved
+  by set comparison in both directions rather than by a count.** `git ls-files 'apps/*/package.json'
+  'packages/*/package.json'` gives **15**; `yarn workspaces list --json` resolves **15** named
+  workspaces plus the root; the symmetric difference of the two sets is **empty** — nothing tracked is
+  unresolved and nothing resolved is untracked. And **no tracked `package.json` lies outside the two
+  globs' depth** (`git ls-files '*/package.json'` minus `(apps|packages)/*/package.json` → 0), so the
+  globs cannot be silently missing a nested workspace. This is threat T-151-16-02 discharged: the
+  claim must be **false at the base and true at the target**, and both halves are now measured — at
+  `origin/main` the same key reads `['packages/*', 'backend/vaa-strapi', 'backend/vaa-strapi/src/plugins/*', 'frontend', 'docs']`,
+  three of whose five entries the stack invalidates. `turbo.json` (new in this slice) declares
+  `build: dependsOn ['^build']`, `test:unit: dependsOn ['build'], cache: false` and topological
+  `lint`/`typecheck`, which is what makes `yarn build` 14/14 ordered correctly.
+- **Item 16 (history).** Nine commits, all conventional, all scoped `(151-16)`.
+
+### The per-slice deltas, attributed by set difference
+
+**Slice 09: 39 → 151 files, +519 → +776, −97 → −346. Slice 10: 37 → 39, +8,661 → +8,664,
+−25,535 → −25,538.** Established with `comm` over the two `diff --name-only --no-renames` sets, not
+by subtraction. **Entered: 112 and 2. Left: 0 and 0.**
+
+| Slice | Entrants | Attribution |
+|---|---:|---|
+| 09 | **112** | **98** generated component pages + **12** hand-authored pages (the localization set, `frontend/{styling,routing,environmental-variables,contexts,components}`, `contributing/code-style-guide`, `auto-documentation`, the publishers-guide languages page) + **2** build scripts — every one entering because a fix put it in the diff, which is D-04 working. |
+| 10 | **2** | `.github/PULL_REQUEST_TEMPLATE` and `.github/workflows/claude-solve-issue.yml`, both members of the dropped-finding class until F-84's fix put them in the diff. |
+
+**Slice 09 is now 151 files rather than 39, and that is a fourfold growth of an operator-approved
+row.** Two things bound it: the **pathspec is unchanged**, so the approved partition is untouched and
+no other slice's cell moves; and 151 files with 1,122 changed lines is inside both GitHub render
+budgets (~300 files, 20,000 lines), so the row's `ok` render flag still holds. It is the same
+mechanism as slice 02's +45 lines and slice 03's +1 file, at a larger scale, and the PR body states
+it rather than letting a reviewer discover a table that says 39.
+
+**Rename detection changes nothing for either slice, measured rather than assumed.**
+`git diff -M --shortstat` returns **151 / +776 / −346** and **39 / +8,664 / −25,538** — identical to
+the `--no-renames` figures, because slice 09 is `2 A / 149 M` and slice 10 is `9 A / 4 D / 26 M` with
+no add/delete pair that could pair up. 151-15's standing instruction still applies to the *bodies*:
+both numbers are stated and reconciled, and here the reconciliation is that they coincide.
+
+### The standing sum-check
+
+| check | result |
+|---|---|
+| comparable total (`diff --no-renames C1..TARGET`) | **4,413** |
+| Σ per-slice `files=` over all eleven pathspec rows | 252 + 97 + 119 + 162 + 195 + 533 + 214 + 330 + **151** + **39** + 2,321 = **4,413** |
+| **gap** | **0** |
+| rise from 151-15's 4,296, attributed by set difference | **+117, every one named, zero leaving.** +3 into slice 11 before this plan touched anything (`151-15-SUMMARY.md`, `pr-bodies/06.md`, `pr-bodies/07.md`, all `.planning/` files riding slice 11: 2,318 → 2,321), then +112 into slice 09 and +2 into slice 10 from this plan's fixes. |
+| slice 08 needs no re-cut | asserted **before** any cut, as 151-15 did: `diff --no-renames ship/v0.2-akita-08-i18n-messages..TARGET -- apps/frontend/messages` → **0 files**. None of this plan's nine fixes touches `apps/frontend/messages`. |
+| `git status --porcelain` | empty after every commit; `HEAD` never left `feat-gsd-roadmap` |
+
+### Gate verdicts after this plan's fixes — measured, not assumed
+
+| Gate | Baseline | After | |
+|---|---|---|---|
+| `yarn lint:check` | 0 errors / 20 warnings | **0 errors / 20 warnings** — counted per package (2 core + 15 dev-seed + 1 frontend + 2 tests), 11/11 tasks, **0 cached** under `TURBO_FORCE=1` | unchanged |
+| `yarn format:check` | red on exactly 2 | **red on exactly the same 2** PD-03-fenced files, under `TURBO_FORCE=1` | unchanged |
+| `yarn workspace @openvaa/docs format:check` | **not in the baseline** (F-82) | **red at `HEAD` → green** | improved |
+| `yarn workspace @openvaa/docs build` | not in the baseline | **succeeds**, adapter-static wrote the site | new evidence |
+| `yarn workspace @openvaa/docs validate:links` | not in the baseline | **191 files scanned, 166 internal links, 0 broken, 0 fixed** | new evidence |
+| hygiene gate | 2 approved KEEP rows | **identical**: `phase-ref` 660/235/bare 11, `task-id` 84/46, `spike-ref` 40/30/0, `milestone-ver` 43/30 | unchanged |
+| `yarn test:unit`, `yarn build` | 1,522 / 149 files; 14/14 | **not re-run.** No fix touches any file under `packages/` or `apps/frontend/src`, and `apps/docs` contributes an empty `--passWithNoTests`. Stated rather than claimed. | — |
+| `yarn db:lint:sql` | red (F-21) | **not re-run** — known-F-21, pending an operator decision at 151-17 | — |
+| `yarn test:e2e` | **not run all phase** | **not run.** D-24 pays this once at 151-18 against the post-sweep tip. Per `CLAUDE.md` a did-not-run E2E test counts as a failure, so **no green suite is claimed for either slice.** | — |
+
+`e2e_collisions` stays **0** and `migrations_added` stays **0**: no fix touched a spec, a fixture or a
+migration.
+
+---
+
+## F-15 — the operator decision, PREPARED AND NOT TAKEN
+
+**Plan 151-16 was told to prepare this decision and stop. `slices.tsv` is unedited; nothing below has
+been applied.** The gate exists because the remedy edits an operator-approved partition, and this
+record's own rule is that no agent may create a waiver unilaterally.
+
+### The mechanism, in one paragraph
+
+`scripts/build-slice.sh` derives each slice as `PARENT..TARGET` **restricted to a pathspec**. A
+`TARGET`-side change to a path that **no** pathspec claims therefore enters **no** slice: it lands in
+the remaining-slices catch-all, which must be `files=0`, and the stack stops reproducing the target
+tree — criterion 7. So an unclaimed file cannot be *fixed* at all, however trivial the fix, until some
+slice claims it. **120 files are in that state** (re-derived above by a second method).
+
+### What is actually at stake — three concrete items, decidable separately
+
+| | Item | Cost of doing nothing |
+|---|---|---|
+| **A** | **`README.md:12` — the repository's front-page image is broken.** It renders `<img … src="./docs/static/images/shiba-inu-facing-front.png">`. That path **does not exist** at `TARGET` (`git cat-file -e` fails); the blob is at `apps/docs/static/images/shiba-inu-facing-front.png` (exists, asserted). The v1.1 layout move broke it. `README.md` is byte-identical at both ends, so **it is in no slice's diff**, and claimed by no pathspec, so **it cannot be fixed**. | The repo's front page ships with a broken image — the first thing a visitor sees. Contrast the D-22 row above, where the *same* class of relocation did **not** break its reference and this record verified it; this is the case where it did. |
+| **B** | **F-10 / F-01 — 89 orphaned Capacitor files plus a dead jest config.** `apps/frontend/{android,ios}` = **89 tracked files** (55 + 34; **48 of them binary**, 1,715 text lines). `capacitor.config.ts` is **deleted by slice 10**. `@capacitor/*` is in **no** `package.json`; `yarn.lock` has **0** capacitor entries; the only `@capacitor` strings in the whole tree are inside the orphaned scaffolding itself (`android/capacitor.settings.gradle`, `ios/App/Podfile`). `apps/frontend/jest.config.json` is 96 bytes and referenced by nothing; jest is a dependency of nothing. | **A slice-10 reviewer sees `capacitor.config.ts` deleted and would reasonably conclude the removal is complete.** The 89 orphans are invisible to them, and to every other reviewer in the stack. The repo ships a dead native-app scaffold and a config for a test runner it does not use. |
+| **C** | **The class.** 1,202 files are invisible to review; **120** are claimed by no pathspec at all, now enumerated file for file. | Anything wrong in those 120 is unfixable inside this stack and unseen by every reviewer of it. A, B and entry 12 of the reconciled list are the three instances this phase actually found. |
+
+### Option 1 — claim `README.md` into slice 09 and fix it (item A)
+
+**The `slices.tsv` edit, verbatim.** Row `09`, column 4 only:
+
+```
+apps/docs docs ROADMAP.md
+```
+becomes
+```
+apps/docs docs ROADMAP.md README.md
+```
+
+| Consequence | Value |
+|---|---|
+| slice 09 file count | 151 → **152** (`2 A / 150 M`) — `README.md` exists identically at both ends, so it enters as `M` once the fix lands: +1 / −1 line |
+| render budget | 152 files, ~1,124 changed lines — **inside both** (~300 files, 20,000 lines). No flag changes. |
+| any other slice's cell | **none.** `README.md` is claimed by no pathspec today, so no already-cut slice's diff can contain it — asserted per-file, not inferred. |
+| already-open PRs #863–#870 | **nothing needed. No force-push.** |
+| byte-identity | preserved: the fix lands on `feat-gsd-roadmap` (the new `TARGET`) and slice 09 claims the path, so the change rides slice 09 and the catch-all stays `files=0`. |
+| re-proof | the standing per-slice check, unchanged: cut, then catch-all `pathspec .` from the slice-10 commit, `Σ files == comparable total`, and `read-tree TIP` + catch-all → tree **must equal** `TARGET^{tree}`. Plus `scripts/verify-identity.sh` at 151-18. |
+| cost | one script invocation; slices 09 and 10 are **uncut and unopened**. |
+
+**Is `README.md` in slice 09's subject?** Its title is *"update the project documentation — the docs
+site, the root roadmap and the key-generation guide"*. The root README is project documentation and
+the image it points at lives in `apps/docs/static/`, so the file it depends on is already in this
+slice. Criterion 6's test — *"does the title describe every file in it, without an 'and also'?"* —
+passes if the subject line names the README, which it currently does not. **A subject amendment is
+part of this option**, e.g. `…the docs site, the root README and roadmap, and the key-generation guide`.
+
+### Option 2 — claim `apps/frontend/{android,ios,jest.config.json}` into slice 10 and delete them (item B)
+
+**The `slices.tsv` edit, verbatim.** Row `10`, column 4, append three tokens to the existing 29:
+
+```
+… apps/frontend/vite.config.ts apps/frontend/vitest.config.ts
+```
+becomes
+```
+… apps/frontend/vite.config.ts apps/frontend/vitest.config.ts apps/frontend/android apps/frontend/ios apps/frontend/jest.config.json
+```
+
+| Consequence | Value |
+|---|---|
+| slice 10 file count | 39 → **129** (`9 A / 94 D / 26 M`) — 90 deletions enter |
+| slice 10 line count | −25,538 → **≈ −27,253** (1,715 text lines; the 48 binaries contribute 0 lines and render as binary) |
+| render budget | 129 files is inside the ~300 cap; the slice is **already over** the 20,000-line cap on `yarn.lock` alone, so the flag does not change — but it moves from 34,199 to ~35,900 changed lines. **No budget crosses that was not already crossed.** |
+| any other slice's cell | **none.** `apps/frontend/android`, `apps/frontend/ios` and `apps/frontend/jest.config.json` are claimed by no pathspec today, and fall inside no already-cut slice's pathspec — slice 06 is `apps/frontend/src/lib`, slice 07 enumerates `src/` files, slice 04 claims one static image. Asserted per file. |
+| already-open PRs #863–#870 | **nothing needed. No force-push.** |
+| byte-identity | preserved, same mechanism as Option 1: the deletions ride slice 10. |
+| re-proof | identical to Option 1, plus `git ls-files apps/frontend/android apps/frontend/ios apps/frontend/jest.config.json` → **0** at `TARGET`. |
+| risk | **the only real one:** if anything outside the repository depends on the native scaffold (a Capacitor build performed from a developer machine, an app-store pipeline), deleting it is destructive in a way no in-repo measurement can see. Every in-repo signal says it is dead. |
+| **claiming without deleting** | **changes nothing measurable.** These files are byte-identical at both ends, so adding them to a pathspec adds **0** files to the diff. Claiming is only worth doing if a fix follows. The same is true of `README.md`. |
+
+### Option 3 — claim all 120 (rejected as prepared, stated for completeness)
+
+Distributing the remaining 118 unclaimed files (`static/` 10, `tools/` 3, `tests/` 2, the six
+`apps/frontend` dotfiles, and 11 root files including `LICENSE` and `.editorconfig`) across slices
+would make the partition *total* rather than merely disjoint-and-tree-identical. It buys nothing this
+phase can spend: their content is unchanged by v0.2, so every one of them would add **0** files to
+every diff, and the review gap it closes is hypothetical until someone finds a defect in one. It also
+touches slice boundaries a reviewer has already been shown. **Not recommended.** The one named
+instance worth keeping visible is `apps/frontend/tools/translationKey/generateTranslationKeyType.ts`
+(151-15): it generates slice 08's only automated gate from the *legacy* catalogue in slice 06, the two
+agree at 598 = 598 today, and nothing enforces it.
+
+### Option 4 — do nothing
+
+Costs, stated plainly because "defer" reads as free: the repository ships with **a broken front-page
+image** and **90 dead files that no reviewer in a twelve-PR review stack will ever see**, and the
+phase's own record says so in three places. No further work is required.
+
+### Recommendation
+
+**Take Option 1 and Option 2. Decline Option 3.**
+
+Both are cheap now and get monotonically more expensive: slices 09 and 10 are **uncut and unopened**,
+so each is one `build-slice.sh` invocation, and **neither requires a force-push anywhere** — that was
+asserted per file rather than assumed, and if any option had required one it would be off the table
+without a fresh decision. Option 1 fixes a one-line defect on the repository's front page and costs
+one file. Option 2 discharges the two findings this phase has carried since 151-06 as *blocked*, in
+the slice whose subject is *"repo plumbing"* and whose diff already deletes the very config those 89
+files exist to serve — which is the strongest argument for placing them there: the reviewer who sees
+`capacitor.config.ts` deleted is exactly the reviewer who should see the scaffold go with it.
+
+**If the operator declines Option 2 but accepts Option 1**, that is coherent — A is a defect and B is
+dead weight, and they need not travel together. **If both are declined**, entries 13 and the F-10/F-01
+rows become terminal `DEFERRED` verdicts with "operator declined at 151-16" as the rationale, and this
+plan's disposition is complete either way.
+
