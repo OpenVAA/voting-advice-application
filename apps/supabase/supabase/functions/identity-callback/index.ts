@@ -17,7 +17,8 @@
  * - IDENTITY_PROVIDER_TYPE: Provider type ('signicat' or 'idura', defaults to 'signicat')
  * - IDENTITY_PROVIDER_DECRYPTION_JWKS: JSON string array of private JWK objects for JWE decryption
  * - IDENTITY_PROVIDER_JWKS_URI: URL to the provider's public JWKS endpoint for JWT signature verification
- * - IDENTITY_PROVIDER_CLIENT_ID: Expected audience in the JWT
+ * - IDENTITY_PROVIDER_CLIENT_ID: Expected audience in the JWT (checked when set)
+ * - IDENTITY_PROVIDER_ISSUER: Expected issuer of the JWT (checked when set)
  * - DEFAULT_PROJECT_ID: Project to assign self-registered candidates to
  * - SUPABASE_URL: Supabase project URL (auto-set by Supabase)
  * - SUPABASE_SERVICE_ROLE_KEY: Service role key for admin operations (auto-set by Supabase)
@@ -69,10 +70,22 @@ async function decryptJweToken(jweToken: string): Promise<string> {
 async function verifyJwt(jwt: string): Promise<jose.JWTPayload> {
   const jwksUri = Deno.env.get('IDENTITY_PROVIDER_JWKS_URI')!;
   const clientId = Deno.env.get('IDENTITY_PROVIDER_CLIENT_ID');
+  const issuer = Deno.env.get('IDENTITY_PROVIDER_ISSUER');
 
   const verifyOptions: jose.JWTVerifyOptions = {};
   if (clientId) {
     verifyOptions.audience = clientId;
+  }
+  // The issuer check is what binds a signature-valid token to the provider we
+  // configured. The frontend's equivalent verifier already applies it
+  // (lib/api/utils/auth/getIdTokenClaims.ts, providers/{idura,signicat}.ts), and this
+  // function is reachable directly at /functions/v1/identity-callback without
+  // passing through it, so omitting it here left the weaker of the two paths
+  // publicly callable. Applied only when configured, matching how `audience` is
+  // handled above, so a deployment that has not set IDENTITY_PROVIDER_ISSUER keeps
+  // its current behaviour instead of failing closed on upgrade.
+  if (issuer) {
+    verifyOptions.issuer = issuer;
   }
 
   const { payload } = await jose.jwtVerify(jwt, jose.createRemoteJWKSet(new URL(jwksUri)), verifyOptions);
@@ -87,6 +100,10 @@ async function verifyJwt(jwt: string): Promise<jose.JWTPayload> {
  * Returns the user ID if found, null otherwise.
  */
 async function findUserByIdentityMatch(
+  // reason: the supabase-js client is imported from an esm.sh URL at runtime and the
+  // Deno type-check has no local declaration for SupabaseClient<Database> to narrow
+  // to. Only `.auth.admin.listUsers` is used, and its result is destructured and
+  // guarded below.
   // deno-lint-ignore no-explicit-any
   supabaseAdmin: any,
   identityMatchValue: string
@@ -110,6 +127,9 @@ async function findUserByIdentityMatch(
     }
 
     const matchingUser = users.find(
+      // reason: `users` comes from the untyped admin client above, so its element type
+      // is unavailable here. Only `app_metadata.identity_match_value` is read, via
+      // optional chaining.
       // deno-lint-ignore no-explicit-any
       (u: any) => u.app_metadata?.identity_match_value === identityMatchValue
     );

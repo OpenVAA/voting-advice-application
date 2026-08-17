@@ -127,10 +127,14 @@ Deno.serve(async (req) => {
     // -------------------------------------------------------------------------
     const supabaseAdmin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
+    // Argument names must match the SQL function's parameter names exactly:
+    // PostgREST resolves overloads by named argument, and `resolve_email_variables`
+    // declares p_user_ids / p_template_body / p_template_subject
+    // (schema/502-email-helpers.sql:22-25).
     const { data: recipients, error: rpcError } = await supabaseAdmin.rpc('resolve_email_variables', {
-      user_ids: recipient_user_ids,
-      template_body: '',
-      template_subject: ''
+      p_user_ids: recipient_user_ids,
+      p_template_body: '',
+      p_template_subject: ''
     });
 
     if (rpcError) {
@@ -211,13 +215,18 @@ Deno.serve(async (req) => {
     const transportConfig: Record<string, unknown> = {
       host: smtpHost,
       port: smtpPort,
-      secure: false,
-      tls: { rejectUnauthorized: false }
+      secure: false
     };
 
     // Add auth if credentials are provided (production SMTP)
     if (smtpUser && smtpPass) {
       transportConfig.auth = { user: smtpUser, pass: smtpPass };
+    } else {
+      // Local development only (Inbucket/Mailpit serve a self-signed certificate and
+      // take no credentials). Certificate verification is NOT relaxed on the
+      // credentialed path: doing so would send SMTP_USER/SMTP_PASS over a channel
+      // whose peer is unauthenticated.
+      transportConfig.tls = { rejectUnauthorized: false };
     }
 
     const transport = nodemailer.createTransport(transportConfig);
