@@ -45,16 +45,12 @@
   initI18nContext();
   initComponentContext();
   initDataContext();
-  const {
-    appSettings,
-    setDataRoot,
-    openFeedbackModal,
-    popupQueue,
-    sendTrackingEvent,
-    startPageview,
-    submitAllEvents,
-    t
-  } = initAppContext();
+  const appCtx = initAppContext();
+  const { setDataRoot, openFeedbackModal, popupQueue, sendTrackingEvent, startPageview, submitAllEvents, t } = appCtx;
+  // appSettings is a bare reactive accessor (see phase 113) whose own declaration
+  // states it MUST be read off the context — destructuring it would bind the value
+  // once at init, so the analytics branch below would never see a settings re-merge.
+  const appSettings = $derived(appCtx.appSettings);
   const layoutCtx = initLayoutContext();
   // TODO: Consider moving the candidate and admin apps to a (auth) folder with the AuthContext initialized there
   initAuthContext();
