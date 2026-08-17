@@ -61,12 +61,24 @@ if (values.type !== 'signing' && values.type !== 'encryption') {
 }
 
 const pem = readFileSync(values.in, 'utf8');
+const isEncrypted = /-----BEGIN ENCRYPTED PRIVATE KEY-----/.test(pem);
 const isPrivate = /-----BEGIN (?:RSA |ENCRYPTED )?PRIVATE KEY-----/.test(pem);
 const isPublic = /-----BEGIN (?:RSA )?PUBLIC KEY-----/.test(pem);
 
 if (!isPrivate && !isPublic) {
   process.stderr.write(
     `Could not detect a PEM header in ${values.in}. Expected BEGIN PRIVATE KEY or BEGIN PUBLIC KEY.\n`
+  );
+  process.exit(1);
+}
+
+// Passphrase-protected keys are detected and rejected here rather than left to `jose.importPKCS8`,
+// which takes no passphrase argument and would otherwise fail with an opaque decode error.
+if (isEncrypted) {
+  process.stderr.write(
+    `${values.in} is a passphrase-encrypted private key, which this tool cannot read.\n` +
+      'Decrypt it first, convert the plaintext key, then delete the plaintext:\n' +
+      `  openssl pkcs8 -topk8 -nocrypt -in ${values.in} -out decrypted.pem\n`
   );
   process.exit(1);
 }
