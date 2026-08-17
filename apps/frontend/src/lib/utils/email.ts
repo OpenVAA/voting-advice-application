@@ -21,8 +21,13 @@ export function getEmailUrl({
   let end = '';
   if (includeMetadata) {
     end = `\n\nDate: ${new Date()}`;
-    end += `\nURL: ${window?.location?.href ?? '-'}`;
-    if (navigator?.userAgent) end += `\nUser Agent: ${navigator?.userAgent ?? '-'}`;
+    // SSR-safe guards: `window` / `navigator` are undefined during server-side rendering.
+    // The metadata is only meaningful on the client; fall back to `-` on the server.
+    const href = typeof window !== 'undefined' ? (window.location?.href ?? '-') : '-';
+    end += `\nURL: ${href}`;
+    if (typeof navigator !== 'undefined' && navigator.userAgent) {
+      end += `\nUser Agent: ${navigator.userAgent}`;
+    }
     end = encodeURIComponent(end);
   }
   // Truncate description if the url would get too long so that we don't get an error when sending the email. See https://stackoverflow.com/questions/13317429/mailto-max-length-of-each-internet-browsers/33041454#33041454

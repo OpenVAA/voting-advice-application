@@ -1,6 +1,11 @@
+import type { Snippet } from 'svelte';
 import type { SvelteHTMLElements } from 'svelte/elements';
 
 export type EntityCardProps = SvelteHTMLElements['article'] & {
+  /**
+   * Additional content to render inside the card.
+   */
+  children?: Snippet;
   /**
    * Custom action to take when the card is clicked, defaults to a link to the entity’s `ResultEntity` route. If the card has subentites, the action will only be triggered by clicking the content above them.
    */

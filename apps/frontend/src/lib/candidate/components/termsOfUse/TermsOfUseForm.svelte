@@ -16,7 +16,6 @@ Accesses `CandidateContext`.
 ```tsx
 <script lang="ts">
   let termsAccepted: boolean;
-  $: console.info('termsAccepted:', termsAccepted);
 </script>
 <TermsOfUseForm bind:termsAccepted/>
 ```
@@ -30,9 +29,7 @@ Accesses `CandidateContext`.
   import { TermsOfUse } from '.';
   import type { TermsOfUseFormProps } from './TermsOfUseForm.type';
 
-  type $$Props = TermsOfUseFormProps;
-
-  export let termsAccepted: $$Props['termsAccepted'] = false;
+  let { termsAccepted = $bindable(false), ...restProps }: TermsOfUseFormProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -41,17 +38,23 @@ Accesses `CandidateContext`.
   const { t } = getComponentContext();
 </script>
 
-<section {...concatClass($$restProps, 'flex flex-col items-center')}>
+<section {...concatClass(restProps, 'flex flex-col items-center')}>
   <div class="mb-lg text-center">
-    {@html sanitizeHtml($t('dynamic.candidateAppPrivacy.consent.ingress'))}
+    {@html sanitizeHtml(t('dynamic.candidateAppPrivacy.consent.ingress'))}
   </div>
-  <Expander title={$t('dynamic.candidateAppPrivacy.consent.title')} contentClass="prose bg-base-100 rounded-lg">
+  <Expander title={t('dynamic.candidateAppPrivacy.consent.title')} contentClass="prose bg-base-100 rounded-lg">
     <div class="m-lg">
       <TermsOfUse />
     </div>
   </Expander>
-  <label class="label mb-md mt-sm cursor-pointer justify-start gap-sm !p-0">
-    <input type="checkbox" class="checkbox" name="termsAccepted" bind:checked={termsAccepted} />
-    <span class="label-text">{$t('dynamic.candidateAppPrivacy.consent.acceptLabel')}</span>
+  <label class="label mb-md mt-sm gap-sm cursor-pointer justify-start !p-0">
+    <!-- bind: keep — two-way DOM checkbox; termsAccepted is $bindable(false). Bind placed AFTER type= for symmetry with the reorder revert (see phase 65; see QuestionChoices.svelte). -->
+    <input
+      type="checkbox"
+      class="checkbox"
+      name="termsAccepted"
+      bind:checked={termsAccepted}
+      data-testid="terms-checkbox" />
+    <span>{t('dynamic.candidateAppPrivacy.consent.acceptLabel')}</span>
   </label>
 </section>

@@ -27,7 +27,7 @@ export type ScoreGaugeProps = Omit<SvelteHTMLElements['div'], 'color'> & {
    */
   unit?: string;
   /**
-   * The color of the gauge. @default 'oklch(var(--n))' i.e. the `neutral` color.
+   * The color of the gauge. @default 'var(--color-neutral)' i.e. the `neutral` color.
    */
   color?: Colors | string | null;
 };

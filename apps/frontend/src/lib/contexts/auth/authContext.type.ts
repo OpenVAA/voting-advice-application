@@ -1,40 +1,50 @@
-import type { Readable } from 'svelte/store';
+import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { DataWriter } from '$lib/api/base/dataWriter.type';
 
 export type AuthContext = {
   /**
-   * Holds the jwt token. NB. The context’s internal methods use it automatically for authentication.
+   * Whether the user is currently authenticated (has a valid Supabase session).
+   * Reactive via `$derived` — access as a plain boolean property.
    */
-  authToken: Readable<string | undefined>;
+  readonly isAuthenticated: boolean;
 
   ////////////////////////////////////////////////////////////////////
   // Wrappers for DataWriter methods
-  // NB. These automatically handle authentication
+  // NB. These automatically handle authentication via Supabase sessions.
   ////////////////////////////////////////////////////////////////////
 
   /**
-   * Logout the user and redirect to the login page.
-   * @returns A `Promise` resolving when the redirection is complete.
+   * Logout the user.
+   * @returns A Promise resolving when logout is complete.
    */
   logout: () => Promise<void>;
+
   /**
-   * Request that the a password reset email sent to the user.
-   * @param email - The user’s email.
-   * @returns A `Promise` resolving to an `DataApiActionResult` object.
+   * Request a password reset email.
+   * @param email - The user's email.
    */
   requestForgotPasswordEmail: (opts: { email: string }) => ReturnType<DataWriter['requestForgotPasswordEmail']>;
+
   /**
-   * Check whether the registration key is valid.
-   * @param code - The password reset code.
+   * Reset password using a recovery session (after clicking email link).
+   * The code parameter is ignored by Supabase adapter (session is established via auth callback).
+   * @param code - Legacy reset code (ignored -- session is established via auth callback).
    * @param password - The new password.
-   * @returns A `Promise` resolving to an `DataApiActionResult` object.
    */
   resetPassword: (opts: { code: string; password: string }) => ReturnType<DataWriter['resetPassword']>;
+
   /**
-   * Change a user’s password.
-   * @param currentPassword - The current password.
+   * Change the current user's password.
+   * Mirrors the writer's real `setPassword` shape (universalDataWriter.ts:147:
+   * `WithAuth & { currentPassword: string; password: string }`). `currentPassword` is
+   * UI-collected but a Supabase-side no-op (the session, not the old password, is verified
+   * — Pitfall 1). It is OPTIONAL at this wrapper level because the wrapper serves three
+   * flows: the settings change-password page supplies it, while the register (first-set)
+   * and password-reset (post-recovery) flows have no current password to supply and call
+   * `setPassword({ password })`. The impl defaults it to `''` when forwarding to the writer's
+   * required shim, so runtime behavior is unchanged across all three flows.
+   * @param currentPassword - The current password (optional; backend no-op under Supabase session auth).
    * @param password - The new password.
-   * @returns A `Promise` resolving to an `DataApiActionResult` object.
    */
-  setPassword: (opts: { currentPassword: string; password: string }) => ReturnType<DataWriter['setPassword']>;
+  setPassword: (opts: { currentPassword?: string; password: string }) => Promise<DataApiActionResult>;
 };

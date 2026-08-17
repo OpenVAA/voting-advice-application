@@ -88,9 +88,8 @@ export async function generateQuestionInfo({
       ? questionIds.map((id) => dataRoot.getQuestion(id))
       : dataRoot.findQuestions({ type: 'opinion', elections: election });
 
-    console.info(
-      '[question-info] selectedQuestions',
-      selectedQuestions.map((q) => q.name)
+    controller.info(
+      `Resolved ${selectedQuestions.length} question(s): ${selectedQuestions.map((q) => q.name).join(', ')}`
     );
 
     if (!selectedQuestions.length) {
@@ -161,7 +160,7 @@ export async function generateQuestionInfo({
         }));
       }
 
-      // Save to Strapi
+      // Save to database
       controller.info(`Saving question info for question "${question.name}"`);
 
       try {
@@ -189,7 +188,7 @@ export async function generateQuestionInfo({
 
     controller.complete();
 
-    // Save job record to Strapi
+    // Save job record
     const job = getJob(jobId);
     if (job) {
       await dataWriter.insertJobResult({
@@ -210,7 +209,7 @@ export async function generateQuestionInfo({
     if (error && typeof error === 'object' && 'name' in error && error.name === AbortError.name) {
       markAborted(jobId);
 
-      // Save aborted job record to Strapi
+      // Save aborted job record
       if (job) {
         await dataWriter.insertJobResult({
           authToken,
@@ -227,7 +226,7 @@ export async function generateQuestionInfo({
         error && typeof error === 'object' && 'message' in error ? String(error.message) : JSON.stringify(error);
       controller.fail(`Question info generation failed: ${message}`);
 
-      // Save failed job record to Strapi
+      // Save failed job record
       if (job) {
         await dataWriter.insertJobResult({
           authToken,

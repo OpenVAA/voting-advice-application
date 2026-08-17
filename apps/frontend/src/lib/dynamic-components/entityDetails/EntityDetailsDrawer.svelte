@@ -21,13 +21,11 @@ A `Drawer` that displays `EntityDetails`.
   import { EntityDetails } from '.';
   import type { EntityDetailsDrawerProps } from './EntityDetailsDrawer.type';
 
-  type $$Props = EntityDetailsDrawerProps;
+  let { entity, ...restProps }: EntityDetailsDrawerProps = $props();
 
-  export let entity: $$Props['entity'];
-
-  const { entity: nakedEntity } = unwrapEntity(entity);
+  const nakedEntity = $derived(unwrapEntity(entity).entity);
 </script>
 
-<Drawer title={nakedEntity.name} {...concatClass($$restProps, '!p-0')}>
+<Drawer title={nakedEntity.name} {...concatClass(restProps, '!p-0')}>
   <EntityDetails {entity} class="min-h-full" />
 </Drawer>

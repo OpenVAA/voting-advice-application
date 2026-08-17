@@ -16,15 +16,12 @@ Functional component used to block user nagivation.
 
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
+  import { browser } from '$app/environment';
   import { beforeNavigate } from '$app/navigation';
   import { getComponentContext } from '$lib/contexts/component';
   import type { PreventNavigationProps } from './PreventNavigation.type';
 
-  type $$Props = PreventNavigationProps;
-
-  export let active: $$Props['active'];
-  export let onCancel: $$Props['onCancel'] = undefined;
-  export let onConfirm: $$Props['onConfirm'] = undefined;
+  let { active, onCancel, onConfirm }: PreventNavigationProps = $props();
 
   const { t } = getComponentContext();
 
@@ -34,7 +31,7 @@ Functional component used to block user nagivation.
 
   beforeNavigate((e) => {
     if (!(active === true || (typeof active === 'function' && active()))) return;
-    if (window.confirm($t('components.preventNavigation.unsavedChanges'))) {
+    if (window.confirm(t('components.preventNavigation.unsavedChanges'))) {
       onConfirm?.();
     } else {
       onCancel?.();
@@ -42,13 +39,14 @@ Functional component used to block user nagivation.
     }
   });
 
-  // prevent navigation on mount
+  // prevent navigation on mount (browser-only; onMount itself doesn't fire on the server)
   onMount(() => {
     addEventListener('beforeunload', handleBeforeUnload);
   });
 
-  // remove event handler on unmount
+  // remove event handler on unmount (onDestroy fires on both server and client; guard the
+  // browser-only API so SSR teardown of this component doesn't throw ReferenceError)
   onDestroy(() => {
-    removeEventListener('beforeunload', handleBeforeUnload);
+    if (browser) removeEventListener('beforeunload', handleBeforeUnload);
   });
 </script>

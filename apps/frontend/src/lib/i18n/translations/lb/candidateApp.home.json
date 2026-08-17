@@ -1,0 +1,19 @@
+{
+  "basicInfo": {
+    "edit": "Är Basisinformatioune änneren",
+    "enter": "Är Basisinformatioune aginn",
+    "view": "Är Basisinformatioune weisen"
+  },
+  "ingress": {
+    "notDone": "Fir am Wal-Kompass opzezäichen, musst Dir e puer Basisinformatioune vun Iech aginn an Aussoe zu politesche Themen beäntwerten.",
+    "ready": "Dir hutt all néideg Informatioune fir de Wal-Kompass ausgefëllt. Dir kënnt Är Äntwerten nach änneren an Iech spéider nach eng Kéier aloggen."
+  },
+  "preview": "Äre Profil virukucken",
+  "previewTip": "Wann Dir wëllt gesinn, wéi d’Wieler*inne Äre Profil gesinn, kënnt Dir en virukucken.",
+  "questions": {
+    "edit": "Är Meenungen änneren",
+    "enter": "Är Meenungen uginn",
+    "view": "Är Meenungen uweisen"
+  },
+  "ready": "Dir sidd prett!"
+}

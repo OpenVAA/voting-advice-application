@@ -1,6 +1,11 @@
+import type { Snippet } from 'svelte';
 import type { SvelteHTMLElements } from 'svelte/elements';
 
 export type ModalContainerProps = SvelteHTMLElements['dialog'] & {
+  /**
+   * The content of the modal.
+   */
+  children?: Snippet;
   /**
    * The title of the modal
    */
@@ -14,9 +19,9 @@ export type ModalContainerProps = SvelteHTMLElements['dialog'] & {
    */
   closeOnBackdropClick?: boolean;
   /**
-   * Bind to this to get the modal's open state.
+   * Whether the modal is open. Use `bind:isOpen` to track this.
    */
-  readonly isOpen?: boolean;
+  isOpen?: boolean;
   /**
    * Callback for when the modal closes. Note that the modal may still be transitioning to `hidden`.
    */
@@ -25,14 +30,4 @@ export type ModalContainerProps = SvelteHTMLElements['dialog'] & {
    * Callback for when the modal opens. Note that the modal may still be transitioning from `hidden`.
    */
   onOpen?: () => unknown;
-  /**
-   * Bind to this to access the modal's close function.
-   * @param noCallbacks - Set to `true` to prevent any callbacks from being triggered when opening or closing the modal.
-   */
-  readonly closeModal?: (noCallbacks?: boolean) => void;
-  /**
-   * Bind to this to access the modal's open function.
-   * @param noCallbacks - Set to `true` to prevent any callbacks from being triggered when opening or closing the modal.
-   */
-  readonly openModal?: (noCallbacks?: boolean) => void;
 };

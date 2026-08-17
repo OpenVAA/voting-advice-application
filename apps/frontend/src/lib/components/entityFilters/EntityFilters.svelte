@@ -16,7 +16,7 @@ Show filters for entities. This component and the individual filter components o
 -->
 
 <script lang="ts">
-  import { FILTER_TYPE, isEnumeratedFilter, isFilterType } from '@openvaa/filters';
+  import { FILTER_TYPE, isEnumeratedFilter, isFilterType, isTextFilter } from '@openvaa/filters';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Expander } from '$lib/components/expander';
   import { getComponentContext } from '$lib/contexts/component';
@@ -24,41 +24,50 @@ Show filters for entities. This component and the individual filter components o
   import type { AnyEntityVariant } from '@openvaa/data';
   import type { EntityFiltersProps } from './EntityFilters.type';
 
-  type $$Props = EntityFiltersProps;
-
-  export let filterGroup: $$Props['filterGroup'];
-  export let targets: $$Props['targets'];
+  let { filterGroup, targets, ...restProps }: EntityFiltersProps = $props();
 
   const { t } = getComponentContext();
 
   /** Type params cannot be used in the HTML part */
   function _isEnumeratedFilter(filter: unknown) {
-    // TODO[Svelte 5]: Check if needed
     return isEnumeratedFilter<MaybeWrappedEntityVariant, AnyEntityVariant>(filter);
+  }
+
+  /**
+   * Type-param-free `isTextFilter` wrapper — same role as `_isEnumeratedFilter`
+   * above. Accepts the base TextFilter PLUS TextQuestionFilter +
+   * TextPropertyFilter subclasses so `customData.filterable: true` on text
+   * questions (built via `buildQuestionFilter → new TextQuestionFilter` per
+   * `filterStore.svelte.ts:55-66`) renders correctly instead of falling
+   * through to the error fallback. see phase 77 P02 fix.
+   */
+  function _isTextFilter(filter: unknown) {
+    return isTextFilter<MaybeWrappedEntityVariant>(filter);
   }
 </script>
 
-<div {...concatClass($$restProps, 'flex flex-col gap-md')}>
+<div {...concatClass(restProps, 'flex flex-col gap-md')}>
   {#each filterGroup.filters as filter}
     <Expander
       title={filter.name}
       variant="question"
       titleClass="!text-left"
-      defaultExpanded={filter.active || isFilterType(filter, FILTER_TYPE.TextFilter)}>
-      {#if isFilterType(filter, FILTER_TYPE.TextFilter)}
+      defaultExpanded={filter.active || _isTextFilter(filter)}
+      data-testid="entity-filter-row">
+      {#if _isTextFilter(filter)}
         {#await import('./text') then { TextEntityFilter }}
-          <svelte:component this={TextEntityFilter} {filter} />
+          <TextEntityFilter {filter} />
         {/await}
       {:else if isFilterType(filter, FILTER_TYPE.NumberQuestionFilter)}
         {#await import('./numeric') then { NumericEntityFilter }}
-          <svelte:component this={NumericEntityFilter} {filter} {targets} />
+          <NumericEntityFilter {filter} {targets} />
         {/await}
       {:else if _isEnumeratedFilter(filter)}
         {#await import('./enumerated') then { EnumeratedEntityFilter }}
-          <svelte:component this={EnumeratedEntityFilter} {filter} {targets} />
+          <EnumeratedEntityFilter {filter} {targets} />
         {/await}
       {:else}
-        <ErrorMessage message={$t('entityFilters.error')} />
+        <ErrorMessage message={t('entityFilters.error')} />
       {/if}
     </Expander>
   {/each}

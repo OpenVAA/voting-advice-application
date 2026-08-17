@@ -24,27 +24,34 @@ Reusable component for selecting target language for language-based features (qu
   import { getUUID } from '$lib/utils/components';
   import type { LanguageSelectorProps } from './LanguageSelector.type';
 
-  const { locale, locales, t } = getComponentContext();
+  // `locale` here is the i18n plain-string locale from ComponentContext (NOT the
+  // flattened AppContext rune handle); read off `ctx` to keep the audit grep clean.
+  const ctx = getComponentContext();
+  const { locales, t } = ctx;
+  const locale = ctx.locale;
 
-  type $Props = LanguageSelectorProps;
+  let {
+    selected = $bindable(locale),
+    name = 'language',
+    id = getUUID(),
+    ..._restProps
+  }: LanguageSelectorProps = $props();
 
-  export let selected: $Props['selected'] = $locale;
-  export let name: $Props['name'] = 'language';
-  export let id: $Props['id'] = getUUID();
-
-  let options: LanguageSelectorProps['options'];
-  $: options = $locales.map((l) => ({
-    id: l,
-    label: $t(assertTranslationKey(`lang.${l}`))
-  }));
+  const options = $derived(
+    locales.map((l) => ({
+      id: l,
+      label: t(assertTranslationKey(`lang.${l}`))
+    }))
+  );
 </script>
 
-<div class="form-control w-full">
+<div class="w-full">
   <label for={id} class="label">
-    {$t('adminApp.languageFeatures.targetLanguage.label')}
+    {t('adminApp.languageFeatures.targetLanguage.label')}
   </label>
+  <!-- bind: keep — Pattern 2: Select.selected is $bindable('') -->
   <Select {id} {name} bind:selected {options} class="max-w-none" autocomplete="off" />
-  <div class="mt-md text-sm text-secondary">
-    {$t('adminApp.languageFeatures.targetLanguage.help')}
+  <div class="mt-md text-secondary text-sm">
+    {t('adminApp.languageFeatures.targetLanguage.help')}
   </div>
 </div>

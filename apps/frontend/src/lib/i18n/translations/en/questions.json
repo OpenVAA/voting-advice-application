@@ -6,6 +6,12 @@
     "youHaventAnswered": "You haven't answered this question",
     "yourAnswer": "You"
   },
+  "arguments": {
+    "con": "Against",
+    "pro": "For",
+    "proCategory": "For {option}",
+    "title": "Arguments"
+  },
   "category": {
     "numQuestions": "{numQuestions, plural, =-1 {} =1 {1 question} other {# questions}}",
     "skip": "Skip This Category"
@@ -17,6 +23,10 @@
       "withoutCategorySelection": "Next, answer {numQuestions} questions regarding politics and values. {numCategories, plural, =0 {} =1 {} other {The questions are divided into # categories.}}"
     },
     "start": "Answer {numQuestions} Questions"
+  },
+  "multiChoice": {
+    "selectExact": "Select {count} options.",
+    "selectRange": "Select {min} to {max} options."
   },
   "next": "Next question",
   "previous": "Previous",

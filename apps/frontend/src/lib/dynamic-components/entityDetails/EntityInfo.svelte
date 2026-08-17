@@ -20,7 +20,7 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
 ### Usage
 
 ```tsx
-<EntityInfo entity={candidate} questions={$infoQuestions} />
+<EntityInfo entity={candidate} questions={infoQuestions} />
 ```
 -->
 
@@ -38,63 +38,48 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
   import type { AnyEntityVariant, AnyNominationVariant, EntityType } from '@openvaa/data';
   import type { EntityInfoProps } from './EntityInfo.type';
 
-  type $$Props = EntityInfoProps;
+  let { entity, questions }: EntityInfoProps = $props();
 
-  export let entity: $$Props['entity'];
-  export let questions: $$Props['questions'];
+  const ctx = getAppContext();
+  const { getRoute, t } = ctx;
+  // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via ctx.X, never destructure.
+  const appSettings = $derived(ctx.appSettings);
+  // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot.<prop>` directly in the tracking scope,
+  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" +
+  // (see spike 024). see phase 117.
 
-  ////////////////////////////////////////////////////////////////////
-  // Get contexts
-  ////////////////////////////////////////////////////////////////////
-
-  const { appSettings, dataRoot, getRoute, t } = getAppContext();
-
-  ////////////////////////////////////////////////////////////////////
-  // Parse entity components
-  ////////////////////////////////////////////////////////////////////
-
-  let entityType: EntityType;
-  let nakedEntity: AnyEntityVariant;
-  let nomination: AnyNominationVariant | undefined;
-
-  $: {
-    ({ entity: nakedEntity, nomination } = unwrapEntity(entity));
-    entityType = nakedEntity.type;
-  }
+  const unwrapped = $derived(unwrapEntity(entity));
+  let nakedEntity: AnyEntityVariant = $derived(unwrapped.entity);
+  let nomination: AnyNominationVariant | undefined = $derived(unwrapped.nomination);
+  let entityType: EntityType = $derived(nakedEntity.type);
 </script>
 
-<div class="grid p-lg pb-safelgb">
+<div class="p-lg pb-safelgb grid">
   {#if nakedEntity.info}
     <div class="infoGroup" role="group">
-      <div>
-        {@html sanitizeHtml(nakedEntity.info)}
-      </div>
+      <div>{@html sanitizeHtml(nakedEntity.info)}</div>
     </div>
   {/if}
 
   {#if nomination}
     {@const { election, electionSymbol, constituency, parentNomination } = nomination}
     <div class="infoGroup" role="group">
-      {#if $dataRoot.elections.length > 1}
-        <InfoItem label={$t('common.election')}>
-          {election.name}
-        </InfoItem>
+      {#if ctx.dataRoot.elections.length > 1}
+        <InfoItem label={t('common.election')}>{election.name}</InfoItem>
       {/if}
       {#if !election.singleConstituency}
-        <InfoItem label={$t('common.constituency')}>
-          {constituency.name}
-        </InfoItem>
+        <InfoItem label={t('common.constituency')}>{constituency.name}</InfoItem>
       {/if}
       {#if parentNomination}
         <InfoItem
-          label={entityType === ENTITY_TYPE.Organization ? $t('common.alliance.singular') : $t('common.electionList')}>
-          <!-- Add a link to the nomination page for parties -->
-          {#if $appSettings.results.sections?.includes(ENTITY_TYPE.Organization) && parentNomination.entityType === ENTITY_TYPE.Organization}
+          label={entityType === ENTITY_TYPE.Organization ? t('common.alliance.singular') : t('common.electionList')}>
+          {#if appSettings.results.sections?.includes(ENTITY_TYPE.Organization) && parentNomination.entityType === ENTITY_TYPE.Organization}
             <a
-              href={$getRoute({
+              href={getRoute.current({
                 route: 'ResultEntity',
-                entityType: parentNomination.entityType,
-                entityId: parentNomination.entity.id,
+                entityTab: 'organizations',
+                entity: parentNomination.entityType,
+                id: parentNomination.entity.id,
                 nominationId: parentNomination.id
               })}>
               <EntityTag entity={parentNomination} variant="full" />
@@ -103,17 +88,13 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
             <EntityTag entity={parentNomination} variant="full" />
           {/if}
           {#if isObjectType(nakedEntity, OBJECT_TYPE.Candidate) && nakedEntity.organization && nakedEntity.organization !== parentNomination.entity}
-            ({$t('entityDetails.memberOfOrganization', { organization: nakedEntity.organization.shortName })})
+            ({t('entityDetails.memberOfOrganization', { organization: nakedEntity.organization.shortName })})
           {/if}
         </InfoItem>
       {/if}
-      {#if electionSymbol || $appSettings.entityDetails.showMissingElectionSymbol[entityType]}
-        <InfoItem label={$t(`common.electionSymbol.${entityType}`)}>
-          {#if electionSymbol}
-            <ElectionSymbol text={electionSymbol} />
-          {:else}
-            {$t('common.missingAnswer')}
-          {/if}
+      {#if electionSymbol || appSettings.entityDetails.showMissingElectionSymbol[entityType]}
+        <InfoItem label={t(`common.electionSymbol.${entityType}`)}>
+          {#if electionSymbol}<ElectionSymbol text={electionSymbol} />{:else}{t('common.missingAnswer')}{/if}
         </InfoItem>
       {/if}
     </div>
@@ -127,34 +108,30 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
         {#each nonLinkQuestions as question}
           {@const answer = nakedEntity.getAnswer(question)}
           {@const { longText } = getCustomData(question)}
-          {#if answer || $appSettings.entityDetails.showMissingAnswers[entityType]}
-            <InfoItem label={question.text} vertical={longText}>
-              <InfoAnswer {answer} {question} />
-            </InfoItem>
+          {#if answer || appSettings.entityDetails.showMissingAnswers[entityType]}
+            <InfoItem label={question.text} vertical={longText}><InfoAnswer {answer} {question} /></InfoItem>
           {/if}
         {/each}
       {/if}
       {#if linkQuestions.length}
-        <InfoItem label={$t('entityDetails.links')}>
+        <InfoItem label={t('entityDetails.links')}>
           {#each linkQuestions as question}
             {@const answer = nakedEntity.getAnswer(question)}
-            {#if answer}
-              <InfoAnswer {answer} {question} class="tag mb-sm me-sm last:me-0" />
-            {/if}
+            {#if answer}<InfoAnswer {answer} {question} class="tag mb-sm me-sm last:me-0" />{/if}
           {/each}
         </InfoItem>
       {/if}
     </div>
   {/if}
 
-  {#if $appSettings.survey?.showIn?.includes('entityDetails')}
+  {#if appSettings.survey?.showIn?.includes('entityDetails')}
     <SurveyBanner class="mt-lg" />
   {/if}
 </div>
 
 <style lang="postcss">
+  @reference "../../../tailwind-theme.css";
   .infoGroup {
-    /* first: is valid although the linter flags it */
-    @apply mt-16 flex flex-col gap-md border-t-md border-t-[var(--line-color)] pt-16 first:mt-0 first:border-t-0 first:pt-0;
+    @apply gap-md border-t-md mt-16 flex flex-col border-t-[var(--line-color)] pt-16 first:mt-0 first:border-t-0 first:pt-0;
   }
 </style>

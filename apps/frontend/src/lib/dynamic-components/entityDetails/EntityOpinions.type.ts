@@ -1,6 +1,6 @@
 import type { AnyQuestionVariant } from '@openvaa/data';
 import type { SvelteHTMLElements } from 'svelte/elements';
-import type { AnswerStore } from '$lib/contexts/voter';
+import type { AnswerState } from '$lib/contexts/voter';
 import type { EntityDetailsProps } from './EntityDetails.type';
 
 export type EntityOpinionsProps = SvelteHTMLElements['div'] & {
@@ -15,5 +15,5 @@ export type EntityOpinionsProps = SvelteHTMLElements['div'] & {
   /**
    * An optional `AnswerStore` with the Voter's answers to the questions.
    */
-  answers?: AnswerStore;
+  answers?: AnswerState;
 };

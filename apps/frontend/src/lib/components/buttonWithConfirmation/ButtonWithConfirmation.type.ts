@@ -1,3 +1,4 @@
+import type { Snippet } from 'svelte';
 import type { ButtonProps } from '$lib/components/button';
 import type { ConfirmationModalProps } from '$lib/components/modal/confirmation';
 
@@ -7,4 +8,8 @@ export type ButtonWithConfirmationProps = Omit<ButtonProps, 'href' | 'on:click'>
      * The title of the confirmation modal.
      */
     modalTitle: string;
+    /**
+     * The content of the confirmation modal.
+     */
+    children?: Snippet;
   };

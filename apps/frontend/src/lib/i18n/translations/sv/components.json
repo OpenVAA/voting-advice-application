@@ -1,6 +1,7 @@
 {
   "accordionSelect": {
-    "collapsedAriaInfo": "Tryck för att visa alla alternativ"
+    "collapsedAriaInfo": "Tryck för att visa alla alternativ",
+    "listboxAriaLabel": "Välj ett alternativ"
   },
   "constituencySelector": {
     "selectPrompt": "Välj {constituencyGroup}"
@@ -15,6 +16,7 @@
     "deleteOption": "Välj bort {option}",
     "error": {
       "fileLoadingError": "Det gick inte att ladda filen.",
+      "invalidEmail": "E-postadressen är ogiltig.",
       "invalidFile": "Filen är ogiltig.",
       "invalidUrl": "Webbadressen är inte giltig.",
       "oversizeFile": "Filen är för stor. Den maximala storleken är {maxFilesize} MB."
@@ -27,6 +29,12 @@
     "selectFirst": "Välj först",
     "selectOne": "Välj",
     "showTranslations": "Översättningar"
+  },
+  "multipleTextInput": {
+    "add": "Lägg till objekt",
+    "moveDown": "Flytta ner",
+    "moveUp": "Flytta upp",
+    "remove": "Ta bort objekt"
   },
   "matchScore": {
     "label": "matchning",

@@ -19,15 +19,15 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
 - `submit`: Submit the feedback or close the modal if it's already been submitted.
 - `reset`: Reset the form so that if the user opens it again, they can fill new feedback. You should call this when closing any modal containing the feedback.
 
-### Events
+### Callback Props
 
-- `cancel`: Fired when the user clicks the cancel button or the submit button again after submitting or an error, indicating that the form should close.
-- `error`: Fired when there is an error sending the feedback.
-- `sent`: Fired when the feedback is successfully sent.
+- `onCancel`: Called when the user clicks the cancel button or the submit button again after submitting or an error, indicating that the form should close.
+- `onError`: Called when there is an error sending the feedback.
+- `onSent`: Called when the feedback is successfully sent.
 
 ### Tracking events
 
-- `feedback_sent`: Feedback is succesfully sent. Contains `rating` and `description` properties.
+- `feedback_sent`: Feedback is successfully sent. Contains `rating` and `description` properties.
 - `feedback_error`: There was an error sending the feedback. Contains `rating` and `description` properties.
 
 ### Usage
@@ -40,24 +40,28 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
     reset();
   }
 </script>
-<Feedback bind:reset on:cancel={close} on:sent={close}/>
+<Feedback bind:reset onCancel={close} onSent={close}/>
 ```
 -->
 
 <script lang="ts">
-  import { createEventDispatcher, onDestroy } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
   import { concatClass } from '$lib/utils/components';
   import { getEmailUrl } from '$lib/utils/email';
   import type { FeedbackProps } from './Feedback.type';
 
-  type $$Props = FeedbackProps;
-
-  export let showActions: $$Props['showActions'] = true;
-  export let status: $$Props['status'] = 'default';
-  export let variant: $$Props['variant'] = 'default';
-  export let canSubmit: $$Props['canSubmit'] = false;
+  let {
+    showActions = true,
+    status = $bindable('default'),
+    variant = 'default',
+    canSubmit = $bindable(false),
+    onCancel = undefined,
+    onError = undefined,
+    onSent = undefined,
+    ...restProps
+  }: FeedbackProps = $props();
 
   /**
    * The delay for autoclosing the modal after it's been submitted.
@@ -72,33 +76,35 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appSettings, sendFeedback, setFeedbackStatus, t, startEvent } = getAppContext();
+  const ctx = getAppContext();
+  const { sendFeedback, setFeedbackStatus, t, startEvent } = ctx;
+  // appSettings is a reactive accessor (see phase 113 flatten) — read via ctx.X, never destructure.
+  const appSettings = $derived(ctx.appSettings);
 
   ////////////////////////////////////////////////////////////////////
   // Handle feedback submission
   ////////////////////////////////////////////////////////////////////
 
-  const dispatch = createEventDispatcher<{
-    cancel: null;
-    error: null;
-    sent: null;
-  }>();
-
-  let description: string;
+  let description = $state('');
   let errorTimeout: NodeJS.Timeout | undefined;
-  let rating: number | undefined;
-  let textareaExpanded = variant === 'default';
-  let zeroInput: HTMLInputElement;
+  let rating: number | undefined = $state(undefined);
+  // textareaExpanded seeds from variant prop (one-shot read at init);
+  // becomes mutable local UI state thereafter (toggled on focus).
+  // svelte-ignore state_referenced_locally
+  let textareaExpanded = $state(variant === 'default');
+  let zeroInput: HTMLInputElement | undefined = $state();
 
   onDestroy(clearErrorTimeout);
 
-  $: canSubmit = status !== 'sending' && (rating != null || !!description);
+  $effect(() => {
+    canSubmit = status !== 'sending' && (rating != null || !!description);
+  });
 
   /**
    * Submit the feedback or close the modal if it's already been submitted.
    */
   export async function submit() {
-    if (status === 'sent' || status === 'error') dispatch('cancel');
+    if (status === 'sent' || status === 'error') onCancel?.();
     // Set the user preference so that we won't ask for feedback again.
     setFeedbackStatus('received');
     status = 'sending';
@@ -106,19 +112,19 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
       if (res?.type !== 'success') {
         startEvent('feedback_error', { rating, description });
         status = 'error';
-        dispatch('error');
+        onError?.();
         return;
       }
       clearErrorTimeout();
       startEvent('feedback_sent', { rating, description });
       status = 'sent';
-      dispatch('sent');
+      onSent?.();
     });
     // Only wait for sending to succeed for `ERROR_TIMEOUT` ms
     errorTimeout = setTimeout(() => {
       if (status !== 'sent') {
         status = 'error';
-        dispatch('error');
+        onError?.();
       }
     }, ERROR_TIMEOUT);
   }
@@ -145,24 +151,25 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
    */
   function getErrorEmail() {
     return getEmailUrl({
-      subject: `${$t('feedback.error.emailSubject')}: ${$t('dynamic.appName')}`,
-      to: $appSettings.admin.email,
+      subject: `${t('feedback.error.emailSubject')}: ${t('dynamic.appName')}`,
+      to: appSettings.admin.email,
       body: description ?? ''
     });
   }
 </script>
 
-<form {...concatClass($$restProps, 'grid justify-items-stretch gap-lg')}>
+<form data-testid="feedback-form" {...concatClass(restProps, 'grid justify-items-stretch gap-lg')}>
   <!-- Rating -->
   <fieldset class="flex justify-center">
     <legend class="mb-md w-full text-center" class:sr-only={variant === 'compact'}>
-      {$t('feedback.rating.label')}
+      {t('feedback.rating.label')}
     </legend>
     <div class="rating">
+      <!-- bind: keep — zeroInput is $state(); single ref read in reset() -->
       <input
         bind:this={zeroInput}
-        on:click={() => (rating = undefined)}
-        aria-label={$t('feedback.rating.valueLabel', { rating: 0, ratingMax: MAX_RATING })}
+        onclick={() => (rating = undefined)}
+        aria-label={t('feedback.rating.valueLabel', { rating: 0, ratingMax: MAX_RATING })}
         value={0}
         type="radio"
         name="rating"
@@ -171,49 +178,52 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
         class="rating-hidden" />
       {#each Array.from({ length: MAX_RATING }, (_, i) => i + 1) as value}
         <input
-          on:click={() => (rating = value)}
-          aria-label={$t('feedback.rating.valueLabel', { rating: value, ratingMax: MAX_RATING })}
+          onclick={() => (rating = value)}
+          aria-label={t('feedback.rating.valueLabel', { rating: value, ratingMax: MAX_RATING })}
           {value}
           type="radio"
           name="rating"
           disabled={status !== 'default'}
+          data-testid="feedback-rating-{value}"
           class="mask mask-star-2 bg-primary" />
       {/each}
     </div>
   </fieldset>
 
   <!-- Description textarea -->
+  <!-- bind: keep — two-way DOM textarea bind:value={description}; description is $state('') -->
   <textarea
     bind:value={description}
-    on:focus={() => (textareaExpanded = true)}
+    onfocus={() => (textareaExpanded = true)}
     disabled={status !== 'default'}
-    aria-label={$t('feedback.description.label')}
-    class="textarea textarea-bordered h-[1rem] w-full resize-none"
+    aria-label={t('feedback.description.label')}
+    data-testid="feedback-description"
+    class="textarea h-[1rem] w-full resize-none"
     class:resize-y={textareaExpanded}
     class:min-h-[6rem]={textareaExpanded}
-    placeholder={$t('feedback.description.placeholder')}></textarea>
+    placeholder={t('feedback.description.placeholder')}></textarea>
 
   <!-- Email info and error -->
   {#if status !== 'error'}
-    {#if variant !== 'compact' && $appSettings.admin.email}
+    {#if variant !== 'compact' && appSettings.admin.email}
       {@const mailto = getErrorEmail()}
       <p class="text-center">
-        {$t('feedback.emailIntro')}
-        <a href={mailto} target="_blank">{$appSettings.admin.email}</a>.
+        {t('feedback.emailIntro')}
+        <a href={mailto} target="_blank">{appSettings.admin.email}</a>.
       </p>
     {/if}
   {:else}
-    <div class="grid gap-md">
-      <p class="mb-0 text-center text-warning">
-        {$t('feedback.error.message')}
-        {#if $appSettings.admin.email}
-          {$t('feedback.error.emailIntro')}
+    <div class="gap-md grid">
+      <p class="text-warning mb-0 text-center">
+        {t('feedback.error.message')}
+        {#if appSettings.admin.email}
+          {t('feedback.error.emailIntro')}
         {/if}
       </p>
-      {#if $appSettings.admin.email}
+      {#if appSettings.admin.email}
         {@const mailto = getErrorEmail()}
-        <a href={mailto} target="_blank" class="justify-self-center rounded-full bg-base-300 px-lg py-md"
-          >{$appSettings.admin.email}</a>
+        <a href={mailto} target="_blank" class="bg-base-300 px-lg py-md justify-self-center rounded-full"
+          >{appSettings.admin.email}</a>
       {/if}
     </div>
   {/if}
@@ -222,21 +232,24 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
   {#if showActions}
     <div class="flex w-full flex-col items-center">
       <Button
-        on:click={submit}
+        onclick={submit}
         disabled={!canSubmit}
         variant="main"
+        data-testid="feedback-submit"
+        data-status={status}
         text={status === 'sent'
-          ? $t('feedback.thanks')
+          ? t('feedback.thanks')
           : status === 'sending'
-            ? $t('feedback.sending')
+            ? t('feedback.sending')
             : status === 'error'
-              ? $t('common.close')
-              : $t('feedback.send')} />
+              ? t('common.close')
+              : t('feedback.send')} />
       <Button
-        on:click={() => dispatch('cancel')}
+        onclick={() => onCancel?.()}
         disabled={status !== 'default'}
         color="warning"
-        text={$t('common.cancel')} />
+        data-testid="feedback-cancel"
+        text={t('common.cancel')} />
     </div>
   {/if}
 </form>

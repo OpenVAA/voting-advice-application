@@ -1,20 +1,17 @@
-import type { VideoContent } from '@openvaa/app-shared';
-import type { Tweened } from 'svelte/motion';
-import type { Writable } from 'svelte/store';
+import type { DeepPartial, VideoContent } from '@openvaa/app-shared';
+import type { Tween } from 'svelte/motion';
 import type { OptionalVideoProps, Video, VideoMode } from '$lib/components/video';
-import type { DeepPartial } from '$lib/utils/merge';
-import type { StackedStore } from '../utils/stackedStore';
+import type { SettingsOverlayApi } from '../utils/SettingsOverlay.svelte';
 
 export type LayoutContext = {
   /**
-   * A store containing top bar actions settings. When showing some buttons, make sure to provide a callback if they define one.
+   * A token-keyed overlay registry containing top bar actions settings. When showing some buttons, make sure to provide a callback if they define one. Read the merged settings via `.current`; register an overlay declaratively via `useTopBar(...)` (or `.use(...)`), whose cleanup is `$effect`-scoped.
    */
-  topBarSettings: StackedStore<TopBarSettings, DeepPartial<TopBarSettings>>;
+  topBarSettings: SettingsOverlayApi<TopBarSettings, DeepPartial<TopBarSettings>>;
   /**
-   * A store containing CSS classes used to customize different parts of the layout.
-   * NB. You should set any changes to the styles during component initialization, because if changes are pushed to the `pageStyles` stack later they may be overwritten when another component initialized after the currrent one is destroyed.
+   * A token-keyed overlay registry containing CSS classes used to customize different parts of the layout. Register overlays via `usePageStyles(...)` (or `.use(...)`); the overlay is auto-reverted on component destroy via `$effect` cleanup (token-keyed, so out-of-order mount/unmount no longer corrupts the merged result).
    */
-  pageStyles: StackedStore<PageStyles, DeepPartial<PageStyles>>;
+  pageStyles: SettingsOverlayApi<PageStyles, DeepPartial<PageStyles>>;
   /**
    * Progress bar status stores.
    */
@@ -24,14 +21,34 @@ export type LayoutContext = {
    */
   navigation: Navigation;
   /**
-   * A store containing navigation settings.
-   * NB. This is not contained under `navigation` for easier store access.
+   * A token-keyed overlay registry containing navigation settings.
+   * NB. This is not contained under `navigation` for easier access. Register overlays via `useNavigation(...)` (or `.use(...)`).
    */
-  navigationSettings: StackedStore<NavigationSettings, DeepPartial<NavigationSettings>>;
+  navigationSettings: SettingsOverlayApi<NavigationSettings, DeepPartial<NavigationSettings>>;
   /**
    * Settings related to the video player.
    */
   video: VideoController;
+  /**
+   * The active route's already-localized page title (the value the route feeds to its document `<title>`, MINUS the constant app-name/maintenance suffix), surfaced for the root `#route-announcer`. Read the current value via `.current`; it is empty when no title-bearing layout component is mounted. Register a route's title declaratively via `setRouteTitle(...)`.
+   */
+  routeTitle: RouteTitle;
+  /**
+   * Declarative, `$effect`-scoped registrar for the route announcer's title — see `useTopBar`. The mounted title component (e.g. `MainContent` / `SingleCardContent`) calls it with its already-localized `title` prop; it writes the `routeTitle` signal and, on component teardown via `$effect` cleanup, resets the signal to the empty string so a route without a title-bearing component does not announce a stale title. No new i18n string is authored — the value carried is the one passed in.
+   */
+  setRouteTitle: (title: string) => void;
+  /**
+   * Declarative scoped overlay for the top bar — pushes the overlay and auto-reverts via `$effect` cleanup when the calling component is destroyed. Replaces the old imperative `topBarSettings.push(...)` + `onDestroy` index-revert.
+   */
+  useTopBar: (overlay: DeepPartial<TopBarSettings>) => void;
+  /**
+   * Declarative scoped overlay for page styles — see `useTopBar`.
+   */
+  usePageStyles: (overlay: DeepPartial<PageStyles>) => void;
+  /**
+   * Declarative scoped overlay for navigation settings — see `useTopBar`.
+   */
+  useNavigation: (overlay: DeepPartial<NavigationSettings>) => void;
 };
 
 export interface PageStyles {
@@ -58,8 +75,20 @@ export interface TopBarSettings {
 }
 
 export interface Progress {
-  current: Tweened<number>;
-  max: Writable<number>;
+  current: Tween<number>;
+  max: number;
+}
+
+/**
+ * A reactive signal carrying the active route's already-localized page title for the root
+ * `#route-announcer`. Empty string when no title-bearing layout component is mounted.
+ */
+export interface RouteTitle {
+  /**
+   * The active route's localized title (minus the constant app-name/maintenance suffix), or the
+   * empty string when no title-bearing layout component is currently mounted.
+   */
+  readonly current: string;
 }
 
 export interface Navigation {
@@ -94,18 +123,18 @@ export interface VideoController {
    * Whether to show the video player. @default false
    * Will be automatically set to `true` when `load` is called.
    */
-  show: Writable<boolean>;
+  show: boolean;
   /**
    * Whether the video player has content. @default false
    * NB. You do not usually need to set this manually. It will instead be automatically set to `true` when `load` is called and `false` on `afterNavigate`.
    */
-  hasContent: Writable<boolean>;
+  hasContent: boolean;
   /**
    * Whether the player is in `text` or `video` mode. This will be set internally, so it should only be read under normal circumstances. @default 'video'
    */
-  mode: Writable<VideoMode>;
+  mode: VideoMode;
   /**
    * A reference to the `Video` component. This is mainly used internally, but can be accessed for fine-grained control.
    */
-  player: Writable<Video | undefined>;
+  player: Video | undefined;
 }

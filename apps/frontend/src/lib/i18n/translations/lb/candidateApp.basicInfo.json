@@ -1,0 +1,16 @@
+{
+  "editableInfos": {
+    "description": "Dës Informatiounen erschéngen an Ärem Profil.",
+    "title": "Äre Profil"
+  },
+  "error": {
+    "invalidQuestion": "De Froen- oder Äntwerttyp ass net valabel fir d’Fro {questionId}"
+  },
+  "instructions": "Fänkt als éischt mat Ären Basisinformatiounen un an, wann Dir wëllt, lued eng Foto erop. Duerno gi politesch Meenungen nogefrot.",
+  "nominations": {
+    "description": "Dëst sinn d’Walbezierker, an deenen Dir nominéiert sidd. Wa d’Wahllëscht oder d’Wahlsymbol feelen, ginn se automatesch nogereecht, wann d’Kandidatelëschte confirméiert sinn.",
+    "title": "Nominatioune"
+  },
+  "requiredInfo": "Dir musst d’Felder mat dësem Symbol ausfëllen, éier Dir déi aner Froen beäntwere kënnt. Dir kënnt Är Äntwerten awer späicheren an spéider weiderféieren.",
+  "title": "Basisinformatiounen"
+}

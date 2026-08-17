@@ -25,37 +25,58 @@ Show a tab title bar that can be used to switch between different tabs.
 
 <script lang="ts">
   import { concatClass } from '$lib/utils/components';
+  import { shouldAnimate, startViewTransition } from '$lib/utils/viewTransition';
   import type { TabsProps } from './Tabs.type';
 
-  type $$Props = TabsProps;
-
-  export let tabs: $$Props['tabs'] = [];
-  export let activeIndex: $$Props['activeIndex'] = 0;
-  export let onChange: $$Props['onChange'] = undefined;
+  let {
+    tabs = [],
+    activeIndex = $bindable(0),
+    onChange,
+    transitionOnChange = false,
+    ...restProps
+  }: TabsProps = $props();
 
   function activate(index: number): void {
-    activeIndex = index;
+    // For LOCAL-state tab switches (not navigation-driven), optionally cross-fade
+    // the activeIndex mutation. Pass `undefined` as the destination URL — there is
+    // no navigation target for a local tab switch, so the `?notr=1` check is
+    // naturally skipped while the SSR / feature-detect / reduced-motion gates still
+    // apply. Falls through to a plain assignment when animation is disabled or
+    // unsupported (graceful degradation lives in viewTransition.ts).
+    if (transitionOnChange && shouldAnimate(undefined)) {
+      startViewTransition(() => {
+        activeIndex = index;
+      });
+    } else {
+      activeIndex = index;
+    }
     onChange?.({ index, tab: tabs[index] });
   }
 </script>
 
-<ul {...concatClass($$restProps, 'flex items-center justify-start bg-base-300 px-0 py-8 overflow-auto')}>
+<!-- reason: role="tablist" — required so <li role="tab"> children satisfy
+     aria-required-parent (WAI-ARIA APG tabs pattern). see phase 80 cite-and-fix
+     (axe rules: aria-required-parent + list); discovered mid-execution as
+     a Rule 4 deviation when the locked NavGroup/NavItem decisions did not
+     resolve the baselined violations. -->
+<ul role="tablist" {...concatClass(restProps, 'flex items-center justify-start bg-base-300 px-0 py-8 overflow-auto')}>
   {#each tabs as tab, index}
     <li
-      class="btn btn-outline m-0 h-[2.2rem] min-h-[2.2rem] w-auto flex-grow truncate rounded-sm px-12 text-md font-bold
-       hover:bg-base-100 hover:text-primary focus:bg-base-100 focus:text-primary"
+      class="btn btn-outline text-md hover:bg-base-100 hover:text-primary focus:bg-base-100 focus:text-primary m-0 h-[2.2rem] min-h-[2.2rem] w-auto flex-grow
+       truncate rounded-sm px-12 font-bold"
       class:text-primary={index !== activeIndex}
       class:bg-base-100={index === activeIndex}
       tabindex="0"
       role="tab"
-      on:click={() => activate(index)}
-      on:keydown={(e) => {
+      data-testid="tab-{index}"
+      onclick={() => activate(index)}
+      onkeydown={(e) => {
         if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
           // Prevent scrolling
           e.preventDefault();
         }
       }}
-      on:keyup={(e) => {
+      onkeyup={(e) => {
         if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
           e.preventDefault();
           activate(index);

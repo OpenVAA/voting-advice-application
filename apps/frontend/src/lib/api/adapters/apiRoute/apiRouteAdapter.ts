@@ -10,6 +10,8 @@ import type { ApiGetRoute, ApiPostRoute, ApiRouteReturnType } from './apiRoutes'
  */
 export function apiRouteAdapterMixin<TBase extends Constructor>(base: TBase): Constructor<ApiRouteAdapter> & TBase {
   abstract class WithMixin extends base {
+    // reason: forwards the base constructor's parameters unchanged; typed as the mixin
+    // `any[]` rest for the reason given on `Constructor` below.
     constructor(...args: Array<any>) {
       super(...args);
     }
@@ -36,4 +38,7 @@ export function apiRouteAdapterMixin<TBase extends Constructor>(base: TBase): Co
   return WithMixin;
 }
 
+// reason: see the identical note in `../supabase/supabaseAdapter.ts` — the mixin
+// pattern requires an `any[]` rest parameter, and the rule exempts rest args via
+// `ignoreRestArgs: true` rather than being silent about a violation.
 type Constructor<TClass = UniversalAdapter> = abstract new (...args: Array<any>) => TClass;

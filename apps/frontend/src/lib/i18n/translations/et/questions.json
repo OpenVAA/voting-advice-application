@@ -6,6 +6,12 @@
     "youHaventAnswered": "Sa ei ole sellele küsimusele vastanud",
     "yourAnswer": "Sina"
   },
+  "arguments": {
+    "con": "Vastu",
+    "pro": "Poolt",
+    "proCategory": "Poolt: {option}",
+    "title": "Argumendid"
+  },
   "category": {
     "numQuestions": "{numQuestions, plural, =-1 {} =1 {1 küsimus} other {# küsimust}}",
     "skip": "Jäta see teema vahele"
@@ -17,6 +23,10 @@
       "withoutCategorySelection": "Vasta järgmisena {numQuestions} küsimusele poliitika ja väärtuste kohta. {numCategories, plural, =0 {} =1 {} other {Need on jagatud # teemaks.}}"
     },
     "start": "Vasta {numQuestions} küsimusele"
+  },
+  "multiChoice": {
+    "selectExact": "Vali {count} valikut.",
+    "selectRange": "Vali {min}–{max} valikut."
   },
   "next": "Järgmine",
   "previous": "Eelmine",

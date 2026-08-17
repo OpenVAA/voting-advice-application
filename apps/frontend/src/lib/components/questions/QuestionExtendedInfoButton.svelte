@@ -26,16 +26,17 @@ A button that will display the question's extended information content in a `Dra
   import { QuestionExtendedInfoDrawer } from '.';
   import type { QuestionExtendedInfoButtonProps } from './QuestionExtendedInfoButton.type';
 
-  type $$Props = QuestionExtendedInfoButtonProps;
-
-  export let question: $$Props['question'];
-  export let onOpen: $$Props['onOpen'] = undefined;
-  export let onSectionCollapse: $$Props['onSectionCollapse'] = undefined;
-  export let onSectionExpand: $$Props['onSectionExpand'] = undefined;
+  let {
+    question,
+    onOpen = undefined,
+    onSectionCollapse = undefined,
+    onSectionExpand = undefined,
+    ...restProps
+  }: QuestionExtendedInfoButtonProps = $props();
 
   const { t } = getComponentContext();
 
-  let showDrawer = false;
+  let showDrawer = $state(false);
 
   function handleClick(): void {
     showDrawer = true;
@@ -48,8 +49,9 @@ A button that will display the question's extended information content in a `Dra
 {/if}
 
 <Button
-  text={$t('components.questionExtendedInfo.title')}
+  text={t('components.questionExtendedInfo.title')}
   icon="info"
   iconPos="left"
-  on:click={handleClick}
-  {...$$restProps} />
+  onclick={handleClick}
+  data-testid="voter-questions-popup-info-button"
+  {...restProps} />

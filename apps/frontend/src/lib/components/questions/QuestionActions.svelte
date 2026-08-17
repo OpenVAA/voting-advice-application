@@ -9,8 +9,8 @@ Display a question's secondary actions, such as skip.
 - `disablePrevious`:  Whether to disable the previous button. @default `false`
 - `variant`: Use to switch between looser and tighter layouts. @default `'default'`
 - `separateSkip`: Whether to separate `skip` and `next` actions both as events and button symbols. @default `false`
-- `nextLabel`: The text label for the `next` button. @default `$t('questions.next')` or `$t('questions.skip')`
-- `previousLabel`: The text label for the `previous` button. @default `$t('questions.previous')`
+- `nextLabel`: The text label for the `next` button. @default `t('questions.next')` or `t('questions.skip')`
+- `previousLabel`: The text label for the `previous` button. @default `t('questions.previous')`
 - Any valid properties of a `<div>` element
 
 ### Callbacks
@@ -43,19 +43,20 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
   import { concatClass } from '$lib/utils/components';
   import type { QuestionActionsProps } from './QuestionActions.type';
 
-  type $$Props = QuestionActionsProps;
-
-  export let answered: $$Props['answered'] = false;
-  export let disabled: $$Props['disabled'] = false;
-  export let disablePrevious: $$Props['disablePrevious'] = false;
-  export let variant: $$Props['variant'] = 'default';
-  export let separateSkip: $$Props['separateSkip'] = false;
-  export let nextLabel: $$Props['nextLabel'] = undefined;
-  export let previousLabel: $$Props['previousLabel'] = undefined;
-  export let onDelete: $$Props['onDelete'] = undefined;
-  export let onNext: $$Props['onNext'] = undefined;
-  export let onPrevious: $$Props['onPrevious'] = undefined;
-  export let onSkip: $$Props['onSkip'] = undefined;
+  let {
+    answered = false,
+    disabled = false,
+    disablePrevious = false,
+    variant = 'default',
+    separateSkip = false,
+    nextLabel = undefined,
+    previousLabel = undefined,
+    onDelete = undefined,
+    onNext = undefined,
+    onPrevious = undefined,
+    onSkip = undefined,
+    ...restProps
+  }: QuestionActionsProps = $props();
 
   const { t } = getComponentContext();
 
@@ -79,10 +80,12 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
 
 <div
   role="group"
-  aria-label={$t('questions.additionalActions')}
-  {...concatClass($$restProps, 'mt-lg grid w-full grid-cols-3 items-stretch gap-md')}>
+  aria-label={t('questions.additionalActions')}
+  data-testid="question-actions"
+  style:view-transition-name="question-actions"
+  {...concatClass(restProps, 'mt-lg grid w-full grid-cols-3 items-stretch gap-md')}>
   <Button
-    on:click={handleNext}
+    onclick={handleNext}
     style="grid-row: 1; grid-column: 3"
     color="secondary"
     {disabled}
@@ -90,9 +93,10 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
     iconPos={variant === 'tight' ? 'right' : 'top'}
     class={variant === 'icon' || variant === 'tight' ? 'content-end' : ''}
     icon={answered || !separateSkip ? 'next' : 'skip'}
-    text={nextLabel ?? (answered || !separateSkip ? $t('questions.next') : $t('questions.skip'))} />
+    data-testid="question-next"
+    text={nextLabel ?? (answered || !separateSkip ? t('questions.next') : t('questions.skip'))} />
   <Button
-    on:click={handleDelete}
+    onclick={handleDelete}
     disabled={!disabled && answered ? undefined : true}
     class="transition-opacity delay-500 disabled:opacity-0"
     style="grid-row: 1; grid-column: 2"
@@ -100,9 +104,10 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
     variant={variant === 'icon' ? 'icon' : 'secondary'}
     iconPos={variant === 'tight' ? 'left' : 'top'}
     icon="close"
-    text={$t('questions.remove')} />
+    data-testid="question-delete"
+    text={t('questions.remove')} />
   <Button
-    on:click={handlePrevious}
+    onclick={handlePrevious}
     disabled={disabled || disablePrevious}
     style="grid-row: 1; grid-column: 1"
     color="secondary"
@@ -110,5 +115,6 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
     iconPos={variant === 'tight' ? 'left' : 'top'}
     class={variant === 'icon' || variant === 'tight' ? 'content-start' : ''}
     icon="previous"
-    text={previousLabel ?? $t('questions.previous')} />
+    data-testid="question-previous"
+    text={previousLabel ?? t('questions.previous')} />
 </div>

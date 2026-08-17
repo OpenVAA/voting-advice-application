@@ -17,20 +17,15 @@ Display an entity's sub-matches.
 
 <script lang="ts">
   import { ScoreGauge } from '$lib/components/scoreGauge';
-  import { concatProps } from '$lib/utils/components';
+  import { concatClass } from '$lib/utils/components';
   import type { SubMatchesProps } from './SubMatches.type';
 
-  type $$Props = SubMatchesProps;
+  let { matches, variant = 'tight', scoreGaugeProps = {}, ...restProps }: SubMatchesProps = $props();
 
-  export let matches: $$Props['matches'];
-  export let variant: $$Props['variant'] = 'tight';
-  export let scoreGaugeProps: $$Props['scoreGaugeProps'] = {};
-
-  let style: string;
-  $: style = `grid-template-columns: repeat(auto-fill, minmax(${variant === 'loose' ? 9 : 6}rem, 1fr));`;
+  let gridStyle = $derived(`grid-template-columns: repeat(auto-fill, minmax(${variant === 'loose' ? 9 : 6}rem, 1fr));`);
 </script>
 
-<div {...concatProps($$restProps, { class: 'grid gap-x-md gap-y-sm', style })}>
+<div {...concatClass(restProps, 'grid gap-x-md gap-y-sm')} data-testid="sub-matches" style={gridStyle}>
   {#each matches as { score, questionGroup }}
     <ScoreGauge {score} label={questionGroup.name} color={questionGroup.color} variant="radial" {...scoreGaugeProps} />
   {/each}

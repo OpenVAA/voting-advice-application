@@ -19,6 +19,7 @@ Accesses `AppContext` to read `appSettings`.
 -->
 
 <script lang="ts">
+  import { staticSettings } from '@openvaa/app-shared';
   import { Button } from '$lib/components/button';
   import { Modal } from '$lib/components/modal';
   import { getAppContext } from '$lib/contexts/app';
@@ -27,35 +28,47 @@ Accesses `AppContext` to read `appSettings`.
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import type { DataConsentInfoButtonProps } from './DataConsentInfoButton.type';
 
-  /* eslint-disable @typescript-eslint/no-unused-vars */
-  type $$Props = DataConsentInfoButtonProps;
+  let { ...restProps }: DataConsentInfoButtonProps = $props();
 
-  const { appSettings, t } = getAppContext();
+  const ctx = getAppContext();
+  const { t } = ctx;
+  // appSettings is a reactive accessor (see phase 113 flatten) — read via ctx.X, never destructure.
+  const appSettings = $derived(ctx.appSettings);
 
-  let closeModal: () => void;
-  let openModal: () => void;
+  const analyticsLink = staticSettings.analytics?.platform?.infoUrl
+    ? `<a href="${staticSettings.analytics.platform.infoUrl}" target="_blank">${
+        staticSettings.analytics.platform.name.charAt(0).toUpperCase() + staticSettings.analytics.platform.name.slice(1)
+      }</a>`
+    : '';
+
+  let modalRef: Modal;
 </script>
 
 <Button
   variant="icon"
   icon="info"
   iconPos="left"
-  on:click={openModal}
-  text={$t('privacy.dataConsentInfoButton')}
-  {...$$restProps} />
+  onclick={() => modalRef?.openModal()}
+  text={t('privacy.dataConsentInfoButton')}
+  {...restProps} />
 
-<Modal bind:closeModal bind:openModal title={$t('common.privacy.dataCollection.title')}>
-  {#if $appSettings.analytics?.platform?.name}
-    <p>{@html sanitizeHtml($t('common.privacy.dataCollection.content'))}</p>
+<!-- bind: keep — modalRef is plain let Modal; single ref read in onclick -->
+<Modal bind:this={modalRef} title={t('common.privacy.dataCollection.title')}>
+  {#if appSettings.analytics?.platform?.name}
+    <p>{@html sanitizeHtml(t('common.privacy.dataCollection.content'))}</p>
     <p>
       {@html sanitizeHtml(
-        $t(assertTranslationKey(`privacy.dataCollection.platform.${$appSettings.analytics.platform.name}`))
+        t(assertTranslationKey(`privacy.dataCollection.platform.${appSettings.analytics.platform.name}`), {
+          analyticsLink
+        })
       )}
     </p>
   {:else}
     {logDebugError('No analytics platform configured!')}
   {/if}
-  <div slot="actions" class="mx-auto flex w-full max-w-md flex-col">
-    <Button on:click={closeModal} text={$t('common.close')} variant="main" />
-  </div>
+  {#snippet actions()}
+    <div class="mx-auto flex w-full max-w-md flex-col">
+      <Button onclick={() => modalRef?.closeModal()} text={t('common.close')} variant="main" />
+    </div>
+  {/snippet}
 </Modal>

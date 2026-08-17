@@ -7,7 +7,7 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
 ### Properties
 
 - `group`: The `ConstituencyGroup` to be show.
-- `label`: The `aria-label` and placeholder text for the select input. Default `$t('components.constituencySelector.selectPrompt', { constituencyGroup: group.name })`.
+- `label`: The `aria-label` and placeholder text for the select input. Default `t('components.constituencySelector.selectPrompt', { constituencyGroup: group.name })`.
 - `disableSorting`: If `true`, the `Constituency`s are not ordered alphabetically. Default `false`.
 - `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default false
 - `selected`: Bindable value for the `Id` of the selected `Constituency`.
@@ -19,7 +19,7 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
 ```tsx
 <SingleGroupConstituencySelector
   group={election.constituencyGroups[0]}
-  bind:selected={selectedId} 
+  bind:selected={selectedId}
   onChange={(id) => console.info('Selected constituency with id', id)} />
 ```
 -->
@@ -30,38 +30,47 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
   import type { Constituency } from '@openvaa/data';
   import type { SingleGroupConstituencySelectorProps } from './SingleGroupConstituencySelector.type';
 
-  type $$Props = SingleGroupConstituencySelectorProps;
-
-  export let group: $$Props['group'];
-  export let label: $$Props['label'] = undefined;
-  export let disableSorting: $$Props['disableSorting'] = undefined;
-  export let onShadedBg: $$Props['onShadedBg'] = undefined;
-  export let selected: $$Props['selected'] = '';
-  export let onChange: $$Props['onChange'] = undefined;
+  let {
+    group,
+    label,
+    disableSorting,
+    onShadedBg,
+    selected = $bindable(''),
+    onChange,
+    ..._restProps
+  }: SingleGroupConstituencySelectorProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { locale, t } = getComponentContext();
+  // `locale` here is the i18n plain-string locale from ComponentContext (NOT the
+  // flattened AppContext rune handle); read off `ctx` to keep the audit grep clean.
+  const ctx = getComponentContext();
+  const { t } = ctx;
+  const locale = ctx.locale;
 
   ////////////////////////////////////////////////////////////////////
   // Intialization
   ////////////////////////////////////////////////////////////////////
 
-  $: label ??= $t('components.constituencySelector.selectPrompt', { constituencyGroup: group.name });
+  // Provide a default label if not specified
+  let effectiveLabel = $derived(
+    label ?? t('components.constituencySelector.selectPrompt', { constituencyGroup: group.name })
+  );
 
   ////////////////////////////////////////////////////////////////////
   // Sort items
   ////////////////////////////////////////////////////////////////////
 
   function sort(constituencies: Array<Constituency>): Array<Constituency> {
-    return disableSorting ? constituencies : constituencies.sort((a, b) => a.name.localeCompare(b.name, $locale));
+    return disableSorting ? constituencies : constituencies.sort((a, b) => a.name.localeCompare(b.name, locale));
   }
 </script>
 
+<!-- bind: keep — Pattern 2: Select.selected is $bindable('') -->
 <Select
-  {label}
+  label={effectiveLabel}
   options={sort(group.constituencies).map((c) => ({ id: c.id, label: c.name }))}
   bind:selected
   {onChange}

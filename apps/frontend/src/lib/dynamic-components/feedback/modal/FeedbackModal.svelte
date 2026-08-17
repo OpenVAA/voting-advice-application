@@ -4,7 +4,7 @@ Show a modal dialog for sending feedback.
 
 ### Properties
 
-- `title`: Optional title for the modal. Defaults to `{$t('feedback.title')}`
+- `title`: Optional title for the modal. Defaults to `{t('feedback.title')}`
 - Any valid properties of a `<Modal>` component.
 
 ### Usage
@@ -14,7 +14,7 @@ Show a modal dialog for sending feedback.
   let openFeedback: () => void;
 </script>
 <FeedbackModal bind:openFeedback>
-<Button on:click={openFeedback} text="Open feedback"/>
+<Button onclick={openFeedback} text="Open feedback"/>
 ```
 -->
 
@@ -25,59 +25,39 @@ Show a modal dialog for sending feedback.
   import { Feedback } from '..';
   import type { FeedbackModalProps } from './FeedbackModal.type';
 
-  type $$Props = FeedbackModalProps;
+  let { title, ...restProps }: FeedbackModalProps = $props();
 
-  export let title: $$Props['title'] = undefined;
-
-  /**
-   * The delay for autoclosing the modal after it's been submitted.
-   */
   const CLOSE_DELAY = 1500;
-
-  ////////////////////////////////////////////////////////////////////
-  // Get contexts
-  ////////////////////////////////////////////////////////////////////
-
   const { t } = getComponentContext();
-
-  ////////////////////////////////////////////////////////////////////
-  // Events
-  ////////////////////////////////////////////////////////////////////
-
   let closeTimeout: NodeJS.Timeout | undefined;
-
   onDestroy(() => {
     if (closeTimeout) clearTimeout(closeTimeout);
   });
 
-  // Export from Feedback
-  let reset: () => void;
-
-  // Exports from Modal
-  let openModal: () => void;
-  let closeModal: () => void;
+  let feedbackRef: { reset: () => void };
+  let modalRef: Modal;
 
   export function closeFeedback() {
-    closeModal();
+    modalRef?.closeModal();
   }
-
   export function openFeedback() {
-    openModal();
+    modalRef?.openModal();
   }
 
   function onSent() {
     closeTimeout = setTimeout(() => {
       closeFeedback();
-      reset();
+      feedbackRef?.reset();
     }, CLOSE_DELAY);
   }
 </script>
 
+<!-- bind: keep — modalRef is plain let Modal; single ref read in closeFeedback/openFeedback -->
 <Modal
-  title={title ?? $t('feedback.title')}
+  title={title ?? t('feedback.title')}
   boxClass="sm:max-w-[calc(36rem_+_2_*_24px)]"
-  bind:openModal
-  bind:closeModal
-  {...$$restProps}>
-  <Feedback on:cancel={closeFeedback} on:sent={onSent} bind:reset />
+  bind:this={modalRef}
+  {...restProps}>
+  <!-- bind: keep — feedbackRef is plain let; single ref read in onSent -->
+  <Feedback onCancel={closeFeedback} {onSent} bind:this={feedbackRef} />
 </Modal>

@@ -3,11 +3,8 @@
   import type { TrackingEvent } from '$lib/contexts/app/tracking';
   import type { UmamiAnalyticsProps } from './UmamiAnalytics.type';
 
-  type $$Props = UmamiAnalyticsProps;
-
-  export let websiteId: $$Props['websiteId'];
-  export let scriptSrc: $$Props['scriptSrc'] = 'https://cloud.umami.is/script.js';
-  export const trackEvent: $$Props['trackEvent'] = sendUmamiEvent;
+  let { websiteId, scriptSrc = 'https://cloud.umami.is/script.js' }: UmamiAnalyticsProps = $props();
+  export const trackEvent: UmamiAnalyticsProps['trackEvent'] = sendUmamiEvent;
 
   function sendUmamiEvent({ name, data }: TrackingEvent<Record<string, JSONData>>) {
     if (!browser || !('umami' in window)) return;

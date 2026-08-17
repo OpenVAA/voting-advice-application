@@ -1,4 +1,4 @@
-<!-- 
+<!--
 @component
 A component for expanders that contain a title and some content. Use the
 `variant` prop to specify the expander type.
@@ -36,7 +36,7 @@ You should not try to use a variant and customize at the same time.
   <p>Example content<p/>
 </Expander>
 
-<Expander title="Example title" variant="category"  iconColor="primary" 
+<Expander title="Example title" variant="category"  iconColor="primary"
   titleClass="bg-base-100 text-primary" contentClass="bg-base-300 text-info font-bold">
   <p>Example content<p/>
 </Expander>
@@ -44,21 +44,24 @@ You should not try to use a variant and customize at the same time.
 -->
 
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import { Icon } from '$lib/components/icon';
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
   import type { ExpanderProps } from './Expander.type';
 
-  type $$Props = ExpanderProps;
-
-  export let title: $$Props['title'];
-  export let variant: $$Props['variant'] = 'read-more';
-  export let iconColor: $$Props['iconColor'] = 'secondary';
-  export let iconPos: $$Props['iconPos'] = 'text';
-  export let titleClass: $$Props['titleClass'] = '';
-  export let contentClass: $$Props['contentClass'] = '';
-  export let defaultExpanded: $$Props['defaultExpanded'] = false;
+  let {
+    title,
+    variant = 'read-more',
+    iconColor = 'secondary',
+    iconPos = 'text',
+    titleClass: customTitleClass = '',
+    contentClass: customContentClass = '',
+    defaultExpanded = false,
+    onExpand = undefined,
+    onCollapse = undefined,
+    children,
+    ...restProps
+  }: ExpanderProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -70,68 +73,86 @@ You should not try to use a variant and customize at the same time.
   // Handle expansion/collapse
   ////////////////////////////////////////////////////////////////////
 
-  const dispatch = createEventDispatcher<{ expand: null; collapse: null }>();
-
-  let expanded = defaultExpanded;
+  // `defaultExpanded` is a render-time-only prop; consumers do not
+  // toggle it after mount. Seed once, then own state locally.
+  // svelte-ignore state_referenced_locally
+  let expanded = $state(defaultExpanded);
 
   function toggleExpanded() {
     expanded = !expanded;
-    dispatch(expanded ? 'expand' : 'collapse');
+    if (expanded) {
+      onExpand?.();
+    } else {
+      onCollapse?.();
+    }
   }
 
   ////////////////////////////////////////////////////////////////////
   // Styling
   ////////////////////////////////////////////////////////////////////
 
-  // Build classes
+  // Build classes (Svelte 5: derive reactively from props instead of
+  // mutating top-level locals at init).
   // 1. Base classes for all collapse components
-  let collapseClasses = 'collapse rounded-none min-h-touch min-w-touch h-auto w-full';
-  let titleClasses = 'collapse-title text-center px-md';
-  let contentClasses = 'collapse-content p-md';
-  let iconClass = '';
+  const collapseClasses = 'collapse rounded-none min-h-touch min-w-touch h-auto w-full';
 
-  // 2. Variant-defined classes
-  switch (variant) {
-    case 'read-more':
-      titleClasses += ' !px-0 text-primary';
-      contentClasses += ' !px-0';
-      break;
-    case 'category':
-      titleClasses += ' !px-md text-xl bg-base-300 font-bold';
-      contentClasses += ' pt-lg';
-      iconPos = 'left';
-      break;
-    case 'question':
-      titleClasses += ' !px-0 text-lg font-bold';
-      contentClasses += ' !px-0';
-      break;
-    case 'question-help':
-      titleClasses += ' text-lg font-bold flex flex-row justify-between !text-left';
-      contentClasses += ' !text-left';
-      break;
-  }
+  // 2. Variant + iconPos resolution. The original code mutated `iconPos`
+  // when variant === 'category'; we replicate that with an effective
+  // iconPos derived from variant.
+  const effectiveIconPos = $derived(variant === 'category' ? 'left' : iconPos);
 
-  // 3. Icon position
-  switch (iconPos) {
-    case 'left':
-      titleClasses += ' flex items-center justify-center';
-      break;
-    case 'text':
-      iconClass = 'inline-block whitespace-nowrap';
-      break;
-  }
+  const titleClasses = $derived.by(() => {
+    let cls = 'collapse-title text-center px-md';
+    switch (variant) {
+      case 'read-more':
+        cls += ' !px-0 text-primary';
+        break;
+      case 'category':
+        cls += ' !px-md text-xl bg-base-300 font-bold';
+        break;
+      case 'question':
+        cls += ' !px-0 text-lg font-bold';
+        break;
+      case 'question-help':
+        cls += ' text-lg font-bold flex flex-row justify-between !text-left';
+        break;
+    }
+    if (effectiveIconPos === 'left') {
+      cls += ' flex items-center justify-center';
+    }
+    if (customTitleClass) {
+      cls += ` ${customTitleClass}`;
+    }
+    return cls;
+  });
 
-  // 4. Add custom classes
-  if (contentClass) {
-    contentClasses += ` ${contentClass}`;
-  }
-  if (titleClass) {
-    titleClasses += ` ${titleClass}`;
-  }
+  const contentClasses = $derived.by(() => {
+    let cls = 'collapse-content p-md';
+    switch (variant) {
+      case 'read-more':
+        cls += ' !px-0';
+        break;
+      case 'category':
+        cls += ' pt-lg';
+        break;
+      case 'question':
+        cls += ' !px-0';
+        break;
+      case 'question-help':
+        cls += ' !text-left';
+        break;
+    }
+    if (customContentClass) {
+      cls += ` ${customContentClass}`;
+    }
+    return cls;
+  });
+
+  const iconClass = $derived(effectiveIconPos === 'text' ? 'inline-block whitespace-nowrap' : '');
 </script>
 
-<div {...concatClass($$restProps, collapseClasses)}>
-  <input type="checkbox" aria-label={$t('common.expandOrCollapse')} on:click={toggleExpanded} checked={expanded} />
+<div {...concatClass(restProps, collapseClasses)}>
+  <input type="checkbox" aria-label={t('common.expandOrCollapse')} onclick={toggleExpanded} checked={expanded} />
   <div class={titleClasses}>
     {title}
     <div class="not-rotated-icon {expanded ? 'rotated-icon' : ''} ml-md {iconClass}">
@@ -140,12 +161,13 @@ You should not try to use a variant and customize at the same time.
   </div>
   {#if expanded}
     <div class={contentClasses}>
-      <slot />
+      {@render children?.()}
     </div>
   {/if}
 </div>
 
 <style lang="postcss">
+  @reference "../../../tailwind-theme.css";
   .not-rotated-icon {
     --tw-rotate: 90deg;
     transition: transform 0.2s linear;

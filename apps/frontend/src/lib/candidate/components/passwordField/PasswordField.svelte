@@ -25,26 +25,32 @@ PasswordField is an input box for password that comes with a button to reveal an
   import { getUUID } from '$lib/utils/components';
   import type { PasswordFieldProps } from './PasswordField.type';
 
-  type $$Props = PasswordFieldProps;
+  let {
+    id: idProp = undefined,
+    password = $bindable(''),
+    autocomplete = '',
+    label = undefined,
+    externalLabel = false,
+    ..._restProps
+  }: PasswordFieldProps = $props();
 
-  export let id: $$Props['id'] = undefined;
-  export let password: $$Props['password'] = '';
-  export let autocomplete: $$Props['autocomplete'] = '';
-  export let label: $$Props['label'] = undefined;
-  export let externalLabel: $$Props['externalLabel'] = false;
   export function focus(): void {
     input?.focus();
   }
 
-  id ??= getUUID();
+  // Generate a stable fallback id once at mount (UUID must not regenerate
+  // per-derived-call). Effective id falls back to the prop when supplied.
+  const fallbackId = getUUID();
+  const id = $derived(idProp ?? fallbackId);
 
   const { t } = getComponentContext();
 
-  let passwordRevealed = false;
+  let passwordRevealed = $state(false);
   /** variable used to refer to the input box in code to change its type*/
-  let input: HTMLInputElement;
+  let input: HTMLInputElement | undefined = $state();
   /** function that hides and reveals the password and changes the icon of the button*/
   function toggleRevealed() {
+    if (!input) return;
     passwordRevealed = !passwordRevealed;
     input.type = passwordRevealed ? 'text' : 'password';
   }
@@ -52,24 +58,26 @@ PasswordField is an input box for password that comes with a button to reveal an
 
 <div class="relative">
   {#if !externalLabel}
-    <label for={id} class="sr-only">{label || $t('common.password')}</label>
+    <label for={id} class="sr-only">{label || t('common.password')}</label>
   {/if}
+  <!-- bind: keep — two-way DOM input bind:value={password} (line below); bind:this={input} is a single ref read in toggleRevealed/focus -->
   <input
+    bind:value={password}
+    bind:this={input}
     {id}
     type="password"
     name="password"
     class="input w-full"
-    placeholder={$t('components.passwordInput.placeholder')}
+    placeholder={t('components.passwordInput.placeholder')}
     data-testid="password-field"
-    bind:value={password}
-    bind:this={input}
-    {autocomplete}
+    autocomplete={autocomplete as AutoFill}
     required />
   <Button
     type="button"
     variant="icon"
-    text={passwordRevealed ? $t('components.passwordInput.hidePassword') : $t('components.passwordInput.showPassword')}
+    text={passwordRevealed ? t('components.passwordInput.hidePassword') : t('components.passwordInput.showPassword')}
     class="!absolute inset-y-0 right-0"
     icon={passwordRevealed ? 'hide' : 'show'}
-    on:click={toggleRevealed} />
+    onclick={toggleRevealed}
+    data-testid="password-field-toggle" />
 </div>

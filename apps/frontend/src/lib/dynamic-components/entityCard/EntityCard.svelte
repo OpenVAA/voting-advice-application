@@ -33,7 +33,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 ### Usage
 
 ```tsx
-<EntityCard action={$getRoute({route: 'ResultsCandidate', entityId: candidate.id})} 
+<EntityCard action={getRoute.current({route: 'ResultCandidate', entityId: candidate.id})}
   content={candidate}>
 <EntityCard content={party} variant="details">
 ```
@@ -53,100 +53,152 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import { concatClass, getUUID } from '$lib/utils/components';
   import { unwrapEntity } from '$lib/utils/entities';
   import { getCardQuestions } from '$lib/utils/entityCards';
-  import { findCandidateNominations } from '$lib/utils/matches';
+  import { getAllianceSummary } from '$lib/utils/getAllianceSummary';
+  import { findCandidateNominations, findOrganizationNominations } from '$lib/utils/matches';
+  import EntityCard from './EntityCard.svelte';
   import EntityCardAction from './EntityCardAction.svelte';
-  import type { AnyEntityVariant, AnyNominationVariant, AnyQuestionVariant } from '@openvaa/data';
+  import type { AnyQuestionVariant } from '@openvaa/data';
   import type { InfoAnswerProps } from '$lib/components/infoAnswer';
   import type { EntityCardProps } from './EntityCard.type';
 
-  type $$Props = EntityCardProps;
-
-  export let action: $$Props['action'] = undefined;
-  export let entity: $$Props['entity'];
-  export let variant: $$Props['variant'] = 'list';
-  export let maxSubcards: $$Props['maxSubcards'] = undefined;
-  export let showElection: $$Props['showElection'] = undefined;
-
-  // We have to set the default value like this, otherwise the value is treated later as possibly undefined
-  maxSubcards ??= 3;
+  let {
+    action,
+    entity,
+    variant = 'list',
+    maxSubcards = 3,
+    showElection,
+    children,
+    ...restProps
+  }: EntityCardProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appSettings, appType, dataRoot, getRoute, startEvent, t } = getAppContext();
-  const matches = $appType === 'voter' ? getVoterContext().matches : undefined;
+  const ctx = getAppContext();
+  const { appType, getRoute, startEvent, t } = ctx;
+  // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via ctx.X, never destructure.
+  const appSettings = $derived(ctx.appSettings);
+  // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot` directly inside the consuming `$derived.by`,
+  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" +
+  // (see spike 024). see phase 117.
+  const voterContext = appType.current === 'voter' ? getVoterContext() : undefined;
 
   ////////////////////////////////////////////////////////////////////
   // Parse components, actions, subcards and questions
   ////////////////////////////////////////////////////////////////////
 
+  type CardQuestions = Array<{
+    question: AnyQuestionVariant;
+    hideLabel?: boolean;
+    format?: InfoAnswerProps['format'];
+  }>;
+
   const baseId = getUUID();
 
-  let electionSymbol: string | undefined;
-  let nakedEntity: AnyEntityVariant;
-  let match: EntityVariantMatch | undefined;
-  let nomination: AnyNominationVariant | undefined;
-  let questions:
-    | Array<{
-        question: AnyQuestionVariant;
-        hideLabel?: boolean;
-        format?: InfoAnswerProps['format'];
-      }>
-    | undefined;
-  let showSubMatches: boolean;
-  let subcards: Array<$$Props> | undefined;
+  const parsed = $derived.by(() => {
+    const unwrapped = unwrapEntity(entity);
+    const { type, id } = unwrapped.entity;
 
-  $: {
-    ({ entity: nakedEntity, match, nomination } = unwrapEntity(entity));
-    const { type, id } = nakedEntity;
-
-    electionSymbol = nomination?.electionSymbol;
+    const elSym = unwrapped.nomination?.electionSymbol;
 
     // The default action is a link to the entity's ResultEntity route.
-    action ??= $getRoute({
-      route: 'ResultEntity',
-      entityType: type,
-      entityId: id,
-      nominationId: nomination?.id
-    });
+    // see phase 62 and see phase 88: ResultEntity now resolves
+    // to the 4-segment shape `[[electionTab]]/[[entityTab]]/[[entity]]/[[id]]`.
+    // The `entity` (singular drawer entity-type matcher) is the entity's own
+    // `type` (candidate | organization | alliance); the `entityTab` (plural
+    // list-tab matcher) is the parent list — defaulting to the same-type
+    // plural preserves the list-plus-matching-drawer shape. The filterContext
+    // auto-scopes per (electionId, entityTab) so a candidate drawer under a
+    // candidates list continues to behave as before.
+    const effectiveAction =
+      action ??
+      getRoute.current({
+        route: 'ResultEntity',
+        entityTab: type === 'candidate' ? 'candidates' : type === 'alliance' ? 'alliances' : 'organizations',
+        entity: type,
+        id,
+        nominationId: unwrapped.nomination?.id
+      });
 
     // The questions and possible submatches to display in the card
     // TODO: Add support for all entity types by expanding the setting type to cover all of them
+    let qs: CardQuestions | undefined;
+    let showSM = false;
     if (type === ENTITY_TYPE.Candidate || type === ENTITY_TYPE.Organization) {
-      showSubMatches = $appSettings.results.cardContents[type].includes('submatches');
+      showSM = appSettings.results?.cardContents?.[type]?.includes('submatches') ?? false;
       if (variant !== 'details') {
-        questions = getCardQuestions({
+        qs = getCardQuestions({
           type,
-          appSettings: $appSettings,
-          dataRoot: $dataRoot
+          appSettings: appSettings,
+          dataRoot: ctx.dataRoot
         });
       }
     }
 
     // The possible subentities to display in the card, shown only in the list variant
+    let scs: Array<EntityCardProps> | undefined;
+    let scsMaxOverride: number | undefined; // see phase 69: alliance branch overrides maxSubcards to render all member orgs
     if (
       variant === 'list' &&
-      nomination &&
-      isObjectType(nomination, OBJECT_TYPE.OrganizationNomination) &&
-      $appSettings.results.cardContents.organization.includes('candidates')
+      unwrapped.nomination &&
+      isObjectType(unwrapped.nomination, OBJECT_TYPE.OrganizationNomination) &&
+      appSettings.results?.cardContents?.organization?.includes('children')
     ) {
-      subcards = findCandidateNominations({ matches: matches ? $matches : undefined, nomination }).map((e) => ({
+      scs = findCandidateNominations({ matches: voterContext?.matches, nomination: unwrapped.nomination }).map((e) => ({
         entity: e
       }));
+    } else if (
+      variant === 'list' &&
+      unwrapped.nomination &&
+      isObjectType(unwrapped.nomination, OBJECT_TYPE.AllianceNomination) &&
+      appSettings.results?.cardContents?.alliance?.includes('children')
+    ) {
+      scs = findOrganizationNominations({ matches: voterContext?.matches, nomination: unwrapped.nomination }).map(
+        (e) => ({
+          entity: e
+        })
+      );
+      scsMaxOverride = Infinity; // see phase 69: render all member orgs, not just top-3
     }
-  }
+
+    // Alliance summary "X candidates across N parties" — rendered on the list-variant alliance card.
+    // The drawer-header surface is rendered by EntityDetails.svelte (which itself wraps EntityCard
+    // variant=details); rendering it only on `'list'` here avoids a visible duplicate when EntityCard
+    // is consumed inside EntityDetails. see phase 69 executor Rule 1 — see SUMMARY.md.
+    let allianceSummary: { numCandidates: number; numParties: number } | undefined;
+    if (
+      unwrapped.nomination &&
+      isObjectType(unwrapped.nomination, OBJECT_TYPE.AllianceNomination) &&
+      variant === 'list'
+    ) {
+      allianceSummary = getAllianceSummary(unwrapped.nomination);
+    }
+
+    return {
+      nakedEntity: unwrapped.entity,
+      match: unwrapped.match as EntityVariantMatch | undefined,
+      nomination: unwrapped.nomination,
+      electionSymbol: elSym,
+      action: effectiveAction,
+      questions: qs,
+      showSubMatches: showSM,
+      subcards: scs,
+      subcardsMax: scsMaxOverride,
+      allianceSummary
+    };
+  });
 
   ////////////////////////////////////////////////////////////////////
   // Event handlers
   ////////////////////////////////////////////////////////////////////
 
   /** Used to toggle expansion of the subcards list */
-  let showAllSubcards = false;
+  let showAllSubcards = $state(false);
 
   function handleSubcardsToggle(): void {
     showAllSubcards = !showAllSubcards;
-    if (showAllSubcards) startEvent('entityCard_expandSubcards', { length: subcards?.length ?? 0 });
+    if (showAllSubcards) startEvent('entityCard_expandSubcards', { length: parsed.subcards?.length ?? 0 });
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -154,29 +206,33 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   ////////////////////////////////////////////////////////////////////
 
   const gridClasses = 'grid gap-md';
-  let classes = `vaa-card relative ${gridClasses}`;
-  if (variant !== 'subcard') {
-    classes += ' rounded-md bg-base-100 px-md py-16';
-    if (action) classes += ' text-neutral transition-shadow ease-in-out hover:shadow-xl';
-  }
+  const classes = $derived.by(() => {
+    let c = `vaa-card relative ${gridClasses}`;
+    if (variant !== 'subcard') {
+      c += ' rounded-md bg-base-100 px-md py-16';
+      if (parsed.action) c += ' text-neutral transition-shadow ease-in-out hover:shadow-xl';
+    }
+    return c;
+  });
 </script>
 
 <!-- If there are no subcards, we make the whole card clickable... -->
 <EntityCardAction
-  action={variant === 'details' || subcards?.length ? false : action}
+  action={variant === 'details' || parsed.subcards?.length ? false : parsed.action}
   shadeOnHover={variant === 'subcard'}>
   <article
-    aria-labelledby="{baseId}_title {match ? `${baseId}_callout` : ''}"
+    aria-labelledby="{baseId}_title {parsed.match ? `${baseId}_callout` : ''}"
     aria-describedby="{baseId}_subtitle"
-    {...concatClass($$restProps, classes)}>
+    data-testid={variant === 'subcard' ? 'entity-card-subcard' : 'entity-card'}
+    {...concatClass(restProps, classes)}>
     <!-- Card header -->
     <!-- ...but if subcards are present, only the card header is clickable -->
     <EntityCardAction
-      action={variant !== 'details' && subcards?.length ? action : false}
+      action={variant !== 'details' && parsed.subcards?.length ? parsed.action : false}
       shadeOnHover
       class={gridClasses}>
       <header
-        class="grid items-center justify-items-start gap-x-md gap-y-xs"
+        class="gap-x-md gap-y-xs grid items-center justify-items-start"
         style="
           grid-template-columns: auto 1fr auto;
           grid-template-rows: 1fr auto;
@@ -186,63 +242,81 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
           ">
         <!-- Avatar -->
         <Avatar
-          entity={nakedEntity}
+          entity={parsed.nakedEntity}
           linkFullImage={variant === 'details'}
           size={variant === 'subcard' ? 'sm' : undefined}
           style="grid-area: avatar" />
 
         <!-- Title -->
-        <div class="grid grid-flow-col items-center gap-sm" style="grid-area: title">
+        <div class="gap-sm grid grid-flow-col items-center" style="grid-area: title" data-testid="entity-card-title">
           <svelte:element this={variant === 'subcard' ? 'h4' : 'h3'} id="{baseId}_title">
-            {nakedEntity.name}
+            {parsed.nakedEntity.name}
           </svelte:element>
-          {#if variant === 'subcard' && electionSymbol}
-            <ElectionSymbol text={electionSymbol} />
+          {#if variant === 'subcard' && parsed.electionSymbol}
+            <ElectionSymbol text={parsed.electionSymbol} />
           {/if}
         </div>
 
         <!-- Subtitle -->
-        <div id="{baseId}_subtitle" class="grid grid-flow-col items-center gap-sm" style="grid-area: subtitle">
+        <div id="{baseId}_subtitle" class="gap-sm grid grid-flow-col items-center" style="grid-area: subtitle">
           {#if variant !== 'subcard'}
-            {#if nomination?.parentNomination}
-              <EntityTag entity={nomination.parentNomination} variant="short" />
+            {#if parsed.nomination?.parentNomination}
+              <EntityTag entity={parsed.nomination.parentNomination} variant="short" />
             {/if}
-            {#if electionSymbol}
-              <ElectionSymbol text={electionSymbol} />
+            {#if parsed.electionSymbol}
+              <ElectionSymbol text={parsed.electionSymbol} />
             {/if}
-            {#if showElection && nomination?.election && nomination?.constituency}
+            {#if showElection && parsed.nomination?.election && parsed.nomination?.constituency}
               <span>
-                {nomination.election.shortName}
-                {$t('common.multipleAnswerSeparator')}
-                {nomination.constituency.name}
+                {parsed.nomination.election.shortName}
+                {t('common.multipleAnswerSeparator')}
+                {parsed.nomination.constituency.name}
               </span>
             {/if}
           {/if}
         </div>
 
         <!-- Callout (Match) -->
-        {#if match}
+        {#if parsed.match}
           <MatchScore
             id="{baseId}_callout"
-            score={match.score}
+            score={parsed.match.score}
             showLabel={variant !== 'subcard'}
             style="grid-area: callout" />
         {/if}
       </header>
 
+      <!-- Alliance summary line (see phase 69): "X candidates across N parties" -->
+      <!-- Composed from 3 keys to work around an inlang plugin-message-format dual-selector compile bug. -->
+      {#if parsed.allianceSummary}
+        <p class="text-secondary text-sm">
+          {t('results.alliance.summary.template', {
+            candidates: t('results.alliance.summary.candidates', {
+              numCandidates: parsed.allianceSummary.numCandidates
+            }),
+            parties: t('results.alliance.summary.parties', {
+              numParties: parsed.allianceSummary.numParties
+            })
+          })}
+        </p>
+      {/if}
+
       <!-- Submatches -->
-      {#if variant !== 'subcard' && match?.subMatches?.length && showSubMatches}
-        <SubMatches matches={match.subMatches} variant={variant === 'details' ? 'loose' : undefined} class="mt-6" />
+      {#if variant !== 'subcard' && parsed.match?.subMatches?.length && parsed.showSubMatches}
+        <SubMatches
+          matches={parsed.match.subMatches}
+          variant={variant === 'details' ? 'loose' : undefined}
+          class="mt-6" />
       {/if}
 
       <!-- Featured questions and answers -->
-      {#if questions?.length}
-        <div class="grid items-start gap-md" style="grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));">
-          {#each questions as { question, hideLabel, format }}
-            {@const answer = nakedEntity.getAnswer(question)}
+      {#if parsed.questions?.length}
+        <div class="gap-md grid items-start" style="grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));">
+          {#each parsed.questions as { question, hideLabel, format }}
+            {@const answer = parsed.nakedEntity.getAnswer(question)}
             <!-- If `hideLabel` is true and we don't have an answer, we don't want to show anything -->
             {#if !hideLabel || answer != null}
-              <div class="grid gap-xs">
+              <div class="gap-xs grid">
                 {#if !hideLabel}
                   <div class="small-label text-left">
                     {question.shortName}
@@ -259,36 +333,36 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     </EntityCardAction>
 
     <!-- Subentities -->
-    {#if subcards?.length}
-      <!-- TODO[Svelte 5]: this currently leaves an unseemly empty gap even if there's no content, because the tag will still contain whitespace. With Svelte 5, this is supposed to be automatically fixed. -->
-      <div class="mt-md grid gap-lg empty:mt-0">
-        {#each subcards.slice(0, showAllSubcards ? undefined : maxSubcards) as ecProps}
-          <svelte:self variant="subcard" {...concatClass(ecProps, 'offset-border')} />
+    {#if parsed.subcards?.length}
+      <div class="mt-md gap-lg grid empty:mt-0">
+        {#each parsed.subcards.slice(0, showAllSubcards ? undefined : (parsed.subcardsMax ?? maxSubcards)) as ecProps}
+          <EntityCard variant="subcard" {...concatClass(ecProps, 'offset-border')} />
         {/each}
-        {#if subcards.length > maxSubcards}
-          <div class="offset-border relative -my-md after:!top-0">
+        {#if parsed.subcards.length > (parsed.subcardsMax ?? maxSubcards)}
+          <div class="offset-border -my-md relative after:!top-0">
             <Button
-              on:click={handleSubcardsToggle}
+              onclick={handleSubcardsToggle}
               variant="secondary"
               color="secondary"
               class="max-w-none"
               text={showAllSubcards
-                ? $t('entityCard.hideAllCandidates')
-                : $t('entityCard.showAllCandidates', {
-                    numCandidates: subcards.length
+                ? t('entityCard.hideAllCandidates')
+                : t('entityCard.showAllCandidates', {
+                    numCandidates: parsed.subcards.length
                   })} />
           </div>
         {/if}
       </div>
     {/if}
 
-    <slot />
+    {@render children?.()}
   </article>
 </EntityCardAction>
 
 <style lang="postcss">
+  @reference "../../../tailwind-theme.css";
   .offset-border {
     /* after: is a valid prefix */
-    @apply after:absolute after:left-0 after:right-0 after:top-[calc(-10rem/16)] after:border-t-md after:border-base-300 after:content-[''];
+    @apply after:border-t-md after:border-base-300 after:absolute after:top-[calc(-10rem/16)] after:right-0 after:left-0 after:content-[''];
   }
 </style>

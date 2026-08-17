@@ -56,11 +56,11 @@ export type BindableVideoProps = {
   /**
    * Bindable: Whether the video is at the end (with a small margin)
    */
-  readonly atEnd?: boolean;
+  atEnd?: boolean;
   /**
    * Bindable: Whether the video or the transcript is visible.
    */
-  readonly mode?: VideoMode;
+  mode?: VideoMode;
 };
 
 /**

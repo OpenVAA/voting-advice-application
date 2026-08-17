@@ -19,17 +19,14 @@ Preview component displaying all available input types.
   import { Input } from '.';
   import type { PreviewAllInputsProps } from './PreviewAllInputs.type';
 
-  type $$Props = PreviewAllInputsProps;
-
-  export let info: $$Props['info'] = undefined;
-  export let locked: $$Props['locked'] = false;
+  let { info, locked = false, ..._restProps }: PreviewAllInputsProps = $props();
 
   function onChange(value: unknown) {
     console.info('New value:', value);
   }
 </script>
 
-<div class="mb-[10rem] flex w-[30rem] flex-col gap-md">
+<div class="gap-md mb-[10rem] flex w-[30rem] flex-col">
   <Input type="text" label="Text" placeholder="This is a placeholder" {onChange} {locked} {info} />
 
   <Input

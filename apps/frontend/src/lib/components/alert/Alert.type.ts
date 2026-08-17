@@ -1,7 +1,16 @@
+import type { Snippet } from 'svelte';
 import type { SvelteHTMLElements } from 'svelte/elements';
 import type { IconName } from '../icon';
 
-export type AlertProps = SvelteHTMLElements['dialog'] & {
+export type AlertProps = SvelteHTMLElements['div'] & {
+  /**
+   * The content of the alert.
+   */
+  children?: Snippet;
+  /**
+   * The action buttons to display.
+   */
+  actions?: Snippet;
   /**
    * The title of the alert
    */
@@ -15,11 +24,15 @@ export type AlertProps = SvelteHTMLElements['dialog'] & {
    */
   autoOpen?: boolean;
   /**
-   * Bind to this to get the alert's open state.
+   * Whether the alert is open.
    */
-  readonly isOpen?: boolean;
+  isOpen?: boolean;
   /**
    * The callback triggered when the alert is closed.
    */
   onClose?: () => void;
+  /**
+   * The callback triggered when the alert is opened.
+   */
+  onOpen?: () => void;
 };

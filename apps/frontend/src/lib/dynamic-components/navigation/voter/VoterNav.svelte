@@ -20,95 +20,88 @@ A template part that outputs the navigation menu for the Voter App for use in `L
 
 ```tsx
 <VoterNav>
-  <NavItem href={$getRoute('Home')} icon="home" text={$t('common.home')} />
+  <NavItem href={getRoute.current('Home')} icon="home" text={t('common.home')} />
 </VoterNav>
 ```
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
   import { NavGroup, Navigation, NavItem } from '$lib/dynamic-components/navigation';
   import { LanguageSelection } from '../languages';
   import type { VoterNavProps } from './VoterNav.type';
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  type $$Props = VoterNavProps;
+  let { onKeyboardFocusOut, ...restProps }: VoterNavProps = $props();
 
-  const { navigation } = getLayoutContext(onDestroy);
+  const { navigation } = getLayoutContext();
 
-  const {
-    appSettings,
-    constituenciesSelectable,
-    electionsSelectable,
-    getRoute,
-    openFeedbackModal,
-    resetVoterData,
-    resultsAvailable,
-    selectedElections: elections,
-    selectedConstituencies: constituencies,
-    surveyLink,
-    t
-  } = getVoterContext();
+  // see phase 61 voter-side parallel fix: reactive context getters
+  // (constituenciesSelectable, electionsSelectable, resultsAvailable,
+  // selectedElections, selectedConstituencies) are read via voterCtx.X.
+  const voterCtx = getVoterContext();
+  // `appSettings` is a bare reactive accessor (see phase 113) — read via
+  // voterCtx.X / $derived, never destructure (destructuring captures the mount-time
+  // snapshot and freezes when mergeAppSettings returns a new object). Stable members
+  // (getRoute, openFeedbackModal, resetVoterData, surveyLink, t) destructure safely.
+  const { getRoute, openFeedbackModal, resetVoterData, surveyLink, t } = voterCtx;
+  const appSettings = $derived(voterCtx.appSettings);
+  const elections = $derived(voterCtx.selectedElections);
+  const constituencies = $derived(voterCtx.selectedConstituencies);
 </script>
 
-<Navigation on:keyboardFocusOut {...$$restProps}>
-  <NavItem
-    on:click={navigation.close}
-    icon="close"
-    text={$t('common.closeMenu')}
-    class="pt-16"
-    id="drawerCloseButton" />
+<Navigation {onKeyboardFocusOut} {...restProps}>
+  <NavItem onclick={navigation.close} icon="close" text={t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
   <NavGroup>
-    <NavItem href={$getRoute('Home')} icon="home" text={$t('common.home')} />
+    <NavItem href={getRoute.current('Home')} icon="home" text={t('common.home')} />
     <!-- Elections are selected either before or after constituencies depending on `startFromConstituencyGroup` -->
-    {#if $electionsSelectable && !$appSettings.elections?.startFromConstituencyGroup}
-      <NavItem href={$getRoute('Elections')} icon="election" text={$t('elections.title')} />
+    {#if voterCtx.electionsSelectable && !appSettings.elections?.startFromConstituencyGroup}
+      <NavItem href={getRoute.current('Elections')} icon="election" text={t('elections.title')} />
     {/if}
-    {#if $constituenciesSelectable}
+    {#if voterCtx.constituenciesSelectable}
       <NavItem
-        disabled={!$appSettings.elections?.startFromConstituencyGroup && !$elections.length}
-        href={$getRoute('Constituencies')}
+        disabled={!appSettings.elections?.startFromConstituencyGroup && !elections.length}
+        href={getRoute.current('Constituencies')}
         icon="constituency"
-        text={$t('constituencies.title')} />
+        text={t('constituencies.title')} />
     {/if}
-    {#if $electionsSelectable && $appSettings.elections?.startFromConstituencyGroup}
+    {#if voterCtx.electionsSelectable && appSettings.elections?.startFromConstituencyGroup}
       <NavItem
-        disabled={!$constituencies.length}
-        href={$getRoute('Elections')}
+        disabled={!constituencies.length}
+        href={getRoute.current('Elections')}
         icon="election"
-        text={$t('elections.title')} />
+        text={t('elections.title')} />
     {/if}
     <NavItem
-      disabled={!($elections.length && $constituencies.length)}
-      href={$getRoute('Questions')}
+      disabled={!(elections.length && constituencies.length)}
+      href={getRoute.current('Questions')}
       icon="opinion"
-      text={$t('questions.title')} />
+      text={t('questions.title')} />
     <NavItem
-      disabled={!($elections.length && $constituencies.length)}
-      href={$getRoute('Results')}
+      disabled={!(elections.length && constituencies.length)}
+      href={getRoute.current('Results')}
       icon="results"
-      text={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')} />
+      text={voterCtx.resultsAvailable ? t('results.title.results') : t('results.title.browse')}
+      data-testid="voter-nav-results" />
   </NavGroup>
   <NavGroup>
-    <NavItem on:click={() => resetVoterData()} icon="close" text={$t('common.resetAnswers')} />
+    <NavItem onclick={() => resetVoterData()} icon="close" text={t('common.resetAnswers')} />
   </NavGroup>
   <NavGroup>
-    <NavItem href={$getRoute('Info')} icon="election" text={$t('info.title')} />
-    <NavItem href={$getRoute('About')} icon="info" text={$t('about.title')} />
-    {#if $appSettings.entities.showAllNominations}
-      <NavItem href={$getRoute('Nominations')} icon="search" text={$t('dynamic.nominations.title')} />
+    <NavItem href={getRoute.current('Info')} icon="election" text={t('info.title')} />
+    <NavItem href={getRoute.current('About')} icon="info" text={t('about.title')} />
+    {#if appSettings.entities.showAllNominations}
+      <NavItem href={getRoute.current('Nominations')} icon="search" text={t('dynamic.nominations.title')} />
     {/if}
-    <NavItem href={$getRoute('Privacy')} icon="privacy" text={$t('privacy.title')} />
+    <NavItem href={getRoute.current('Privacy')} icon="privacy" text={t('privacy.title')} />
   </NavGroup>
-  {#if $appSettings.survey?.showIn?.includes('navigation') || $openFeedbackModal}
+  {#if appSettings.survey?.showIn?.includes('navigation') || openFeedbackModal.current}
     <NavGroup>
-      {#if $appSettings.survey?.showIn?.includes('navigation')}
-        <NavItem href={$surveyLink} target="_blank" icon="research" text={$t('dynamic.survey.button')} />
+      {#if appSettings.survey?.showIn?.includes('navigation')}
+        <NavItem href={surveyLink.current} target="_blank" icon="research" text={t('dynamic.survey.button')} />
       {/if}
-      {#if $openFeedbackModal}
-        <NavItem on:click={$openFeedbackModal} icon="feedback" text={$t('feedback.send')} />
+      {#if openFeedbackModal.current}
+        <NavItem onclick={openFeedbackModal.current} icon="feedback" text={t('feedback.send')} />
       {/if}
     </NavGroup>
   {/if}

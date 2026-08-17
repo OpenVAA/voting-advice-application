@@ -21,8 +21,4 @@ export type PasswordFieldProps = SvelteHTMLElements['div'] & {
    * Whether the label is outside the component and should not be rendered inside. @default false
    */
   externalLabel?: boolean;
-  /**
-   * Bindable: Function to set focus to the password input.
-   */
-  focus?: () => void;
 };

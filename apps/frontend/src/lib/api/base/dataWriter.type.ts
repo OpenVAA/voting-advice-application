@@ -175,7 +175,9 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
 
   ////////////////////////////////////////////////////////////////////
   // Setting data owned by the user
-  // NB. All setters return the whole updated entity data for synchronization.
+  // NB. The answer setters (`updateAnswers`/`overwriteAnswers`) return only the
+  // updated `LocalizedAnswers` map for synchronization, while the property setter
+  // (`updateEntityProperties`) returns the whole updated `LocalizedCandidateData`.
   ////////////////////////////////////////////////////////////////////
 
   /**
@@ -184,18 +186,18 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * @param target.type - The type of the entity.
    * @param target.id - The id of the entity.
    * @param answers - A `LocalizedAnswers` object containing the answers to update.
-   * @returns A `Promise` resolving the updated `LocalizedCandidateData` object or a `Response` containing one.
+   * @returns A `Promise` resolving the updated `LocalizedAnswers` for the entity or a `Response` containing them.
    */
-  updateAnswers: (opts: SetAnswersOptions) => DWReturnType<LocalizedCandidateData, TType>;
+  updateAnswers: (opts: SetAnswersOptions) => DWReturnType<LocalizedAnswers, TType>;
   /**
    * Overwrite the whole `answers` property of an entity owned by the user.
    * @param authToken - The authorization token.
    * @param target.type - The type of the entity.
    * @param target.id - The id of the entity.
    * @param answers - A `LocalizedAnswers` object containing the new `answers`.
-   * @returns A `Promise` resolving the updated `LocalizedCandidateData` object or a `Response` containing one.
+   * @returns A `Promise` resolving the updated `LocalizedAnswers` for the entity or a `Response` containing them.
    */
-  overwriteAnswers: (opts: SetAnswersOptions) => DWReturnType<LocalizedCandidateData, TType>;
+  overwriteAnswers: (opts: SetAnswersOptions) => DWReturnType<LocalizedAnswers, TType>;
   /**
    * Update any editable properties of an entity owned by the user.
    * @param authToken - The authorization token.
@@ -386,7 +388,7 @@ export type WithUserSettings = {
 };
 
 /**
- * A temporary type for setting `Question` data, which will be updated later to allow for setting all properties. It currently supports only those `customData` properties that are not stored as their own fields in Strapi.
+ * A temporary type for setting `Question` data, which will be updated later to allow for setting all properties. It currently supports only `customData` properties.
  */
 export type TemporarySetQuestionData = {
   customData: {

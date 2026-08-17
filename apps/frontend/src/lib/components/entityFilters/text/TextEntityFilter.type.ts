@@ -7,7 +7,7 @@ export type TextEntityFilterProps = SvelteHTMLElements['div'] & {
    */
   filter: TextFilter<MaybeWrappedEntityVariant>;
   /**
-   * The placeholder text. @default $t('components.entityFilters.text.placeholder')
+   * The placeholder text. @default t('components.entityFilters.text.placeholder')
    */
   placeholder?: string;
   /**

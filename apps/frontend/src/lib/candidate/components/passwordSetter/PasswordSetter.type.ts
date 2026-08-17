@@ -1,6 +1,6 @@
 import type { SvelteHTMLElements } from 'svelte/elements';
 
-export type PasswordSetterProps = SvelteHTMLElements['form'] & {
+export type PasswordSetterProps = Omit<SvelteHTMLElements['form'], 'autocomplete'> & {
   /**
    * Bindable: The password value.
    */
@@ -17,8 +17,4 @@ export type PasswordSetterProps = SvelteHTMLElements['form'] & {
    * Bindable: Whether the password is valid and the confirmation password matches.
    */
   valid?: boolean;
-  /**
-   * Bindable: Function to clear the form.
-   */
-  reset?: () => void;
 };

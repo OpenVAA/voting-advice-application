@@ -24,29 +24,29 @@ popupQueue.push({
   import type { Route } from '$lib/utils/route';
   import type { PreregisteredNotificationProps } from './PreregisteredNotification.type';
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  type $$Props = PreregisteredNotificationProps;
+  let { ...restProps }: PreregisteredNotificationProps = $props();
 
   const { getRoute, t } = getAppContext();
 
-  let closeAlert: () => void;
+  let alertRef: Alert;
 
-  const title = $t('candidateApp.preregister.isPreregisteredNotification.title');
-  const content = $t('candidateApp.preregister.isPreregisteredNotification.content');
+  const title = t('candidateApp.preregister.isPreregisteredNotification.title');
+  const content = t('candidateApp.preregister.isPreregisteredNotification.content');
 
   function handleClick(route: Route): void {
-    closeAlert();
-    goto($getRoute(route));
+    alertRef?.closeAlert();
+    goto(getRoute.current(route));
   }
 </script>
 
-<Alert bind:closeAlert {title} icon="login" {...$$restProps}>
-  <div class="grid grid-flow-row gap-md">
+<!-- bind: keep — single ref alertRef read in handleClick (Svelte 5 discussion #15979) -->
+<Alert bind:this={alertRef} {title} icon="login" {...restProps}>
+  <div class="gap-md grid grid-flow-row">
     <h3>{title}</h3>
     {@html sanitizeHtml(content)}
   </div>
-  <svelte:fragment slot="actions">
-    <Button on:click={() => handleClick('CandAppLogin')} text={$t('common.login')} variant="main" class="mb-md" />
-    <Button on:click={() => handleClick('CandAppForgotPassword')} text={$t('candidateApp.login.forgotPassword')} />
-  </svelte:fragment>
+  {#snippet actions()}
+    <Button onclick={() => handleClick('CandAppLogin')} text={t('common.login')} variant="main" class="mb-md" />
+    <Button onclick={() => handleClick('CandAppForgotPassword')} text={t('candidateApp.login.forgotPassword')} />
+  {/snippet}
 </Alert>

@@ -19,21 +19,15 @@ Used when the application has multiple elections and question may apply to only 
 -->
 
 <script lang="ts">
-  import { concatProps } from '$lib/utils/components';
+  import { concatClass } from '$lib/utils/components';
   import type { ElectionTagProps } from './ElectionTag.type';
 
-  type $$Props = ElectionTagProps;
-
-  export let election: $$Props['election'];
-  export let variant: $$Props['variant'] = 'short';
-  export let onShadedBg: $$Props['onShadedBg'] = undefined;
+  let { election, variant = 'short', onShadedBg, ...restProps }: ElectionTagProps = $props();
 
   // Create styles
-  let classes: string;
-  let styles: string;
-  $: {
-    classes = `tag ${onShadedBg ? 'bg-base-100' : 'bg-base-200'}`;
-    styles = '';
+  let tagStyles = $derived.by(() => {
+    let classes = `tag ${onShadedBg ? 'bg-base-100' : 'bg-base-200'}`;
+    let styles = '';
     if (election.color?.normal) {
       styles += ` --tag-color: ${election.color.normal};`;
       classes += ' text-[var(--tag-color)]';
@@ -42,13 +36,10 @@ Used when the application has multiple elections and question may apply to only 
       styles += ` --tag-color-dark: ${election.color.dark};`;
       classes += ' dark:text-[var(--tag-color-dark)]';
     }
-  }
+    return { classes, styles };
+  });
 </script>
 
-<span
-  {...concatProps($$restProps, {
-    class: classes,
-    style: styles
-  })}>
+<span {...concatClass(restProps, tagStyles.classes)} style={tagStyles.styles} data-testid="election-tag">
   {variant === 'full' ? election.name : election.shortName}
 </span>

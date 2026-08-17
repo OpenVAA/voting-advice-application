@@ -18,13 +18,17 @@ export type FeedbackProps = SvelteHTMLElements['form'] & {
    */
   readonly status?: SendingStatus;
   /**
-   * Submit the feedback or close the modal if it's already been submitted.
+   * Callback fired when the user clicks the cancel button or after submitting/error, indicating that the form should close.
    */
-  readonly submit?: () => Promise<void>;
+  onCancel?: () => void;
   /**
-   * Reset the form so that if the user opens it again, they can fill new feedback. You should call this when closing any modal containing the feedback.
+   * Callback fired when there is an error sending the feedback.
    */
-  readonly reset?: () => void;
+  onError?: () => void;
+  /**
+   * Callback fired when the feedback is successfully sent.
+   */
+  onSent?: () => void;
 };
 
 /**

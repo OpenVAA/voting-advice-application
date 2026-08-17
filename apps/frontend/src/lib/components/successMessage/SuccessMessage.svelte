@@ -5,7 +5,7 @@ Used to display a message when an action succeeds.
 ### Properties
 
 - `inline`: Whether to show an inline version of the message. By default the message tries to center itself in the available area and displays a large emoji. Default: `false`
-- `message`: The message to display. Default: `$t('common.success')`
+- `message`: The message to display. Default: `t('common.success')`
 - Any valid attributes of a `<div>` element.
 
 ### Usage
@@ -22,34 +22,34 @@ Used to display a message when an action succeeds.
   import { HeroEmoji } from '../heroEmoji';
   import type { SuccessMessageProps } from './SuccessMessage.type';
 
-  type $$Props = SuccessMessageProps;
-
-  export let inline: $$Props['inline'] = false;
-  export let message: $$Props['message'] = undefined;
+  let { inline = false, message, ...restProps }: SuccessMessageProps = $props();
 
   const { t } = getComponentContext();
 
-  message ||= $t('common.success');
-  const emoji = $t('dynamic.success.heroEmoji');
+  // Derived effective message so the prop isn't reassigned (Svelte 5).
+  const effectiveMessage = $derived(message || t('common.success'));
+  const emoji = t('dynamic.success.heroEmoji');
 
   ////////////////////////////////////////////////////////////////////
   // Styling
   ////////////////////////////////////////////////////////////////////
 
-  const classes = inline
-    ? 'inline-flex flex-row align-bottom gap-sm'
-    : 'flex flex-col items-center justify-center h-full w-full gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg';
+  const classes = $derived(
+    inline
+      ? 'inline-flex flex-row align-bottom gap-sm'
+      : 'flex flex-col items-center justify-center h-full w-full gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg'
+  );
 </script>
 
-<div {...concatClass($$restProps, classes)}>
+<div {...concatClass(restProps, classes)}>
   {#if inline}
-    <span class="text-center text-success">{emoji} {message}</span>
+    <span class="text-success text-center">{emoji} {effectiveMessage}</span>
   {:else}
     {#if emoji}
       <figure role="presentation" class="my-lg">
         <HeroEmoji {emoji} />
       </figure>
     {/if}
-    <h2 class="text-center text-success">{message}</h2>
+    <h2 class="text-success text-center">{effectiveMessage}</h2>
   {/if}
 </div>

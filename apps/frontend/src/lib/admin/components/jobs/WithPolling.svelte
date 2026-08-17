@@ -14,15 +14,20 @@ TODO[Svelte 5]: Count subscriptions to stores (or $states) and automatically sta
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onMount } from 'svelte';
   import { getAdminContext } from '$lib/contexts/admin';
+  import type { Snippet } from 'svelte';
+
+  let { children }: { children: Snippet } = $props();
 
   const {
     jobs: { startPolling, stopPolling }
   } = getAdminContext();
 
-  startPolling();
-  onDestroy(() => stopPolling());
+  onMount(() => {
+    startPolling();
+    return () => stopPolling();
+  });
 </script>
 
-<slot />
+{@render children?.()}

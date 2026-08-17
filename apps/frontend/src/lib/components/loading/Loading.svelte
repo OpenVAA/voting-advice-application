@@ -5,7 +5,7 @@ Used to display a loading spinner with an optionally visible text label.
 ### Properties
 
 - `inline`: Whether to show an inline version of the spinner. By default the spinner tries to center itself in the available area. Default: `false`
-- `label`: The label text. Default: `$t('common.loading')`
+- `label`: The label text. Default: `t('common.loading')`
 - `showLabel`: Whether to show the text label. The label will always be shown to screen readers. Default: `false`
 - `size`: The size of the loading spinner. Default: `'lg'`
 - Any valid attributes of a `<div>` element.
@@ -24,12 +24,7 @@ Used to display a loading spinner with an optionally visible text label.
   import { concatClass } from '$lib/utils/components';
   import type { LoadingProps } from './Loading.type';
 
-  type $$Props = LoadingProps;
-
-  export let inline: $$Props['inline'] = false;
-  export let label: $$Props['label'] = undefined;
-  export let showLabel: $$Props['showLabel'] = false;
-  export let size: $$Props['size'] = undefined;
+  let { inline = false, label, showLabel = false, size, ...restProps }: LoadingProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -41,28 +36,33 @@ Used to display a loading spinner with an optionally visible text label.
   // Styling
   ////////////////////////////////////////////////////////////////////
 
-  let classes = 'text-secondary ';
-  classes += inline
-    ? 'inline-flex flex-row align-bottom gap-sm'
-    : 'flex flex-col items-center justify-center h-full w-full gap-md';
-  let spinnerClass = 'loading loading-spinner ';
-  switch (size) {
-    case 'xs':
-      spinnerClass += 'loading-xs';
-      break;
-    case 'sm':
-      spinnerClass += 'loading-sm';
-      break;
-    case 'md':
-      spinnerClass += 'loading-md';
-      break;
-    case 'lg':
-    default:
-      spinnerClass += 'loading-lg';
-  }
+  const classes = $derived(
+    'text-secondary ' +
+      (inline
+        ? 'inline-flex flex-row align-bottom gap-sm'
+        : 'flex flex-col items-center justify-center h-full w-full gap-md')
+  );
+  const spinnerClass = $derived.by(() => {
+    let cls = 'loading loading-spinner ';
+    switch (size) {
+      case 'xs':
+        cls += 'loading-xs';
+        break;
+      case 'sm':
+        cls += 'loading-sm';
+        break;
+      case 'md':
+        cls += 'loading-md';
+        break;
+      case 'lg':
+      default:
+        cls += 'loading-lg';
+    }
+    return cls;
+  });
 </script>
 
-<div {...concatClass($$restProps, classes)}>
-  <span class={spinnerClass} />
-  <span class="text-center" class:sr-only={!showLabel}>{label ?? $t('common.loading')}</span>
+<div data-testid="loading-indicator" {...concatClass(restProps, classes)}>
+  <span class={spinnerClass}></span>
+  <span class="text-center" class:sr-only={!showLabel}>{label ?? t('common.loading')}</span>
 </div>

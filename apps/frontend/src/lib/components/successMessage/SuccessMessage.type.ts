@@ -6,7 +6,7 @@ export type SuccessMessageProps = SvelteHTMLElements['div'] & {
    */
   inline?: boolean;
   /**
-   * The message to display. @default `$t('common.success')`
+   * The message to display. @default `t('common.success')`
    */
   message?: string | null;
 };
