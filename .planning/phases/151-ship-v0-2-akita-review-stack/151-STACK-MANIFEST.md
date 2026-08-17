@@ -43,16 +43,16 @@ pr_860_decision: repurpose-at-151-18
 
 # --- plan 151-17: the last slice cut; the stack is complete and byte-identical ---
 slices_cut_all_twelve: true
-slice_11_sha: 6f04fa02313b60b7447a7262a0e05a3091a7cb12
-slice_11_files: 2324
-slice_11_insertions: 879826
+slice_11_sha: 384e7b40ac7823e716fa234be0a148d7ec220001  # re-cut after the S-07 redaction; 6f04fa023 was the pre-redaction cut
+slice_11_files: 2325
+slice_11_insertions: 880314
 slice_11_deletions: 104
-cut_target_sha_151_17: 1ab69a32b868e5b8d39e155b369ec0dbf908fa07
-cut_target_tree_151_17: 291cc9a563603b0ef45f084f759fe146d521456a
-partition_total_files_at_151_17: 4507
+cut_target_sha_151_17: 96a16d7fe  # the redaction commit; the pre-redaction cut was at 1ab69a32b
+cut_target_tree_151_17: d94708d0d995ab2f00493ce53800c7530a68c992
+partition_total_files_at_151_17: 4508
 final_catchall_files: 0
 full_stack_identity_verified: true
-criterion_4_1_satisfied_by: 6f04fa02313b60b7447a7262a0e05a3091a7cb12
+criterion_4_1_satisfied_by: 384e7b40ac7823e716fa234be0a148d7ec220001
 taxonomy_c1_to_tip: CONFORMING
 taxonomy_whole_stack_shared_paths: 628   # rename-aware, the gate's own extraction; 682 under --no-renames
 slice_11_must_be_recut_before_push: true # this plan, 151-18 and 151-19 all write .planning/ files
@@ -114,7 +114,7 @@ later plan — only its cells.
 | 08 | 9 | `ship/v0.2-akita-08-i18n-messages` | `feat: add the Paraglide message catalogues for every supported locale` | **330** | **8986** | 0 | **files > 300** — 47 messages × 7 locales, one shape, plus the catalogue README | `6a810df8a` | [#871](https://github.com/OpenVAA/voting-advice-application/pull/871) |
 | 09 | 10 | `ship/v0.2-akita-09-docs` | `docs: update the project documentation - the docs site, the root README and roadmap, and the key-generation guide` | **152** | **777** | **347** | ok — 152 files, 1,124 changed lines, inside both caps; GitHub renders the same triple (no rename detection: `2 A / 150 M`) | `2865b05b3` | [#872](https://github.com/OpenVAA/voting-advice-application/pull/872) |
 | 10 | 11 | `ship/v0.2-akita-10-root-config` | `chore: update the monorepo and frontend-app build, lint, CI and deployment plumbing` | **129** | **8662** | **27267** | **lines > 20k** — `yarn.lock` alone accounts for most of it; the +90 files are the F-15 Option-2 deletions | `3aa503741` | pending (opens at 151-17, per D-07) |
-| 11 | 12 | `ship/v0.2-akita-11-planning` | `docs[planning]: add the v0.2 planning record and agent configuration` | **2324** | **879826** | **104** | **files > 300 and lines > 20k** — unreadable by design (D-12) | `6f04fa023` | pending (opens at 151-18, after the identity proof and the D-24 suite gate) |
+| 11 | 12 | `ship/v0.2-akita-11-planning` | `docs[planning]: add the v0.2 planning record and agent configuration` | **2325** | **880314** | **104** | **files > 300 and lines > 20k** — unreadable by design (D-12) | `384e7b40a` | pending (opens at 151-18, after the identity proof and the D-24 suite gate) |
 
 Pathspecs are **not** duplicated into this table: `slices.tsv` column 4 is the single source, and a
 copy here would be a second source able to drift from it. Reproduce any row's pathspec with
@@ -1354,6 +1354,31 @@ Consequences, stated so they are not rediscovered:
    to slice 11 after it — by this plan, by 151-18, by 151-19 — is **outside that scan's coverage**
    and must be re-scanned before the push. This is stated in the scan record itself as a named
    coverage limit, not left implicit.
+
+### Slice 11 re-cut after the operator's redaction decision
+
+The operator selected **`remove-and-rescan` scoped to S-07** at this plan's checkpoint (see
+`151-SECRET-SCAN.md` § 8). Slice 11 was therefore re-cut after the redaction landed:
+
+| | first cut | re-cut |
+|---|---|---|
+| commit | `6f04fa023` | **`384e7b40a`** |
+| files | 2324 | **2325** (`151-SECRET-SCAN.md` joins the slice) |
+| lines | +879,826 / −104 | **+880,314 / −104** |
+| commits in `10..11` | 1 | **1** — criterion 4.1 holds at the new SHA |
+| final catch-all | `files=0` | **`files=0`** |
+| full-stack identity | tree `291cc9a56`, BYTE-IDENTICAL | **tree `d94708d0d`, BYTE-IDENTICAL** |
+| partition arithmetic | 4507, gap 0 | **4508, gap 0** |
+
+**No force-push:** slice 11 has never been pushed, so the re-cut is a local `git branch -f` on an
+unpublished ref. This is the third re-cut in the phase (slices 02 and 08 preceded it) and, like
+those, it was free precisely because D-07's one-slice lag kept the branch unopened.
+
+**The re-cut does not close the staleness; it cannot.** Everything this plan commits after
+`384e7b40a` — `pr-bodies/10.md`, `151-17-SUMMARY.md`, the `STATE.md`/`ROADMAP.md` updates — plus
+everything 151-18 and 151-19 write, again falls outside both the slice and its scan.
+`slice_11_must_be_recut_before_push: true` stays set, and **151-18 owes a final re-cut and a delta
+rescan before it opens PR 11.**
 
 ### Criterion 4.4's proxy across the rename base — the standing instruction from 151-05, discharged
 

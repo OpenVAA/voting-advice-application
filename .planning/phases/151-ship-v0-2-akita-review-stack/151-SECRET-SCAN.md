@@ -2,25 +2,29 @@
 phase: 151-ship-v0-2-akita-review-stack
 plan: 17
 artifact: secret-scan
-scanned_object: "ship/v0.2-akita-11-planning (6f04fa02313b60b7447a7262a0e05a3091a7cb12)"
-scanned_range: "3aa503741425a1df4d528a883f3c294906e96cc4..6f04fa02313b60b7447a7262a0e05a3091a7cb12"
+scanned_object: "ship/v0.2-akita-11-planning (384e7b40ac7823e716fa234be0a148d7ec220001, re-cut after redaction)"
+scanned_object_original: "6f04fa02313b60b7447a7262a0e05a3091a7cb12 (pre-redaction; scanned first)"
+scanned_range: "3aa503741425a1df4d528a883f3c294906e96cc4..384e7b40ac7823e716fa234be0a148d7ec220001"
+rescan: complete
 scanned_at: 2026-08-17
 scanner: "TruffleHog (primary) + gsd-151-17 pattern sweep (independent) + targeted project-shape greps"
 scanner_version: "trufflehog 3.95.2; python 3.9.16; git 2.50.1 (Apple Git-155)"
 ruleset: "TruffleHog default detector set (all detectors, results=verified,unknown,unverified,filtered_unverified) + ruleset gsd-151-17 v1 (24 named rules, listed in full below)"
-files_in_diff: 2324
-files_scanned: 2325
-lines_scanned: 911828
-lines_scanned_corpus_only: 888337
-diff_changed_lines: 879930
+files_in_diff: 2325
+files_scanned: 2326
+lines_scanned: 913140
+lines_scanned_corpus_only: 889649
+diff_changed_lines: 880418
 coverage: superset
 archives_expanded: 2
-findings_total: 14
+findings_total: 15
 findings_live: 0
-findings_accepted: 9
-findings_false_positive: 5
-verdict: pass-with-accepted-findings
-operator_signoff: pending
+findings_accepted: 8
+findings_remediated: 1  # S-07, redacted on the operator's remove-and-rescan decision
+findings_false_positive: 6
+verdict: pass-after-remediation
+operator_signoff: granted-with-required-remediation
+operator_decision: remove-and-rescan (scoped to S-07); remainder approved as recorded
 blocking: true
 ---
 
@@ -137,7 +141,7 @@ findings, and the scan is not reproducible without naming it. It is a credential
 | **S-04** | as S-03 | `…/trace-run-2.zip` (same members) | 351 sites | `base64…[2787 withheld]…V9fQ` | Same class as S-03. `refresh_token` `x37…[7 withheld]…p7`, 12 chars. |
 | **S-05** | sweep `jwt` | 14 occurrences across 4 files (both trace archives, `0-trace.network` + one `.html` resource each) | various | `eyJhbG…[139 withheld]…n_I0` | **The published Supabase CLI demo *anon* key — a public constant, not a credential.** Decoded: `alg HS256`, `iss supabase-demo`, `role anon`, `exp 2032-11-11`. **Decisive evidence: it verifies against Supabase's published local-development signing secret** `super-secret-jwt-token-with-at-least-32-characters-long`, which `supabase start` prints on every developer machine and Supabase documents publicly (HMAC recomputed, signature matched). A cloud project uses a per-project secret, so this token authenticates against nothing deployed. **Already public independently:** the identical token is tracked at `HEAD` in `.env.example`, `apps/supabase/benchmarks/k6/config.js` and `apps/supabase/benchmarks/scripts/run-benchmarks.sh` — the last two shipped in slice 03, **already merged into the public PR #866**. |
 | **S-06** | sweep `apikey-assign`, `supabase-env` | `.planning/milestones/v2.7-phases/67-default-seed-alliances/67-02-PLAN.md` | 166 | `${SUPA…[183 withheld]…81IU` | **The published Supabase CLI demo *service_role* key**, appearing as a shell default: `"apikey: ${SUPABASE_SERVICE_ROLE_KEY:-<demo key>}"` against `http://127.0.0.1:54321`. `iss supabase-demo`, `role service_role`, `exp 2032-11-11`. **Verifies against the same published demo secret** — recomputed and matched. This is the most powerful Supabase role, which is exactly why it was verified cryptographically rather than judged by appearance; being the public demo constant, it grants `service_role` only on an instance configured with the public secret, i.e. a local dev stack. |
-| **S-07** | sweep `password-assign` | `…/trace-run-{1,2}.zip!resources/295c6c0b9d….json` (POST body) + 4 `.planning/` files incl. `79-…/post-fix/rca-traces/registration-rca.spec.ts:152` | 1, and 4 sites | `Prof…[11 withheld]…1!` (17 chars) | **Test-fixture registration password**, POSTed to `http://127.0.0.1:54321/auth/v1/signup?email=test.unregistered2%40openvaa.org`. Used by an RCA capture spec against the local stack. **This one is NOT already public** — it appears only under `.planning/`, in no tracked file outside it. Classified non-live because the account exists only in a local database and no cloud host appears in the corpus. **Residual risk is stated, not hidden — see § 5.** |
+| **S-07** ⟶ **REMEDIATED** | sweep `password-assign` | `…/trace-run-{1,2}.zip!resources/295c6c0b9d….json` (POST body) + 4 `.planning/` files incl. `79-…/post-fix/rca-traces/registration-rca.spec.ts:152` | 1, and 4 sites | `Prof…[11 withheld]…1!` (17 chars) | **Test-fixture registration password**, POSTed to `http://127.0.0.1:54321/auth/v1/signup?email=test.unregistered2%40openvaa.org`. Used by an RCA capture spec against the local stack. **This one is NOT already public** — it appears only under `.planning/`, in no tracked file outside it. Classified non-live because the account exists only in a local database and no cloud host appears in the corpus. **The operator selected `remove-and-rescan` on this finding specifically; it has been redacted and no longer exists in the record — see § 8.** |
 | **S-08** | sweep `password-assign` | 21 `.planning/` files (v1.0, v2.10, v2.14, and this phase's `151-DISPOSITION.md:1272`) | various | `Pass…[4 withheld]…1!` (10 chars) | **A documented public mock-data password, already published twice over.** It is `TEST_CANDIDATE_PASSWORD` at `tests/tests/utils/testCredentials.ts:44` — slice 05, **already public as PR #868** — whose own header comment records that the dataset "is seeded only against a local Supabase instance". It is also printed in the developers' guide at `apps/docs/…/backend/mock-data-generation/+page.md` as the default for `mock.candidate@openvaa.org` — slice 09, **already public as PR #872**. Publishing it again in `.planning/` discloses nothing new. |
 | **S-09** | sweep `db-url-with-creds` | `78-05-PLAN.md:223`, `75-02a-SUMMARY.md:36,79,148`, `67-02-PLAN.md:157` | 5 sites | `postgr…[21 withheld]…res@` | **The documented local Supabase default connection string**, `postgresql://postgres:postgres@127.0.0.1:54322/postgres` — loopback, default port, default credentials that the Supabase CLI creates on every `supabase start`. Quoted inside `psql …` command lines in planning prose. Grants nothing off-host. |
 
@@ -180,7 +184,12 @@ content.
 
 ## 5. What this scan does NOT cover — the claim most likely to be silently false
 
-1. **Anything committed to slice 11 after `6f04fa023`.** Slice 11's pathspec is
+1. ~~**Anything committed to slice 11 after `6f04fa023`.**~~ **CLOSED for everything committed up to
+   `384e7b40a`** by the full rescan in § 8, which re-scanned the whole re-cut publication surface
+   rather than only the delta. The limit *re-opens* for anything plans 151-17 (after this point),
+   151-18 and 151-19 commit; the original text is kept below because the mechanism is permanent.
+
+   **Anything committed to slice 11 after the last rescan.** Slice 11's pathspec is
    `.planning .claude .agents CLAUDE.md`, and *every plan writes `.planning/` files* — including
    this one. This record, `pr-bodies/10.md`, the manifest edits and `151-17-SUMMARY.md` are all
    **outside this scan**, as is everything plans 151-18 and 151-19 write. **Slice 11 must be re-cut
@@ -213,10 +222,12 @@ been reset many times since, and **no cloud Supabase host appears anywhere in th
 What no in-repo measurement can see is whether an account with that email and password exists on a
 deployed staging or production instance. This is the same shape of residual risk the operator
 accepted knowingly for the Capacitor removal, and it is stated here in the same terms so it can be
-objected to on the strength of this text alone. **Recommendation: accept.** The alternative —
-rewriting fifteen milestones of planning history to strip a test password — is disproportionate to a
-fixture that a `db:reset` already invalidated, provided the operator can confirm the credential was
-never reused off-localhost.
+objected to on the strength of this text alone. **The recommendation made here was `accept`. The operator overruled it and selected
+`remove-and-rescan`, and the reasoning was better than the recommendation:** this record had already
+set `slice_11_must_be_recut_before_push: true`, so a re-cut and a delta rescan were mandatory
+regardless — which made the redaction very nearly free, against an unbounded downside that no
+in-repo measurement can bound. The cost argument for `accept` rested on a cost that was already
+being paid. **S-07 is redacted; see § 8.**
 
 ## 6. Ruleset `gsd-151-17` v1 — the 24 rules, verbatim
 
@@ -269,4 +280,110 @@ the forced answer. **The decision is nevertheless the operator's**, and it cover
 
 ---
 
-*Phase: 151-ship-v0-2-akita-review-stack · Plan 17 · scan executed 2026-08-17, before any push*
+## 8. Remediation and rescan — the operator's `remove-and-rescan` decision, executed
+
+**Decision: `remove-and-rescan`, scoped to S-07.** The remainder of the scan was approved as
+recorded. **S-08 was explicitly NOT redacted** — it is already public in `testCredentials.ts`
+(PR #868) and printed in the developers' guide (PR #872), so redacting it would be theatre that
+also desynchronises the planning record from what already ships.
+
+### What was removed
+
+`Prof…[11 withheld]…1!` — 17 characters — existed in **32 places**, and the archives held most of them:
+
+| Location | Occurrences |
+|---|---:|
+| `02-03-PLAN.md`, `79-RESEARCH.md`, `84-RCA-FINDINGS.md`, `registration-rca.spec.ts` (plain files) | 4 |
+| `trace-run-1.zip` — `0-trace.trace` (8), `test.trace` (4), `resources/src@eb3799a6….txt` (1), `resources/295c6c0b9d….json` (1) | 14 |
+| `trace-run-2.zip` — same four members | 14 |
+| **Total** | **32** |
+
+**A grep over the working tree would have reported 4 and been wrong by 28.** The archives are where
+the credential actually lived, and only a scanner that opens containers — or a redaction that does —
+would find them. This is the § 4 lesson recurring inside its own remediation.
+
+Substitution token: **`[REDACTED-S07-17]`, deliberately the same length as the secret**, so the
+trace JSON stays valid and any recorded byte offsets stay correct. Both archives were rebuilt
+member-by-member preserving filename, compression type, timestamp and attributes;
+`zipfile.testzip()` returns OK on each and member counts are unchanged (**69** and **74**).
+
+**One consequence recorded rather than discovered later:** `resources/295c6c0b9d….json` is
+content-addressed — its filename is the sha1 of its content — so after redaction the content no
+longer hashes to its name. The Playwright trace viewer resolves resources by *recorded* name, so
+both archives still load; nothing else in the trace depends on that hash.
+
+### The re-cut
+
+| | before | after |
+|---|---|---|
+| slice 11 commit | `6f04fa023` | **`384e7b40a`** |
+| files | 2324 | **2325** (+`151-SECRET-SCAN.md`) |
+| lines | +879,826 / −104 | **+880,314 / −104** |
+| commits in `10..11` | 1 | **1** (criterion 4.1 holds) |
+| final catch-all | `files=0` | **`files=0`** |
+| full-stack identity | BYTE-IDENTICAL | **BYTE-IDENTICAL**, tree `d94708d0d` |
+
+**No force-push was involved** — slice 11 has never been pushed, so the re-cut is a local
+`git branch -f` on an unpublished ref.
+
+### The rescan — full surface, not just the delta
+
+The delta between the scanned commit and the re-cut was **9 files** (the 6 redactions plus this
+plan's three own artifacts). **The whole publication surface was rescanned anyway**, because
+scanning only a delta would leave the claim "this slice is clean" resting on a previous run of a
+ruleset that had since changed the corpus.
+
+| | first scan | rescan |
+|---|---:|---:|
+| files scanned | 2325 | **2326** |
+| lines scanned (archives expanded) | 911,828 | **913,140** |
+| TruffleHog findings | 13 (11 `JWT`, 2 `Box`) | **13 (11 `JWT`, 2 `Box`)** — `verified_secrets: 0` |
+| sweep: `password-assign` distinct values | 13, including `Prof…[11 withheld]…1!` | **13, and the S-07 value is GONE**, replaced by `[REDAC…[7 withheld]…-17]` |
+
+**Verified directly, both plain and archived: `0` occurrences remain anywhere in the tree.**
+
+### Five rules newly tripped by the rescan — all of them are this file
+
+The sweep's counts moved: `private-key-block` 2 → 4, `db-url-with-creds` 5 → 6,
+`apikey-assign` 710 → 711, and `pgp-key-block` and `ssh-private` went **0 → 1** each, having matched
+nothing on the first pass.
+
+**Every one of those new hits is `151-SECRET-SCAN.md` itself** — §&nbsp;6's ruleset table quotes the
+patterns literally (lines 229–230 are the PGP and OpenSSH markers), and §&nbsp;3's finding rows quote
+the redacted excerpts (lines 139, 142, 149). Checked file by file, not inferred: **0 of the new hits
+are in any other file.**
+
+**Recorded because the failure mode is a real one, not because it is amusing.** A scan report that
+lands inside its own scan scope will trip its own rules on the next pass, and an unwary later reader
+— or a later plan re-running this sweep — would see two brand-new key-block classes appear in the
+planning slice and reasonably conclude something had leaked. It is the same self-reference trap this
+phase has hit repeatedly, and naming it here is what stops it costing someone a pass.
+
+### Final tally after remediation
+
+**15 findings: 0 live, 1 remediated (S-07), 8 accepted with stated evidence, 6 false positives**
+(the original 5 plus S-15, this file's self-reference). **Verdict: `pass-after-remediation`.**
+
+### The two coverage limits, accepted rather than closed
+
+1. **No OCR over the 109 screenshots** inside the trace archives — **accepted**, not closed. A
+   credential rendered as pixels would still not be found.
+2. **The post-rescan delta** — anything plans 151-17 (after this point), 151-18 and 151-19 commit is
+   again outside coverage. The mandatory pre-push re-cut at 151-18 carries a re-scan obligation with
+   it; `slice_11_must_be_recut_before_push: true` stays set in the stack manifest.
+
+### Two findings the operator asked be carried into 151-19's skill write-up
+
+- **Scan the publication surface, not the diff.** It is the only reason `.claude/settings.json` — a
+  file in no slice's diff — was seen at all.
+- **One scanner is not a scan.** TruffleHog found 2 distinct JWTs; the independent 24-rule sweep
+  found 4, adding the `anon` and `service_role` tokens no detector flagged, classified by
+  recomputing their HMAC against Supabase's documented local-dev secret rather than by appearance. A
+  single-scanner run would have published a `service_role`-shaped token unclassified.
+
+**A third, earned in the remediation:** *a grep over the working tree is not a census when the
+content includes archives* — 4 visible occurrences, 28 hidden ones.
+
+---
+
+*Phase: 151-ship-v0-2-akita-review-stack · Plan 17 · scanned 2026-08-17 before any push; remediated and rescanned the same day*

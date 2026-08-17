@@ -32,7 +32,9 @@ secret_scan_verdict: pass-with-accepted-findings
 secret_scan_findings_live: 0
 secret_scan_artifact: 151-SECRET-SCAN.md
 security_rows: 1  # SEC-1; no checklist item covers it
-slice_11_cells_still_pending_17: 12  # the plan tasks no sweep; routing put to the operator
+slice_11_cells_routed_to_18: 12  # operator decision at 151-17; D-20 still requires a MEASURED reason per N/A
+f_21_decision: option-a-implement-params-after-phase-ships  # taken by the operator at 151-17
+f_29_unblocked_by: "the PD-02 carve-out that F-21's discharging migration needs"
 f_15_operator_gate: accepted-options-1-and-2-at-151-16  # option 3 declined; slices.tsv amended on that decision, not by an agent
 comparable_total: 4413  # re-measured at 151-16; every rise attributed by set difference, zero files ever leaving
 slices_dispositioned: ["01a", "01b", "02", "03", "04", "05", "06", "07", "08", "09", "10"]
@@ -224,15 +226,21 @@ have meant: SEC-1 is the evidence for the credential-exposure half of that cell 
 *Cryptographic Failures* / A07 *Identification and Authentication Failures*). SEC-1 does **not**
 discharge the cell on its own — see the discrepancy immediately below.
 
-**Open: slice 11's twelve general cells still read `P→17`, and this plan does not fill them.**
-`151-17-PLAN.md` has four tasks — cut the slice, scan it, the operator gate, and open PR 10 — and
-**none of them is a checklist sweep of slice 11**. The matrix's `PENDING→17` markers were written by
-151-06 on the expectation that the plan cutting slice 11 would also sweep it. Recorded as a
-discrepancy rather than resolved unilaterally: the cells are **left at `P→17`** so the gap stays
-visible, instead of being re-routed to `P→18` by an agent, and the routing decision is put to the
-operator at this plan's checkpoint alongside F-21. Slice 11 is 2,324 planning and agent-config files
-carrying **no application code**, so most of the twelve items are `N/A` on their face — but "most"
-is a prediction, and D-20 requires every `N/A` to carry a measured reason.
+**Slice 11's twelve general cells are routed to 151-18 — by the operator, at this plan's
+checkpoint.** `151-17-PLAN.md` has four tasks — cut the slice, scan it, the operator gate, and open
+PR 10 — and **none of them is a checklist sweep of slice 11**. The matrix's `PENDING→17` markers were
+written by 151-06 on the expectation that the plan cutting slice 11 would also sweep it, and that
+expectation was never turned into a task.
+
+The gap was **surfaced rather than silently re-routed**: the markers were left reading `P→17` and
+put to the operator, who routed them to **151-18**, which already owns the four phase-level items.
+The matrix now reads `P→18` for all twelve.
+
+**D-20 is not relaxed by the routing.** Slice 11 is 2,325 planning and agent-config files carrying
+**no application code**, so most of the twelve items look `N/A` on their face — but *"slice 11 is
+planning files so it's probably N/A" is not a disposition.* Every `N/A` must still carry a
+**measured** reason, not an assumed one. Recorded explicitly because a large all-`N/A` column is
+exactly the shape that gets waved through.
 
 ---
 
@@ -243,18 +251,18 @@ Columns are slices. Every cell holds a verdict token or `PENDING→NN` (the plan
 
 | # | Item | Reach | 01a | 01b | 02 | 03 | 04 | 05 | 06 | 07 | 08 | 09 | 10 | 11 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **2** | OWASP Top 10 review | `none` | N/A | MET | MET | FIXED | FIXED | MET | MET | FIXED | MET | FIXED | MET | P→17 |
-| **3** | Follows the Code style guide | `partial` | N/A | N/A | FIXED | MET | MET | FIXED | FIXED | FIXED | FIXED | FIXED | MET | P→17 |
-| **4** | Avoid `any`; document or `@ts-expect-error` | `partial` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | MET | N/A | MET | MET | P→17 |
-| **5** | No repeated code in the PR or elsewhere in the repo | `none` | DEF | FIXED | MET | DEF | DEF | MET | DEF | DEF | DEF | DEF | FIXED | P→17 |
-| **6** | New components / functions / entities documented | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | FIXED | FIXED | MET | DEF | P→17 |
-| **7** | Repo documentation markdown updated | `none` | DEF | DEF | FIXED | FIXED | FIXED | FIXED | FIXED | FIXED | N/A | FIXED | FIXED | P→17 |
-| **8** | Tracking events for new user-facing functions | `none` | N/A | N/A | N/A | N/A | N/A | N/A | MET | MET | N/A | N/A | N/A | P→17 |
-| **9** | New Svelte components follow the guidelines | `partial` | N/A | N/A | N/A | N/A | N/A | N/A | FIXED | MET | N/A | N/A | N/A | P→17 |
-| **10** | Errors handled and logged | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | FIXED | N/A | MET | MET | P→17 |
-| **13** | WCAG A and AA | `partial` | N/A | N/A | N/A | N/A | N/A | MET | MET | FIXED | MET | MET | N/A | P→17 |
-| **14** | Keyboard + screen-reader usable | `partial` | N/A | N/A | N/A | N/A | N/A | DEF | DEF | DEF | N/A | DEF | N/A | P→17 |
-| **15** | Developers'/Publishers' Guide entries updated | `none` | DEF | DEF | DEF | DEF | FIXED | FIXED | DEF | DEF | DEF | FIXED | FIXED | P→17 |
+| **2** | OWASP Top 10 review | `none` | N/A | MET | MET | FIXED | FIXED | MET | MET | FIXED | MET | FIXED | MET | P→18 |
+| **3** | Follows the Code style guide | `partial` | N/A | N/A | FIXED | MET | MET | FIXED | FIXED | FIXED | FIXED | FIXED | MET | P→18 |
+| **4** | Avoid `any`; document or `@ts-expect-error` | `partial` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | MET | N/A | MET | MET | P→18 |
+| **5** | No repeated code in the PR or elsewhere in the repo | `none` | DEF | FIXED | MET | DEF | DEF | MET | DEF | DEF | DEF | DEF | FIXED | P→18 |
+| **6** | New components / functions / entities documented | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | FIXED | FIXED | MET | DEF | P→18 |
+| **7** | Repo documentation markdown updated | `none` | DEF | DEF | FIXED | FIXED | FIXED | FIXED | FIXED | FIXED | N/A | FIXED | FIXED | P→18 |
+| **8** | Tracking events for new user-facing functions | `none` | N/A | N/A | N/A | N/A | N/A | N/A | MET | MET | N/A | N/A | N/A | P→18 |
+| **9** | New Svelte components follow the guidelines | `partial` | N/A | N/A | N/A | N/A | N/A | N/A | FIXED | MET | N/A | N/A | N/A | P→18 |
+| **10** | Errors handled and logged | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | FIXED | N/A | MET | MET | P→18 |
+| **13** | WCAG A and AA | `partial` | N/A | N/A | N/A | N/A | N/A | MET | MET | FIXED | MET | MET | N/A | P→18 |
+| **14** | Keyboard + screen-reader usable | `partial` | N/A | N/A | N/A | N/A | N/A | DEF | DEF | DEF | N/A | DEF | N/A | P→18 |
+| **15** | Developers'/Publishers' Guide entries updated | `none` | DEF | DEF | DEF | DEF | FIXED | FIXED | DEF | DEF | DEF | FIXED | FIXED | P→18 |
 
 `P→NN` abbreviates the pending marker `PENDING→NN`. Count: 12 × 12 = **144 cells, 0 blank**.
 
@@ -993,7 +1001,7 @@ here. Six landed as fixes on `feat-gsd-roadmap` before the slice was cut, per D-
 | **F-18** | 5, 7 | **02** | `packages/app-shared/README.md:25` cited `apps/strapi/`, a path that has never existed at either end (`git ls-tree` → 0 entries at `ac30f132a` and at `HEAD`). Routed here by 151-10 to be fixed **before** PR 3 opens. | **FIXED** — `995696502`; slice 02 re-cut from the fixed tip before its PR was opened |
 | **F-19** | 11, 18, 22 | **03** | `scripts/lint-schema.mjs:27` hardcoded the fallback database as port **54332**; `config.toml:29` declares `54322`. A digit transposition, and the gate had therefore **never run against this project's schema**. On the sweeping machine another Supabase instance answered on 54332 and the script silently linted it, reporting 149 warnings about `anonymise_*`, `mcp_oauth_*` and `mission_*` tables that do not exist in this repository. | **FIXED** — `cd96d1ff4` |
 | **F-20** | 22 | **03** | Check 0001 compared `pg_constraint.conkey[1:n]` — a **1-based** `smallint[]` — with `pg_index.indkey[1:n]`, an **`int2vector`, which is 0-based**. Proven on the live database: for a single-column index `indkey[1:1]` is `{}` while `conkey[1:1]` is `{2}`, so **every** single-column foreign key was reported unindexed — 51 warnings against the correct database, including `nominations.project_id`, whose index `idx_nominations_project_id` exists. A second defect in the same query: no schema filter, while 0013 scopes itself to `public`, so the report was dominated by Supabase-managed `auth.*` and `storage.*` rows. | **FIXED** — `cd96d1ff4`; the corrected gate reports 0 errors and exactly 2 warnings, matching an independent static read |
-| **F-21** | 11 | **03** | **`yarn db:lint:sql` exits non-zero on the branch** — `supabase db lint --fail-on warning` reports 4 `plpgsql_check` findings: `is_localized_string` "never read variable p_key", `_bulk_upsert_record` "unused variable rel_key", and `resolve_email_variables` "unused parameter p_template_body" and "p_template_subject". Neither this gate nor the pgTAP suite appears in `151-BASELINE.md`, so the phase has carried **two unmeasured gates** since 151-03 — and F-27 shows that mattered. | **DEFERRED** — the only change that turns the gate green is dropping two parameters from a granted, type-generated, pgTAP-referenced public RPC. That is a breaking signature change and a product decision about whether per-template variable resolution is still intended, not a cleanup: D-13 excludes code restructuring from the collision surface and Rule 4 reserves it for the operator. Fixing 2 of the 4 would cost a migration and leave the gate red anyway. **Operator decision required.** |
+| **F-21** ⟶ **DECIDED (a)** | 11 | **03** | **`yarn db:lint:sql` exits non-zero on the branch** — `supabase db lint --fail-on warning` reports 4 `plpgsql_check` findings: `is_localized_string` "never read variable p_key", `_bulk_upsert_record` "unused variable rel_key", and `resolve_email_variables` "unused parameter p_template_body" and "p_template_subject". Neither this gate nor the pgTAP suite appears in `151-BASELINE.md`, so the phase has carried **two unmeasured gates** since 151-03 — and F-27 shows that mattered. | **DEFERRED** — the only change that turns the gate green is dropping two parameters from a granted, type-generated, pgTAP-referenced public RPC. That is a breaking signature change and a product decision about whether per-template variable resolution is still intended, not a cleanup: D-13 excludes code restructuring from the collision surface and Rule 4 reserves it for the operator. Fixing 2 of the 4 would cost a migration and leave the gate red anyway. **DECIDED at 151-17: option (a) — implement the parameters, scheduled AFTER this phase ships.** See § "F-21 — the operator decision, TAKEN" below. |
 | **F-22** | 1, 10 | **03** | **The `send-email` Edge Function was dead on arrival.** It called `resolve_email_variables` with the argument names `user_ids` / `template_body` / `template_subject`; the function declares `p_user_ids` / `p_template_body` / `p_template_subject` (`502-email-helpers.sql:22-25`, `database.ts:1270-1275`). PostgREST resolves overloads by argument name, so every invocation returned `PGRST202` and the handler converted it to HTTP 500 "Failed to resolve template variables". Verified against the running instance in both directions. | **FIXED** — `fb05eca78` |
 | **F-23** | 2 | **03** | `identity-callback`'s `verifyJwt` passed only `audience` to `jose.jwtVerify` and never checked `iss`. `IDENTITY_PROVIDER_ISSUER` is documented in `.env.example:59` and in the deployment guide, and the frontend's equivalent verifier already applies it (`lib/api/utils/auth/getIdTokenClaims.ts:9`, `providers/idura.ts:131`, `providers/signicat.ts:94`) — so the directly-callable Edge Function was the weaker of two paths to the same trust decision. | **FIXED** — `fb05eca78`, applied only when configured so no deployment fails closed on upgrade |
 | **F-24** | 2 | **06** (surfaced by 03's sweep) | **The Signicat identity path keys account identity on `birthdate`.** `claimConfig.ts:34-39` sets `identityMatchProp: 'birthdate'`, and `identity-callback` uses that value both to find an existing user (`findUserByIdentityMatch`) and to derive the account's `placeholderEmail`. A birth date is not an identifier: two candidates sharing one resolve to the **same auth user and the same candidate record**. `IDENTITY_PROVIDER_TYPE` **defaults to `'signicat'`** (`index.ts:167`) and `.env.example:38` ships that default. | **DEFERRED — ESCALATED.** Checked before recording, and the check changed the framing: this is **not** local to slice 03. The frontend states the same design independently — `providers/authConfig.ts:18-26` ("Signicat Finnish bank authentication returns `birthdate` as the primary identifier"), `getIdTokenClaims.ts:44`, `dataWriter.type.ts:64`. Changing the Edge Function alone would desynchronise the two halves and make matters worse, and the correct claim is external knowledge — what this tenant's Signicat is configured to return — which the repository does not contain. Routed to plan **151-14**, where the frontend half is swept, so one decision covers both. Idura, the newer provider, correctly uses `sub`. |
@@ -2533,6 +2541,83 @@ both numbers are stated and reconciled, and here the reconciliation is that they
 
 `e2e_collisions` stays **0** and `migrations_added` stays **0**: no fix touched a spec, a fixture or a
 migration.
+
+---
+
+## F-21 — the operator decision, TAKEN at 151-17
+
+**Decision: option (a) — implement `resolve_email_variables`' two unused parameters, scheduled
+AFTER this phase ships. Not implemented now.**
+
+`yarn db:lint:sql` exits 1 on a correct tree. Until this decision is executed, **that red is
+expected and no later plan may read it as a failure.**
+
+### The four `plpgsql_check` warnings, and what each actually costs
+
+Measured at 151-17 against the tree, not carried over from the record — and **two of the four are
+not what the record implied**.
+
+| # | Function | Warning | Fix cost, measured |
+|---|---|---|---|
+| 1 | `is_localized_string` | never-read variable `p_key` | **Local variable**, declared `00001_initial_schema.sql:101`, used only as a loop target in `FOR p_key, p_value IN SELECT * FROM jsonb_each(p_val)` at `:114`. Iterate `SELECT value` into `p_value` alone. **No signature change, zero API impact.** |
+| 2 | `_bulk_upsert_record` | unused variable `rel_key` | **Local variable**, `:2597`, in an underscore-prefixed internal helper. Delete the declaration. **Zero API impact.** |
+| 3 | `resolve_email_variables` | unused parameter `p_template_body` | see below |
+| 4 | `resolve_email_variables` | unused parameter `p_template_subject` | see below |
+
+**Warnings 1 and 2 are dead local variables with no API surface whatsoever.** The record's framing —
+that fixing two of four "would cost a migration and leave the gate red anyway" — is true only in the
+sense that any body change needs a migration; it wrongly implies the two are entangled with the
+signature question. They are not.
+
+### The signature question, and the option the record never surfaced
+
+Both parameters are declared at `:2963-2965` with `DEFAULT ''` and are **referenced nowhere in the
+body** — only `p_user_ids` is, at the `FOREACH`. Verified by reading the body, not by trusting the
+warning.
+
+**Blast radius of *dropping* them (option b), measured:**
+
+| Surface | Effect |
+|---|---|
+| Grants | `GRANT EXECUTE ON FUNCTION public.resolve_email_variables(uuid[], text, text)` to `authenticated` **and** `service_role`, `:3095` and `:3097` — both rewritten |
+| Generated types | `packages/supabase-types/src/database.ts:1270` declares both as optional args — needs `yarn db:types` |
+| pgTAP | **NOT a hazard.** `apps/supabase/supabase/tests/database/07-rpc-security.test.sql:143` calls it with **one** argument and relies on the defaults; it survives a drop untouched. **The record's "pgTAP-referenced" framing pointed at the wrong risk.** |
+| **The sole production caller** | **BREAKS.** `apps/supabase/supabase/functions/send-email/index.ts:134` passes **all three by name**, under its own comment noting that *PostgREST resolves overloads by named argument*. Dropping the parameters makes that call fail with `PGRST202` — the live email flow. |
+
+**Option (a), which the record never presented: implement them.** The parameters exist because the
+function was *meant* to resolve only the variables a template actually references. Implementing that
+filter is **no signature change, no grant change, no generated-type change, and no caller-shape
+change** — and it greens the gate.
+
+**The caveat that makes it a product decision, not a cleanup:** the Edge Function currently passes
+`''` for both, so implementing the filter *also* requires it to pass the real template body and
+subject; otherwise an empty template references no variables and nothing resolves, breaking email.
+That is a behaviour change to a shipped feature, which is why it ships separately from this phase
+and why D-13's exclusion of code restructuring and Rule 4 both point at the operator.
+
+### PD-02 needs an explicit carve-out, or it deadlocks
+
+**PD-02 makes a migration blocking on `yarn db:lint:sql` exiting 0 — but the migration that fixes
+these four warnings is what makes it exit 0.** As written, the gate forbids its own remedy. The
+carve-out must say so explicitly: *a migration whose purpose is to discharge F-21 may land while the
+gate is red, because the gate is green only after it.*
+
+**F-29 rides that carve-out.** The two unindexed join-table foreign keys —
+`constituency_group_constituencies.constituency_id` and
+`election_constituency_groups.constituency_group_id`, the trailing columns of two composite primary
+keys, so reverse lookups and `ON DELETE CASCADE` from the referenced side are sequential scans — are
+fixed by an index migration that PD-02 currently blocks. Once the carve-out exists, F-29 lands in the
+same migration or the one after it. **Until then F-29 stays open, and it is open for a reason that
+has nothing to do with F-29.**
+
+### Status
+
+| item | state |
+|---|---|
+| F-21 | **DECIDED — option (a)**, scheduled after this phase ships. Not implemented here. |
+| F-29 | **still deferred**, now with a named unblocking condition rather than an open-ended one |
+| PD-02 | **needs an explicit carve-out** for the discharging migration — recorded here, owed by whoever executes (a) |
+| `yarn db:lint:sql` | **red on a correct tree, expected.** No later plan may read it as a failure. |
 
 ---
 
