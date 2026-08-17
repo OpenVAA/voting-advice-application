@@ -1,7 +1,9 @@
 import type { ChoiceQuestionData, MultipleChoiceQuestionType } from '../../../internal';
 
-export interface MultipleChoiceQuestionData<TType extends MultipleChoiceQuestionType, TValue = number>
-  extends ChoiceQuestionData<TType, TValue> {
+export interface MultipleChoiceQuestionData<
+  TType extends MultipleChoiceQuestionType,
+  TValue = number
+> extends ChoiceQuestionData<TType, TValue> {
   // From HasId
   // - id: Id;
   //

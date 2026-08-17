@@ -34,7 +34,13 @@ export type DynamicSettings = {
       /**
        * The content tabs to show for parties.
        */
-      [ENTITY_TYPE.Organization]: Array<EntityDetailsContent | OrganizationDetailsContent>;
+      [ENTITY_TYPE.Organization]: Array<EntityDetailsContent | ParentEntityDetailsContent>;
+      /**
+       * The content tabs to show for alliances. Alliances have no own answers,
+       * so 'opinions' is typically omitted by default; the broader union allows
+       * future opt-in without a type-rename (see phase 69).
+       */
+      [ENTITY_TYPE.Alliance]?: Array<EntityDetailsContent | ParentEntityDetailsContent>;
     };
     /**
      * Whether to show a marker for missing election symbol in entity details, e.g. 'Election Symbol: --', or hide missing items completely. The marker, if shown, is defined in the translations.
@@ -207,9 +213,29 @@ export type DynamicSettings = {
          */
         | 'submatches'
         /**
-         * List party's the top 3 candidates within it's card. Only applies to the results list.
+         * List the parent entity's children (CandidateNominations) within its card.
+         * Only applies to the results list. (see phase 69: renamed from 'candidates'
+         * for semantic-uniform parent-entity children naming.)
          */
-        | 'candidates'
+        | 'children'
+        /**
+         * Show the entity's answer to a specific question. Only applies to the results list.
+         */
+        | QuestionInCardContent
+      >;
+      /**
+       * The additional contents of alliance cards. NB. the order of the items has currently no effect.
+       */
+      [ENTITY_TYPE.Alliance]?: Array<
+        /**
+         * Show the matching scores for each question category.
+         */
+        | 'submatches'
+        /**
+         * List the parent entity's children (OrganizationNominations) within its card.
+         * (see phase 69: alliance children = member organization-nominations.)
+         */
+        | 'children'
         /**
          * Show the entity's answer to a specific question. Only applies to the results list.
          */
@@ -219,7 +245,7 @@ export type DynamicSettings = {
     /**
      * Which entity types to show in the results view. There must be at least one.
      */
-    sections: Array<typeof ENTITY_TYPE.Candidate | typeof ENTITY_TYPE.Organization>;
+    sections: Array<typeof ENTITY_TYPE.Candidate | typeof ENTITY_TYPE.Organization | typeof ENTITY_TYPE.Alliance>;
     /**
      * If defined, a feedback popup will be shown on the next page load, when the user has reached the results section and the number of seconds given by this value has passed. The popup will not be shown, if the user has already given some feedback.
      */
@@ -302,6 +328,15 @@ export type DynamicSettings = {
       hideHero: boolean;
     };
   };
+  /**
+   * Settings related to Candidate App pre-registration. If enabled, make sure to set the relevant env variables as well. Backend/per-instance controlled (moved from `StaticSettings` to `DynamicSettings`).
+   */
+  preRegistration?: {
+    /**
+     * Whether pre-registration is enabled for the Candidate App.
+     */
+    enabled?: boolean;
+  };
 };
 
 export type OrganizationMatchingMethod =
@@ -354,13 +389,16 @@ export type EntityDetailsContent =
   | 'opinions';
 
 /**
- * The possible content tabs to show for `Organization`s.
+ * The possible content tabs to show for parent entities (Organization, Alliance).
+ * The "children" of an Organization are its CandidateNominations; the "children"
+ * of an Alliance are its OrganizationNominations. Single shared opt-in keeps
+ * the type surface symmetric across parent entity types (see phase 69).
  */
-export type OrganizationDetailsContent =
+export type ParentEntityDetailsContent =
   /**
-   * The party’s candidates.
+   * The parent entity's children (CandidateNominations for Organization, OrganizationNominations for Alliance).
    */
-  'candidates';
+  'children';
 
 /**
  * The data for a notification to be shown to users.

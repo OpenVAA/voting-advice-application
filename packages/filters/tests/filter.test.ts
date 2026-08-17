@@ -252,12 +252,12 @@ describe('TextQuestionFilter: multiple values', () => {
   test('Should return all that have the included item', () => {
     const filter = new TextQuestionFilter({ question }, LOCALE);
     filter.include = 'Hamburger';
-    expect(filter.apply(targets)).toEqual(expect.arrayContaining([people['Bart'], people['Homer']]));
+    expect(filter.apply(targets)).toEqual([people['Bart'], people['Homer']]);
   });
   test('Should return all that partally match the included item', () => {
     const filter = new TextQuestionFilter({ question }, LOCALE);
     filter.include = 'Hambu';
-    expect(filter.apply(targets)).toEqual(expect.arrayContaining([people['Bart'], people['Homer']]));
+    expect(filter.apply(targets)).toEqual([people['Bart'], people['Homer']]);
   });
   test('Should not return those excluded', () => {
     const filter = new TextQuestionFilter({ question }, LOCALE);
@@ -268,7 +268,7 @@ describe('TextQuestionFilter: multiple values', () => {
   test('Should not return all if none are excluded', () => {
     const filter = new TextQuestionFilter({ question }, LOCALE);
     filter.exclude = 'None of the above';
-    expect(filter.apply(targets)).toEqual(expect.arrayContaining(Object.values(people)));
+    expect(filter.apply(targets)).toEqual(Object.values(people));
   });
 });
 
@@ -310,6 +310,46 @@ test('ChoiceQuestionFilter', () => {
   ).toEqual([choices[1], choices[3], choices[0], choices[2]]);
   filter.reset();
   expect(filter.active, 'Not active if reset').toBe(false);
+});
+
+test('ChoiceQuestionFilter: TIR3 empty-include semantics', () => {
+  // TIR3 cluster 1: distinguish `include = undefined` (filter inactive, all
+  // pass) from `include = []` (filter ACTIVE with zero allowed → 0 results).
+  // Prior to this contract, both states collapsed to "filter inactive".
+  const choices: Array<Choice> = [
+    { id: '0', label: 'M' },
+    { id: '1', label: 'A' },
+    { id: '2', label: 'E' }
+  ];
+  const question = choiceQuestion('rightId', choices);
+  const answers = ['0', '1', '1', '2', undefined];
+  const people: Array<AnsweringEntity> = answers.map(
+    (a) =>
+      new AnsweringEntity({
+        wrongId: undefined,
+        rightId: a
+      })
+  );
+  const filter = new ChoiceQuestionFilter({ question }, 'fi');
+
+  // (c) include = undefined → all entities match (filter inactive)
+  expect(filter.active, 'undefined include → inactive').toBe(false);
+  expect(filter.apply(people), 'undefined include → all entities').toEqual(people);
+
+  // (a) include = [] → zero matches (active, empty allow-list)
+  filter.include = [];
+  expect(filter.active, 'empty include → ACTIVE').toBe(true);
+  expect(filter.apply(people), 'empty include → 0 matches').toEqual([]);
+
+  // (b) include = [MISSING_VALUE] → only entities with no answer match
+  filter.include = [MISSING_VALUE];
+  expect(filter.active, 'include=[MISSING_VALUE] → active').toBe(true);
+  expect(filter.apply(people), 'include=[MISSING_VALUE] → only missing-answer entities').toEqual([people[4]]);
+
+  // Toggle back to undefined → inactive again
+  filter.include = undefined;
+  expect(filter.active, 'undefined include after reset → inactive').toBe(false);
+  expect(filter.apply(people), 'undefined include after reset → all').toEqual(people);
 });
 
 test('ChoiceQuestionFilter: missing values', () => {
