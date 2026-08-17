@@ -1,0 +1,265 @@
+/**
+ * @file candidateProfilePage fixture.
+ *
+ * Function-fixture for the candidate profile (basic-info) page at
+ * `apps/frontend/src/routes/candidate/(protected)/profile/+page.svelte`.
+ *
+ * Surface:
+ *  - uploadPortrait({ path, expectError? })       — upload an image file via
+ *                                                    the file chooser on the
+ *                                                    profile-image-upload
+ *                                                    button. When expectError
+ *                                                    is supplied, additionally
+ *                                                    assert the i18n error
+ *                                                    message inside the
+ *                                                    profile-image-error
+ *                                                    wrapper.
+ *  - expectStaticInfo({ name?, nomination? })     — assert the immutable
+ *                                                    first-name / last-name
+ *                                                    and the nominations
+ *                                                    block content.
+ *  - getQuestion(label)                           — locate a per-question
+ *                                                    wrapper by displayed
+ *                                                    label (string | RegExp).
+ *  - expectQuestionsVisible(labels)               — assert each label appears
+ *                                                    inside a profile-info-item.
+ *  - expectQuestionsAbsent(labels)                — assert none of the labels
+ *                                                    is present.
+ *  - expectRequiredBadge(label)                   — assert the question
+ *                                                    matching `label` carries
+ *                                                    a required marker.
+ *  - fillQuestion(label, value)                   — locate by label + fill the
+ *                                                    inner input/textarea.
+ *  - submit()                                     — click profile-submit.
+ *  - expectSubmitMessage()                        — assert the post-submit
+ *                                                    success / advance state
+ *                                                    by waiting for navigation
+ *                                                    away from /profile.
+ *
+ * **General API principle:** question methods take the DISPLAYED label
+ * (string | RegExp). Specs holding externalIds resolve to labels via base at
+ * the call site.
+ *
+ * **Rigidity contract:** NO `try/catch` wrapping `expect(...)`, NO
+ * `.catch(() => null)` on assertion-bearing locator interactions. This fixture is
+ * one of three that DOES use `expect.soft` — 6 call sites, in the profile-field
+ * and nomination readers below, so one wrong field reports alongside the rest of
+ * the form rather than masking it. It is outside `SOFT_ASSERTION_BUDGETS`, which
+ * is deliberately scoped to `voter-journey.spec.ts`; see the note above that
+ * table in `playwright.config.ts`.
+ */
+
+import { expect } from '@playwright/test';
+import { testIds } from '../../utils/testIds';
+import type { Locator, Page } from '@playwright/test';
+
+/**
+ * Image-upload error variant keys. Mapped to i18n message keys at
+ * `apps/frontend/src/lib/components/input/Input.svelte:270-272`:
+ *  - invalidFile  → 'components.input.error.invalidFile'  ("Invalid file type")
+ *  - oversizeFile → 'components.input.error.oversizeFile' ("File too large")
+ *
+ * The exact rendered strings depend on the active i18n bundle; the fixture
+ * asserts on a stable substring rather than the full localized message so
+ * spec assertions remain robust across locale switches.
+ */
+const IMAGE_ERROR_CONTAINS: Readonly<Record<'invalidFile' | 'oversizeFile', RegExp>> = Object.freeze({
+  invalidFile: /invalid|not.*image|wrong.*format/i,
+  oversizeFile: /large|size|max/i
+});
+
+export interface ProfileNominationExpectations {
+  electionSymbol?: string;
+  constituency?: string | RegExp;
+  election?: string | RegExp;
+}
+
+export function createCandidateProfilePage(page: Page) {
+  /**
+   * Locate the per-question wrapper (data-testid="candidate-profile-info-item")
+   * whose visible content matches `label` (string | RegExp). Returns the
+   * filtered Locator without awaiting — caller chains an action.
+   */
+  function questionLocator(label: string | RegExp): Locator {
+    return page.getByTestId(testIds.candidate.profile.infoItem).filter({ hasText: label });
+  }
+
+  return {
+    /**
+     * Upload an image via the file chooser triggered by the profile-image-upload
+     * button. When `expectError` is supplied, additionally assert the matching
+     * error message is rendered inside the profile-image-error wrapper.
+     *
+     * The pre-filechooser 500ms settle delay exists because the underlying
+     * click target's onclick handler needs to hydrate before Playwright
+     * registers the filechooser listener.
+     */
+    async uploadPortrait(opts: { path: string; expectError?: 'invalidFile' | 'oversizeFile' }): Promise<void> {
+      // reason: there is no public hydration signal on the image-upload button;
+      // a small timeout is the canonical pattern for filechooser-trigger races.
+      // eslint-disable-next-line playwright/no-wait-for-timeout
+      await page.waitForTimeout(500);
+      const fileChooserPromise = page.waitForEvent('filechooser');
+      await page.getByTestId(testIds.candidate.profile.imageUpload).getByRole('button').first().click();
+      const fileChooser = await fileChooserPromise;
+      await fileChooser.setFiles(opts.path);
+      if (opts.expectError !== undefined) {
+        const errWrapper = page.getByTestId(testIds.candidate.profile.imageError);
+        await expect(errWrapper).toBeVisible();
+        await expect(errWrapper).toContainText(IMAGE_ERROR_CONTAINS[opts.expectError]);
+      }
+    },
+
+    /**
+     * Assert the immutable static-info fields render the expected values.
+     * Each field is optional — only the supplied fields are checked.
+     */
+    async expectStaticInfo(props: { name?: string; nomination?: ProfileNominationExpectations }): Promise<void> {
+      if (props.name !== undefined) {
+        // `profile-first-name` lands on the disabled <input> element itself.
+        // An <input>'s value lives in its `value` property, NOT its text
+        // content, so `toContainText` always sees "" — use `toHaveValue`,
+        // the Playwright-canonical assertion for form-control values.
+        const firstName = page.getByTestId('profile-first-name');
+        await expect.soft(firstName).toHaveValue(props.name);
+      }
+      if (props.nomination !== undefined) {
+        const noms = page.getByTestId(testIds.candidate.profile.nominations);
+        await expect.soft(noms).toBeVisible();
+        // Election name renders as the InputGroup title (plain text) → matched
+        // on text content. Constituency + election symbol render as locked
+        // <Input> values, which live in the input's `value` property (NOT text
+        // content), so they're matched via toHaveValue on their testid'd inputs.
+        if (props.nomination.election !== undefined) {
+          await expect.soft(noms).toContainText(props.nomination.election);
+        }
+        if (props.nomination.constituency !== undefined) {
+          await expect.soft(noms.getByTestId('nomination-constituency')).toHaveValue(props.nomination.constituency);
+        }
+        if (props.nomination.electionSymbol !== undefined) {
+          await expect
+            .soft(noms.getByTestId('nomination-election-symbol'))
+            .toHaveValue(props.nomination.electionSymbol);
+        }
+      }
+    },
+
+    /**
+     * Return the Locator for the question wrapper matching `label`.
+     */
+    getQuestion(label: string | RegExp): Locator {
+      return questionLocator(label);
+    },
+
+    /**
+     * Assert every label in `labels` is rendered inside a profile-info-item.
+     */
+    async expectQuestionsVisible(labels: Array<string | RegExp>): Promise<void> {
+      for (const label of labels) {
+        await expect(questionLocator(label).first()).toBeVisible();
+      }
+    },
+
+    /**
+     * Assert NO profile-info-item matches any of `labels`.
+     */
+    async expectQuestionsAbsent(labels: Array<string | RegExp>): Promise<void> {
+      for (const label of labels) {
+        await expect.soft(questionLocator(label)).toHaveCount(0);
+      }
+    },
+
+    /**
+     * Assert the question matching `label` carries a required marker.
+     * Per `Input.svelte:135` the required marker is a screen-reader-only
+     * "Required" span sibling to the input; we match on its accessible text.
+     */
+    async expectRequiredBadge(label: string | RegExp): Promise<void> {
+      const q = questionLocator(label).first();
+      await expect.soft(q).toContainText(/required/i);
+    },
+
+    /**
+     * Locate the question matching `label` and fill its inner editable
+     * control. Descends to the first `textbox` OR `spinbutton` inside the
+     * wrapper: text / longText / link / date questions render `role=textbox`,
+     * but a **number** question is `<input type="number">` → `role=spinbutton`.
+     * Matching only `textbox` made `.fill()` on a number question hang until
+     * the full per-test timeout (the locator never resolved); `.or()` covers
+     * both roles.
+     *
+     * Fail-fast: assert the control is visible (bounded by the expect timeout)
+     * BEFORE filling. A never-resolving locator would otherwise let `.fill()`
+     * burn the entire per-test timeout; the bounded assertion surfaces the
+     * real cause in seconds with a clear message.
+     */
+    async fillQuestion(label: string | RegExp, value: string): Promise<void> {
+      const q = questionLocator(label).first();
+      const editable = q.getByRole('textbox').or(q.getByRole('spinbutton')).first();
+      await expect(editable).toBeVisible();
+      await editable.fill(value);
+    },
+
+    /**
+     * Fill a MultipleTextInput (row-list) info question matching `label` with
+     * `values`, one row per value. Mirrors `fillQuestion`'s label-locate idiom,
+     * then drives the row list:
+     *  - Row 0 pre-renders (the component pads to a floor of >= 1 row), so it is
+     *    filled in place.
+     *  - Each subsequent value needs a fresh row: click the `multiple-text-add`
+     *    control until a row exists at the target index, then fill it.
+     *
+     * Row inputs and the add control are located via testIds constants only
+     * (no raw `multiple-text-*` selector literals — selector-catalogue rule).
+     *
+     * Fail-fast: assert the target row is visible (bounded by the expect
+     * timeout) BEFORE filling, so a never-resolving locator surfaces the real
+     * cause in seconds instead of burning the full per-test timeout.
+     */
+    async fillMultipleTextQuestion(label: string | RegExp, values: Array<string>): Promise<void> {
+      const q = questionLocator(label).first();
+      await expect(q).toBeVisible();
+      const rows = q.getByTestId(testIds.voter.questions.multipleTextRow);
+      const addButton = q.getByTestId(testIds.voter.questions.multipleTextAdd);
+      for (let i = 0; i < values.length; i++) {
+        // Ensure a row exists at index `i` (row 0 is pre-rendered by the floor).
+        while ((await rows.count()) <= i) {
+          await expect(addButton).toBeEnabled();
+          await addButton.click();
+        }
+        const row = rows.nth(i);
+        await expect(row).toBeVisible();
+        await row.fill(values[i]);
+      }
+    },
+
+    /**
+     * Click profile-submit (variant="main"). Caller asserts the post-submit
+     * navigation target separately.
+     *
+     * Fail-fast: assert the button is enabled (bounded by the expect timeout)
+     * BEFORE clicking. profile-submit is `disabled={!canSubmit}` where
+     * `canSubmit = status !== 'loading'` (profile/+page.svelte:96) — it is NOT
+     * gated on required-field completeness, so this is safe to assert even
+     * when the required field is empty. A `status` stuck on 'loading' would
+     * otherwise let `.click()` retry the disabled button until the full
+     * per-test timeout; the bounded assertion surfaces that in seconds.
+     */
+    async submit(): Promise<void> {
+      const submitBtn = page.getByTestId(testIds.candidate.profile.submit);
+      await expect(submitBtn).toBeEnabled();
+      await submitBtn.click();
+    },
+
+    /**
+     * Assert the profile-submit flow advances away from /profile (i.e., the
+     * submit was successful — the page navigates to /candidate or
+     * /candidate/questions per the canSubmit branch at profile/+page.svelte:104-116).
+     */
+    async expectSubmitMessage(): Promise<void> {
+      await expect(page).toHaveURL(/\/candidate(?!\/profile)/);
+    }
+  };
+}
+
+export type CandidateProfilePageFixture = ReturnType<typeof createCandidateProfilePage>;
