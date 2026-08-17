@@ -24,11 +24,17 @@ All four are `type: module`, build with [`tsup`](https://tsup.egoist.dev/) + `ts
 
 ## Justified divergences
 
-A package may diverge from the canonical paradigm only when the divergence is documented inline (in `package.json`'s `description`, in the package's `README.md`, or in a comment beside the divergent field). The current divergences in the repo:
+A package may diverge from the canonical paradigm only when the divergence is documented inline (in `package.json`'s `description`, in the package's `README.md`, or in a comment beside the divergent field). Exactly four packages — `core`, `data`, `matching`, `filters` — carry the paradigm in full; every other `packages/*` workspace diverges, and each divergence is recorded here:
 
-- **`@openvaa/app-shared`** is `private: true` (not published — internal cross-cut between `apps/frontend/` and `apps/supabase/` plus dev tooling) and has a `scripts.test:unit: "vitest run --passWithNoTests"` (real unit tests live in `src/`).
+- **`@openvaa/app-shared`** is `private: true` (not published — internal cross-cut between `apps/frontend/` and `apps/supabase/` plus dev tooling) and has a `scripts.test:unit: "vitest run --passWithNoTests"` (real unit tests live in `src/`). Otherwise fully canonical: `tsup` build, flat barrel, `@openvaa/shared-config/ts`.
+- **`@openvaa/llm`** is `private: true` with no `license`/`LICENSE` — an experimental LLM package, not published while its API is unsettled. Everything else is canonical: `tsup` build, flat barrel, `@openvaa/shared-config/ts`.
+- **`@openvaa/argument-condensation`** and **`@openvaa/question-info`** are `private: true` with no `license`/`LICENSE`, as above, and additionally extend `scripts.build` past the canonical `tsup && tsc --emitDeclarationOnly --outDir dist` to copy their prompt directories into `dist/`. The prompts are loaded at runtime as data rather than imported, so the bundler does not carry them.
+- **`@openvaa/dev-tools`** is `private: true`, has no `license`/`LICENSE`, and does not build: it is a maintainer-only CLI (key generation, PEM→JWK conversion) run through `tsx`, so `scripts.build` is a deliberate no-op, `tsconfig.json` sets `noEmit: true`, and there is no `module`/`types`/`exports` surface because nothing imports it.
+- **`@openvaa/shared-config`** is `private: true` with no `license`/`LICENSE` and a no-op `scripts.build` — it _is_ the configuration the other packages extend (ESLint, TypeScript), consumed as source rather than as a bundle.
+- **`@openvaa/dev-seed`** is `private: true` with no `license`/`LICENSE` and a no-op `scripts.build` — a local-development seeder run through `tsx`.
+- **`@openvaa/supabase-types`** is `private: true` with no `license`/`LICENSE` and a no-op `scripts.build`, and its `exports`/`module` point at `./src/index.ts` rather than `./dist/` — it is generated output (`yarn db:types`) consumed directly as TypeScript source.
 
-No other packages currently diverge.
+Any workspace not listed above is expected to match the canonical shape. When you add or retire a package, update this list in the same commit — a stale list here is worse than no list, because it reads as an assurance.
 
 ## Adding a new package
 
