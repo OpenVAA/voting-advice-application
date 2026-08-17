@@ -1,3 +1,11 @@
+/**
+ * A recursively optional version of `TObject`: every property at every depth becomes optional, so a
+ * partial settings override can be typed against the full settings shape without restating it.
+ *
+ * NB. Only plain object properties are recursed into. Arrays and constructed objects (e.g. `Date`)
+ * match the `extends object` branch too, so their own properties are also made optional — which is
+ * consistent with how {@link mergeSettings} treats them (replaced wholesale, never element-merged).
+ */
 export type DeepPartial<TObject> = {
   [K in keyof TObject]?: TObject[K] extends object ? DeepPartial<TObject[K]> : TObject[K];
 };
@@ -26,6 +34,25 @@ export function mergeSettings<TTarget extends object, TSource extends object>(
   return deepMergeRecursively(result, source);
 }
 
+/*
+ * reason: the four `(target as any)[key]` writes below cannot be typed without `any`, and
+ * `@ts-expect-error` is not an alternative here.
+ *
+ * `TTarget` is an unconstrained `object`, so `key` — which `for…in` types as `keyof TSource` — is not
+ * a known key of `TTarget`, and TypeScript rejects the write with "expression of type 'string' can't
+ * be used to index type 'TTarget'". That is correct as far as the type system can see: this function
+ * is deliberately widening `target` by writing keys it does not yet declare, which is the whole
+ * operation `mergeSettings` performs. There is no assertion that expresses "index by an arbitrary key
+ * of the other type parameter" — `Record<string, unknown>` would compile but discards `TTarget`, and
+ * the caller-visible return type `TTarget & TSource` is what actually carries the safety, asserted
+ * once at the end of the function and covered by `mergeSettings.test.ts`.
+ *
+ * `@ts-expect-error` was considered and rejected: it suppresses the whole line rather than the single
+ * index expression, and it would fail the build the day the underlying error changes shape, turning a
+ * documented cast into an unrelated build break.
+ *
+ * The disable is scoped to this one function and re-enabled immediately after it.
+ */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function deepMergeRecursively<TTarget extends object, TSource extends object>(
   target: TTarget,
