@@ -13,14 +13,19 @@ criterion_3: closed-by-plan-151-08
 criterion_3_gate_red_is_expected: true
 per_slice_items: 12
 cells_expected: 163
-cells_filled: 159
-cells_pending: 4
+cells_filled: 163
+cells_pending: 0
 blank_cells: 0
 db_slice: "03"
 adapter_slice: "06"
 adapter_block_dispositioned: true  # by 151-14; the block's only appearance in the stack
 migrations_added: 0  # PD-02 answered by 151-11: no fix touched a migration
 e2e_collisions: 0
+suite_green: false  # 1 failed / 134 passed / 0 skipped / 0 did-not-run -- CARDINAL FAILURE, see the D-24 section
+suite_run_at: 2026-08-17T18:20:25Z
+suite_failure: "performance-budget.spec.ts:105 timeToMatches 7536 > 5000; ttfb 5718 = 76% of the window; resultsFetches invariant at 11"
+suite_root_cause: test-defect-cold-vite-ssr-under-contention  # NOT a landed fix; PD-01 finds no target
+findings_total_note: F-88 raised at 151-18
 dropped_finding_class_files: 841  # re-measured at 151-14 (was 842 at 151-06; the branch moved)
 dropped_finding_class_slice_06: 492
 dropped_finding_class_slice_07: 0  # the first slice whose diff IS its whole surface, proven two ways
@@ -39,7 +44,7 @@ f_15_operator_gate: accepted-options-1-and-2-at-151-16  # option 3 declined; sli
 comparable_total: 4413  # re-measured at 151-16; every rise attributed by set difference, zero files ever leaving
 slices_dispositioned: ["01a", "01b", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11"]
 findings_total: 84  # F-88 raised at 151-18
-status: in-progress
+status: cells-complete-suite-red
 approval: pending
 ---
 
@@ -191,10 +196,10 @@ produces its evidence.
 
 | # | Item | Verdict | Gate + measured reach (D-18) | Evidence produced by |
 |---|---|---|---|---|
-| **1** | Changes solve the issues the work set out to solve | `PENDING→18` | **none** — no gate exists; phase-level judgement against the phase's own success criteria and the root `ROADMAP.md` Addendum. | plan **151-18**, then operator approval of this record |
-| **11** | Troubleshoot failing checks in the PR | `PENDING→18` | **partial** — 6 CI jobs exist, but `supabase-tests` is conditional on a `dorny/paths-filter` over `apps/supabase/**` + `packages/supabase-types/**` and **every one of its four steps carries that `if:`** (`.github/workflows/main.yaml:87-93,95,101,105,110`). **Complement: on a sibling-based stacked PR whose diff-vs-base excludes those paths, the job reports green having run nothing** — it may not be cited for any stacked PR (`151-MEASUREMENTS.md` § 1.5). The trusted signal is D-24's full-suite run against the post-sweep branch tip, not per-PR CI. | plan **151-18** (D-24 run); PR #1's expected reds documented per Pitfall 7 |
-| **12** | Shared-dependency blast radius | `PENDING→18` | **partial** — `yarn build` (turbo topological) + `yarn test:unit` = **1,522 tests across 149 files**, green at the 151-03 baseline. **Complement: unit tests do not exercise the SSR/adapter boundary or the DB**; the E2E suite (43 specs) does, but only via the `e2e-tests` job, and `apps/docs` `test:unit` is `vitest run --passWithNoTests` — an empty pass. | plan **151-18** |
-| **16** | Clean, linear history per the commit guidelines | `PENDING→18` | **partial** — `scripts/verify-commit-taxonomy.sh`, a phase-local gate encoding criterion 4.1–4.6. **Complement: clause 4.4 is asserted by a named structural proxy (disjoint modified-path sets), not by the clause itself**, and the script prints the proxy's name on every run so no record can overclaim. There is no CI-side history gate. Criterion 4's restructure is itself the evidence. **Must be run over `C1..TIP`** (0 shared paths, CONFORMING) with the whole-stack `origin/main..TIP` run (628 shared paths, exit 1) recorded beside it and explained — a rename-based stack can never satisfy a proxy that treats a rename as a modification. **Both runs executed at plan 151-17 over the complete twelve-slice stack** and recorded in `151-STACK-MANIFEST.md` § "Slice 11 cut": `C1..TIP` **CONFORMING, exit 0, 0 shared paths**; `origin/main..TIP` **exit 1, 628 shared paths**, of which **0 involve any pair of later slices** (that follows from the `C1..TIP` run's zero, which excludes 01a) and **628/628 are under `apps/`**. The 420 figure was 151-05's dry-run measurement and is superseded. | plan **151-18**; the taxonomy runs themselves discharged at **151-17** — see *Open discrepancies* below |
+| **1** | Changes solve the issues the work set out to solve | **DEFERRED** → operator | **none** — no gate exists; phase-level judgement against the phase's own success criteria and the root `ROADMAP.md` Addendum. | plan **151-18**, then operator approval of this record |
+| **11** | Troubleshoot failing checks in the PR | **DEFERRED** | **partial** — 6 CI jobs exist, but `supabase-tests` is conditional on a `dorny/paths-filter` over `apps/supabase/**` + `packages/supabase-types/**` and **every one of its four steps carries that `if:`** (`.github/workflows/main.yaml:87-93,95,101,105,110`). **Complement: on a sibling-based stacked PR whose diff-vs-base excludes those paths, the job reports green having run nothing** — it may not be cited for any stacked PR (`151-MEASUREMENTS.md` § 1.5). The trusted signal is D-24's full-suite run against the post-sweep branch tip, not per-PR CI. | plan **151-18** (D-24 run); PR #1's expected reds documented per Pitfall 7 |
+| **12** | Shared-dependency blast radius | **MET** | **partial** — `yarn build` (turbo topological) + `yarn test:unit` = **1,522 tests across 149 files**, green at the 151-03 baseline. **Complement: unit tests do not exercise the SSR/adapter boundary or the DB**; the E2E suite (43 specs) does, but only via the `e2e-tests` job, and `apps/docs` `test:unit` is `vitest run --passWithNoTests` — an empty pass. | plan **151-18** |
+| **16** | Clean, linear history per the commit guidelines | **MET** | **partial** — `scripts/verify-commit-taxonomy.sh`, a phase-local gate encoding criterion 4.1–4.6. **Complement: clause 4.4 is asserted by a named structural proxy (disjoint modified-path sets), not by the clause itself**, and the script prints the proxy's name on every run so no record can overclaim. There is no CI-side history gate. Criterion 4's restructure is itself the evidence. **Must be run over `C1..TIP`** (0 shared paths, CONFORMING) with the whole-stack `origin/main..TIP` run (628 shared paths, exit 1) recorded beside it and explained — a rename-based stack can never satisfy a proxy that treats a rename as a modification. **Both runs executed at plan 151-17 over the complete twelve-slice stack** and recorded in `151-STACK-MANIFEST.md` § "Slice 11 cut": `C1..TIP` **CONFORMING, exit 0, 0 shared paths**; `origin/main..TIP` **exit 1, 628 shared paths**, of which **0 involve any pair of later slices** (that follows from the `C1..TIP` run's zero, which excludes 01a) and **628/628 are under `apps/`**. The 420 figure was 151-05's dry-run measurement and is superseded. | plan **151-18**; the taxonomy runs themselves discharged at **151-17** — see *Open discrepancies* below |
 
 ---
 
@@ -2993,3 +2998,168 @@ item 3.
 research prediction was that `skill-drift-check` **fails PR 01a**; that was measured false three
 times and stays false. What is true is narrower and was only visible by *running the script*: the job
 does not fail any PR in this stack, and will fail the first one after it.
+
+---
+
+## D-24 — the collective green signal: THE SUITE IS RED
+
+**Run by plan 151-18 against the post-sweep `feat-gsd-roadmap` tip. Result: `1 failed, 134 passed`,
+exit 1. This is a CARDINAL FAILURE and the phase does not proceed past it.**
+
+Recorded exactly as observed. The three phase-level cells this run was to discharge (**1**, **11**,
+**12**) therefore **cannot** be closed on a green signal, and `suite_green` is `false`.
+
+### Prerequisites — all three met, so the red is trustworthy
+
+A red result is only worth acting on if the run was set up correctly; otherwise it measures the
+setup. All three of the binding prerequisites were satisfied **before** the run.
+
+| # | Prerequisite | Evidence |
+|---|---|---|
+| 1 | **Clean database, reset from migrations** | `yarn db:reset` → exit **0**. Recreated, `roles.sql` globals, migrations `00001_initial_schema` / `00002_anon_select_terms_of_use…` / `00003_authenticated_insert_feedback` applied, `seed.sql` executed (`NOTICE: OpenVAA seed data executed successfully`), containers restarted, buckets `public-assets` + `private-assets` created. |
+| 2 | **Exactly one fresh dev server** | Port 5173 was **unoccupied** before start (`lsof` empty). One `yarn dev` started; `lsof -nP -iTCP:5173` reports a **single** listener, pid 88025, `[::1]:5173`. Vite 6.4.1, Paraglide compiled, `HTTP 200` on `GET /`. No pre-existing server to steal the port. |
+| 3 | **Preflight passed** | The **positive** assertion line, once: `E2E PREFLIGHT OK /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend (verified against /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd)`. The served application echoed **this** working tree's absolute path back through Vite's `/@fs` endpoint, so the suite provably drove this checkout. |
+
+**PD-02 does not fire.** `migrations_added: 0` — plan 151-11 established that no fix in this phase
+touched a migration, so the SQL-linter and pgTAP obligations attached to a migration-bearing phase
+have no trigger. (`yarn db:lint:sql`'s standing F-21 red is unrelated and remains the expected state
+on a correct tree, per the operator's option-(a) decision.)
+
+### The run
+
+| field | value |
+|---|---|
+| command | `yarn test:e2e` (the gate suite; `--grep-invert @probe`) |
+| started / ended (UTC) | `2026-08-17T18:20:25Z` → `2026-08-17T18:31:44Z` |
+| wall time | **11.3 min** (Playwright's own figure), 11m19s by clock |
+| workers | 6 (local default) |
+| tests | **135** |
+| **passed** | **134** |
+| **failed** | **1** |
+| skipped | **0** |
+| did-not-run | **0** |
+| **exit code** | **1** |
+
+**Zero skipped and zero did-not-run** — no cascade failure, no silent omission. The single failure is
+a genuine assertion failure with a measured value, not a timeout or an infrastructure abort.
+
+### The failure, verbatim
+
+```
+1) [performance] › tests/tests/specs/perf/performance-budget.spec.ts:105:3 ›
+   Performance budgets › voter results page renders matches within budget @perf
+
+Results performance: {"timeToMatches":7536,"resultsFetches":11,"cardCount":13,"scoreCount":13,
+  "navigationTiming":{"domContentLoaded":5812,"loadComplete":5823,"ttfb":5718}}
+
+    Error: expect(received).toBeLessThan(expected)
+    Expected: < 5000
+    Received:   7536
+
+    > 169 |     expect(timeToMatches).toBeLessThan(TIME_TO_MATCHES_BUDGET_MS);
+```
+
+### Root cause — diagnosed, and re-tested in isolation before being accepted
+
+**The spec's own design decides this, and it decides against a code regression.** Its docblock states
+that Navigation Timing is logged *"so a budget failure shows whether the regression is server-side
+(ttfb climbs) or client-side (ttfb flat, timeToMatches climbs)"*, and it carries a second,
+deliberately **load-independent** assertion — the results-fetch count — as *"the guard that catches
+an N+1 or a duplicated fetch chain regardless of how fast the machine is, so it cannot be silently
+absorbed by faster hardware."*
+
+Both diagnostics point the same way:
+
+| signal | calibrated | full-suite run | verdict |
+|---|---|---|---|
+| `resultsFetches` (load-independent regression guard) | 11 invariant, budget ≤ 13 | **11** | **PASS — fetch shape unchanged** |
+| `ttfb` (server-side term) | 30–173 ms warm; ~428 ms just-started | **5,718 ms** | 33–190× warm; **13× the cold allowance the budget was calibrated to absorb** |
+| `timeToMatches` (wall clock) | 296–522 idle, 821–1,504 contended | **7,536 ms** | over the 5,000 ms budget |
+
+**TTFB is 5,718 ms of the 7,536 ms — 76% of the measured window.** The client-side remainder
+(~1,818 ms) sits in the documented contended range. The failure is server-side.
+
+**Isolation re-test — three runs, warm server, same tree** (diagnostic only; these are **not** the
+gate and are not offered as one):
+
+```
+run 1: timeToMatches 256 ms   resultsFetches 11   ttfb 44 ms   → 3 passed
+run 2: timeToMatches 414 ms   resultsFetches 11   ttfb 25 ms   → 3 passed
+run 3: timeToMatches 270 ms   resultsFetches 11   ttfb 38 ms   → 3 passed
+```
+
+256–414 ms against a 5,000 ms budget — **12–20× under**, squarely inside the docblock's own idle
+calibration band (296–522 ms). **`resultsFetches` is 11 in all four runs**, in-suite and isolated.
+
+**PD-01 was applied and finds no target.** PD-01 directs that the landed fix which caused the
+regression be identified and reverted. The candidate was real and was checked rather than dismissed:
+**`f91356687` (151-15) modifies `results/[[electionTab]]/+layout.svelte`** — the exact route this
+spec measures — changing `dataRoot`/`appSettings` from destructured locals to in-scope reads. If that
+change had caused a regression it would show as **more fetches** or as a **client-side** climb with
+flat TTFB. Measured: fetches invariant at 11, and the climb is 76% TTFB. **No landed fix caused this
+failure**, so PD-01's default remedy — revert the fix — has nothing to revert, and reverting
+`f91356687` would reintroduce a real reactivity bug to no effect on this metric.
+
+**The defect is in the test, and CLAUDE.md says to iron it out rather than skip it.** The budget's
+cold-start allowance was calibrated against a server measured at `ttfb 428 ms`; this run hit `/results`
+as the **first** request to that route on a freshly started dev server, under 6-way worker contention,
+against a **13-card** result set (vs 6 in isolation — the perm setup projects' data coexisting, which
+the run's own `Database is NOT fresh` notices report). Vite's one-time on-demand transform of the
+heaviest route in the application is inside the measured window and is not application performance.
+
+**No flaky annotation, no skip, no retry-until-green was applied, and none will be.**
+
+### Why this executor did not fix it — the blast radius makes it an operator decision
+
+The fix is small in the file and large in the stack. `tests/tests/specs/perf/performance-budget.spec.ts`
+belongs to **slice 05** (pathspec `tests`), which is **published as PR #868** at `545cc26c8`.
+
+```
+$ git ls-remote --heads origin ship/v0.2-akita-05-e2e-tests
+545cc26c8790c54b532f3d50fe5bceb02d851177   refs/heads/ship/v0.2-akita-05-e2e-tests
+```
+
+Any commit touching `tests/` makes slice 05 stale, and because the stack is a chain, slice 05 and
+**every published slice above it — 06, 07, 08, 09, 10 — would have to be re-cut and force-pushed**
+(11 is unpushed and re-cuts freely). **Force-pushing is forbidden in this phase without a fresh
+operator decision**, and it is forbidden precisely because five open pull requests would have their
+history rewritten under any reviewer already looking at them.
+
+So the choice is genuinely the operator's, and it is put at this plan's checkpoint rather than
+resolved by an agent:
+
+- **fix-and-recut** — correct the spec (e.g. warm the route before the measured reload, which removes
+  Vite's one-time transform from the window **without** weakening the budget the calibration data
+  supports), re-cut slices 05–11, force-push five published branches, then re-run the full suite.
+- **ship-with-waiver** — record the failure as a known, diagnosed, environment-dominated test defect
+  under a waiver, and publish. This requires the v2.14 waiver's conditions to be met and quoted.
+- **hold** — publish nothing further until the suite is green.
+
+### Phase-level cells — what this run does and does not discharge
+
+| # | Item | Verdict | Basis |
+|---|---|---|---|
+| **11** | Troubleshoot failing checks in the PR | **DEFERRED** | The suite's one failure is diagnosed to its root cause above, and PR 01a's CI is now recorded from a **real run** rather than predicted (below). Deferred rather than met because the failing check is **not fixed** — fixing it is the operator decision above. |
+| **12** | Shared-dependency blast radius | **MET** | `yarn build` 14/14 and `yarn test:unit` 1,522 tests / 149 files at the 151-03 baseline, **plus** this run: 134 of 135 E2E tests green across voter, candidate, a11y, perf and the full permutation matrix — the boundary unit tests cannot reach (SSR, adapter, database). **Complement (D-18): the one uncovered surface is the performance envelope itself**, which is the single thing that failed; and `apps/docs`' `test:unit` remains an empty `--passWithNoTests`. |
+| **1** | Changes solve the issues the work set out to solve | **DEFERRED → operator** | Criteria 4, 5 and 7 are proven by command (`151-BYTE-IDENTITY-PROOF.md` § final); criteria 1 and 3 are closed; criterion 2's sweep is complete across all twelve slices. **Criterion 6's manual half and this cell's judgement are the operator's**, and they are now the only things outstanding. This cell cannot be self-certified by the agent that did the work. |
+
+### PR 01a's ACTUAL failing jobs — measured, replacing the predicted list
+
+Read from the REST endpoint at head `602b79351` (**GraphQL returned `HTTP 503`**, so `gh pr checks`
+was unusable; the REST check-runs endpoint served it, and an API outage was not read as a state
+change):
+
+| job | conclusion |
+|---|---|
+| `e2e-tests` | **failure** |
+| `backend-validation` | **failure** |
+| `frontend-and-shared-module-validation` | **failure** |
+| `CodeQL` | success |
+| `Analyze (actions)` | success |
+| `Analyze (javascript-typescript)` | success |
+
+**Exactly three failing jobs, and `skill-drift-check` is not among them — Pitfall 7 refuted for the
+fourth time.** PR 01a targets `main`, so the workflow that runs is `origin/main`'s three-job version,
+which has no such job; `backend-validation` appears here and nowhere else in the stack because it
+validates the Strapi backend that slice 01b deletes. This is the measured list; the phase's earlier
+predicted list is superseded.
