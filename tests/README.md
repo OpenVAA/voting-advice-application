@@ -6,7 +6,8 @@ Playwright-driven cross-monorepo E2E tests covering the voter app, candidate app
 
 ```bash
 # Prereqs: yarn install && (in another shell) yarn dev
-yarn test:e2e                              # full suite — configured for 6 workers (1 on CI)
+yarn test:e2e                              # the gate suite — 6 workers (1 on CI); EXCLUDES the @probe specs
+yarn test:e2e:probes                       # the 5 isolation probes, run one at a time
 yarn test:e2e --project=voter-journey      # one project (still pulls in its dependency chain)
 yarn test:e2e --grep "result card"         # filter by title substring
 yarn test:e2e --reporter=line              # less noisy output
@@ -185,6 +186,23 @@ Each `perm-<short>` spec project depends on its own `data-setup-perm-<short>` an
 | `bank-auth`         | `PLAYWRIGHT_BANK_AUTH=1` | `tests/specs/candidate/candidate-bank-auth.spec.ts` | `data-setup-base`                | Spec throws at module load without `SUPABASE_SERVICE_ROLE_KEY`/`SUPABASE_ANON_KEY`, and 3 tests need the `identity-callback` Edge Function served (`--no-verify-jwt`). Idura/Signicat OIDC integration test.             |
 | `bank-auth-journey` | `PLAYWRIGHT_BANK_AUTH=1` | `tests/specs/candidate/candidate-bank-auth-journey.spec.ts` | `data-setup-bank-auth-journey`, which (see phase 140 WR-03) depends on `voter-prefs-tracking` — the **tail of the perm serial chain** | Full-browser preregister journey against a mock OIDC issuer (`webServer`-spawned, HTTPS, self-signed localhost cert). See `IDURA-TEST-RUNBOOK.md` Step B-3. **`--project=bank-auth-journey` pulls the whole chain transitively and takes full-suite time**, by design: the setup does an authoritative `app_settings` REPLACE, and the singleton needs mutual exclusion, which in this config means being in the serial chain. RESEARCH A4 ("stands alone") is deliberately superseded. Selection is identity-based (`[EL1]`/`[CO1]`), so foreign datasets fail the walk loudly rather than being silently preregistered into (see phase 140 CR-01). |
 
+### Isolation probes — excluded from the gate suite
+
+`yarn test:e2e` appends `--grep-invert @probe`, so the five specs under
+[`tests/specs/_probes/`](./tests/specs/_probes/) do **not** run in it. They are fixtures-first
+isolation probes (`numberScale`, `orgMatching`, `popupNotice`, `questionInfo`, `video`), each
+tagged `@probe`, and they sit deliberately OUTSIDE the perm serial DAG: each clobbers the shared
+`app_settings` singleton, so each must run alone and be seeded out of band. Run them with
+`yarn test:e2e:probes <probe-file>` (project `_probes`).
+
+The project's `testMatch` enumerates the probe files by name, and `playwright.config.ts` throws at
+config load if a `*.probe.spec.ts` file matches no project — so a probe cannot silently exist while
+running from nowhere.
+
+| Project   | Enable with            | Spec dir               | Depends on | Notes                                                                  |
+| --------- | ---------------------- | ---------------------- | ---------- | ---------------------------------------------------------------------- |
+| `_probes` | `yarn test:e2e:probes` | `tests/specs/_probes/` | none       | 5 specs, LEAF, no `data-setup`; seeded out of band, run one at a time. |
+
 ---
 
 ## Datasets reference
@@ -214,7 +232,7 @@ Fixtures + setup follow a role-based shape:
 
 - **`tests/tests/fixtures/voter/`** — voter-app UI surface fixtures (`voter-journey.fixture.ts`, `views.ts`, `resultsPage.fixture.ts`, `entityDetails.fixture.ts`, `entityFilters.fixture.ts`, `minimalVoterResultsPage.fixture.ts`, `voterNavFixture.fixture.ts`, …). Perm specs importing these is fine — perm is a test _family_, not a separate app.
 - **`tests/tests/fixtures/candidate/`** — candidate-app fixtures (`candidate-journey.ts` composition root, login/profile/question page fixtures).
-- **`tests/tests/fixtures/shared/`** — genuinely cross-app helpers only (`emailBucket.fixture.ts`, `langSelectorFixture.fixture.ts`, `multilingualTextFieldFixture.fixture.ts`, `feedbackDialog.fixture.ts`).
+- **`tests/tests/fixtures/shared/`** — genuinely cross-app helpers only. All ten: `emailBucket.fixture.ts`, `feedbackDialog.fixture.ts`, `forensicCapture.fixture.ts`, `langSelectorFixture.fixture.ts`, `multilingualTextFieldFixture.fixture.ts`, `navMenu.fixture.ts`, `popupNotice.fixture.ts`, `theme.fixture.ts`, `trackingIntercept.fixture.ts`, `video.fixture.ts`.
 - **`tests/tests/setup/shared/`** — cross-role infra (`auth.setup.ts`, `setupFromTemplate.ts`, the merged `base.setup.ts` / `base.teardown.ts`).
 - **`tests/tests/setup/candidate/`** — candidate-journey setup/teardown.
 - **`tests/tests/setup/perm/`** — the `perm-*` setup/teardown pairs.
