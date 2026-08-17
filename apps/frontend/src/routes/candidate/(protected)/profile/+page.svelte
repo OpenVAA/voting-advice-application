@@ -1,0 +1,366 @@
+<!--@component
+
+# Candidate app profile basic info page
+
+Shows the candidate's basic information, some of which is editable.
+
+### Settings
+
+- `entities.hideIfMissingAnswers.candidate`: Affects message shown.
+-->
+
+<script lang="ts">
+  import { getCustomData } from '@openvaa/app-shared';
+  import { isEmptyValue } from '@openvaa/data';
+  import { goto } from '$app/navigation';
+  import { Button } from '$lib/components/button';
+  import { ErrorMessage } from '$lib/components/errorMessage';
+  import { Icon } from '$lib/components/icon';
+  import { iconBadgeClass, Input, InputGroup, QuestionInput } from '$lib/components/input';
+  import PreventNavigation from '$lib/components/preventNavigation/PreventNavigation.svelte';
+  import { SuccessMessage } from '$lib/components/successMessage';
+  import { Warning } from '$lib/components/warning';
+  import { getCandidateContext } from '$lib/contexts/candidate';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { logDebugError } from '$lib/utils/logger';
+  import MainContent from '../../../MainContent.svelte';
+  import type { LocalizedAnswer } from '@openvaa/app-shared';
+  import type { AnyNominationVariantPublicData, AnyQuestionVariant } from '@openvaa/data';
+
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  // see phase 61 follow-up: read reactive context getters via candCtx.X.
+  const candCtx = getCandidateContext();
+  const { getRoute, t, userData } = candCtx;
+  // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via candCtx.X, never destructure.
+  const appSettings = $derived(candCtx.appSettings);
+  // dataRoot is identity-stable (#version-bridge): read `candCtx.dataRoot.<prop>` directly in the tracking scope,
+  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" and the
+  // stable-reference alias anti-pattern (see spike 024, see phase 117).
+  const { pageStyles } = getLayoutContext();
+
+  ////////////////////////////////////////////////////////////////////
+  // State variables
+  ////////////////////////////////////////////////////////////////////
+
+  let bypassPreventNavigation = $state(false);
+  let status = $state<ActionStatus>('idle');
+
+  ////////////////////////////////////////////////////////////////////
+  // Display immutable data
+  ////////////////////////////////////////////////////////////////////
+
+  // The candidate's nominations are loaded as raw partial data on `userData`
+  // (NOT provided to `dataRoot` — see the candidate protected +layout.svelte).
+  // We format them directly here, resolving election/constituency names from
+  // `dataRoot` (which DOES hold elections + constituencies via question data).
+  let nominations = $derived(userData.current?.nominations?.nominations ?? []);
+
+  /**
+   * Return the data from a raw nomination needed for displaying it.
+   */
+  function parseNomination(nomination: AnyNominationVariantPublicData): {
+    election?: string;
+    constituency?: string;
+    organization?: string;
+    electionSymbol?: string;
+    unconfirmed?: boolean;
+  } {
+    try {
+      const election = candCtx.dataRoot.getElection(nomination.electionId);
+      const constituency = candCtx.dataRoot.getConstituency(nomination.constituencyId);
+      return {
+        election: election.name,
+        constituency: constituency.name,
+        // Raw partial nomination data carries no parent-nomination (election
+        // list / organization) nor confirmed-state info — those live only in
+        // the full nomination graph, which the candidate app does not load.
+        organization: undefined,
+        electionSymbol: nomination.electionSymbol ?? undefined,
+        unconfirmed: false
+      };
+    } catch (e) {
+      logDebugError(`Error formatting nomination: ${e}`);
+      return {
+        unconfirmed: true
+      };
+    }
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // Handle saving answers and define submit label and notes
+  ////////////////////////////////////////////////////////////////////
+
+  let allRequiredFilled = $derived(
+    !candCtx.requiredInfoQuestions.some((q) => isEmptyValue(userData.current?.candidate.answers?.[q.id]?.value))
+  );
+
+  let canSubmit = $derived(status !== 'loading');
+
+  let submitRouting = $derived.by(() => {
+    if (allRequiredFilled && candCtx.unansweredOpinionQuestions.length && !candCtx.answersLocked) {
+      return {
+        submitRoute: getRoute.current('CandAppQuestions'),
+        submitLabel: userData.hasUnsaved ? t('common.saveAndContinue') : t('common.continue')
+      };
+    }
+    return {
+      submitRoute: getRoute.current('CandAppHome'),
+      submitLabel: candCtx.answersLocked || !userData.hasUnsaved ? t('common.return') : t('common.saveAndReturn')
+    };
+  });
+
+  function handleImageInputChange(value: unknown): void {
+    if (!value) {
+      userData.resetImage();
+      return;
+    }
+    const image = value as ImageWithFile;
+    userData.setImage(image);
+  }
+
+  function handleQuestionInputChange({ value, question }: { value: unknown; question: AnyQuestionVariant }): void {
+    const answer = { value } as LocalizedAnswer;
+    userData.setAnswer(question.id, answer);
+  }
+
+  async function handleSubmit(): Promise<void> {
+    if (!canSubmit) {
+      status = 'error';
+      logDebugError('[Candidate app question page]: handleSubmit called when canSubmit is false');
+      return;
+    }
+    status = 'loading';
+    // Request email to be sent in the backend
+    const result = await userData.save().catch((e) => {
+      logDebugError(`[Candidate app question page] Error saving userData: ${e?.message}`);
+      return undefined;
+    });
+    if (result?.type !== 'success') {
+      status = 'error';
+      return;
+    }
+    status = 'success';
+    goto(submitRouting.submitRoute);
+  }
+
+  /**
+   * Handle cancel button click.
+   */
+  function handleCancel(): void {
+    bypassPreventNavigation = true;
+    userData.resetUnsaved();
+    goto(getRoute.current('CandAppHome')).then(() => (bypassPreventNavigation = false));
+  }
+
+  /**
+   * Reset saved answers when leaving the page.
+   */
+  function handleNavigationConfirm(): void {
+    userData.resetUnsaved();
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // Styling
+  ////////////////////////////////////////////////////////////////////
+
+  pageStyles.use({ drawer: { background: 'bg-base-200' } });
+
+  const subheadingClass = 'text-lg mt-lg mb-md mx-md';
+</script>
+
+<PreventNavigation
+  active={() => !bypassPreventNavigation && userData.hasUnsaved && !candCtx.answersLocked}
+  onConfirm={handleNavigationConfirm} />
+
+<MainContent title={t('candidateApp.basicInfo.title')}>
+  {#snippet note()}
+    {#if candCtx.answersLocked}
+      <Warning data-testid="candidate-answers-locked-warning">
+        {t('candidateApp.common.editingNotAllowed')}
+        {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || (appSettings.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
+          {t('candidateApp.common.isHiddenBecauseMissing')}
+        {/if}
+      </Warning>
+    {:else if candCtx.profileComplete}
+      <SuccessMessage inline message={t('candidateApp.common.fullyCompleted')} />
+    {/if}
+  {/snippet}
+
+  <p class="text-center">
+    {t('candidateApp.basicInfo.instructions')}
+  </p>
+
+  <!-- Immutable personal data -->
+
+  <section>
+    <h2 class={subheadingClass}>{t('dynamic.candidateAppBasicInfo.immutableData.title')}</h2>
+    <p class="mx-md">{t('dynamic.candidateAppBasicInfo.immutableData.ingress')}</p>
+    <InputGroup class="mt-lg">
+      <Input
+        type="text"
+        label={t('common.firstName')}
+        value={userData.current?.candidate.firstName}
+        onShadedBg
+        locked
+        data-testid="profile-first-name" />
+      <Input
+        type="text"
+        label={t('common.lastName')}
+        value={userData.current?.candidate.lastName}
+        onShadedBg
+        locked
+        data-testid="profile-last-name" />
+
+      <!-- Locked Info questions -->
+      {#each candCtx.infoQuestions.filter((q) => getCustomData(q).locked) as question}
+        {@const answer = userData.current?.candidate.answers?.[question.id]}
+        <QuestionInput
+          {question}
+          {answer}
+          locked
+          onShadedBg
+          disableMultilingual
+          placeholder={t('dynamic.candidateAppBasicInfo.immutableData.emptyPlaceholder')} />
+      {/each}
+    </InputGroup>
+  </section>
+
+  <!-- Immutable nominations -->
+
+  <section data-testid="candidate-profile-nominations">
+    <h2 class={subheadingClass}>{t('candidateApp.basicInfo.nominations.title')}</h2>
+    <p class="mx-md">{t('candidateApp.basicInfo.nominations.description')}</p>
+
+    <div class="gap-lg flex flex-col">
+      {#each nominations as nomination}
+        {@const { election, constituency, organization, electionSymbol, unconfirmed } = parseNomination(nomination)}
+        <InputGroup title={election}>
+          {#if constituency}
+            <Input
+              type="text"
+              label={t('common.constituency')}
+              value={constituency}
+              onShadedBg
+              locked
+              data-testid="nomination-constituency" />
+          {/if}
+          {#if organization}
+            <Input type="text" label={t('common.electionList')} value={organization} onShadedBg locked />
+          {/if}
+          {#if electionSymbol}
+            <Input
+              type="text"
+              label={t('common.electionSymbol.candidate')}
+              value={electionSymbol}
+              onShadedBg
+              locked
+              data-testid="nomination-election-symbol" />
+          {/if}
+          <Input
+            type="text"
+            label={t('common.state')}
+            value={unconfirmed ? t('common.pending') : t('common.confirmed')}
+            onShadedBg
+            locked />
+        </InputGroup>
+      {/each}
+    </div>
+  </section>
+
+  <!-- Editable data -->
+
+  <section>
+    <h2 class={subheadingClass}>{t('candidateApp.basicInfo.editableInfos.title')}</h2>
+
+    <div class="gap-md flex flex-col">
+      <!-- Image -->
+
+      <!--
+        see phase 89 Plan 02 (TIR4:75-76 + 166-188): wrap the image Input in a div
+        carrying `profile-image-error`. Input.svelte's <ErrorMessage> at
+        :640-642 is shared across all input types (text / email / image /
+        textarea-multilingual), so a testid added inside Input would be
+        ambiguous. Wrapping at the call site scopes the testid to image-upload
+        errors only.
+      -->
+      <div data-testid="profile-image-error">
+        <Input
+          type="image"
+          label={t('common.candidatePortrait')}
+          value={userData.current?.candidate.image}
+          onChange={handleImageInputChange}
+          locked={candCtx.answersLocked}
+          onShadedBg
+          containerProps={{ 'data-testid': 'profile-image-upload' }} />
+      </div>
+
+      <!-- Editable Info questions -->
+
+      <!-- {#each}: keyed — QuestionInput carries per-item interactive state (bind:value, focus, uncommitted draft); positional reuse on reorder/filter would corrupt state across questions -->
+      {#each candCtx.infoQuestions.filter((q) => !getCustomData(q).locked) as question (question.id)}
+        {@const answer = userData.current?.candidate.answers?.[question.id]}
+        <div data-testid="candidate-profile-info-item">
+          <QuestionInput
+            {question}
+            {answer}
+            onChange={handleQuestionInputChange}
+            locked={candCtx.answersLocked}
+            onShadedBg />
+        </div>
+      {/each}
+    </div>
+  </section>
+
+  <!-- Submit button and error messages -->
+
+  {#snippet primaryActions()}
+    {#if !candCtx.answersLocked}
+      <div class="mx-md mb-lg mt-md transition-opacity" class:opacity-0={status === 'loading' || allRequiredFilled}>
+        <Icon name="required" class="{iconBadgeClass} text-warning" /><span class="sr-only"
+          >{t('common.required')}</span>
+        {t('candidateApp.basicInfo.requiredInfo')}
+      </div>
+    {/if}
+
+    {#if status === 'error'}
+      <ErrorMessage inline message={t('candidateApp.error.saveFailed')} class="mb-lg mt-md" />
+    {/if}
+
+    <div class="grid w-full justify-items-center">
+      {#if !candCtx.answersLocked}
+        <Button
+          text={submitRouting.submitLabel}
+          onclick={handleSubmit}
+          disabled={!canSubmit}
+          loading={status === 'loading'}
+          loadingText={t('common.saving')}
+          type="submit"
+          data-testid="profile-submit"
+          variant="main"
+          icon="next" />
+        <Button
+          text={t('common.cancel')}
+          disabled={!userData.hasUnsaved}
+          onclick={handleCancel}
+          color="warning"
+          data-testid="profile-cancel" />
+      {:else}
+        <Button
+          text={t('common.return')}
+          href={getRoute.current('CandAppHome')}
+          variant="main"
+          data-testid="profile-return" />
+      {/if}
+    </div>
+  {/snippet}
+</MainContent>
+
+<style lang="postcss">
+  @reference "../../../../tailwind-theme.css";
+  section {
+    @apply mt-lg self-stretch;
+  }
+</style>
