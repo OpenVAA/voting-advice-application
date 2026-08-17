@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 26
+open_count: 30
 waived_count: 0
 fixed_count: 0
-total_count: 26
-last_updated: 2026-08-17T11:44:12.162Z
+total_count: 30
+last_updated: 2026-08-17T12:30:33.379Z
 ---
 
 # Broken Windows Ledger
@@ -41,6 +41,10 @@ last_updated: 2026-08-17T11:44:12.162Z
 | 24 | 151 | deviation | packages/dev-seed/src/cli/seed.ts | 123 | F-38: live forward-compatibility scaffolding for shipped plans — writer.write cast to (...args: Array<unknown>) defeats type-checking on a real call; D-13 excludes the restructure | open |  | 2026-08-17T11:44:11.884Z |  |
 | 25 | 151 | deviation | packages/dev-seed/README.md |  | F-36: dev-seed has no locality guard; both CLIs fall back SUPABASE_URL ??= PUBLIC_SUPABASE_URL and seed:teardown has no env enforcement. Documented, not guarded — operator decision | open |  | 2026-08-17T11:44:12.028Z |  |
 | 26 | 151 | lint-warning | packages/dev-seed/src/generators |  | F-39: 15 of the repo's 20 lint:check warnings, all unused-ctx on the uniform generator signature; the /^_/ remedy would move the phase-wide baseline | open |  | 2026-08-17T11:44:12.162Z |  |
+| 27 | 151 | deviation | .planning/phases/151-ship-v0-2-akita-review-stack/151-DISPOSITION.md |  | F-44: hygiene-grep-report.sh reports plan-number occ=0 OK over a tree with 35 plan references in tests/ alone (3 pattern blind spots); recorded not patched, routed to 151-19 | open |  | 2026-08-17T12:30:32.948Z |  |
+| 28 | 151 | unrun-verify | tests/ |  | 43 E2E specs not run during the slice-05 sweep (no dev server / no seeded Supabase); per CLAUDE.md a did-not-run counts as a failure until D-24's full-suite run at 151-18 | open |  | 2026-08-17T12:30:33.131Z |  |
+| 29 | 151 | lint-warning | tests/tests/support/mockOidcIssuerEntry.ts | 33 | F-49: eslint-disable directive for no-console that the rule reports no problems for; deferred because fixing it moves the 20-warning baseline eight later plans compare against | open |  | 2026-08-17T12:30:33.261Z |  |
+| 30 | 151 | deviation | tests/playwright.config.ts | 307 | F-50: CI retries:3 can green a flaky test; accepted because determinism-batch.sh refuses to run under CI for exactly this reason and fails on flaky!=0 | open |  | 2026-08-17T12:30:33.379Z |  |
 
 ````json
 [
@@ -354,6 +358,54 @@ last_updated: 2026-08-17T11:44:12.162Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-08-17T11:44:12.162Z",
+    "resolved_at": null
+  },
+  {
+    "id": 27,
+    "kind": "deviation",
+    "phase": "151",
+    "file": ".planning/phases/151-ship-v0-2-akita-review-stack/151-DISPOSITION.md",
+    "line": null,
+    "description": "F-44: hygiene-grep-report.sh reports plan-number occ=0 OK over a tree with 35 plan references in tests/ alone (3 pattern blind spots); recorded not patched, routed to 151-19",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T12:30:32.948Z",
+    "resolved_at": null
+  },
+  {
+    "id": 28,
+    "kind": "unrun-verify",
+    "phase": "151",
+    "file": "tests/",
+    "line": null,
+    "description": "43 E2E specs not run during the slice-05 sweep (no dev server / no seeded Supabase); per CLAUDE.md a did-not-run counts as a failure until D-24's full-suite run at 151-18",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T12:30:33.131Z",
+    "resolved_at": null
+  },
+  {
+    "id": 29,
+    "kind": "lint-warning",
+    "phase": "151",
+    "file": "tests/tests/support/mockOidcIssuerEntry.ts",
+    "line": 33,
+    "description": "F-49: eslint-disable directive for no-console that the rule reports no problems for; deferred because fixing it moves the 20-warning baseline eight later plans compare against",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T12:30:33.261Z",
+    "resolved_at": null
+  },
+  {
+    "id": 30,
+    "kind": "deviation",
+    "phase": "151",
+    "file": "tests/playwright.config.ts",
+    "line": 307,
+    "description": "F-50: CI retries:3 can green a flaky test; accepted because determinism-batch.sh refuses to run under CI for exactly this reason and fails on flaky!=0",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T12:30:33.379Z",
     "resolved_at": null
   }
 ]

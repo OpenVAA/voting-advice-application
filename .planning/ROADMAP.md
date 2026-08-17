@@ -627,7 +627,7 @@ each plan's `requirements` field cites the criteria it serves (`criterion-1` …
      a reviewer would otherwise read changes that a later commit undoes, or a partial version of a
      feature that was later reworked.
 
-**Plans:** 12/19 plans executed, 17 waves. Tracer-first: plan 01 proves the whole stack mechanism end to end on
+**Plans:** 13/19 plans executed, 17 waves. Tracer-first: plan 01 proves the whole stack mechanism end to end on
 throwaway refs before any sweep, slice or PR exists. Slice work is serialised bottom-up per D-07.
 
 Plans:
@@ -675,7 +675,7 @@ Plans:
 
 **Wave 11** *(blocked on Wave 10 completion)*
 
-- [ ] 151-13-PLAN.md — Sweep and cut slice 05, the E2E suite; open PR 04 (wave 11)
+- [x] 151-13-PLAN.md — Sweep and cut slice 05, the E2E suite; open PR 04 (wave 11)
 
 **Wave 12** *(blocked on Wave 11 completion)*
 

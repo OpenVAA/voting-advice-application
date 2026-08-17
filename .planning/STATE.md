@@ -5,15 +5,15 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 151
 current_phase_name: ship-v0-2-akita-review-stack
 status: executing
-stopped_at: Completed 151-12-PLAN.md
-last_updated: "2026-08-17T11:43:59.654Z"
+stopped_at: "Completed 151-13-PLAN.md — slice 05 cut at 545cc26c8, PR #867 open"
+last_updated: "2026-08-17T12:30:02.532Z"
 last_activity: 2026-08-16
 last_activity_desc: Phase 151 execution started
 progress:
   total_phases: 15
   completed_phases: 4
   total_plans: 43
-  completed_plans: 36
+  completed_plans: 37
   percent: 27
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-151, 15 phases, 38 requirements)
 Phase: 151 (ship-v0-2-akita-review-stack) — EXECUTING
-Plan: 13 of 19
+Plan: 14 of 19
 Status: Ready to execute
 Last activity: 2026-08-16 — Phase 151 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-17T11:43:59.632Z
-Stopped at: Completed 151-12-PLAN.md
+Last session: 2026-08-17T12:30:02.510Z
+Stopped at: Completed 151-13-PLAN.md — slice 05 cut at 545cc26c8, PR #867 open
 Resume file: None
 
 ## Deferred Items
@@ -161,6 +161,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 151 P10 | ~50m | 4 tasks | 5 files |
 | Phase 151 P11 | ~1h40m | 3 tasks | 9 files |
 | Phase 151 P12 | ~1h25m | 3 tasks | 10 files |
+| Phase 151 P13 | 96 | 3 tasks | 26 files |
 
 ## Deferred Items
 
@@ -694,6 +695,10 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: 151-12: fixes committed before the disposition record, inverting the plan's task order — a cell may not read FIXED before the commit it cites exists
 - [Phase ?]: 151-12: F-39 not fixed — dev-seed's 15 lint warnings are one deliberate class, and the remedy would move a phase-wide baseline eight later plans compare against
 - [Phase ?]: 151-12: F-36's locality guard deferred to the operator — dev-seed has none, and adding one changes the behaviour of a command that deletes rows
+- [Phase ?]: [Phase 151-13]: Item 13 (WCAG) verdict for the E2E slice is MET-with-complement, not n/a: slice 05 IS the a11y gate, so the item's surface is the gate's adequacy — 7 route entries / 5 URLs / 14 tests x 2 themes, with 31 of 36 route surfaces named as unreached.
+- [Phase ?]: [Phase 151-13]: Item 14 (keyboard + screen-reader) is DEFERRED, not MET: the keyboard half has no gate anywhere — axe is a static-DOM auditor, so keyboard is uncovered on the 5 scanned routes as much as on the other 31.
+- [Phase ?]: [Phase 151-13]: F-44 (hygiene gate reports plan-number occ=0 over a tree with 35 plan references) is recorded, not patched: widening a pattern mid-stack would move operator-approved counts, the F-39 failure mode. Routed to 151-19; 151-14/15/16 must run the three patterns themselves.
+- [Phase ?]: [Phase 151-13]: PR-title format stabilised at 'N/12 <slices.tsv subject verbatim>' from 151-14 onward; PRs #863, #864 and #866 are NOT retitled — editing a live PR's title to match a later convention is churn.
 
 ### Quick Tasks Completed
 
