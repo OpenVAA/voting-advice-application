@@ -1,3 +1,5 @@
+> **Note:** Parts of this page reference the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
+
 # Running the Development Environment
 
 Make sure that you’re using the recommended Node version (see [Requirements](/developers-guide/development/requirements)) by running `node -v`. If needed set the correct version with `nvm use <VERSION>`.
@@ -8,22 +10,25 @@ First, install dependencies for all workspaces:
 yarn install
 ```
 
-To build and run development Docker images for the entire stack (frontend, backend and DB), in the project's root directory:
+To start the whole development stack — the local Supabase services, the shared-package watcher and the frontend dev server — in the project's root directory:
 
 - Make a copy of the `.env.example` file and rename the copy as `.env`
 - Run `yarn dev`
-- If you run into errors, try checking the tips related to Docker in [Troubleshooting](/developers-guide/troubleshooting).
+- If you run into errors, try the tips in [Troubleshooting](/developers-guide/troubleshooting).
 
 The `yarn dev` script will automatically build all the shared packages and start watching them for changes. If these change, they will be rerebuilt and the frontend restarted to reflect the changes.
 
-To bring down the Docker stack properly (delete all containers, images and named volumes which include backend DB volume with potentially seeded mock data) run:
+To stop the local backend services again, run:
 
 ```bash
-yarn dev:down
+yarn db:stop
 ```
 
-**When running the project in Docker, only use the `.env` file in project root. You usually
-don't have to touch the separate .env files for frontend and backend.**
+To drop the database and recreate it from the migrations and `seed.sql` — discarding any seeded
+data -- run `yarn db:reset`.
+
+**Only use the `.env` file in the project root. You usually don't have to touch the separate
+.env files for the individual workspaces.**
 
 If you want to seed backend DB with mock data (e.g. for demonstration, development or testing purposes purposes), please follow the instructions [here](/developers-guide/backend/mock-data-generation).
 

@@ -16,6 +16,6 @@ Show filters for entities. This component and the individual filter components o
 
 ## Source
 
-[frontend/src/lib/components/entityFilters/EntityFilters.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/entityFilters/EntityFilters.svelte)
+[frontend/src/lib/components/entityFilters/EntityFilters.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/entityFilters/EntityFilters.svelte)
 
-[frontend/src/lib/components/entityFilters/EntityFilters.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/entityFilters/EntityFilters.type.ts)
+[frontend/src/lib/components/entityFilters/EntityFilters.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/entityFilters/EntityFilters.type.ts)

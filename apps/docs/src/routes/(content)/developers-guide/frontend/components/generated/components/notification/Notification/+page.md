@@ -15,6 +15,6 @@ Show a notification popup to the user.
 
 ## Source
 
-[frontend/src/lib/components/notification/Notification.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/notification/Notification.svelte)
+[frontend/src/lib/components/notification/Notification.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/notification/Notification.svelte)
 
-[frontend/src/lib/components/notification/Notification.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/notification/Notification.type.ts)
+[frontend/src/lib/components/notification/Notification.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/notification/Notification.type.ts)

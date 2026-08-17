@@ -17,6 +17,6 @@ Used to display an error message. Also logs the error to the console.
 
 ## Source
 
-[frontend/src/lib/components/errorMessage/ErrorMessage.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/errorMessage/ErrorMessage.svelte)
+[frontend/src/lib/components/errorMessage/ErrorMessage.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/errorMessage/ErrorMessage.svelte)
 
-[frontend/src/lib/components/errorMessage/ErrorMessage.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/errorMessage/ErrorMessage.type.ts)
+[frontend/src/lib/components/errorMessage/ErrorMessage.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/errorMessage/ErrorMessage.type.ts)

@@ -24,6 +24,6 @@ TODO[Svelte 5]: Maybe convert into `$snippet`.
 
 ## Source
 
-[frontend/src/lib/dynamic-components/entityCard/EntityCardAction.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/entityCard/EntityCardAction.svelte)
+[frontend/src/lib/dynamic-components/entityCard/EntityCardAction.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityCard/EntityCardAction.svelte)
 
-[frontend/src/lib/dynamic-components/entityCard/EntityCardAction.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/entityCard/EntityCardAction.type.ts)
+[frontend/src/lib/dynamic-components/entityCard/EntityCardAction.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityCard/EntityCardAction.type.ts)

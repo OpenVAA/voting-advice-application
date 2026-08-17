@@ -20,6 +20,6 @@ A template part that outputs the navigation menu for the Admin App for use in `L
 
 ## Source
 
-[frontend/src/lib/dynamic-components/navigation/admin/AdminNav.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/navigation/admin/AdminNav.svelte)
+[frontend/src/lib/dynamic-components/navigation/admin/AdminNav.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/admin/AdminNav.svelte)
 
-[frontend/src/lib/dynamic-components/navigation/admin/AdminNav.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/navigation/admin/AdminNav.type.ts)
+[frontend/src/lib/dynamic-components/navigation/admin/AdminNav.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/admin/AdminNav.type.ts)

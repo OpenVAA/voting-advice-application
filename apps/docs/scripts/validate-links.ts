@@ -3,7 +3,7 @@
  * Validate and fix internal links in markdown files
  *
  * This script:
- * 1. Finds all markdown files in docs/src/routes
+ * 1. Finds all markdown files in src/routes (relative to the docs workspace)
  * 2. Extracts all internal links (not starting with https?://)
  * 3. Validates that the links point to existing files/routes
  * 4. Fixes relative links by making them absolute

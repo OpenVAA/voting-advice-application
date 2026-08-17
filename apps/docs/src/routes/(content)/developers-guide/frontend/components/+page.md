@@ -4,7 +4,7 @@ For information about component properties, typing and documentation, see [Svelt
 
 ## Dynamic and static components
 
-The components used in the app are divided into dynamic and static ones, contained in [$lib/components](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components) and [$lib/dynamic-components](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components), respectively.
+The components used in the app are divided into dynamic and static ones, contained in [$lib/components](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components) and [$lib/dynamic-components](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components), respectively.
 
 ## Available components
 

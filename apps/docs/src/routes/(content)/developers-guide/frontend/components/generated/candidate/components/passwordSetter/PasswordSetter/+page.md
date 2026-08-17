@@ -23,6 +23,6 @@ Contains the dynamic `PasswordValidator` component.
 
 ## Source
 
-[frontend/src/lib/candidate/components/passwordSetter/PasswordSetter.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/candidate/components/passwordSetter/PasswordSetter.svelte)
+[frontend/src/lib/candidate/components/passwordSetter/PasswordSetter.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/passwordSetter/PasswordSetter.svelte)
 
-[frontend/src/lib/candidate/components/passwordSetter/PasswordSetter.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/candidate/components/passwordSetter/PasswordSetter.type.ts)
+[frontend/src/lib/candidate/components/passwordSetter/PasswordSetter.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/passwordSetter/PasswordSetter.type.ts)

@@ -25,6 +25,6 @@ any valid attributes of the `<svg>` element.
 
 ## Source
 
-[frontend/src/lib/components/icon/Icon.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/icon/Icon.svelte)
+[frontend/src/lib/components/icon/Icon.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/icon/Icon.svelte)
 
-[frontend/src/lib/components/icon/Icon.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/icon/Icon.type.ts)
+[frontend/src/lib/components/icon/Icon.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/icon/Icon.type.ts)

@@ -1,3 +1,5 @@
+> **Note:** Parts of this page reference the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
+
 # Deployment
 
 The application is fully containerized and the recommended way of deploying it is as Docker containers.
@@ -237,12 +239,13 @@ You can also create production builds of the frontend and backend, but directly 
 
 ### Build from Dockerimage
 
-Run `yarn prod` in the project root. This will create a production-ready build of the app in Docker and create containers
-for both backend and frontend which are ready to use by themselves. Frontend is accessible from port 80 by default.
+Run `docker compose -f docker-compose.dev.yml up --build` in the project root. This builds the frontend
+production image and starts it; the backend is Supabase, so no backend container is built. Start the
+local Supabase services first with `yarn db:start`. The frontend is accessible on port 3000 by default.
 
 ### Building the frontend separately
 
-To build the frontend separately for production, run `yarn build` in the `frontend` directory. This will build the frontend into JavaScript
+To build the frontend separately for production, run `yarn build` in the `apps/frontend` directory. This will build the frontend into JavaScript
 files contained in the `build` directory. You can then copy the contents of the `build` folder into a Node server along with
 the `package.json` and `yarn.lock` files and can start the frontend by running `node index.js` in the directory. The frontend
 will use port 3000 by default.

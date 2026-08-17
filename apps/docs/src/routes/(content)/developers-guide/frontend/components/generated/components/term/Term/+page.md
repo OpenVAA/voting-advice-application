@@ -22,6 +22,6 @@ Uses the `term` and `definition` roles.
 
 ## Source
 
-[frontend/src/lib/components/term/Term.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/term/Term.svelte)
+[frontend/src/lib/components/term/Term.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/term/Term.svelte)
 
-[frontend/src/lib/components/term/Term.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/term/Term.type.ts)
+[frontend/src/lib/components/term/Term.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/term/Term.type.ts)

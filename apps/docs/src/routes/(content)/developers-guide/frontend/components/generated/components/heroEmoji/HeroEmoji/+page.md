@@ -23,6 +23,6 @@ using the `class` attribute, e.g. `class="text-[10rem]"`.
 
 ## Source
 
-[frontend/src/lib/components/heroEmoji/HeroEmoji.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/heroEmoji/HeroEmoji.svelte)
+[frontend/src/lib/components/heroEmoji/HeroEmoji.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/heroEmoji/HeroEmoji.svelte)
 
-[frontend/src/lib/components/heroEmoji/HeroEmoji.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/heroEmoji/HeroEmoji.type.ts)
+[frontend/src/lib/components/heroEmoji/HeroEmoji.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/heroEmoji/HeroEmoji.type.ts)

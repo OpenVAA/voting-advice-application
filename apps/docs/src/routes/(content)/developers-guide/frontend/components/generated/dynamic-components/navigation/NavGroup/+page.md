@@ -25,6 +25,6 @@ Use to group `NavItem` components. Displays a faint line above the group.
 
 ## Source
 
-[frontend/src/lib/dynamic-components/navigation/NavGroup.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/navigation/NavGroup.svelte)
+[frontend/src/lib/dynamic-components/navigation/NavGroup.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/NavGroup.svelte)
 
-[frontend/src/lib/dynamic-components/navigation/NavGroup.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/navigation/NavGroup.type.ts)
+[frontend/src/lib/dynamic-components/navigation/NavGroup.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/NavGroup.type.ts)

@@ -50,12 +50,12 @@ For basic content, avoid using `z-index` and prefer layerying using the element 
 For elements that absolutely need their `z-index` set, the following Tailwind classes are used:
 
 - `z-10`: Navigation drawer menu, page header
-- `z-20`: Buttons overlaid on the header by the [`<Video>`](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/video/Video.svelte) component
-- `z-30`: The [`<Alert>`](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/alert/Alert.svelte) component
+- `z-20`: Buttons overlaid on the header by the [`<Video>`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/video/Video.svelte) component
+- `z-30`: The [`<Alert>`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/alert/Alert.svelte) component
 - `z-40`: Not used currently
 - `z-50`: Not used currently
 
-Note that the dialog created by the [`<Modal>`](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/modal/Modal.svelte) component, is placed in a ’Top Layer’ placed in front of any content, regardless of their `z-index`.
+Note that the dialog created by the [`<Modal>`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/Modal.svelte) component, is placed in a ’Top Layer’ placed in front of any content, regardless of their `z-index`.
 
 ### Default styling
 

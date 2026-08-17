@@ -7,8 +7,8 @@ import { join } from 'path';
  * Base directories
  */
 export const DOCS_ROOT = process.cwd();
-export const REPO_ROOT = join(DOCS_ROOT, '..');
-export const FRONTEND_ROOT = join(REPO_ROOT, 'frontend');
+export const REPO_ROOT = join(DOCS_ROOT, '../..');
+export const FRONTEND_ROOT = join(REPO_ROOT, 'apps', 'frontend');
 
 /**
  * Generated documentation directory (intermediate output)

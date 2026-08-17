@@ -75,6 +75,6 @@ If not provided, the `video` element will be hidden until these properties are p
 
 ## Source
 
-[frontend/src/lib/components/video/Video.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/video/Video.svelte)
+[frontend/src/lib/components/video/Video.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/video/Video.svelte)
 
-[frontend/src/lib/components/video/Video.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/video/Video.type.ts)
+[frontend/src/lib/components/video/Video.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/video/Video.type.ts)

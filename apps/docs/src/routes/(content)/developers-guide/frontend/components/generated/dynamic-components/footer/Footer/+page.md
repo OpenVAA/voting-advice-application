@@ -18,6 +18,6 @@ A template part that is used to show the application's common footer, shown on s
 
 ## Source
 
-[frontend/src/lib/dynamic-components/footer/Footer.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/footer/Footer.svelte)
+[frontend/src/lib/dynamic-components/footer/Footer.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/footer/Footer.svelte)
 
-[frontend/src/lib/dynamic-components/footer/Footer.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/dynamic-components/footer/Footer.type.ts)
+[frontend/src/lib/dynamic-components/footer/Footer.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/footer/Footer.type.ts)

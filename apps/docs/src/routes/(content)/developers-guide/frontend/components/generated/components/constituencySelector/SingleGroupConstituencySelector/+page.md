@@ -26,6 +26,6 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
 
 ## Source
 
-[frontend/src/lib/components/constituencySelector/SingleGroupConstituencySelector.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/constituencySelector/SingleGroupConstituencySelector.svelte)
+[frontend/src/lib/components/constituencySelector/SingleGroupConstituencySelector.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/constituencySelector/SingleGroupConstituencySelector.svelte)
 
-[frontend/src/lib/components/constituencySelector/SingleGroupConstituencySelector.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/constituencySelector/SingleGroupConstituencySelector.type.ts)
+[frontend/src/lib/components/constituencySelector/SingleGroupConstituencySelector.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/constituencySelector/SingleGroupConstituencySelector.type.ts)

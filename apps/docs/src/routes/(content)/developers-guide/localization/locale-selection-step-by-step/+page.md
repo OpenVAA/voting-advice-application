@@ -2,11 +2,11 @@
 
 The locale selection process works as follows.
 
-[`$lib/i18n`](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/i18n/init.ts) is initialized:
+[`$lib/i18n`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/i18n/init.ts) is initialized:
 
 1. Supported `locales` and the `defautlLocale` are loaded from [`StaticSettings`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/staticSettings.ts)
 
-[`hooks.server.ts: handle`](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/hooks.server.ts) parses the route and `Request.accept-language`:
+[`hooks.server.ts: handle`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/hooks.server.ts) parses the route and `Request.accept-language`:
 
 1. Supported `locales` are loaded from `$lib/i18n`
 2. The locales listed in `Request.accept-language` are iterated and the first one found (using a soft match) in `locales` is saved as `preferredLocale`
@@ -22,7 +22,7 @@ The locale selection process works as follows.
 
 1. Both `preferredLocale` and `currentLocale` (in which the content is served) are passed further in `locals`.
 
-[`+layout.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/routes/[[lang=locale]]/+layout.ts) loads translations from the local source and the database:
+[`+layout.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/routes/[[lang=locale]]/+layout.ts) loads translations from the local source and the database:
 
 1. Load `DataProvider.getAppCustomization(•).translationOverrides` as dynamic translations for use with `i18n`.
 2. Load local translations with `$lib/i18n: loadTranslations`

@@ -244,8 +244,8 @@ export default {
 
           // Custom variables
           '--line-color': getColor('line-color', '#d9d9d9'),
-          '--progress-color': 'oklch(var(--n))',
-          '--progress-label-color': 'oklch(var(--n))'
+          '--progress-color': getColor('neutral', '#333333'),
+          '--progress-label-color': getColor('neutral', '#333333')
         },
         dark: {
           // DaisyUI colors: https://daisyui.com/docs/colors/
@@ -274,8 +274,8 @@ export default {
 
           // Custom variables
           '--line-color': getColor('line-color', '#262626', 'dark'),
-          '--progress-color': 'oklch(var(--n))',
-          '--progress-label-color': 'oklch(var(--n))'
+          '--progress-color': getColor('neutral', '#333333', 'dark'),
+          '--progress-label-color': getColor('neutral', '#333333', 'dark')
         }
       }
     ]

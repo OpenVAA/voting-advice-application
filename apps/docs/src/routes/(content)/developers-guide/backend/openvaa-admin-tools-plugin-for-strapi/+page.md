@@ -1,3 +1,5 @@
+> **Note:** This page documents the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
+
 # OpenVAA admin tools plugin for Strapi
 
 > NB! The name of the plugin in Strapi is `openvaa-admin-tools`.

@@ -22,6 +22,6 @@ Show a radial or a linear score gauge for a sub-match.
 
 ## Source
 
-[frontend/src/lib/components/scoreGauge/ScoreGauge.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/scoreGauge/ScoreGauge.svelte)
+[frontend/src/lib/components/scoreGauge/ScoreGauge.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/scoreGauge/ScoreGauge.svelte)
 
-[frontend/src/lib/components/scoreGauge/ScoreGauge.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/frontend/src/lib/components/scoreGauge/ScoreGauge.type.ts)
+[frontend/src/lib/components/scoreGauge/ScoreGauge.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/scoreGauge/ScoreGauge.type.ts)
