@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 13
+open_count: 16
 waived_count: 0
 fixed_count: 0
-total_count: 13
-last_updated: 2026-08-17T08:05:52.468Z
+total_count: 16
+last_updated: 2026-08-17T08:50:38.709Z
 ---
 
 # Broken Windows Ledger
@@ -28,6 +28,9 @@ last_updated: 2026-08-17T08:05:52.468Z
 | 11 | 151 | deviation | .planning/phases/151-ship-v0-2-akita-review-stack/151-hygiene-prose-queue.tsv |  | 7 comment lines were rewritten correctly (reference removed) but read badly after a mid-sentence deletion, e.g. 'See for the trace.' Enumerated as 151-08's prose-polish queue. | open |  | 2026-08-17T07:05:45.533Z |  |
 | 12 | 151 | deviation | apps/frontend/src/lib/admin/components/jobs/FeatureJobs.svelte | 103 | Admitted shipped bug: admin Past Jobs section does not show past jobs; recorded not fixed per operator leave-and-record, carries an open product question | open |  | 2026-08-17T08:05:52.298Z |  |
 | 13 | 151 | unrun-verify | .planning/phases/151-ship-v0-2-akita-review-stack/scripts/hygiene-grep-report.sh |  | hygiene --assert-clean exits 1 on task-id (84) and phase-ref bare (11); both KEEP-classified with measured justification, gate re-scoping left to operator | open |  | 2026-08-17T08:05:52.468Z |  |
+| 14 | 151 | deviation | README.md | 12 | Front-page mascot image src=./docs/static/images/shiba-inu-facing-front.png broken by the layout move; blocked by F-15 (no slice pathspec claims README.md) | open |  | 2026-08-17T08:50:38.414Z |  |
+| 15 | 151 | deviation | apps/frontend/jest.config.json |  | F-01 dead jest config; deletion blocked by F-15 (unclaimed by any slice pathspec) | open |  | 2026-08-17T08:50:38.585Z |  |
+| 16 | 151 | deviation | apps/frontend/android |  | F-10 89 orphaned Capacitor files; deletion blocked by F-15 (unclaimed by any slice pathspec) | open |  | 2026-08-17T08:50:38.709Z |  |
 
 ````json
 [
@@ -185,6 +188,42 @@ last_updated: 2026-08-17T08:05:52.468Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-08-17T08:05:52.468Z",
+    "resolved_at": null
+  },
+  {
+    "id": 14,
+    "kind": "deviation",
+    "phase": "151",
+    "file": "README.md",
+    "line": 12,
+    "description": "Front-page mascot image src=./docs/static/images/shiba-inu-facing-front.png broken by the layout move; blocked by F-15 (no slice pathspec claims README.md)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T08:50:38.414Z",
+    "resolved_at": null
+  },
+  {
+    "id": 15,
+    "kind": "deviation",
+    "phase": "151",
+    "file": "apps/frontend/jest.config.json",
+    "line": null,
+    "description": "F-01 dead jest config; deletion blocked by F-15 (unclaimed by any slice pathspec)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T08:50:38.585Z",
+    "resolved_at": null
+  },
+  {
+    "id": 16,
+    "kind": "deviation",
+    "phase": "151",
+    "file": "apps/frontend/android",
+    "line": null,
+    "description": "F-10 89 orphaned Capacitor files; deletion blocked by F-15 (unclaimed by any slice pathspec)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-17T08:50:38.709Z",
     "resolved_at": null
   }
 ]
