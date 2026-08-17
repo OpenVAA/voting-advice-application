@@ -1,0 +1,28 @@
+{
+  "_provenance": "reconstructed-from-trace-run-2.zip + error-context-run-2.md page-snapshot at test failure moment.",
+  "_source_trace": "trace-run-2.zip",
+  "_source_snapshot": "error-context-run-2.md",
+  "runTag": "2",
+  "checkpoint": "after-login-settled",
+  "url_at_failure": "http://localhost:5173/candidate/login",
+  "page_snapshot_at_failure": {
+    "_source": "error-context-run-2.md",
+    "heading_h1": "Your password is now set! Please log in using it.",
+    "form_state": {
+      "email_field": "test.unregistered2@openvaa.org (pre-filled)",
+      "password_field": "(empty — focused but no value)",
+      "sign_in_button": "disabled"
+    },
+    "_LANDMARK": "Run-2 page-snapshot is BYTE-FOR-BYTE IDENTICAL to run-1 page-snapshot (verified via diff of error-context-run-{1,2}.md). The cascade-skip mode is fully deterministic."
+  },
+  "cookies": [
+    {
+      "name": "sb-127-auth-token",
+      "value": "<REDACTED-AUTH-TOKEN>",
+      "_note": "Session cookie valid throughout. The /candidate/login page does not auto-redirect because the deliberate clean-auth-flow redirect at register/password/+page.svelte:97 lands users on /login regardless of session state."
+    }
+  ],
+  "hydrationMarker": null,
+  "_hydration_signal": "window.__phase79RcaHydrated NEVER set in run-2 (same as run-1).",
+  "_run_consistency": "Run-2 confirms run-1's verdict: H1 partially confirmed, H2 disproven by absence of exercise. The proximate cause is a test-spec URL-predicate bug; the deeper cause is the deliberate /login redirect that masks any session-propagation race for the happy path but exposes the test-helper bug."
+}

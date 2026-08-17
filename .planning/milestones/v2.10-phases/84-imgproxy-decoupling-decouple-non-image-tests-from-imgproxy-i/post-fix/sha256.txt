@@ -1,0 +1,111 @@
+# Phase 84 Plan 01 Task 5 — 3-Run Cold-Start Identity Gate (D-05 + D-08)
+# Captured: 2026-05-14T11:25:00Z
+
+run-1.json: 04ddfdd85cfbcd6505626eb8fb50f3e6f35c11e5385df1f4c8695b22ed0655aa
+run-2.json: 98a6daff1f0558b90f6fcded22dced0c6489b90a2acf42f9cf14c8e8ec052bb6
+run-3.json: 04ddfdd85cfbcd6505626eb8fb50f3e6f35c11e5385df1f4c8695b22ed0655aa
+
+# Hash algorithm: sha256 over the file `(id, status)` pairs sorted lexicographically.
+# Each `id` is constructed as `<projectName> :: <file> > <title>`.
+# Per Phase 79 D-08, this hashes the deterministic identity surface (NOT the raw JSON
+# whose timestamps + durations legitimately vary across runs).
+
+# === STRICT D-08 IDENTITY GATE — STATUS ===
+#
+# Run 1 SHA == Run 3 SHA (full identity), Run 2 differs.
+#
+# Per-test diff (only 1 cell varies):
+#
+# voter-app :: specs/voter/voter-detail.spec.ts > should open party detail drawer
+#   with info, candidates, and opinions tabs
+#     Run 1: passed
+#     Run 2: failed
+#     Run 3: passed
+#
+# All other 165 (id, status) pairs are byte-identical across all 3 runs.
+
+# === FLAKE ANALYSIS ===
+#
+# Domain: voter-app (NOT a Phase 84 DETERM-08 surface; Phase 86 scope per ROADMAP.md).
+#
+# Test history (per tests/scripts/diff-playwright-reports.ts:87-92 jsdoc):
+#   "voter-detail 'should open party detail drawer' was previously in this class
+#    [FAILURE-CLASS] — Phase 83 DETERM-07b hydration-guard promoted it to PASS_LOCKED."
+#
+# The test is a known boundary-case: pre-Phase 83 it deterministically failed in the
+# FAILURE-CLASS narrative pool; Phase 83's DETERM-07b hydration-guard moved it into
+# PASS_LOCKED. Its appearance as a single-run-out-of-3 flake here suggests the
+# hydration-guard's safety window is on the edge — under specific worker scheduling
+# pressure, the test may still race. NOT IMGPROXY-RELATED.
+#
+# Phase 73 RESEARCH Pitfall 5 prescribes for NON-imgproxy flakes mid-gate:
+#   "escalate per Phase 79 D-09 instability protocol (investigate the unexpected
+#    flake before regen)."
+#
+# However, Phase 84's scope is DETERM-08 + DETERM-09 (imgproxy decoupling), not
+# voter-app hydration. The mission-critical Phase 84 surface (11 candidate-app-settings
+# + 2 candidate-app-password + 2 re-auth.setup.ts entries) is DETERMINISTIC-PASS
+# across all 3 runs. The 3 image-intrinsic IMGPROXY_TIED_TITLES survivors
+# (CAND-03 upload + CAND-03 readback + CAND-12 readback) are also DETERMINISTIC-PASS
+# across all 3 runs.
+#
+# The single-run party-drawer flake is a pre-existing boundary-case from Phase 83
+# (NOT introduced by Phase 84). Routing the strict-identity recovery work to
+# Phase 86 (voter-app hydration-guard tightening) per ROADMAP.md scope.
+
+# === OPERATOR-ALIGNED CHECKPOINT ===
+#
+# Three paths forward (operator decides):
+#
+# (a) ACCEPT — regen against run-3.json (identical to run-1.json). The party-drawer
+#     flake is documented here but not addressed in Phase 84. PASS_LOCKED list will
+#     INCLUDE party-drawer (its status in run-3 is passed). Risk: future runs may
+#     hit the flake; downstream Phases 85/86/87 must either (a1) tighten the
+#     hydration-guard further OR (a2) re-classify party-drawer into DATA_RACE-
+#     equivalent FAILURE-CLASS narrative pool. Per the operator's All-Green Suite
+#     directive (project_all_green_suite_priority.md memory) — strictly speaking,
+#     party-drawer is not "all green" if it can flake. But Phase 84's surface is.
+#
+# (b) RETRY — re-run the full 3-run gate (~54 min) per RESEARCH Pitfall 5 protocol
+#     after `supabase stop && supabase start`. If second attempt is SHA-identical
+#     across all 3, proceed. If second attempt still has flake, escalate to (c).
+#
+# (c) INVESTIGATE — pause regen, investigate the party-drawer hydration-guard
+#     boundary (Phase 86 scope per ROADMAP.md). Likely requires hydration-guard
+#     timeout / retry-policy tuning OR a route-load wait-for-stable predicate
+#     refinement. ~separate-phase effort.
+
+# === PHASE 84-SCOPE TEST DETERMINISM (verified across all 3 runs) ===
+#
+# All 11 candidate-app-settings tests:
+#   - should show read-only warning when answers are locked  ✓✓✓ (3/3 passed)
+#   - should show maintenance page when candidateApp is disabled  ✓✓✓
+#   - should show maintenance page when underMaintenance is true  ✓✓✓
+#   - should display notification popup when enabled  ✓✓✓
+#   - should render help page correctly  ✓✓✓
+#   - should render privacy page correctly  ✓✓✓
+#   - should hide hero when hideHero is enabled  ✓✓✓
+#   - should show hero when hideHero is disabled  ✓✓✓
+#   - SETTINGS-01 wave A — access.voterApp  ✓✓✓
+#   - SETTINGS-01 wave A — entities.showAllNominations  ✓✓✓
+#   - SETTINGS-01 wave A — entities.hideIfMissingAnswers.candidate  ✓✓✓
+#   - SETTINGS-01 wave A — elections.showElectionTags  ✓✓✓
+#   - SETTINGS-01 wave A — questions.showCategoryTags  ✓✓✓
+#   - SETTINGS-01 wave A — questions.showResultsLink  ✓✓✓
+#   - SETTINGS-01 wave A — results.sections  ✓✓✓
+#   (3 PASS-WITH-DEFERRAL cells skipped intentionally per spec L424-487 — matches Phase 83 baseline)
+#
+# 2 candidate-app-password tests:
+#   - should change password and login with new password  ✓✓✓
+#   - should logout and return to login page  ✓✓✓
+#
+# 2 re-auth.setup.ts entries (dual-project):
+#   - auth-setup :: re-authenticate as candidate  ✓✓✓
+#   - re-auth-setup :: re-authenticate as candidate  ✓✓✓
+#
+# 3 DATA_RACE survivors (image-intrinsic):
+#   - should upload a profile image (CAND-03)  ✓✓✓
+#   - should show editable info fields on profile page (CAND-03)  ✓✓✓
+#   - should persist profile image after page reload (CAND-12)  ✓✓✓
+#
+# All 16 candidate-app-mutation tests passed deterministically across all 3 runs.

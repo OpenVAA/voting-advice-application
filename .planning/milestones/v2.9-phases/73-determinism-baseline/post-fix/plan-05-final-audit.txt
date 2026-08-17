@@ -1,0 +1,31 @@
+Plan 5 final audit: 0/7 rules have remaining warnings. Total = 0. Ready for Plan 6 lint-gate bump.
+
+Captured: 2026-05-11 (post-Plan-05 Task 3)
+
+Per-rule remaining counts (workspace-wide `tests/` lint run):
+  playwright/no-conditional-in-test: 0 warnings
+  playwright/no-conditional-expect:  0 warnings
+  playwright/no-networkidle:         0 warnings
+  playwright/no-raw-locators:        0 warnings
+  playwright/no-wait-for-timeout:    0 warnings
+  playwright/no-skipped-test:        0 warnings
+  playwright/expect-expect:          0 warnings
+
+Total playwright/* warnings: 0
+
+DETERM-01 cross-check (`git grep -nE "test\.skip\(" tests/`):
+  3 matches, all in tests/tests/specs/candidate/candidate-bank-auth.spec.ts:
+    - Line 189 (keys-configured precondition gate)
+    - Line 226 (keys-not-configured precondition gate)
+    - Line 245 (Magic-link D-07 anchor)
+  Each line is preceded by `// eslint-disable-next-line playwright/no-skipped-test`
+  with a `// reason:` justification block (per CONTEXT D-07 + RESEARCH §"Example 1").
+  Plus 1 doc-comment reference to `test.skip(precondition, …)` at line 110
+  (a textual reference in JSDoc, not an actual skip).
+
+Probe command used:
+  cd tests && yarn eslint --flag v10_config_lookup_from_file . 2>&1 | grep -cE "playwright/"
+
+Plan 6 will FORMALLY validate this state by bumping each rule from 'warn' to
+'error' in tests/eslint.config.mjs and re-running lint. Plan 5 task 3 is the
+pre-flight check; Plan 6 is the gate.

@@ -53,13 +53,33 @@ export type CustomData = {
      */
     longText?: boolean;
     /**
+     * For number questions: the maximum answer value. When both `min` and `max` are set the question is matchable; the Supabase data provider bridges these into `NumberQuestionData.min`/`max`.
+     */
+    max?: number;
+    /**
+     * For `MultipleTextInput`: the maximum number of value rows. Once reached, adding further rows is disabled.
+     */
+    maxItems?: number;
+    /**
      * For `QuestionInput`. If provided, will set the `maxlength` of text inputs.
      */
     maxlength?: number;
     /**
-     * Whether the question is required for the candidate to be listed in the Voter App.
+     * For multi-choice categorical opinion questions: the maximum number of selected choices for a valid answer.
      */
-    required?: boolean;
+    maxSelections?: number;
+    /**
+     * For number questions: the minimum answer value. When both `min` and `max` are set the question is matchable; the Supabase data provider bridges these into `NumberQuestionData.min`/`max`.
+     */
+    min?: number;
+    /**
+     * For `MultipleTextInput`: the minimum number of value rows. A value greater than 1 renders that many rows initially and prevents deletion below it.
+     */
+    minItems?: number;
+    /**
+     * For multi-choice categorical opinion questions: the minimum number of selected choices for a valid answer. Zero selections is always treated as unanswered.
+     */
+    minSelections?: number;
     /**
      * Whether a multiple-choice question’s options should be displayed vertically instead of the default horizontal layout.
      */

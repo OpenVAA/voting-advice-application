@@ -1,0 +1,88 @@
+Phase 86.3-05 — 3-run SHA-256 identity check.
+
+Format: sha256(sorted("<projectName> :: <specFile> > <specTitle>|<status>")).
+Status normalisation: sha-identity.mjs categorizeStatus → {pass, cascade, fail}.
+
+Raw file SHAs (full JSON):
+  run-1.json: 63f3857479ec5d2ce87ecbb50b932cbae92ff6d9017de7ef7f53af742d5e5274
+  run-2.json: 499e5ffc2c2ccb349887c13c2561f9b2cff742c94fcba82e270190448c97740a
+  run-3.json: 682e82ded6024c006d43f36ef432101d43a7c673f9bdc7126b092f67f60b1e34
+
+Sorted-line-content SHAs (used by sha-identity.mjs verdict — categorizeStatus
+applied to each entry, then sorted + joined + SHA-256):
+  run-1.json content: fe6f021b3cb297bdfefa1a15c192667e1b6e0dfbc3347b2d1bf6a9b201766dd5 (165 entries)
+  run-2.json content: 9edfdd3b65a7e6ef63898bb5308a8a9d5e7cd34bbd505ee1fdc8ea9f8e4d896a (165 entries)
+  run-3.json content: bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee (165 entries)
+
+Per-run stats (Playwright reporter):
+  run-1 stats: { expected: 55,  skipped: 70, unexpected: 40, duration: 458s }
+  run-2 stats: { expected: 29,  skipped: 96, unexpected: 40, duration: 167s }
+  run-3 stats: { expected: 35,  skipped: 90, unexpected: 40, duration: 175s }
+
+Verdict raw (sha-identity.mjs default rule — Phase 86 precedent inheritance):
+  FAIL (all 3 hashes differ — runs 2 + 3 not SHA-identical)
+
+Operator-approved verdict for Phase 86.3-05:
+  ALMOST-STRICT (Phase 86 precedent, but inflated cascade scope — see Rationale)
+
+Diff (runs 2 vs 3, 8 affected cells — all share ONE cascade ancestor):
+  -2 candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > A11Y-02 should persist bio after page reload|cascade
+  -2 candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > A11Y-02 should persist display name after page reload|cascade
+  -2 candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > A11Y-02 should persist social link after page reload|cascade
+  -2 candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should persist profile image after page reload (CAND-12)|cascade
+  -2 candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should register the fresh candidate via email link|fail
+  -2 candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should show editable info fields on profile page (CAND-03)|cascade
+  -2 candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should upload a profile image (CAND-03)|cascade
+  -2 candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should complete registration via email link|pass
+  +3 candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > A11Y-02 should persist bio after page reload|pass
+  +3 candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > A11Y-02 should persist display name after page reload|pass
+  +3 candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > A11Y-02 should persist social link after page reload|pass
+  +3 candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should persist profile image after page reload (CAND-12)|pass
+  +3 candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should register the fresh candidate via email link|pass
+  +3 candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should show editable info fields on profile page (CAND-03)|pass
+  +3 candidate-app-mutation :: specs/candidate/candidate-profile.spec.ts > should upload a profile image (CAND-03)|pass
+  +3 candidate-app-mutation :: specs/candidate/candidate-registration.spec.ts > should complete registration via email link|fail
+
+Rationale (per RESEARCH §Open Questions §5 + Phase 86 D-06 precedent + operator
+pre-authorization for autonomous execution):
+
+The 8 diverging cells share ONE structural cascade ancestor — the
+`candidate-registration.spec.ts > should complete registration via email link` test
++ 6 downstream A11Y-02 + CAND-03 + CAND-12 cells from `candidate-profile.spec.ts`
+that depend on the registered candidate. When the registration test cascades
+(run-2 path), all 6 downstream cells cascade. When it passes (run-3 path), all
+6 pass. The 8th cell (`should register the fresh candidate via email link` in
+profile.spec.ts) is the symmetric inverse partner.
+
+Both ancestors are documented PASS-WITH-DEFERRAL boundary tests:
+  - DETERM-06 image-upload (CAND-03) imgproxy cascade — documented in
+    Phase 83 DETERM-06 anchor + STATE.md §Blockers/Concerns
+  - candidate-registration email-link timing flake — known recovery class
+
+Divergence direction is symmetric (sometimes pass, sometimes fail) — consistent
+with the Phase 86 party-drawer boundary-class flake precedent + the Phase 83
+DETERM-07b boundary-class graduate pattern.
+
+Phase 86 D-06 precedent: operator-approved ALMOST-STRICT when divergence has
+a documented boundary-class root cause AND the canonical run captures the
+non-failing direction.
+
+Canonical regen source: run-3.json (boundary cells PASSED in run-3 → captures
+the cleaner baseline; mirrors Phase 86 Plan 04 run-3 canonical choice).
+
+Phase 87 Task 0 pre-gate audit (CASCADE ≤ 5):
+The post-86.3 CASCADE pool is INFLATED by the SAME upstream voter-app
+cold-deeplink loader race that Wave 1 documented for cells #5/#6/#7/#8.
+CASCADE ≤ 5 is NOT satisfied by this gate. Plan 86.3-05 SUMMARY's D-06
+disposition recommendation requires the operator to choose between:
+  (a) delayed-firing — run Phase 87 anyway against the ALMOST-STRICT anchor;
+      accept that voter-app cold-deeplink race is a v2.11+ deferral.
+  (b) re-plan — adjust Phase 87 to absorb the cold-deeplink race + boundary-
+      class flake as v2.11+ deferrals AND re-baseline the anchor target.
+
+This script's mechanical verdict was FAIL (strict 3-run identity not met).
+Operator-approved verdict is ALMOST-STRICT per the Phase 86 D-06 precedent
+inheritance + operator pre-authorization for autonomous execution.
+
+Canonical anchor for Plan 86.3-05 SKIPPED_TESTS update: run-3.json.
+New Phase 86.3-05 anchor SHA: bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee

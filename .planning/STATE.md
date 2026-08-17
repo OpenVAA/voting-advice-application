@@ -1,0 +1,885 @@
+---
+gsd_state_version: 1.0
+milestone: v2.15
+milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
+current_phase: 151
+current_phase_name: ship-v0-2-akita-review-stack
+status: executing
+stopped_at: "Completed 151-17-PLAN.md — stack complete, PR #873 open, slice 11 cut and scanned but unpushed"
+last_updated: "2026-08-17T18:00:55.548Z"
+last_activity: 2026-08-16
+last_activity_desc: Phase 151 execution started
+progress:
+  total_phases: 15
+  completed_phases: 4
+  total_plans: 43
+  completed_plans: 41
+  percent: 27
+---
+
+# Project State
+
+## Project Reference
+
+See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
+
+**Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
+**Current focus:** Phase 151 — ship-v0-2-akita-review-stack
+
+## Current Position
+
+Milestone: v2.15 (Phases 137-151, 15 phases, 38 requirements)
+Phase: 151 (ship-v0-2-akita-review-stack) — EXECUTING
+Plan: 18 of 19
+Status: Ready to execute
+Last activity: 2026-08-16 — Phase 151 execution started
+
+**Standing acceptance rule for every v2.15 phase:** prove the guard fails before claiming it guards —
+negative control run twice (once against the old assertion to demonstrate blindness, once against the
+new one to demonstrate the catch). Visual baselines only in
+`mcr.microsoft.com/playwright:v1.58.2-noble`, `--platform linux/amd64`, dev server `--host 0.0.0.0`;
+never on a developer Mac.
+
+**Phase order rationale:** 137 first (every later phase's E2E evidence depends on the served-app
+preflight), 138 second (an undiagnosed 1-in-8 intermittent contaminates every later "suite green"),
+139 before 142 (a withdrawn finding must shrink scope, not surprise remediation), 141 before 142 (the
+AI-package tests being repaired must actually run in CI), 144 before 145, 147 before 148. 143/146/149/150
+are independent.
+
+## Session Continuity
+
+Last session: 2026-08-17T18:00:46.582Z
+Stopped at: Completed 151-17-PLAN.md — stack complete, PR #873 open, slice 11 cut and scanned but unpushed
+Resume file: None
+
+## Deferred Items
+
+Items acknowledged and deferred at milestone close on 2026-08-12:
+
+| Category | Item | Status |
+|----------|------|--------|
+| verification | **Phase 137 — Task 2: observed CI run on both jobs (E2E + `e2e-visual`).** Blocked at execution time: `main.yaml` triggers only on push-to-`main` / PR-to-`main`, and `feat-gsd-roadmap` is 2377 commits ahead of `origin/main`, so discharging it needs a 2377-commit PR — disproportionate to a verification step. Carries open risk **T-137-11**: the deleted CI wait loops make the preflight's 120 s poll CI's only cold-start absorber, and that ceiling is budget-preserving (60×2 s, the deleted loop's own budget), not measured. Discharge when the branch is next PR'd to `main`; append a CI section to `137-NEGATIVE-CONTROL.md`. | deferred; operator-accepted 2026-08-13 |
+| verification | Phase 134 — D-18 native-speaker review of six constructed non-English `selectExact` singulars | human_needed; operator-accepted (no automated check can assess grammaticality) |
+| uat | Phase 134 — 134-UAT.md, 1 pending scenario (the same D-18 item) | pending; operator-accepted |
+| verification | Phase 136 — REAL-03 first observed CI run of the `dev-seed-integration` job | human_needed; not executable outside GitHub Actions. Wiring verified by construction + local simulation |
+| e2e | DEF-135-04 — intermittent `EPERM-07` term-trigger failure (1 in 8 runs) | **DISCHARGED 2026-08-14 by Phase 138** (was: WAIVED at v2.14 close, four conditions). Named root cause: an **ordering defect** — SvelteKit commits the destination URL at `client.js:1759-1760` before swapping the DOM at `:1824`, and the walk's navigation settle waited on the URL alone and swallowed its own timeout, so assertions were made inside a window in which the destination DOM did not exist. Fixed test-side (shared `settleAfterClientNavigation`). Evidence: `138-DIAGNOSIS.md` (criterion 1), `138-NEGATIVE-CONTROL.md` (criterion 2 — pre-fix 5/5 fail, post-fix 0/5), `138-DETERMINISM-LEDGER.md` (criterion 3 — 16/16 on one pinned HEAD). `.planning/v2.14-CARDINAL-RULE-WAIVER.md` § Discharged; **no successor waiver**. Still open and carried: the unlocalised multi-second navigation excursion — attributed to a transient dev-server stall by operator judgment 2026-08-14, unlocalised, falsifiable. |
+| e2e | Visual-gate run-4 anomaly — 1 unexplained failure in 5 clean container runs, failing test not captured | recorded UNCONFIRMED; carried into v2.15 Phase 146 criterion 5 (explain or re-observe during the re-baseline) |
+| backlog | Visual-gate sensitivity floor (ratio dilutes with page height — measured) | **CONSUMED** → v2.15 VGATE-01/02/03, Phase 146 |
+| backlog | 5 packages outside `test:unit` (core, matching, llm, question-info, argument-condensation) | **CONSUMED** → v2.15 UNIT-01..04, Phase 141 |
+| backlog | Candidate-app axe + raw-i18n-key coverage (D-136-04-1) | **CONSUMED** → v2.15 CSCAN-01..04, Phases 147-148 |
+| backlog | `fonts.googleapis.com` egress inside the blocking visual gate (D-136-05-2) | **CONSUMED** → v2.15 VGATE-04/05/06, Phase 146 |
+| todos | ~48 standing pending todos | carried; triage via `/gsd-review-backlog` |
+| docs | **Test-runbook concurrency claim contradicts the Playwright config (Phase 138 F-2).** `tests/README.md:124` (the ASCII project DAG) and `tests/README.md:135` both state that the voter permutation family runs *in parallel* with the base/journey families and that its first setup `data-setup-perm-1e1cg1co` has no upstream dependency. The config says the opposite: `tests/playwright.config.ts:514-517` declares `dependencies: ['voter-journey', 'candidate-journey']` on that setup, and the config's own docblocks at `tests/playwright.config.ts:57-64` and `:501-512` explain the serial anchoring and why it is load-bearing (shared `app_settings` singleton + mutually-destructive preclears). | open; found during Phase 138 research (§R7.2 F-2) and **deliberately NOT absorbed** — correcting the concurrency documentation is a separate concern from discharging a cardinal-rule waiver, and Phase 138's ROADMAP shape note forbids padding a diagnosis phase with adjacent work. Filed here rather than fixed; `tests/README.md:124`/`:135` are left exactly as written. |
+
+**Closeout type:** `override_closeout` — 2 phases verified `human_needed` rather than `passed`.
+
+## Performance Metrics
+
+**Cumulative:**
+
+- Milestones shipped: 15 (v1.0, v1.1, v1.2, v1.3, v1.4, v2.0, v2.1, v2.3, v2.4, v2.5, v2.6, v2.7, v2.8, v2.9, v2.10) + 1 paused (v2.2)
+- Total plans completed: 321 + 6 tasks (v2.9 added 32 plans)
+- Timeline: 46 days across 7 work windows (2026-03-01 → 2026-03-28 + v2.5 2026-04-23→24 + v2.6 2026-04-24→28 + v2.7 2026-04-29→05-08 + v2.8 2026-05-08→10 + v2.9 2026-05-10→12)
+- v2.9 specifically: 6 phases (73-78), 32 plans, 89 tasks across 3 days
+
+**Per-Plan Metrics:**
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 125 P01 | 4min | 2 tasks | 2 files |
+| Phase 125 P02 | 2min | 2 tasks | 6 files |
+| Phase 125 P03 | 1min | 2 tasks | 4 files |
+| Phase 125 P04 | 19min | 2 tasks | 0 files |
+| Phase 126 P01 | 2min | 2 tasks | 1 files |
+| Phase 126 P02 | 10m | 2 tasks | 2 files |
+| Phase 126 P04 | 2min | 1 tasks | 1 files |
+| Phase 126 P03 | 25min | 2 tasks | 2 files |
+| Phase 126 P05 | ~32min | 2 tasks | 0 files |
+| Phase 127 P01 | 12min | 2 tasks | 6 files |
+| Phase 127 P02 | 3min | 2 tasks | 2 files |
+| Phase 127 P03 | 29min | 2 tasks | 0 files |
+| Phase 128 P01 | 7min | 3 tasks | 7 files |
+| Phase 128 P02 | 6min | 2 tasks | 5 files |
+| Phase 128 P03 | 3min | 2 tasks | 5 files |
+| Phase 128 P04 | 3m | 2 tasks | 2 files |
+| Phase 128 P05 | ~14m | 2 tasks | 0 files |
+| Phase 129 P01 | 6min | 2 tasks | 4 files |
+| Phase 129 P02 | 2min | 2 tasks | 3 files |
+| Phase 129 P03 | 2min | 1 tasks | 2 files |
+| Phase 129 P04 | 18min | 2 tasks | 4 files |
+| Phase 129 P05 | 5min | 2 tasks | 12 files |
+| Phase 129 P06 | 9min | 3 tasks | 14 files |
+| Phase 129 P07 | 35min | 2 tasks | 2 files |
+| Phase 129 P08 | 250min | 3 tasks | 12 files |
+| Phase 129 P09 | 26min | 3 tasks | 6 files |
+| Phase 130 P01 | 45min | 2 tasks | 5 files |
+| Phase 130 P02 | ~35min | 2 tasks | 3 files |
+| Phase 130 P03 | ~55min | 2 tasks | 1 files |
+| Phase 130 P04 | ~40min | 3 tasks | 3 files |
+| Phase 130 P05 | ~50min | 2 tasks | 1 files |
+| Phase 130 P06 | ~55min | 2 tasks | 1 files |
+| Phase 131 P01 | 55min | 2 tasks | 5 files |
+| Phase 131 P02 | ~80min | 2 tasks | 5 files |
+| Phase 131 P03 | ~45min | 3 tasks | 6 files |
+| Phase 131 P04 | ~70min | 2 tasks | 6 files |
+| Phase 131 P05 | 66min | 2 tasks | 4 files |
+| Phase 132 P01 | ~22min | 1 tasks | 1 files |
+| Phase 132 P02 | 8min | 2 tasks | 3 files |
+| Phase 132 P04 | 6min | 3 tasks | 8 files |
+| Phase 132 P03 | 108 | 3 tasks | 13 files |
+| Phase 133 P01 | 3min | 1 tasks | 1 files |
+| Phase 133 P02 | 4min | 1 tasks | 1 files |
+| Phase 133 P03 | 45min | 1 tasks | 0 files |
+| Phase 138 P01 | 30m | 3 tasks | 9 files |
+| Phase 138 P02 | ~40 min | 3 tasks | 3 files |
+| Phase 138 P03 | ~70 min | 3 tasks | 2 files |
+| Phase 138 P04 | 75 min | 3 tasks | 6 files |
+| Phase 138 P05 | 4h 40m | 3 tasks | 2 files |
+| Phase 138 P06 | ~37min active (7h04m wall) | 3 tasks | 7 files |
+| Phase 139 P01 | 14min | 2 tasks | 1 files |
+| Phase 139 P02 | 20m | 2 tasks | 1 files |
+| Phase 139 P03 | ~20 minutes | 2 tasks | 2 files |
+| Phase 139 P04 | 25m | 2 tasks | 1 files |
+| Phase 139 P05 | 32 min | 3 tasks | 1 files |
+| Phase 139 P06 | 18min | 2 tasks | 1 files |
+| Phase 139 P07 | 12min | 3 tasks | 3 files |
+| Phase 140 P01 | ~15min | 3 tasks | 4 files |
+| Phase 140 P02 | 22min | 3 tasks | 3 files |
+| Phase 140 P03 | 33min | 2 tasks | 3 files |
+| Phase 140 P04 | 45min | 3 tasks | 4 files |
+| Phase 140 P05 | 55m | 3 tasks | 32 files |
+| Phase 140 P06 | 45min | 3 tasks | 4 files |
+| Phase 151 P01 | 28min | 3 tasks | 4 files |
+| Phase 151 P02 | 48min | 3 tasks | 3 files |
+| Phase 151 P03 | 31min | 3 tasks | 2 files |
+| Phase 151 P04 | 51min | 3 tasks | 1 files |
+| Phase 151 P05 | 45min | 4 tasks | 2 files |
+| Phase 151 P06 | 50m | 4 tasks | 3 files |
+| Phase 151 P07 | 2h10m | 3 tasks | 352 files |
+| Phase 151 P08 | ~3h | 4 tasks | 151 files |
+| Phase 151 P09 | 35m | 3 tasks | 7 files |
+| Phase 151 P10 | ~50m | 4 tasks | 5 files |
+| Phase 151 P11 | ~1h40m | 3 tasks | 9 files |
+| Phase 151 P12 | ~1h25m | 3 tasks | 10 files |
+| Phase 151 P13 | 96 | 3 tasks | 26 files |
+| Phase 151 P14 | 118 | 3 tasks | 533 files |
+| Phase 151 P15 | 92 | 3 tasks | 34 files |
+| Phase 151 P16 | one session | 3 tasks | 232 files |
+| Phase 151 P17 | one session | 4 tasks | 11 files |
+
+## Deferred Items
+
+### Acknowledged at v2.13 close (2026-06-13)
+
+Pre-close artifact audit surfaced 8 open items. The 2 🔴 items were **resolved at close** (not deferred): debug `dataroot-stale-direct-nav` (fixed by Phase 117 — 12-site codemod + E2E 95/95; status → resolved) and the Phase 113 `human_needed` verification gap (the deferred live-E2E was satisfied by the Phase 116 green gate; status → resolved). The 6 🟡 items are **non-blockers, deferred** — the substantive close gate (15/15 requirements, E2E 95/95 to the 3× determinism standard + unit 766+450 + typecheck 0-net-new + lint) was satisfied.
+
+| Category | Item | Status | Disposition |
+|----------|------|--------|-------------|
+| quick_task | 260607-cd0-clean-up-e2e-test-folder-catalogue | unknown (status flag) | Verified-done since v2.11 (cleanup follow-up closed; only the SUMMARY terminal-status flag is unflipped). Carried forward. |
+| todos | ~52 standing backlog todos | pending | Carried-forward backlog (pre-dates v2.13). Triage via `/gsd-review-backlog` when shaping the next milestone. Includes CAND-STORE-01 (v2 deferral). |
+| Phase 120 P03 | 35min | 3 tasks | 1 files |
+| Phase 120 P04 | ~45min | 3 tasks | 4 files |
+| Phase 120 P05 | 75min | 3 tasks | 6 files |
+| Phase 120 P06 | ~55min | 3 tasks | 7 files |
+| Phase 120 P07 | 95min | 3 tasks | 5 files |
+| Phase 120 P08 | ~50min | 3 tasks | 10 files |
+| Phase 121 P01 | 75min | 3 tasks | 1 files |
+| Phase 121 P02 | 35min | 1 tasks | 1 files |
+| Phase 121 P03 | 75min | 2 tasks | 3 files |
+| Phase 121 P121-04 | ~25min | 1 tasks | 4 files |
+| Phase 121 P121-05 | 10m | 1 tasks | 1 files |
+| Phase 121 P121-06 | ~18min | 2 tasks | 2 files |
+| Phase 121-e2e-specs-flow-coverage P07 | 35min | 1 tasks | 1 files |
+| Phase 121 P121-08 | 150min | 3 tasks | 4 files |
+| Phase 122 P01 | 5min | 3 tasks | 6 files |
+| Phase 122 P02 | 15min | 3 tasks | 2 files |
+| Phase 122 P03 | 5min | 3 tasks | 7 files |
+| Phase 122 P04 | 9min | 3 tasks | 5 files |
+| Phase 123 P01 | 12min | 2 tasks | 4 files |
+| Phase 123 P02 | ~6min | 3 tasks | 3 files |
+| Phase 123 P03 | 3min | 3 tasks | 1 files |
+| Phase 123 P04 | 44min | 2 tasks | 1 files |
+| Phase 124 P01 | 2 min | 2 tasks | 2 files |
+
+### Acknowledged at v2.11 close (2026-06-07)
+
+Pre-close artifact audit surfaced 11 open items, all assessed as **non-blockers** during the v2.11 milestone audit (`.planning/milestones/v2.11-MILESTONE-AUDIT.md`) and acknowledged/deferred at close. The substantive close gate (22/22 requirements, 18/18 integration seams, full E2E 84/0 + unit green + a11y 10/10 + 3× determinism) was satisfied.
+
+| Category | Item | Status | Disposition |
+|----------|------|--------|-------------|
+| verification | Phase 95 95-VERIFICATION.md | human_needed | Closed-by-design: live E2E gate deferred to Phase 101; satisfied by the 101 green gate (see 101-VERIFICATION.md). Marker is accurate phase history. |
+| verification | Phase 96 96-VERIFICATION.md | human_needed | Closed-by-design: deferred to Phase 101; satisfied by the 101 green gate. |
+| verification | Phase 99 99-VERIFICATION.md | human_needed | Closed-by-design: NAVA11Y-03 live axe gate deferred to Phase 101; closed by a11y-smoke 10/10. |
+| verification | Phase 100 100-VERIFICATION.md | human_needed | Closed-by-design: 2 live E2E runs deferred to Phase 101; satisfied by the 101 green gate. |
+| uat | Phase 99 99-UAT.md | partial (0 pending scenarios) | CR-01/CR-02 resolved in 99-04; live axe gate closed by Phase 101. 0 pending scenarios. |
+| quick_task | 260607-cd0-clean-up-e2e-test-folder-catalogue | unknown (status flag) | Verified-done — STATE.md records the entire cleanup follow-up as closed (dead-code sweep + .helper rename + IDURA + emailHelper consolidation, live-green). Only the SUMMARY terminal-status flag was left unflipped. |
+| todos | 5 counted + ~51 more standing backlog | pending | Carried-forward backlog (pre-dates v2.11 + 3 v2.11-captured). Triage via `/gsd-review-backlog` when shaping the next milestone. |
+
+Resolved this session before close (not deferred): debug `elections-continue-stall` (was `root_cause_found`; disproven as a user-facing bug — test-fixture timing artifact fixed via `waitForVisible`, confirmed by Phase 101 a11y 10/10 → status `resolved`); v2.11 doc-hygiene (authored 101-VERIFICATION.md, flipped stale NAVA11Y-03 traceability note, backfilled 4 SUMMARY frontmatter REQ-IDs).
+
+---
+
+Snapshot at v2.10 planning start (2026-05-12), updated 2026-05-13 after Phase 79 close added Phase 83 + 2 follow-up todos, updated 2026-05-20 after constituency-filter WONT-IMPLEMENT decision. v2.10 now consumes 5 in-milestone candidates (3 v2.9-routed originals + 2 Phase-79-surfaced follow-ups absorbed in-milestone rather than re-deferred). 4 other v2.9-routed v2.10+ candidates remain re-deferred to v2.11+ (SETTINGS-02 / SETTINGS-03 / FilterGroup OR-mode / voters-layout non-reactive topbar). Constituency-filter PRODUCT-GAP has since been CLOSED as WONT-IMPLEMENT (out of contract — constituency is a navigation/scope concept, not a filter).
+| Phase 106 P01 | 6min | 2 tasks | 1 files |
+| Phase 106 P02 | 3min | 2 tasks | 1 files |
+| Phase 106 P03 | 2min | 2 tasks | 1 files |
+| Phase 106 P04 | 4min | 2 tasks | 3 files |
+| Phase 107 P01 | 8min | 2 tasks | 2 files |
+| Phase 107 P02 | 3min | 2 tasks | 3 files |
+| Phase 107 P03 | 3min | 2 tasks | 2 files |
+| Phase 108 P01 | 1min | 2 tasks | 2 files |
+| Phase 108 P02 | 3min | 2 tasks | 2 files |
+| Phase 108 P03 | 3min | 2 tasks | 0 files |
+| Phase 109 P01 | 4min | 2 tasks | 4 files |
+| Phase 109 P02 | 6min | 2 tasks | 1 files |
+| Phase 109 P03 | 3min | 2 tasks | 2 files |
+| Phase 110 P01 | 6min | 2 tasks | 2 files (+3 deleted) |
+| Phase 110 P02 | 2min | 2 tasks | 3 files |
+| Phase 110 P03 | 18min | 2 tasks | 1 files |
+| Phase 110 P04 | 6min | 2 tasks | 1 files |
+| Phase 111 P01 | 3min | 1 tasks | 1 files |
+| Phase 111 P02 | 2min | 2 tasks | 2 files |
+| Phase 111 P03 | 7min | 2 tasks | 1 files |
+| Phase 112 P01 | ~2min | 2 tasks | 2 files |
+| Phase 112 P02 | ~2min | 2 tasks | 2 files |
+
+### Acknowledged at v2.10 close (2026-06-04)
+
+The pre-close artifact audit surfaced 15 open items. All v2.10-internal artifacts were **resolved** before close; the standing todo backlog is **carried forward** to v2.11+.
+
+**Resolved this session (7 artifacts):**
+
+| Artifact | Resolution |
+|----------|------------|
+| debug `phase93-e2e-regression-clusters` | Both clusters fixed + committed (1e7d8842f / efd7cbe11); final gate satisfied by Phase 94 green run. Status → resolved. |
+| Phase 89 HUMAN-UAT (was partial, 5 pending) | All 5 dynamic gates closed by Phase 94 green run. Status → complete. |
+| Phase 92 HUMAN-UAT (was passed) | 51/0/0; re-stamped to terminal `complete`. |
+| quick `260603-c0g` (dev-seed lint) | Done — lint + build green. Status → complete. |
+| quick `260531-x5s` (candidate userData save) | Done — 3 commits, unit 34/34. Status → complete. |
+| quick `260601-hn9` (skip popup tests) | Done — commits + todos filed. Status → complete. |
+| quick `260523-u53` / `260527-nat` / `260531-we7` / `260601-iqd` | Done/superseded/e2e-covered/backfilled — see each SUMMARY's `status_note`. |
+
+**Carried forward (deferred to v2.11+):** 49 standing backlog todos in `.planning/todos/pending/` (most predate v2.10). These include the documented v2.11+ deferrals (cold-deeplink races, perm-per-app-notifications re-enable, 86/86.1/86.2 VERIFICATION backfill) plus older backlog (party-app generalization, app-shared normalisation, mergeSettings re-export removal, alliance-tab rendering, etc.). Triage via `/gsd-review-backlog` when shaping v2.11.
+
+| Category | Item | Status / Notes |
+|----------|------|----------------|
+| todo | 2026-05-12-candidate-profile-cascading-race.md | **v2.10 Phase 79 / DETERM-04** — Complete (passed-with-deferral 2026-05-13) |
+| todo | 2026-05-12-a11y-axe-first-run-violations.md | **v2.10 Phase 80 / A11Y-04** — mapped |
+| todo | 2026-05-12-a11y-01-product-gap-cells.md | **v2.10 Phase 81 / A11Y-05+06 + Phase 82 / A11Y-07** — mapped (split across email/url shared-dispatch + required-empty product-decision phase) |
+| todo | 2026-05-13-candidate-profile-image-upload-cascade.md | **v2.10 Phase 83 / DETERM-06** — promoted 2026-05-13 from v2.11+ to in-milestone gap closure |
+| todo | 2026-05-13-voter-matching-detail-flakes.md | **v2.10 Phase 83 / DETERM-07** — promoted 2026-05-13 from v2.11+ to in-milestone gap closure |
+| todo | 2026-05-12-settings-02-voter-authoring-product-gap.md | Re-deferred to v2.11+ — voter-app PRODUCT-GAP, out of v2.10 focused scope |
+| todo | 2026-05-12-settings-03-voter-required-product-gap.md | Re-deferred to v2.11+ — voter-app PRODUCT-GAP, out of v2.10 focused scope; Phase 86 Plan 03 Task 3 confirmed via testIgnore project-config exclusion (no fix) |
+| todo | 2026-05-12-voters-layout-non-reactive-appsettings.md | **CLOSED 2026-05-20** by Phase 86.3 Plan 01 — moved to .planning/todos/done/ |
+| todo | 2026-05-14-qspec-walkToQuestion-cold-start-race.md | **v2.11+** — Phase 86 Plan 03 Tasks 1+2 source-skip (QSPEC-01 + QSPEC-02 boolean+categorical share root cause: walkToQuestion intro-start CTA wait races full-suite settings overlay; 10s timeout on voter-questions-start) |
+| todo | 2026-05-14-party-drawer-boundary-flake-residual.md | **v2.11+** — Phase 86 Plan 04 Task 2 PASSED-WITH-DEFERRAL on strict 3-run SHA identity (Phase-83-DETERM-07b boundary graduate; Plan 01 Task 5 hardening reduced but did not eliminate boundary classification) |
+| todo | 2026-05-12-qspec-01-i18n-hardening.md | Backlog — small QSPEC follow-up; not v2.10 |
+| todo | 2026-05-12-qspec-02-multi-choice-categorical-variant.md | Backlog — QSPEC follow-up; not v2.10 |
+| todo | 2026-05-12-58-e2e-audit-addendum-qspec.md | Backlog — audit addendum hygiene; not v2.10 |
+| todo | results-url-refactor-followups.md | Re-deferred to v2.11+ — sharable URLs / multi-tenant pair |
+| todo | frontend-project-id-scoping.md | Re-deferred to v2.11+ — paired with results-url-refactor-followups |
+| todo | 2026-05-10-incorporate-luxembourg-and-danish-vaa-changes.md | Separate future milestone — deltas unscoped |
+| todo | 2026-04-28-cleanup-nominations-table.md | DB-01 — deferred 2026-04-29; user opted to keep table as is |
+| todo | 2026-03-28-generalize-candidate-app-to-party-app.md | Future party-app variant |
+| todo | 2026-03-28-investigate-migrating-candidate-answer-store.md | Architectural investigation |
+| todo | adapter-package-loading.md | Medium — tsconfig-based importable adapter |
+| todo | check-candidate-distribution.md | Low — default seed candidate spread follow-up |
+| todo | configurable-mock-data.md | Medium — Supabase GENERATE_MOCK_DATA env replacement |
+| todo | password-reset-code-method.md | Strapi-era leftover |
+| todo | register-page-registrationkey-method.md | Strapi-era leftover |
+| todo | rename-admin-writer.md | dev-seed internal API hygiene; low priority |
+| todo | session-storage-election-constituency.md | Partly mitigated by v2.6 Phase 62 URL-based election scoping |
+| todo | sql-linting-formatting.md | CI hygiene |
+| todo | 2026-05-09-rewrite-parent-answer-imputation.md | Future matching-focused milestone |
+| carry-forward | 165 pre-existing intra-package circular deps (data/matching/filters internal.ts barrel pattern) | Out of v2.10 scope; dedicated structural refactor milestone |
+| infrastructure | Local imgproxy Docker container 502 on image upload (intermittent) | Not a code issue; fix with `supabase stop && supabase start`. Carried forward. |
+| Phase 79 P01 | 2h | 4 tasks | 18 files |
+| Phase 79 P02 | 50min | 3 tasks | 9 files |
+| Phase 79 P02F | 3min | 0 tasks | 3 files |
+| Phase 80 P01 | ~6h | 6 tasks + 1 deviation (Task 5b) + 1 Rule 1 fix | 8 files + 2 deviation files |
+| Phase 81 P01 | 1h | 9 tasks | 24 files |
+| Phase 82 P01 | 26min | 6 tasks | 4 files |
+| Phase 83 P01 | 180min | 10 tasks | 8 files |
+| Phase 86 P01 | 15min | 5 tasks | 5 files |
+| Phase 86 P02 | 10min | 3 tasks | 2 files |
+| Phase 86 P03 | 25min | 5 tasks | 5 files |
+| Phase 86 P04 | ~190min (~162min unattended 3-run gate + ~28min orchestration) | 7 tasks | 9 files |
+| Phase 86.2 P01 | 210min | 3 tasks | 12 files |
+| Phase 86.2 P02 | 90min | 3 tasks | 23 files |
+| Phase 86.3 P01 | 75min | 3 tasks | 7 files (+ 1 todo rename) |
+| Phase 86.3 P03 | 50min | 3 tasks | 5 files (1 spec + 1 trace-analysis + 1 smoke + 1 augmented todo + 1 SUMMARY) |
+| Phase 86.3 P04 | ~15min | 2 tasks | 4 files (1 spec + 1 augmented todo + 1 smoke + 1 SUMMARY) |
+| Phase 86.3 P02 | 30min | 3 tasks tasks | 5 files files |
+| Phase 87 P01 | 30min (Path A verbal-accept; ~216 min saved vs Path B) | 5 tasks (0/1a/1b/2/3/4) | ~20 files |
+| Phase 88 P02 | 25min | 8 tasks | 20 files |
+| Phase 88 P04 | 69 min | 14 tasks | 24 files |
+| Phase 89 P01 | 70min | 4 tasks | 5 files |
+| Phase 89 P02 | 35 min | 4 tasks | 17 files |
+| Phase 89 P03 | 40 min | 5 tasks tasks | 8 files files |
+| Phase 89-continuing-test-refactoring-implement-the-new-candidate-jour P04 | 10 min | 4 tasks | 13 files |
+| Phase 89-continuing-test-refactoring-implement-the-new-candidate-jour PLAST | 30 min | 5 tasks | 16 files |
+| Phase 90 P01 | 30min | 2 tasks | 5 files |
+| Phase 90 P02 | 15min | - tasks | - files |
+| Phase 90 P03 | 30 min | 3 tasks | 12 files |
+| Phase 90 P04 | 25 min | 3 tasks | 6 files |
+| Phase 91 P01 | 19 | 4 tasks | 20 files |
+| Phase 91 P03 | 18 | 3 tasks | 8 files |
+| Phase 91 P91-02 | 20 | 3 tasks | 47 files |
+| Phase 91 P04 | 14 | 3 tasks | 6 files |
+| Phase 92 P01 | 25min | 3 tasks | 12 files |
+| Phase 92 P02 | ~2min | 2 tasks | 4 files |
+| Phase Phase 92 PP03 | ~6min | 3 tasks | 13 files |
+| Phase 92 P05 | ~5min | 3 tasks | 8 files |
+| Phase 92 P04 | ~25min | 2 tasks | 9 files |
+| Phase 93 P01 | 3min | 3 tasks | 3 files |
+| Phase 93 P02 | ~30min | 2 tasks | 30 files |
+| Phase 93 P03 | ~35min | 3 tasks | 28 files |
+| Phase 93 P04 | ~50min | 3 tasks | 64 files |
+| Phase 93 P05 | ~30min | 3 tasks | 43 files |
+| Phase 93 P06 | ~3h (incl. operator full test:e2e gate + gap-closure) | 3 tasks (+3 gap-closure commits) | 8 files |
+| Phase 94 P01 | 12min | 3 tasks | 4 files |
+| Phase 94 P02 | 12min | 2 tasks | 44 files |
+| Phase 94 P03 | 25min | 2 tasks | 25 files |
+| Phase 94 P04 | ~18min | 2 tasks | 17 files |
+| Phase 94 P05 | ~18min | 2 tasks | 16 files |
+| Phase 94 P06 | ~10min | 2 tasks | 17 files |
+| Phase 94 P07 | ~25min | 2 tasks | 32 files |
+| Phase 94 P08 | ~7min | 2 tasks | 3 files |
+| Phase 95 P01 | 4min | 3 tasks | 3 files |
+| Phase 95 P02 | 8min | 2 tasks | 2 files |
+| Phase 95 P03 | 12min | 3 tasks | 5 files |
+| Phase 95 P04 | 3min | 2 tasks | 4 files |
+| Phase 95 P05 | 22min | 3 tasks | 37 files |
+| Phase 99 P01 | 12min | 2 tasks | 2 files |
+| Phase 99 P02 | ~9min | 2 tasks | 9 files |
+| Phase 99 P03 | 55min | 2 tasks | 1 files |
+| Phase 99 P04 | ~12min | 3 tasks | 6 files |
+| Phase 96 P01 | 8min | 3 tasks | 8 files |
+| Phase 96 P02 | 4min | 3 tasks | 2 files |
+| Phase 100 P01 | 2min | 1 tasks | 1 files |
+| Phase 100 P02 | 12min | 3 tasks | 3 files |
+| Phase 97 P01 | 2min | 3 tasks | 2 files |
+| Phase 98 P01 | 10m | 2 tasks | 4 files |
+| Phase 98 P02 | ~15min | 2 tasks | 26 files |
+| Phase 98 P03 | ~10min | 2 tasks | 66 files |
+| Phase 98 P04 | 2 | 2 tasks | 4 files |
+
+## Accumulated Context
+
+### Roadmap Evolution
+
+- 2026-08-16: Phase 151 added: Ship v0.2 Akita — Review Stack & Commit-History Restructure. Source: root `ROADMAP.md` § "Addendum 1: Shipping v0.2 Akita" (operator-authored). Scope: Code Review Checklist + Code Style Guide sweeps over the whole v0.2 diff, comment hygiene (no planning-artifact/history narration in code), commit-history restructure (planning · docs · tests · squashed feature commits with no self-fixes · formatting · `[db]` tags), backup + byte-identical review worktrees, and a review-only PR stack off `origin/main` split by change nature. Continuation branch `feat-v02-akita-continued` created at `315b9795e` for parallel feature work.
+- 2026-08-09: Phase 134 added: A11y Contrast + i18n Catalog + Boolean-Answer Defect Closure (FIX-01/02/03). Source: `.planning/v2.14-MILESTONE-AUDIT.md` status `tech_debt` — 3 CONFIRMED user-facing defects carried as deferrals (WCAG AA contrast on the elections selector; untranslated `multiChoice` key in all 7 locales; boolean `false` reading back as unanswered). Operator chose remediation-before-close.
+- 2026-07-24: Phase 133 added: Fix Phase 132 code review gaps — resolve REVIEW.md findings; remove `navigateDirectlyToQuestions` entirely and make `advanceVoterFlow` deterministically check each possible screen (trial for regressions via E2E).
+- 2026-06-12: **v2.13 Context-as-Class Migration** milestone roadmap created. **11 phases (106-116), 15 requirements mapped, 0 unmapped.** Phase numbering continues from v2.12 (last phase 105); no reset. Granularity `fine`; parallelization on; frontend-only scope (`apps/frontend/src/**`), backed by spikes 017–023 + `CONTEXT-MEMBER-AUDIT.md` + `CONTEXT-CLASS-PROOF.md` + CONVENTIONS §17–22 (3 contexts already converted as the migration template). Conversion follows the audit's low-blast-radius-first order: **106 (Group F helpers) → 107 (leaf auth/component + proof reconcile) / 108 (app producers getRoute/survey/tracking/popup) [107 ∥ 108] → 109 (appContext orchestrator + spread-of-context fix + `_poc*` removal) → 110 voter / 111 candidate / 112 admin [all three ∥, sibling orchestrators on the appContext base] → 113 FLATTEN (drop reactiveFoo dupes + ~524-site `.current` codemod — **runs ALONE**, the v2.12 collision lesson) → 114 RENAME (Store→State) → 115 SWEEP (last svelte/store + `$:` strip + widen ESLint guard; SWEEP-03 after SWEEP-01) → 116 GATE (terminal green gate).** End-loading per the user's explicit instruction: RENAME/SWEEP/GATE (the v2.12 Phases 104/105) sit at the tail, after all CLASS conversions + the flatten, because RENAME touches the same `*Store` files. Within-milestone parallelism: 107∥108, and 110∥111∥112 (each a distinct context dir; back-compat handles keep consumers byte-identical until the flatten, so file-overlap risk is low — serialize only if a planner finds a shared producer file). FLATTEN-02 is the one large mechanical codemod that must never run concurrently with another large rewrite.
+- 2026-06-08: **v2.12 Runes-Native Cleanup** milestone roadmap created. **4 phases (102-105), 9 requirements mapped 1:1, 0 unmapped.** Phase numbering continues from v2.11 (last phase 101); no reset. Granularity `fine`; frontend-only scope (`apps/frontend/src/**`), backed by the `spike-findings-voting-advice-application-gsd` skill. Effectively a single serial chain — **102 → 103 → 104 → 105** — driven by two hard constraints: (1) **spike-first** — Phase 102 (HANDLE-01) classifies the 40 `{ readonly current }` handles + picks the canonical idiom per class and GATES the codemod; (2) **codemod collision** — Phase 103 (HANDLE-02/03, the ~524-site `.current` codemod) and Phase 104 (RENAME-01/02, the Store→State rename) touch many of the same files, so they are serialized, not parallel. Within Phase 105, SWEEP-03 (widen the `svelte/store` ESLint guard app-wide) lands AFTER SWEEP-01 (convert the last `svelte/store`) so the widened guard doesn't flag existing code; GATE-01 is the terminal milestone-close green gate (full E2E incl. a11y-smoke + unit + typecheck + lint). The only safe parallelism is intra-phase (independent SWEEP-01/SWEEP-02 fixes before the SWEEP-03 guard + close).
+- 2026-06-04: **v2.11 Svelte 5 Runes Migration + View Transitions** milestone started + roadmap created. **7 phases (95-101), 22 requirements mapped 1:1.** Phase numbering continues from v2.10 (last phase 94); no reset. Backed by the `spike-findings-voting-advice-application-gsd` skill (16 browser-verified spikes). Two independent domains: **Domain A** rune migration (Phases 95-98, strict 4-wave chain 95→96→97→98) and **Domain B** View Transitions + nav-a11y (Phases 99-100, chain 99→100) — A and B are independent and parallel-eligible; within Phase 95 the 5 Tier-1 leaf-context migrations are internally parallel. **Phase 101** is the milestone-close green gate (depends on all of 95-100). Research skipped (spikes ARE the research). At start, the 19 v2.10 phase directories (still in `.planning/phases/` — complete-milestone had archived only the metadata) were moved to `.planning/milestones/v2.10-phases/`. NOTE: the gsd-roadmapper subagent hit an API socket drop after writing ROADMAP.md fully; the orchestrator finished REQUIREMENTS.md traceability + STATE.md frontmatter/Current Position by hand.
+- 2026-06-03: Phase 94 added (v2.10 closing cleanup) — Final E2E suite polish: de-planning comments/titles, line-unwrap, README triage, + 4 Phase-93 code-review follow-ups (WR-01..04). Reopens v2.10 milestone scope (was milestone_complete after Phase 93).
+- 2026-04-28: v2.6 Svelte 5 Migration Cleanup shipped. 5 phases (60-64), 18 plans, 48 tasks, 4 days.
+- 2026-05-08: v2.7 shipped. 4 phases (65-68), 9 plans, 28 tasks, 9 days. `tech_debt` verdict (8/8 reqs wired; 3 documented deferrals).
+- 2026-05-10: v2.8 shipped. 4 phases (69-72), 13 plans, ~37 tasks, 3 days. Bundled parity gate PASSED.
+- 2026-05-12: v2.9 shipped. 6 phases (73-78), 32 plans, 89 tasks, 3 days. `tech_debt` verdict (24/24 reqs satisfied; 12 PASS + 12 PASS-WITH-DEFERRAL; 8 v2.10+ candidate todos filed).
+- 2026-05-12: v2.10 Test Reliability + A11y Compliance roadmap drafted. **4 phases (79-82), 6 requirements mapped 1:1 across 2 categories (DETERM ×2 / A11Y ×4):**
+  - **Phase 79 — Determinism Recovery** (DETERM-04, DETERM-05): cascading-race fix + parity-script constants regen. Sequential — fix must land before regen captures a clean baseline. Both REQs share the candidate-profile test surface.
+  - **Phase 80 — A11Y Axe Cite-and-Fix** (A11Y-04): resolve 5 first-run WCAG 2.1 AA violations across `/results` + voter-detail-drawer routes. Structurally independent of DETERM; can run in parallel with Phase 79 (benefits from DETERM-04 being green for clean assertion runs, but does not depend on DETERM-05 regen).
+  - **Phase 81 — A11Y-01 PRODUCT-GAP Cells: Email + URL Format** (A11Y-05, A11Y-06): shared `customData.format` / `Question.subtype` dispatch decision; both REQs land via the same schema + component + i18n surface. Depends on Phase 79 DETERM-04 being green for clean assertion runs (assertions live in `candidate-profile-validation.spec.ts` which the cascade blocked).
+  - **Phase 82 — A11Y-01 PRODUCT-GAP Cell: Required-Empty** (A11Y-07): embedded product decision (REJECT vs SOFT-WARN-ONLY) gates implementation shape — warrants its own discuss-phase gate. Depends on Phase 79 DETERM-04 being green.
+- 2026-05-13: Phase 79 SHIPPED passed-with-deferral. URL-predicate fix at `candidate-profile.spec.ts:51` (RCA verdict — neither H1 auth-session nor H2 ToU-hydration was the proximate cause; the bug was in the test helper). 6 cold-start captures (D-08 strict identity failed on initial trio due to pre-existing voter-app flakes; D-09 fresh trio SHA-identical at `ff0334f856…`). v2.10 anchor locked: 80 PASS_LOCKED + 15 DATA_RACE + 57 CASCADE.
+- 2026-05-13: v2.10 scope expanded from 4 phases / 6 REQs to **5 phases / 8 REQs**. **Phase 83 added** (Test Reliability Follow-ups — DETERM-06 image-upload cascade + DETERM-07 voter-app flakes) to absorb the 2 follow-up todos surfaced by Phase 79's DETERM-04 fix as in-milestone gap closure rather than re-deferring to v2.11+. Phase 83 depends only on Phase 79; structurally parallel-eligible with 80/81/82.
+- 2026-05-13: Phase 80 SHIPPED GREEN. A11Y-04 closed — 5 WCAG 2.1 AA violations resolved via Tabs.svelte `role="tablist"` root-cause fix (1-line) + Drawer/Button aria-label i18n (2-line). Scout misdiagnosis corrected mid-execution via Rule 4 deviation (operator-approved Option A: add 1-line Tabs.svelte fix in-plan as Task 5b; NavGroup/NavItem context-detect retained as orthogonal a11y improvement for candidate/admin nav surfaces). Per-rule + global-zero a11y regression gate landed; Phase 79 v2.10 anchor SHA `ff0334f856…` preserved verbatim (4 parity gates PASS). Latent heading-order risk did NOT surface. 0 deferred items for Phase 80.
+- 2026-05-13: Phases 81-82 SHIPPED. A11Y-05/06/07 closed. v2.10 anchor preserved through Phase 81; Phase 82 +1 PASS_LOCKED additive regen.
+- 2026-05-13: Phase 83 SHIPPED GREEN. DETERM-06 closed via 4-rung ladder (D-01a selector fix → D-01b 500ms settle → D-01c imgproxy re-enable → Rule-2 fill-required-empty). DETERM-07a/b closed via hydration-completeness guards. 3-run cold-start SHA-256 identity FIRST-attempt at hash `d6bfeebdb0…`. **New v2.10-close anchor: 94 PASS_LOCKED + 15 DATA_RACE + 47 CASCADE** (+13 net PASS_LOCKED; DATA_RACE Phase 73 D-09 binding preserved verbatim). 3 Phase 82 advisory follow-ups closed (WR-01 overlay-extend, IN-01 docstring, IN-02 +2 PASS_LOCKED backfill).
+- 2026-05-13: **v2.10 scope expanded from 5 phases / 8 REQs to 9 phases / 16 REQs.** Phases 84-87 added as the **All-Green Suite extension** — directive from operator: get ALL e2e tests passing (no DATA_RACE flakes, no CASCADE skips, no FAILURE-CLASS deterministic fails). Phase 84 = imgproxy structural decoupling (DATA_RACE 15→≤3); Phase 85 = variant-project cascade RCA + fix (CASCADE 47→0); Phase 86 = voter-app FAILURE-CLASS cleanup (~10→0); Phase 87 = final v2.10-ship anchor capture. Phase 84 is the sequential precondition; 85+86 parallel-eligible after; 87 sequential after 85+86. New REQ IDs: DETERM-08..15 (8 new REQs).
+- 2026-05-14: Phase 86 SHIPPED PASSED-WITH-DEFERRAL. DETERM-12/13/14 closed via 3-plan cluster RCA. Plan 01 (popups + hydration + navigation/redirects + party-drawer harden): 5 deterministic fixes. Plan 02 (filter + feedback): 2 deterministic fixes; CLAUDE.md Svelte 5 destructuring audit on 3 components DISPROVED. Plan 03 (visibility + edge-cases + question-rendering): 1 hydration-guard fix (voter-detail case-d) + 1 project-config testIgnore exclusion (voter-visibility-required) + 2 test.skip()+rationale entries (QSPEC-01/02 — Phase 75 inheritance, shared v2.11+ todo). 3-run cold-start SHA-identity ALMOST-STRICT verdict (run-1 invalidated by operator; run-2 vs run-3 differ by exactly 1 cell — party-drawer boundary flake per Phase 83 DETERM-07b classification; canonical regen source = run-3). **New v2.10 All-Green Suite anchor: 9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9** — 113 PASS_LOCKED (+4 net vs Phase 85 109) + 3 DATA_RACE (UNCHANGED per D-09) + 40 CASCADE (-2 from QSPEC source-skip migration to SKIPPED_TESTS) + 2 SKIPPED (new bucket) = 158 tracked. Phase 85 anchor `411e09f5ff…` ABSORBED. SKIPPED_TESTS const introduced in `tests/scripts/diff-playwright-reports.ts` (per CONTEXT.md D-05). 2 new v2.11+ todos filed (qspec-walkToQuestion cold-start race + party-drawer boundary flake residual). FAILURE-CLASS narrative block shrunk from ~100 lines to 40-line shrunken header. Phase 87 entry condition (strict-identity 3-run gate) is PASSED-WITH-DEFERRAL; residual party-drawer boundary flake explicitly carried forward.
+- Phase numbering continues from v2.9 (last phase: 78); v2.10 starts at 79 and extends through 87. No reset.
+- Plan count is TBD per phase (filled by `/gsd-plan-phase`).
+- Phase 86.1 inserted after Phase 86: Pre-Phase-87 Convergence Sweep — drive v2.10 e2e suite to all-green-or-explicit-deferral so Phase 87's CASCADE ≤ 5 pre-gate fires cleanly. Originally drafted as orphaned Phase 88 in commit bf286df76; renumbered to 86.1 to match execution order. (URGENT)
+- Phase 86.2 inserted after Phase 86: E2E suite refactor pass (extract helpers, dedup assertions, propagate Phase 86.1 post-fix patterns); inserted after green-baseline 2026-05-19 supersedes HANDOFF.json CASCADE=40 blocker; depends on Phase 86.1; gates Phase 86.3 (URGENT)
+- Phase 86.3 inserted after Phase 86: Implement 7 source-skipped tests (SETTINGS-01 wave A×3 + SETTINGS-01 wave B constituency-filter + E2E-03 feedback persistence + LAYOUT-03 popup regression gate + QSPEC-01/02 boolean+categorical); discuss-phase first answers 'is this all?' by reconciling with grep of test.skip() across tree; depends on Phase 86.2 (URGENT)
+- 2026-05-21 (cont.): **Phase 87 Path B promoted** at operator request. Fresh 3-run cold-start gate executed against post-86.3-v2 codebase HEAD `bd0f92b90`: runs 1+2 SHA-identical at `b2ad76e5de4f5b435db536bb5d5d05c81c5bd4c8e007a5f0c25078e2ed74ef2e` (159 pass / 0 fail / 4 skipped); run-3 differs by exactly 2 boundary-class cells (`voter-app :: voter-results.spec.ts > coupling-rule redirect: singular without id → list view (D-11)` + `> deeplink edge case: organizations list + candidate drawer (D-08 shape 4)`) — same documented voter-app cold-deeplink loader race as v2.11+-deferred cells #5/#7/#8. Operator-promoted ALMOST-STRICT verdict per Phase 86 D-06 precedent extension (in fact stronger — runs 1+2 100% identical vs Phase 86 v1 1-cell run-2/run-3 diff). v2.10 ship anchor UPGRADED: `bc1c94957b…` (Path A re-derivation from 86.3-v1 raw) → `b2ad76e5…` (Path B PASS-state pair, fresh raw artifacts post-86.3-v2). Path A captures preserved at `.planning/phases/87-…/post-fix/path-a/` for audit-trail continuity. Const arrays preserved verbatim (114/3/36/4 = 157 tracked); the 2 boundary-flake cells are NEW tests not in PASS_LOCKED_TESTS — documentary only, NOT promoted per CONTEXT D-08 (folded into existing v2.11+ navigation-from-home redesign closure). regen-constants.mjs reportPath repointed to run-2.json (PASS-state canonical per Phase 86 D-06). IMGPROXY match-count assertion preserved 3/3 ✓. Imgproxy 502 recovery applied between run-2 and run-3 (`supabase stop && supabase start`) per Phase 79 D-14. /gsd-audit-milestone v2.10 verdict unchanged (tech_debt operator-accepted).
+- 2026-05-22: **Phase 88 added to v2.10 roadmap** as the new final phase. Scope: operator-driven audit of the entire e2e test catalog (remove obsolete tests, add coverage gaps, consolidate redundant specs) followed by a fresh 3-run cold-start baseline capture against the mutated catalog. The Phase 88 anchor REPLACES Phase 87's anchor (`b2ad76e5…`) as the gate against which all future development is verified, starting with v2.11 rune-migration Wave 1. Phase 87's anchor becomes historical (last gate against the pre-audit catalog). **Gating semantics:** Phase 88 blocks both `/gsd-complete-milestone v2.10` AND the v2.11 spike-tested rune migration kickoff — v2.10 closes against the catalog the team intends to live with, and v2.11 Wave 1 needs a deterministic post-audit baseline to regression-test against. Plan count + REQ IDs TBD via `/gsd-discuss-phase 88`. Spike findings (001-012) already provide the migration shape for v2.11; the audit-and-rebaseline phase is the bridge that makes those findings safely actionable.
+- 2026-05-21: **Phase 87 SHIPPED PASSED-WITH-DEFERRAL.** DETERM-15 closed via Path A verbal-accept v2.10 ship-close anchor pin. Operator selected Path A (verbal-accept) at execute-phase Task 1a checkpoint based on autonomous-directive + 2026-05-21 operator verbal verification at commit 9ad802ec0 (3 runs, 0 fails + 4 hard-coded skips). Phase 87 ship anchor `bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee` re-binds the same raw SHA as 86.3-v1 (Path A re-uses 86.3-v1 raw run-3.json) to the v2.10 ship narrative — v2 classification deltas (cells #1/#2/#6 PASS_LOCKED promotions + cell #3 → SKIPPED + VOTE-05 removal) live in `diff-playwright-reports.ts` const arrays as the binding contract. Pool counts: 114 PASS_LOCKED + 3 DATA_RACE + 36 CASCADE + 4 SKIPPED = 157 tracked (operator-amended D-05 carried forward from Phase 86.3 D-06 RE-PLAN). Atomic constants regen: regen-constants.mjs reportPath repointed Phase 86 → Phase 87; PHASE 87 v2.10 SHIP ANCHOR jsdoc replaces PHASE 86.3 v2 ANCHOR block; IMGPROXY_TIED_TITLES match-count assertion 3 titles, 3 total matches ✓; CONTEXT.md D-04 stale const names corrected + v2-reshape note appended. /gsd-audit-milestone v2.10 verdict: tech_debt operator-accepted (`.planning/v2.10-MILESTONE-AUDIT.md`). 5 new v2.11+ todos filed: cell #3 mount-lifecycle, Phase 86/86.1/86.2 VERIFICATION.md backfill (the other 3 — qspec / party-drawer / voter-feedback — were pre-existing). KNOWN PATH A DEVIATION: parity-gate self-identity smoke FAILs structurally because 86.3-v1 raw data predates v2 classification promotions; documented in run-mode-decision.txt + audit doc. Phase 86 anchor 9a6d74a3088e… and Phase 86.3-v1 anchor bc1c94957b… both marked ABSORBED. **v2.10 milestone is SHIPPABLE** — operator next step: `/gsd-complete-milestone v2.10`.
+- 2026-05-20 → 2026-05-21: Phase 86.3 v2 baseline reached. Original 2026-05-20 close (8-cell disposition: 3 FIX-PASS + 1 WONT-IMPLEMENT + 4 SKIP-FALLBACK) surfaced 3 downstream regressions during operator verification: voter-results fixture popup re-queue blocked by cell #3 reactive $effect; voter-matching helper drift (maxSteps:3 vs fixture's 6); voter-popup-hydration cold-deeplink race. Resolved 2026-05-20 → 2026-05-21 via four follow-up commits (`6d0914b22` untrack patch on cells #1+#2 topBar $effect; `0a34dfbc7` revert cell #3 reactive → onMount + restore skipReason; `52a2f077a` rewrite voter-popup-hydration via answeredVoterPage fixture, landing v2.11+ Recommendation #3 early; user-removed VOTE-05 partial-negative test from voter-matching helper). New 8-cell v2 disposition: 3 FIX-PASS (cells #1/#2/#6) + 1 WONT-IMPLEMENT (cell #4) + 4 PASS-WITH-DEFERRAL (cell #3 onMount-revert) + SKIP-FALLBACK (cells #5/#7/#8 — voter-app cold-deeplink race remains). Operator-verified 3 test suite runs: 0 fails + 4 hard-coded skips (cells #3, #5, #7, #8). 3-run cold-start gate ALMOST-STRICT (Phase 86 D-06 precedent extension; 8 diverging cells share ONE boundary-class cascade ancestor = DETERM-06 imgproxy + candidate-registration email-link timing). Anchor SHA: bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee. SKIPPED_TESTS const composition on v2 baseline (2026-05-21): 4 entries — cell #3 candidate-settings notifications.voterApp (ADDED post-revert), cell #5 voter-feedback-persistence (kept), cell #7/#8 QSPEC-01/02 (kept). Cell #4 entry removed alongside spec deletion 2026-05-20. Cell #6 entry removed 2026-05-21 (test rewritten to use answeredVoterPage fixture — FIX-PASS). PASS_LOCKED 113 → 116 (+3 SETTINGS-01 wave A FIX-PASS). PHASE 86.3 ANCHOR jsdoc added to diff-playwright-reports.ts. D-06 Phase 87 disposition recommendation: **RE-PLAN** (CASCADE >> 5 hard fails Phase 87 Task 0 pre-gate; upstream voter-app cold-deeplink race materially changes anchor target; v2.11+ navigation-from-home redesign closes 4 cells in single fix paired with 86.3-04 Recommendation #3). Wave 1 SKIP-FALLBACK plans (02/03/04) + Wave 2 SKIP-FALLBACK on cells #7/#8 (Plan 05) demonstrate consistent SHIP-WITH-DEFERRAL pattern preserving gap-signals for v2.11+ pickup.
+- 2026-05-29: **Phase 90 added** — TIR5 permutations (missing-nominations warning + localisation negative/positive). Applies Phase 89's strict-fixtures + minimal-data perm pattern to 3 new candidate-app permutation specs per `TEST-INVENTORY-REFACTOR-5.md` at repo root. Adds lang-selector fixture + multilingual-text-field fixture. Depends on Phase 89. UI hint: no. Plan count TBD via `/gsd-plan-phase 90`.
+- 2026-05-30: **Phase 91 added** — TIR6 perm + edit test additions and visual/perf/a11y/bank-auth refactor per `TEST-INVENTORY-REFACTOR-6.md` at repo root. New perm specs (answersLocked read-only warning, hideHero, header.showFeedback/showHelp, entities.showAllNominations, entities.hideIfMissingAnswers.candidate, elections.showElectionTags, questions.showCategoryTags, question.customData.allowOpen) + new edit-journey steps (candidate invalidUrl on Link-type question, voter feedback-dialog flow + feedbackDialog fixture, all-nominations route) + refactor of 4 spec families to new fixtures/data/strict expectations (visual-regression 34.1.1–34.1.4, performance-budget 35.1.1, a11y-smoke 36.1.1–36.1.6, candidate-bank-auth 37.1.1–37.1.6). Depends on Phase 90. Plan count + REQ IDs TBD via `/gsd-discuss-phase 91`.
+- 2026-06-02: **Phase 92 added** — E2E test infrastructure hardening (operator `--do` directive routed via /gsd-progress). 5 workstreams: (1) typecheck all `tests/` + fix all warnings/errors + eliminate raw locators (no bare `page.locator`/`getByText`; all access via fixtures/testIds); (2) add `goToPage(locale?)` + `expectPageVisible(visible=true)` to every page fixture + migrate all raw `page.goto`/URL expectations to the paradigm + add fixtures (with stable load-confirming testIds) to every checked page; (3) consolidate test timeout constants into a single file used everywhere (documented exceptions for single-test total timeouts); (4) mark questionable the prior storage-decoupling diagnosis (imgproxy/storage healthy but edge_runtime + pooler stopped — logged-not-fixed flakiness, possibly unrelated to answers data model); (5) fix `[setupFromTemplate] Database is NOT fresh` guard to only trigger on meaningful pre-existing data (currently false-positives on ~2 non-test candidates/orgs across many setups). Builds on the in-flight Page-Object→fixtures migration already on `feat-gsd-roadmap`. Depends on Phase 91. Plan count + REQ IDs TBD via `/gsd-discuss-phase 92`.
+- 2026-05-27: **Plan 88-04 added to Phase 88: TIR3 fixtures-and-spec-refactor.** Absorbs T3–T9 deferred from quick task `260527-nat` (T1+T2 already shipped — categorical-filter empty-include semantics via `caf6ee931`; baseV1 `[<id>] desc` rename via `accfba54f`). Scope: T3 `cardContents.candidate` external_id resolution (load-time-vs-seed-time ADR REQUIRED), T4 fixtures library (`resultsPage`/`entityFilters`/`entityDetails`), T5–T8 mega-journey cell migrations (EDIT result-card-contents, ADD matching:organisations + filters:text + filters:dialog, REFACTOR voter-vs-entity matrix + party-drawer→organisation-details, REMOVE 5 cells), T9 `TEXT_RE` cleanup. SCOPE memo: `.planning/phases/88-…/88-04-SCOPE.md` (193 lines). Discuss-phase room REQUIRED (unlike 88-01/02/03 which skipped it — the T3 resolver-placement ADR demands explicit operator decision). Research-phase pre-flight grep BINDING per `260527-nat-SUMMARY.md:191-195` — DOM testids (`score-gauge`/`election-symbol`/`entity-list-filter-badge`) + baseV1 row counts (5/2/3/13/12/1/0 in TIR3 cells) must be reconciled against current seed reality BEFORE executor wave starts. Phase 88 status row updated: 2/2 → 3/4 In progress (88-03 retroactively added to the Plans block — file existed on disk + shipped via SUMMARY but was missing from ROADMAP listing pre-2026-05-27).
+- Plan 88-03 retroactively added to ROADMAP Plans block on 2026-05-27 (file existed since 2026-05-26 with PLAN + SCOPE + SUMMARY; the roadmap row was never updated post-ship — corrected as a side-effect of the 88-04 add).
+- 2026-05-28: **Plan 88-04 SHIPPED PARTIAL.** TIR3 T3–T9 deferred portion landed: Option B (seed-time) `{externalId}` → UUID resolver inside dev-seed Writer Pass-5 (rejects Option A); 12 new testids added to results-page components; 3-file Playwright function-fixtures library (`resultsPage`/`entityFilters`/`entityDetails`) + `views.ts` composition root sibling to legacy `index.ts`; 6 voter-mega-journey cell migrations (T5 EDIT `result-card-contents`, T6 ADD `matching: organisations`, T7 REFACTOR `voter-vs-entity matrix` + REFACTOR `organisation details`, T8 ADD `filters: text` + ADD `filters: dialog`); TEXT_RE cleanup (8 DROP + 2 TIGHTEN + 34 KEEP); ADR-88-04-01 (Option B) committed BEFORE Wave-1 code per SCOPE acceptance #1. 14 atomic commits. Gate B (cold-start mega-journey): PARTIAL — 33/34 sub-tasks pass; the single mega-journey test passes T5/T6/matching:ranking/T7-matrix/T7-org-details/T8-filters:text + T8-filters:dialog stages 1-3 then fails at stage 4 (d2.close() modal re-open dynamics — fixture-level testid resolution on re-opened dialog). 7 Rule 1 fixes uncovered during Gate B integration; documented in 88-04-SUMMARY.md + 88-04-VERIFY.txt + deferred-items.md. Gates A / A.2 / A.3 / C / D / E / F all PASS. **Follow-up TODO surfaced (v2.11+ candidate, Gate A.4 binding from 88-04 ADR):** Refactor `QuestionInCardContent` and other results-cards settings to be election-specific. Consider moving the setting to questions or elections in `@openvaa/data`. When this lands, the dev-seed Writer's Pass-5 resolver from 88-04 may be retired / refactored. **Phase 88 status:** 3/4 → 4/4 plans landed (88-04 PARTIAL with T8 stage 4+ deferred to 88-LAST follow-up). 3-run cold-start gate explicitly deferred to 88-LAST per SCOPE acceptance #8.
+- 2026-05-29: **Phase 89 added** to v2.10 roadmap — continuing test refactoring; implements the new candidate journey (and related edits) per TEST-INVENTORY-REFACTOR-4.md. Scope mirrors voter-journey conventions (strict, no fallbacks, fixtures, `[id] desc` format, serial-only, minimal data); also extends baseV1 hero/info content + adds settings-based permutations (maintenance/voterApp/candidateApp variants). Plan count + REQ IDs TBD via `/gsd-discuss-phase 89`.
+- 2026-05-28 (later, post-SUMMARY): **Plan 88-04 Gate B PARTIAL → PASS (operator-driven, post-SUMMARY).** Operator rejected the self-deferral of T8 filters:dialog stage 4+ to 88-LAST. Three layered Rule 1 fixes landed in one commit (`aaffe7d11`): (a) `entityFilters.fixture.ts` `close()`/`reset()`/`expectResetToBeDisabled()` switched from `getByTestId(filter-dialog-{apply,reset})` to `getByRole('button', { name: /Close filters|Reset filters/i })` scoped to dialog root — testid lookup on Modal action `<Button>` components (Button → `<svelte:element>` + `concatClass(restProps, classes)`) was empirically unreliable under strict-mode resolution; (b) `getFilterButtonBadge()` switched from `getByTestId(entity-list-filter-badge)` (Wave 1.5 span wrapper that does NOT survive Svelte 5 snippet compilation) to `getByTestId(entity-list-filter).first()` (the filter button itself, whose accessible name `"<count> Filter"` includes the badge text); (c) `reset()` fixture method documented + updated to await dialog hidden — `resetFilters()` at EntityListControls.svelte:96-100 calls `closeModal()` synchronously after `filterGroup?.reset()`, so the Reset button CLOSES the dialog as a side-effect (original fixture docstring "Dialog STAYS OPEN" was wrong), and removed 3 redundant `d.close()` calls after reset in T8 STAGES 4/5b/7. **Modal.svelte UNCHANGED.** No frontend changes; all adjustments are test-level (fixture + spec). Verification: `yarn db:reset && yarn db:seed --template baseV1 && cd tests && npx playwright test --project=voter-mega-journey` → 34 passed cold-start in ~57s, 2 consecutive runs confirmed. 88-04-SUMMARY.md + ROADMAP.md updated to PASS; T8 stage 4+ item moved from "Deferred Issues" to Deviation #8 in SUMMARY.md. 88-LAST follow-up for T8 cleared; the only 88-04 deferred items remaining are pre-existing dev-seed e2e.test.ts count drift and legacy `expectQuestionDisplayToHave` helper (out of 88-04 scope; tracked in deferred-items.md).
+
+- 2026-06-03: **Phase 93 added** — Clean up and reorganise E2E tests, fixtures, setup, and seed templates (operator `--do` directive routed via /gsd-progress). Scope: role-based fixture reorg (candidate `email`/`langSel`/`multilingualText` → `shared/`; `voterNav` → `voter/`; `fixtures/` root files → `shared/`|`voter/`; consolidate `views` with `voter-mega`; extract `minimalVoterResultsPage` from `voter-mega` for perms — rewrite for minimal datasets if needed); `tests/setup/` reorg into `voter/*`+`candidate/*`+`shared/*`+`perm/*`; rename all "mega" tests → `voter-journey`/`candidate-journey`; rewrite a11y spec to use `baseV1` seed instead of `e2e` data; seed-template reorg into `e2e/perm/*`+`e2e/base.ts` with old `e2e.ts` removed and `baseV1` renamed to `e2e/base`. Depends on Phase 92. Plan count + REQ IDs TBD via `/gsd-discuss-phase 93`.
+
+### Decisions
+
+Full decision log in PROJECT.md Key Decisions table.
+
+Key cross-milestone reference points carried forward into v2.10:
+
+- Phase 75 PASS_LOCKED baseline (47/15/33) preserved through v2.9 Phases 76 → 77 → 78 via three architectural-deferral decisions; constants regen DEFERRED-WITH-RATIONALE at every Phase 76/77/78 close. The unlock condition is Phase 79 DETERM-04 (cascading-race fix); Phase 79 DETERM-05 (regen) executes against a clean post-fix 3-run cold-start baseline.
+- Phase 79 sequencing: DETERM-04 MUST land before DETERM-05. The regen captures the post-fix baseline (expected ~63 PASS_LOCKED — 47 v2.9 anchor + ~16 cascade-unblocked tests). Regen path options: v2.9 in-place path OR the archived `node .planning/milestones/v2.9-phases/73-determinism-baseline/post-fix/regen-constants.mjs <run-3.json>` script.
+- Phase 80 (A11Y-04) is the smallest phase — 5 violations across 3 rule-IDs, 2 of which are shared-component fixes that resolve both routes simultaneously. Expected ~1-2 plans (per-rule batching: `aria-required-parent` + `list` likely co-located in entity-card/list component; `button-name` independent on drawer icon-button).
+- Phase 81 (A11Y-05 + A11Y-06) shares the schema dispatch question — phase discussion picks ONE mechanism (likely `customData.format` enum addition + INPUT_TYPES bridge) covering both email + URL paths. The Phase 76 P01 `test-question-social-1` slot (sort 21) MAY be promoted to carry the URL dispatch once schema lands.
+- Phase 82 (A11Y-07) has the embedded product decision (REJECT-with-inline-error vs SOFT-WARN-ONLY = current badge + submit-button gating). Decision made at phase discuss time. If SOFT-WARN-ONLY: the cell closes as PRODUCT-CONFIRMED with no code changes — the spec asserts the existing badge + button-gating instead of a new error UI.
+- All v2.10 work is frontend / package-level + Playwright spec authoring — NO Supabase migrations, NO new test runners, NO E2E framework migration. Same durable stack as v2.9 (Playwright 1.58.2).
+- Deprecated `dev:*` script aliases scheduled for removal at v2.10 close (per Phase 78 Plan 01 SUMMARY commitment) — should be addressed as a sub-task during one of the v2.10 cleanup commits, not as a separate phase.
+- [Phase ?]: Phase 79 Plan 01 (DETERM-04 RCA): H1 partially confirmed re-framed, H2 disproven by absence of exercise; proximate cause is test-spec URL-predicate bug at candidate-profile.spec.ts:51
+- [Phase ?]: Phase 79 Plan 02 (DETERM-04 fix): applied one-line URL-predicate fix at candidate-profile.spec.ts:51 per Plan 01 RCA; registration cascade resolved, verified across 3 isolated runs + cold-start
+- [Phase ?]: Phase 79 Plan 02: image-upload (CAND-03) cascade-skips 5 downstream tests post-fix; structurally unrelated to DETERM-04; flag 79-02F restructure trigger = N (restructure wouldn't help; image-upload investigation deferred to future plan)
+- [Phase ?]: Plan 79-02F closed DONE-AS-NOOP per XOR contract — Plan 02 PASSed, so the fallback restructure short-circuits without executing Tasks 1-4.
+- [Phase ?]: Phase 80 Plan 01 (A11Y-04) closes GREEN — Tabs.svelte role=tablist root-cause fix (1-line) corrects scout misdiagnosis via Rule 4 deviation; NavGroup/NavItem context-detect retained as independent a11y improvement; Phase 79 v2.10 anchor SHA ff0334f856… preserved (4 parity gates PASS)
+- [Phase ?]: [Phase 81-01]: A11Y-05 + A11Y-06 closed via Question.subtype dispatch ('email' parallel to 'link'); 14-locale i18n + TranslationKey regen; e2e sort-21 retrofit + new sort-23; 3-run cold-start fingerprint identity PASS; v2.10 anchor preserved by NET-ADDITIONS construction.
+- [Phase ?]: Phase 82 P01: TIGHTEN-SOFT closed A11Y-07 via canSubmit && allRequiredFilled gate at +page.svelte:103; sort-24 fixture landed with custom_data.required (LANDMINE-1); 6-cell A11Y-01 green; 3-run cold-start fingerprint identical; parity-script PASS_LOCKED 80 → 81 additive
+- [Phase ?]: Phase 83 P01: DETERM-06 closed via 4-rung ladder (D-01a+D-01b+D-01c+Rule-2); DETERM-07a/b via hydration guards; v2.10-close anchor regenerated at SHA d6bfeebdb0...
+- [Phase ?]: Phase 86 Plan 01 (DETERM-12 popups+hydration+navigation cluster): 5/5 tests fixed (0 skips, 0 todos); cluster RCA lens (hydration timing + nav state propagation) held; CASCADE-unblock predicted for 4 CLEAN-02 sibling cells at Plan 04 gate
+- [Phase 86]: Plan 02 (DETERM-13 filter+feedback cluster): 2/2 tests fixed (0 skips, 0 todos); 3-component CLAUDE.md Svelte 5 audit DISPROVED H2; Phase-64 close-race pattern toHaveCount(0) closed both surfaces
+- [Phase ?]: Phase 86 Plan 03 (DETERM-14) closed: QSPEC-01+02 skip+rationale (Phase 75 inherit), voter-visibility-required project-config exclusion, voter-detail case (d) hydration guard. 4 commits, 1 new todo.
+- [Phase 86]: Plan 04 (close orchestration) closed PASSED-WITH-DEFERRAL: 3-run cold-start gate ALMOST-STRICT (party-drawer boundary flake — 1 cell differs run-2 vs run-3); run-3 canonical regen source per Phase 85 precedent; new anchor `9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9` (113/3/40 + 2 SKIPPED); IMGPROXY_TIED_TITLES D-09 binding preserved (3 entries unchanged); SKIPPED_TESTS const introduced; FAILURE-CLASS narrative shrunk to 40-line header; 2 v2.11+ todos filed (qspec + party-drawer).
+- [Phase ?]: Phase 86.2 Plan 01: 6 helpers extracted into tests/tests/helpers/; barrel + README; voter.fixture.ts public API preserved (internal swap to walkVoterIteration)
+- [Phase ?]: Phase 86.2 Plan 01: Pitfall enforcement confirmed — #1 caller-side .catch on helper #1, internal on #3; #2 Select.svelte ARIA contract cited in helper #4 docstring; #3 default maxSteps=6 documented in helper #6 (Pitfall regression guard)
+- [Phase ?]: Helpers #3-#6 propagation explicitly deferred to v2.11+ per RESEARCH (9 sites): different pattern shape (helper #3 — no destination predicate; helper #4 — named-combobox variants; helper #5 — non-count findData; helper #6 — answer-loop not Skip-Next-only).
+- [Phase ?]: Negative-landing assertions (expect.not.toHaveURL) stay inline with // reason: comments — expectLandedOn is positive-only by design per helper Pitfall #1 docstring.
+- [Phase ?]: Single-run full-suite smoke (NOT 3-run SHA-identity gate) is Plan 86.2-02 audit charter; Plan 86.2-03 owns the canonical 3-run gate against fresh post-86.2 anchor.
+- [Phase 86.3 P01]: SETTINGS-01 wave A cells #1/#2/#3 closed via reactive $effect-driven `topBarSettings.revert(baseIdx)+push(next)` (Pitfall 1 guard) + $effect with `notificationQueued = $state(false)` fire-once guard (Pitfall 2 guard) on (voters)/+layout.svelte. +27 LOC; mirrors canonical pattern at appContext.svelte.ts:93-100. All 3 per-cell smokes OUTCOME: FIX-PASS. v2.11+ todo `2026-05-12-voters-layout-non-reactive-appsettings.md` CLOSED (moved to .planning/todos/done/).
+- [Phase 86.3 P03]: E2E-03 / DETERM-13 cell #5 voter-feedback-persistence H2/H3 trace-driven disambiguation attempted per Phase 86.1-02 recommended-next-action #1. Trace shows verdict NEITHER — upstream `answeredVoterPage` fixture race (CASCADE-class, separate from DETERM-13) blocks H2/H3 disambiguation entirely (/questions intro page stuck at `Loading…` despite seeded data + clean Supabase REST 200/304/307). SKIP-FALLBACK applied per CONTEXT D-06; test signature surgically swapped `({ answeredVoterPage })` → `({ page })` to make `test.skip(true, …)` report as `1 skipped` instead of `1 failed`. ModalContainer.svelte UNCHANGED. v2.11+ todo augmented with REVISED recommended-next-action ordering (FIRST fix fixture race, THEN re-attempt H2/H3).
+- [Phase 86.3 P04]: LAYOUT-03 / DETERM-12 cell #6 voter-popup-hydration Path 2 (`page.context().addInitScript`) attempted per RESEARCH §"Cell #6 Fix shapes §2". 1-line swap verified-applied but EMPIRICALLY DISPROVED: /results stalls at `Loading…` (15s timeout on voter-results-list testid; Supabase REST all-200; canonical /results/candidates frame URL; same upstream loader-race symptom as 86.3-03 /questions). Path 1 (`test.use({ storageState })`) abandoned at RESEARCH §"Pitfall 4" (static config vs runtime-discovered question UUIDs; alternative resolutions out of D-08 1h cap). SKIP-FALLBACK applied per CONTEXT D-06; Path 2 swap LEFT IN PLACE as evidence-of-attempt (Phase 86.1-03 cell 2 storage-clear pattern). v2.11+ todo voter-popup-hydration-layout-03-deeplink.md augmented 44 → 72 lines with Phase 86.3-04 attempt section + cross-ref to 86.3-03 trace; Recommendation #3 (navigation-from-home test) elevated to strongest v2.11+ next action. Production loader UNCHANGED per D-10 STRICT gate.
+- [Phase 86.3 P02]: cell #4 SETTINGS-01 wave B constituency-filter — SUPERSEDED 2026-05-20 by operator WONT-IMPLEMENT decision. Constituency is navigation/scope, not a per-list filter. Spec block deleted from `tests/tests/specs/variants/constituency.spec.ts`; v2.11+ todo moved to `.planning/todos/done/2026-05-13-constituency-filter-product-gap.md` with WONT-FIX close note; SKIPPED_TESTS const entry removed; anchor jsdoc + cell #4 row marked WONT-IMPLEMENT in `diff-playwright-reports.ts`. (Original disposition: SKIP-FALLBACK via Path-C, Path-B rejected on reviewer-drift; that disposition is now historical.)
+- [Phase 92 P05]: 8 named voter-route perm-spec gotos migrated to voterHomePage/resultsPage goToPage (5 simple specs re-rooted on fixtures/views; perm-localisation-positive uses perm-l10n root, so voterHomePage+resultsPage registered there). Maintenance/307-redirect/candidate/OIDC-callback gotos kept inline with // reason:. Exhaustive D-09 grep proves zero un-migrated voter-route gotos landing on a normally-rendered page in scope; voter-mega.fixture.ts:110 + utils/voterIntro.ts:57 noted as out-of-scope infrastructure follow-up. perm-localisation TIMEOUT machinery left intact for 92-04. typecheck:tests + eslint both exit 0.
+- [Phase 87]: Path A verbal-accept run-mode selected at Task 1a checkpoint (autonomous directive + commit 9ad802ec0 verbal verification audit basis); saves ~216 min vs Path B fresh 3-run gate. v2.10 ship anchor pinned at `bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee` re-bound from 86.3-v1 raw data to v2.10 ship narrative. Operator-amended D-05 carried forward (CASCADE=36 + 4 SKIPPED accepted as documented v2.11+ deferrals). Audit-milestone v2.10 verdict: tech_debt operator-accepted; v2.10 SHIPPABLE; Phase 86/86.1/86.2 VERIFICATION.md backfill folded into v2.11+ tech_debt with new todo file. Cell #3 candidate-settings notifications.voterApp mount-lifecycle todo filed proactively per plan §6 expected new todo. KNOWN DEVIATION: parity-gate self-identity smoke FAILs structurally on Path A (76 regressions reported because 86.3-v1 raw data predates v2 classification promotions); const arrays correctly reflect v2 baseline (114/3/36/4 ✓); operator-accepted as known limitation of verbal-accept audit basis.
+- [Phase 86.3 P05]: QSPEC-01/02 cells #7+#8 SKIP-FALLBACK — walkToQuestion helper-resilience fix LANDED in voterNavigation.ts:308-329 (defensive isVisible probe + conditional intro-CTA click; +13 LOC) but EMPIRICALLY INSUFFICIENT — cells #7/#8 fail at upstream `advanceVoterFlow` line 149 (5s race-checkpoint timeout) because /intro itself never paints (page renders only `Loading…`). Same upstream voter-app cold-deeplink loader race as Phase 86.3-03 cell #5 (/questions Loading…) + Phase 86.3-04 cell #6 (/results Loading…); 4-cell finding characterizes the race as SHARED voter-app cold-deeplink (NOT route-specific). Helper fix LEFT IN PLACE as evidence-of-attempt (mirrors 86.3-04 Path-2 pattern). 3-run cold-start gate: raw FAIL (3 hashes differ); operator-approved ALMOST-STRICT per Phase 86 D-06 precedent (8 diverging cells share ONE documented boundary-class cascade ancestor — DETERM-06 imgproxy CAND-03 + candidate-registration email-link timing); canonical run-3.json; anchor SHA bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee. SKIPPED_TESTS const 2 → 5 entries (added cells #4/#5/#6; kept cells #7/#8); 3 SETTINGS-01 wave A cells moved CASCADE → PASS_LOCKED. PHASE 86.3 ANCHOR jsdoc added to diff-playwright-reports.ts. D-06 Phase 87 disposition recommendation: RE-PLAN (CASCADE >> 5 hard fails Phase 87 Task 0 pre-gate; upstream cold-deeplink race materially changes anchor target; v2.11+ navigation-from-home redesign closes 4 cells in single fix paired with 86.3-04 Recommendation #3).
+- [Phase ?]: Plan 88-02: Name-disjoint key dissociation between route-side electionTab (SELECTED singular) and search-side electionId (AVAILABLE-multi) yields structural rather than semantic dissociation
+- [Phase ?]: Plan 88-02 Q3: $derived.by chosen for currentResultsElection over push-pattern $state+$effect mirror; no FK fetch involved (just Array.find over already-resolved selectedElections)
+- [Phase ?]: Plan 88-02 Q4: pre-existing 'ResultsCandidate' typo fixed in EntityCard + EntityCardAction docstring examples as drive-by (docstring-only; no runtime impact)
+- [Phase ?]: Plan 88-02 Q2: extended existing +layout.ts (client+server load) rather than introducing +layout.server.ts — AVAILABLE-array is URL-supplied, no server-only data fetch required for guard validation
+- [Phase ?]: Plan 88-02 Q5: buildRoute({ electionId: [...] }) remains pure search-side write (no route-side dual-write); both-surfaces callers pass both keys explicitly; existing allowlist-driven split handles structurally — no buildRoute.ts code change needed
+- [Phase ?]: Option B (seed-time) for cardContents.candidate external_id resolution (88-04 ADR-88-04-01)
+- [Phase ?]: Phase 88 Plan 04 fixtures library partition: 3 fixture files + views.ts composition root sibling to legacy index.ts
+- [Phase ?]: Phase 89 Plan 01: baseV1 mutated in place per D-89-01 (hero on Q1+Q2+QG-base, info on Q1, required test-qu-info-text, 3 filtered info qs mun/north/south, unregistered candidate w/ election_symbol 999); voter-mega-journey absorbs new content via 3 testids + 4 strict assertion groups + matrix count 13→14 narrowing TIR4:99
+- [Phase ?]: Phase 89 Plan 01 R8 Wave 0 verdict: candidates table has NO email column in supabase-types — unregistered candidate row omits email; email reserved for 89-03 sibling const file (unregistered-aa@test.openvaa.local)
+- [Phase ?]: Plan 89-02: 12 candidate fixtures + composition root + 7 testids ship UNWIRED per D-89-02; legacy PageObjects untouched (parallel-landing)
+- [Phase ?]: Plan 89-03: 22-step candidate-mega-journey.spec.ts landed end-to-end per TIR4:101-257; 3 new playwright project entries sequenced AFTER voter-mega-journey via dependencies; setup/teardown pair with unregisterCandidate BEFORE runTeardown per R4; 3-run cold-start gate deferred to operator runbook per env cascade (89-01 + 89-02 precedent)
+- [Phase ?]: Plan 89-04 honored as-written: 3 perm templates + 6 setup/teardown wrappers + 3 specs + 9 playwright project entries. Each perm template uses distinct externalIdPrefix per D-89-03 parallel-safety.
+- [Phase ?]: Runtime gate deferred per environment cascade carry-forward from 89-01/02/03 (vite dev returns 500). Static verification clean across all 12 production files + 9 playwright project entries.
+- [Phase ?]: Phase 89 SHIPPED — all 5 plans complete. 89-LAST: 5 absorbed candidate specs deleted + 3 candidate-settings blocks excised (CAND-10/11/13) + 4 zero-consumer PageObject classes pruned + playwright.config.ts cleaned.
+- [Phase ?]: Plan 90-01: Stage A runtime supportedLocales override — module-level mutable + setter; live ESM let bindings for defaultLocale/locales/langNames propagate updates without consumer changes
+- [Phase ?]: Plan 90-02: perm-missing-nominations template uses MINIMAL_BASE_APP_SETTINGS verbatim (no Stage A override); spec asserts modal via stable IDs [EL1]/[EL2] + the localised marker 'not available' from results.json; chain anchored to perm-per-app-notifications preserving HIGH-2 sequential perm invariant
+- [Phase ?]: Plan 90-03: chose testIds.shared namespace for langSelector + multilingualToggle — app-agnostic placement reusable by Plan 90-04 voter-side cross-check
+- [Phase ?]: Plan 90-03: +layout.ts applyDynamicOverride() wiring deferred to operator runbook — Plan 90-01 surface complete; connector glue in +layout.ts load() is operator-deferred per v2.10 cascade carry-forward
+- [Phase ?]: Phase 90 Plan 04 — Locale-switch UI assertion uses label-diff pattern via testIds.voter.home.startButton; innerText() diff over literal-string match (robust against i18n bundle drift)
+- [Phase ?]: Phase 90 Plan 04 — Voter-side re-navigation required after langSelector.switchTo('fi') (Assumption A3 resolved: dialog state does NOT survive Paraglide data-sveltekit-reload full-reload)
+- [Phase ?]: Phase 90 Plan 04 — Per-perm recipientEmail 'candidate-l10n-pos-aa@test.openvaa.local' prevents cross-perm Inbucket pollution (distinct from 90-03 + candidate-mega per emailBucket recipient-filter)
+- [Phase ?]: D-91-PD-07 applied — named-params + answers-filled-by-default lock-in at the shared.ts + buildMinimal + candidateSessionMinter layers
+- [Phase ?]: Hybrid port discipline for perm-localisation-positive (buildMinimal for topology + hand-authored override for bespoke 4Q/answer shape)
+- [Phase 95 P03]: CTX-03 closed — new `localStorageState<T>(key, default)` helper (the only new symbol in Phase 95, K1) added to persistedState.svelte.ts via a private StorageType-parametrized `storageState` core that REUSES production `getItemFromStorage`/`saveItemToStorage` (no inline readVersioned/writeVersioned, NO format-migration shim per D-03 — stale payload → default). Both voter `answerStore` + candidate `candidateUserDataStore` migrated off the `$state → localStorageWritable → fromStore` 3-layer bridge to a single handle; `svelte/store` import fully removed at BOTH leaves (getter-shaped public surfaces → no consumer bridge). JSON-clone (L-4) + deepFreeze + `startEvent` hooks preserved. `localStorageWritable`/`sessionStorageWritable` KEPT (Phase 98 deletes). Core shaped for Phase 96 `sessionStorageState` reuse. Unit: 697/697; `yarn check` baseline-identical (0 new type errors). Task 3 resumed mid-flight after API socket drop — uncommitted candidate-store change reviewed correct, committed atomically, no rework.
+- [Phase ?]: buildMinimal extended with buildSingleOrgNoms branch — supports organizations=1 perms without orphan or-2 parent rows
+- [Phase ?]: Phase 91 Plan 03 (D-91-MJ-02): feedbackDialog shared function-fixture authored under tests/tests/fixtures/shared/ (NEW directory) with full Pattern 2 surface; standalone factory pattern, NOT extended into voter-mega.fixture.ts.
+- [Phase ?]: Phase 91 Plan 03 (Pitfall 10): data-status={status} attribute on Feedback.svelte:235 submit button + data-testid='input-error' on Input.svelte:641 inline ErrorMessage land the locale-resilient assertion targets for feedbackDialog success state + Input validation error surface.
+- [Phase ?]: Phase 91 Plan 03 (D-91-MJ-03): voter-feedback-persistence.spec.ts deleted in the SAME commit as the absorbing voter-mega feedbackDialog step. The spec had been SKIP-FALLBACK since Phase 86.1-02 (DETERM-13) due to dialog-close locator race; retirement absorbs TIR6:34-61 coverage into voter-mega.
+- [Phase ?]: Phase 91 Plan 03: baseV1 already seeds test-qu-info-text-link URL-type info question (subtype='link', settings.type='link' at baseV1.ts:662-672) — RESEARCH Assumption A1 holds; no baseV1 extension needed for the candidate invalidUrl step 13.5.
+- [Phase ?]: Plan 91-02: 9 new TIR6 Group A perm chains + 7 testid additions landed; sequential chain anchored on perm-localisation-positive per HIGH-2; A1+A2+A9 setups consume candidateSessionMinter per D-91-PD-06
+- [Phase ?]: Phase 91 Plan 04 (D-91-RS-01/02/02b/04/05): TIR6 visual/perf/a11y/bank-auth migrated to voter-mega.fixture.ts; locatedVoterPage variant + @deprecated banner on voter.fixture; audit clean (0 legacy leaks); CI rebaseline deferred per D-91-RS-01
+- [Phase ?]: [Phase 92-01]: tests/ typecheck gate wired + no-restricted-locators enforced; full tests/ lint suite greened. Task 3 testId-sweep: 0 in-scope migrations (1 candidate deferred to 92-03).
+- [Phase 92-02]: WS4 imgproxy/pooler diagnosis flagged QUESTIONABLE (D-13) at both markdown sites (quick SUMMARY + pending todo); diff-playwright-reports.ts:311 inspected + SKIPPED (encodes the imgproxy DATA_RACE flake pool / Phase 73 D-09 binding, not the questionable edge_runtime/pooler claim); STATE.md not edited (only ref is the roadmap-add narrative, already labeled "possibly unrelated"). WS5 both freshness probes (setupFromTemplate.ts + data.setup.ts) exclude the `seed_` baseline prefix (D-15) via a second `.not('external_id','like','seed_%')` on candidates + organizations; warn-only default + E2E_REQUIRE_FRESH_DB hard-fail branch byte-unchanged (D-14); duplicated-edit (no shared helper, lower-risk option). typecheck:tests green.
+- [Phase ?]: [Phase 92 P03]: WS2 FIXTURES — voter goToPage/expectPageVisible rollout (3 net-new + 2 extended fixtures, home/intro load anchors, named-Home-goto migration, open-menu→nav-menu-toggle testId). typecheck:tests + tests-eslint green.
+- [Phase 92]: Timeout consolidation (92-04): central tests/tests/helpers/timeouts.ts TIMEOUTS buckets (element/click/page/slowPage/testMax, MAX-merged so no budget tightened) + barrel export; all 4 local TIMEOUT objects deleted; >90s test.setTimeout budgets preserved as named inline exceptions L10N_TEST_MAX=180_000 + MEGA_TEST_MAX=120_000 (NOT collapsed to 90s); emailBucket POLL_TIMEOUT kept inline; playwright.config global timeout sourced from TIMEOUTS.testMax. D-10/D-11/D-12 satisfied.
+- [Phase ?]: Phase 93 P01: Wave-0 dev-seed gate restored to exit 0 via describe.skip quarantine of variant-app-settings (deleted variant-* imports) + e2e.test.ts drifted row-count assertion; pre-rewrite Playwright baseline (84 tests/72 files) captured for Plan 05 attribution
+- [Phase ?]: Phase 93 Plan 02: e2e/base + e2e/perm/* seed family established; bare e2e template retired (D-01); baseTemplate/BASE_APP_SETTINGS renames (FLAG-9); dev-seed template tests retargeted to base dataset (D-03), test:unit green
+- [Phase ?]: Phase 93 Plan 03 (WS1): role-based fixture taxonomy complete — voter-app fixtures -> fixtures/voter/, cross-app -> fixtures/shared/, voterNav -> voter/, minimalVoterResultsPage extracted (minimalVoterResultsTest), voterMegaTest -> voterJourneyTest, candidate-mega -> candidate-journey, candidateMegaConstants -> candidateJourneyConstants; typecheck + lint green at every commit
+- [Phase ?]: Plan 93-04: merged two base-seeding paths into one (data-setup-base); deleted data-setup/data-teardown + dead e2eFixtureRefs.ts; decoupled base from perm anchor (FLAG-6)
+- [Phase ?]: Plan 93-04: voter-journey/candidate-journey testMatch set to no-mega regex now (D-09 gate); spec FILES still mega-named -> transient 2-spec orphan until Plan 05/06
+- [Phase ?]: Phase 93 Plan 05: journey specs renamed voter-journey/candidate-journey; tests/README graph rewrite + CLAUDE.md e2e/base; ZERO mega/baseV1 tokens (D-09 gate met); playwright list back to 84/72
+- [Phase ?]: Phase 94 Plan 01: WR-01..04 + D-02 landed — husk + diff tool deleted, fail-loud empty-prefix teardown guard (e2e/base only), data-driven median ordinal default, perm-per-app-notifications kept with re-enable TODO (D-03); two infra files de-planned; --list baseline pinned 84/72
+- [Phase ?]: Phase 94-02: corrected 6 stale perm docstring prefixes during de-planning sweep (comment-only)
+- [Phase ?]: Phase 94 P03: 25 specs (22 perm + a11y/visual/perf) de-planned + retitled; WR-02/D-03 quarantine re-enable TODO added to perm-per-app-notifications; --list 84/72 preserved; typecheck green
+- [Phase ?]: Phase 94 Plan 04: de-planned candidate suite (12 fixtures + 2 setup + 2 specs); deleted candidate-journey.README.md (D-04); step 13.5 retitled plain; typecheck green
+- [Phase ?]: Phase 94 Plan 05: voter + shared E2E fixtures (14) de-planned; voter-journey spec retitled to plain language; voter-journey.README.md deleted (D-04); typecheck green
+- [Phase ?]: [Phase 94-06]: De-planned 6 utils + 5 helper-source + 3 shared-setup + 3 root-config files; seed-test-data throw message de-cited (e2e/base literal kept); helper contracts (settleNetworkIdle no-swallow, Select combobox+listbox ARIA, walkToQuestion resilience) + eslint allow-list rationale preserved; typecheck green
+- [Phase 94]: [Phase 94-07]: dev-seed template layer de-planned (32 of 33 files; e2e/base.ts already clean); Plan-01 Math.floor median ordinal logic preserved; D-01 fence held (wider src/ untouched); dev-seed unit 450/450 green
+- [Phase 94]: Plan 94-08: rewrote tests/README.md (D-06) + helpers/README.md (D-05) current-state-only; phase-wide de-planning gate PASS (residual grep empty, typecheck 0, --list 84/72)
+- [Phase ?]: 95-01: appContext appSettings+appCustomization DB override folded into $state init (SSR no-flash, D-04); mergeAppSettings pure spread (D-05, no shared staticSettings mutation); internal pure mergeInitialAppSettings helper added; Wave-1 toStore bridges + userPreferences Writable kept
+- [Phase ?]: dataContext (CTX-02): replaced writable() bridge with a hand-rolled Readable subscriber-set + current/instance Pattern-2 split + untrack(); temporary $dataRoot bridge retained until Phase 98
+- [Phase ?]: 95-04: popupStore migrated to pure-rune Pattern-1 get current() (CTX-05); Readable dropped from PopupStore type; the single fromStore(popupQueue) consumer in +layout.svelte migrated to popupQueue.current
+- [Phase ?]: 95-05 (CTX-04): StackedState LIFO stack replaced by token-keyed settingsOverlay registry + declarative use*() API; getLayoutContext() takes no onDestroy arg; all ~33 callsites migrated; StackedState retained for Phase 98.
+- [Phase ?]: Phase 99 Plan 01: View-Transitions coupling + nav-a11y hooks landed in root +layout.svelte via shared viewTransition.ts helper (typed guard, no any); analytics hooks merged not replaced; reduced-motion both layers + ?notr=1 escape hatch shipped.
+- [Phase 99]: Header named via style:view-transition-name (Pitfall-7: stops ::view-transition(root) sliding chrome)
+- [Phase 99]: O-1 honored not deferred: opt-in transitionOnChange Tabs prop wraps local activeIndex mutation in startViewTransition; bind:activeIndex preserved
+- [Phase ?]: Phase 99 Plan 03: extended a11y-smoke (NAVA11Y-01/02/03) via ?notr=1; live located-route run deferred to operator (pre-existing shared-fixture/seed issue).
+- [Phase ?]: Phase 96 Plan A: added reactiveAppSettings/reactiveLocale .current getters to appContext (additive, mirrors reactiveDataRoot) so Plan B can drop fromStore(appSettings)/fromStore(locale)
+- [Phase ?]: Phase 96 Plan A: survey/tracking producers made fully store-free (CTX-06); appContext seam owns the store-shaped surveyLink/sendTrackingEvent/sessionId/shouldTrack bridges (Q3 option b)
+- [Phase ?]: Phase 96 Plan 02: both orchestrators read appContext.reactiveAppSettings.current/reactiveLocale.current and drop fromStore(appSettings)/fromStore(locale); candidateContext keeps only fromStore(getRoute) (Phase 97); voterContext fully svelte/store-free; candidate prereg ids migrated to sessionStorageState/localStorageState (CTX-07)
+- [Phase ?]: Phase 100 Plan 01: D-03 answer-survival gate placed after the base-category loop, crossing the Boolean<-Likert type boundary via previousButton; reuses expectQuestionAndAdvance, no new spec, no frontend change
+- [Phase 97]: CONS-03 admin auth-reactivity fixed: adminContext uses explicit delegating getter for isAuthenticated (no authContext spread); AdminNav reads via $derived(ctx.isAuthenticated) — Object spread captured the isAuthenticated $derived by value, de-reactivating admin auth gating. O-2 spread audit confirmed no other top-level reactive getter is captured by a spread.
+- [Phase ?]: Phase 98-01: removed the Readable<DataRoot> store bridge from dataContext; two layouts now read DataRoot via reactiveDataRoot.instance (data-layer half of CLEAN-01)
+- [Phase ?]: 98-02: appContext store-exports reshaped to pure { current, set?, update? } rune handles; ~17 latent store consumers migrated to .current (Phase 97 codemod covered only appSettings/darkMode/locale/dataRoot/getRoute)
+- [Phase ?]: 98-02: widened FeedbackStatus to include 'dismissed' (Rule 1 bugfix surfaced by localStorageState strict typing)
+- [Phase ?]: Phase 98-03: kept persistedState.svelte.ts filename (K1-compliant), slimmed in place — dropped svelte/store import + *Writable exports, kept localStorageState/sessionStorageState/storageState
+- [Phase ?]: Phase 98-03: CLEAN-01 deletion half complete — StackedState/dataCollectionStore/runes-test deleted; zero svelte/store imports remain in lib/contexts + routes (D-04/K1 enforced)
+- [Phase ?]: Phase 106-01: PopupStore class/type name clash resolved via aliased type import (PopupStore as PopupStoreApi) + implements; public PopupStore type unchanged
+- [Phase ?]: 106-02: SettingsOverlay class — #current $derived initialized in constructor (not field initializer); field-init would read #base before ctor assignment
+- [Phase ?]: persistedState handle converted to class PersistedStateImpl<TValue> (106-03); imperative arrow set/update, CR-01 init-persist in constructor body, consumers byte-identical
+- [Phase ?]: 106-04: VideoController extracted from layoutContext as a standalone Svelte 5 class; initLayoutContext() stays a factory (orchestrator-class conversion deferred to P107 per A1/A10)
+- [Phase ?]: 106-04: shouldClearContent kept a public class field; host nav hooks toggle it across the boundary, off the typed VideoController interface
+- [Phase ?]: Phase 107: authContext isAuthenticated must be a private #$derived + own-enumerable constructor accessor (NOT a bare $derived class field) — Svelte 5 compiles $state/$derived class fields to prototype accessors that object spread drops; verified headlessly. Spread-safety gate applies to all context-as-class members an orchestrator spreads.
+- [Phase ?]: 107-02: componentContext converted to class ComponentContextProvider; i18n surface as OWN properties (Object.assign) for spread-safety; darkMode delegation getter over directly-composed new DarkMode() (no { current } re-export); DarkMode exported, createDarkMode kept until Phase 109
+- [Phase ?]: 107-03: dataContext/filterContext doc-reconciled to §17/§18/§20/§22 idiom; reactiveDataRoot.instance documented as intentional-until-Phase-113 back-compat (live consumer named); executable code byte-identical (comment-only diffs)
+- [Phase ?]: Phase 108-01: getRoute + survey converted to Svelte 5 classes (GetRoute/Survey); prototype get current() (direct-access, no own-enumerable accessor); factory signatures + spike-012 per-field page read byte-identical
+- [Phase ?]: 108-02: trackingService kept spread-consumed members as own-enumerable handle-object fields; shouldTrack $derived installed in constructor body (D1 field-init order)
+- [Phase ?]: popupStore verify-only: already a conformant class PopupStore + popupStore() factory wrapper, no change required
+- [Phase ?]: Phase 108 gate green: build exit 0, context tests 101/101, svelte-check 151=baseline (zero new); all four app-layer producers are Svelte 5 classes
+- [Phase ?]: Phase 109-01: removed Phase-102 _poc* scaffolding (appContext surface+type) + createDarkMode() factory before the Plan-02 class conversion; vitest 101 to 98, svelte-check 151/151 no new errors
+- [Phase ?]: appContext converted to class AppContextProvider; internal upstream-context spreads replaced by explicit own-enumerable forwarding; SSR merge kept as synchronous $state field initializers with re-merge $effects in the constructor
+- [Phase ?]: 109-03: Own-enumerability spread guard asserts Object.keys(spread) superset (not in) so a future prototype-getter regression fails CI before silently dropping a member from the 3 downstream {...appContext} spreads
+- [Phase ?]: 109-03: Exported AppContextProvider as a documented non-behavioral test seam; production still constructs only via initAppContext()/getAppContext()
+- [Phase ?]: Derived-projection voter sub-stores (match/nominationAndQuestion/filter) converted to classes: single #deps field + private #value=$derived.by read via get value() prototype getter; factory signatures + { readonly value } surfaces byte-identical (110-02)
+- [Phase ?]: voterContext converted to VoterContextProvider class: stable refs + producers + $derived as lazy field initializers (D1 order), $effect blocks + initFilterContext in constructor, inherited appContext spread via Object.assign + readonly x! declarations for implements
+- [Phase ?]: Phase 111 P01: candidateUserDataStore -> CandidateUserDataStoreImpl class behind byte-identical factory (D2 clash avoided; composite $derived.by merge + JSON round-trip clone preserved)
+- [Phase ?]: 111-03: getter-only override + Object.assign inheritance must OMIT the overridden key from the assign source — writing to a getter-only accessor throws TypeError in strict-mode SSR (caught by candidate-journey E2E, invisible to unit/build/svelte-check)
+- [Phase ?]: adminContext → AdminContextProvider class; v2.11 auth-forwarding fix preserved verbatim (isAuthenticated delegating getter + 4 arrow forwards, no authContext spread); appContext via single Object.assign
+- [Phase 118 P02]: EFLOW-01..11 + EQTYP-01..03 coverage maps appended to `.planning/v2.14-E2E-COVERAGE-PLAN.md` against READ spec evidence (A5). EFLOW: 03 (4-case voter-vs-entity matrix, voter-journey:938-952) + 05 (skip/delete/back+CTA, voter-journey:602-668) confirmed covered no-new-code; 01 (filters — apply/reset/badge/2-filter-intersection covered, categorical select-all-none + text×filter gap) + 04 (subMatches 4-gauge count covered, correct-values gap) + 06 + 09 PARTIAL→extend; 07 (dark-mode) + 08 (tracking payloads, needs intercept fixture) + 11 (mobile interactive) confirmed MISSING; 02 (alliance card/drawer, UNBLK-06) DEFERRED→130; 10 PARTIAL→Idura-only retarget. **Open Question 1 RESOLVED:** perm-localisation-positive switches locale on voter home pre-answer + does a persisted-answer results cross-check — covers UI/content re-localisation but NOT mid-flow voter answer/selection-state preservation → net-new in 121. **EFLOW-10 (122.2):** retarget existing `candidate-bank-auth.spec.ts` to Idura `sub`-based identity + hetu/country claims, drop Signicat, keep direct-Edge-Function synthetic-JWE stub (no live IdP); Open Question 2 flagged — configure test decryption JWKS in beforeAll so the A6 green gate runs the keys-configured path deterministically (else "did not run" = cardinal failure). **EQTYP:** all 3 DEFERRED→130 — 01 single-choice categorical opinion covered (voter); candidate opinion answering generic (Base×5 walked incl categorical Base-4/boolean Base-5 via `selectChoice(0)` loop, type-specific variant checks only on candidate INFO questions), multiple-choice variant blocked on UNBLK-02; 02 MISSING (no number opinion in seed) blocked on UNBLK-05; 03 text covered, MultipleText round-trip blocked on UNBLK-01. NO test/fixture/seed code written.
+- [Phase 118 P01]: E2E coverage audit deliverable seeded at `.planning/v2.14-E2E-COVERAGE-PLAN.md`. EPERM-01..11 classified against READ spec evidence (A5): EPERM-01/02/08 confirmed covered no-new-code; EPERM-03/04 candidate/org covered with alliance slice DEFERRED→130; EPERM-05/06/07/09/11 PARTIAL (extend); EPERM-10 confirmed MISSING (zero `organizationMatching` refs in `tests/`). Refuted the RESEARCH starting hypothesis on EPERM-11 — the GLOBAL `access.underMaintenance` flag is untested (only per-app voterApp/candidateApp gating is covered). `--likert-only` cross-cutting verdict: COMPLETE removal, NO shim, NO fixture change (fixtures already answer non-Likert opinion types natively via per-question scoped choiceCount), pure deletion + doc-scrub landing Phase 119; unused `voterNavigation.ts` helpers (walkToQuestion/waitForNextQuestion/clickThroughIntroPages/walkToQuestionsIntro) flagged as a separate hygiene call (navigateToFirstQuestion KEPT — it is used). NO test/fixture/seed code written.
+- [Phase ?]: EPERM-05 org slice asserted ADDITIVELY: showMissingElectionSymbol.organization=false yields ABSENT Election Number row (not a '—' placeholder); showMissingAnswers.organization=true markers asserted; zero seed change (120-03)
+- [Phase ?]: EPERM-07 arguments render-gating resolved by co-seeding infoSections on the argument carriers (additive seed change, production gate untouched)
+- [Phase ?]: Added voter-questions-arguments testid to the QuestionExtendedInfo Arguments Expander (Rule 2 — sibling infoSection blocks already had testids)
+- [Phase ?]: EPERM-09: renamed perm-header-show-feedback to perm-show-feedback-survey in place (extend-not-duplicate); showIn audit covers frontpage+entityDetails, navigation deferred (no stable testid)
+- [Phase ?]: EPERM-11: consolidated 2 per-app maintenance specs into one perm-access-disable spec (3 access modes), re-pointed per-app-notifications, retained dev-seed templates
+- [Phase ?]: EFLOW-01 select-all/none surfaced on the Party filter (6 options > 3 threshold); pick-multiple (3 options) asserts the toggle ABSENT
+- [Phase ?]: EFLOW-04 subMatch gauge values derived at build (Base=100/Opt-A=50/Opt-B=50/Regional=100) — not the uniform ~100% the research assumed
+- [Phase ?]: EFLOW-06: locale-switch state-preservation asserted via resolved electionId in URL (query OR path) + identical candidate MatchScore across each full-reload switch
+- [Phase ?]: EFLOW-09 logged-in candidate nav group asserted via candidate-nav-* testids (NavItem spreads custom data-testid over nav-menu-item, hiding it from the navMenu items() reader)
+- [Phase 121]: 121-05: mobile project uses explicit 390x844 isMobile/hasTouch (visual-regression analog) over devices['Pixel 5']
+- [Phase 121]: 121-05: voter-prefs-tracking hosted under perm-analytics-tracking triad (not base leaf) — analytics overlay clobbers app_settings singleton
+- [Phase 121]: EFLOW-08 tracking emission captured via a forced same-window visibilitychange flush (submitAllEvents), not a hard nav — page.goto tears down the __trackCalls capture array. — Keeps the capture array alive for getTrackCalls(); the layout's visibilitychange handler calls submitAllEvents in place.
+- [Phase 121]: Runtime consent granted via the DataConsentPopup dialog (scoped getByRole('dialog')) to avoid the strict-mode clash with the inline privacy-page DataConsent. — The popup auto-opens when consent is indetermined and overlays the inline control; it is the canonical voter consent surface.
+- [Phase ?]: Plan 121-08 (EFLOW-11): shared walkUntilQuestionsIntro auto-grants the DataConsentPopup (addLocatorHandler) — fixed the mobile journey AND a latent full-suite flake (voter-journey/a11y/perf); full yarn test:e2e now 125/125. Mobile sub-tests are describe-scoped (no viewport leak); filter assertions are seed/constituency-agnostic.
+- [Phase ?]: 122-01: Fixed committed test JWK pair (test-enc-1/test-sig-1) is the single source of truth for the bank-auth test worker, served Edge Function, and mock issuer — determinism over per-run generateKeyPair (D-03/RESEARCH A2)
+- [Phase ?]: 122-02: Asserted Idura flow-through as the real extractClaims set ['birthdate','hetu'] (not 'country', which the Edge Function does not extract); converted env-gated test.skip into a loud D-02 keysConfigured gate + mismatched-key negative-path test. — Match real production behavior + cardinal-rule (no silent did-not-run).
+- [Phase ?]: Phase 123-01: A2 test seam resolved = spy-on-collaborator under $effect.root driving the real CandidateContextProvider (no pure-helper extract)
+- [Phase ?]: Phase 123-03: RUNES-01 lifecycle audit — 0 MIGRATE / 25 LEAVE (4 hard-LEAVE); genuine-lifecycle-dominant surface per D-04
+- [Phase ?]: Phase 123-03: RUNES-02 reactive-let MIGRATE set EMPTY — v2.13 already converted reactive locals; survivors are bind:this refs/timers/handles/intentional non-reactive (confirms A1)
+- [Phase ?]: Phase 123 D-03 gate: build 14/14 + unit 769/769 + svelte-check 151 ERR/1 WARN (=baseline) + full E2E 125/125 green — all four gates pass — Behavior-neutrality of the idiom polish + 2 RUNES-05 bug fixes proven; criterion 4 holds (delta 0)
+- [Phase ?]: Two full-suite E2E flakes (EFLOW-06, EFLOW-11) classified as env non-determinism, not regression — Different spec each run, both passed in isolation; trusted fresh-server+clean-DB run was 125/125
+- [Phase ?]: 125-01: Added @types/qs per-workspace resolving all 8 qs ambient-declaration errors; predicted data/[collection] fallout did not materialize (GetDataOptionsBase all-optional) — no cast needed, honest real-types fix per D-01
+- [Phase ?]: TYPE-02 (125-02): removed dead cookies arg from 6 admin-jobs routes (destructure + getUserData call); getUserData not widened (D-02); svelte-check 143 → 137, auth gate behavior-neutral
+- [Phase ?]: 125-03: deleted leftover _spikes-017-019 read-write-split scaffolding (4 files, git rm -r); TYPE-03 cluster cleared 137→133 svelte-check errors; _spikes-020 untouched; unit suite green (758)
+- [Phase ?]: Phase 125 D-04 gate: svelte-check 151 → 133 (exactly −18), three clusters (qs/cookies/spike) at zero, no net-new; build+unit green; E2E 125/0/0 behavior-neutrality pass
+- [Phase ?]: 126-01: regen-only fix (yarn db:types) types get_nominations and drops svelte-check 133->50; generated types are single source of truth, never hand-edited (D-01/D-02).
+- [Phase ?]: 126-02: generified toDataObject over TRow with a Record<string,unknown> default (D-05) — backward-compatible; return type/body unchanged; yarn check delta 0
+- [Phase ?]: 126-03: Cleared supabaseDataProvider.ts to 0 svelte-check errors (total 50->46) via null->undefined RPC-arg coercion + discriminated-union narrowing (no as-unknown-as double-cast).
+- [Phase ?]: 126-03: Kept the parent_nomination_id nullable cast — the regenerated non-null string type is a nullability gap; removing it would strand the parent-lookup null-guards.
+- [Phase ?]: Phase 126 D-06 gate passed: svelte-check pinned 46/1 with supabaseDataProvider.ts (non-test) at 0; full E2E 125/0/0 proves behavior-neutrality.
+- [Phase ?]: 127-01: retyped prepareDataWriter param to synchronous UniversalDataWriter (kept async return); cleared all 18 TYPE-06 context errors (svelte-check 46->28)
+- [Phase ?]: 127-01: renamed local await-consts to dw at 5 sites to avoid the renamed dataWriter import shadowing itself (TDZ)
+- [Phase ?]: 127-02: JobMessage interface->type alias makes JobMessage[] Json-assignable, fixing both admin_jobs insert sites at source; nominations map annotation dropped (partial select) + documented as-Json RPC cast. TYPE-05 cleared; svelte-check 28/1 -> 24/1.
+- [Phase ?]: Phase 127 D-06 gate PASSED: svelte-check 46/1 -> 24/1 (5 target files at 0), full unit green, full E2E 125/0/0 behavior-neutral
+- [Phase ?]: 128-01: passed SupabaseAdapterConfig via typed local var (mixin return-type erases the widened init override); cleared 15 adapter test-layer type errors + deleted dead _spikes-020 dir.
+- [Phase ?]: 128-02: setPassword currentPassword made optional (not required) at the AuthContext wrapper — register/password-reset flows call setPassword({ password }); keeps zero net-new svelte-check while satisfying the type-truth must_have.
+- [Phase ?]: 128-03: Adopted built-in TS 5.9.3 ViewTransition lib types over hand-rolled interfaces; confirmed EntityInfo:80 dead-branch collapse is a type-lie not a bug.
+- [Phase ?]: Phase 128 D-07 gate proven green: build 14/14, unit 19/19, frontend svelte-check 24/1→0/0, docs svelte-check 0/1→0/0, E2E 125/0/0.
+- [Phase ?]: MultipleChoiceCategorical matching: per-choice binary subdimensions, no 2-choice shortcut (D-06); empty/missing → all-MISSING_VALUE (D-07)
+- [Phase ?]: 129-02: customData (JSONB) chosen as extension home for question-input min/max/item/selection constraints — no DB migration
+- [Phase ?]: 129-03: /nominations loader fetches question data locale-only (electionId optional) + consumer provides it into dataRoot for parity with (located) layout (UNBLK-04)
+- [Phase ?]: Number-scale opinion input built on native <input type=range> (D-03) so keyboard exact-value stepping is free; persist on change event only (never per drag pixel)
+- [Phase ?]: MultipleText i18n keys live at components.multipleTextInput.* (no input.* namespace file); reorder uses collapse/expand vertical chevrons
+- [Phase ?]: 129-06: Multi-choice categorical opinion input via checkbox mode in QuestionChoices; validity surfaced (not enforced) by OpinionQuestionInput, callers gate Save/Skip (D-07)
+- [Phase ?]: 129-07: registered all 8 Phase-129 question-input locators in testIds.ts (byte-matched to plans 04/05/06) + extended voter-journey walk with slider (Home/End) + checkbox (2-choice) branches; inert vs current seed (voter-journey 3 passed)
+- [Phase ?]: UNBLK-06 alliance render closed by a one-line seed sections change ('alliance' LAST); zero Phase-69 rebuilds, MatchScore gauge free via org→alliance imputation (D-08/D-09)
+- [Phase ?]: Candidate multi-choice walk stall was test-side (number→multi-choice transition lingering-slider race), not a frontend bug — fixed via id-scoped choice settle; exploratory QuestionChoices change reverted (frontend unchanged)
+- [Phase ?]: 130-01: answerNumberScale takes (value, min) not a full question object
+- [Phase ?]: 130-01: open candidate drawers by clicking the card article directly (not openEntityDetailsForCard) — no-subcard cards wrap the article in the navigating <a>
+- [Phase ?]: EQTYP-03 candidate multipleText round-trip closed: fillMultipleTextQuestion helper + MULTIPLE_TEXT_ANSWERS markers + candidate-journey steps 13/21 (130-02)
+- [Phase ?]: 130-03: reach mid-flow questions via in-app menu (client-side) to preserve located scope; full page.goto reload bounces to the election selector
+- [Phase ?]: 130-03: dropped the 'POLAR_MIN ranks first' claim — the all-min walk answers multi-choice ['a','b'] (agrees with POLAR_MAX), so only the ordering + monotonic shift is asserted
+- [Phase ?]: 130-04: alliance click-through proven by drawer-identity assertion; generic openEntityDetailsForCard/getMemberCards work for alliances unmodified (no fixture edit)
+- [Phase ?]: 130-05: EQTYP-01 candidate type-specific opinion contracts (multi-choice checkbox + D-07 gating, categorical/boolean radios); choiceHelper content deferred to BLOCKER-130-05 (runtime i18n gap)
+- [Phase ?]: 130-06: D-05 gate green 3/3 full-suite (128 passed/0 failed each) on fresh server+clean DB; root-caused a voter-journey-mobile number-scale loop-entry fixture gap (fix 8725d86ef)
+- [Phase ?]: Phase 131-01: proved todo-triage tracer loop; todos #5 (not-located) + #6 (notifications.voterApp) CLOSED-AS-STALE on 3x pass/pass/pass; diagnosed+remediated db:reset storage-502-wedge (Kong upstream orphaned by storage restart)
+- [Phase ?]: Phase 131-02: hardened navigateToFirstQuestion helper (terminal answer-option settle) — todo #7 FIXED, 3x green + 5-consumer regression clean; corrected cold-start recipe (bare db:reset + bucket-ready gate)
+- [Phase ?]: Phase 131 Plan 04: OQ-7.1 = ADD — feedback text-persists-across-cancel is load-bearing (FeedbackModal bind:this keep-mounted); added HARD assertion, todo #4 FIXED, todo #3 CLOSED-AS-STALE
+- [Phase ?]: Isolated mid-chain perm-spec recipe (--project=<perm> --no-deps + out-of-band yarn db:seed --template) + yarn db:*-only wedge recovery (never npx supabase start from repo root — foreign project steals :54322)
+- [Phase ?]: Phase 131 closed: 7/7 todos terminally disposed (2 FIXED, 5 CLOSED-AS-STALE), 0 new skips, changed specs 3x GATE-GREEN; candidate-journey:661 load-flake filed+escalated to Phase 132 (D-07, no skip)
+- [Phase ?]: 132-01: hardened candidate-journey step 13.5 with inline waitForURL(slowPage) post-submit settle (over the 5s-default expectSubmitMessage fixture) — root-causes the cold-start load-contention flake; candidate-journey green in isolation 5/0/0
+- [Phase ?]: 132-02: svelte-check gate flipped to 0-absolute — check script uses --fail-on-warnings + blocking CI step; negative control proved 1 warning breaks the gate (TYPE-10)
+- [Phase ?]: 132-04: cleared all 20 clean-tree lint:check errors (14 frontend func-style/import-sort + 6 tests/ import-sort/reasoned-disables) via behavior-neutral edits in 8 files; lint:check now exits 0 — unblocks 132-03 static gate (SC #3).
+- [Phase ?]: Phase 132 milestone-close gate: full E2E 3x green (129/0/0) + svelte-check 0/0 absolute; mid-gate elections-continue-stall flake hardened in-phase (voterNavigation.ts) then count restarted.
+- [Phase ?]: Phase 133-01: removed voterNavigation page.goto() hard-nav fallback (WR-01) — elections/constituencies stalls now continue into the deterministic race-loop; loop exhaustion is the sole loud failure path
+- [Phase ?]: Phase 133-01: kept the pre-click TIMEOUTS.slowPage bounded visibility wait and maxSteps=10 to absorb the Phase-132 SSR-compile continue-stall without masking a genuine break
+- [Phase ?]: 133-02: E2E URL settles assert the positive destination — step 13.5 uses /\/candidate\/?(?:\?|#|$)/ (CandAppHome) instead of a negative-lookahead that passed on any non-/profile route (IN-01)
+- [Phase ?]: 133-02: chose a boundary-terminated route regex over a bare $ anchor so trailing slash / query / hash / locale prefix are tolerated while every sub-route is still rejected
+- [Phase ?]: 133-02: retained the Phase 132 D-01 split-settle rationale in the reworded comment so the two-await structure is not later collapsed back into one racing assertion
+- [Phase ?]: Phase 133 gate: 3 consecutive full-suite E2E runs at 129/129 (0 unexpected/flaky/skipped) — hard-nav fallback removal did not reintroduce the continue-stall flake
+- [Phase ?]: DEF-133-01 deferred: latent ~11%-per-run flake at voterIntro.ts:28 (intro-CTA click vs 2s TIMEOUTS.click stability budget), root cause UNCONFIRMED, outside Phase 133 change surface
+- [Phase 138]: U-1 resolved UNRECOVERABLE after an 8-location search; all three EPERM-07 hypotheses stay live
+- [Phase 138]: eperm07-term-trigger hunt spec ships permanently; E2E executed-count baseline moves 134 -> 135
+- [Phase 138]: auto: true forensic capture fixture on the voter composition root — new convention, 16-spec reach intended
+- [Phase 138]: H1 (View-Transition snapshot capture) ELIMINATED at the reduced-motion lever — 10-vs-10 A/B, arm A 7/10 vs arm B 9/10 failures, identical error text; the transition changes the intermediate DOM's shape (stale vs absent), not whether the window exists
+- [Phase 138]: Budget lever alone cannot force DEF-135-04 deterministically (11/15 at the 100 ms floor); swap-latency band measured at 100-125 ms vs a 2000 ms production budget, so plan 03's CDP amplification (~20x) is on the critical path
+- [Phase 138]: The 100 ms operating point is explicitly disqualified as plan 04's negative-control pre-fix half — 73% is stochastic, and one passing pre-fix run would falsify the pair
+- [Phase ?]: 138-03: DEF-135-04 root cause NAMED as an ordering — SvelteKit commits the URL (client.js:1759-1760) before it swaps the DOM (client.js:1824) and the walk settle (voter-journey.spec.ts:186-190) waits on the URL only, so assertions land in a window where Base-2 is still rendered and Base-2 carries no terms
+- [Phase ?]: 138-03: all three hypotheses now terminal — H1, H2 and H3 eliminated; H4 and RESEARCH A2 also dispositioned; U-1 and U-2 both answered
+- [Phase ?]: 138-03: deterministic forcing configuration for plan 04 is EPERM07_FORCE_BUDGET_MS=400 + EPERM07_FORCE_CPU_RATE=40 (15/15, 5x oracle shrink), run ISOLATED for both halves of the criterion-2 pair
+- [Phase ?]: 138-03: the amplifier remains UNIDENTIFIED and is recorded as a bounded open question — the field occurrence needs a ~36x window excursion and every lever reached at most ~5.4x; mechanism established, excursion not
+- [Phase ?]: 138-03: INTEG-01 deliberately NOT checked off mid-phase — the diagnosis artefact exists but plan 04 could still overturn it and plan 06 owns the phase-level reconciliation (matches plans 01 and 02, which also carried INTEG-01 and left it open)
+- [Phase ?]: Fix tier for DEF-135-04 chosen by the operator at a blocking D-06 checkpoint: TEST-SIDE, with the ~4 s user-visible excursion carried as a separate open item
+- [Phase ?]: In-app navigation settles now wait for the destination DOM (navigation-landmark text change) instead of the URL, in one shared helper used by both the voter walk and the EPERM-07 instrument
+- [Phase ?]: 138-05: batch validity is asserted on executed count (135) + preflight verdict + failed/flaky/did-not-run, never on exit status alone — an exit 0 with fewer tests executed is a cardinal failure
+- [Phase ?]: 138-05: an infrastructure abort resets the consecutive count and the batch restarts from run 01; the discarded attempt is carried into the ledger via --carry-discards rather than erased by the restart
+- [Phase ?]: 138-05: valid runs are pruned to results.json + stdout/devserver logs; only a non-valid run retains its HTML report (trace + video), keeping 16 full-suite runs at 9.9 MB instead of 5.2 GB
+- [Phase ?]: Phase 138: the v2.14 cardinal-rule waiver is DISCHARGED unrenewed (2026-08-14, operator decision at a one-way checkpoint) — named root cause + negative-control pair + 16/16 runs; no successor waiver; the unlocalised multi-second excursion stays open, attributed by operator judgment and falsifiable
+- [Phase ?]: Phase 139 apparatus: HYGIENE-LOOP / TWO-COLUMN RULE / COLLATERAL RULE / 15-row enumeration defined once in 139-VERDICTS.md SS 3; plans 02-07 invoke by name
+- [Phase ?]: Verdict vocabulary is exactly two values (confirmed/withdrawn); the severity-qualified third tier was rejected, so vacuous-but-red is plain confirmed with the mitigation in the verdict body (D-02)
+- [Phase ?]: Hygiene gate is the SCOPED porcelain (apps tests packages), never the bare form — three tracked files are dirty at session start in this linked worktree
+- [Phase ?]: A green injection run needs a positive control proving the break was live; F18 carries an npx tsx probe alongside its two green runs
+- [Phase ?]: Phase 139 Plan 02: F16 confirmed, but the audit's own named regression is REFUTED by execution: deleting the language check reds handleQuestion.test.ts (promise resolves []). With entities: [] getAndSliceComments returns zero groups, so no downstream throw path is reachable — the audit's 'three independent paths to a throw' is false. Verdict rests on a category-preserving message-swap injection instead; Phase 142 must take its negative control from 139-VERDICTS.md § 5.4.6, not from the audit sentence.
+- [Phase ?]: Phase 139 Plan 02: a predicted-PASS injection that comes back FAIL is a design smell, not a withdrawal (§ 3.4). Applied to F16 after the fact and to F20-6 in advance; both stayed confirmed. Withdrawing on a category-removing injection would have struck two real weaknesses from the audit.
+- [Phase ?]: Phase 139 Plan 02: positive controls for green injection runs are best run IN BAND: for F15-B/C the control changed condensationType at condenser.ts:204 — a sibling property of the same return literal — reddening 5 of 8 tests, which proves the code path is live AND that the blindness is specific to the arguments field.
+- [Phase ?]: Phase 139 Plan 03: F15-A confirmed on two grounds: the audit's named regression is un-injectable (packages/question-info/src/ has zero references to question.type/QUESTION_TYPE/choices — grep exits 1, so question type is already ignored by shipped code), plus a substituted injection at infoGeneration.ts:76 that stays green
+- [Phase ?]: Phase 139 Plan 03: The audit's description of questionTypes.test.ts:535-537 is corrected on the record — exact toBe string equalities, not toBeDefined() variations — and an unlisted eleventh site at :388 is added; neither weakens F15-A
+- [Phase ?]: Phase 139 Plan 03: F20-5 carries two injections under one verdict (vacuity at variants.ts:94, wrong ID at :100), giving Phase 142 two distinct pre-specified regressions: a length guard and equality assertions on the expected ids
+- [Phase ?]: Phase 139 Plan 03: In-band positive controls run for both findings — key-vs-value at infoGeneration.ts:77 (7/7 red) and electionId: undefined at variants.ts:100 (red inside the forEach) — the latter is what makes injection A's vacuous green interpretable
+- [Phase ?]: Phase 139 plan 04: all three F19 findings confirmed — the verdict cites the assertion column (PASS, blind), never the process exit code (FAIL); D-02 and the TWO-COLUMN RULE
+- [Phase ?]: Phase 139 plan 04: F19c needed a second injection — 'undefined as unknown as string' serialises to the string "undefined" via URLSearchParams, modelling malformation not absence; deleting the entry produces the null the finding names (§ 8.3 R-6)
+- [Phase ?]: 139-05: F20-1's plan-specified injection was zero-delta on the finding's axis (error() throws, so the handler catches its own 400); verdict rested on a second correctly-scoped injection — § 8.3 R-7
+- [Phase ?]: 139-05: four positive controls added where the plan specified none — every site predicted PASS, so a green run alone could not rule out a null experiment
+- [Phase ?]: Phase 139 plan 06: § 4 ordering audit passed 15/15 — no record mis-slotted; roll-up records 15 confirmed, withdrawn: none, 2 overturned predictions (F15-C, F16) and 1 refuted premise (F20-1)
+- [Phase ?]: Phase 139 plan 06: § 7 records the incidental live OIDC defect — SvelteKit 2 error() throws, so authorize's return error(400) is swallowed by its own catch and returned as 500; Phase 142 tightening that matcher to {status:400} will red on the clean tree until the endpoint is fixed
+- [Phase ?]: Phase 139 plan 07 — ASSERT-01 traceability status set to `Complete` (majority value, matches the Phase-138 rows that carry inline evidence clauses) rather than `Satisfied`
+- [Phase ?]: Phase 139 plan 07 — criterion-4 record corrections K-1..K-3 deliberately NOT propagated into the audit's prose: criterion 4 forces an in-place audit edit only on a withdrawal, and the withdrawal set is empty
+- [Phase ?]: Phase 139 plan 07 — the six unenumerated F19-class sites were NOT added to ASSERT-07; criterion 4 is a shrink mechanism and this phase does not use it to widen scope on sites it never verdicted (proposed to Phase 140 instead)
+- [Phase ?]: F19 matcher: expect(v, msg).toEqual(expect.stringMatching(/^[\w-]+\.[\w-]+\.[\w-]+$/)) over toMatch — vitest's toMatch throws a raw TypeError on null and drops the custom message; identical discrimination, better diagnostics (140-01)
+- [Phase ?]: Phase 142's F19 obligation under ASSERT-07 is discharged by the 140-01 diff — one diff serves both; Phase 142 must not re-apply the idura.ts injections (140-01)
+- [Phase ?]: F10 budget guard: equality (not ceiling) at Playwright config load, so soft→hard promotions also throw and must be recorded
+- [Phase ?]: F10 invariant lives at config load, not globalSetup/test, because 'playwright test --list' skips globalSetup entirely
+- [Phase 140]: 140-03: F9 remedy is a complementary in-dataset POSITIVE control (Design A cross-transplant of one seeded property each way), not a stronger matcher — no count matcher can distinguish 'setting suppressed the tag' from 'the component is gone' because the observable is identical
+- [Phase 140]: 140-03: OBSERVED — with both tag-render {#if} blocks deleted from QuestionHeading.svelte, 86/86 E2E tests stay green including both perm tag specs; the blind spot is the suite's, not just the two named specs'
+- [Phase 140]: 140-03: packages/dev-seed is NOT a built package (build is 'echo Nothing to build', exports point at ./src/index.ts, no dist) — the 'stale build seeds the old dataset' risk assumed by planning does not exist for this package
+- [Phase ?]: F9 positive controls use the house form expect(count, '<why>').toBeGreaterThan(0), not research's .not.toHaveCount(0); 140-VALIDATION.md reconciled to the shipped form
+- [Phase ?]: A serial Playwright project chain cannot observe its own downstream half: once the upstream spec fails everything after it is 'did not run', so a subset adversary is required to red the downstream spec at its own line (140-NEGATIVE-CONTROL.md 16.4)
+- [Phase ?]: 140-05: helper carries pre-change matcher unchanged (D-02) so the 27-site codemod is behaviour-preserving; matcher chosen in plan 06
+- [Phase ?]: 140-05: F3 measurement taken — 25 of 26 executed sites report 0/0/0; only the last-seeded perm has rows to delete
+- [Phase ?]: F3 matcher: branch A (before/after invariant) adopted against 140-MEASUREMENT.md's 26-row table; a positivity floor would have reddened 25 of 26 executed sites
+- [Phase ?]: Shape-3 bank-auth teardown reached via its data lane (--project data-setup-bank-auth-journey), turning the expected named gap into an observation; only the journey spec's browser leg remains a named gap
+- [Phase ?]: 151-01: slice 09 needs a bare 'docs' pathspec alongside apps/docs — the target reintroduces a top-level docs/key-generation.md the rename rule does not cover
+- [Phase ?]: 151-01: slice 10 must not be written as a complement of 01b-09, or the catch-all tripwire becomes a tautology; explicit enumeration instead
+- [Phase ?]: 151-01: partition overlap is proven by arithmetic (per-slice counts sum to the independently measured total, 4240), not by the tree hash alone
+- [Phase ?]: Criteria 4.1-4.2 are distinct single-commit classes: the planning slice must be subjected planning: / docs[planning]: / docs(planning):, never bare docs:
+- [Phase ?]: Hygiene rows are made disjoint with (?!-\d{2}); 725 is the COMBINED decision-ID count (540 bare + 185 long), correcting C-5
+- [Phase ?]: The hygiene report prints two totals: an 8-row planning-reference total comparable to research's 1,984, and a labelled task-id supplementary subtotal
+- [Phase ?]: 151-03: pin is the execution-time tip fe91f3099, not CONTEXT's 94be73a61; both recorded, drift is 15 source-free planning commits
+- [Phase ?]: 151-03: format:check is RED (2 prettier files); PD-03 fences both out of D-05's fix bar unless a slice sweep surfaces them
+- [Phase ?]: 151-03: A6 resolved — per-package tests/ are UNLINTED not exempt; every workspace lints src/ only, so 'lint-enforced' is true of src/ only
+- [Phase ?]: Checklist has 31 items, not 30: .agents/code-review-checklist.md:8 uses U+00A0 in the 'any' item, defeating every grep census and making it an unclickable checkbox. Canonical disposition numbering is 1-31.
+- [Phase ?]: 0 of 31 checklist items are exhaustively covered by an automated gate (10 partial, 21 none) — measured, so no D-18 cell may cite 'green CI' as evidence.
+- [Phase ?]: yarn db:lint:sql is not sqlfluff: it is plpgsql_check plus a 174-line script implementing exactly 2 Splinter advisors. Research and CLAUDE.md both overstate it.
+- [Phase ?]: 151-01's +271 'Phases 141-150 drift' is 249 files of measurement-method difference (backend/ drop) plus this phase's own .planning growth; the product tree has not moved since research.
+- [Phase ?]: D-15 exempts .agents/code-review-checklist.md from the hygiene sweep, not from checklist item 7 — its stale docs/src/routes links and NBSP checkbox are repo-documentation defects, not planning citations.
+- [Phase ?]: Slice 07 absorbs the seven-file SvelteKit app shell by name so hooks.server.ts (Supabase session + locale) is reviewed with the request path, not inside a config PR
+- [Phase ?]: Criterion 4.4's disjoint-path proxy cannot hold across a D-11 rename base; the gate's honest range is C1..TIP with the whole-stack run recorded beside it (151-17)
+- [Phase ?]: items_total is 31 not 30 - checklist line 8 uses NBSP task markers
+- [Phase ?]: cells_expected is 163 not 207 - the plan formula double-counts 4 phase-level items
+- [Phase ?]: origin/main integration commit classed chore, not docs, so it cannot perturb clause 4.2's docs count == 1
+- [Phase ?]: the dropped-finding class is 842 files, 110 unclaimed by any slice pathspec
+- [Phase ?]: 151-07: attributive phase/spike references are reported, not collapsed — 'the see phase 64 fix' is worse noise than the citation it replaces (108 occurrences route to 151-08)
+- [Phase ?]: 151-07: a codemod's own hits+residue arithmetic cannot detect an occurrence no pattern matches; reconcile the report against raw git grep (found 6 silently-dropped section anchors)
+- [Phase ?]: Gate stays honestly red: two named, measured KEEP exceptions beat a gate re-scoped until it passed (151-08)
+- [Phase ?]: task-id KEEP proven by breakage: determinism-batch.sh matches a Playwright step title as a functional string (151-08)
+- [Phase ?]: Decision-IDs stripped from unit-test titles, task-IDs kept — nothing selects tests by decision ID (151-08)
+- [Phase ?]: REPORT-only re-scope of task-id/phase-ref gate rows deferred to plan 151-19 (151-08)
+- [Phase ?]: The invisible-to-review class is 1202 files, not 842; unclaimed-by-pathspec is 120, not 110 (151-09)
+- [Phase ?]: Stack states 01a..09 declare workspaces that do not exist — PR #1's body must say so (151-09)
+- [Phase ?]: Findings on the 120 unclaimed files are DEFERRED, not fixed — the remedy edits an operator-approved slices.tsv, so it is the operator's call (151-09)
+- [Phase ?]: The plan's 01a <verify> asserts 'DR'; a correct pure-rename commit yields 'R' — asserted the prose criterion (R>0, A=0, M=0) instead (151-09)
+- [Phase ?]: Items 12 and 16 stay phase-level (PENDING->18); their evidence is recorded as input rather than filled into per-slice cells (151-09)
+- [Phase ?]: 151-10: operator consented to publish (accept-reviews) — ruleset 8477541 stays active; ~12 one-shot Copilot reviews accepted (review_on_push:false)
+- [Phase ?]: 151-10: PR #860 will be REPURPOSED as the stack umbrella at 151-18 — head update is a fast-forward not a force-push; #860 carries zero human reviews
+- [Phase ?]: 151-10: stack PRs fire origin/main's main.yaml, which has NO skill-drift-check — research Pitfall 7 is wrong; real CI signature is 'Setup Yarn 4.6' / YN0028
+- [Phase ?]: migrations_added stays 0 deliberately: F-29 and F-30 would each need a migration, and PD-02 makes a migration blocking on yarn db:lint:sql exiting 0, which F-21 prevents
+- [Phase ?]: F-21 not fixed — greening yarn db:lint:sql needs a breaking signature change to a granted, type-generated, pgTAP-referenced public RPC; that is a product decision (Rule 4), escalated to the operator
+- [Phase ?]: F-24 (Signicat birthdate identity key) reframed as a repo-wide design choice after checking the frontend, and routed to 151-14 so one decision covers both halves rather than desynchronising them
+- [Phase ?]: 151-12: fixes committed before the disposition record, inverting the plan's task order — a cell may not read FIXED before the commit it cites exists
+- [Phase ?]: 151-12: F-39 not fixed — dev-seed's 15 lint warnings are one deliberate class, and the remedy would move a phase-wide baseline eight later plans compare against
+- [Phase ?]: 151-12: F-36's locality guard deferred to the operator — dev-seed has none, and adding one changes the behaviour of a command that deletes rows
+- [Phase ?]: [Phase 151-13]: Item 13 (WCAG) verdict for the E2E slice is MET-with-complement, not n/a: slice 05 IS the a11y gate, so the item's surface is the gate's adequacy — 7 route entries / 5 URLs / 14 tests x 2 themes, with 31 of 36 route surfaces named as unreached.
+- [Phase ?]: [Phase 151-13]: Item 14 (keyboard + screen-reader) is DEFERRED, not MET: the keyboard half has no gate anywhere — axe is a static-DOM auditor, so keyboard is uncovered on the 5 scanned routes as much as on the other 31.
+- [Phase ?]: [Phase 151-13]: F-44 (hygiene gate reports plan-number occ=0 over a tree with 35 plan references) is recorded, not patched: widening a pattern mid-stack would move operator-approved counts, the F-39 failure mode. Routed to 151-19; 151-14/15/16 must run the three patterns themselves.
+- [Phase ?]: [Phase 151-13]: PR-title format stabilised at 'N/12 <slices.tsv subject verbatim>' from 151-14 onward; PRs #863, #864 and #866 are NOT retitled — editing a live PR's title to match a later convention is churn.
+- [Phase ?]: F-24 is escalated, not fixed: the decisive fact about Signicat's response is external knowledge the repo does not contain; question narrowed for the operator at 151-18
+- [Phase ?]: The three context-destructuring / dataRoot-alias violations found are all in slice 07 and are deferred to 151-15, because a reactivity fix must name a covering test and that test is an unrunnable E2E spec
+- [Phase ?]: The Supabase Adapter checklist block is CLOSED by 151-14, proven by enumeration over 24 files with the unsafe-session-accessor-in-a-guard count asserted at 0
+- [Phase ?]: Slice 07 items 13/14: the axe scan reaches 5 of 36 routes; the 31 it does not were named and manually swept class by class, which found the one real a11y defect
+- [Phase ?]: F-73: a second reactive-accessor destructure, in the root layout from initAppContext() — a scan keyed on get*Context() reported 41 sites/1 violation where re-running found 84/2
+- [Phase ?]: Locale key parity measured exactly: 7 locales x 47 files x 598 keys, symmetric difference 0; placeholder-set parity recursing into the 147 plural bodies found the one real i18n defect
+- [Phase ?]: PR files-changed counts use rename detection; a --no-renames convention disagrees with them (533 vs 528, 214 vs 165) — every later PR body must state and reconcile both
+- [Phase ?]: 151-16: F-15 options 1 and 2 accepted by the operator — slices.tsv amended to claim README.md (slice 09) and the Capacitor scaffold (slice 10); the first partition change since approval, and no force-push was needed
+- [Phase ?]: 151-16: F-04's stale-path count was a substring artefact — 8 of 13 files were already correct; the -F acceptance grep is unsatisfiable because the correct path contains the stale one
+- [Phase 151]: Operator overruled 'approve' with remove-and-rescan on S-07: the mandatory re-cut made redaction nearly free against an unbounded downside
+- [Phase 151]: F-21 decided — option (a), implement the two RPC parameters rather than drop them, scheduled after this phase ships
+- [Phase 151]: PD-02 needs an explicit carve-out: as written it blocks the very migration that would green its gate; F-29 rides that carve-out
+- [Phase 151]: Slice 11's twelve checklist cells routed to 151-18; D-20 still requires a measured reason per N/A
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory | Status |
+|---|-------------|------|--------|-----------|--------|
+| 260607-j0y | Strip phase/change-history pointer comments from e2e test files (git + `.planning` cover traceability). 5 files: dropped planning-doc citations (`86.2-RESEARCH.md`, `73-04-PLAN.md`), version/phase tags (`v2.8`/`v2.11`/`P70`/`Cat A`/`Phase 95/99/100`/`Wave 0`/`D-03`/`QLAYOUT-02`/`Plan 02`), and change-narration ("This replaces the v2.11 SETTLE-BEFORE-COUNT approach…", "original guard … replaced", "rune migration"). **Kept** all current-behavior rationale (de-versioned, not deleted): post-hydration `$dataRoot`/`$state` timing, page-reuse DOM lag, `SETTLE-BEFORE-COUNT` concept. **Never touched** `eslint-disable` directives (3+1+1 intact) or assertion messages. Comment-only + one unreferenced `test.step` title. **User WIP preserved:** `voter-journey.spec.ts` had uncommitted `optionIndex` WIP — split my comment hunks out via `git apply --cached` and committed alone; WIP left untouched in the working tree. Gates: eslint 0, `tsc -p tests/tsconfig.json` 0, `playwright --list` 93 (unchanged). | 2026-06-07 | 6aab0146f | [260607-j0y-remove-phase-change-history-pointer-comm](./quick/260607-j0y-remove-phase-change-history-pointer-comm/) | complete |
+| 260603-c0g | Fix 3 pre-existing dev-seed lint errors + runes-test svelte build break, then close the full **`yarn lint:check` + `yarn build`** gates (both now exit 0). Scope grew beyond the 4 cited fixes once the in-flight tree was probed: also fixed a real build break (`statistics/+page.svelte` MainContent import off-by-one `../` depth from refactor `e19cc134b`) + 33 frontend lint errors (26 autofixed: import-sort/newline-after-import/quotes/unused; 7 manual: 3 func-style arrow→declaration in `supabaseDataProvider.test.ts`/`(located)/+layout.ts`/`getRouteRuneStore`, 4 naming-convention type params `T`/`U`→`TTarget`/`TAdditional` in `appSettingsVariantA/B`). All in committed-clean files; 0 in-flight `tests/` WIP swept. lint:check 11/11, build 14/14. | 2026-06-03 | 8a3d3b55b | [260603-c0g-fix-3-dev-seed-lint-errors-runes-test-bu](./quick/260603-c0g-fix-3-dev-seed-lint-errors-runes-test-bu/) |
+| 260602-i6o | Fix perm tests that hard-code the locale in `toHaveURL` matchers. `perm-header-show-help.spec.ts:23` failed (`/\/en\/about/` vs received `/about`). **Root cause (wrong test assumption, not a regression):** base locale `en` is served **prefixless** (Paraglide `urlPatterns`; documented at `perm-localisation-positive.spec.ts:162-164`), so `getRoute`/`buildRoute` emit locale-prefixless paths for `en` and navigation lands on `/about`, never `/en/about`. Swept all `toHaveURL`/`waitForURL` in `specs/perm/` + `setup/`; exactly two matchers hard-coded `/en/` incorrectly: header-show-help (`/\/en\/about/` → `/\/(?:[a-z]{2}\/)?about(?:\/\|$)/`) and hide-all-nominations (`/\/en\/?$/` → `/\/(?:[a-z]{2}\/?)?$/`, the 307-redirect to Home which resolves to `/` for base locale). **Left unchanged (locale match is the point):** perm-localisation-positive `/\/fi(\/\|$)/` + the base-locale `not.toHaveURL(/(fi\|sv\|…)/)` (i18n routing contract); perm-not-located (`/election/`, `evil.example`); setup `/login/`. Test titles + doc-comments updated. Regex case-table + `playwright --list` + ESLint clean; full E2E left to suite run. | 2026-06-02 | a449c2ab6 | [260602-i6o-fix-perm-tests-that-hard-code-locale-in-](./quick/260602-i6o-fix-perm-tests-that-hard-code-locale-in-/) |
+| 260602-hiz | Green `perm-hide-hero` (the "no questions in your constituency" empty-state failure). The spec deep-linked to `/en/candidate/questions/<external_id>` then asserted the hero `<figure>` visible — but landed on `error.noQuestions` ("element(s) not found"). **Root cause:** the candidate-questions `+layout.svelte:57` gates the question page on `ctx.opinionQuestions.length > 0`, else shows `error.noQuestions`. `opinionQuestions` fills via an async `$effect` chain (`reactiveDataRoot` → `userData` nominations → `selectedElections`/`selectedConstituencies` → questions). A cold deep-link races that chain, flashing the empty state — the layout can't tell "loading" from "empty" (the transient-symptom the user saw in other tests). Two extra deep-link faults: the per-question URL is keyed on the **internal** id (not `external_id`), and an empty `<figure>` (hideHero=true) has a zero-height box so `toBeVisible()` would fail anyway. **Fix (test-only):** navigate via the overview per TIR6:24-32 + the canonical perm-answers-locked pattern — `goToPage()` (warms context) → `goToQuestion(/\[QU-OPIN-L5-1\]/)`; anchor readiness on `candidate-questions-answer`; assert hero `toBeAttached()` (not visible) + `locator('img, span')` count 0 (raw-locator inline-justified). ESLint clean; full E2E left to suite run (needs setup project + stack). **Follow-up:** give the questions `+layout.svelte` (candidate + voter) a loading guard so it stops flashing `error.noQuestions` during the cold data-resolution window. | 2026-06-02 | a15fd5bb4 | [260602-hiz-fix-perm-hide-hero-deeplink-race](./quick/260602-hiz-fix-perm-hide-hero-deeplink-race/) |
+| 260602-rad | Green `perm-answers-locked` surface-3 (opinion question). The radio assertion scoped to `getByTestId('question-choices')` — the **voter-app** `QuestionChoices` fieldset testid, which never exists on the candidate page. The question page tags `<OpinionQuestionInput data-testid="candidate-questions-answer">`; that prop flows through `restProps` onto the inner `QuestionChoices` `<fieldset>` where `{...restProps}` sits **after** `data-testid="question-choices"` and **overrides** it (override is by design — `candidateQuestionPage.fixture` relies on it). So `count()` returned 0 despite radios rendering. Fix (test-only): scope to `testIds.candidate.questions.answerInput` + `getByRole('radio')`, matching the fixture's `selectChoice` pattern; adopt page-object `goToPage()`. The bad literal was introduced by 260602-dud (its "3/3 pass" claim was inaccurate). Verified: 3/3 + 55 passed clean. Incidental env reset: deleted stale invited users `candidate-l10n-pos-aa@` + `e2e-perm-answers-locked-cand-1@`. **Follow-up:** perm teardowns leak invited auth users (`inviteUserByEmail … already registered` on re-run) — teardown should unregister. | 2026-06-02 | d8a11b0a5 | [260602-rad-fix-perm-answers-locked-radio-testid](./quick/260602-rad-fix-perm-answers-locked-radio-testid/) |
+| 260602-dud | Fixturise `perm-answers-locked` question navigation. The surface-3 opinion-question test did `page.goto('/en/candidate/questions/<external_id>')`, but the per-question URL is keyed on the **internal** question id — it never resolved. Added `goToQuestion(textOrNth)` to `candidateQuestionsOverviewPage` (expand-all-categories → click matching card action → await per-question route) sharing a new `clickEdit` helper with `clickEditQuestion`. Spec now clicks through via `goToQuestion(/\[QU-OPIN-L5-1\]/)`; raw CSS locators replaced with `getByRole` (radio + profile input role-union) per the no-raw-locator ESLint rule. Verified: perm-answers-locked 3/3 + perm-localisation-positive pass. Incidental: deleted a stale `candidate-l10n-pos-aa@…` auth user blocking the l10n setup. | 2026-06-02 | 302b2d00c | [260602-dud-fixturise-perm-answers-locked-question-n](./quick/260602-dud-fixturise-perm-answers-locked-question-n/) |
+| 260602-qfx | Green `perm-localisation-positive` for the completed-state question flow. **Data disproven as cause** — q3/q4 resolve correctly for the candidate's election/constituency (DB + Chrome verified); the "no questions in your constituency" warning only shows post-teardown. Seed pre-answers both opinion Qs → completed "Your Opinions" variant with a collapsed `[QC-OPIN]` expander, so the empty-state `candidate-questions-start` button never renders. Fixes: reach q3/q4 via expander+card-edit; scope comment value to the textarea + multilingual fixture to `<main>`; q3→q4 via overview; activate opinions tab (`tab-1`) in voter cross-check. **App fix:** opinion-editor open-answer comment now honors `customData.disableMultilingual` (was a raw multilingual `<Input>`). 50 passed. Follow-up: invited auth user not unregistered on teardown. | 2026-06-02 | beabf7d63 | [260602-qfx-fix-perm-l10n-positive-completed-state](./quick/260602-qfx-fix-perm-l10n-positive-completed-state/) |
+| 260522-mps | Generate e2e test catalog inventory for Phase 88 audit (38 specs, 173 tests in execution order) | 2026-05-22 | 7f11a2c25 | [260522-mps-generate-e2e-test-catalog-inventory-for-](./quick/260522-mps-generate-e2e-test-catalog-inventory-for-/) |
+| 260523-u53 | Implement 19 [deferred-88-nn] steps in voter-mega-journey.spec.ts per TEST-INVENTORY-REFACTOR-1.md; spec 3/3 PASS, lint 0/0, 3 expect.soft within budget | 2026-05-23 | f3b99905a | [260523-u53-implement-all-of-the-deferred-88-nn-test](./quick/260523-u53-implement-all-of-the-deferred-88-nn-test/) |
+| 260524-l1t | Refactor voter-mega-journey.spec.ts (TIMEOUT/RX consts, named args, locator hardening, entity-selected testId) + D7 RLS hardening (anon ToU gating, get_nominations RLS-safe, migration 00002 + pgTAP) + D8 baseV1 rename test-qg-opin-base-b/c → opt-a/b. No tests executed (user directive). Lint 0/0. | 2026-05-24 | e1bd3a43e | [260524-l1t-refactor-voter-mega-journey-spec-ts-time](./quick/260524-l1t-refactor-voter-mega-journey-spec-ts-time/) |
+| 260525-adl | Fix non-standard `disabled` attr on `<a>` in Button.svelte + NavItem.svelte → switch to `aria-disabled="true"` + drop `href` (WCAG 2.1 AA + Playwright `toBeDisabled()`-compatible). Collapses `toHaveAttribute('disabled','true')` workarounds in voter-settings + candidate-required-info specs back to plain `toBeDisabled()`. Fixes voter-mega-journey.spec.ts:783 reported failure. Lint + svelte-check clean on changed files. | 2026-05-25 | e3d191a10 | [260525-adl-aria-disabled-on-link-elements](./quick/260525-adl-aria-disabled-on-link-elements/) |
+| 260525-tea | Collapse 26 baseV1 candidate opinion-answer blocks into 4 templates (POLAR_MAX/POLAR_MIN extended to all 11 opinion questions; new GENERIC = middle+tiebreak-to-min; SPECIAL retains partial-answer arrangement). Add unique election_symbol "2"…"30" to 29 candidate nominations (2 CA-AA-Special nominations omit; "1" reserved). Hoist 5 inline regexes into TEXT_RE; drop dead countSentinelHits helper. Replace soft "9-type sentinel" info-tab step with exact 13-info-item assertions on Polar-Max (electionSymbol "3") + Special (per screencap, incl. 6/15/1980 date and "—" missing rows). Lint + tsc clean; E2E not run. | 2026-05-25 | b611aea6d | [260525-tea-extend-voter-test-data](./quick/260525-tea-extend-voter-test-data/) |
+| 260531-p0o | Implement `SupabaseFeedbackWriter._postFeedback` (was throwing stub). Resolves `project_id` from `app_settings` (single-project deploy, anon-readable), inserts into `public.feedback`. DB CHECK + rate-limit trigger gate the insert; anon-insert RLS already in place. Mirrors deleted Strapi pattern (`c4331dadf^`). Typecheck + lint clean on changed file. | 2026-05-31 | 8ae1b3d1a | [260531-p0o-supabase-feedback-impl](./quick/260531-p0o-supabase-feedback-impl/) |
+| 260527-nat | **PARTIAL — Path A only.** TEST-INVENTORY-REFACTOR-3 T1+T2 landed; T3-T9 deferred to future phase. T1 (caf6ee931): categorical entity filter — fixed `isMissing(isMissing)` typo + reverted auto-select-all-when-empty default + distinguished `include=undefined` (inactive) from `include=[]` (active, allow none) at `EnumeratedFilter` level + `userActivated` flag in `EnumeratedEntityFilter.svelte`; 22/22 filter unit tests green. T2 (accfba54f): baseV1 `[<id>]` desc prefix on 45 fixed-row names; opt-a → `[qg-opin-opt-a-NotSelected]`, opt-b → `[qg-opin-opt-b-Skipped]`; preserved pre-baseline 27ef8f998. Seed verified (135 rows OK). Expected breakage: voter-mega-journey `TEXT_RE` probes vs renamed names — deferred to T9 in follow-up phase. | 2026-05-27 | accfba54f | [260527-nat-apply-test-inventory-refactor-3-md-to-vo](./quick/260527-nat-apply-test-inventory-refactor-3-md-to-vo/) |
+| 260601-q22 | **Investigation (no code change).** Dug into candidate-mega step-22 logout failure. Instrumented `(protected)/+layout.server.ts` (fire-and-forget per-load logging of RPC candidate row vs. all `candidates` rows for `auth.uid()`), ran the journey twice. **DISPROVED** the standing "auth-linkage mismatch / answers in a different `candidates` row" root cause: exactly ONE row per auth uid (stable `rpcCandidateId`), answers persist to it (profile fill → `answerKeys:4` read back by the auth.uid()-scoped RPC), writes + read RPC target the same row, no `auth.users` trigger creates a second candidate. Revised hypothesis: step-22 empty read was a client-side / stale in-memory `userData.savedCandidateData` artifact (matches HMR-staleness note), not backend. Separate env blocker logged: clean-env runs now hang at step 13 on the portrait storage upload (`save()` stuck "Saving…"). Instrumentation fully reverted (tree clean); todo updated with evidence. | 2026-06-01 | 0c8506c0a | [260601-q22-step22-logout-bug-data-layer-disproven](./quick/260601-q22-step22-logout-bug-data-layer-disproven/) |
+| 260531-t1d | Fix candidate-mega step 9 crash `TypeError: Cannot read properties of undefined (reading 'unicode')`. Root cause: `candidateLoginPage.fixture.ts:41` referenced non-existent `testIds.candidate.login.password` → `getByTestId(undefined)` → Playwright `escapeRegexForSelector(undefined).unicode`. Repointed to the canonical `testIds.candidate.password.field` (`'password-field'`, the `<PasswordField>` testid already used by the spec's `loginIfRedirectedToLoginPage` helper). NOT a timing race. Edit verified; E2E not run. | 2026-05-31 | eada5fdfc | [260531-t1d-fix-login-password-testid](./quick/260531-t1d-fix-login-password-testid/) |
+| 260531-vqu | Fix candidate-mega step 13 180s timeout at `fillQuestion(/qu-info-number/)`. Root cause: `[qu-info-number]` is `<input type=number>` → role `spinbutton`, not `textbox`, so `getByRole('textbox')` never resolved and `.fill()` waited out the full per-test timeout. Fixture: descend to `getByRole('textbox').or(getByRole('spinbutton'))` + add bounded `expect(editable).toBeVisible()` before fill (fail fast ~5s, not 180s). Spec: wrapped every id-based `hasText` regex in full bracketed `[id]` tokens (info visible/absent/required lists, step-13 fill loop, link+required fills, opinion getQuestionCard/clickEditQuestion/getCategoryExpander, preview expectInfoAnswer) — all baseV1 labels verified bracketed. submit() gating deliberately skipped (disabled Save-and-Return regression risk). Lint clean on both files; no bare `/qu-`/`/qg-` regexes remain; E2E not run. | 2026-05-31 | dc262ab67 | [260531-vqu-fillquestion-number-input-and-bracketed-id-match](./quick/260531-vqu-fillquestion-number-input-and-bracketed-id-match/) |
+| 260531-vdn | Make `candidateTermsOfUsePage.acceptAndAdvance()` fail fast on a stuck-disabled submit. Bare `getSubmit().click()` auto-waited for actionability against the 90s per-test timeout (no `actionTimeout` set) → ~346× click-retry dump. Added `await expect(getSubmit()).toBeEnabled()` before the click: polls the bounded 5s expect timeout, fails with a clear "expected enabled" message. Mirrors documented disabled→enabled spec flow; rigidity-contract compliant. Lint clean on changed file; E2E not run. | 2026-05-31 | 7ce1a4e14 | [260531-vdn-tou-fixture-fail-fast-on-disabled-submit](./quick/260531-vdn-tou-fixture-fail-fast-on-disabled-submit/) |
+| 260531-we7 | Fix candidate question-page error "setAnswers: Answer for number question must be a number". Root cause: `Input.svelte` `handleChange` catch-all `else` emitted the raw DOM `<input>.value` (always a string) for `type==='number'`; backend `validate_answer_value` requires a JSON number. Added a `type==='number'` branch (before the catch-all, `instanceof HTMLInputElement` narrowed, no `any`) emitting `currentTarget.valueAsNumber`, mapping `NaN`/empty → `undefined` (cleared field). Single generic Input-level fix — covers candidate + voter apps. `yarn check` clean on changed file; **manual browser UAT pending** (live-stack checkpoint not yet run). | 2026-05-31 | 41ee79340 | [260531-we7-fix-setanswers-number-question-must-be-a](./quick/260531-we7-fix-setanswers-number-question-must-be-a/) |
+| 260531-x5s | Fix candidate `userData.save()` dropping the entity id on answers-only saves (→ `upsert_answers(p_entity_id: undefined)` PostgREST 404). Task 1: typed `updateAnswers`/`overwriteAnswers` as `LocalizedAnswers` (was `LocalizedCandidateData`) at interface/abstract layers — matches the honest supabase concrete impl; surfaced the store type-lie. Task 2 (TDD): added `mergeCandidateAnswers` helper + reworked `save()` to handle the two return shapes distinctly — answers merge into `candidate.answers` (id + static fields preserved), properties still wholesale-replace. New `candidateUserDataStore.svelte.test.ts` (3 tests, `$effect.root`+`flushSync` harness) RED→GREEN. Store test 3/3 + supabaseDataWriter contract 34/34 PASS; tsc + lint clean on 4 touched files (15 supabase tsc errors pre-existing on base). E2E candidate-mega step 13.5 = manual regression guard (not run). | 2026-06-01 | 89a847438 | [260531-x5s-fix-candidate-userdata-save-dropping-ent](./quick/260531-x5s-fix-candidate-userdata-save-dropping-ent/) |
+| 260601-hn9 | Skip the 2 notification popup tests in the permutations suite (`tests/tests/specs/perm/perm-per-app-notifications.spec.ts` → `test.describe.skip`) pending the full Svelte runes migration, with an inline comment cross-referencing the re-enable todo. Confirmed the 2 tests are NOT in the `PASS_LOCKED_TESTS`/`SKIPPED_TESTS` parity arrays (post-date the v2.10 ship anchor) so `diff-playwright-reports.ts` + `playwright.config.ts` stay untouched. Filed two pending todos in `.planning/todos/pending/`: (A) re-enable perm-per-app-notifications + verify popup management after runes migration; (B) convert analytics setting to a dynamic setting + add e2e test for consent handling and analytics events. Bidirectional cross-reference between skip comment ↔ Todo A. | 2026-06-01 | 5da1c09a8 | [260601-hn9-skip-popup-tests-add-todos](./quick/260601-hn9-skip-popup-tests-add-todos/) |
+| 260601-ro7 | Move locale display names into the Paraglide translations payload for all 7 languages. Created `messages/{en,fi,sv,da,et,fr,lb}/lang.json` (wrapped in the `"lang"` namespace key per paraglide convention — flat keys would have compiled to ids `en`/`fi`, not `lang.en`/`lang.fi`), identical endonym map per file (English/Suomi/Svenska/Dansk/Eesti/Français/Lëtzebuergesch). Registered in `project.inlang/settings.json` pathPattern; bumped `translations.test.ts` file-count 46→47. Rewired `localeNames` off `staticSettings.supportedLocales[].name`: `init.ts` no longer exports it; `i18nContext.initI18nContext()` builds it via `t('lang.<code>')` over paraglide locales (at context/request scope — eager `init.ts` module-load `t()` would call `getLocale()` outside a request). `supportedLocales` still drives the offered `locales` array + default; `LanguageSelection.svelte` unchanged. TranslationKey generator already synthesizes `lang.*` (no codegen change). E2E-to-end confirmed via compiled `export { lang_en as "lang.en" }` alias. **Follow-up (4f64ffe04):** per user, reverted the locale-*name* part of f1e5047d4 — `LanguageSelection.svelte` uses `t('lang.<loc>')` directly again; dropped `localeNames` from the i18n context entirely (no remaining consumer; supersedes 2cc5eb37e's via-`t()` build). Kept the `$locales` store auto-subscribe fix (real render bug, not name-sourcing). Added a `translations.test.ts` case asserting the base-locale `lang.json` declares a name for every locale dir. `staticSettings.supportedLocales[].name` **kept** (still consumed by `@openvaa/llm` localizationInstructions → LLM prompt `{language}` var). i18n suite 296/296; `yarn check`/lint/prettier clean on changed files (155 check errors are pre-existing baseline). | 2026-06-01 | 4f64ffe04 | [260601-ro7-localenames-to-paraglide-payload](./quick/260601-ro7-localenames-to-paraglide-payload/) |
+| 260601-iqd | Add a `voterNav` open/close function-fixture so `perm-localisation-positive.spec.ts` can reach the language selector (which renders only inside the voter nav drawer, closed by default). New `tests/tests/fixtures/candidate/voterNavFixture.fixture.ts`: `createVoterNav(page)` with idempotent `open()` (returns a `LangSelectorFixture` for chaining) + idempotent `close()`. Added locale-independent `testIds.shared.navigation.menuToggle='nav-menu-toggle'` + `data-testid="nav-menu-toggle"` on the `Header.svelte` open-drawer button (the English-only `/open menu/i` aria-label fails on the /fi locale at spec line 152). Close uses the locale-stable `#drawerCloseButton` id. Wired `voterNav` into the `perm-l10n.ts` root; spec now opens the drawer before all 4 `langSelector` access sites, closes it after the line-119 `expectVisible` (overlay blocks the home start button), and closes the entity-details modal (Escape) before opening the nav at step 10. Playwright `--list` resolves the spec; lint clean. **Plan 02 (f1e5047d4):** fixed the actual `lang-selector` not-visible failure — `LanguageSelection` gated on `locales.length` where `getAppContext().locales` is a *store* (`.length` → undefined → NavGroup never rendered); switched to `$locales` auto-subscribe + sourced NavItem text from a new `localeNames` i18n-context map (init.ts derives `locales`+`localeNames` from `supportedLocales`). Ground-truth manual check confirms `lang-selector` visible with `English`/`Suomi`/`Svenska`. Adjacent e2e-green fixes folded in: LogoutButton disabled-until-modal-ref guard, commented-out candidate notification `$effect` (`effect_update_depth_exceeded`), dev-seed import order, rigidity `.catch` removals, perm-missing-nominations intro-page step. Full E2E not re-run (HMR staleness on live dev server — needs clean restart). | 2026-06-01 | f1e5047d4 | [260601-iqd-add-voternav-open-close-fixture-and-wire](./quick/260601-iqd-add-voternav-open-close-fixture-and-wire/) |
+| 260607-cd0 | **Clean up e2e test folder (ANALYSIS ONLY — `--full`).** Catalogued all 46 in-scope code modules (26 fixtures + 6 helper `.ts` + barrel + 13 utils + `setupFromTemplate.ts`) + the 49-file setup project graph → importing specs via the triple-grep recipe (module path + exported symbol + `helpers/index.ts` barrel path, so barrel re-exports don't hide usage). **Overlap (D1/D2/D3 tiers):** refuted 3 of 4 scouted "duplicate" pairs — `navigation.helper`/`voterNavigation` + `voterIntro`/`voterIntroPage.fixture` are deliberate generic-primitive-vs-domain-aware siblings; `translations`/`perm-l10n` is a non-pair. Confirmed `emailHelper.ts`→`emailBucket.fixture` as D3-superseded but **load-bearing** (2 live spec importers → gated migration, not a free delete). Recommends **KEEP** the helpers/utils split (principled, documented axis). **6 dead modules** found (zero importers): `translations.ts`, `paths.ts` (cascade), `answerQuestion.ts` + 3 NEW beyond research (`db-precondition.helper.ts`, `voter-iteration.helper.ts`, dead `gotoAndSettle` export — README's `walkVoterIteration` claim is stale). **Deliverable:** `260607-cd0-E2E-CLEANUP-REPORT.md` (289 lines, §0–5) with a mechanically-executable consolidate→delete proposal (canonical target + delete list + import-rewrite sites per item, dead-code-first) + stray-artifact decisions (output dirs already gitignored; `IDURA-TEST-RUNBOOK.md` = keep-vs-ignore user decision). **NO source/test code changed** (`git status tests/` clean; deprecation deferred to a follow-up run per user checkpoint). Plan-checked PASS + verified 7/7 (dead-code verdicts independently grep-confirmed). | 2026-06-07 | 80c8ff0e6 | [260607-cd0-clean-up-e2e-test-folder-catalogue-fixtu](./quick/260607-cd0-clean-up-e2e-test-folder-catalogue-fixtu/) | Verified + follow-up executed |
+
+**Follow-up to 260607-cd0 (executed 2026-06-07, user-approved):** Deprecation run on the report's proposal. Removed dead code — `utils/{answerQuestion,translations,paths}.ts` (`6edeb9fa2`) + `helpers/{db-precondition,voter-iteration}.helper.ts` & the dead `gotoAndSettle` export (`fc08e10f3`). Renamed the 3 surviving helpers `*.helper.ts`→`*.ts` (navigation/select/settle) + retired the `<concern>.helper.ts` convention (barrel + README updated; only the barrel imported them by path so consumers unaffected). Kept + tracked `tests/IDURA-TEST-RUNBOOK.md` in place (`1d90db68c`). **Item 6 (emailHelper→emailBucket) — DONE + verified green 2026-06-07** (`2764a79a9`): the fixture never actually imported emailHelper (docstring was wrong); whole file was dead except `toCallbackUrl`, which moved into `emailBucket.fixture.ts`; both spec imports repointed; `emailHelper.ts` deleted. User confirmed all tests pass on a live stack; todo moved to `.planning/todos/completed/`. **The entire 260607-cd0 cleanup follow-up is now closed** (dead-code sweep + `.helper` rename + IDURA + emailHelper consolidation).
+
+**Specialized-project env flip (`716ac827c`):** performance + a11y-smoke promoted from opt-in to default-on (opt out via `PLAYWRIGHT_NO_PERF` / `PLAYWRIGHT_NO_A11Y`); default `--list` 84→93. visual-regression + bank-auth kept opt-in (hard blockers: visual auth-setup/base-dataset gap; bank-auth module-load secret throw + unguarded Edge-Function tests). CI: perf+a11y now in the blocking `e2e-tests` job; former `e2e-visual-perf` narrowed to visual-only (`e2e-visual`, advisory). Confirmed green by user.
+
+### Blockers/Concerns
+
+- Local imgproxy Docker container crashes intermittently (502 on image upload) — not a code issue; carry-forward infrastructure debt. May affect any image-upload-touching E2E re-runs during Phase 79 verification (cold-start full-suite gate).
+- 165 pre-existing intra-package circular deps in `@openvaa/data` / `matching` / `filters` — deferred to a dedicated structural refactor milestone.
+- Phase 83 DETERM-06 image-upload (CAND-03) cascade blocks 3/4 Plan 86.2-01 per-spec smokes (candidate-profile-validation, voter-not-located-redirect, results-sections); refactors verified clean via grep + lint + tsc instead. Plan 86.2-03 3-run gate will surface true post-86.2 state.
+- voter-mega-journey project chain blocked by pre-existing perm-1e1cg1co flake (CASCADE) — Task 2 verify deferred to clean-environment manual run; orthogonal vite-dev cache wipe race documented in deferred-items.md
+- 122-02 EFLOW-10 deterministic-green BLOCKED: production identity-callback Edge Function createUser() omits email; local GoTrue (edge-runtime 1.71.0) rejects emailless user -> 500. Decrypt/verify/claim-extraction all succeed. Operator/Rule 4 fix (gated by T-122-03 'runs UNMODIFIED'): add email=${userId}@bank-auth.placeholder at createUser. Until then the keys-configured create path cannot be observed green; EFLOW-10 left unmarked.
+- BLOCKER-130-05: multi-choice helper text renders raw i18n key questions.multiChoice.selectRange at runtime — keys missing from Paraglide messages/{locale}/questions.json (added only to type-gen translations/ in 129-06). Also: getSavedAnswer discards saved boolean false. See phase deferred-items.md.
+- ~~Phase 132 Plan 03 milestone-close gate BLOCKED: yarn lint:check is RED on a clean tree (14 frontend errors: func-style + import-sort; 6 tests/ errors: raw-locators + conditional-in-test + import-sort).~~ **RESOLVED by 132-04 (2026-07-22):** all 20 clean-tree lint:check errors cleared via behavior-neutral edits in 8 files (func-style arrow→declaration, import reorder, reasoned `// reason:`-block disables); `yarn lint:check` now exits 0, `yarn test:unit` green (frontend 759 / dev-seed 444), `playwright --list` exit 0. 132-03 can now re-run `yarn lint:check` and honestly record the static gate (SC #3) as green.
+- DEF-135-04's ~4 s field excursion is unlocalised: the mechanism is established but the amplifier is not. Plan 06's waiver discharge must carry this qualification.
+- 151-07: criterion 3 is NOT closed — 528 residue rows, 7 prose-review lines, and hygiene-grep-report.sh --assert-clean still exits 1 on 8 of 9 rows. Plan 151-08 owns all of it; the zero-gates for '.planning/' (5 left) and 'Plan NN-NN' (2 left) are blocked by C-6 routing Markdown whole to the agent pass.
+
+## Session Continuity
+
+Last session: 2026-08-09 (resume)
+Stopped at: DEF-133-01 resolved (root cause confirmed by reproduction, fixed, 3x E2E gate green 129/0/0) + planning bookkeeping reconciled; v2.14 ready for /gsd-complete-milestone
+Resume file: None
+
+NOTE (2026-08-09 resume audit): the frontmatter `current_phase: 122 / status: planning` is STALE — an
+artifact of the known `state.complete-phase` transition quirk (see memory `project_gsd_execute_phase_quirks`).
+Phase 122 verified `passed` 2026-06-17; Phase 133 (last executed) verified `passed` 2026-07-26 with UAT +
+code-review fixes committed through 704cb30fc. No HANDOFF.json, no .continue-here checkpoint, no async jobs,
+no interrupted agents, and zero PLAN-without-SUMMARY across all phases.
+
+- Drove the EFLOW-10b bank-auth full-browser journey (`candidate-bank-auth-journey.spec.ts`) to SINGLE-PASS GREEN (`1 passed`, no skip/did-not-run) against the orchestrator-owned live env. Commit daab88f06 (tests/ only).
+- Enabled `preRegistration.enabled` SCOPED to the bank-auth-journey run: new `setupFromTemplate({ appSettingsOverride })` param (additive `merge_jsonb_column` AFTER the post-seed subset-match); paired teardown resets `{enabled:false}`. Shared `perm-not-located-2e2cg` template + `MINIMAL_BASE_APP_SETTINGS` + default suite untouched. DB-verified `{enabled:true}` during / `{enabled:false}` after.
+- Fixed 3 Rule-1 bugs (all tests/): (1) browser-context `ignoreHTTPSErrors` missing → authorize-leg 302 to the self-signed mock issuer failed silently; (2) spec assumed a non-existent confirmation-email/registration-key/set-password leg — the Supabase id_token-callback path establishes the session INLINE (Edge Function create + route verifyOtp) and lands on the success status page, so steps 5-6 now assert the success status page + a DB proof of the created auth.users(idura claims)+candidates+user_roles cascade; (3) teardown leak — the bank-auth user is created under `${sub}@bank-auth.placeholder`, not the typed address, so clean by the placeholder + delete the orphan candidate (new `getAuthUserByEmail`/`deleteBankAuthCandidateBySub` helpers).
+- NOTE the prior-session blocker (build-time `staticSettings.preRegistration.enabled:false`) was resolved by the orchestrator moving the flag to DynamicSettings (route guard now reads it from the `app_settings` row server-side); `@openvaa/app-shared` rebuilt + :5173 restarted. That production-code change is the orchestrator's (uncommitted here).
+
+Work done in an earlier session (118-02):
+
+- Appended EFLOW-01..11 + EQTYP-01..03 coverage maps to `.planning/v2.14-E2E-COVERAGE-PLAN.md` (replacing the Plan-01 placeholder anchors), all verdicts grounded against real `tests/` specs per A5. EFLOW: 03/05 confirmed-covered-no-new-code; 01/04/06/09 PARTIAL→extend; 07/08/11 MISSING→new; 02 DEFERRED→130; 10 PARTIAL→Idura-only retarget. EQTYP: all 3 DEFERRED→130 (UNBLK-02/05/01 blockers). EFLOW-10 note records the Idura `sub`-based identity + hetu/country retarget, drops Signicat, keeps the direct-Edge-Function synthetic-JWE stub (no live IdP), and flags the deterministic-green-gate decision (test JWKS in beforeAll) for the 122 plan.
+- Open Question 1 resolved (EFLOW-06): perm-localisation-positive covers UI/content re-localisation but NOT mid-flow voter answer-state preservation → net-new in Phase 121.
+- NO test/fixture/seed code written. Three atomic commits (7bddd3135, 0776a6dfb, 8d89e6ee8).
+- Next: Plan 03 (build list + extension-scope pins) and Plan 04 (deferred-build markers + cross-cutting findings + operator approval gate).
+
+(Prior session — v2.10 close, retained below:)
+
+- Fresh full-milestone audit (79-94) written to .planning/v2.10-MILESTONE-AUDIT.md (prior Phase-87 partial audit preserved as Appendix A). Verdict: tech_debt — 13 satisfied + 3 partial (86/86.1/86.2 missing VERIFICATION.md, documentary debt) + 0 unsatisfied; final e2e suite GREEN (82/2). Integration-checker skipped (test-infra milestone; composition proven by Phase 94 --list 84/72 + green run).
+- B-1: 89-VERIFICATION.md re-stamped human_needed → passed (5 dynamic gates closed downstream by Phase 94 green run).
+- B-2: REQUIREMENTS.md traceability + checkboxes reconciled to verified state; 88-94 in-milestone expansion noted.
+- Package-script harmonisation: supabase:*→db:*, db:* = DB-only, dev:* = full-stack, deprecated dev:* aliases removed. Fixed user's WIP bugs (yarn-yarn ×4, accidental removal of test:e2e/test:unit/test:unit:watch/watch:shared/prepare:husky, dev:reset missing-yarn, dev:reset-with-data seed-after-blocking-dev). Updated CLAUDE.md + apps/frontend/README.md + packages/dev-seed/README.md + 2 active code comments. apps/docs site pages left (legacy Strapi-era, pending rewrite).
+
+Next action: /gsd-complete-milestone v2.10 to archive. Open flag for operator: confirm `prepare: "husky"` restoration was wanted (interacts with the worktree core.hooksPath=/dev/null workaround). Pre-existing (untouched) issue noted: root docs:* scripts reference @openvaa/docs script names that no longer match (generate vs generate:docs). After archive: shape next milestone (Svelte 5 runes migration).
+
+### Plan-count estimate (drafted 2026-05-12)
+
+| Phase | Likely plan count | Notes |
+|-------|-------------------|-------|
+| 79 — Determinism Recovery | 2-4 plans | (1) DETERM-04 root-cause investigation + fix-or-restructure decision + implementation; (2) DETERM-04 verification (3-run cold-start identity); (3) DETERM-05 constants regen + commit; potentially (4) split if investigation surfaces a deeper Svelte 5 hydration OR Supabase auth-session race requiring its own plan. |
+| 80 — A11Y Axe Cite-and-Fix | 1-2 plans | (1) shared-component fix for `aria-required-parent` + `list` (likely entity-card list); (2) drawer `button-name` aria-label additions. Could collapse into a single plan if surfaces are co-located. |
+| 81 — A11Y-01 Email + URL Format Cells | 2-3 plans | (1) schema decision + `customData.format` enum + `INPUT_TYPES` email branch + i18n `invalidEmail`; (2) URL dispatch (subtype OR `customData.format='url'`) + fixture extension + spec cell 6; potentially (3) split if URL schema restoration requires more than a customData enum extension. |
+| 82 — A11Y-01 Required-Empty Cell | 1 plan | Product decision at discuss-phase + (if REJECT) save-path validation + `required` i18n key + spec cell 4; lighter if decision is SOFT-WARN-ONLY (spec only). |
+
+**Total v2.10 estimate:** ~6-10 plans across 4 phases. Risk: high on Phase 79 (race investigation may surface code-level bugs requiring framework or auth work); moderate on Phase 81 (schema decision drives implementation shape); low on Phases 80 + 82 (small focused fixes + product-decision-gated cell).
+
+## Operator Next Steps
+
+> Reconciled 2026-08-09. The previous contents of this section were **stale by
+> 45 phases** (they described Phase 88 / v2.10-close work, shipped 2026-06-04).
+> That stale text is preserved verbatim in the collapsed block at the bottom for
+> history; it is NOT current guidance.
+
+**Milestone v2.14 is ready to close.** All 16 phases (118-133) carry a
+`status: passed` VERIFICATION.md; 83/83 plans have SUMMARYs; no PLAN lacks a
+SUMMARY; no HANDOFF.json, `.continue-here` checkpoint, async-job manifest, or
+interrupted agent is outstanding.
+
+### Recommended next action
+
+`/gsd-complete-milestone v2.14` — archive the milestone.
+
+### Cleared before close (2026-08-09)
+
+- **DEF-133-01** (intro-CTA click flake, ~1/9 full-suite rate) — **RESOLVED**.
+  The Phase-133 layout-shift hypothesis was disproven; the confirmed cause is an
+  asymmetric timeout-budget allocation in `bypassIntroThen` (10 s visibility wait
+  vs 2 s click budget, on costs that scale together under main-thread
+  contention). Reproduced at ≥60x CDP CPU throttling, fixed via the in-tree
+  `clickAndRaceSettle` idiom, validated 0/4 timeouts at 20x/40x/60x/80x, then
+  gated by **3x full E2E suite green — 129 passed / 0 failed / 0 skipped /
+  0 did-not-run** on every run (runs 1-2 consecutive off one clean baseline,
+  run 3 off a full cold start). Lint + prettier + `typecheck:tests` clean. Full
+  write-up: `.planning/phases/133-fix-phase-132-code-review-gaps/deferred-items.md`.
+
+- **ROADMAP progress-table drift** — rows 118 / 119 / 122 / 124 showed
+  In-progress / Pending-verify / Not-started against phases that were verified
+  passed weeks earlier; Phase 133 had no row at all. All reconciled against the
+  VERIFICATION.md frontmatter (the authoritative source).
+
+- **STATE.md frontmatter drift** — `current_phase: 122 / status: planning` was an
+  artifact of the known `state.complete-phase` transition quirk. Corrected.
+
+### Open at close (non-blocking)
+
+- **41 pending backlog todos** — triage via `/gsd-review-backlog` when shaping
+  v2.15. Includes the newly-filed
+  `2026-08-09-intro-step-list-renders-before-data-ready.md` (real user-visible
+  CLS on the intro page, surfaced by the DEF-133-01 investigation; needs a
+  product decision, not a test fix).
+
+- **Phase 133 VERIFICATION** carries 1 `behavior_unverified` item (the WR-01
+  loud-failure path) — closed by the Phase-133 UAT experiment; marker retained as
+  accurate phase history.
+
+---
+
+<details>
+<summary>Superseded — stale Phase 88 / v2.10-close guidance (kept for history)</summary>
+
+- Start the next milestone with /gsd-new-milestone
+
+### Recommended next action
+
+`/gsd-execute-phase 88` → runs Plan 88-02. Expected duration: significant (8 tasks; full route refactor + voterContext + server-guards + spec URL audits + full-suite regression). Atomic commits per task; existing suite must stay green at every commit. The known Plan 88-01 deviation T5 (sequential baseV1 chain dep on `variant-hidden-required-candidate`) was already manually unwound by operator earlier in the session.
+
+### Other Phase 88 backlog (after 88-02 closes)
+
+- **88-NN parallel-decoupling**: per-template prefix (`'test-baseV1-'` vs `'test-e2e-'`) so baseV1 chain can run truly in parallel without the current sequential dep on `variant-hidden-required-candidate` (Deviation T5).
+- **88-NN absorb refactor-doc lines 379+** (specs not yet organized into the mega-journey).
+- **88-NN retire `--likert-only` flag** once last consumer migrates.
+- **88-NN retire per-variant setup files** once `setupFromTemplate` consumes them all.
+- **88-LAST final v2.10-close anchor capture** against the post-audit catalog (3-run cold-start gate); replaces Phase 87 anchor.
+
+### Cross-milestone holds (unchanged)
+
+- **v2.10 milestone close** (`/gsd-complete-milestone v2.10`) remains BLOCKED behind Phase 88 final plan.
+- **v2.11 rune migration kickoff** (Wave 1 leaf-context migrations) remains BLOCKED behind Phase 88 final plan.
+
+### Pre-existing flake to surface separately
+
+`candidate-profile.spec.ts:130` (terms-checkbox visibility race) is the primary cascade driver in full-suite runs (75 did_not_run in Plan 88-01's Task 6 Run #3). NOT caused by 88-01. Operator memory `project_all_green_suite_priority.md` flags this as v2.10 priority — likely a follow-up plan within Phase 88 or a sibling phase. Consider whether 88-02 absorbs it or if it gets its own plan.
+</details>

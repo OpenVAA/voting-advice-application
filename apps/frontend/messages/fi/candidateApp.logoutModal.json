@@ -1,0 +1,37 @@
+{
+  "candidateApp.logoutModal": {
+    "continue": "Jatka tietojen syöttämistä",
+    "ingress": "Oletko varma, että haluat kirjautua ulos? Sinut kirjataan automaattisesti ulos {timeLeft} sekunnin kuluttua.",
+    "itemsLeft": [
+      {
+        "declarations": [
+          "input infoQuestionsLeft",
+          "local infoQuestionsLeftPlural = infoQuestionsLeft: plural",
+          "input opinionQuestionsLeft",
+          "local opinionQuestionsLeftPlural = opinionQuestionsLeft: plural"
+        ],
+        "selectors": ["infoQuestionsLeftPlural", "opinionQuestionsLeftPlural"],
+        "match": {
+          "infoQuestionsLeftPlural=one opinionQuestionsLeftPlural=one": "Täytettävänä on vielä perustieto ja yksi mielipide.",
+          "infoQuestionsLeftPlural=one opinionQuestionsLeftPlural=other": "Täytettävänä on vielä perustieto ja {opinionQuestionsLeft} mielipidettä.",
+          "infoQuestionsLeftPlural=other opinionQuestionsLeftPlural=one": "Täytettävänä on vielä {infoQuestionsLeft} perustietoa ja yksi mielipide.",
+          "infoQuestionsLeftPlural=other opinionQuestionsLeftPlural=other": "Täytettävänä on vielä {infoQuestionsLeft} perustietoa ja {opinionQuestionsLeft} mielipidettä."
+        }
+      }
+    ],
+    "questionsLeft": [
+      {
+        "declarations": [
+          "input opinionQuestionsLeft",
+          "local opinionQuestionsLeftPlural = opinionQuestionsLeft: plural"
+        ],
+        "selectors": ["opinionQuestionsLeftPlural"],
+        "match": {
+          "opinionQuestionsLeftPlural=one": "Täytettävä on vielä yksi mielipide.",
+          "opinionQuestionsLeftPlural=other": "Täytettävä on vielä {opinionQuestionsLeft} mielipidettä."
+        }
+      }
+    ],
+    "title": "Osa tiedoistasi puuttuu"
+  }
+}

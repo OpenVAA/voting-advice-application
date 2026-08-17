@@ -7,6 +7,9 @@
 
 import { registerPrompts } from '@openvaa/llm';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Register all condensation prompts with the global registry
 registerPrompts({

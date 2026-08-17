@@ -1,0 +1,20 @@
+{
+  "entityList": {
+    "controls": {
+      "noFilterResults": "Filtrene gav ingen resultater. Prøv at ændre dem.",
+      "noSearchResults": "Søgningen gav ingen resultater. Prøv at ændre søgeordet.",
+      "searchPlaceholder": "Søg efter navn",
+      "showingNumResults": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=one": "Viser 1 resultat",
+            "numShownPlural=other": "Viser {numShown} resultater"
+          }
+        }
+      ]
+    },
+    "showMore": "Vis mere"
+  }
+}

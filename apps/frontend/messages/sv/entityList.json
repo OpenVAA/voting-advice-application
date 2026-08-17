@@ -1,0 +1,20 @@
+{
+  "entityList": {
+    "controls": {
+      "noFilterResults": "Filtren gav inga träffar. Du kan försöka ändra dem.",
+      "noSearchResults": "Sökningen gav inga träffar. Du kan försöka ändra det.",
+      "searchPlaceholder": "Sök efter namn",
+      "showingNumResults": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=one": "Visar 1 resultat",
+            "numShownPlural=other": "Visar {numShown} resultat"
+          }
+        }
+      ]
+    },
+    "showMore": "Visa mer"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "entityList": {
+    "controls": {
+      "noFilterResults": "The filters yielded no matches. You can try changing them.",
+      "noSearchResults": "The search yielded no matches. You can try changing it.",
+      "searchPlaceholder": "Search by name",
+      "showingNumResults": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=one": "Showing 1 result",
+            "numShownPlural=other": "Showing {numShown} results"
+          }
+        }
+      ]
+    },
+    "showMore": "Show more"
+  }
+}

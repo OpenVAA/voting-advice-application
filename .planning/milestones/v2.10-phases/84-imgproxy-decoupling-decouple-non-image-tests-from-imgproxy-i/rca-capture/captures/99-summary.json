@@ -1,0 +1,39 @@
+{
+  "stages": {
+    "01-login-page": {
+      "storageRequests": 0,
+      "storageFailures": 0,
+      "firstStorage": null
+    },
+    "02-login-submit-home": {
+      "storageRequests": 0,
+      "storageFailures": 0,
+      "firstStorage": null
+    },
+    "03-questions": {
+      "storageRequests": 0,
+      "storageFailures": 0,
+      "firstStorage": null
+    },
+    "04-home-again": {
+      "storageRequests": 0,
+      "storageFailures": 0,
+      "firstStorage": null
+    },
+    "05-help": {
+      "storageRequests": 0,
+      "storageFailures": 0,
+      "firstStorage": null
+    },
+    "06-privacy": {
+      "storageRequests": 0,
+      "storageFailures": 0,
+      "firstStorage": null
+    }
+  },
+  "verdict": {
+    "totalStorageRequests": 0,
+    "renderImageRequests": 0,
+    "objectPublicRequests": 0
+  }
+}

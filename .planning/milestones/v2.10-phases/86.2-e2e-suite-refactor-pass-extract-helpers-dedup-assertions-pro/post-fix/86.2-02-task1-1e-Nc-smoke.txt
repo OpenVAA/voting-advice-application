@@ -1,0 +1,93 @@
+[dotenv@17.3.1] injecting env (25) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+
+Running 82 tests using 3 workers
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+[1A[2K[1/82] [data-setup] › tests/tests/setup/data.setup.ts:76:1 › import test dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[2/82] [auth-setup] › tests/tests/setup/auth.setup.ts:66:1 › authenticate as candidate
+[1A[2K[3/82] [auth-setup] › tests/tests/setup/re-auth.setup.ts:20:1 › re-authenticate as candidate
+[1A[2K  1) [auth-setup] › tests/tests/setup/auth.setup.ts:66:1 › authenticate as candidate ───────────────
+
+    Error: [2mexpect([22m[31mpage[39m[2m).not.[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: not [32m/.*login.*/[39m
+    Received string: [31m"[7mhttp://localhost:5173/en/candidate/login?redirectTo=candidate[27m"[39m
+    Timeout: 5000ms
+
+    Call log:
+    [2m  - Expect "not toHaveURL" with timeout 5000ms[22m
+    [2m    8 × unexpected value "http://localhost:5173/en/candidate/login?redirectTo=candidate"[22m
+
+
+      92 |
+      93 |   // Wait for navigation away from the login page
+    > 94 |   await expect(page).not.toHaveURL(/.*login.*/);
+         |                          ^
+      95 |
+      96 |   // Save authenticated state for downstream tests
+      97 |   await page.context().storageState({ path: authFile });
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/setup/auth.setup.ts:94:26
+
+    Error Context: tests/playwright-results/setup-auth.setup.ts-authenticate-as-candidate-auth-setup/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    tests/playwright-results/setup-auth.setup.ts-authenticate-as-candidate-auth-setup/trace.zip
+    Usage:
+
+        yarn playwright show-trace tests/playwright-results/setup-auth.setup.ts-authenticate-as-candidate-auth-setup/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  2) [auth-setup] › tests/tests/setup/re-auth.setup.ts:20:1 › re-authenticate as candidate ─────────
+
+    Error: [2mexpect([22m[31mpage[39m[2m).not.[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: not [32m/.*login.*/[39m
+    Received string: [31m"[7mhttp://localhost:5173/en/candidate/login?redirectTo=candidate[27m"[39m
+    Timeout: 5000ms
+
+    Call log:
+    [2m  - Expect "not toHaveURL" with timeout 5000ms[22m
+    [2m    8 × unexpected value "http://localhost:5173/en/candidate/login?redirectTo=candidate"[22m
+
+
+      37 |
+      38 |   // Wait for navigation away from login
+    > 39 |   await expect(page).not.toHaveURL(/.*login.*/);
+         |                          ^
+      40 |
+      41 |   // Save fresh authenticated state
+      42 |   await page.context().storageState({ path: authFile });
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/setup/re-auth.setup.ts:39:26
+
+    Error Context: tests/playwright-results/setup-re-auth.setup.ts-re-authenticate-as-candidate-auth-setup/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    tests/playwright-results/setup-re-auth.setup.ts-re-authenticate-as-candidate-auth-setup/trace.zip
+    Usage:
+
+        yarn playwright show-trace tests/playwright-results/setup-re-auth.setup.ts-re-authenticate-as-candidate-auth-setup/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[4/82] [data-teardown-variants] › tests/tests/setup/variant-data.teardown.ts:12:1 › delete variant test dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+
+[1A[2K[5/82] [data-teardown] › tests/tests/setup/data.teardown.ts:17:1 › delete test dataset
+[1A[2K[6/82] [data-teardown] › tests/tests/setup/variant-data.teardown.ts:12:1 › delete variant test dataset
+[1A[2K  2 failed
+    [auth-setup] › tests/tests/setup/auth.setup.ts:66:1 › authenticate as candidate ────────────────
+    [auth-setup] › tests/tests/setup/re-auth.setup.ts:20:1 › re-authenticate as candidate ──────────
+  76 did not run
+  4 passed (24.1s)

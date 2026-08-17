@@ -1,0 +1,144 @@
+88-04 Wave-0 Pre-flight Probes — outcomes
+==========================================
+Date: 2026-05-28
+Author: gsd-execute-phase executor (Plan 88-04, Task 1)
+
+This is a SCRATCH file — NOT committed. Consumed by downstream tasks for
+placement / role-shape decisions.
+
+------------------------------------------------------------
+PROBE 1 — `questions.external_id` DB column + question runtime field
+------------------------------------------------------------
+Status: PASS
+
+Evidence (DB column — Option B Writer SELECT prerequisite):
+  packages/supabase-types/src/database.ts:952 — `external_id: string | null;` on questions.Row
+  packages/supabase-types/src/database.ts:979 — `external_id?: string | null;` on questions.Insert
+  packages/supabase-types/src/database.ts:1006 — `external_id?: string | null;` on questions.Update
+
+  ✓ DB column exists. Option B Writer SELECT (`SELECT id, external_id FROM questions WHERE project_id=...`) is implementable.
+
+Evidence (runtime `externalId` field on Question — orthogonal but noted):
+  packages/data/src/objects/questions/base/question.ts — file DOES NOT EXIST in the tree
+  (the plan's `read_first` reference was outdated; the base file is `questionAndCategoryBase.ts`).
+  grep -rnE "externalId" packages/data/src/objects/questions/ returned 0 hits.
+
+  NOTE: This is ORTHOGONAL to Option B's feasibility — Option B's Writer SELECT operates
+  directly on the DB column at seed time, NOT on a runtime Question instance. The Writer
+  imports `external_id` from the questions table via Supabase client; there is no need
+  for a runtime `Question.externalId` getter. (Option A would have required it; we
+  REJECTED Option A — see Task 2 ADR.)
+
+  → Option B is unblocked. No escalation needed.
+
+------------------------------------------------------------
+PROBE 2 — Modal.svelte restProps forwarding
+------------------------------------------------------------
+Status: PASS (forwarding via concatClass)
+
+Evidence:
+  apps/frontend/src/lib/components/modal/Modal.svelte:69 — `let { ..., ...restProps }: ModalProps = $props();`
+  apps/frontend/src/lib/components/modal/Modal.svelte:89 — `{...concatClass(restProps, 'modal-bottom sm:modal-middle')}` forwarded to <ModalContainer>
+  apps/frontend/src/lib/components/modal/ModalContainer.svelte:60 — `...restProps` destructured
+  apps/frontend/src/lib/components/modal/ModalContainer.svelte:138 — `{...concatClass(restProps, 'modal backdrop:bg-neutral backdrop:opacity-60')}` on the <dialog>
+
+  Result: passing `data-testid="entity-filter-dialog"` to <Modal> arrives on the <dialog> element at the DOM level.
+
+Decision for Wave 1.5 (Task 5):
+  → Pass `data-testid="entity-filter-dialog"` AS A PROP on the <Modal> invocation at EntityListControls.svelte:163.
+    No wrapper <div> needed.
+
+------------------------------------------------------------
+PROBE 3 — Expander.svelte restProps forwarding
+------------------------------------------------------------
+Status: PASS (forwarding via concatClass on outer <div>)
+
+Evidence:
+  apps/frontend/src/lib/components/expander/Expander.svelte:49 — `import { concatClass } from '$lib/utils/components';`
+  apps/frontend/src/lib/components/expander/Expander.svelte:63 — `...restProps` destructured
+  apps/frontend/src/lib/components/expander/Expander.svelte:154 — `<div {...concatClass(restProps, collapseClasses)}>` outer wrapper
+
+  Result: passing `data-testid="entity-filter-row"` to <Expander> arrives on the outer <div>.
+
+Decision for Wave 1.5 (Task 5):
+  → Pass `data-testid="entity-filter-row"` AS A PROP on each <Expander> in EntityFilters.svelte:51.
+    No wrapper <div> needed.
+
+------------------------------------------------------------
+PROBE 4 — Election-selector accordion child role + name shape
+------------------------------------------------------------
+Status: PASS
+
+Evidence:
+  apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte:349-357 —
+    <AccordionSelect data-testid="voter-results-election-select" options={elections} labelGetter={getName} ... />
+  apps/frontend/src/lib/components/accordionSelect/AccordionSelect.svelte:80-91 — inner clickable is
+    <button role="option" aria-selected={...} onclick={...}>
+      <span class="uc-first">{labelGetter?.(option)}</span>
+    </button>
+
+  The button's accessible name comes from the inner <span>'s text content, which is `labelGetter(option)`
+  → for elections, `getName(election)` returns the election's `name` field (post-T2: includes `[el-reg]` prefix).
+
+Decision for Task 6 (`resultsPage.selectElection`):
+  → Open the accordion (it conditionally renders children when `expanded || activeIndex === index`),
+    then click `page.getByRole('option', { name: <regex> })` filtered inside the
+    `voter-results-election-select` testid scope.
+  → Recommended implementation:
+      const accordion = page.getByTestId('voter-results-election-select');
+      await accordion.getByRole('option', { name: /Regional/i }).click();
+    The AccordionSelect auto-handles the open/close state — clicking on a non-active option
+    expands+activates. (Note: when there's only 1 election in `elections.length`, the
+    accordion is NOT rendered (line 344 guard); fixture should be robust to that case.)
+
+------------------------------------------------------------
+PROBE 5 — CA-AA-Hidden hide mechanism
+------------------------------------------------------------
+Status: PASS — terms_of_use_accepted absent (NOT hideIfMissingAnswers)
+
+Evidence:
+  packages/dev-seed/src/templates/baseV1.ts:898-907 — `test-ca-aa-hidden` row:
+    {
+      external_id: 'test-ca-aa-hidden',
+      first_name: 'Hidden',
+      last_name: 'Candidate AA',
+      // terms_of_use_accepted DELIBERATELY absent (refactor-doc:72)
+      sort_order: 1,
+      is_generated: false,
+      organization: { external_id: 'test-or-aa' },
+      answersByExternalId: withInfoAnswers(GENERIC)
+    }
+
+  The row's `terms_of_use_accepted` field is INTENTIONALLY missing.
+  The row has FULL info answers (via withInfoAnswers(GENERIC)) — so hideIfMissingAnswers
+  would NOT trigger on this candidate; the hide is solely driven by the missing ToU consent.
+
+Count math for T6:
+  Party AA nominal members under EL-Reg/CO-Reg-N:
+    - test-ca-aa-special (visible)
+    - test-ca-aa-hidden  (hidden — ToU absent)
+    - test-ca-aa-1, test-ca-aa-2, test-ca-aa-3, test-ca-aa-4 (4 generic, visible)
+  → 6 nominal − 1 hidden = 5 visible Party-AA members ✓ matches RESEARCH R-3.
+
+  → T6 contract "Party AA shows 3 by default, Show-all reveals 5, Collapse returns to 3" stands.
+
+------------------------------------------------------------
+BASEV1 FILTERABLE FLIP — separate atomic edit (committed in Task 1's atomic commit)
+------------------------------------------------------------
+File: packages/dev-seed/src/templates/baseV1.ts:683
+Change: `filterable: true` → `filterable: false` on test-qu-info-boolean
+
+Rationale: align baseV1 reality with TIR3 T8 design (3 filter rows: Party + pick-multiple
++ years-of-experience). Per RESEARCH R-3 disposition Option 1.
+
+------------------------------------------------------------
+DOWNSTREAM CONSUMPTION TABLE
+------------------------------------------------------------
+Consumer task       | Consumes
+--------------------+-------------------------------------------
+Task 2 (ADR)        | Probe 1 PASS — Option B is feasible
+Task 5 (Wave 1.5)   | Probe 2 PASS → Modal: testid as prop, no wrapper
+                    | Probe 3 PASS → Expander: testid as prop, no wrapper
+Task 6 (fixtures)   | Probe 4 — selectElection uses getByRole('option', { name }) inside
+                    |   the voter-results-election-select scope
+Task 7b (T6 cell)   | Probe 5 PASS — 5 visible Party-AA members count is locked

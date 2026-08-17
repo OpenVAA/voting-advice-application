@@ -1,0 +1,8 @@
+{
+  "enterEmailAndPassword": "Enter your email and password to log in.",
+  "forgotPassword": "Forgot Password?",
+  "haveRegistrationCode": "Do you have a registration code?",
+  "title": "Sign in",
+  "unknownError": "There was an error with your user data. Please contact support if the issue persists.",
+  "answersLockedInfo": "Registration or editing answers is no longer possible, but you can still log in to view your information."
+}

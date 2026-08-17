@@ -1,0 +1,44 @@
+# Chain-head deterministic failure capture (H0 confirmation)
+# Source: .planning/phases/84-imgproxy-decoupling-…/post-fix/run-{1,2,3}.json
+# (Phase 84 binding anchor, SHA 04ddfdd85cf… per run-{1,3} identity; run-2 differs
+# by 1 party-drawer cell routed to Phase 86)
+# Method: walk each run's suites tree, filter projectName ∈ {voter-app-popups, candidate-app-password}
+#         AND status !== 'passed', dump row format <projectName> | <status> | <specTitle> | <error[:150]>
+# Verdict: voter-app-popups :: should remember dismissal after page reload FAILED 3/3 deterministic.
+# Cascade root: per playwright.config.ts:236, data-setup-multi-election declares
+#               dependencies: ['candidate-app-password', 'voter-app-popups'] —
+#               so this FAIL transitively cascade-skips the entire 9-variant linear chain.
+
+=== RUN 1 ===
+voter-app-popups         | failed     | should remember dismissal after page reload | Error: locator.click: Error: strict mode violation: getByRole('dialog').getByRole('button', { name: /close|sulje|stäng|luk/i }) resolved to 2 elements
+voter-app-popups         | skipped    | should show survey popup after delay on results page |
+voter-app-popups         | skipped    | should not show any popup when disabled |
+=== RUN 2 ===
+voter-app-popups         | failed     | should remember dismissal after page reload | Error: locator.click: Error: strict mode violation: getByRole('dialog').getByRole('button', { name: /close|sulje|stäng|luk/i }) resolved to 2 elements
+voter-app-popups         | skipped    | should show survey popup after delay on results page |
+voter-app-popups         | skipped    | should not show any popup when disabled |
+=== RUN 3 ===
+voter-app-popups         | failed     | should remember dismissal after page reload | Error: locator.click: Error: strict mode violation: getByRole('dialog').getByRole('button', { name: /close|sulje|stäng|luk/i }) resolved to 2 elements
+voter-app-popups         | skipped    | should show survey popup after delay on results page |
+voter-app-popups         | skipped    | should not show any popup when disabled |
+
+# === EMPIRICAL VERDICT ===
+# H0 (chain-head deterministic FAIL) = CONFIRMED.
+# Pattern: voter-app-popups :: should remember dismissal after page reload, status=failed,
+#          error="strict mode violation: getByRole('dialog').getByRole('button', { name: /close|sulje|stäng|luk/i }) resolved to 2 elements"
+# Reproduces 3/3 across the Phase 84 binding anchor (run-1, run-2, run-3).
+# No data-setup-* / variant-* entries appear in this capture (chain-head filter excludes them);
+# all 9 variant chain projects status=skipped with empty error in the same artifacts (verified
+# separately per RESEARCH §"Confirm variant setups never executed").
+#
+# Per Playwright's strict project-dependency contract, this single deterministic FAIL cascades
+# the variant linear chain — producing the 44 CASCADE-SKIP entries that, together with 3
+# PRODUCT-GAP source-skips in candidate-app-settings, make up the 47-entry CASCADE pool tracked
+# in tests/scripts/diff-playwright-reports.ts:253-301.
+#
+# Phase 85 Plan 02 fix path (per Pitfall 6 in 85-RESEARCH.md): Path B structural decoupling —
+# remove voter-app-popups from data-setup-multi-election's dependencies at
+# playwright.config.ts:236, replacing ['candidate-app-password', 'voter-app-popups'] with
+# ['candidate-app-password']. Precedent: Phase 84 re-auth-setup decouple at playwright.config.ts:148-152
+# (commit 93050e4fb). D-08-compliant (does not touch the popup test itself; Phase 86 retains
+# DETERM-12 ownership of the actual fix).

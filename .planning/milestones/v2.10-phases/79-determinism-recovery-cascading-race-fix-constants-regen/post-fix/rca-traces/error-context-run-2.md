@@ -1,0 +1,43 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - link "Skip to main content" [ref=e3] [cursor=pointer]:
+    - /url: "#mainContent"
+  - generic [ref=e5]:
+    - banner [ref=e6]:
+      - button "Open menu" [ref=e8] [cursor=pointer]:
+        - img [ref=e9]
+        - img [ref=e12]
+    - main [ref=e21]:
+      - generic [ref=e23]:
+        - group [ref=e25]:
+          - heading "Your password is now set! Please log in using it." [level=1] [ref=e26]
+        - generic [ref=e27]:
+          - generic [ref=e28]:
+            - generic [ref=e29]:
+              - textbox "Email" [ref=e30]: test.unregistered2@openvaa.org
+              - generic [ref=e32]:
+                - generic [ref=e33]: Password
+                - textbox "Password" [active] [ref=e34]
+                - button "Reveal password" [ref=e35] [cursor=pointer]:
+                  - img [ref=e37]
+              - button "Sign in" [disabled]:
+                - generic:
+                  - generic: Sign in
+            - generic [ref=e39]:
+              - button "Do you have a registration code?" [ref=e40] [cursor=pointer]:
+                - generic [ref=e42]: Do you have a registration code?
+              - button "Forgot Password?" [ref=e43] [cursor=pointer]:
+                - generic [ref=e45]: Forgot Password?
+              - button "Candidate Support" [ref=e46] [cursor=pointer]:
+                - generic [ref=e48]: Candidate Support
+              - button "Election Compass for voters" [ref=e49] [cursor=pointer]:
+                - generic [ref=e51]: Election Compass for voters
+          - generic [ref=e52]:
+            - text: Made with
+            - link "OpenVAA" [ref=e53] [cursor=pointer]:
+              - /url: https://github.com/OpenVAA/voting-advice-application/
+              - img "OpenVAA" [ref=e54]
+  - generic [ref=e63]: Sign in – Election Compass
+```

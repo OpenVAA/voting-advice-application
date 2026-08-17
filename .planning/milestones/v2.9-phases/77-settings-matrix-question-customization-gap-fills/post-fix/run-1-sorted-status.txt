@@ -1,0 +1,5 @@
+DEFERRED-WITH-RATIONALE — see run-1.json _note + 77-VERIFICATION.md §3-Run Determinism Record.
+Per Phase 76 P04 precedent (commit f205b114f): when the cold-start gate is dominated by inherited
+upstream auth-setup race cascade, the rational path is to preserve prior baseline + document
+the inherited race deferral. Per-plan smokes for all 4 Phase 77 plans (77-01 through 77-04)
+PASS × 3 in isolation with `--no-deps` workaround, providing per-spec determinism evidence.

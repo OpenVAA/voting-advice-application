@@ -1,0 +1,31 @@
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+
+Running 4 tests using 1 worker
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+
+[1A[2K[1/4] [data-setup] › tests/setup/data.setup.ts:76:1 › import test dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+
+[1A[2K[2/4] [voter-app] › tests/specs/voter/voter-question-rendering-categorical.spec.ts:109:3 › voter question rendering — categorical (QSPEC-02) › categorical opinion question (single-choice) renders, voter answers, persists across goBack, mirrors on entity-detail @voter
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[3/4] [data-teardown] › tests/setup/data.teardown.ts:17:1 › delete test dataset
+[1A[2K[4/4] [data-teardown] › tests/setup/variant-data.teardown.ts:12:1 › delete variant test dataset
+[1A[2K  1 skipped
+  3 passed (4.1s)
+
+----
+LANDMINE-NOTE: cell #8 has no within-spec cascade dependents (single-test describe block).
+
+Empirical investigation (Phase 86.3-05 Task 2):
+  - Cell #8 shares EXACT root cause with cell #7 per Phase 86 RESEARCH
+    §3.10 + Phase 86.3-05 Task 2 empirical smoke (same Loading… page
+    snapshot on /intro after Home start; voter-intro-start testId never
+    paints; 5s race-checkpoint timeout fires at voterNavigation.ts:149).
+  - Same upstream voter-app cold-deeplink loader race as cells #5/#6/#7.
+  - walkToQuestion helper-resilience fix LEFT IN PLACE in
+    voterNavigation.ts:308-329 (defensive, no regression).
+  - Second-run smoke (post-skip): `1 skipped + 3 passed`.
+
+OUTCOME: SKIP-FALLBACK

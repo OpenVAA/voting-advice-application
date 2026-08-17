@@ -1,0 +1,9 @@
+{
+  "controls": {
+    "noFilterResults": "Aucun résultat pour ces filtres. Vous pouvez les modifier.",
+    "noSearchResults": "Aucun résultat pour cette recherche. Vous pouvez la modifier.",
+    "searchPlaceholder": "Rechercher par nom",
+    "showingNumResults": "Affichage de {numShown, plural, =1 {1 résultat} other {# résultats}}"
+  },
+  "showMore": "Afficher plus"
+}
