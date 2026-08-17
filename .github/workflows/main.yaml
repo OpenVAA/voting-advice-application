@@ -22,29 +22,43 @@ on:
       - ".env.example"
 
 jobs:
+  skill-drift-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "Check skill drift"
+        run: .claude/scripts/audit-skill-drift.sh
+
   frontend-and-shared-module-validation:
     runs-on: ubuntu-latest
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
 
     steps:
       - name: "Checkout Frontend source code"
         uses: actions/checkout@v4
 
-      - name: Setup Yarn 4.6
+      - name: Setup Yarn 4.13
         uses: threeal/setup-yarn-action@v2
         with:
-          version: 4.6
+          version: 4.13
 
-      - name: Setup Node.js 20.18.1
+      - name: Setup Node.js 22.22.1
         uses: actions/setup-node@v4
         with:
-          node-version: 20.18.1
+          node-version: 22.22.1
           cache: "yarn"
 
       - name: "Install all dependencies"
         run: yarn install --frozen-lockfile
 
       - name: "Build all shared modules"
-        run: yarn build:shared
+        run: yarn build
 
       - name: "Run Prettier check globally"
         run: yarn format:check
@@ -52,70 +66,140 @@ jobs:
       - name: "Run ESlint check on frontend"
         run: yarn lint:check
 
-      - name: "Check that TranslationKey type is up to date"
-        run: yarn workspace @openvaa/frontend generate:translation-key-type && git diff --exit-code
-
       - name: "Run Frontend and shared module tests"
         run: yarn test:unit
 
       - name: "Configure frontend environment using the repo root .env.example file"
-        run: cp .env.example frontend/.env
+        run: cp .env.example apps/frontend/.env
+
+      - name: "Type-check frontend (svelte-check, 0 errors / 0 warnings)"
+        run: yarn workspace @openvaa/frontend check
 
       - name: "Build frontend"
         run: yarn workspace @openvaa/frontend build
 
-  backend-validation:
+  supabase-tests:
     runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            supabase:
+              - 'apps/supabase/**'
+              - 'packages/supabase-types/**'
+
+      - uses: supabase/setup-cli@v1
+        if: steps.changes.outputs.supabase == 'true'
+        with:
+          version: latest
+
+      - name: "Start Supabase"
+        if: steps.changes.outputs.supabase == 'true'
+        working-directory: apps/supabase
+        run: supabase start
+
+      - name: "Run pgTAP tests"
+        if: steps.changes.outputs.supabase == 'true'
+        working-directory: apps/supabase
+        run: supabase test db
+
+      - name: "Stop Supabase"
+        if: always() && steps.changes.outputs.supabase == 'true'
+        working-directory: apps/supabase
+        run: supabase stop
+
+  # The @openvaa/dev-seed integration test carries the NF-01 OPERATION BUDGET —
+  # the deterministic batching / N+1 guard Phase 135 built to replace a
+  # load-sensitive wall-clock gate (REQUIREMENTS.md GUARD-03). It self-skips via
+  # `describe.skipIf(!process.env.SUPABASE_URL)`, and the
+  # `frontend-and-shared-module-validation` job above runs `yarn test:unit` with
+  # no Supabase and no repo-root `.env` — so before this job existed the budget
+  # ran on developer machines only and NEVER in CI, while the job went green
+  # (fake-guard sweep 2026-08-11, finding F5).
+  #
+  # It is a SEPARATE job rather than a step in `e2e-tests` on purpose: this test
+  # writes ~327 `seed_` candidates from the `default` template, which would
+  # contaminate the `e2e/base` dataset the E2E suite asserts against. Running it
+  # after `yarn test:e2e` in that job would instead couple it to E2E going
+  # green — a red E2E run would mask a seed-path regression.
+  #
+  # There is deliberately NO `paths-filter` here (unlike `supabase-tests`). The
+  # code this guards spans dev-seed, supabase-types, apps/supabase's schema, and
+  # the core/matching/app-shared chain the latent answer model uses, so an
+  # honest filter would cover most of the repo — and a conditional guard is how
+  # F5 happened in the first place. The job runs in parallel with `e2e-tests`,
+  # which does strictly more work (same install + build + `supabase start`, plus
+  # a Playwright install and the full E2E suite), so it does not extend the
+  # critical-path wall clock; the cost is runner minutes.
+  dev-seed-integration:
+    runs-on: ubuntu-latest
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+      # Declares "this file is REQUIRED to execute in this job". The test throws
+      # at module scope if this is set while SUPABASE_URL is not, so losing the
+      # Supabase wiring below turns CI red instead of silently reverting to a
+      # green skip.
+      DEV_SEED_INTEGRATION_REQUIRED: "1"
 
     steps:
-      - name: "Checkout Backend source code"
+      - name: "Checkout source code"
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
-      - name: Setup Yarn 4.6
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Setup Yarn 4.13
         uses: threeal/setup-yarn-action@v2
         with:
-          version: 4.6
+          version: 4.13
 
-      - name: Setup Node.js 20.18.1
+      - name: Setup Node.js 22.22.1
         uses: actions/setup-node@v4
         with:
-          node-version: 20.18.1
+          node-version: 22.22.1
           cache: "yarn"
-
-      - name: Cache node modules
-        id: cache-npm-backend-main
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: "backend/vaa-strapi/node_modules"
-          key: ${{ runner.os }}-backend-build-${{ env.cache-name }}-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
 
       - name: "Install all dependencies"
         run: yarn install --frozen-lockfile
 
-      - name: "Build all shared modules"
-        run: yarn build:shared
+      - name: "Build @openvaa/dev-seed and its dependencies"
+        run: yarn build --filter=@openvaa/dev-seed
 
-      - name: "Install Backend yarn dependencies"
-        run: yarn workspace @openvaa/strapi install --frozen-lockfile
+      - name: "Start Supabase"
+        working-directory: apps/supabase
+        run: supabase start
 
-      # We've already linted and formatted the code globally in the previous job
-
-      # These are currently not used
-      # - name: "Run Backend tests"
-      #   run: |
-      #     npm run test
-
-      - name: "Build backend"
+      # Read the connection details off the RUNNING instance rather than
+      # hard-coding the local demo keys, so a CLI change to the local key format
+      # cannot make this job authenticate as anon and fail confusingly.
+      - name: "Export Supabase connection env"
+        working-directory: apps/supabase
         run: |
-          yarn workspace @openvaa/strapi build
+          STATUS="$(supabase status -o env)"
+          API_URL="$(printf '%s\n' "$STATUS" | grep '^API_URL=' | cut -d= -f2- | tr -d '"')"
+          SERVICE_ROLE_KEY="$(printf '%s\n' "$STATUS" | grep '^SERVICE_ROLE_KEY=' | cut -d= -f2- | tr -d '"')"
+          test -n "$API_URL" || { echo "::error::API_URL missing from supabase status"; exit 1; }
+          test -n "$SERVICE_ROLE_KEY" || { echo "::error::SERVICE_ROLE_KEY missing from supabase status"; exit 1; }
+          echo "SUPABASE_URL=$API_URL" >> "$GITHUB_ENV"
+          echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY" >> "$GITHUB_ENV"
+
+      # With SUPABASE_URL set, `describe.skipIf(!hasSupabase)` in
+      # tests/integration/default-template.integration.test.ts is FALSE, so the
+      # NF-01 operation budget and the D-58-20 row-count / relational / portrait
+      # / TMPL-07 assertions all execute.
+      - name: "Run dev-seed tests (incl. the NF-01 operation budget)"
+        run: yarn workspace @openvaa/dev-seed test:unit
+
+      - name: "Stop Supabase"
+        if: always()
+        working-directory: apps/supabase
+        run: supabase stop
 
   e2e-tests:
     runs-on: ubuntu-latest
@@ -123,78 +207,43 @@ jobs:
     steps:
       - name: "Checkout source code"
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: "Configure environment"
         run: cp .env.example .env
 
-      - name: Setup Yarn 4.6
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Setup Yarn 4.13
         uses: threeal/setup-yarn-action@v2
         with:
-          version: 4.6
+          version: 4.13
 
-      - name: Setup Node.js 20.18.1
+      - name: Setup Node.js 22.22.1
         uses: actions/setup-node@v4
         with:
-          node-version: 20.18.1
+          node-version: 22.22.1
           cache: "yarn"
-
-      # - name: Cache node modules
-      #   id: cache-npm-e2e-main
-      #   uses: actions/cache@v4
-      #   env:
-      #     cache-name: cache-node-modules-e2e
-      #   with:
-      #     path: "node_modules"
-      #     key: ${{ runner.os }}-e2e-build-${{ env.cache-name }}-${{ hashFiles('yarn.lock') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-build-${{ env.cache-name }}-
-      #       ${{ runner.os }}-build-
-      #       ${{ runner.os }}-
 
       - name: "Install yarn dependencies"
         run: yarn install --frozen-lockfile
 
       - name: "Install playwright"
-        run: yarn playwright install
+        run: yarn playwright install --with-deps
 
-      - name: "Start OpenVAA"
-        run: yarn dev:start
+      - name: "Build all packages"
+        run: yarn build
 
-      - name: "Collect Docker logs on failure"
-        if: failure()
-        uses: jwalton/gh-docker-logs@v2
-        with:
-          dest: ./logs
+      - name: "Start Supabase"
+        working-directory: apps/supabase
+        run: supabase start
 
-      - name: "Tar Docker logs"
-        if: failure()
-        run: tar cvzf ./logs.tgz ./logs
-
-      - name: "Upload Docker logs on failure"
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: logs.tgz
-          path: ./logs.tgz
-          retention-days: 30
-
-      - name: "Sleep for 30s to allow mock data generation to complete before running e2e tests"
-        uses: juliangruber/sleep-action@v2
-        with:
-          time: 30s
+      - name: "Start frontend"
+        run: yarn workspace @openvaa/frontend dev &
 
       - name: "Run E2E tests"
         run: yarn test:e2e
-
-      - name: "Upload playwright setup report"
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: playwright-setup-report
-          path: tests/playwright-setup-report/
-          retention-days: 30
 
       - name: "Upload playwright report"
         uses: actions/upload-artifact@v4
@@ -204,6 +253,80 @@ jobs:
           path: tests/playwright-report/
           retention-days: 30
 
-      - name: "Stop OpenVAA"
+      - name: "Stop Supabase"
         if: always()
-        run: yarn dev:down
+        working-directory: apps/supabase
+        run: supabase stop
+
+  # Visual regression is opt-in at the Playwright level (PLAYWRIGHT_VISUAL gates
+  # the auth-setup + visual-regression projects) but BLOCKING at the CI level: a
+  # screenshot regression fails the build. It runs in its own job only because it
+  # needs PLAYWRIGHT_VISUAL set for the whole run; performance + a11y-smoke run by
+  # default in the blocking `e2e-tests` job above (opt out with
+  # PLAYWRIGHT_NO_PERF / PLAYWRIGHT_NO_A11Y).
+  #
+  # Baselines are Linux/x86_64 PNGs captured on this runner's image. After an
+  # INTENTIONAL UI change they must be regenerated in the container that matches
+  # this job (mcr.microsoft.com/playwright:v<version>-noble, --platform
+  # linux/amd64, --workers=1) — never on a developer Mac, whose font
+  # rasterisation differs enough to fail here permanently. The full procedure is
+  # in the docblock of tests/tests/specs/visual/visual-regression.spec.ts.
+  #
+  # The job needs network access to fonts.googleapis.com: the app loads Inter
+  # with display=swap and the specs assert it resolved before capturing.
+  e2e-visual:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@v4
+
+      - name: "Configure environment"
+        run: cp .env.example .env
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Setup Yarn 4.13
+        uses: threeal/setup-yarn-action@v2
+        with:
+          version: 4.13
+
+      - name: Setup Node.js 22.22.1
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.1
+          cache: "yarn"
+
+      - name: "Install yarn dependencies"
+        run: yarn install --frozen-lockfile
+
+      - name: "Install playwright"
+        run: yarn playwright install --with-deps
+
+      - name: "Build all packages"
+        run: yarn build
+
+      - name: "Start Supabase"
+        working-directory: apps/supabase
+        run: supabase start
+
+      - name: "Start frontend"
+        run: yarn workspace @openvaa/frontend dev &
+
+      - name: "Run visual regression tests (blocking)"
+        run: PLAYWRIGHT_VISUAL=1 npx playwright test -c ./tests/playwright.config.ts --grep "@visual"
+
+      - name: "Upload playwright report"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-visual
+          path: tests/playwright-report/
+          retention-days: 30
+
+      - name: "Stop Supabase"
+        if: always()
+        working-directory: apps/supabase
+        run: supabase stop

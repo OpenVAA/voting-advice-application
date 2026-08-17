@@ -14,3 +14,6 @@ package-lock.json
 
 # Locally stored data files
 /data
+
+# Paraglide generated output
+src/lib/paraglide/

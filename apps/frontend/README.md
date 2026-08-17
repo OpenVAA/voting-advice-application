@@ -1,89 +1,47 @@
-# Getting Started with Svelte
+# @openvaa/frontend
 
-This document describes the process for running the frontend separately on your local machine without Docker. You can
-find [instructions on running the project with Docker here](../docs/docker-setup-guide.md).
+SvelteKit 2 frontend for OpenVAA Voting Advice Applications.
 
-> See also the main [documentation for the frontend](/docs/frontend/).
+## Dev workflow
 
-## Run The Frontend
+`yarn dev` (from repo root) starts three processes concurrently via `concurrently`:
 
-Frontend module depends on `@openvaa/app-shared` and you need to build it prior to using `@openvaa/frontend` directly (no need if you use it via Docker):
+1. **Local Supabase** (`yarn db:start`) — Postgres, Auth, Storage, Edge Functions, Inbucket
+2. **Package watcher** (`yarn watch:shared`, which runs `turbo watch build --filter='./packages/*'`) — rebuilds shared `@openvaa/*` packages' `dist/` outputs whenever their source changes
+3. **Frontend dev server** (`yarn workspace @openvaa/frontend dev`, which runs `vite dev`) — serves the SvelteKit app with HMR
 
-```bash
-yarn workspace @openvaa/app-shared install
-yarn workspace @openvaa/app-shared build
-```
+### Autoreload behavior
 
-Install frontend dependencies:
+When you edit a `@openvaa/*` package source file (e.g. `packages/data/src/foo.ts`):
 
-```bash
-yarn install
-```
+- Turborepo rebuilds that package's `dist/`
+- Vite (with `preserveSymlinks: true` in `vite.config.ts`) picks up the rebuilt `dist/` via its existing module graph
+- Hot Module Replacement fires in the browser — no manual reload required
 
-Then copy `.env.example`, rename it as `.env` and fill required environment variables there.
+When you edit the root `.env`:
 
-## Development
+- `vite-plugin-restart` (configured in `apps/frontend/vite.config.ts`) detects the change
+- The Vite server fully restarts (env snapshot must be re-seeded; HMR is insufficient for env vars)
 
-After installation & setting up environment variables, start a development server:
+### When autoreload misbehaves
 
-```bash
-yarn dev
+If you see stale module errors after a fresh clone or after a long-running dev session:
 
-# or start the server and open the app in a new browser tab
-yarn dev -- --open
+- `yarn dev:reset` resets the database, then relaunches the full stack (Supabase + watcher + Vite, with the vite cache wiped on startup)
+- For a cold `dist/` recovery, run `yarn build` first, then `yarn dev`
 
-# to make the dev project accessible through the ip, add host flag to the commamd
-# it is required for iOS development via Xcode
-yarn dev -- --host
-```
+### Path aliases
 
-### Android
+- `$lib` → `apps/frontend/src/lib`
+- `$types` → `apps/frontend/src/lib/types`
+- `$voter` → `apps/frontend/src/lib/voter`
+- `$candidate` → `apps/frontend/src/lib/candidate`
 
-#### Dev w/ Hot Reload
+## Build
 
-1. Install Android Studio for the best dev experience.
-2. Open `capacitor.config.js` file and change `server.url` value to your public IP address.
-3. Not mandatory, but run the command `npx cap sync android` for a better flow experience.
-4. Run the command `npx cap open android` with Android Studio installed to open the app.
-5. Click `Run app` button or `^R` in order to run the emulator and see the project.
+`yarn build --filter=@openvaa/frontend` (from repo root) produces the SvelteKit `adapter-node` server bundle in `apps/frontend/build/`.
 
-#### Build
+## Tests
 
-Same as Dev, but run `npx cap sync android` after each build to get the most recent project build version.
-
-### iOS
-
-#### Dev w/ Hot Reload
-
-1. Install Xcode for the best dev experience.
-2. Open `capacitor.config.js` file and change `server.url` value to your public IP address.
-3. Not mandatory, but run the command `npx cap sync ios` for a better flow experience.
-4. Run the command `npx cap open ios` with Xcode installed to open the app.
-5. Click `Build` button in order to run the emulator and see the project.
-
-#### Build
-
-Same as Dev, but run `npx cap sync ios` after each build to get the most recent project build version.
-
-## Tooling
-
-### Tailwind and DaisyUI
-
-To facilitate the development of front-end components we have included the Tailwind library in our project.
-Additionally, we have included the DaisyUI plugin to speed up the development of the front-end components. You can find
-more information about the Tailwind library in the [Tailwind official documentation](https://tailwindcss.com/docs/installation) and the [DaisyUI official documentation](https://daisyui.com/components/).
-
-See the [styling guide](../docs/frontend/styling.md) for using Tailwind and DaisyUI classes.
-
-## Accessibility
-
-This application needs to be WCAG 2.1 AA compliant. Therefore, you must familiarize yourself with web accessibility.
-You can start by exploring the [Accessibility Fundamentals Overview page](https://www.w3.org/WAI/fundamentals/) and the
-[Mozilla Developer Network accessibility section](https://developer.mozilla.org/en-US/docs/Web/Accessibility). Every time
-you develop a new component, be sure to comply with the [Accessibility Guidelines](https://www.w3.org/TR/WCAG21/)
-
-## 📚 Learn more
-
-- [Svelte](https://svelte.dev/) - Svelte is a radical new approach to building user interfaces.
-- [SvelteKit](https://kit.svelte.dev/) - SvelteKit is a framework for building web applications of all sizes, with a
-  beautiful development experience and flexible, low-level APIs.
+- `yarn workspace @openvaa/frontend test:unit` — Vitest unit tests
+- `yarn test:e2e` (from repo root, requires `yarn dev` running) — Playwright E2E tests
