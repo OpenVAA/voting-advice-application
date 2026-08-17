@@ -17,8 +17,6 @@ services:
       - /opt/apps/frontend/node_modules
       - /opt/apps/frontend/.svelte-kit
       - /opt/apps/frontend/.vite
-      - /opt/apps/frontend/android
-      - /opt/apps/frontend/ios
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     healthcheck:
