@@ -19,8 +19,9 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
 
 ```tsx
 <ConstituencySelector
-  elections={dataRoot.elections}
-  bind:selected={$selectedConstituencies}
+  elections={ctx.dataRoot.elections}
+  bind:selected
+  bind:selectionComplete
   onChange={(sel) => console.info('Selected', sel)} />
 ```
 -->

@@ -46,14 +46,14 @@ The same component can also be used to display the answers of the voter and anot
 ```tsx
 <QuestionChoices
   {question}
-  selectedId={$voterAnswers[question.id]}
+  selectedId={question.ensureValue(answers.answers[question.id]?.value)}
   onChange={answerQuestion}
   onReselect={doFoo} />
 
 <QuestionChoices
   {question}
   mode="display"
-  selectedId={$voterAnswers[question.id]}
+  selectedId={question.ensureValue(answers.answers[question.id]?.value)}
   otherSelected={candidateAnswer}
   otherLabel={t('candidateApp.common.candidateAnswerLabel')} />
 ```

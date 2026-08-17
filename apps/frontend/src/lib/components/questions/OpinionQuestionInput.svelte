@@ -18,12 +18,12 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
 ```tsx
 <OpinionQuestionInput
   {question}
-  answer={$voterAnswers[question.id]}
+  answer={answers.answers[question.id]}
   onChange={answerQuestion} />
 <OpinionQuestionInput
   {question}
   mode="display"
-  answer={$voterAnswers[question.id]}
+  answer={answers.answers[question.id]}
   otherAnswer={candidate.getAnswer(question)}
   otherLabel={t('candidateApp.common.candidateAnswerLabel')} />
 ```
