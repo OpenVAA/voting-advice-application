@@ -1,6 +1,6 @@
 // Use direct import to avoid loading other modules which depend on `$app/...`
-import { ROUTE } from '../../../frontend/src/lib/utils/route/route';
-import type { Route } from '../../../frontend/src/lib/utils/route/route';
+import { ROUTE } from '../../../apps/frontend/src/lib/utils/route/route';
+import type { Route } from '../../../apps/frontend/src/lib/utils/route/route';
 
 /**
  * A limited route builder to use in testing because we cannot use the real `buildRoute` that depends on Svelte kit.
@@ -16,6 +16,5 @@ export function buildRoute({ route, locale }: { route: Route; locale: string }):
       return p;
     })
     .filter((p) => p !== undefined)
-    .join('/')
-    .replace(/^\/+/, '');
+    .join('/');
 }
