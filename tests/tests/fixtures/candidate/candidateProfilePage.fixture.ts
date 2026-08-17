@@ -40,8 +40,13 @@
  * (string | RegExp). Specs holding externalIds resolve to labels via base at
  * the call site.
  *
- * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`,
- * NO `.catch(() => null)` on assertion-bearing locator interactions.
+ * **Rigidity contract:** NO `try/catch` wrapping `expect(...)`, NO
+ * `.catch(() => null)` on assertion-bearing locator interactions. This fixture is
+ * one of three that DOES use `expect.soft` — 6 call sites, in the profile-field
+ * and nomination readers below, so one wrong field reports alongside the rest of
+ * the form rather than masking it. It is outside `SOFT_ASSERTION_BUDGETS`, which
+ * is deliberately scoped to `voter-journey.spec.ts`; see the note above that
+ * table in `playwright.config.ts`.
  */
 
 import { expect } from '@playwright/test';

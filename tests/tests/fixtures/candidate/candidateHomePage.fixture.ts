@@ -20,8 +20,13 @@
  *  - clickContinue()                    — click candidate-home-continue
  *                                          (variant="main" primary action).
  *
- * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`,
- * NO `.catch(() => null)` on assertion-bearing locator interactions.
+ * **Rigidity contract:** NO `try/catch` wrapping `expect(...)`, NO
+ * `.catch(() => null)` on assertion-bearing locator interactions. This fixture is
+ * one of three that DOES use `expect.soft` — 4 call sites, in the two
+ * multi-property readers below, so a single wrong task-tile state reports
+ * alongside its siblings instead of hiding them. It is outside
+ * `SOFT_ASSERTION_BUDGETS`, which is deliberately scoped to `voter-journey.spec.ts`;
+ * see the note above that table in `playwright.config.ts`.
  */
 
 import { expect } from '@playwright/test';

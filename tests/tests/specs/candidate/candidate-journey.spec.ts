@@ -45,9 +45,12 @@
  *         /candidate/login.
  *
  * Rigidity contract:
- *   - 0 expect.soft
  *   - 0 try/catch wrapping expect()
  *   - 0 .catch(() => null) on assertion-bearing locator interactions
+ *   - expect.soft is used, in the three optional-page and disabled-button checks
+ *     where a failure should not abort the remaining 20 steps of the walk. This
+ *     spec is outside SOFT_ASSERTION_BUDGETS, which is deliberately scoped to
+ *     voter-journey.spec.ts; see the note above that table in playwright.config.ts.
  *
  * Starts UNAUTHENTICATED (test.use storageState empty-cookies).
  *
