@@ -13,8 +13,8 @@ criterion_3: closed-by-plan-151-08
 criterion_3_gate_red_is_expected: true
 per_slice_items: 12
 cells_expected: 163
-cells_filled: 72
-cells_pending: 91
+cells_filled: 84
+cells_pending: 79
 blank_cells: 0
 db_slice: "03"
 adapter_slice: "06"
@@ -24,8 +24,8 @@ dropped_finding_class_files: 842
 invisible_to_review_files: 1202
 unclaimed_by_any_pathspec: 120
 comparable_total: 4274
-slices_dispositioned: ["01a", "01b", "02", "03", "04"]
-findings_total: 41
+slices_dispositioned: ["01a", "01b", "02", "03", "04", "05"]
+findings_total: 50
 status: in-progress
 approval: pending
 ---
@@ -35,8 +35,9 @@ approval: pending
 **Created:** 2026-08-17
 **Phase:** 151 — Ship the v0.2 Akita review stack
 **Plan:** 06 (scaffold + phase-level rows). Cells are filled by plans 151-09 … 151-18.
-**Status:** 🟡 **IN PROGRESS — approval gate NOT reached.** `cells_filled: 72` of 163, after plans
-151-09 (slices **01a**, **01b**, **02**), 151-11 (slice **03**) and 151-12 (slice **04**) — all 72 cells terminal, none pending. The gate closes only when
+**Status:** 🟡 **IN PROGRESS — approval gate NOT reached.** `cells_filled: 84` of 163, after plans
+151-09 (slices **01a**, **01b**, **02**), 151-11 (slice **03**), 151-12 (slice **04**) and 151-13
+(slice **05**) — all 84 cells terminal, none pending. The gate closes only when
 `cells_filled == cells_expected` **and** `blank_cells == 0`, checked in plan 151-18. Criterion 1 has
 no other automated evidence, so this frontmatter *is* the criterion.
 
@@ -190,18 +191,18 @@ Columns are slices. Every cell holds a verdict token or `PENDING→NN` (the plan
 
 | # | Item | Reach | 01a | 01b | 02 | 03 | 04 | 05 | 06 | 07 | 08 | 09 | 10 | 11 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **2** | OWASP Top 10 review | `none` | N/A | MET | MET | FIXED | FIXED | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **3** | Follows the Code style guide | `partial` | N/A | N/A | FIXED | MET | MET | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **4** | Avoid `any`; document or `@ts-expect-error` | `partial` | N/A | N/A | FIXED | FIXED | FIXED | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **5** | No repeated code in the PR or elsewhere in the repo | `none` | DEF | FIXED | MET | DEF | DEF | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **6** | New components / functions / entities documented | `none` | N/A | N/A | FIXED | FIXED | FIXED | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **7** | Repo documentation markdown updated | `none` | DEF | DEF | FIXED | FIXED | FIXED | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **8** | Tracking events for new user-facing functions | `none` | N/A | N/A | N/A | N/A | N/A | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **9** | New Svelte components follow the guidelines | `partial` | N/A | N/A | N/A | N/A | N/A | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **10** | Errors handled and logged | `none` | N/A | N/A | FIXED | FIXED | FIXED | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **13** | WCAG A and AA | `partial` | N/A | N/A | N/A | N/A | N/A | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **14** | Keyboard + screen-reader usable | `partial` | N/A | N/A | N/A | N/A | N/A | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **15** | Developers'/Publishers' Guide entries updated | `none` | DEF | DEF | DEF | DEF | FIXED | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **2** | OWASP Top 10 review | `none` | N/A | MET | MET | FIXED | FIXED | MET | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **3** | Follows the Code style guide | `partial` | N/A | N/A | FIXED | MET | MET | FIXED | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **4** | Avoid `any`; document or `@ts-expect-error` | `partial` | N/A | N/A | FIXED | FIXED | FIXED | MET | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **5** | No repeated code in the PR or elsewhere in the repo | `none` | DEF | FIXED | MET | DEF | DEF | MET | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **6** | New components / functions / entities documented | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **7** | Repo documentation markdown updated | `none` | DEF | DEF | FIXED | FIXED | FIXED | FIXED | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **8** | Tracking events for new user-facing functions | `none` | N/A | N/A | N/A | N/A | N/A | N/A | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **9** | New Svelte components follow the guidelines | `partial` | N/A | N/A | N/A | N/A | N/A | N/A | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **10** | Errors handled and logged | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **13** | WCAG A and AA | `partial` | N/A | N/A | N/A | N/A | N/A | MET | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **14** | Keyboard + screen-reader usable | `partial` | N/A | N/A | N/A | N/A | N/A | DEF | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **15** | Developers'/Publishers' Guide entries updated | `none` | DEF | DEF | DEF | DEF | FIXED | FIXED | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
 
 `P→NN` abbreviates the pending marker `PENDING→NN`. Count: 12 × 12 = **144 cells, 0 blank**.
 
@@ -1179,6 +1180,241 @@ above cites a reachable object from the moment it is written, instead of carryin
 through an intermediate commit and being corrected afterwards — which is the shape that produced
 151-11's own deviation 4, five cells citing an amended hash. D-04's actual requirement, that fixes
 land on `feat-gsd-roadmap` before the slice is cut, is unaffected and met.
+
+---
+
+## Slice 05 — `ship/v0.2-akita-05-e2e-tests` — cell-by-cell evidence
+
+**Filled by plan 151-13.** The 12 per-slice general items. The two Supabase blocks and the Adapter
+block read `n/a — outside block pathspec`: the slice touches neither `apps/supabase/` nor
+`apps/frontend/src/lib/api/adapters/supabase/`, so under § "Cell arithmetic" those pairs are not in
+the expected set and create no cells. The four phase-level items (1, 11, 12, 16) are **not** re-run
+here; evidence is contributed below and their cells stay `PENDING→18`.
+
+**This slice is the phase's own gate.** The cardinal E2E rule makes these 43 specs the signal every
+other slice's "it works" claim rests on, so a blind assertion here silently converts every such claim
+into an unproven one. That is why the sweep below spends most of its effort on whether the suite
+asserts what it says it asserts, and on whether the suite's own self-description is true.
+
+Measured refs for this pass:
+
+| ref | value |
+|---|---|
+| `BASE` = `origin/main` | `ac30f132a` — **still unmoved**; C-12's re-measurement trigger has not fired at any point in this phase |
+| `PARENT` = slice 04 | `7640f7bcb` |
+| `TARGET` = `feat-gsd-roadmap` at sweep start | `dd87c1c57` |
+| slice-05 file set | `diff --no-renames ship/v0.2-akita-04-dev-seed..TARGET -- tests` → **195 files** (`184 A`, `7 D`, `4 M`), +23,292 / −778 at sweep start |
+| local Supabase / dev server | **not running.** No spec was executed. See § "What this sweep did NOT do" below — this is stated, not omitted |
+
+### Sweep surface, stated before any verdict (D-20)
+
+| In surface | Count |
+|---|---|
+| spec files | **43** added (`.spec.ts`), plus **3** deleted — `candidateApp-advanced`, `candidateApp-basics`, `translations`. Discovery-level confirmation: `npx playwright test --list` → **143 tests in 94 files** |
+| TypeScript, all | **171** `.ts` in the diff; **167** tracked `.ts` in `tests/` at `TARGET` |
+| Playwright config + runner | `playwright.config.ts` (1,595 lines, 3 config-load guards), `global-setup.ts`, `tests/scripts/{e2e-run,determinism-batch}.sh` |
+| fixtures / setup / utils / helpers | `fixtures/` 36 · `setup/` 61 · `utils/` 17 · `helpers/` 6 · `support/` 5 |
+| documentation | `tests/README.md` (269 lines), `tests/IDURA-TEST-RUNBOOK.md`, `tests/tests/helpers/README.md` |
+| committed key material | `support/mock-oidc-{cert,key}.pem` + the inline JWKs in `utils/testKeys.ts` |
+| binary fixtures | 5 `.png` (2 visual baselines + 3 assets), 1 `.jpg`, 1 `.webm`, 1 `.mp4`, 1 `.vtt`, 1 `.csv` |
+
+| Declared out of surface, with reason |
+|---|
+| **The suite was not executed.** The full-suite run is D-24's job at plan **151-18**, and it needs a dev server on `:5173` plus a seeded local Supabase, neither of which was up. Every verdict below is a *static* verdict — reading source, counting call sites, loading the Playwright config. **No cell below claims a passing run.** |
+| **3 files in `tests/` are invisible to this slice's diff** and were therefore swept **from the target tree**, per the manifest's standing instruction on the dropped-finding class: `tests/.gitignore`, `tests/.prettierignore`, `tests/tests/utils/testsDir.ts`. All three are byte-identical at `origin/main` and `HEAD` (blobs `1f83983be`, `df8914f52`, `106d54a85`). Swept, not skipped — verdict under item 2 below. |
+| **Visual-regression baseline images** (`specs/visual/__screenshots__/*.png`, 2 files) are declared out of surface for *content* review: they regenerate only inside the pinned Playwright container on `linux/amd64`, so a local read tells a reviewer nothing a diff would not. They are in surface for the *no-local-regeneration* check, which is a negative grep and passes: `git diff --name-only` over this plan's commits matches `-snapshots` **0** times and `__screenshots__` **0** times. |
+
+**The file-count arithmetic closes exactly, in both directions.** `origin/main` carries **14** files
+under `tests/`; `14 = 7 D + 4 M + 3 unchanged`. `HEAD` carries **191**; `191 = 184 A + 4 M + 3
+unchanged`. No file is unaccounted for at either end.
+
+### The line delta, attributed commit by commit rather than netted
+
+The manifest's dry run predicted **+23,297** for this slice. Measured at the tip immediately before
+the hygiene commits it is **exactly 23,297** — the prediction was right, and the number then moved
+twice for reasons that are each measurable:
+
+| tip | slice-05 `+lines` | delta | cause |
+|---|---:|---:|---|
+| `0c538024c~1` (pre-hygiene) | **23,297** | — | the dry run's figure, reproduced |
+| `0c538024c` (the codemod) | 23,293 | **−4** | reference deletions collapsing comment lines |
+| `5862397ad` (hygiene stage 2) | 23,292 | **−1** | one further residue rewrite |
+| `3cad264bd` (this plan) | **23,325** | **+33** | this plan's 25 in-slice fixes, `+98 / −65` |
+
+**The file count never moved from 195, and `−lines` never moved from 778.** Every one of this plan's
+25 `tests/` edits touched a file already inside the slice's diff, and its 26th edit is in
+`apps/docs/**` — slice **09**. **No file entered or left any partition cell.**
+
+At 23,325 + 778 = **24,103 changed lines** the slice is over GitHub's 20,000-line render cap. That
+was known and accepted at partition approval (D-12 class) and is stated in the PR body rather than
+fixed by re-partitioning.
+
+### Slice 05 — general items (12 cells)
+
+| # | Item | Verdict | Evidence |
+|---|---|---|---|
+| **2** | OWASP Top 10 | **MET** | Exhaustive over the slice's trust boundaries, which here are: committed key material, the env surface, the one subprocess call, and the TLS posture. **A02 / A05 — the committed key material is the headline, and it is correctly handled.** `support/mock-oidc-cert.pem` is a self-signed cert, `CN=127.0.0.1`, valid 2026-06-17 → 2036-06-14, paired with a committed **2048-bit RSA private key**. Committing a private key is normally a finding; here it is a documented, threat-IDed acceptance: `.gitignore:10-17` carries a `*.pem`-class ignore with an explicit two-line un-ignore and a four-line rationale naming the threat (*"TEST-ONLY … never installed into a trust store, never used by production (threat T-122-09, accepted). Intentionally tracked so the SAME cert is shared across machines/CI"*), and `support/mockOidcIssuer.ts:31-38` repeats it and adds that the issuer **binds `127.0.0.1` only, never a public interface**. `utils/testKeys.ts:1-22` does the same for the inline RSA JWKs under threat **T-122-01**, and states the failure mode outright (*"Reusing these in prod would enable id_token spoofing"*). **A05 — secret-shaped-literal scan over all 195 files returns 0**: `git grep -oE 'eyJ[A-Za-z0-9_-]{10,}' -- tests/` → **0** matches, and a `(password\|secret\|api_key\|service_role)\s*[:=]\s*'…'` scan → **0**. This slice is *cleaner* than slice 04 on that axis, which carries two demo-key literals. The one credential constant, `testCredentials.ts:44` `'Password1!'`, is on the `test.openvaa.local` domain and documents its posture plus the verification grep at `:29-32`. **A02 — the TLS bypass is correctly scoped.** `ignoreHTTPSErrors: true` appears once, on the `bank-auth-journey` project only (`playwright.config.ts:515-519`), behind `PLAYWRIGHT_BANK_AUTH`, with 11 lines stating why the browser context needs it. It is **not** set on `use` at the top level, so no default-suite project has certificate verification disabled. **A03 — the one subprocess call is injection-free by construction**: `preflight.ts:238` uses `execFileSync('lsof', [argv…])` with a 5 s timeout, and `:229-235` states the reason (*"never its shell-interpolating sibling … a shell-free call has no injection surface even if `baseURL` were attacker-influenced"*). **A01 — no session state leaks into git**: `git ls-files tests/` matches `playwright/`, `.auth` and `blob-report` **0** times, and `tests/.gitignore` (one of the three diff-invisible files, swept from the target tree) is what prevents it — `playwright*/` covers both `playwright-results/` and the `playwright/.auth/user.json` `storageState` the visual chain writes. Gate: **none**. |
+| **3** | Code style guide | **FIXED** — commits `822108b0f`, `54ec7fed9` | The guide's two mechanically checkable rules are clean over all 171 `.ts` files: **0** `Foo[]` array-suffix type declarations (the guide requires `Array<Foo>`, `code-style-guide/+page.md:79`) and **0** single-letter type parameters (`:80`). What was **not** clean is the comment prose, and it was broken by this phase's own tooling: **F-42**, **38 sites** where the hygiene codemod deleted a reference and left the sentence unrepaired — 12 empty code spans (`` * the bug. Negative control: ` `. ``), 2 corrupted code identifiers (`submitElection()` → `submitElection `, `not.toBeVisible()` → `not.toBeVisible`), and 24 broken sentences (`video→, questionInfo→`, `see phase 130 04 riders`, `is 's "persists across reload"`, `the ONLY available mechanism for.`). Plus **F-43**, 14 comments citing a plan by a bare number that names nothing to a reader. Both fixed. **The method matters and is the reason the count is trustworthy:** the sites were derived by diffing the codemod commit's own old/new line pairs and flagging where a damage signature appears in the new line and not the old — not by grepping the tree for suspicious-looking prose, which returned 672 candidates of which the great majority were legitimate `...` spread syntax and ordinary possessives. Gate: `eslint --flag v10_config_lookup_from_file tests`, **partial** — **complement: the gate lints `tests/` but has `ignores: ['playwright*', 'debug-*', 'e2e-runs']` (`tests/eslint.config.mjs:11`), and no lint rule can see comment prose at all, which is where 100% of this slice's item-3 findings were.** Within its reach it reports **0 errors and 2 warnings** — see item 3's sibling finding **F-49**. |
+| **4** | Avoid `any` | **MET** | **The cleanest result of any slice in this stack, and it is a count over the whole set rather than a sample: `any` appears in type position 0 times across all 195 files.** `git grep -nP '\bas\s+any\b\|:\s*any\b\|<any>\|Array<any>\|any\[\]' -- tests/` returns exactly two hits, both the English word *any* inside a comment (`utils/voterIntro.ts:74`, `utils/voterNavigation.ts:149`). There is therefore **no** `eslint-disable @typescript-eslint/no-explicit-any` anywhere in the slice — `git grep -n 'no-explicit-any' -- tests/` returns one line, `tests/eslint.config.mjs:78`, the rule's own configuration. This breaks the F-12 / F-25 / F-41 pattern (undocumented `any` suppressions in slices 02, 03 and 04) rather than continuing it: there is nothing to document because there is nothing suppressed. Gate: `@typescript-eslint/no-explicit-any`, set to **`warn`** for `tests/` at `eslint.config.mjs:78` — **complement: at `warn` it could not have failed a build even had there been violations, so the zero is evidence from the count, not from the gate.** |
+| **5** | No repeated / dead code | **MET** | **0** `TODO`/`FIXME`/`HACK`/`XXX` occurrences across all 195 files. *(Correction to the record: slice 04's cell claims it is "the only slice in the stack with none". It is not — this slice also has none, and slice 04's claim was true only of the slices swept before this one.)* The deletion of the 3 superseded specs is complete rather than partial: `git grep` for `candidateApp-basics`, `candidateApp-advanced`, `translations.spec`, `utils/translations`, `candidate-import.csv` and `test_image_black` across `tests/ apps/ packages/ .github/ package.json` returns **0** hits, so no config, workflow or import still names a removed file. Duplication is factored rather than copied: `helpers/{navigation,select,settle,timeouts}.ts` hold the shared walk primitives, and `helpers/navigation.ts:18-23` records *why* the `eperm07-term-trigger` instrument delegates to the shared `settleAfterClientNavigation` instead of keeping a private copy (*"the instrument would otherwise keep its own copy of the defect and stop witnessing this file"*) — the strongest anti-duplication argument in the slice, because a duplicate there would have been a duplicate of a bug. Dead specs are structurally impossible: `playwright.config.ts:35-50` throws at **config load** if any `*.probe.spec.ts` matches no project, with the message *"they match NO Playwright project and run from NO command"*, and `--list` (which skips `globalSetup`) still executes config-load code, so the guard cannot be bypassed by the one invocation shape that skips the preflight. The near-duplicate pair `perm-hide-category-tags.spec.ts` / `perm-hide-election-tags.spec.ts` is deliberate and each states its own positive control in place (`:50` in both). Gate: **none**. |
+| **6** | Entities documented | **MET** | Measured, not asserted. **159 of 167** tracked `.ts` files open with a `/**` file-level docblock; the remaining **8** place theirs after the import block, and all 8 were checked individually — `global-setup.ts` (a 23-line docblock), `playwright.config.ts`, `preflight.ts`, `seed-test-data.ts`, `auth.setup.ts`, `buildRoute.ts`, `preflight.test.ts`, `testsDir.ts` — so **0 files carry no file-level documentation**. At declaration level, **87 of 152** exported declarations carry an adjacent doc comment (57%); the 65 that do not are dominated by one shape, the page-object pair `createXxxPage()` plus its `ReturnType` type alias, in files whose header enumerates the surface **method by method** — e.g. `candidateLoginPage.fixture.ts:1-20` lists all six methods with their behaviour, including which assertion is deliberately left at the spec site. That is the same argument slice 04's cell made for its generator classes, and it holds more strongly here because the enumeration is exhaustive rather than a description. `tests/tests/helpers/README.md` exists and is linked from `tests/README.md`. Gate: **none**. |
+| **7** | Repo documentation updated | **FIXED** — commits `76b0735a7`, `4e0cf5580` | Four defects, all in prose describing this slice, all found by reading the prose against the tree. **F-45** — `tests/README.md`'s "Project inventory" presents itself as complete and **omits the `_probes` project entirely**, while `package.json:27`'s `test:e2e` appends `--grep-invert @probe`: **5 of the suite's 43 specs — 12% — never ran in what the README called the "full suite"**, and the command that does run them (`test:e2e:probes`, `package.json:28`) was undocumented. **F-46** — the shared-fixture list named **4 of the 10** files in `fixtures/shared/`, with no ellipsis to signal the omission, while the sibling voter list has one; same incomplete-inventory-presented-as-complete class as **F-34**. Both fixed. **F-47** — the Developers' Guide's testing page carried **six** false claims about this slice, each verified false rather than argued: *"Imports the default test dataset via Admin Tools API"* (the seeder writes through `bulk_import` with a service-role client; "Admin Tools" was the Strapi plugin slice 01b deletes); `auth-setup` listed as step 2 of the default chain (it is declared **only** under `PLAYWRIGHT_VISUAL`, `playwright.config.ts:355-360`); *"Test projects — Run with the pre-authenticated browser state"* (the default run is unauthenticated — `voter-journey` starts anonymous, `candidate-journey` starts logged out and registers mid-walk); *"created automatically on Strapi bootstrap (via `ensureDevData`)"* (`git grep ensureDevData` → **0** code hits, 2 docs hits); `DEV_CANDIDATE_EMAIL` / `DEV_CANDIDATE_PASSWORD` (likewise **0** code hits — the real credentials are `testCredentials.ts` literals registered at runtime by `forceRegister`); and `yarn dev:down` (**no such script in `package.json`** — a documented command that cannot be run). The same edit added the two operational facts the page omitted and a reader could not discover: the served-application preflight, and the `@probe` exclusion. **Cross-slice landing, recorded rather than silently split:** the file is under `apps/docs/**`, so the fix lands in slice **09** when plan **151-16** cuts it — the same shape as F-40, and deliberately not forced into this slice's pathspec, which would break the partition. **Recorded, not fixed:** `ensureDevData` and the `DEV_CANDIDATE_*` pair also appear in `developers-guide/backend/mock-data-generation/+page.md:32,37-38`, a Strapi-era page whose fate is a whole-page decision — routed to **151-16** with F-04, F-33 and the `GENERATE_MOCK_DATA_ON_RESTART` class. Gate: **none**. |
+| **8** | Tracking events | **NOT-SWEPT** — `n/a — the item's condition is not met: the slice adds no user-available function` | The slice adds test infrastructure; nothing in it is reachable by a voter or a candidate. The distinction worth recording is that this slice is where tracking is **asserted**, which is the item's mirror image rather than the item: `fixtures/shared/trackingIntercept.fixture.ts` intercepts at the umami boundary and `specs/voter/voter-prefs-tracking.spec.ts:151,175,212` asserts suppression without consent, emission (`track` + `startEvent`) with consent, and a preferences round-trip across reload. The event call sites themselves live in the frontend and are dispositioned in slices 06 and 07. |
+| **9** | Svelte component guidelines | **NOT-SWEPT** — `n/a — no .svelte file in the slice` | Extension census over all 195 files: **171** `.ts`, **5** `.png`, **4** `.gitkeep`, **3** `.md`, **2** `.sh`, **2** `.pem`, and one each of `.webm`, `.vtt`, `.txt`, `.mp4`, `.mjs`, `.json`, `.jpg`, `.csv`. Zero `.svelte`. Gate `svelte-check` **not cited** — nothing is in scope for it. |
+| **10** | Errors handled and logged | **MET** | Exhaustive over the slice's failure paths, and the shape is unusually deliberate. **The preflight's failure output is the best example in the repository of an error message built for a reader**: `preflight.ts` emits `reason` (naming the exact URL probed and the status returned), `expected port`, `expected checkout`, `observed` (status, final URL *after redirects*, `<title>`, and the served module root) and a best-effort `listening process`, then the two remedies verbatim — and `tests/README.md` documents how to read it field by field. Three separate failure modes are distinguished rather than collapsed: a broken preflight (`:348`, the probe file missing from this tree — *"say that, do not blame the server"*), a dead server (`:353-361`), and a foreign server (`:381`, `:387`). The `probe.status !== 200` comparison is **strictly** equal-to-200 with the reason stated in place (*"a not-equal-to-404 comparison would be wrong: a foreign server whose serving root lies elsewhere answers 403, measured"*). Diagnostics that could hang are bounded: `findListeningProcess` carries a 5 s timeout because *"a hung diagnostic must never outlive the failure it decorates"*. The one swallowed catch in the slice is the right one to swallow — `:243`, around `lsof`, whose absence must not mask the real failure — and it says so. On the runner side, `e2e-run.sh` distinguishes exit codes and refuses to produce evidence it cannot stand behind: `:171-178` exits **7** if the preflight's headline literals are no longer present in `preflight.ts` (a guard against the *guard* drifting), `:444-452` fails if any preflight failure line appears, and `:453-457` fails if **no** preflight success line appears — so "the gate never ran" and "the gate passed" cannot produce the same evidence. `determinism-batch.sh:543-548` refuses a green when `flaky != 0`, quoting the project rule as its reason. Gate: **none**. |
+| **13** | WCAG A and AA | **MET** — with its complement, which is the whole point of the cell | **This cell is `MET` where slice 04's was `n/a`, and the difference is not an inconsistency: slice 04 contained no a11y gate, and this slice *is* the a11y gate.** What is `MET` is that the gate exists, is on by default, and asserts against the right rule set: `specs/a11y/a11y-smoke.spec.ts:163` sets `WCAG_TAGS = ['wcag2a','wcag2aa','wcag21a','wcag21aa']` — all four tags the item names — and `playwright.config.ts:401-402` declares `a11y-smoke` **default-on**, opt-**out** via `PLAYWRIGHT_NO_A11Y`, so a11y is not something a run has to remember to enable. **Measured reach, re-measured in plan 151-04 and re-confirmed here: 7 route entries → 5 distinct URLs → 14 emitted tests, across 2 themes.** The 7 entries are `home`, `elections-selector`, `constituencies-selector-located`, `questions`, `results`, `voter-detail-drawer`, `results-filter-drawer` (`a11y-smoke.spec.ts:215-330`); entries 5, 6 and 7 are three DOM states of `/results`, which is why 7 entries resolve to **5** URLs and why "7 routes" overstates route coverage by 2 if read literally. The 2 themes are structural rather than a loop variable — three fixture families × light/dark = 6 declaration sites at `:497, :508, :527, :541, :550, :561`, partitioned `raw` 3 / `located` 1 / `answered` 3, giving `(3+1+3) × 2 = 14`. **Named complement — the surfaces this gate does not reach, and it is the larger half: 31 of the 36 `+page.svelte` route surfaces are never scanned.** All **18** candidate-app routes (the whole `(protected)` set, the auth surfaces, the 5 preregistration routes, `help`, `privacy`); all **5** admin routes; **8** voter routes, including `questions/[questionId]` — the per-question surface a voter spends most of the journey on — plus `questions/category/[categoryId]`, `results/…/statistics`, `about`, `info`, `intro`, `nominations`, `privacy`; and the bank-auth / OIDC flows, which no scan entry references. Phase 147 ("Candidate-App Scan Reach") is the scheduled remedy and has **not executed** (`ROADMAP.md:720`, `0/TBD — Not started`; no phase directory exists for 141–150), so this complement is current rather than inherited. Gate: `assertAxeScan`, **partial** — **and the complement above is the measured reason it is only partial. A `MET` on this cell citing "the a11y gate is green" without those 31 routes would be exactly the laundering D-18 forbids.** |
+| **14** | Keyboard + screen-reader | **DEFERRED** — the screen-reader half is gated on 5 of 36 route surfaces and the keyboard half is gated **nowhere** | Two layers, and they fail differently. **Screen-reader:** `assertNoRawI18nKeys` (`utils/rawKeyScan.ts:309`) is wired into `assertAxeScan` at `a11y-smoke.spec.ts:471` — **one call site, inside the axe helper**, so by construction it has exactly the axe gate's reach and no more: the identical 7 × 2, the identical 31-route complement, plus the two blind sites already on record (`candidate-journey.spec.ts:921`, `candidateProfilePage.fixture.ts:174`). **Keyboard: there is no gate at all.** axe is a static-DOM auditor; it does not tab through a UI. So the keyboard half of this item is `none` **even on the 5 routes that are scanned** — not partially covered, uncovered. The specs do exercise keyboard input where a control requires it (`voter-journey.fixture.ts:545` drives the number-scale slider with `ArrowRight` rather than `fill()`, because `fill()` bypasses the persist-on-release logic), but that is input mechanics in service of a value assertion, not a tab-order or focus-management assertion. **Why DEFERRED and not FIXED:** building a keyboard-navigation gate is net-new test authorship, which D-13 excludes from this phase's sweep scope, and widening the axe route table is Phase 147's declared scope. **Remedy stated so a later phase need not re-derive it:** the missing gate is a focus-order walk — `page.keyboard.press('Tab')` through each route asserting the visited `:focus` sequence against an expected order and that no interactive element is unreachable — and the natural place for it is beside `assertAxeScan`, whose route table already enumerates the surfaces. Gate: **`none` for the keyboard half, `partial` for the screen-reader half.** |
+| **15** | Developers'/Publishers' Guides | **FIXED** — commit `4e0cf5580`, landing in **slice 09** | The Developers' Guide is the only guide that documents this slice, at `developers-guide/development/testing/+page.md`, and its two E2E sections were false in six specific ways — enumerated with their verification under item 7 above rather than repeated here. The Publishers' Guide describes no testing surface, so nothing there is invalidated: `git grep -il 'playwright\|test:e2e' -- 'apps/docs/src/routes/(content)/publishers-guide'` → **0** files. The fix is a cross-slice landing into slice **09**, cut by plan **151-16**. **One thing the page still carries and this cell does not launder:** its top-line note *"Parts of this page reference the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release."* That note is now narrower than it was — the E2E half no longer references Strapi — but the unit-test and troubleshooting halves still do, and deciding the fate of the Strapi-era pages wholesale is **151-16**'s call, not this sweep's. Gate: **none**. |
+
+### What this sweep did NOT do — stated, because the alternative is a claim it cannot support
+
+**No spec was executed.** The suite needs a dev server on `:5173` and a seeded local Supabase; neither
+was running, and standing them up to run a 10.5-minute suite per fix is exactly the cost D-24 exists
+to pay once, at plan **151-18**, against the post-sweep tip. So:
+
+- Every verdict above is **static** — source read, call sites counted, config loaded.
+- The strongest *executable* evidence obtained is `npx playwright test --list`, which loads
+  `playwright.config.ts` with all three config-load guards active and reports **143 tests in 94
+  files**. That is a real check with a real failure mode (a dropped spec, an orphaned probe, a drifted
+  soft-assertion budget) and it passed. It is not a pass of the suite.
+- **Per `CLAUDE.md`, a "did not run" E2E test counts as a failure, not a pass.** This sweep therefore
+  records **43 specs not run**, deferred to 151-18's D-24 run. It does not record them as green.
+
+**No test title was rewritten**, which is plan 151-08's KEEP verdict and an acceptance criterion of
+this plan. Confirmed on real slice content: all **34** `task-id`-shaped tokens in `tests/` sit in a
+`test.describe(…)` title, a `test(…)` title, a `test.step(…)` title, a positive-control assertion
+message, a functional string (`determinism-batch.sh:96`'s `EPERM07_STEP_PREFIX`, which the gate
+matches against a Playwright step title) or a runbook heading. **Zero are in comments**, so there was
+nothing in this class to fix and nothing to undo.
+
+**No assertion was changed**, so the two-sided negative control this plan's Task 2 requires has **no
+subject**. All 25 `tests/` edits are comment-only or documentation-only; `git diff` over this plan's
+commits shows no change to any `expect`, `test`, `describe`, `use` or `dependencies` expression. The
+requirement is recorded as **not triggered**, not as satisfied — a negative control with nothing to
+control for would be theatre.
+
+**Nothing was skipped and no baseline was regenerated.** `git grep -nE '\b(test|it|describe)\.(skip|fixme|only)\b'`
+over `tests/` returns **0**, as does a bare `skip(`/`fixme(` scan — the whole 43-spec suite contains
+no skip, no `fixme` and no `only`, before or after this plan. `git diff --name-only` over this plan's
+commits matches `-snapshots` **0** times and `__screenshots__` **0** times.
+
+### The hygiene gate is byte-identical before and after this plan's 25 edits
+
+Criterion 3's gate is **closed and red on purpose**, and its read rule is that exactly two rows —
+`task-id` (84) and `phase-ref` bare (11) — is a PASS. This plan rewrote 52 comments, so the gate was
+re-run after every batch and the full row set compared, not just the two named rows:
+
+| row | before | after |
+|---|---|---|
+| `phase-ref` | 660 occ / 235 files / **bare 11** | 660 / 235 / **11** |
+| `spike-ref` | 40 / 30 / bare 0 | 40 / 30 / 0 |
+| `decision-id-long` · `decision-id-bare` · `section-anchor` · `planning-path` · `plan-number` | 0 each | 0 each |
+| `milestone-ver` (report-only) | 43 / 30 | 43 / 30 |
+| `task-id` | 84 / 46 | 84 / 46 |
+| union files touched by any row | 270 | 270 |
+
+**Every cell is unchanged.** That was not free, and the way it was nearly lost is worth recording:
+an intermediate version of the `eperm07-term-trigger.spec.ts` fix rewrote a line-broken `(Phase / 138
+review WR-01)` into the D-14-authorised `see phase 138` form — but across the same line break, so
+the continuation line read `* phase 138). The mechanism …`, which the gate's
+`(?<!see\s)\bphases?\s+\d+` pattern correctly counts as **bare**. `phase-ref bare` went 11 → 12, the
+gate's approved state moved, and the fix was reworked to drop the citation entirely rather than
+reflow it. **The authorised collapsed form is only authorised when it survives on one line**, and
+that is a real trap for any later plan editing a wrapped comment.
+
+The `occ` column was held too, not just the gated `bare` column: adding a `see phase 138` would have
+taken `phase-ref occ` from 660 to 661. An operator approved a report with 660 in it, so 660 is what
+this plan returns. Same discipline as **F-39**, applied in the other direction.
+
+### Findings queued by this sweep
+
+Numbering continues the series. Five landed as fixes on `feat-gsd-roadmap` before the slice was cut,
+per D-04; one of the five lands in a **different slice** and says so.
+
+| ID | Items | Slice | Finding | Disposition |
+|---|---|---|---|---|
+| **F-42** | 3 | **05** | **The hygiene codemod broke 38 comments in `tests/` and the Stage-2 pass resolved only 13 of the 43 it created.** Three classes: **12 empty code spans** where a deleted reference sat inside a backtick pair, leaving lines like `` * the bug. Negative control: ` `. `` and `` * lives in ` ` § Adjudication ``; **2 corrupted code identifiers**, because the codemod's empty-enclosure cleanup (`hygiene-codemod.mjs:524`, `s.replace(/[ \t]*\(\s*\)[ \t]*/g, dropEnclosure)`) fires on **any** `()` on a line that carried a reference edit — so `submitElection()` became `submitElection ` and `not.toBeVisible()` became `not.toBeVisible`; and **24 broken sentences** — arrows pointing at nothing (`video→, questionInfo→, popupNotice→, orgMatching→`, which destroyed a four-way probe→perm mapping), orphan numbers (`see phase 130 04 riders`, `Assert the 129 number-scale`), orphan possessives (`is 's "persists across reload"`), prepositions with no object (`the ONLY available mechanism for.`, `trace-confirmed in.`), and doubled periods. **One of the 38 was load-bearing**: `playwright.config.ts:56` is the sentence recording a knowingly-deferred guard-scope decision, and the codemod had rendered it `* Scoped deliberately to a single file: 's scope is …` — the record of a deliberate deferral, made unreadable. | **FIXED** — `822108b0f`. Every rewrite states the fact without reintroducing a reference; the gate's full row set is byte-identical. **The class exists in other slices and is routed, not fixed**: the same detector over `apps/frontend` finds it there (e.g. `dataContext.svelte.ts:24` `` `Updatable.subscribe ` ``, `persistedState.svelte.ts:83` `` `initXxxContext ` ``, `voterContext.svelte.ts:622` `` `getFilterContext ` ``) → plans **151-14** / **151-15**. Reproduce with the old/new pair method, not a tree grep: the tree grep returns 672 candidates, mostly `...` spread syntax and ordinary possessives. |
+| **F-43** | 3 | **05** | **14 comments cite a plan by a bare number that resolves to nothing for any reader outside the planning directory** — `122-04`, `122-05`, `119-08` ×2, `129-06`, `120-01`, `120-05`, `128-02`, `122-02` ×2 and `(129)`, in 6 files; plus 2 numbered references split across a line break (`(Phase` / `120-01 …`), which no line-based grep can see. | **FIXED** — `54ec7fed9`. Each rewritten to state the fact without the citation. Gate counts unchanged in both directions. |
+| **F-44** | 3 | — (phase-level, gate design) | **`hygiene-grep-report.sh` reports `plan-number occ = 0 OK` over a tree containing 35 plan references in `tests/` alone.** Three blind spots, each a property of the pattern rather than of the tree: (a) its `plan-number` pattern is `/\bplans?\s+\d+[-.]\d+\b/i`, so it requires the literal word *plan* **and** a two-part number — it matches `plan 122-05` and misses both bare `122-05` (12 occurrences, F-43) and `plan 06` (**23** occurrences, mostly in the partially-collapsed form `see phase 136 plan 05`); (b) its `phase-ref` pattern needs the keyword and the digits on the **same line**, so a reference wrapped across a line break is invisible (2 instances found); (c) `\b[A-Z]{3,}-\d{2}\b` misses `EFLOW-10b` and `DEF-135-04` on the trailing-character boundary. **This is the "never trust an internal identity as proof of coverage" class**: the row is self-consistently green and the tree is not clean. It is **not** a red row, so it does not disturb criterion 3's operator-approved state under the read rule — but it means the green rows are weaker evidence than they read as. | **DEFERRED — routed to plan 151-19**, where gate design is the subject. Deliberately **not** patched here: widening a pattern mid-stack would move the operator-approved counts and re-baseline a gate to make a slice look tidier, which is the F-39 failure mode. The 23 `plan NN` occurrences are also left in place — that form at least parses as a reference, and rewriting 23 more comments buys a reader nothing. **Flagged to 151-14 / 151-15 / 151-16:** run the three patterns above over your own slices; the gate will not do it for you. |
+| **F-45** | 7 | **05** | **`tests/README.md`'s "Project inventory" omits the `_probes` project, and its "full suite" line omits what the suite excludes.** `package.json:27` appends `--grep-invert @probe` to `test:e2e`, so **5 of the suite's 43 specs never run in it**, and `test:e2e:probes` (`package.json:28`) was undocumented. A reader following the README would believe the probes were covered. | **FIXED** — `76b0735a7`. The inventory now carries a `_probes` row, the exclusion is named on the `test:e2e` line, and the config-load orphan-probe guard is documented as the reason a probe cannot exist while running from nowhere. |
+| **F-46** | 6, 7 | **05** | **`tests/README.md` named 4 of the 10 files in `fixtures/shared/`, with no ellipsis** — while the adjacent voter-fixture list carries one, so the omission read as an exhaustive list. Missing: `forensicCapture`, `navMenu`, `popupNotice`, `theme`, `trackingIntercept`, `video`. Same class as **F-34** (dev-seed's *"Public API (stable)"* docblock naming 18 of 38): incomplete rather than wrong, and presented as complete. | **FIXED** — `76b0735a7`, all ten listed. |
+| **F-47** | 7, 15 | **09** (surfaced by 05's sweep) | **The Developers' Guide's testing page makes six claims about this slice and all six are false**, each verified rather than argued: the dataset is imported *"via Admin Tools API"* (it is the `bulk_import` RPC with a service-role client; Admin Tools was the Strapi plugin slice 01b deletes); `auth-setup` is step 2 of the default chain (declared **only** under `PLAYWRIGHT_VISUAL`, `playwright.config.ts:355-360`); test projects *"Run with the pre-authenticated browser state"* (the default run is unauthenticated); the test user is *"created automatically on Strapi bootstrap (via `ensureDevData`)"* (**0** code references to `ensureDevData`); credentials come from `DEV_CANDIDATE_EMAIL` / `DEV_CANDIDATE_PASSWORD` (**0** code references; the real ones are `testCredentials.ts` literals via `forceRegister`); and `yarn dev:down` (**no such script**). The page also omitted the preflight and the `@probe` exclusion — the two facts an operator most needs. | **FIXED** — `4e0cf5580`, **landing in slice 09** (`apps/docs/**`), which plan **151-16** cuts. Same cross-slice shape as F-40, recorded here so the reviewer of PR 6 knows where the documentation change went. Sub-finding **recorded, not fixed**: `ensureDevData` and `DEV_CANDIDATE_*` also appear in `backend/mock-data-generation/+page.md:32,37-38` — routed to **151-16** with F-04, F-33 and the `GENERATE_MOCK_DATA_ON_RESTART` class, because that page's fate is a whole-page decision. |
+| **F-48** | 1, 3 | **05** | **Three files declare a rigidity contract they violate.** `candidate-journey.spec.ts:47-50` states *"- 0 expect.soft"* and carries **3**; `candidateHomePage.fixture.ts:23` and `candidateProfilePage.fixture.ts:43` state *"NO `expect.soft`"* and carry **4** and **6**. Counted by call site (`grep -cE '(^\|[^a-zA-Z.])expect\.soft\('`), not by trusting the prose: **149 call sites in `tests/` total**, 136 of them in `voter-journey.spec.ts` and **13 in these three files**. This is item 1's real shape in this slice — not a spec asserting less than its title claims, but a file describing its own rigour falsely, in the one slice whose credibility every other slice borrows. | **FIXED** — `3cad264bd`, by making each header **true**: the count, where the calls are, why soft is right there, and that the file sits outside `SOFT_ASSERTION_BUDGETS`. **The guard table was deliberately not widened**, because `playwright.config.ts:56-58` reserves that: *"Scoped deliberately to a single file … The three sibling `Rigidity contract` drift files found alongside it are a recorded follow-up, not a licence to widen this table quietly."* Those three siblings are exactly these three. **The drift was already known** — this finding is that its record had been made unreadable by F-42 and that the false claims themselves were never corrected. |
+| **F-49** | 3, 4 | **05** | **`tests/` contributes 2 of the repository's 20 `lint:check` warnings, and one of them is a decorative suppression.** `support/mockOidcIssuerEntry.ts:33` carries an `eslint-disable` for `no-console` that the rule reports **no problems for** — the same family as F-12 / F-25 / F-41 (suppressions with nothing behind them), now with a fourth member. The other is `candidate-bank-auth-journey.spec.ts:223`, `playwright/prefer-to-have-length`. Both are `warn`-level and both are `--fix`-able. | **DEFERRED — F-39's baseline invariant.** Fixing either takes `tests/` from 2 warnings to 1 or 0 and the repository from `0 errors / 20 warnings` to 19 or 18 — **moving the phase-wide number that this plan and every later one compares "unchanged" against**. Recording the gap is better than re-baselining a gate mid-stack to tidy a slice. Remedy, so a later phase need not re-derive it: delete the unused directive at `mockOidcIssuerEntry.ts:33` and convert the length assertion, **in the same commit that re-baselines `151-BASELINE.md`**. |
+| **F-50** | 1, 11 | **05** | **CI sets `retries: 3`, which can report a flaky test as green** — `playwright.config.ts:307`, `retries: process.env.CI ? 3 : 0`. `CLAUDE.md`'s cardinal rule forbids retrying-until-green and allows no known-flaky exemption, and three retries is structurally a retry-until-green for anything failing at up to a ~1-in-8 rate. | **DEFERRED — accepted, because the project already built the remedy and it is in this slice.** `determinism-batch.sh` **refuses to start** with `CI` set, for exactly this reason, stated in place at `:46` and `:195-201` (*"With CI present the config buys retries: 3 per test and collapses to a single…"*), and it fails a batch outright when `flaky != 0` (`:543-548`, *"there is no acceptable flaky test in this project"*). Four projects additionally pin `retries: 0` where a retry would mask a state-mutating assertion. So the posture is coherent: CI retries buy tolerance for infrastructure noise, and the determinism gate — not CI — is the flake signal. **Recorded rather than changed** because lowering CI retries is an operator decision about CI cost, and because 151-18's D-24 run is a local, non-CI run at `retries: 0` and is the trusted signal regardless. |
+
+### Evidence contributed to the phase-level cells (which stay `PENDING→18`)
+
+- **Item 1 (do the changes solve the problem).** The suite's coverage claims were sampled against
+  `.planning/v2.14-E2E-COVERAGE-PLAN.md` rather than taken from it, and the specs it names do assert
+  what it credits them with — checked in four cases spanning its verdict vocabulary:
+  `perm-access-disable.spec.ts` covers all three EPERM-11 slices including the previously-missing
+  global `underMaintenance` flag (`:59, :81, :101`); `perm-org-matching.spec.ts` asserts the org match
+  **score** differs across `none` / `answersOnly` / `impute` and adds an explicit
+  `not.toBe(SCORE_ANSWERS_ONLY)` cross-check (`:76, :94, :116-117`), which is the primary assertion
+  the coverage plan's operator note demanded rather than the About-page secondary;
+  `voter-prefs-tracking.spec.ts` asserts suppression, emission and round-trip (`:151, :175, :212`);
+  and `voter-dark-mode.spec.ts` asserts all three claims in its title. **That last one is a recorded
+  measurement artefact and the reason this row is a read rather than a grep:** the spec contains
+  exactly **one** `expect(` token, which looks like a spec asserting a third of its title — until you
+  read it and find all three assertions inside `theme.expectTheme`, a web-first `expect.poll` in
+  `theme.fixture.ts`, with the docblock explaining that `expect` is deliberately not imported at the
+  spec site. A count-based verdict here would have produced a false finding.
+- **Item 11 (troubleshoot failing checks) and item 12 (blast radius).** `main.yaml` at this slice's
+  head is blob **`c2fdcedb2`** — byte-identical to `origin/main`'s — and defines exactly three jobs
+  (`frontend-and-shared-module-validation`, `backend-validation`, `e2e-tests`), all failing at
+  **`Setup Yarn 4.6`**. **The `e2e-tests` job that exists at this head cannot exercise this slice**:
+  it fails before Playwright is installed, for the stack-wide `YN0028` lockfile reason. No check fires
+  on PR 6 at all, because `main.yaml`'s `pull_request` trigger is `branches: [main]` and this PR's
+  base is a sibling. `skill-drift-check`, `supabase-tests` and `dev-seed-integration` **do not exist
+  at any published head** — they arrive with slice 10. The evidence that does exist for this slice is
+  static plus one config-load check: `npx playwright test --list` → **143 tests in 94 files**, with
+  the orphan-probe, soft-assertion-budget and teardown-prefix-uniqueness guards all active.
+  `yarn typecheck:tests` (`tsc -p tests/tsconfig.json --noEmit`) is clean. **43 specs did not run**,
+  and per `CLAUDE.md` that counts as a failure rather than a pass until D-24 discharges it at 151-18.
+- **Item 16 (clean, linear history).** This plan added **6** commits, each one type-conforming
+  (`fix` ×1, `docs` ×5) and each scoped to one finding class. No commit touches a file outside
+  `tests/` and `apps/docs/`, and no commit is a fix of another commit in this plan.
+
+### Gate verdicts after this plan's fixes — measured, not assumed
+
+Re-run with **`TURBO_FORCE=1`** where turbo mediates, so none is a cache replay:
+
+| Gate | `151-BASELINE.md` | After the six fixes | Verdict |
+|---|---|---|---|
+| `yarn build` | 14/14 | **14 successful / 14 total** | unchanged |
+| `yarn test:unit` | 1522 passed / 149 files | **1522 passed / 149 files** (16 + 244 + 21 + 22 + 446 + 773 across 1 + 47 + 3 + 1 + 43 + 54), 21/21 tasks, 0 cached | unchanged |
+| `yarn lint:check` | 0 errors / 20 warnings | **0 errors / 20 warnings** (core 2, dev-seed 15, frontend 1, tests 2), 11/11 tasks, 0 cached | unchanged |
+| `yarn format:check` | RED on exactly 2 PD-03-fenced files | **RED on exactly 2** — `packages/dev-seed/src/templates/e2e/perm/perm-bankauth-notloc.ts`, `tests/README.md` | unchanged |
+| `yarn typecheck:tests` | not in the baseline | **clean** — recorded here as a new datum, not as a comparison |
+| `npx playwright test --list` | not in the baseline | **143 tests in 94 files**, all config-load guards active | recorded as a new datum |
+| `hygiene-grep-report.sh --assert-clean` | exit 1 with exactly `task-id` 84 and `phase-ref` bare 11 | **exit 1, same two rows, every column identical** | unchanged |
+
+**`tests/README.md` was edited and stays in the `format:check` red set — it was already in it.** The
+red set's *cardinality* is what PD-03 fences, and it is still 2. **`yarn format` was not run**, and
+neither PD-03-fenced file was reformatted; running it would have taken the red set to 0 and destroyed
+the comparison eight later plans make.
+
+**`e2e_collisions` stays `0`.** PD-01's trigger is a landed fix taking a gate from green to red. No
+landed fix did — all 6 commits are comment- or documentation-only.
+
+**`migrations_added` stays `0`.** Nothing in this plan touches SQL. PD-02 is a recorded no-op for this
+slice, not an unasked question.
+
+**`yarn db:lint:sql` was deliberately not run.** It exits 1 on a correct tree pending **F-21**, an
+open operator decision from plan 151-11, and nothing in this slice touches SQL. Naming it would have
+manufactured a red signal that says nothing about this slice.
+
+### Ordering note — fixes were committed before this record, deliberately
+
+`151-13-PLAN.md` orders the sweep (Task 1) before the fixes (Task 2). The *sweep* ran first, as
+written; the *commits* did not, for the reason 151-12 recorded: a cell may not read `FIXED` before the
+commit it must cite exists. Every `FIXED` cell above cites a reachable object from the moment it was
+written. D-04's actual requirement — that fixes land on `feat-gsd-roadmap` before the slice is cut —
+is unaffected and met.
+
+---
+
 
 ---
 
