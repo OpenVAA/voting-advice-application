@@ -1,9 +1,9 @@
-FROM node:20.18.1-alpine AS base
+FROM node:22-alpine AS base
 
 WORKDIR /opt
 
 # Setup env variable for yarn
-ENV YARN_VERSION=4.6
+ENV YARN_VERSION=4.13.0
 
 # install and use yarn 4.x
 RUN corepack enable && corepack prepare yarn@${YARN_VERSION}
@@ -11,12 +11,10 @@ RUN corepack enable && corepack prepare yarn@${YARN_VERSION}
 # Skip Husky installation in Docker
 ENV HUSKY=0
 
-COPY package.json yarn.lock .yarnrc.yml ./
+COPY package.json yarn.lock .yarnrc.yml turbo.json ./
 COPY .yarn ./.yarn
 # To be able to use --immutable, we need to copy all the packages in the workspace
-COPY backend backend
-COPY docs docs
-COPY frontend frontend
+COPY apps apps
 COPY packages packages
 RUN yarn install --immutable
 
@@ -25,7 +23,7 @@ FROM base AS shared
 WORKDIR /opt
 
 # Build all shared modules
-RUN yarn build:shared
+RUN yarn build
 
 FROM base AS frontend
 
@@ -33,7 +31,7 @@ WORKDIR /opt
 
 # Copy only the packages we need
 COPY --from=shared /opt/packages packages
-COPY --from=shared /opt/frontend frontend
+COPY --from=shared /opt/apps/frontend apps/frontend
 
 FROM frontend AS development
 
@@ -52,4 +50,4 @@ WORKDIR /opt
 RUN yarn workspace @openvaa/frontend build
 
 EXPOSE 3000
-CMD node ./frontend/build/index.js
+CMD node ./apps/frontend/build/index.js
