@@ -24,7 +24,7 @@ import { execSync } from 'node:child_process';
 // Config
 // ---------------------------------------------------------------------------
 
-const DB_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres@127.0.0.1:54332/postgres';
+const DB_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
 const STRICT = process.argv.includes('--strict');
 
 // Tables to exclude from the RLS check (internal / extension tables)
@@ -66,12 +66,23 @@ JOIN pg_attribute a
  AND a.attnum   = x.attnum
 WHERE c.contype = 'f'
   AND c.conrelid::regclass::text NOT LIKE 'pg_%'
+  -- Only this project's own schema. Check 0013 already scopes itself to
+  -- 'public'; without the same scoping here the report is dominated by
+  -- Supabase-managed auth.* and storage.* tables the project cannot act on,
+  -- which is how a gate teaches its readers to ignore it.
+  AND c.connamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public')
   AND NOT EXISTS (
     SELECT 1
     FROM pg_index i
     WHERE i.indrelid = c.conrelid
-      AND c.conkey[1:array_length(c.conkey, 1)]
-        = i.indkey[1:array_length(c.conkey, 1)]
+      -- pg_constraint.conkey is a 1-based smallint[]; pg_index.indkey is an
+      -- int2vector, which is 0-BASED. Slicing both from 1 compares the FK's
+      -- columns against the index's SECOND..Nth columns, so every
+      -- single-column FK yields '{n}' = '{}' and is reported as unindexed.
+      -- Slice indkey from 0 so the comparison is leading-columns to
+      -- leading-columns, which is what "an index covers this FK" means.
+      AND c.conkey[1:array_length(c.conkey, 1)]::smallint[]
+        = (i.indkey[0:array_length(c.conkey, 1) - 1])::smallint[]
   )
 GROUP BY c.conrelid, c.conname;
 `;
