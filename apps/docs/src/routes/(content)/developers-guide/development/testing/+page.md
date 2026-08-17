@@ -22,33 +22,57 @@ The project uses Playwright for E2E testing. The tests use their own dataset gen
 
 ### How it works
 
-The test framework uses a project dependency chain:
+The suite is organised as a graph of Playwright projects joined by `dependencies`. The default run
+has three families:
 
-1. **data-setup** — Imports the default test dataset via Admin Tools API
-2. **auth-setup** — Authenticates as a test candidate and saves `storageState`
-3. **Test projects** — Run with the pre-authenticated browser state
+1. **`data-setup-base`** — seeds the `e2e/base` template through the `bulk_import` RPC with a
+   service-role client, then hands off to `voter-journey` and to the candidate-journey chain. Its
+   paired `data-teardown-base` clears the `test-`-prefixed rows afterwards.
+2. **The voter permutation chain** — runs in parallel with the family above. Its setups are chained
+   sequentially because each one rewrites the singleton `app_settings` row, and each teardown wipes
+   only its own `test-perm-<short>-` prefix.
+3. **The specialised projects** — `performance` and `a11y-smoke` are on by default (opt out with
+   `PLAYWRIGHT_NO_PERF` / `PLAYWRIGHT_NO_A11Y`); `visual-regression` and the bank-auth projects are
+   opt-in behind `PLAYWRIGHT_VISUAL` / `PLAYWRIGHT_BANK_AUTH`.
 
-The test candidate user is created automatically on Strapi bootstrap (via `ensureDevData`). Its credentials are configurable via `DEV_CANDIDATE_EMAIL` and `DEV_CANDIDATE_PASSWORD` env vars (see [env vars](/developers-guide/configuration/environmental-variables)).
+**The default run is unauthenticated.** `voter-journey` starts as an anonymous voter and
+`candidate-journey` starts logged out and registers itself during the walk, so neither depends on a
+pre-authenticated browser state. The `auth-setup` project that writes a `storageState` is declared
+**only** when `PLAYWRIGHT_VISUAL` is set, for the visual-regression baselines.
+
+There is no bootstrap-created test user and no `DEV_CANDIDATE_*` env var. The registered base
+candidate is minted at runtime by `SupabaseAdminClient.forceRegister`, from the literals in
+`tests/tests/utils/testCredentials.ts`.
 
 ### Running E2E tests
 
-All of the E2E tests are collected in the `/tests` folder. To run the E2E tests start all the services locally:
+All of the E2E tests are collected in the `/tests` folder. Start the stack in one shell:
 
 ```bash
 yarn dev
 ```
 
-... and then:
+... and then, in another:
 
 ```bash
 yarn playwright install
 yarn test:e2e
 ```
 
-If you encounter any unexpected issues with the E2E tests, make sure to bring down the Docker stack properly to reset the database (more on mock data [here](/developers-guide/backend/mock-data-generation)).
+**Every run begins with a preflight**, in Playwright's global setup, that proves the server
+answering the port is this checkout's own dev server — it requires the served application to echo
+this working tree's absolute path back via Vite's `/@fs` endpoint. It aborts the run with exit 1
+before the first spec if that does not hold, and nothing skips it. If your dev server is on another
+port, set `FRONTEND_PORT` (in the root `.env`, or as a prefix on a single command) for both the
+server and the suite; the preflight then verifies that target instead of being disabled.
 
-To bring down the Docker stack properly (delete all containers, images and named volumes which include backend DB volume) run:
+Note that `yarn test:e2e` appends `--grep-invert @probe`, so the isolation probes under
+`tests/tests/specs/_probes/` do not run in it — use `yarn test:e2e:probes` for those.
 
-```bash
-yarn dev:down
-```
+If a run leaves the database in an unexpected state, reset it with `yarn db:reset` (or
+`yarn db:reset-with-data` to reseed the demo dataset). Development does not use Docker, so there is
+no stack to bring down; the teardown projects are the only legitimate path to clear test data while
+a run is in progress.
+
+See [`tests/README.md`](https://github.com/OpenVAA/voting-advice-application/blob/main/tests/README.md)
+for the full project inventory, the concurrency model and the common pitfalls.
