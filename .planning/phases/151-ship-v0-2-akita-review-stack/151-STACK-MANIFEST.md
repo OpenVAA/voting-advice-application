@@ -20,19 +20,20 @@ operator_approved: true
 operator_approved_date: 2026-08-17
 
 # --- plan 151-09: the bottom three slices cut for real (no longer a dry run) ---
-slices_cut: ["01a", "01b", "02", "03", "04"]
-slices_cut_by: "151-09 (01a, 01b, 02); 151-11 (03; 02 re-cut from the F-18-fixed tip); 151-12 (04)"
+slices_cut: ["01a", "01b", "02", "03", "04", "05"]
+slices_cut_by: "151-09 (01a, 01b, 02); 151-11 (03; 02 re-cut from the F-18-fixed tip); 151-12 (04); 151-13 (05)"
 cut_base_sha: ac30f132a407084bf30626029a0a71a0a521982f
-cut_target_sha: 99ce9bb872e54c5e451bb609a46fb1ac49587d50
-cut_target_tree: c5b0fecde6487f4a4f5ac0eb4156500b9c41b4a8
-partition_total_files_at_cut: 4281
-catchall_remaining_files: 3651
+cut_target_sha: c0c47513fbc55dd41effeff1ffd864db529e5a49
+cut_target_tree: 8459312c952c26555e8cac193e9aa8155a62ef73
+partition_total_files_at_cut: 4283
+catchall_remaining_files: 3458
 catchall_deviation_pct: 0.0
 partial_stack_identity_verified: true
-branches_pushed: 4
-prs_opened: 4
-pushed_by: "151-10 (01a, 01b); 151-11 (02); 151-12 (03)"
-prs_open: [863, 864, 865, 866]
+branches_pushed: 5
+prs_opened: 5
+pushed_by: "151-10 (01a, 01b); 151-11 (02); 151-12 (03); 151-13 (04)"
+prs_open: [863, 864, 865, 866, 867]
+criterion_4_3_satisfied_by: 545cc26c8790c54b532f3d50fe5bceb02d851177
 ruleset_8477541: untouched-active
 pr_860_decision: repurpose-at-151-18
 ---
@@ -86,8 +87,8 @@ later plan — only its cells.
 | 01b | 2 | `ship/v0.2-akita-01b-strapi-removal` | `chore: remove the Strapi backend and the frontend tests that drove it` | 252 | 0 | 55663 | **lines > 20k** — deletions only | `4a7c85934` | [#864](https://github.com/OpenVAA/voting-advice-application/pull/864) |
 | 02 | 3 | `ship/v0.2-akita-02-shared-packages` | `feat: rework the shared @openvaa packages for the v0.2 data, matching and filter model` | 97 | 1273 | 289 | ok | `ee270800b` | [#865](https://github.com/OpenVAA/voting-advice-application/pull/865) |
 | 03 | 4 | `ship/v0.2-akita-03-supabase` | `feat[db]: replace the Strapi backend with the Supabase schema, RLS, functions and generated types` | 119 | 16422 | 0 | ok | `11f877913` | [#866](https://github.com/OpenVAA/voting-advice-application/pull/866) |
-| 04 | 5 | `ship/v0.2-akita-04-dev-seed` | `feat: add the dev-seed package that generates deterministic local and E2E data` | 162 | 19661 | 0 | ok — 19,661 lines, still inside the 20k cap | `7640f7bcb` | pending (opens at 151-13, per D-07) |
-| 05 | 6 | `ship/v0.2-akita-05-e2e-tests` | `test: add the Playwright end-to-end suite and its runner configuration` | 195 | 23297 | 778 | **lines > 20k** | pending | pending |
+| 04 | 5 | `ship/v0.2-akita-04-dev-seed` | `feat: add the dev-seed package that generates deterministic local and E2E data` | 162 | 19661 | 0 | ok — 19,661 lines, still inside the 20k cap | `7640f7bcb` | [#867](https://github.com/OpenVAA/voting-advice-application/pull/867) |
+| 05 | 6 | `ship/v0.2-akita-05-e2e-tests` | `test: add the Playwright end-to-end suite and its runner configuration` | 195 | 23325 | 778 | **lines > 20k** | `545cc26c8` | pending (opens at 151-14, per D-07) |
 | 06 | 7 | `ship/v0.2-akita-06-frontend-lib` | `feat: rewrite the frontend library layer on Svelte 5 runes and the Supabase adapter` | 526 | 22657 | 8315 | **files > 300 and lines > 20k** | pending | pending |
 | 07 | 8 | `ship/v0.2-akita-07-frontend-routes` | `feat: rewrite the frontend app shell and the voter and candidate routing surface` | 213 | 10291 | 8267 | ok | pending | pending |
 | 08 | 9 | `ship/v0.2-akita-08-i18n-messages` | `feat: add the Paraglide message catalogues for every supported locale` | 329 | 8904 | 0 | **files > 300** — 47 messages × 7 locales, one shape | pending | pending |
@@ -694,6 +695,148 @@ the reasoning was sound while the observable signature was not.
   contributes **15 of the repository's 20 `lint:check` warnings**, all one deliberate class. The
   rule's own remedy (`/^_/`) would take the gate to `0 / 5` and invalidate the "unchanged against
   `151-BASELINE.md`" comparison every later plan makes. Recorded rather than applied.
+
+
+## Slice 05 cut and PR 5 published — plan 151-13
+
+**The stack's sixth slice exists, its fifth PR is open, and criterion 4.3 is satisfied structurally
+rather than by squashing.** No slice was re-cut: all 25 of this plan's `tests/` fixes fall inside the
+*uncut* slice 05 and its 26th fix falls in slice 09, so PRs #863, #864, #865 and #866 were never
+disturbed and no force-push was needed anywhere.
+
+| ref | value |
+|---|---|
+| base, re-resolved | `origin/main` = `ac30f132a` — **still unmoved**, at every measurement point in this phase |
+| `TARGET`, the fixed tip at cut time | `c0c47513f` — includes this plan's six sweep fixes and its disposition record |
+| `PARENT`, unchanged and already pushed | `7640f7bcb` — slice 04; **not** re-cut, so PR #867 shows the same object that was pushed |
+
+| slice | branch | commit | files | +lines | −lines |
+|---|---|---|---|---|---|
+| 05 | `ship/v0.2-akita-05-e2e-tests` | **`545cc26c8`** | **195** | **23325** | **778** |
+
+### Criterion 4.3 — satisfied, with the commit SHA as its evidence
+
+> **4.3 — all tests are one commit.**
+
+`git log --oneline ship/v0.2-akita-04-dev-seed..ship/v0.2-akita-05-e2e-tests | wc -l` → **1**.
+The commit is **`545cc26c8`**, subject `test: add the Playwright end-to-end suite and its runner
+configuration`, and it contains the whole root `tests/` tree — 195 files, `184 A / 7 D / 4 M`, status
+set `ADM`.
+
+**The criterion and the slice coincide exactly rather than approximately.** Slice 05's pathspec in
+`slices.tsv` is the single token `tests`, so "one slice" and "one commit" and "all tests" are the same
+set by construction, not by a squash that happened to gather them. Nothing was collapsed to satisfy
+the clause, and there is no second `test:`-typed commit anywhere in the stack to collapse — the
+taxonomy gate's `test` cardinality clause goes from `0 == 1` to `1 == 1` with this cut.
+
+### The line delta, attributed commit by commit — and the dry run was exactly right
+
+The dry-run table predicted **+23,297**. Measured at the tip immediately *before* the hygiene commits
+it is **exactly 23,297**, so the prediction needs no correction; the number then moved three times and
+each move is measurable:
+
+| tip | `+lines` | delta | cause |
+|---|---:|---:|---|
+| `0c538024c~1` (pre-hygiene) | **23,297** | — | the dry run's figure, reproduced |
+| `0c538024c` (the hygiene codemod) | 23,293 | **−4** | reference deletions collapsing comment lines |
+| `5862397ad` (hygiene stage 2) | 23,292 | **−1** | one further residue rewrite |
+| `c0c47513f` (this plan) | **23,325** | **+33** | 25 in-slice fixes, `+98 / −65`, attributed per file |
+
+**The file count never moved from 195 and `−lines` never moved from 778.** All 25 `tests/` edits
+touched files already inside the slice's diff; the 26th edit is in `apps/docs/**`, slice **09**. **No
+file entered or left any partition cell.** At 23,325 + 778 = **24,103 changed lines** the slice is over
+GitHub's 20,000-line render cap — known and accepted at approval (D-12 class), stated in the PR body
+rather than fixed by re-partitioning.
+
+**Both ends of the file arithmetic close, stated in both directions rather than by subtraction:**
+`origin/main` carries **14** files under `tests/` and `14 = 7 D + 4 M + 3 unchanged`; `HEAD` carries
+**191** and `191 = 184 A + 4 M + 3 unchanged`. The 3 unchanged files — `tests/.gitignore`,
+`tests/.prettierignore`, `tests/tests/utils/testsDir.ts` — are byte-identical at both ends (blobs
+`1f83983be`, `df8914f52`, `106d54a85`) and appear in **no** slice's diff. They are this slice's
+instance of the dropped-finding class, and the standing instruction was followed: they were swept
+**from the target tree**, and `tests/.gitignore` turned out to be load-bearing — its `playwright*/`
+rule is what keeps the visual chain's `storageState` (a live candidate session cookie) out of git.
+`git ls-files tests/` matches `playwright/`, `.auth` and `blob-report` **0** times.
+
+### The per-slice safety check
+
+| check | result |
+|---|---|
+| chain | `05^ == 04` by `rev-parse` (`7640f7bcb` both sides) |
+| remaining-slices catch-all, `TIP05..TARGET` pathspec `.` | **`files=3458`** |
+| partition arithmetic | 252 + 97 + 119 + 162 + 195 + 3458 = **4283** = comparable total (`diff --no-renames C1..TARGET`). **Gap: 0.** |
+| attribution of the rise from 151-12's 4280→4281→4283 | **+2, both named**: `151-12-SUMMARY.md` and `pr-bodies/03.md`, both `.planning/` files riding slice 11. Established by **set difference**, not subtraction — `comm` over the two comparable file sets shows exactly two files entering and **zero leaving**. |
+| predicted remainder | 151-12's catch-all was 3651 including slice 05's 195. 3651 − 195 + 2 = **3458**, the measured value. **Deviation 0.000%**, against a 1% halt threshold. |
+| a second, independent cross-check | slice 11's own pathspec measured at this `TARGET` gives **2314** files; 3458 − 2314 = **1144** = 526 + 213 + 329 + 39 + 37, the dry run's slices 06–10 summed **exactly**. The remainder decomposes without reference to the catch-all. |
+| **partial-stack identity** | the six cut slices plus the catch-all produce tree **`8459312c9`** = `TARGET^{tree}` **`8459312c9`**. **MATCH.** |
+| `git status --porcelain` | empty throughout; `HEAD` never left `feat-gsd-roadmap`; the catch-all was applied into a scratch `GIT_INDEX_FILE` through `build-slice.sh` itself, never reimplemented |
+
+### Published
+
+| slice | branch on `origin` | SHA (remote == local, asserted) | PR | base |
+|---|---|---|---|---|
+| 04 | `ship/v0.2-akita-04-dev-seed` | `7640f7bcb` | [#867](https://github.com/OpenVAA/voting-advice-application/pull/867) | `ship/v0.2-akita-03-supabase` |
+
+Asserted after the fact, not assumed: `gh pr view 867` returns `baseRefName`
+`ship/v0.2-akita-03-supabase`, `headRefOid` `7640f7bcb` equal to the local tip, and — independently
+confirming the body's central numbers — `changedFiles: 162, additions: 19661, deletions: 0`.
+`gh pr list --head ship/v0.2-akita-05-e2e-tests --json number --jq length` returns **0**, so D-07's
+one-slice lag held — **PR 6 stays closed until slice 06 is swept at plan 151-14**;
+`git ls-remote --heads origin 'ship/*'` returns exactly **5** refs; `origin/main` is unmoved at
+`ac30f132a`; and PR **#860 was not touched** (`updatedAt` still `2026-05-19T12:08:25Z`). The push was
+dry-run immediately beforehand and reported `[new branch]`, with no force anywhere.
+
+Like #864, #865 and #866, PR #867 fires **no checks** — asserted, not predicted: `gh pr checks 867`
+returns *"no checks reported on the 'ship/v0.2-akita-04-dev-seed' branch"*.
+
+### The PR-title format has drifted across five PRs — stabilised here, for 151-14 onward
+
+Recorded because it is visible to every reviewer and nobody decided it:
+
+| PR | title |
+|---|---|
+| #863 | `ship(v0.2) 01/12 — move frontend/ and docs/ under apps/ (renames only, zero lines)` |
+| #864 | `ship(v0.2) 02/12 — remove the dead Strapi backend and its orphaned frontend tests` |
+| #865 | `3/12 feat: rework the shared @openvaa packages for the v0.2 data, matching and filter model` |
+| #866 | `feat[db]: replace the Strapi backend with the Supabase schema, RLS, functions and generated types` — **no position marker at all** |
+| #867 | `5/12 feat: add the dev-seed package that generates deterministic local and E2E data` |
+
+**Standing instruction for 151-14 … 151-17: use `N/12 <slices.tsv column 3 verbatim>`**, the shape
+#865 and #867 share. It carries the stack position a reviewer needs in a list view and it makes the
+title the commit subject, so the title cannot drift from the commit it names. **Do not retitle
+#863, #864 or #866** — they are open and under review, the bodies carry the position explicitly, and
+editing a live PR's title to satisfy a convention chosen after it opened is churn, not a fix.
+
+### What this plan's sweep did NOT establish, stated because the alternative is a claim
+
+**The 43 E2E specs were not run.** The suite needs a dev server on `:5173` and a seeded local
+Supabase, and D-24's full-suite run at plan **151-18** is where that cost is paid once, against the
+post-sweep tip. Per `CLAUDE.md` a did-not-run E2E test counts as a failure rather than a pass, so
+**this record does not claim a green suite for slice 05** — it claims a statically swept one. The
+strongest executable evidence obtained is `npx playwright test --list`, which loads
+`playwright.config.ts` with all three of its config-load guards active (orphan-probe,
+soft-assertion-budget, teardown-prefix-uniqueness) and reports **143 tests in 94 files**. That has a
+real failure mode and it passed; it is not a suite pass.
+
+### Two things later plans need from this sweep
+
+- **F-44 — the hygiene gate reports `plan-number occ = 0 OK` over a tree with 35 plan references in
+  `tests/` alone.** Three blind spots, each a property of the pattern: its `plan-number` regex requires
+  the literal word *plan* **and** a two-part number, so it misses bare `122-05` (12 occurrences, fixed
+  here) and `plan 06` (23 occurrences, left in place); its `phase-ref` regex needs keyword and digits
+  on the **same line**, so a wrapped reference is invisible; and `\b[A-Z]{3,}-\d{2}\b` misses
+  `EFLOW-10b` on the trailing-character boundary. **Not patched here** — widening a pattern mid-stack
+  would move the operator-approved counts, which is the F-39 failure mode. Routed to **151-19**.
+  **151-14 / 151-15 / 151-16 must run those three patterns over their own slices; the gate will not.**
+- **A trap that nearly moved criterion 3's approved state, and will catch the next plan that edits a
+  wrapped comment.** Rewriting a line-broken `(Phase / 138 review WR-01)` into the D-14-authorised
+  `see phase 138` form *across the same line break* leaves the continuation line reading
+  `* phase 138). …`, which the gate's `(?<!see\s)\bphases?\s+\d+` correctly counts as **bare**:
+  `phase-ref bare` went 11 → 12 and the approved state moved. **The authorised collapsed form is only
+  authorised when it survives on one line.** The fix was reworked to drop the citation, returning
+  `phase-ref` to **660 occ / 235 files / bare 11** — the `occ` column held too, not just the gated
+  `bare` column, because an operator approved a report with 660 in it.
+
 
 ---
 
