@@ -29,7 +29,7 @@ Fork the repo and make any changes you need to the source code. You’ll most li
 
 ### 2. Configure AWS
 
-The backend uses AWS by default for media storage (S3) and email (SES). If you do not wish to use AWS, you will need to edit the [Strapi plugin config](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/strapi/config/plugins.ts).
+The backend uses AWS by default for media storage (S3) and email (SES). If you do not wish to use AWS, you will need to edit the [Strapi plugin config](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/config/plugins.ts).
 
 You will need to set the following `env` variables for AWS to work. You can collect the variables in an `.env` file for easier import into Render services, which are set up below.
 
@@ -100,7 +100,7 @@ Create a new Web Service.
 - Link to your repository on Github
 - Select the branch to deploy from
 - Edit settings:
-  - Set `Dockerfile Path` to `./apps/strapi/Dockerfile`
+  - Set `Dockerfile Path` to `./backend/vaa-strapi/Dockerfile`
   - You may want to turn `Auto-Deploy` off
   - The other settings can be left to defaults
 
@@ -253,5 +253,5 @@ Don't forget to run `yarn install --production` before starting the frontend.
 
 ### Building the backend separately
 
-To build the backend separately, run `yarn build` and `yarn start` in the `apps/strapi` directory.
+To build the backend separately, run `yarn build` and `yarn start` in the `backend/vaa-strapi` directory.
 This will build Strapi and start it in port 1337.

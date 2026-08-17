@@ -6,9 +6,9 @@
 
 By default, all content types inside Strapi are assumed to be safe to be publicly exposed. For reading, all the fields except any fields marked with the `private` keyword in their schema definition are returned per how Strapi works. For writing, the majority of the create, update, and delete endpoints are disabled by default unless explicitly used by the candidate application, and otherwise restricted to only resources that belong to the logged in candidate to prevent unauthorized modification of the data.
 
-The restrictions are enforced using policies for each content type's route, usually found in the `apps/strapi/src/api/[schema]/routes/[schema].ts` file. To simplify this, there are a couple of helper functions available in [acl.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/strapi/src/util/acl.ts) and [policies](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/strapi/src/policies/). Please see [Strapi's documentation on policies](https://docs.strapi.io/dev-docs/backend-customization/policies#usage) on how to use them.
+The restrictions are enforced using policies for each content type's route, usually found in the `backend/vaa-strapi/src/api/[schema]/routes/[schema].ts` file. To simplify this, there are a couple of helper functions available in [acl.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/util/acl.ts) and [policies](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/policies/). Please see [Strapi's documentation on policies](https://docs.strapi.io/dev-docs/backend-customization/policies#usage) on how to use them.
 
-The default permissions unauthenticated and authenticated users are managed in the [strapi-server.js](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/strapi/src/extensions/users-permissions/strapi-server.js) file, in the `defaultPermissions` array.
+The default permissions unauthenticated and authenticated users are managed in the [strapi-server.js](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/extensions/users-permissions/strapi-server.js) file, in the `defaultPermissions` array.
 
 ### filter-by-candidate
 

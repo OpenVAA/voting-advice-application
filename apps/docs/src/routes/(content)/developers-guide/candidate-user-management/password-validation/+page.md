@@ -37,7 +37,7 @@ If the validity check passes, a POST request is sent to the backend to either
 
 ### Backend
 
-- `/api/auth/candidate/register` endpoint is implemented by [`candidate.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/strapi/src/extensions/users-permissions/controllers/candidate.ts) using the registration key
+- `/api/auth/candidate/register` endpoint is implemented by [`candidate.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/extensions/users-permissions/controllers/candidate.ts) using the registration key
   - the backend also validates the password using the same `validatePassword` function
 - `/api/auth/reset-password` is fully handled by Strapi's users-permissions plugin
 

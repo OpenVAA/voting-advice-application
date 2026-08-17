@@ -72,7 +72,7 @@ If that's not the issue, open Docker and check the `frontend` and `strapi` conta
 
 The REST api query syntax can be a bit tricky, notably `*` only goes one-level deep.
 
-Another possible cause is that the access control policy does not allow populating the relations. The policy is defined for each API route in `apps/strapi/src/api/<schema>/routes/<schema>.ts`. For more information, see [Security](/developers-guide/backend/security).
+Another possible cause is that the access control policy does not allow populating the relations. The policy is defined for each API route in `backend/vaa-strapi/src/api/<schema>/routes/<schema>.ts`. For more information, see [Security](/developers-guide/backend/security).
 
 ## Playwright: `TimeoutError` when locating elements and running the tests locally
 

@@ -11,8 +11,8 @@ The project is a monorepo and it consists of several yarn workspaces (each is a 
   - [`@openvaa/matching`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/matching/)
 - Application
   - [`@openvaa/app-shared`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/)
-  - [`@openvaa/strapi`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/strapi/)
-  - [`@openvaa/strapi-admin-tools`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/strapi/src/plugins/openvaa-admin-tools/)
+  - [`@openvaa/strapi`](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/)
+  - [`@openvaa/strapi-admin-tools`](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/plugins/openvaa-admin-tools/)
   - [`@openvaa/frontend`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/)
 - Experimental LLM features
   - [`@openvaa/argument-condensation`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/argument-condensation/)
