@@ -5,15 +5,15 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 151
 current_phase_name: ship-v0-2-akita-review-stack
 status: executing
-stopped_at: Completed 151-15-PLAN.md
-last_updated: "2026-08-17T14:47:41.319Z"
+stopped_at: Completed 151-16-PLAN.md
+last_updated: "2026-08-17T15:55:02.231Z"
 last_activity: 2026-08-16
 last_activity_desc: Phase 151 execution started
 progress:
   total_phases: 15
   completed_phases: 4
   total_plans: 43
-  completed_plans: 39
+  completed_plans: 40
   percent: 27
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-151, 15 phases, 38 requirements)
 Phase: 151 (ship-v0-2-akita-review-stack) — EXECUTING
-Plan: 16 of 19
+Plan: 17 of 19
 Status: Ready to execute
 Last activity: 2026-08-16 — Phase 151 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-17T14:47:25.346Z
-Stopped at: Completed 151-15-PLAN.md
+Last session: 2026-08-17T15:54:54.079Z
+Stopped at: Completed 151-16-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -164,6 +164,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 151 P13 | 96 | 3 tasks | 26 files |
 | Phase 151 P14 | 118 | 3 tasks | 533 files |
 | Phase 151 P15 | 92 | 3 tasks | 34 files |
+| Phase 151 P16 | one session | 3 tasks | 232 files |
 
 ## Deferred Items
 
@@ -708,6 +709,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: F-73: a second reactive-accessor destructure, in the root layout from initAppContext() — a scan keyed on get*Context() reported 41 sites/1 violation where re-running found 84/2
 - [Phase ?]: Locale key parity measured exactly: 7 locales x 47 files x 598 keys, symmetric difference 0; placeholder-set parity recursing into the 147 plural bodies found the one real i18n defect
 - [Phase ?]: PR files-changed counts use rename detection; a --no-renames convention disagrees with them (533 vs 528, 214 vs 165) — every later PR body must state and reconcile both
+- [Phase ?]: 151-16: F-15 options 1 and 2 accepted by the operator — slices.tsv amended to claim README.md (slice 09) and the Capacitor scaffold (slice 10); the first partition change since approval, and no force-push was needed
+- [Phase ?]: 151-16: F-04's stale-path count was a substring artefact — 8 of 13 files were already correct; the -F acceptance grep is unsatisfiable because the correct path contains the stale one
 
 ### Quick Tasks Completed
 

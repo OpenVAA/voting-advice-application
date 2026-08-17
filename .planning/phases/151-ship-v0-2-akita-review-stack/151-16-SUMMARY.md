@@ -213,3 +213,9 @@ by the catch-all equalling slice 11 exactly with zero foreign paths.
 - [x] `#871` base `ship/v0.2-akita-07-frontend-routes`; `#872` base `ship/v0.2-akita-08-i18n-messages`
 - [x] No PR for slice 10 (D-07 lag held); 10 remote refs; `origin/main` unmoved; #860 untouched
 - [x] No force-push, no `git clean`, no `git stash`, worktree clean throughout
+
+## Self-Check: PASSED
+
+All three named artifacts exist and are non-empty (`151-16-SUMMARY.md` 215 lines, `pr-bodies/08.md`
+222, `pr-bodies/09.md` 294). All 16 plan commits plus both slice commits (`2865b05b3`, `3aa503741`)
+resolve with `git cat-file -e`.
