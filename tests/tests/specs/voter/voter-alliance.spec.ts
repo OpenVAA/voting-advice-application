@@ -81,7 +81,7 @@ test.describe('voter-alliance (EFLOW-02 + EPERM-03/04 riders)', () => {
         timeout: TIMEOUTS.element
       });
 
-      // Both member-org subcards asserted BY NAME (deeper than 's nth(1)
+      // Both member-org subcards asserted BY NAME (deeper than a bare nth(1)
       // visibility): OR-AA Party AA + OR-AB Party AB are the alliance members.
       const subcards = allianceA.getByTestId(testIds.voter.results.cardSubcard);
       await expect(subcards.filter({ hasText: /Party AA/i })).toBeVisible({ timeout: TIMEOUTS.slowPage });

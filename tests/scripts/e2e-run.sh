@@ -327,7 +327,7 @@ echo "e2e-run.sh: Supabase ready (REST $rest_code, public-assets bucket present)
 
 # --- 5. spawn the dev server, with its output redirected ------------------------
 
-# This redirection is the ONLY available mechanism for. Playwright does not manage
+# This redirection is the ONLY available mechanism. Playwright does not manage
 # the frontend dev server in this repo, and making it do so -- by adding a
 # Playwright-managed frontend server entry to the config -- is FORBIDDEN: it would
 # replace the Phase-137 trust model (a gate that VERIFIES an operator-started server)

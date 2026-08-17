@@ -292,7 +292,7 @@ export const testIds = {
       // Renders only `{#if values.length > 3}` (threshold > 3 confirmed) and its
       // label flips selectAll/unselectAll via `allSelected` — it is ONE toggle, not
       // two buttons. The entityFilters fixture (Plan 07) clicks it to select-all when
-      // not-all-selected and to select-none when all-selected..
+      // not-all-selected and to select-none when all-selected.
       filterSelectAllToggle: 'entity-filter-select-all-toggle'
     },
     entityDetail: {
@@ -324,7 +324,7 @@ export const testIds = {
       // Dedicated testid on the about.organizationMatching disclosure block on the
       // About page (rendered only when matching.organizationMatching !== 'none').
       // Tighter than the coarse voter-about-content anchor so can assert the
-      // org-matching disclosure specifically..
+      // org-matching disclosure specifically.
       organizationMatching: 'voter-about-organization-matching'
     },
     info: {
@@ -396,16 +396,16 @@ export const testIds = {
     // Generic Video component root <div> testid (Video.svelte). Shared between the
     // voter + candidate apps. The element is class:hidden-not-destroyed (hidden when
     // !hasContent), so expectVideo(true) asserts toBeVisible() and expectVideo(false)
-    // asserts not.toBeVisible — NOT mount/unmount churn..
+    // asserts not.toBeVisible() — NOT mount/unmount churn.
     video: 'video',
     // Distinct root testids on the results feedback + survey popups (FeedbackPopup /
     // SurveyPopup Alert roots). Distinct so the dismiss-and-reload helper can assert
-    // each popup's dismiss-persistence independently..
+    // each popup's dismiss-persistence independently.
     feedbackPopup: 'feedback-popup',
     surveyPopup: 'survey-popup',
     // Root <div> testid on SurveyBanner.svelte — the survey prompt rendered on the
     // frontpage / entityDetails surfaces when survey.showIn includes that surface.
-    // Consumed by the perm-show-feedback-survey showIn-surface audit..
+    // Consumed by the perm-show-feedback-survey showIn-surface audit.
     surveyBanner: 'survey-banner'
   }
 } as const;

@@ -2,11 +2,11 @@
 #
 # determinism-batch.sh -- Run N SERIAL, preflight-confirmed, validity-enforced full-suite
 #                         E2E runs on ONE pinned git HEAD and emit a mechanically derived
-#                         ledger (see phase 138, -- criterion 3).
+#                         ledger (see phase 138 -- criterion 3).
 #
 # Usage:
 #   tests/scripts/determinism-batch.sh                                   # the gate: 16 full-suite runs
-#   tests/scripts/determinism-batch.sh --runs 16 --ledger-file
+#   tests/scripts/determinism-batch.sh --runs 16 --ledger-file <path>
 #   tests/scripts/determinism-batch.sh --runs 2 --project eperm07-term-trigger \
 #       --ledger-dir tests/e2e-runs/selftest-batch                       # fast scoped self-check
 #
@@ -20,8 +20,9 @@
 #   --ledger-dir <path> Where run-NN directories are created. Relative paths resolve
 #                       against the REPO ROOT. Default: tests/e2e-runs/determinism-batch
 #                       (git-ignored, per plan 01).
-#   --ledger-file <path> Where the markdown ledger is written. Default:
-#                       <ledger-dir>
+#   --ledger-file <path> Where the markdown ledger is written. Default: a markdown
+#                       file inside <ledger-dir>; the literal name is set by
+#                       LEDGER_FILE below.
 #   --carry-discards <path>
 #                       A TSV of already-formatted abort rows from a PREVIOUS, discarded
 #                       attempt. They are carried into this batch's "Aborts and discards"

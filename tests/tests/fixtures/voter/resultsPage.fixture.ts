@@ -224,7 +224,7 @@ export function createResultsPage(page: Page) {
      * Reads the RESULTS-LIST card callout (`testIds.voter.results.matchScore`,
      * rendered by MatchScore.svelte as the "<n>%" header readout) scoped to the
      * matched card — NOT the `score-gauge` testid, which only renders inside the
-     * entity-details SubMatches drawer (trace-confirmed in).
+     * entity-details SubMatches drawer (trace-confirmed).
      * The target card scopes the callout; no org-scoped disambiguation id is needed.
      */
     async expectOrgMatchScore(target: Target): Promise<number> {

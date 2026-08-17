@@ -57,13 +57,13 @@ test.describe('@probe video fixture (EPERM-06)', () => {
     // the intro page auto-redirects on mount PAST the `voter-questions-start`
     // button straight to the category intro (`categoryIntros.show=true` here).
     // walkUntilQuestionsIntro is bypass-tolerant (see phase 120) and lands on the
-    // category intro directly..
+    // category intro directly.
     await walkUntilQuestionsIntro(page);
 
     // Under perm-question-video the questions-intro is bypassed (show=false) and
     // walkUntilQuestionsIntro deterministically lands on the category intro
     // (categoryIntros.show=true). No questions-start dispatch is needed — the
-    // page is already on the category intro..
+    // page is already on the category intro.
     const categoryStart = page.getByTestId(testIds.voter.questions.categoryStart);
 
     // On the category intro: NO question video here (seeded on questions only).

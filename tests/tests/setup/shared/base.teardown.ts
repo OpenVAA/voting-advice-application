@@ -17,7 +17,7 @@
  * `test-e2e-base-` namespace, but NOT its sole deleter — all 19 perm setups
  * pass `extraTeardownPrefix: ['test-', 'e2e-perm-']`, and `'test-'` matches
  * `test-e2e-base-%`, so a perm setup wipes this dataset before seeding its
- * own (` `, confirmed empirically — the stated reason
+ * own (confirmed empirically — the stated reason
  * `before = 0` was observed at this site). That is safe only because
  * Playwright's `teardown:` deferral is transitive over the serial perm chain,
  * so every setup completes before any teardown runs (see phase 140 review WR-06);

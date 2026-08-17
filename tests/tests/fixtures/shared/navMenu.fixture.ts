@@ -16,7 +16,7 @@
  * ## Surface
  *  - menu                       — the nav-menu root Locator.
  *  - items()                    — all nav-menu-item Locators inside the menu.
- *  - openMobileNav — click the hamburger toggle; the
+ *  - openMobileNav()            — click the hamburger toggle; the
  *                                 mobile-only open step before reading items.
  *  - expectNavMenuItems(items)  — assert the menu contains EXACTLY the given
  *                                 item labels, in order.
@@ -38,8 +38,8 @@ export interface NavMenuFixture {
   /** Click the mobile hamburger toggle to open the nav drawer. */
   openMobileNav(): Promise<void>;
   /**
-   * Assert the menu contains exactly `expected` item labels, in order
-   * . Each entry is matched against the corresponding item's
+   * Assert the menu contains exactly `expected` item labels, in order. Each
+   * entry is matched against the corresponding item's
    * accessible name (regex or substring).
    */
   expectNavMenuItems(expected: Array<RegExp | string>): Promise<void>;

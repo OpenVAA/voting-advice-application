@@ -64,7 +64,7 @@
  * implementation, no drift, and this spec witnesses the production helper instead
  * of holding a private copy of the bug. The settle still bears no assertion of its
  * own — the hard assertion follows it. The pre-fix behaviour is not lost: it is on
- * the record as RUN 1 of ` ` (5/5 failing).
+ * the record as RUN 1 of the negative control (5/5 failing).
  *
  * The `try { … } finally { … }` around the hop is a resource-release block for
  * the CDP session (a surviving throttle would distort every later test in the
@@ -115,7 +115,7 @@ function forcedNumber(name: string, fallback: number, min: number): number {
 }
 
 // FORCING BUDGET — file-local, env-defaulted to the shared production budget.
-// reason: 's negative-control knob. It is scoped to THIS file by
+// reason: this spec's negative-control knob. It is scoped to THIS file by
 // construction, so no other spec's budget can be perturbed by this phase; the
 // shared TIMEOUTS.element default is NEVER edited (its own docblock,
 // timeouts.ts:16-21, forbids moving it, and it is shared with the Playwright
@@ -126,7 +126,7 @@ function forcedNumber(name: string, fallback: number, min: number): number {
 const FORCED_ELEMENT_BUDGET = forcedNumber('EPERM07_FORCE_BUDGET_MS', TIMEOUTS.element, 1);
 
 // CDP slowdown multiplier for the hop under test (1 = no throttle).
-// reason: 's amplifier. Same file-local, env-defaulted construction —
+// reason: this spec's amplifier. Same file-local, env-defaulted construction —
 // unset means rate 1, which is the browser's normal scheduling. `min: 1` because
 // `Emulation.setCPUThrottlingRate` accepts no slowdown below 1, and a sub-1 value
 // would be dropped by `applyCpuThrottleKnob` — an unapplied throttle the operator
@@ -172,7 +172,7 @@ type ForensicState = {
  * stop witnessing `voter-journey.spec.ts` entirely, so a revert of the production
  * fix would not be caught here. Delegating to the shared helper is what makes
  * this spec a permanent regression test for that helper rather than a museum of
- * the bug. Negative control: ` `.
+ * the bug. A negative control was recorded before the fix landed.
  *
  * The `capture` callback the action receives records the settle's baseline
  * (URL + landmark text) at the LAST instant before the navigating click, which is

@@ -55,8 +55,8 @@ test.describe('@probe org-matching readers (EPERM-10)', () => {
     // MatchScore.svelte (a `<span>` with the "% match" text), NOT ScoreGauge.svelte
     // (`score-gauge` is only emitted inside the entity-details SubMatches drawer).
     // Wiring expectOrgMatchScore to the list-card score (add a stable testid to
-    // MatchScore, or re-point the reader) is an SPEC concern (Plan 06) —
-    // trace-confirmed in. The probe proves the org card
+    // MatchScore, or re-point the reader) is a SPEC concern —
+    // trace-confirmed. The probe proves the org card
     // + computed match readout against the active org-matching seed.
   });
 

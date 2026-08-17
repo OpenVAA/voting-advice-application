@@ -48,7 +48,7 @@ test.describe('@probe popupNotice fixture (EPERM-09)', () => {
     // feedback (delay 1s) AND survey (delay 1s) countdowns active on /results,
     // the feedback popup occupies the queue head and the survey popup is queued
     // BEHIND it — so the survey only surfaces once the feedback popup is
-    // dismissed (see phase 120 trace-confirmed; see).
+    // dismissed (see phase 120, trace-confirmed).
     // Dismiss the leading feedback popup first, then assert the survey popup.
     await popups.expectVisible('feedback');
     await popups.dismiss('feedback');

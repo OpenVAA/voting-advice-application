@@ -211,7 +211,7 @@ async function toggleCategoryListItem({
  * The settle now lives in `helpers/navigation.ts` so this walk and the
  * `eperm07-term-trigger` instrument share ONE implementation and cannot drift —
  * the instrument would otherwise keep its own copy of the defect and stop
- * witnessing this file. Negative control: ` `.
+ * witnessing this file. A negative control was recorded before the fix landed.
  *
  * The baseline is captured BY THE ACTION, via the `capture` callback it receives,
  * immediately before the navigating click — never here at wrapper entry (see phase 138
@@ -428,7 +428,7 @@ async function expectExactOneMultiChoiceQuestionAndAdvance({
     const choices = page.locator(`[data-testid="question-choice"][name="questionChoices-${questionId}"]`);
     await expect(choices.first()).toBeVisible({ timeout: TIMEOUTS.element });
 
-    // ---- lock ----
+    // ---- helper-text lock ----
     // The helper paragraph is emitted only for a multi-choice question carrying
     // authored min/max (`{#if mode === 'answer' && multiConstraints}`), and its
     // text is the branch output. Exact string → a raw-key regression fails here.
@@ -1795,7 +1795,7 @@ test.describe('voter journey', () => {
     // Voter nominations coverage was moved OUT of this journey test. The former
     // commented-out nominations step (SKIPPED for the since-fixed 2026-05-31
     // fetch-all-questions bug) is superseded by the dedicated
-    // tests/tests/specs/voter/voter-nominations.spec.ts (per).
+    // tests/tests/specs/voter/voter-nominations.spec.ts.
   });
 });
 

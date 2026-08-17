@@ -134,7 +134,7 @@ export function createQuestionInfo(page: Page): QuestionInfoFixture {
       // distinct testid — NOT a `.nth(index)` slice of a shared base testid.
       // Playwright's `getByTestId` is an exact match, so the base
       // `voter-questions-info-section` never matches `…-section-0` (see phase 120
-      // trace-confirmed fixture/component mismatch; see).
+      // trace-confirmed fixture/component mismatch).
       for (const index of sections) {
         await expect(page.getByTestId(`${testIds.voter.questions.infoSection}-${index}`)).toBeVisible();
       }

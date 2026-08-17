@@ -10,7 +10,7 @@
  * idiom mirrors `perm-hide-all-nominations.spec.ts`).
  *
  * This is a DEDICATED spec per — NOT a voter-journey step. The old
- * commented journey step (removed by) used soft assertions; this
+ * commented journey step (since removed) used soft assertions; this
  * spec carries HARD assertions only.
  *
  * Seed is ASSERT-ONLY: no dev-seed or product files are modified.

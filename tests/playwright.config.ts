@@ -53,7 +53,7 @@ if (fs.existsSync(probesDir)) {
  * Hoisted so the budget guard below — and every reader — has ONE place to look for the
  * number, which is why the spec's own header names this symbol instead of restating it.
  *
- * Scoped deliberately to a single file: 's scope is `voter-journey.spec.ts`.
+ * Scoped deliberately to a single file: its scope is `voter-journey.spec.ts`.
  * The three sibling `Rigidity contract` drift files found alongside it are a recorded
  * follow-up, not a licence to widen this table quietly.
  */
@@ -443,11 +443,11 @@ export default defineConfig({
     // than seconds — accepted, because there is no requirement that this journey
     // be runnable quickly in isolation.
     //
-    // see phase 140 CR-01 is FIXED (commit `10ca954ac`): `submitElection ` /
+    // see phase 140 CR-01 is FIXED (commit `10ca954ac`): `submitElection()` /
     // `submitConstituency()` in `candidatePreregisterPage.fixture.ts` select by
     // LABEL, not by position, so a foreign dataset in the DB fails the walk
     // loudly instead of being silently preregistered into. Proven by trace —
-    // `check` fires on the `[EL1]` option (see ` ` Gate 3).
+    // `check` fires on the `[EL1]` option.
     //
     // The setup/teardown FILES these entries point at land in 122-04; the journey
     // SPEC matched by the `bank-auth-journey` project lands in 122-05.
@@ -639,7 +639,7 @@ export default defineConfig({
       dependencies: ['data-setup-base']
     },
 
-    // voter-alliance (see phase 130 04 riders) — LEAF. Read-only
+    // voter-alliance (see phase 130, plus its results-display riders) — LEAF. Read-only
     // alliance results-surface DEPTH on the base dataset (Alliance A card,
     // clickable member-org subcards, member-orgs drawer, ['info','children'] tab
     // control). Consumes the shared 'max' voter walk (answeredVoterPage) under a
@@ -669,8 +669,8 @@ export default defineConfig({
 
     // === _probes (fixtures-first isolation probes) — LEAF, no data-setup ===
     //
-    // The 4 deferred perm-seeded probes (video→, questionInfo→,
-    // popupNotice→, orgMatching→) live under
+    // The 4 deferred perm-seeded probes (video, questionInfo,
+    // popupNotice, orgMatching) live under
     // ./tests/specs/_probes. They are DELIBERATELY OUTSIDE the perm serial-DAG
     // chain: each clobbers the shared `app_settings` JSONB singleton, so they
     // MUST run ONE-AT-A-TIME in true isolation, seeded OUT-OF-BAND per the probe

@@ -41,7 +41,7 @@ test.describe('voter-dark-mode', () => {
 
     // Persistence: the emulated media preference survives reload automatically
     // (no toggle, no client storage). Assert the dark signal STILL holds — this
-    // is 's "persists across reload".
+    // is the "persists across reload" property this spec is named for.
     await page.reload();
     await theme.expectTheme('dark');
 
