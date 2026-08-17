@@ -77,9 +77,8 @@ export async function condenseArguments({
     const selectedQuestions = questionIds.length
       ? questionIds.map((id) => dataRoot.getQuestion(id))
       : dataRoot.findQuestions({ type: 'opinion', elections: election });
-    console.info(
-      '[condense] selectedQuestions',
-      selectedQuestions.map((q) => q.name)
+    controller.info(
+      `Resolved ${selectedQuestions.length} question(s): ${selectedQuestions.map((q) => q.name).join(', ')}`
     );
     const supportedQuestions = selectedQuestions.filter(
       (q) =>
@@ -87,9 +86,8 @@ export async function condenseArguments({
         q.type === QUESTION_TYPE.SingleChoiceOrdinal ||
         q.type === QUESTION_TYPE.SingleChoiceCategorical
     );
-    console.info(
-      '[condense] supportedQuestions',
-      supportedQuestions.map((q) => q.name)
+    controller.info(
+      `${supportedQuestions.length} of those are of a supported type: ${supportedQuestions.map((q) => q.name).join(', ')}`
     );
 
     if (!supportedQuestions.length) {
@@ -103,9 +101,6 @@ export async function condenseArguments({
     // Create pipeline dynamically based on the questions we'll actually process
     const pipeline = createQuestionPipeline(supportedQuestions);
     controller.initializePipeline(pipeline);
-
-    console.error({ election });
-    console.error(dataRoot.candidateNominations.map((n) => n.entity.id));
 
     // 3) Collect nominated entities (HasAnswers) for the election
     const entities = Object.values(ENTITY_TYPE).flatMap((t) =>

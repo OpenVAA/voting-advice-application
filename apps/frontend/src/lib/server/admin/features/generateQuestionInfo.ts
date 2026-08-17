@@ -88,9 +88,8 @@ export async function generateQuestionInfo({
       ? questionIds.map((id) => dataRoot.getQuestion(id))
       : dataRoot.findQuestions({ type: 'opinion', elections: election });
 
-    console.info(
-      '[question-info] selectedQuestions',
-      selectedQuestions.map((q) => q.name)
+    controller.info(
+      `Resolved ${selectedQuestions.length} question(s): ${selectedQuestions.map((q) => q.name).join(', ')}`
     );
 
     if (!selectedQuestions.length) {
