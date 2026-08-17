@@ -137,7 +137,7 @@ If re-auth-setup depends on `candidate-app` instead of `candidate-app-mutation`,
 
 **Trade-off:** re-auth-setup must be robust to candidate-app-mutation having run OR not yet run. The password-revocation only happens in `candidate-password.spec.ts` (which is in `candidate-app-password`, NOT mutation), so this is safe — `candidate-app-mutation` does NOT revoke Alpha's session (it touches a fresh candidate `E2E_ADDENDUM_CANDIDATES[1]`, not Alpha — see `candidate-profile.spec.ts:84-86`).
 
-Verification: I confirmed `candidate-profile.spec.ts` uses `E2E_ADDENDUM_CANDIDATES[1]` (a fresh candidate) and registers it with `candidatePassword = 'ProfileTestPass1!'` (not Alpha's `Password1!`). The mutation project does NOT touch Alpha's auth — so re-auth-setup doesn't need to wait for mutation.
+Verification: I confirmed `candidate-profile.spec.ts` uses `E2E_ADDENDUM_CANDIDATES[1]` (a fresh candidate) and registers it with `candidatePassword = '[REDACTED-S07-17]'` (not Alpha's `Password1!`). The mutation project does NOT touch Alpha's auth — so re-auth-setup doesn't need to wait for mutation.
 
 ### Option 2b: Apply `--ignore-snapshots` / `teardown` semantics (not applicable here)
 

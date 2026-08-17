@@ -348,7 +348,7 @@ setup('register fresh candidate via email link', async ({ page }) => {
   const client = new SupabaseAdminClient();
   const candidateEmail = E2E_ADDENDUM_CANDIDATES[1].email!;
   const candidateExternalId = E2E_ADDENDUM_CANDIDATES[1].external_id;
-  const candidatePassword = 'ProfileTestPass1!';
+  const candidatePassword = '[REDACTED-S07-17]';
 
   // Step 1: count + send registration email + poll Inbucket
   // (verbatim from candidate-profile.spec.ts:89-107)

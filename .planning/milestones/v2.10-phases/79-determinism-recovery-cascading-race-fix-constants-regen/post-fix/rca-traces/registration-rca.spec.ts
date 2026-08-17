@@ -149,7 +149,7 @@ test.describe('candidate profile RCA (Phase 79 Plan 01)', { tag: ['@candidate', 
   const client = new SupabaseAdminClient();
   const candidateEmail = E2E_ADDENDUM_CANDIDATES[1].email!;
   const candidateExternalId = E2E_ADDENDUM_CANDIDATES[1].external_id;
-  const candidatePassword = 'ProfileTestPass1!';
+  const candidatePassword = '[REDACTED-S07-17]';
 
   test('RCA — should register the fresh candidate via email link', async ({ page }) => {
     test.setTimeout(120000);
