@@ -37,9 +37,13 @@
 #                    with `fatal: malformed index info` (Pitfall 3).
 #   set -o pipefail  `set -e` does NOT fire inside a pipeline, so without pipefail the
 #                    slice silently produces nothing while the script reports success.
-#   python3 parsing  the -z stream is split on NUL, never on whitespace: the tracked path
-#                    `apps/frontend/src/lib/server/api/README.md 21-40-30-014.md` contains
-#                    a space (Pitfall 2).
+#   python3 parsing  the -z stream is split on NUL, never on whitespace. The tracked path
+#                    `apps/frontend/src/lib/server/api/README.md 21-40-30-014.md` contained a
+#                    space (Pitfall 2). Plan 151-14 renamed that file to `README.md` as a
+#                    review finding, so the repository no longer contains a spaced path -- the
+#                    NUL split stays REQUIRED regardless: a whitespace split would silently
+#                    corrupt the index-info stream the moment one reappears, and `git diff`
+#                    output is not a whitespace-delimited format.
 #   --no-renames     slice content is the target's bytes at the target's paths; rename
 #                    detection would be noise here and, at this diff size, wrong noise.
 #   diff.renameLimit=20000
