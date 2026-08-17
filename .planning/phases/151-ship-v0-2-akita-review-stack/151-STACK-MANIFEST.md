@@ -20,20 +20,21 @@ operator_approved: true
 operator_approved_date: 2026-08-17
 
 # --- plan 151-09: the bottom three slices cut for real (no longer a dry run) ---
-slices_cut: ["01a", "01b", "02", "03", "04", "05", "06"]
-slices_cut_by: "151-09 (01a, 01b, 02); 151-11 (03; 02 re-cut from the F-18-fixed tip); 151-12 (04); 151-13 (05); 151-14 (06)"
+slices_cut: ["01a", "01b", "02", "03", "04", "05", "06", "07", "08"]
+slices_cut_by: "151-09 (01a, 01b, 02); 151-11 (03; 02 re-cut from the F-18-fixed tip); 151-12 (04); 151-13 (05); 151-14 (06); 151-15 (07, 08; 08 re-cut from its own README-fixed tip)"
 cut_base_sha: ac30f132a407084bf30626029a0a71a0a521982f
-cut_target_sha: d8e75d868
-cut_target_tree: 06f7ab4f4
-partition_total_files_at_cut: 4292
-catchall_remaining_files: 2934
+cut_target_sha: 75c10cb8f
+cut_target_tree: 10ef4af4f
+partition_total_files_at_cut: 4296
+catchall_remaining_files: 2394
 catchall_deviation_pct: 0.0
 partial_stack_identity_verified: true
-branches_pushed: 6
-prs_opened: 6
-pushed_by: "151-10 (01a, 01b); 151-11 (02); 151-12 (03); 151-13 (04); 151-14 (05)"
-prs_open: [863, 864, 865, 866, 867, 868]
+branches_pushed: 8
+prs_opened: 8
+pushed_by: "151-10 (01a, 01b); 151-11 (02); 151-12 (03); 151-13 (04); 151-14 (05); 151-15 (06, 07)"
+prs_open: [863, 864, 865, 866, 867, 868, 869, 870]
 adapter_block_dispositioned_by: "151-14"
+cells_filled: 123  # of 163, after 151-15 filled slices 07 and 08
 criterion_4_3_satisfied_by: 545cc26c8790c54b532f3d50fe5bceb02d851177
 ruleset_8477541: untouched-active
 pr_860_decision: repurpose-at-151-18
@@ -90,9 +91,9 @@ later plan — only its cells.
 | 03 | 4 | `ship/v0.2-akita-03-supabase` | `feat[db]: replace the Strapi backend with the Supabase schema, RLS, functions and generated types` | 119 | 16422 | 0 | ok | `11f877913` | [#866](https://github.com/OpenVAA/voting-advice-application/pull/866) |
 | 04 | 5 | `ship/v0.2-akita-04-dev-seed` | `feat: add the dev-seed package that generates deterministic local and E2E data` | 162 | 19661 | 0 | ok — 19,661 lines, still inside the 20k cap | `7640f7bcb` | [#867](https://github.com/OpenVAA/voting-advice-application/pull/867) |
 | 05 | 6 | `ship/v0.2-akita-05-e2e-tests` | `test: add the Playwright end-to-end suite and its runner configuration` | 195 | 23325 | 778 | **lines > 20k** | `545cc26c8` | [#868](https://github.com/OpenVAA/voting-advice-application/pull/868) |
-| 06 | 7 | `ship/v0.2-akita-06-frontend-lib` | `feat: rewrite the frontend library layer on Svelte 5 runes and the Supabase adapter` | **533** | **22715** | **8344** | **files > 300 AND lines > 20k** — 533 files (cap 300) and 31,059 changed lines (cap 20,000); the ONLY row over both budgets other than the by-design planning slice | `8c613634b` | pending (opens at 151-15, per D-07) |
-| 07 | 8 | `ship/v0.2-akita-07-frontend-routes` | `feat: rewrite the frontend app shell and the voter and candidate routing surface` | 213 | 10291 | 8267 | ok | pending | pending |
-| 08 | 9 | `ship/v0.2-akita-08-i18n-messages` | `feat: add the Paraglide message catalogues for every supported locale` | 329 | 8904 | 0 | **files > 300** — 47 messages × 7 locales, one shape | pending | pending |
+| 06 | 7 | `ship/v0.2-akita-06-frontend-lib` | `feat: rewrite the frontend library layer on Svelte 5 runes and the Supabase adapter` | **533** | **22715** | **8344** | **files > 300 AND lines > 20k** — 533 files (cap 300) and 31,059 changed lines (cap 20,000); the ONLY row over both budgets other than the by-design planning slice | `8c613634b` | [#869](https://github.com/OpenVAA/voting-advice-application/pull/869) |
+| 07 | 8 | `ship/v0.2-akita-07-frontend-routes` | `feat: rewrite the frontend app shell and the voter and candidate routing surface` | **214** | **10319** | **8268** | ok — 214 files, 18,587 changed lines, inside both caps (GitHub renders 165 / +7,593 / −5,542 with rename detection on) | `342926b93` | [#870](https://github.com/OpenVAA/voting-advice-application/pull/870) |
+| 08 | 9 | `ship/v0.2-akita-08-i18n-messages` | `feat: add the Paraglide message catalogues for every supported locale` | **330** | **8986** | 0 | **files > 300** — 47 messages × 7 locales, one shape, plus the catalogue README | `6a810df8a` | pending (opens at 151-16, per D-07) |
 | 09 | 10 | `ship/v0.2-akita-09-docs` | `docs: update the project documentation - the docs site, the root roadmap and the key-generation guide` | 39 | 490 | 92 | ok | pending | pending |
 | 10 | 11 | `ship/v0.2-akita-10-root-config` | `chore: update the monorepo and frontend-app build, lint, CI and deployment plumbing` | 37 | 8665 | 25535 | **lines > 20k** — `yarn.lock` alone accounts for most of it | pending | pending |
 | 11 | 12 | `ship/v0.2-akita-11-planning` | `docs[planning]: add the v0.2 planning record and agent configuration` | 2287 | 866928 | 100 | **files > 300 and lines > 20k** — unreadable by design (D-12) | pending | pending |
@@ -945,6 +946,158 @@ for `frontend-and-shared-module-validation`: step **3 `Setup Yarn 4.6` — failu
 - **F-64 routes a 117-file, 272-occurrence stale-permalink class to 151-16** as a slice-09 whole-tree
   decision, generator included.
 
+
+
+## Slices 07 and 08 cut, PRs 6 and 7 published — plan 151-15
+
+**Two slices in one pass, the stack's eighth and ninth, and its sixth and seventh PRs open.** Slice 08
+was **re-cut** after its own sweep fix landed — the second time in the phase that D-07's one-slice lag
+has been spent rather than collected on, after 151-11's slice-02 re-cut. Slice 07 was pushed before
+that re-cut and was asserted unaffected by it, so PRs #863 … #870 were never disturbed and **no
+force-push was needed anywhere**.
+
+| ref | value |
+|---|---|
+| base, re-resolved | `origin/main` = `ac30f132a` — **still unmoved**, at every measurement point in this phase |
+| `TARGET` at the slice-07 cut | `f7076dbfe`, merge tree `276d89a94` |
+| `TARGET` at the slice-08 re-cut | `75c10cb8f`, merge tree `10ef4af4f` — includes this plan's seven sweep fixes |
+| `PARENT` for 07, unchanged and pushed by this plan | `8c613634b` — slice 06; **not** re-cut, so PR #869 shows the same object that was pushed |
+| `PARENT` for 08, unchanged and already pushed | `342926b93` — slice 07; **not** re-cut, so PR #870 shows the same object that was pushed |
+
+| slice | branch | commit | files | +lines | −lines |
+|---|---|---|---|---|---|
+| 07 | `ship/v0.2-akita-07-frontend-routes` | **`342926b93`** | **214** | **10319** | **8268** |
+| 08 | `ship/v0.2-akita-08-i18n-messages` | **`6a810df8a`** | **330** | **8986** | 0 |
+
+### Slice 07 is the first slice in the stack whose diff IS its whole surface
+
+Every other slice carries a dropped-finding class — files byte-identical across the layout move, which
+slice 01a renders as rename lines and no later slice's diff contains. Under slice 07's and slice 08's
+paths there is **no such class**, and that is established two independent ways rather than asserted:
+
+| Method | Slice 07 | Slice 08 |
+|---|---:|---:|
+| files tracked at `HEAD` under the pathspec, minus files present in the diff (`A` ∪ `M`) | **114 − 114 = 0** | **330 − 330 = 0** |
+| blob comparison, `HEAD:<path>` vs `origin/main:frontend/<path>`, per file | **0 identical** | **0 identical** |
+
+The two methods answer from opposite directions and agree. **This is the standing instruction's
+question finally coming back negative**, and it matters for the disposition: for these two slices the
+review surface and the diff are the same set, so nothing under them is reviewed by nobody.
+
+### The published numbers did not match the measured ones — rename detection, reproduced before correcting anything
+
+**GitHub reported `528 files, +22,550, −8,179` for PR #869 against a measured 533 / +22,715 / −8,344,
+and `165 files, +7,593, −5,542` for PR #870 against 214 / +10,319 / −8,268.** Both bodies had already
+been written with the measured numbers, so the discrepancy surfaced by comparing the published result
+against the measurement rather than by trusting either one.
+
+Cause, reproduced locally to the digit before either body was edited: **rename detection.**
+`git show -M --shortstat` on the two slice commits returns exactly `528 / 22550 / 8179` and
+`165 / 7593 / 5542`, with rename-aware status sets `207 A / 55 D / 261 M / 5 R` and
+`60 A / 50 D / 6 M / 49 R`. This record's slice table is `--no-renames` by its own stated convention;
+GitHub's Files-changed tab is not.
+
+For slice 07 the gap is large and **favourable to the reviewer**: 49 of the 97 `[[lang=locale]]` route
+files are matched to their de-localised counterparts, so GitHub shows 49 readable rename diffs where
+`--no-renames` shows 98 delete-plus-add halves.
+
+> **Standing instruction for 151-16 and 151-17.** Every PR body from here on must state **both**
+> numbers and reconcile them, because a reviewer reads the header line and then the Files-changed tab
+> and will otherwise conclude one of them is wrong. Slice 09 (39 files) and slice 10 (37) are unlikely
+> to show much rename detection; **slice 11 will**, and slice 01a already demonstrates the extreme case
+> in the opposite direction. Neither number is wrong; only an unreconciled pair is.
+
+### The per-slice safety check
+
+| check | result |
+|---|---|
+| chain | `07^ == 06` (`8c613634b` both sides) and `08^ == 07` (`342926b93` both sides), by `rev-parse` |
+| commit count per slice | **1** and **1** |
+| status sets | slice 07 **`ADM`** (`109 A / 99 D / 6 M`); slice 08 **`A`** (`330 A`) |
+| remaining-slices catch-all, `TIP08..TARGET` pathspec `.` | **`files=2394`** |
+| partition arithmetic | 252 + 97 + 119 + 162 + 195 + 533 + 214 + 330 + 2394 = **4296** = comparable total (`diff --no-renames C1..TARGET`). **Gap: 0.** |
+| attribution of the rise from 151-14's 4292 | **+4, every one named, zero leaving.** By set difference: `151-14-SUMMARY.md` and `pr-bodies/05.md` — two `.planning/` files 151-14 committed *after* its own measurement, riding slice 11 (2316 → 2318) — plus this plan's `apps/frontend/src/routes/loginRedirectTarget.ts` (slice 07) and `apps/frontend/messages/README.md` (slice 08). |
+| predicted remainder | 151-14's catch-all was 2934 including slice 07's then-213 and slice 08's 329. 2934 − 213 − 329 + 2 = **2394**, the measured value. **Deviation 0.000%** against a 1% halt threshold. |
+| a second, independent decomposition | per-slice pathspecs measured at this `TARGET`: 39 + 37 + 2318 = **2394**. The remainder closes **without reference to the catch-all**, and slices 09 and 10 are unchanged **file for file** from the dry-run table (39 / 37). |
+| **partial-stack identity** | the nine cut slices plus the catch-all produce tree **`10ef4af4f`** = `TARGET^{tree}` **`10ef4af4f`**. **MATCH.** Measured twice — `276d89a94` before this plan's last two commits and `10ef4af4f` after — matching the target both times. |
+| `git status --porcelain` | empty throughout; `HEAD` never left `feat-gsd-roadmap`; the catch-all was applied into a scratch `GIT_INDEX_FILE` through `build-slice.sh` itself, never reimplemented, and never committed to a ref |
+
+**The dry run's predictions for both slices are now fully attributed, in both directions.** Slice 07
+was predicted 213 / +10,291 / −8,267; it measured 213 / +10,290 / −8,267 at 151-13's tip, 213 /
++10,291 / −8,268 at 151-14's (the +1/+1 is 151-14's F-57 dead-link repair in `src/routes/README.md`, a
+file already inside the slice's diff), and 214 / +10,319 / −8,268 here. Slice 08 was predicted 329 /
++8,904 / 0 and measured exactly that until this plan's README added one file and 82 lines. **No file
+has ever entered or left either slice's partition cell** other than the two this plan added.
+
+### Slice 08's re-cut, and the assertion that made it safe
+
+Slice 08 was cut, then this plan's item-6 fix added `apps/frontend/messages/README.md`, so it was
+re-cut on the unchanged slice-07 commit. **The assertion that slice 07 needed no re-cut was made
+before the rebuild, not assumed:** `diff --no-renames` between the pushed slice-07 tip `342926b93` and
+the new target, restricted to slice 07's nine-token pathspec, returns **0 files**. PRs #869 and #870
+therefore still show the objects that were pushed.
+
+### Published
+
+| slice | branch on `origin` | SHA (remote == local, asserted) | PR | base |
+|---|---|---|---|---|
+| 06 | `ship/v0.2-akita-06-frontend-lib` | `8c613634b` | [#869](https://github.com/OpenVAA/voting-advice-application/pull/869) | `ship/v0.2-akita-05-e2e-tests` |
+| 07 | `ship/v0.2-akita-07-frontend-routes` | `342926b93` | [#870](https://github.com/OpenVAA/voting-advice-application/pull/870) | `ship/v0.2-akita-06-frontend-lib` |
+
+Asserted after the fact, not assumed: `gh pr view` returns the expected `baseRefName` for each,
+`headRefOid` equal to the local tip, and `OPEN`.
+`gh pr list --head ship/v0.2-akita-08-i18n-messages --json number --jq length` returns **0** and
+`git ls-remote --heads origin 'ship/v0.2-akita-08*'` returns **0**, so D-07's one-slice lag held —
+**PR 9 stays closed until slice 09 is swept at plan 151-16.**
+`git ls-remote --heads origin 'ship/*'` returns exactly **8** refs; `origin/main` is unmoved at
+`ac30f132a`; and PR **#860 was not touched** (`updatedAt` still `2026-05-19T12:08:25Z`). Both pushes
+were dry-run immediately beforehand and each reported `[new branch]`, with **no force anywhere**, no
+`git clean`, no `git stash`.
+
+Like #864 … #868, both new PRs fire **no checks** — asserted, not predicted: `gh pr checks` returns
+*"no checks reported"* on each. **The titles follow the format 151-13 stabilised** — `7/12 feat: …`
+and `8/12 feat: …`, `N/12` plus `slices.tsv` column 3 verbatim.
+
+### The CI failure signature was re-verified against the run before it was published again
+
+`gh run view 32017478048 --json jobs` reports, for `frontend-and-shared-module-validation`: step
+**3 `Setup Yarn 4.6` — failure**, step 4 `Setup Node.js 20.18.1` — skipped, step **5 `Install all
+dependencies` — skipped**. `backend-validation` the same; `e2e-tests` fails at step 4 `Setup Yarn 4.6`
+after a passing `Configure environment`. `main.yaml` at 01a's tip is blob **`c2fdcedb2`**,
+byte-identical to `origin/main`'s, and defines exactly `frontend-and-shared-module-validation`,
+`backend-validation` and `e2e-tests` — so `skill-drift-check`, `supabase-tests` and
+`dev-seed-integration` do **not** exist at any published head, and research's Pitfall 7 stays refuted.
+Both bodies state exactly that and no more.
+
+### What 151-16 inherits from this cut
+
+- **PR 8 (slice 08) opens at 151-16**, once slice 09 is swept. Slice 08's branch exists locally at
+  `6a810df8a` and is **not** pushed.
+- **F-64 is still slice 09's** — 272 `blob/main/frontend/…` permalinks across 117 `apps/docs/` files,
+  generator included. Two specifics this sweep adds to it: the routing guide's generated page describes
+  neither the `admin/` app nor the `api/` tree (the same gap this plan fixed in the in-slice README),
+  and the routing prose predates the locale-segment removal that is slice 07's defining change.
+- **F-59's eslint-config fix rides slice 10's diff**, as 151-14 recorded.
+- **A named instance for F-15, and it is load-bearing.** `apps/frontend/tools/` (3 files) is claimed by
+  **no** slice's pathspec — asserted by running all eleven rows of `slices.tsv` against it, every one
+  returning 0 — **and** is byte-identical across the layout move, so it is in no slice's diff either.
+  One of those three files, `tools/translationKey/generateTranslationKeyType.ts`, generates the
+  compile-time key union that is slice 08's only automated gate, and it reads its key list from the
+  *legacy* catalogue in slice 06 rather than from `messages/`. The two agree exactly today (**598 =
+  598**, symmetric difference 0 both directions) and nothing enforces that. **F-15's structural
+  question remains the operator's at 151-16**; this is recorded so that decision has a concrete example
+  in front of it rather than a count of 120.
+- **A fourth F-44 blind spot, confirmed live** and routed to **151-19**: a phase reference broken
+  across a line (`apps/frontend/src/params/etSg.ts:3-4` ends a line with `introduced by Phase` and
+  continues `88 to make…`) is invisible to `phase-ref`, which needs keyword and digits on one line. It
+  is left in place deliberately: it is grammatical as it stands, and **neither repair is count-neutral**
+  — collapsing it adds a `phase-ref occ` if `see`-prefixed and a `bare` if not.
+- **A drift this plan caught in its own work, worth copying as a habit.** Two comments it wrote added
+  three `see phase N`, one `see spike N` and one `v2.13`, moving the hygiene report's **ungated** columns
+  660/40/43 → 663/41/44 while the gated `bare` columns held at 11/0. `--assert-clean` would have gone on
+  reporting exactly the two approved rows and the drift would have shipped unnoticed. **Check `occ`, not
+  only `bare`, after every edit that writes a comment.** Corrected in `33e616758`; final state
+  byte-identical to the pre-plan baseline.
 
 
 ---
