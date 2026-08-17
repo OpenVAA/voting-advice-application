@@ -75,13 +75,15 @@ export default [
     }
   },
   // (v2.11 K1 guard): ban `svelte/store` so any reintroduction of the store seam
-  // fails `yarn lint:check`. 's widening to the whole `src/**` tree is now DONE in
-  // see phase 115: the glob covers `src/**/*.{ts,svelte}` (was 's narrower
-  // lib/contexts/** + routes/**), enforcing the rune-only invariant frontend-wide now that
-  // removed the last real `svelte/store` import.
+  // fails `yarn lint:check`. The guard's widening to the whole `src/**` tree is
+  // now DONE — see phase 115: the glob covers `src/**/*.{ts,svelte}`, where it
+  // previously covered only lib/contexts/** + routes/**. That enforces the
+  // rune-only invariant frontend-wide, now that the last real `svelte/store`
+  // import has been removed.
   // Flat config REPLACES (does not merge) the `no-restricted-imports` array for in-scope files,
   // so the inherited deep-relative-`lib` `patterns` ban (shared-config/eslint.config.mjs:147-152)
-  // is re-included VERBATIM here, or it would silently drop for these files (RESEARCH Pitfall 3).
+  // is re-included VERBATIM here. Omitting it would silently drop that ban for these
+  // files, because the replacement is total rather than additive.
   {
     files: ['src/**/*.{ts,svelte}'],
     rules: {
