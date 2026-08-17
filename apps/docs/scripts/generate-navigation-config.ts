@@ -3,7 +3,7 @@
  * Generate navigation configuration from the SvelteKit routes directory
  *
  * This script:
- * 1. Reads all routes from docs/src/routes
+ * 1. Reads all routes from src/routes (relative to the docs workspace)
  * 2. Parses route structure and +page.md files
  * 3. Loads the current navigation config
  * 4. Compares current config with discovered routes

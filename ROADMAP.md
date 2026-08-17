@@ -25,7 +25,7 @@ Regarding certain features, such as one vs. multiple elections, we should have m
 
 ## Build skills for Claude
 
-Mine the /docs/src/routes and /packages/\*/README.md contents for information and build the following skills for Claude.
+Mine the /apps/docs/src/routes and /packages/\*/README.md contents for information and build the following skills for Claude.
 
 Use the /skill-creator skill for building the skills.
 
@@ -132,7 +132,7 @@ This is a huge task, so it might be best done as a phase or other structured wor
 > For each of the checklist-type tasks, consider launching an agent for each item or a group of items.
 
 1. Check that all of the condition in the [Code Review Checklist](/.agents/code-review-checklist.md) are addressed
-2. Check that the [Code style guide](<docs/src/routes/(content)/developers-guide/contributing/code-style-guide/+page.md>) is adhered to
+2. Check that the [Code style guide](<apps/docs/src/routes/(content)/developers-guide/contributing/code-style-guide/+page.md>) is adhered to
 3. Especially for GSD, make sure that in-file comments are concise and do not refer to planning artifacts or historical changes in the codebase
    1. We use the git history for this
    2. If an planning reference is imperative, only mention the artifact shortly, e.g. "See phase 55/spike 66"
