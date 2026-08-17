@@ -75,22 +75,22 @@
       "timeLeft": [
         {
           "declarations": [
-            "input minuter",
-            "local minuterPlural = minuter: plural",
-            "input sekunder",
-            "local sekunderPlural = sekunder: plural"
+            "input minutes",
+            "local minutesPlural = minutes: plural",
+            "input seconds",
+            "local secondsPlural = seconds: plural"
           ],
-          "selectors": ["minuterPlural", "sekunderPlural"],
+          "selectors": ["minutesPlural", "secondsPlural"],
           "match": {
-            "minuterPlural=zero sekunderPlural=zero": "  kvar",
-            "minuterPlural=zero sekunderPlural=one": " en sekund kvar",
-            "minuterPlural=zero sekunderPlural=other": " {sekunder} sekunder kvar",
-            "minuterPlural=one sekunderPlural=zero": "en minut  kvar",
-            "minuterPlural=one sekunderPlural=one": "en minut en sekund kvar",
-            "minuterPlural=one sekunderPlural=other": "en minut {sekunder} sekunder kvar",
-            "minuterPlural=other sekunderPlural=zero": "{minuter} minuter  kvar",
-            "minuterPlural=other sekunderPlural=one": "{minuter} minuter en sekund kvar",
-            "minuterPlural=other sekunderPlural=other": "{minuter} minuter {sekunder} sekunder kvar"
+            "minutesPlural=zero secondsPlural=zero": "  kvar",
+            "minutesPlural=zero secondsPlural=one": " en sekund kvar",
+            "minutesPlural=zero secondsPlural=other": " {seconds} sekunder kvar",
+            "minutesPlural=one secondsPlural=zero": "en minut  kvar",
+            "minutesPlural=one secondsPlural=one": "en minut en sekund kvar",
+            "minutesPlural=one secondsPlural=other": "en minut {seconds} sekunder kvar",
+            "minutesPlural=other secondsPlural=zero": "{minutes} minuter  kvar",
+            "minutesPlural=other secondsPlural=one": "{minutes} minuter en sekund kvar",
+            "minutesPlural=other secondsPlural=other": "{minutes} minuter {seconds} sekunder kvar"
           }
         }
       ],
