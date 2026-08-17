@@ -25,6 +25,41 @@
  *     latentAnswerEmitter(template)` — customizable per-sub-step via
  *     `ctx.latent` (swappable seam).
  *
+ * Built-in templates:
+ *   - `BUILT_IN_TEMPLATES` — name => Template for every built-in the CLI
+ *     resolves. `default`, `e2e/base`, and the `perm-*` /
+ *     `show-feedback-survey` permutation fixtures.
+ *   - `BUILT_IN_OVERRIDES` — name => Overrides, paired 1:1 with the above.
+ *     Consulted only after a built-in name matches.
+ *   - `defaultTemplate` / `defaultOverrides` — the `default` built-in and its
+ *     non-uniform candidate / question-type shaping.
+ *   - `baseTemplate` — the `e2e/base` canonical Playwright dataset.
+ *   - `BASE_APP_SETTINGS` — the `app_settings` object `e2e/base` seeds, exported
+ *     so specs assert against one copy rather than a hand-maintained second.
+ *
+ * CLI surface (exported so `tests/` drives the same code the CLIs do):
+ *   - `resolveTemplate(arg, builtIns)` — built-in-name-first, filesystem-path
+ *     fallback resolution, validating whatever it returns.
+ *   - `runTeardown(prefix, client)` — pure teardown orchestration, no
+ *     `process.exit` / env reads / stdout writes.
+ *   - `assertTeardownPrefix(prefix, callerLabel)` — the 2-character mass-delete
+ *     guard. Exported so out-of-package callers re-check the SAME invariant
+ *     instead of keeping a copy that can drift.
+ *   - `ALLOWED_TEARDOWN_TABLES` — the 10 tables `bulk_delete` clears.
+ *   - `formatSummary(input)` — the post-seed stdout summary.
+ *   - `SEED_CLI_USAGE` / `TEARDOWN_USAGE` — the two `--help` texts.
+ *
+ * Locales:
+ *   - `LOCALES` — the supported locale codes the fan-out expands to.
+ *   - `fanOutLocales(rows, template, seed)` — 4-locale JSONB expansion; a no-op
+ *     when `generateTranslationsForAllLocales` is off.
+ *
+ * app_settings external-id resolution:
+ *   - `settingsContainsExternalIdRefs(settings)` — does this settings tree carry
+ *     any `{ externalId }` shape?
+ *   - `resolveAppSettingsExternalIds(...)` — resolve those refs to UUIDs at seed
+ *     time (see phase 88 T3, Option B).
+ *
  * Types:
  *   - `Template` — validated template type (`z.infer<typeof TemplateSchema>`).
  *   - `Ctx` — pipeline ctx (seam).
@@ -35,6 +70,9 @@
  *     in Plan 10).
  *   - `TableName` — union of the 14 table names in TOPO_ORDER.
  *   - `LatentHooks` — swappable seam on `ctx.latent` (GEN-06g).
+ *   - `LocaleCode` — union of the `LOCALES` entries.
+ *   - `SummaryInput` — argument shape of `formatSummary`.
+ *   - `TeardownResult` — `{ rowsDeleted, storageRemoved }` from `runTeardown`.
  *
  * Notes:
  *   - Private workspace; no npm publish.
