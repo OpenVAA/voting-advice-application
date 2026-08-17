@@ -27,6 +27,12 @@ dropped_finding_class_slice_07: 0  # the first slice whose diff IS its whole sur
 dropped_finding_class_slice_08: 0
 invisible_to_review_files: 1202
 unclaimed_by_any_pathspec: 120  # re-confirmed at 151-16 by a SECOND, independent method: 5070 tracked, 4950 claimed, 120 unclaimed, enumerated file for file
+secret_scan: run-at-151-17
+secret_scan_verdict: pass-with-accepted-findings
+secret_scan_findings_live: 0
+secret_scan_artifact: 151-SECRET-SCAN.md
+security_rows: 1  # SEC-1; no checklist item covers it
+slice_11_cells_still_pending_17: 12  # the plan tasks no sweep; routing put to the operator
 f_15_operator_gate: accepted-options-1-and-2-at-151-16  # option 3 declined; slices.tsv amended on that decision, not by an agent
 comparable_total: 4413  # re-measured at 151-16; every rise attributed by set difference, zero files ever leaving
 slices_dispositioned: ["01a", "01b", "02", "03", "04", "05", "06", "07", "08", "09", "10"]
@@ -186,7 +192,47 @@ produces its evidence.
 | **1** | Changes solve the issues the work set out to solve | `PENDING→18` | **none** — no gate exists; phase-level judgement against the phase's own success criteria and the root `ROADMAP.md` Addendum. | plan **151-18**, then operator approval of this record |
 | **11** | Troubleshoot failing checks in the PR | `PENDING→18` | **partial** — 6 CI jobs exist, but `supabase-tests` is conditional on a `dorny/paths-filter` over `apps/supabase/**` + `packages/supabase-types/**` and **every one of its four steps carries that `if:`** (`.github/workflows/main.yaml:87-93,95,101,105,110`). **Complement: on a sibling-based stacked PR whose diff-vs-base excludes those paths, the job reports green having run nothing** — it may not be cited for any stacked PR (`151-MEASUREMENTS.md` § 1.5). The trusted signal is D-24's full-suite run against the post-sweep branch tip, not per-PR CI. | plan **151-18** (D-24 run); PR #1's expected reds documented per Pitfall 7 |
 | **12** | Shared-dependency blast radius | `PENDING→18` | **partial** — `yarn build` (turbo topological) + `yarn test:unit` = **1,522 tests across 149 files**, green at the 151-03 baseline. **Complement: unit tests do not exercise the SSR/adapter boundary or the DB**; the E2E suite (43 specs) does, but only via the `e2e-tests` job, and `apps/docs` `test:unit` is `vitest run --passWithNoTests` — an empty pass. | plan **151-18** |
-| **16** | Clean, linear history per the commit guidelines | `PENDING→18` | **partial** — `scripts/verify-commit-taxonomy.sh`, a phase-local gate encoding criterion 4.1–4.6. **Complement: clause 4.4 is asserted by a named structural proxy (disjoint modified-path sets), not by the clause itself**, and the script prints the proxy's name on every run so no record can overclaim. There is no CI-side history gate. Criterion 4's restructure is itself the evidence. **Must be run over `C1..TIP`** (0 shared paths, CONFORMING) with the whole-stack `origin/main..TIP` run (420 shared paths, exit 1) recorded beside it and explained — a rename-based stack can never satisfy a proxy that treats a rename as a modification. | plan **151-18** — see *Open discrepancies* below |
+| **16** | Clean, linear history per the commit guidelines | `PENDING→18` | **partial** — `scripts/verify-commit-taxonomy.sh`, a phase-local gate encoding criterion 4.1–4.6. **Complement: clause 4.4 is asserted by a named structural proxy (disjoint modified-path sets), not by the clause itself**, and the script prints the proxy's name on every run so no record can overclaim. There is no CI-side history gate. Criterion 4's restructure is itself the evidence. **Must be run over `C1..TIP`** (0 shared paths, CONFORMING) with the whole-stack `origin/main..TIP` run (628 shared paths, exit 1) recorded beside it and explained — a rename-based stack can never satisfy a proxy that treats a rename as a modification. **Both runs executed at plan 151-17 over the complete twelve-slice stack** and recorded in `151-STACK-MANIFEST.md` § "Slice 11 cut": `C1..TIP` **CONFORMING, exit 0, 0 shared paths**; `origin/main..TIP` **exit 1, 628 shared paths**, of which **0 involve any pair of later slices** (that follows from the `C1..TIP` run's zero, which excludes 01a) and **628/628 are under `apps/`**. The 420 figure was 151-05's dry-run measurement and is superseded. | plan **151-18**; the taxonomy runs themselves discharged at **151-17** — see *Open discrepancies* below |
+
+---
+
+## Security — the secret scan over the planning slice (plan 151-17)
+
+**A control that runs but is not recorded where a reviewer looks is a control that will be
+forgotten.** This row exists because no checklist item asks for it: the code review checklist
+assumes a pull request someone reads, and slice 11 is explicitly the one nobody will
+(D-12). `151-RESEARCH.md` § Security Domain names this the highest-value security action in the
+phase, and it is a **blocking precondition to pushing slice 11**, not a follow-up.
+
+| # | Control | Verdict | Gate + measured reach (D-18) | Evidence |
+|---|---|---|---|---|
+| **SEC-1** | Exhaustive secret scan of the planning slice before publication | **RUN — `pass-with-accepted-findings`; 0 live** | **none** — no CI job, no checklist item, and no gate in this repository performs it. Reach is whatever the scan itself covers, which is why its coverage is asserted by **set containment** (2,325 files scanned ⊇ 2,324 files in the diff) rather than by a line-count proxy, and why its **limits are enumerated** rather than left implicit. | `151-SECRET-SCAN.md`, over `3aa503741..6f04fa023` (`ship/v0.2-akita-11-planning`), run **before** the branch was pushed. `trufflehog 3.95.2` (all detectors) **plus** an independent 24-rule sweep (`gsd-151-17` v1) **plus** targeted project-shape greps. **14 findings: 0 live, 9 accepted with stated evidence, 5 false positives.** |
+
+**Why two methods, recorded here and not only in the scan file:** TruffleHog surfaced 2 distinct
+JWTs; the independent sweep surfaced **4**, adding the Supabase demo `anon` and `service_role`
+tokens that no detector flagged, plus the session cookies whose `refresh_token` is base64-inside-a-
+cookie rather than a recognised token shape. Both extra tokens proved to be **published public
+constants** — verified cryptographically, by recomputing their HMAC against Supabase's documented
+local-development secret, rather than judged by appearance. A single scanner's clean result would
+have published a `service_role`-shaped token without ever classifying it.
+
+**Cross-reference — checklist item 2 (OWASP Top 10 review).** The plan directs this row to be
+cross-referenced from "checklist item 2's phase-level row". **Item 2 has no phase-level row** — it is
+a per-slice item (the four phase-level items are 1, 11, 12 and 16), so the instruction is wrong as
+written. The cross-reference is made to **item 2's slice-11 cell** instead, which is what it can only
+have meant: SEC-1 is the evidence for the credential-exposure half of that cell (OWASP A02
+*Cryptographic Failures* / A07 *Identification and Authentication Failures*). SEC-1 does **not**
+discharge the cell on its own — see the discrepancy immediately below.
+
+**Open: slice 11's twelve general cells still read `P→17`, and this plan does not fill them.**
+`151-17-PLAN.md` has four tasks — cut the slice, scan it, the operator gate, and open PR 10 — and
+**none of them is a checklist sweep of slice 11**. The matrix's `PENDING→17` markers were written by
+151-06 on the expectation that the plan cutting slice 11 would also sweep it. Recorded as a
+discrepancy rather than resolved unilaterally: the cells are **left at `P→17`** so the gap stays
+visible, instead of being re-routed to `P→18` by an agent, and the routing decision is put to the
+operator at this plan's checkpoint alongside F-21. Slice 11 is 2,324 planning and agent-config files
+carrying **no application code**, so most of the twelve items are `N/A` on their face — but "most"
+is a prediction, and D-20 requires every `N/A` to carry a measured reason.
 
 ---
 
