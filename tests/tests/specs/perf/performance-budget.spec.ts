@@ -52,6 +52,34 @@
  * machine (ttfb 428 ms on a just-started server vs 30–173 ms warm). It is a
  * regression gate for dev mode, NOT a production target.
  *
+ * ## Why a warm-up reload (phase 151, plan 151-18)
+ *
+ * The full-suite gate failed once here at `timeToMatches 7536` against this
+ * same 5000 ms budget. Diagnosed rather than waived, and the spec's own two
+ * diagnostics decided it:
+ *
+ * ```
+ * in-suite (failing):  timeToMatches 7536  ttfb 5718  resultsFetches 11
+ * warm, isolated:      timeToMatches  256   ttfb  44  resultsFetches 11
+ *                                     414         25                 11
+ *                                     270         38                 11
+ * ```
+ *
+ * `ttfb` was **76% of the measured window** (server-side), and the
+ * load-independent `resultsFetches` guard was **invariant at 11 across all
+ * four runs** — so the fetch shape was unchanged and no application regression
+ * existed. The cause was Vite's one-time on-demand SSR transform of this route,
+ * paid on the first server-rendered request to it: the calibration above
+ * assumed `ttfb 428 ms` on a just-started server, and a genuinely cold *route*
+ * under full-suite worker contention measured 5718 ms, 13x that allowance.
+ *
+ * The fix is to take that one-time cost OUTSIDE the measured window with an
+ * unmeasured warm-up reload. **The budget is deliberately NOT raised** — the
+ * 5000 ms threshold and its calibration data stand exactly as measured, and no
+ * retry, extended timeout or flaky annotation was added. Raising the threshold
+ * would have hidden the very regressions this spec exists to catch; per the
+ * rule three paragraphs above, never raise a budget to make a red test green.
+ *
  * `RESULTS_FETCH_BUDGET = 13`: the route issued exactly **11** `/rest/v1/`
  * requests in 8/8 runs, invariantly across both idle and contended runs AND
  * across result sets of 6 and 13 cards (so the count is genuinely
@@ -124,6 +152,27 @@ voterTest.describe('Performance budgets', { tag: ['@perf'] }, () => {
     // after the SSR response and long before the list exists, so waiting for it
     // would put the very blind spot this spec was rewritten to close back into
     // the measured window.
+    // WARM-UP RELOAD — not measured. See "Why a warm-up reload" in the docblock.
+    //
+    // The fixture reached /results by CLIENT-SIDE routing, so this route has
+    // never been server-rendered in this dev server's lifetime. The first SSR
+    // request to it pays Vite's one-time on-demand transform of the whole route
+    // tree, which is dev-server cost, not application performance — and it lands
+    // inside the measured window if the measured reload is also the first one.
+    await page.reload({ waitUntil: 'commit' });
+    await list.waitFor({ state: 'visible', timeout: RENDER_WAIT_CEILING_MS });
+    await matchScore.first().waitFor({ state: 'visible', timeout: RENDER_WAIT_CEILING_MS });
+
+    // Discard the warm-up's requests so RESULTS_FETCH_BUDGET keeps measuring
+    // exactly ONE load. Without this the count doubles and the load-independent
+    // guard — the assertion that actually catches an N+1 — silently inverts from
+    // a regression detector into a false positive.
+    resultsFetches.length = 0;
+
+    // MEASURED RELOAD. Identical to the warm-up, so the measured window still
+    // spans SSR response -> hydration -> Supabase round-trips -> matching ->
+    // list render. The budget below is UNCHANGED; this removes a dev-server
+    // artefact from the window rather than making room for one.
     const started = Date.now();
     await page.reload({ waitUntil: 'commit' });
     await list.waitFor({ state: 'visible', timeout: RENDER_WAIT_CEILING_MS });
