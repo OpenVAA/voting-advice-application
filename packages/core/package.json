@@ -1,20 +1,43 @@
 {
-  "private": true,
   "name": "@openvaa/core",
   "version": "0.1.0",
+  "license": "MIT",
+  "description": "Core types, interfaces, and utilities for OpenVAA voting advice applications",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OpenVAA/voting-advice-application.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/OpenVAA/voting-advice-application/tree/main/packages/core",
+  "bugs": {
+    "url": "https://github.com/OpenVAA/voting-advice-application/issues"
+  },
+  "files": [
+    "dist",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
-    "build": "yarn tsc --build && yarn tsc-esm-fix"
+    "build": "tsup && tsc --emitDeclarationOnly --outDir dist",
+    "lint": "eslint --flag v10_config_lookup_from_file src/",
+    "typecheck": "tsc --noEmit"
   },
   "type": "module",
-  "module": "./build/index.js",
-  "types": "./build/index.d.ts",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    "import": "./build/index.js"
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
   },
   "devDependencies": {
     "@openvaa/shared-config": "workspace:^",
-    "tsc-esm-fix": "^3.1.2",
-    "typescript": "^5.7.3",
-    "vitest": "^2.1.8"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

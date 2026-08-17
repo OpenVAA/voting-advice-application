@@ -3,9 +3,11 @@
   "extends": "@openvaa/shared-config/ts",
   "compilerOptions": {
     "lib": ["es2022", "dom"],
-    "tsBuildInfoFile": "./build/tsconfig.tsbuildinfo",
+    "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo",
     "rootDir": "./src",
-    "outDir": "./build"
+    "outDir": "./dist",
+    "declaration": true,
+    "emitDeclarationOnly": true
   },
   "include": ["src/**/*"],
   "exclude": ["src/testUtils/**/*", "**/*.test.ts"],

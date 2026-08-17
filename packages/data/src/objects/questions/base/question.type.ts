@@ -34,4 +34,8 @@ export interface QuestionData<TType extends QuestionType = QuestionType> extends
    * The category of the question. Each must belong to one and only one category.
    */
   categoryId: Id;
+  /**
+   * An optional flag indicating whether the question is required. Note that it is up to the consumer to enforce this, it has no effect within the data layer.
+   */
+  required?: boolean;
 }

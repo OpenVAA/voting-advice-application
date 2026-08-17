@@ -12,11 +12,11 @@ import type {
  * NB. If the value array passed to `MultipleChoiceQuestion.normalizeValue` contains any missing values, the whole array is treated as missing.
  */
 export abstract class MultipleChoiceQuestion<
-    // We need to unelegantly provide `TType` and `TValue` twice because inferring then from `TData` leads to typing issues
-    TType extends MultipleChoiceQuestionType,
-    TValue,
-    TData extends MultipleChoiceQuestionData<TType, TValue> = MultipleChoiceQuestionData<TType, TValue>
-  >
+  // We need to unelegantly provide `TType` and `TValue` twice because inferring then from `TData` leads to typing issues
+  TType extends MultipleChoiceQuestionType,
+  TValue,
+  TData extends MultipleChoiceQuestionData<TType, TValue> = MultipleChoiceQuestionData<TType, TValue>
+>
   extends ChoiceQuestion<TType, TValue, TData>
   implements DataAccessor<MultipleChoiceQuestionData<TType, TValue>>
 {

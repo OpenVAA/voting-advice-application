@@ -1,4 +1,4 @@
-import { isPlainObject } from './utils/isPlainObject.js';
+import { isPlainObject } from './utils/isPlainObject';
 import type { Image } from '@openvaa/data';
 
 /**

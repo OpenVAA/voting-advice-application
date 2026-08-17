@@ -9,7 +9,7 @@ Contains exports for configuring `eslint`, `prettier` and `ts`. Import or extend
 ```json
 "devDependencies": {
   "@openvaa/shared-config": "^1.0.0",
-  "tsc-esm-fix": "^3.1.2", // If using TypeScript
+  "tsup": "^8.5.1", // If using TypeScript
   "typescript": "^5.6.3",  // If using TypeScript
 }
 ```

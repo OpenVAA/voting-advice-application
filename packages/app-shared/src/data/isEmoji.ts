@@ -1,5 +1,5 @@
-import { isPlainObject } from './utils/isPlainObject.js';
-import type { Emoji } from './customData.type.js';
+import { isPlainObject } from './utils/isPlainObject';
+import type { Emoji } from './customData.type';
 
 /**
  * Typeguard for `Emoji` objects.
