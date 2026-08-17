@@ -27,10 +27,10 @@ dropped_finding_class_slice_07: 0  # the first slice whose diff IS its whole sur
 dropped_finding_class_slice_08: 0
 invisible_to_review_files: 1202
 unclaimed_by_any_pathspec: 120  # re-confirmed at 151-16 by a SECOND, independent method: 5070 tracked, 4950 claimed, 120 unclaimed, enumerated file for file
-f_15_operator_gate: prepared-at-151-16-awaiting-decision
+f_15_operator_gate: accepted-options-1-and-2-at-151-16  # option 3 declined; slices.tsv amended on that decision, not by an agent
 comparable_total: 4413  # re-measured at 151-16; every rise attributed by set difference, zero files ever leaving
 slices_dispositioned: ["01a", "01b", "02", "03", "04", "05", "06", "07", "08", "09", "10"]
-findings_total: 82
+findings_total: 83
 status: in-progress
 approval: pending
 ---
@@ -200,7 +200,7 @@ Columns are slices. Every cell holds a verdict token or `PENDING→NN` (the plan
 | **2** | OWASP Top 10 review | `none` | N/A | MET | MET | FIXED | FIXED | MET | MET | FIXED | MET | FIXED | MET | P→17 |
 | **3** | Follows the Code style guide | `partial` | N/A | N/A | FIXED | MET | MET | FIXED | FIXED | FIXED | FIXED | FIXED | MET | P→17 |
 | **4** | Avoid `any`; document or `@ts-expect-error` | `partial` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | MET | N/A | MET | MET | P→17 |
-| **5** | No repeated code in the PR or elsewhere in the repo | `none` | DEF | FIXED | MET | DEF | DEF | MET | DEF | DEF | DEF | DEF | DEF | P→17 |
+| **5** | No repeated code in the PR or elsewhere in the repo | `none` | DEF | FIXED | MET | DEF | DEF | MET | DEF | DEF | DEF | DEF | FIXED | P→17 |
 | **6** | New components / functions / entities documented | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | FIXED | FIXED | MET | DEF | P→17 |
 | **7** | Repo documentation markdown updated | `none` | DEF | DEF | FIXED | FIXED | FIXED | FIXED | FIXED | FIXED | N/A | FIXED | FIXED | P→17 |
 | **8** | Tracking events for new user-facing functions | `none` | N/A | N/A | N/A | N/A | N/A | N/A | MET | MET | N/A | N/A | N/A | P→17 |
@@ -2332,7 +2332,7 @@ each return **claimed by: none** when every row of `slices.tsv` is run against t
 | **2** | OWASP Top 10 | **MET** | Swept as *supply chain and CI*, which is what a plumbing slice's threat surface is. **Workflow injection: 0.** No workflow uses `pull_request_target` (asserted over all six). Every one of the **13** user-controlled `github.event.*` values in `claude.yml` is passed through `env:` (`:36-40`, `:82-90`) rather than interpolated into a `run:` body — the documented anti-injection shape, and it is the pre-existing files that get this right, so the cell credits them rather than the plan. **Secrets: 10 `secrets.*` references** across the six workflows (`ANTHROPIC_API_KEY`, `GITHUB_TOKEN`, `TURBO_TOKEN`), none echoed, none written to an artifact. **`release.yml` (new in this slice) publishes to npm with no npm token anywhere in the tree** — `permissions: id-token: write`, `registry-url: https://registry.npmjs.org`, `NPM_CONFIG_PROVENANCE: true` and `changesets/action@v1`. That is **npm trusted publishing (OIDC)**, and it matches the project's own recorded decision to use trusted publishing instead of an `NPM_TOKEN`; it is **deliberate, and must not be "fixed" by adding a token**. `.changeset/config.json` sets `"access": "public"`, consistent with it. **Secret-shaped literals across `.env.example`, `render.example.yaml`, both compose files and all of `.github/`: 0.** |
 | **3** | Follows the Code style guide | **MET** | The slice is configuration, YAML and one vendored yarn release; the style surface is the gates, and both are unchanged from `151-BASELINE.md` under forced, uncached runs: `yarn lint:check` **0 errors / 20 warnings** (11/11 tasks, 0 cached; per-package 2 + 15 + 1 + 2, the baseline's exact split) and `yarn format:check` **red on exactly the two PD-03-fenced files**. **The warning count is not reduced** — F-39's rule — and was verified by counting per package rather than by reading a summary line. F-44's three blind-spot patterns over the slice: **0 planning references** (the only matches are `yarn.lock`, excluded, and PNG bytes). |
 | **4** | Avoid `any`; document or `@ts-expect-error` | **MET** | `git grep -nw 'any'` over all 39 files, every file type: **0 occurrences**, in type position or otherwise. `@ts-expect-error` / `@ts-ignore`: **0 / 0**. |
-| **5** | No repeated code in the PR or elsewhere in the repo | **DEFERRED** | Four dead-code findings sit in this slice and **none can be fixed here**, for two different reasons that must not be collapsed. **Blocked by F-15, the operator gate:** `apps/frontend/jest.config.json` (F-01 — jest is a dependency of nothing, the file is referenced by nothing) and the **89 orphaned Capacitor files** under `apps/frontend/{android,ios}` (F-10 — `capacitor.config.ts` is deleted by this very slice, `@capacitor/*` is in no `package.json`, `yarn.lock` has 0 capacitor entries, and the only `@capacitor` references in the tree are inside the orphaned scaffolding itself: `android/capacitor.settings.gradle`, `ios/App/Podfile`). **No pathspec claims those paths**, so a deletion would land in the catch-all and break criterion 7 — see the F-15 decision package below. **Shipping by the operator-approved framing:** the two dead one-shot codemods (F-03) and the tracked `tsconfig.tsbuildinfo` (F-08) are *in* this slice's diff and could be deleted, but the manifest's approved slice-10 justification names all three explicitly as this slice's contested-but-justified files and instructs the plan that writes its PR body to defend them to a cold reviewer. Deleting them would contradict the approval it is the operator's to change. **Recorded, with the obligation restated for 151-17.** |
+| **5** | No repeated code in the PR or elsewhere in the repo | **DEFERRED** | Four dead-code findings sit in this slice and **none can be fixed here**, for two different reasons that must not be collapsed. **Blocked by F-15, the operator gate:** `apps/frontend/jest.config.json` (F-01 — jest is a dependency of nothing, the file is referenced by nothing) and the **89 orphaned Capacitor files** under `apps/frontend/{android,ios}` (F-10 — `capacitor.config.ts` is deleted by this very slice, `@capacitor/*` is in no `package.json`, `yarn.lock` has 0 capacitor entries, and the only `@capacitor` references in the tree are inside the orphaned scaffolding itself: `android/capacitor.settings.gradle`, `ios/App/Podfile`). **No pathspec claims those paths**, so a deletion would land in the catch-all and break criterion 7 — see the F-15 decision package below. **Shipping by the operator-approved framing:** the two dead one-shot codemods (F-03) and the tracked `tsconfig.tsbuildinfo` (F-08) are *in* this slice's diff and could be deleted, but the manifest's approved slice-10 justification names all three explicitly as this slice's contested-but-justified files and instructs the plan that writes its PR body to defend them to a cold reviewer. Deleting them would contradict the approval it is the operator's to change. **Recorded, with the obligation restated for 151-17.** **Updated after the operator accepted F-15 Options 1 and 2:** F-01 and F-10 are **FIXED** in `6c40fb57b` — 89 orphans plus the jest config deleted, and the two now-pointless anonymous-volume exclusions dropped from `apps/frontend/docker-compose.dev.yml`; `git ls-files apps/frontend/android apps/frontend/ios apps/frontend/jest.config.json` → **0**, `capacitor` (word, case-insensitive) over the tree excluding vendored files → **0**. F-03 and F-08 remain **DEFERRED** by the approved framing. The cell therefore reads FIXED with its residue named rather than averaged. |
 | **6** | New components / functions / entities documented | **DEFERRED** | Nine files are added and the documentation is uneven in a way worth naming rather than averaging. Well documented: `main.yaml`'s new jobs carry substantial rationale comments — `:115-137` explains why `dev-seed-integration` is a separate job with deliberately **no** `paths-filter` and names the incident that caused it, `:178-180` why the connection details are read off the running instance, `:261-276` why visual regression is opt-in at the Playwright level but blocking in CI. Not documented: **`.github/workflows/release.yml` ships with no comment at all** — a new publish-to-npm workflow whose OIDC trusted-publishing mechanism is the least obvious thing in the slice and the one a reviewer is most likely to misread as a missing token; and **`.bg-shell/manifest.json` is the two-byte literal `[]`, referenced by nothing in the tree** (`git grep -ln 'bg-shell'` outside `.planning`/`.claude` → 0 hits) and not gitignored (F-81). Neither is fixed: a docblock for `release.yml` is worth writing but is the kind of addition a reviewer should see attributed to the author, and deleting a manifest whose owning tool cannot be identified from the repository is not an agent's call. |
 | **7** | Repo documentation markdown updated | **FIXED** | Three dead documentation links, all found **from the target tree** because all three files are byte-identical across the layout move and appear in **no** slice's diff — the standing instruction's exact case, and the third slice in a row where it produced real findings. `.github/PULL_REQUEST_TEMPLATE:9,19` pointed at `docs/contributing/self-review.md` and `docs/contributing/CONTRIBUTING.md`, **neither of which exists at either end of this stack** (`ls-tree -r origin/main` → absent), so this is pre-existing drift rather than a v0.2 regression; repointed at the live guide pages, with the target anchors verified to exist (`contributing/pull-request/+page.md:17` `### Self-review`, `contributing/contribute/+page.md:9` `### Commit your update`). `.github/workflows/claude-solve-issue.yml:55` instructed the agent to follow `docs/code-review-checklist.md`; the checklist is at `.agents/code-review-checklist.md`. Commit **`3fa38158b`**. |
 | **8** | Tracking events for new user-facing functions | **NOT-SWEPT** | `n/a — no applicable surface in this slice.` The slice adds no function available to a user; it is build, lint, CI, container and release configuration. |
@@ -2363,7 +2363,7 @@ completeness, not cleanliness.
 | 10 | `tree/main/{frontend,docs}` references | 2 | new this plan | **FIXED** | `b510aafb4`. The i18n one needed a semantic re-target (`src/lib/i18n/translations` → `messages/`), not a prefix. |
 | 11 | Four guides naming removed yarn scripts | 6 sites | new this plan | **FIXED** | `7cebe7baa`. |
 | 12 | `packages/app-shared/src/settings/README.md:5,6` | 2 | F-04 row 13 | **DEFERRED** | **Its owning slice 02 is PUBLISHED as PR #865.** A fix would reach no slice — slice 02 is cut, and no later pathspec claims the file — so it would land in the catch-all and break criterion 7, and re-cutting means force-pushing a PR under review, which the phase forbids. Routed to 151-18 / post-merge. |
-| 13 | `README.md:12` — the repo's front-page mascot image | 1 | F-15 (151-09) | **AWAITING OPERATOR DECISION** | Blocked by F-15: `README.md` is claimed by **no** pathspec. Prepared below; **not taken.** |
+| 13 | `README.md:12` — the repo's front-page mascot image | 1 | F-15 (151-09) | **FIXED** | `aad244085`, ships in **slice 09**. Unblocked by the operator accepting F-15 Option 1; `README.md` is now claimed by slice 09's pathspec. |
 | 14 | 12 permalink targets that no longer exist | 12 distinct, 9 pages | **F-80, new this plan** | **DEFERRED** | Each needs a semantic re-target, not a prefix, and several of the carrying pages are themselves legacy-banner-marked. Enumerated below so no later plan re-derives them. |
 | 15 | 11 legacy backend / Strapi pages | 11 pages | v0.2's own choice | **DEFERRED — by v0.2's recorded banner** | Each carries "documents the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release." That is a documented deferral with an owner, not silence. Recorded as a verdict so the reader can disagree with it. |
 | 16 | 8 `backend/vaa-strapi/…` targets dead at `origin/main` too | 8 distinct | new this plan | **DEFERRED — pre-existing** | e.g. `src/util/acl.ts`, `src/extensions/users-permissions/strapi-server.js` (the real file is `.ts`), `…/adminsrc/components/*.tsx` (real path `admin/src`). Dead **before** v0.2, so outside the phase's net-diff boundary. |
@@ -2601,3 +2601,43 @@ dead weight, and they need not travel together. **If both are declined**, entrie
 rows become terminal `DEFERRED` verdicts with "operator declined at 151-16" as the rationale, and this
 plan's disposition is complete either way.
 
+
+### F-15 — the operator's decision, taken 2026-08-17
+
+**Options 1 and 2 ACCEPTED; Option 3 DECLINED.** Recorded here because the whole point of the gate is
+that an agent did not take it. `slices.tsv` was amended on that decision and on nothing else:
+
+| row | column | before | after |
+|---|---|---|---|
+| `09` | 4 (pathspec) | `apps/docs docs ROADMAP.md` | `apps/docs docs ROADMAP.md README.md` |
+| `09` | 3 (subject) | `…the docs site, the root roadmap and the key-generation guide` | `…the docs site, the root README and roadmap, and the key-generation guide` |
+| `10` | 4 (pathspec) | 29 tokens, ending `apps/frontend/vitest.config.ts` | + `apps/frontend/android apps/frontend/ios apps/frontend/jest.config.json` |
+
+The subject amendment is not cosmetic: criterion 6's test is *"does the title describe every file in
+it, without an 'and also'?"*, and a slice whose pathspec claims `README.md` while its subject names
+only the docs site and the roadmap would fail it on the file the operator just added.
+
+**The residual risk on Option 2, stated rather than buried.** Every in-repo signal says the Capacitor
+scaffold is dead — `@capacitor/*` in **no** `package.json`, **0** entries in `yarn.lock`, no source
+import, and the only `@capacitor` strings anywhere were inside the scaffold itself
+(`android/capacitor.settings.gradle`, `ios/App/Podfile`). **No in-repo measurement can see an
+external Capacitor or app-store pipeline building from it.** The operator accepted the removal
+knowing that. `pr-bodies/09.md` states it in those terms, so a cold reviewer who knows of such a
+pipeline can object on the strength of the body alone.
+
+| post-fix assertion | result |
+|---|---|
+| `git ls-files apps/frontend/android apps/frontend/ios apps/frontend/jest.config.json` | **0** |
+| `capacitor` (word, case-insensitive) over the tree, excluding `yarn.lock` and `.yarn/` | **0** |
+| `apps/frontend/(android\|ios)` referenced anywhere outside `.planning`/`.claude` | **0** — the two anonymous-volume exclusions in `apps/frontend/docker-compose.dev.yml` were the only references and are removed with the directories |
+| README image target | `apps/docs/static/images/shiba-inu-facing-front.png` exists at `HEAD` and on disk |
+| gates after both fixes, under `TURBO_FORCE=1` | `build` **14/14, 0 cached**; `test:unit` **1,522 tests / 149 files** (16+244+21+22+446+773 across 1+47+3+1+43+54), 21/21 tasks, 0 cached; `lint:check` **0 errors / 20 warnings**, 11/11, 0 cached; `format:check` **red on exactly the two PD-03 files**. Every one identical to `151-BASELINE.md`. |
+
+**F-87, raised while verifying the deletion.** The residual-reference sweep's only surviving `jest`
+match was inside **`apps/docs/tsconfig.tsbuildinfo`** — which means **F-08's tracked-build-artifact
+finding is a class of three, not one**: `apps/frontend/tsconfig.tsbuildinfo` (slice 10, recorded),
+`apps/docs/tsconfig.tsbuildinfo` (**slice 09**, byte-identical across the move so in no slice's diff
+until now) and `packages/supabase-types/tsconfig.tsbuildinfo` (**slice 02, published as PR #865**).
+Recorded, not fixed: the frontend one ships by the operator-approved slice-10 framing, and deleting
+the other two would mean either contradicting that framing for no reason or touching a published
+slice. Routed to 151-18 / post-merge.
