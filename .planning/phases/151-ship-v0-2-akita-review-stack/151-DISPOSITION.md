@@ -13,8 +13,8 @@ criterion_3: closed-by-plan-151-08
 criterion_3_gate_red_is_expected: true
 per_slice_items: 12
 cells_expected: 163
-cells_filled: 147
-cells_pending: 16
+cells_filled: 159
+cells_pending: 4
 blank_cells: 0
 db_slice: "03"
 adapter_slice: "06"
@@ -32,13 +32,13 @@ secret_scan_verdict: pass-with-accepted-findings
 secret_scan_findings_live: 0
 secret_scan_artifact: 151-SECRET-SCAN.md
 security_rows: 1  # SEC-1; no checklist item covers it
-slice_11_cells_routed_to_18: 12  # operator decision at 151-17; D-20 still requires a MEASURED reason per N/A
+slice_11_cells_filled_at_18: 12  # 4 MET, 2 DEFERRED, 6 N/A -- NOT the all-N/A column the shape predicted
 f_21_decision: option-a-implement-params-after-phase-ships  # taken by the operator at 151-17
 f_29_unblocked_by: "the PD-02 carve-out that F-21's discharging migration needs"
 f_15_operator_gate: accepted-options-1-and-2-at-151-16  # option 3 declined; slices.tsv amended on that decision, not by an agent
 comparable_total: 4413  # re-measured at 151-16; every rise attributed by set difference, zero files ever leaving
-slices_dispositioned: ["01a", "01b", "02", "03", "04", "05", "06", "07", "08", "09", "10"]
-findings_total: 83
+slices_dispositioned: ["01a", "01b", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11"]
+findings_total: 84  # F-88 raised at 151-18
 status: in-progress
 approval: pending
 ---
@@ -251,18 +251,18 @@ Columns are slices. Every cell holds a verdict token or `PENDING→NN` (the plan
 
 | # | Item | Reach | 01a | 01b | 02 | 03 | 04 | 05 | 06 | 07 | 08 | 09 | 10 | 11 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **2** | OWASP Top 10 review | `none` | N/A | MET | MET | FIXED | FIXED | MET | MET | FIXED | MET | FIXED | MET | P→18 |
-| **3** | Follows the Code style guide | `partial` | N/A | N/A | FIXED | MET | MET | FIXED | FIXED | FIXED | FIXED | FIXED | MET | P→18 |
-| **4** | Avoid `any`; document or `@ts-expect-error` | `partial` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | MET | N/A | MET | MET | P→18 |
-| **5** | No repeated code in the PR or elsewhere in the repo | `none` | DEF | FIXED | MET | DEF | DEF | MET | DEF | DEF | DEF | DEF | FIXED | P→18 |
-| **6** | New components / functions / entities documented | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | FIXED | FIXED | MET | DEF | P→18 |
-| **7** | Repo documentation markdown updated | `none` | DEF | DEF | FIXED | FIXED | FIXED | FIXED | FIXED | FIXED | N/A | FIXED | FIXED | P→18 |
-| **8** | Tracking events for new user-facing functions | `none` | N/A | N/A | N/A | N/A | N/A | N/A | MET | MET | N/A | N/A | N/A | P→18 |
-| **9** | New Svelte components follow the guidelines | `partial` | N/A | N/A | N/A | N/A | N/A | N/A | FIXED | MET | N/A | N/A | N/A | P→18 |
-| **10** | Errors handled and logged | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | FIXED | N/A | MET | MET | P→18 |
-| **13** | WCAG A and AA | `partial` | N/A | N/A | N/A | N/A | N/A | MET | MET | FIXED | MET | MET | N/A | P→18 |
-| **14** | Keyboard + screen-reader usable | `partial` | N/A | N/A | N/A | N/A | N/A | DEF | DEF | DEF | N/A | DEF | N/A | P→18 |
-| **15** | Developers'/Publishers' Guide entries updated | `none` | DEF | DEF | DEF | DEF | FIXED | FIXED | DEF | DEF | DEF | FIXED | FIXED | P→18 |
+| **2** | OWASP Top 10 review | `none` | N/A | MET | MET | FIXED | FIXED | MET | MET | FIXED | MET | FIXED | MET | MET |
+| **3** | Follows the Code style guide | `partial` | N/A | N/A | FIXED | MET | MET | FIXED | FIXED | FIXED | FIXED | FIXED | MET | MET |
+| **4** | Avoid `any`; document or `@ts-expect-error` | `partial` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | MET | N/A | MET | MET | DEF |
+| **5** | No repeated code in the PR or elsewhere in the repo | `none` | DEF | FIXED | MET | DEF | DEF | MET | DEF | DEF | DEF | DEF | FIXED | DEF |
+| **6** | New components / functions / entities documented | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | FIXED | FIXED | MET | DEF | MET |
+| **7** | Repo documentation markdown updated | `none` | DEF | DEF | FIXED | FIXED | FIXED | FIXED | FIXED | FIXED | N/A | FIXED | FIXED | MET |
+| **8** | Tracking events for new user-facing functions | `none` | N/A | N/A | N/A | N/A | N/A | N/A | MET | MET | N/A | N/A | N/A | N/A |
+| **9** | New Svelte components follow the guidelines | `partial` | N/A | N/A | N/A | N/A | N/A | N/A | FIXED | MET | N/A | N/A | N/A | N/A |
+| **10** | Errors handled and logged | `none` | N/A | N/A | FIXED | FIXED | FIXED | MET | FIXED | FIXED | N/A | MET | MET | MET |
+| **13** | WCAG A and AA | `partial` | N/A | N/A | N/A | N/A | N/A | MET | MET | FIXED | MET | MET | N/A | N/A |
+| **14** | Keyboard + screen-reader usable | `partial` | N/A | N/A | N/A | N/A | N/A | DEF | DEF | DEF | N/A | DEF | N/A | N/A |
+| **15** | Developers'/Publishers' Guide entries updated | `none` | DEF | DEF | DEF | DEF | FIXED | FIXED | DEF | DEF | DEF | FIXED | FIXED | N/A |
 
 `P→NN` abbreviates the pending marker `PENDING→NN`. Count: 12 × 12 = **144 cells, 0 blank**.
 
@@ -2772,3 +2772,224 @@ until now) and `packages/supabase-types/tsconfig.tsbuildinfo` (**slice 02, publi
 Recorded, not fixed: the frontend one ships by the operator-approved slice-10 framing, and deleting
 the other two would mean either contradicting that framing for no reason or touching a published
 slice. Routed to 151-18 / post-merge.
+
+---
+
+## Slice 11 — `ship/v0.2-akita-11-planning` — cell-by-cell evidence
+
+**Filled by plan 151-18**, on the operator's routing at 151-17. Twelve general cells.
+
+**D-20 was the whole risk here and it was not relaxed.** Slice 11 is 2,329 planning and
+agent-configuration files, and the expected shape — the shape that gets waved through — is a
+twelve-cell column of `N/A` justified by "it's just planning files." **That shape is wrong, and
+measurement is what shows it is wrong.** Four cells came back `MET` on the strength of a real gate
+or real content, two came back `DEFERRED` on measured violations, and only six are `N/A`. Every one
+of the six carries a measured reason.
+
+### Sweep surface, stated before any verdict (D-20)
+
+**The surface is the publication surface, not the diff** — 151-17's transferable lesson, applied
+here rather than quoted.
+
+| measurement | value |
+|---|---:|
+| `git ls-tree -r` over the slice's pathspec (what **ships**) | **2,329** |
+| `git diff --no-renames` vs slice 10 (what a **reviewer sees**) | **2,328** |
+| in the tree but in **no** slice's diff | **1** — `.claude/settings.json` |
+
+`.claude/settings.json` ships inside slice 11 and appears in no diff anywhere in the stack, because
+it is byte-identical at `origin/main`. It is the phase's "reviewed by nobody" class with a single
+member in this slice, and it is named here rather than left to be inferred.
+
+**Composition of the 2,329, by extension:**
+
+| ext | count | ext | count | ext | count |
+|---|---:|---|---:|---|---:|
+| `.md` | 1,971 | `.mjs` | 17 | `.tsv` | 4 |
+| `.txt` | 124 | `.gitkeep` | 16 | `.log` | 4 |
+| `.json` | 90 | `.sha256` | 18 | `.zip` | 2 |
+| `.svelte` | 46 | `.sh` | 9 | `.sql` | 2 |
+| `.ts` | 25 | | | `.gitignore` | 1 |
+
+**97 of the 2,329 files are source code**, not prose — 46 `.svelte`, 25 `.ts`, 17 `.mjs`, 9 `.sh`.
+That is the fact that makes an all-`N/A` column indefensible.
+
+**The load-bearing scope measurement — is any of it reachable?**
+
+| question | command | answer |
+|---|---|---|
+| under a workspace root? | root `package.json` `workspaces` = `['packages/*','apps/*']`; slice-11 files under `apps/` or `packages/` | **0** |
+| in any `tsconfig`? | grep for `.claude`/`.planning` across all `tsconfig*.json` | **0 hits** |
+| in any vite / svelte / vitest config? | grep across `apps/frontend/{vite,vitest}.config.ts`, `svelte.config.js` | **0 hits** |
+| a `turbo.json` pipeline input? | grep `turbo.json` | **0 hits** |
+| imported by product code? | `git grep -l "from '…\.(claude\|planning)/'" -- apps packages` | **0** |
+| **reached by Prettier?** | `.prettierignore` | **YES for `.claude`/`.agents`/`CLAUDE.md`; NO for `.planning/`** |
+
+That last row is the one that turns a presumed `N/A` into a measured `MET`, and it is developed under
+item 3.
+
+### Slice 11 — general items (12 cells)
+
+- **Item 2 — OWASP Top 10 review · MET** — *n/a as to injection/access-control: 0 of 2,329 files are
+  on any runtime path (table above), so this slice exposes no request handler, no query and no
+  authorisation decision. The applicable category is credential exposure (A02 / A07), and it was
+  measured rather than presumed.* Evidence: **SEC-1**, `151-SECRET-SCAN.md` — two independent methods
+  over the 2,325-file publication surface, **0 live findings**, verdict `pass-after-remediation`,
+  run **before** any push. Plus **this plan's delta rescan** over the three files that entered the
+  slice after that scan (`151-17-SUMMARY.md`, `deferred-items.md`, `pr-bodies/10.md`): JWT-header
+  `eyJ` **0**, `BEGIN … PRIVATE KEY` **0**, AWS/GitHub/Slack token shapes **0**, S-07 literal **0**.
+  Three matches for `service_role` / `supabase.(co|in|net)` in `151-17-SUMMARY.md` at lines **96,
+  100, 102** were opened and read: all three are **prose quoting the scan's own ruleset** ("…tokens
+  that no detector flagged", "No `*.supabase.co/.in/.net` anywhere in 2,325 files"), carrying no
+  value. This is the self-quoting-ruleset artefact 151-17 predicted, recurring exactly as predicted.
+  **Complement (D-18): no gate performs any of this.** No CI job, no checklist item and no hook scans
+  this repository for secrets; the reach of this cell is precisely the reach of a scan that was run by
+  hand once and will not re-run itself.
+
+- **Item 3 — Follows the Code style guide · MET** — **by a real gate, measured and negative-controlled,
+  not asserted.** `.prettierignore` excludes `.planning/` (line 36) and *nothing else in this slice* —
+  so `format:check`'s `prettier --check .` **does** reach `.claude/**`, `.agents/**` and `CLAUDE.md`,
+  which is **104 of the 2,329 files**. Verified two ways: run explicitly, `prettier --check .claude
+  .agents CLAUDE.md` → *"All matched files use Prettier code style!"*, exit 0; and the repo-wide
+  expansion was **negative-controlled** — a deliberately malformed `.claude/__prettier_probe.ts` was
+  written, `prettier --check .` reported it, and the probe was removed with the worktree verified
+  clean. (An earlier probe in `.turbo/` returned a false negative because Prettier 3.7.4 honours
+  `.gitignore`; that is why the probe was repeated in a *tracked* dot-directory. The check was wrong
+  before the content was.) The repository's two standing `format:check` failures are
+  `packages/dev-seed/src/templates/e2e/perm/perm-bankauth-notloc.ts` (slice 04) and `tests/README.md`
+  (slice 05) — **neither is in this slice**, so slice 11 is green on the gate that reaches it.
+  **Complement: 2,225 of 2,329 files (95.5%) are outside every formatter's and linter's reach** —
+  `.planning/` is prettier-ignored and no ESLint config names any slice-11 path, so for the bulk of
+  this slice "follows the style guide" is unmeasured, not measured-and-passing.
+
+- **Item 4 — Avoid `any`; document or `@ts-expect-error` · DEFERRED** — **3 real annotations in 2
+  files**, found by distinguishing type annotations from the word "any" in prose (a naive `\bany\b`
+  grep reports 16 files; the annotation-shaped pattern reports 2):
+  - `.claude/skills/spike-findings-…/sources/015-view-transitions-api/code/+layout.svelte:37` —
+    `(document as any).startViewTransition(…)`
+  - `.claude/skills/spike-findings-…/sources/016-focus-and-a11y-during-transitions/code/+layout.svelte:38` — same call
+  - `…/016-focus-and-a11y-during-transitions/code/+layout.svelte:71` — `(window as any).__a11yLog = a11yLog`
+
+  **None is documented and none carries `@ts-expect-error`**, so the checklist item is genuinely
+  violated. Shipping unfixed, with rationale: these are **frozen snapshots of spike experiments**,
+  archived as the record of what was actually executed. Editing them would make the artifact
+  disagree with the experiment it documents, and no typecheck gate sees them (no `tsconfig` includes
+  the path). The first two are additionally the standard idiom for the View Transitions API, which
+  had no `lib.dom` typing at the time the spike ran. **Complement: no gate would ever catch these** —
+  `lint:check` and `typecheck` do not reach `.claude/`, so this cell's only evidence is this manual
+  read.
+
+- **Item 5 — No repeated code in the PR or elsewhere in the repo · DEFERRED** — measured by **blob
+  OID identity** over all 2,329 files, not by inspection: **16 byte-identical groups, 20 redundant
+  files** among the 2,311 non-empty files (18 files are git's empty blob `e69de29bb` — `.gitkeep`
+  placeholders and empty evidence captures). Classified, because the raw count would mislead:
+  - **12 groups are determinism evidence in which byte-identity IS the finding** — `run-{1,2,3}.sha256`,
+    `run-{1,2,3}.json`, `run-{1,2,3}-sorted-status.txt` across phases 74/75/76/84/85/86.3/87. A
+    3-run determinism proof is *established* by the three files being identical; deduplicating them
+    would destroy the evidence.
+  - **1 group is `.gitkeep` placeholders** (×3), which exist to be identical.
+  - **3 groups are genuine code duplication (4 redundant files)**, and these are the deferral:
+    `runePersistedState.svelte.ts` identical under spikes `003` and `005`;
+    `sha-identity.mjs` identical under phases 79 and 83; `sha-identity-runner.mjs` (phase 86)
+    identical to `sha-identity.mjs` (phase 86.3).
+
+  Deferred because all four are inside per-phase archives whose value is being a faithful record of
+  what that phase ran; factoring them into a shared module would make each phase's archive incomplete.
+  **Complement: no gate detects duplication anywhere in this repository**, in this slice or any other.
+
+- **Item 6 — New components / functions / entities documented · MET** — every documented unit in the
+  slice carries its documentation **in the same directory**, verified by enumeration rather than
+  sampling: **7 of 7** skills have a `SKILL.md` (`architect`, `components`, `data`, `database`,
+  `filters`, `matching`, `spike-findings-…`), and **16 of 16** spike source directories under
+  `sources/` have a `README.md` (001–016, including `011` which is documentation-only). The
+  skill package additionally carries 8 topic references under `references/` and a `BOUNDARIES.md`.
+  **Complement: no gate checks documentation presence or accuracy** — this is a file-existence census,
+  which is evidence that documentation *exists*, not that it is *correct*.
+
+- **Item 7 — Repo documentation markdown updated · MET** — slice 11 carries **exactly two** files
+  that are repository documentation in the reviewed sense, and **both are in its diff and are
+  human-readable**: `CLAUDE.md` (**+243 / −104**) and `.agents/code-review-checklist.md` (**+38**).
+  These are the two files a reviewer of this "unreadable" PR can and should actually read. The
+  remaining 2,225 `.planning/` files are the phase record, not repository documentation.
+  **Complement: no gate verifies documentation currency**; F-04's stale-path class was found by grep,
+  and the same grep is not re-run by CI.
+
+- **Item 8 — Tracking events for new user-facing functions · N/A** — *reason (measured): the slice
+  contains **zero** tracking call sites and **zero** user-facing functions.* A grep for
+  `startEvent|trackEvent|analytics` across the slice's 42 `.ts`/`.mjs` files returns **2 matches, and
+  both were opened and read — both are comments**:
+  `001-appsettings-native-rune/appSettingsRuneContext.svelte.ts:13` is a doc-comment usage example
+  (`// .ts $derived: const platform = $derived(ctx.current.analytics?.platform);`), and
+  `003-voter-answer-store-rune/voterAnswerRuneStore.svelte.ts:12` says
+  *"Tracking-startEvent is intentionally omitted in the spike (orthogonal…)"* — a note recording an
+  omission. **0 call sites.** Combined with 0 files on any runtime path, there is no user-facing
+  function in this slice to instrument. **Complement: no gate exists for tracking coverage anywhere.**
+
+- **Item 9 — New Svelte components follow the guidelines · N/A** — *reason (measured): 46 `.svelte`
+  files exist in the slice and **0 of them are compiled by anything.*** None lies under `apps/` or
+  `packages/`; `svelte.config.js`, `vite.config.ts` and `vitest.config.ts` contain **no reference** to
+  `.claude` or `.planning`; and SvelteKit discovers routes under `apps/frontend/src/routes`, which no
+  slice-11 path is inside. They are frozen reproductions of spike experiments (the `+page.svelte` /
+  `+layout.svelte` names are *reproductions of* route files, not route files). The component
+  guidelines govern components that ship in the product; none of these does.
+  **Complement: `svelte-check` and the Svelte compiler never see these files**, so no gate could
+  disagree with this verdict either way — which is exactly why the reason is a scope measurement and
+  not a quality judgement.
+
+- **Item 10 — Errors handled and logged · MET, with one finding raised** — the slice contains **8
+  executable scripts** (mode `100755`) plus one non-executable `.sh`. Error handling measured per
+  file, not sampled:
+
+  | script | `set -` flags | explicit `exit` | writes to stderr |
+  |---|---:|---:|---:|
+  | `.claude/scripts/audit-skill-drift.sh` | 1 (`set -euo pipefail`) | 2 | **0** |
+  | `scripts/build-rename-commit.sh` | 2 | 2 | 6 |
+  | `scripts/build-slice.sh` | 2 | 3 | 5 |
+  | `scripts/hygiene-grep-report.sh` | 2 | 3 | 3 |
+  | `scripts/slice-overlap-matrix.sh` | 2 | 8 | 9 |
+  | `scripts/verify-commit-taxonomy.sh` | 2 | 4 | 3 |
+  | `scripts/verify-identity.sh` | 2 | 4 | 3 |
+
+  The seven phase scripts all carry `set -euo pipefail` **plus** an explicit `set -o pipefail`,
+  documented exit-code contracts, and diagnostics on stderr. **`audit-skill-drift.sh` is the
+  exception and is the only slice-11 file that executes in CI** (`.github/workflows/main.yaml:34`):
+  it carries `set -euo pipefail` and two explicit exit paths, but writes **0 bytes to stderr** —
+  measured, `733` bytes to stdout and `0` to stderr — so both of its failure messages go to stdout.
+  For a CI job that is acceptable (both streams are captured), which is why the cell is `MET` and not
+  `DEFERRED`; it is recorded because it is the one divergence.
+  **Complement: no gate enforces error-handling conventions on shell scripts** — there is no
+  `shellcheck` in this repository (0 references in any workflow or `package.json`).
+
+- **Item 13 — WCAG A and AA · N/A** — *reason (measured): the slice has no rendered surface.* 46
+  `.svelte` files, **0** `.html`, **0** `.css`; none is compiled or served (item 9's scope
+  measurement), so nothing in this slice reaches a browser and no success criterion can be applied to
+  it. Worth stating explicitly because spike **016** is *about* accessibility during view transitions
+  and its README records a11y findings — but it records them; it does not ship them.
+  **Complement: the `e2e-visual` and axe-based gates run against the built application only**, so
+  they neither cover nor could cover this slice.
+
+- **Item 14 — Keyboard and screen-reader usable · N/A** — *reason (measured): same scope measurement
+  as item 13 — 0 files render, so there is no focus order, no tab sequence and no accessible name to
+  evaluate.* Distinct from item 13 in the checklist and dispositioned separately here rather than
+  folded into it. **Complement: manual AT testing is the only real gate for this item anywhere in the
+  project, and it has no target in this slice.**
+
+- **Item 15 — Developers'/Publishers' Guide entries updated · N/A** — *reason (measured): the guide
+  tree is entirely outside this slice's pathspec.* `apps/docs/` paths in slice 11's surface: **0**.
+  The Developers' and Publishers' Guides live under
+  `apps/docs/src/routes/(content)/{developers,publishers}-guide/`, which **slice 09 owns** and where
+  this item is dispositioned `FIXED`. The one adjacent question — whether `CLAUDE.md`'s +243/−104
+  creates a guide obligation — is answered no: `CLAUDE.md` is agent configuration, not published
+  documentation, and the guides are not generated from it. **Complement: no gate links guide currency
+  to code changes**; slice 09's cell carries the same complement.
+
+### Finding raised by this sweep
+
+| ID | Status | Items | Description | Evidence | Slice | Disposition |
+|---|---|---|---|---|---|---|
+| **F-88** | **holds — *new, this plan*** | 11 | **`skill-drift-check` exits 1 at the branch tip.** The job arrives with slice 10 and the script it runs arrives with slice 11; run against the branch tip the script reports **`Checked: 4  Drifted: 2  Skipped: 3`** and **exits 1**, because `data` (4 commits / 7 files to `packages/data/src/`) and `database` (7 commits / 15 files to `apps/supabase/` + `packages/supabase-types/`) have drifted past their skills' last update of 2026-08-10. **No pull request in this stack shows this**, because `main.yaml` triggers on `pull_request: branches: [main]` and only PR 01a targets `main` — where the workflow is still `origin/main`'s three-job version that has no such job. The first PR opened against `main` **after** the stack merges will therefore have a red `skill-drift-check` that no one in this phase has seen fail. | `bash .claude/scripts/audit-skill-drift.sh` → exit 1; `.github/workflows/main.yaml:34` | **10** (job) / **11** (script) | **DEFERRED → post-merge.** Not fixed here: greening it means editing `.claude/skills/{data,database}/SKILL.md`, which are slice-11 files, to reflect schema and data-model changes that ship in slices 02 and 03 — a content task with its own review needs, not a shipping-mechanics fix. Routed to 151-19's follow-up list. |
+
+**This is Pitfall 7's fourth appearance and the first time it has been anything but refuted.** The
+research prediction was that `skill-drift-check` **fails PR 01a**; that was measured false three
+times and stays false. What is true is narrower and was only visible by *running the script*: the job
+does not fail any PR in this stack, and will fail the first one after it.

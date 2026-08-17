@@ -344,9 +344,386 @@ the top of this section.
 
 ## Section 2 — Final stack (pass `final`)
 
-*Not yet written. Plan 151-18 appends it, mirroring the frontmatter keys above with the `run:` key
-set to `final` and the real `ship/*` branch tips.*
+**Written by plan 151-18.** This is the real stack — the twelve `ship/*` branches that become the
+pull requests, not the throwaway objects of Section 1. It mirrors Section 1's frontmatter keys.
 
-Note for 151-18: keep the literal `run: <value>` string confined to frontmatter. Plan 151-01's
-acceptance criterion greps for exactly one occurrence, and prose that repeats the literal breaks
-that count — it did here, and was fixed rather than waived.
+Section 1's closing note asked 151-18 to keep the literal key-and-value string confined to
+frontmatter, because plan 151-01's acceptance criterion greps for exactly one occurrence. That
+criterion is **superseded here by construction**: this section's whole purpose is to carry a second
+value of that key, so the count becomes two. The note's *intent* — never repeat the literal in prose
+— is honoured: the block below is the only place it appears in this section.
+
+```yaml
+phase: 151
+phase_name: ship-v0-2-akita-review-stack
+record: byte-identity-proof
+run: final
+run_date: 2026-08-17
+plan: 151-18
+base_sha: ac30f132a407084bf30626029a0a71a0a521982f
+base_ref: origin/main
+target_source_sha: ff027416cce9abeabaa5c81af062f94b29a92c46
+target_source_ref: feat-gsd-roadmap
+merge_target_commit: d55587fb1cadde0c37fa75c8e4da7a265e68e6d2
+merge_target_tree: d5f77fd48b987667dea26141fd70da5de3290f2b
+stack_tip_commit: 1e33b5073ebbcd3beba84dffc72eb81a5996e7d0
+stack_tip_tree: d5f77fd48b987667dea26141fd70da5de3290f2b
+changed_files: 0
+catchall_files: 0
+rename_commit: 602b793510cf432365e14a2562cc5e3f917e040e
+rename_commit_R: 1316
+rename_commit_A: 0
+rename_commit_M: 0
+slice_count: 12
+slice_file_total: 4511
+comparable_total: 4511
+partition_gap: 0
+taxonomy_c1_to_tip: CONFORMING          # exit 0, 11 commits, 0 shared paths
+taxonomy_main_to_tip: VIOLATIONS        # exit 1, 12 commits, 628 shared paths — explained below
+origin_main_advanced_since_merge: false
+backup_worktree_intact: true
+hooks_path_intact: true
+toolchain:
+  git: 2.50.1 (Apple Git-155)
+  python3: 3.9.16
+  prettier: 3.7.4
+status: criteria_4_5_7_proven
+```
+
+### Step 0 — the target, re-resolved (C-12)
+
+Criterion 7's target is `feat-gsd-roadmap` **merged with `origin/main`**, and plan 151-06 made that
+a commit rather than a described construction, so the proof takes a single ref on each side. Nobody
+has to reproduce a merge to check it.
+
+```
+$ git fetch origin
+$ git rev-parse origin/main
+ac30f132a407084bf30626029a0a71a0a521982f
+
+$ git rev-parse d55587fb1                       # the D-22 materialised merge (plan 151-06)
+d55587fb1cadde0c37fa75c8e4da7a265e68e6d2
+$ git rev-parse d55587fb1^2                     # which main it merged
+ac30f132a407084bf30626029a0a71a0a521982f
+
+$ git merge-base --is-ancestor origin/main feat-gsd-roadmap ; echo $?
+0
+$ git rev-list --count feat-gsd-roadmap..origin/main
+0
+```
+
+**`origin/main` has NOT advanced since the merge commit.** It resolves to the same SHA the merge
+took as its second parent, it is an ancestor of the branch, and the branch is zero commits behind.
+So the claim this record makes is unqualified: the stack is byte-identical to the branch, and the
+branch contains `origin/main` **as of now**, not merely as of the merge.
+
+Had it advanced, this paragraph would have said so and the claim would have been narrowed to "as of
+the merge commit" — which is why the re-resolution is a step rather than an assumption.
+
+### Step 1 — slice 11 re-cut, because the record required it
+
+Plan 151-17 set `slice_11_must_be_recut_before_push: true` and it was still true here: 151-17's own
+four closing commits landed **after** its cut at `384e7b40a`, so the stack no longer reconstructed
+the branch. The branch is unpushed, so the re-cut moves a local ref only — **no force-push**.
+
+```
+$ git ls-remote --heads origin ship/v0.2-akita-11-planning | wc -l
+0                                               # unpushed, so the ref move is not a force-push
+
+$ git update-ref refs/heads/ship/v0.2-akita-11-planning 1e33b5073 384e7b40a
+```
+
+The re-cut is the same `build-slice.sh` invocation as every other slice, reading its pathspec from
+`slices.tsv` column 4 rather than a hard-coded copy:
+
+```
+files=2328
+slice 11 commit: 1e33b5073ebbcd3beba84dffc72eb81a5996e7d0
+```
+
+**The catch-all tripwire, which is the load-bearing half:**
+
+```
+$ PARENT=1e33b5073 TARGET=ff027416c build-slice.sh "ship(v0.2) catch-all -- MUST BE EMPTY" .
+files=0
+EMPTY: ship(v0.2) catch-all -- MUST BE EMPTY
+1e33b5073ebbcd3beba84dffc72eb81a5996e7d0        # parent echoed unchanged
+```
+
+A green identity check with a non-empty catch-all is a laundered result — research measured that
+live (472 files absorbed, tree hash still matching). The empty catch-all is not a formality here,
+but it also proves nothing on its own about the *split*; see § "What the empty catch-all proves"
+in `151-STACK-MANIFEST.md`.
+
+**The +3 attributed file by file**, not asserted. Slice 11 went 2,325 → 2,328 files:
+
+```
+$ comm -13 old11.txt new11.txt
+  + .planning/phases/151-ship-v0-2-akita-review-stack/151-17-SUMMARY.md
+  + .planning/phases/151-ship-v0-2-akita-review-stack/deferred-items.md
+  + .planning/phases/151-ship-v0-2-akita-review-stack/pr-bodies/10.md
+$ comm -23 old11.txt new11.txt
+  (empty — nothing left the set)
+```
+
+All three are files 151-17 created after taking its own measurement. Five further files were
+*modified* rather than added, which is why the delta is 8 changed paths but only +3 files.
+
+### Step 2 — criterion 7, D-23's two independent checks, verbatim
+
+```
+$ bash scripts/verify-identity.sh feat-gsd-roadmap ship/v0.2-akita-11-planning
+== Check 1: git diff must be empty ==
+target : feat-gsd-roadmap  (ff027416cce9abeabaa5c81af062f94b29a92c46)
+tip    : ship/v0.2-akita-11-planning  (1e33b5073ebbcd3beba84dffc72eb81a5996e7d0)
+changed files: 0
+
+== Check 2: tree hashes must be equal ==
+target tree : d5f77fd48b987667dea26141fd70da5de3290f2b
+stack  tree : d5f77fd48b987667dea26141fd70da5de3290f2b
+
+---
+Checks failed: 0  (changed files: 0, trees equal: yes)
+
+BYTE-IDENTICAL
+
+$ echo $?
+0
+```
+
+**Both checks pass, and they are computed by different code paths** — the file count comes from the
+diff machinery, the tree hashes from object hashing. Either is reproducible on its own:
+
+```
+git diff feat-gsd-roadmap ship/v0.2-akita-11-planning        # must print nothing
+git rev-parse feat-gsd-roadmap^{tree} ship/v0.2-akita-11-planning^{tree}   # must print one SHA twice
+```
+
+That reproducibility is the entire value of criterion 7: **the stack never has to be merged to be
+believed.**
+
+### Step 3 — the partition arithmetic, at the final cut
+
+| slice | files |
+|---|---:|
+| 01b strapi-removal | 252 |
+| 02 shared-packages | 97 |
+| 03 supabase | 119 |
+| 04 dev-seed | 162 |
+| 05 e2e-tests | 195 |
+| 06 frontend-lib | 533 |
+| 07 frontend-routes | 214 |
+| 08 i18n-messages | 330 |
+| 09 docs | 152 |
+| 10 root-config | 129 |
+| 11 planning | **2328** |
+| **Σ** | **4511** |
+
+```
+$ git -c diff.renameLimit=20000 diff --name-only --no-renames 602b79351 ff027416c | wc -l
+4511
+```
+
+**Σ per-slice = comparable total = 4511. Gap 0.** Sum-equals-total is the *overlap* check; the empty
+catch-all is the *gap* check. Both hold, so the partition is exact.
+
+#### The 151-09 re-baseline, reconciled — the phase's one outstanding bookkeeping item
+
+Plan 151-09 reported `252 + 97 + 3925 = 4274 — gap 0` against a standing baseline of **4257**
+without attributing the +17 file by file, the way 151-06 had attributed 4255 → 4257. Every plan
+since attributed its own rise by set difference; that one gap stayed open. It is closed here by
+measurement rather than by argument:
+
+| checkpoint | comparable total | Δ | attributed by |
+|---|---:|---:|---|
+| 151-05 dry run | 4255 | — | — |
+| 151-06 | 4257 | +2 | set difference (the D-22 merge's two files) |
+| 151-09 | 4274 | **+17** | **never attributed — the open item** |
+| 151-16 | 4413 | +139 | set difference |
+| 151-17 | 4508 | +95 | set difference |
+| **151-18 (this cut)** | **4511** | **+3** | set difference, above |
+
+The +17 is recovered the same way every other rise was, by differencing the two file sets across
+`151-06`'s cut refs (`C1 = dd88de20c`, `TARGET = d55587fb1`) and `151-09`'s (`C1 = 5636a724b`,
+`TARGET = 27193876e`):
+
+```
+$ git -c diff.renameLimit=20000 diff --name-only --no-renames dd88de20c d55587fb1 | sort > a.txt
+$ git -c diff.renameLimit=20000 diff --name-only --no-renames 5636a724b 27193876e | sort > b.txt
+$ wc -l < a.txt ; wc -l < b.txt
+4257
+4274
+$ comm -13 a.txt b.txt | wc -l     # entered the set
+17
+$ comm -23 a.txt b.txt | wc -l     # left the set
+0
+```
+
+**All seventeen, named** — every one a `.planning/` artifact written by plans 151-06, 151-07 and
+151-08 between the two measurements, and every one inside slice 11's pathspec:
+
+```
+151-06-SUMMARY.md   151-07-SUMMARY.md   151-08-SUMMARY.md   151-DISPOSITION.md
+151-HYGIENE-REPORT.md   151-hygiene-prose-queue.tsv   151-hygiene-residue.tsv
+151-hygiene-summary.json   scripts/hygiene-codemod.mjs
+scripts/fixtures/hygiene-codemod.{input,expected}.{sh,sql,svelte,ts}      # 8 fixture files
+```
+
+(all paths relative to `.planning/phases/151-ship-v0-2-akita-review-stack/`)
+
+The structural fact that makes the reconciliation sound, and that 151-09 could have stated instead
+of leaving a bare arithmetic identity: **every rise in the comparable total is a `.planning/` file
+written by a plan of this phase, every one of them rides slice 11 by pathspec, and no file has ever
+left the set** (`comm -23` is empty at every checkpoint measured, including this one). The total is
+monotonically non-decreasing for a reason, not by coincidence. A rise that *did* include a departure
+would be a partition defect; none has.
+
+**The literal is a snapshot; the identity is the assertion.** 4255 → 4257 → 4274 → 4413 → 4508 →
+4511 across six measurements, `gap 0` at every one.
+
+### Step 4 — criterion 4, the commit taxonomy, both runs
+
+**Run A — `C1..TIP`, the range the disposition record names as the one that decides criterion 4.**
+
+```
+$ bash scripts/verify-commit-taxonomy.sh 602b793510cf432365e14a2562cc5e3f917e040e..ship/v0.2-akita-11-planning
+
+Commit Taxonomy Audit -- criterion 4.1-4.6
+==========================================
+range   : 602b793510cf432365e14a2562cc5e3f917e040e..ship/v0.2-akita-11-planning
+commits : 11
+
+  class         count  expected    ok    clause
+  ----------  -------  ----------  ----  ------
+  planning          1  == 1        ok    4.1
+  docs              1  == 1        ok    4.2
+  test              1  == 1        ok    4.3
+  feat              6  -           -     -
+  chore             2  -           -     -
+  style             0  <= 1        ok    4.5
+
+  4.6  [db] marker on db-touching commits         violations: 0
+  4.4  PROXY: disjoint modified-path sets         shared paths: 0
+       unplaced commits (unrecognised subject)    count: 0
+
+---
+Errors: 0  (unplaced: 0, [db] gaps: 0, shared paths: 0)
+Note: 4.4 is asserted by its structural proxy (disjoint modified-path sets), not by
+      deciding whether one commit fixes another. Read the verdict accordingly.
+
+CONFORMING
+
+$ echo $?
+0
+```
+
+**4.4 IS A PROXY AND THE OUTPUT SAYS SO ON EVERY RUN.** "The PR contains no fixes of itself" is a
+semantic question about intent and is not decidable from commit subjects. What was actually measured
+is **disjoint modified-path sets**: no two commits in the range touch the same path. On a
+path-partitioned stack that is strictly *stronger* than the criterion; as a general statement about
+intent it is strictly *weaker*. This record does not claim the clause was decided — it claims the
+proxy held. That distinction is why the script prints the proxy's name unconditionally, and it is
+the reason no reader of this file can be misled by a green banner.
+
+**Run B — `origin/main..TIP`. Exit 1, and that is the correct result, not a defect.**
+
+```
+$ bash scripts/verify-commit-taxonomy.sh origin/main..ship/v0.2-akita-11-planning
+commits : 12
+  planning 1 ok 4.1 · docs 1 ok 4.2 · test 1 ok 4.3 · style 0 ok 4.5
+  feat 6 · refactor 1 · chore 2
+  4.6  [db] marker on db-touching commits         violations: 0
+  4.4  PROXY: disjoint modified-path sets         shared paths: 628
+       unplaced commits (unrecognised subject)    count: 0
+Errors: 1
+$ echo $?
+1
+```
+
+Both runs are recorded because recording only the green one would be the laundering this phase keeps
+catching. **The difference between them is exactly one commit: `602b79351`, slice 01a, the
+pure-rename layout move** — which run A excludes as the stack's base and run B includes.
+
+Every one of the 628 shared paths is a file 01a **moved** and a later slice **edits**. The proxy
+counts a rename as a modification of both the old and new path, so a rename-based stack can never
+satisfy it across its own rename base. Two facts pin that down rather than leaving it to inspection:
+
+- **Run A's zero.** If any shared path involved a pair of *later* slices, run A would report it —
+  run A differs from run B only by 01a's presence. It reports **0**. Therefore all 628 involve 01a.
+- **628/628 are under `apps/`** — the tree 01a moved. The first twenty printed are all
+  `apps/docs/**`, paired between `602b79351` (the move) and `2865b05b3` (slice 09, docs).
+
+This is **D-11's design expressed in path terms, not a defect in the split.** The 420 figure that
+appeared in earlier drafts was 151-05's dry-run measurement and is superseded; 628 is the gate's own
+rename-aware extraction, and 682 is the same quantity under this record's `--no-renames` convention
+(rename detection *inside* the later slices hides 56 source paths). Both are recorded so neither
+can be mistaken for a discrepancy.
+
+### Step 5 — criterion 5, re-verified at the END of the review, not only at its start
+
+Criterion 5 is that the original reiterative history survives **for the duration of the review**.
+Proving it in plan 151-03 and never looking again would leave the criterion asserted rather than
+met, so it is re-measured here:
+
+```
+$ git worktree list | grep gsd-backup
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd-backup  fe91f3099 (detached HEAD)
+
+$ git -C ../voting-advice-application-gsd-backup rev-parse HEAD
+fe91f3099e923039837bf88516f8ce14ded4078c
+
+$ git -C ../voting-advice-application-gsd-backup symbolic-ref -q HEAD ; echo $?
+1                                               # still DETACHED — nothing can fast-forward it
+
+$ git -C ../voting-advice-application-gsd-backup status --porcelain | wc -l
+0                                               # still clean
+```
+
+`151-BASELINE.md` records `pre_sweep_tip: fe91f3099e923039837bf88516f8ce14ded4078c`. **The worktree's
+HEAD equals it exactly, is still detached, and its working tree is still clean.** No plan in this
+phase touched it, and no `git clean`, `git stash`, `reset --hard` or rebase ran anywhere near it.
+
+### Step 6 — the hooks-path override, confirmed rather than assumed
+
+Branch and history operations do not touch git config, but plan 151-03 recorded the override and the
+correct thing to do with a recorded value is read it back:
+
+```
+$ git config --get core.hooksPath
+/dev/null
+$ git config --worktree --get core.hooksPath
+/dev/null                                       # still worktree-LOCAL, not leaked to the shared config
+```
+
+Matches `151-BASELINE.md`'s `hooks_path: /dev/null`, and the scope check confirms it is still the
+worktree-local override rather than something that has escaped into the repository-wide config that
+the main checkout and every sibling worktree share.
+
+### What this section proves, and what it does not
+
+**Proven, by command, with output recorded verbatim:**
+
+- **Criterion 7** — the twelve-slice stack reconstructs the merge target byte for byte, by two
+  independent checks, both reproducible without trusting this file.
+- **Criterion 4** — every cardinality clause and the `[db]` implication, over the range the
+  disposition record names, with 4.4's proxy named on the run rather than in a footnote.
+- **Criterion 5** — the reiterative history is still there, still detached, still at its pin, at the
+  *end* of the phase.
+- The partition is exact in both directions at the final cut, and the phase's one outstanding
+  bookkeeping gap (151-09's unattributed re-baseline) is closed by measurement.
+
+**Not proven, and not claimed:**
+
+- **That the slice boundaries are the right *review* boundaries.** Byte-identity is indifferent to
+  how the content was divided; criterion 6's manual read is what answers that, and it is a separate
+  gate.
+- **That the split is honest.** The empty catch-all is necessary, not sufficient — the real evidence
+  is the per-slice prediction checks in plans 151-09 … 151-17, each run while a wrong answer was
+  still catchable.
+- **That the stack stays identical.** It is identical to `ff027416c`. **Every subsequent `.planning/`
+  commit — including this plan's own — makes it stale again by construction**, because every such
+  file rides slice 11. That is not a defect; it is why `slice_11_must_be_recut_before_push` exists
+  and why the final re-cut happens immediately before PR 12 opens, with this check re-run against
+  the tip it is published from.
+- **Anything about the suite, the pull requests, or the review itself.** Those are D-24's gate and
+  criterion 6's read, recorded elsewhere.
