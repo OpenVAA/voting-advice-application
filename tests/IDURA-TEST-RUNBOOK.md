@@ -198,7 +198,7 @@ committed test key pair** (`tests/tests/utils/testKeys.ts`, kids `test-enc-1` / 
 directly to the `identity-callback` Edge Function. There is **no browser and no real
 provider** — only the Edge-Function decrypt → verify → match → create path runs.
 
-> **D-02 (deterministic-green gate):** the spec asserts the keys-configured create path
+> **Deterministic-green gate:** the spec asserts the keys-configured create path
 > ran on EVERY run (it does **not** `test.skip`). A "did not run" is a **CARDINAL failure**
 > (CLAUDE.md E2E Hard Rule). The gate holds only if the served Edge Function is wired with
 > the **fixed test decryption JWK** AND a reachable JWKS endpoint serving the **test signing
@@ -276,7 +276,7 @@ PLAYWRIGHT_BANK_AUTH=1 FRONTEND_PORT=5174 \
   npx playwright test --project=bank-auth -c tests/playwright.config.ts
 ```
 
-> The dev server has to be on 5174 for this run as well — start it with the same prefix (`FRONTEND_PORT=5174 yarn dev`) or put a `FRONTEND_PORT=5174` line in the root `.env`, which moves both the dev server and Playwright. Otherwise the E2E preflight aborts the run before the first spec; see [`tests/README.md`](./README.md) § Run for what it asserts and how to read its failure message.
+> The dev server has to be on 5174 for this run as well — start it with the same prefix (`FRONTEND_PORT=5174 yarn dev`) or put a `FRONTEND_PORT=5174` line in the root `.env`, which moves both the dev server and Playwright. Otherwise the E2E preflight aborts the run before the first spec; see [`tests/README.md`](./README.md), "Run", for what it asserts and how to read its failure message.
 
 **Expected:** all `bank-auth` tests pass with the keys-configured create path **TAKEN**
 (no skipped / did-not-run). The spec asserts `identity_provider='idura'`,
@@ -284,8 +284,8 @@ PLAYWRIGHT_BANK_AUTH=1 FRONTEND_PORT=5174 \
 flow-through, and a magic-link `action_link` containing `token=`. If the keys-configured
 path did not run, the spec FAILS loudly (it points back here) rather than skipping.
 
-> The plan 122-03 (EFLOW-10b full-browser journey via the mock OIDC issuer) will append a
-> separate **EFLOW-10b** section below this one — do not merge the two.
+> The **EFLOW-10b** full-browser journey (via the mock OIDC issuer) has its own
+> section below this one — do not merge the two.
 
 ---
 
@@ -293,12 +293,12 @@ path did not run, the spec FAILS loudly (it points back here) rather than skippi
 
 This is the **automated, deterministic** full-browser counterpart to the manual full-flow
 run at the top of this runbook. It drives the `bank-auth-journey` Playwright project (the
-NEW journey spec lands in plan 122-05), walking the REAL
+NEW journey spec), walking the REAL
 `/candidate/preregister → /api/oidc/authorize → (mock IdP) 302 → /api/oidc/callback
 (server-side exchange + decrypt) → authenticated → election/constituency → email + ToU →
 preregister() → registration-key → set password → logged-in` chain. The **only** thing faked
 is the IdP at the env-pointed network seam — the real authorize→callback→exchange→decrypt→
-claims chain runs **UNMODIFIED** (D-01 Option B; Option C — a test-only branch in production
+claims chain runs **UNMODIFIED** (Option B; Option C — a test-only branch in production
 auth code — was rejected + operator-LOCKED).
 
 ### The mock OIDC issuer
@@ -417,7 +417,7 @@ Playwright starts the mock OIDC issuer (`webServer` entry → `tsx mockOidcIssue
 waits for `https://127.0.0.1:9443/.well-known/openid-configuration/jwks` (with
 `ignoreHTTPSErrors`), then runs the journey, then tears the issuer down.
 
-> **Since Phase 140 WR-03 this gate is NO LONGER FAST.** `data-setup-bank-auth-journey`
+> **This gate is NO LONGER FAST (see phase 140 WR-03).** `data-setup-bank-auth-journey`
 > depends on `voter-prefs-tracking`, the tail of the perm serial chain, so
 > `--project=bank-auth-journey` pulls the ENTIRE chain transitively — expect full-suite
 > wall-clock (~11 min per run, so ~35 min for the 3× gate), not seconds. This is deliberate:
@@ -427,7 +427,7 @@ waits for `https://127.0.0.1:9443/.well-known/openid-configuration/jwks` (with
 > requirement that this journey be runnable quickly in isolation.
 >
 > Consequently many datasets (base, every perm dataset) are live in the DB while the journey
-> walks. That is SAFE because selection is identity-based since Phase 140 CR-01:
+> walks. That is SAFE because selection is identity-based (see phase 140 CR-01):
 > `submitElection('[EL1]')` / `submitConstituency('[CO1')` assert on the dataset's own labels,
 > so a foreign dataset fails the walk loudly instead of being silently preregistered into.
 > Verified by trace — see `140-GATES.md` Gate 3.

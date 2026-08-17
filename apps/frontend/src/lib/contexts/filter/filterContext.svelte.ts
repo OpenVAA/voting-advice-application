@@ -25,8 +25,8 @@ export function getFilterContext(): FilterContext {
  * `FilterGroup`). The reactive core is the private `#version` `$state` field, bumped
  * on every `FilterGroup.onChange` — `FilterGroup.filters[i]._rules` is plain JS, not
  * `$state`, so the version counter is the minimum-ceremony bridge into `$derived`
- * reactivity (RESEARCH.md §Pattern 1, Pitfall 1; the same bridge as `dataContext`).
- * Per the version-bridge is KEPT verbatim — it does NOT simplify away.
+ * reactivity (the same bridge as `dataContext`).
+ * The version-bridge is KEPT verbatim — it does NOT simplify away.
  *
  * Class-shape choices (see spike 020/022/023):
  *  - reactive projection in `$derived` field: `#filterGroup` is a `$derived`
@@ -125,20 +125,24 @@ class FilterContextProvider implements FilterContext {
     this.#filterGroup?.reset();
   };
 
-  // arrow field — survives detach. Intentional Phase-62 no-op stub.
+  // arrow field — survives detach. Intentional no-op stub.
   addFilter = (_spec: unknown): void => {
-    console.warn('filterContext.addFilter() is not implemented in Phase 62 — see D-06 (future LLM chat follow-up).');
+    console.warn(
+      'filterContext.addFilter() is not implemented: this build exposes a fixed filter set, so filters cannot be added at runtime.'
+    );
   };
 
-  // arrow field — survives detach. Intentional Phase-62 no-op stub.
+  // arrow field — survives detach. Intentional no-op stub.
   removeFilter = (_id: string): void => {
-    console.warn('filterContext.removeFilter() is not implemented in Phase 62 — see D-06 (future LLM chat follow-up).');
+    console.warn(
+      'filterContext.removeFilter() is not implemented: this build exposes a fixed filter set, so filters cannot be removed at runtime.'
+    );
   };
 }
 
 /**
  * Initialise the `FilterContext`. Must be called exactly once per voter session
- * (typically from `initVoterContext ` per). Throws status-500 on a
+ * (typically from `initVoterContext()`). Throws status-500 on a
  * second invocation.
  */
 export function initFilterContext(args: InitFilterContextArgs): FilterContext {

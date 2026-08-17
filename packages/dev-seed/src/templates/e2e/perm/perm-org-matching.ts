@@ -31,7 +31,7 @@
  * voter, satisfying the distinguishability requirement.
  *
  * Org own answers are stitched by the Writer's `importAnswers` pass (which —
- * as of Phase 119 — generalises over candidates AND organizations); the org
+ * as of the rename (see phase 119) — generalises over candidates AND organizations); the org
  * carries `answersByExternalId` keyed by FULL prefixed question external_ids.
  *
  * Prefix discipline: `externalIdPrefix: 'e2e-perm-orgmatch-'`. Row external_ids

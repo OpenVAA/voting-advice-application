@@ -26,8 +26,8 @@ import type { Ctx } from '../../src/ctx';
 import type { LatentHooks } from '../../src/emitters/latent/latentTypes';
 import { validateTemplate } from '../../src/template/schema';
 
-describe('template schema — latent block (D-57-21)', () => {
-  it('accepts an empty template (Phase 56 regression)', () => {
+describe('template schema — latent block', () => {
+  it('accepts an empty template (regression)', () => {
     expect(() => validateTemplate({})).not.toThrow();
   });
 
@@ -39,7 +39,7 @@ describe('template schema — latent block (D-57-21)', () => {
     expect(() => validateTemplate({ latent: { dimensions: 3, eigenvalues: [1, 0.333, 0.111] } })).not.toThrow();
   });
 
-  it('rejects mismatched dimensions/eigenvalues length (D-57-02)', () => {
+  it('rejects mismatched dimensions/eigenvalues length', () => {
     expect(() => validateTemplate({ latent: { dimensions: 2, eigenvalues: [1] } })).toThrow(
       /template\.latent\.eigenvalues.*Expected length 2, got 1/
     );

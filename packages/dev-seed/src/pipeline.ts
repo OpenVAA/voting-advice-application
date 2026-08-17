@@ -168,7 +168,7 @@ export function runPipeline(
   const output: Record<string, Array<Record<string, unknown>>> = {};
   const templateFragments = template as unknown as Record<string, unknown>;
 
-  // seam: install the Phase 57 latent emitter unless a caller has already
+  // seam: install the latent emitter (see phase 57) unless a caller has already
   // wired a custom one (test-injection path). `??=` preserves see phase 56 behavior
   // for tests that pre-set ctx.answerEmitter on an externally-supplied ctx.
   // The latent emitter internally falls back to `defaultRandomValidEmit` for:
@@ -215,14 +215,14 @@ export function runPipeline(
  *   - `constituency_group._constituencies = { externalId: [...constituency extIds] }`
  *   - `question_category._elections = { externalId: [...election extIds] }`
  *
- * Per-row scoping (delivers the Phase 58 hook the original full-fanout comment
+ * Per-row scoping (delivers the hook (see phase 58) the original full-fanout comment
  * promised): a row that already declares scoping — via `_<sentinel>`,
  * `<sentinel>`, or `<snake_case_sentinel>` (the four shapes `linkJoinTables`
  * accepts in supabaseAdminClient.ts:324-330) — is left untouched. Only rows
  * that lack any declaration receive the full-fanout default. Templates that
  * want a realistic election→cg→constituency hierarchy declare the relationships
  * inline on the relevant fixed[] rows; templates that want everything wired to
- * everything (the Phase 56 default) omit the declarations and inherit fanout.
+ * everything (the default; see phase 56) omit the declarations and inherit fanout.
  */
 function attachSentinels(output: Record<string, Array<Record<string, unknown>>>): void {
   const allGroupExtIds = (output.constituency_groups ?? [])

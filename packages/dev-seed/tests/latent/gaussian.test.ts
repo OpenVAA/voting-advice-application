@@ -58,7 +58,7 @@ describe('boxMuller (gaussian.ts)', () => {
     }
   });
 
-  it('short-circuits when stdDev === 0 (D-57-11)', () => {
+  it('short-circuits when stdDev === 0', () => {
     const faker = seededFaker();
     expect(boxMuller(faker, 7, 0)).toBe(7);
     expect(boxMuller(faker, -2, 0)).toBe(-2);

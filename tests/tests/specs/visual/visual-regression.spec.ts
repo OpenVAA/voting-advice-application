@@ -26,7 +26,7 @@
  * Baselines are Linux/x86_64 PNGs and MUST be regenerated in the container that
  * matches CI's `ubuntu-latest` runner — never on a developer Mac, whose font
  * rasterisation differs enough to fail CI permanently. That mismatch is what left
- * this project non-functional between v1.2 and Phase 136. With the app on
+ * this project non-functional between v1.2 and a later phase (see phase 136). With the app on
  * http://localhost:$PORT and Supabase on the host:
  *
  *   docker run --rm --platform linux/amd64

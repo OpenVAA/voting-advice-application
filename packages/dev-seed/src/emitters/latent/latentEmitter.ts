@@ -35,10 +35,10 @@ import type { AnswerEmitter } from '../answers';
 import type { SpaceBundle } from './latentTypes';
 
 /**
- * / GEN-06g public entry: build the Phase 57 latent emitter for a given
+ * / GEN-06g public entry: build the latent emitter (see phase 57) for a given
  * validated template. Installed by `pipeline.ts` via `ctx.answerEmitter ??=
  * latentAnswerEmitter(template)` immediately before the topo loop; the `??=`
- * preserves pre-injected emitters used by Phase 56 tests.
+ * preserves pre-injected emitters used by the earlier tests (see phase 56).
  */
 export function latentAnswerEmitter(template: Template): AnswerEmitter {
   let bundle: SpaceBundle | undefined;

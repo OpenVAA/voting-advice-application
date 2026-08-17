@@ -4,7 +4,7 @@
  * Covers:
  *   `{}` template produces a valid row-set for every real entity
  *     (accounts/projects/feedback/app_settings/alliances/factions/nominations
- *     default to 0 rows per per-generator defaults; the seven
+ *     default to 0 rows per the per-generator defaults; the seven
  *     "content" entities always have ≥1 row).
  *   override signature `(fragment, ctx) => Rows ` fully
  *     replaces the built-in generator's output for that table AND receives
@@ -60,14 +60,14 @@ describe('runPipeline', () => {
     expect(Array.isArray(out.feedback)).toBe(true);
   });
 
-  it('D-25: override fully replaces the built-in generator output', () => {
+  it('override fully replaces the built-in generator output', () => {
     const out = runPipeline({}, { elections: () => [] });
     expect(out.elections).toEqual([]);
     // Other entities still flow normally.
     expect(out.organizations.length).toBeGreaterThan(0);
   });
 
-  it('D-25: override receives (fragment, ctx) with seeded faker + projectId', () => {
+  it('override receives (fragment, ctx) with seeded faker + projectId', () => {
     const overrideSpy = vi.fn((_fragment: unknown, ctx: Ctx) => [
       { external_id: 'override_el_0', project_id: ctx.projectId }
     ]);
@@ -85,7 +85,7 @@ describe('runPipeline', () => {
     expect(typeof receivedCtx.faker.person.firstName).toBe('function');
   });
 
-  it('D-08: template fragment wins over generator defaults', () => {
+  it('template fragment wins over generator defaults', () => {
     // ElectionsGenerator.defaults returns { count: 1 }; template supplies 5.
     const out = runPipeline({ elections: { count: 5 } });
     expect(out.elections).toHaveLength(5);
@@ -195,7 +195,7 @@ describe('runPipeline', () => {
     expect(Object.keys(answers)).toHaveLength(out.questions.length);
   });
 
-  it('override map uses TOPO_ORDER table names (D-06)', () => {
+  it('override map uses TOPO_ORDER table names', () => {
     // Spot-check that an override keyed to a mid-topo table still replaces its output.
     const out = runPipeline({}, { organizations: () => [] });
     expect(out.organizations).toEqual([]);

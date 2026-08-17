@@ -29,7 +29,7 @@
 
   // Stable references (functions, userData object): destructure-safe.
   // Reactive accessor isAuthenticated read via candCtx.X (one-shot read at
-  // component init via $derived) — see CLAUDE.md §Context Destructuring Rule.
+  // component init via $derived) — see CLAUDE.md "Context Destructuring Rule".
   const candCtx = getCandidateContext();
   const { getRoute, register, setPassword, t, userData } = candCtx;
 

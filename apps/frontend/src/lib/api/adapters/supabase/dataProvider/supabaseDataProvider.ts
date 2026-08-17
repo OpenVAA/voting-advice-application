@@ -406,7 +406,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     // reverse fill, `OrganizationNomination.candidateNominationIds` is
     // undefined, `hasCandidates` is false, and `nominationAndQuestionStore`
     // filters every org out under the default `hideIfMissingAnswers.candidate`
-    // setting — surfaced as "parties tab is empty" during Phase 64 manual
+    // setting — surfaced as "parties tab is empty" during manual
     // smoke. The full child→parent → grandparent walk also covers
     // candidate→faction→organization→alliance and faction→organization edges.
     const childIdsByParentAndType = new Map<string, Map<string, Array<string>>>();

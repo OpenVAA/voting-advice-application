@@ -3,10 +3,10 @@ import { match } from './etSg';
 
 /**
  * Unit test for the `etSg` SvelteKit param matcher (short-name alias of
- * `entityTypeSingular`, introduced by Phase 88).
+ * `entityTypeSingular`; see phase 88).
  *
- * Accept-set (American spelling per Phase 62 Open Question 1 RESOLVED;
- * extended with `alliance` per Phase 69):
+ * Accept-set (American spelling, see phase 62;
+ * extended with `alliance`; see phase 69):
  *   `candidate` | `organization` | `alliance`
  *
  * Rejects plural forms, British spellings, legacy `party`,

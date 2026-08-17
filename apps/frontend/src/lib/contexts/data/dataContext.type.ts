@@ -7,7 +7,7 @@ export type DataContext = {
    * removed in Wave 4 (see phase 98); the duplicate read-only mirror + its
    * non-reactive producer-read split were collapsed into this single handle in
    * see phase 113, and the `{ current }` wrapper was flattened to a bare
-   * field in Phase 113 — read `ctx.dataRoot` directly. Producer
+   * field (see phase 113) — read `ctx.dataRoot` directly. Producer
    * writes go through `setDataRoot`.
    */
   readonly dataRoot: DataRoot;

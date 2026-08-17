@@ -45,7 +45,7 @@ export class ProjectsGenerator {
   generate(fragment: ProjectsFragment): Array<TablesInsert<'projects'>> {
     if ((fragment.count ?? 0) > 0 || (fragment.fixed?.length ?? 0) > 0) {
       this.ctx.logger(
-        '[dev-seed] ProjectsGenerator: projects are bootstrap-only per D-11. ' +
+        '[dev-seed] ProjectsGenerator: projects are bootstrap-only. ' +
           'Requested rows ignored — the bootstrap project is pre-populated via seed.sql. ' +
           `Reference it via ctx.projectId (bootstrap UUID: ${this.ctx.projectId}).`
       );

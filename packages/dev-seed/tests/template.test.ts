@@ -19,7 +19,7 @@ import { describe, expect, it } from 'vitest';
 import { validateTemplate } from '../src/template/schema';
 
 describe('validateTemplate', () => {
-  it('TMPL-02: {} template passes validation (every field is optional per D-18)', () => {
+  it('TMPL-02: {} template passes validation (every field is optional)', () => {
     expect(() => validateTemplate({})).not.toThrow();
     expect(validateTemplate({})).toEqual({});
   });

@@ -33,7 +33,7 @@ Use to group `NavItem` components. Displays a faint line above the group.
   // reason: SSR-safe per-instance ID — Svelte 5.20.0+. Hydration-consistent (server-rendered value matches client-rendered value).
   const titleId = $props.id();
 
-  // reason: Top-level call — runs during component init when current_component is bound (RESEARCH §Pitfall 3). Pushes parent-marker context BEFORE children render so NavItem can read it.
+  // reason: Top-level call — runs during component init when current_component is bound. Pushes parent-marker context BEFORE children render so NavItem can read it.
   setContext(NAV_GROUP_CONTEXT_KEY, true);
 </script>
 

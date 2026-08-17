@@ -49,10 +49,10 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via candCtx.X, never destructure.
   const appSettings = $derived(candCtx.appSettings);
   // dataRoot is identity-stable (#version-bridge): read `candCtx.dataRoot.<prop>` directly in the tracking scope,
-  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md §Context Destructuring Rule +
+  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" +
   // (see spike 024). see phase 117.
   // Reactive accessors ($state / $derived backed): read via candCtx.X. Aliased
-  // through $derived for template readability — see CLAUDE.md §Context Destructuring Rule.
+  // through $derived for template readability — see CLAUDE.md "Context Destructuring Rule".
   const answersLocked = $derived(candCtx.answersLocked);
   const questionBlocks = $derived(candCtx.questionBlocks);
   const unansweredOpinionQuestions = $derived(candCtx.unansweredOpinionQuestions);

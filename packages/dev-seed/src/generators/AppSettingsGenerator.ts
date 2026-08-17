@@ -24,7 +24,7 @@
  * single project has AT MOST ONE row. The generator clamps `count > 1` to 1
  * and warns via `ctx.logger` — users who genuinely need multiple per-project
  * settings blobs should supply them via `fixed[]` entries tied to distinct
- * project_ids (a Phase 58 multi-project template concern).
+ * project_ids (a multi-project template concern; see phase 58).
  *
  * apply — see ElectionsGenerator.ts for the
  * canonical-pattern rationale.

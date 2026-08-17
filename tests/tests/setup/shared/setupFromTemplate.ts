@@ -183,7 +183,7 @@ export async function setupFromTemplate(
   //     delegated to runTeardown itself.
   //     NOTE (see phase 140 WR-05): this delete does NOT route through
   //     runTeardownAsserted (assertTeardown.ts) and is therefore unasserted —
-  //     see and assertTeardown.ts's RATIONALE docblock.
+  //     see assertTeardown.ts's RATIONALE docblock.
   if (options?.extraTeardownPrefix) {
     const prefixes = Array.isArray(options.extraTeardownPrefix)
       ? options.extraTeardownPrefix

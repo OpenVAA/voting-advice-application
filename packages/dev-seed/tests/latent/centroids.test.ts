@@ -30,7 +30,7 @@ const PARTIES_4 = [
 ];
 const PARTIES_8 = Array.from({ length: 8 }, (_, i) => ({ external_id: `seed_party_${i}` }));
 
-describe('defaultCentroids (GEN-06b / D-57-03 / D-57-05)', () => {
+describe('defaultCentroids (GEN-06b)', () => {
   it('returns shape Array<Array<number>> with length N × dims; no NaN', () => {
     const ctx = makeCtx();
     const c = defaultCentroids(2, [1, 1 / 3], PARTIES_4, ctx);
@@ -60,7 +60,7 @@ describe('defaultCentroids (GEN-06b / D-57-03 / D-57-05)', () => {
     expect(a).toEqual(b);
   });
 
-  it('honors full anchor map (D-57-05) — all parties anchored', () => {
+  it('honors full anchor map — all parties anchored', () => {
     const ctx = makeCtx();
     const anchors = {
       seed_party_0: [0.5, -0.5],
@@ -78,7 +78,7 @@ describe('defaultCentroids (GEN-06b / D-57-03 / D-57-05)', () => {
     expect(anchors.seed_party_0[0]).toBe(0.5);
   });
 
-  it('fills missing parties via farthest-point when anchors are partial (D-57-05)', () => {
+  it('fills missing parties via farthest-point when anchors are partial', () => {
     const ctx = makeCtx();
     const anchors = {
       seed_party_1: [1, 1],

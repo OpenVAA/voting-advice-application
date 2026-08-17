@@ -17,7 +17,7 @@ import { describe, expect, it } from 'vitest';
 import { defaultSpread } from '../../src/emitters/latent/spread';
 import { makeCtx } from '../utils';
 
-describe('defaultSpread (GEN-06c / D-57-04)', () => {
+describe('defaultSpread (GEN-06c)', () => {
   it('returns 0.15 by default', () => {
     const ctx = makeCtx();
     expect(defaultSpread(ctx)).toBe(0.15);

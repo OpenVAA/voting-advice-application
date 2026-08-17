@@ -1,6 +1,6 @@
 /**
  * @file numberScale.probe.spec.ts — fixtures-first smoke/probe (SC4) for the
- * two net-new VOTER-side fixture capabilities that Phase 130's voter-journey
+ * two net-new VOTER-side fixture capabilities that the later voter-journey (see phase 130)
  * extensions depend on:
  *
  *   1. `answerNumberScale` — the value-parametrized native-range slider driver

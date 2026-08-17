@@ -10,7 +10,7 @@
  * `dev-seed-integration` job in `.github/workflows/main.yaml` — NOT the
  * `frontend-and-shared-module-validation` job. That job runs `yarn test:unit`
  * with no Supabase and no repo-root `.env`, so this file skips there and always
- * did; up to Phase 135 that was the ONLY place it was reached from, i.e. the
+ * did; up to that point (see phase 135) that was the ONLY place it was reached from, i.e. the
  * NF-01 budget never executed in CI at all. The dedicated job starts Supabase
  * and exports `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` from
  * `supabase status -o env`, and sets `DEV_SEED_INTEGRATION_REQUIRED=1` so a lost
@@ -26,7 +26,7 @@
  *     as a wall-clock budget
  *   locale fan-out produces every locale key on elections.name
  *
- * NF-01 (rewritten in Phase 135): this test used to gate on ELAPSED
+ * NF-01 (rewritten; see phase 135): this test used to gate on ELAPSED
  * WALL-CLOCK TIME, with a hard ten-second ceiling, measured across `runPipeline`
  * + `fanOutLocales` + `writer.write` — i.e. across ~650 sequential HTTP
  * round-trips to a local Supabase. Its outcome therefore depended on how busy
@@ -89,7 +89,7 @@ const hasSupabase = Boolean(process.env.SUPABASE_URL);
  *
  * `describe.skipIf(!hasSupabase)` below is deliberate and correct for
  * a developer machine without `supabase start`. Its FAILURE MODE is that the
- * skip is SILENT: for every CI run up to Phase 135 this whole file — including
+ * skip is SILENT: for every CI run up to that point (see phase 135) this whole file — including
  * the NF-01 operation budget — skipped and the job went green, so the guarantee
  * REQUIREMENTS.md recorded for was true only locally.
  *
@@ -197,7 +197,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
     vi.restoreAllMocks();
   });
 
-  it('applies default template and meets the NF-01 operation budget + D-58-20 assertions', async () => {
+  it('applies default template and meets the NF-01 operation budget + assertions', async () => {
     const template = BUILT_IN_TEMPLATES.default;
     const overrides = BUILT_IN_OVERRIDES.default;
     const seed = (template as { seed?: number }).seed ?? 42;
@@ -254,8 +254,8 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
     expect(ops.updateCandidateImage).toBe(rows.candidates.length);
 
     // 1c. app_settings: one merge_jsonb_column RPC per row, and AT MOST one
-    //     question-external-id lookup for the entire payload (the Phase 88
-    //     Plan 04 cheap pre-walk gate — 88-04-ADR-cardContents-resolver.md).
+    //     question-external-id lookup for the entire payload (the cheap
+    //     pre-walk gate; see phase 88).
     expect(ops.updateAppSettings).toBe(rows.app_settings?.length ?? 0);
     expect(ops.selectQuestionExternalIds).toBeLessThanOrEqual(1);
 

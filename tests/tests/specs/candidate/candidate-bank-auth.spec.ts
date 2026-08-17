@@ -165,7 +165,7 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     expect(
       probe,
       'EFLOW-10 keys-configured path did not run — the served identity-callback Edge Function ' +
-        'is missing IDENTITY_PROVIDER_DECRYPTION_JWKS (D-02). See tests/IDURA-TEST-RUNBOOK.md.'
+        'is missing IDENTITY_PROVIDER_DECRYPTION_JWKS. See tests/IDURA-TEST-RUNBOOK.md.'
     ).not.toBeNull();
     expect(
       probe!.keysConfigured,

@@ -65,7 +65,7 @@ export type VoterContext = AppContext & {
    * Returns `undefined` when there is no active election OR matches haven't
    * been built yet for that election.
    *
-   * Added by the Phase 88 follow-up that broke the route-shape
+   * Added by the follow-up (see phase 88) that broke the route-shape
    * redirect loop: the previous behavior force-filled `/candidates` into the
    * results URL whenever `entityTab` was absent (`+layout.ts` GUARD 2 / GUARD
    * 4 + the leaf coupling-guard + `buildListRoute`), and those force-fills

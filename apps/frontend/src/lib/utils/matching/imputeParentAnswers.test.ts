@@ -207,7 +207,7 @@ describe('imputeParentAnswers', () => {
     });
   });
 
-  describe('Alliance parent type (Phase 69 new branch)', () => {
+  describe('Alliance parent type (new branch)', () => {
     it('reads parent.organizationNominations as children when parent is an AllianceNomination', () => {
       const q = makeFakeQuestion({ id: 'q1', type: 'Number' });
       const orgChild1 = makeFakeOrgParent({

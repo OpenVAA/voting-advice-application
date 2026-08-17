@@ -1,7 +1,7 @@
 /**
  * FeedbackGenerator — minimal stub for the `feedback` table.
  *
- * Scope (CONTEXT Claude's Discretion §"Whether feedback ships in Phase 56"):
+ * Scope:
  * returns `[]` by default. Supports `fixed[]` for users who want specific
  * feedback rows (uncommon — feedback has little test / demo value), so the
  * pipeline class map treats every table uniformly.
@@ -20,7 +20,7 @@
  * is no external_id key, the "upsert" behaves as plain insert — previous
  * runs' feedback rows accumulate in the DB. Teardown (see phase 58) cannot
  * target them via prefix because no `external_id` column — manual cleanup
- * required. This limitation is carried forward to Phase 58 if feedback
+ * required. This limitation is carried forward (see phase 58) if feedback
  * seeding becomes useful.
  *
  * apply — see ElectionsGenerator.ts for the
@@ -62,7 +62,7 @@ export class FeedbackGenerator {
 
     if ((fragment.count ?? 0) > 0) {
       this.ctx.logger(
-        '[dev-seed] FeedbackGenerator: synthetic feedback disabled in Phase 56. ' +
+        '[dev-seed] FeedbackGenerator: synthetic feedback disabled. ' +
           'Use `fixed: [{ rating: N, description: "..." }]` to emit explicit rows. ' +
           'Teardown cannot target feedback rows (no external_id) — manual cleanup required.'
       );

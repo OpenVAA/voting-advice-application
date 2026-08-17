@@ -127,7 +127,7 @@ export class SupabaseAdminClient {
     // Non-column fields to strip (handled separately).
     //
     // - `answersByExternalId` is consumed by `importAnswers` (Pass 2).
-    // - `email` on candidates is a Phase 59 hand-off payload, not a column.
+    // - `email` on candidates is a hand-off payload (see phase 59), not a column.
     // - `constituency_groups` / `constituencies` (and the camelCase variants)
     //   are M:N declarations consumed by `linkJoinTables` (Pass 3). They name
     //   association rows in `election_constituency_groups` /
@@ -722,7 +722,7 @@ export class SupabaseAdminClient {
    * `upsert: true` makes re-runs idempotent.
    * `contentType: 'image/jpeg'` keeps Storage metadata correct.
    *
-   * CONTEXT §Specifics: upload failure is seed-blocking — throws with a
+   * Upload failure is seed-blocking — throws with a
    * candidate-scoped message the CLI surfaces + exits 1.
    *
    * @returns the storage path that was written (caller writes it into
@@ -747,7 +747,7 @@ export class SupabaseAdminClient {
    * `alt` MUST be populated (Pitfall #4 — WCAG 2.1 AA). Caller builds it
    * as `"${first_name} ${last_name}".trim()`.
    *
-   * Direct UPDATE — no merge semantics needed since Phase 58 authors the
+   * Direct UPDATE — no merge semantics needed since dev-seed (see phase 58) authors the
    * full shape.
    */
   async updateCandidateImage(

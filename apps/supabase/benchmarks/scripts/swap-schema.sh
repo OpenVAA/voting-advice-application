@@ -26,7 +26,7 @@ RELATIONAL_FILE="$SCHEMA_DIR/006-answers-relational.sql"
 AUTH_RLS_FILE="$SCHEMA_DIR/013-auth-rls.sql"
 AUTH_RLS_BACKUP="$SCHEMA_DIR/013-auth-rls.sql.bak"
 
-# Concatenation order (per Phase 10 decision: 010-rls.sql comes AFTER 012-auth-hooks.sql)
+# Concatenation order: 010-rls.sql comes AFTER 012-auth-hooks.sql
 SCHEMA_FILES=(
   "000-functions.sql"
   "001-tenancy.sql"

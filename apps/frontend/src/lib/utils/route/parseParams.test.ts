@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { parseParams } from './parseParams';
 
 /**
- * Unit test for `parseParams` covering the Phase 88 name-disjoint
+ * Unit test for `parseParams` covering the name-disjoint
  * dissociation rule between the route-side `electionTab` (singular SELECTED
  * election) and the search-side `electionId` (AVAILABLE array) surfaces.
  *

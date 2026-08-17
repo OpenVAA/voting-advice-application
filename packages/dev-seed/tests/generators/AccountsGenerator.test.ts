@@ -10,7 +10,7 @@ import { AccountsGenerator } from '../../src/generators/AccountsGenerator';
 import { makeCtx } from '../utils';
 
 describe('AccountsGenerator', () => {
-  it('returns [] for empty fragment (pass-through per D-11)', () => {
+  it('returns [] for empty fragment (pass-through)', () => {
     const gen = new AccountsGenerator(makeCtx());
     expect(gen.generate({})).toEqual([]);
   });

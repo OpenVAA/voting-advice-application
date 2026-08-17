@@ -29,7 +29,7 @@ const CONTEXT_KEY = Symbol();
  * headlessly). The original object-literal `get isAuthenticated()` WAS an
  * own-enumerable accessor, so the spread copied it (as a snapshot — the
  * documented spread-of-context trap, CONVENTIONS see spike 009/019). To stay
- * byte-identical at the consumer until the Phase 109 spread-of-context fix,
+ * byte-identical at the consumer until the spread-of-context fix (see phase 109),
  * `isAuthenticated` MUST remain own-enumerable. Hence the constructor-assigned
  * accessor rather than a bare `$derived` field.
  *
@@ -44,7 +44,7 @@ const CONTEXT_KEY = Symbol();
  * synchronous via `$derived`.
  */
 export class AuthContextProvider implements AuthContext {
-  // /§D — private $derived backing field; exposed as an OWN-ENUMERABLE accessor
+  // Private $derived backing field; exposed as an OWN-ENUMERABLE accessor
   // (assigned in the constructor) so it survives the candidateContext spread.
   #isAuthenticated = $derived(!!page.data.session);
 

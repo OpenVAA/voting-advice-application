@@ -6,7 +6,7 @@
  *
  *   - `accounts` / `projects` — stripped from payload (bootstrap-only;
  *     dev-seed never writes those tables).
- *   - `feedback` — SKIPPED in Phase 56 with a `ctx.logger` warning. Writer uses
+ *   - `feedback` — SKIPPED (see phase 56) with a `ctx.logger` warning. Writer uses
  *     ONLY the public `SupabaseAdminClient` methods; no `feedback` helper exists
  *     on the admin client (Plan 02 is already landed, Plan 05 stubbed the
  *     generator). see phase 58 may add a narrow `insertFeedback` helper if demand
@@ -66,7 +66,7 @@ const PORTRAITS_DIR = join(dirname(fileURLToPath(import.meta.url)), 'assets', 'p
  *
  *  - `projectId` — defaults to `TEST_PROJECT_ID` (`00000000-0000-0000-0000-000000000001`,
  *    the bootstrap project UUID from seed.sql).
- *  - `logger` — sink for writer warnings (currently the Phase 56 feedback-skip
+ *  - `logger` — sink for writer warnings (currently the feedback-skip (see phase 56)
  *    notice). Defaults to a no-op so production usage doesn't need to wire one.
  */
 export interface WriterOptions {
@@ -135,7 +135,7 @@ export class Writer {
    *   6. `updateAppSettings` per row (`merge_jsonb_column` RPC) — RESEARCH
    *      Pitfall 5 routes around the `UNIQUE(project_id)` conflict that
    *      `bulk_import` can't handle for this table.
-   *   7. `feedback` rows are SKIPPED with a logger warning in Phase 56.
+   *   7. `feedback` rows are SKIPPED with a logger warning (see phase 56).
    */
   async write(
     data: Record<string, Array<Record<string, unknown>>>,
@@ -168,7 +168,7 @@ export class Writer {
     // Pass 4 (see phase 58 Plan 04): portrait upload.
     // Runs AFTER linkJoinTables (candidates have UUIDs assigned by bulk_import)
     // and BEFORE updateAppSettings. Skips silently if no candidates present;
-    // throws on upload/update errors to keep the run atomic per CONTEXT §Specifics.
+    // throws on upload/update errors to keep the run atomic.
     const portraits = await this.uploadPortraits(externalIdPrefix);
 
     // Pass 5: app_settings via merge_jsonb_column (Pitfall 5).
@@ -190,11 +190,11 @@ export class Writer {
       }
     }
 
-    // Pass 6: feedback — SKIPPED in Phase 56 per scope boundary.
+    // Pass 6: feedback — SKIPPED per scope boundary (see phase 56).
     if (feedbackRows && feedbackRows.length > 0) {
       this.logger(
-        `[dev-seed] Writer: feedback writes skipped in Phase 56 (${feedbackRows.length} rows ignored). ` +
-          'Feedback has no external_id column and is not teardown-friendly; Phase 58 may add direct upsert support.'
+        `[dev-seed] Writer: feedback writes skipped (${feedbackRows.length} rows ignored). ` +
+          'Feedback has no external_id column and is not teardown-friendly; direct upsert support may be added later.'
       );
     }
 
@@ -217,8 +217,7 @@ export class Writer {
    *
    * Failure modes:
    *   - Missing assets dir → throws `Error('No portrait assets found at ...')`.
-   *   - Upload error → rethrown with candidate-scoped message (CONTEXT
-   *     §Specifics: seed-blocking).
+   *   - Upload error → rethrown with candidate-scoped message (seed-blocking).
    *   - Update error → rethrown similarly.
    *
    * Determinism:

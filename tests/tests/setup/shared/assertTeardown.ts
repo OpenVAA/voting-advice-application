@@ -39,7 +39,7 @@
  * MATCHER — the before/after invariant (research shape A), adopted under
  * **branch A** of plan 06's pre-specified decision rule. The full measurement
  * (observation counts, per-site breakdown, and the rejected-alternatives cost
- * analysis) lives in ` ` § Adjudication — the single
+ * analysis) lives in the phase record — the single
  * source of truth; figures are deliberately NOT restated here (see phase 140
  * IN-02 — a duplicated number in a docblock is precisely the F10 failure mode
  * this phase closed elsewhere, and line-number citations into
@@ -60,8 +60,8 @@
  *
  * WHAT IT CATCHES ONLY WHEN `rowsBefore > 0` AT THE SITE IN QUESTION: a
  * silently no-opping `bulk_delete`, a scoping bug that sends the RPC a
- * different prefix from the one counted. Per ` `
- * § Adjudication, `rowsBefore > 0` was the RARE outcome, not the common one
+ * different prefix from the one counted. Per the phase
+ * adjudication, `rowsBefore > 0` was the RARE outcome, not the common one
  * (see MATCHER above for the mechanism) — so at most observed sites this
  * assertion's discriminating power is limited to the unconditional
  * over-deletion catch above; the no-op/scoping catches are exercised by
@@ -99,7 +99,7 @@
  *     present… and none survived it" describes rows only — it should not be
  *     read as covering storage too.
  * Stated so nobody reads more into this assertion than the measurement
- * supports (` ` § Adjudication).
+ * supports.
  *
  * The caller's `prefix` is forwarded verbatim — no default, no normalisation, no
  * fallback — so `runTeardown`'s two-character mass-delete guard keeps its full

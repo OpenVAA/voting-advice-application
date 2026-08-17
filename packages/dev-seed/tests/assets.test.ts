@@ -26,7 +26,7 @@ describe('portrait assets (GEN-10)', () => {
   const files = readdirSync(ASSETS_DIR);
   const portraits = files.filter((f) => f.endsWith('.jpg'));
 
-  it('contains exactly 30 portrait JPEG files (D-58-05)', () => {
+  it('contains exactly 30 portrait JPEG files', () => {
     expect(portraits.length).toBe(EXPECTED_COUNT);
   });
 

@@ -86,7 +86,7 @@ TESTS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 REPO_ROOT="$(cd "$TESTS_DIR/.." && pwd)"
 RUNNER="$SCRIPT_DIR/e2e-run.sh"
 
-# The full gate suite's expected executed count. It was 134 through Phase 137; plan 01 of
+# The full gate suite's expected executed count. It was 134 through the previous phase; plan 01 of
 # this phase ships the eperm07-term-trigger hunt spec PERMANENTLY as a LEAF regression
 # guard, which moved it to 135. Every later v2.15 phase reconciles against 135.
 EXPECTED_EXECUTED=135
@@ -262,7 +262,7 @@ DIRTY_LIST="$(git -C "$REPO_ROOT" status --porcelain | awk '{print $2}' | paste 
 # interrupted batch still leaves a complete file with its abort recorded.
 emit_ledger() {
   {
-    echo "# Phase 138 -- Determinism batch ledger (criterion 3, INTEG-02)"
+    echo "# Determinism batch ledger (criterion 3, INTEG-02)"
     echo
     if [ "$SCOPED" = "1" ]; then
       echo "> **SELF-TEST -- not gate evidence.** This batch was scoped to the Playwright"
@@ -293,7 +293,7 @@ emit_ledger() {
     echo "| Working tree at batch start | $DIRTY_FILES file(s) modified: ${DIRTY_LIST:-none} |"
     echo "| Ledger directory | \`${LEDGER_DIR#"$REPO_ROOT"/}\` (git-ignored) |"
     echo
-    echo "**Expected executed count.** It was **134** through Phase 137. Plan 01 of this phase"
+    echo "**Expected executed count.** It was **134** through the previous phase. Plan 01 of this phase"
     echo "ships the \`eperm07-term-trigger\` hunt spec permanently in the default suite, which moved"
     echo "the baseline to **135**. This is a decision, not drift; see \`## Executed-count baseline\`."
     echo
@@ -527,10 +527,10 @@ while [ "$i" -le "$RUNS" ]; do
     REASON="the single-run wrapper exited $RUN_STATUS (see its exit-code table; 130 means the run was interrupted)"
   elif [ "$PREFLIGHT_FAILS" != "0" ]; then
     VERDICT="INVALID"
-    REASON="preflight failure count is $PREFLIGHT_FAILS -- the run is not confirmed to have tested this checkout (D-17)"
+    REASON="preflight failure count is $PREFLIGHT_FAILS -- the run is not confirmed to have tested this checkout"
   elif ! printf '%s' "$PREFLIGHT_OKS" | grep -qE '^[1-9][0-9]*$'; then
     VERDICT="INVALID"
-    REASON="preflight success count is $PREFLIGHT_OKS -- the served-application gate did not positively confirm this run, and 'no failure was printed' is not the same fact as 'the gate passed' (D-17)"
+    REASON="preflight success count is $PREFLIGHT_OKS -- the served-application gate did not positively confirm this run, and 'no failure was printed' is not the same fact as 'the gate passed'"
   elif [ "$SCOPED" = "0" ] && [ "$EXECUTED" != "$EXPECTED_EXECUTED" ]; then
     VERDICT="INVALID"
     REASON="executed count is $EXECUTED, expected $EXPECTED_EXECUTED -- a test that did not run is a failure, never a skip (CLAUDE.md E2E Hard Rule)"

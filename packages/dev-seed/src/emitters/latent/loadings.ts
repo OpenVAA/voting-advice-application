@@ -30,7 +30,7 @@
  * schema accepts arbitrary-length arrays because cross-field dims validation
  * is impractical at zod level; this is the runtime guard (T-57-22).
  *
- * ## Pitfall 3 regression guard (RESEARCH §Common Pitfalls → Pitfall 3)
+ * ## Regression guard
  *
  * `questions.length === 0` returns `{}` with no iteration. see phase 56 has
  * determinism tests that pass an empty `{}` template; the pipeline walks all

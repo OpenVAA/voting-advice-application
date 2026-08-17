@@ -129,12 +129,12 @@ describe('Writer', () => {
   // + NF-02: env enforcement at construction
   // -------------------------------------------------------------------------
 
-  it('throws at construction when SUPABASE_URL is missing (D-15, NF-02)', () => {
+  it('throws at construction when SUPABASE_URL is missing (NF-02)', () => {
     process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-key';
     expect(() => new Writer()).toThrow(/SUPABASE_URL/);
   });
 
-  it('throws at construction when SUPABASE_SERVICE_ROLE_KEY is missing (D-15, NF-02)', () => {
+  it('throws at construction when SUPABASE_SERVICE_ROLE_KEY is missing (NF-02)', () => {
     process.env.SUPABASE_URL = 'http://localhost:54321';
     expect(() => new Writer()).toThrow(/SUPABASE_SERVICE_ROLE_KEY/);
   });
@@ -181,7 +181,7 @@ describe('Writer', () => {
       expect(instance.callOrder.slice(0, 3)).toEqual(['bulkImport', 'importAnswers', 'linkJoinTables']);
     });
 
-    it('strips accounts from bulk_import payload (D-11 pass-through)', async () => {
+    it('strips accounts from bulk_import payload (pass-through)', async () => {
       const writer = new Writer();
       await writer.write({
         accounts: [{ id: 'x' }],
@@ -193,7 +193,7 @@ describe('Writer', () => {
       expect(bulkImportArg).not.toHaveProperty('accounts');
     });
 
-    it('strips projects from bulk_import payload (D-11 pass-through)', async () => {
+    it('strips projects from bulk_import payload (pass-through)', async () => {
       const writer = new Writer();
       await writer.write({
         projects: [{ id: 'y' }],
@@ -205,7 +205,7 @@ describe('Writer', () => {
       expect(bulkImportArg).not.toHaveProperty('projects');
     });
 
-    it('strips feedback from bulk_import payload (D-11 direct-upsert-or-skip)', async () => {
+    it('strips feedback from bulk_import payload (direct-upsert-or-skip)', async () => {
       const writer = new Writer();
       await writer.write({
         feedback: [{ rating: 5 }],
@@ -286,7 +286,7 @@ describe('Writer', () => {
     // see phase 58 Plan 04 — uploadPortraits pass
     // ---------------------------------------------------------------------
 
-    describe('uploadPortraits pass (Phase 58 Plan 04 — GEN-09)', () => {
+    describe('uploadPortraits pass (GEN-09)', () => {
       it('invokes selectCandidatesForPortraitUpload AFTER linkJoinTables and BEFORE updateAppSettings (sequence order)', async () => {
         const writer = new Writer();
         // With default mock (returns [] candidates), uploadPortrait is never called

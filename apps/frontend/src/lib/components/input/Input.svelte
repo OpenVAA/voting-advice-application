@@ -223,7 +223,7 @@ Multilingual features are only available if the `locales` store contains more th
 
   // bind: migrate — `mainInputs` must be $state in Svelte 5 because
   // `bind:this={mainInputs[i]}` mutates a property on it. A plain array
-  // triggers `binding_property_non_reactive`. Mirrors the Phase 64 fix
+  // triggers `binding_property_non_reactive`. Mirrors the earlier fix (see phase 64)
   // at QuestionChoices.svelte:122-124.
   const mainInputs: Array<HTMLElement> = $state([]);
   /**
@@ -419,7 +419,7 @@ Multilingual features are only available if the `locales` store contains more th
                 class:opacity-0={!isTranslationsVisible}>{t(assertTranslationKey(`lang.${locale}`))}</label>
               <!-- The actual textarea
                    NB. Join does not work it, so we do it by hand -->
-              <!-- bind: keep — Pattern 1 ($state target for bind:this; mainInputs is $state([]) per declaration above). bind: placed AFTER value/class for symmetry with Phase 65 reorder revert. -->
+              <!-- bind: keep — Pattern 1 ($state target for bind:this; mainInputs is $state([]) per declaration above). bind: placed AFTER value/class for symmetry with the reorder revert (see phase 65). -->
               <textarea
                 id="{id}-{locale}"
                 aria-labelledby="{id}-label {id}-label-{locale}"
@@ -444,7 +444,7 @@ Multilingual features are only available if the `locales` store contains more th
                 class:opacity-0={!isTranslationsVisible}>{t(assertTranslationKey(`lang.${locale}`))}</label>
               <div class={inputAndIconContainerClass}>
                 <!-- The actual text input -->
-                <!-- bind: keep — Pattern 1 ($state target for bind:this; mainInputs is $state([]) per declaration above). bind: placed AFTER type/value for symmetry with Phase 65 reorder revert. -->
+                <!-- bind: keep — Pattern 1 ($state target for bind:this; mainInputs is $state([]) per declaration above). bind: placed AFTER type/value for symmetry with the reorder revert (see phase 65). -->
                 <input
                   type="text"
                   id="{id}-{locale}"
@@ -486,7 +486,7 @@ Multilingual features are only available if the `locales` store contains more th
         <label class={inputLabelClass} for={id}>{label}</label>
         <div class={inputAndIconContainerClass}>
           {#if options?.length}
-            <!-- bind: keep — Pattern 1 ($state target for bind:this; mainInputs is $state([]) per declaration above). bind: placed AFTER class= for symmetry with Phase 65 reorder revert. -->
+            <!-- bind: keep — Pattern 1 ($state target for bind:this; mainInputs is $state([]) per declaration above). bind: placed AFTER class= for symmetry with the reorder revert (see phase 65). -->
             <select
               {id}
               disabled={isDisabled}

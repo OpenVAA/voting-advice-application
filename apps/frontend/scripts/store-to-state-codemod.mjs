@@ -2,7 +2,7 @@
 /**
  * see phase 114 — Codemod: rune-native `*Store` identifiers → `*State`
  *
- * After the Phase 106–113 class conversions there are NO Svelte stores behind any
+ * After the class conversions (see phase 106 through 113) there are NO Svelte stores behind any
  * of the in-scope `*Store` symbols — they are plain classes / factory functions /
  * `$state`-backed fields. The "Store" suffix is now a misnomer. This codemod rewrites
  * the camelCase identifiers AND the PascalCase type names to `*State`, leaving file
@@ -159,7 +159,7 @@ if (files.length === 0) {
   process.exit(1);
 }
 
-console.log(`PHASE 114 — store→state codemod ${APPLY ? '(APPLIED)' : '(DRY-RUN)'}\n`);
+console.log(`store→state codemod ${APPLY ? '(APPLIED)' : '(DRY-RUN)'}\n`);
 
 let filesChanged = 0;
 let totalHits = 0;

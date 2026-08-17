@@ -217,7 +217,7 @@ test('all message files are valid JSON', () => {
 
 describe('TranslationKey type safety (CLEAN-04)', () => {
   test('t() signature rejects non-TranslationKey strings at compile-time', () => {
-    // reason: regression-locker for Phase 78 (CONTEXT RESEARCH Q7).
+    // reason: regression-locker (see phase 78).
     // If `t()` in wrapper.ts is loosened back to `key: string`, the @ts-expect-error
     // directive below becomes "unused @ts-expect-error" and the typecheck (yarn check)
     // fails. The real assertion is the compiler — the runtime smoke below only satisfies

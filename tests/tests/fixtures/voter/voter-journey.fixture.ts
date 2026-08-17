@@ -125,7 +125,7 @@ type VoterJourneyFixtures = VoterJourneyFixtureOptions & {
  * auto-redirects past itself and the post-condition is instead the bypassed
  * landing (a category intro start `voter-questions-category-start`, or the first
  * question's `question-choice`). Voter context has electionId + constituencyId
- * resolved either way. See for the trace.
+ * resolved either way.
  */
 async function walkUntilQuestionsIntro(page: Page): Promise<void> {
   // 0. Consent-popup guard. When data-collection consent is `indetermined` (the

@@ -42,7 +42,7 @@
   ////////////////////////////////////////////////////////////////////
 
   // Stable references (functions, stores consumed via $X auto-subscribe): destructure-safe.
-  // Reactive accessors (answersLocked) read via candCtx.X — see CLAUDE.md §Context Destructuring Rule.
+  // Reactive accessors (answersLocked) read via candCtx.X — see CLAUDE.md "Context Destructuring Rule".
   const candCtx = getCandidateContext();
   const { appCustomization, darkMode, getRoute, t } = candCtx;
   // appSettings is a reactive accessor (see phase 113 flatten) — read via candCtx.X, never destructure.

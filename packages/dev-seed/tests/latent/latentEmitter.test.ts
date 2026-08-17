@@ -54,13 +54,13 @@ function ctxWith(orgExtIds: Array<string>, questions: Array<TablesInsert<'questi
   });
 }
 
-describe('latentAnswerEmitter (D-57-13 / D-57-14 / GEN-06g)', () => {
+describe('latentAnswerEmitter (GEN-06g)', () => {
   it('conforms to AnswerEmitter contract', () => {
     const e: AnswerEmitter = latentAnswerEmitter({} as Template);
     expect(typeof e).toBe('function');
   });
 
-  it('caches SpaceBundle across candidate emissions (D-57-13)', () => {
+  it('caches SpaceBundle across candidate emissions', () => {
     const centroidsHook = vi.fn((dims: number, _ev: Array<number>, parties: ReadonlyArray<{ external_id: string }>) =>
       parties.map((_p, i) => Array.from({ length: dims }, (_, d) => (i === d ? 1 : 0)))
     );
@@ -96,7 +96,7 @@ describe('latentAnswerEmitter (D-57-13 / D-57-14 / GEN-06g)', () => {
     });
   });
 
-  it('hook wins over template (D-57-14) — centroids hook invoked with template data as arg', () => {
+  it('hook wins over template — centroids hook invoked with template data as arg', () => {
     const centroidsHook = vi.fn((_dims, _ev, parties, _ctx, _tplCentroids) => parties.map(() => [0, 0]));
     const templateCentroids = { p0: [0.1, 0.1], p1: [0.2, 0.2] };
     const ctx = ctxWith(['p0', 'p1'], [mkQ('q_0')]);
@@ -111,7 +111,7 @@ describe('latentAnswerEmitter (D-57-13 / D-57-14 / GEN-06g)', () => {
     expect(args[4]).toBe(templateCentroids);
   });
 
-  it('dimensions hook receives template as arg (D-57-14 argument forwarding)', () => {
+  it('dimensions hook receives template as arg (argument forwarding)', () => {
     const dimsHook = vi.fn(() => ({ dims: 2, eigenvalues: [1, 1 / 3] }));
     const ctx = ctxWith(['p0'], [mkQ('q_0')]);
     ctx.latent = { dimensions: dimsHook };

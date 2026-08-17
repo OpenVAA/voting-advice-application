@@ -10,12 +10,12 @@
  *   - `expectLandedOn` and `clickAndRaceSettle` are thin wrappers around
  *     `expect(page).toHaveURL(...)` and the `click + race-against-URL-change`
  *     pattern. `clickAndRaceSettle` settles on the URL ALONE and swallows its own
- *     timeout — i.e. it still has the shape ` ` § Named root cause
+ *     timeout — i.e. it still has the shape the diagnosis
  *     calls link 4. It is NOT a settle in the sense the fixed helper is; see its
  *     own docblock for the residual exposure and why it is nevertheless correct
  *     at its two call sites.
  *
- * "The settle was fixed in Phase 138" therefore does NOT mean every navigation in
+ * "The settle was fixed" (see phase 138) therefore does NOT mean every navigation in
  * the suite is settled on the DOM. It means the voter walk's Q→Q hops are, plus
  * the instrument that witnesses them.
  *
@@ -42,8 +42,8 @@ import type { Locator, Page } from '@playwright/test';
 /**
  * Settle an in-app (client-side) navigation on the DESTINATION DOM, not on the URL.
  *
- * reason: (see phase 138) DEF-135-04. This closes the
- * settle link in the ordering defect named in ` ` § Named root
+ * reason: (see phase 138). This closes the
+ * settle link in the ordering defect named as the root
  * cause. SvelteKit commits the destination URL to history FIRST
  * (`client.js:1759-1760`), then awaits the `onNavigate` callbacks
  * (`:1779-1785`), and only THEN swaps the DOM (`:1824`). A settle that waits on
@@ -160,10 +160,9 @@ export async function settleAfterClientNavigation(
       // the swap. Measured during this phase: with `raf` polling under the
       // adversary's 40x CPU throttle the predicate missed a swap that had
       // demonstrably happened — 4 of 5 runs timed out, on a path where the term
-      // assertion at the production budget passes at every CPU rate tested
-      // (` ` §B.5). That block is recorded as the discarded
-      // block in ` `; it was an artifact of the
-      // observation method, not of the app.
+      // assertion at the production budget passes at every CPU rate tested.
+      // That block is recorded as the discarded block; it was an artifact
+      // of the observation method, not of the app.
       polling: 50
     }
   );
@@ -293,9 +292,9 @@ type UrlPredicate = string | RegExp | ((url: URL) => boolean);
  * a defensive click+race helper.
  *
  * RESIDUAL EXPOSURE, stated explicitly (see phase 138 review WR-04). This helper
- * still has the exact shape the diagnosis names as link 4 of the DEF-135-04
- * mechanism: it settles on the URL ALONE, and it swallows. Under the ordering in
- * ` ` § Named root cause, SvelteKit commits the URL
+ * still has the exact shape the diagnosis names as link 4 of the
+ * mechanism: it settles on the URL ALONE, and it swallows. Under the ordering
+ * named as the root cause, SvelteKit commits the URL
  * (`client.js:1759-1760`) before it swaps the DOM (`:1824`), so this helper can
  * return with the PREVIOUS page still rendered, and it cannot distinguish "the
  * navigation never happened" from "the URL committed but the DOM has not".

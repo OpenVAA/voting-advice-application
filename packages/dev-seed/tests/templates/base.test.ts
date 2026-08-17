@@ -111,7 +111,7 @@ describe('baseTemplate — shape + schema validation', () => {
     expect(() => validateTemplate(baseTemplate)).not.toThrow();
   });
 
-  it('sets generateTranslationsForAllLocales: false (single-locale e2e per D-58-16)', () => {
+  it('sets generateTranslationsForAllLocales: false (single-locale e2e)', () => {
     expect(baseTemplate.generateTranslationsForAllLocales).toBe(false);
   });
 

@@ -1,8 +1,7 @@
 /**
  * bank-auth-journey data-teardown project (EFLOW-10b).
  *
- * Owns BOTH halves of the journey's runtime state (RESEARCH §Runtime State
- * Inventory):
+ * Owns BOTH halves of the journey's runtime state:
  *
  *  1. The seeded dataset — clears the `e2e-bankauth-notloc-` prefix via
  *     `runTeardown`. see phase 140 CR-01: this prefix is DEDICATED to this

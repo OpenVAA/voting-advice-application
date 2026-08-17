@@ -40,7 +40,7 @@ describe('determinism (TMPL-08)', () => {
   // see phase 58 Plan 09 — Pitfall #1 locale fan-out determinism (NF-04)
   // ---------------------------------------------------------------------------
   //
-  // RESEARCH §Pitfall #1: if locale iteration order drifts, fan-out output
+  // If locale iteration order drifts, fan-out output
   // differs across runs even at the same seed. `locales.ts` locks iteration
   // via hardcoded `LOCALES = ['en','fi','sv']` + hardcoded
   // `LOCALIZED_FIELDS` map. These cases prove byte-level determinism survives
@@ -90,7 +90,7 @@ describe('determinism (TMPL-08)', () => {
     expect(Object.keys(election.name).sort()).toEqual(['en', 'fi', 'sv']);
   });
 
-  it('locale fan-out is a no-op when generateTranslationsForAllLocales is undefined (Phase 56 behavior preserved)', () => {
+  it('locale fan-out is a no-op when generateTranslationsForAllLocales is undefined (behavior preserved)', () => {
     const template = {
       seed: 42,
       elections: { count: 0, fixed: [{ external_id: 'e1', name: { en: 'Demo' } }] }

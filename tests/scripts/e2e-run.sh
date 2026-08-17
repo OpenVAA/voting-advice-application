@@ -248,7 +248,7 @@ unset EPERM07_FORCE_BUDGET_MS EPERM07_FORCE_CPU_RATE EPERM07_NO_VT || true
 unset CI || true
 
 {
-  echo "# Environment posture for this run (Phase 138, D-12)."
+  echo "# Environment posture for this run."
   echo "# Written BEFORE the run; the observed_* lines are appended from results.json AFTER it,"
   echo "# so the posture is auditable rather than asserted."
   echo "ci_env=unset"
@@ -442,7 +442,7 @@ echo "e2e-run.sh: preflight failures $PREFLIGHT_FAILURES, successes $PREFLIGHT_S
 # --- 8/9. teardown + end timestamp happen in the trap -----------------------------------
 
 if [ "$PREFLIGHT_FAILURES" != "0" ]; then
-  echo "e2e-run.sh: FATAL -- the run was not preflight-confirmed; it is not evidence (D-17)" >&2
+  echo "e2e-run.sh: FATAL -- the run was not preflight-confirmed; it is not evidence" >&2
   exit 6
 fi
 
@@ -453,7 +453,7 @@ fi
 if [ "$PREFLIGHT_SUCCESSES" -lt 1 ]; then
   echo "e2e-run.sh: FATAL -- no preflight SUCCESS line ('$PREFLIGHT_OK_HEADLINE') in the run" >&2
   echo "            output, and no failure either. The served-application gate did not run," >&2
-  echo "            so this run is unconfirmed and is not evidence (D-17)." >&2
+  echo "            so this run is unconfirmed and is not evidence." >&2
   exit 6
 fi
 

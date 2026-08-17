@@ -89,7 +89,7 @@ describe('NominationsGenerator', () => {
     rows.forEach((r) => expect(r).not.toHaveProperty('entity_type'));
   });
 
-  it('does NOT emit redundant organization ref (clean polymorphism per RESEARCH §9)', () => {
+  it('does NOT emit redundant organization ref (clean polymorphism)', () => {
     const gen = new NominationsGenerator(makeCtx({ refs: populatedRefs() }));
     const rows = gen.generate({ count: 2 });
     rows.forEach((r) => {

@@ -345,7 +345,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
     {/if}
   </div>
 {:else}
-  <!-- bind: keep — two-way DOM select bind:value={selected}; selected is $bindable(''). Bind placed AFTER class= for symmetry with Phase 65 reorder revert. -->
+  <!-- bind: keep — two-way DOM select bind:value={selected}; selected is $bindable(''). Bind placed AFTER class= for symmetry with the reorder revert (see phase 65). -->
   <select
     aria-label={effectiveLabel}
     {...concatClass(restProps, `select ${inputClass}`)}

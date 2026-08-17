@@ -3,10 +3,10 @@ import { match } from './etPl';
 
 /**
  * Unit test for the `etPl` SvelteKit param matcher (short-name alias of
- * `entityTypePlural`, introduced by Phase 88).
+ * `entityTypePlural`; see phase 88).
  *
- * Accept-set (American spelling per Phase 62 Open Question 1 RESOLVED;
- * extended with `alliances` per Phase 69):
+ * Accept-set (American spelling, see phase 62;
+ * extended with `alliances`; see phase 69):
  *   `candidates` | `organizations` | `alliances`
  *
  * Rejects singular forms, British spellings, legacy `party`/`parties`,

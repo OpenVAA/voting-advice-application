@@ -11,11 +11,11 @@
   ////////////////////////////////////////////////////////////////////
 
   // Stable references (functions, stores, objects with internal getters): destructure-safe.
-  // Reactive accessors (constituenciesSelectable) read via candCtx.X — see CLAUDE.md §Context Destructuring Rule.
+  // Reactive accessors (constituenciesSelectable) read via candCtx.X — see CLAUDE.md "Context Destructuring Rule".
   const candCtx = getCandidateContext();
   const { getRoute, t } = candCtx;
   // dataRoot is identity-stable (#version-bridge): read `candCtx.dataRoot.<prop>` directly in the tracking scope,
-  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md §Context Destructuring Rule +
+  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" +
   // (see spike 024). see phase 117.
   const nextRoute = $derived(
     candCtx.constituenciesSelectable ? 'CandAppPreregisterConstituency' : 'CandAppPreregisterEmail'

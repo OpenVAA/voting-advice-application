@@ -23,8 +23,9 @@ const PROBE_TEST_MATCH = /(video|questionInfo|popupNotice|orgMatching|numberScal
  * invocable one-at-a-time. The cost of enumeration is that ADDING a probe file
  * without adding it to the pattern silently produces a test that matches no
  * project and runs from no command, while still sitting in `specs/` looking like
- * coverage. That is precisely what happened to four probe files between Phase 119
- * and Phase 136: 6 tests, unreachable for ~16 phases, noticed only by an audit.
+ * coverage. That is precisely what happened to four probe files between two
+ * phases (see phase 119, see phase 136): 6 tests, unreachable for ~16 phases,
+ * noticed only by an audit.
  *
  * A comment asking future authors to keep the list in sync would be the same
  * kind of non-guard this phase exists to remove, so the invariant is CHECKED.
@@ -183,7 +184,7 @@ const teardownDir = TESTS_DIR;
 if (!fs.existsSync(teardownDir)) {
   throw new Error(
     `Teardown prefix guard: expected directory '${teardownDir}' does not exist. The ` +
-      'teardown-prefix-uniqueness guard (Phase 140 review CR-01) cannot enumerate *.teardown.ts ' +
+      'teardown-prefix-uniqueness guard (review CR-01) cannot enumerate *.teardown.ts ' +
       'files without it.'
   );
 }
@@ -207,7 +208,7 @@ if (unparsedTeardownPrefixFiles.length > 0) {
     "Teardown prefix guard could not parse a `const PREFIX = '...'` declaration in " +
       `${unparsedTeardownPrefixFiles.join(', ')}, but the file calls runTeardownAsserted — so its ` +
       'prefix is NOT covered by the uniqueness/overlap check below and a collision could reappear ' +
-      'silently (Phase 140 review WR-03; same enumeration-drift shape as fake-guard finding F4). Make ' +
+      'silently (review WR-03; same enumeration-drift shape as fake-guard finding F4). Make ' +
       "the declaration match `const PREFIX = '...'` (a plain top-level string literal), or widen the " +
       'regex above to cover the new shape.'
   );
@@ -220,7 +221,7 @@ for (let i = 0; i < teardownPrefixDeclarations.length; i++) {
       throw new Error(
         `Teardown prefix collision: '${a.file}' and '${b.file}' both declare PREFIX = '${a.prefix}'. ` +
           `The two data-teardown projects are not guaranteed to be ordered relative to each other, so ` +
-          `their runTeardownAsserted before/after row counts can race nondeterministically (Phase 140 ` +
+          `their runTeardownAsserted before/after row counts can race nondeterministically (` +
           `review CR-01). Give one of them its own dedicated prefix — and, if it reuses a shared dev-seed ` +
           `template, its own dedicated template registration too (see ` +
           `packages/dev-seed/src/templates/e2e/perm/perm-bankauth-notloc.ts for the pattern).`
@@ -232,7 +233,7 @@ for (let i = 0; i < teardownPrefixDeclarations.length; i++) {
         `Teardown prefix overlap: '${shorter.file}' declares PREFIX = '${shorter.prefix}', which is a ` +
           `string-prefix of '${longer.file}'s PREFIX = '${longer.prefix}'. Both are matched by the SAME ` +
           `\`external_id LIKE '${shorter.prefix}%'\` scan, so the shorter prefix's teardown/count also ` +
-          `touches the longer prefix's rows (Phase 140 review CR-01 + WR-06). Choose non-overlapping prefixes.`
+          `touches the longer prefix's rows (review CR-01 + WR-06). Choose non-overlapping prefixes.`
       );
     }
   }
@@ -433,7 +434,7 @@ export default defineConfig({
     // → authenticated → election/constituency → email+ToU → preregister() →
     // registration-key → set password → logged-in.
     //
-    // OPT-IN (PLAYWRIGHT_BANK_AUTH). As of Phase 140 WR-03 it JOINS THE TAIL OF
+    // OPT-IN (PLAYWRIGHT_BANK_AUTH). As of WR-03 (see phase 140) it JOINS THE TAIL OF
     // THE PERM SERIAL CHAIN (see `dependencies` below). This SUPERSEDES RESEARCH
     // A4/Pitfall 3 ("stands alone") by explicit operator decision: A4 bought a
     // fast isolated gate at the cost of `app_settings` singleton safety, and the
@@ -474,7 +475,7 @@ export default defineConfig({
             //     `a11y-smoke` (identical dependency set → identical phase, see
             //     playwright/lib/runner/tasks.js createPhasesTask), so the REPLACE
             //     landed mid-spec under `PLAYWRIGHT_BANK_AUTH=1 yarn test:e2e`.
-            //   · `['voter-journey', 'candidate-journey']` (the Phase 140 review's
+            //   · `['voter-journey', 'candidate-journey']` (the review's
             //     own suggestion) merely RELOCATES the race: it lands this project
             //     in the same phase as `data-setup-perm-1e1cg1co`, the perm chain
             //     HEAD, which does the same REPLACE. Do not "fix" it that way.
@@ -558,7 +559,7 @@ export default defineConfig({
     // (see phase 138) — `video: 'retain-on-failure'`. This project
     // owns the term-trigger step, whose failure is a LATENCY signal,
     // not an absence signal: the recorded occurrence's own page snapshot showed
-    // the trigger present (deferred-items.md § DEF-135-04). A trace records what
+    // the trigger present. A trace records what
     // the test asserted; only a video records what the page was DOING across the
     // Base-2 → Base-3 hop while the budget expired. Bounded by construction —
     // this project runs ONE test, and a green run produces zero video bytes.
@@ -689,12 +690,12 @@ export default defineConfig({
     // in this directory must appear in it. That is the invariant: a probe file
     // not named here matches NO project and is reachable from NO command.
     //
-    // It was violated between Phase 119 and Phase 136. Four base/read-only
+    // It was violated between two phases (see phase 119, see phase 136). Four base/read-only
     // probes (entityFilters/navMenu/theme/trackingIntercept), added in 119-08 as
     // fixture-development scaffolding, were left out of this pattern — so their
     // 6 tests ran from nowhere, including from `yarn test:e2e:probes`, while
     // still sitting in `specs/` implying coverage (fake-guard sweep 2026-08-11,
-    // finding F4). They were DELETED in Phase 136 plan 03 rather than wired up,
+    // finding F4). They were DELETED (see phase 136) rather than wired up,
     // because every fixture method they smoke-tested is now exercised by a spec
     // that runs in the blocking default suite, in each case at least as
     // strongly: selectAll/selectNone by voter-journey.spec.ts (exact 13/0/13

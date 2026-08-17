@@ -38,7 +38,7 @@ describe('Signicat provider', () => {
     vi.restoreAllMocks();
   });
 
-  describe('interface compliance (D-04)', () => {
+  describe('interface compliance', () => {
     it('has type property set to signicat', () => {
       expect(signicatProvider.type).toBe('signicat');
     });
@@ -65,7 +65,7 @@ describe('Signicat provider', () => {
     });
   });
 
-  describe('getAuthorizeUrl (D-09, D-10 - PKCE flow unchanged)', () => {
+  describe('getAuthorizeUrl (PKCE flow unchanged)', () => {
     it('returns URL with PKCE code_challenge parameter', async () => {
       const result = await signicatProvider.getAuthorizeUrl({
         redirectUri: 'http://localhost:5173/callback',

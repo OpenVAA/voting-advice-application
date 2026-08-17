@@ -97,7 +97,7 @@ function resetStorageMockState(): void {
 // SupabaseAdminClient.listCandidatePortraitPaths + removePortraitStorageObjects
 // ---------------------------------------------------------------------------
 
-describe('SupabaseAdminClient storage cleanup surface (Phase 58 Plan 07)', () => {
+describe('SupabaseAdminClient storage cleanup surface', () => {
   beforeEach(() => {
     resetStorageMockState();
     vi.clearAllMocks();
@@ -245,7 +245,7 @@ function makeFakeClient(overrides: Partial<FakeClient> = {}): FakeClient {
   };
 }
 
-describe('runTeardown (CLI-03 / D-58-07 / D-58-17 / Pitfall #5 + #6)', () => {
+describe('runTeardown (CLI-03 / Pitfall #5 + #6)', () => {
   it('calls bulkDelete exactly once with the 10 allowed tables (Pitfall #6 — no accounts/projects/feedback/app_settings)', async () => {
     const client = makeFakeClient();
     await runTeardown('seed_', client as unknown as SupabaseAdminClient);
@@ -403,7 +403,7 @@ describe('runTeardown (CLI-03 / D-58-07 / D-58-17 / Pitfall #5 + #6)', () => {
 // TEARDOWN_USAGE
 // ---------------------------------------------------------------------------
 
-describe('TEARDOWN_USAGE (CLI-04 / D-58-13)', () => {
+describe('TEARDOWN_USAGE (CLI-04)', () => {
   it('starts with Usage: line', () => {
     expect(TEARDOWN_USAGE).toMatch(/^Usage: yarn workspace @openvaa\/dev-seed seed:teardown/);
   });
@@ -425,7 +425,7 @@ describe('TEARDOWN_USAGE (CLI-04 / D-58-13)', () => {
     expect(TEARDOWN_USAGE).toMatch(/seed_/);
   });
 
-  it('mentions that teardown is permissive on the prefix (D-58-17)', () => {
+  it('mentions that teardown is permissive on the prefix', () => {
     expect(TEARDOWN_USAGE).toMatch(/[Pp]ermissive/);
   });
 });

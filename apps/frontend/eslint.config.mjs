@@ -92,7 +92,7 @@ export default [
             {
               name: 'svelte/store',
               message:
-                'svelte/store is banned in migrated contexts/routes (v2.11 K1). Use $state/$derived rune handles exposing `current`. See .planning/v2.11-DECISIONS.md K1.'
+                'svelte/store is banned in migrated contexts and routes. Use $state/$derived rune handles exposing `current` instead.'
             }
           ],
           patterns: [

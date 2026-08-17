@@ -200,7 +200,7 @@ async function toggleCategoryListItem({
  *
  * reason: (see phase 138) DEF-135-04. This helper used to
  * end in `page.waitForURL(...).catch(() => null)` — a URL-only wait that swallowed
- * its own timeout. Under the ordering named in ` ` § Named root
+ * its own timeout. Under the ordering named as the root
  * cause, SvelteKit commits the URL (`client.js:1759-1760`) before it swaps the DOM
  * (`:1824`), so that settle released while the PREVIOUS question was still
  * rendered, and any trailing assertion raced a swap that had not happened. The
@@ -402,7 +402,7 @@ const SELECT_EXACT_ONE_EN = 'Select 1 option.';
  * and proved it renders by importing the compiled Paraglide output at build
  * time, but no seeded question had an equal min/max window, so the RUNNING app
  * always took the `selectRange` branch and a break in the string would have
- * shipped silently (134-06-SUMMARY §"still has no standing guard").
+ * shipped silently with no standing guard.
  *
  * `qu-opin-base-8-multichoice-exact` closes that: min === max === 1 makes
  * QuestionChoices render `selectExact` with `count = 1`
@@ -884,7 +884,7 @@ test.describe('voter journey', () => {
     });
 
     // customData.terms extension (additive, against e2e/base; the
-    // `terms` block was seeded on Base-3 / qu-opin-base-3-likert7 in Phase 119,
+    // `terms` block was seeded on Base-3 / qu-opin-base-3-likert7 (see phase 119),
     // base.ts:782-790). The trigger 'Likert' appears verbatim in the Base-3 title
     // ("Base opinion 3 — Likert 7"), so QuestionHeading renders it as an in-text
     // <Term> affordance; hovering/focusing the trigger reveals the definition
@@ -900,7 +900,7 @@ test.describe('voter journey', () => {
       });
       // Settle on Base-3 by its heading.
       const questionHeading = page.getByTestId(testIds.voter.questions.heading);
-      // reason: HARD, not soft (see phase 138; deferred-items.md § DEF-135-04 "Suggested follow-up") —
+      // reason: HARD, not soft (see phase 138) —
       // a mis-timed Base-3 arrival must abort HERE, not two lines below at the term gate that misdirects.
       await expect(questionHeading).toHaveText(TEXT_RE.baseOpinion3Likert7, { timeout: TIMEOUTS.element });
 
@@ -964,7 +964,7 @@ test.describe('voter journey', () => {
         .soft(questionHeading)
         .toHaveText(TEXT_RE.baseOpinion8MultiChoiceExact, { timeout: TIMEOUTS.element });
       // Min-answers gate (minimumAnswers: 5). see phase 129 added Base-6/Base-7
-      // and Phase 135 added Base-8, so the voter now holds 8 base answers here —
+      // and Base-8 was added later (see phase 135), so the voter now holds 8 base answers here —
       // deleting ONE no longer crosses the 5-answer threshold. Delete FOUR
       // (Base-8 → Base-7 → Base-6 → Base-5, 8→7→6→5→4) to cross below the gate,
       // asserting the CTA stays enabled until the crossing delete, then
@@ -1222,7 +1222,7 @@ test.describe('voter journey', () => {
     // frontend code was built this phase. Presence-level only; the full
     // card+drawer spec is Phase-130 scope.
     // ====================================================================
-    await test.step('D-10: alliance tab renders alliance cards with a match-score gauge + member-org subcards', async () => {
+    await test.step('alliance tab renders alliance cards with a match-score gauge + member-org subcards', async () => {
       await resultsPage.selectEntityTab('alliances');
       const allianceSection = page.getByTestId(testIds.voter.results.allianceSection);
       await expect.soft(allianceSection).toBeVisible({ timeout: TIMEOUTS.slowPage });

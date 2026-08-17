@@ -19,7 +19,7 @@ yarn db:seed:teardown              # remove all seed_-prefixed rows + portraits
 
 `yarn db:reset-with-data` is the fast path for a fresh local DB state — it
 composes `yarn db:reset` (runs migrations + `seed.sql` bootstrap) with
-`yarn db:seed --template default` in one step (D-58-11). It touches the
+`yarn db:seed --template default` in one step. It touches the
 database only; for a full-stack reset that also wipes the vite cache and
 relaunches, use `yarn dev:reset-with-data`.
 
@@ -34,8 +34,7 @@ relaunches, use `yarn dev:reset-with-data`.
 | `yarn workspace @openvaa/dev-seed seed:teardown --help` | Teardown flag reference                                                               |
 
 The `db:seed*` scripts bubble up from root `package.json` so contributors
-never have to type `yarn workspace @openvaa/dev-seed ...` for common operations
-(D-58-08).
+never have to type `yarn workspace @openvaa/dev-seed ...` for common operations.
 
 ## Flag Reference
 
@@ -48,7 +47,7 @@ never have to type `yarn workspace @openvaa/dev-seed ...` for common operations
 | `--external-id-prefix <str>`      | string | `seed_`       | Override for the `external_id` prefix on every row (teardown filter contract) |
 | `-h`, `--help`                    | flag   | —             | Show help and exit                                                            |
 
-Template argument resolution (D-58-09, name-first, path-fallback):
+Template argument resolution (name-first, path-fallback):
 
 1. Starts with `./`, `/`, or `../` → treat as filesystem path.
 2. Ends in `.ts`, `.js`, or `.json` → treat as filesystem path.
@@ -62,7 +61,7 @@ Template argument resolution (D-58-09, name-first, path-fallback):
 | `--prefix <str>` | string | `seed_` | `external_id` prefix to match. Must be ≥ 2 chars. |
 | `-h`, `--help`   | flag   | —       | Show help and exit                                |
 
-Teardown is permissive by design (D-58-17): it trusts the `external_id` prefix
+Teardown is permissive by design: it trusts the `external_id` prefix
 as the contract and does NOT shape-check individual rows. A user who mixes
 hand-curated data with the same prefix gets it deleted. Use a distinct prefix
 for hand-curated data to keep it safe. The 2-char minimum (T-58-07-02) prevents
@@ -89,7 +88,7 @@ A realistic Finnish-flavored parliamentary election:
   (30 images, public-domain AI-generated — see
   [`src/assets/portraits/LICENSE.md`](./src/assets/portraits/LICENSE.md))
 
-Candidate answers are clustered via Phase 57's latent-factor emitter
+Candidate answers are clustered via the latent-factor emitter (see phase 57)
 (`ctx.answerEmitter ??= latentAnswerEmitter(template)`) — parties get
 per-centroid positions in latent space and candidates sample around their
 party's centroid. Matching / political-compass plots show visible clustering
@@ -236,8 +235,7 @@ in your IDE to see field-level docs. Key top-level fields:
 - `generateTranslationsForAllLocales: boolean` — 4-locale expansion
   (en / fi / sv / da per `staticSettings.supportedLocales`).
 - `latent: { dimensions, eigenvalues, centroids, spread, loadings, noise }` —
-  Phase 57 latent-factor emitter config. See
-  `.planning/phases/57-latent-factor-answer-model/57-CONTEXT.md` for semantics.
+  latent-factor emitter config (see phase 57).
 - Per-entity `{ count?, fixed? }` fragments for each of the 12 non-system
   public tables: `elections`, `constituency_groups`, `constituencies`,
   `organizations`, `alliances`, `factions`, `candidates`, `question_categories`,
@@ -252,8 +250,8 @@ Requires:
 - `SUPABASE_SERVICE_ROLE_KEY` — set automatically by `supabase start`;
   readable via `yarn db:status`.
 
-Missing env → the CLI exits 1 with an actionable message (D-58-12). The
-writer enforces both at construction time (D-15 / NF-02).
+Missing env → the CLI exits 1 with an actionable message. The
+writer enforces both at construction time (NF-02).
 
 ## Security Notes
 
@@ -282,7 +280,7 @@ Either use a known built-in name or pass a filesystem path starting with
 
 **`Template validation failed: template.candidates.count: Expected number, received string`**
 The field path tells you the offending key. Fix the type and re-run.
-Zod errors (TMPL-09 / D-16) include field paths for every violation.
+Zod errors (TMPL-09) include field paths for every violation.
 
 **Teardown leaves rows behind.**
 Check the `external_id` prefix — teardown filters on `external_id LIKE ${prefix}%`.
@@ -297,12 +295,9 @@ aborts (exit 1). Re-run after fixing the Storage bucket state
 
 ## Related Docs
 
-- Phase 56 (`@openvaa/dev-seed` pipeline foundations):
-  `.planning/phases/56-generator-foundations-plumbing/`
-- Phase 57 (latent-factor answer model):
-  `.planning/phases/57-latent-factor-answer-model/`
-- Phase 58 (templates, CLI, default dataset):
-  `.planning/phases/58-templates-cli-default-dataset/`
+- `@openvaa/dev-seed` pipeline foundations — see phase 56
+- Latent-factor answer model — see phase 57
+- Templates, CLI and default dataset — see phase 58
 - Portrait licensing: [`./src/assets/portraits/LICENSE.md`](./src/assets/portraits/LICENSE.md)
-- CLAUDE.md §"Seeding local data" — short snippet in root `CLAUDE.md` Common
+- CLAUDE.md, "Seeding local data" — short snippet in root `CLAUDE.md` Common
   Workflows section (DX-04 entry point for AI pair-programmers).

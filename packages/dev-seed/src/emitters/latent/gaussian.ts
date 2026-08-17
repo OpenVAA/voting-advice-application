@@ -11,7 +11,7 @@
  * Pattern analog: `packages/dev-seed/src/emitters/answers.ts` (pure file-local
  * helper style — same convention as `pickOneChoiceId`, `extractChoiceIds`).
  *
- * ## Pitfall 1 clamp (RESEARCH §Common Pitfalls → Pitfall 1)
+ * ## Clamp
  *
  * `faker.number.float({ min: 0, max: 1 })` can return exactly `0`. Feeding `0` into
  * `Math.log()` yields `-Infinity`, which `Math.sqrt()` then propagates as `NaN`.

@@ -45,7 +45,7 @@ export class AccountsGenerator {
     if ((fragment.count ?? 0) > 0 || (fragment.fixed?.length ?? 0) > 0) {
       const bootstrapId = this.ctx.refs.accounts[0]?.id ?? 'none';
       this.ctx.logger(
-        '[dev-seed] AccountsGenerator: accounts are bootstrap-only per D-11. ' +
+        '[dev-seed] AccountsGenerator: accounts are bootstrap-only. ' +
           'Requested rows ignored — the bootstrap account is pre-populated via seed.sql. ' +
           `Reference it via ctx.refs.accounts[0].id (bootstrap UUID: ${bootstrapId}).`
       );

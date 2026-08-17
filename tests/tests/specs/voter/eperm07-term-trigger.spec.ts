@@ -4,10 +4,10 @@
  * Drives ONLY Base-1 → Base-2 → Base-3 and asserts the in-text <Term> trigger on
  * Base-3, so the ~1-in-8 DEF-135-04 event can be forced and observed in
  * single-digit seconds instead of inside a 648 s full-suite run. That is what
- * makes dozens of forcing attempts affordable ('s economics).
+ * makes dozens of forcing attempts affordable.
  *
  * Hypothesis under investigation (a HYPOTHESIS, not a conclusion — the live
- * ledger is ` ` § Hypothesis ledger, and U-1 eliminated none of
+ * ledger is in the phase record, and U-1 eliminated none of
  * the three): SvelteKit pushes the destination URL to history (client.js:1760)
  * BEFORE it swaps the DOM (client.js:1824), awaiting the `onNavigate` callbacks
  * in between (client.js:1779-1785) — and the root layout's callback
@@ -149,7 +149,7 @@ const CATEGORY_BASE_OPINION = /Base Opinion Questions/i;
 const HEADING_BASE_1 = /Base opinion 1/i;
 const HEADING_BASE_2 = /Base opinion 2/i;
 
-/** The forensic tri-state recorded at the instant of assertion (RESEARCH §R2.4-C). */
+/** The forensic tri-state recorded at the instant of assertion. */
 type ForensicState = {
   pathname: string;
   /** `querySelectorAll` length — an absent heading reads as 0, it does not throw. */
@@ -265,7 +265,7 @@ async function releaseCpuThrottle(client: CDPSession | null): Promise<void> {
 }
 
 /**
- * Read the tri-state that discriminates H1 / H2 / H3 (RESEARCH §R2.4-C).
+ * Read the tri-state that discriminates H1 / H2 / H3.
  *
  * `headingCount` is a `querySelectorAll` LENGTH, so an absent heading is
  * observed as `0` rather than as a thrown locator error — H2's verdict is

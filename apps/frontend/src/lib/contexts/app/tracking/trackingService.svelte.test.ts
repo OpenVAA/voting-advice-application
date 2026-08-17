@@ -140,7 +140,7 @@ describe('trackingService (pure-rune producer)', () => {
     });
   });
 
-  describe('spread-safety (Phase 107 gate regression guard)', () => {
+  describe('spread-safety (gate regression guard)', () => {
     // `trackingService` is the ONLY app-layer producer consumed via `...tracking`
     // spread (appContext.svelte.ts:299). Svelte 5 compiles bare `$state`/`$derived`
     // CLASS fields to PROTOTYPE accessors that are NOT own-enumerable and are

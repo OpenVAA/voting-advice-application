@@ -28,4 +28,4 @@ If the ambiguous licensing posture becomes blocking (e.g. distribution of the re
 - [Unsplash](https://unsplash.com/license) — permissive for commercial + non-commercial use.
 - [UIFaces](https://uifaces.co/) — open-source faces, check per-face license.
 
-Switching sources is a template-level decision (new D-58-XX in CONTEXT.md). Do NOT swap sources unilaterally — discuss with maintainers first.
+Switching sources is a template-level decision. Do NOT swap sources unilaterally — discuss with maintainers first.

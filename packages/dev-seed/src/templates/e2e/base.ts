@@ -284,7 +284,7 @@ function withInfoAnswers(extra: Record<string, { value: unknown }>): Record<stri
 
 // Opinion-answer templates. Every non-special candidate uses ONE of these
 // three templates verbatim (260525-tea); CA-AA-Special retains its asymmetric
-// partial-answer arrangement (see top-of-file docstring §"Partial-answer
+// partial-answer arrangement (see the top-of-file docstring, "Partial-answer
 // candidate arrangement").
 //
 // Coverage: all 14 opinion questions across all categories — base 1-8
@@ -661,7 +661,7 @@ export const baseTemplate: Template = {
   //   opinion (14): 8 in QG-Opin-Base + Opt-A-1 + Opt-B-1 + EL-Reg-1 +
   //                 CO-Mun-SE-SW-1 + Filt-Mun-NE + Filt-Mun-SE.
   // Refactor-doc:26-56 says "14 questions total"; that figure predates the
-  // filtered info questions AND the Phase 129 / 135 base-opinion additions, so
+  // filtered info questions AND the base-opinion additions (see phase 129, 135), so
   // it is NOT the count to trust. The enumeration above is derived from the
   // `fixed` array below and is the authoritative one.
   questions: {
@@ -913,7 +913,7 @@ export const baseTemplate: Template = {
       // `effectiveMin === effectiveMax` and `selectRange` otherwise
       // (QuestionChoices.svelte:420-425), so without an equal-window question
       // the running app can NEVER reach the `selectExact` branch and the key
-      // added in Phase 134 has no runtime coverage. Exact-ONE (not exact-two)
+      // added later (see phase 134) has no runtime coverage. Exact-ONE (not exact-two)
       // is deliberate: it renders the MF2 `countPlural=one` branch — the branch
       // carrying the constructed non-English singulars (134), i.e. the one
       // most worth guarding.
@@ -1037,7 +1037,7 @@ export const baseTemplate: Template = {
         sort_order: 0,
         is_generated: false,
         organization: { external_id: 'test-e2e-base-or-aa' },
-        // Partial-answer arrangement (top-of-file docstring §"Partial-answer
+        // Partial-answer arrangement (top-of-file docstring, "Partial-answer
         // candidate arrangement"):
         //   (a) both answered: base-1, base-3, base-4, base-5
         //   (b) voter answered, entity missing: base-2 (omitted)

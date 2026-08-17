@@ -39,7 +39,7 @@ See `+page.ts` for possible redirects.
   // dataRoot is identity-stable (#version-bridge): NEVER bind it to an intermediate $derived alias and read through
   // the alias — the alias yields the same DataRoot ref on each #version bump, so Svelte 5 skips downstream
   // notification and the cold/direct-URL snapshot stays empty. Read `voterCtx.dataRoot.<prop>` directly inside each
-  // consuming tracking scope. See CLAUDE.md §Context Destructuring Rule
+  // consuming tracking scope. See CLAUDE.md "Context Destructuring Rule"
   // (see spike 024 anti-pattern entry). see phase 117.
 
   ////////////////////////////////////////////////////////////////////

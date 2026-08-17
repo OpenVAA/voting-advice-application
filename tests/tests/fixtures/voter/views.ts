@@ -95,7 +95,7 @@ export const test = base.extend<ViewFixtures>({
   // phase's run leaves evidence without someone having opted a spec in first.
   // Cost is three event listeners per page and no behaviour change; the
   // fixture asserts nothing. See forensicCapture.fixture.ts for the rationale
-  // in full and § U-1 for what its absence already cost.
+  // in full.
   forensicCapture: [
     async ({ page }, use, testInfo) => {
       const log = attachForensicCapture(page);

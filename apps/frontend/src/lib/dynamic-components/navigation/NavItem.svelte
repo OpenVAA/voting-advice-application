@@ -37,7 +37,7 @@ Accesses `LayoutContext`.
   const { navigation } = getLayoutContext();
 
   // reason: Top-level getContext read — NOT inside an element attribute
-  // (Svelte issue #7549; RESEARCH §Pitfall 2). Static structural detection:
+  // (Svelte issue #7549). Static structural detection:
   // NavItem's containment in a NavGroup is fixed at component creation.
   const inNavGroup = getContext(NAV_GROUP_CONTEXT_KEY) === true;
 
@@ -81,7 +81,7 @@ Accesses `LayoutContext`.
   </svelte:element>
 {/snippet}
 
-<!-- The wrapping <div role="listitem"> is rendered ONLY when this NavItem is a child of a NavGroup (auto-detected via getContext per Phase 80). Orphan NavItems (e.g., VoterNav/CandidateNav/AdminNav close-buttons) render bare to avoid the axe aria-required-parent violation. -->
+<!-- The wrapping <div role="listitem"> is rendered ONLY when this NavItem is a child of a NavGroup (auto-detected via getContext; see phase 80). Orphan NavItems (e.g., VoterNav/CandidateNav/AdminNav close-buttons) render bare to avoid the axe aria-required-parent violation. -->
 {#if inNavGroup}
   <div role="listitem">
     {@render content()}

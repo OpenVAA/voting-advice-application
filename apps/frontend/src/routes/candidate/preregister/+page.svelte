@@ -26,7 +26,7 @@
 
   // Stable references (functions, queues): destructure-safe.
   // Reactive accessors (constituenciesSelectable, electionsSelectable, idTokenClaims,
-  // isPreregistered) read via candCtx.X — see CLAUDE.md §Context Destructuring Rule.
+  // isPreregistered) read via candCtx.X — see CLAUDE.md "Context Destructuring Rule".
   const candCtx = getCandidateContext();
   const { getRoute, popupQueue, t } = candCtx;
   const { navigationSettings } = getLayoutContext();

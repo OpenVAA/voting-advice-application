@@ -25,7 +25,7 @@ test('Should be matchable', () => {
   expect(obj.isMatchable).toBe(true);
 });
 
-test('Should have one binary subdimension per choice (no 2-choice shortcut, D-06)', () => {
+test('Should have one binary subdimension per choice (no 2-choice shortcut)', () => {
   const obj = root.getQuestion(objData.id) as MultipleChoiceCategoricalQuestion;
   obj.data.allowDuplicates = false;
   obj.data.ordered = false;
@@ -63,7 +63,7 @@ test('Should normalize a missing value to an all-MISSING_VALUE subdimension arra
   expect(obj.normalizeValue(MISSING_VALUE)).toEqual([MISSING_VALUE, MISSING_VALUE, MISSING_VALUE, MISSING_VALUE]);
 });
 
-test('Should normalize an empty selection ([]) to an all-MISSING_VALUE subdimension array (D-07)', () => {
+test('Should normalize an empty selection ([]) to an all-MISSING_VALUE subdimension array', () => {
   const obj = root.getQuestion(objData.id) as MultipleChoiceCategoricalQuestion;
   obj.data.allowDuplicates = false;
   obj.data.ordered = false;

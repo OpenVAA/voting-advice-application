@@ -58,8 +58,7 @@ Show a tab title bar that can be used to switch between different tabs.
      aria-required-parent (WAI-ARIA APG tabs pattern). see phase 80 cite-and-fix
      (axe rules: aria-required-parent + list); discovered mid-execution as
      a Rule 4 deviation when the locked NavGroup/NavItem decisions did not
-     resolve the baselined violations. See §Latent Risk
-     Surface Check + scout-misdiagnosis-correction note. -->
+     resolve the baselined violations. -->
 <ul role="tablist" {...concatClass(restProps, 'flex items-center justify-start bg-base-300 px-0 py-8 overflow-auto')}>
   {#each tabs as tab, index}
     <li

@@ -9,11 +9,11 @@ import { describe, expect, it } from 'vitest';
  *
  * The hard part of — widening the `no-restricted-imports` guard glob to
  * `src/**\/*.{ts,svelte}` and clearing every `svelte/store` import — already landed
- * in Phase 115 (see `apps/frontend/eslint.config.mjs` lines 77-84). This
+ * earlier (see phase 115, and `apps/frontend/eslint.config.mjs` lines 77-84). This
  * spec makes the lock-in PROVABLE rather than merely present: it asserts the guard
  * actually FIRES on a deliberate `import { writable } from 'svelte/store'` (so a
  * future reintroduction breaks the test suite, not just lints clean by accident),
- * AND that it stays SILENT on clean rune code. Per the guard config is
+ * AND that it stays SILENT on clean rune code. The guard config is
  * NOT edited here — this is a SEPARATE vitest spec, side-stepping the flat-config
  * REPLACE-not-merge trap.
  *

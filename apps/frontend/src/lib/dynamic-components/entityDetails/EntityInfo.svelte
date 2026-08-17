@@ -45,7 +45,7 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
   // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
   // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot.<prop>` directly in the tracking scope,
-  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md §Context Destructuring Rule +
+  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" +
   // (see spike 024). see phase 117.
 
   const unwrapped = $derived(unwrapEntity(entity));

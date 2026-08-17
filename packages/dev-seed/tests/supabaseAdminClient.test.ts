@@ -124,7 +124,7 @@ function resetMockState(): void {
   mockState.uploadCalls = [];
 }
 
-describe('SupabaseAdminClient portrait surface (Phase 58 Plan 04)', () => {
+describe('SupabaseAdminClient portrait surface', () => {
   beforeEach(() => {
     resetMockState();
     vi.clearAllMocks();

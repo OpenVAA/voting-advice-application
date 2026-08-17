@@ -58,7 +58,7 @@
   // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via voterCtx.X, never destructure.
   const appSettings = $derived(voterCtx.appSettings);
   // dataRoot is identity-stable (#version-bridge): read `voterCtx.dataRoot.<prop>` directly in the tracking scope,
-  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md §Context Destructuring Rule +
+  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" +
   // (see spike 024). see phase 117.
   const { topBarSettings, progress, video } = getLayoutContext();
 

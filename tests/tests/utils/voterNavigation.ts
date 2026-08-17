@@ -50,8 +50,8 @@ type StopAt = 'first-question' | 'questions-intro' | 'category-intro';
  * `Promise.race` below settles on the URL ALONE (the URL branch normally wins —
  * SvelteKit commits the URL at `client.js:1759-1760` before it swaps the DOM at
  * `:1824`) and BOTH branches swallow. That is the exact shape
- * ` ` § Named root cause calls link 4 of the DEF-135-04
- * mechanism, and Phase 138's fix did not remove it here. `advanceClick` drives
+ * the diagnosis calls link 4 of the
+ * mechanism, and the fix (see phase 138) did not remove it here. `advanceClick` drives
  * `voter-journey.fixture`'s `answerAndAdvanceToResults` /
  * `walkUntilQuestionsIntro` stack, on which `perm-hide-category-tags`,
  * `perm-hide-election-tags`, `minimalVoterResultsPage.fixture` and
@@ -69,7 +69,7 @@ type StopAt = 'first-question' | 'questions-intro' | 'category-intro';
  * on the stack opens with its own hard assertion. Those, not this race, are what
  * bound the exposure.
  *
- * Consequence for a later reader: "the settle was fixed in Phase 138" covers the
+ * Consequence for a later reader: "the settle was fixed" (see phase 138) covers the
  * voter walk's Q→Q hops (`helpers/navigation.ts` `expectClientNavigation`), NOT
  * this function. Use `expectClientNavigation` for any hop whose next assertion is
  * not a hard landing assertion on the destination.

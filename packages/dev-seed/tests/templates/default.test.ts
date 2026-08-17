@@ -139,8 +139,8 @@ describe('candidatesOverride — non-uniform distribution + locale cycling', () 
 // questionsOverride
 // ---------------------------------------------------------------------------
 
-describe('questionsOverride — D-58-03 type mix', () => {
-  it('Test 11: produces exactly 26 question rows (D-15)', () => {
+describe('questionsOverride — type mix', () => {
+  it('Test 11: produces exactly 26 question rows', () => {
     const ctx = makeCtx({
       refs: { ...makeCtx().refs, question_categories: fourCategories() }
     });
@@ -148,7 +148,7 @@ describe('questionsOverride — D-58-03 type mix', () => {
     expect(rows).toHaveLength(26);
   });
 
-  it('Test 12: type mix is 18 singleChoiceOrdinal + 5 singleChoiceCategorical + 1 boolean + 1 number + 1 multipleChoiceCategorical (D-15)', () => {
+  it('Test 12: type mix is 18 singleChoiceOrdinal + 5 singleChoiceCategorical + 1 boolean + 1 number + 1 multipleChoiceCategorical', () => {
     const ctx = makeCtx({
       refs: { ...makeCtx().refs, question_categories: fourCategories() }
     });
@@ -228,36 +228,36 @@ describe('defaultTemplate — shape & frontmatter constants', () => {
     expect(() => validateTemplate(defaultTemplate)).not.toThrow();
   });
 
-  it('Test 18: generateTranslationsForAllLocales === true (D-58-04)', () => {
+  it('Test 18: generateTranslationsForAllLocales === true', () => {
     expect(defaultTemplate.generateTranslationsForAllLocales).toBe(true);
   });
 
-  it('Test 19: organizations.fixed has 8 entries (D-58-01)', () => {
+  it('Test 19: organizations.fixed has 8 entries', () => {
     expect(defaultTemplate.organizations?.fixed).toBeDefined();
     expect(defaultTemplate.organizations?.fixed).toHaveLength(8);
   });
 
-  it('Test 20: elections.fixed has 1 entry (D-58-02)', () => {
+  it('Test 20: elections.fixed has 1 entry', () => {
     expect(defaultTemplate.elections?.fixed).toHaveLength(1);
   });
 
-  it('Test 21: constituency_groups.fixed has 1 entry (D-58-02)', () => {
+  it('Test 21: constituency_groups.fixed has 1 entry', () => {
     expect(defaultTemplate.constituency_groups?.fixed).toHaveLength(1);
   });
 
-  it('Test 22: constituencies.fixed has 5 entries (Phase 64 manual-smoke densification)', () => {
+  it('Test 22: constituencies.fixed has 5 entries (manual-smoke densification)', () => {
     expect(defaultTemplate.constituencies?.fixed).toHaveLength(5);
   });
 
-  it('Test 23: question_categories.fixed has 4 entries (D-58-02)', () => {
+  it('Test 23: question_categories.fixed has 4 entries', () => {
     expect(defaultTemplate.question_categories?.fixed).toHaveLength(4);
   });
 
-  it('Test 24: questions.count === 26 (D-58-02, D-15)', () => {
+  it('Test 24: questions.count === 26', () => {
     expect(defaultTemplate.questions?.count).toBe(26);
   });
 
-  it('Test 25: candidates.count === 327 (Phase 64 manual-smoke densification)', () => {
+  it('Test 25: candidates.count === 327 (manual-smoke densification)', () => {
     expect(defaultTemplate.candidates?.count).toBe(327);
   });
 

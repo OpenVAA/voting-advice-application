@@ -142,7 +142,7 @@ describe('defaultProject (GEN-06f)', () => {
 
   // ---- Multi categorical dispatch ----
 
-  it('multipleChoiceCategorical: returns non-empty array (D-57-09 ≥ 1 guardrail)', () => {
+  it('multipleChoiceCategorical: returns non-empty array (≥ 1 guardrail)', () => {
     const q = mkQ('q_multi', 'multipleChoiceCategorical', CAT_3);
     for (let seed = 0; seed < 50; seed++) {
       const ctx = makeCtx();

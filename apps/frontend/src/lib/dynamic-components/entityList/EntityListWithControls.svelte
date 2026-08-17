@@ -94,7 +94,7 @@ component-local). See `EntityListWithControls.helpers.ts` for the pure
   );
 
   // Local version counter for searchFilter.onChange. Mirrors the filterContext
-  // pattern (RESEARCH §Pitfall 1, Pattern 1) for the search-state branch.
+  // pattern for the search-state branch.
   let searchVersion = $state(0);
   $effect(() => {
     const sf = searchFilter;

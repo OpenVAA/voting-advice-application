@@ -29,12 +29,13 @@ export type RuneTrackingService = Omit<TrackingService, 'sendTrackingEvent' | 's
  * (`sendTrackingEvent`/`sessionId`/`shouldTrack` per `trackingService.type.ts`)
  * is reconstructed by the `appContext` seam.
  *
- * SPREAD-SAFETY (the single most spread-sensitive producer in Phase 108):
+ * SPREAD-SAFETY (the single most spread-sensitive producer (see phase 108)):
  * `trackingService` is the ONLY app-layer producer consumed via `...tracking`
  * spread (`appContext.svelte.ts:299`). Svelte 5 compiles bare `$state`/`$derived`
  * CLASS fields to PRIVATE backing fields + PROTOTYPE accessors, which are NOT
- * own-enumerable and are DROPPED by `{ ...instance }` spread (the Phase 107
- * spread-safety gate). To stay byte-identical at the consumer until the Phase 109
+ * own-enumerable and are DROPPED by `{ ...instance }` spread (the
+ * spread-safety gate; see phase 107). To stay byte-identical at the consumer until
+ * the spread-of-context fix (see phase 109)
  * spread-of-context fix lands, every spread-consumed member MUST be an
  * OWN-ENUMERABLE instance field:
  *   - `sendTrackingEvent` / `shouldTrack` are OBJECT-LITERAL `{ current, set? }`

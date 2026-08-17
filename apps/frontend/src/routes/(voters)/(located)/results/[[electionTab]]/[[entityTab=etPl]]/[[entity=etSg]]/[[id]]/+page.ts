@@ -3,7 +3,7 @@ import type { PageLoad } from './$types';
 
 /**
  * Results detail route — coupling + matcher-fallthrough guard (see phase 62;
- * keys renamed for Phase 88 4-segment shape).
+ * keys renamed for the 4-segment shape; see phase 88).
  *
  * Valid URL shapes (post-88-02 + loop-fix):
  *   1. /results                                                — picker view; +layout.ts redirects only when 1 election available

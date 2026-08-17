@@ -117,7 +117,7 @@ export function defaultProject(
       case 'boolean':
       case 'date':
       case 'image': {
-        // fallback — reuse the Phase 56 per-type stub one question at a
+        // fallback — reuse the per-type stub (see phase 56) one question at a
         // time. The candidate argument is unused by `defaultRandomValidEmit`;
         // pass a minimal TablesInsert<'candidates'> shell.
         const fallback = defaultRandomValidEmit({} as TablesInsert<'candidates'>, [q], ctx);
@@ -261,7 +261,7 @@ function dot(a: Array<number>, b: Array<number>): number {
  * as JSONB-unsafe, narrows entry-by-entry, drops malformed shapes.
  *
  * When the choice entry lacks an explicit `normalizableValue`, falls back to
- * parsing the `id` as a number (the Phase 56 Likert convention — `id`s were
+ * parsing the `id` as a number (the Likert convention (see phase 56) — `id`s were
  * `'1'..'5'`). The A2 fix in QuestionsGenerator makes the explicit field the
  * primary path; the parseInt fallback keeps older templates / fixtures
  * backwards-compatible.
@@ -303,6 +303,6 @@ function extractChoiceIds(q: TablesInsert<'questions'>): Array<string> {
 
 // Compile-time contract assertion — if the `LatentHooks.project` signature
 // drifts in latentTypes.ts, TypeScript reports the incompatibility here. The
-// one seam, one place to audit convention from Phase 56 answers.ts.
+// one seam, one place to audit convention from answers.ts (see phase 56).
 const _typecheckProject: NonNullable<LatentHooks['project']> = defaultProject;
 void _typecheckProject;

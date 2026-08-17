@@ -31,7 +31,7 @@ Environment:
   The repo-root \`.env\` file is auto-loaded at startup, so variables defined there
   (PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY) take effect without \`export\`.
 
-Permissive by design (D-58-17):
+Permissive by design:
   seed:teardown trusts the external_id prefix as the contract. It does NOT
   shape-check individual rows. Users who mix hand-curated data with the same
   prefix will have it deleted by teardown. Use a distinct prefix for

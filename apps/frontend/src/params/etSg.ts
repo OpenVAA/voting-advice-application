@@ -10,7 +10,7 @@
  *   - `organization` → drawer-entity type = organization
  *   - `alliance`     → drawer-entity type = alliance (see phase 69)
  *
- * American spelling per Phase 62 Open Question 1 RESOLVED.
+ * American spelling (see phase 62).
  *
  * Explicitly does NOT accept the legacy value `party` — no runtime consumer
  * of `entityType=party` in the URL remains.
@@ -19,7 +19,7 @@
  * Strict boolean-OR allowlist — no regex, no glob, no user-supplied predicate.
  *
  * The matcher filename MUST equal the folder-bracket name used in routes
- * (e.g. `[[entity=etSg]]`) — see phase 62 RESEARCH §Pitfall 7.
+ * (e.g. `[[entity=etSg]]`) — see phase 62.
  */
 export function match(param: string): param is 'candidate' | 'organization' | 'alliance' {
   return param === 'candidate' || param === 'organization' || param === 'alliance';

@@ -16,7 +16,7 @@
  * seam (critical): `const emit = ctx.answerEmitter?? defaultRandomValidEmit`
  * is the SINGLE hook point see phase 57's latent-factor emitter overrides. The
  * default is the random-valid-per-question-type stub in emitters/answers.ts.
- * This file does NOT change between Phase 56 and Phase 57 — only
+ * This file does NOT change between the two emitter generations — only
  * `ctx.answerEmitter` gets populated.
  *
  * see phase 56 emits shape-valid random answers per question type.
@@ -135,7 +135,7 @@ export class CandidatesGenerator {
         // production path. Synthetic candidates set `row.organization` above
         // (line 121) when `refs.organizations` is non-empty; if the ref is
         // missing, `row.organization` is undefined and the property is
-        // spread-omitted from the literal (preserves the Phase 56 invariant
+        // spread-omitted from the literal (preserves the invariant (see phase 56)
         // that `rows[0]` carries no `organization` property when the ref is
         // empty).
         const candidateForEmit: TablesInsert<'candidates'> = {

@@ -6,7 +6,7 @@
  * `cloud.umami.is` and WITHOUT embedding any Umami website key
  * (cardinal-rule safe; CLAUDE.md: never commit secrets).
  *
- * ## Emission boundary (VERIFIED — RESEARCH §Tracking Emission Boundary)
+ * ## Emission boundary (VERIFIED)
  *
  * `TrackingService` routes all submitted event data through a single handler
  * stored in its `sendTrackingEvent` rune. `+layout.svelte` wires that handler

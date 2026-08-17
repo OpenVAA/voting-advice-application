@@ -80,7 +80,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
   // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot` directly inside the consuming `$derived.by`,
-  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md §Context Destructuring Rule +
+  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" +
   // (see spike 024). see phase 117.
   const voterContext = appType.current === 'voter' ? getVoterContext() : undefined;
 

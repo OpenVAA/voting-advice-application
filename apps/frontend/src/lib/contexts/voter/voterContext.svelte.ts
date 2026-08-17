@@ -30,7 +30,7 @@ const CONTEXT_KEY = Symbol();
 // electionId search param is identical). Without this guard, every
 // navigation cascaded selectedElections → nominationAndQuestionState →
 // filterState, rebuilding FilterGroup instances and dropping any active
-// filter rules — surfaced during Phase 64 manual smoke as "filter badge
+// filter rules — surfaced during manual smoke (see phase 64) as "filter badge
 // disappears after closing candidate drawer". Svelte 4 stores absorbed this
 // via `writable.set()`'s no-op-write skip; Svelte 5 raw `$state` writes
 // need an explicit equality check.
@@ -113,7 +113,7 @@ export class VoterContextProvider implements VoterContext {
   // fix (see phase 61): pure $state, no sessionStorage.
   // `bind:group` on a getter/setter context accessor backed by
   // `fromStore(sessionStorageWritable)` intermittently failed to propagate writes
-  // (known Svelte 5 binding pitfall — see RESEARCH §Pitfall 1). Migrated to pure
+  // (known Svelte 5 binding pitfall). Migrated to pure
   // $state; session-only; default-all-checked seeded here rather than
   // in the page's onMount so the counter never renders the transient 0 state.
   #selectedQuestionCategoryIds = $state<Array<Id>>([]);
@@ -142,7 +142,7 @@ export class VoterContextProvider implements VoterContext {
   // Inherited appContext + STABLE refs (field initializers — they run BEFORE the
   // $derived/producer field initializers below in declaration order, so those
   // can read them; the appContext members are reproduced via
-  // `Object.assign(this, this.#appContext)` in the constructor — see §below).
+  // `Object.assign(this, this.#appContext)` in the constructor — see below).
   ////////////////////////////////////////////////////////////
 
   #appContext = getAppContext();

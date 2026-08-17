@@ -1627,7 +1627,7 @@ describe('SupabaseDataProvider', () => {
       expect(nom?.parentNominationType).toBe('organization');
     });
 
-    it('clears parentNominationId when the parent nomination is not in the result set (Phase 64 P01)', async () => {
+    it('clears parentNominationId when the parent nomination is not in the result set (P01)', async () => {
       // If the RPC fan-out doesn't include the parent (e.g., a cross-constituency
       // parent that the filter excluded), the adapter MUST clear parentNominationId
       // so the Nomination constructor's "either both or neither" invariant holds.

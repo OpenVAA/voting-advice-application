@@ -4,7 +4,7 @@ import { COLUMN_MAP, PROPERTY_MAP } from '@openvaa/supabase-types';
  * Map a snake_case database row to a camelCase domain object.
  * Columns in COLUMN_MAP are renamed; unmapped columns pass through unchanged.
  *
- * TODO: RLS is responsible for preventing sensitive data leakage, not the mapper.
+ * Note: RLS is responsible for preventing sensitive data leakage, not the mapper.
  */
 export function mapRow<TRow extends Record<string, unknown>>(row: TRow): Record<string, unknown> {
   const result: Record<string, unknown> = {};

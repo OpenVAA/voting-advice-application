@@ -1,7 +1,7 @@
 /**
  * @openvaa/dev-seed — Template-driven dev data generator for OpenVAA.
  *
- * Public API (stable within Phase 56):
+ * Public API (stable; see phase 56):
  *
  * Runtime values:
  *   - `runPipeline(template, overrides?, ctx?)` — orchestrate all 14 generators
@@ -16,7 +16,7 @@
  *   - `buildCtx(template)` — fresh ctx factory with seeded faker.
  *   - `validateTemplate(input)` — zod v4 validator with field-path
  *     errors.
- *   - `TemplateSchema` — zod schema (re-exported for Phase 57/58 `.extend()`
+ *   - `TemplateSchema` — zod schema (re-exported for `.extend()` use (see phase 57, 58)
  *     composition).
  *   - `defaultRandomValidEmit` — see phase 56 answer-emitter stub. see phase 57
  *     supplies a latent-factor emitter via `ctx.answerEmitter` (seam).

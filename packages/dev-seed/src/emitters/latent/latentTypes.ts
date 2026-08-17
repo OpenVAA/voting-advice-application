@@ -1,5 +1,5 @@
 /**
- * Shared type surface for the Phase 57 latent-factor answer emitter.
+ * Shared type surface for the latent-factor answer emitter (see phase 57).
  *
  * Every..57-07 sub-step file imports from here — this is the single
  * cross-module contract that keeps the six default sub-steps + the composition
@@ -8,7 +8,7 @@
  * Pattern analog: `packages/dev-seed/src/types.ts` (cross-module type re-export
  * convention). We deliberately do NOT re-export `Ctx` / `Template` here — those
  * remain canonical in their original modules and consumers import them
- * separately. `latentTypes.ts` owns ONLY the types introduced in Phase 57.
+ * separately. `latentTypes.ts` owns ONLY the types introduced there (see phase 57).
  *
  * ## — nested function-pointer seam
  *

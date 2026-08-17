@@ -11,7 +11,7 @@
  * canonical-pattern rationale.
  *
  * Default count = 4: enough parties for matching/filtering sanity-checks
- * (candidates' organization ref picks round-robin per PATTERNS §generators
+ * (candidates' organization ref picks round-robin over the
  * CandidatesGenerator sample) without bloating the <10s seed budget (NF-01).
  */
 

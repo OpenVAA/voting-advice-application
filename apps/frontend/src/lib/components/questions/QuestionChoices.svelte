@@ -376,7 +376,7 @@ The same component can also be used to display the answers of the voter and anot
            Both pointer and keyboard interactions are handled. -->
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <label onclick={(e) => handleClick(e, id)} onkeyup={(e) => handleKeyUp(e, id)}>
-        <!-- bind: keep — Pattern 1 ($state target for bind:this; inputs is $state({}) per Phase 64 fix above); two-way DOM radio group bind:group={selected}, selected is $state. Bind directives placed AFTER value= as a defensive convention to keep diff-against-v2.6-baseline minimal — the order is order-invariant for these shapes per Svelte 5 semantics. -->
+        <!-- bind: keep — Pattern 1 ($state target for bind:this; inputs is $state({}) per the fix above (see phase 64)); two-way DOM radio group bind:group={selected}, selected is $state. Bind directives placed AFTER value= as a defensive convention to keep diff-against-v2.6-baseline minimal — the order is order-invariant for these shapes per Svelte 5 semantics. -->
         <input
           type="radio"
           class="radio-primary radio border-lg bg-base-100 relative h-32 w-32 outline outline-4 outline-[var(--radio-bg)] disabled:opacity-100"

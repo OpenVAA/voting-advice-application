@@ -49,7 +49,7 @@ describe('OrganizationsGenerator', () => {
     rows.forEach((r) => expect(r.project_id).toBe('00000000-0000-0000-0000-000000000001'));
   });
 
-  it('does NOT emit auth_user_id (Phase 56 no-auth scope per RESEARCH §4.8)', () => {
+  it('does NOT emit auth_user_id (no-auth scope)', () => {
     const gen = new OrganizationsGenerator(makeCtx());
     const rows = gen.generate({ count: 3 });
     rows.forEach((r) => expect(r).not.toHaveProperty('auth_user_id'));

@@ -74,7 +74,7 @@ describe('mergeAppSettings', () => {
  * `$effect` (which never runs on the server) — the server-rendered HTML already
  * carries the DB override (no post-hydration default→override flash).
  *
- * These assertions are the unit-level equivalent of spike 008 variantB's
+ * These assertions are the unit-level equivalent of variantB (see spike 008)
  * `initialMergeIncludedDbOverride === true`: they pass through the same pure
  * init-merge the `$state(...)` declaration calls, with NO `$effect` flush, and
  * prove a sentinel DB-override value is present in the initial value. They FAIL

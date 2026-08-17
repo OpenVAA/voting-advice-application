@@ -805,7 +805,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
     // overview state; this pre-answers qu-opin-base-7-multichoice, which is
     // compatible with the step-19 walk (it covers only REMAINING unanswered
     // questions).
-    await test.step('18.5. EQTYP-01: multi-choice opinion — type-specific input contract (checkboxes + helper + D-07 save gating)', async () => {
+    await test.step('18.5. EQTYP-01: multi-choice opinion — type-specific input contract (checkboxes + helper + save gating)', async () => {
       // Navigate from the overview to the multi-choice question editor via its
       // card action (goToQuestion expands every category then clicks the card's
       // Answer/Edit affordance and awaits navigation off the overview).
@@ -881,7 +881,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
     // region as 18.5 (no general journey-spec refactor — steps 16-18's likert
     // choreography and the step-19 walk are untouched). Radio input `type` +
     // exact choice count is the discriminant vs the multi-choice checkboxes above.
-    await test.step('18.6. D-02: categorical + boolean opinion — type-specific input contracts', async () => {
+    await test.step('18.6. categorical + boolean opinion — type-specific input contracts', async () => {
       // Categorical (qu-opin-base-4): singleChoiceCategorical → 3 RADIO choices.
       await candidateQuestionsOverviewPage.goToQuestion(/\[qu-opin-base-4-categorical\]/);
       await expect(page).toHaveURL(/\/candidate\/questions\/[^/]+/, { timeout: TIMEOUTS.slowPage });

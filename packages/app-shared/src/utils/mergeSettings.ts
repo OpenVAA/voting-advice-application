@@ -5,7 +5,7 @@ export type DeepPartial<TObject> = {
 /**
  * Deep merge two plain (non-constructed) objects with settings.
  *
- * Hoisted to `@openvaa/app-shared` in Phase 63 so both `@openvaa/dev-seed`
+ * Hoisted to `@openvaa/app-shared` (see phase 63) so both `@openvaa/dev-seed`
  * and the frontend can import a single source of truth. Note that
  * `mergeAppSettings` in `apps/frontend/src/lib/utils/settings.ts` is a
  * separate, SHALLOW merge with different semantics — do not confuse the two.

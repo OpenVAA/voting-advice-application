@@ -4,7 +4,7 @@
  *
  * ## Why this exists (see phase 135)
  *
- * Until Phase 135 the `e2e/base` seed carried exactly ONE multi-choice opinion
+ * Until a later change (see phase 135) the `e2e/base` seed carried exactly ONE multi-choice opinion
  * question (`qu-opin-base-7-multichoice`, minSelections 2 / maxSelections 3), so
  * every walk hard-coded "click the first 2 checkboxes" and cited that window in
  * a COUPLING comment. see phase 135 adds a second multi-choice question with an

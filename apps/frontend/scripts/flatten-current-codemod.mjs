@@ -2,7 +2,7 @@
 /**
  * see phase 113 — Codemod: <handle>.current → <handle> (bare reactive field)
  *
- * The INVERSE of spike-009-store-codemod.mjs. see phase 106–112 left context handles
+ * The INVERSE of the earlier store codemod (see spike 009). see phase 106–112 left context handles
  * as back-compat `{ current }` objects; see phase 113 flattens the three canonical
  * handles to bare reactive class fields, so consumer reads drop the `.current`
  * accessor. Two passes:
@@ -69,8 +69,8 @@ const HANDLE_FLATTENS = ['appSettings', 'dataRoot', 'locale'];
 
 /** Destructure-trap candidates for THIS codemod's audit pass. The three
  *  flattened names are reactive accessors post-flatten and MUST NOT be
- *  destructured from a get*Context() call. (The spike-009 source's own
- *  REACTIVE_ACCESSORS set gains the same names in Phase 113 Task 2; this
+ *  destructured from a get*Context() call. (That source's own
+ *  REACTIVE_ACCESSORS set gains the same names (see phase 113); this
  *  local set keeps the codemod self-contained for its own audit output.) */
 const FLATTENED_ACCESSORS = new Set(['appSettings', 'dataRoot', 'locale']);
 
@@ -197,7 +197,7 @@ for (const filepath of files) {
 
 // ── Output ──────────────────────────────────────────────────────────────
 
-console.log(`PHASE 113 — flatten .current codemod ${APPLY ? '(APPLIED)' : '(DRY-RUN)'}\n`);
+console.log(`flatten .current codemod ${APPLY ? '(APPLIED)' : '(DRY-RUN)'}\n`);
 
 for (const { filepath, hits, warnings } of fileResults) {
   const rel = relative(REPO_ROOT, filepath);

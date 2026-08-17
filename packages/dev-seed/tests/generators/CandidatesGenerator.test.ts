@@ -86,7 +86,7 @@ describe('CandidatesGenerator', () => {
     expect(rows[0]).not.toHaveProperty('organization');
   });
 
-  it('D-27 seam: uses defaultRandomValidEmit when ctx.answerEmitter is undefined', () => {
+  it('answerEmitter seam: uses defaultRandomValidEmit when ctx.answerEmitter is undefined', () => {
     const base = makeCtx();
     const gen = new CandidatesGenerator(
       makeCtx({
@@ -103,7 +103,7 @@ describe('CandidatesGenerator', () => {
     expect(typeof rowAny.answersByExternalId!['seed_q_001'].value).toBe('boolean');
   });
 
-  it('D-27 seam: uses ctx.answerEmitter when provided (Phase 57 path)', () => {
+  it('answerEmitter seam: uses ctx.answerEmitter when provided (latent path)', () => {
     const customEmitter: AnswerEmitter = vi.fn(() => ({
       seed_q_001: { value: 'CUSTOM_VALUE' }
     }));
@@ -129,7 +129,7 @@ describe('CandidatesGenerator', () => {
     expect(rows[0]).not.toHaveProperty('answersByExternalId');
   });
 
-  it('forwards candidate.organization into ctx.answerEmitter when refs.organizations populated (D-57 Interpretation Note)', () => {
+  it('forwards candidate.organization into ctx.answerEmitter when refs.organizations populated (Interpretation Note)', () => {
     // B1 regression test: pins the `candidateForEmit` literal to include the
     // organization ref. Prevents future narrowing that would silently break
     // see phase 57 latent emitter's findPartyIndex.
@@ -149,7 +149,7 @@ describe('CandidatesGenerator', () => {
     expect(candidateArg.organization).toEqual(ORG_REF);
   });
 
-  it('does NOT forward organization property when refs.organizations is empty (Phase 56 invariant preserved)', () => {
+  it('does NOT forward organization property when refs.organizations is empty (invariant preserved)', () => {
     // Preserves the existing `omits organization ref when refs.organizations empty`
     // shape on the emitter boundary too — not just on the emitted row.
     const spy = vi.fn(() => ({ seed_q_001: { value: true } })) as unknown as AnswerEmitter;
@@ -167,7 +167,7 @@ describe('CandidatesGenerator', () => {
     expect(candidateArg).not.toHaveProperty('organization');
   });
 
-  it('D-57-20 (a): fixed row with answersByExternalId is used verbatim — emitter NOT invoked', () => {
+  it('(a): fixed row with answersByExternalId is used verbatim — emitter NOT invoked', () => {
     // Fixed rows with pre-supplied answersByExternalId must bypass the emitter
     // entirely. bullet 1.
     const spy = vi.fn(() => ({ seed_q_001: { value: true } })) as unknown as AnswerEmitter;
@@ -200,7 +200,7 @@ describe('CandidatesGenerator', () => {
     expect(rowAny.answersByExternalId).toEqual(supplied);
   });
 
-  it('D-57-20 (b): fixed row without answersByExternalId — emitter NOT invoked; row carries no synthesized answers', () => {
+  it('(b): fixed row without answersByExternalId — emitter NOT invoked; row carries no synthesized answers', () => {
     // bullet 2: fixed rows skip the latent pipeline entirely. The
     // generator does NOT invoke the emitter for fixed rows. If a consumer wants
     // answers on a fixed row, they supply answersByExternalId (branch a above).
@@ -231,7 +231,7 @@ describe('CandidatesGenerator', () => {
     expect(rowAny.answersByExternalId).toBeUndefined();
   });
 
-  it('D-57-20 (c): synthetic (count-generated) rows always run through the latent emitter', () => {
+  it('(c): synthetic (count-generated) rows always run through the latent emitter', () => {
     // bullet 3: synthetic rows always go through ctx.answerEmitter (the
     // latent emitter in production wiring). Emitter invoked once per synthetic
     // row; each candidate arg carries `organization` (from Task 0's amendment).

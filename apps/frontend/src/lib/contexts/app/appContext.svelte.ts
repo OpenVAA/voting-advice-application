@@ -374,7 +374,7 @@ export class AppContextProvider implements AppContext {
     // guard `mergeAppSettings` always produces a new AppSettings object, which
     // Svelte 5 propagates as a state change, cascading through `entityTypes` →
     // `nominationAndQuestionStore` → `filterStore` and recreating every
-    // `FilterGroup` on every navigation. Surfaced during Phase 64 manual smoke
+    // `FilterGroup` on every navigation. Surfaced during manual smoke (see phase 64)
     // as "filter badge disappears on drawer open / portraits reload on close".
     // Svelte 4 stores absorbed this via `safe_not_equal`; raw `$state =` doesn't.
     $effect(() => {

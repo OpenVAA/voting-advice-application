@@ -20,7 +20,7 @@ import { describe, expect, it } from 'vitest';
 import { defaultPositions } from '../../src/emitters/latent/positions';
 import { makeCtx } from '../utils';
 
-describe('defaultPositions (GEN-06d / D-57-04)', () => {
+describe('defaultPositions (GEN-06d)', () => {
   it('returns Array<number> of length dims; finite coords', () => {
     const ctx = makeCtx();
     const p = defaultPositions(0, [[0, 0]], 0.15, ctx);
@@ -35,7 +35,7 @@ describe('defaultPositions (GEN-06d / D-57-04)', () => {
     p.forEach((v) => expect(Number.isFinite(v)).toBe(true));
   });
 
-  it('spread=0 returns exact centroid (D-57-04 deterministic mode)', () => {
+  it('spread=0 returns exact centroid (deterministic mode)', () => {
     const ctx = makeCtx();
     const p = defaultPositions(0, [[1, 2, 3]], 0, ctx);
     expect(p).toEqual([1, 2, 3]);
@@ -80,7 +80,7 @@ describe('defaultPositions (GEN-06d / D-57-04)', () => {
     expect(stdY).toBeLessThan(0.105);
   });
 
-  it('is isotropic — std matches across dims (D-57-04)', () => {
+  it('is isotropic — std matches across dims', () => {
     const ctx = makeCtx();
     const N = 2000;
     const xs: Array<number> = [];

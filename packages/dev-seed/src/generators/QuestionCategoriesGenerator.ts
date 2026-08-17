@@ -15,7 +15,7 @@
  * apply — see ElectionsGenerator.ts for the
  * canonical-pattern rationale.
  *
- * Default count = 2: enough category diversity for Phase 56 plumbing
+ * Default count = 2: enough category diversity for the plumbing (see phase 56)
  * (e.g. "Economy", "Environment") so QuestionsGenerator's rotation assigns
  * questions across more than one category. see phase 58 templates can override.
  */

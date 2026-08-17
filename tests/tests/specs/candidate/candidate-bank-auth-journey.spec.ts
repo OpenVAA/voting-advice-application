@@ -51,7 +51,7 @@
  * testIds, never localized strings (CLAUDE.md localization rule).
  *
  * ---------------------------------------------------------------------------
- * Running (see tests/IDURA-TEST-RUNBOOK.md §EFLOW-10b for the full procedure):
+ * Running (see tests/IDURA-TEST-RUNBOOK.md, "EFLOW-10b", for the full procedure):
  *
  *   # Terminal 1 — SvelteKit server WITH the IdP env in its OWN process:
  *   yarn db:reset

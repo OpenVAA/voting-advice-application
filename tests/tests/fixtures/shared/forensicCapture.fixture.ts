@@ -9,13 +9,13 @@
  * ## Why it exists
  *
  * The failure is a ~1-in-8 LATENCY signal, not an absence signal
- * (`deferred-items.md` § DEF-135-04: the post-failure page snapshot SHOWS the
+ * (the post-failure page snapshot SHOWS the
  * trigger). `trace: 'on'` (playwright.config.ts:133) records what the test
  * asserted; it does not record what the page was doing — a late-arriving fetch,
  * a client-side error during the Base-2 → Base-3 hop, or a failed request that
  * stalled the render are all invisible in a trace alone. see phase 138 task 1
  * established that the ORIGINAL occurrence's evidence is unrecoverable
- * (` ` § U-1) precisely because no such capture existed. This
+ * precisely because no such capture existed. This
  * fixture is the fix for the next occurrence.
  *
  * ## Surface

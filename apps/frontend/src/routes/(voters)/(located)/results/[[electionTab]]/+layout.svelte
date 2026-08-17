@@ -6,12 +6,12 @@ Renders the matching results list and, when on an entity detail child route, sho
 
 Entity cards are `<a>` links — right-click opens in new tab, normal click triggers SvelteKit client-side navigation which the layout detects and renders in a Drawer.
 
-## Architecture (see phase 62 refactor; updated by Phase 88)
+## Architecture (see phase 62 refactor; see phase 88 update)
 
 - URL is the single source of truth. Tabs, drawer visibility, and
   active entity type are pure `$derived` over `page.params.electionTab` /
-  `entityTab` / `entity` / `id`. As of the *selected* election
-  whose results are being rendered now lives in the route segment
+  `entityTab` / `entity` / `id`. The *selected* election
+  whose results are being rendered lives in the route segment
   `page.params.electionTab` (name-disjoint from the search-side
   `?electionId=…` AVAILABLE-array surface, which keeps its
   `voterContext.selectedElections` semantics — that array drives nomination

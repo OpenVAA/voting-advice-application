@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { formatSummary } from '../../src/cli/summary';
 
-describe('formatSummary (D-58-14)', () => {
+describe('formatSummary', () => {
   const sample = {
     templateName: 'default (built-in)',
     seed: 42,

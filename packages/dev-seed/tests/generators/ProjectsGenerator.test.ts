@@ -10,7 +10,7 @@ import { ProjectsGenerator } from '../../src/generators/ProjectsGenerator';
 import { makeCtx } from '../utils';
 
 describe('ProjectsGenerator', () => {
-  it('returns [] for empty fragment (pass-through per D-11)', () => {
+  it('returns [] for empty fragment (pass-through)', () => {
     const gen = new ProjectsGenerator(makeCtx());
     expect(gen.generate({})).toEqual([]);
   });

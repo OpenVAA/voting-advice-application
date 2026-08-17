@@ -91,7 +91,7 @@ function buildQuestionRows(): Array<TablesInsert<'questions'>> {
   })) as Array<TablesInsert<'questions'>>;
 }
 
-describe('Clustering integration (D-57-17 / D-57-18 / Success Criterion 5)', () => {
+describe('Clustering integration (Success Criterion 5)', () => {
   it('mean_intra_party / mean_inter_party < 0.5 at seed 42, 4×10×12', () => {
     // Construct refs FIRST, then pass them into the ctx builder. B2 fix —
     // no LHS cast on the assembled ctx.

@@ -4,12 +4,12 @@
  *
  * SINGLE function pointer, NO interface ceremony. see phase 57 supplies a
  * latent-factor emitter by assigning `ctx.answerEmitter`. The candidate generator
- * does not change between Phase 56 and Phase 57 — only `ctx.answerEmitter` gets
+ * does not change between the two emitter generations — only `ctx.answerEmitter` gets
  * populated.
  *
  * forward note: see phase 57's latent emitter can fall back to
  * `defaultRandomValidEmit` for categorical questions when no explicit loading /
- * choice mapping is supplied, mirroring this Phase 56 stub.
+ * choice mapping is supplied, mirroring this stub (see phase 56).
  *
  * shape-valid ONLY. Subdimension projection / MISSING_VALUE handling stays in
  * `@openvaa/matching`. This emitter does NOT produce correlated or clustered

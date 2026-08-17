@@ -76,7 +76,7 @@
   // microtask boundary between `$effect` and `$state` writes. This shape
   // removes the Svelte 5 SSR+hydration reactivity race that stuck the
   // previous `$effect` + promise-chain pattern at <Loading /> on full page
-  // loads. Ref: 60-RESEARCH §Pattern 1.
+  // loads.
   const validity:
     | { error: Error }
     | {
@@ -161,7 +161,7 @@
   onNavigate((navigation) => {
     submitAllEvents(); // preserve existing analytics flush
     // LANDMINE: read `navigation.to?.url` — NOT `page.url` (which is the SOURCE url during
-    // onNavigate per spike-015). `shouldAnimate` also gates reduced-motion (VT-03) +?notr=1.
+    // onNavigate (see spike 015). `shouldAnimate` also gates reduced-motion (VT-03) +?notr=1.
     if (!shouldAnimate(navigation.to?.url)) return;
     return new Promise<void>((resolve) => {
       startViewTransition(async () => {
@@ -260,7 +260,7 @@
   {/if}
 {/if}
 
-<!-- Popup service: inline renderer (runes-idiomatic; replaces the v2.1 popup-renderer wrapper per Phase 60) -->
+<!-- Popup service: inline renderer (runes-idiomatic; replaces the v2.1 popup-renderer wrapper; see phase 60) -->
 {#if popupQueue.current}
   {@const item = popupQueue.current}
   {@const Component = item.component}

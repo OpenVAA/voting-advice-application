@@ -167,20 +167,20 @@ describe('buildMinimal', () => {
     expect(c2.answersByExternalId).toEqual({});
   });
 
-  it('defaultAnswerForQuestion: number with custom_data min/max returns the numeric midpoint (D-16)', () => {
+  it('defaultAnswerForQuestion: number with custom_data min/max returns the numeric midpoint', () => {
     const entry = defaultAnswerForQuestion({ type: 'number', custom_data: { min: 0, max: 10 } }, 'e2e-num-qu-number-1');
     // Numeric midpoint (0..10 → 5), JSON number not string.
     expect(entry.value).toBe(5);
     expect(typeof entry.value).toBe('number');
   });
 
-  it('defaultAnswerForQuestion: number with no min/max returns { value: 0 } (D-16)', () => {
+  it('defaultAnswerForQuestion: number with no min/max returns { value: 0 }', () => {
     const entry = defaultAnswerForQuestion({ type: 'number' }, 'e2e-num-qu-number-2');
     expect(entry.value).toBe(0);
     expect(typeof entry.value).toBe('number');
   });
 
-  it('defaultAnswerForQuestion: multipleChoiceCategorical returns an array of choice ids respecting minSelections (D-16)', () => {
+  it('defaultAnswerForQuestion: multipleChoiceCategorical returns an array of choice ids respecting minSelections', () => {
     const entry = defaultAnswerForQuestion(
       {
         type: 'multipleChoiceCategorical',

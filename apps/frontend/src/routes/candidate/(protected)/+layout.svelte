@@ -73,7 +73,6 @@
   // between `$effect` and `$state` writes. This shape removes the Svelte 5
   // SSR+hydration reactivity race that stuck the previous `$effect` +
   // promise-chain pattern at <Loading /> on full page loads.
-  // Ref: 60-RESEARCH §Pattern 1.
   const validity = $derived.by(() => {
     if (!isValidResult(data.questionData, { allowEmpty: true })) {
       return { state: 'error' as const };
@@ -97,7 +96,7 @@
     };
   });
 
-  // 4-way enum retained per RESEARCH §Alternatives — clean readable branch shape.
+  // 4-way enum retained — clean readable branch shape.
   // `$derived` (not `$state`) — recomputes automatically when `validity` or
   // `termsAcceptedLocal` changes, so `handleSubmit` has no explicit `layoutState = 'ready'` write.
   const layoutState = $derived<'loading' | 'error' | 'terms' | 'ready'>(

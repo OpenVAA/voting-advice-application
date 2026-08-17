@@ -11,7 +11,7 @@
  * export + file-local helpers (`extractChoiceIds` style). Compile-time contract
  * assertion mirrors `_typecheckDefaultEmit` from `answers.ts:70-73`.
  *
- * ## Algorithm (RESEARCH § "Algorithmic Snippets → Farthest-point sampling")
+ * ## Algorithm (farthest-point sampling)
  *
  * 1. Build a Gaussian-sampled candidate pool — `max(10*N, 50)` vectors. Each
  *    dimension `d` drawn from `N(0, sqrt(eigenvalues[d]))` so the eigenvalue

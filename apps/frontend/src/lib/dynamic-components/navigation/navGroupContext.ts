@@ -11,7 +11,7 @@
  *   avoid the axe `aria-required-parent` violation; no per-consumer prop drilling
  *   is required.
  *
- * Typed as `unique symbol` (RESEARCH §Pattern 2) for stronger compile-time
+ * Typed as `unique symbol` for stronger compile-time
  * narrowing than the bare `Symbol()` precedent at `filterContext.svelte.ts:8`.
  * The `'nav-group'` description is debug-only metadata (visible in DevTools).
  */

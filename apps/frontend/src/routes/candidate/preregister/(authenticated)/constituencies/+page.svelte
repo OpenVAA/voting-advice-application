@@ -11,7 +11,7 @@
   ////////////////////////////////////////////////////////////////////
 
   // Stable references (functions): destructure-safe.
-  // Reactive accessors (preregistrationElections) read via candCtx.X — see CLAUDE.md §Context Destructuring Rule.
+  // Reactive accessors (preregistrationElections) read via candCtx.X — see CLAUDE.md "Context Destructuring Rule".
   const candCtx = getCandidateContext();
   const { getRoute, t } = candCtx;
 

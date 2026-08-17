@@ -21,7 +21,7 @@
  * copy of this helper and `voter-journey.spec.ts` carries a stricter variant
  * (`expectElectionOptionAndSelect`, which adds a listbox-accessible-name lock it
  * owns). Consolidating the probe copy onto this module is logged in
- * `deferred-items.md`; it was left out of Phase 136 plan 05 to keep the
+ * `deferred-items.md`; it was left out (see phase 136) to keep the
  * visual-repair blast radius on the visual chain.
  */
 

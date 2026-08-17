@@ -50,7 +50,7 @@
  *     it emits only the authoritative ref. The party-candidate
  *     relationship is already expressed via `candidates.organization_id`.
  *
- * Polymorphism variants NOT produced in Phase 56's generated path:
+ * Polymorphism variants NOT produced in the generated path (see phase 56):
  *   organization / faction / alliance nominations. The SHAPE supports them
  *   (PolymorphicRef union + `fixed[]` pass-through); users who want them
  *   supply via `fixed `. see phase 58 templates extend to generate them.
@@ -171,7 +171,7 @@ export class NominationsGenerator {
     if (refs.constituencies.length === 0) missing.push('constituencies');
     if (missing.length > 0) {
       throw new Error(
-        `[dev-seed] NominationsGenerator: cannot emit candidate nominations — ctx.refs is empty for: ${missing.join(', ')}. Ensure the pipeline runs in D-06 topo order (candidates/elections/constituencies BEFORE nominations) and that the template requests non-zero counts for these entities. Required refs must be populated before NominationsGenerator.generate() is called.`
+        `[dev-seed] NominationsGenerator: cannot emit candidate nominations — ctx.refs is empty for: ${missing.join(', ')}. Ensure the pipeline runs in topological order (candidates/elections/constituencies BEFORE nominations) and that the template requests non-zero counts for these entities. Required refs must be populated before NominationsGenerator.generate() is called.`
       );
     }
   }

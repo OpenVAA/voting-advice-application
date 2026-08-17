@@ -16,7 +16,7 @@ import { describe, expect, it } from 'vitest';
 import { defaultDimensions } from '../../src/emitters/latent/dimensions';
 import type { Template } from '../../src/template/types';
 
-describe('defaultDimensions (GEN-06a / D-57-01 / D-57-02)', () => {
+describe('defaultDimensions (GEN-06a)', () => {
   it('default is {dims:2, eigenvalues:[1, 1/3]}', () => {
     const r = defaultDimensions({} as Template);
     expect(r.dims).toBe(2);

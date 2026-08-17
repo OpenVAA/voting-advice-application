@@ -8,7 +8,7 @@
  *  1. The multi-election dataset. Seeds the DEDICATED
  *     `perm-bankauth-notloc` TEMPLATE (registry key
  *     `packages/dev-seed/src/templates/index.ts` →
- *     `permBankauthNotLocatedTemplate`) — a Phase 140 CR-01 copy of
+ *     `permBankauthNotLocatedTemplate`) — a CR-01 copy (see phase 140) of
  *     `perm-not-located-2e2cg`'s shape (2 elections × 2 disjoint constituency
  *     groups × 2 constituencies each, the only existing shape that forces
  *     BOTH the candidate-preregister election selector AND the constituency

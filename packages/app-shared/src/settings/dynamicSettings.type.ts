@@ -392,7 +392,7 @@ export type EntityDetailsContent =
  * The possible content tabs to show for parent entities (Organization, Alliance).
  * The "children" of an Organization are its CandidateNominations; the "children"
  * of an Alliance are its OrganizationNominations. Single shared opt-in keeps
- * the type surface symmetric across parent entity types (per Phase 69).
+ * the type surface symmetric across parent entity types (see phase 69).
  */
 export type ParentEntityDetailsContent =
   /**

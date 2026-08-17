@@ -39,7 +39,7 @@ function mkQ(extId: string): TablesInsert<'questions'> {
   };
 }
 
-describe('defaultLoadings (GEN-06e / D-57-06 / D-57-07)', () => {
+describe('defaultLoadings (GEN-06e)', () => {
   it('returns record keyed by external_id with length-dims vectors', () => {
     const ctx = makeCtx();
     const qs = [mkQ('seed_q_0'), mkQ('seed_q_1'), mkQ('seed_q_2')];
@@ -60,7 +60,7 @@ describe('defaultLoadings (GEN-06e / D-57-06 / D-57-07)', () => {
     expect(m).toEqual({ seed_q_0: [] });
   });
 
-  it('silently skips questions with no external_id (Phase 56 guard)', () => {
+  it('silently skips questions with no external_id (guard)', () => {
     const ctx = makeCtx();
     const qs: ReadonlyArray<TablesInsert<'questions'>> = [
       mkQ('seed_q_0'),
@@ -87,7 +87,7 @@ describe('defaultLoadings (GEN-06e / D-57-06 / D-57-07)', () => {
     expect(std).toBeLessThan(1.2);
   });
 
-  it('honors per-question template override (D-57-07)', () => {
+  it('honors per-question template override', () => {
     const ctx = makeCtx();
     const qs = [mkQ('seed_q_0'), mkQ('seed_q_1')];
     const tpl = { seed_q_0: [0.5, -0.5] };

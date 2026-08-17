@@ -74,7 +74,7 @@ describe('Idura provider', () => {
     vi.restoreAllMocks();
   });
 
-  describe('interface compliance (D-04)', () => {
+  describe('interface compliance', () => {
     it('has type property set to idura', () => {
       expect(iduraProvider.type).toBe('idura');
     });

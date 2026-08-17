@@ -16,7 +16,7 @@
  *   - "persisted across reload" is AUTOMATIC — the emulated media preference
  *     survives reloads, so no client-storage assertion is needed (or possible).
  *
- * >>> SCOPE FLAG for Phase 121: the spec scope must be corrected to
+ * >>> SCOPE FLAG (see phase 121): the spec scope must be corrected to
  * >>> drop any toggle-click and client-storage-persistence assertions and instead
  * >>> drive the theme via `setColorScheme(...)` (emulateMedia) and assert the
  * >>> rendered signal. See the SUMMARY "Deviations / Flags" section.

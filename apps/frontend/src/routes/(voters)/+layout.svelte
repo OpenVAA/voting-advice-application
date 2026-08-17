@@ -102,7 +102,7 @@
   // settings UI and the topBar reactivity is the user-visible value.
   //
   // Cell #3 disposition is now REVERT-TO-ONMOUNT (downgraded from FIX-PASS),
-  // matching the Phase 77 baseline. The DataConsentPopup branch (below) stays
+  // matching the baseline (see phase 77). The DataConsentPopup branch (below) stays
   // in the same onMount per -01 small-fix constraint (CONTEXT).
   onMount(() => {
     if (!appSettings.access.voterApp) return;

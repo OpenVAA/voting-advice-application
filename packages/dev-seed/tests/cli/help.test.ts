@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { USAGE } from '../../src/cli/help';
 
-describe('USAGE (CLI-04 / D-58-13)', () => {
+describe('USAGE (CLI-04)', () => {
   it('documents --template flag', () => {
     expect(USAGE).toMatch(/--template <name-or-path>/);
   });

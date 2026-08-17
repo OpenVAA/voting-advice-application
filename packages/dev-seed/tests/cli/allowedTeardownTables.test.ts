@@ -72,7 +72,7 @@ function parseSqlTextArray(sql: string, declaration: 'allowed_collections' | 'de
   return [...match[1].matchAll(/'([^']+)'/g)].map((m) => m[1]);
 }
 
-describe('ALLOWED_TEARDOWN_TABLES completeness (Phase 140 WR-04, IN-01)', () => {
+describe('ALLOWED_TEARDOWN_TABLES completeness (WR-04, IN-01)', () => {
   it('bulk_delete validates and deletes the same set of collections', () => {
     const sql = readFileSync(SCHEMA_MIGRATION_PATH, 'utf8');
     const allowedCollections = parseSqlTextArray(sql, 'allowed_collections');

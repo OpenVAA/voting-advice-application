@@ -11,8 +11,8 @@ import type { AnswerState } from './answerState.type';
  * context-as-class migration). The persistence + version bridge is
  * INHERITED from `localStorageState`/`PersistedStateImpl` unchanged — this
  * class does NOT own a `#version`; the `{ version, data }` payload + expiry live
- * in `persistedState.svelte.ts` (already shipped, see phase 96), so the spike-022
- * silent-spin caveat is already mitigated upstream and is NOT re-implemented here.
+ * in `persistedState.svelte.ts` (already shipped, see phase 96), so the silent-spin caveat
+ * (see spike 022) is already mitigated upstream and is NOT re-implemented here.
  *
  * The answers can be read via the reactive `answers` getter, but setting and
  * deleting them can only be done using the dedicated methods. The returned
