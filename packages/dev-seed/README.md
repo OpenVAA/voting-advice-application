@@ -40,12 +40,12 @@ never have to type `yarn workspace @openvaa/dev-seed ...` for common operations.
 
 ### `seed` (primary command)
 
-| Flag                              | Type   | Default       | Purpose                                                                       |
-| --------------------------------- | ------ | ------------- | ----------------------------------------------------------------------------- |
-| `-t`, `--template <name-or-path>` | string | `default`     | Built-in name (`default`, `e2e`) OR filesystem path (`./my.ts`, `/abs.json`)  |
-| `--seed <integer>`                | number | from template | Faker RNG seed override (determinism)                                         |
-| `--external-id-prefix <str>`      | string | `seed_`       | Override for the `external_id` prefix on every row (teardown filter contract) |
-| `-h`, `--help`                    | flag   | —             | Show help and exit                                                            |
+| Flag                              | Type   | Default       | Purpose                                                                                     |
+| --------------------------------- | ------ | ------------- | ------------------------------------------------------------------------------------------- |
+| `-t`, `--template <name-or-path>` | string | `default`     | Built-in name (`default`, `e2e/base`, `perm-*`) OR filesystem path (`./my.ts`, `/abs.json`) |
+| `--seed <integer>`                | number | from template | Faker RNG seed override (determinism)                                                       |
+| `--external-id-prefix <str>`      | string | `seed_`       | Override for the `external_id` prefix on every row (teardown filter contract)               |
+| `-h`, `--help`                    | flag   | —             | Show help and exit                                                                          |
 
 Template argument resolution (name-first, path-fallback):
 
@@ -94,12 +94,27 @@ per-centroid positions in latent space and candidates sample around their
 party's centroid. Matching / political-compass plots show visible clustering
 out of the box.
 
-### `e2e`
+### `e2e/base`
 
 Matches what Playwright specs in `tests/tests/specs/` depend on — same testIds,
 same relational wiring contracts. Single-locale
 (`generateTranslationsForAllLocales: false`) because Playwright specs generally
 test a single locale and 4× JSONB expansion is pure overhead.
+
+The invocation name is `e2e/base`, not a bare `e2e` — the bare name was retired
+when the canonical base dataset moved under `src/templates/e2e/`, and
+`--template e2e` now errors with the built-in list.
+
+### `perm-*` and `show-feedback-survey`
+
+Minimal-data settings- and topology-permutation fixtures consumed by the
+Playwright suite — 28 of the 30 built-ins. Each carries its own distinct
+`externalIdPrefix` so per-perm setup and teardown never share a prefix and
+cannot race each other in a parallel run. They are E2E fixtures rather than a
+demo dataset: seed one only when you are reproducing the spec that owns it. The
+authoritative list is the `BUILT_IN_TEMPLATES` map in
+[`src/templates/index.ts`](./src/templates/index.ts), which is also what
+`--help` points at, so this README never carries a second copy to drift.
 
 ## Authoring Custom Templates
 
@@ -274,9 +289,11 @@ Run `yarn db:start` first.
 **`Error: Cannot reach Supabase at http://127.0.0.1:54321. Is 'supabase start' running?`**
 Check `yarn db:status`. If services are down, run `yarn db:start`.
 
-**`Unknown template: 'foo'. Built-in templates: default, e2e.`**
-Either use a known built-in name or pass a filesystem path starting with
-`./`, `/`, or `../` (or a path ending in `.ts` / `.js` / `.json`).
+**`Unknown template: 'foo'. Built-in templates: default, e2e/base, perm-1e1cg1co, ...`**
+Either use a known built-in name — the message lists all 30 — or pass a
+filesystem path starting with `./`, `/`, or `../` (or a path ending in
+`.ts` / `.js` / `.json`). Note `e2e/base`: a bare `e2e` is the retired name and
+lands here.
 
 **`Template validation failed: template.candidates.count: Expected number, received string`**
 The field path tells you the offending key. Fix the type and re-run.
