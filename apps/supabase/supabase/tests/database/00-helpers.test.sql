@@ -346,16 +346,25 @@ BEGIN
   -- 260524-l1t D7: candidate_a + candidate_a2 are published=true and previously
   -- visible to anon under the legacy `anon_select_candidates USING (published =
   -- true)` policy. Migration 00002 tightens the policy to also require
-  -- `terms_of_use_accepted IS NOT NULL AND < now()`. Setting both to now()
-  -- keeps the existing anon-visible-candidate assertions in 03-anon-read.test
-  -- passing. candidate_b stays NULL — it's published=false so still invisible,
+  -- `terms_of_use_accepted IS NOT NULL AND < now()`. Both are therefore set to a
+  -- timestamp strictly in the past so the existing anon-visible-candidate
+  -- assertions in 03-anon-read.test pass.
+  --
+  -- It MUST NOT be a bare now(). pgTAP runs each file inside one transaction
+  -- (the BEGIN/ROLLBACK pattern), and now() is transaction_timestamp(): it is
+  -- frozen for the whole transaction. A row inserted with ToU = now() is then
+  -- read back under a policy asking ToU < now(), which is now() < now() = FALSE,
+  -- so candidate_a was invisible to anon and 03-anon-read tests 9 and 13 failed
+  -- deterministically. Use clock_timestamp() if a moving clock is ever wanted.
+  --
+  -- candidate_b stays NULL — it's published=false so still invisible,
   -- AND a NULL ToU value lets 10-schema-migrations test #30 continue to assert
   -- the candidate_b ToU column is NULL after a candidate_a-as-other cross-tenant
   -- UPDATE attempt.
   INSERT INTO candidates (id, project_id, auth_user_id, first_name, last_name, organization_id, published, terms_of_use_accepted) VALUES
-    (test_id('candidate_a'),  test_id('project_a'), test_user_id('candidate_a'),  'Alice', 'Alpha',   test_id('org_a'), true,  now()),
+    (test_id('candidate_a'),  test_id('project_a'), test_user_id('candidate_a'),  'Alice', 'Alpha',   test_id('org_a'), true,  now() - interval '1 day'),
     (test_id('candidate_b'),  test_id('project_b'), test_user_id('candidate_b'),  'Bob',   'Bravo',   test_id('org_b'), false, NULL),
-    (test_id('candidate_a2'), test_id('project_a'), test_user_id('candidate_a2'), 'Carol', 'Charlie', test_id('org_a'), true,  now());
+    (test_id('candidate_a2'), test_id('project_a'), test_user_id('candidate_a2'), 'Carol', 'Charlie', test_id('org_a'), true,  now() - interval '1 day');
 
   -- ===== Factions =====
   INSERT INTO factions (id, project_id, name, published) VALUES
