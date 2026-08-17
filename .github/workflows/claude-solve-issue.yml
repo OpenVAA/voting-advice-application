@@ -52,7 +52,7 @@ jobs:
             6. Create a pull request with your solution using `gh pr create`
 
             Important:
-            - Follow the code review checklist in docs/code-review-checklist.md
+            - Follow the code review checklist in .agents/code-review-checklist.md
             - Write clear commit messages
             - Include tests if applicable
             - Reference the issue in your PR description with "Fixes #${{ inputs.issue_number }}"
