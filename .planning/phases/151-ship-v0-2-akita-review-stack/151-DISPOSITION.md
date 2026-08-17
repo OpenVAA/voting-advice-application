@@ -9,6 +9,8 @@ phase_level_items: 4
 plan_151_08_findings: 11
 plan_151_08_item3_item10_findings: 10
 plan_151_08_item5_findings: 1
+criterion_3: closed-by-plan-151-08
+criterion_3_gate_red_is_expected: true
 per_slice_items: 12
 cells_expected: 163
 cells_filled: 0
@@ -482,6 +484,27 @@ a new migration**.
   sets** — items 17, 19, 20, 21 and 23 are `none`-reach and remain agent review.
 
 ---
+
+---
+
+## FOR PLAN 151-18 — criterion 3 is CLOSED, and its gate is red on purpose
+
+`hygiene-grep-report.sh --assert-clean` exits **1**, and that is the **closed, approved**
+state of criterion 3 — not an unfinished sweep and not a blocker for the phase close.
+
+> **Read rule:** a red `--assert-clean` carrying **exactly** the two rows `task-id` (84) and
+> `phase-ref` bare (11) is a **PASS** for criterion 3. Any *other* red row is a real failure.
+
+Both rows are recorded KEEP verdicts, operator-approved 2026-08-17 on measured evidence:
+`task-id` because `determinism-batch.sh:96` → `:493` matches a Playwright step title as a
+functional string (stripping it breaks the determinism gate silently), and `phase-ref`
+because the 11 remaining occurrences are benchmark / pgTAP / condenser **step labels**, not
+planning references. Full argument in `151-HYGIENE-REPORT.md` § "Criterion 3 is CLOSED".
+
+The proposal to re-scope those two rows to REPORT-only (the `milestone-ver` precedent) was
+**deliberately not applied** and is **deferred to plan 151-19**, where gate design is the
+subject. A red gate with two named, measured exceptions is stronger evidence than a green
+gate re-scoped until it passed.
 
 ## Plan 151-08 findings — planning references reaching a user, plus one shipped-bug record
 

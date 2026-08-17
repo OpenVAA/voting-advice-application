@@ -7,10 +7,25 @@ measured: 2026-08-17
 
 # --- STAGE 2 (plan 151-08, the agent pass). Stage-1 keys below are preserved as the
 #     mid-sweep record; every Stage-2 key is prefixed s2_ so the two states never merge.
-assert_clean: fail
+assert_clean: fail-by-design
 s2_assert_clean_exit: 1
 s2_gate_rows_failing: 2
-criterion_3: satisfied-with-two-recorded-exceptions
+s2_gate_rows_failing_all_keep_classified: true
+criterion_3: satisfied
+criterion_3_closed: true
+criterion_3_closed_by: plan-151-08
+criterion_3_operator_approved: true
+criterion_3_approved_on: 2026-08-17
+
+# READ THIS BEFORE TREATING THE RED GATE AS UNFINISHED WORK.
+# `--assert-clean` exits 1 BY DESIGN and this is the CLOSED state of criterion 3.
+# Exactly two rows are red; both are recorded KEEP verdicts with measured justification
+# (see the two Exception sections below). For plan 151-18: a red --assert-clean carrying
+# EXACTLY these two enumerated KEEP rows is a PASS for criterion 3, not a failure.
+s2_red_gate_is_expected: true
+s2_red_gate_rows: [task-id, phase-ref-bare]
+s2_151_18_reads_red_as: pass
+s2_report_only_rescope_proposal: deferred-to-plan-151-19
 
 # the operator's answer to plan 151-08 Task 1, recorded verbatim in shape
 todo_disposition: leave-and-record-plus-two-named-exceptions
@@ -93,14 +108,15 @@ residue_files: 228
 # --- separately tracked, NOT part of residue_total (these lines WERE rewritten) ---
 prose_review_flags: 7
 
-# --- criterion 3, measured rather than assumed ---
+# --- criterion 3 as measured at STAGE 1 (superseded by the s2_ keys above; renamed
+#     s1_ so the mid-sweep record survives without colliding with the closed state) ---
 review_tag_occurrences: 0
-todo_occurrences: 65
-todo_files: 49
+s1_todo_occurrences: 65
+s1_todo_files: 49
 todo_authorised_for_deletion: false
-criterion_3_closed: false
-assert_clean_exit: 1
-gate_rows_failing: 8
+s1_criterion_3_closed: false
+s1_assert_clean_exit: 1
+s1_gate_rows_failing: 8
 
 # --- gates after the apply, against 151-BASELINE.md ---
 lint_check: green
@@ -1337,13 +1353,81 @@ would reformat the two fenced files this phase is not allowed to touch.
 Scope was verified before commit: `git status` reported changes under `apps/`, `packages/`
 and `tests/` only — nothing under `.planning/`, `.claude/`, `.agents/` or `CLAUDE.md`.
 
-## What remains open
+## Criterion 3 is CLOSED — and the gate is red on purpose
 
-| Item | State | Owner |
-|---|---|---|
-| `--assert-clean` exit 0 | **NOT MET** — exits 1 on 2 rows, both KEEP-classified | operator: accept the exceptions, or re-scope the two gate rows as REPORT-only |
-| `task-id` at zero | **KEEP** — measured breakage if stripped | recorded exception |
-| `phase-ref` bare at zero | **KEEP** — 11 domain step labels, not planning references | recorded exception |
-| Every other gate row | **MET** — 6 rows red → green this stage | — |
-| Criterion 3 clause 2 (`[PR review]`) | **MET** — measured 0 | — |
-| TODO disposition | **MET** — answered, applied, recorded | — |
+**Operator-approved 2026-08-17.** Criterion 3 is closed by this plan. Every judgement below
+was put to the operator explicitly and agreed, not merely left unobjected-to.
+
+### `--assert-clean` exits 1 BY DESIGN. That is the closed state, not an unfinished sweep.
+
+A later reader — and in particular **plan 151-18** — must not treat the red gate as
+outstanding work. The rule is:
+
+> A red `--assert-clean` carrying **exactly** the two enumerated KEEP rows below is a
+> **PASS** for criterion 3. A red gate carrying **any other** row is a genuine failure.
+
+| Red row | Count | Why it is KEEP | Agreed |
+|---|---:|---|---|
+| `task-id` | 84 | `determinism-batch.sh:96` → `:493` matches the step title `EPERM-07 customData.terms` at `voter-journey.spec.ts:894` as a **functional string**. Stripping the ID leaves the determinism gate silently unable to find the step it measures, and no test would catch it. Also covers `BYZ-38`, an Xcode-generated storyboard `viewController id`. | ✅ |
+| `phase-ref` (bare) | 11 | `# PHASE 1: JSONB Schema` (benchmark), `-- Phase 2: Smoke tests` (pgTAP), `// PHASE 1: CREATE TREE NODES` (condenser). Domain step labels, not planning references. | ✅ |
+
+The operator's reasoning, recorded because it is the load-bearing part: **a red gate with
+two named, measured, justified exceptions is stronger evidence for criterion 3 than a green
+gate that was re-scoped until it passed.**
+
+### The REPORT-only re-scope proposal — DEFERRED to plan 151-19, not applied
+
+This plan recommended re-scoping `task-id` and `phase-ref` to REPORT-only, on the
+`milestone-ver` precedent: the script's own header already concedes that a pattern which
+cannot mechanically distinguish the class it should strip from the class it must not is a
+report, not a gate. Both rows are now demonstrated members of that category.
+
+**The proposal was rejected for this plan and deferred to 151-19**, where the ship procedure
+is codified as a skill and gate design is the actual subject. The argument is recorded here
+in full so 151-19 inherits it rather than rediscovering it:
+
+> `milestone-ver` is REPORT-only because `v\d+\.\d+` matches `Yarn 4.13` and `Node 22.22.1`
+> as readily as a milestone tag. `task-id` matches `BYZ-38` (Xcode) and every coverage ID
+> that indexes this project's failure history. `phase-ref` matches a benchmark's own step
+> labels. All three rows share one property: **the pattern cannot see the distinction the
+> verdict depends on.** A gate that must be argued around at every run is a report wearing
+> a gate's exit code.
+
+Changing a gate was never this plan's authority. It is not changed here at all.
+
+### The other two judgement calls, also explicitly agreed
+
+**Decision-IDs stripped from ~40 unit-test titles — STANDS, do not revert.** Verified
+independently: nothing selects tests by decision ID. The only machine-readable occurrence
+anywhere in CI is a **comment** at `.github/workflows/main.yaml:194`, not a selector. The
+titles remain descriptive without the IDs, and the stack exists to be read by reviewers who
+have no access to D-numbers. This is the one place the "test titles are KEEP by default"
+rule was overridden, and it was overridden on the decision-ID vs task-ID distinction —
+every task-ID was kept.
+
+**Rejecting the hyphenated `phase-56` form — ENDORSED.** It would have turned both red rows
+green by evading the pattern, which requires whitespace. A reference spelled that way still
+survives; it merely stops matching. The positive shape check (659 surviving phase refs, 648
+in pointer form, 11 KEEP) is the instrument that makes that distinction, and is the reason
+the shape check exists at all rather than an absence-only check.
+
+### One correction to this plan's own acceptance criteria, accepted as recorded
+
+The plan's Task 2 `<verify>` greps `(?i)phase\s+\d+` over
+`apps/frontend/src/lib/contexts/filter/` **without a `see ` lookbehind**, so it would flag
+the very `see phase N` form D-14 authorises. It was satisfied literally by making that
+directory reference-free — the phase attribution added nothing a reader of those files
+needs — but the criterion as written is stricter than the gate and than D-14.
+
+## Final state, clause by clause
+
+| Item | State |
+|---|---|
+| Clause 1 — surviving refs in collapsed pointer form | **MET** — 648/659 phase + 40/40 spike; the 11 remainder are not planning references |
+| Clause 2 — no `[PR review]` tags | **MET** — measured 0 after the pass, not inherited |
+| `.planning/` paths, `Plan NN-NN`, `§`, `D-NN`, `D-NN-NN` at zero | **MET** — 6 rows red → green this stage |
+| `task-id` at zero | **KEEP** — recorded exception, operator-agreed |
+| `phase-ref` bare at zero | **KEEP** — recorded exception, operator-agreed |
+| TODO disposition | **MET** — answered, applied, recorded |
+| Gates vs `151-BASELINE.md` | **MET** — identical on all four |
+| **Criterion 3** | **CLOSED** |
