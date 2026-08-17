@@ -244,8 +244,8 @@ async function walkUntilQuestionsIntro(page: Page): Promise<void> {
   //    `e2e/base` dataset keeps `questionsIntro.show=true` (base.ts:196), so the
   //    start button DOES paint there and the `.or()` resolves on it first —
   //    making this change zero-regression for the base journey + a11y-smoke.
-  //    This is the trace-grounded root cause from (the
-  //    119-08 "reactive churn / TOCTOU detach" verdict is REFUTED — the failure
+  //    This is the trace-grounded root cause (the earlier
+  //    "reactive churn / TOCTOU detach" verdict is REFUTED — the failure
   //    is deterministic and settings-driven, and occurs here at line ~184, never
   //    reaching the suspected `answerAndAdvanceToResults` churn site at line ~209
   //    which stays untouched).
@@ -548,8 +548,8 @@ async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, ans
  * boundary proof).
  *
  * Never uses `fill()` — that bypasses the slider's persist-on-release logic
- * (129). Does NOT click Next: number inputs never auto-advance
- * (129-06); the caller clicks Next explicitly. Takes only the target value +
+ * entirely. Does NOT click Next: number inputs never auto-advance, so
+ * the caller clicks Next explicitly. Takes only the target value +
  * the scale `min` (default 0) — no full question object required.
  */
 async function answerNumberScale(page: Page, value: number, min = 0): Promise<void> {

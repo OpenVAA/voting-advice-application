@@ -71,7 +71,7 @@ export const testIds = {
       // NB. the password confirmation input's live id is the component-hardcoded
       // `candidate.passwordSetter.confirm` (PasswordSetter.svelte:80) — the former
       // settings-scoped `confirmPassword` entry was dead (its prop fell into <form>
-      // restProps and never rendered a usable id) and was removed (128-02).
+      // restProps and never rendered a usable id) and was removed.
       updateButton: 'settings-update-password'
     },
     preview: {
@@ -95,7 +95,7 @@ export const testIds = {
     // post-auth election -> constituency -> email/ToU selection steps. Raw
     // strings verified in apps/frontend/src/routes/candidate/preregister/
     // (+page.svelte:140,163,167; (authenticated)/{elections,constituencies,email}/+page.svelte).
-    // Driven by the EFLOW-10b candidate-preregister page-object (122-04/122-05).
+    // Driven by the EFLOW-10b candidate-preregister page-object.
     preregister: {
       start: 'preregister-start',
       continue: 'preregister-continue',

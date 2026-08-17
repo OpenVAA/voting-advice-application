@@ -1,5 +1,5 @@
 /**
- * Test constants for the EFLOW-10b bank-auth journey spec (122-05) + its
+ * Test constants for the EFLOW-10b bank-auth journey spec + its
  * setup/teardown pair.
  *
  * Single source of truth for the journey's recipient email — the address the

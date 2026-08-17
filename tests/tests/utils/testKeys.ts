@@ -36,7 +36,7 @@ export const encPubJwk: JWK = {
 /**
  * Private encryption JWK (RSA-OAEP-256). Used by the served Edge Function to
  * decrypt the JWE. The Edge Function reads `IDENTITY_PROVIDER_DECRYPTION_JWKS`
- * as a JSON `[{...}]` array — see `decryptionJwks` below (122-02 consumes this).
+ * as a JSON `[{...}]` array — see `decryptionJwks` below.
  */
 export const encPrivJwk: JWK = {
   kty: 'RSA',
@@ -81,8 +81,9 @@ export const sigPrivJwk: JWK = {
 
 /**
  * The value the served Edge Function reads from `IDENTITY_PROVIDER_DECRYPTION_JWKS`
- * (a JSON `[{...}]` array of private decryption JWKs). 122-02 stringifies this into
- * the Edge Function env so the keys-configured create path runs deterministically.
+ * (a JSON `[{...}]` array of private decryption JWKs). The bank-auth setup
+ * stringifies this into the Edge Function env so the keys-configured create
+ * path runs deterministically.
  */
 export const decryptionJwks: ReadonlyArray<JWK> = [encPrivJwk];
 

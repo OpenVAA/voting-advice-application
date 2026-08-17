@@ -20,8 +20,8 @@
  *   3. SURVEY popup coordination on /results: same 4 criteria. The popup queue is
  *      FIFO and shows ONE popup at a time (popupState.svelte.ts:
  *      `#current = $derived(#queue[0])`); with both countdowns active the feedback
- *      popup leads, so the survey only surfaces once feedback is dismissed (Phase
- *      120-01 trace-confirmed; mirrors popupNotice.probe.spec.ts).
+ *      popup leads, so the survey only surfaces once feedback is dismissed
+ *      (trace-confirmed; mirrors popupNotice.probe.spec.ts).
  *   4. survey.showIn SURFACE AUDIT — the survey banner mounts ONLY on the surfaces
  *      named in `survey.showIn`. Re-seed showIn per net-new surface (frontpage /
  *      entityDetails — both render SurveyBanner.svelte's `survey-banner` testid)
@@ -155,7 +155,7 @@ test.describe('perm-show-feedback-survey (EPERM-09)', () => {
     // results feedback popup (results.showFeedbackPopup is still seeded) surfaces
     // on /results and its modal scrim intercepts the card click — dismiss it
     // before opening the entity card (mirrors the perm-interactive-info
-    // dismiss-before-nav pattern, 120-05).
+    // dismiss-before-nav pattern).
     const popups = createPopupNotice(page);
     await walkUntilQuestionsIntro(page);
     await answerAndAdvanceToResults(page, 'max');

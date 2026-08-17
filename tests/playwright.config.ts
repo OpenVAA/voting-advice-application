@@ -449,8 +449,8 @@ export default defineConfig({
     // loudly instead of being silently preregistered into. Proven by trace —
     // `check` fires on the `[EL1]` option.
     //
-    // The setup/teardown FILES these entries point at land in 122-04; the journey
-    // SPEC matched by the `bank-auth-journey` project lands in 122-05.
+    // The setup/teardown FILES these entries point at, and the journey SPEC
+    // matched by the `bank-auth-journey` project, all live in this tree.
     //
     // The mock OIDC issuer is spawned via the `webServer` entry below (also
     // PLAYWRIGHT_BANK_AUTH-gated). It binds 127.0.0.1-only and serves over HTTPS
@@ -691,7 +691,7 @@ export default defineConfig({
     // not named here matches NO project and is reachable from NO command.
     //
     // It was violated between two phases (see phase 119, see phase 136). Four base/read-only
-    // probes (entityFilters/navMenu/theme/trackingIntercept), added in 119-08 as
+    // probes (entityFilters/navMenu/theme/trackingIntercept), added as
     // fixture-development scaffolding, were left out of this pattern — so their
     // 6 tests ran from nowhere, including from `yarn test:e2e:probes`, while
     // still sitting in `specs/` implying coverage (fake-guard sweep 2026-08-11,

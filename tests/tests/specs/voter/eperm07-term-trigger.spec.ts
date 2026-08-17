@@ -176,8 +176,8 @@ type ForensicState = {
  *
  * The `capture` callback the action receives records the settle's baseline
  * (URL + landmark text) at the LAST instant before the navigating click, which is
- * the only instant at which the DOM is known to be on the page being left (Phase
- * 138 review WR-01). The mechanism is on `expectClientNavigation`; this wrapper
+ * the only instant at which the DOM is known to be on the page being left.
+ * The mechanism is on `expectClientNavigation`; this wrapper
  * exists only to keep the spec's own naming, and delegating means the instrument
  * cannot drift from the production walk.
  */
