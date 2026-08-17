@@ -1,0 +1,37 @@
+{
+  "candidateApp.logoutModal": {
+    "continue": "Jätka andmete sisestamist",
+    "ingress": "Kas olete kindel, et soovite välja logida? Teid logitakse automaatselt välja {timeLeft} sekundi pärast.",
+    "itemsLeft": [
+      {
+        "declarations": [
+          "input infoQuestionsLeft",
+          "local infoQuestionsLeftPlural = infoQuestionsLeft: plural",
+          "input opinionQuestionsLeft",
+          "local opinionQuestionsLeftPlural = opinionQuestionsLeft: plural"
+        ],
+        "selectors": ["infoQuestionsLeftPlural", "opinionQuestionsLeftPlural"],
+        "match": {
+          "infoQuestionsLeftPlural=one opinionQuestionsLeftPlural=one": "Täita on veel üks põhiandme ja üks arvamus.",
+          "infoQuestionsLeftPlural=one opinionQuestionsLeftPlural=other": "Täita on veel üks põhiandme ja {opinionQuestionsLeft} arvamust.",
+          "infoQuestionsLeftPlural=other opinionQuestionsLeftPlural=one": "Täita on veel {infoQuestionsLeft} põhiandmet ja üks arvamus.",
+          "infoQuestionsLeftPlural=other opinionQuestionsLeftPlural=other": "Täita on veel {infoQuestionsLeft} põhiandmet ja {opinionQuestionsLeft} arvamust."
+        }
+      }
+    ],
+    "questionsLeft": [
+      {
+        "declarations": [
+          "input opinionQuestionsLeft",
+          "local opinionQuestionsLeftPlural = opinionQuestionsLeft: plural"
+        ],
+        "selectors": ["opinionQuestionsLeftPlural"],
+        "match": {
+          "opinionQuestionsLeftPlural=one": "Täita on veel üks arvamus.",
+          "opinionQuestionsLeftPlural=other": "Täita on veel {opinionQuestionsLeft} arvamust."
+        }
+      }
+    ],
+    "title": "Osa teie andmetest on veel puudu"
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "dynamic": {
+    "about": {
+      "heroEmoji": "⚙️"
+    },
+    "appName": "Wal-Kompass",
+    "candidateAppBasicInfo": {
+      "immutableData": {
+        "title": "Perséinlech Donnéeën",
+        "ingress": "Ären Numm an nach aner Informatiounen goufen virausgefëllt oder ginn nogereecht, wann d’Kandidatelëschten confirméiert sinn. Dir kënnt dës Donnéeën net selwer änneren; bei Feeler kontaktéiert wgl. de Kandidat*inne‑Support.",
+        "emptyPlaceholder": "Op Basis vun der Kandidatelëscht"
+      }
+    },
+    "candidateAppName": "Wal-Kompass fir Kandidat*inne",
+    "candidateAppNotAccessible": {
+      "content": "De Wal-Kompass fir Kandidat*inne ass nach net verëffentlecht. Kommt wgl. op dës Adress zréck, wann en disponibel ass.",
+      "title": "Entschëllegt, de Wal-Kompass fir Kandidat*inne ass nach net disponibel"
+    },
+    "candidateAppPrivacy": {
+      "heroEmoji": "🛡️",
+      "consent": {
+        "acceptLabel": "Ech sinn domat averstanen, datt meng Donnéeë no de Notzungsbedingunge gespäichert a benotzt ginn.",
+        "heroEmoji": "🖋️",
+        "ingress": "Dir musst d’Notzungsbedingunge akzeptéieren, éier Dir mat Ärem Profil weidermacht. Liest se wgl. suergfälteg a setzt d’Häckche hei drënner.",
+        "title": "Notzungsbedingungen"
+      },
+      "registryStatement": {
+        "content": "<h3>1. Dateschutzverantwortlechen</h3><p>DATA_CONTROLLER</p><h3>2. Kontaktpersoun fir de Register</h3><p>DATA_CONTACT_PERSON, <a href=\"mailto:first.last@openvaa.org\">first.last@openvaa.org</a>.</p><h3>3. Numm vum Register</h3><p>{appName} – Informatiounssystem fir Kandidat*inne.</p><h3>4. Rechtsgrond an Zweck vun der Veraarbechtung vu perséinlechen Donnéeën</h3><p>De Rechtsgrond no der EU‑Dateschutz‑Veruerdnung (DSGVO) ass d’Zoustëmmung vun der betraffener Persoun. De Zweck ass d’Benotzung an engem Wal‑Kompass.</p><h3>5. Inhalt vum Register</h3><p>Am Register ginn dës Donnéeë gespäichert: Numm, politesche Hannergrond, E‑Mail‑Adress, Gebuertsdatum, Websäit‑URLen, Social‑Media‑URLen, aner fräiwëlleg Äntwerten op Froen aus dem Wal‑Kompass, souwéi Informatiounen aus ëffentleche Walregisteren.</p><p>DATA_STORAGE_TERM_EG_5_YRS</p><p>Fir d’Funktiounéiere vum Service noutwendeg Cookië ginn op Basis vum berechtegte Interessi veraarbecht, z. B. fir d'Sécherheet ze garantéieren.</p><h3>6. Reegelméisseg Quelle vun den Donnéeën</h3><p>D’Donnéeë kommen iwwer e Formulaire vun de Kandidat*inne, bei der Bank‑Authentifikatioun an aus ëffentleche Walregisteren.</p><h3>7. Reegelméisseg Weiderginn vun Donnéeën a Transfere baussent der EU oder dem EWR</h3><p>D’Donnéeë ginn net reegelméisseg un Drëttpersoune weiderginn; nom Enn vun der Publikatioun vum Wal‑Kompass kënne se fir Fuerschung an d’Weiderentwécklung vum Wal‑Kompass benotzt ginn.</p><h3>8. Grondsätz vum Dateschutz</h3><p>De Register gëtt mat Sorgfalt veraarbecht, an d’Donnéeë si géint Onbefugte geschützt. Beim Späichere vun Donnéeën op Internet‑Servere ginn adequat physesch a digital Sécherheetsmoossnamen ëmgesat. De Dateschutzverantwortlechen stellt sécher, datt gespäichert Donnéeën, Server‑Accèsrechter an aner sensibel Informatioune vertraulech behandelt ginn an nëmme vu Mataarbechter gesi ginn, deenen hir Aufgab et verlaangt.</p><h3>9. Recht op Informatioun an op Berichtung</h3><p>All Persoun am Register huet d’Recht, hir gespäichert Donnéeën anzekucken an d’Berichtegung vu feeler- oder onvollstännegen Donnéeën ze verlaangen. Dofir ass eng Ufro per E‑Mail un de Verantwørte schécken. Falls noutwendeg, kann eng Identitéitskontroll gefrot ginn. D’Äntwert geschitt bannent de Frëschte vum DSGVO.</p><h3>10. Aner Rechter am Zesummenhang mat der Veraarbechtung</h3><p>Persounen am Register hunn d’Recht, d’Läschung hirer Donnéeën ze verlaangen (‚Recht op Vergiessen‘). Si hunn och aner Rechter no DSGVO, z. B. d’Aschränkung vun der Veraarbechtung an e puer Situatiounen. D’Ufroe ginn per E‑Mail un de Verantwørte geschéckt; eng Identitéitskontroll ka verlaangt ginn. Geäntwert gëtt bannent de gesetzleche Frëschten.</p>",
+        "title": "Register‑ a Dateschutz‑Erklärung"
+      },
+      "otherTermsOfUse": {
+        "content": "",
+        "title": "Aner Notzungsbedéngungen"
+      }
+    },
+    "constituencies": {
+      "heroEmoji": "📍",
+      "ingress": {
+        "multipleElections": "D’Kandidat*inne an d’Parteien si no Walbezierker agedeelt. Wielt fir all Wahl e Walbezierk.",
+        "singleElection": "D’Kandidat*inne an d’Parteien si no Walbezierker agedeelt. Dir kënnt nëmme Leit aus Ärem Walbezierk wielen.",
+        "singleGroup": "D’Kandidat*inne an d’Parteien si no Walbezierker agedeelt. Wielt hei drënner e Walbezierk."
+      }
+    },
+    "elections": {
+      "heroEmoji": "🗳️",
+      "ingress": {
+        "multipleElections": "Wielt d’Wahlen, fir déi Dir Kandidat*inne oder Parteien fanne wëllt.",
+        "singleElection": "An Ärem ausgewielten Walbezierk fënnt just eng eenzeg Wahl statt."
+      }
+    },
+    "error": {
+      "heroEmoji": "🙊"
+    },
+    "frontPage": {
+      "ingress": "Mat dëser Applikatioun kënnt Dir lëtzebuergesch  Parteien no hire politesche Positiounen vergläichen. ",
+      "startButton": "Fannt Parteien déi Är Meenungen deelen!"
+    },
+    "info": {
+      "content": "Liest méi iwwer d’Wahlen hei drënner.",
+      "dateInfo": [
+        {
+          "declarations": [
+            "input electionDate",
+            "local formattedElectionDate = electionDate: datetime year=numeric month=2-digit day=2-digit"
+          ],
+          "match": {
+            "formattedElectionDate=*": "Den Waldatum ass {formattedElectionDate}."
+          }
+        }
+      ],
+      "heroEmoji": "🗳️"
+    },
+    "intro": {
+      "continue": "Weider",
+      "heroEmoji": "🚀",
+      "ingress": "Dës App hëlleft Iech déi Parteien ze fannen, déi am beschten Äre politesche Virléiften entspriechen. ",
+      "list": {
+        "constituencies": "Äre Walbezierk auswielen",
+        "details": "Kuckt Iech méi detailléiert Resultater un",
+        "elections": "Eng Wahl auswielen",
+        "opinions": "Gitt Är Meenung zu 20 Themen an",
+        "results": "Entdeckt déi Parteien, déi am beschte mat Iech iwwereneestëmmen Parteien gesinn"
+      },
+      "title": "Loosst eis ufänken!"
+    },
+    "maintenance": {
+      "content": "<p>Et deet eis leed, de Wal‑Kompass ass wéinst Ënnerhalt momentan net disponibel. E soll geschwënn erëm lafen; probéiert et wgl. spéider nach eng Kéier.</p><p>Maacht Iech keng Suergen, falls Dir grad amgaang war: Dir kënnt dono do weidermachen, wou Dir opgehalen hutt.</p>",
+      "heroEmoji": "🛠️"
+    },
+    "nominations": {
+      "title": "All registréiert Kandidat*inne",
+      "content": "Op dëser Säit fannt Dir all d’Kandidat*inne, déi de Wal‑Kompass ausgefëllt hunn.",
+      "heroEmoji": "🔍"
+    },
+    "privacy": {
+      "content": "Hei ënnen ass d’Privatsphär an d’Datensammele vun der Applikatioun erkläert.",
+      "dataConsentIntro": {
+        "popup": "Dierfe mir Är Donnéeën komplett anonym fir Fuerschung an d’Verbesserung vun der Applikatioun sammelen? Mir benotze keng Cookien, an d’Donnéeë kënnen net mat Iech verbonne ginn."
+      },
+      "heroEmoji": "🛡️"
+    },
+    "questions": {
+      "heroEmoji": "💬"
+    },
+    "results": {
+      "heroEmoji": "🎊",
+      "ingress": {
+        "browse": "Hei sinn déi Kandidat*inne an Parteien, déi bei dëse Wahlen ustinn, nogeuerdent no Wahlsymbol oder Numm. Mat de Filtere kënnt Dir d’Lëscht andämmen.",
+        "results": "Hei sinn Är Resultater mat lëtzebuergesche politesche Parteien. Déi bescht Resultater erschéngen als éischt. Klickt op den Numm vun der Partei fir méi detailléiert Vergläicher an fir Zougang zu de Kommentarer vun de politesche Parteien zu all Fro ze kréien. "
+      },
+      "multipleElections": "Wielt fir d’éischt hei drënner, vun wéi enger Wahl Dir Kandidat*inne an Parteien wëllt gesinn, a wielt duerno ob Kandidat*inne oder Parteien."
+    },
+    "statistics": {
+      "heroEmoji": "🧮"
+    },
+    "success": {
+      "heroEmoji": "🎉"
+    },
+    "survey": {
+      "button": "Un der Benotzer‑Ëmfro deelhuelen",
+      "info": "Wëllt Dir hëllefen, Wal‑Kompassen ze verbesseren? Maacht d’Ëmfro an engem neie Fënster op a fëllt se elo oder zu engem passende Moment aus.",
+      "popupInfo": "D’Ëmfro geet an engem neie Fënster op. Dir kënnt se direkt oder zu engem passende Moment ausfëllen.",
+      "popupTitle": "Wëllt Dir hëllefen, Wal‑Kompassen ze verbesseren?",
+      "thanks": "Merci fir d’Ëmfro ausfëllen!",
+      "title": "Un der Benotzer‑Ëmfro deelhuelen"
+    },
+    "voterAppNotAccessible": {
+      "content": "De Wal‑Kompass ass nach net verëffentlecht. Kommt wgl. op dës Adress zréck, wann en disponibel ass.",
+      "title": "Entschëllegt, de Wal‑Kompass ass nach net verëffentlecht"
+    }
+  }
+}
