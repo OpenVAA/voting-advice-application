@@ -64,6 +64,16 @@
  *  (f) ALPHABETIC SECTION ANCHORS. `§Context Destructuring Rule`, `§Pitfall 7` — a titled
  *      anchor has no mechanical end boundary, so deleting `§`+token mangles the prose that
  *      follows. Numeric-leading anchors DO have one and are rule 2. The rest is residue.
+ *  (h) ATTRIBUTIVE REFERENCES. D-14's collapsed form reads correctly in CITATION
+ *      position (`see phase 61.`) and incorrectly in ATTRIBUTIVE position: `Mirrors the
+ *      Phase 64 fix` would become `Mirrors the see phase 64 fix`, and `went bare in Phase
+ *      113` would become `went bare in see phase 113`. Measured, that is 113 of 704 phase
+ *      references and 5 of 41 spike references -- 16% of the collapse surface. Rewriting
+ *      them mechanically would replace one kind of noise with a more embarrassing kind, so
+ *      a reference immediately preceded by an article or preposition is REPORTED, not
+ *      collapsed. Rewording them needs a sentence, which is what the agent pass is for.
+ *      Consequence, stated plainly: the `phase-ref` / `spike-ref` gate rows are still red
+ *      after this codemod runs, and only plan 151-08 can turn them green.
  *  (g) AMBIGUOUS PHASE / SPIKE WORDS. `# PHASE 1: JSONB Schema` (a benchmark script's own
  *      stage marker) and `// PHASE 2: PREPARE LLM INPUTS` (an algorithm stage) are not
  *      planning citations, and `spike-009-store-codemod.mjs` is a filename, not a spike
@@ -262,7 +272,8 @@ const RESIDUE_REASONS = [
   'milestone-version',
   'todo-class',
   'alphabetic-section-anchor',
-  'ambiguous-reference'
+  'ambiguous-reference',
+  'attributive-reference'
 ];
 
 /**
@@ -280,6 +291,21 @@ function isAmbiguousPhase(matchText, line, endIdx) {
   if (/\bPHASES?\s/.test(matchText)) return true;
   const n = Number(/(\d+)/.exec(matchText)[1]);
   return n <= 4;
+}
+
+/**
+ * Exclusion (h). An article or preposition immediately before the reference means the
+ * reference is being used as a NAME for something ("the Phase 64 fix", "in Phase 113"),
+ * not as a pointer to go and read. Inserting `see` there is ungrammatical, so the match is
+ * reported instead of rewritten. An already-collapsed `see phase N` is exempt: its `see`
+ * is consumed by the pattern, so the word before it is not the reference's determiner.
+ */
+const ATTRIBUTIVE_RE =
+  /\b(?:the|a|an|in|at|by|per|of|to|for|with|from|during|between|within|through|since|until|this|that|these|those|and|or)\s*$/i;
+
+function isAttributive(matchText, line, startIdx) {
+  if (/^see\b/i.test(matchText)) return false;
+  return ATTRIBUTIVE_RE.test(line.slice(0, startIdx));
 }
 
 /** Exclusion (g). `spike-009-store-codemod.mjs` is a filename; `Spikes 020-023` is a range. */
@@ -419,7 +445,7 @@ function inSpans(idx, spans) {
 // Punctuation that only existed to JOIN two things, at least one of which has just been
 // deleted. Orphaned separators are removed; anything outside a sentinel's immediate
 // neighbourhood is never examined, so a legitimate `(a/b)` elsewhere on the line survives.
-const SEP = '[\\s,;/|\u00b7\u2022\u2014\u2013-]';
+const SEP = '[\\s,;/|+&~\u00b7\u2022\u2014\u2013-]';
 const NUL = '\\u0000';
 
 function repair(text, guardEnd) {
@@ -453,6 +479,12 @@ function repair(text, guardEnd) {
   s = s.replace(new RegExp('([([{])' + SEP + '*' + NUL + SEP + '*[,;:]?[ \\t]*', 'g'), '$1');
   // 4. Same against a closing bracket.
   s = s.replace(new RegExp(SEP + '*' + NUL + SEP + '*([)\\]}])', 'g'), '$1');
+  // 4b. An INFIX separator whose other operand was deleted is orphaned:
+  //    `see phase 134 / <deleted> Option A`  ->  `see phase 134 Option A`.
+  //    `,` and `;` are deliberately NOT in this class: after a deletion they are almost
+  //    always the sentence's own punctuation, which step 5 preserves.
+  s = s.replace(new RegExp('[ \\t]*[/|+&~][ \\t]*' + NUL, 'g'), SENTINEL);
+  s = s.replace(new RegExp(NUL + '[ \\t]*[/|+&~][ \\t]*', 'g'), SENTINEL);
   // 5. A sentinel immediately before sentence punctuation leaves the punctuation attached.
   s = s.replace(new RegExp(SEP + '*' + NUL + '[ \\t]*([,;.:!?])', 'g'), '$1');
   // 6. Anything still standing becomes a single space, absorbing the horizontal whitespace
@@ -463,6 +495,9 @@ function repair(text, guardEnd) {
   s = s.replace(/[ \t]*\(\s*\)[ \t]*/g, ' ');
   s = s.replace(/[ \t]*\[\s*\][ \t]*/g, ' ');
   s = s.replace(/``/g, '');
+  //    ...and the connective the now-empty enclosure was attached to:
+  //    `  (D-05), which auto-scopes`  ->  `  which auto-scopes`.
+  s = s.replace(/^([ \t]*)[,;:][ \t]*/, '$1');
   // 8. Residual punctuation adjacency.
   s = s.replace(/[ \t]+([,;.:!?)\]])/g, '$1');
   s = s.replace(/,(\s*[.;:])/g, '$1');
@@ -496,6 +531,7 @@ function openerEnd(line, spans) {
 const PROSE_SUSPECT_RES = [
   /\b(?:as of|according to|introduced by|documented in|described in|defined in)\s+(?:the|a|an|and|is|are|was|were|it|its|this|that)\b/i,
   /\b(?:see|per|cf)\s+(?:for|the|a|an|and|in|at|to|is|are)\b/i,
+  /\b(?:see|per|cf)\s+\u00a7/i,
   /\b(?:at|in|on|to|from|of|for|with|via|by|under)[ \t]*[,;:]/i,
   /\([ \t]*[,;:/|]/,
   /[,;][ \t]*[)\]]/
@@ -609,6 +645,10 @@ function transform(relPath, original) {
       }
       if (f.rule.id === 'spike-ref' && isAmbiguousSpike(f.text, line, f.end)) {
         residue.push({ ...record, reason: 'ambiguous-reference' });
+        continue;
+      }
+      if (f.rule.kind === 'collapse' && isAttributive(f.text, line, f.start)) {
+        residue.push({ ...record, reason: 'attributive-reference' });
         continue;
       }
       const replacement = f.rule.kind === 'delete' ? SENTINEL : f.rule.to(f.groups);

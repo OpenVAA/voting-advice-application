@@ -13,7 +13,7 @@
  *
  * Push-based mirror, mirroring the candidateContext fix
  * documented.
- * Introduced by see phase 88 and revised in see spike 024.
+ * Introduced by Phase 88 and revised in Spike-024.
  * Milestone tag v2.11 and tool version Node 22.22.1 are both left alone.
  * TODO: this marker is reported, never rewritten.
  * CLAUDE.md §Context Destructuring Rule keeps its titled anchor.

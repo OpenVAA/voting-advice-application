@@ -2,7 +2,7 @@
 
 # Results layout
 
-Architecture (see phase 62 refactor; updated by see phase 88)
+Architecture (see phase 62 refactor; updated by Phase 88)
 
 - URL is the single source of truth.
 - As of the selected election lives in the route segment.
