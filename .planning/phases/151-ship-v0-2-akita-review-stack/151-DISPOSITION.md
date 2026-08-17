@@ -13,19 +13,19 @@ criterion_3: closed-by-plan-151-08
 criterion_3_gate_red_is_expected: true
 per_slice_items: 12
 cells_expected: 163
-cells_filled: 36
-cells_pending: 127
+cells_filled: 60
+cells_pending: 103
 blank_cells: 0
 db_slice: "03"
 adapter_slice: "06"
-migrations_added: 0
+migrations_added: 0  # PD-02 answered by 151-11: no fix touched a migration
 e2e_collisions: 0
 dropped_finding_class_files: 842
 invisible_to_review_files: 1202
 unclaimed_by_any_pathspec: 120
 comparable_total: 4274
-slices_dispositioned: ["01a", "01b", "02"]
-findings_total: 18
+slices_dispositioned: ["01a", "01b", "02", "03"]
+findings_total: 33
 status: in-progress
 approval: pending
 ---
@@ -35,8 +35,8 @@ approval: pending
 **Created:** 2026-08-17
 **Phase:** 151 — Ship the v0.2 Akita review stack
 **Plan:** 06 (scaffold + phase-level rows). Cells are filled by plans 151-09 … 151-18.
-**Status:** 🟡 **IN PROGRESS — approval gate NOT reached.** `cells_filled: 36` of 163, after plan
-151-09 dispositioned slices **01a**, **01b** and **02** — all 36 cells terminal, none pending. The gate closes only when
+**Status:** 🟡 **IN PROGRESS — approval gate NOT reached.** `cells_filled: 60` of 163, after plans
+151-09 (slices **01a**, **01b**, **02**) and 151-11 (slice **03**) — all 60 cells terminal, none pending. The gate closes only when
 `cells_filled == cells_expected` **and** `blank_cells == 0`, checked in plan 151-18. Criterion 1 has
 no other automated evidence, so this frontmatter *is* the criterion.
 
@@ -190,18 +190,18 @@ Columns are slices. Every cell holds a verdict token or `PENDING→NN` (the plan
 
 | # | Item | Reach | 01a | 01b | 02 | 03 | 04 | 05 | 06 | 07 | 08 | 09 | 10 | 11 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **2** | OWASP Top 10 review | `none` | N/A | MET | MET | P→11 | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **3** | Follows the Code style guide | `partial` | N/A | N/A | FIXED | P→11 | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **4** | Avoid `any`; document or `@ts-expect-error` | `partial` | N/A | N/A | FIXED | P→11 | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **5** | No repeated code in the PR or elsewhere in the repo | `none` | DEF | FIXED | MET | P→11 | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **6** | New components / functions / entities documented | `none` | N/A | N/A | FIXED | P→11 | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **7** | Repo documentation markdown updated | `none` | DEF | DEF | FIXED | P→11 | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **8** | Tracking events for new user-facing functions | `none` | N/A | N/A | N/A | P→11 | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **9** | New Svelte components follow the guidelines | `partial` | N/A | N/A | N/A | P→11 | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **10** | Errors handled and logged | `none` | N/A | N/A | FIXED | P→11 | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **13** | WCAG A and AA | `partial` | N/A | N/A | N/A | P→11 | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **14** | Keyboard + screen-reader usable | `partial` | N/A | N/A | N/A | P→11 | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
-| **15** | Developers'/Publishers' Guide entries updated | `none` | DEF | DEF | DEF | P→11 | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **2** | OWASP Top 10 review | `none` | N/A | MET | MET | FIXED | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **3** | Follows the Code style guide | `partial` | N/A | N/A | FIXED | MET | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **4** | Avoid `any`; document or `@ts-expect-error` | `partial` | N/A | N/A | FIXED | FIXED | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **5** | No repeated code in the PR or elsewhere in the repo | `none` | DEF | FIXED | MET | DEF | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **6** | New components / functions / entities documented | `none` | N/A | N/A | FIXED | FIXED | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **7** | Repo documentation markdown updated | `none` | DEF | DEF | FIXED | FIXED | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **8** | Tracking events for new user-facing functions | `none` | N/A | N/A | N/A | N/A | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **9** | New Svelte components follow the guidelines | `partial` | N/A | N/A | N/A | N/A | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **10** | Errors handled and logged | `none` | N/A | N/A | FIXED | FIXED | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **13** | WCAG A and AA | `partial` | N/A | N/A | N/A | N/A | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **14** | Keyboard + screen-reader usable | `partial` | N/A | N/A | N/A | N/A | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
+| **15** | Developers'/Publishers' Guide entries updated | `none` | DEF | DEF | DEF | DEF | P→12 | P→13 | P→14 | P→15 | P→15 | P→16 | P→16 | P→17 |
 
 `P→NN` abbreviates the pending marker `PENDING→NN`. Count: 12 × 12 = **144 cells, 0 blank**.
 
@@ -396,15 +396,15 @@ modification can never pass over `origin/main..TIP`. Run the gate over `C1..TIP`
 
 | # | Item | Reach | Slice 03 | Gate + complement |
 |---|---|---|---|---|
-| **17** | New content tables include all common columns | `none` | `PENDING→11` | Neither `supabase db lint` nor `lint-schema.mjs` inspects column sets. **Complement: the entire item.** |
-| **18** | RLS enabled + standard 5-policy pattern | `partial` | `PENDING→11` | `lint-schema.mjs` check **0013** (`apps/supabase/scripts/lint-schema.mjs:38-51`, ERROR) covers the **"RLS enabled" half only**. **Complement: the 5-policy pattern is not checked at all — a table with RLS on and one policy passes.** |
-| **19** | RLS policies use `(SELECT auth.uid())` / `(SELECT auth.jwt())` scalar subqueries | `none` | `PENDING→11` | No check reads policy bodies. Greppable over 27 SQL files; **no gate exists**. |
-| **20** | RLS policies specify `TO anon` / `TO authenticated` | `none` | `PENDING→11` | No check reads policy role targets. Same 27-file surface; no gate. |
-| **21** | `SECURITY DEFINER` functions set `search_path = ''` | `none` | `PENDING→11` | `plpgsql_check` validates PL/pgSQL **bodies**, not function *attributes*. **Complement: `search_path = ''` and schema-qualification are entirely unchecked.** |
-| **22** | B-tree indexes on `project_id` and FK columns | `partial` | `PENDING→11` | `lint-schema.mjs` check **0001** (`:53-76`, WARNING, and `lint:sql` runs `--fail-on warning`) covers **FK columns**. **Complement: a `project_id` that is not a declared FK is invisible to it, and index *type* is unchecked.** |
-| **23** | Trigger naming conventions | `none` | `PENDING→11` | Neither check reads trigger names. No gate. |
-| **24** | pgTAP transaction-boundary pattern + `create_test_data()` | `none` | `PENDING→11` | Execution is not conformance — a pgTAP file that never `ROLLBACK`s passes if its assertions pass. **Complement: the pattern is unchecked, and the executing job is the conditional one from item 11.** 11 files. |
-| **25** | pgTAP assertion patterns | `none` | `PENDING→11` | Same as 24 — execution is not conformance. Agent review over the same 11 files. |
+| **17** | New content tables include all common columns | `none` | **MET** | Neither `supabase db lint` nor `lint-schema.mjs` inspects column sets. **Complement: the entire item.** |
+| **18** | RLS enabled + standard 5-policy pattern | `partial` | **MET** | `lint-schema.mjs` check **0013** (`apps/supabase/scripts/lint-schema.mjs:38-51`, ERROR) covers the **"RLS enabled" half only**. **Complement: the 5-policy pattern is not checked at all — a table with RLS on and one policy passes.** |
+| **19** | RLS policies use `(SELECT auth.uid())` / `(SELECT auth.jwt())` scalar subqueries | `none` | **MET** | No check reads policy bodies. Greppable over 27 SQL files; **no gate exists**. |
+| **20** | RLS policies specify `TO anon` / `TO authenticated` | `none` | **MET** | No check reads policy role targets. Same 27-file surface; no gate. |
+| **21** | `SECURITY DEFINER` functions set `search_path = ''` | `none` | **MET** | `plpgsql_check` validates PL/pgSQL **bodies**, not function *attributes*. **Complement: `search_path = ''` and schema-qualification are entirely unchecked.** |
+| **22** | B-tree indexes on `project_id` and FK columns | `partial` | **DEFERRED** | `lint-schema.mjs` check **0001** (`:53-76`, WARNING, and `lint:sql` runs `--fail-on warning`) covers **FK columns**. **Complement: a `project_id` that is not a declared FK is invisible to it, and index *type* is unchecked.** |
+| **23** | Trigger naming conventions | `none` | **DEFERRED** | Neither check reads trigger names. No gate. |
+| **24** | pgTAP transaction-boundary pattern + `create_test_data()` | `none` | **FIXED** | Execution is not conformance — a pgTAP file that never `ROLLBACK`s passes if its assertions pass. **Complement: the pattern is unchecked, and the executing job is the conditional one from item 11.** 11 files. |
+| **25** | pgTAP assertion patterns | `none` | **MET** | Same as 24 — execution is not conformance. Agent review over the same 11 files. |
 
 > **`yarn db:lint:sql` is not sqlfluff.** It is `supabase db lint --schema public --fail-on warning`
 > plus a 174-line local `scripts/lint-schema.mjs` implementing 2 Splinter advisors. `CLAUDE.md`
@@ -429,9 +429,9 @@ under `apps/supabase/supabase/functions/`. Small enough that exhaustive agent re
 
 | # | Item | Reach | Slice 03 | Gate + complement |
 |---|---|---|---|---|
-| **29** | Verify caller is admin via JWT claims | `none` | `PENDING→11` | No gate exists. Same 3-function / 5-file surface. |
-| **30** | `createClient()` with `service_role` for privileged operations | `none` | `PENDING→11` | No gate exists. Same 3-function / 5-file surface. |
-| **31** | HTTP status codes + descriptive error messages | `none` | `PENDING→11` | No gate exists. Same 3-function / 5-file surface. |
+| **29** | Verify caller is admin via JWT claims | `none` | **MET** | No gate exists. Same 3-function / 5-file surface. |
+| **30** | `createClient()` with `service_role` for privileged operations | `none` | **MET** | No gate exists. Same 3-function / 5-file surface. |
+| **31** | HTTP status codes + descriptive error messages | `none` | **MET** | No gate exists. Same 3-function / 5-file surface. |
 
 ---
 
@@ -439,12 +439,12 @@ under `apps/supabase/supabase/functions/`. Small enough that exhaustive agent re
 
 | Group | Cells | Filled | Pending | Blank |
 |---|---:|---:|---:|---:|
-| Per-slice general (12 × 12) | 144 | 36 | 108 | **0** |
+| Per-slice general (12 × 12) | 144 | 48 | 96 | **0** |
 | Phase-level (4 × 1) | 4 | 0 | 4 | **0** |
-| Supabase Backend (9, slice 03) | 9 | 0 | 9 | **0** |
+| Supabase Backend (9, slice 03) | 9 | 9 | 0 | **0** |
 | Supabase Adapter (3, slice 06) | 3 | 0 | 3 | **0** |
-| Edge Functions (3, slice 03) | 3 | 0 | 3 | **0** |
-| **Total** | **163** | **36** | **127** | **0** |
+| Edge Functions (3, slice 03) | 3 | 3 | 0 | **0** |
+| **Total** | **163** | **60** | **103** | **0** |
 
 **The 36 filled cells, by slice** (plan 151-09): **01a** — 9 `NOT-SWEPT` + 3 `DEFERRED`, **0 `MET`**;
 **01b** — 8 `NOT-SWEPT` + 1 `MET` + 1 `FIXED` + 2 `DEFERRED`; **02** — 4 `NOT-SWEPT` + 2 `MET` +
@@ -804,6 +804,186 @@ exactly two files:
 Neither is a live reference, so **slice 01b's item-2 `MET` verdict stands**: the removal is complete at
 the dependency layer (`yarn.lock` at the shipped tree carries **0** `strapi` and **0** `localstack`
 entries, and the root `package.json` `workspaces` no longer names `backend/vaa-strapi`).
+
+## Slice 03 — `ship/v0.2-akita-03-supabase` — cell-by-cell evidence
+
+**Filled by plan 151-11.** This is the only slice where the Supabase Backend (17–25) and
+Edge Functions (29–31) blocks apply at all, so 28 item sets are dispositioned here: the 12
+per-slice general items plus those 12 conditional ones, plus the four phase-level items,
+which are **not** re-run here and whose cells reference the phase-level row above.
+
+Measured refs for this pass:
+
+| ref | value |
+|---|---|
+| `BASE` = `origin/main` | `ac30f132a` — still unmoved |
+| `TARGET` = `feat-gsd-roadmap` at sweep time | `0adaec37b`; at cut time, after this plan's six fixes, `b6b036fcc` |
+| slice-03 file set | `diff --no-renames ship/v0.2-akita-02-shared-packages..TARGET -- apps/supabase packages/supabase-types supabase` → **118 files, all `A`** |
+| local Supabase | running; `[db] port = 54322` per `supabase/config.toml:29`; database reset from migrations before every measurement below |
+
+### Sweep surface, stated before any verdict (D-20)
+
+| In surface | Count |
+|---|---|
+| SQL schema definition files (`supabase/schema/*.sql`) | 21 files / 3,409 lines |
+| applied migrations (`supabase/migrations/*.sql`) | **3** files / 3,526 lines |
+| pgTAP tests (`supabase/tests/database/*.sql`) | **11** files / 272 assertions |
+| Edge Functions (`supabase/functions/**`) | 3 functions / **5** tracked files / 1,097 lines |
+| TypeScript + tooling | `packages/supabase-types/src/*.ts` ×3, `scripts/lint-schema.mjs`, `vitest.config.ts`, 2 `package.json`, 2 `tsconfig` |
+| benchmarks (`apps/supabase/benchmarks/**`) | 62 files — k6 / pgbench harnesses and their recorded results |
+
+**Declared out of surface, with reason (D-20 makes the reason mandatory):** none. Every
+one of the 118 files is inside at least one lens below. The 62 benchmark files are swept
+under items 2, 5 and 7 only — they are a measurement harness with no runtime path into the
+application and no production credential — and that narrower treatment is stated here
+rather than left implicit.
+
+### The eight enumerable security checks — counts, not samples
+
+Each row gives the command whose output produced it. **Counts are of the `schema/` copy**,
+which is the readable authority; the same constructs in `migrations/00001` were counted
+separately and agree.
+
+| Check | Command | Checked | Conforming |
+|---|---|---:|---:|
+| RLS policies use `(SELECT auth.uid())` / `(SELECT auth.jwt())` scalar subqueries, never a bare call | `grep -ohE 'auth\.(uid\|jwt)\(\)' schema/*.sql migrations/*.sql \| wc -l` for the denominator; the same after `sed -E 's/\(\s*SELECT[[:space:]]+auth\.(uid\|jwt)\(\)/(SELECT XX/g'` for bare survivors | **56 occurrences** | **56** — bare survivors: **0** |
+| every policy names an explicit role target | awk join of each multi-line `CREATE POLICY` up to its terminating `;`, then extract the `TO <role>` token | **97 policies** | **97** — `authenticated` 80, `anon` 15, `supabase_auth_admin` 1, `service_role` 1 |
+| RLS enabled on tables | `ALTER TABLE … ENABLE ROW LEVEL SECURITY` vs `CREATE TABLE` census | **20 tables** | **19** — the 20th is `private.feedback_rate_limits`, see below |
+| standard five-policy set on content tables | per-table policy census from the same awk join | **13 content tables** | **13** |
+| `SECURITY DEFINER` functions pin `SET search_path = ''` | awk over each `CREATE … FUNCTION` header up to its `AS $$` | **9 functions** (18 counting the migration copy) | **9** (18) |
+| B-tree indexes on `project_id` and every FK column | `scripts/lint-schema.mjs` check 0001, **after this plan repaired it**, cross-checked against a static read of `200-indexes.sql` | **32 FK columns**, 13 of them `project_id` | **30** — 2 gaps, see F-29 |
+| pgTAP transaction-boundary pattern + `create_test_data()` | per-file census of `BEGIN;` / `ROLLBACK;` / `plan(` / `finish()` / `create_test_data()` | **11 files** | **11** |
+| Edge Functions verify admin via JWT claims before any privileged operation | full read of all 5 files | **2 admin-gated functions** | **2**; the third is the public identity callback, whose control is the JWKS signature check |
+
+Two of those rows need their qualifier stated rather than buried:
+
+- **`private.feedback_rate_limits` has no RLS, and that is correct.** It lives in the
+  `private` schema, which `config.toml:13` does not expose (`schemas = ["public",
+  "graphql_public"]`), and `CREATE SCHEMA private` grants `USAGE` to nobody. The asymmetry
+  with `public.storage_config` — which *does* carry `ENABLE ROW LEVEL SECURITY` plus
+  `REVOKE ALL … FROM anon, authenticated, public` at `400-storage.sql:37-39` — is explained
+  by exposure, not by inconsistency: `storage_config` is in the exposed schema and needs
+  both. `storage_config` carries **zero policies**, which with RLS enabled is deny-all and
+  is the intended shape.
+- **The five-policy denominator is 13, not 18.** Five tables carry a deliberately different
+  set and are not content tables: `accounts` and `projects` (4 — no `anon_select`, they are
+  never voter-facing), `admin_jobs` (3 — admin-only, no UPDATE), `feedback` (4 — insert-only
+  by design, `-- No UPDATE policy -- feedback is immutable after insert`), `user_roles` (2 —
+  `supabase_auth_admin` read for the token hook, `service_role` manage). Two join tables
+  carry 4 (no `admin_update`: a row is its own key). `candidates` and `organizations` carry
+  6 — the standard five plus `candidate_update_own` / `party_update_own_organizations`.
+
+### Slice 03 — general items (12 cells)
+
+| # | Item | Verdict | Evidence |
+|---|---|---|---|
+| **2** | OWASP Top 10 | **FIXED** — commits `fb05eca78`, `cd96d1ff4` | Exhaustive over the slice per D-20: all 97 RLS policies, all 9 `SECURITY DEFINER` functions, all 5 Edge Function files and all 3 migrations read. **A01** — 97/97 policies name an explicit role and 56/56 auth-identity calls use the scalar-subquery form; cross-tenant reads are covered by `01-tenant-isolation.test.sql` (green). **A02** — `send-email` disabled TLS certificate verification on the credentialed production path (**F-26**, fixed, `index.ts:214-231`); `storage_config` holds a service-role key in a plaintext column (**F-32**, deferred). **A03** — `invite-candidate:39-47` and `send-email:54-79` validate every field before use; the bulk RPCs build dynamic SQL through `quote_literal`/`quote_ident` (`501-bulk-operations.sql`). **A07** — `identity-callback` verified the JWT signature and audience but never the issuer (**F-23**, fixed, `index.ts:69-93`). **A10 (SSRF)** — the only outbound URLs are `IDENTITY_PROVIDER_JWKS_URI` and `SITE_URL`, both from the environment and neither reachable from request input; `redirectTo` at `identity-callback:318` is likewise environment-derived, so there is **no open redirect and no SSRF**. This closes T-151-11-05 by measurement. Gate: **none**. |
+| **3** | Code style guide | **MET** | The 9 TypeScript/JS files in the slice pass `yarn lint:check` with 0 errors and contribute 0 of the 20 warnings; `yarn format:check` is clean on every file in the slice (the two red files are PD-03-fenced and in other slices). SQL follows one house shape across all 21 `schema/` files: a banner comment naming the file's functions, `public.`-qualified identifiers, lower-case keywords for types and upper-case for statements. Gate: `eslint` + `prettier`, **partial** — **complement: neither reads SQL, which is 32 of the 118 files and 96% of the slice's lines.** |
+| **4** | Avoid `any` | **FIXED** — commit `fb05eca78` | Exhaustive: `grep -c '\bany\b'` over every `.ts`/`.mjs` in the slice returns non-zero for exactly one file. `packages/supabase-types/src/database.ts` — 5,000+ generated lines — contains **0**. The two occurrences are `identity-callback/index.ts:107` (`supabaseAdmin: any`) and `:133` (`(u: any)`), each already carrying a `deno-lint-ignore no-explicit-any` but **no documented reason**, which both this item and the style guide require. **F-25**, fixed by adding the reason. Gate: `@typescript-eslint/no-explicit-any`, **partial** — **complement: Deno files under `supabase/functions/` are outside the eslint project and are linted by `deno lint`, which no repository script runs.** |
+| **5** | No repeated / dead code | **DEFERRED** — the schema ships twice and two build artifacts are tracked | `supabase/schema/` (21 files, 3,409 lines) is a second copy of `supabase/migrations/00001` with 00002 and 00003 folded in. Verified: concatenating `schema/*.sql` in filename order and diffing against `migrations/00001_initial_schema.sql` yields exactly the three hunks that migrations 00002 and 00003 apply, and nothing else. It is deliberate — each migration header names the schema files it mirrors — but **nothing verifies the two agree**, and `config.toml:58` leaves `schema_paths = []`, so the CLI never reads `schema/`. The duplication is not removed here (that is a workflow decision, not a cleanup); it is now **documented** in the new `apps/supabase/README.md`, commit `b6b036fcc`. Separately **F-31**: `packages/supabase-types/tsconfig.tsbuildinfo` and `supabase/.branches/_current_branch` are tracked build/CLI artifacts — same class as **F-08**, and routed with it to plan **151-16** so the whole class is decided once. Gate: **none**. |
+| **6** | Entities documented | **FIXED** — commit `b6b036fcc` | Every `schema/*.sql` opens with a banner naming its functions; every `SECURITY DEFINER` function carries a comment stating why it is definer-rights; all three Edge Functions have header docblocks; `claimConfig.ts` documents each field of `ProviderClaimConfig`. The gap was at the **workspace** level: `apps/supabase/` shipped no README while holding 6,900 lines of SQL in two directories with no statement of which is authoritative (**F-28**). Fixed. `identity-callback`'s docblock also omitted `IDENTITY_PROVIDER_ISSUER` from its environment list; added in `fb05eca78`. Gate: **none**. |
+| **7** | Repo documentation updated | **FIXED** — commits `b6b036fcc`, `995696502` | `CLAUDE.md` is stale on all three Supabase paths — it cites `apps/supabase/{migrations,functions,tests}` where the real paths are `apps/supabase/supabase/{…}` — but `CLAUDE.md` rides slice **11** under D-15 and is not edited here. What was in this slice's reach is the missing workspace README, now added with the authoritative-directory statement, the real reach of `yarn db:lint:sql`, and the two traps this sweep found. Also fixed in this plan, though owned by slice 02: **F-18**, `packages/app-shared/README.md:25`, which cited `apps/strapi/`. **F-33** widens that: `git grep -c 'apps/strapi'` over the shipped tree returns **16 files / 46 occurrences** of a path that has never existed, 15 of the files under `apps/docs/**` (slice 09) — routed to plan **151-16** with F-04. Gate: **none**. |
+| **8** | Tracking events | **NOT-SWEPT** — `n/a — no user-available function in this slice` | The slice's user-reachable surface is a database and three server-side functions. No analytics call site exists anywhere in the 118 files (`grep -ri 'umami\|plausible\|gtag\|trackEvent'` → 0 hits); event tracking is a frontend concern and lives in slices 06 and 07. |
+| **9** | Svelte component guidelines | **NOT-SWEPT** — `n/a — no `.svelte` file in the slice` | Extension census over the 118 files: 56 `.sql`, 39 `.json`, 9 `.ts`, 4 `.sh`, 2 `.js`, and one each of `.mjs`, `.toml`, `.py`, `.md`, `.tsbuildinfo`, `.gitignore`. Zero `.svelte`. |
+| **10** | Errors handled and logged | **FIXED** — commit `fb05eca78` | Exhaustive over the three Edge Functions, which are the slice's only request-handling code. Each wraps its whole body in `try`/`catch`, returns a typed JSON error, and distinguishes 400 / 401 / 403 / 405 / 500. `invite-candidate:150-176` logs and continues on the two non-fatal post-invite steps and rolls the candidate row back when the invite itself fails. The defect was **F-22**: `send-email` called `resolve_email_variables` with `user_ids` / `template_body` / `template_subject` against a function declaring `p_`-prefixed parameters, so **every invocation returned `PGRST202` and the handler turned it into HTTP 500** — the error path was well-built and permanently taken. Proven live, not argued: the un-prefixed POST returns `{"code":"PGRST202", … "hint":"Perhaps you meant to call the function public.resolve_email_variables(p_template_body, p_template_subject, p_user_ids)"}` and the `p_`-prefixed POST returns `[]`. Gate: **none**. |
+| **13** | WCAG A and AA | **NOT-SWEPT** — `n/a — no rendered markup in this slice` | No `.svelte`, `.html` or component file; the slice renders nothing to a browser. The one text surface reaching a person is the email body assembled in `send-email:154-184`, which is out of WCAG's scope. `assertAxeScan` is **not** cited: citing a gate over a slice with no markup is the laundering D-18 forbids. |
+| **14** | Keyboard + screen-reader | **NOT-SWEPT** — `n/a — no rendered markup in this slice` | As item 13. |
+| **15** | Developers'/Publishers' Guides | **DEFERRED** — the guides still describe the Strapi backend this slice replaces | `apps/docs/src/routes/(content)/developers-guide/backend/**` documents Strapi authentication, plugins, default data loading and mock data generation — the backend this slice's 118 files exist to replace — and there is no Supabase equivalent page. Fifteen of those files also carry the never-existed `apps/strapi/` link path (F-33). Rationale for deferring: every affected file is under `apps/docs/**`, owned by slice **09**, which D-07 sweeps bottom-up at plan **151-16**; editing them here would put slice 09's content in slice 03's diff. Routed to plan **151-16**. Gate: **none**. |
+
+### Slice 03 — Supabase Backend block (items 17–25, 9 cells)
+
+| # | Item | Verdict | Evidence |
+|---|---|---|---|
+| **17** | New content tables include all common columns | **MET** | All 13 content tables carry `id uuid PRIMARY KEY DEFAULT gen_random_uuid()`, `project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE`, `external_id text`, `created_at`/`updated_at timestamptz NOT NULL DEFAULT now()`, and `published boolean` where voter-facing. `500-external-id.sql` adds the `(project_id, external_id)` uniqueness and the immutability trigger uniformly — 11 `enforce_external_id_immutability` triggers, one per external-id-bearing table. Gate: **none** — **complement: neither `supabase db lint` nor `lint-schema.mjs` inspects column sets, so this cell is entirely agent review.** |
+| **18** | RLS enabled + standard five-policy pattern | **MET** | 19 of 20 tables carry `ENABLE ROW LEVEL SECURITY`; the 20th, `private.feedback_rate_limits`, is in an unexposed schema with no grants (rationale above). 13 of 13 content tables carry the standard five; the seven deviations are enumerated above and each is a deliberate, non-content shape. Gate: `lint-schema.mjs` check **0013**, **partial** — **complement: 0013 covers the "RLS enabled" half only and scopes itself to schema `public`, so a table with RLS on and one policy passes, and the `private` schema is invisible to it. And until this plan's F-19 fix the whole script ran against the wrong database, so 0013 had never evaluated this schema at all.** |
+| **19** | Scalar-subquery auth calls | **MET** | **56 of 56** occurrences of `auth.uid()` / `auth.jwt()` across `schema/` and `migrations/` appear as `(SELECT auth.…())`; stripping that form from the text leaves **0** bare calls. Gate: **none** — no check reads policy bodies; the count above is the entire evidence. |
+| **20** | Explicit `TO` role target | **MET** | **97 of 97** policies name a role: `authenticated` 80, `anon` 15, `supabase_auth_admin` 1 (`auth_admin_read_user_roles`, required by the Custom Access Token Hook), `service_role` 1. Gate: **none**. |
+| **21** | `SECURITY DEFINER` pins an empty `search_path` | **MET** | **9 of 9** definer-rights functions carry `SET search_path = ''` in the header: `107-feedback.sql:39`, `301-auth-functions.sql:58,103,144`, `400-storage.sql:49,336,382,454`, `502-email-helpers.sql:22`. (A naive `grep -c 'SECURITY DEFINER'` returns 12 in `schema/`; three of those are comment lines. The count above parses each `CREATE … FUNCTION` header to its `AS $$`.) Schema-qualification follows from the pin rather than being asserted separately: with an empty `search_path` any unqualified object reference is a runtime error, and the 272-assertion pgTAP suite exercises these functions green — a stronger check than a grep. Gate: **none** — **complement: `plpgsql_check` validates PL/pgSQL bodies, never function attributes.** |
+| **22** | B-tree indexes on `project_id` and FK columns | **DEFERRED** — 2 of 32 FK columns are unindexed | All **13** `project_id` FK columns are indexed, as are 17 of the remaining 19. The two gaps are the **trailing** columns of the two join tables' composite primary keys: `constituency_group_constituencies.constituency_id` and `election_constituency_groups.constituency_group_id`. A composite PK indexes its leading column only, so the reverse lookup and the `ON DELETE CASCADE` from the referenced side are sequential scans. **F-29.** Rationale for deferring rather than fixing: the fix is a new migration, which PD-02 makes `[BLOCKING]` on `yarn db:lint:sql` exiting 0 — and that gate is red for an unrelated, undecided reason (**F-21**). Landing a migration whose blocking gate cannot be shown green would be worse than recording the gap. Routed to whoever discharges F-21. Gate: `lint-schema.mjs` check **0001** — **and this cell is why it is only now usable: the check was broken twice over (F-19, F-20) and the corrected run reports exactly these two rows, matching an independent static read of `200-indexes.sql` against the declared foreign keys.** |
+| **23** | Trigger naming conventions | **DEFERRED** — 22 of 52 triggers use a prefix the checklist does not list | Census: `set_updated_at` ×14, `enforce_external_id_immutability` ×11, `validate_*` ×5 — **30 conforming**. Outside the checklist's `set_updated_at` / `validate_{thing}` / `enforce_{constraint}` set: `cleanup_storage_on_delete` ×10, `cleanup_image_on_update` ×10, `cascade_question_delete_to_answers` ×1, `check_feedback_rate_limit` ×1 — **22**. Rationale for deferring: the 22 are not ad hoc, they are three further conventions applied consistently, and the two candidate remedies are both wrong for an executor to take unilaterally — renaming 22 triggers needs a migration (see F-29's reasoning), and widening the checklist edits `.agents/`, the very artifact this phase's 31-item census is measured against. Recorded for the operator. Gate: **none**. |
+| **24** | pgTAP transaction boundary + `create_test_data()` | **FIXED** — commit `3646180a8` | **11 of 11** files open `BEGIN;`, close `ROLLBACK;`, end with `SELECT * FROM finish();` and build fixtures with `create_test_data()`; 10 declare `SELECT plan(n)` and `00-helpers.test.sql` declares `no_plan()`, both valid. The pattern was fully conformant — and was itself the cause of the suite being **red**. Because each file runs in one transaction, `now()` is `transaction_timestamp()` and frozen, so the fixture's `terms_of_use_accepted = now()` failed migration 00002's `ToU < now()` guard: measured, `BEGIN; SELECT now() < now();` → `f`. Two assertions failed deterministically (**F-27**). Fixed in the fixture, no schema change. Gate: `supabase test db` — **complement: execution is not conformance, and the `supabase-tests` CI job is conditional on a `dorny/paths-filter` and will not fire on this sibling-based PR. The evidence here is the locally-run suite against a database reset from migrations: before, `Files=11, Tests=272, Failed 2/272, Result: FAIL`; after, `Files=11, Tests=272, All tests successful, Result: PASS`.** |
+| **25** | pgTAP assertion patterns | **MET** | All three required forms are present and used for their correct cases across the 11 files: `ok()` ×62 for positive assertions, `is()` ×70 and `lives_ok()` ×53 for the silent-RLS-denial pattern (a blocked read returns zero rows rather than raising, so it is asserted as `lives_ok` + a zero count, e.g. `03-anon-read.test.sql:85-89`), and `throws_ok()` ×58 where an error is the expected outcome. Plus `has_column()` ×22, `has_table()` ×2, `has_function()` ×2, `col_type_is()` ×2 for the schema-shape assertions in `10-schema-migrations.test.sql`. Gate: **none** — same complement as item 24; the locally-run suite is cited, never the CI job. |
+
+### Slice 03 — Edge Functions block (items 29–31, 3 cells)
+
+Surface: 3 functions, 5 tracked files, 1,097 lines — small enough that every cell below is
+a full read rather than a sample.
+
+| # | Item | Verdict | Evidence |
+|---|---|---|---|
+| **29** | Verify caller is admin via JWT claims before privileged operations | **MET** | **2 of 2** admin-gated functions do, and both do it in the right order — the caller check completes *before* the `service_role` client is constructed, so there is no window in which a privileged client exists for an unverified caller. `invite-candidate:52-95` and `send-email:81-123`: reject a missing `Authorization` header with 401; validate the token server-side with `auth.getUser()` against an **anon**-key client (so an invalid or expired token cannot pass); only then decode that same validated token and test `user_roles` for `super_admin` / `account_admin` / `project_admin`, 403 otherwise. `invite-candidate` additionally scopes `project_admin` to the requested project (`:84-89`). The `service_role` client is created at `invite-candidate:100` and `send-email:128`, after the gate. The third function, `identity-callback`, is **`n/a — public identity callback, not an admin-gated function`**: it is the unauthenticated leg of bank login, and its substitute control is the provider-JWKS signature check at `:69-93` plus the audience and issuer checks — the issuer half of which this plan added (**F-23**). Gate: **none**. |
+| **30** | `createClient()` with `service_role` for privileged operations | **MET** | **3 of 3** functions construct exactly one privileged client, each with `Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')` and each used only for operations that must bypass RLS — `invite-candidate:100` (candidate insert, `auth.admin.inviteUserByEmail`, `user_roles` insert), `send-email:128` (the `resolve_email_variables` RPC, which is `SECURITY DEFINER` over `auth.users`), `identity-callback:236` (`auth.admin.createUser`/`listUsers`, candidate and role insert). The caller-scoped clients in the two admin functions correctly use the **anon** key, so the caller's own token is what `getUser()` validates. No service-role key is logged or returned in any response body. Gate: **none**. |
+| **31** | HTTP status codes + descriptive error messages | **MET** | Full census over the three handlers: 405 for a non-POST; 400 for unparseable JSON and for each named missing or malformed field, with the field named in the message; 401 for a missing header, an invalid token, a failed JWE decryption or a failed signature check; 403 for a valid caller lacking the role, with the reason stated; 500 for downstream failures, carrying the upstream `details`; 201 on `invite-candidate` create and 200 elsewhere. Every function ends in a `catch` that narrows `unknown` to a message rather than serialising the raw error. One residual, recorded not fixed: those 500 bodies return the internal `details` string to the caller, which is more than an unauthenticated caller of `identity-callback` needs (OWASP A09). It is deliberate — the messages are how the bank-auth flow is debugged — and is not at the fix bar on its own. Gate: **none**. |
+
+### Findings queued by this sweep
+
+Numbering continues the series; **F-18 was carried in from plan 151-10** and is discharged
+here. Six landed as fixes on `feat-gsd-roadmap` before the slice was cut, per D-04.
+
+| ID | Items | Slice | Finding | Disposition |
+|---|---|---|---|---|
+| **F-18** | 5, 7 | **02** | `packages/app-shared/README.md:25` cited `apps/strapi/`, a path that has never existed at either end (`git ls-tree` → 0 entries at `ac30f132a` and at `HEAD`). Routed here by 151-10 to be fixed **before** PR 3 opens. | **FIXED** — `995696502`; slice 02 re-cut from the fixed tip before its PR was opened |
+| **F-19** | 11, 18, 22 | **03** | `scripts/lint-schema.mjs:27` hardcoded the fallback database as port **54332**; `config.toml:29` declares `54322`. A digit transposition, and the gate had therefore **never run against this project's schema**. On the sweeping machine another Supabase instance answered on 54332 and the script silently linted it, reporting 149 warnings about `anonymise_*`, `mcp_oauth_*` and `mission_*` tables that do not exist in this repository. | **FIXED** — `cd96d1ff4` |
+| **F-20** | 22 | **03** | Check 0001 compared `pg_constraint.conkey[1:n]` — a **1-based** `smallint[]` — with `pg_index.indkey[1:n]`, an **`int2vector`, which is 0-based**. Proven on the live database: for a single-column index `indkey[1:1]` is `{}` while `conkey[1:1]` is `{2}`, so **every** single-column foreign key was reported unindexed — 51 warnings against the correct database, including `nominations.project_id`, whose index `idx_nominations_project_id` exists. A second defect in the same query: no schema filter, while 0013 scopes itself to `public`, so the report was dominated by Supabase-managed `auth.*` and `storage.*` rows. | **FIXED** — `cd96d1ff4`; the corrected gate reports 0 errors and exactly 2 warnings, matching an independent static read |
+| **F-21** | 11 | **03** | **`yarn db:lint:sql` exits non-zero on the branch** — `supabase db lint --fail-on warning` reports 4 `plpgsql_check` findings: `is_localized_string` "never read variable p_key", `_bulk_upsert_record` "unused variable rel_key", and `resolve_email_variables` "unused parameter p_template_body" and "p_template_subject". Neither this gate nor the pgTAP suite appears in `151-BASELINE.md`, so the phase has carried **two unmeasured gates** since 151-03 — and F-27 shows that mattered. | **DEFERRED** — the only change that turns the gate green is dropping two parameters from a granted, type-generated, pgTAP-referenced public RPC. That is a breaking signature change and a product decision about whether per-template variable resolution is still intended, not a cleanup: D-13 excludes code restructuring from the collision surface and Rule 4 reserves it for the operator. Fixing 2 of the 4 would cost a migration and leave the gate red anyway. **Operator decision required.** |
+| **F-22** | 1, 10 | **03** | **The `send-email` Edge Function was dead on arrival.** It called `resolve_email_variables` with the argument names `user_ids` / `template_body` / `template_subject`; the function declares `p_user_ids` / `p_template_body` / `p_template_subject` (`502-email-helpers.sql:22-25`, `database.ts:1270-1275`). PostgREST resolves overloads by argument name, so every invocation returned `PGRST202` and the handler converted it to HTTP 500 "Failed to resolve template variables". Verified against the running instance in both directions. | **FIXED** — `fb05eca78` |
+| **F-23** | 2 | **03** | `identity-callback`'s `verifyJwt` passed only `audience` to `jose.jwtVerify` and never checked `iss`. `IDENTITY_PROVIDER_ISSUER` is documented in `.env.example:59` and in the deployment guide, and the frontend's equivalent verifier already applies it (`lib/api/utils/auth/getIdTokenClaims.ts:9`, `providers/idura.ts:131`, `providers/signicat.ts:94`) — so the directly-callable Edge Function was the weaker of two paths to the same trust decision. | **FIXED** — `fb05eca78`, applied only when configured so no deployment fails closed on upgrade |
+| **F-24** | 2 | **06** (surfaced by 03's sweep) | **The Signicat identity path keys account identity on `birthdate`.** `claimConfig.ts:34-39` sets `identityMatchProp: 'birthdate'`, and `identity-callback` uses that value both to find an existing user (`findUserByIdentityMatch`) and to derive the account's `placeholderEmail`. A birth date is not an identifier: two candidates sharing one resolve to the **same auth user and the same candidate record**. `IDENTITY_PROVIDER_TYPE` **defaults to `'signicat'`** (`index.ts:167`) and `.env.example:38` ships that default. | **DEFERRED — ESCALATED.** Checked before recording, and the check changed the framing: this is **not** local to slice 03. The frontend states the same design independently — `providers/authConfig.ts:18-26` ("Signicat Finnish bank authentication returns `birthdate` as the primary identifier"), `getIdTokenClaims.ts:44`, `dataWriter.type.ts:64`. Changing the Edge Function alone would desynchronise the two halves and make matters worse, and the correct claim is external knowledge — what this tenant's Signicat is configured to return — which the repository does not contain. Routed to plan **151-14**, where the frontend half is swept, so one decision covers both. Idura, the newer provider, correctly uses `sub`. |
+| **F-25** | 4 | **03** | Two `deno-lint-ignore no-explicit-any` suppressions with no documented reason (`identity-callback/index.ts:107,133`) — the exact class of F-12, fixed in slice 02. | **FIXED** — `fb05eca78` |
+| **F-26** | 2 | **03** | `send-email` set `tls: { rejectUnauthorized: false }` unconditionally, including on the branch that supplies `SMTP_USER`/`SMTP_PASS` — sending SMTP credentials over a channel whose peer certificate is never verified. The surrounding comment (`// Add auth if credentials are provided (production SMTP)`) shows the production path was explicitly contemplated. | **FIXED** — `fb05eca78`; verification is relaxed only on the uncredentialed local path |
+| **F-27** | 24 | **03** | **The pgTAP suite was red on the branch**, 2 of 272, both in `03-anon-read.test.sql`, and neither `151-BASELINE.md` nor any CI job on this stack would have shown it. Migration 00002 tightened `anon_select_candidates` to require `terms_of_use_accepted < now()`; `create_test_data()` inserted the two published fixture candidates with `ToU = now()` and its own comment says this was meant to keep the assertions passing. But pgTAP's mandated single-transaction pattern freezes `now()` at `transaction_timestamp()`, so the guard evaluated `now() < now()` = FALSE. Measured: `BEGIN; SELECT now() < now(), now() = now(), clock_timestamp() > now();` → `f, t, t`. | **FIXED** — `3646180a8`, in the fixture only; **no schema change, so `migrations_added` stays 0** |
+| **F-28** | 6, 7 | **03** | `apps/supabase/` shipped no README while holding the schema **twice** — 3,409 lines under `schema/`, the same schema again under `migrations/` — with nothing stating which the database reads. | **FIXED** — `b6b036fcc` |
+| **F-29** | 22 | **03** | Two foreign keys have no covering index: `constituency_group_constituencies.constituency_id` and `election_constituency_groups.constituency_group_id`, the trailing columns of the two join tables' composite primary keys. | **DEFERRED** — the fix is a migration, which PD-02 makes blocking on `db:lint:sql` exiting 0; that gate is red for the undecided F-21. Routed with F-21. |
+| **F-30** | 23 | **03** | 22 of 52 triggers use `cleanup_*` / `cascade_*` / `check_*` prefixes, outside the three the checklist names. Consistent, but undocumented as conventions. | **DEFERRED** — both remedies are the operator's: a migration renaming 22 triggers, or widening `.agents/code-review-checklist.md`, which is the artifact this phase's 31-item census is measured against |
+| **F-31** | 5 | **03** | `packages/supabase-types/tsconfig.tsbuildinfo` and `supabase/.branches/_current_branch` are tracked build/CLI-state artifacts. | **DEFERRED** — same class as **F-08** (`apps/frontend/tsconfig.tsbuildinfo`); routed to plan **151-16** so the class is decided once. Unlike F-08 these paths *are* claimed by a slice pathspec, so they are **not** F-15-blocked. |
+| **F-32** | 2 | **03** | `public.storage_config` stores `service_role_key` as a plaintext `text` column, read by the pg_net storage-cleanup triggers. `seed.sql:20` seeds the published Supabase local-development demo key — not a secret — but `400-storage.sql:529-531` instructs operators to "update the `storage_config` table with actual values" in production, putting a live service-role key in a queryable column. | **DEFERRED** — the remedy is Supabase Vault (`vault.create_secret`), an architectural change (Rule 4). The table is fail-closed today: RLS on, zero policies, `REVOKE ALL … FROM anon, authenticated, public`, `GRANT SELECT … TO service_role` only. |
+| **F-33** | 5, 7 | **09** (surfaced by 03's sweep) | **F-18 is a class, not two instances.** `git grep -c 'apps/strapi'` over the shipped tree, excluding `.planning`/`.claude`/`.agents`, returns **16 files / 46 occurrences** — 15 files under `apps/docs/**` linking `blob/main/apps/strapi/…`, all of which 404. 151-10 predicted the class and asked a later plan to grep for it; done. | **RECORDED → plan 151-16**, with F-04 and item 15's deferral. The `packages/app-shared` instance is F-18 and is fixed. |
+
+### Gate verdicts after this plan's fixes — measured, not assumed
+
+All four re-run with **`TURBO_FORCE=1`**, so none is a cache replay:
+
+| Gate | `151-BASELINE.md` | After the six fixes | Verdict |
+|---|---|---|---|
+| `yarn build` | 14/14 | **14 successful / 14 total** | unchanged |
+| `yarn test:unit` | 1522 passed / 149 files | **1522 passed / 149 files** (16 + 21 + 244 + 22 + 446 + 773 across 1 + 3 + 47 + 1 + 43 + 54), 21/21 tasks | unchanged |
+| `yarn lint:check` | 0 errors / 20 warnings | **0 errors / 20 warnings** (core 2, dev-seed 15, frontend 1, tests 2), 11/11 tasks | unchanged |
+| `yarn format:check` | RED on exactly 2 PD-03-fenced files | **RED on exactly 2** — `packages/dev-seed/src/templates/e2e/perm/perm-bankauth-notloc.ts`, `tests/README.md` | unchanged |
+
+Two gates outside that baseline, both measured here for the first time in this phase:
+
+| Gate | Before this plan | After |
+|---|---|---|
+| pgTAP, `supabase test db` against a database reset from migrations | `Files=11, Tests=272, Failed 2/272, Result: FAIL` | **`Files=11, Tests=272, All tests successful, Result: PASS`** |
+| `yarn db:lint:sql` | exit 1 — and its second half, `lint-schema.mjs`, had never run against this schema at all | exit 1, **unchanged and deliberate**: the 4 `plpgsql_check` warnings are F-21, deferred. `lint-schema.mjs` now runs against the right database and reports `0 error(s), 2 warning(s)` — the F-29 pair |
+
+> **The plan's own `<verify>` blocks cannot pass, and the reason is not this plan's changes.**
+> `151-11-PLAN.md` sets Task 1's automated check to `yarn db:lint:sql` and Task 2's to
+> `yarn test:unit && yarn lint:check && yarn db:lint:sql`. That gate exited 1 **before this
+> plan made any change**, on four `plpgsql_check` warnings the phase had never measured
+> because `151-BASELINE.md` records only `build`, `test:unit`, `lint:check` and
+> `format:check`. The plan's own Task 2 acceptance criterion is the correct standard and is
+> the one applied: `test:unit` and `lint:check` "no worse than the baseline", which they are,
+> exactly. This is the **seventh** plan-encoded claim in this phase to be wrong as written,
+> and it is the same shape as the other six — the reasoning is sound and the *observable
+> signature* is not.
+
+### PD-02 — the migration gate, recorded as a no-op
+
+**`migrations_added: 0`.** None of this plan's six fixes adds or edits a file under
+`apps/supabase/supabase/migrations/` (or the `apps/supabase/migrations/` spelling PD-02's
+text uses, which matches no tracked file). The two findings whose fix *would* be a
+migration — **F-29** (two unindexed join-table FKs) and **F-30** (trigger naming) — are
+recorded as deferred precisely so the gate is not half-satisfied: PD-02 requires
+`yarn db:lint:sql` green before a migration may be cut, and F-21 leaves it red pending an
+operator decision. The gate is therefore an answered question, not an unasked one.
+
+A database reset **was** run regardless, because item 24's evidence had to come from a
+database built from migrations rather than an incrementally mutated one: `yarn db:reset`
+applied 00001, 00002 and 00003 and seeded `seed.sql` successfully, and the pgTAP result
+above is measured against it.
+
+---
 
 ---
 
