@@ -5,15 +5,15 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 151
 current_phase_name: ship-v0-2-akita-review-stack
 status: executing
-stopped_at: Completed 151-09-PLAN.md
-last_updated: "2026-08-17T08:50:24.626Z"
+stopped_at: "Completed 151-10-PLAN.md — PRs #863 and #864 open"
+last_updated: "2026-08-17T10:01:45.094Z"
 last_activity: 2026-08-16
 last_activity_desc: Phase 151 execution started
 progress:
   total_phases: 15
   completed_phases: 4
   total_plans: 43
-  completed_plans: 33
+  completed_plans: 34
   percent: 27
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-12 — v2.15 active)
 
 Milestone: v2.15 (Phases 137-151, 15 phases, 38 requirements)
 Phase: 151 (ship-v0-2-akita-review-stack) — EXECUTING
-Plan: 10 of 19
+Plan: 11 of 19
 Status: Ready to execute
 Last activity: 2026-08-16 — Phase 151 execution started
 
@@ -48,8 +48,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-08-17T08:50:15.009Z
-Stopped at: Completed 151-09-PLAN.md
+Last session: 2026-08-17T10:01:33.319Z
+Stopped at: Completed 151-10-PLAN.md — PRs #863 and #864 open
 Resume file: None
 
 ## Deferred Items
@@ -158,6 +158,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 151 P07 | 2h10m | 3 tasks | 352 files |
 | Phase 151 P08 | ~3h | 4 tasks | 151 files |
 | Phase 151 P09 | 35m | 3 tasks | 7 files |
+| Phase 151 P10 | ~50m | 4 tasks | 5 files |
 
 ## Deferred Items
 
@@ -682,6 +683,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase ?]: Findings on the 120 unclaimed files are DEFERRED, not fixed — the remedy edits an operator-approved slices.tsv, so it is the operator's call (151-09)
 - [Phase ?]: The plan's 01a <verify> asserts 'DR'; a correct pure-rename commit yields 'R' — asserted the prose criterion (R>0, A=0, M=0) instead (151-09)
 - [Phase ?]: Items 12 and 16 stay phase-level (PENDING->18); their evidence is recorded as input rather than filled into per-slice cells (151-09)
+- [Phase ?]: 151-10: operator consented to publish (accept-reviews) — ruleset 8477541 stays active; ~12 one-shot Copilot reviews accepted (review_on_push:false)
+- [Phase ?]: 151-10: PR #860 will be REPURPOSED as the stack umbrella at 151-18 — head update is a fast-forward not a force-push; #860 carries zero human reviews
+- [Phase ?]: 151-10: stack PRs fire origin/main's main.yaml, which has NO skill-drift-check — research Pitfall 7 is wrong; real CI signature is 'Setup Yarn 4.6' / YN0028
 
 ### Quick Tasks Completed
 
