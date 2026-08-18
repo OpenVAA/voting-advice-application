@@ -173,7 +173,7 @@ Display a question for answering.
     <QuestionHeading {question} questionBlocks={$selectedQuestionBlocks} slot="heading" />
 
     {#if !customData.video}
-      {#if $appSettings.questions.interactiveInfo?.enabled && (info || customData.infoSections?.length)}
+      {#if $appSettings.questions.interactiveInfo?.enabled && (info || customData.infoSections?.length || customData.arguments?.length)}
         <div class="flex items-center justify-center">
           <QuestionExtendedInfoButton
             {question}

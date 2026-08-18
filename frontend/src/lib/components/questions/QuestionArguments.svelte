@@ -4,27 +4,25 @@ Display the pros and cons arguments related to a question.
 
 ### Properties
 
-- `info`: The info content to show as a plain or HTML string.
-- `onCollapse`: A callback triggered when the info content is collapsed. Mostly used for tracking.
-- `onExpand`: A callback triggered when the info content is expanded.  Mostly used for tracking.
-- Any valid properties of an `<Expander>` component
+- `question`: The question whose arguments to display.
+- Any valid properties of a `<div>` element
 
 ### Usage
 
 ```tsx
-<QuestionBasicInfo {info}/>
+<QuestionArguments {question}/>
 ```
 -->
 
 <script lang="ts">
+  import { ARGUMENT_TYPE, getCustomData } from '@openvaa/app-shared';
+  import { isChoiceQuestion } from '@openvaa/data';
   import { getComponentContext } from '$lib/contexts/component';
+  import { concatClass } from '$lib/utils/components';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import type { ArgumentType, QuestionArguments } from '@openvaa/app-shared';
-  import { ARGUMENT_TYPE, getCustomData } from '@openvaa/app-shared';
-  import type { QuestionArgumentsProps } from './QuestionArguments.type';
   import type { TranslationKey } from '$types';
-  import { isChoiceQuestion } from '@openvaa/data';
-  import { concatClass } from '$lib/utils/components';
+  import type { QuestionArgumentsProps } from './QuestionArguments.type';
 
   type $$Props = QuestionArgumentsProps;
 
@@ -35,22 +33,25 @@ Display the pros and cons arguments related to a question.
   const { arguments: args } = getCustomData(question) || {};
 
   const TITLE_KEYS: Record<ArgumentType, TranslationKey> = {
-    [ARGUMENT_TYPE.BooleanCons]: 'questions.arguments.pro',
-    [ARGUMENT_TYPE.BooleanPros]: 'questions.arguments.con',
+    [ARGUMENT_TYPE.BooleanPros]: 'questions.arguments.pro',
+    [ARGUMENT_TYPE.BooleanCons]: 'questions.arguments.con',
     [ARGUMENT_TYPE.CategoricalPros]: 'questions.arguments.proCategory',
-    [ARGUMENT_TYPE.LikertCons]: 'questions.arguments.pro',
-    [ARGUMENT_TYPE.LikertPros]: 'questions.arguments.con'
+    [ARGUMENT_TYPE.LikertPros]: 'questions.arguments.pro',
+    [ARGUMENT_TYPE.LikertCons]: 'questions.arguments.con'
   };
 
   /**
-   * Sort arguments to show cons before pros.
+   * Whether the argument holds counterarguments.
+   */
+  function isCon({ type }: QuestionArguments): boolean {
+    return type === ARGUMENT_TYPE.BooleanCons || type === ARGUMENT_TYPE.LikertCons;
+  }
+
+  /**
+   * Sort arguments to show pros before cons.
    */
   function sortArguments(args: Array<QuestionArguments>): Array<QuestionArguments> {
-    return [...args].sort((a, b) => {
-      if (a.type === ARGUMENT_TYPE.BooleanCons || a.type === ARGUMENT_TYPE.LikertCons) return 1;
-      if (b.type === ARGUMENT_TYPE.BooleanCons || b.type === ARGUMENT_TYPE.LikertCons) return -1;
-      return 0;
-    });
+    return [...args].sort((a, b) => Number(isCon(a)) - Number(isCon(b)));
   }
 </script>
 
