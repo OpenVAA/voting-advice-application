@@ -34,19 +34,19 @@ export async function addCandidate({
   return parseResponse(response, 'There was an error adding the candidate');
 }
 
-async function parseResponse<T extends { type: string; cause?: string }>(
+async function parseResponse<TResponse extends { type: string; cause?: string }>(
   response: Response | Error,
   fallbackError: string
-): Promise<T> {
+): Promise<TResponse> {
   if (response instanceof Error) {
-    return { type: 'failure', cause: response.message } as T;
+    return { type: 'failure', cause: response.message } as TResponse;
   }
   if (!response.ok) {
-    return { type: 'failure', cause: fallbackError } as T;
+    return { type: 'failure', cause: fallbackError } as TResponse;
   }
-  const data: T = await response.json();
+  const data: TResponse = await response.json();
   if (data.type !== 'success') {
-    return { type: 'failure', cause: data.cause ?? fallbackError } as T;
+    return { type: 'failure', cause: data.cause ?? fallbackError } as TResponse;
   }
   return data;
 }
