@@ -21,13 +21,13 @@ Display the question's expandable information content.
 -->
 
 <script lang="ts">
+  import { getCustomData } from '@openvaa/app-shared';
+  import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import { getCustomData } from '@openvaa/app-shared';
   import { Expander } from '../expander';
-  import type { QuestionExtendedInfoProps } from './QuestionExtendedInfo.type';
-  import { getComponentContext } from '$lib/contexts/component';
   import { QuestionArguments } from '.';
+  import type { QuestionExtendedInfoProps } from './QuestionExtendedInfo.type';
 
   type $$Props = QuestionExtendedInfoProps;
 
@@ -47,9 +47,9 @@ Display the question's expandable information content.
   <div class="prose">
     {@html sanitizeHtml(info)}
   </div>
-  {#if infoSections?.length}
+  {#if infoSections?.length || args?.length}
     <div class="prose">
-      {#each infoSections as { title, content }}
+      {#each infoSections ?? [] as { title, content }}
         {#if title}
           <Expander
             {title}
@@ -61,7 +61,7 @@ Display the question's expandable information content.
           </Expander>
         {/if}
       {/each}
-      {#if args}
+      {#if args?.length}
         {@const title = $t('questions.arguments.title')}
         <Expander
           {title}
