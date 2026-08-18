@@ -8,7 +8,8 @@ import type {
   CandidateStatsResult,
 } from '../../../server/src/services/candidateStats.type';
 
-const TSV_HEADER = 'email\tfirstName\tlastName\tregistrationKey\tpartyExternalId\tconstituencyExternalId';
+const TSV_HEADER =
+  'email\tfirstName\tlastName\tregistrationKey\tpartyExternalId\tconstituencyExternalId';
 
 function rowsToTsv(rows: Array<CandidateStatRow>): string {
   const dataLines = rows.map(

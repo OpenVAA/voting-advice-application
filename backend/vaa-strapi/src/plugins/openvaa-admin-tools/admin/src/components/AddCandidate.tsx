@@ -1,4 +1,12 @@
-import { Button, Field, Flex, SingleSelect, SingleSelectOption, TextInput, Typography } from '@strapi/design-system';
+import {
+  Button,
+  Field,
+  Flex,
+  SingleSelect,
+  SingleSelectOption,
+  TextInput,
+  Typography,
+} from '@strapi/design-system';
 import { CheckCircle, WarningCircle } from '@strapi/icons';
 import { useCallback, useEffect, useState } from 'react';
 import { addCandidate, getFormOptions } from '../api/addCandidate';
@@ -148,7 +156,9 @@ export function AddCandidate(): ReactElement {
 
       <Button
         onClick={handleSubmit}
-        disabled={loading || !firstName || !lastName || !email || !selectedParty || !selectedConstituency}
+        disabled={
+          loading || !firstName || !lastName || !email || !selectedParty || !selectedConstituency
+        }
       >
         {loading ? 'Adding...' : 'Add Candidate'}
       </Button>

@@ -5,10 +5,12 @@ export default function service({ strapi }: { strapi: Core.Strapi }) {
   return {
     getStats: async (): Promise<CandidateStatsResult> => {
       // 1. Get all opinion question-categories
-      const categories = await strapi.documents('api::question-category.question-category').findMany({
-        filters: { type: 'opinion' },
-        populate: { questions: true },
-      });
+      const categories = await strapi
+        .documents('api::question-category.question-category')
+        .findMany({
+          filters: { type: 'opinion' },
+          populate: { questions: true },
+        });
 
       // 2. Collect all opinion question documentIds
       const opinionQuestionIds = new Set<string>();
