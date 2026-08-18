@@ -1,7 +1,10 @@
 services:
   # LocalStack configuration: https://docs.localstack.cloud/references/configuration/
   awslocal:
-    image: localstack/localstack
+    # Pinned: from the 2026.3.0 release onwards LocalStack requires a valid
+    # LOCALSTACK_AUTH_TOKEN and exits with code 55 without one. 4.14.0 is the last
+    # release that starts unauthenticated. Only bump this together with an auth token.
+    image: localstack/localstack:4.14.0
     ports:
       - "127.0.0.1:4566:4566"
     environment:
