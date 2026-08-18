@@ -4,7 +4,7 @@ Display any data input, its associated label and possible info. The HTML element
 
 The input itself is wrapped in multiple container elements, the outermost of which can be passed the `containerProps` prop.
 
-Multilingual features are only available if the `locales` store contains more than one locale.Button
+Multilingual features are only available if the `locales` store contains more than one locale.
 
 ### Properties
 
