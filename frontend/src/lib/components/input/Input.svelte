@@ -9,7 +9,7 @@ Multilingual features are only available if the `locales` store contains more th
 ### Properties
 
 - `type`: The type of input element to use. This also defines the type of the `value` prop, which of the other properties are allowed or required, and the HTML element rendered.
-  - `boolean`: A boolean toggle.render
+  - `boolean`: A boolean toggle.
   - `date`: A date input.
   - `image`: An image file input.
   - `number`: A numeric input.
