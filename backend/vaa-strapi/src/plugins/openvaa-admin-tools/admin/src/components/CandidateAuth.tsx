@@ -183,29 +183,42 @@ export function CandidateAuth(): ReactElement {
               }}
             >
               {searchResults.map((c) => (
-                <div
+                <button
                   key={c.documentId}
+                  type="button"
                   onClick={() => handleSelectCandidate(c.documentId)}
                   style={{
+                    width: '100%',
                     padding: '8px 12px',
                     cursor: 'pointer',
+                    border: 'none',
                     borderBottom: '1px solid #f0f0f0',
+                    background: 'transparent',
+                    font: 'inherit',
+                    color: 'inherit',
+                    textAlign: 'left',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
                   }}
                   onMouseEnter={(e) =>
-                    ((e.currentTarget as HTMLDivElement).style.backgroundColor = '#f0f0ff')
+                    ((e.currentTarget as HTMLButtonElement).style.backgroundColor = '#f0f0ff')
                   }
                   onMouseLeave={(e) =>
-                    ((e.currentTarget as HTMLDivElement).style.backgroundColor = 'transparent')
+                    ((e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent')
+                  }
+                  onFocus={(e) =>
+                    ((e.currentTarget as HTMLButtonElement).style.backgroundColor = '#f0f0ff')
+                  }
+                  onBlur={(e) =>
+                    ((e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent')
                   }
                 >
                   <span>
                     {c.firstName} {c.lastName} ({c.email})
                   </span>
                   <Badge>{c.isRegistered ? 'Registered' : 'Unregistered'}</Badge>
-                </div>
+                </button>
               ))}
             </div>
           )}
