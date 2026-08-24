@@ -162,5 +162,36 @@ describe('trackingService (pure-rune producer)', () => {
       });
       cleanup();
     });
+
+    // EXACT own-enumerable surface lock — deliberately NOT a `toContain` superset
+    // check. `appContext` blanket-forwards this producer's WHOLE own-enumerable
+    // surface via `inheritContextMembers(this, this.#tracking)`, so ANY new public
+    // own-enumerable member added to `TrackingServiceImpl` silently WIDENS
+    // appContext's public runtime surface beyond the `AppContext` type. The
+    // appContext spread guard (`appContext.spread.svelte.test.ts`) is a superset
+    // check and is therefore blind to that widening — this case is the tripwire.
+    // If you add a member here on purpose, add it to `AppContext` and to this
+    // list in the same change.
+    it('exposes EXACTLY the eight own-enumerable members appContext forwards', async () => {
+      const { trackingService } = await importTracking(true);
+      const cleanup = $effect.root(() => {
+        const svc = trackingService({
+          appSettings: appSettingsHandle(true),
+          userPreferences: userPrefsHandle('granted')
+        });
+        const expected = [
+          'sessionId',
+          'sendTrackingEvent',
+          'shouldTrack',
+          'startPageview',
+          'startEvent',
+          'submitAllEvents',
+          'track',
+          'resetAllEvents'
+        ];
+        expect(Object.keys(svc).sort()).toEqual([...expected].sort());
+      });
+      cleanup();
+    });
   });
 });
