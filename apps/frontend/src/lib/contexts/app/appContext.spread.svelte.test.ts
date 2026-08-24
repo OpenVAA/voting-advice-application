@@ -26,11 +26,18 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // `vi.mock` factories are hoisted; mutable holders they reference are created via
 // `vi.hoisted` (also hoisted, evaluated first).
-const { stubs } = vi.hoisted(() => {
+const { stubs, dataRootHolder, initialDataRoot } = vi.hoisted(() => {
   function handle<TValue>(value: TValue): { current: TValue } {
     return { current: value };
   }
+  // Mutable backing for the dataCtx stub's `dataRoot` ACCESSOR (below), so a case
+  // can replace the value AFTER construction and observe whether appContext
+  // re-reads the source or serves a construction-time snapshot.
+  const initialDataRoot: unknown = { marker: 'dataRoot-initial' };
+  const dataRootHolder: { value: unknown } = { value: initialDataRoot };
   return {
+    dataRootHolder,
+    initialDataRoot,
     stubs: {
       // componentCtx: STABLE members (t/translate) + reactive reads
       // (locale/locales/darkMode read directly, not as handles).
@@ -42,9 +49,20 @@ const { stubs } = vi.hoisted(() => {
         darkMode: false
       },
       // dataCtx: bare own-enumerable reactive accessor (see phase 113) +
-      // arrow-field writer. `dataRoot` is now a bare value, not a `{ current }` handle.
+      // arrow-field writer. `dataRoot` is a bare value, not a `{ current }` handle.
+      //
+      // The ACCESSOR SHAPE here is LOAD-BEARING, not cosmetic: production's
+      // `DataContextProvider` installs `dataRoot` as an own-enumerable accessor
+      // (`Object.defineProperty(…, { get, enumerable: true })`), and appContext
+      // forwards the whole dataCtx surface with `inheritContextMembers`, which
+      // installs a LIVE forwarding accessor for an accessor member but a frozen
+      // VALUE COPY for a plain data member. A plain-data stub would therefore make
+      // a value-copy regression pass silently. An object-literal `get` is an
+      // own-enumerable accessor property — the same descriptor shape production has.
       data: {
-        dataRoot: {} as unknown,
+        get dataRoot(): unknown {
+          return dataRootHolder.value;
+        },
         setDataRoot: (_v: unknown) => {}
       },
       // tracking producer: own-enumerable handle objects + arrow-field methods.
@@ -111,6 +129,8 @@ describe('AppContextProvider — own-enumerability spread guard', () => {
     cleanup?.();
     cleanup = undefined;
     vi.clearAllMocks();
+    // Reset the dataCtx stub backing so no case leaks its replacement into another.
+    dataRootHolder.value = initialDataRoot;
   });
 
   /**
@@ -196,6 +216,30 @@ describe('AppContextProvider — own-enumerability spread guard', () => {
     expect(Object.keys(spread)).toContain('appSettings');
     expect(Object.keys(spread)).toContain('dataRoot');
     expect(Object.keys(spread)).toContain('locale');
+  });
+
+  // Live-forwarding guard for the dataCtx inherit. appContext forwards the whole
+  // dataCtx surface via `inheritContextMembers`, which re-installs `dataRoot` as a
+  // LIVE accessor delegating to `dataContext` on EVERY read — not a snapshot taken
+  // at construction. That liveness is the whole point: production's `dataRoot` is an
+  // identity-stable `#version`-bridge accessor populated AFTER appContext is built,
+  // so a value copy would hand every consumer a permanently empty DataRoot.
+  //
+  // Asserted on the INSTANCE, deliberately NOT on a spread copy: `{ ...instance }`
+  // necessarily invokes the getter once and snapshots the result (Test 2 covers that
+  // side). A value-copy forward cannot satisfy this case — negative-control verified
+  // by temporarily forwarding `dataRoot` by value, which makes the second assertion
+  // report the stale initial marker.
+  it('dataRoot is forwarded LIVE from dataContext, not snapshotted at construction', () => {
+    const instance = setup();
+    expect(instance.dataRoot as unknown).toBe(initialDataRoot);
+
+    // Replace the source value AFTER construction, exactly as the real DataRoot
+    // population happens after appContext is built.
+    const replacement: unknown = { marker: 'dataRoot-replaced' };
+    dataRootHolder.value = replacement;
+
+    expect(instance.dataRoot as unknown).toBe(replacement);
   });
 
   // Edge case — the read-write `appType` handle survives the spread intact so
