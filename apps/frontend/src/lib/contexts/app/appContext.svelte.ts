@@ -13,6 +13,7 @@ import { surveyLink } from './survey.svelte';
 import { trackingService } from './tracking';
 import { getComponentContext } from '../component';
 import { getDataContext } from '../data';
+import { inheritContextMembers } from '../utils/inheritContextMembers';
 import { localStorageState } from '../utils/persistedState.svelte';
 import type { DynamicSettings } from '@openvaa/app-shared';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
@@ -37,10 +38,14 @@ const CONTEXT_KEY = Symbol();
  * contexts (the componentCtx / dataCtx / tracking instance-spreads) and then
  * overriding a handful of members. Those THREE internal instance-spreads are
  * GONE. Every forwarded member is now an EXPLICIT OWN-ENUMERABLE instance
- * property assigned in the constructor (CONVENTIONS "explicit getter
- * forwarding, never instance spread") — the canonical
- * `Object.assign(this, getX())` composing-leaf copy for the stable members and
- * `Object.defineProperty(this, …)` / handle-object fields for the reactive ones.
+ * property installed in the constructor (CONVENTIONS "explicit getter
+ * forwarding, never instance spread"), by three mechanisms: a SELECTIVE
+ * `Object.assign` value copy for the two stable componentCtx members;
+ * `inheritContextMembers` — the shared descriptor-preserving forwarder written in
+ * (see phase 113 CR-01) and already used by the three downstream orchestrators —
+ * for the WHOLE dataCtx and tracking surfaces; and
+ * `Object.defineProperty(…)` / handle-object fields for this context's own
+ * reactive members.
  *
  * ── The DECISIVE downstream-spread constraint ────────────────────────────────
  * `candidateContext.svelte.ts:366`, `adminContext.svelte.ts:98`, and
@@ -167,7 +172,7 @@ export class AppContextProvider implements AppContext {
   // Reactive `{ current, set?, update? }` handles installed via `const self = this`.
   readonly appType!: AppContext['appType'];
   // appSettings/locale are BARE own-enumerable reactive accessors (see phase 113
-  // ), installed via Object.defineProperty(this, …, { enumerable: true })
+  // ), installed via `Object.defineProperty(…, { enumerable: true })`
   // so they survive the downstream `{ ...appContext }` spreads.
   readonly appSettings!: AppContext['appSettings'];
   readonly appCustomization!: AppContext['appCustomization'];
@@ -180,17 +185,23 @@ export class AppContextProvider implements AppContext {
   readonly userPreferences!: AppContext['userPreferences'];
   readonly popupQueue!: PopupState;
 
-  // Forwarded STABLE componentCtx members (own props copied via Object.assign).
+  // Forwarded STABLE componentCtx members — a SELECTIVE forward (only these two
+  // are copied, by reference; see the forwarding block for why not wholesale).
   readonly t!: AppContext['t'];
   readonly translate!: AppContext['translate'];
 
-  // Forwarded dataCtx members. `dataRoot` is a BARE own-enumerable reactive accessor
-  // (see phase 113) installed via Object.defineProperty so it survives the
-  // downstream spreads; `setDataRoot` is an arrow field — reference copied.
+  // Forwarded dataCtx members — inherited WHOLESALE from `dataContext` via
+  // `inheritContextMembers` (see the forwarding block). `dataRoot` arrives as a
+  // LIVE forwarding accessor delegating to the source's own bare reactive accessor
+  // (see phase 113) on every read, still own-enumerable and therefore still safe
+  // across the downstream spreads; `setDataRoot` is an arrow field — reference copied.
   readonly dataRoot!: AppContext['dataRoot'];
   readonly setDataRoot!: AppContext['setDataRoot'];
 
-  // Forwarded tracking members (own-prop handles + arrow fields — references copied).
+  // Forwarded tracking members — inherited WHOLESALE from the tracking producer via
+  // `inheritContextMembers` (own-enumerable `{ current }` handle objects + arrow
+  // fields, all copied by reference). The producer's exact eight-member surface is
+  // locked by a dedicated case in `tracking/trackingService.svelte.test.ts`.
   readonly sendTrackingEvent!: AppContext['sendTrackingEvent'];
   readonly sessionId!: AppContext['sessionId'];
   readonly shouldTrack!: AppContext['shouldTrack'];
@@ -321,43 +332,50 @@ export class AppContextProvider implements AppContext {
     ////////////////////////////////////////////////////////////////////
     // EXPLICIT FORWARDING of the upstream contexts as OWN properties — this
     // REPLACES the former componentCtx / dataCtx / tracking instance-spreads
-    // (success criterion 1). Stable plain members are copied by reference;
-    // reactive members are the own-enumerable handle objects exposed by the
-    // producers/contexts.
+    // (success criterion 1). Two mechanisms, chosen per upstream: a SELECTIVE
+    // value copy for componentCtx (only two of its members belong here), and the
+    // shared `inheritContextMembers` forwarder for the WHOLE dataCtx and tracking
+    // surfaces.
+    //
+    // Why the shared forwarder rather than a hand-rolled accessor install plus a
+    // value copy (the two ad-hoc mechanisms this block used to carry): it copies
+    // each own-enumerable member BY PROPERTY DESCRIPTOR — an accessor is
+    // re-installed as a LIVE forwarding accessor that delegates to the source on
+    // every read, a data member is copied by value. That distinction is
+    // load-bearing here for the same reason it was one layer downstream in
+    // (see phase 113 CR-01): a plain value copy of a bare reactive accessor
+    // (`dataRoot`) invokes its getter ONCE at construction time and freezes
+    // reactivity for every consumer. Keeping it an accessor means the reactive
+    // `#version` re-read happens inside the CONSUMER's tracking scope.
+    //
+    // Everything the forwarder installs is own-enumerable (`enumerable: true`),
+    // so all of it survives the three downstream `{ ...appContext }` spreads —
+    // the load-bearing spread-safety discipline documented at the top of this file.
     ////////////////////////////////////////////////////////////////////
 
-    // Forward dataCtx.dataRoot as a BARE own-enumerable reactive accessor (see phase 113
-    // ): read the now-bare `dataContext.dataRoot` accessor each access so the
-    // `#version` reactive re-read inside it stays live, and install via
-    // Object.defineProperty(enumerable:true) so it survives the downstream
-    // `{ ...appContext }` spreads. (Cannot go through the plain `Object.assign` value
-    // copy below — that would snapshot the DataRoot once, losing reactivity.)
-    Object.defineProperty(this, 'dataRoot', {
-      get() {
-        return self.#dataCtx.dataRoot;
-      },
-      enumerable: true,
-      configurable: true
+    // componentCtx — EXPLICIT SELECTIVE forward, deliberately NOT wholesale. This
+    // context OVERRIDES `locale` (bare accessor) and `locales` / `darkMode`
+    // (`{ current }` handles) with its own members installed above, so a wholesale
+    // inherit would clobber them; and `componentCtx.darkMode` is a prototype
+    // getter (not own-enumerable), so a wholesale inherit would not even see it.
+    // Only the two STABLE members belong here, copied by reference.
+    Object.assign(this, {
+      t: this.#componentCtx.t,
+      translate: this.#componentCtx.translate
     });
 
-    Object.assign(this, {
-      // componentCtx — only the STABLE members not overridden above
-      // (`locale`/`locales`/`darkMode` are replaced by the `{ current }` handles).
-      t: this.#componentCtx.t,
-      translate: this.#componentCtx.translate,
-      // dataCtx — arrow-field writer (reference copied); `dataRoot` is installed
-      // above as a bare own-enumerable accessor.
-      setDataRoot: this.#dataCtx.setDataRoot,
-      // tracking — own-enumerable handle objects + arrow-field methods.
-      sendTrackingEvent: this.#tracking.sendTrackingEvent,
-      sessionId: this.#tracking.sessionId,
-      shouldTrack: this.#tracking.shouldTrack,
-      startPageview: this.#tracking.startPageview,
-      startEvent: this.#tracking.startEvent,
-      track: this.#tracking.track,
-      submitAllEvents: this.#tracking.submitAllEvents,
-      resetAllEvents: this.#tracking.resetAllEvents
-    });
+    // dataCtx — WHOLESALE forward of its two own-enumerable members: `dataRoot`
+    // (re-installed as a live forwarding accessor over the source's bare reactive
+    // accessor) and the `setDataRoot` arrow-field writer (copied by reference).
+    inheritContextMembers(this, this.#dataCtx);
+
+    // tracking — WHOLESALE forward of the producer's eight own-enumerable members
+    // (`{ current }` handle objects + arrow-field methods, all copied by
+    // reference). A wholesale forward re-exports whatever the producer exposes, so
+    // its surface is pinned by an exact-`Object.keys` case in
+    // `tracking/trackingService.svelte.test.ts` — without that lock, a new public
+    // member on the producer would silently widen this context's public surface.
+    inheritContextMembers(this, this.#tracking);
 
     ////////////////////////////////////////////////////////////////////
     // Prev-ref-guarded $effect RE-MERGE (success criterion 3). Legal in the
