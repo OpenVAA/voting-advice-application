@@ -1,11 +1,15 @@
-Re: apps/supabase/supabase/schema/300-auth-tables.sql
+# Refactoring tasks to discuss, plan and queue
 
-# Permissions refactoring
+- Use project id to select the project
+  - Add a PROJECT_ID env which defaults to the default project id
+  - Parameterise all queries with that
+  - Allow e2e tests to create their own project with a default test project id so they no longer require a full local db reset
+- Move MainContent and the other components in the routes root to $layouts/main (export barrel), adding a new alias
+- Permissions refactoring (see below)
 
-## General todo
+# Permissions refactoring WIP
 
-- Use project id
-- Supabase dataprovider:
+> Re: apps/supabase/supabase/schema/300-auth-tables.sql
 
 ## Todo
 
