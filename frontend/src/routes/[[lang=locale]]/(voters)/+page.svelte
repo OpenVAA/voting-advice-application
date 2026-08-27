@@ -16,14 +16,14 @@ The frontpage of the app for voters.
   import { getLayoutContext } from '$lib/contexts/layout';
   import { Footer } from '$lib/dynamic-components/footer';
   import { SurveyBanner } from '$lib/dynamic-components/survey/banner';
-  import MainContent from '../MainContent.svelte';
   import { sanitizeHtml } from '$lib/utils/sanitize';
+  import MainContent from '../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, appSettings, darkMode, getRoute, t } = getAppContext();
+  const { appCustomization, appSettings, darkMode, getRoute, locale, t } = getAppContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
@@ -57,5 +57,12 @@ The frontpage of the app for voters.
     <SurveyBanner class="mt-lg" />
   {/if}
 
+  <div class="mt-md flex flex-col items-center justify-center justify-items-center gap-sm md:flex-row">
+    <img
+      src="images/co-funded-by-the-eu-{$locale || 'en'}.png"
+      alt="Co-funded by the European Union"
+      class="max-w-[10rem]" />
+    <img src="images/youthvotes-logo-black.png" alt="YouthVotes" class="max-w-[5rem]" />
+  </div>
   <Footer />
 </MainContent>
