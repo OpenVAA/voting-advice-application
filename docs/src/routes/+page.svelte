@@ -175,6 +175,7 @@
           class="link">YouthVotes</a> (2025–2027) project together with the National Youth Councils of Finland (FYCS), Denmark
         (DUF) and Estonia (ENL).
       </p>
+      <img src="/images/funded-by-the-eu-en.png" alt="Funded by the European Union" class="ms-auto max-w-[5rem] md:max-w-[7rem]" />
     </div>
   </div>
 
