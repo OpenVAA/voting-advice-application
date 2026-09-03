@@ -1,0 +1,391 @@
+<!--@component
+
+# Results layout
+
+Renders the matching results list and, when on an entity detail child route, shows that entity's details in a `Drawer` modal overlay. The layout persists across child route navigation, keeping the results list mounted underneath.
+
+Entity cards are `<a>` links — right-click opens in new tab, normal click triggers SvelteKit client-side navigation which the layout detects and renders in a Drawer.
+
+## Architecture
+
+- URL is the single source of truth. Tabs, drawer visibility, and
+  active entity type are pure `$derived` over `page.params.electionTab` / `entityTab` / `entity` / `id`. The *selected* election whose results are being rendered lives in the route segment `page.params.electionTab` (name-disjoint from the search-side `?electionId=…` AVAILABLE-array surface, which keeps its `voterContext.selectedElections` semantics — that array drives nomination
+  + question filtering and is set by the voter at `/elections`).
+  No local `$state` twins for URL-derivable state; no `$effect`-based sync.
+- `<EntityListWithControls>` replaces the legacy `<EntityList>` call —
+  filters are re-enabled end-to-end through the shared `filterContext` which auto-scopes per (electionId, entityTab).
+- Drawer-first paint: the `{#if drawerVisible} <EntityDetailsDrawer/>`
+  block is rendered BEFORE the list container in DOM source order; the list container carries `content-visibility: auto` so the browser defers its layout/paint until it scrolls into view.
+
+Sibling tracking concerns:
+- `startFeedbackPopupCountdown` via `appSettings.results.showFeedbackPopup`
+- `startSurveyPopupCountdown` via `appSettings.survey.showIn`
+- `onMount` `results_ranked`/`results_browse` page-entry event
+- `$effect` drawer-viewed tracking event
+-->
+
+<script lang="ts">
+  import { log } from '@openvaa/app-shared';
+  import { isMatch } from '@openvaa/matching';
+  import { onMount } from 'svelte';
+  import { slide } from 'svelte/transition';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/state';
+  import { MainContent } from '$layouts/main';
+  import AccordionSelect from '$lib/components/accordionSelect/AccordionSelect.svelte';
+  import { Button } from '$lib/components/button';
+  import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { Loading } from '$lib/components/loading';
+  import { Tabs } from '$lib/components/tabs';
+  import { getVoterContext } from '$lib/contexts/voter';
+  import { EntityDetailsDrawer } from '$lib/dynamic-components/entityDetails';
+  import { EntityListWithControls } from '$lib/dynamic-components/entityList';
+  import { getEntityAndTitle } from '$lib/utils/entityDetails';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
+  import { compareMaybeWrappedEntities } from '$lib/utils/sorting';
+  import { ucFirst } from '$lib/utils/text/ucFirst';
+  import { DELAY } from '$lib/utils/timing';
+  import type { Election, EntityType } from '@openvaa/data';
+  import type { Snippet } from 'svelte';
+  import type { Tab } from '$lib/components/tabs';
+
+  // reason: child routes render via URL-driven Drawer state inside this layout, not via `{@render children()}`. Renamed to `_children` to satisfy unused-vars while preserving SvelteKit prop contract.
+  let { children: _children }: { children: Snippet } = $props();
+
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  // The reactive context getters (constituenciesSelectable, matches, nominationsAvailable, resultsAvailable, selectedConstituencies, selectedElections) are read via voterCtx.X.
+  // Genuinely stable members (getRoute, t, answers, startEvent, *Countdown) remain destructured.
+  //
+  // appSettings and dataRoot are NOT in that set. Both are bare reactive accessors, so per CLAUDE.md's Context Destructuring Rule neither may be destructured: appSettings is value-replacing, so a destructured local stops updating, and dataRoot is identity-stable behind a #version bridge, so the destructure takes the version dependency once at init and never again.
+  const voterCtx = getVoterContext();
+  const { answers, getRoute, startEvent, startFeedbackPopupCountdown, startSurveyPopupCountdown, t } = voterCtx;
+  // appSettings is value-replacing: a $derived read alias is safe and correct.
+  const appSettings = $derived(voterCtx.appSettings);
+  // dataRoot is identity-stable: read `voterCtx.dataRoot.<prop>` directly inside the consuming tracking scope, never through an intermediate $derived alias (referential equality would suppress downstream notification and the cold/direct-URL snapshot would stay empty). See CLAUDE.md "Context Destructuring Rule" and its stable-reference carve-out.
+  // Local aliases for template readability:
+  const elections = $derived(voterCtx.selectedElections);
+  const constituencies = $derived(voterCtx.selectedConstituencies);
+
+  ////////////////////////////////////////////////////////////////////
+  // URL-derived state
+  ////////////////////////////////////////////////////////////////////
+  //
+  // Two name-disjoint election surfaces coexist on the URL:
+  //   - ROUTE side: `page.params.electionTab` (singular) — the *selected* election whose results-page is being rendered. New.
+  //   - SEARCH side: `?electionId=…` / `electionId[N]=…` (zero-or-more) — the AVAILABLE elections (voter scope set at `/elections`), surfaced via `voterContext.selectedElections`.
+  // The two share NO key name (electionTab vs electionId) — different identifiers throughout the codebase. The server-side guard at `[[electionTab]]/+layout.ts` validates that `params.electionTab` is a member of the AVAILABLE array.
+  //
+  // entityTab + entity + id are route params, gated by the etPl / etSg short-name matchers.
+  //
+  // Single-election fallback: when the route segment is absent AND there's exactly one available election, auto-select it. The server guard in `[[electionTab]]/+layout.ts` is expected to redirect-and-canonicalize this case, so this fallback is the client-side safety net.
+
+  type EntityPlural = 'candidates' | 'organizations' | 'alliances';
+
+  const _urlElectionTab = $derived(page.params.electionTab);
+
+  const activeElectionId = $derived<string | undefined>(
+    _urlElectionTab ?? (elections.length === 1 ? elections[0].id : undefined)
+  );
+
+  const activeElection = $derived<Election | undefined>(
+    activeElectionId ? elections.find((e) => e.id === activeElectionId) : undefined
+  );
+
+  const _urlPluralRaw = $derived(page.params.entityTab);
+  const _urlPlural = $derived<EntityPlural | undefined>(
+    _urlPluralRaw === 'candidates' || _urlPluralRaw === 'organizations' || _urlPluralRaw === 'alliances'
+      ? _urlPluralRaw
+      : undefined
+  );
+
+  // The map of plurals available for the active election (possibly just candidates, possibly just organizations, possibly both). Computed from matches so we always render consistent tab labels without going through a separate $state twin.
+  type EntityTab = { type: EntityType; label: string };
+  const entityTabs = $derived<Array<EntityTab>>(
+    activeElectionId && voterCtx.matches[activeElectionId]
+      ? (Object.keys(voterCtx.matches[activeElectionId]) as Array<EntityType>).map((type) => ({
+          type,
+          label: ucFirst(t(`common.${type}.plural`))
+        }))
+      : []
+  );
+
+  // Plural → singular mapping uses American spelling. The implied entity type lives on voterContext via `currentResultsEntityType`: URL-first with default-pick fallback to the first available tab for the active election. Reading through `voterCtx.X` per the CLAUDE.md Context Destructuring Rule preserves reactivity (must not destructure).
+  const activeEntityType = $derived(voterCtx.currentResultsEntityType);
+
+  // `compareMaybeWrappedEntities` re-sorts what the matcher already ordered, and the primary key is the same one: it compares match score DESC, which is exactly `MatchingAlgorithm`'s ascending distance. What it adds is a TIE-BREAK — election symbol asc, then name asc — for entities the matcher scores identically.
+  //
+  // Why this is needed (debug session `tied-match-order-churn`): `matchingAlgorithm.ts:122` sorts on distance alone, and `Array.prototype.sort` is stable, so distance-tied entities keep their ARRIVAL order. That order is the `get_nominations` row order, which falls back to the `gen_random_uuid()` primary key for any nomination lacking `sort_order` — so tied candidates permuted between page loads. The seed-side half is fixed in `dev-seed`'s pipeline, but an imported dataset without `sort_order` would still churn; this makes `/results` stable regardless of what the data layer hands us.
+  //
+  // `toSorted`, NOT `sort`: `voterCtx.matches[...]` is reactive context state and must not be mutated in place.
+  const activeMatches = $derived<Array<MaybeWrappedEntityVariant> | undefined>(
+    activeElectionId && activeEntityType
+      ? voterCtx.matches[activeElectionId]?.[activeEntityType]?.toSorted(compareMaybeWrappedEntities)
+      : undefined
+  );
+
+  // Tabs.activeIndex — non-bound, passed as a $derived value.
+  const activeTabIndex = $derived.by(() => {
+    if (!activeEntityType) return 0;
+    const i = entityTabs.findIndex((tab) => tab.type === activeEntityType);
+    return i === -1 ? 0 : i;
+  });
+
+  ////////////////////////////////////////////////////////////////////
+  // Drawer visibility — drawer renders iff both singular+id present
+  ////////////////////////////////////////////////////////////////////
+
+  const drawerVisible = $derived<boolean>(!!(page.params.entity && page.params.id));
+
+  const drawerEntity = $derived.by<MaybeWrappedEntityVariant | undefined>(() => {
+    if (!drawerVisible) return undefined;
+    const entityType = page.params.entity as EntityType;
+    const entityId = page.params.id!;
+    const nominationId = page.url.searchParams.get('nominationId') ?? undefined;
+    try {
+      const { entity } = getEntityAndTitle({
+        dataRoot: voterCtx.dataRoot,
+        matches: voterCtx.matches,
+        entityType,
+        entityId,
+        nominationId
+      });
+      return entity;
+    } catch (e) {
+      // Silent degradation — UI-SPEC Empty State Inventory "Deeplink to entity not found"
+      log.error(
+        `Could not get entity details for ${entityType} ${entityId}. Error: ${e instanceof Error ? e.message : '-'}`
+      );
+      return undefined;
+    }
+  });
+
+  ////////////////////////////////////////////////////////////////////
+  // Start countdowns and track events
+  ////////////////////////////////////////////////////////////////////
+
+  onMount(() => {
+    startEvent(voterCtx.resultsAvailable ? 'results_ranked' : 'results_browse', {
+      election: activeElectionId,
+      entityType: activeEntityType,
+      numAnswers: Object.keys(answers.answers).length
+    });
+  });
+
+  // Use $effect for popup countdowns so they react to app settings updates.
+  // The settings store may update after the component mounts (async data load), and the countdown functions handle repeated calls by clearing prior timeouts.
+  $effect(() => {
+    if (appSettings.results.showFeedbackPopup != null)
+      startFeedbackPopupCountdown(appSettings.results.showFeedbackPopup);
+  });
+
+  $effect(() => {
+    if (appSettings.survey?.showIn && appSettings.survey.showIn.includes('resultsPopup'))
+      startSurveyPopupCountdown(appSettings.results.showSurveyPopup);
+  });
+
+  // Drawer-view tracking — fires on drawer open transitions (covers both matched and unmatched entity pools per the legacy `results_ranked_*` / `results_browse_*` event pair).
+  $effect(() => {
+    if (!drawerVisible || !drawerEntity) return;
+    const entityType = page.params.entity as EntityType;
+    const entityId = page.params.id!;
+    if (isMatch(drawerEntity)) {
+      startEvent(`results_ranked_${entityType}`, { id: entityId, score: drawerEntity.score });
+    } else {
+      startEvent(`results_browse_${entityType}`, { id: entityId });
+    }
+  });
+
+  ////////////////////////////////////////////////////////////////////
+  // Handlers (all selector changes push to URL)
+  ////////////////////////////////////////////////////////////////////
+
+  /**
+   * Build a path-only /results URL with the SELECTED election landing on the new `electionTab` route segment and the existing search params preserved verbatim.
+   *
+   * Name-disjoint dissociation: `electionTab` is the route-side singular (route side); `electionId` is the search-side AVAILABLE-array (existing PERSISTENT_SEARCH_PARAMS member at `$lib/routes/params.ts`).
+   * The two never alias: the search-side AVAILABLE array is preserved as-is, and the route-side electionTab is the canonical SELECTED-singular surface.
+   */
+  function buildListRoute(electionTab: string | undefined, plural: EntityPlural | undefined): string {
+    const electionSegment = electionTab ? `/${electionTab}` : '';
+    // No `/candidates` force-fill when plural is absent: the URL `/results/{electionTab}` is itself a valid render shape — voterContext.currentResultsEntityType implies the active tab and the layout renders the entity-type selector only when 2+ types exist for the election. Callers that want a specific tab in the URL (handleEntityTabChange, post-drawer-close) still pass an explicit plural.
+    const pluralSegment = plural ? `/${plural}` : '';
+    // Preserve any persistent search params (electionId AVAILABLE array, constituencyId, etc.) on the URL verbatim. The route side now owns the SELECTED election surface; the search side keeps its existing AVAILABLE-array role.
+    return `/results${electionSegment}${pluralSegment}${page.url.search}`;
+  }
+
+  function handleElectionChange(details: { option: unknown }): void {
+    const { id } = details.option as Election;
+    const plural = _urlPlural ?? _pluralForActiveType();
+    goto(buildListRoute(id, plural));
+    startEvent('results_changeElection', { election: id });
+  }
+
+  function handleEntityTabChange({ index, tab }: { index?: number; tab?: Tab }): void {
+    const typed = tab as EntityTab | undefined;
+    if (typed?.type === 'candidate' || index === 0) {
+      goto(buildListRoute(activeElectionId, 'candidates'));
+      startEvent('results_changeTab', { section: 'candidate' });
+      return;
+    }
+    if (typed?.type === 'organization' || index === 1) {
+      goto(buildListRoute(activeElectionId, 'organizations'));
+      startEvent('results_changeTab', { section: 'organization' });
+      return;
+    }
+    if (typed?.type === 'alliance' || index === 2) {
+      goto(buildListRoute(activeElectionId, 'alliances'));
+      startEvent('results_changeTab', { section: 'alliance' });
+      return;
+    }
+  }
+
+  function handleDrawerClose(): void {
+    // `noScroll: true` mirrors the entity-card open path (EntityCard's `cardAction` snippet sets `data-sveltekit-noscroll` on its anchor branch). Without it, SvelteKit's default scroll-on-navigation snaps the list back to the top, which reads as "the page scrolls when the drawer closes".
+    goto(buildListRoute(activeElectionId, _urlPlural ?? _pluralForActiveType()), { noScroll: true });
+  }
+
+  function _pluralForActiveType(): EntityPlural | undefined {
+    if (activeEntityType === 'candidate') return 'candidates';
+    if (activeEntityType === 'organization') return 'organizations';
+    if (activeEntityType === 'alliance') return 'alliances';
+    return undefined;
+  }
+
+  function getName(e: unknown): string {
+    return (e as Election).name;
+  }
+</script>
+
+{#if Object.values(voterCtx.nominationsAvailable).some(Boolean)}
+  <!--
+    DRAWER-FIRST SOURCE ORDER (Open Question 4 RESOLVED — cheapest-first).
+    Rendered before MainContent so that on a cold deeplink the drawer paints before the list container below it (the list carries `content-visibility: auto` so the browser defers its layout/paint until in view).
+  -->
+  {#if drawerVisible && drawerEntity}
+    <EntityDetailsDrawer entity={drawerEntity} onClose={handleDrawerClose} data-testid="voter-results-drawer" />
+  {/if}
+
+  <MainContent title={voterCtx.resultsAvailable ? t('results.title.results') : t('results.title.browse')}>
+    {#snippet hero()}
+      <figure role="presentation">
+        <HeroEmoji emoji={t('dynamic.results.heroEmoji')} />
+      </figure>
+    {/snippet}
+
+    <div class="mb-xl text-center" data-testid="voter-results-ingress">
+      {#if voterCtx.resultsAvailable}
+        <p>{t('dynamic.results.ingress.results')}</p>
+      {:else}
+        <p>
+          {@html sanitizeHtml(
+            t('dynamic.results.ingress.browse', {
+              questionsLink: `<a href="${getRoute.current('Questions')}">${t('results.ingress.questionsLinkText', {
+                numQuestions: appSettings.matching.minimumAnswers
+              })}</a>`
+            })
+          )}
+        </p>
+      {/if}
+      {#if elections.length > 1}
+        <p>{t('dynamic.results.multipleElections')}</p>
+      {/if}
+    </div>
+
+    {#if voterCtx.dataRoot.elections.length > 1}
+      {@const activeIndex = elections.findIndex((e) => e.id === activeElectionId)}
+      <AccordionSelect
+        options={elections}
+        {activeIndex}
+        labelGetter={getName}
+        onChange={handleElectionChange}
+        class="-mt-md mb-lg"
+        style="view-transition-name: results-election-select"
+        data-testid="voter-results-election-select" />
+
+      {#if activeElection?.info}
+        <p transition:slide={{ duration: DELAY.sm }} class="text-secondary text-center text-sm">
+          {activeElection.info}
+        </p>
+      {/if}
+    {/if}
+
+    {#snippet fullWidth()}
+      <!--
+        LIST CONTAINER — `content-visibility: auto` defers layout/paint until scrolled into view (Open Question 4 RESOLVED). Renders AFTER the drawer block above in source order so the drawer wins the paint race on cold deeplinks.
+      -->
+      <div
+        class="bg-base-300 flex min-h-[120vh] flex-col items-center [content-visibility:auto]"
+        style="content-visibility: auto;"
+        data-testid="voter-results-list-container">
+        {#if activeElectionId}
+          <div class="pb-safelgb pl-safemdl pr-safemdr match-w-xl:px-0 w-full max-w-xl">
+            {#if entityTabs.length > 1}
+              <Tabs
+                tabs={entityTabs}
+                activeIndex={activeTabIndex}
+                onChange={handleEntityTabChange}
+                style="view-transition-name: results-entity-tabs"
+                data-testid="voter-results-entity-tabs" />
+            {/if}
+
+            {#if activeEntityType}
+              {#if activeMatches}
+                <div
+                  data-testid={activeEntityType === 'candidate'
+                    ? 'voter-results-candidate-section'
+                    : activeEntityType === 'organization'
+                      ? 'voter-results-party-section'
+                      : activeEntityType === 'alliance'
+                        ? 'voter-results-alliance-section'
+                        : undefined}>
+                  <!-- {#key}: keep — a scope-tuple change discards per-scope filter UI state; without remount, EntityListWithControls would carry filter selections from one election:entityType context into the next. -->
+                  {#key `${activeElectionId}:${activeEntityType}`}
+                    <h3 class="my-lg mx-10 text-xl">
+                      {t(`results.${activeEntityType}.numShown`, { numShown: activeMatches.length })}
+                      {#if voterCtx.constituenciesSelectable}
+                        <span class="font-normal">
+                          {t('results.inConstituency')}
+                          {activeElection?.getApplicableConstituency(constituencies)?.name || '—'}
+                        </span>
+                      {/if}
+                    </h3>
+                    <EntityListWithControls
+                      entities={activeMatches}
+                      class="mb-lg mx-10"
+                      data-testid="voter-results-list" />
+                  {/key}
+                </div>
+              {:else}
+                <Loading />
+              {/if}
+            {:else}
+              <div class="py-lg text-error text-center text-lg" data-testid="voter-results-no-nominations-warning">
+                {t('error.noNominations')}
+              </div>
+            {/if}
+          </div>
+        {:else}
+          <p class="text-secondary mt-[2rem] text-center text-sm" transition:slide>
+            {t('results.selectElectionFirst')}
+          </p>
+        {/if}
+      </div>
+    {/snippet}
+  </MainContent>
+{:else}
+  <MainContent title={t('error.noNominations')}>
+    {#snippet hero()}
+      <figure role="presentation">
+        <HeroEmoji emoji={t('dynamic.error.heroEmoji')} />
+      </figure>
+    {/snippet}
+
+    {#snippet primaryActions()}
+      <Button href={getRoute.current('Questions')} text={t('questions.title')} variant="main" icon="next" />
+      <Button href={getRoute.current('Home')} text={t('common.returnHome')} />
+    {/snippet}
+  </MainContent>
+{/if}

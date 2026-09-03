@@ -1,0 +1,9 @@
+{
+  "candidateApp.error": {
+    "candidateNoNomination": "The candidate associated with the logged in user has no nomination. Please contact support.",
+    "nominationNoElection": "The nominatinon associated with the candidate has no election. Please contact support.",
+    "saveFailed": "We’re terribly sorry, there was a problem saving your answers. Please try again and if the problem persists, please contact support.",
+    "userNoCandidate": "The logged in user has no candidate info tied to it. Please contact support.",
+    "registrationLocked": "Unfortunately, registration is no longer possible."
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "continue": "Continuer la saisie",
+  "ingress": "Êtes-vous sûr·e de vouloir vous déconnecter ? Vous serez automatiquement déconnecté·e après {timeLeft} secondes.",
+  "itemsLeft": "Il reste {infoQuestionsLeft, plural, =1 {encore un élément} other {encore # éléments}} d’informations de base et {opinionQuestionsLeft, plural, =1 {une opinion} other {# opinions}} à remplir.",
+  "questionsLeft": "Il reste {opinionQuestionsLeft, plural, =1 {encore une opinion} other {encore # opinions}} à remplir.",
+  "title": "Certaines de vos données manquent encore"
+}

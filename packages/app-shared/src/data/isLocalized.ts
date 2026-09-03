@@ -1,6 +1,6 @@
-import { isImage } from './isImage.js';
-import { isPlainObject } from './utils/isPlainObject.js';
-import type { LocalizedObject, LocalizedString } from './localized.type.js';
+import { isImage } from './isImage';
+import { isPlainObject } from './utils/isPlainObject';
+import type { LocalizedObject, LocalizedString } from './localized.type';
 
 /**
  * Quick and dirty test to check whether an object may be a localized string.

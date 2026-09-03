@@ -1,0 +1,93 @@
+{
+  "common": {
+    "alliance": {
+      "plural": "vaaliliitot",
+      "singular": "vaaliliitto"
+    },
+    "answer": {
+      "no": "Ei",
+      "yes": "Kyllä"
+    },
+    "back": "Palaa",
+    "cancel": "Peruuta",
+    "candidate": {
+      "plural": "ehdokkaat",
+      "singular": "ehdokas"
+    },
+    "candidatePortrait": "Omakuva",
+    "clear": "Tyhjennä",
+    "close": "Sulje",
+    "closeDialog": "Sulje valintaikkuna",
+    "closeMenu": "Sulje valikko",
+    "confirmed": "Vahvistettu",
+    "constituency": "Vaalipiiri",
+    "continue": "Jatka",
+    "election": "Vaali",
+    "electionList": "Vaalilista",
+    "electionSymbol": {
+      "alliance": "Vaalisymboli",
+      "candidate": "Ehdokasnumero",
+      "faction": "Vaalisymboli",
+      "organization": "Vaalisymboli"
+    },
+    "email": "Sähköposti",
+    "emailPlaceholder": "Sähköposti",
+    "expandOrCollapse": "Laajenna tai pienennä tämä sisältö",
+    "faction": {
+      "plural": "ryhmittymät",
+      "singular": "ryhmittymä"
+    },
+    "firstName": "Etunimi",
+    "home": "Alkuun",
+    "info": "Lisätietoja",
+    "language": {
+      "select": "Valitse kieli"
+    },
+    "lastName": "Sukunimi",
+    "loading": "Ladataan…",
+    "locked": "Lukittu",
+    "login": "Kirjaudu",
+    "logout": "Kirjaudu ulos",
+    "madeWithPrefix": "Rakennettu",
+    "madeWithSuffix": ":n avulla",
+    "missingAnswer": "—",
+    "multipleAnswerSeparator": " • ",
+    "nomination": "Ehdokkuus",
+    "openCloseMenu": "Avaa tai sulje valikko",
+    "openMenu": "Avaa valikko",
+    "openVAA": "OpenVAA",
+    "or": "Tai",
+    "organization": {
+      "plural": "puolueet",
+      "singular": "puolue"
+    },
+    "password": "Salasana",
+    "passwordConfirmation": "Vahvista salasana",
+    "pending": "Vahvistamaton",
+    "primaryActions": "Ensijaiset toiminnot",
+    "privacy": {
+      "dataCollection": {
+        "content": "Haluaisimme kerätä koneen käyttötietoja täysin nimettömästi tutkimusta ja sovelluksen kehittämistä varten. Kerättäviin tietoihin sisältyvät muun muassa vaalikonevastaukset, vastaamiseen käytetty aika ja mitä tuloksia on katseltu, mutta tietoja ei voi yhdistää sinuun.",
+        "title": "Vastausten ja käyttötietojen kerääminen"
+      }
+    },
+    "progress": "Eteneminen",
+    "publishedBy": "Julkaisija: {publisher}",
+    "question": "Kysymys",
+    "readMore": "Lue lisää",
+    "required": "Vaadittava",
+    "resetAnswers": "Tyhjennä vastauksesi",
+    "return": "Palaa",
+    "returnHome": "Palaa etusivulle",
+    "saveAndContinue": "Tallenna ja jatka",
+    "saveAndReturn": "Tallenna ja palaa",
+    "saving": "Tallennetaan…",
+    "showFullImage": "Näytä täysikokoinen kuva",
+    "skipToMain": "Hyppää sisältöön",
+    "state": "Tila",
+    "success": "Toiminto onnistui!",
+    "thanksNo": "Ei kiitos",
+    "unaffiliated": "Sitoutumaton",
+    "website": "Verkkosivusto"
+  }
+}

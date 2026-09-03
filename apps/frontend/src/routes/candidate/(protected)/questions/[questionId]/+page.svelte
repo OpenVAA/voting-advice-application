@@ -1,0 +1,360 @@
+<!--@component
+
+# Candidate app question page
+
+Display a question for answering or for dispalay if `$answersLocked` is `true`.
+
+## Params
+
+- `questionId`: The `Id` of the question to display.
+
+## Settings
+
+- `questions.showCategoryTags`: Whether to show category tags for questions.
+- `candidateApp.questions.hideVideo`: Whether to hide video content for questions.
+- `candidateApp.questions.hideHero`: Whether to hide hero content for questions.
+-->
+
+<script lang="ts">
+  import { getCustomData, log } from '@openvaa/app-shared';
+  import { isEmptyValue } from '@openvaa/data';
+  import { error } from '@sveltejs/kit';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/state';
+  import { MainContent } from '$layouts/main';
+  import { Button } from '$lib/components/button';
+  import { ErrorMessage } from '$lib/components/errorMessage';
+  import { Hero } from '$lib/components/hero';
+  import { Input } from '$lib/components/input';
+  import { Loading } from '$lib/components/loading';
+  import { PreventNavigation } from '$lib/components/preventNavigation';
+  import { OpinionQuestionInput, QuestionBasicInfo } from '$lib/components/questions';
+  import { Warning } from '$lib/components/warning';
+  import { getCandidateContext } from '$lib/contexts/candidate';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { QuestionHeading } from '$lib/dynamic-components/questionHeading';
+  import { parseParams } from '$lib/routes';
+  import type { LocalizedAnswer } from '@openvaa/app-shared';
+  import type { Id } from '@openvaa/core';
+  import type { AnyQuestionVariant } from '@openvaa/data';
+
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  // Stable references (functions, stores, objects with internal getters): destructure-safe.
+  const candCtx = getCandidateContext();
+  const { getRoute, t, userData } = candCtx;
+  // appSettings/dataRoot are reactive accessors — read via candCtx.X, never destructure.
+  const appSettings = $derived(candCtx.appSettings);
+  // dataRoot is identity-stable (#version-bridge): read `candCtx.dataRoot.<prop>` directly in the tracking scope, never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" and the stable-reference alias anti-pattern.
+  // Reactive accessors ($state / $derived backed): read via candCtx.X. Aliased through $derived for template readability — see CLAUDE.md "Context Destructuring Rule".
+  const answersLocked = $derived(candCtx.answersLocked);
+  const questionBlocks = $derived(candCtx.questionBlocks);
+  const unansweredOpinionQuestions = $derived(candCtx.unansweredOpinionQuestions);
+  const { pageStyles, video } = getLayoutContext();
+
+  ////////////////////////////////////////////////////////////////////
+  // State variables
+  ////////////////////////////////////////////////////////////////////
+
+  let bypassPreventNavigation = $state(false);
+  let errorMessage = $state<string | undefined>(undefined);
+  let status = $state<ActionStatus>('loading');
+  // Validity surfaced by `OpinionQuestionInput`. The `{#key question.id}` remount around the input resets it per question; only the multi-choice branch ever sets it false (selection outside min/max). ANDed into `canSubmit` so Save is gated while a multi-choice selection is out of range.
+  let answerValid = $state(true);
+
+  ////////////////////////////////////////////////////////////////////
+  // Get the current and next question
+  ////////////////////////////////////////////////////////////////////
+
+  let questionData = $derived.by(() => {
+    const questionId = parseParams(page).questionId;
+    if (!questionId) error(500, 'No questionId provided.');
+    try {
+      const q = candCtx.dataRoot.getQuestion(questionId);
+      const cd = getCustomData(q);
+      const nextId = getNextQuestionId(q);
+      const lastUnanswered = getIsLastUnanswered();
+      return { question: q, customData: cd, nextQuestionId: nextId, isLastUnanswered: lastUnanswered };
+    } catch {
+      error(404, `Question with id ${questionId} not found.`);
+    }
+  });
+
+  let question = $derived(questionData!.question);
+  let customData = $derived(questionData!.customData);
+  let nextQuestionId = $derived(questionData!.nextQuestionId);
+  let isLastUnanswered = $derived(questionData!.isLastUnanswered);
+
+  $effect(() => {
+    const cd = questionData!.customData;
+    status = 'idle';
+    if (!appSettings.candidateApp.questions.hideVideo && cd?.video) {
+      video.load(cd.video);
+    }
+  });
+
+  /**
+   * A non-reactive utility set the isLastUnanswered flag, which we use to route to the Home page after answering the last one.
+   */
+  function getIsLastUnanswered(): boolean {
+    return unansweredOpinionQuestions.length === 1;
+  }
+
+  /**
+   * Returns the next unanswered question’s id.
+   *
+   * `findIndex` returning -1 is the NORMAL state here, not an edge case: reads inside this function ARE tracked by the enclosing `$derived.by`, so saving an answer (which removes the current question from `unansweredOpinionQuestions`) re-runs this with the current question absent. The -1 fall-through (`[-1 + 1] === [0]`) makes "Save & continue" resume at the FIRST unanswered question — both after a normal save and when re-editing an already-answered question. Do not "fix" -1 to return undefined: that reroutes every save to the questions list.
+   */
+  function getNextQuestionId(question: AnyQuestionVariant): Id | undefined {
+    const index = unansweredOpinionQuestions.findIndex((q) => q.id === question.id);
+    return index < unansweredOpinionQuestions.length - 1 ? unansweredOpinionQuestions[index + 1]?.id : undefined;
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // Check if the form is dirty or empty and define button labels
+  ////////////////////////////////////////////////////////////////////
+
+  let canSubmit = $derived(
+    status !== 'loading' && !isEmptyValue(userData.current?.candidate.answers?.[question.id]?.value) && answerValid
+  );
+
+  let submitRouting = $derived.by(() => {
+    if (nextQuestionId) {
+      return {
+        submitRoute: getRoute.current({ route: 'CandAppQuestion', questionId: nextQuestionId }),
+        submitLabel: t('common.saveAndContinue')
+      };
+    } else if (isLastUnanswered) {
+      return {
+        submitRoute: getRoute.current('CandAppHome'),
+        submitLabel: t('common.saveAndContinue')
+      };
+    }
+    return {
+      submitRoute: getRoute.current('CandAppQuestions'),
+      submitLabel: userData.hasUnsaved ? t('common.saveAndReturn') : t('common.return')
+    };
+  });
+
+  // The label is return when loading, bc saving isn't cancellable anymore
+  let cancelLabel = $derived(status === 'loading' || !userData.hasUnsaved ? t('common.return') : t('common.cancel'));
+
+  ////////////////////////////////////////////////////////////////////
+  // Handle saving answers
+  ////////////////////////////////////////////////////////////////////
+
+  /**
+   * Handle `OpinionQuestionInput` value changes.
+   */
+  function handleValueChange({
+    value,
+    question: inputQuestion
+  }: {
+    value: unknown;
+    question: AnyQuestionVariant;
+  }): void {
+    if (inputQuestion.id !== question.id) {
+      status = 'error';
+      errorMessage = undefined;
+      log.debug('handleValueChange: questionId mismatch');
+      return;
+    }
+    setAnswer({ value });
+  }
+
+  /**
+   * Handle the open-answer `Input` value changes.
+   */
+  function handleInfoChange(info: unknown): void {
+    // We can be sure of the value type but it cannot be properly typed in `Input.type`
+    setAnswer({ info: info as LocalizedString });
+  }
+
+  /**
+   * Merge info or value with the existing answer.
+   */
+  function setAnswer({ value, info }: { value?: unknown; info?: LocalizedString }): void {
+    if (answersLocked) {
+      status = 'error';
+      errorMessage = t('candidateApp.common.editingNotAllowed');
+      log.debug('[Candidate app question page]: setAnswer called when answersLocked');
+      return;
+    }
+    if (value == null && info == null) {
+      status = 'error';
+      // Internal empty-payload guard (programmer error) — not a lock condition, so use the generic save-failure message rather than "editing not allowed".
+      errorMessage = t('candidateApp.error.saveFailed');
+      log.debug('[Candidate app question page]: setAnswer called with no value nor info');
+      return;
+    }
+    const answer: Partial<LocalizedAnswer> = userData.current?.candidate.answers?.[question.id] ?? {};
+    if (customData.allowOpen && info) answer.info = info;
+    if (value != null) answer.value = value as LocalizedAnswer['value'];
+    userData.setAnswer(question.id, answer as LocalizedAnswer);
+    status = 'idle';
+  }
+
+  /**
+   * Handle the submit button click.
+   */
+  async function handleSubmit(): Promise<void> {
+    if (!canSubmit) {
+      status = 'error';
+      errorMessage = t('candidateApp.error.saveFailed');
+      log.debug('[Candidate app question page]: handleSubmit called when canSubmit is false');
+      return;
+    }
+    status = 'loading';
+    // Request email to be sent in the backend
+    const result = await userData.save().catch((e) => {
+      log.error(`Error saving userData: ${e?.message}`);
+      return undefined;
+    });
+    if (result?.type !== 'success') {
+      status = 'error';
+      errorMessage = t('candidateApp.error.saveFailed');
+      return;
+    }
+    status = 'success';
+    goto(submitRouting.submitRoute);
+  }
+
+  /**
+   * Handle cancel button click.
+   */
+  function handleCancel(): void {
+    bypassPreventNavigation = true;
+    userData.resetUnsaved();
+    goto(getRoute.current('CandAppQuestions')).then(() => (bypassPreventNavigation = false));
+  }
+
+  /**
+   * Reset saved answers when leaving the page.
+   */
+  function handleNavigationConfirm(): void {
+    userData.resetUnsaved();
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // Styling
+  ////////////////////////////////////////////////////////////////////
+
+  pageStyles.use({ drawer: { background: 'bg-base-200' } });
+</script>
+
+{#if question}
+  {@const { info, text } = question}
+  {@const customData = getCustomData(question)}
+  {@const answer = userData.current?.candidate.answers?.[question.id]}
+
+  <!-- {#key}: keep — remount drops in-progress draft state from the prior question (form input refs, OpinionQuestionInput internal $state) when the URL navigates question N → N+1. Without it, draft state from the prior question would leak into the next form on navigation. -->
+  {#key question.id}
+    <PreventNavigation
+      active={() => !bypassPreventNavigation && userData.hasUnsaved && !answersLocked}
+      onConfirm={handleNavigationConfirm} />
+
+    <MainContent title={text}>
+      {#snippet note()}
+        {#if answersLocked}
+          <Warning data-testid="candidate-answers-locked-warning">
+            {t('candidateApp.common.editingNotAllowed')}
+          </Warning>
+        {/if}
+      {/snippet}
+
+      {#snippet hero()}
+        <figure role="presentation" data-testid="candidate-questions-hero" style="view-transition-name: question-hero">
+          {#if !appSettings.candidateApp.questions.hideHero && customData?.hero}
+            <Hero content={customData.hero} />
+          {/if}
+        </figure>
+      {/snippet}
+
+      {#snippet heading()}
+        <QuestionHeading
+          {question}
+          {questionBlocks}
+          onShadedBg
+          data-focus-on-nav
+          tabindex={-1}
+          style="view-transition-name: question-heading" />
+      {/snippet}
+
+      {#if !(appSettings.candidateApp.questions.hideVideo && customData.video) && info && info !== ''}
+        <QuestionBasicInfo {info} />
+      {/if}
+
+      {#snippet primaryActions()}
+        <div class="gap-lg grid w-full justify-items-center">
+          <!-- Question answer proper -->
+
+          <OpinionQuestionInput
+            {question}
+            {answer}
+            mode={answersLocked ? 'display' : 'answer'}
+            onShadedBg
+            bind:valid={answerValid}
+            onChange={handleValueChange}
+            data-testid="candidate-questions-answer" />
+
+          <!-- Open answer -->
+
+          {#if customData.allowOpen}
+            <!-- Honor the per-question `disableMultilingual` opt-out on the
+                 open-answer comment, mirroring QuestionInput.svelte:73 (which gates info-question inputs). Without this the comment always rendered the multilingual translations toggle, ignoring the
+                 opt-out that info questions respect. -->
+            <Input
+              type={customData.disableMultilingual ? 'textarea' : 'textarea-multilingual'}
+              label={t('candidateApp.questions.openAnswerPrompt')}
+              value={answer?.info}
+              disabled={!canSubmit}
+              locked={answersLocked}
+              placeholder={canSubmit ? '' : t('candidateApp.questions.answerQuestionFirst')}
+              onShadedBg
+              onChange={handleInfoChange}
+              data-testid="candidate-questions-comment" />
+          {/if}
+
+          <!-- Error message -->
+
+          {#if status === 'error'}
+            <ErrorMessage inline message={errorMessage} class="mb-lg mt-md" />
+          {/if}
+
+          <!-- Submit or cancel -->
+
+          <div class="grid w-full justify-items-center">
+            {#if !answersLocked}
+              <Button
+                text={submitRouting.submitLabel}
+                onclick={handleSubmit}
+                disabled={!canSubmit}
+                loading={status === 'loading'}
+                loadingText={t('common.saving')}
+                type="submit"
+                id="submitButton"
+                variant="main"
+                icon="next"
+                data-testid="candidate-questions-save" />
+              <Button
+                text={cancelLabel}
+                onclick={handleCancel}
+                color="warning"
+                data-testid="candidate-questions-cancel" />
+            {:else}
+              <Button
+                text={t('common.return')}
+                href={getRoute.current('CandAppQuestions')}
+                variant="main"
+                data-testid="candidate-questions-return" />
+            {/if}
+          </div>
+        </div>
+      {/snippet}
+    </MainContent>
+  {/key}
+{:else}
+  <Loading class="mt-lg" />
+{/if}

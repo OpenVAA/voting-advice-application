@@ -1,0 +1,24 @@
+{
+  "candidateApp.register": {
+    "code": "registreringskod",
+    "codePlaceholder": "T.ex. CP23-174a-f4%&-aHAB",
+    "didYouAlreadyRegister": "Har du redan registrerat dig?",
+    "enterCode": "Ange registreringskoden som du har fått via e-post för att slutföra din registrering.",
+    "goToLoginLabel": "Gå till inloggningssidan",
+    "loggedInWarning": "En användare är för närvarande inloggad. Logga ut innan du fortsätter.",
+    "passwordValidation": {
+      "commonPatterns": "Innehåller vanliga sekvenser eller mönster",
+      "length": "Minst {minPasswordLength} tecken",
+      "lowercase": "Liten bokstav",
+      "number": "Nummer",
+      "repetition": "Innehåller upprepning av tecken",
+      "symbol": "Specialtecken (såsom !?%#€)",
+      "uppercase": "Stor bokstav",
+      "username": "Undvik att använda ditt namn i lösenordet"
+    },
+    "register": "Registrera",
+    "title": "Registrering",
+    "titleWithPreregistration": "Bekräfta din e-postadress",
+    "wrongRegistrationCode": "Fel registreringskod"
+  }
+}

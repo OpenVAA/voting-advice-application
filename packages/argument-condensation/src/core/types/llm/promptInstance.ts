@@ -6,20 +6,7 @@ import type { CondensationOperation } from '../condensation/operation';
  * @example
  *
  * const promptCall: PromptCall = {
- *   promptTemplateId: '123',
- *   operation: "map",
- *   rawInputText: 'The input text for the prompt',
- *   rawOutputText: 'The output text for the prompt',
- *   modelUsed: 'gpt-4o',
- *   timestamp: '2021-01-01T00:00:00.000Z',
- *   metadata: {
- *     tokens: {
- *       input: 100,
- *       output: 200,
- *       total: 300
- *     },
- *     latency: 1000,
- *     cost: 0.10
+ *   promptTemplateId: '123', operation: "map", rawInputText: 'The input text for the prompt', rawOutputText: 'The output text for the prompt', modelUsed: 'gpt-4o', timestamp: '2021-01-01T00:00:00.000Z', metadata: { tokens: { input: 100, output: 200, total: 300 }, latency: 1000, cost: 0.10
  *   }
  * };
  */

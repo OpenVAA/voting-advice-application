@@ -22,24 +22,15 @@ import type {
  * This allows packages to specify where their prompts are located, as it features will have differing prompt directory structures.
  * Prompts are then loaded by callers using `loadPrompt()`. This function is rapid, as yaml parsing and I/O operations are cached.
  *
- * @example
- * // In feature's prompts.ts:
- * registerPrompts({
- *   packageName: 'my-feature',
- *   promptsDir: path.join(__dirname, 'prompts')
- * });
+ * @example // In feature's prompts.ts: registerPrompts({
+ *   packageName: 'my-feature', promptsDir: path.join(__dirname, 'prompts') });
  *
- * // Anywhere in the feature code:
- * const { promptText } = await loadPrompt({
- *   promptId: 'my_prompt_id',
- *   language: 'fi',
- *   variables: { topic: 'Test' }
- * });
+ * // Anywhere in the feature code: const { promptText } = await loadPrompt({
+ *   promptId: 'my_prompt_id', language: 'fi', variables: { topic: 'Test' } });
  */
 class GlobalPromptRegistry {
   /**
-   * Global index of all registered prompts
-   * Structure: Map<promptId, Map<language, PromptData>>
+   * Global index of all registered prompts Structure: Map<promptId, Map<language, PromptData>>
    */
   private static promptIndex = new Map<string, Map<string, PromptData>>();
 
@@ -269,20 +260,12 @@ class GlobalPromptRegistry {
 /**
  * Register prompts from a feature's prompts directory
  *
- * This should be called once per feature, typically in a dedicated prompts.ts file
- * that is imported at the top of the feature's index.ts.
+ * This should be called once per feature, typically in a dedicated prompts.ts file that is imported at the top of the feature's index.ts.
  *
- * @example
- * // In packages/my-feature/src/prompts.ts:
- * import { registerPrompts } from '@openvaa/llm';
- * import * as path from 'path';
+ * @example // In packages/my-feature/src/prompts.ts: import { registerPrompts } from '@openvaa/llm'; import * as path from 'path';
  *
  * registerPrompts({
- *   packageName: 'my-feature',
- *   promptsDir: path.join(__dirname, 'prompts')
- * }).catch(err => {
- *   console.error('[my-feature] Failed to register prompts:', err);
- * });
+ *   packageName: 'my-feature', promptsDir: path.join(__dirname, 'prompts') }).catch(err => { console.error('[my-feature] Failed to register prompts:', err); });
  */
 export async function registerPrompts(options: RegisterPromptsOptions): Promise<void> {
   return GlobalPromptRegistry.registerPrompts(options);
@@ -302,17 +285,11 @@ export async function registerPrompts(options: RegisterPromptsOptions): Promise<
  * @param options - Options including prompt ID, language, and variables
  * @returns The composed prompt text and metadata about how it was resolved
  *
- * @example
- * const { promptText, metadata } = await loadPrompt({
- *   promptId: 'map_likertPros_condensation_v1',
- *   language: 'fi',
- *   variables: { topic: 'Healthcare', comments: '...' },
- *   strict: true
- * });
+ * @example const { promptText, metadata } = await loadPrompt({
+ *   promptId: 'map_likertPros_condensation_v1', language: 'fi', variables: { topic: 'Healthcare', comments: '...' }, strict: true });
  *
  * if (metadata.usedFallback) {
- *   console.log(`Used ${metadata.promptLanguage} prompt for ${metadata.outputLanguage} output`);
- * }
+ *   console.log(`Used ${metadata.promptLanguage} prompt for ${metadata.outputLanguage} output`); }
  */
 export async function loadPrompt(options: LoadPromptOptions): Promise<LoadPromptResult> {
   const { promptId, language, variables, throwIfVarsMissing: strict = true, fallbackLocalization = false } = options;

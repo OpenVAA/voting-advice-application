@@ -150,8 +150,7 @@ function validatePipelineOutputs(steps: Array<ProcessingStep>, commentCount: num
         break;
       }
       case CondensationOperations.ITERATE_MAP:
-        // iterate_map doesn't change the structure - it just refines existing argument lists
-        // Structure remains the same as after map
+        // iterate_map doesn't change the structure - it just refines existing argument lists Structure remains the same as after map
         break;
       case CondensationOperations.REDUCE: {
         const { denominator } = step.params as ReduceOperationParams;

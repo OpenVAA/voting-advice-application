@@ -4,8 +4,7 @@ import type { Comment } from '../condensation/condensationInput';
 /**
  * Comments are grouped based on their answer values and question type
  *
- * @example
- * For a boolean question, we have two groups:
+ * @example For a boolean question, we have two groups:
  * - pros: comments that are given along with the answer "true"
  * - cons: comments that are given along with the answer "false"
  *

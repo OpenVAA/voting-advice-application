@@ -10,7 +10,7 @@ export const staticSettings: StaticSettings = {
     source: 'https://github.com/OpenVAA/voting-advice-application'
   },
   dataAdapter: {
-    type: 'strapi',
+    type: 'supabase',
     supportsCandidateApp: true,
     supportsAdminApp: true
   },
@@ -40,7 +40,7 @@ export const staticSettings: StaticSettings = {
   },
   font: {
     name: 'Inter',
-    url: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap',
+    url: '/fonts/inter.css',
     style: 'sans'
   },
   supportedLocales: [
@@ -56,16 +56,9 @@ export const staticSettings: StaticSettings = {
     {
       code: 'sv',
       name: 'Svenska'
-    },
-    {
-      code: 'da',
-      name: 'Dansk'
     }
   ],
   analytics: {
     trackEvents: false
-  },
-  preRegistration: {
-    enabled: false
   }
 };

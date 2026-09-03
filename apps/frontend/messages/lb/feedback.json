@@ -1,0 +1,32 @@
+{
+  "feedback": {
+    "description": {
+      "label": "Weider Bemierkungen",
+      "placeholder": "Weider Bemierkungen oder Virschléi"
+    },
+    "emailIntro": "Wann Dir wëllt, kënnt Dir eis och per E-Mail kontaktéieren op",
+    "error": {
+      "emailIntro": "Schéckt wgl. Äre Feedback per E-Mail mam Knäppchen hei drënner. Är bis elo geschriwwe Bemierkunge ginn automatesch dobäigesat.",
+      "emailSubject": "Feedback",
+      "message": "Et deet eis leed, et gouf e Feeler beim Schécken vum Feedback."
+    },
+    "popupTitle": "Kënnt Dir de Wal-Kompass bewäerten?",
+    "rating": {
+      "label": "Allgemeng Bewäertung vun der App",
+      "valueLabel": [
+        {
+          "declarations": ["input rating", "input ratingMax", "local ratingPlural = rating: plural"],
+          "selectors": ["ratingPlural"],
+          "match": {
+            "ratingPlural=zero": "Keng Bewäertung",
+            "ratingPlural=other": "Bewäertung {rating} vun {ratingMax}"
+          }
+        }
+      ]
+    },
+    "send": "Feedback schécken",
+    "sending": "Schécken…",
+    "thanks": "Merci fir Äre Feedback!",
+    "title": "Feedback"
+  }
+}

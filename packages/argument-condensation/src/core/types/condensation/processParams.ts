@@ -6,10 +6,7 @@
  * @example
  *
  * const params: RefineOperationParams = {
- *   initialBatchPromptId: 'Initial-batch-id',
- *   refinementPromptId: 'Refinement-id',
- *   batchSize: 42
- * };
+ *   initialBatchPromptId: 'Initial-batch-id', refinementPromptId: 'Refinement-id', batchSize: 42 };
  */
 export interface RefineOperationParams {
   /** Initial batch prompt id (loaded from centralized registry) */
@@ -27,9 +24,7 @@ export interface RefineOperationParams {
  * @example
  *
  * const params: MapOperationParams = {
- *   condensationPromptId: 'Condensation-id',
- *   batchSize: 42
- * };
+ *   condensationPromptId: 'Condensation-id', batchSize: 42 };
  */
 export interface MapOperationParams {
   /** Condensation prompt id (loaded from centralized registry) */
@@ -46,9 +41,7 @@ export interface MapOperationParams {
  * @example
  *
  * const params: IterateMapOperationParams = {
- *   iterationPromptId: 'Iteration-id',
- *   batchSize: 42
- * };
+ *   iterationPromptId: 'Iteration-id', batchSize: 42 };
  */
 export interface IterateMapOperationParams {
   /** Iteration prompt id (loaded from centralized registry) */
@@ -64,9 +57,7 @@ export interface IterateMapOperationParams {
  * @example
  *
  * const params: ReduceOperationParams = {
- *   coalescingPromptId: 'Coalescing-id',
- *   denominator: 42
- * };
+ *   coalescingPromptId: 'Coalescing-id', denominator: 42 };
  */
 export interface ReduceOperationParams {
   /** Coalescing prompt id (loaded from centralized registry) */
@@ -78,15 +69,12 @@ export interface ReduceOperationParams {
 /**
  * Parameters for the grounding operation.
  * The grounding operation takes in a list of arguments and comments to refine the arguments with.
- * Grounding is a parallellizable operation in contrast with the operation 'refine' which maintains
- * a single list of arguments across multiple iterations.
+ * Grounding is a parallellizable operation in contrast with the operation 'refine' which maintains a single list of arguments across multiple iterations.
  *
  * @example
  *
  * const params: GroundingOperationParams = {
- *   groundingPromptId: 'Grounding-id',
- *   batchSize: 42
- * };
+ *   groundingPromptId: 'Grounding-id', batchSize: 42 };
  */
 export interface GroundingOperationParams {
   /** Grounding prompt id (loaded from centralized registry) */

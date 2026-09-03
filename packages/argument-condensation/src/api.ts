@@ -33,60 +33,23 @@ import type {
  * @param options.controller - Optional controller for tracking progress and issues during condensation
  * @returns The condensation results as an array of CondensationRunResult
  *
- * @example
- * import { handleQuestion } from '@openvaa/argument-condensation';
- * import { BooleanQuestion, DataRoot, QUESTION_TYPE } from '@openvaa/data';
- * import { LLMProvider } from '@openvaa/llm';
- * import type { HasAnswers } from '@openvaa/core';
+ * @example import { handleQuestion } from '@openvaa/argument-condensation'; import { BooleanQuestion, DataRoot, QUESTION_TYPE } from '@openvaa/data'; import { LLMProvider } from '@openvaa/llm'; import type { HasAnswers } from '@openvaa/core';
  *
- * // 1. Set up your question, entities, and LLM provider
- * // You'll most likely get the question from the DataRoot
- * const question = new BooleanQuestion({
- *   data: {
- *     id: 'q1',
- *     type: QUESTION_TYPE.Boolean,
- *     name: 'Renewable Energy Funding',
- *     customData: {},
- *     categoryId: 'cat1'
- *   },
- *   root: dataRoot // Your DataRoot instance
- * });
+ * // 1. Set up your question, entities, and LLM provider // You'll most likely get the question from the DataRoot const question = new BooleanQuestion({
+ *   data: { id: 'q1', type: QUESTION_TYPE.Boolean, name: 'Renewable Energy Funding', customData: {}, categoryId: 'cat1' }, root: dataRoot // Your DataRoot instance });
  *
  * const entities: Array<HasAnswers> = [
- *   {
- *     id: 'c1',
- *     answers: { q1: { value: true, comment: 'Absolutely, it is crucial for the future of our planet.' } }
- *   },
- *   {
- *     id: 'c2',
- *     answers: {
- *       q1: { value: false, comment: 'No, we should prioritize economic growth and traditional energy sectors.' }
+ *   { id: 'c1', answers: { q1: { value: true, comment: 'Absolutely, it is crucial for the future of our planet.' } } }, { id: 'c2', answers: { q1: { value: false, comment: 'No, we should prioritize economic growth and traditional energy sectors.' }
  *     }
- *   },
- *   {
- *     id: 'c3',
- *     answers: { q1: { value: true, comment: 'Yes, and we should also invest in job training for green energy fields.' } }
+ *   }, { id: 'c3', answers: { q1: { value: true, comment: 'Yes, and we should also invest in job training for green energy fields.' } }
  *   }
  * ];
  *
  * const llmProvider = new LLMProvider({
- *   provider: 'openai',
- *   apiKey: '...',
- *   modelConfig: { primary: 'gpt-4o', tpmLimit: 30000 }
- * });
+ *   provider: 'openai', apiKey: '...', modelConfig: { primary: 'gpt-4o', tpmLimit: 30000 } });
  *
- * // 2. Call handleQuestion with the setup
- * const results = await handleQuestion({
- *   question,
- *   entities,
- *   options: {
- *     llmProvider,
- *     language: 'en',
- *     runId: 'some-run-id',
- *     maxCommentsPerGroup: 1000,
- *     invertProsAndCons: false,
- *     prompts: {}
- *     // Optional controller
+ * // 2. Call handleQuestion with the setup const results = await handleQuestion({
+ *   question, entities, options: { llmProvider, language: 'en', runId: 'some-run-id', maxCommentsPerGroup: 1000, invertProsAndCons: false, prompts: {} // Optional controller
  *   }
  * });
  */
@@ -99,8 +62,7 @@ export async function handleQuestion({
   entities: Array<HasAnswers>;
   options: CondensationAPIOptions;
 }): Promise<Array<CondensationRunResult>> {
-  // Set default values for some optional parameters
-  // Default promptIds and the visualization flag (false) are set in runSingleCondensation
+  // Set default values for some optional parameters Default promptIds and the visualization flag (false) are set in runSingleCondensation
   const options = {
     ...userOptions,
     invertProsAndCons: userOptions.invertProsAndCons ?? false, // Rarely needed

@@ -26,7 +26,7 @@ test('Should have constituencyGroups', () => {
   root.elections!.forEach((obj) => {
     const objData = data.elections.find((d) => d.id === obj.id);
     expect(objData).toBeDefined();
-    expect(obj.constituencyGroups.map((g) => g.id)).toEqual(expect.arrayContaining(groupIds[obj.id]));
+    expect(obj.constituencyGroups.map((g) => g.id)).toEqual(groupIds[obj.id]);
   });
 });
 
@@ -118,6 +118,6 @@ describe('GetQuestions', () => {
     // Opinion questions are from 8 to 13, but 8 and 10 are for election-2 only.
     // Question-10 has a constituency filter 'constituency-1-1' but it should not be included because of the election filter
     const ids = [9, 11, 12, 13].map((i) => `question-${i}`);
-    expect(questions?.map((q) => q.id)).toEqual(expect.arrayContaining(ids));
+    expect(questions?.map((q) => q.id)).toEqual(ids);
   });
 });

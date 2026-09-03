@@ -4,9 +4,7 @@
  * @param errorMessage - The error message string from the API.
  * @returns The suggested wait time in milliseconds, or null if it cannot be parsed.
  *
- * @example
- * // returns 6154
- * parseWaitTimeFromError("...Please try again in 6.154s. ...")
+ * @example // returns 6154 parseWaitTimeFromError("...Please try again in 6.154s. ...")
  */
 export function parseWaitTimeFromError(errorMessage: string): number | null {
   const match = errorMessage.match(/try again in ([\d.]+)s/);

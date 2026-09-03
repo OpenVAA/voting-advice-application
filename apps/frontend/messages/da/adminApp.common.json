@@ -1,0 +1,10 @@
+{
+  "adminApp.common": {
+    "home": "Hjem",
+    "description": "Brug værktøjerne nedenfor til at administrere valgkompasset.",
+    "notAccessible": {
+      "content": "Admin-appen er i øjeblikket konfigureret som utilgængelig.",
+      "title": "Beklager, admin-appen er ikke tilgængelig"
+    }
+  }
+}

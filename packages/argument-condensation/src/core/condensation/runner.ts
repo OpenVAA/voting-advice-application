@@ -13,8 +13,7 @@ import type {
 
 /**
  * Condense arguments for a single group of comments.
- * A question usually has multiple groups of comments (e.g. pro and con comment groups for boolean and likert questions),
- * so this function is called multiple times for a single question.
+ * A question usually has multiple groups of comments (e.g. pro and con comment groups for boolean and likert questions), so this function is called multiple times for a single question.
  * Condensation type determines both the input and output type. First level is question type (input), second level is output type.
  * E.g. CONDENSATION_TYPE.BooleanPros is a boolean question with pros as output.
  *
@@ -26,21 +25,8 @@ import type {
  * @param {number} - args.parallelBatches - The number of parallel batches to use for condensation.
  * @returns {Promise<CondensationRunResult>} The condensation results as a CondensationRunResult.
  *
- * @example
- * const results = await runSingleCondensation({
- *   question: question as BooleanQuestion,
- *   comments: Array<VAAComment>,
- *   condensationType: CONDENSATION_TYPE.BooleanPros,
- *   options: {
- *     llmProvider: new LLMProvider({ provider: 'openai', apiKey: '...', modelConfig: { primary: 'gpt-4o' } }),
- *     language: 'en',
- *     llmModel: 'gpt-4o',
- *     runId: 'example-run-id',
- *     maxCommentsPerGroup: 1000,
- *     modelTPMLimit: 30000
- *   },
- *   parallelBatches: 1
- * });
+ * @example const results = await runSingleCondensation({
+ *   question: question as BooleanQuestion, comments: Array<VAAComment>, condensationType: CONDENSATION_TYPE.BooleanPros, options: { llmProvider: new LLMProvider({ provider: 'openai', apiKey: '...', modelConfig: { primary: 'gpt-4o' } }), language: 'en', llmModel: 'gpt-4o', runId: 'example-run-id', maxCommentsPerGroup: 1000, modelTPMLimit: 30000 }, parallelBatches: 1 });
  */
 export async function runSingleCondensation({
   question,
@@ -57,8 +43,7 @@ export async function runSingleCondensation({
 }): Promise<CondensationRunResult> {
   const { llmProvider, language, runId, createVisualizationData, prompts } = options;
   const modelTPMLimit = llmProvider.config.modelConfig.tpmLimit ?? MODEL_DEFAULTS.TPM_LIMIT;
-  // Get prompts from registry
-  // If you are interested in testing different prompts, you can:
+  // Get prompts from registry If you are interested in testing different prompts, you can:
   //  - Set your own prompts in src/core/prompts/.../yourPrompt.yaml files with a promptText variable holding your prompts.
   //   This will make it available to use in the handleQuestion function with the 'prompts' by configuring your own promptIds.
 
@@ -70,8 +55,7 @@ export async function runSingleCondensation({
   // Get prompts and their required parameters using a helper. Currently hardcoded to use map-reduce with specific prompts.
   // The helper calculates a sensible 'batchSize' (how many comments to map at a time?) for the map operation.
   // For reduce, it finds 'denominators' (how many argument lists to coalesce to one list at a time?).
-  // If you want to use other parameters or operations (like refine or ground),
-  // you must implement your own helper logic or simply configure your own steps here with consts
+  // If you want to use other parameters or operations (like refine or ground), you must implement your own helper logic or simply configure your own steps here with consts
   const steps: Array<ProcessingStep> = await createCondensationSteps({
     comments,
     mapPromptId,
@@ -84,8 +68,7 @@ export async function runSingleCondensation({
     controller: options.controller
   });
 
-  // Create condensation input that defines all inputs and the configuration for the condenser,
-  // which is the condensation logic engine that orchestrates LLM calls and their parsing
+  // Create condensation input that defines all inputs and the configuration for the condenser, which is the condensation logic engine that orchestrates LLM calls and their parsing
   const input: CondensationRunInput = {
     question,
     comments,

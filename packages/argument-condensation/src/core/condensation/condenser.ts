@@ -47,55 +47,24 @@ class DummyTreeBuilder {
  * Outputs a list of arguments and generates operation tree visualization data for debugging and analysis.
  *
  * You can use the condenser either as a standalone class or simply by using the `handleQuestion` function defined in `main.ts`.
- * A standalone run provides minimal but not trivial customization options. Namely, you can run a process for only finding cons,
- * whereas `handleQuestion` automatically runs both pros and cons.
+ * A standalone run provides minimal but not trivial customization options. Namely, you can run a process for only finding cons, whereas `handleQuestion` automatically runs both pros and cons.
  *
- * The data needed for visualizing a run through the condenser will be saved to `data/operationTrees` if the flag
- * `createVisualizationData` is set to `true`.
+ * The data needed for visualizing a run through the condenser will be saved to `data/operationTrees` if the flag `createVisualizationData` is set to `true`.
  *
  * You can choose the condensation run you want to visualize from the `data/operationTrees` folder in  the visualization UI.
  *
- * @example
- * import { Condenser } from '@openvaa/argument-condensation';
- * import { SingleChoiceCategoricalQuestion, DataRoot, QUESTION_TYPE } from '@openvaa/data';
- * import { OpenAIProvider } from '@openvaa/llm';
- * import type { CondensationRunInput } from '@openvaa/argument-condensation';
+ * @example import { Condenser } from '@openvaa/argument-condensation'; import { SingleChoiceCategoricalQuestion, DataRoot, QUESTION_TYPE } from '@openvaa/data'; import { OpenAIProvider } from '@openvaa/llm'; import type { CondensationRunInput } from '@openvaa/argument-condensation';
  *
  * const question = new SingleChoiceCategoricalQuestion({
- *   data: {
- *     id: 'q2',
- *     type: QUESTION_TYPE.SingleChoiceCategorical,
- *     name: 'Public Transport Improvement',
- *     customData: {},
- *     categoryId: 'cat1',
- *     choices: [
- *       { id: 'choice1', customData: {} },
- *       { id: 'choice2', customData: {} }
+ *   data: { id: 'q2', type: QUESTION_TYPE.SingleChoiceCategorical, name: 'Public Transport Improvement', customData: {}, categoryId: 'cat1', choices: [ { id: 'choice1', customData: {} }, { id: 'choice2', customData: {} }
  *     ]
- *   },
- *   root: dataRoot // Your DataRoot instance
- * });
+ *   }, root: dataRoot // Your DataRoot instance });
  *
  * const comments = [
- *   { id: 'c1', entityId: 'cand1', entityAnswer: 'choice1', text: 'New subways are essential.' },
- *   { id: 'c2', entityId: 'cand2', entityAnswer: 'choice2', text: 'Buses are more flexible.' }
- * ];
+ *   { id: 'c1', entityId: 'cand1', entityAnswer: 'choice1', text: 'New subways are essential.' }, { id: 'c2', entityId: 'cand2', entityAnswer: 'choice2', text: 'Buses are more flexible.' } ];
  *
  * const condenser = new Condenser({
- *   question,
- *   comments,
- *   options: {
- *     llmProvider: new OpenAIProvider({ apiKey: 'your-api-key' }),
- *     language: 'en',
- *     outputType: 'categoricalPros',
- *     processingSteps: [
- *       { operation: 'map', params: { batchSize: 20 } },
- *       { operation: 'reduce', params: { denominator: 5 } }
- *     ],
- *     llmModel: 'gpt-4o',
- *     modelTPMLimit: 30000,
- *     runId: 'my-run-id',
- *     createVisualizationData: true
+ *   question, comments, options: { llmProvider: new OpenAIProvider({ apiKey: 'your-api-key' }), language: 'en', outputType: 'categoricalPros', processingSteps: [ { operation: 'map', params: { batchSize: 20 } }, { operation: 'reduce', params: { denominator: 5 } } ], llmModel: 'gpt-4o', modelTPMLimit: 30000, runId: 'my-run-id', createVisualizationData: true
  *   }
  * });
  *
@@ -538,8 +507,7 @@ export class Condenser {
       // `nodeIds`: The final output nodes of this step (the iterate_map nodes).
       // These will serve as parents for the next condensation step.
       nodeIds: result.nodeIds,
-      // `nodeMapping`: The internal wiring for visualization. This links each iterate_map node
-      // back to its parent map node, showing the two-phase nature of this operation.
+      // `nodeMapping`: The internal wiring for visualization. This links each iterate_map node back to its parent map node, showing the two-phase nature of this operation.
       nodeMapping: result.nodeIds.map((_, i) => previousNodeMapping[i] ?? [])
     };
   }
@@ -578,8 +546,7 @@ export class Condenser {
       chunks.push(argumentLists.slice(i, i + denominator));
     }
 
-    // Create the parent mapping for each new reduce node. Each node will be linked
-    // to the group of parent nodes that produced the argument lists it is reducing.
+    // Create the parent mapping for each new reduce node. Each node will be linked to the group of parent nodes that produced the argument lists it is reducing.
     const chunkNodeMapping = chunks.map((chunk, chunkIndex) => {
       const startIdx = chunkIndex * denominator;
       const endIdx = Math.min(startIdx + denominator, previousNodeMapping.length);
@@ -628,8 +595,7 @@ export class Condenser {
     const parallelFactor = this.input.options.parallelBatches; // How many batches to process in parallel?
     const argumentLists = normalizeArgumentLists(argumentData);
 
-    // COMMENT ALLOCATION STRATEGY
-    // Ensure we have enough comment batches for all argument lists
+    // COMMENT ALLOCATION STRATEGY Ensure we have enough comment batches for all argument lists
     const availableComments = this.input.comments;
     const numArgumentLists = argumentLists.length;
     const availableCommentBatches = Math.floor(availableComments.length / params.batchSize);
@@ -703,8 +669,7 @@ export class Condenser {
       parallelBatches = MODEL_DEFAULTS.PARALLEL_BATCHES
     } = config;
 
-    // PHASE 1: CREATE TREE NODES
-    // Create a tree node for each item we'll process
+    // STAGE 1: CREATE TREE NODES Create a tree node for each item we'll process
     const nodeIds: Array<string> = [];
     for (let i = 0; i < items.length; i++) {
       const nodeId = this.treeBuilder.createNode(operation, stepIndex, i);
@@ -742,8 +707,7 @@ export class Condenser {
       this.treeBuilder.startNode(nodeId);
     }
 
-    // PHASE 2: PREPARE LLM INPUTS
-    // Transform each item into an LLM input using operation-specific logic
+    // STAGE 2: PREPARE LLM INPUTS Transform each item into an LLM input using operation-specific logic
     const llmInputs = await Promise.all(
       items.map(async (item, i) => {
         const templateVariables = prepareTemplateVars(item, i);
@@ -760,8 +724,7 @@ export class Condenser {
       })
     );
 
-    // PHASE 3: EXECUTE PARALLEL LLM CALLS WITH VALIDATION
-    // The llmProvider handles all retry logic (for both network and validation errors) internally.
+    // STAGE 3: EXECUTE PARALLEL LLM CALLS WITH VALIDATION The llmProvider handles all retry logic (for both network and validation errors) internally.
     // We provide the inputs and a validation contract, and the provider returns fully parsed and validated objects.
     let results: Array<LLMObjectGenerationResult<ResponseWithArguments>>;
 
@@ -789,8 +752,7 @@ export class Condenser {
       );
     }
 
-    // PHASE 4: PROCESS RESULTS AND COLLECT METRICS
-    // All responses are valid because they have been validated against the contract by the provider.
+    // STAGE 4: PROCESS RESULTS AND COLLECT METRICS All responses are valid because they have been validated against the contract by the provider.
     const finalArguments: Array<Array<Argument>> = new Array(items.length);
     const allPromptCalls: Array<PromptCall> = [];
 

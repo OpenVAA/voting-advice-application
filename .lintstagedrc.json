@@ -1,8 +1,7 @@
 {
-  "*.{html,js,jsx,cjs,mjssvelte,ts,tsx,cts,mts,xml,yaml,yml}": [
-    "yarn build:app-shared",
+  "*.{html,js,jsx,cjs,mjs,svelte,ts,tsx,cts,mts,xml,yaml,yml}": [
     "prettier --write",
     "eslint --fix --flag v10_config_lookup_from_file"
   ],
-  "*.{css,json,md}": ["yarn build:app-shared", "prettier --write"]
+  "*.{css,json,md}": ["prettier --write"]
 }

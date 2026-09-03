@@ -1,0 +1,69 @@
+<!--@component
+
+# Candidate app help page
+
+Shows a FAQ and other support content for the candidate application.
+
+### Settings
+
+- `admin.email`: Shown for contacting support
+-->
+
+<script lang="ts">
+  import { MainContent } from '$layouts/main';
+  import { Button } from '$lib/components/button';
+  import { Expander } from '$lib/components/expander';
+  import { getCandidateContext } from '$lib/contexts/candidate';
+  import { getEmailUrl } from '$lib/utils/email';
+
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  const ctx = getCandidateContext();
+  const { appCustomization, getRoute, t, userData } = ctx;
+  // appSettings is a reactive accessor — read via ctx.appSettings, never destructure. This is a one-time init read, so read off ctx directly (no $derived alias).
+
+  ////////////////////////////////////////////////////////////////////
+  // Build support email link
+  ////////////////////////////////////////////////////////////////////
+
+  const supportMailto = getEmailUrl({
+    subject: `${t('candidateApp.help.supportEmailSubject')}: ${t('dynamic.candidateAppName')}`,
+    to: ctx.appSettings.admin.email
+  });
+</script>
+
+<MainContent title={t('candidateApp.help.title')}>
+  <div class="mb-lg text-center">
+    {t('candidateApp.help.ingress')}
+  </div>
+
+  {#each appCustomization.current.candidateAppFAQ ?? [] as faq}
+    <Expander title={faq.question} variant="question-help">
+      {faq.answer}
+    </Expander>
+  {:else}
+    <p class="mt-lg text-center text-secondary">
+      {t('candidateApp.help.noFAQ')}
+    </p>
+  {/each}
+
+  <Button
+    href={supportMailto}
+    variant="prominent"
+    target="_blank"
+    icon="feedback"
+    text={t('candidateApp.common.contactSupport')}
+    class="mt-lg"
+    data-testid="candidate-help-contact-support" />
+
+  {#snippet primaryActions()}
+    <Button
+      icon="next"
+      variant="main"
+      text={t('common.home')}
+      href={userData.current ? getRoute.current('CandAppHome') : getRoute.current('CandAppLogin')}
+      data-testid="candidate-help-home" />
+  {/snippet}
+</MainContent>

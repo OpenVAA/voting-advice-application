@@ -1,0 +1,6 @@
+{
+  "entityCard": {
+    "hideAllCandidates": "Kollapsad lista",
+    "showAllCandidates": "Visa alla {numCandidates} kandidater"
+  }
+}

@@ -4,20 +4,14 @@ import type { z } from 'zod';
 import type { LLMCosts, ModelPricing } from '../utils/costCalculation.type';
 
 // Vercel AI SDK defines their types similarly with Prompt and CallSettings as base types.
-// For streamText, for example, they define its params as Prompt & CallSetting & 20-ish other
-// params that are defined explicitly, not inside any type. We do the same here by cherry-picking
-// the explicit params from Vercel's StreamText. In addition to copying their existing params to
-// our own LLMStreamOptions type, we also add our own params that are not in Vercel's type.
-// These types are here to facilitate LLM-related functionality that is not supported by Vercel's
-// AI SDK. Namely, cost calculation, latency tracking and validation failure retries.
+// For streamText, for example, they define its params as Prompt & CallSetting & 20-ish other params that are defined explicitly, not inside any type. We do the same here by cherry-picking the explicit params from Vercel's StreamText. In addition to copying their existing params to our own LLMStreamOptions type, we also add our own params that are not in Vercel's type.
+// These types are here to facilitate LLM-related functionality that is not supported by Vercel's AI SDK. Namely, cost calculation, latency tracking and validation failure retries.
 
 // ------------------------------------------------------------
 // COMMON
 // ------------------------------------------------------------
 
-// TODO: check that model pricing is internally handled and that it is required only if
-// we don't have up-to-date info on the specific model. Also we need separate config for
-// fallback model.
+// TODO: check that model pricing is internally handled and that it is required only if we don't have up-to-date info on the specific model. Also we need separate config for fallback model.
 export interface LLMModelConfig {
   primary: string;
   fallback?: string;
@@ -70,8 +64,7 @@ export type LLMStreamOptions<TOOLS extends ToolSet | undefined = undefined> = Pr
   };
 
 export interface LLMStreamResult<TOOLS extends ToolSet | undefined = undefined>
-  extends StreamTextResult<NonNullable<TOOLS>, never>,
-    Omit<LLMCallMetadata, 'costs'> {
+  extends StreamTextResult<NonNullable<TOOLS>, never>, Omit<LLMCallMetadata, 'costs'> {
   // Override costs to be a Promise since stream results are immediately available
   costs: Promise<LLMCosts>;
 }

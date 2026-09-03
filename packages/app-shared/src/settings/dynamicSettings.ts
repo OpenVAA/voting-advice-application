@@ -4,7 +4,8 @@ export const dynamicSettings: DynamicSettings = {
   entityDetails: {
     contents: {
       candidate: ['info', 'opinions'],
-      organization: ['info', 'candidates', 'opinions']
+      organization: ['info', 'children', 'opinions'],
+      alliance: ['info', 'children']
     },
     showMissingElectionSymbol: {
       candidate: true,
@@ -21,11 +22,11 @@ export const dynamicSettings: DynamicSettings = {
   },
   headerStyle: {
     dark: {
-      bgColor: 'oklch(var(--b3))',
+      bgColor: 'var(--color-base-300)',
       overImgBgColor: 'transparent'
     },
     light: {
-      bgColor: 'oklch(var(--b3))',
+      bgColor: 'var(--color-base-300)',
       overImgBgColor: 'transparent'
     },
     imgSize: 'cover',
@@ -59,7 +60,8 @@ export const dynamicSettings: DynamicSettings = {
   results: {
     cardContents: {
       candidate: ['submatches'],
-      organization: ['candidates']
+      organization: ['children'],
+      alliance: ['children']
     },
     showFeedbackPopup: 180,
     showSurveyPopup: 500,

@@ -1,0 +1,29 @@
+{
+  "about": {
+    "content": "<p>Le questionnaire comprend une sélection de 20 questions parmi les 44 questions contenues dans l'outil en ligne smartwielen déployé pour les élections européennes de 2024. Smartwielen a été proposé par l'Université du Luxembourg et le Zentrum fir Politesch Bildung (ZpB). L'Université du Luxembourg met également à disposition l'outil en ligne actuel (non public) à des fins de recherche, en collaboration avec OpenVAA.</p><p>La Boussole Electorale compare les opinions que vous saisissez à celles données par les partis. Leurs réponses ont été recueillies par l'équipe smartwielen dans le cadre des élections européennes de 2024. L'outil permet de comparer vos opinions avec celles des 7 partis représentés à la Chambre des députés du Luxembourg.</p><p>Dans la section des résultats, vous obtiendrez un score de compatibilité avec chacun de ces 7 partis. Ce score reflète le pourcentage de correspondance entre vos réponses et celles des partis.</p><ul><li>Un score de 100 signifie que vous êtes entièrement d'accord sur toutes les questions auxquelles vous avez répondu.</li><li>Un score de 0 signifie que vous n'êtes d'accord sur aucune des questions.</li><li>Un score entre ces deux extrêmes signifie que vous êtes d'accord sur certaines questions et en désaccord sur d'autres.</li></ul><p>Pour plus de détails sur les méthodes utilisées, vous pouvez nous contacter par e-mail à l'adresse patrick.dumont@uni.lu.</p>",
+    "feedback": {
+      "title": "Commentaire"
+    },
+    "organizationMatching": {
+      "content": [
+        {
+          "declarations": ["input partyMatchingMethod"],
+          "selectors": ["partyMatchingMethod"],
+          "match": {
+            "partyMatchingMethod=answersOnly": "<p>Les résultats des partis ont été calculés à partir des réponses fournies par les partis.</p> ",
+            "partyMatchingMethod=imputed": "<p>Les résultats des partis ont été calculés sur la base de leurs réponses ou, si un parti n’a pas répondu aux questions, à partir de la valeur la plus fréquente (mode) ou de la médiane des réponses de ses candidat·es dans la circonscription.</p> ",
+            "partyMatchingMethod=other": "<p>Les résultats des partis ont été calculés sur la base de leurs réponses ou, si un parti n’a pas répondu aux questions, sur la base des réponses de ses candidat·es dans la circonscription.</p> <p>Veuillez noter que les candidat·es d’un parti peuvent être en désaccord avec leur parti sur certaines questions ; cette position calculée peut donc ne pas refléter entièrement la position officielle du parti.</p>"
+          }
+        }
+      ],
+      "title": "Correspondance avec les partis"
+    },
+    "returnButton": "Retour à l’accueil",
+    "source": {
+      "content": "Le code source de l’application est disponible sur",
+      "sitename": "GitHub",
+      "title": "Code source"
+    },
+    "title": "Comment fonctionne cette application ?"
+  }
+}

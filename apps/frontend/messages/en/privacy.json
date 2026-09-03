@@ -1,0 +1,50 @@
+{
+  "privacy": {
+    "analytics": {
+      "content": {
+        "umami": "We use the Umami service for analytics. This happens completely anonymously and does require any cookies. Further info: {analyticsLink}."
+      },
+      "title": "Analytics"
+    },
+    "cookies": {
+      "content": "The application does not use cookies to store your data. Your answers and preferences are stored in your browser’s local storage for a better user experience. This data can only be accessed by your device, not by the application’s publisher.",
+      "title": "Cookies"
+    },
+    "dataCollection": {
+      "platform": {
+        "umami": "We use the Umami service for data collection. It does not employ cookies. Further info: {analyticsLink}."
+      }
+    },
+    "dataConsentInfoButton": "Further information collecting usage data",
+    "dataConsentIntro": {
+      "denied": [
+        {
+          "declarations": [
+            "input consentDate",
+            "local formattedConsentDate = consentDate: datetime year=numeric month=2-digit day=numeric"
+          ],
+          "match": {
+            "formattedConsentDate=*": "You have denied data collection {formattedConsentDate}. You can change your preference below."
+          }
+        }
+      ],
+      "granted": [
+        {
+          "declarations": [
+            "input consentDate",
+            "local formattedConsentDate = consentDate: datetime year=numeric month=2-digit day=numeric"
+          ],
+          "match": {
+            "formattedConsentDate=*": "You have consented to data collection {formattedConsentDate}.  You can change your preference below."
+          }
+        }
+      ],
+      "indetermined": "You can consent to or deny data collection by choosing one of the options below."
+    },
+    "dataConsentLabel": {
+      "denied": "I don’t want to share my data",
+      "granted": "Yes, I agree to share my data"
+    },
+    "title": "Privacy"
+  }
+}

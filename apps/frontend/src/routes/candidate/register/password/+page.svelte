@@ -1,0 +1,146 @@
+<!--@component
+
+# Candidate app initial password setting page
+
+- Shows a form in which to insert
+- Checks on load if the key is in a search param and automatically redirects to password selection if the key is valid.
+
+## Params
+
+- `registrationKey`: The registration key
+- `username`: The name with which to greet the user
+- `email`: The email of the user
+-->
+
+<script lang="ts">
+  import { log } from '@openvaa/app-shared';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/state';
+  import { MainContent } from '$layouts/main';
+  import { PasswordSetter } from '$lib/candidate/components/passwordSetter';
+  import { Button } from '$lib/components/button';
+  import { ErrorMessage } from '$lib/components/errorMessage';
+  import { HeadingGroup } from '$lib/components/headingGroup';
+  import { getCandidateContext } from '$lib/contexts/candidate';
+
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  // Stable references (functions, userData object): destructure-safe.
+  // Reactive accessor isAuthenticated read via candCtx.X (one-shot read at component init via $derived) — see CLAUDE.md "Context Destructuring Rule".
+  const candCtx = getCandidateContext();
+  const { getRoute, register, setPassword, t, userData } = candCtx;
+
+  ////////////////////////////////////////////////////////////////////
+  // Check flow type and params
+  ////////////////////////////////////////////////////////////////////
+
+  const registrationKey = page.url.searchParams.get('registrationKey') || '';
+  const username = page.url.searchParams.get('username') || '';
+  const email = page.url.searchParams.get('email') || '';
+
+  // Invite flow: user has a session from auth callback verifyOtp, email is provided but no registrationKey
+  const isInviteFlow = candCtx.isAuthenticated && email !== '' && registrationKey === '';
+
+  if (!isInviteFlow) {
+    // Registration key flow: both registrationKey and email are required
+    if (registrationKey === '' || email === '') {
+      goto(getRoute.current('CandAppRegister'));
+    }
+
+    // Redirect if logged in (only for registration key flow), that page will prompt the user to logout
+    if (userData.current) goto(getRoute.current('CandAppRegister'));
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // Handle password change
+  ////////////////////////////////////////////////////////////////////
+
+  let isPasswordValid = $state(false);
+  let password = $state('');
+  let status = $state<ActionStatus>('idle');
+  let validationError = $state<string | undefined>(undefined);
+
+  let canSubmit = $derived(status !== 'loading' && isPasswordValid);
+  let submitLabel = $derived(validationError || t('candidateApp.setPassword.setPassword'));
+
+  async function handleSubmit() {
+    if (!canSubmit) {
+      log.debug('HandleSubmit called when canSubmit is false');
+      return undefined;
+    }
+
+    status = 'loading';
+
+    if (isInviteFlow) {
+      // Invite flow: user already has a session, set the password and redirect to login.
+      // The session from verifyOtp may not reliably persist through client-side navigation to the protected route, so we redirect to login for a clean auth flow.
+      const result = await setPassword({ password }).catch((e) => {
+        log.error(`Error with setPassword (invite flow): ${e?.message}`);
+        return undefined;
+      });
+
+      if (result?.type !== 'success') {
+        status = 'error';
+        return;
+      }
+
+      candCtx.newUserEmail = email;
+      status = 'success';
+      await goto(getRoute.current('CandAppLogin'));
+    } else {
+      // Registration key flow: activate the user with the key and password
+      const result = await register({ registrationKey, password }).catch((e) => {
+        log.error(`Error with register: ${e?.message}`);
+        return undefined;
+      });
+
+      if (result?.type !== 'success') {
+        status = 'error';
+        return;
+      }
+
+      candCtx.newUserEmail = email;
+      status = 'success';
+      await goto(getRoute.current('CandAppLogin'));
+    }
+  }
+</script>
+
+<MainContent title={t('candidateApp.register.title')}>
+  {#snippet heading()}
+    <HeadingGroup>
+      <h1>{t('candidateApp.common.greeting', { username })}</h1>
+    </HeadingGroup>
+  {/snippet}
+  <div class="flex-nowarp flex flex-col items-center">
+    <!-- bind: keep — PasswordSetter.password is $bindable(''). Validity and the error message are derived inside the component and arrive through onValidityChange, so neither is bindable. -->
+    <PasswordSetter
+      bind:password
+      onValidityChange={({ valid, errorMessage }) => {
+        isPasswordValid = valid;
+        validationError = errorMessage;
+      }} />
+    {#if status === 'error'}
+      <ErrorMessage
+        inline
+        message={t('candidateApp.setPassword.registrationError')}
+        class="mb-lg mt-md"
+        data-testid="register-password-error" />
+    {/if}
+  </div>
+
+  {#snippet primaryActions()}
+    <Button
+      onclick={handleSubmit}
+      disabled={!canSubmit}
+      variant="main"
+      text={submitLabel}
+      data-testid="set-password-submit" />
+    <Button
+      href={getRoute.current('CandAppHelp')}
+      text={t('candidateApp.common.contactSupport')}
+      data-testid="register-password-help-link" />
+  {/snippet}
+</MainContent>
