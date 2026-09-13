@@ -10,17 +10,17 @@
   },
   "inConstituency": "vaalipiirissä",
   "ingress": {
-    "answerMinQuestions": "Jos haluat löytää eniten kanssasi samaa mieltä olevat {candidatePlural} ja {partyPlural}, {questionsLink} ensin.",
+    "answerMinQuestions": "Jos haluat löytää eniten kanssasi samaa mieltä olevat {candidatePlural}, {questionsLink} ensin.",
     "questionsLinkText": "vastaa ainakin {numQuestions, plural, =1 {yhteen kysymykseen} other {# kysymykseen}}"
   },
   "missingNominations": {
     "noNominations": {
-      "title": "Vaalipiirissäsi ei ole vaalikoneeseen vastanneita ehdokkaita tai puolueita",
+      "title": "Vaalipiirissäsi ei ole vaalikoneeseen vastanneita ehdokkaita",
       "content": "Voit halutessasi tutustua kysymyksiin, mutta tuloksia ei voida näyttää."
     },
     "someNominations": {
-      "title": "Joidenkin vaalien ehdokkaat tai puolueet eivät ole vastanneet vaalikoneeseen",
-      "content": "Vaalipiirissäsi ei ole ehdokkaiden tai puolueiden vastauksia kaikkien vaalien osalta. Tuloksissa näytetään vain ne vaalit, joihin vastauksia on saatavilla."
+      "title": "Joidenkin vaalien ehdokkaat eivät ole vastanneet vaalikoneeseen",
+      "content": "Vaalipiirissäsi ei ole ehdokkaiden vastauksia kaikkien vaalien osalta. Tuloksissa näytetään vain ne vaalit, joihin vastauksia on saatavilla."
     },
     "noNominationsForElection": "ei saatavilla"
   },
@@ -29,7 +29,7 @@
   },
   "selectElectionFirst": "Valitse vaali ensin",
   "title": {
-    "browse": "Selaa ehdokkaita ja puolueita",
+    "browse": "Selaa ehdokkaita",
     "results": "Tuloksesi"
   }
 }

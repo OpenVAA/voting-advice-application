@@ -35,6 +35,7 @@ Display the question's expandable information content.
   on:collapse={() => onCollapse?.()}
   on:expand={() => onExpand?.()}
   title={$t('common.readMore')}
+  titleClass="text-primary font-bold"
   {...$$restProps}>
   {@html sanitizeHtml(info)}
 </Expander>

@@ -173,6 +173,7 @@ Shows the candidate's basic information, some of which is editable.
   pageStyles.push({ drawer: { background: 'bg-base-200' } });
 
   const subheadingClass = 'text-lg mt-lg mb-md mx-md';
+  const disclaimerClass = 'mx-md mt-sm p-0 text-sm text-secondary';
 </script>
 
 <PreventNavigation
@@ -265,6 +266,10 @@ Shows the candidate's basic information, some of which is editable.
         onChange={handleImageInputChange}
         locked={$answersLocked}
         onShadedBg />
+      <p class={disclaimerClass}>
+        Vaalikoneen ylläpitäjä syöttää tähän aiemmin toimittamasi ehdokaskuvasi myöhemmin, joten voit sivuuttaa tämän
+        kohdan.
+      </p>
 
       <!-- Editable Info questions -->
 

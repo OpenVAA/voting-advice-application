@@ -248,7 +248,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
                     {question.shortName}
                   </div>
                 {/if}
-                <div>
+                <div class="truncated-answer">
                   <InfoAnswer {answer} {question} {format} />
                 </div>
               </div>
@@ -290,5 +290,10 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   .offset-border {
     /* after: is a valid prefix */
     @apply after:absolute after:left-0 after:right-0 after:top-[calc(-10rem/16)] after:border-t-md after:border-base-300 after:content-[''];
+  }
+
+  /* NB. before: is a valid pseudoclass even though the linter flags it */
+  .truncated-answer {
+    @apply relative h-[3.7rem] overflow-hidden before:absolute before:bottom-[-0.1rem] before:right-0 before:h-lg before:w-[4rem] before:bg-gradient-to-l before:from-base-100 before:from-[2rem] before:px-md before:text-right before:content-['→'];
   }
 </style>

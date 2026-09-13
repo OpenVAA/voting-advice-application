@@ -12,6 +12,7 @@ The frontpage of the app for voters.
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
+  import { HeadingGroup } from '$lib/components/headingGroup';
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { Footer } from '$lib/dynamic-components/footer';
@@ -22,22 +23,31 @@ The frontpage of the app for voters.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, appSettings, darkMode, getRoute, t } = getAppContext();
-  const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
+  const { appSettings, getRoute, t } = getAppContext();
+  const { pageStyles } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
   // Edit layout
   ////////////////////////////////////////////////////////////////////
 
-  pageStyles.push({ drawer: { background: 'bg-base-300' } });
-  topBarSettings.push({
-    imageSrc: $darkMode
-      ? ($appCustomization.poster?.urlDark ?? $appCustomization.poster?.url ?? '/images/hero.png')
-      : ($appCustomization.poster?.url ?? '/images/hero.png')
-  });
+  pageStyles.push({ drawer: { background: undefined } });
+  // topBarSettings.push({
+  //   imageSrc: $darkMode
+  //     ? ($appCustomization.poster?.urlDark ?? $appCustomization.poster?.url ?? '/images/hero-dark.jpg')
+  //     : ($appCustomization.poster?.url ?? '/images/hero.jpg')
+  // });
 </script>
 
-<MainContent title={$t('dynamic.appName')}>
+<MainContent
+  title={$t('dynamic.appName')}
+  class="!sm:px-lg !px-0 !pb-0"
+  contentClass="!max-w-xl p-lg sm:p-xl rounded-t-lg bg-base-300 grow">
+  <HeadingGroup slot="heading" class="mt-[20dvh] text-2xl text-base-100">
+    <h1>
+      {$t('dynamic.appName')}
+    </h1>
+  </HeadingGroup>
+
   <Button variant="main" href={$getRoute('Intro')} text={$t('dynamic.frontPage.startButton')} />
 
   <p class="mt-lg text-center">
@@ -55,3 +65,13 @@ The frontpage of the app for voters.
 
   <Footer />
 </MainContent>
+
+<style lang="postcss">
+  :global(body) {
+    @apply bg-[url('/images/hero.jpg')] bg-cover bg-fixed bg-center dark:bg-[url('/images/hero-dark.jpg')];
+  }
+
+  :global(.vaa-frontpage-logos > svg, .vaa-frontpage-logos > img) {
+    @apply inline-block max-h-[2rem] max-w-[8rem];
+  }
+</style>

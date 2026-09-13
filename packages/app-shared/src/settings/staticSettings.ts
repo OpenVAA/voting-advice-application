@@ -2,12 +2,12 @@ import type { StaticSettings } from './staticSettings.type';
 
 export const staticSettings: StaticSettings = {
   admin: {
-    email: 'first.last@openvaa.org'
+    email: 'justiina.lampila@tampere.fi'
   },
   appVersion: {
     version: 1,
     requireUserDataVersion: 1,
-    source: 'https://github.com/OpenVAA/voting-advice-application'
+    source: 'https://github.com/OpenVAA/voting-advice-application/tree/deploy-tampere-nuva-2026'
   },
   dataAdapter: {
     type: 'strapi',
@@ -16,13 +16,13 @@ export const staticSettings: StaticSettings = {
   },
   colors: {
     light: {
-      primary: '#2546a8',
+      primary: '#29549a',
       secondary: '#666666',
       accent: '#0a716b',
       neutral: '#333333',
       'base-100': '#ffffff',
-      'base-200': '#e8f5f6',
-      'base-300': '#d1ebee',
+      'base-200': '#e3f1fa',
+      'base-300': '#c8e4f4',
       warning: '#a82525',
       'line-color': '#d9d9d9'
     },
@@ -39,30 +39,23 @@ export const staticSettings: StaticSettings = {
     }
   },
   font: {
-    name: 'Inter',
-    url: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap',
+    name: 'Montserrat',
+    url: 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap',
     style: 'sans'
   },
   supportedLocales: [
     {
-      code: 'en',
-      name: 'English',
-      isDefault: true
-    },
-    {
       code: 'fi',
-      name: 'Suomi'
-    },
-    {
-      code: 'sv',
-      name: 'Svenska'
-    },
-    {
-      code: 'da',
-      name: 'Dansk'
+      name: 'Suomi',
+      isDefault: true
     }
   ],
   analytics: {
+    platform: {
+      name: 'umami',
+      code: 'f7425493-83ed-40d1-a335-534fa49f34e2',
+      infoUrl: 'https://umami.is/'
+    },
     trackEvents: false
   },
   preRegistration: {

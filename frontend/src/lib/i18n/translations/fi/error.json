@@ -6,7 +6,7 @@
   "default": "Jotakin meni pieleen, anteeksi!",
   "general": "Jotakin meni pieleen, anteeksi",
   "loginFailed": "Kirjautuminen epäonnistui. Tarkista käyttäjätunnus ja salasana.",
-  "noNominations": "Vaalipiirissäsi ei ole vaalikoneeseen vastanneita ehdokkaita tai puolueita",
+  "noNominations": "Vaalipiirissäsi ei ole vaalikoneeseen vastanneita ehdokkaita",
   "noQuestions": "Vaalikoneessa ei vielä ole vaalipiiriäsi koskevia kysymyksiä",
   "unsupportedQuestion": "Tätä kysymystä ei voida näyttää, anteeksi!",
   "wrongEmailOrPassword": "Väärä sähköposti tai salasana"
