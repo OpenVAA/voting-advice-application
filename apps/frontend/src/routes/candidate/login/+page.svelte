@@ -26,6 +26,7 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { getErrorTranslationKey } from '$candidate/utils/loginError';
+  import { MainContent } from '$layouts/main';
   import { PasswordField } from '$lib/candidate/components/passwordField';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
@@ -34,7 +35,6 @@
   import { getLayoutContext } from '$lib/contexts/layout';
   import { Footer } from '$lib/dynamic-components/footer';
   import { DELAY } from '$lib/utils/timing';
-  import MainContent from '../../MainContent.svelte';
   import type { CandidateLoginError } from '$candidate/utils/loginError';
 
   ////////////////////////////////////////////////////////////////////

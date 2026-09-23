@@ -17,6 +17,10 @@
  */
 
 export async function load({ locals }) {
-  const { session } = await locals.safeGetSession();
-  return { session };
+  const { session, user } = await locals.safeGetSession();
+
+  // The projection, built per request and held nowhere: one request's identifier cannot reach another request's payload. `expires_at` is carried through as the value the session reported — never re-derived from a clock, never rounded, never converted between units — or the null form when the session reports none.
+  return {
+    session: session && user ? { userId: user.id, expiresAt: session.expires_at ?? null } : null
+  };
 }

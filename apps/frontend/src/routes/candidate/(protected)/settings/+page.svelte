@@ -10,16 +10,15 @@ Shows the candidate's user settings.
 -->
 
 <script lang="ts">
+  import { log } from '@openvaa/app-shared';
   import { PasswordSetter } from '$candidate/components/passwordSetter';
-  import { PasswordField } from '$lib/candidate/components/passwordField';
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Input } from '$lib/components/input';
   import SuccessMessage from '$lib/components/successMessage/SuccessMessage.svelte';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { logDebugError } from '$lib/utils/logger';
-  import MainContent from '../../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -32,7 +31,6 @@ Shows the candidate's user settings.
   // Handle password change
   ////////////////////////////////////////////////////////////////////
 
-  let currentPassword = $state('');
   let isNewPasswordValid = $state(false);
   let password = $state('');
   let passwordSetterRef: { reset: () => void };
@@ -44,13 +42,13 @@ Shows the candidate's user settings.
 
   async function handleSubmit(): Promise<void> {
     if (!canSubmit) {
-      logDebugError('HandleSubmit called when canSubmit is false');
+      log.debug('HandleSubmit called when canSubmit is false');
       return undefined;
     }
     status = 'loading';
 
-    const result = await setPassword({ currentPassword, password }).catch((e) => {
-      logDebugError(`Error with register: ${e?.message}`);
+    const result = await setPassword({ password }).catch((e) => {
+      log.error(`Error with register: ${e?.message}`);
       return undefined;
     });
 
@@ -61,7 +59,6 @@ Shows the candidate's user settings.
 
     status = 'success';
     // Clear fields on success
-    currentPassword = '';
     passwordSetterRef?.reset();
   }
 
@@ -97,28 +94,15 @@ Shows the candidate's user settings.
     <h2 class={subheadingClass}>{t('candidateApp.settings.password.update')}</h2>
 
     <div class="gap-md flex flex-col">
-      <!-- <p class="mx-md my-0">{t('candidateApp.settings.password.currentDescription')}</p> -->
-
-      <div class="w-full" data-testid="settings-current-password">
-        <label for="currentPassword" class="mx-md my-2 px-0">
-          {t('candidateApp.settings.password.current')}
-        </label>
-        <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
-          <PasswordField
-            id="currentPassword"
-            bind:password={currentPassword}
-            externalLabel={true}
-            autocomplete="current-password" />
-        </div>
-      </div>
-
       <div class="flex-nowarp flex flex-col items-center" data-testid="settings-new-password">
         <!-- bind: keep — PasswordSetter.password is $bindable(''); bind:this is the component reference handleSubmit calls reset() on. Validity and the error message are derived inside the component and arrive through onValidityChange, so neither is bindable. -->
         <PasswordSetter
-          bind:valid={isNewPasswordValid}
-          bind:errorMessage={validationError}
           bind:password
-          bind:this={passwordSetterRef} />
+          bind:this={passwordSetterRef}
+          onValidityChange={({ valid, errorMessage }) => {
+            isNewPasswordValid = valid;
+            validationError = errorMessage;
+          }} />
 
         {#if status === 'error'}
           <ErrorMessage inline message={t('candidateApp.settings.error.changePassword')} class="mb-lg mt-md" />

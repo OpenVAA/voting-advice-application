@@ -15,13 +15,13 @@ See `+page.ts` for possible redirects.
   import qs from 'qs';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { ConstituencySelector } from '$lib/components/constituencySelector';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
-  import { filterPersistent } from '$lib/utils/route/filterPersistent';
-  import { parseParams } from '$lib/utils/route/parseParams';
-  import MainContent from '../../MainContent.svelte';
+  import { filterPersistent } from '$lib/routes/filterPersistent';
+  import { parseParams } from '$lib/routes/parseParams';
   import type { Id } from '@openvaa/core';
 
   ////////////////////////////////////////////////////////////////////

@@ -3,8 +3,8 @@
  */
 
 import { json } from '@sveltejs/kit';
-import { getUserData } from '$lib/auth';
 import { createJob, getActiveJobs } from '$lib/server/admin/jobs/jobStore';
+import { requireVerifiedAdmin } from '$lib/server/admin/requireVerifiedAdmin';
 import type { AdminFeature } from '$lib/admin/features';
 import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 
@@ -15,9 +15,9 @@ type StartJobRequestBody = {
 
 type StartJobResponse = JobInfo | { error: string };
 
-export async function POST({ fetch, request }) {
-  if ((await getUserData({ fetch }))?.role !== 'admin')
-    return json({ error: 'Forbidden' } as StartJobResponse, { status: 403 });
+export async function POST({ fetch, locals, request }) {
+  const denied = await requireVerifiedAdmin({ fetch, locals });
+  if (denied) return denied;
 
   try {
     const { feature, author } = (await request.json()) as StartJobRequestBody;

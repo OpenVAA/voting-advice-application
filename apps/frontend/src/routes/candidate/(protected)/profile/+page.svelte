@@ -10,9 +10,10 @@ Shows the candidate's basic information, some of which is editable.
 -->
 
 <script lang="ts">
-  import { getCustomData } from '@openvaa/app-shared';
+  import { getCustomData, log } from '@openvaa/app-shared';
   import { isEmptyValue } from '@openvaa/data';
   import { goto } from '$app/navigation';
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Icon } from '$lib/components/icon';
@@ -22,8 +23,6 @@ Shows the candidate's basic information, some of which is editable.
   import { Warning } from '$lib/components/warning';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { logDebugError } from '$lib/utils/logger';
-  import MainContent from '../../../MainContent.svelte';
   import type { LocalizedAnswer } from '@openvaa/app-shared';
   import type { AnyNominationVariantPublicData, AnyQuestionVariant } from '@openvaa/data';
 
@@ -76,7 +75,7 @@ Shows the candidate's basic information, some of which is editable.
         unconfirmed: false
       };
     } catch (e) {
-      logDebugError(`Error formatting nomination: ${e}`);
+      log.error(`Error formatting nomination: ${e}`);
       return {
         unconfirmed: true
       };
@@ -123,13 +122,13 @@ Shows the candidate's basic information, some of which is editable.
   async function handleSubmit(): Promise<void> {
     if (!canSubmit) {
       status = 'error';
-      logDebugError('[Candidate app question page]: handleSubmit called when canSubmit is false');
+      log.debug('[Candidate app question page]: handleSubmit called when canSubmit is false');
       return;
     }
     status = 'loading';
     // Request email to be sent in the backend
     const result = await userData.save().catch((e) => {
-      logDebugError(`[Candidate app question page] Error saving userData: ${e?.message}`);
+      log.error(`[Candidate app question page] Error saving userData: ${e?.message}`);
       return undefined;
     });
     if (result?.type !== 'success') {
@@ -272,24 +271,15 @@ Shows the candidate's basic information, some of which is editable.
     <div class="gap-md flex flex-col">
       <!-- Image -->
 
-      <!--
-        see phase 89 Plan 02 (TIR4:75-76 + 166-188): wrap the image Input in a div
-        carrying `profile-image-error`. Input.svelte's <ErrorMessage> at
-        :640-642 is shared across all input types (text / email / image /
-        textarea-multilingual), so a testid added inside Input would be
-        ambiguous. Wrapping at the call site scopes the testid to image-upload
-        errors only.
-      -->
-      <div data-testid="profile-image-error">
-        <Input
-          type="image"
-          label={t('common.candidatePortrait')}
-          value={userData.current?.candidate.image}
-          onChange={handleImageInputChange}
-          locked={candCtx.answersLocked}
-          onShadedBg
-          containerProps={{ 'data-testid': 'profile-image-upload' }} />
-      </div>
+      <!-- Portrait upload. The error surface is Input's own <ErrorMessage>, which already carries the shared `input-error` testid; tests address it scoped inside this instance's `profile-image-upload` container. That container is what disambiguates this Input from the others on the page, so no wrapper element is needed to carry a testid of its own. -->
+      <Input
+        type="image"
+        label={t('common.candidatePortrait')}
+        value={userData.current?.candidate.image}
+        onChange={handleImageInputChange}
+        locked={candCtx.answersLocked}
+        onShadedBg
+        containerProps={{ 'data-testid': 'profile-image-upload' }} />
 
       <!-- Editable Info questions -->
 

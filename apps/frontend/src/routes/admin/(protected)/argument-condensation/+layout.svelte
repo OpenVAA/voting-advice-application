@@ -8,12 +8,12 @@
 -->
 
 <script lang="ts">
+  import { log } from '@openvaa/app-shared';
   import WithPolling from '$lib/admin/components/jobs/WithPolling.svelte';
   import { isValidResult } from '$lib/api/utils/isValidResult';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
   import { getAdminContext } from '$lib/contexts/admin';
-  import { logDebugError } from '$lib/utils/logger';
   import type { Snippet } from 'svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
   import type { LayoutData } from './$types';
@@ -43,7 +43,7 @@
   });
 
   $effect(() => {
-    if (error) logDebugError(error.message);
+    if (error) log.error(error.message);
   });
 
   /**

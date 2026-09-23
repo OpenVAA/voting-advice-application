@@ -34,8 +34,6 @@ Displays a warning if the selected constituency does not have nominations in all
   // Keep context ref for reactive getter access (destructuring captures static values)
   const voterCtx = getVoterContext();
   const { getRoute, t } = voterCtx;
-  // dataRoot is a reactive accessor (see phase 113 flatten) — read via voterCtx.X, never destructure.
-  const dataRoot = $derived(voterCtx.dataRoot);
 
   /**
    * Maximum time to wait for the `voterCtx.nominationsAvailable` value to settle after providing data to the `dataRoot`. The reactive chain through multiple `$derived` levels may need several microtasks to propagate.
@@ -78,6 +76,8 @@ Displays a warning if the selected constituency does not have nominations in all
   ]): Promise<Error | undefined> {
     if (!isValidResult(questionData, { allowEmpty: true })) return new Error('Error loading question data');
     if (!isValidResult(nominationData, { allowEmpty: true })) return new Error('Error loading nomination data');
+    // `dataRoot` is read HERE rather than through a module-level `$derived` alias. The accessor is identity-stable, so an alias returns the same reference on every `#version` bump and Svelte skips downstream notification — any property later read through it goes stale on cold entry (spike 024, CLAUDE.md carve-out). This function is invoked from a `.then` callback, outside the effect's tracking scope, which is exactly what the doc comment above wants, so a plain local read is both safe and equivalent.
+    const dataRoot = voterCtx.dataRoot;
     dataRoot.update(() => {
       dataRoot.provideQuestionData(questionData);
       dataRoot.provideEntityData(nominationData.entities);

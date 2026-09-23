@@ -20,13 +20,12 @@
 
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { Layout, MaintenancePage } from '$layouts/main';
   import { Notification } from '$lib/components/notification';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { initVoterContext } from '$lib/contexts/voter';
   import { DataConsentPopup } from '$lib/dynamic-components/dataConsent/popup';
   import { VoterNav } from '$lib/dynamic-components/navigation/voter/';
-  import Layout from '../Layout.svelte';
-  import MaintenancePage from '../MaintenancePage.svelte';
   import type { Snippet } from 'svelte';
 
   ////////////////////////////////////////////////////////////////////

@@ -16,11 +16,12 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
 -->
 
 <script lang="ts">
-  import { getCustomData } from '@openvaa/app-shared';
+  import { getCustomData, log } from '@openvaa/app-shared';
   import { isEmptyValue } from '@openvaa/data';
   import { error } from '@sveltejs/kit';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Hero } from '$lib/components/hero';
@@ -32,9 +33,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { QuestionHeading } from '$lib/dynamic-components/questionHeading';
-  import { logDebugError } from '$lib/utils/logger';
-  import { parseParams } from '$lib/utils/route';
-  import MainContent from '../../../../MainContent.svelte';
+  import { parseParams } from '$lib/routes';
   import type { LocalizedAnswer } from '@openvaa/app-shared';
   import type { Id } from '@openvaa/core';
   import type { AnyQuestionVariant } from '@openvaa/data';
@@ -159,7 +158,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
     if (inputQuestion.id !== question.id) {
       status = 'error';
       errorMessage = undefined;
-      logDebugError('handleValueChange: questionId mismatch');
+      log.debug('handleValueChange: questionId mismatch');
       return;
     }
     setAnswer({ value });
@@ -180,14 +179,14 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
     if (answersLocked) {
       status = 'error';
       errorMessage = t('candidateApp.common.editingNotAllowed');
-      logDebugError('[Candidate app question page]: setAnswer called when answersLocked');
+      log.debug('[Candidate app question page]: setAnswer called when answersLocked');
       return;
     }
     if (value == null && info == null) {
       status = 'error';
       // Internal empty-payload guard (programmer error) — not a lock condition, so use the generic save-failure message rather than "editing not allowed".
       errorMessage = t('candidateApp.error.saveFailed');
-      logDebugError('[Candidate app question page]: setAnswer called with no value nor info');
+      log.debug('[Candidate app question page]: setAnswer called with no value nor info');
       return;
     }
     const answer: Partial<LocalizedAnswer> = userData.current?.candidate.answers?.[question.id] ?? {};
@@ -204,13 +203,13 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
     if (!canSubmit) {
       status = 'error';
       errorMessage = t('candidateApp.error.saveFailed');
-      logDebugError('[Candidate app question page]: handleSubmit called when canSubmit is false');
+      log.debug('[Candidate app question page]: handleSubmit called when canSubmit is false');
       return;
     }
     status = 'loading';
     // Request email to be sent in the backend
     const result = await userData.save().catch((e) => {
-      logDebugError(`Error saving userData: ${e?.message}`);
+      log.error(`Error saving userData: ${e?.message}`);
       return undefined;
     });
     if (result?.type !== 'success') {

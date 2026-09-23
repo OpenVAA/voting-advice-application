@@ -6,14 +6,14 @@ Shows a form with which to request a password reset email.
 -->
 
 <script lang="ts">
+  import { log } from '@openvaa/app-shared';
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { SuccessMessage } from '$lib/components/successMessage';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { logDebugError } from '$lib/utils/logger';
-  import MainContent from '../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -34,7 +34,7 @@ Shows a form with which to request a password reset email.
     status = 'loading';
     // Request email to be sent in the backend
     const result = await requestForgotPasswordEmail({ email }).catch((e) => {
-      logDebugError(`Error requesting password reset email: ${e?.message}`);
+      log.error(`Error requesting password reset email: ${e?.message}`);
       return undefined;
     });
     if (result?.type !== 'success') {

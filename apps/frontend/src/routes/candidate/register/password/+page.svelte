@@ -13,15 +13,15 @@
 -->
 
 <script lang="ts">
+  import { log } from '@openvaa/app-shared';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
+  import { MainContent } from '$layouts/main';
   import { PasswordSetter } from '$lib/candidate/components/passwordSetter';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeadingGroup } from '$lib/components/headingGroup';
   import { getCandidateContext } from '$lib/contexts/candidate';
-  import { logDebugError } from '$lib/utils/logger';
-  import MainContent from '../../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -67,7 +67,7 @@
 
   async function handleSubmit() {
     if (!canSubmit) {
-      logDebugError('HandleSubmit called when canSubmit is false');
+      log.debug('HandleSubmit called when canSubmit is false');
       return undefined;
     }
 
@@ -77,7 +77,7 @@
       // Invite flow: user already has a session, set the password and redirect to login.
       // The session from verifyOtp may not reliably persist through client-side navigation to the protected route, so we redirect to login for a clean auth flow.
       const result = await setPassword({ password }).catch((e) => {
-        logDebugError(`Error with setPassword (invite flow): ${e?.message}`);
+        log.error(`Error with setPassword (invite flow): ${e?.message}`);
         return undefined;
       });
 
@@ -92,7 +92,7 @@
     } else {
       // Registration key flow: activate the user with the key and password
       const result = await register({ registrationKey, password }).catch((e) => {
-        logDebugError(`Error with register: ${e?.message}`);
+        log.error(`Error with register: ${e?.message}`);
         return undefined;
       });
 
@@ -115,7 +115,13 @@
     </HeadingGroup>
   {/snippet}
   <div class="flex-nowarp flex flex-col items-center">
-    <PasswordSetter bind:valid={isPasswordValid} bind:errorMessage={validationError} bind:password />
+    <!-- bind: keep — PasswordSetter.password is $bindable(''). Validity and the error message are derived inside the component and arrive through onValidityChange, so neither is bindable. -->
+    <PasswordSetter
+      bind:password
+      onValidityChange={({ valid, errorMessage }) => {
+        isPasswordValid = valid;
+        validationError = errorMessage;
+      }} />
     {#if status === 'error'}
       <ErrorMessage
         inline

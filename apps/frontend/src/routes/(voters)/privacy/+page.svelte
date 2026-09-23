@@ -12,6 +12,7 @@ Displays information about the privacy policy of the app as well as the possible
 
 <script lang="ts">
   import { staticSettings } from '@openvaa/app-shared';
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { HeroEmoji } from '$lib/components/heroEmoji';
@@ -20,7 +21,6 @@ Displays information about the privacy policy of the app as well as the possible
   import { DataConsent } from '$lib/dynamic-components/dataConsent';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import MainContent from '../../MainContent.svelte';
 
   const ctx = getAppContext();
   const { getRoute, t } = ctx;

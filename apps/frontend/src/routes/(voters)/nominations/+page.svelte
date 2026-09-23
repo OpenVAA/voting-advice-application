@@ -7,13 +7,13 @@ List all nominations in the application.
 
 <script lang="ts">
   import { FilterGroup } from '@openvaa/filters';
+  import { MainContent } from '$layouts/main';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
   import { buildParentFilters } from '$lib/contexts/voter/filters/buildParentFilters';
   import { EntityList, EntityListControls } from '$lib/dynamic-components/entityList';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { ucFirst } from '$lib/utils/text/ucFirst';
-  import MainContent from '../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

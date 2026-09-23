@@ -14,11 +14,11 @@ See `+page.ts` for possible redirects.
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { ElectionSelector } from '$lib/components/electionSelector';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
-  import MainContent from '../../MainContent.svelte';
   import type { Id } from '@openvaa/core';
 
   ////////////////////////////////////////////////////////////////////

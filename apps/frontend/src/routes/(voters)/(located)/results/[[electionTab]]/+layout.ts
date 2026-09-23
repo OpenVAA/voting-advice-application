@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit';
-import { parseParams } from '$lib/utils/route';
+import { parseParams } from '$lib/routes';
 import type { LayoutLoad } from './$types';
 
 /**

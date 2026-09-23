@@ -9,16 +9,16 @@
 -->
 
 <script lang="ts">
+  import { log } from '@openvaa/app-shared';
   import { untrack } from 'svelte';
   import { TermsOfUseForm } from '$candidate/components/termsOfUse';
+  import { MainContent } from '$layouts/main';
   import { isValidResult } from '$lib/api/utils/isValidResult';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { Loading } from '$lib/components/loading';
   import { getCandidateContext } from '$lib/contexts/candidate/candidateContext.svelte';
-  import { logDebugError } from '$lib/utils/logger';
-  import MainContent from '../../MainContent.svelte';
   import type { Snippet } from 'svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
   import type { LayoutData } from './$types';
@@ -45,11 +45,18 @@
     status = 'loading';
     try {
       userData.setTermsOfUseAccepted(new Date().toJSON());
-      await userData.save();
+      // BRANCH ON THE RESULT. `save()` is composite and its answers branch returns `{ type: 'failure' }` on an unverified read-back (`candidateUserDataState.svelte.ts:260`) — positioned BEFORE the `updateEntityProperties` call that persists `termsOfUseAccepted`. Ignoring the return therefore reports success for a save in which the terms write never ran. That was harmless until `157.1-06`, whose answers branch previously returned a truthy `{}` that let the guard pass; this check is what keeps the phase from shipping a silent success of its own making (criterion 2).
+      // Same idiom as the two already-checked entrances (`questions/[questionId]/+page.svelte:215`, `profile/+page.svelte`), same existing failure surface, and NOT converted to a throw (decision B4(a)).
+      const result = await userData.save();
+      if (result?.type !== 'success') {
+        log.error('Terms-of-use acceptance was not persisted: the composite save reported a failure.');
+        status = 'error';
+        return;
+      }
       status = 'success';
       termsSubmitted = true;
     } catch (error) {
-      logDebugError(error);
+      log.error('Failed to save terms-of-use acceptance', { err: error });
       status = 'error';
     }
   }
@@ -115,7 +122,7 @@
 
   // Error logging side-effect, in its own `$effect` so it re-runs on validity changes without being entangled with the data-application effect above.
   $effect(() => {
-    if (validity.state === 'error') logDebugError('Error loading protected-layout data');
+    if (validity.state === 'error') log.error('Error loading protected-layout data');
   });
 </script>
 
@@ -134,7 +141,7 @@
     {#if status === 'error'}
       <!-- The EXISTING save-failure key, shared with the two already-checked `save()` entrances so all three report the same thing; it exists in every shipped locale (decision B4(a) — no new key). -->
       <div role="alert" data-testid="tou-save-error" class="text-error my-md text-center">
-        {t('error.default')}
+        {t('candidateApp.error.saveFailed')}
       </div>
     {/if}
     {#snippet primaryActions()}

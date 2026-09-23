@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import qs from 'qs';
-import { getUserData } from '$lib/auth';
 import { getActiveJobs } from '$lib/server/admin/jobs/jobStore';
+import { requireVerifiedAdmin } from '$lib/server/admin/requireVerifiedAdmin';
 import type { AdminFeature } from '$lib/admin/features';
 import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 
@@ -13,9 +13,9 @@ type ActiveJobsResponse = Array<JobInfo> | { error: string };
  *
  * Returns: JobInfo[]
  */
-export async function GET({ url, fetch }) {
-  if ((await getUserData({ fetch }))?.role !== 'admin')
-    return json({ error: 'Forbidden' } as ActiveJobsResponse, { status: 403 });
+export async function GET({ url, fetch, locals }) {
+  const denied = await requireVerifiedAdmin({ fetch, locals });
+  if (denied) return denied;
 
   try {
     // Parse params

@@ -25,11 +25,13 @@ Sibling tracking concerns:
 -->
 
 <script lang="ts">
+  import { log } from '@openvaa/app-shared';
   import { isMatch } from '@openvaa/matching';
   import { onMount } from 'svelte';
   import { slide } from 'svelte/transition';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
+  import { MainContent } from '$layouts/main';
   import AccordionSelect from '$lib/components/accordionSelect/AccordionSelect.svelte';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
@@ -39,11 +41,10 @@ Sibling tracking concerns:
   import { EntityDetailsDrawer } from '$lib/dynamic-components/entityDetails';
   import { EntityListWithControls } from '$lib/dynamic-components/entityList';
   import { getEntityAndTitle } from '$lib/utils/entityDetails';
-  import { logDebugError } from '$lib/utils/logger';
   import { sanitizeHtml } from '$lib/utils/sanitize';
+  import { compareMaybeWrappedEntities } from '$lib/utils/sorting';
   import { ucFirst } from '$lib/utils/text/ucFirst';
   import { DELAY } from '$lib/utils/timing';
-  import MainContent from '../../../../MainContent.svelte';
   import type { Election, EntityType } from '@openvaa/data';
   import type { Snippet } from 'svelte';
   import type { Tab } from '$lib/components/tabs';
@@ -120,7 +121,9 @@ Sibling tracking concerns:
   //
   // `toSorted`, NOT `sort`: `voterCtx.matches[...]` is reactive context state and must not be mutated in place.
   const activeMatches = $derived<Array<MaybeWrappedEntityVariant> | undefined>(
-    activeElectionId && activeEntityType ? voterCtx.matches[activeElectionId]?.[activeEntityType] : undefined
+    activeElectionId && activeEntityType
+      ? voterCtx.matches[activeElectionId]?.[activeEntityType]?.toSorted(compareMaybeWrappedEntities)
+      : undefined
   );
 
   // Tabs.activeIndex — non-bound, passed as a $derived value.
@@ -152,7 +155,7 @@ Sibling tracking concerns:
       return entity;
     } catch (e) {
       // Silent degradation — UI-SPEC Empty State Inventory "Deeplink to entity not found"
-      logDebugError(
+      log.error(
         `Could not get entity details for ${entityType} ${entityId}. Error: ${e instanceof Error ? e.message : '-'}`
       );
       return undefined;

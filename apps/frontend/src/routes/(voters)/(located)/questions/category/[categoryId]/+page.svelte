@@ -19,6 +19,7 @@ Display the intro to a question category and possibly a button with which to ski
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
@@ -26,8 +27,7 @@ Display the intro to a question category and possibly a button with which to ski
   import { Loading } from '$lib/components/loading';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
-  import { parseParams } from '$lib/utils/route';
-  import MainContent from '../../../../../MainContent.svelte';
+  import { parseParams } from '$lib/routes';
   import type { Id } from '@openvaa/core';
 
   ////////////////////////////////////////////////////////////////////

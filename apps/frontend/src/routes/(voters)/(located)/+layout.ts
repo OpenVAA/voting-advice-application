@@ -11,13 +11,25 @@
 import { staticSettings } from '@openvaa/app-shared';
 import { DataRoot } from '@openvaa/data';
 import { redirect } from '@sveltejs/kit';
-import { dataProvider as dataProviderPromise } from '$lib/api/dataProvider';
+import { createDataProvider, createSupabaseUniversalClient } from '$lib/api/dataProvider';
 import { getLocale } from '$lib/paraglide/runtime';
-import { buildRoute, getImpliedConstituencyIds, getImpliedElectionIds, parseParams } from '$lib/utils/route';
+import { buildRoute, getImpliedConstituencyIds, getImpliedElectionIds, parseParams } from '$lib/routes';
 import { mergeAppSettings } from '$lib/utils/settings';
 import type { Id } from '@openvaa/core';
 
-export async function load({ fetch, parent, untrack, url }) {
+/**
+ * Whether an id parameter names an actual selection.
+ *
+ * An EMPTY ARRAY is not a selection, and a bare truthiness test says it is. Both producers of these values emit one: `parseParams` filters empty values out of an array param, so the degenerate `?electionId=` yields `[]`, and `getImpliedConstituencyIds` returns `[]` rather than `undefined` when it is handed no elections to imply from. Either one used to satisfy `if (!electionId)`, skip the redirect, and reach the adapter as a present-but-empty filter — which fanned out to zero RPC calls and produced a blank voter app with no error, no redirect and no log line. The predicate is used at all three guards so neither producer can reopen the hole.
+ *
+ * @param value - A parsed or implied id parameter.
+ * @returns `true` when the value names at least one id.
+ */
+function hasSelection(value: Id | Array<Id> | undefined): value is Id | Array<Id> {
+  return value != null && (!Array.isArray(value) || value.length > 0);
+}
+
+export async function load({ data, fetch, parent, untrack, url }) {
   const lang = getLocale();
   let electionId: Id | Array<Id> | undefined;
   let constituencyId: Id | Array<Id> | undefined;
@@ -36,7 +48,7 @@ export async function load({ fetch, parent, untrack, url }) {
   }
 
   // Try to imply ids if not provided
-  if (!electionId || !constituencyId) {
+  if (!hasSelection(electionId) || !hasSelection(constituencyId)) {
     const { appSettingsData, constituencyData, electionData } = await parent();
     const appSettings = mergeAppSettings(staticSettings, await appSettingsData);
 
@@ -44,13 +56,13 @@ export async function load({ fetch, parent, untrack, url }) {
     const dataRoot = new DataRoot();
     dataRoot.provideElectionData(await electionData);
     dataRoot.provideConstituencyData(await constituencyData);
-    if (!electionId) {
+    if (!hasSelection(electionId)) {
       electionId = getImpliedElectionIds({
         appSettings,
         dataRoot,
-        selectedConstituencyIds: constituencyId ? [constituencyId].flat() : undefined
+        selectedConstituencyIds: hasSelection(constituencyId) ? [constituencyId].flat() : undefined
       });
-      if (!electionId) {
+      if (!hasSelection(electionId)) {
         redirect(
           307,
           withNext(
@@ -63,12 +75,12 @@ export async function load({ fetch, parent, untrack, url }) {
       }
     }
 
-    if (!constituencyId) {
+    if (!hasSelection(constituencyId)) {
       constituencyId = getImpliedConstituencyIds({
         dataRoot,
         selectedElectionIds: [electionId].flat()
       });
-      if (!constituencyId) {
+      if (!hasSelection(constituencyId)) {
         redirect(
           307,
           withNext(
@@ -83,9 +95,9 @@ export async function load({ fetch, parent, untrack, url }) {
     }
   }
 
-  // Get data
-  const dataProvider = await dataProviderPromise;
-  dataProvider.init({ fetch });
+  // Get data. The client is built from this route's OWN server-load data rather than taken from `await parent()` on purpose: `parent()` does not resolve until the root load's four Supabase round-trips have finished, and the two calls below used to run in parallel with them. Blocking them behind the root measurably broke `afterNavigate`'s single-`requestAnimationFrame` focus reset, which finds no question heading yet and never retries. See this route's `+layout.server.ts` for the full reasoning and for the cost the operator accepted.
+  const supabaseClient = createSupabaseUniversalClient({ fetch, cookies: data.supabaseCookies });
+  const dataProvider = createDataProvider({ fetch, client: supabaseClient });
   return {
     // Both promises below are returned UNAWAITED on purpose: they stream, and SvelteKit resolves them after this load returns. That is safe under per-request instancing because the promise captures THIS request's own adapter, which nothing else can rebind; do not "fix" it by awaiting.
     questionData: dataProvider

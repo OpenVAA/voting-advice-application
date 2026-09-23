@@ -12,6 +12,7 @@ Shows the opinion questions for the candidate to answer.
 <script lang="ts">
   import { isLocalizedString } from '@openvaa/app-shared';
   import { isEmptyValue } from '@openvaa/data';
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import ElectionTag from '$lib/components/electionTag/ElectionTag.svelte';
   import { Expander } from '$lib/components/expander';
@@ -22,7 +23,6 @@ Shows the opinion questions for the candidate to answer.
   import { Warning } from '$lib/components/warning';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getElectionsToShow } from '$lib/utils/questions';
-  import MainContent from '../../../MainContent.svelte';
   import type { Answer, AnyQuestionVariant } from '@openvaa/data';
 
   ////////////////////////////////////////////////////////////////////

@@ -14,12 +14,12 @@ Display a general intro before starting answering the questions and possibly all
   import { error } from '@sveltejs/kit';
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
-  import MainContent from '../../../MainContent.svelte';
   import type { QuestionCategory } from '@openvaa/data';
 
   ////////////////////////////////////////////////////////////////////

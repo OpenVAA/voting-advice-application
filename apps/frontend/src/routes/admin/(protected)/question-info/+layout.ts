@@ -13,15 +13,16 @@
  *
  * The parent protected load is deliberately UNCHANGED: it already awaited `parent()` unconditionally for other data, so it was never newly serialised and takes its client from a call it was already making.
  */
-import { dataProvider as dataProviderPromise } from '$lib/api/dataProvider';
+
+import { createDataProvider, createSupabaseUniversalClient } from '$lib/api/dataProvider';
 import { getLocale } from '$lib/paraglide/runtime';
 
-export async function load({ fetch }) {
+export async function load({ data, fetch }) {
   const lang = getLocale();
 
-  // Get question data
-  const dataProvider = await dataProviderPromise;
-  dataProvider.init({ fetch });
+  // Rebuilt per pass from THIS route's own server-load data — see the docstring's second section for why it is not taken from the ancestor.
+  const supabaseClient = createSupabaseUniversalClient({ fetch, cookies: data.supabaseCookies });
+  const dataProvider = createDataProvider({ fetch, client: supabaseClient });
 
   return {
     // ⚠ RETURNED UNAWAITED ON PURPOSE, exactly as it was before this route was de-serialised and exactly as the voter-side analog keeps its own reads. It streams, and SvelteKit resolves it after this load returns; that is safe under per-request instancing because the promise captures THIS request's own adapter, which nothing else can rebind. Awaiting it would convert streaming into blocking on the very path this file exists to unblock — do not "fix" it.

@@ -15,13 +15,12 @@
 
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { Layout, MaintenancePage } from '$layouts/main';
   import { Notification } from '$lib/components/notification';
   import { getAppContext } from '$lib/contexts/app';
   import { initCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { CandidateNav } from '$lib/dynamic-components/navigation/candidate';
-  import Layout from '../Layout.svelte';
-  import MaintenancePage from '../MaintenancePage.svelte';
   import type { Snippet } from 'svelte';
 
   let { children }: { children: Snippet } = $props();

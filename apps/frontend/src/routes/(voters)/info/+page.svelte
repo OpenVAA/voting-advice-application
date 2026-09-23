@@ -6,12 +6,12 @@ Displays information about the elections in the VAA.
 -->
 
 <script lang="ts">
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import MainContent from '../../MainContent.svelte';
 
   const ctx = getAppContext();
   const { getRoute, t } = ctx;

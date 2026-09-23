@@ -18,9 +18,9 @@
 import { staticSettings } from '@openvaa/app-shared';
 import { DataRoot } from '@openvaa/data';
 import { redirect } from '@sveltejs/kit';
-import { buildRoute, getImpliedElectionIds, parseParams } from '$lib/utils/route';
+import { buildRoute, getImpliedElectionIds, parseParams } from '$lib/routes';
 import { mergeAppSettings } from '$lib/utils/settings';
-import type { Route } from '$lib/utils/route';
+import type { Route } from '$lib/routes';
 
 export async function load({ parent, params, route, url }) {
   const { appSettingsData, constituencyData, electionData } = await parent();

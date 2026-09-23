@@ -10,12 +10,12 @@ The frontpage of the app for voters.
 -->
 
 <script lang="ts">
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { Footer } from '$lib/dynamic-components/footer';
   import { SurveyBanner } from '$lib/dynamic-components/survey/banner';
-  import MainContent from '../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

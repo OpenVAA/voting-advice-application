@@ -6,11 +6,11 @@ Page for controlling the argument condensation feature.
 
 <script lang="ts">
   import { enhance } from '$app/forms';
+  import { MainContent } from '$layouts/main';
   import { FeatureJobs } from '$lib/admin/components/jobs';
   import { Button } from '$lib/components/button';
   import { getAdminContext } from '$lib/contexts/admin';
   import { getUUID } from '$lib/utils/components';
-  import MainContent from '../../../MainContent.svelte';
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { ActionResult, SubmitFunction } from '@sveltejs/kit';
   import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';

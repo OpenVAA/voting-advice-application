@@ -1,10 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { ConstituencySelector } from '$lib/components/constituencySelector';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import MainContent from '../../../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

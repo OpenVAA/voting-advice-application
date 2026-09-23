@@ -18,12 +18,13 @@
 -->
 
 <script lang="ts">
-  import { getCustomData } from '@openvaa/app-shared';
+  import { getCustomData, log } from '@openvaa/app-shared';
   import { isBooleanQuestion, isSingleChoiceQuestion } from '@openvaa/data';
   import { error } from '@sveltejs/kit';
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { Hero } from '$lib/components/hero';
   import { HeroEmoji } from '$lib/components/heroEmoji';
@@ -37,10 +38,8 @@
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
   import { QuestionHeading } from '$lib/dynamic-components/questionHeading';
-  import { logDebugError } from '$lib/utils/logger';
-  import { FIRST_QUESTION_ID, parseParams } from '$lib/utils/route';
+  import { FIRST_QUESTION_ID, parseParams } from '$lib/routes';
   import { DELAY } from '$lib/utils/timing';
-  import MainContent from '../../../MainContent.svelte';
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { Snippet } from 'svelte';
 
@@ -101,7 +100,7 @@
     if (!questionBlock) {
       if (question) {
         const questionId = parseParams(page).questionId;
-        logDebugError(
+        log.debug(
           `Question with id ${questionId} not found in voterCtx.selectedQuestionBlocks. Rerouting to category selection.`
         );
         goto(getRoute.current('Questions'));

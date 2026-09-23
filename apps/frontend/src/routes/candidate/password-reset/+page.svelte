@@ -10,16 +10,16 @@ Shows a form with which to set a new password when it has been reset.
 -->
 
 <script lang="ts">
+  import { log } from '@openvaa/app-shared';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
+  import { MainContent } from '$layouts/main';
   import { PasswordSetter } from '$lib/candidate/components/passwordSetter';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { logDebugError } from '$lib/utils/logger';
-  import MainContent from '../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -52,7 +52,7 @@ Shows a form with which to set a new password when it has been reset.
 
   async function handleSubmit() {
     if (!canSubmit) {
-      logDebugError('HandleSubmit called when canSubmit is false');
+      log.debug('HandleSubmit called when canSubmit is false');
       return undefined;
     }
 
@@ -61,7 +61,7 @@ Shows a form with which to set a new password when it has been reset.
     if (isSessionFlow) {
       // Session-based flow: user already has a session from verifyOtp, just set the password
       const result = await setPassword({ password }).catch((e) => {
-        logDebugError(`Error with setPassword: ${e?.message}`);
+        log.error(`Error with setPassword: ${e?.message}`);
         return undefined;
       });
 
@@ -76,7 +76,7 @@ Shows a form with which to set a new password when it has been reset.
     } else {
       // Code-based flow: use resetPassword with the code
       const result = await resetPassword({ code: code!, password }).catch((e) => {
-        logDebugError(`Error with resetPassword: ${e?.message}`);
+        log.error(`Error with resetPassword: ${e?.message}`);
         return undefined;
       });
 
@@ -105,7 +105,13 @@ Shows a form with which to set a new password when it has been reset.
     </HeadingGroup>
   {/snippet}
   <div class="flex-nowarp flex flex-col items-center">
-    <PasswordSetter bind:valid={isPasswordValid} bind:errorMessage={validationError} bind:password />
+    <!-- bind: keep — PasswordSetter.password is $bindable(''). Validity and the error message are derived inside the component and arrive through onValidityChange, so neither is bindable. -->
+    <PasswordSetter
+      bind:password
+      onValidityChange={({ valid, errorMessage }) => {
+        isPasswordValid = valid;
+        validationError = errorMessage;
+      }} />
     {#if status === 'error'}
       <ErrorMessage
         inline

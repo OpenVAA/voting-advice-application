@@ -7,11 +7,10 @@
 -->
 
 <script lang="ts">
+  import { Layout, MaintenancePage } from '$layouts/main';
   import { initAdminContext } from '$lib/contexts/admin';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { AdminNav } from '$lib/dynamic-components/navigation/admin';
-  import Layout from '../Layout.svelte';
-  import MaintenancePage from '../MaintenancePage.svelte';
   import type { Snippet } from 'svelte';
 
   let { children }: { children: Snippet } = $props();

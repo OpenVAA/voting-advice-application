@@ -9,11 +9,11 @@
 
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import MainContent from '../../../MainContent.svelte';
   import type { Snippet } from 'svelte';
 
   let { children }: { children: Snippet } = $props();

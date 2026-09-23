@@ -11,15 +11,15 @@
 -->
 
 <script lang="ts">
+  import { log } from '@openvaa/app-shared';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
+  import { MainContent } from '$layouts/main';
   import { LogoutButton } from '$lib/candidate/components/logoutButton';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { getCandidateContext } from '$lib/contexts/candidate';
-  import { logDebugError } from '$lib/utils/logger';
-  import MainContent from '../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -59,7 +59,7 @@
   async function checkKeyAndContinue(registrationKey: string): Promise<void> {
     status = 'loading';
     const result = await checkRegistrationKey({ registrationKey }).catch((e) => {
-      logDebugError(`Error checking registration key: ${e?.message}`);
+      log.error(`Error checking registration key: ${e?.message}`);
       return undefined;
     });
     if (result?.type !== 'success') {

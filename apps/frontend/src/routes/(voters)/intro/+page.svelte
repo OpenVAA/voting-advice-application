@@ -11,10 +11,10 @@ Shown after the front page in the voter app. Displays a list of the steps the vo
 -->
 
 <script lang="ts">
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
-  import MainContent from '../../MainContent.svelte';
 
   // Destructuring the reactive context getters (electionsSelectable, constituenciesSelectable) captures the initial empty/false snapshot. Read via `voterCtx.X` instead. Stable functions (getRoute, t) remain destructured.
   const voterCtx = getVoterContext();
