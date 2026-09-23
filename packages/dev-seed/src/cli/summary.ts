@@ -3,14 +3,11 @@
  *
  * Output shape (fixed — not a machine-parseable format):
  *
- *   Applied template: default (built-in)
- *   Seed: 42                                              Elapsed: 6.21s
- *                                                         Portraits uploaded: 100
+ *   Applied template: default (built-in) Seed: 42                                              Elapsed: 6.21s Portraits uploaded: 100
  *
  *   Table                          Created
  *   ─────────────────────────────── ──────────
- *   elections                      1
- *   ...                            ...
+ *   elections                      1 ...                            ...
  *   ─────────────────────────────── ──────────
  *   Total                          251
  *

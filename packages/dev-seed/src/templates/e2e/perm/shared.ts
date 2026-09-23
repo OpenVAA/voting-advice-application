@@ -1,41 +1,33 @@
 /**
  * Shared building blocks for the perm-* minimal-data templates.
  *
- * Every entity's `name` field uses the `[<SYMBOL>] <description>` display
- * convention so specs can match inline via `/\[<SYMBOL>\]/i` regexes without
- * a shared `TEXT_RE` bucket.
+ * Every entity's `name` field uses the `[<SYMBOL>] <description>` display convention so specs can match inline via `/\[<SYMBOL>\]/i` regexes without a shared `TEXT_RE` bucket.
  *
  * Prefix discipline:
  *   - Templates declare a unique `externalIdPrefix` (e.g.
- *     `'test-perm-1e1cg1co-'`). The writer prepends this prefix to every
- *     row's top-level `external_id` AT WRITE TIME — row external_ids in
- *     `fixed[]` are AUTHORED BARE (e.g. `external_id: 'el-1'`) and become
- *     `test-perm-1e1cg1co-el-1` after the writer's prepend.
- *   - Nested-ref `external_id` fields (e.g. `organization: { external_id: ... }`,
- *     `parent: { external_id: ... }`) are passed VERBATIM by the writer to
- *     bulk_import — so they MUST contain the FULL prefixed external_id
- *     (e.g. `organization: { external_id: 'test-perm-1e1cg1co-or-1' }`).
- *     The shared builder functions below take a `prefix` argument (named
- *     params) and emit refs with `${prefix}or-1` etc.
+ *     `'test-perm-1e1cg1co-'`). The writer prepends this prefix to every row's top-level `external_id` AT WRITE TIME — row external_ids in `fixed[]` are AUTHORED BARE (e.g. `external_id: 'el-1'`) and become `test-perm-1e1cg1co-el-1` after the writer's prepend.
+ *   - Nested-ref `external_id` fields (e.g. `organization: { external_id: ... }`, `parent: { external_id: ... }`) are passed VERBATIM by the writer to bulk_import — so they MUST contain the FULL prefixed external_id (e.g. `organization: { external_id: 'test-perm-1e1cg1co-or-1' }`).
+ *     The shared builder functions below take a `prefix` argument (named params) and emit refs with `${prefix}or-1` etc.
  *
- * This preserves the parallel-only contract: `setupFromTemplate.ts:131-137`
- * derives the teardown prefix from `template.externalIdPrefix`, so each
- * perm-* setup tears down ITS OWN unique prefix.
+ * This preserves the parallel-only contract: `setupFromTemplate.ts:131-137` derives the teardown prefix from `template.externalIdPrefix`, so each perm-* setup tears down ITS OWN unique prefix.
  *
- * Named-params convention: every builder that takes more than one parameter
- * where positional order can be confused accepts a single named-options
- * object. Single-param builders stay parameterless.
- * `buildCandidate.answersByExternalId` is OPTIONAL — the leaf builder writes
- * an empty map when omitted; the assembling layer (perm template OR
- * `buildMinimal` helper) is responsible for populating the answer map when
- * the candidate should carry answers.
+ * Named-params convention: every builder that takes more than one parameter where positional order can be confused accepts a single named-options object. Single-param builders stay parameterless.
+ * `buildCandidate.answersByExternalId` is OPTIONAL — the leaf builder writes an empty map when omitted; the assembling layer (perm template OR `buildMinimal` helper) is responsible for populating the answer map when the candidate should carry answers.
  */
 
 /**
- * Likert-5 choices for opinion questions. Mirrors the e2e/base shape so the
- * latent-factor emitter (ordinal dispatch) treats perm-* opinion questions
- * identically.
+ * Likert-5 choices for opinion questions. Mirrors the e2e/base shape so the latent-factor emitter (ordinal dispatch) treats perm-* opinion questions identically.
  */
+
+import type { Json } from '@openvaa/supabase-types';
+import type {
+  CandidatesFixedRow,
+  NominationsFixedRow,
+  OrganizationsFixedRow,
+  QuestionCategoriesFixedRow,
+  QuestionsFixedRow
+} from '../../../template/permittedKeys';
+
 export const LIKERT_5_EN: Array<{ id: string; label: { en: string }; normalizableValue: number }> = [
   { id: '1', label: { en: 'Fully disagree' }, normalizableValue: 1 },
   { id: '2', label: { en: 'Somewhat disagree' }, normalizableValue: 2 },
@@ -47,13 +39,9 @@ export const LIKERT_5_EN: Array<{ id: string; label: { en: string }; normalizabl
 /**
  * Minimal-base app_settings.
  *
- * The `elections.startFromConstituencyGroup` key is OMITTED entirely because
- * JSONB drops `undefined` keys and breaks `toMatchObject` parity in
- * setupFromTemplate's post-seed assertion. Variants that override
- * `disallowSelection` spread this base.
+ * The `elections.startFromConstituencyGroup` key is OMITTED entirely because JSONB drops `undefined` keys and breaks `toMatchObject` parity in setupFromTemplate's post-seed assertion. Variants that override `disallowSelection` spread this base.
  *
- * `matching.minimumAnswers = 1` so the perm-* specs need to answer at most
- * one opinion question.
+ * `matching.minimumAnswers = 1` so the perm-* specs need to answer at most one opinion question.
  */
 export const MINIMAL_BASE_APP_SETTINGS = {
   entityDetails: {
@@ -117,27 +105,21 @@ export const MINIMAL_BASE_APP_SETTINGS = {
     underMaintenance: false,
     answersLocked: false
   },
-  // Both notifications explicitly OFF. app_settings is applied via merge_jsonb_column
-  // (deep merge), and the perm family is one sequential chain sharing the app_settings
-  // singleton — so without an explicit `candidateApp: { show: false }` here, the
-  // `candidateApp.show: true` set by perm-per-app-notifications BLEEDS into every
-  // downstream perm that spreads this base (e.g. perm-localisation-positive), where the
-  // modal notification then intercepts clicks on the candidate register flow. Only
-  // perm-per-app-notifications overrides this to `show: true`.
+  // Both notifications explicitly OFF. app_settings is applied via merge_jsonb_column (deep merge), and the perm family is one sequential chain sharing the app_settings singleton — so without an explicit `candidateApp: { show: false }` here, the `candidateApp.show: true` set by perm-per-app-notifications BLEEDS into every downstream perm that spreads this base (e.g. perm-localisation-positive), where the modal notification then intercepts clicks on the candidate register flow. Only perm-per-app-notifications overrides this to `show: true`.
   notifications: { voterApp: { show: false }, candidateApp: { show: false } },
   analytics: { trackEvents: false }
-} as const;
+  // `satisfies Json`, not `as const`: this object is written straight into the `app_settings.settings` JSONB column, whose type is the MUTABLE `Json`.
+  // `as const` made every nested array a readonly tuple, which `Json` rejects.
+} satisfies Json;
 
 /**
  * Build the standard 2 question_categories (1 info + 1 opinion).
  *
- * Row external_ids are BARE (the writer prepends the template prefix). The
- * category reference IS NOT a nested ref — `question_categories` rows have
- * no cross-table refs themselves.
+ * Row external_ids are BARE (the writer prepends the template prefix). The category reference IS NOT a nested ref — `question_categories` rows have no cross-table refs themselves.
  *
  * Parameterless (single-param functions stay parameterless).
  */
-export function buildQuestionCategories(): Array<Record<string, unknown>> {
+export function buildQuestionCategories(): Array<QuestionCategoriesFixedRow> {
   return [
     {
       external_id: 'qc-info',
@@ -165,11 +147,9 @@ export interface BuildQuestionsOptions {
 }
 
 /**
- * Build the standard 2 questions (text info + Likert5 opinion). The nested
- * `category` ref uses the FULL prefixed external_id (writer passes refs
- * verbatim).
+ * Build the standard 2 questions (text info + Likert5 opinion). The nested `category` ref uses the FULL prefixed external_id (writer passes refs verbatim).
  */
-export function buildQuestions({ prefix }: BuildQuestionsOptions): Array<Record<string, unknown>> {
+export function buildQuestions({ prefix }: BuildQuestionsOptions): Array<QuestionsFixedRow> {
   return [
     {
       external_id: 'qu-info-text',
@@ -196,12 +176,11 @@ export function buildQuestions({ prefix }: BuildQuestionsOptions): Array<Record<
 }
 
 /**
- * Build the standard 2 organizations. Row external_ids are BARE (the writer
- * prepends the template prefix).
+ * Build the standard 2 organizations. Row external_ids are BARE (the writer prepends the template prefix).
  *
  * Parameterless.
  */
-export function buildOrganizations(): Array<Record<string, unknown>> {
+export function buildOrganizations(): Array<OrganizationsFixedRow> {
   return [
     {
       external_id: 'or-1',
@@ -231,13 +210,10 @@ export interface BuildStandardCandidateAnswersOptions {
 }
 
 /**
- * Build standard candidate answers (info text + Likert5 neutral) used by
- * every perm-* candidate that wants the legacy "always-answered" behaviour.
- * Keyed by FULL prefixed question external_ids (importAnswers resolves the
- * question external_id verbatim against the DB).
+ * Build standard candidate answers (info text + Likert5 neutral) used by every perm-* candidate that wants the legacy "always-answered" behaviour.
+ * Keyed by FULL prefixed question external_ids (importAnswers resolves the question external_id verbatim against the DB).
  *
- * Callers pass the result explicitly via `buildCandidate({ ...,
- * answersByExternalId: buildStandardCandidateAnswers({ prefix }) })`.
+ * Callers pass the result explicitly via `buildCandidate({ ..., answersByExternalId: buildStandardCandidateAnswers({ prefix }) })`.
  */
 export function buildStandardCandidateAnswers({
   prefix
@@ -251,11 +227,7 @@ export function buildStandardCandidateAnswers({
 /**
  * Options for {@link buildCandidate} (named-params).
  *
- * `answersByExternalId` is OPTIONAL — when omitted the leaf builder writes
- * an empty answer map. The assembling layer (perm template OR `buildMinimal`
- * helper) is responsible for populating answers when the candidate should
- * carry them. This enables the clean-candidate use case the
- * hide-if-missing-answers perm depends on.
+ * `answersByExternalId` is OPTIONAL — when omitted the leaf builder writes an empty answer map. The assembling layer (perm template OR `buildMinimal` helper) is responsible for populating answers when the candidate should carry them. This enables the clean-candidate use case the hide-if-missing-answers perm depends on.
  */
 export interface BuildCandidateOptions {
   /** External-id prefix (e.g. `'e2e-perm-1e1cg1co-'`). Used for nested organization ref. */
@@ -269,10 +241,8 @@ export interface BuildCandidateOptions {
   /** Candidate row sort_order. */
   sortOrder: number;
   /**
-   * Per-question answer map. Optional — defaults to `{}` (clean candidate at
-   * the leaf-builder level). Keys are FULL prefixed question external_ids.
-   * For the legacy "always-answered" behaviour, pass
-   * `buildStandardCandidateAnswers({ prefix })`.
+   * Per-question answer map. Optional — defaults to `{}` (clean candidate at the leaf-builder level). Keys are FULL prefixed question external_ids.
+   * For the legacy "always-answered" behaviour, pass `buildStandardCandidateAnswers({ prefix })`.
    */
   answersByExternalId?: Record<string, { value: unknown; info?: { en: string } }>;
 }
@@ -289,7 +259,7 @@ export function buildCandidate({
   idSuffix,
   sortOrder,
   answersByExternalId
-}: BuildCandidateOptions): Record<string, unknown> {
+}: BuildCandidateOptions): CandidatesFixedRow {
   return {
     external_id: idSuffix,
     first_name: `[CA${orgN}${candLetter}]`,
@@ -317,16 +287,14 @@ export interface BuildElectionConstituencyNomsOptions {
   /** Symbol number for the first candidate nomination (subsequent candidates increment by 1). */
   electionSymbolStart: number;
   /**
-   * Optional nomination external_id sub-prefix to disambiguate when one
-   * election × constituency pair recurs across different shapes (rare).
+   * Optional nomination external_id sub-prefix to disambiguate when one election × constituency pair recurs across different shapes (rare).
    * Defaults to `''` (empty — keyed by `${electionIdSuffix}-${constituencyIdSuffix}`).
    */
   nomKeyPrefix?: string;
 }
 
 /**
- * Build a tuple of (or-1 org nom, or-2 org nom, candidate-1 nom, candidate-2
- * nom, ...) for the given election × constituency. Returns 2 + N rows.
+ * Build a tuple of (or-1 org nom, or-2 org nom, candidate-1 nom, candidate-2 nom, ...) for the given election × constituency. Returns 2 + N rows.
  *
  * Row external_ids are BARE; nested refs use the FULL prefixed external_id.
  */
@@ -337,11 +305,11 @@ export function buildElectionConstituencyNoms({
   candidateIdSuffixes,
   electionSymbolStart,
   nomKeyPrefix = ''
-}: BuildElectionConstituencyNomsOptions): Array<Record<string, unknown>> {
+}: BuildElectionConstituencyNomsOptions): Array<NominationsFixedRow> {
   const electionExtId = `${prefix}${electionIdSuffix}`;
   const constituencyExtId = `${prefix}${constituencyIdSuffix}`;
   const key = nomKeyPrefix === '' ? `${electionIdSuffix}-${constituencyIdSuffix}` : nomKeyPrefix;
-  const noms: Array<Record<string, unknown>> = [
+  const noms: Array<NominationsFixedRow> = [
     {
       external_id: `nom-${key}-or-1`,
       organization: { external_id: `${prefix}or-1` },

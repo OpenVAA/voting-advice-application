@@ -1,37 +1,23 @@
 /**
- * `base` built-in template — see phase 88 journey scaffolding.
+ * `base` built-in template — journey scaffolding.
  *
- * Authored from TEST-INVENTORY-REFACTOR-1.md:13-200 (verbatim spec); this is
- * the canonical dataset for the new voter journey at
- * tests/tests/specs/voter/voter-journey.spec.ts.
+ * The canonical dataset for the voter journey at tests/tests/specs/voter/voter-journey.spec.ts.
  *
- * The single canonical base dataset (see phase 93); all external_ids carry the
- * `test-e2e-base-` prefix and are cleared by `runTeardown('test-e2e-base-', client)`.
- * Runs as the base playwright chain (data-setup-base → voter-journey →
- * data-teardown-base).
+ * The single canonical base dataset; all external_ids carry the `test-e2e-base-` prefix and are cleared by `runTeardown('test-e2e-base-', client)`.
+ * Runs as the base playwright chain (data-setup-base → voter-journey → data-teardown-base).
  *
  * ## Convention (top-of-file invariants)
  *
  * - `externalIdPrefix: ''` — fixed[] external_ids are pre-written with the
  *   full `test-e2e-base-` literal so `runTeardown('test-e2e-base-', ...)`
- *   matches verbatim (see phase 93 canonical prefix).
+ *   matches verbatim.
  * - external_id kebabing: `test-e2e-base-{group}-{name}` lowercase. Symbolic
- *   names from the refactor doc map as:
+ *   names map as:
  *     - Elections:           test-e2e-base-el-reg, test-e2e-base-el-mun
  *     - Constituency groups: test-e2e-base-cg-reg, test-e2e-base-cg-mun
- *     - Constituencies:      test-e2e-base-co-reg-n, test-e2e-base-co-reg-s,
- *                            test-e2e-base-co-mun-ne, test-e2e-base-co-mun-nw,
- *                            test-e2e-base-co-mun-se, test-e2e-base-co-mun-sw
- *     - Question categories: test-e2e-base-qg-info, test-e2e-base-qg-opin-base,
- *                            test-e2e-base-qg-opin-opt-a (was: -base-b),
- *                            test-e2e-base-qg-opin-opt-b (was: -base-c),
- *                            test-e2e-base-qg-opin-el-reg, test-e2e-base-qg-opin-co-mun-se-sw,
- *                            test-e2e-base-qg-opin-filt-a, test-e2e-base-qg-opin-filt-b
- *     - Questions:           test-e2e-base-qu-info-{type}, test-e2e-base-qu-opin-base-{i}-{type},
- *                            test-e2e-base-qu-opin-opt-a-1 (was: -base-b-1),
- *                            test-e2e-base-qu-opin-opt-b-1 (was: -base-c-1),
- *                            test-e2e-base-qu-opin-el-reg-1, test-e2e-base-qu-opin-co-mun-se-sw-1,
- *                            test-e2e-base-qu-open-filt-mun-ne, test-e2e-base-qu-open-filt-mun-se
+ *     - Constituencies:      test-e2e-base-co-reg-n, test-e2e-base-co-reg-s, test-e2e-base-co-mun-ne, test-e2e-base-co-mun-nw, test-e2e-base-co-mun-se, test-e2e-base-co-mun-sw
+ *     - Question categories: test-e2e-base-qg-info, test-e2e-base-qg-opin-base, test-e2e-base-qg-opin-opt-a (was: -base-b), test-e2e-base-qg-opin-opt-b (was: -base-c), test-e2e-base-qg-opin-el-reg, test-e2e-base-qg-opin-co-mun-se-sw, test-e2e-base-qg-opin-filt-a, test-e2e-base-qg-opin-filt-b
+ *     - Questions:           test-e2e-base-qu-info-{type}, test-e2e-base-qu-opin-base-{i}-{type}, test-e2e-base-qu-opin-opt-a-1 (was: -base-b-1), test-e2e-base-qu-opin-opt-b-1 (was: -base-c-1), test-e2e-base-qu-opin-el-reg-1, test-e2e-base-qu-opin-co-mun-se-sw-1, test-e2e-base-qu-open-filt-mun-ne, test-e2e-base-qu-open-filt-mun-se
  *     - Alliances:           test-e2e-base-al-a, test-e2e-base-al-b
  *     - Organisations:       test-e2e-base-or-aa, test-e2e-base-or-ab, test-e2e-base-or-ba, test-e2e-base-or-bb, test-e2e-base-or-c
  *     - Candidates:          test-e2e-base-ca-{org}-{name} or test-e2e-base-ca-{org}-{n}-gen
@@ -39,43 +25,27 @@
  * - `generateTranslationsForAllLocales: false` (single-locale e2e per).
  * - `seed: 42` for deterministic generation.
  *
- * ## Hierarchy (refactor-doc:15-25)
+ * ## Hierarchy
  *
- * Per-constituency parent_id: each CO-Mun-* has parent_id pointing at the
- * matching CO-Reg-* (the Reg constituency). This is implemented via
- * `parent: { external_id }` on each CO-Mun row — the ConstituenciesGenerator
- * passes the sentinel to bulk_import which resolves it server-side
- * (see ConstituenciesGenerator.ts:34-39).
+ * Per-constituency parent_id: each CO-Mun-* has parent_id pointing at the matching CO-Reg-* (the Reg constituency). This is implemented via `parent: { external_id }` on each CO-Mun row — the ConstituenciesGenerator passes the sentinel to bulk_import which resolves it server-side (see ConstituenciesGenerator.ts:34-39).
  *   - CO-Mun-NE → parent CO-Reg-N
  *   - CO-Mun-NW → parent CO-Reg-N
  *   - CO-Mun-SE → parent CO-Reg-S
  *   - CO-Mun-SW → parent CO-Reg-S
- * NOTE: the refactor doc's "Fully hierarchical with CG-Reg as parent" line
- * (line 21) is realized at the per-constituency level (USER NOTE on Task 1)
- * rather than at the CG level — there is no CG-level parent relationship on
- * the dev-seed pipeline today.
+ * NOTE: the "fully hierarchical, with CG-Reg as parent" arrangement is realized at the per-constituency level rather than at the CG level — there is no CG-level parent relationship in the dev-seed pipeline today.
  *
  * ## Question scoping
  *
  * - QG-Opin-EL-Reg carries `_elections: { external_id: ['test-e2e-base-el-reg'] }`
- *   so linkJoinTables (supabaseAdminClient.ts) resolves to
- *   `election_ids: [uuid(test-e2e-base-el-reg)]` on the question_categories row.
+ *   so linkJoinTables (supabaseAdminClient.ts) resolves to `election_ids: [uuid(test-e2e-base-el-reg)]` on the question_categories row.
  * - QG-Opin-CO-Mun-SE-SW carries `_constituencies: { external_id: [...] }`
- *   resolved by linkJoinTables to `constituency_ids: [uuid(...)]` JSONB on
- *   the question_categories row (column at migration line 597).
+ *   resolved by linkJoinTables to `constituency_ids: [uuid(...)]` JSONB on the question_categories row (column at migration line 597).
  * - Per-question constituency scoping (QU-Open-Filt-Mun-NE under QG-Opin-Filt-A
- *   and QU-Open-Filt-Mun-SE under QG-Opin-Filt-B) carries the same
- *   `_constituencies: { external_id: [...] }` sentinel on the question row;
- *   resolved to `questions.constituency_ids` JSONB (column at migration line 625).
+ *   and QU-Open-Filt-Mun-SE under QG-Opin-Filt-B) carries the same `_constituencies: { external_id: [...] }` sentinel on the question row; resolved to `questions.constituency_ids` JSONB (column at migration line 625).
  *
  * ## Partial-answer candidate arrangement
  *
- * Per USER NOTE on Task 1: voter journey skips QU-Opin-Opt-A-1 (was
- * Base-B-1) and QU-Opin-EL-Reg-1; skips QU-Open-Filt-Mun-NE; and never sees
- * QG-Opin-Opt-B (was Base-C; unchecked) nor QG-Opin-CO-Mun-SE-SW (filtered
- * out for
- * CO-Mun-NE). CA-AA-Special's answer arrangement (one of two
- * partial-answer roles) exercises the 4-case matrix in 9.6.5-8:
+ * The voter journey skips QU-Opin-Opt-A-1 and QU-Opin-EL-Reg-1; skips QU-Open-Filt-Mun-NE; and never sees QG-Opin-Opt-B (unchecked) nor QG-Opin-CO-Mun-SE-SW (filtered out for CO-Mun-NE). CA-AA-Special's answer arrangement — one of two partial-answer roles — exercises this 4-case matrix:
  *   - (a) base-1, base-3, base-4, base-5: both answered
  *   - (b) base-2: voter answered, entity missing
  *   - (c) B-1 + EL-Reg-1: voter missing (skipped), entity answered
@@ -83,10 +53,10 @@
  *
  * ## Settings
  *
- * `BASE_APP_SETTINGS` (exported) is the verbatim object literal from
- * refactor-doc:109-200; future variants compose via `mergeSettings(...)`.
+ * `BASE_APP_SETTINGS` (exported) is this dataset's settings literal; variants compose over it via `mergeSettings(...)`.
  */
 
+import type { Json } from '@openvaa/supabase-types';
 import type { Template } from '../../template/types';
 
 // ---------------------------------------------------------------------------
@@ -124,10 +94,7 @@ const OPIN_CATEGORICAL_EN: Array<{ id: string; label: { en: string } }> = [
   { id: 'c', label: { en: 'Option C' } }
 ];
 
-// Multi-choice categorical opinion choices (see phase 129). 4 choices so the
-// over-max boundary (4 selections vs maxSelections 3) is exercisable and the
-// POLAR_MAX / POLAR_MIN answer templates can pick disjoint 2-choice subsets
-// for maximal subdimension distance.
+// Multi-choice categorical opinion choices. 4 choices so the over-max boundary (4 selections vs maxSelections 3) is exercisable and the POLAR_MAX / POLAR_MIN answer templates can pick disjoint 2-choice subsets for maximal subdimension distance.
 const OPIN_MULTICHOICE_EN: Array<{ id: string; label: { en: string } }> = [
   { id: 'a', label: { en: 'Multi option A' } },
   { id: 'b', label: { en: 'Multi option B' } },
@@ -149,7 +116,7 @@ const INFO_SINGLE_CATEGORICAL_EN: Array<{ id: string; label: { en: string } }> =
 ];
 
 // ---------------------------------------------------------------------------
-// Settings — refactor-doc:109-200 verbatim
+// Settings
 // ---------------------------------------------------------------------------
 
 export const BASE_APP_SETTINGS = {
@@ -211,30 +178,20 @@ export const BASE_APP_SETTINGS = {
   },
   results: {
     cardContents: {
-      // see phase 88 Plan 04 T3 (Option B — seed-time resolver): the
-      // {externalId} shape is flattened to the question's DB UUID by the
-      // Writer's Pass-5 resolver (resolveAppSettingsExternalIds) BEFORE the
-      // merge_jsonb_column RPC. The persisted JSONB contains plain UUID
-      // strings; e2e/base.ts never hardcodes post-seed UUIDs.
+      // Seed-time resolver: the {externalId} shape is flattened to the question's DB UUID by the Writer's Pass-5 resolver (resolveAppSettingsExternalIds) BEFORE the merge_jsonb_column RPC. The persisted JSONB contains plain UUID strings; e2e/base.ts never hardcodes post-seed UUIDs.
       candidate: ['submatches', { question: { externalId: 'test-e2e-base-qu-info-text' } }],
       organization: ['children'],
       alliance: ['children']
     },
     showFeedbackPopup: 180,
     showSurveyPopup: 500,
-    // 'alliance' MUST be strictly LAST — the Org-first imputation cascade
-    // invariant (matchState.svelte.ts:104-110) requires 'organization' to
-    // precede 'alliance' or orgProxiesById is empty and alliance scores
-    // silently degrade. Adding 'alliance' here is the single switch that
-    // turns on BOTH alliance matching and the results tab.
+    // 'alliance' MUST be strictly LAST — the Org-first imputation cascade invariant (matchState.svelte.ts:104-110) requires 'organization' to precede 'alliance' or orgProxiesById is empty and alliance scores silently degrade. Adding 'alliance' here is the single switch that turns on BOTH alliance matching and the results tab.
     sections: ['candidate', 'organization', 'alliance']
   },
   elections: {
     disallowSelection: false,
     showElectionTags: true
-    // refactor-doc:181 declares `startFromConstituencyGroup: undefined`;
-    // omitting the key is equivalent (JSONB drops `undefined` on serialize,
-    // breaking post-seed `toMatchObject` parity if the literal is included).
+    // `startFromConstituencyGroup` is deliberately OMITTED rather than set to `undefined`: the two are equivalent here, but JSONB drops `undefined` on serialize, so writing the literal breaks post-seed `toMatchObject` parity.
   },
   access: {
     candidateApp: true,
@@ -253,11 +210,11 @@ export const BASE_APP_SETTINGS = {
       hideVideo: false
     }
   }
-} as const;
+  // `satisfies Json`, not `as const`: this object is written straight into the `app_settings.settings` JSONB column, whose type is the MUTABLE `Json`.
+} satisfies Json;
 
 // ---------------------------------------------------------------------------
-// Info-question answers (every candidate gets a default for each info q —
-// per USER NOTE on Task 1: "fill in all for all candidates" unless reason not to).
+// Info-question answers — every candidate gets a default for each info question, unless a row states a reason not to.
 // ---------------------------------------------------------------------------
 
 const DEFAULT_INFO_ANSWERS: Record<string, { value: unknown }> = {
@@ -273,8 +230,7 @@ const DEFAULT_INFO_ANSWERS: Record<string, { value: unknown }> = {
   'test-e2e-base-qu-info-number': { value: 42 },
   'test-e2e-base-qu-info-boolean': { value: true },
   'test-e2e-base-qu-info-date': { value: '1980-06-15' },
-  // see phase 129: two campaign-keyword strings; the voter-journey
-  // asserts both render on the entity-detail info tab (round-trip read proof).
+  // Two campaign-keyword strings; the voter-journey asserts both render on the entity-detail info tab (round-trip read proof).
   'test-e2e-base-qu-info-multipleText': { value: ['Campaign keyword alpha', 'Campaign keyword beta'] }
 };
 
@@ -282,47 +238,24 @@ function withInfoAnswers(extra: Record<string, { value: unknown }>): Record<stri
   return { ...DEFAULT_INFO_ANSWERS, ...extra };
 }
 
-// Opinion-answer templates. Every non-special candidate uses ONE of these
-// three templates verbatim (260525-tea); CA-AA-Special retains its asymmetric
-// partial-answer arrangement (see the top-of-file docstring, "Partial-answer
-// candidate arrangement").
+// Opinion-answer templates. Every non-special candidate uses ONE of these three templates verbatim (260525-tea); CA-AA-Special retains its asymmetric partial-answer arrangement (see the top-of-file docstring, "Partial-answer candidate arrangement").
 //
-// Coverage: all 14 opinion questions across all categories — base 1-8
-// (likert5/likert4/likert7/categorical/boolean/number/multi-choice 2..3/
-// multi-choice exact-1), opt-a/opt-b (singleChoiceOrdinal likert5), el-reg-1
-// (singleChoiceOrdinal), co-mun-se-sw-1 (singleChoiceOrdinal),
-// open-filt-mun-ne/se (singleChoiceOrdinal).
-// Candidates outside a given scope still carry the answer; the matching
-// algorithm picks only in-scope questions per voter, so the extra answers
-// are inert (they cost ~nothing on import).
+// Coverage: all 14 opinion questions across all categories — base 1-8 (likert5/likert4/likert7/categorical/boolean/number/multi-choice 2..3/multi-choice exact-1), opt-a/opt-b (singleChoiceOrdinal likert5), el-reg-1 (singleChoiceOrdinal), co-mun-se-sw-1 (singleChoiceOrdinal), open-filt-mun-ne/se (singleChoiceOrdinal).
+// Candidates outside a given scope still carry the answer; the matching algorithm picks only in-scope questions per voter, so the extra answers are inert (they cost ~nothing on import).
 const POLAR_MAX: Record<string, { value: unknown }> = {
   'test-e2e-base-qu-opin-base-1-likert5': { value: '5' },
   'test-e2e-base-qu-opin-base-2-likert4': { value: '4' },
   'test-e2e-base-qu-opin-base-3-likert7': { value: '7' },
   'test-e2e-base-qu-opin-base-4-categorical': { value: 'c' },
   'test-e2e-base-qu-opin-base-5-boolean': { value: true },
-  // Number values are JSON numbers (not strings); multi-choice values are
-  // choice-id arrays respecting 2..3 selections, POLAR_MAX/POLAR_MIN disjoint
-  // for maximal subdimension distance.
+  // Number values are JSON numbers (not strings); multi-choice values are choice-id arrays respecting 2..3 selections, POLAR_MAX/POLAR_MIN disjoint for maximal subdimension distance.
   'test-e2e-base-qu-opin-base-6-number': { value: 10 },
   'test-e2e-base-qu-opin-base-7-multichoice': { value: ['a', 'b'] },
-  // Base-8 (exact-one multi-choice, see phase 135) is DELIBERATELY
-  // MATCHING-NEUTRAL: every answer template below gives it the SAME value
-  // (['a']), and every automated walk selects checkboxes from index 0 upward,
-  // so the voter also lands on 'a' in BOTH answerMode='min' and 'max'. Every
-  // candidate therefore sits at distance 0 on this dimension.
+  // Base-8 (exact-one multi-choice) is DELIBERATELY MATCHING-NEUTRAL: every answer template below gives it the SAME value (['a']), and every automated walk selects checkboxes from index 0 upward, so the voter also lands on 'a' in BOTH answerMode='min' and 'max'. Every candidate therefore sits at distance 0 on this dimension.
   //
-  // Why that is safe rather than lazy: a categorical question's subdimensions
-  // are re-weighted to one dimension's worth of total weight (metric.ts:225-231),
-  // so base-8 adds exactly 1 unit to the maximum possible distance and 0 to
-  // every candidate's actual distance. Scores become 1 - D/(Dmax+1) with D
-  // unchanged — a strictly monotone transform, so the existing ranking
-  // assertions (POLAR_MAX first at 100%, POLAR_MIN last, the
-  // min-walk ordering) are preserved EXACTLY rather than merely "probably".
+  // Why that is safe rather than lazy: a categorical question's subdimensions are re-weighted to one dimension's worth of total weight (metric.ts:225-231), so base-8 adds exactly 1 unit to the maximum possible distance and 0 to every candidate's actual distance. Scores become 1 - D/(Dmax+1) with D unchanged — a strictly monotone transform, so the existing ranking assertions (POLAR_MAX first at 100%, POLAR_MIN last, the min-walk ordering) are preserved EXACTLY rather than merely "probably".
   //
-  // Base-7 above remains the multi-choice MATCHING-coverage question (its
-  // POLAR_MAX/POLAR_MIN values are disjoint on purpose); base-8's job is the
-  // `selectExact` helper-text render guard, not matching discrimination.
+  // Base-7 above remains the multi-choice MATCHING-coverage question (its POLAR_MAX/POLAR_MIN values are disjoint on purpose); base-8's job is the `selectExact` helper-text render guard, not matching discrimination.
   'test-e2e-base-qu-opin-base-8-multichoice-exact': { value: ['a'] },
   'test-e2e-base-qu-opin-opt-a-1': { value: '5' },
   'test-e2e-base-qu-opin-opt-b-1': { value: '5' },
@@ -358,8 +291,7 @@ const POLAR_MIN: Record<string, { value: unknown }> = {
   'test-e2e-base-qu-opin-base-5-boolean': { value: false },
   'test-e2e-base-qu-opin-base-6-number': { value: 0 },
   'test-e2e-base-qu-opin-base-7-multichoice': { value: ['c', 'd'] },
-  // Matching-neutral by construction — see the POLAR_MAX note above. NOT the
-  // opposite of POLAR_MAX on purpose: base-8 must not shift any score.
+  // Matching-neutral by construction — see the POLAR_MAX note above. NOT the opposite of POLAR_MAX on purpose: base-8 must not shift any score.
   'test-e2e-base-qu-opin-base-8-multichoice-exact': { value: ['a'] },
   'test-e2e-base-qu-opin-opt-a-1': { value: '1' },
   'test-e2e-base-qu-opin-opt-b-1': { value: '1' },
@@ -372,8 +304,7 @@ const POLAR_MIN: Record<string, { value: unknown }> = {
 // Middle values with tiebreak-to-min:
 //   likert5 (1-5):   middle = '3'
 //   likert4 (1-4):   middle = 2.5 → tiebreak-to-min → '2'
-//   likert7 (1-7):   middle = '4'
-//   categorical a/b/c: middle = 'b'
+//   likert7 (1-7):   middle = '4' categorical a/b/c: middle = 'b'
 //   boolean:         no middle → tiebreak-to-min → false
 const GENERIC: Record<string, { value: unknown }> = {
   'test-e2e-base-qu-opin-base-1-likert5': { value: '3' },
@@ -411,7 +342,7 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-el-reg',
         name: { en: '[el-reg] Regional Election' },
         short_name: { en: 'Regional' },
-        election_type: 'general',
+        election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 0,
         is_generated: false,
@@ -423,7 +354,7 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-el-mun',
         name: { en: '[el-mun] Municipal Election' },
         short_name: { en: 'Municipal' },
-        election_type: 'local',
+        election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 1,
         is_generated: false,
@@ -460,9 +391,7 @@ export const baseTemplate: Template = {
     ]
   },
 
-  // ------------------------------------------------------------------- constituencies
-  // CO-Mun-* rows carry `parent: { external_id }` → resolves to parent_id
-  // on the constituencies table via bulk_import (ConstituenciesGenerator.ts:34-39).
+  // ------------------------------------------------------------------- constituencies CO-Mun-* rows carry `parent: { external_id }` → resolves to parent_id on the constituencies table via bulk_import (ConstituenciesGenerator.ts:34-39).
   constituencies: {
     count: 0,
     fixed: [
@@ -579,14 +508,11 @@ export const baseTemplate: Template = {
     ]
   },
 
-  // -------------------------------------------------------------- question_categories
-  // 8 categories total: 1 info + 7 opinion (Base + Opt-A (was Base-B) +
-  // Opt-B (was Base-C) + EL-Reg scoped + CO-Mun-SE-SW scoped + Filt-A + Filt-B).
+  // -------------------------------------------------------------- question_categories 8 categories total: 1 info + 7 opinion (Base + Opt-A (was Base-B) + Opt-B (was Base-C) + EL-Reg scoped + CO-Mun-SE-SW scoped + Filt-A + Filt-B).
   // Scoping refs (resolved by linkJoinTables from `_<sentinel>` shape):
   //   - QG-Opin-EL-Reg → `_elections` sentinel → election_ids JSONB column.
   //   - QG-Opin-CO-Mun-SE-SW → `_constituencies` sentinel → constituency_ids
-  //     JSONB column. Per-question (test-e2e-base-qu-open-filt-mun-ne / -se) entries
-  //     in `questions` use the same `_constituencies` sentinel.
+  //     JSONB column. Per-question (test-e2e-base-qu-open-filt-mun-ne / -se) entries in `questions` use the same `_constituencies` sentinel.
   question_categories: {
     count: 0,
     fixed: [
@@ -652,18 +578,10 @@ export const baseTemplate: Template = {
     ]
   },
 
-  // ------------------------------------------------------------------- questions
-  // 26 questions = 12 info + 14 opinion.
-  //   info    (12): 9 general (multipleChoiceCategorical, singleChoiceCategorical,
-  //                 text, text-longText, text-link, number, boolean, date,
-  //                 multipleText) + 3 constituency-filtered (filt-mun-only,
-  //                 filt-co-reg-n, filt-co-reg-s).
-  //   opinion (14): 8 in QG-Opin-Base + Opt-A-1 + Opt-B-1 + EL-Reg-1 +
-  //                 CO-Mun-SE-SW-1 + Filt-Mun-NE + Filt-Mun-SE.
-  // Refactor-doc:26-56 says "14 questions total"; that figure predates the
-  // filtered info questions AND the base-opinion additions (see phase 129, 135), so
-  // it is NOT the count to trust. The enumeration above is derived from the
-  // `fixed` array below and is the authoritative one.
+  // ------------------------------------------------------------------- questions 26 questions = 12 info + 14 opinion.
+  //   info    (12): 9 general (multipleChoiceCategorical, singleChoiceCategorical, text, text-longText, text-link, number, boolean, date, multipleText) + 3 constituency-filtered (filt-mun-only, filt-co-reg-n, filt-co-reg-s).
+  //   opinion (14): 8 in QG-Opin-Base + Opt-A-1 + Opt-B-1 + EL-Reg-1 + CO-Mun-SE-SW-1 + Filt-Mun-NE + Filt-Mun-SE.
+  // The enumeration above is derived from the `fixed` array below and is the authoritative count — do not trust any figure stated elsewhere.
   questions: {
     count: 0,
     fixed: [
@@ -686,7 +604,7 @@ export const baseTemplate: Template = {
         name: { en: '[qu-info-singleChoiceCategorical] Info: pick one category.' },
         choices: INFO_SINGLE_CATEGORICAL_EN,
         category: { external_id: 'test-e2e-base-qg-info' },
-        // filterable:false per refactor-doc:30 (NOT filterable)
+        // filterable:false — this question is deliberately NOT filterable
         allow_open: false,
         required: false,
         sort_order: 1,
@@ -757,10 +675,7 @@ export const baseTemplate: Template = {
         sort_order: 7,
         is_generated: false
       },
-      // see phase 129: multipleText info question restored (the frontend
-      // MultipleTextInput now renders it — plan 05). Its DEFAULT_INFO_ANSWERS
-      // entry seeds two keyword strings the voter-journey asserts render on the
-      // entity-detail info tab (the round-trip read-path proof).
+      // multipleText info question; the frontend MultipleTextInput renders it. Its DEFAULT_INFO_ANSWERS entry seeds two keyword strings the voter-journey asserts render on the entity-detail info tab (the round-trip read-path proof).
       {
         external_id: 'test-e2e-base-qu-info-multipleText',
         type: 'multipleText',
@@ -772,11 +687,8 @@ export const baseTemplate: Template = {
         is_generated: false
       },
 
-      // see phase 89 Plan 01 (TIR4:94-99): 3 filtered info questions scoped to
-      // municipal-only / north-only / south-only constituencies/elections.
-      // Voter-journey's voter (CO-Reg-N + CO-Mun-NE per voter-journey
-      // fixture's first-option pick) sees ONLY the north-only filtered
-      // question on the candidate-details info tab.
+      // 3 filtered info questions scoped to municipal-only / north-only / south-only constituencies/elections.
+      // Voter-journey's voter (CO-Reg-N + CO-Mun-NE per voter-journey fixture's first-option pick) sees ONLY the north-only filtered question on the candidate-details info tab.
       {
         external_id: 'test-e2e-base-qu-info-filt-mun-only',
         type: 'text',
@@ -811,8 +723,7 @@ export const baseTemplate: Template = {
         is_generated: false
       },
 
-      // QG-Opin-Base — 8 opinion questions covering the ordinal / categorical /
-      // boolean / number-scale / multi-choice (range AND exact-one) variants
+      // QG-Opin-Base — 8 opinion questions covering the ordinal / categorical / boolean / number-scale / multi-choice (range AND exact-one) variants
       {
         external_id: 'test-e2e-base-qu-opin-base-1-likert5',
         type: 'singleChoiceOrdinal',
@@ -842,11 +753,7 @@ export const baseTemplate: Template = {
         name: { en: '[qu-opin-base-3-likert7] Base opinion 3 — Likert 7.' },
         choices: LIKERT_7_EN,
         category: { external_id: 'test-e2e-base-qg-opin-base' },
-        // NOTE: additive customData.terms so the Phase-120 voter-journey
-        // extension can assert the in-text term-trigger affordance + definition
-        // popup. The trigger 'Likert' appears verbatim in this question's title
-        // text above, so the in-text term affordance renders. customData (not a
-        // new row) — additive, alters no rigid base count.
+        // NOTE: additive customData.terms so the voter-journey can assert the in-text term-trigger affordance + definition popup. The trigger 'Likert' appears verbatim in this question's title text above, so the in-text term affordance renders. customData (not a new row) — additive, alters no rigid base count.
         custom_data: {
           terms: [
             {
@@ -879,9 +786,7 @@ export const baseTemplate: Template = {
         sort_order: 104,
         is_generated: false
       },
-      // see phase 129: number-scale opinion question in the MAIN category.
-      // custom_data.min/max makes it matchable via the plan-02 NumberQuestion
-      // bridge; surfaces the NumberScaleInput slider in the voter question flow.
+      // Number-scale opinion question in the MAIN category. custom_data.min/max makes it matchable via the NumberQuestion bridge; surfaces the NumberScaleInput slider in the voter question flow.
       {
         external_id: 'test-e2e-base-qu-opin-base-6-number',
         type: 'number',
@@ -892,9 +797,7 @@ export const baseTemplate: Template = {
         sort_order: 105,
         is_generated: false
       },
-      // see phase 129: multipleChoiceCategorical opinion question in the MAIN
-      // category. 4 choices + minSelections 2 / maxSelections 3 (constraint
-      // edge-coverage); surfaces the checkbox multi-select input.
+      // multipleChoiceCategorical opinion question in the MAIN category. 4 choices + minSelections 2 / maxSelections 3 (constraint edge-coverage); surfaces the checkbox multi-select input.
       {
         external_id: 'test-e2e-base-qu-opin-base-7-multichoice',
         type: 'multipleChoiceCategorical',
@@ -906,19 +809,9 @@ export const baseTemplate: Template = {
         sort_order: 106,
         is_generated: false
       },
-      // see phase 135: a SECOND multipleChoiceCategorical opinion question
-      // in the MAIN category, carrying an EQUAL selection window
-      // (min === max === 1). The equality is the whole point: QuestionChoices
-      // .svelte renders `questions.multiChoice.selectExact` when
-      // `effectiveMin === effectiveMax` and `selectRange` otherwise
-      // (QuestionChoices.svelte:420-425), so without an equal-window question
-      // the running app can NEVER reach the `selectExact` branch and the key
-      // added later (see phase 134) has no runtime coverage. Exact-ONE (not exact-two)
-      // is deliberate: it renders the MF2 `countPlural=one` branch — the branch
-      // carrying the constructed non-English singulars (134), i.e. the one
-      // most worth guarding.
+      // A SECOND multipleChoiceCategorical opinion question in the MAIN category, carrying an EQUAL selection window (min === max === 1). The equality is the whole point: QuestionChoices .svelte renders `questions.multiChoice.selectExact` when `effectiveMin === effectiveMax` and `selectRange` otherwise (QuestionChoices.svelte:420-425), so without an equal-window question the running app can NEVER reach the `selectExact` branch and its message key has no runtime coverage. Exact-ONE (not exact-two) is deliberate: it renders the MF2 `countPlural=one` branch — the branch carrying the constructed non-English singulars, i.e. the one most worth guarding.
       //
-      // Base-7 above KEEPS its 2..3 window (see phase 129 range edge-coverage).
+      // Base-7 above KEEPS its 2..3 window for range edge-coverage.
       // This question is an ADDITION, never a repurposing of that one.
       {
         external_id: 'test-e2e-base-qu-opin-base-8-multichoice-exact',
@@ -963,8 +856,7 @@ export const baseTemplate: Template = {
         name: { en: '[qu-opin-el-reg-1] Regional-only opinion 1 — Likert 5.' },
         choices: LIKERT_5_EN,
         category: { external_id: 'test-e2e-base-qg-opin-el-reg' },
-        // The category itself carries election_ids via _elections (above);
-        // the question inherits scoping via its category.
+        // The category itself carries election_ids via _elections (above); the question inherits scoping via its category.
         allow_open: true,
         sort_order: 130,
         is_generated: false
@@ -1011,10 +903,7 @@ export const baseTemplate: Template = {
     ]
   },
 
-  // ------------------------------------------------------------------- candidates
-  // Per refactor-doc:66-107. terms_of_use_accepted set on all except CA-AA-Hidden
-  // (per refactor-doc:72). Every candidate answers every info question by default
-  // (USER NOTE on Task 1); opinion answers vary to support matching invariants.
+  // ------------------------------------------------------------------- candidates terms_of_use_accepted is set on all except CA-AA-Hidden. Every candidate answers every info question by default; opinion answers vary to support the matching invariants.
   //
   // Perfect-match candidate: CA-AA-Special (also exercises 4-case matrix below).
   // Worst-match candidate: CA-BA-1 (CO-Reg-N) — all base opinions at polar min.
@@ -1023,12 +912,8 @@ export const baseTemplate: Template = {
   candidates: {
     count: 0,
     fixed: [
-      // ---- CO-Reg-N — 13 candidates (the bulk per refactor-doc:67-83) ----
-      // Per USER NOTE on Task 1: partial-answer arrangement supports the
-      // 9.6.5-8 voter-detail matrix given the voter SKIPS qu-opin-base-b-1
-      // and qu-opin-el-reg-1 (and filt-mun-ne). CA-AA-Special is the
-      // partial-answer candidate; its answer set is asymmetric across the
-      // 4 cases (see top-of-file docstring).
+      // ---- CO-Reg-N — 13 candidates (the bulk of them) ---- The partial-answer arrangement supports the
+      // 9.6.5-8 voter-detail matrix given the voter SKIPS qu-opin-base-b-1 and qu-opin-el-reg-1 (and filt-mun-ne). CA-AA-Special is the partial-answer candidate; its answer set is asymmetric across the 4 cases (see top-of-file docstring).
       {
         external_id: 'test-e2e-base-ca-aa-special',
         first_name: 'Special',
@@ -1037,8 +922,7 @@ export const baseTemplate: Template = {
         sort_order: 0,
         is_generated: false,
         organization: { external_id: 'test-e2e-base-or-aa' },
-        // Partial-answer arrangement (top-of-file docstring, "Partial-answer
-        // candidate arrangement"):
+        // Partial-answer arrangement (top-of-file docstring, "Partial-answer candidate arrangement"):
         //   (a) both answered: base-1, base-3, base-4, base-5
         //   (b) voter answered, entity missing: base-2 (omitted)
         //   (c) voter missing (skipped), entity answered: B-1, EL-Reg-1
@@ -1049,19 +933,15 @@ export const baseTemplate: Template = {
           'test-e2e-base-qu-opin-base-3-likert7': { value: '7' },
           'test-e2e-base-qu-opin-base-4-categorical': { value: 'c' },
           'test-e2e-base-qu-opin-base-5-boolean': { value: true },
-          // base-6/base-7 (new base questions) — case (a) both answered;
-          // max values so CA-AA-Special stays a perfect match for the
-          // answerMode='max' voter (number 10, multi-choice ['a','b']).
+          // base-6/base-7 (new base questions) — case (a) both answered; max values so CA-AA-Special stays a perfect match for the answerMode='max' voter (number 10, multi-choice ['a','b']).
           'test-e2e-base-qu-opin-base-6-number': { value: 10 },
           'test-e2e-base-qu-opin-base-7-multichoice': { value: ['a', 'b'] },
-          // base-8 (see phase 135) — case (a) both answered. Matching-
-          // neutral value, identical across every template (see POLAR_MAX).
+          // base-8 — case (a) both answered. Matching-neutral value, identical across every template (see POLAR_MAX).
           'test-e2e-base-qu-opin-base-8-multichoice-exact': { value: ['a'] },
           // case (c) — voter skips these, entity has answers
           'test-e2e-base-qu-opin-opt-a-1': { value: '5' },
           'test-e2e-base-qu-opin-el-reg-1': { value: '5' },
-          // test-e2e-base-qu-open-filt-mun-ne INTENTIONALLY missing — case (d)
-          // info answers for filtering
+          // test-e2e-base-qu-open-filt-mun-ne INTENTIONALLY missing — case (d) info answers for filtering
           'test-e2e-base-qu-info-multipleChoiceCategorical': { value: ['c'] },
           'test-e2e-base-qu-info-number': { value: 99 }
         })
@@ -1070,7 +950,7 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-aa-hidden',
         first_name: 'Hidden',
         last_name: 'Candidate AA',
-        // terms_of_use_accepted DELIBERATELY absent (refactor-doc:72)
+        // terms_of_use_accepted DELIBERATELY absent
         sort_order: 1,
         is_generated: false,
         organization: { external_id: 'test-e2e-base-or-aa' },
@@ -1191,18 +1071,14 @@ export const baseTemplate: Template = {
         organization: { external_id: 'test-e2e-base-or-c' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
-      // see phase 89 Plan 01 (TIR4:86-90): unregistered candidate under party
-      // AA in CO-Reg-N. NO terms_of_use_accepted (registration must trigger
-      // ToU gate). NO answersByExternalId (unregistered → no answers). NO
-      // auth_user_id (sendEmail-driven invite flow creates this at runtime).
-      // candidates table has NO email column (89-01 Wave 0 R8 verdict);
-      // email lives in a sibling const file consumed.
+      // Unregistered candidate under party AA in CO-Reg-N. NO terms_of_use_accepted (registration must trigger ToU gate). NO answersByExternalId (unregistered → no answers). NO auth_user_id (sendEmail-driven invite flow creates this at runtime).
+      // candidates table has NO email column; email lives in a sibling const file.
       // Election symbol "999" is set on the paired nomination row below.
       {
         external_id: 'test-e2e-base-ca-aa-unregistered',
         first_name: 'Unregistered',
         last_name: 'Candidate AA',
-        // terms_of_use_accepted DELIBERATELY absent (TIR4:86-90)
+        // terms_of_use_accepted DELIBERATELY absent — registration must trigger the ToU gate
         sort_order: 14,
         is_generated: false,
         organization: { external_id: 'test-e2e-base-or-aa' }
@@ -1216,13 +1092,11 @@ export const baseTemplate: Template = {
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 13,
         is_generated: false,
-        // No organization — independent (refactor-doc:83)
+        // No organization — independent
         answersByExternalId: withInfoAnswers(GENERIC)
       },
 
-      // ---- CO-Reg-S — 4 candidates ("not always allied" foil) ----
-      // OR-AA + OR-AB are present BUT NOT under AL-A here. Per refactor-doc:84-94,
-      // CO-Reg-S has OR-AA + OR-AB UNGROUPED, plus AL-B with OR-BA + OR-BB.
+      // ---- CO-Reg-S — 4 candidates ("not always allied" foil) ---- OR-AA + OR-AB are present BUT NOT under AL-A here: CO-Reg-S has OR-AA + OR-AB UNGROUPED, plus AL-B with OR-BA + OR-BB.
       {
         external_id: 'test-e2e-base-ca-reg-s-aa-1',
         first_name: 'South',
@@ -1264,8 +1138,7 @@ export const baseTemplate: Template = {
         answersByExternalId: withInfoAnswers(GENERIC)
       },
 
-      // ---- CO-Mun-NE — 6 candidates (CA-AA-Special re-nominated + 1 AA-gen + 1 per other party) ----
-      // CA-AA-Special is re-nominated (same candidate row, additional nomination triangle below).
+      // ---- CO-Mun-NE — 6 candidates (CA-AA-Special re-nominated + 1 AA-gen + 1 per other party) ---- CA-AA-Special is re-nominated (same candidate row, additional nomination triangle below).
       {
         external_id: 'test-e2e-base-ca-mun-ne-aa-1',
         first_name: 'NE',
@@ -1359,7 +1232,7 @@ export const baseTemplate: Template = {
         answersByExternalId: withInfoAnswers(GENERIC)
       },
 
-      // ---- CO-Mun-SW — 2 candidates (OR-AA + OR-BA per refactor-doc:107) ----
+      // ---- CO-Mun-SW — 2 candidates (OR-AA + OR-BA) ----
       {
         external_id: 'test-e2e-base-ca-mun-sw-aa-1',
         first_name: 'SW',
@@ -1383,19 +1256,17 @@ export const baseTemplate: Template = {
     ]
   },
 
-  // ------------------------------------------------------------------- nominations
-  // Per refactor-doc:66-107. Each constituency / election triangle:
+  // ------------------------------------------------------------------- nominations Each constituency / election triangle:
   //   1. Alliance-type nomination (declared first; parent for the OR-* nominations under it)
   //   2. Organization-type nominations (parent for the candidate nominations under each)
   //   3. Candidate-type nominations (each links candidate ID + parent_nomination → its OR)
   //
-  // CO-Mun-NW carries ONLY CA-Independent (refactor-doc:102-103).
+  // CO-Mun-NW carries ONLY CA-Independent.
   // OR-C is NOT alliance-affiliated.
   nominations: {
     count: 0,
     fixed: [
-      // ================== EL-Reg / CO-Reg-N ==================
-      // Alliances
+      // ================== EL-Reg / CO-Reg-N ================== Alliances
       {
         external_id: 'test-e2e-base-nom-reg-n-al-a',
         alliance: { external_id: 'test-e2e-base-al-a' },
@@ -1573,15 +1444,12 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-nom-reg-n-ca-independent',
         election_symbol: '14',
         candidate: { external_id: 'test-e2e-base-ca-independent' },
-        // No parent_nomination — independent (refactor-doc:83)
+        // No parent_nomination — independent
         election: { external_id: 'test-e2e-base-el-reg' },
         constituency: { external_id: 'test-e2e-base-co-reg-n' },
         election_round: 1
       },
-      // see phase 89 Plan 01 (TIR4:90): nomination for the unregistered
-      // candidate under OR-AA in CO-Reg-N. Election symbol "999" is the
-      // canonical sentinel for the unregistered-candidate fixture used
-      // by candidate-journey.
+      // Nomination for the unregistered candidate under OR-AA in CO-Reg-N. Election symbol "999" is the canonical sentinel for the unregistered-candidate fixture used by candidate-journey.
       {
         external_id: 'test-e2e-base-nom-reg-n-ca-aa-unregistered',
         election_symbol: '999',
@@ -1592,8 +1460,7 @@ export const baseTemplate: Template = {
         election_round: 1
       },
 
-      // ================== EL-Reg / CO-Reg-S ==================
-      // Per refactor-doc:84-94: OR-AA + OR-AB UNGROUPED (no AL-A), plus AL-B with OR-BA + OR-BB.
+      // ================== EL-Reg / CO-Reg-S ================== OR-AA + OR-AB UNGROUPED (no AL-A), plus AL-B with OR-BA + OR-BB.
       {
         external_id: 'test-e2e-base-nom-reg-s-al-b',
         alliance: { external_id: 'test-e2e-base-al-b' },
@@ -1671,8 +1538,7 @@ export const baseTemplate: Template = {
         election_round: 1
       },
 
-      // ================== EL-Mun / CO-Mun-NE ==================
-      // Alliances + orgs at the municipal constituency
+      // ================== EL-Mun / CO-Mun-NE ================== Alliances + orgs at the municipal constituency
       {
         external_id: 'test-e2e-base-nom-mun-ne-al-a',
         alliance: { external_id: 'test-e2e-base-al-a' },
@@ -1726,8 +1592,7 @@ export const baseTemplate: Template = {
         constituency: { external_id: 'test-e2e-base-co-mun-ne' },
         election_round: 1
       },
-      // Candidates (CO-Mun-NE)
-      // CA-AA-Special is re-nominated here (refactor-doc:99)
+      // Candidates (CO-Mun-NE) CA-AA-Special is re-nominated here
       {
         external_id: 'test-e2e-base-nom-mun-ne-ca-aa-special',
         candidate: { external_id: 'test-e2e-base-ca-aa-special' },
@@ -1782,8 +1647,7 @@ export const baseTemplate: Template = {
         election_round: 1
       },
 
-      // ================== EL-Mun / CO-Mun-NW ==================
-      // Only CA-Independent (refactor-doc:102-103)
+      // ================== EL-Mun / CO-Mun-NW ================== Only CA-Independent
       {
         external_id: 'test-e2e-base-nom-mun-nw-ca-independent',
         election_symbol: '24',
@@ -1793,8 +1657,7 @@ export const baseTemplate: Template = {
         election_round: 1
       },
 
-      // ================== EL-Mun / CO-Mun-SE ==================
-      // OR-AA..BB each with 1 candidate
+      // ================== EL-Mun / CO-Mun-SE ================== OR-AA..BB each with 1 candidate
       {
         external_id: 'test-e2e-base-nom-mun-se-al-a',
         alliance: { external_id: 'test-e2e-base-al-a' },
@@ -1878,8 +1741,7 @@ export const baseTemplate: Template = {
         election_round: 1
       },
 
-      // ================== EL-Mun / CO-Mun-SW ==================
-      // OR-AA + OR-BA each with 1 candidate (refactor-doc:107)
+      // ================== EL-Mun / CO-Mun-SW ================== OR-AA + OR-BA each with 1 candidate
       {
         external_id: 'test-e2e-base-nom-mun-sw-al-a',
         alliance: { external_id: 'test-e2e-base-al-a' },

@@ -1,10 +1,8 @@
 /**
  * AppSettingsGenerator unit tests.
  *
- * see phase 56 count semantics (RESEARCH Pitfall 5): `app_settings` is UNIQUE
- * on `project_id`, so the generator clamps `count > 1` to 1 and logs a warning.
- * seed.sql bootstrap row covers the zero-count path; writer (Plan 07) routes
- * emissions through `updateAppSettings` (merge_jsonb_column) not bulk_import.
+ * Count semantics: `app_settings` is UNIQUE on `project_id`, so the generator clamps `count > 1` to 1 and logs a warning.
+ * seed.sql bootstrap row covers the zero-count path; the writer routes emissions through `updateAppSettings` (merge_jsonb_column) not bulk_import.
  *
  * acceptance (a)–(e) adapted for the clamp semantics.
  */
@@ -24,7 +22,7 @@ describe('AppSettingsGenerator', () => {
     expect(gen.generate({ count: 1 })).toHaveLength(1);
   });
 
-  it('clamps count > 1 to 1 (app_settings UNIQUE on project_id per Pitfall 5)', () => {
+  it('clamps count > 1 to 1 (app_settings is UNIQUE on project_id)', () => {
     const gen = new AppSettingsGenerator(makeCtx());
     const rows = gen.generate({ count: 5 });
     expect(rows).toHaveLength(1);

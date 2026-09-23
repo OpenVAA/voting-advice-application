@@ -1,34 +1,22 @@
 /**
- * see phase 57 clustering integration test (Success Criterion 5).
+ * Clustering integration test for the latent-factor emitter.
  *
- * Headline test: synthetic candidates generated via the latent emitter cluster
- * by party more tightly than they cluster across parties. With 4 parties × 10
- * candidates × 12 ordinal questions at seed 42, `mean_intra / mean_inter < 0.5`
- * under Manhattan distance in a MatchingSpace built from OrdinalQuestions.
+ * Headline test: synthetic candidates generated via the latent emitter cluster by party more tightly than they cluster across parties. With 4 parties × 10 candidates × 12 ordinal questions at seed 42, `mean_intra / mean_inter < 0.5` under Manhattan distance in a MatchingSpace built from OrdinalQuestions.
  *
- * Pitfall 6: `OrdinalQuestion.fromLikert({ scale: 5 })` generates choice ids
- * `choice_1..choice_5`, but our emitter returns `'1'..'5'` (QuestionsGenerator
- * + defaultProject convention). This test constructs MatchableQuestions via
- * the raw `new OrdinalQuestion({ id, values })` constructor with values
- * `[{id:'1',value:1}..{id:'5',value:5}]` — matching the emitter's id
- * convention.
+ * ⚠ `OrdinalQuestion.fromLikert({ scale: 5 })` generates choice ids `choice_1..choice_5`, but our emitter returns `'1'..'5'` (QuestionsGenerator
+ * + defaultProject convention). This test constructs MatchableQuestions via the raw `new OrdinalQuestion({ id, values })` constructor with values `[{id:'1',value:1}..{id:'5',value:5}]` — matching the emitter's id convention.
  *
- * B2 fix: `buildClusteringCtx` accepts `questions` + `organizations` + `seed`
- * as parameters and populates `refs.questions` / `refs.organizations` at
- * construction time. An earlier draft tried to assign into a post-construction
- * ctx by casting the left-hand side of an assignment — which is not valid
- * TypeScript. This parameterized form sidesteps the issue entirely.
+ * B2 fix: `buildClusteringCtx` accepts `questions` + `organizations` + `seed` as parameters and populates `refs.questions` / `refs.organizations` at construction time. An earlier draft tried to assign into a post-construction ctx by casting the left-hand side of an assignment — which is not valid TypeScript. This parameterized form sidesteps the issue entirely.
  */
 
 import { Faker, en } from '@faker-js/faker';
 import { DISTANCE_METRIC, MatchingSpace, OrdinalQuestion, Position } from '@openvaa/matching';
 import { describe, expect, it } from 'vitest';
 
-// Rule 3 — @openvaa/matching's barrel re-exports `DISTANCE_METRIC` (a map of
-// { Manhattan: manhattanDistance, ... }) but not the bare `manhattanDistance`
-// function. Access through the map; semantics identical.
+// Rule 3 — @openvaa/matching's barrel re-exports `DISTANCE_METRIC` (a map of { Manhattan: manhattanDistance, ... }) but not the bare `manhattanDistance` function. Access through the map; semantics identical.
 const manhattanDistance = DISTANCE_METRIC.Manhattan;
 import { latentAnswerEmitter } from '../../src/emitters/latent/latentEmitter';
+import { SEED_REF_DATE } from '../../src/ctx';
 import type { Ctx } from '../../src/ctx';
 import type { Template } from '../../src/template/types';
 import type { TablesInsert } from '@openvaa/supabase-types';
@@ -41,9 +29,7 @@ const NUM_QUESTIONS = 12;
 const LIKERT_SCALE = 5;
 
 /**
- * B2 fix — accept questions + orgs + seed as parameters and populate
- * refs.questions / refs.organizations at construction time. Avoids the
- * invalid "cast-the-LHS-of-an-assignment" pattern that does not compile.
+ * B2 fix — accept questions + orgs + seed as parameters and populate refs.questions / refs.organizations at construction time. Avoids the invalid "cast-the-LHS-of-an-assignment" pattern that does not compile.
  */
 function buildClusteringCtx(
   questions: Array<TablesInsert<'questions'>>,
@@ -56,6 +42,7 @@ function buildClusteringCtx(
     faker,
     projectId: PROJECT_UUID,
     externalIdPrefix: 'seed_',
+    refDate: new Date(SEED_REF_DATE),
     refs: {
       accounts: [{ id: PROJECT_UUID }],
       projects: [{ id: PROJECT_UUID }],
@@ -91,10 +78,9 @@ function buildQuestionRows(): Array<TablesInsert<'questions'>> {
   })) as Array<TablesInsert<'questions'>>;
 }
 
-describe('Clustering integration (Success Criterion 5)', () => {
+describe('Clustering integration — intra-party vs inter-party separation', () => {
   it('mean_intra_party / mean_inter_party < 0.5 at seed 42, 4×10×12', () => {
-    // Construct refs FIRST, then pass them into the ctx builder. B2 fix —
-    // no LHS cast on the assembled ctx.
+    // Construct refs FIRST, then pass them into the ctx builder. B2 fix — no LHS cast on the assembled ctx.
     const questions = buildQuestionRows();
     const organizations = Array.from({ length: NUM_PARTIES }, (_, i) => ({
       external_id: `seed_party_${i}`
@@ -126,10 +112,7 @@ describe('Clustering integration (Success Criterion 5)', () => {
       }
     }
 
-    // Build MatchableQuestions whose choice ids match our emitter's output
-    // (`'1'..'5'` with values `1..5`). Pitfall 6: do NOT use
-    // `OrdinalQuestion.fromLikert({ scale: 5 })` — it produces
-    // `choice_1..choice_5`, which `normalizeValue` would fail to find.
+    // Build MatchableQuestions whose choice ids match our emitter's output (`'1'..'5'` with values `1..5`). Do NOT use `OrdinalQuestion.fromLikert({ scale: 5 })` — it produces `choice_1..choice_5`, which `normalizeValue` would fail to find.
     const matchable = questions.map(
       (q) =>
         new OrdinalQuestion({
@@ -172,13 +155,7 @@ describe('Clustering integration (Success Criterion 5)', () => {
     expect(Number.isFinite(meanInter)).toBe(true);
     expect(meanInter).toBeGreaterThan(0);
     // ======================================================================
-    // headline assertion — W2 lock: the `< 0.5` threshold is a HARD
-    // acceptance criterion. It MUST NOT be lowered by the test author to ship
-    // green. If this assertion fails at `seed: 42`, the bug is in the
-    // implementation (loadings too random, noise too high, spread too wide,
-    // centroid sampler not separating parties enough, OrdinalQuestion
-    // id-convention mismatch, etc.) OR in the TEST FIXTURE (e.g. template
-    // `spread`/`noise` overrides needed). Legitimate responses, in order:
+    // headline assertion — W2 lock: the `< 0.5` threshold is a HARD acceptance criterion. It MUST NOT be lowered by the test author to ship green. If this assertion fails at `seed: 42`, the bug is in the implementation (loadings too random, noise too high, spread too wide, centroid sampler not separating parties enough, OrdinalQuestion id-convention mismatch, etc.) OR in the TEST FIXTURE (e.g. template `spread`/`noise` overrides needed). Legitimate responses, in order:
     //   1. Inspect and fix the implementation bug.
     //   2. Apply TEST-SIDE `spread: 0.08` or `noise: 0.02` to the Template
     //      literal above (NOT the production defaults in latent/*.ts).
@@ -187,11 +164,7 @@ describe('Clustering integration (Success Criterion 5)', () => {
     // ======================================================================
     expect(ratio).toBeLessThan(0.5);
 
-    // Soft inter-question correlation assertion (RESEARCH Open Question 4):
-    // Pick the first two questions; compute Pearson correlation of their
-    // normalized values across all candidates. Should be non-trivially non-zero
-    // (|r| > 0.1 — loose bound) because shared party centroids + random
-    // loadings produce correlated projections.
+    // Soft inter-question correlation assertion: Pick the first two questions; compute Pearson correlation of their normalized values across all candidates. Should be non-trivially non-zero (|r| > 0.1 — loose bound) because shared party centroids + random loadings produce correlated projections.
     const vals0 = rows
       .map((r) => r.answers[matchable[0].id]?.value)
       .filter((v): v is string => typeof v === 'string')
@@ -213,9 +186,7 @@ describe('Clustering integration (Success Criterion 5)', () => {
       d1 += (vals1[i] - m1) ** 2;
     }
     const r = d0 === 0 || d1 === 0 ? 0 : num / Math.sqrt(d0 * d1);
-    // Threshold from RESEARCH Open Question 4 — loose lower bound for
-    // "non-trivial" correlation. Tune downward ONLY if empirically the default
-    // knobs don't hit it.
+    // A loose lower bound for "non-trivial" correlation. Tune downward ONLY if empirically the default knobs don't hit it.
     expect(Math.abs(r)).toBeGreaterThan(0.1);
   });
 });

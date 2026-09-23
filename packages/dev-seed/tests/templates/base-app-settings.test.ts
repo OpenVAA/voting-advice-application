@@ -1,20 +1,14 @@
 /**
- * `e2e/base` template app_settings contract tests (see phase 93 Plan 02).
+ * `e2e/base` template app_settings contract tests.
  *
- * Retargeted from the retired `e2e` app-settings suite to the canonical base
- * dataset (formerly `baseV1`). Locks:
+ * Retargeted from the retired `e2e` app-settings suite to the canonical base dataset (formerly `baseV1`). Locks:
  *
- *   - `app_settings.fixed[0]` exists with a single fixed row whose
- *     external_id starts with `test-e2e-base-` (so `runTeardown('test-e2e-base-', ...)` matches).
- *   - `app_settings.fixed[0].settings` deep-equals `BASE_APP_SETTINGS`
- *     (formerly `BASE_V1_APP_SETTINGS` / `E2E_BASE_APP_SETTINGS`).
- *   - the writer reads `row.settings` (NOT `row.value`) so Pass-5
- *     merge_jsonb_column fires (Pitfall 2).
- *   - `BASE_APP_SETTINGS` is re-exported from the `@openvaa/dev-seed` barrel
- *     and carries the base dataset's top-level settings blocks.
+ *   - `app_settings.fixed[0]` exists with a single fixed row whose external_id starts with `test-e2e-base-` (so `runTeardown('test-e2e-base-', ...)` matches).
+ *   - `app_settings.fixed[0].settings` deep-equals `BASE_APP_SETTINGS` (formerly `BASE_V1_APP_SETTINGS` / `E2E_BASE_APP_SETTINGS`).
+ *   - the writer reads `row.settings` (NOT `row.value`) so Pass-5 merge_jsonb_column fires.
+ *   - `BASE_APP_SETTINGS` is re-exported from the `@openvaa/dev-seed` barrel and carries the base dataset's top-level settings blocks.
  *
- * Every asserted value is derived from `e2e/base.ts` (the surviving dataset),
- * not carried over from the old e2e single-election app-settings.
+ * Every asserted value is derived from `e2e/base.ts` (the surviving dataset), not carried over from the old e2e single-election app-settings.
  *
  * contract: pure shape assertions. No Supabase imports.
  */
@@ -41,13 +35,13 @@ describe('baseTemplate.app_settings — fixed-row shape contract', () => {
     expect(frag?.fixed).toHaveLength(1);
   });
 
-  it('fixed[0].external_id starts with "test-e2e-base-" so runTeardown("test-e2e-base-", ...) matches (Pitfall 6)', () => {
+  it('fixed[0].external_id starts with "test-e2e-base-" so runTeardown("test-e2e-base-", ...) matches', () => {
     const row = fragmentOf('app_settings')?.fixed?.[0];
     expect(typeof row?.external_id).toBe('string');
     expect((row?.external_id as string).startsWith('test-e2e-base-')).toBe(true);
   });
 
-  it('fixed[0] uses `settings` field (NOT `value`) so writer Pass-5 fires (Pitfall 2)', () => {
+  it('fixed[0] uses `settings` field (NOT `value`) so writer Pass-5 fires', () => {
     const row = fragmentOf('app_settings')?.fixed?.[0];
     expect(row).toHaveProperty('settings');
     expect(row).not.toHaveProperty('value');
@@ -122,7 +116,7 @@ describe('BASE_APP_SETTINGS — base dataset settings contract', () => {
   });
 
   it('results block carries candidate cardContents with the info-text submatch question ref', () => {
-    // 'alliance' LAST — see phase 129 (Org-first cascade invariant).
+    // 'alliance' LAST — the org-first cascade invariant.
     expect(BASE_APP_SETTINGS.results.sections).toEqual(['candidate', 'organization', 'alliance']);
     expect(BASE_APP_SETTINGS.results.cardContents.candidate).toEqual([
       'submatches',

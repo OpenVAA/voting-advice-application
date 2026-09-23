@@ -1,31 +1,19 @@
 /**
  * FeedbackGenerator — minimal stub for the `feedback` table.
  *
- * Scope:
- * returns `[]` by default. Supports `fixed[]` for users who want specific
- * feedback rows (uncommon — feedback has little test / demo value), so the
- * pipeline class map treats every table uniformly.
+ * Scope: returns `[]` by default. Supports `fixed[]` for users who want specific feedback rows (uncommon — feedback has little test / demo value), so the pipeline class map treats every table uniformly.
  *
- * Table characteristics (RESEARCH, migration lines 949–961):
+ * Table characteristics (migration lines 949–961):
  *   - Required: `project_id`, CHECK (`rating IS NOT NULL OR description IS NOT NULL`)
  *   - Optional: `rating` int, `description` text, `date`, `url`, `user_agent`
  *   - No `external_id` column → NOT idempotent via external_id. Re-runs
  *     APPEND rather than upsert.
- *   - No `is_generated` column — feedback is uniformly user-submitted in prod;
- *     dev-seeded rows are visually indistinguishable (acceptable trade-off per
- *     Claude's Discretion — fixing this is a schema change, out of scope).
+ *   - No `is_generated` column — feedback is uniformly user-submitted in prod; dev-seeded rows are visually indistinguishable (acceptable trade-off per Claude's Discretion — fixing this is a schema change, out of scope).
  *
- * Writer routing (Plan 07 per): not in bulk_import's processing_order.
- * Direct `.upsert()` in the writer (if any rows are emitted). Because there
- * is no external_id key, the "upsert" behaves as plain insert — previous
- * runs' feedback rows accumulate in the DB. Teardown (see phase 58) cannot
- * target them via prefix because no `external_id` column — manual cleanup
- * required. This limitation is carried forward (see phase 58) if feedback
- * seeding becomes useful.
+ * Writer routing: `feedback` is not in bulk_import's processing_order.
+ * Direct `.upsert()` in the writer (if any rows are emitted). Because there is no external_id key, the "upsert" behaves as plain insert — previous runs' feedback rows accumulate in the DB. Teardown cannot target them via prefix because no `external_id` column — manual cleanup required. That limitation stands for as long as feedback seeding becomes useful.
  *
- * apply — see ElectionsGenerator.ts for the
- * canonical-pattern rationale. (external_id prefix) does NOT apply
- * because the table has no `external_id` column.
+ * apply — see ElectionsGenerator.ts for the canonical-pattern rationale. (external_id prefix) does NOT apply because the table has no `external_id` column.
  */
 
 import type { TablesInsert } from '@openvaa/supabase-types';
@@ -36,7 +24,7 @@ export type FeedbackFragment = Fragment<TablesInsert<'feedback'>>;
 export class FeedbackGenerator {
   constructor(private ctx: Ctx) {}
 
-  // see phase 56 ignores ctx here; kept on the signature for consistency.
+  // `defaults` ignores ctx here; it is kept on the signature for consistency.
 
   defaults(ctx: Ctx): FeedbackFragment {
     return { count: 0 };
@@ -47,11 +35,9 @@ export class FeedbackGenerator {
     const rows: Array<TablesInsert<'feedback'>> = [];
 
     // fixed[] pass-through — NO external_id prefix (table has no external_id).
-    // Fragment.fixed's `external_id` key is present on the Fragment type but is
-    // simply ignored here — writer's plain .upsert() doesn't look at it either.
+    // Fragment.fixed's `external_id` key is present on the Fragment type but is simply ignored here — writer's plain .upsert() doesn't look at it either.
     for (const fx of fragment.fixed ?? []) {
-      // Discard the external_id sentinel from Fragment<T>; feedback table has
-      // no corresponding column. Postgres would reject it as an unknown field.
+      // Discard the external_id sentinel from Fragment<T>; feedback table has no corresponding column. Postgres would reject it as an unknown field.
 
       const { external_id, ...rest } = fx;
       rows.push({

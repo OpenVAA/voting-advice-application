@@ -1,11 +1,9 @@
 /**
  * NominationsGenerator unit tests.
  *
- * + polymorphism contract (RESEARCH migration line 741 CHECK):
- *   - Client-side ref validation: throws a descriptive error BEFORE bulk_import
- *     when required refs are empty (covers candidates, elections, constituencies)
- *   - Emits only the authoritative polymorphic ref (`candidate`) — no redundant
- *     `organization` tagging (dropped the legacy tests/ admin-client workaround)
+ * + polymorphism contract (migration line 741 CHECK):
+ *   - Client-side ref validation: throws a descriptive error BEFORE bulk_import when required refs are empty (covers candidates, elections, constituencies)
+ *   - Emits only the authoritative polymorphic ref (`candidate`) — no redundant `organization` tagging (dropped the legacy tests/ admin-client workaround)
  *   - Does NOT emit `entity_type` (GENERATED column; migration line 724–731)
  *   - Emits `election` + `constituency` refs on every generated row
  *   - Clamps generated count to `refs.candidates.length` with logger warning
@@ -17,8 +15,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { NominationsGenerator } from '../../src/generators/NominationsGenerator';
 import { makeCtx } from '../utils';
 
-// Helper: build a ctx.refs with the three ref categories populated that
-// NominationsGenerator requires for generated rows.
+// Helper: build a ctx.refs with the three ref categories populated that NominationsGenerator requires for generated rows.
 function populatedRefs(): ReturnType<typeof makeCtx>['refs'] {
   return {
     ...makeCtx().refs,
@@ -93,10 +90,7 @@ describe('NominationsGenerator', () => {
     const gen = new NominationsGenerator(makeCtx({ refs: populatedRefs() }));
     const rows = gen.generate({ count: 2 });
     rows.forEach((r) => {
-      // Generated candidate-type nominations MUST NOT carry `organization` —
-      // the legacy tests/ admin-client workaround (CHECK num_nonnulls=1 fires
-      // otherwise) is intentionally dropped; party-candidate relationship is
-      // in candidates.organization_id.
+      // Generated candidate-type nominations MUST NOT carry `organization` — the legacy tests/ admin-client workaround (CHECK num_nonnulls=1 fires otherwise) is intentionally dropped; the party-candidate relationship is the `parent_nomination` edge, and since 162-07b that is its only statement.
       expect(r).not.toHaveProperty('organization');
     });
   });

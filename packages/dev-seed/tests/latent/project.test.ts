@@ -1,5 +1,5 @@
 /**
- * defaultProject unit tests (Task 1).
+ * defaultProject unit tests.
  *
  * Exercises the per-question-type dispatch in `src/emitters/latent/project.ts`:
  *   - Ordinal (singleChoiceOrdinal) via COORDINATE inverse-normalize.
@@ -8,8 +8,7 @@
  *   - Non-choice types delegate to `defaultRandomValidEmit`.
  *   - Cross-cutting: empty questions, missing external_id, contract assertion.
  *
- * Plus the A2 fix regression on QuestionsGenerator.LIKERT_5 — each choice
- * carries `normalizableValue: j + 1` per RESEARCH Open Question 2.
+ * Plus the A2 fix regression on QuestionsGenerator.LIKERT_5 — each choice carries `normalizableValue: j + 1`.
  *
  * contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc `.
  */
@@ -71,7 +70,7 @@ describe('defaultProject (GEN-06f)', () => {
     expect(r.q_ord.value).toBe('3');
   });
 
-  it('ordinal: always returns a string id, never index (Pitfall 5)', () => {
+  it('ordinal: always returns a string id, never index', () => {
     const q = mkQ('q_ord', 'singleChoiceOrdinal', LIKERT_5_WITH_NV);
     for (let i = 0; i < 100; i++) {
       const ctx = makeCtx();
@@ -228,7 +227,7 @@ describe('defaultProject (GEN-06f)', () => {
   });
 });
 
-describe('QuestionsGenerator LIKERT_5 A2 fix', () => {
+describe('QuestionsGenerator LIKERT_5 choice normalizableValue', () => {
   it('emits each LIKERT_5 choice with normalizableValue = j+1 (1..5)', () => {
     const ctx = makeCtx();
     const gen = new QuestionsGenerator(ctx);

@@ -3,26 +3,15 @@
  *
  * `projects` is bootstrapped by `apps/supabase/supabase/seed.sql`:
  *
- *   INSERT INTO projects (id, account_id, name)
- *   VALUES (
- *     '00000000-0000-0000-0000-000000000001',
- *     '00000000-0000-0000-0000-000000000001',
- *     'Default Project'
+ *   INSERT INTO projects (id, account_id, name) VALUES ( '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'Default Project'
  *   );
  *
- * Dev-seed does NOT write to `projects`. The bootstrap row is pre-populated in
- * `ctx.refs.projects` by `buildCtx` in `packages/dev-seed/src/ctx.ts`, and
- * every content generator's `project_id` field defaults to `ctx.projectId`
- * (which is itself the bootstrap project UUID).
+ * Dev-seed does NOT write to `projects`. The bootstrap row is pre-populated in `ctx.refs.projects` by `buildCtx` in `packages/dev-seed/src/ctx.ts`, and every content generator's `project_id` field defaults to `ctx.projectId` (which is itself the bootstrap project UUID).
  *
  * This class exists to:
- *   1. Satisfy "one generator per non-system public table" — all 16
- *      non-system public tables have a generator class entry in Plan 07's
- *      TOPO_ORDER map, even the two that are bootstrap-only.
+ *   1. Satisfy "one generator per non-system public table" — all 16 non-system public tables have a generator class entry in the pipeline's TOPO_ORDER map, even the two that are bootstrap-only.
  *   2. Make the zero-write behavior explicit in code rather than by omission.
- *   3. Give the pipeline a uniform `new Gen(ctx).generate(fragment)` call shape
- *      — the pipeline's generator class map does not need a special branch
- *      for accounts/projects.
+ *   3. Give the pipeline a uniform `new Gen(ctx).generate(fragment)` call shape — the pipeline's generator class map does not need a special branch for accounts/projects.
  *
  * See AccountsGenerator for the full rationale — same story here.
  */
@@ -35,8 +24,7 @@ export type ProjectsFragment = Fragment<TablesInsert<'projects'>>;
 export class ProjectsGenerator {
   constructor(private ctx: Ctx) {}
 
-  // see phase 56 ignores ctx here; kept on the signature for consistency with the
-  // rest of the generator classes + the contract.
+  // `defaults` ignores ctx here; it is kept on the signature for consistency with the rest of the generator classes + the contract.
 
   defaults(ctx: Ctx): ProjectsFragment {
     return { count: 0 };

@@ -1,22 +1,18 @@
 /**
- * teardown.ts + supabaseAdminClient storage-cleanup tests
- * (see phase 58 Plan 07 — Pitfall #5 + Pitfall #6).
+ * teardown.ts + supabaseAdminClient storage-cleanup tests.
  *
  * Covers:
- *   - `SupabaseAdminClient.listCandidatePortraitPaths()` — 2-level enumeration
- *     of `${projectId}/candidates/` directory in `public-assets` bucket.
- *   - `SupabaseAdminClient.removePortraitStorageObjects(paths)` — bulk remove
- *     via the Storage API.
+ *   - `SupabaseAdminClient.listCandidatePortraitPaths()` — 2-level enumeration of `${projectId}/candidates/` directory in `public-assets` bucket.
+ *   - `SupabaseAdminClient.removePortraitStorageObjects(paths)` — bulk remove via the Storage API.
  *   - `runTeardown(prefix, client)` pure orchestrator:
- *       1. bulkDelete of exactly the 10 allowed tables (Pitfall #6 guardrail).
- *       2. Explicit Storage Path 2 cleanup AFTER bulkDelete (RESEARCH).
+ *       1. bulkDelete of exactly the 10 allowed tables (the guardrail).
+ *       2. Explicit Storage Path 2 cleanup AFTER bulkDelete.
  *       3. `--prefix` override.
- *       4. Prefix length guard (T-58-07-02 — mass-delete prevention).
+ *       4. Prefix length guard — mass-delete prevention.
  *       5. Error rephrasing for `fetch failed` (parity).
  *   - `TEARDOWN_USAGE` constant.
  *
- * pattern: all Supabase side-effects go through a mocked client — tests
- * are fully offline. Integration test (Plan 09) exercises the live path.
+ * pattern: all Supabase side-effects go through a mocked client — tests are fully offline. The integration test exercises the live path.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -44,17 +40,11 @@ const storageState: StorageMockState = {
 };
 
 vi.mock('@supabase/supabase-js', () => {
-  // `any` reason: the object faked here is supabase-js's PostgrestFilterBuilder,
-  // a deep generic over the Database schema with no nameable exported form, and
-  // the fake is a thenable whose chain methods return `this`. Naming its type
-  // would restate the whole builder to satisfy a mock these tests never read a
-  // typed value out of.
+  // `any` reason: the object faked here is supabase-js's PostgrestFilterBuilder, a deep generic over the Database schema with no nameable exported form, and the fake is a thenable whose chain methods return `this`. Naming its type would restate the whole builder to satisfy a mock these tests never read a typed value out of.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function makeBuilder(): any {
     return {
-      // The portrait-surface tests rely on the builder terminals, but the
-      // list/remove tests only touch the storage facade below. Provide a
-      // harmless always-resolving builder for completeness.
+      // The portrait-surface tests rely on the builder terminals, but the list/remove tests only touch the storage facade below. Provide a harmless always-resolving builder for completeness.
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       like: vi.fn().mockReturnThis(),
@@ -115,11 +105,11 @@ describe('SupabaseAdminClient storage cleanup surface', () => {
         error: null
       });
       storageState.listResults.set('proj-xyz/candidates/cand-1', {
-        data: [{ name: 'seed-portrait.jpg' }],
+        data: [{ name: '3f2b8c1e-5a4d-4e7f-9b6a-1c2d3e4f5a6b.jpg' }],
         error: null
       });
       storageState.listResults.set('proj-xyz/candidates/cand-2', {
-        data: [{ name: 'seed-portrait.jpg' }],
+        data: [{ name: '9e8d7c6b-5a49-4382-a716-0f1e2d3c4b5a.jpg' }],
         error: null
       });
 
@@ -127,8 +117,8 @@ describe('SupabaseAdminClient storage cleanup surface', () => {
       const paths = await client.listCandidatePortraitPaths();
 
       expect(paths).toEqual([
-        'proj-xyz/candidates/cand-1/seed-portrait.jpg',
-        'proj-xyz/candidates/cand-2/seed-portrait.jpg'
+        'proj-xyz/candidates/cand-1/3f2b8c1e-5a4d-4e7f-9b6a-1c2d3e4f5a6b.jpg',
+        'proj-xyz/candidates/cand-2/9e8d7c6b-5a49-4382-a716-0f1e2d3c4b5a.jpg'
       ]);
       expect(storageState.storageFromCalls).toContain('public-assets');
     });
@@ -170,13 +160,13 @@ describe('SupabaseAdminClient storage cleanup surface', () => {
         error: null
       });
       storageState.listResults.set('proj-xyz/candidates/cand-1', {
-        data: [{ name: '.emptyFolderPlaceholder' }, { name: 'seed-portrait.jpg' }],
+        data: [{ name: '.emptyFolderPlaceholder' }, { name: '3f2b8c1e-5a4d-4e7f-9b6a-1c2d3e4f5a6b.jpg' }],
         error: null
       });
 
       const client = new SupabaseAdminClient('http://localhost', 'key', 'proj-xyz');
       const paths = await client.listCandidatePortraitPaths();
-      expect(paths).toEqual(['proj-xyz/candidates/cand-1/seed-portrait.jpg']);
+      expect(paths).toEqual(['proj-xyz/candidates/cand-1/3f2b8c1e-5a4d-4e7f-9b6a-1c2d3e4f5a6b.jpg']);
     });
   });
 
@@ -227,6 +217,7 @@ interface FakeClient {
   listCandidateIdsByPrefix: ReturnType<typeof vi.fn>;
   listCandidatePortraitPaths: ReturnType<typeof vi.fn>;
   removePortraitStorageObjects: ReturnType<typeof vi.fn>;
+  setProjectOpenForVoters: ReturnType<typeof vi.fn>;
 }
 
 function makeFakeClient(overrides: Partial<FakeClient> = {}): FakeClient {
@@ -246,12 +237,13 @@ function makeFakeClient(overrides: Partial<FakeClient> = {}): FakeClient {
     listCandidateIdsByPrefix: vi.fn().mockResolvedValue([]),
     listCandidatePortraitPaths: vi.fn().mockResolvedValue([]),
     removePortraitStorageObjects: vi.fn().mockResolvedValue(0),
+    setProjectOpenForVoters: vi.fn().mockResolvedValue(undefined),
     ...overrides
   };
 }
 
-describe('runTeardown (CLI-03 / Pitfall #5 + #6)', () => {
-  it('calls bulkDelete exactly once with the 10 allowed tables (Pitfall #6 — no accounts/projects/feedback/app_settings)', async () => {
+describe('runTeardown (CLI-03)', () => {
+  it('calls bulkDelete exactly once with the 10 allowed tables (no accounts/projects/feedback/app_settings)', async () => {
     const client = makeFakeClient();
     await runTeardown('seed_', client as unknown as SupabaseAdminClient);
 
@@ -297,7 +289,7 @@ describe('runTeardown (CLI-03 / Pitfall #5 + #6)', () => {
     }
   });
 
-  it('collects candidate UUIDs BEFORE bulkDelete, lists+removes portraits AFTER (UAT gap #1)', async () => {
+  it('collects candidate UUIDs BEFORE bulkDelete, lists+removes portraits AFTER', async () => {
     const order: Array<string> = [];
     const client = makeFakeClient({
       listCandidateIdsByPrefix: vi.fn().mockImplementation(async () => {
@@ -327,7 +319,7 @@ describe('runTeardown (CLI-03 / Pitfall #5 + #6)', () => {
     ]);
   });
 
-  it('scopes listCandidatePortraitPaths to the UUIDs returned by listCandidateIdsByPrefix (UAT gap #1 — prefix isolation)', async () => {
+  it('scopes listCandidatePortraitPaths to the UUIDs returned by listCandidateIdsByPrefix (prefix isolation)', async () => {
     const client = makeFakeClient({
       listCandidateIdsByPrefix: vi.fn().mockResolvedValue(['uuid-1', 'uuid-2'])
     });
@@ -342,14 +334,17 @@ describe('runTeardown (CLI-03 / Pitfall #5 + #6)', () => {
     const client = makeFakeClient({
       listCandidatePortraitPaths: vi
         .fn()
-        .mockResolvedValue(['proj/candidates/c1/seed-portrait.jpg', 'proj/candidates/c2/seed-portrait.jpg']),
+        .mockResolvedValue([
+          'proj/candidates/c1/3f2b8c1e-5a4d-4e7f-9b6a-1c2d3e4f5a6b.jpg',
+          'proj/candidates/c2/9e8d7c6b-5a49-4382-a716-0f1e2d3c4b5a.jpg'
+        ]),
       removePortraitStorageObjects: vi.fn().mockResolvedValue(2)
     });
 
     await runTeardown('seed_', client as unknown as SupabaseAdminClient);
     expect(client.removePortraitStorageObjects).toHaveBeenCalledWith([
-      'proj/candidates/c1/seed-portrait.jpg',
-      'proj/candidates/c2/seed-portrait.jpg'
+      'proj/candidates/c1/3f2b8c1e-5a4d-4e7f-9b6a-1c2d3e4f5a6b.jpg',
+      'proj/candidates/c2/9e8d7c6b-5a49-4382-a716-0f1e2d3c4b5a.jpg'
     ]);
   });
 
@@ -402,6 +397,38 @@ describe('runTeardown (CLI-03 / Pitfall #5 + #6)', () => {
       /Unknown collection for deletion: feedback/
     );
   });
+
+  describe('reopening the project (162.1 D-19)', () => {
+    it('reopens the project exactly once, after the portrait cleanup, when the caller passes reopenProject: true', async () => {
+      const order: Array<string> = [];
+      const client = makeFakeClient({
+        removePortraitStorageObjects: vi.fn().mockImplementation(async () => {
+          order.push('removePortraitStorageObjects');
+          return 0;
+        }),
+        setProjectOpenForVoters: vi.fn().mockImplementation(async () => {
+          order.push('setProjectOpenForVoters');
+        })
+      });
+
+      await runTeardown('e2e-perm-closed-project-', client as unknown as SupabaseAdminClient, {
+        reopenProject: true
+      });
+
+      expect(client.setProjectOpenForVoters).toHaveBeenCalledTimes(1);
+      expect(client.setProjectOpenForVoters).toHaveBeenCalledWith(true);
+      expect(order).toEqual(['removePortraitStorageObjects', 'setProjectOpenForVoters']);
+    });
+
+    it('never touches project openness when the caller does not ask, as the E2E teardowns do', async () => {
+      const client = makeFakeClient();
+
+      await runTeardown('e2e-perm-closed-project-', client as unknown as SupabaseAdminClient);
+      await runTeardown('e2e-perm-closed-project-', client as unknown as SupabaseAdminClient, {});
+
+      expect(client.setProjectOpenForVoters).not.toHaveBeenCalled();
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -417,6 +444,14 @@ describe('TEARDOWN_USAGE (CLI-04)', () => {
     expect(TEARDOWN_USAGE).toContain('--prefix');
   });
 
+  /**
+   * `seed` spells this concept `--external-id-prefix`. Carrying that spelling over to teardown used to be ERR_PARSE_ARGS_UNKNOWN_OPTION under `strict: true` — an error naming no alternative, which reads as "teardown cannot target this prefix" rather than "teardown spells the flag differently". The alias is now accepted; this keeps it documented, because an undocumented alias is how the next reader concludes the trap is still there.
+   */
+  it('documents the --external-id-prefix alias and that it is an alias', () => {
+    expect(TEARDOWN_USAGE).toContain('--external-id-prefix');
+    expect(TEARDOWN_USAGE).toMatch(/Alias for --prefix/);
+  });
+
   it('documents --help / -h flag', () => {
     expect(TEARDOWN_USAGE).toMatch(/-h, --help/);
   });
@@ -428,6 +463,11 @@ describe('TEARDOWN_USAGE (CLI-04)', () => {
 
   it('mentions the default seed_ prefix', () => {
     expect(TEARDOWN_USAGE).toMatch(/seed_/);
+  });
+
+  it('states that the CLI reopens the targeted project to voters', () => {
+    expect(TEARDOWN_USAGE).toMatch(/reopens the targeted project/);
+    expect(TEARDOWN_USAGE).toContain('open_for_voters = true');
   });
 
   it('mentions that teardown is permissive on the prefix', () => {

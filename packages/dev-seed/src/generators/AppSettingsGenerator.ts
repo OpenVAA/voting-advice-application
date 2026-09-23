@@ -1,38 +1,21 @@
 /**
  * AppSettingsGenerator — content generator for the `app_settings` table.
  *
- * Routing note (RESEARCH Pitfall 5): the writer (Plan 07) MUST route
- * emitted rows through `updateAppSettings` (direct JSONB merge via the
- * merge_jsonb_column RPC), NOT through `bulk_import`.
+ * ⚠ Routing note: the writer MUST route emitted rows through `updateAppSettings` (direct JSONB merge via the merge_jsonb_column RPC), NOT through `bulk_import`.
  *
  * Why: `apps/supabase/supabase/seed.sql` bootstraps an `app_settings` row with
- *   external_id = NULL for the default project. bulk_import's upsert matches on
- *   `ON CONFLICT (project_id, external_id) WHERE external_id IS NOT NULL` — a
- *   second insert with `external_id = 'seed_appsettings'` falls through to the
- *   `UNIQUE(project_id)` constraint (migration line 916) and fails with
- *   "duplicate key value violates unique constraint".
+ *   external_id = NULL for the default project. bulk_import's upsert matches on `ON CONFLICT (project_id, external_id) WHERE external_id IS NOT NULL` — a second insert with `external_id = 'seed_appsettings'` falls through to the `UNIQUE(project_id)` constraint (migration line 916) and fails with "duplicate key value violates unique constraint".
  *
- * Writer routing sequence (Plan 07):
+ * Writer routing sequence:
  *   1. Pipeline emits rows from this generator
- *   2. Writer strips them from the bulk_import payload (app_settings excluded
- *      from TOPO_ORDER's bulk-write set)
- *   3. Writer iterates rows and calls `this.client.updateAppSettings(row.settings)`
- *      for each — merge_jsonb_column deep-merges into the bootstrap row
- *      (idempotent on the keys supplied)
+ *   2. Writer strips them from the bulk_import payload (app_settings excluded from TOPO_ORDER's bulk-write set)
+ *   3. Writer iterates rows and calls `this.client.updateAppSettings(row.settings)` for each — merge_jsonb_column deep-merges into the bootstrap row (idempotent on the keys supplied)
  *
- * see phase 56 count semantics: `app_settings` is UNIQUE on `project_id`, so a
- * single project has AT MOST ONE row. The generator clamps `count > 1` to 1
- * and warns via `ctx.logger` — users who genuinely need multiple per-project
- * settings blobs should supply them via `fixed[]` entries tied to distinct
- * project_ids (a multi-project template concern; see phase 58).
+ * Count semantics: `app_settings` is UNIQUE on `project_id`, so a single project has AT MOST ONE row. The generator clamps `count > 1` to 1 and warns via `ctx.logger` — users who genuinely need multiple per-project settings blobs should supply them via `fixed[]` entries tied to distinct project_ids — a multi-project template concern.
  *
- * apply — see ElectionsGenerator.ts for the
- * canonical-pattern rationale.
+ * apply — see ElectionsGenerator.ts for the canonical-pattern rationale.
  *
- * Default count = 0: the seed.sql bootstrap row is already usable out of the
- * box. Generating a second row adds no value unless the user wants to stamp
- * dev-specific settings keys — which templates express explicitly via
- * `count: 1` or `fixed: [{ settings: {...} }]`.
+ * Default count = 0: the seed.sql bootstrap row is already usable out of the box. Generating a second row adds no value unless the user wants to stamp dev-specific settings keys — which templates express explicitly via `count: 1` or `fixed: [{ settings: {...} }]`.
  */
 
 import type { TablesInsert } from '@openvaa/supabase-types';
@@ -43,7 +26,7 @@ export type AppSettingsFragment = Fragment<TablesInsert<'app_settings'>>;
 export class AppSettingsGenerator {
   constructor(private ctx: Ctx) {}
 
-  // see phase 56 ignores ctx here; kept on the signature for consistency.
+  // `defaults` ignores ctx here; it is kept on the signature for consistency.
 
   defaults(ctx: Ctx): AppSettingsFragment {
     return { count: 0 };
@@ -54,11 +37,7 @@ export class AppSettingsGenerator {
     const rows: Array<TablesInsert<'app_settings'>> = [];
 
     // fixed[] pass-through — typically at most one hand-authored row per project.
-    // external_id prefixed for idempotent teardown (see phase 58 filters by
-    // prefix); project_id defaulted. Per-project UNIQUE means users supplying
-    // multiple fixed entries MUST target distinct project_ids — otherwise the
-    // writer's updateAppSettings sequence merges them all into the same row
-    // (last-write-wins semantics at the JSONB merge layer).
+    // external_id prefixed for idempotent teardown (teardown filters by prefix); project_id defaulted. Per-project UNIQUE means users supplying multiple fixed entries MUST target distinct project_ids — otherwise the writer's updateAppSettings sequence merges them all into the same row (last-write-wins semantics at the JSONB merge layer).
     for (const fx of fragment.fixed ?? []) {
       rows.push({
         ...fx,

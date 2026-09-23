@@ -1,8 +1,7 @@
 /**
  * AccountsGenerator unit tests — pass-through.
  *
- * scope: pure I/O. Asserts ` ` return for every input shape, with a logger
- * warning emitted exactly once when the user requests non-empty fragment content.
+ * scope: pure I/O. Asserts ` ` return for every input shape, with a logger warning emitted exactly once when the user requests non-empty fragment content.
  */
 
 import { describe, expect, it, vi } from 'vitest';

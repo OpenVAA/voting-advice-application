@@ -1,10 +1,7 @@
 /**
  * Static --help output for `yarn workspace @openvaa/dev-seed seed:teardown`.
  *
- * The text documents the `--prefix` override, the two env vars the CLI
- * depends on, and the permissive-prefix contract. Listed flags
- * stay in sync with `packages/dev-seed/src/cli/teardown.ts`'s parseArgs
- * options block.
+ * The text documents the `--prefix` override and its `--external-id-prefix` alias, the two env vars the CLI depends on, and the permissive-prefix contract. Listed flags stay in sync with `packages/dev-seed/src/cli/teardown.ts`'s parseArgs options block.
  */
 
 export const TEARDOWN_USAGE = `Usage: yarn workspace @openvaa/dev-seed seed:teardown [options]
@@ -17,10 +14,17 @@ Also removes candidate portrait files from the public-assets Storage bucket
 (Path 2 explicit cleanup — deterministic, does not rely on the async
 pg_net AFTER-DELETE trigger).
 
+Finally reopens the targeted project to voters (open_for_voters = true),
+which undoes \`--template perm-closed-project\`. The targeted project is the
+default project (00000000-0000-0000-0000-000000000001).
+
 Options:
       --prefix <str>                external_id prefix to match. Must be at
                                     least 2 characters to prevent accidental
                                     mass-delete. [default: seed_]
+      --external-id-prefix <str>    Alias for --prefix, matching the spelling
+                                    \`seed\` uses. Pass one or the other; giving
+                                    both with different values is refused.
   -h, --help                        Show this help and exit.
 
 Environment:

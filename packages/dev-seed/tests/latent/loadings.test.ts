@@ -3,23 +3,16 @@
  *
  * Covers:
  *   - Matrix shape keyed by `question.external_id` (storage contract).
- *   - Pitfall 3 regression: `questions.length === 0` → `{}` (no throw, no
- *     iteration — see phase 56 determinism tests with empty `{}` template rely on
- *     this).
+ *   - empty-input regression: `questions.length === 0` → `{}` (no throw, no
+ *     iteration — the determinism tests with an empty `{}` template rely on this).
  *   - `dims === 0` edge: keys present with length-0 vectors (no throw).
- *   - see phase 56 guard replication: questions with no `external_id` are silently
- *     skipped (mirrors `extractChoiceIds` / `defaultRandomValidEmit`).
+ *   - guard replication: questions with no `external_id` are silently skipped (mirrors `extractChoiceIds` / `defaultRandomValidEmit`).
  *   - N(0, 1) statistics over 60 entries at seed 42 (loose bounds for small N).
- *   - per-question override — supplied vector copied verbatim into the
- *     matching `external_id` slot.
- *   - Override copy semantics — mutating the returned vector does NOT mutate
- *     the source `tplLoadings` entry.
- *   - Wrong-length override silently ignored (defensive guard against template
- *     drift between `dims` and per-question vector length).
- *   - Determinism under a seeded `ctx.faker` (two fresh ctxs with the same
- *     seed produce byte-identical matrices).
- *   - Pitfall 1 regression via `gaussian.ts` — no `NaN` / `Infinity` entries
- *     across 50 distinct seeds.
+ *   - per-question override — supplied vector copied verbatim into the matching `external_id` slot.
+ *   - Override copy semantics — mutating the returned vector does NOT mutate the source `tplLoadings` entry.
+ *   - Wrong-length override silently ignored (defensive guard against template drift between `dims` and per-question vector length).
+ *   - Determinism under a seeded `ctx.faker` (two fresh ctxs with the same seed produce byte-identical matrices).
+ *   - `Math.log(0)` regression via `gaussian.ts` — no `NaN` / `Infinity` entries across 50 distinct seeds.
  */
 
 import type { TablesInsert } from '@openvaa/supabase-types';
@@ -51,7 +44,7 @@ describe('defaultLoadings (GEN-06e)', () => {
     }
   });
 
-  it('returns {} for empty questions (Pitfall 3 regression)', () => {
+  it('returns {} for empty questions (regression guard)', () => {
     expect(defaultLoadings([], 2, makeCtx())).toEqual({});
   });
 
@@ -79,8 +72,7 @@ describe('defaultLoadings (GEN-06e)', () => {
     expect(all).toHaveLength(60);
     const mean = all.reduce((a, b) => a + b, 0) / all.length;
     const std = Math.sqrt(all.reduce((a, b) => a + (b - mean) ** 2, 0) / all.length);
-    // Loose bounds — 60 samples from N(0,1) have sample std in ~[0.8, 1.2] and
-    // sample mean in ~[-0.3, 0.3] at seed 42.
+    // Loose bounds — 60 samples from N(0,1) have sample std in ~[0.8, 1.2] and sample mean in ~[-0.3, 0.3] at seed 42.
     expect(mean).toBeGreaterThan(-0.3);
     expect(mean).toBeLessThan(0.3);
     expect(std).toBeGreaterThan(0.8);
@@ -123,7 +115,7 @@ describe('defaultLoadings (GEN-06e)', () => {
     expect(a).toEqual(b);
   });
 
-  it('produces finite entries over 50 distinct seeds (Pitfall 1 regression)', () => {
+  it('produces finite entries over 50 distinct seeds (regression guard)', () => {
     const qs = [mkQ('a'), mkQ('b')];
     for (let seed = 0; seed < 50; seed++) {
       const ctx = makeCtx();

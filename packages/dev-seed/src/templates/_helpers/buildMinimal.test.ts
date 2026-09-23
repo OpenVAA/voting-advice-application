@@ -3,19 +3,14 @@
  *
  * Covers the 8 core behaviours:
  *
- *  1. Default 1c/1opin/0info — single candidate carries answer for the 1
- *     seeded opinion question (default candidateAnswersDefault='all').
+ *  1. Default 1c/1opin/0info — single candidate carries answer for the 1 seeded opinion question (default candidateAnswersDefault='all').
  *  2. settingsOverlay deep-merges onto MINIMAL_BASE_APP_SETTINGS.
- *  3. elections=2 + nominationsInElectionIndices=[0] yields nominations only
- *     in el-1.
- *  4. customDataByQuestion injects custom_data on a named question (keyed by
- *     BARE external_id).
+ *  3. elections=2 + nominationsInElectionIndices=[0] yields nominations only in el-1.
+ *  4. customDataByQuestion injects custom_data on a named question (keyed by BARE external_id).
  *  5. answersByCandidate explicit map overrides the default answer fill.
- *  6. Multi-candidate, multi-question default: every candidate carries an
- *     answer to every seeded question.
+ *  6. Multi-candidate, multi-question default: every candidate carries an answer to every seeded question.
  *  7. answersByCandidate['cand-X'] = 'none' produces a clean candidate.
- *  8. candidateAnswersDefault: 'none' (global override) produces all clean
- *     candidates.
+ *  8. candidateAnswersDefault: 'none' (global override) produces all clean candidates.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -42,8 +37,7 @@ describe('buildMinimal', () => {
     expect(opinions).toHaveLength(1);
     expect(infos).toHaveLength(0);
 
-    // Default candidateAnswersDefault='all' — the candidate has an answer to
-    // the 1 seeded opinion question.
+    // Default candidateAnswersDefault='all' — the candidate has an answer to the 1 seeded opinion question.
     const cand = tpl.candidates?.fixed?.[0] as { answersByExternalId?: Record<string, unknown> } | undefined;
     expect(cand?.answersByExternalId).toBeDefined();
     expect(Object.keys(cand?.answersByExternalId ?? {})).toHaveLength(1);

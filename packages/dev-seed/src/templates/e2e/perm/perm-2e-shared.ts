@@ -2,11 +2,9 @@
  * perm-2e-shared minimal-data template.
  *
  * Topology: 2 elections sharing 1 constituency group with 1 constituency.
- * Election selector shown (2 elections); no constituency selector after
- * election selection (single shared CG/CO is auto-implied).
+ * Election selector shown (2 elections); no constituency selector after election selection (single shared CG/CO is auto-implied).
  *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-2e-shared-'`. Row
- * external_ids bare; refs prefixed.
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-2e-shared-'`. Row external_ids bare; refs prefixed.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS verbatim.
  */
@@ -36,7 +34,7 @@ export const perm2eSharedTemplate: Template = {
         external_id: 'el-1',
         name: { en: '[EL1] First election' },
         short_name: { en: 'EL1' },
-        election_type: 'general',
+        election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 0,
         is_generated: false,
@@ -48,7 +46,7 @@ export const perm2eSharedTemplate: Template = {
         external_id: 'el-2',
         name: { en: '[EL2] Second election' },
         short_name: { en: 'EL2' },
-        election_type: 'local',
+        election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 1,
         is_generated: false,

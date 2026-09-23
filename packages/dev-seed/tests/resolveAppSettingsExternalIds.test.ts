@@ -1,14 +1,12 @@
 /**
- * Unit tests for `resolveAppSettingsExternalIds` + `settingsContainsExternalIdRefs`
- * (see phase 88 Plan 04 T3 — Option B seed-time resolver).
+ * Unit tests for `resolveAppSettingsExternalIds` + `settingsContainsExternalIdRefs` (the seed-time resolver).
  *
  * Covers:
  *   - String passthrough: legacy `question: '<uuid>'` shape unchanged.
  *   - {externalId} branch: resolved to the mapped UUID.
  *   - Missing externalId: throws with the offending path + missing id.
  *   - Forward-compatible paths: organization + alliance behave identically.
- *   - `settingsContainsExternalIdRefs` gate: true when ANY {externalId}
- *     shape is present at any handled path; false otherwise.
+ *   - `settingsContainsExternalIdRefs` gate: true when ANY {externalId} shape is present at any handled path; false otherwise.
  *
  * Pure-function tests. No Supabase dependency.
  */

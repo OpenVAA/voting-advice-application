@@ -1,13 +1,11 @@
 /**
- * `defaultSpread` unit tests (Task 2).
+ * `defaultSpread` unit tests.
  *
  * Covers the RED/GREEN gate for `src/emitters/latent/spread.ts`:
  *   - Test 1: no template override → default `0.15`.
  *   - Test 2: scalar template override forwarded verbatim.
- *   - Test 3: `tplSpread === 0` preserved (nullish-coalesce, not `||`) — collapses
- *     candidates to centroids, a legal deterministic mode.
- *   - Test 4: determinism — two calls with same args return equal numbers; no faker
- *     consulted.
+ *   - Test 3: `tplSpread === 0` preserved (nullish-coalesce, not `||`) — collapses candidates to centroids, a legal deterministic mode.
+ *   - Test 4: determinism — two calls with same args return equal numbers; no faker consulted.
  *   - Test 5: purity — defaultSpread consumes ZERO faker draws across varied inputs.
  *
  * contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc `.
@@ -41,17 +39,14 @@ describe('defaultSpread (GEN-06c)', () => {
   });
 
   it('does not read ctx.faker (pure lookup)', () => {
-    // Compare the two ctx objects' faker state before and after. If defaultSpread
-    // consumes a random draw, state would diverge. Since defaultSpread just
-    // returns a constant, both remain identical.
+    // Compare the two ctx objects' faker state before and after. If defaultSpread consumes a random draw, state would diverge. Since defaultSpread just returns a constant, both remain identical.
     const ctx = makeCtx();
     const pre = ctx.faker.number.int({ min: 0, max: 1_000_000 });
     defaultSpread(ctx);
     defaultSpread(ctx, 0.2);
     defaultSpread(ctx, 0);
     const post = ctx.faker.number.int({ min: 0, max: 1_000_000 });
-    // `post` must equal the SECOND draw after `pre` (the first draw inside the
-    // faker's sequence) — i.e. defaultSpread consumed zero draws in between.
+    // `post` must equal the SECOND draw after `pre` (the first draw inside the faker's sequence) — i.e. defaultSpread consumed zero draws in between.
     // Verify: reset and compare.
     const fresh = makeCtx();
     const first = fresh.faker.number.int({ min: 0, max: 1_000_000 });

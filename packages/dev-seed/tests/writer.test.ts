@@ -2,50 +2,32 @@
  * Writer unit tests — (env-enforcement + mocked-client call shape).
  *
  * Covers:
- *   - NF-02: constructor throws when `SUPABASE_URL` is missing.
- *   - NF-02: constructor throws when `SUPABASE_SERVICE_ROLE_KEY` is
- *     missing. Error messages are descriptive (mention the env var AND
- *     point at `supabase start` remediation).
- *   - NF-01: `write()` calls `bulkImport` → `importAnswers` → `linkJoinTables`
+ *   - the constructor throws when `SUPABASE_URL` is missing.
+ *   - the constructor throws when `SUPABASE_SERVICE_ROLE_KEY` is missing. Error messages are descriptive (mention the env var AND point at `supabase start` remediation).
+ *   - `write()` calls `bulkImport` → `importAnswers` → `linkJoinTables`
  *     in that order (single-transaction atomicity + post-pass enrichment).
- *   - routing: `accounts`, `projects`, `feedback`, `app_settings` are
- *     STRIPPED from the `bulk_import` payload. Each is routed elsewhere or
- *     skipped.
- *   - RESEARCH Pitfall 5: `app_settings` routes through
- *     `updateAppSettings` (the `merge_jsonb_column` RPC), NOT `bulk_import`
- *     (which fails on the `UNIQUE(project_id)` constraint pre-inserted by
- *     seed.sql).
- *   - Feedback-skip logger warning: when `feedback` rows are supplied, the
- *     writer emits a descriptive warning via the injected logger and does
- *     NOT call any write method for feedback.
+ *   - routing: `accounts`, `projects`, `feedback`, `app_settings` are STRIPPED from the `bulk_import` payload. Each is routed elsewhere or skipped.
+ *   - `app_settings` routes through `updateAppSettings` (the `merge_jsonb_column` RPC), NOT `bulk_import` (which fails on the `UNIQUE(project_id)` constraint pre-inserted by seed.sql).
+ *   - Feedback-skip logger warning: when `feedback` rows are supplied, the writer emits a descriptive warning via the injected logger and does NOT call any write method for feedback.
  *
- * Pattern: `vi.mock` hoists above imports — the mocked `SupabaseAdminClient`
- * replaces the real one for every test in this file. The mock factory keeps
- * a list of constructed instances so each test can inspect the one it owns.
+ * Pattern: `vi.mock` hoists above imports — the mocked `SupabaseAdminClient` replaces the real one for every test in this file. The mock factory keeps a list of constructed instances so each test can inspect the one it owns.
  * `vi.clearAllMocks()` in `beforeEach` resets spy state between tests.
  *
- * contract: pure I/O. No real Supabase contact; no `createClient`, no
- * `.rpc()`.
+ * contract: pure I/O. No real Supabase contact; no `createClient`, no `.rpc()`.
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-// Imported AFTER vi.mock — Writer's `import { SupabaseAdminClient } from
-// './supabaseAdminClient'` now resolves to the mocked module.
+// Imported AFTER vi.mock — Writer's `import { SupabaseAdminClient } from './supabaseAdminClient'` now resolves to the mocked module.
 import { Writer } from '../src/writer';
 
-// vi.mock is HOISTED — runs before the Writer import below so Writer resolves
-// `./supabaseAdminClient` to the mocked module. The factory returns a fresh
-// module shape on every import, but instance tracking via `__getLastInstance`
-// lets tests inspect the specific mocked admin client the Writer constructed.
+/** A portrait object name in the application's upload convention: a random v4-shaped UUID plus `.jpg` (162.1 D-15). */
+const UUID_JPG = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.jpg$/;
+
+// vi.mock is HOISTED — runs before the Writer import below so Writer resolves `./supabaseAdminClient` to the mocked module. The factory returns a fresh module shape on every import, but instance tracking via `__getLastInstance` lets tests inspect the specific mocked admin client the Writer constructed.
 // Default portrait-method mocks applied to every instance.
-// Tests can reassign these on the last instance (via getMockedAdminClient)
-// to customize per-test behavior (e.g., returning candidates or throwing).
+// Tests can reassign these on the last instance (via getMockedAdminClient) to customize per-test behavior (e.g., returning candidates or throwing).
 vi.mock('../src/supabaseAdminClient', () => {
-  // `any` reason: this array holds the ad-hoc object literals the factory below
-  // returns, which are structurally unrelated to SupabaseAdminClient — typing it
-  // as that class would be a false claim, and the alternative (naming the literal's
-  // shape) duplicates the factory. Nothing reads these elements as a typed value;
-  // `__getLastInstance` re-types at its own boundary, where the reason is stated.
+  // `any` reason: this array holds the ad-hoc object literals the factory below returns, which are structurally unrelated to SupabaseAdminClient — typing it as that class would be a false claim, and the alternative (naming the literal's shape) duplicates the factory. Nothing reads these elements as a typed value; `__getLastInstance` re-types at its own boundary, where the reason is stated.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const instances: Array<any> = [];
   return {
@@ -66,8 +48,7 @@ vi.mock('../src/supabaseAdminClient', () => {
         updateAppSettings: vi.fn().mockImplementation(async () => {
           callOrder.push('updateAppSettings');
         }),
-        // see phase 58 Plan 04 portrait methods — default to "no candidates"
-        // so existing see phase 56/57 tests don't exercise the upload branch.
+        // Portrait methods — default to "no candidates" so the other cases in this file do not exercise the upload branch.
         selectCandidatesForPortraitUpload: vi.fn().mockImplementation(async () => {
           callOrder.push('selectCandidatesForPortraitUpload');
           return [];
@@ -78,6 +59,9 @@ vi.mock('../src/supabaseAdminClient', () => {
         }),
         updateCandidateImage: vi.fn().mockImplementation(async () => {
           callOrder.push('updateCandidateImage');
+        }),
+        setProjectOpenForVoters: vi.fn().mockImplementation(async () => {
+          callOrder.push('setProjectOpenForVoters');
         }),
         callOrder
       };
@@ -92,8 +76,7 @@ vi.mock('../src/supabaseAdminClient', () => {
 });
 
 /**
- * Typed accessor for the mock module's instance-tracking helpers. The cast
- * isolates the only `any`-ish surface in this file (mock internals).
+ * Typed accessor for the mock module's instance-tracking helpers. The cast isolates the only `any`-ish surface in this file (mock internals).
  */
 async function getMockedAdminClient(): Promise<{
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -110,6 +93,8 @@ async function getMockedAdminClient(): Promise<{
   uploadPortrait: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateCandidateImage: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setProjectOpenForVoters: any;
   callOrder: Array<string>;
 }> {
   const mod = await import('../src/supabaseAdminClient');
@@ -131,7 +116,7 @@ describe('Writer', () => {
   });
 
   // -------------------------------------------------------------------------
-  // + NF-02: env enforcement at construction
+  // + env enforcement at construction
   // -------------------------------------------------------------------------
 
   it('throws at construction when SUPABASE_URL is missing (NF-02)', () => {
@@ -169,7 +154,7 @@ describe('Writer', () => {
   });
 
   // -------------------------------------------------------------------------
-  // NF-01: call shape with env present
+  // Call shape with env present
   // -------------------------------------------------------------------------
 
   describe('with env present', () => {
@@ -184,6 +169,65 @@ describe('Writer', () => {
 
       const instance = await getMockedAdminClient();
       expect(instance.callOrder.slice(0, 3)).toEqual(['bulkImport', 'importAnswers', 'linkJoinTables']);
+    });
+
+    // ---------------------------------------------------------------------
+    // Pass 0 — the unknown-property guard
+    // ---------------------------------------------------------------------
+
+    describe('Pass 0 — assertKnownRowProps (TMPL-02)', () => {
+      it('REJECTS a dataset carrying an unknown row property WITHOUT ever calling bulkImport', async () => {
+        const writer = new Writer();
+        const instance = await getMockedAdminClient();
+
+        await expect(
+          writer.write({ elections: [{ external_id: 'seed_e1', project_id: 'p', _constituencies: { id: [] } }] })
+        ).rejects.toThrow(/assertKnownRowProps/);
+
+        // The point of the case: Pass 0 fires BEFORE Pass 1, not alongside it.
+        // A guard that ran after bulkImport would leave rows committed.
+        expect(instance.bulkImport).not.toHaveBeenCalled();
+        expect(instance.importAnswers).not.toHaveBeenCalled();
+        expect(instance.linkJoinTables).not.toHaveBeenCalled();
+      });
+
+      it('names the key, the collection and the row external_id in the rejection', async () => {
+        const writer = new Writer();
+        await expect(
+          writer.write({ elections: [{ external_id: 'seed_e1', project_id: 'p', _constituencies: { id: [] } }] })
+        ).rejects.toThrow(/_constituencies[\s\S]*seed_e1[\s\S]*elections|_constituencies[\s\S]*elections/);
+      });
+
+      it('guards the PRE-DELETION data — app_settings is checked although bulkData no longer carries it', async () => {
+        const writer = new Writer();
+        const instance = await getMockedAdminClient();
+
+        // `app_settings` is deleted from bulkData before Pass 1, so a guard reading bulkData would be blind to it — and every built-in template emits exactly one app_settings row.
+        await expect(
+          writer.write({
+            elections: [{ external_id: 'seed_e1', project_id: 'p' }],
+            app_settings: [{ settings: { k: 'v' }, bogusSetting: true }]
+          })
+        ).rejects.toThrow(/bogusSetting[\s\S]*app_settings|app_settings[\s\S]*bogusSetting/);
+
+        expect(instance.bulkImport).not.toHaveBeenCalled();
+        expect(instance.updateAppSettings).not.toHaveBeenCalled();
+      });
+
+      it('lets a CLEAN dataset through to bulkImport unchanged', async () => {
+        const writer = new Writer();
+        const instance = await getMockedAdminClient();
+
+        await writer.write({
+          elections: [{ external_id: 'seed_e1', project_id: 'p' }],
+          app_settings: [{ settings: { k: 'v' } }],
+          feedback: [{ rating: 5 }]
+        });
+
+        expect(instance.bulkImport).toHaveBeenCalledTimes(1);
+        const bulkImportArg = instance.bulkImport.mock.calls[0][0] as Record<string, unknown>;
+        expect(bulkImportArg).toHaveProperty('elections');
+      });
     });
 
     it('strips accounts from bulk_import payload (pass-through)', async () => {
@@ -222,7 +266,7 @@ describe('Writer', () => {
       expect(bulkImportArg).not.toHaveProperty('feedback');
     });
 
-    it('routes app_settings through updateAppSettings, NOT bulk_import (Pitfall 5)', async () => {
+    it('routes app_settings through updateAppSettings, NOT bulk_import', async () => {
       const writer = new Writer();
       await writer.write({
         app_settings: [{ settings: { key: 'value' } }],
@@ -288,14 +332,13 @@ describe('Writer', () => {
     });
 
     // ---------------------------------------------------------------------
-    // see phase 58 Plan 04 — uploadPortraits pass
+    // uploadPortraits pass
     // ---------------------------------------------------------------------
 
     describe('uploadPortraits pass (GEN-09)', () => {
       it('invokes selectCandidatesForPortraitUpload AFTER linkJoinTables and BEFORE updateAppSettings (sequence order)', async () => {
         const writer = new Writer();
-        // With default mock (returns [] candidates), uploadPortrait is never called
-        // but selectCandidatesForPortraitUpload still runs — that's the assertion point.
+        // With default mock (returns [] candidates), uploadPortrait is never called but selectCandidatesForPortraitUpload still runs — that's the assertion point.
         await writer.write({
           elections: [{ external_id: 'seed_e1', project_id: 'p' }],
           app_settings: [{ settings: { k: 'v' } }]
@@ -320,7 +363,7 @@ describe('Writer', () => {
         expect(instance.selectCandidatesForPortraitUpload).toHaveBeenCalledWith('seed_');
       });
 
-      it('passes a custom externalIdPrefix when provided (Plan 05 CLI hook)', async () => {
+      it('passes a custom externalIdPrefix when provided (CLI hook)', async () => {
         const writer = new Writer();
         await writer.write({ elections: [{ external_id: 'foo_e1', project_id: 'p' }] }, 'foo_');
 
@@ -353,8 +396,9 @@ describe('Writer', () => {
         expect(uploadCalls[0][0]).toBe('uuid-1');
         expect(uploadCalls[1][0]).toBe('uuid-2');
         expect(uploadCalls[2][0]).toBe('uuid-3');
-        // All uploads use the canonical "seed-portrait.jpg" filename at the remote path.
-        expect(uploadCalls[0][2]).toBe('seed-portrait.jpg');
+        // Every upload is named `<random uuid>.jpg`, the convention the application's own uploads use (162.1 D-15): the storage cleanup whitelist accepts only UUID object names, and a fixed name would be guessable.
+        const filename = uploadCalls[0][2];
+        expect(filename).toMatch(UUID_JPG);
 
         // updateCandidateImage gets { path, alt } where alt = "First Last".
         const updateCalls = instance.updateCandidateImage.mock.calls;
@@ -362,10 +406,31 @@ describe('Writer', () => {
         expect(updateCalls[1][2].alt).toBe('Bob Jones');
         expect(updateCalls[2][2].alt).toBe('Carol Kim');
         // path returned by uploadPortrait flows into updateCandidateImage.
-        expect(updateCalls[0][2].path).toBe('test-project/candidates/uuid-1/seed-portrait.jpg');
+        expect(updateCalls[0][2].path).toBe(`test-project/candidates/uuid-1/${filename}`);
       });
 
-      it('builds alt text as "first_name last_name" trimmed, falling back to external_id when names are empty (WCAG 2.1 AA — Pitfall #4)', async () => {
+      it('gives every candidate its own random UUID filename (162.1 D-15)', async () => {
+        const candidates = [
+          { id: 'uuid-1', external_id: 'seed_cand_0000', first_name: 'Alice', last_name: 'Smith' },
+          { id: 'uuid-2', external_id: 'seed_cand_0001', first_name: 'Bob', last_name: 'Jones' }
+        ];
+
+        const writer = new Writer();
+        const instance = await getMockedAdminClient();
+        instance.selectCandidatesForPortraitUpload.mockResolvedValueOnce(candidates);
+        instance.uploadPortrait.mockImplementation(
+          async (id: string, _ext: string, filename: string) => `test-project/candidates/${id}/${filename}`
+        );
+
+        await writer.write({ elections: [{ external_id: 'seed_e1', project_id: 'p' }] });
+
+        const filenames = instance.uploadPortrait.mock.calls.map((call: Array<unknown>) => call[2]);
+        expect(filenames).toHaveLength(2);
+        for (const filename of filenames) expect(filename).toMatch(UUID_JPG);
+        expect(filenames[0]).not.toBe(filenames[1]);
+      });
+
+      it('builds alt text as "first_name last_name" trimmed, falling back to external_id when names are empty (WCAG 2.1 AA)', async () => {
         const candidates = [{ id: 'u1', external_id: 'seed_cand_edge', first_name: '', last_name: '' }];
 
         const writer = new Writer();
@@ -470,6 +535,59 @@ describe('Writer', () => {
         // Default mock returns [].
         const result = await writer.write({ elections: [{ external_id: 'seed_e1', project_id: 'p' }] });
         expect(result).toEqual({ portraits: 0 });
+      });
+    });
+
+    describe('project openness pass (162.1 D-21)', () => {
+      it('closes the project as the very last write when the template declares openForVoters: false', async () => {
+        const writer = new Writer();
+        await writer.write(
+          {
+            elections: [{ external_id: 'seed_e1', project_id: 'p' }],
+            app_settings: [{ settings: { k: 'v' } }],
+            feedback: [{ rating: 5 }]
+          },
+          'seed_',
+          { openForVoters: false }
+        );
+
+        const instance = await getMockedAdminClient();
+        expect(instance.setProjectOpenForVoters).toHaveBeenCalledTimes(1);
+        expect(instance.setProjectOpenForVoters).toHaveBeenCalledWith(false);
+        expect(instance.callOrder[instance.callOrder.length - 1]).toBe('setProjectOpenForVoters');
+      });
+
+      it('opens the project when the template declares openForVoters: true', async () => {
+        const writer = new Writer();
+        await writer.write({ elections: [{ external_id: 'seed_e1', project_id: 'p' }] }, 'seed_', {
+          openForVoters: true
+        });
+
+        const instance = await getMockedAdminClient();
+        expect(instance.setProjectOpenForVoters).toHaveBeenCalledTimes(1);
+        expect(instance.setProjectOpenForVoters).toHaveBeenCalledWith(true);
+      });
+
+      it('issues no projects write at all when the caller passes no openForVoters', async () => {
+        const writer = new Writer();
+        await writer.write({ elections: [{ external_id: 'seed_e1', project_id: 'p' }] });
+        await writer.write({ elections: [{ external_id: 'seed_e1', project_id: 'p' }] }, 'seed_', {});
+
+        const instance = await getMockedAdminClient();
+        expect(instance.setProjectOpenForVoters).not.toHaveBeenCalled();
+        expect(instance.callOrder).not.toContain('setProjectOpenForVoters');
+      });
+
+      it('propagates a failing openness write instead of swallowing it', async () => {
+        const writer = new Writer();
+        const instance = await getMockedAdminClient();
+        instance.setProjectOpenForVoters.mockRejectedValueOnce(
+          new Error('setProjectOpenForVoters: failed to set open_for_voters=false on p: boom')
+        );
+
+        await expect(
+          writer.write({ elections: [{ external_id: 'seed_e1', project_id: 'p' }] }, 'seed_', { openForVoters: false })
+        ).rejects.toThrow(/^setProjectOpenForVoters/);
       });
     });
   });

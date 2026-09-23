@@ -1,9 +1,7 @@
 /**
  * ConstituenciesGenerator unit tests.
  *
- * acceptance criteria (a)–(e) + the self-FK parent ref's cycle-avoidance
- * invariant: any generated `parent: { external_id }` ref points to a row emitted
- * EARLIER in the same batch (no forward refs, no self-reference, no cycles).
+ * acceptance criteria (a)–(e) + the self-FK parent ref's cycle-avoidance invariant: any generated `parent: { external_id }` ref points to a row emitted EARLIER in the same batch (no forward refs, no self-reference, no cycles).
  */
 
 import { describe, expect, it } from 'vitest';

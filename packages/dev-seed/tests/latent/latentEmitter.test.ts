@@ -1,9 +1,7 @@
 /**
- * latentAnswerEmitter unit tests (Task 1).
+ * latentAnswerEmitter unit tests.
  *
- * Covers (closure-cached SpaceBundle), (hook precedence),
- * Pitfall 4 (no-party fallback), GEN-06g (six independently swappable hooks),
- * and the compile-time AnswerEmitter contract.
+ * Covers (closure-cached SpaceBundle), (hook precedence), the no-party fallback, the six independently swappable hooks, and the compile-time AnswerEmitter contract.
  */
 
 import { describe, expect, it, vi } from 'vitest';
@@ -49,7 +47,8 @@ function ctxWith(orgExtIds: Array<string>, questions: Array<TablesInsert<'questi
     refs: {
       ...base.refs,
       organizations: orgExtIds.map((id) => ({ external_id: id })),
-      questions: questions as unknown as Array<{ external_id: string }>
+      // Projected rather than cast: `Ctx['refs'].questions` declares only `external_id`, and `mkQ` always supplies one.
+      questions: questions.map(({ external_id }) => ({ external_id: external_id ?? '' }))
     }
   });
 }
@@ -74,7 +73,7 @@ describe('latentAnswerEmitter (GEN-06g)', () => {
     expect(centroidsHook).toHaveBeenCalledTimes(1);
   });
 
-  it('falls back to defaultRandomValidEmit when candidate has no organization (Pitfall 4)', () => {
+  it('falls back to defaultRandomValidEmit when candidate has no organization', () => {
     const ctx = ctxWith(['p0', 'p1'], [mkQ('q_0')]);
     const emit = latentAnswerEmitter({} as Template);
     const r = emit(mkCand('c0'), [mkQ('q_0')], ctx);
@@ -83,7 +82,7 @@ describe('latentAnswerEmitter (GEN-06g)', () => {
     expect(['1', '2', '3', '4', '5']).toContain(r.q_0.value);
   });
 
-  it('falls back to defaultRandomValidEmit when organizations ref is empty (Pitfall 4)', () => {
+  it('falls back to defaultRandomValidEmit when organizations ref is empty', () => {
     const ctx = ctxWith([], [mkQ('q_0'), mkQ('q_1')]);
     const emit = latentAnswerEmitter({} as Template);
     const r0 = emit(mkCand('c0', 'anyorg'), [mkQ('q_0'), mkQ('q_1')], ctx);
@@ -101,9 +100,7 @@ describe('latentAnswerEmitter (GEN-06g)', () => {
     const templateCentroids = { p0: [0.1, 0.1], p1: [0.2, 0.2] };
     const ctx = ctxWith(['p0', 'p1'], [mkQ('q_0')]);
     ctx.latent = { centroids: centroidsHook };
-    const emit = latentAnswerEmitter({
-      latent: { centroids: templateCentroids }
-    } as unknown as Template);
+    const emit = latentAnswerEmitter({ latent: { centroids: templateCentroids } });
     emit(mkCand('c0', 'p0'), [mkQ('q_0')], ctx);
     expect(centroidsHook).toHaveBeenCalledTimes(1);
     const args = centroidsHook.mock.calls[0];
@@ -112,10 +109,11 @@ describe('latentAnswerEmitter (GEN-06g)', () => {
   });
 
   it('dimensions hook receives template as arg (argument forwarding)', () => {
-    const dimsHook = vi.fn(() => ({ dims: 2, eigenvalues: [1, 1 / 3] }));
+    // The parameter is declared because the assertion below reads it: `vi.fn(() => …)` infers a ZERO-parameter signature, so `mock.calls[0]` is the empty tuple and indexing it is out of range. The list mirrors `LatentHooks['dimensions']` (`src/emitters/latent/latentTypes.ts:90`).
+    const dimsHook = vi.fn((_template: Template) => ({ dims: 2, eigenvalues: [1, 1 / 3] }));
     const ctx = ctxWith(['p0'], [mkQ('q_0')]);
     ctx.latent = { dimensions: dimsHook };
-    const tpl = { latent: { dimensions: 2 } } as unknown as Template;
+    const tpl: Template = { latent: { dimensions: 2 } };
     const emit = latentAnswerEmitter(tpl);
     emit(mkCand('c0', 'p0'), [mkQ('q_0')], ctx);
     expect(dimsHook).toHaveBeenCalledTimes(1);
@@ -155,7 +153,7 @@ describe('latentAnswerEmitter (GEN-06g)', () => {
     expect(aOut).toEqual(bOut);
   });
 
-  it('candidate with unknown organization id falls back (Pitfall 4 defensive)', () => {
+  it('candidate with unknown organization id falls back (defensive)', () => {
     const ctx = ctxWith(['p0', 'p1'], [mkQ('q_0')]);
     const emit = latentAnswerEmitter({} as Template);
     // c0's organization ref does not match any party — must NOT throw, must fallback.

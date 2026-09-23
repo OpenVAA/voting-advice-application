@@ -1,21 +1,17 @@
 /**
- * defaultDimensions — GEN-06a built-in default.
+ * defaultDimensions — the built-in dimensions default.
  *
- * Resolves `{ dims, eigenvalues }` from a (possibly empty) `template.latent` block
- * per the rules:
+ * Resolves `{ dims, eigenvalues }` from a (possibly empty) `template.latent` block per the rules:
  *
  *   default `dims` is 2 (political-compass shape).
- *   default eigenvalues decay geometrically with ratio 1/3:
- *            `[1, 1/3, 1/9, ...]` generalizing to `(1/3)^i` for `i in 0..dims-1`.
+ *   default eigenvalues decay geometrically with ratio 1/3: `[1, 1/3, 1/9, ...]` generalizing to `(1/3)^i` for `i in 0..dims-1`.
  *
- * Precedence (all fields optional per):
+ * Precedence (every field is optional):
  *   - `template.latent.dimensions` > unset → 2
  *   - `template.latent.eigenvalues` explicit → used verbatim; `dims` derived from
- *     `eigenvalues.length` when `dimensions` is unset, OR equals `dimensions` when
- *     both are supplied (schema .superRefine enforces the length match).
+ *     `eigenvalues.length` when `dimensions` is unset, OR equals `dimensions` when both are supplied (schema .superRefine enforces the length match).
  *
- * Pure function — no `ctx.faker` read (no RNG). Called ONCE per pipeline run from
- * the `latentAnswerEmitter` closure cache (Plan 07); memoized into `SpaceBundle`.
+ * Pure function — no `ctx.faker` read (no RNG). Called ONCE per pipeline run from the `latentAnswerEmitter` closure cache; memoized into `SpaceBundle`.
  */
 
 import type { Template } from '../../template/types';
@@ -29,8 +25,7 @@ export function defaultDimensions(template: Template): { dims: number; eigenvalu
   const tplEig = template.latent?.eigenvalues;
 
   // When explicit eigenvalues are supplied, they dictate the dimensionality.
-  // Schema .superRefine (Plan 01) enforces `tplEig.length === tplDims` when both
-  // are supplied; here we honor that invariant and trust the validator.
+  // The schema's `.superRefine` enforces `tplEig.length === tplDims` when both are supplied; here we honor that invariant and trust the validator.
   if (tplEig !== undefined) {
     const dims = tplDims ?? tplEig.length;
     return { dims, eigenvalues: [...tplEig] };
@@ -41,7 +36,6 @@ export function defaultDimensions(template: Template): { dims: number; eigenvalu
   return { dims, eigenvalues };
 }
 
-// Compile-time assertion — guards against drift between this default and the
-// `LatentHooks.dimensions` signature exported from latentTypes.ts.
+// Compile-time assertion — guards against drift between this default and the `LatentHooks.dimensions` signature exported from latentTypes.ts.
 const _typecheckDimensions: NonNullable<LatentHooks['dimensions']> = defaultDimensions;
 void _typecheckDimensions;

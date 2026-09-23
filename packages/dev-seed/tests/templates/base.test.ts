@@ -1,17 +1,10 @@
 /**
- * `e2e/base` template shape tests (see phase 93 Plan 02).
+ * `e2e/base` template shape tests.
  *
- * Retargeted from the retired `e2e` template suite to the canonical base
- * dataset (formerly `baseV1`, now `packages/dev-seed/src/templates/e2e/base.ts`).
- * The base dataset is the single multi-election / multi-constituency seed that
- * every downstream setup + spec consumes; this file locks its structural
- * shape so accidental drift in the dataset is caught at the unit-test gate.
+ * Retargeted from the retired `e2e` template suite to the canonical base dataset (formerly `baseV1`, now `packages/dev-seed/src/templates/e2e/base.ts`).
+ * The base dataset is the single multi-election / multi-constituency seed that every downstream setup + spec consumes; this file locks its structural shape so accidental drift in the dataset is caught at the unit-test gate.
  *
- * Every asserted count + external_id is derived from `e2e/base.ts` directly
- * (read at authoring time from the source, not carried over from the old e2e
- * single-election expectations). The old e2e contracts (`test-election-1`,
- * single-election, 18 candidates) are intentionally NOT reproduced — the base
- * dataset is a different, multi-election shape.
+ * Every asserted count + external_id is derived from `e2e/base.ts` directly (read at authoring time from the source, not carried over from the old e2e single-election expectations). The old e2e contracts (`test-election-1`, single-election, 18 candidates) are intentionally NOT reproduced — the base dataset is a different, multi-election shape.
  *
  * contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc `.
  */
@@ -21,8 +14,7 @@ import { validateTemplate } from '../../src/template/schema';
 import { baseTemplate } from '../../src/templates/e2e/base';
 
 // ---------------------------------------------------------------------------
-// Fragment introspection helpers. The Template type marks every table field as
-// optional, so we narrow carefully to avoid masking real type errors.
+// Fragment introspection helpers. The Template type marks every table field as optional, so we narrow carefully to avoid masking real type errors.
 // ---------------------------------------------------------------------------
 
 type FragmentView = { fixed?: Array<Record<string, unknown>>; count?: number };
@@ -56,8 +48,7 @@ function allExternalIds(): Array<string> {
 }
 
 // ---------------------------------------------------------------------------
-// Positive inclusion list — key external_ids that downstream setup/specs
-// assert against. Derived from e2e/base.ts (the surviving dataset).
+// Positive inclusion list — key external_ids that downstream setup/specs assert against. Derived from e2e/base.ts (the surviving dataset).
 // ---------------------------------------------------------------------------
 
 const REQUIRED_EXTERNAL_IDS: Array<{ table: string; id: string }> = [

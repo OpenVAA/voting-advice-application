@@ -1,64 +1,35 @@
 /**
  * perm-localisation-positive minimal-data template.
  *
- * Operates against the 3-locale `staticSettings.supportedLocales` base
- * (`[en, fi, sv]`) directly — NO runtime override. The single-locale variant
- * (perm-localisation-negative) is not seeded here.
+ * Operates against the 3-locale `staticSettings.supportedLocales` base (`[en, fi, sv]`) directly — NO runtime override. The single-locale variant (perm-localisation-negative) is not seeded here.
  *
- * Topology: 1 election, 1 CG with 1 CO, 1 organisation, 1 candidate, 1
- * nomination. 2 question categories (qc-info + qc-opin), each carrying 2
- * questions:
+ * Topology: 1 election, 1 CG with 1 CO, 1 organisation, 1 candidate, 1 nomination. 2 question categories (qc-info + qc-opin), each carrying 2 questions:
  *   - q1 (text)                          — multilingual surface (no opt-out)
  *   - q2 (text + disableMultilingual)    — per-question multilingual OFF
- *   - q3 (singleChoiceOrdinal + allow_open=true)  — open-answer comment is the
- *                                                    multilingual surface
+ *   - q3 (singleChoiceOrdinal + allow_open=true)  — open-answer comment is the multilingual surface
  *   - q4 (singleChoiceOrdinal + allow_open=true + disableMultilingual)
  *
- * The candidate has terms_of_use_accepted set + ENGLISH-ONLY seeded answers
- * to all 4 questions. Finnish answers are AUTHORED BY THE SPEC at runtime via
- * the multilingualTextField fixture's setLocaleValue('fi', ...) calls.
+ * The candidate has terms_of_use_accepted set + ENGLISH-ONLY seeded answers to all 4 questions. Finnish answers are AUTHORED BY THE SPEC at runtime via the multilingualTextField fixture's setLocaleValue('fi', ...) calls.
  *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-l10n-pos-'` (distinct from
- * every other perm template).
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-l10n-pos-'` (distinct from every other perm template).
  *
- * Settings: APP_SETTINGS spreads MINIMAL_BASE_APP_SETTINGS verbatim (helper
- * default) — no i18n override. The runtime `locales` export from `$lib/i18n`
- * resolves to the staticSettings list (en/fi/sv), the LanguageSelection
- * NavGroup (`locales.length > 1` gate at LanguageSelection.svelte:32)
- * renders with three locales, and the translation-options toggle stays
- * visible on every multilingual Input (`multilingual && locales.length > 1`
- * gate at Input.svelte:646,653) for q1 (text) and q3-comment (open-answer
- * textarea).
+ * Settings: APP_SETTINGS spreads MINIMAL_BASE_APP_SETTINGS verbatim (helper default) — no i18n override. The runtime `locales` export from `$lib/i18n` resolves to the staticSettings list (en/fi/sv), the LanguageSelection NavGroup (`locales.length > 1` gate at LanguageSelection.svelte:32) renders with three locales, and the translation-options toggle stays visible on every multilingual Input (`multilingual && locales.length > 1` gate at Input.svelte:646,653) for q1 (text) and q3-comment (open-answer textarea).
  *
- * q2 + q4 carry `customData.disableMultilingual = true` as a per-question
- * opt-out: even with locales.length > 1, the multilingual toggle is
- * suppressed on those two questions (QuestionInput.svelte:72-77).
+ * q2 + q4 carry `customData.disableMultilingual = true` as a per-question opt-out: even with locales.length > 1, the multilingual toggle is suppressed on those two questions (QuestionInput.svelte:72-77).
  *
- * q3 + q4 require `allow_open: true` because the multilingual surface on the
- * opinion editor is the OPEN-ANSWER COMMENT textarea
- * (`<Input type="textarea-multilingual">` at
- * `routes/candidate/(protected)/questions/[questionId]/+page.svelte:294-304`).
- * Without `allow_open=true` the comment block does not render and the
- * assertions on q3/q4 would target a missing element.
+ * q3 + q4 require `allow_open: true` because the multilingual surface on the opinion editor is the OPEN-ANSWER COMMENT textarea (`<Input type="textarea-multilingual">` at `routes/candidate/(protected)/questions/[questionId]/+page.svelte:294-304`).
+ * Without `allow_open=true` the comment block does not render and the assertions on q3/q4 would target a missing element.
  *
  * The L10N spec depends on:
- *   - The candidate's BARE external_id = `ca-1-1a` (hardcoded in the spec
- *     at perm-localisation-positive.spec.ts:88 as
- *     `CANDIDATE_EXTERNAL_ID = 'e2e-perm-l10n-pos-ca-1-1a'`).
- *   - 4 specific questions with bespoke `[Q1]`/`[Q2]`/`[Q3]`/`[Q4]` name
- *     markers (asserted by the spec's `getQuestion(/\[Q1\]/)` calls).
+ *   - The candidate's BARE external_id = `ca-1-1a` (hardcoded in the spec at perm-localisation-positive.spec.ts:88 as `CANDIDATE_EXTERNAL_ID = 'e2e-perm-l10n-pos-ca-1-1a'`).
+ *   - 4 specific questions with bespoke `[Q1]`/`[Q2]`/`[Q3]`/`[Q4]` name markers (asserted by the spec's `getQuestion(/\[Q1\]/)` calls).
  *   - 2 questions carrying `customData.disableMultilingual = true`.
  *   - 2 opinion questions carrying `allow_open: true`.
- *   - Specific seeded English answer markers (`[en-answer-q1]` /
- *     `[en-answer-q3]`).
+ *   - Specific seeded English answer markers (`[en-answer-q1]` / `[en-answer-q3]`).
  *
- * Build strategy: use `buildMinimal` for the topology bits the helper
- * supports cleanly (1 election / 1 CG / 1 CO / 1 organisation / app_settings
- * deep-merged with the empty overlay → MINIMAL_BASE_APP_SETTINGS verbatim).
- * Override `question_categories`, `questions`, `candidates`, and
- * `nominations` with the hand-authored bespoke shapes the spec depends on.
- * The composed Template is structurally identical to the pre-port hand-
- * authored template (parity for the spec's selectors and assertions).
+ * Build strategy: use `buildMinimal` for the topology bits the helper supports cleanly (1 election / 1 CG / 1 CO / 1 organisation / app_settings deep-merged with the empty overlay → MINIMAL_BASE_APP_SETTINGS verbatim).
+ * Override `question_categories`, `questions`, `candidates`, and `nominations` with the hand-authored bespoke shapes the spec depends on.
+ * The composed Template is structurally identical to the pre-port hand-authored template (parity for the spec's selectors and assertions).
  */
 
 import { LIKERT_5_EN } from './shared';
@@ -76,12 +47,10 @@ const base = buildMinimal({
   organizations: 1
 });
 
-export const permLocalisationPositiveTemplate: Template = {
+export const permLocalizationPositiveTemplate: Template = {
   ...base,
 
-  // Two categories inline (qc-info + qc-opin) — same shape as
-  // buildQuestionCategories() but kept literal here to keep the question/
-  // category co-location explicit for the L10N positive perm.
+  // Two categories inline (qc-info + qc-opin) — same shape as buildQuestionCategories() but kept literal here to keep the question/category co-location explicit for the L10N positive perm.
   question_categories: {
     count: 0,
     fixed: [
@@ -102,8 +71,7 @@ export const permLocalisationPositiveTemplate: Template = {
     ]
   },
 
-  // 4 questions inline. q2 + q4 carry customData.disableMultilingual; q3 + q4
-  // carry allow_open=true.
+  // 4 questions inline. q2 + q4 carry customData.disableMultilingual; q3 + q4 carry allow_open=true.
   questions: {
     count: 0,
     fixed: [
@@ -155,13 +123,7 @@ export const permLocalisationPositiveTemplate: Template = {
     ]
   },
 
-  // 1 candidate (`ca-1-1a`) with ToU accepted and ENGLISH-ONLY answers to
-  // all 4 questions. Finnish answers are AUTHORED at runtime by the spec
-  // via multilingualTextField.setLocaleValue('fi', '[fi-answer-qN]') — NOT
-  // seeded here. The candidate has NO auth.users row — the spec drives
-  // Inbucket registration to obtain an auth identity. The seeded English
-  // answers persist to `candidate.answers` via importAnswers and are the
-  // baseline for the "English visible" assertions.
+  // 1 candidate (`ca-1-1a`) with ToU accepted and ENGLISH-ONLY answers to all 4 questions. Finnish answers are AUTHORED at runtime by the spec via multilingualTextField.setLocaleValue('fi', '[fi-answer-qN]') — NOT seeded here. The candidate has NO auth.users row — the spec drives Inbucket registration to obtain an auth identity. The seeded English answers persist to `candidate.answers` via importAnswers and are the baseline for the "English visible" assertions.
   candidates: {
     count: 0,
     fixed: [
@@ -183,8 +145,7 @@ export const permLocalisationPositiveTemplate: Template = {
     ]
   },
 
-  // 1 nomination via the single-org variant inlined here (mirrors the
-  // pre-port file-local `buildElectionConstituencyNomsSingleOrg` helper).
+  // 1 nomination via the single-org variant inlined here (mirrors the pre-port file-local `buildElectionConstituencyNomsSingleOrg` helper).
   // Only or-1 parent + the candidate child; no or-2 row (single-org perm).
   nominations: {
     count: 0,
@@ -209,4 +170,4 @@ export const permLocalisationPositiveTemplate: Template = {
   }
 };
 
-export default permLocalisationPositiveTemplate;
+export default permLocalizationPositiveTemplate;

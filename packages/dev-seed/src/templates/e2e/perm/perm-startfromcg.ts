@@ -10,15 +10,12 @@
  *       - co-1b2 parent=co-1b
  *       - co-1c no parent (orphan)
  *
- * The CG UUID is unknown at seed time; perm-startfromcg.spec.ts's beforeAll
- * resolves it via SupabaseAdminClient and writes via client.updateAppSettings.
+ * The CG UUID is unknown at seed time; perm-startfromcg.spec.ts's beforeAll resolves it via SupabaseAdminClient and writes via client.updateAppSettings.
  *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-startfromcg-'`. Row
- * external_ids bare; refs prefixed.
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-startfromcg-'`. Row external_ids bare; refs prefixed.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS verbatim — `elections.
- * startFromConstituencyGroup` is OMITTED entirely; the CG UUID is
- * post-seed-resolved by the spec's beforeAll.
+ * startFromConstituencyGroup` is OMITTED entirely; the CG UUID is post-seed-resolved by the spec's beforeAll.
  */
 
 import {
@@ -46,7 +43,7 @@ export const permStartfromcgTemplate: Template = {
         external_id: 'el-1',
         name: { en: '[EL1] CG-1 parents' },
         short_name: { en: 'EL1' },
-        election_type: 'general',
+        election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 0,
         is_generated: false,
@@ -58,7 +55,7 @@ export const permStartfromcgTemplate: Template = {
         external_id: 'el-2',
         name: { en: '[EL2] CG-2 leaves' },
         short_name: { en: 'EL2' },
-        election_type: 'local',
+        election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 1,
         is_generated: false,

@@ -1,15 +1,11 @@
 /**
  * perm-disable-election-2co minimal-data template.
  *
- * Topology: 2 elections share 1 CG with 2 COs; `elections.disallowSelection:
- * true`. No election selector shown, but constituency selector IS shown (2
- * CO options for the implied combined election scope).
+ * Topology: 2 elections share 1 CG with 2 COs; `elections.disallowSelection: true`. No election selector shown, but constituency selector IS shown (2 CO options for the implied combined election scope).
  *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-disable-elec-2co-'`. Row
- * external_ids bare; refs prefixed.
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-disable-elec-2co-'`. Row external_ids bare; refs prefixed.
  *
- * Settings: MINIMAL_BASE_APP_SETTINGS spread with elections.disallowSelection:
- * true override.
+ * Settings: MINIMAL_BASE_APP_SETTINGS spread with elections.disallowSelection: true override.
  */
 
 import {
@@ -45,7 +41,7 @@ export const permDisableElection2coTemplate: Template = {
         external_id: 'el-1',
         name: { en: '[EL1] First election' },
         short_name: { en: 'EL1' },
-        election_type: 'general',
+        election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 0,
         is_generated: false,
@@ -57,7 +53,7 @@ export const permDisableElection2coTemplate: Template = {
         external_id: 'el-2',
         name: { en: '[EL2] Second election' },
         short_name: { en: 'EL2' },
-        election_type: 'local',
+        election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 1,
         is_generated: false,

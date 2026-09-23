@@ -2,30 +2,23 @@
 /**
  * `yarn workspace @openvaa/dev-seed seed` — CLI entry point.
  *
- * Sequence per RESEARCH:
+ * Sequence:
  *   1. parseArgs — node:util built-in (keygen.ts precedent, NOT commander/yargs).
  *   2. --help short-circuit => print USAGE => exit 0.
- *   3. resolveTemplate(--template) => validated Template (10).
+ *   3. resolveTemplate(--template) => validated Template.
  *   4. Apply --seed / --external-id-prefix overrides to the template.
  *   5. new Writer — throws with messages on missing env; CLI catches.
- *   6. runPipeline(template) — see phase 56/57 orchestrator.
- *   7. fanOutLocales(rows, template, seed) — Plan 03 utility (no-op if flag off).
- *   8. writer.write(rows, prefix) => optionally returns `{ portraits }` once
- *      Plan 04 lands portrait upload support; this CLI tolerates both the
- *      current `void` return and the future `{ portraits: number }` shape so
- *      Plan 04 can ship without re-touching this file.
+ *   6. runPipeline(template) — the generator orchestrator.
+ *   7. fanOutLocales(rows, template, seed) — no-op if the flag is off.
+ *   8. writer.write(rows, prefix, { openForVoters }) — the third argument carries the resolved template's `openForVoters`, because the writer receives rows, not the template; when the template declares it, the writer's last pass sets the target project's openness (162.1 D-21). Optionally returns `{ portraits }`. This CLI tolerates both a `void` return and the `{ portraits: number }` shape, so the writer's signature can move without re-touching it.
  *   9. formatSummary(...) => stdout.
  *   10. exit 0 on success, 1 on any error.
  *
  * error handling:
- *   - Missing env => Writer constructor throws with exact message; CLI prints +
- *     exit(1).
- *   - Template not found => resolveTemplate throws with built-in list + path
- *     suggestion; CLI prints + exit(1).
- *   - Template validation failed => field-path message from
- *     validateTemplate; CLI prints + exit(1).
- *   - Supabase unreachable => supabase-js throws `fetch failed`; CLI rephrases
- *     to `Cannot reach Supabase at ${url}. Is 'supabase start' running?`
+ *   - Missing env => Writer constructor throws with exact message; CLI prints + exit(1).
+ *   - Template not found => resolveTemplate throws with built-in list + path suggestion; CLI prints + exit(1).
+ *   - Template validation failed => field-path message from validateTemplate; CLI prints + exit(1).
+ *   - Supabase unreachable => supabase-js throws `fetch failed`; CLI rephrases to `Cannot reach Supabase at ${url}. Is 'supabase start' running?`
  *   - Any other error => re-raised as `Error: ${err.message}`.
  */
 
@@ -40,18 +33,13 @@ import type { Template } from '../template/types';
 import type { Overrides } from '../types';
 
 // Load repo-root .env if present (Node 22+ built-in). Silent no-op if missing.
-// The monorepo convention keeps Supabase URL/keys in the root .env, shared
-// with the frontend. SvelteKit exposes them as PUBLIC_SUPABASE_URL /
-// PUBLIC_SUPABASE_ANON_KEY; server-only tools use SUPABASE_URL /
-// SUPABASE_SERVICE_ROLE_KEY. URL is identical between the two namespaces.
+// The monorepo convention keeps Supabase URL/keys in the root .env, shared with the frontend. SvelteKit exposes them as PUBLIC_SUPABASE_URL / PUBLIC_SUPABASE_ANON_KEY; server-only tools use SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY. URL is identical between the two namespaces.
 try {
   process.loadEnvFile(new URL('../../../../.env', import.meta.url).pathname);
 } catch {
   // no .env at repo root — env must be exported manually
 }
-// Fall back to PUBLIC_SUPABASE_URL when SUPABASE_URL is absent — the URL is
-// not sensitive, only the service_role key is. Dev ergonomics: the single
-// `.env` shared with the frontend works for seed too.
+// Fall back to PUBLIC_SUPABASE_URL when SUPABASE_URL is absent — the URL is not sensitive, only the service_role key is. Dev ergonomics: the single `.env` shared with the frontend works for seed too.
 if (!process.env.SUPABASE_URL && process.env.PUBLIC_SUPABASE_URL) {
   process.env.SUPABASE_URL = process.env.PUBLIC_SUPABASE_URL;
 }
@@ -75,14 +63,11 @@ if (values.help) {
 const templateArg = values.template ?? 'default';
 
 try {
-  // Lazy-load the built-in template map + per-template overrides map (Plan 06
-  // ships both; Plan 05 tolerated an absent module via loadBuiltIns' catch).
+  // Lazy-load the built-in template map + per-template overrides map; `loadBuiltIns` tolerates an absent module via its catch.
   const builtIns = await loadBuiltIns();
   const template = await resolveTemplate(templateArg, builtIns.templates);
 
-  // Apply --seed override (parse string to int; reject non-integer). Validate
-  // the FULL token first — `Number.parseInt('12abc', 10)` returns 12, silently
-  // accepting a typo'd seed as a different-but-valid deterministic dataset.
+  // Apply --seed override (parse string to int; reject non-integer). Validate the FULL token first — `Number.parseInt('12abc', 10)` returns 12, silently accepting a typo'd seed as a different-but-valid deterministic dataset.
   // A strict integer-only regex rejects partial-numeric/garbage input loudly.
   if (values.seed !== undefined) {
     if (!/^-?\d+$/.test(values.seed)) {
@@ -103,26 +88,20 @@ try {
   // Writer constructor reads env + throws messages if missing.
   const writer = new Writer();
 
-  // Look up per-template overrides — built-in templates may ship paired
-  // Overrides (e.g. the `default` template's non-uniform candidate
-  // distribution). Custom filesystem templates can express the same by
-  // shipping a sibling `Overrides` export (Plan 10's authoring guide). For
-  // now, custom templates resolve to `{}` (no overrides).
+  // Look up per-template overrides — built-in templates may ship paired Overrides (e.g. the `default` template's non-uniform candidate distribution). Custom filesystem templates can express the same by shipping a sibling `Overrides` export; see the authoring guide in the package README. Custom templates otherwise resolve to `{}` (no overrides).
   const overrides: Overrides = builtIns.overrides[templateArg] ?? {};
 
   const start = Date.now();
   const rows = runPipeline(template, overrides);
   fanOutLocales(rows, template, seed);
 
-  // Writer.write signature evolves across plans:
-  //   Plan 04 (current base): write(rows) => Promise<void>
-  //   Plan 04 (post-portrait): write(rows, prefix?) => Promise<{ portraits: number }>
-  // The CLI defers to runtime inspection of the resolved value to stay
-  // forward-compatible without re-editing this file once Plan 04 lands.
+  // Writer.write has two tolerated signatures:
+  //   write(rows) => Promise<void> write(rows, prefix?) => Promise<{ portraits: number }> The CLI defers to runtime inspection of the resolved value so the writer's signature can move without re-editing this file.
 
   const writeResult: unknown = await (writer.write as (...args: Array<unknown>) => Promise<unknown>)(
     rows,
-    (template as Template & { externalIdPrefix?: string }).externalIdPrefix ?? 'seed_'
+    (template as Template & { externalIdPrefix?: string }).externalIdPrefix ?? 'seed_',
+    { openForVoters: template.openForVoters }
   );
   const portraits = extractPortraitCount(writeResult);
 
@@ -155,13 +134,9 @@ async function loadBuiltIns(): Promise<{
   overrides: Record<string, Overrides>;
 }> {
   try {
-    // `.js` extension for ESM resolution at runtime (tsx transforms .ts to
-    // .js at load time). Plan 06 ships this file; Plan 05 tolerated absence.
+    // `.js` extension for ESM resolution at runtime (tsx transforms .ts to .js at load time).
     //
-    // The import path is built at runtime to keep TypeScript from statically
-    // resolving it — Plan 05 shipped before Plan 06. Once Plan 06 lands the
-    // import resolves normally; if the module is absent (or fails to load),
-    // the catch branch returns empty maps.
+    // The import path is built at runtime to keep TypeScript from statically resolving it. If the module is absent (or fails to load), the catch branch returns empty maps.
     const modulePath = '../templates/index.js';
     const mod = (await import(/* @vite-ignore */ modulePath)) as {
       BUILT_IN_TEMPLATES?: Record<string, Template>;
@@ -172,12 +147,8 @@ async function loadBuiltIns(): Promise<{
       overrides: mod.BUILT_IN_OVERRIDES ?? {}
     };
   } catch (err) {
-    // The registry failed to load. Fall back to empty built-ins so a
-    // filesystem-path template still works — but REPORT THE CAUSE first.
-    // Without this line the failure is invisible: resolveTemplate then throws
-    // `Unknown template: 'default'. Built-in templates: (none registered
-    // yet).`, which names the wrong problem and sends the reader off to check
-    // their spelling instead of the stack trace they actually need.
+    // The registry failed to load. Fall back to empty built-ins so a filesystem-path template still works — but REPORT THE CAUSE first.
+    // Without this line the failure is invisible: resolveTemplate then throws `Unknown template: 'default'. Built-in templates: (none registered yet).`, which names the wrong problem and sends the reader off to check their spelling instead of the stack trace they actually need.
     process.stderr.write(
       `Warning: could not load the built-in template registry (${(err as Error)?.message ?? String(err)}). ` +
         'Built-in template names will not resolve; filesystem-path templates still will.\n'
@@ -194,12 +165,10 @@ function describeTemplateSource(arg: string, builtIns: Record<string, Template>)
 /**
  * Extract `portraits` count from a Writer.write return value.
  *
- * - Plan 04 current base: write returns `undefined`/`void` => 0 portraits.
- * - Plan 04 post-portrait: write returns `{ portraits: number }` => pass through.
+ * - write returns `undefined` / `void` => 0 portraits.
+ * - write returns `{ portraits: number }` => pass through.
  *
- * Accepts any shape defensively; anything that's not `{ portraits: <number> }`
- * is reported as 0. Keeps the CLI forward-compatible without coupling to the
- * exact Writer signature.
+ * Accepts any shape defensively; anything that's not `{ portraits: <number> }` is reported as 0. Keeps the CLI forward-compatible without coupling to the exact Writer signature.
  */
 function extractPortraitCount(result: unknown): number {
   if (result && typeof result === 'object' && 'portraits' in result) {

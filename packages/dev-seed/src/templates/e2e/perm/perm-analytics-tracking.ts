@@ -1,32 +1,18 @@
 /**
  * perm-analytics-tracking minimal-data template.
  *
- * Carries the ANALYTICS OVERLAY that arms the `trackingIntercept` fixture for
- * the `voter-prefs-tracking` spec (Plan 06). The spec requires the
- * `app_settings` singleton to expose:
+ * Carries the ANALYTICS OVERLAY that arms the `trackingIntercept` fixture for the `voter-prefs-tracking` spec. That spec requires the `app_settings` singleton to expose:
  *
- *   analytics: {
- *     platform: { name: 'umami', code: <dummy>, infoUrl: <test-url> },
- *     trackEvents: true
+ *   analytics: { platform: { name: 'umami', code: <dummy>, infoUrl: <test-url> }, trackEvents: true
  *   }
  *
- * so the frontend mounts its analytics integration and emits track events the
- * fixture can intercept. Consent is NOT seeded here — it is toggled at runtime
- * inside the Plan 06 spec.
+ * so the frontend mounts its analytics integration and emits track events the fixture can intercept. Consent is NOT seeded here — it is toggled at runtime inside that spec.
  *
- * SECURITY (threat T-121-AN): `analytics.platform.code` is a DUMMY value
- * ('e2e-dummy-code'), never a real Umami / analytics key. No secrets are
- * committed — the seed only needs the platform OBJECT present + trackEvents on.
+ * SECURITY: `analytics.platform.code` is a DUMMY value ('e2e-dummy-code'), never a real Umami / analytics key. No secrets are committed — the seed only needs the platform OBJECT present + trackEvents on.
  *
- * Topology: a minimal walkable voter dataset — 1 election, 1 CG with 1 CO,
- * 2 organisations, 2 member candidates (each answering the single opinion
- * question), ONE opinion category with ONE Likert-5 question. This is the
- * smallest shape that lets a voter answer → reach /results, the surface the
- * tracking spec exercises.
+ * Topology: a minimal walkable voter dataset — 1 election, 1 CG with 1 CO, 2 organisations, 2 member candidates (each answering the single opinion question), ONE opinion category with ONE Likert-5 question. This is the smallest shape that lets a voter answer → reach /results, the surface the tracking spec exercises.
  *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-analytics-'`. Row external_ids
- * authored BARE (writer prepends prefix); nested refs use the FULL prefixed
- * external_id. Additive — own namespaced dataset, does NOT touch `e2e/base`.
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-analytics-'`. Row external_ids authored BARE (writer prepends prefix); nested refs use the FULL prefixed external_id. Additive — own namespaced dataset, does NOT touch `e2e/base`.
  */
 
 import { buildCandidate, buildElectionConstituencyNoms, LIKERT_5_EN, MINIMAL_BASE_APP_SETTINGS } from './shared';
@@ -51,7 +37,7 @@ export const permAnalyticsTrackingTemplate: Template = {
         external_id: 'el-1',
         name: { en: '[EL1] Analytics-tracking election' },
         short_name: { en: 'EL1' },
-        election_type: 'general',
+        election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 0,
         is_generated: false,
@@ -181,8 +167,7 @@ export const permAnalyticsTrackingTemplate: Template = {
         external_id: 'app-settings',
         settings: {
           ...MINIMAL_BASE_APP_SETTINGS,
-          // analytics overlay: FULL platform object (mirrors
-          // staticSettings.type.ts analytics.platform) + trackEvents:true.
+          // analytics overlay: FULL platform object (mirrors staticSettings.type.ts analytics.platform) + trackEvents:true.
           // `code` is a DUMMY value (threat T-121-AN) — never a real key.
           analytics: {
             platform: {
