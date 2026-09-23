@@ -8,11 +8,7 @@ import type { LanguageModelUsage as TokenUsage } from 'ai';
  * @example
  *
  * const metrics: LLMPipelineMetrics = {
- *   processingTimeMs: 420,
- *   nLlmCalls: 66,
- *   costs: { input: 0.5, output: 0.5, total: 1 },
- *   tokens: { inputTokens: 6700, outputTokens: 6800, totalTokens: 13500 }
- * };
+ *   processingTimeMs: 420, nLlmCalls: 66, costs: { input: 0.5, output: 0.5, total: 1 }, tokens: { inputTokens: 6700, outputTokens: 6800, totalTokens: 13500 } };
  */
 export interface LLMPipelineMetrics extends PipelineMetrics {
   nLlmCalls: number;
@@ -21,8 +17,7 @@ export interface LLMPipelineMetrics extends PipelineMetrics {
 
 /**
  * Base result type for all LLM generation operations that are used via this package.
- * Not relevant for a single LLM call, rather a more abstract result that packages
- * generating data with LLMs use.
+ * Not relevant for a single LLM call, rather a more abstract result that packages generating data with LLMs use.
  *
  * Contains common fields like runId, metrics, success status, and metadata
  *

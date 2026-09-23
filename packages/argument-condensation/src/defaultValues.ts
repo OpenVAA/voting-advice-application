@@ -1,8 +1,7 @@
 /**
  * Default values and constants for the Argument Condensation package
  *
- * This file centralizes all configuration constants used throughout the package,
- * making them easily accessible and configurable for consumers.
+ * This file centralizes all configuration constants used throughout the package, making them easily accessible and configurable for consumers.
  */
 
 /**
@@ -13,8 +12,7 @@ export const BATCH_PROCESSING = {
   MAX_BATCH_SIZE: 30,
 
   /** Minimum number of comments processed in a single batch during map operations.
-   *  Keeps us from sending single-comment batches to the LLM. Used as the lower limit
-   * for batch size reduction, which happens if input comments are too long to be handled
+   *  Keeps us from sending single-comment batches to the LLM. Used as the lower limit for batch size reduction, which happens if input comments are too long to be handled
    * in a batch of MAX_BATCH_SIZE. */
   MIN_BATCH_SIZE: 3,
 

@@ -53,6 +53,7 @@ describe('handleQuestion', () => {
     });
     const entities: Array<HasAnswers> = [];
 
+    // Assert the EXACT rejection prefix, not a bare `toThrow()`. `handleQuestion` has several competing throw sites, so a bare matcher is satisfied by any of them — including a `Cannot read properties of undefined` from an unrelated failure. `Unsupported language: lol` is a true prefix of the live template at `api.ts:119-121` and vitest's string form is a substring match, so this is satisfied only by the language rejection this test's own title promises. Strictly stronger than a bare `/language/i` match.
     await expect(
       handleQuestion({
         question,
