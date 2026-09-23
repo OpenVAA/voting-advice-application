@@ -14,7 +14,6 @@ export const COLUMN_MAP = {
   // CandidateData
   first_name: 'firstName',
   last_name: 'lastName',
-  organization_id: 'organizationId',
 
   // QuestionData
   category_id: 'categoryId',
@@ -29,7 +28,8 @@ export const COLUMN_MAP = {
 
   // NominationData
   candidate_id: 'candidateId',
-  organization_id_nom: 'organizationId',
+  // This key was spelled `organization_id_nom` until 162-07b, and the suffix was not a naming choice — it was a workaround. Two tables carried a column called `organization_id`, `candidates` and `nominations`, and an object literal cannot declare the same key twice, so the second one was given a suffix that names a column on no table at all. The cost was RES-7 / T-144-11: `PROPERTY_MAP` is this map reversed and reversal is last-wins, so `organizationId` resolved to the suffixed spelling and the dev-seed guard derived from it admitted the camel key NOWHERE. 162-07b removed `candidates.organization_id`, one mapping is left, and the suffix goes with the problem it worked around. `packages/dev-seed/tests/template/permittedKeys.test.ts` carries the standing assertion that no two keys here map to one property again — it lives there because this package has no test runner of its own.
+  organization_id: 'organizationId',
   faction_id: 'factionId',
   alliance_id: 'allianceId',
   election_id: 'electionId',
@@ -61,11 +61,10 @@ export const COLUMN_MAP = {
   open_answer: 'openAnswer',
   question_id: 'questionId',
 
-  // Auth columns (see phase 10)
+  // Auth columns
   auth_user_id: 'authUserId',
-  published: 'published',
 
-  // Candidate columns (see phase 22)
+  // Candidate columns
   terms_of_use_accepted: 'termsOfUseAccepted',
 
   // External ID (used across all content tables)
@@ -95,8 +94,7 @@ export const TABLE_MAP = {
   appSettings: 'app_settings',
   adminJobs: 'admin_jobs',
   electionConstituencyGroups: 'election_constituency_groups',
-  constituencyGroupConstituencies: 'constituency_group_constituencies',
-  userRoles: 'user_roles'
+  constituencyGroupConstituencies: 'constituency_group_constituencies'
 } as const;
 
 /** camelCase collection name */

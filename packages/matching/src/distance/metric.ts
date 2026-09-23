@@ -27,8 +27,7 @@ export const DISTANCE_METRIC: Record<string, MetricFunction> = {
    * An Euclidean distance is the square root of the sum of the squares of the distances in each dimension.
    */
   Euclidean: euclideanDistance
-  // MendezHybrid, // This should be easy to implement, just take a 50/50 average of Manhattan and Directional
-  // Mahalonobis
+  // MendezHybrid, // This should be easy to implement, just take a 50/50 average of Manhattan and Directional Mahalonobis
 };
 
 /**
@@ -217,8 +216,7 @@ export function distance({
 }): NormalizedDistance {
   space ??= a.space;
   if (!space.isCompatible(b.space)) throw new Error('The shapes of the parameters are incompatible.');
-  // TODO: In theory, we could precompute `aFlat` and `weights` for the entire run of the matching algorithm, but it seems it would not provide much of a speed benefit because the operations involved are simple
-  // Flatten the positions for easier mapping
+  // TODO: In theory, we could precompute `aFlat` and `weights` for the entire run of the matching algorithm, but it seems it would not provide much of a speed benefit because the operations involved are simple Flatten the positions for easier mapping
   const aFlat = flatten(a.coordinates);
   const bFlat = flatten(b.coordinates);
   // Compute weights
@@ -232,8 +230,7 @@ export function distance({
     .flat();
   if (weights.length !== aFlat.length || weights.length !== bFlat.length)
     throw new Error('The shapes of the parameters are incompatible after weigthing.');
-  // Compute the distances and maximum weights for each dimension
-  // Ignore dimensions with missing coordinates if `allowMissing` is false
+  // Compute the distances and maximum weights for each dimension Ignore dimensions with missing coordinates if `allowMissing` is false
   const distances = new Array<number>();
   const maxima = new Array<number>();
   for (let i = 0; i < weights.length; i++) {

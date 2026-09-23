@@ -36,9 +36,7 @@ export type DynamicSettings = {
        */
       [ENTITY_TYPE.Organization]: Array<EntityDetailsContent | ParentEntityDetailsContent>;
       /**
-       * The content tabs to show for alliances. Alliances have no own answers,
-       * so 'opinions' is typically omitted by default; the broader union allows
-       * future opt-in without a type-rename (see phase 69).
+       * The content tabs to show for alliances. Alliances have no own answers, so 'opinions' is typically omitted by default; the broader union allows future opt-in without a type-rename.
        */
       [ENTITY_TYPE.Alliance]?: Array<EntityDetailsContent | ParentEntityDetailsContent>;
     };
@@ -214,8 +212,7 @@ export type DynamicSettings = {
         | 'submatches'
         /**
          * List the parent entity's children (CandidateNominations) within its card.
-         * Only applies to the results list. (see phase 69: renamed from 'candidates'
-         * for semantic-uniform parent-entity children naming.)
+         * Only applies to the results list. Named 'children' rather than 'candidates' so that parent-entity children are named uniformly across entity types.
          */
         | 'children'
         /**
@@ -233,7 +230,7 @@ export type DynamicSettings = {
         | 'submatches'
         /**
          * List the parent entity's children (OrganizationNominations) within its card.
-         * (see phase 69: alliance children = member organization-nominations.)
+         * An alliance's children are its member organization-nominations.
          */
         | 'children'
         /**
@@ -390,9 +387,7 @@ export type EntityDetailsContent =
 
 /**
  * The possible content tabs to show for parent entities (Organization, Alliance).
- * The "children" of an Organization are its CandidateNominations; the "children"
- * of an Alliance are its OrganizationNominations. Single shared opt-in keeps
- * the type surface symmetric across parent entity types (see phase 69).
+ * The "children" of an Organization are its CandidateNominations; the "children" of an Alliance are its OrganizationNominations. Single shared opt-in keeps the type surface symmetric across parent entity types.
  */
 export type ParentEntityDetailsContent =
   /**
@@ -417,8 +412,7 @@ export type NotificationData = {
    */
   content: LocalizedString;
   /**
-   * The `Icon.name` to display in the notification. @default important
-   * NB. The proper type is not accessible to `app-shared`.
+   * The `Icon.name` to display in the notification. @default important NB. The proper type is not accessible to `app-shared`.
    */
   icon?: string;
 };

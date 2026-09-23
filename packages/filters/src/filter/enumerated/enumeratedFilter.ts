@@ -78,20 +78,17 @@ export abstract class EnumeratedFilter<
   /**
    * Set the `include` allow-list.
    *
-   * Semantics (post TIR3 cluster 1):
+   * Semantics:
    *  - `undefined` → filter inactive (everything passes).
    *  - `[]` (defined empty array) → filter ACTIVE with zero-allowed → 0 results.
    *  - `[…ids]` → allow only listed values.
    *
-   * We bypass `setRule` because its `matchRules` optimization treats `undefined`
-   * and `[]` as equal (see `matchRules`/`ruleIsActive` semantics in `rules.ts`).
-   * That optimization is correct for "active vs inactive" question but wrong for
-   * the include allow-list, where we now need to distinguish those two states.
+   * We bypass `setRule` because its `matchRules` optimization treats `undefined` and `[]` as equal (see `matchRules`/`ruleIsActive` semantics in `rules.ts`).
+   * That optimization is correct for "active vs inactive" question but wrong for the include allow-list, where we now need to distinguish those two states.
    */
   set include(values: Array<MaybeMissing<TValue>> | undefined) {
     const current = this._rules.include;
-    // Skip update only when both reference the same state (both undefined OR
-    // both arrays with identical content).
+    // Skip update only when both reference the same state (both undefined OR both arrays with identical content).
     if (current === undefined && values === undefined) return;
     if (
       Array.isArray(current) &&
@@ -106,9 +103,7 @@ export abstract class EnumeratedFilter<
   }
 
   /**
-   * True if the filter has any active rule. Enumerated filters need a stricter
-   * definition than the base implementation because a defined-but-empty
-   * `include = []` is semantically "active, allow nothing" (post TIR3 cluster 1).
+   * True if the filter has any active rule. Enumerated filters need a stricter definition than the base implementation because a defined-but-empty `include = []` is semantically "active, allow nothing".
    */
   get active(): boolean {
     if (this._rules.include !== undefined) return true;

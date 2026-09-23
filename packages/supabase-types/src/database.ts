@@ -121,6 +121,7 @@ export type Database = {
       alliances: {
         Row: {
           color: Json | null;
+          confirmed: boolean;
           created_at: string;
           custom_data: Json | null;
           external_id: string | null;
@@ -130,7 +131,6 @@ export type Database = {
           is_generated: boolean | null;
           name: Json | null;
           project_id: string;
-          published: boolean;
           short_name: Json | null;
           sort_order: number | null;
           subtype: string | null;
@@ -138,6 +138,7 @@ export type Database = {
         };
         Insert: {
           color?: Json | null;
+          confirmed?: boolean;
           created_at?: string;
           custom_data?: Json | null;
           external_id?: string | null;
@@ -147,7 +148,6 @@ export type Database = {
           is_generated?: boolean | null;
           name?: Json | null;
           project_id: string;
-          published?: boolean;
           short_name?: Json | null;
           sort_order?: number | null;
           subtype?: string | null;
@@ -155,6 +155,7 @@ export type Database = {
         };
         Update: {
           color?: Json | null;
+          confirmed?: boolean;
           created_at?: string;
           custom_data?: Json | null;
           external_id?: string | null;
@@ -164,7 +165,6 @@ export type Database = {
           is_generated?: boolean | null;
           name?: Json | null;
           project_id?: string;
-          published?: boolean;
           short_name?: Json | null;
           sort_order?: number | null;
           subtype?: string | null;
@@ -223,6 +223,7 @@ export type Database = {
           answers: Json | null;
           auth_user_id: string | null;
           color: Json | null;
+          confirmed: boolean;
           created_at: string;
           custom_data: Json | null;
           external_id: string | null;
@@ -232,10 +233,7 @@ export type Database = {
           info: Json | null;
           is_generated: boolean | null;
           last_name: string;
-          name: Json | null;
-          organization_id: string | null;
           project_id: string;
-          published: boolean;
           short_name: Json | null;
           sort_order: number | null;
           subtype: string | null;
@@ -246,6 +244,7 @@ export type Database = {
           answers?: Json | null;
           auth_user_id?: string | null;
           color?: Json | null;
+          confirmed?: boolean;
           created_at?: string;
           custom_data?: Json | null;
           external_id?: string | null;
@@ -255,10 +254,7 @@ export type Database = {
           info?: Json | null;
           is_generated?: boolean | null;
           last_name: string;
-          name?: Json | null;
-          organization_id?: string | null;
           project_id: string;
-          published?: boolean;
           short_name?: Json | null;
           sort_order?: number | null;
           subtype?: string | null;
@@ -269,6 +265,7 @@ export type Database = {
           answers?: Json | null;
           auth_user_id?: string | null;
           color?: Json | null;
+          confirmed?: boolean;
           created_at?: string;
           custom_data?: Json | null;
           external_id?: string | null;
@@ -278,10 +275,7 @@ export type Database = {
           info?: Json | null;
           is_generated?: boolean | null;
           last_name?: string;
-          name?: Json | null;
-          organization_id?: string | null;
           project_id?: string;
-          published?: boolean;
           short_name?: Json | null;
           sort_order?: number | null;
           subtype?: string | null;
@@ -289,13 +283,6 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [
-          {
-            foreignKeyName: 'candidates_organization_id_fkey';
-            columns: ['organization_id'];
-            isOneToOne: false;
-            referencedRelation: 'organizations';
-            referencedColumns: ['id'];
-          },
           {
             foreignKeyName: 'candidates_project_id_fkey';
             columns: ['project_id'];
@@ -319,7 +306,6 @@ export type Database = {
           name: Json | null;
           parent_id: string | null;
           project_id: string;
-          published: boolean;
           short_name: Json | null;
           sort_order: number | null;
           subtype: string | null;
@@ -338,7 +324,6 @@ export type Database = {
           name?: Json | null;
           parent_id?: string | null;
           project_id: string;
-          published?: boolean;
           short_name?: Json | null;
           sort_order?: number | null;
           subtype?: string | null;
@@ -357,7 +342,6 @@ export type Database = {
           name?: Json | null;
           parent_id?: string | null;
           project_id?: string;
-          published?: boolean;
           short_name?: Json | null;
           sort_order?: number | null;
           subtype?: string | null;
@@ -422,7 +406,6 @@ export type Database = {
           is_generated: boolean | null;
           name: Json | null;
           project_id: string;
-          published: boolean;
           short_name: Json | null;
           sort_order: number | null;
           subtype: string | null;
@@ -439,7 +422,6 @@ export type Database = {
           is_generated?: boolean | null;
           name?: Json | null;
           project_id: string;
-          published?: boolean;
           short_name?: Json | null;
           sort_order?: number | null;
           subtype?: string | null;
@@ -456,7 +438,6 @@ export type Database = {
           is_generated?: boolean | null;
           name?: Json | null;
           project_id?: string;
-          published?: boolean;
           short_name?: Json | null;
           sort_order?: number | null;
           subtype?: string | null;
@@ -510,7 +491,7 @@ export type Database = {
           custom_data: Json | null;
           election_date: string | null;
           election_start_date: string | null;
-          election_type: string | null;
+          election_type: Database['public']['Enums']['nomination_shape'];
           external_id: string | null;
           id: string;
           image: Json | null;
@@ -519,7 +500,6 @@ export type Database = {
           multiple_rounds: boolean | null;
           name: Json | null;
           project_id: string;
-          published: boolean;
           short_name: Json | null;
           sort_order: number | null;
           subtype: string | null;
@@ -532,7 +512,7 @@ export type Database = {
           custom_data?: Json | null;
           election_date?: string | null;
           election_start_date?: string | null;
-          election_type?: string | null;
+          election_type?: Database['public']['Enums']['nomination_shape'];
           external_id?: string | null;
           id?: string;
           image?: Json | null;
@@ -541,7 +521,6 @@ export type Database = {
           multiple_rounds?: boolean | null;
           name?: Json | null;
           project_id: string;
-          published?: boolean;
           short_name?: Json | null;
           sort_order?: number | null;
           subtype?: string | null;
@@ -554,7 +533,7 @@ export type Database = {
           custom_data?: Json | null;
           election_date?: string | null;
           election_start_date?: string | null;
-          election_type?: string | null;
+          election_type?: Database['public']['Enums']['nomination_shape'];
           external_id?: string | null;
           id?: string;
           image?: Json | null;
@@ -563,7 +542,6 @@ export type Database = {
           multiple_rounds?: boolean | null;
           name?: Json | null;
           project_id?: string;
-          published?: boolean;
           short_name?: Json | null;
           sort_order?: number | null;
           subtype?: string | null;
@@ -582,6 +560,7 @@ export type Database = {
       factions: {
         Row: {
           color: Json | null;
+          confirmed: boolean;
           created_at: string;
           custom_data: Json | null;
           external_id: string | null;
@@ -590,8 +569,8 @@ export type Database = {
           info: Json | null;
           is_generated: boolean | null;
           name: Json | null;
+          organization_id: string;
           project_id: string;
-          published: boolean;
           short_name: Json | null;
           sort_order: number | null;
           subtype: string | null;
@@ -599,6 +578,7 @@ export type Database = {
         };
         Insert: {
           color?: Json | null;
+          confirmed?: boolean;
           created_at?: string;
           custom_data?: Json | null;
           external_id?: string | null;
@@ -607,8 +587,8 @@ export type Database = {
           info?: Json | null;
           is_generated?: boolean | null;
           name?: Json | null;
+          organization_id: string;
           project_id: string;
-          published?: boolean;
           short_name?: Json | null;
           sort_order?: number | null;
           subtype?: string | null;
@@ -616,6 +596,7 @@ export type Database = {
         };
         Update: {
           color?: Json | null;
+          confirmed?: boolean;
           created_at?: string;
           custom_data?: Json | null;
           external_id?: string | null;
@@ -624,14 +605,21 @@ export type Database = {
           info?: Json | null;
           is_generated?: boolean | null;
           name?: Json | null;
+          organization_id?: string;
           project_id?: string;
-          published?: boolean;
           short_name?: Json | null;
           sort_order?: number | null;
           subtype?: string | null;
           updated_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: 'factions_organization_id_fkey';
+            columns: ['organization_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
           {
             foreignKeyName: 'factions_project_id_fkey';
             columns: ['project_id'];
@@ -647,7 +635,7 @@ export type Database = {
           date: string;
           description: string | null;
           id: string;
-          project_id: string;
+          project_id: string | null;
           rating: number | null;
           url: string | null;
           user_agent: string | null;
@@ -657,7 +645,7 @@ export type Database = {
           date?: string;
           description?: string | null;
           id?: string;
-          project_id: string;
+          project_id?: string | null;
           rating?: number | null;
           url?: string | null;
           user_agent?: string | null;
@@ -667,7 +655,7 @@ export type Database = {
           date?: string;
           description?: string | null;
           id?: string;
-          project_id?: string;
+          project_id?: string | null;
           rating?: number | null;
           url?: string | null;
           user_agent?: string | null;
@@ -682,13 +670,45 @@ export type Database = {
           }
         ];
       };
+      grants: {
+        Row: {
+          created_at: string;
+          id: string;
+          role: Database['public']['Enums']['grant_role_type'];
+          scope: Database['public']['Enums']['grant_scope_type'];
+          target_id: string | null;
+          target_type: Database['public']['Enums']['entity_type'] | null;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          role: Database['public']['Enums']['grant_role_type'];
+          scope: Database['public']['Enums']['grant_scope_type'];
+          target_id?: string | null;
+          target_type?: Database['public']['Enums']['entity_type'] | null;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          role?: Database['public']['Enums']['grant_role_type'];
+          scope?: Database['public']['Enums']['grant_scope_type'];
+          target_id?: string | null;
+          target_type?: Database['public']['Enums']['entity_type'] | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       nominations: {
         Row: {
           alliance_id: string | null;
           candidate_id: string | null;
           color: Json | null;
+          confirmed: boolean;
           constituency_id: string;
           created_at: string;
+          created_by: string | null;
           custom_data: Json | null;
           election_id: string;
           election_round: number | null;
@@ -704,19 +724,19 @@ export type Database = {
           organization_id: string | null;
           parent_nomination_id: string | null;
           project_id: string;
-          published: boolean;
           short_name: Json | null;
           sort_order: number | null;
           subtype: string | null;
-          unconfirmed: boolean | null;
           updated_at: string;
         };
         Insert: {
           alliance_id?: string | null;
           candidate_id?: string | null;
           color?: Json | null;
+          confirmed?: boolean;
           constituency_id: string;
           created_at?: string;
+          created_by?: string | null;
           custom_data?: Json | null;
           election_id: string;
           election_round?: number | null;
@@ -732,19 +752,19 @@ export type Database = {
           organization_id?: string | null;
           parent_nomination_id?: string | null;
           project_id: string;
-          published?: boolean;
           short_name?: Json | null;
           sort_order?: number | null;
           subtype?: string | null;
-          unconfirmed?: boolean | null;
           updated_at?: string;
         };
         Update: {
           alliance_id?: string | null;
           candidate_id?: string | null;
           color?: Json | null;
+          confirmed?: boolean;
           constituency_id?: string;
           created_at?: string;
+          created_by?: string | null;
           custom_data?: Json | null;
           election_id?: string;
           election_round?: number | null;
@@ -760,11 +780,9 @@ export type Database = {
           organization_id?: string | null;
           parent_nomination_id?: string | null;
           project_id?: string;
-          published?: boolean;
           short_name?: Json | null;
           sort_order?: number | null;
           subtype?: string | null;
-          unconfirmed?: boolean | null;
           updated_at?: string;
         };
         Relationships: [
@@ -831,6 +849,7 @@ export type Database = {
           answers: Json | null;
           auth_user_id: string | null;
           color: Json | null;
+          confirmed: boolean;
           created_at: string;
           custom_data: Json | null;
           external_id: string | null;
@@ -840,7 +859,6 @@ export type Database = {
           is_generated: boolean | null;
           name: Json | null;
           project_id: string;
-          published: boolean;
           short_name: Json | null;
           sort_order: number | null;
           subtype: string | null;
@@ -850,6 +868,7 @@ export type Database = {
           answers?: Json | null;
           auth_user_id?: string | null;
           color?: Json | null;
+          confirmed?: boolean;
           created_at?: string;
           custom_data?: Json | null;
           external_id?: string | null;
@@ -859,7 +878,6 @@ export type Database = {
           is_generated?: boolean | null;
           name?: Json | null;
           project_id: string;
-          published?: boolean;
           short_name?: Json | null;
           sort_order?: number | null;
           subtype?: string | null;
@@ -869,6 +887,7 @@ export type Database = {
           answers?: Json | null;
           auth_user_id?: string | null;
           color?: Json | null;
+          confirmed?: boolean;
           created_at?: string;
           custom_data?: Json | null;
           external_id?: string | null;
@@ -878,7 +897,6 @@ export type Database = {
           is_generated?: boolean | null;
           name?: Json | null;
           project_id?: string;
-          published?: boolean;
           short_name?: Json | null;
           sort_order?: number | null;
           subtype?: string | null;
@@ -900,7 +918,9 @@ export type Database = {
           created_at: string;
           default_locale: string;
           id: string;
+          lock_nominations: boolean;
           name: string;
+          open_for_voters: boolean;
           updated_at: string;
         };
         Insert: {
@@ -908,7 +928,9 @@ export type Database = {
           created_at?: string;
           default_locale?: string;
           id?: string;
+          lock_nominations?: boolean;
           name: string;
+          open_for_voters?: boolean;
           updated_at?: string;
         };
         Update: {
@@ -916,7 +938,9 @@ export type Database = {
           created_at?: string;
           default_locale?: string;
           id?: string;
+          lock_nominations?: boolean;
           name?: string;
+          open_for_voters?: boolean;
           updated_at?: string;
         };
         Relationships: [
@@ -946,7 +970,6 @@ export type Database = {
           is_generated: boolean | null;
           name: Json | null;
           project_id: string;
-          published: boolean;
           short_name: Json | null;
           sort_order: number | null;
           subtype: string | null;
@@ -968,7 +991,6 @@ export type Database = {
           is_generated?: boolean | null;
           name?: Json | null;
           project_id: string;
-          published?: boolean;
           short_name?: Json | null;
           sort_order?: number | null;
           subtype?: string | null;
@@ -990,7 +1012,6 @@ export type Database = {
           is_generated?: boolean | null;
           name?: Json | null;
           project_id?: string;
-          published?: boolean;
           short_name?: Json | null;
           sort_order?: number | null;
           subtype?: string | null;
@@ -1025,7 +1046,6 @@ export type Database = {
           is_generated: boolean | null;
           name: Json | null;
           project_id: string;
-          published: boolean;
           required: boolean | null;
           settings: Json | null;
           short_name: Json | null;
@@ -1052,7 +1072,6 @@ export type Database = {
           is_generated?: boolean | null;
           name?: Json | null;
           project_id: string;
-          published?: boolean;
           required?: boolean | null;
           settings?: Json | null;
           short_name?: Json | null;
@@ -1079,7 +1098,6 @@ export type Database = {
           is_generated?: boolean | null;
           name?: Json | null;
           project_id?: string;
-          published?: boolean;
           required?: boolean | null;
           settings?: Json | null;
           short_name?: Json | null;
@@ -1120,33 +1138,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      user_roles: {
-        Row: {
-          created_at: string;
-          id: string;
-          role: Database['public']['Enums']['user_role_type'];
-          scope_id: string | null;
-          scope_type: string;
-          user_id: string;
-        };
-        Insert: {
-          created_at?: string;
-          id?: string;
-          role: Database['public']['Enums']['user_role_type'];
-          scope_id?: string | null;
-          scope_type: string;
-          user_id: string;
-        };
-        Update: {
-          created_at?: string;
-          id?: string;
-          role?: Database['public']['Enums']['user_role_type'];
-          scope_id?: string | null;
-          scope_type?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
     };
     Views: {
       [_ in never]: never;
@@ -1158,14 +1149,16 @@ export type Database = {
       };
       bulk_delete: { Args: { p_data: Json }; Returns: Json };
       bulk_import: { Args: { p_data: Json }; Returns: Json };
-      can_access_project: { Args: { p_project_id: string }; Returns: boolean };
       custom_access_token_hook: { Args: { p_event: Json }; Returns: Json };
       delete_storage_object: {
         Args: { p_bucket: string; p_file_path: string };
         Returns: undefined;
       };
       get_candidate_user_data: {
-        Args: { p_entity_type?: Database['public']['Enums']['entity_type'] };
+        Args: {
+          p_entity_type?: Database['public']['Enums']['entity_type'];
+          p_project_id: string;
+        };
         Returns: {
           answers: Json;
           color: Json;
@@ -1176,7 +1169,6 @@ export type Database = {
           info: Json;
           last_name: string;
           name: Json;
-          organization_id: string;
           project_id: string;
           short_name: Json;
           sort_order: number;
@@ -1184,6 +1176,7 @@ export type Database = {
           terms_of_use_accepted: string;
         }[];
       };
+      get_entity_basic_data: { Args: { p_entity_id: string }; Returns: Json };
       get_localized: {
         Args: { p_default_locale?: string; p_locale: string; p_val: Json };
         Returns: string;
@@ -1192,7 +1185,9 @@ export type Database = {
         Args: {
           p_constituency_id?: string;
           p_election_id?: string;
+          p_election_round?: number;
           p_include_unconfirmed?: boolean;
+          p_project_id: string;
         };
         Returns: {
           alliance_id: string;
@@ -1212,7 +1207,6 @@ export type Database = {
           entity_info: Json;
           entity_last_name: string;
           entity_name: Json;
-          entity_organization_id: string;
           entity_short_name: Json;
           entity_sort_order: number;
           entity_subtype: string;
@@ -1229,33 +1223,31 @@ export type Database = {
           subtype: string;
         }[];
       };
-      has_role: {
+      get_questions: {
         Args: {
-          p_check_role: string;
-          p_check_scope_id?: string;
-          p_check_scope_type?: string;
+          p_constituency_id?: string;
+          p_election_id?: string;
+          p_election_round?: number;
+          p_project_id: string;
         };
-        Returns: boolean;
+        Returns: Json;
       };
-      is_candidate_self: {
-        Args: { p_row_auth_user_id: string };
-        Returns: boolean;
+      grant_role_permissions: {
+        Args: {
+          p_role: Database['public']['Enums']['grant_role_type'];
+          p_scope: Database['public']['Enums']['grant_scope_type'];
+          p_target_type: Database['public']['Enums']['entity_type'];
+        };
+        Returns: Database['public']['Enums']['grant_permission'][];
       };
+      is_image: { Args: { p_val: Json }; Returns: boolean };
       is_localized_string: { Args: { p_val: Json }; Returns: boolean };
-      is_storage_entity_published: {
-        Args: { p_entity_id_segment: string; p_entity_type_segment: string };
-        Returns: boolean;
-      };
       is_valid_choice_id: {
         Args: { p_valid_choices: Json; p_value: Json };
         Returns: boolean;
       };
       jsonb_recursive_merge: {
         Args: { p_base: Json; p_patch: Json };
-        Returns: Json;
-      };
-      merge_custom_data: {
-        Args: { p_patch: Json; p_question_id: string };
         Returns: Json;
       };
       merge_jsonb_column: {
@@ -1267,8 +1259,18 @@ export type Database = {
         };
         Returns: undefined;
       };
+      merge_question_custom_data: {
+        Args: { p_patch: Json; p_question_id: string };
+        Returns: Json;
+      };
+      project_open_for_voters: {
+        Args: { p_project_id: string };
+        Returns: boolean;
+      };
+      referenced_storage_paths: { Args: { p_row: Json }; Returns: string[] };
       resolve_email_variables: {
         Args: {
+          p_project_id: string;
           p_template_body?: string;
           p_template_subject?: string;
           p_user_ids: string[];
@@ -1284,9 +1286,35 @@ export type Database = {
         Args: { p_project_id: string; p_ref: Json; p_target_table: string };
         Returns: string;
       };
+      storage_path_can: {
+        Args: {
+          p_id: string;
+          p_project: string;
+          p_scope: Database['public']['Enums']['grant_scope_type'];
+          p_type: string;
+          p_verb: Database['public']['Enums']['storage_verb'];
+        };
+        Returns: boolean;
+      };
+      storage_path_is_public: {
+        Args: { p_id: string; p_project: string; p_type: string };
+        Returns: boolean;
+      };
       upsert_answers: {
         Args: { p_answers: Json; p_entity_id: string; p_overwrite?: boolean };
         Returns: Json;
+      };
+      user_can: {
+        Args: {
+          p_permission: Database['public']['Enums']['grant_permission'];
+          p_scope: Database['public']['Enums']['grant_scope_type'];
+          p_target_id: string;
+        };
+        Returns: boolean;
+      };
+      user_has_account_grant: {
+        Args: { p_account_id: string };
+        Returns: boolean;
       };
       validate_answer_value: {
         Args: {
@@ -1296,10 +1324,38 @@ export type Database = {
         };
         Returns: undefined;
       };
+      validate_image: { Args: { p_val: Json }; Returns: undefined };
     };
     Enums: {
       category_type: 'info' | 'opinion' | 'default';
       entity_type: 'candidate' | 'organization' | 'faction' | 'alliance';
+      grant_permission:
+        | 'feedback.read'
+        | 'feedback.manage'
+        | 'account.edit_settings'
+        | 'account.manage_projects'
+        | 'account.manage_admins'
+        | 'project.manage_editors'
+        | 'project.edit_project_settings'
+        | 'project.edit_app_settings'
+        | 'project.edit_structure'
+        | 'project.edit_questions'
+        | 'project.read_structure'
+        | 'project.edit_entities'
+        | 'project.edit_nominations'
+        | 'project.read_entities'
+        | 'entity.edit_answers'
+        | 'entity.read_answers'
+        | 'entity.edit_immutable'
+        | 'entity.invite_children'
+        | 'entity.confirm'
+        | 'nomination.edit'
+        | 'nomination.read'
+        | 'nomination.confirm'
+        | 'nomination.create_parent';
+      grant_role_type: 'admin' | 'editor';
+      grant_scope_type: 'global' | 'account' | 'project' | 'entity';
+      nomination_shape: 'organization_only' | 'candidate_only' | 'organization_list';
       question_type:
         | 'text'
         | 'number'
@@ -1310,7 +1366,7 @@ export type Database = {
         | 'singleChoiceOrdinal'
         | 'singleChoiceCategorical'
         | 'multipleChoiceCategorical';
-      user_role_type: 'candidate' | 'party' | 'project_admin' | 'account_admin' | 'super_admin';
+      storage_verb: 'read' | 'write';
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -1435,6 +1491,34 @@ export const Constants = {
     Enums: {
       category_type: ['info', 'opinion', 'default'],
       entity_type: ['candidate', 'organization', 'faction', 'alliance'],
+      grant_permission: [
+        'feedback.read',
+        'feedback.manage',
+        'account.edit_settings',
+        'account.manage_projects',
+        'account.manage_admins',
+        'project.manage_editors',
+        'project.edit_project_settings',
+        'project.edit_app_settings',
+        'project.edit_structure',
+        'project.edit_questions',
+        'project.read_structure',
+        'project.edit_entities',
+        'project.edit_nominations',
+        'project.read_entities',
+        'entity.edit_answers',
+        'entity.read_answers',
+        'entity.edit_immutable',
+        'entity.invite_children',
+        'entity.confirm',
+        'nomination.edit',
+        'nomination.read',
+        'nomination.confirm',
+        'nomination.create_parent'
+      ],
+      grant_role_type: ['admin', 'editor'],
+      grant_scope_type: ['global', 'account', 'project', 'entity'],
+      nomination_shape: ['organization_only', 'candidate_only', 'organization_list'],
       question_type: [
         'text',
         'number',
@@ -1446,7 +1530,7 @@ export const Constants = {
         'singleChoiceCategorical',
         'multipleChoiceCategorical'
       ],
-      user_role_type: ['candidate', 'party', 'project_admin', 'account_admin', 'super_admin']
+      storage_verb: ['read', 'write']
     }
   }
 } as const;
