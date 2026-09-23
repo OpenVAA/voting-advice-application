@@ -1,13 +1,10 @@
 /**
  * OIDC token exchange endpoint.
  *
- * Exchanges an authorization code for an id_token using the active identity
- * provider. For Signicat, this uses client_secret authentication. For Idura,
- * this uses private_key_jwt client assertion (RFC 7523).
+ * Exchanges an authorization code for an id_token using the active identity provider. For Signicat, this uses client_secret authentication. For Idura, this uses private_key_jwt client assertion (RFC 7523).
  *
  * The provider abstraction handles all provider-specific token exchange logic.
- * This endpoint validates the resulting id_token, sets it as an httpOnly cookie,
- * and returns a success response.
+ * This endpoint validates the resulting id_token, sets it as an httpOnly cookie, and returns a success response.
  */
 
 import { error, json } from '@sveltejs/kit';

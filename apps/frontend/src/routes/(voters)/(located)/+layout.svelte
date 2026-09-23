@@ -38,9 +38,7 @@ Displays a warning if the selected constituency does not have nominations in all
   const dataRoot = $derived(voterCtx.dataRoot);
 
   /**
-   * Maximum time to wait for the `voterCtx.nominationsAvailable` value to settle after
-   * providing data to the `dataRoot`. The reactive chain through multiple
-   * `$derived` levels may need several microtasks to propagate.
+   * Maximum time to wait for the `voterCtx.nominationsAvailable` value to settle after providing data to the `dataRoot`. The reactive chain through multiple `$derived` levels may need several microtasks to propagate.
    */
   const NOMINATIONS_SETTLE_TIMEOUT = 3000;
 
@@ -52,19 +50,9 @@ Displays a warning if the selected constituency does not have nominations in all
   let hasNominations = $state<NominationStatus>('none');
   // Suppress modal re-open for the same nomination state.
   //
-  // The `$effect` below tracks `data.questionData` / `data.nominationData`,
-  // which are STREAMED Promises returned by `+layout.ts`. Their identity
-  // changes on every load (including sub-route navigation within `(located)`
-  // — `/questions` → `/questions/__first__`, etc.), so the effect re-fires
-  // and `updateAsync` runs again with the same underlying election +
-  // constituency selection. Without this guard, `modalRef?.openModal()`
-  // would be called on every re-fire, instantly reopening the modal a user
-  // had just dismissed.
+  // The `$effect` below tracks `data.questionData` / `data.nominationData`, which are STREAMED Promises returned by `+layout.ts`. Their identity changes on every load (including sub-route navigation within `(located)` — `/questions` → `/questions/__first__`, etc.), so the effect re-fires and `updateAsync` runs again with the same underlying election + constituency selection. Without this guard, `modalRef?.openModal()` would be called on every re-fire, instantly reopening the modal a user had just dismissed.
   //
-  // The key combines the resolved nomination-status and the
-  // election+constituency ids that produced it; if any of those change
-  // (voter picked a different constituency, etc.) the modal correctly
-  // re-shows because the key no longer matches.
+  // The key combines the resolved nomination-status and the election+constituency ids that produced it; if any of those change (voter picked a different constituency, etc.) the modal correctly re-shows because the key no longer matches.
   let modalShownForKey = $state<string | null>(null);
 
   $effect(() => {
@@ -95,19 +83,10 @@ Displays a warning if the selected constituency does not have nominations in all
       dataRoot.provideEntityData(nominationData.entities);
       dataRoot.provideNominationData(nominationData.nominations);
     });
-    // Wait for the reactive chain (VoterContext.selectedElections +
-    // nominationsAvailable, both $derived/$effect over dataRoot + URL params)
-    // to propagate before reading nomination status. The original sync read
-    // raced the $effect that recomputes selectedElections — without the wait,
-    // matches[activeElectionId] would still be undefined when the layout
-    // first paints, locking the results page in a "Loading…" state until the
-    // user manually navigated (variant-constituency.spec.ts:148 regression).
+    // Wait for the reactive chain (VoterContext.selectedElections + nominationsAvailable, both $derived/$effect over dataRoot + URL params) to propagate before reading nomination status. The original sync read raced the $effect that recomputes selectedElections — without the wait, matches[activeElectionId] would still be undefined when the layout first paints, locking the results page in a "Loading…" state until the user manually navigated. The spec that originally caught that regression no longer exists; its assertions were absorbed into the voter specs under `tests/tests/specs/voter/`, which is where a reintroduced sync read surfaces today.
     const nomStatus = await awaitNominationsSettled();
     hasNominations = nomStatus;
-    // Compose the dataset key from the current nomination status + the
-    // selection that produced it. Open the modal only when this key differs
-    // from the one we last opened the modal for — see the
-    // `modalShownForKey` doc-comment above for the reopen-race motivation.
+    // Compose the dataset key from the current nomination status + the selection that produced it. Open the modal only when this key differs from the one we last opened the modal for — see the `modalShownForKey` doc-comment above for the reopen-race motivation.
     const key = JSON.stringify({
       nomStatus,
       e: voterCtx.selectedElections.map((el) => el.id).sort(),
@@ -122,10 +101,7 @@ Displays a warning if the selected constituency does not have nominations in all
   }
 
   /**
-   * Wait for the `voterCtx.nominationsAvailable` reactive value to settle by polling
-   * inside an $effect instead of using store `.subscribe()`. Resolves
-   * immediately if nominations are already available, otherwise waits for the
-   * reactive chain to propagate with a safety timeout.
+   * Wait for the `voterCtx.nominationsAvailable` reactive value to settle by polling inside an $effect instead of using store `.subscribe()`. Resolves immediately if nominations are already available, otherwise waits for the reactive chain to propagate with a safety timeout.
    */
   function awaitNominationsSettled(): Promise<NominationStatus> {
     return new Promise((resolve) => {
@@ -155,8 +131,7 @@ Displays a warning if the selected constituency does not have nominations in all
             // All nominations confirmed — defer to next microtask so cleanup is assigned
             queueMicrotask(() => done(status));
           } else {
-            // Not all nominations yet — debounce to let the chain settle,
-            // then resolve with whatever the final status is
+            // Not all nominations yet — debounce to let the chain settle, then resolve with whatever the final status is
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => done(checkNominations(untrack(() => voterCtx.nominationsAvailable))), 100);
           }

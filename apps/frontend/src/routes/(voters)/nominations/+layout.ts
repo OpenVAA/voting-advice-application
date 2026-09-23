@@ -30,10 +30,8 @@ export async function load({ parent, fetch }) {
   const dataProvider = await dataProviderPromise;
   dataProvider.init({ fetch });
   return {
-    // Parity with the located layout loader: the all-nominations route is
-    // unscoped, so `getQuestionData` is called locale-only — `electionId` is optional
-    // in `GetQuestionsOptions`, and with none supplied all categories/questions are
-    // returned, which is correct for the unscoped all-nominations view.
+    // Both promises below are returned UNAWAITED on purpose: they stream, and SvelteKit resolves them after this load returns. That is safe under per-request instancing because the promise captures THIS request's own adapter, which nothing else can rebind; do not "fix" it by awaiting.
+    // Parity with the located layout loader: the all-nominations route is unscoped, so `getQuestionData` is called locale-only — `electionId` is optional in `GetQuestionsOptions`, and with none supplied all categories/questions are returned, which is correct for the unscoped all-nominations view.
     questionData: dataProvider
       .getQuestionData({
         locale: lang

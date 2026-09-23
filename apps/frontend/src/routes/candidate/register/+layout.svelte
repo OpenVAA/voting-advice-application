@@ -12,7 +12,7 @@
 
   let { children }: { children: Snippet } = $props();
 
-  // see phase 61 follow-up: answersLocked is reactive; access via candCtx.X.
+  // answersLocked is reactive; access via candCtx.X.
   const candCtx = getCandidateContext();
   const { getRoute, t } = candCtx;
   const { pageStyles } = getLayoutContext();

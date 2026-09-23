@@ -1,6 +1,5 @@
 /**
- * POST /api/admin/jobs/[id]/abort
- * Request a cooperative abort for a specific job
+ * POST /api/admin/jobs/[id]/abort Request a cooperative abort for a specific job
  */
 import { json } from '@sveltejs/kit';
 import { getUserData } from '$lib/auth';

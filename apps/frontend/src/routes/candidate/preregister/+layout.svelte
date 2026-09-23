@@ -13,7 +13,7 @@
 
   let { children }: { children: Snippet } = $props();
 
-  // see phase 61 follow-up: read reactive context getters via candCtx.X.
+  // Read the reactive context getters via candCtx.X.
   const candCtx = getCandidateContext();
   const { getRoute, t, userData, clearIdToken } = candCtx;
   const { pageStyles, topBarSettings } = getLayoutContext();

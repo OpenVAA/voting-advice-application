@@ -1,6 +1,5 @@
 /**
- * GET /api/admin/jobs/[id]/progress
- * Get progress and status for a specific job
+ * GET /api/admin/jobs/[id]/progress Get progress and status for a specific job
  */
 
 import { json } from '@sveltejs/kit';

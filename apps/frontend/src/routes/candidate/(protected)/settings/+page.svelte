@@ -113,6 +113,7 @@ Shows the candidate's user settings.
       </div>
 
       <div class="flex-nowarp flex flex-col items-center" data-testid="settings-new-password">
+        <!-- bind: keep — PasswordSetter.password is $bindable(''); bind:this is the component reference handleSubmit calls reset() on. Validity and the error message are derived inside the component and arrive through onValidityChange, so neither is bindable. -->
         <PasswordSetter
           bind:valid={isNewPasswordValid}
           bind:errorMessage={validationError}

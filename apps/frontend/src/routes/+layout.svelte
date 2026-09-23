@@ -47,18 +47,13 @@
   initDataContext();
   const appCtx = initAppContext();
   const { setDataRoot, openFeedbackModal, popupQueue, sendTrackingEvent, startPageview, submitAllEvents, t } = appCtx;
-  // appSettings is a bare reactive accessor whose own declaration in
-  // `appContext.type.ts` states it MUST be read off the context. Destructuring it
-  // would bind the value once at init, so the analytics branch below would never
-  // see a settings re-merge.
+  // appSettings is a bare reactive accessor whose own declaration in `appContext.type.ts` states it MUST be read off the context. Destructuring it would bind the value once at init, so the analytics branch below would never see a settings re-merge.
   const appSettings = $derived(appCtx.appSettings);
   const layoutCtx = initLayoutContext();
   // TODO: Consider moving the candidate and admin apps to a (auth) folder with the AuthContext initialized there
   initAuthContext();
 
-  // Localized route-announcer title (NAVA11Y-01 / CR-01). Read via property access on the context
-  // object (NOT destructured) per the CLAUDE.md Context Destructuring Rule — `routeTitle.current`
-  // is a reactive accessor backed by $state, registered by MainContent / SingleCardContent.
+  // Localized route-announcer title. Read via property access on the context object (NOT destructured) per the CLAUDE.md Context Destructuring Rule — `routeTitle.current` is a reactive accessor backed by $state, registered by MainContent / SingleCardContent.
   const routeTitle = $derived(layoutCtx.routeTitle.current);
 
   ////////////////////////////////////////////////////////////////////
@@ -117,8 +112,7 @@
   // the former non-reactive producer-read + hand-written `untrack` idiom).
   $effect(() => {
     if ('error' in validity) return;
-    // Snapshot validity fields inside the effect's tracked scope (so the effect
-    // re-runs when they change); the write itself is untracked inside setDataRoot.
+    // Snapshot validity fields inside the effect's tracked scope (so the effect re-runs when they change); the write itself is untracked inside setDataRoot.
     const snapshot = {
       electionData: validity.electionData,
       constituencyData: validity.constituencyData
@@ -141,8 +135,7 @@
   ////////////////////////////////////////////////////////////////////
 
   // Reference to UmamiAnalytics component to access its trackEvent export.
-  // `sendTrackingEvent` is the rune handle from AppContext; `.current` is read
-  // here in value position only to type `trackEvent`.
+  // `sendTrackingEvent` is the rune handle from AppContext; `.current` is read here in value position only to type `trackEvent`.
   let umamiRef = $state<{ trackEvent?: typeof sendTrackingEvent.current }>();
 
   $effect(() => {
@@ -153,12 +146,10 @@
   beforeNavigate(({ willUnload, to }) => {
     if (updated.current && !willUnload && to?.url) location.href = to.url.href;
   });
-  // MERGE — analytics flush THEN View-Transitions coupling (VT-01). Single merged hook
-  // guarantees flush ordering and avoids two-promise ambiguity (resolved Open Question O-2).
+  // Analytics flush THEN View-Transitions coupling, in one merged hook: that guarantees flush ordering and avoids the two-promise ambiguity of two separate hooks.
   onNavigate((navigation) => {
     submitAllEvents(); // preserve existing analytics flush
-    // LANDMINE: read `navigation.to?.url` — NOT `page.url` (which is the SOURCE url during
-    // onNavigate (see spike 015). `shouldAnimate` also gates reduced-motion (VT-03) and ?notr=1.
+    // LANDMINE: read `navigation.to?.url` — NOT `page.url`, which is the SOURCE url during onNavigate. `shouldAnimate` also gates reduced motion and ?notr=1.
     if (!shouldAnimate(navigation.to?.url)) return;
     return new Promise<void>((resolve) => {
       startViewTransition(async () => {
@@ -201,8 +192,7 @@
     if (feedbackModalRef) openFeedbackModal.set(() => feedbackModalRef?.openFeedback());
   });
 
-  // popupItem reactivity is handled inline at the template tail via
-  // popupQueue.current + {@const Component = item.component}
+  // popupItem reactivity is handled inline at the template tail via popupQueue.current + {@const Component = item.component}
 
   const fontUrl =
     staticSettings.font?.url ?? 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap';
@@ -225,11 +215,9 @@
   <link href={fontUrl} rel="stylesheet" />
 </svelte:head>
 
-<!-- Route announcer (NAVA11Y-01 / CR-01): always-present aria-live region, placed OUTSIDE the
+<!-- Route announcer: always-present aria-live region, placed OUTSIDE the
      error/loading/maintenance branches so screen readers reliably announce route changes.
-     Text is the active route's already-localized page title (the value fed to the document
-     `<title>`, minus the constant app-name/maintenance suffix), surfaced via the layout-context
-     `routeTitle` signal that MainContent / SingleCardContent register their localized `title` into
+     Text is the active route's already-localized page title (the value fed to the document `<title>`, minus the constant app-name/maintenance suffix), surfaced via the layout-context `routeTitle` signal that MainContent / SingleCardContent register their localized `title` into
      (no new i18n strings; the existing localized title is reused on ALL routes). -->
 <div aria-live="polite" aria-atomic="true" class="sr-only" id="route-announcer">
   {routeTitle}
@@ -257,7 +245,7 @@
   {/if}
 {/if}
 
-<!-- Popup service: inline renderer (runes-idiomatic; replaces the v2.1 popup-renderer wrapper; see phase 60) -->
+<!-- Popup service: inline, runes-idiomatic renderer — no wrapper component -->
 {#if popupQueue.current}
   {@const item = popupQueue.current}
   {@const Component = item.component}
@@ -270,9 +258,8 @@
 {/if}
 
 <style>
-  /* Reduced-motion (VT-03 CSS layer): null any escaping ::view-transition animation.
-     LANDMINE: the @media query WRAPS the :global selector — never the reverse form (the
-     Svelte CSS parser rejects an at-rule nested inside :global with "Expected a valid CSS
+  /* Reduced motion: null any escaping ::view-transition animation.
+     LANDMINE: the @media query WRAPS the :global selector — never the reverse form (the Svelte CSS parser rejects an at-rule nested inside :global with "Expected a valid CSS
      identifier"). */
   @media (prefers-reduced-motion: reduce) {
     :global(::view-transition-group(*)),

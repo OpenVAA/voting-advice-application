@@ -6,26 +6,18 @@ Renders the matching results list and, when on an entity detail child route, sho
 
 Entity cards are `<a>` links — right-click opens in new tab, normal click triggers SvelteKit client-side navigation which the layout detects and renders in a Drawer.
 
-## Architecture (see phase 62 refactor; see phase 88 update)
+## Architecture
 
 - URL is the single source of truth. Tabs, drawer visibility, and
-  active entity type are pure `$derived` over `page.params.electionTab` /
-  `entityTab` / `entity` / `id`. The *selected* election
-  whose results are being rendered lives in the route segment
-  `page.params.electionTab` (name-disjoint from the search-side
-  `?electionId=…` AVAILABLE-array surface, which keeps its
-  `voterContext.selectedElections` semantics — that array drives nomination
+  active entity type are pure `$derived` over `page.params.electionTab` / `entityTab` / `entity` / `id`. The *selected* election whose results are being rendered lives in the route segment `page.params.electionTab` (name-disjoint from the search-side `?electionId=…` AVAILABLE-array surface, which keeps its `voterContext.selectedElections` semantics — that array drives nomination
   + question filtering and is set by the voter at `/elections`).
   No local `$state` twins for URL-derivable state; no `$effect`-based sync.
 - `<EntityListWithControls>` replaces the legacy `<EntityList>` call —
-  filters are re-enabled end-to-end through the shared `filterContext`
-  which auto-scopes per (electionId, entityTab).
+  filters are re-enabled end-to-end through the shared `filterContext` which auto-scopes per (electionId, entityTab).
 - Drawer-first paint: the `{#if drawerVisible} <EntityDetailsDrawer/>`
-  block is rendered BEFORE the list container in DOM source order; the list
-  container carries `content-visibility: auto` so the browser defers its
-  layout/paint until it scrolls into view.
+  block is rendered BEFORE the list container in DOM source order; the list container carries `content-visibility: auto` so the browser defers its layout/paint until it scrolls into view.
 
-Sibling tracking concerns (Pitfall 6) preserved verbatim:
+Sibling tracking concerns:
 - `startFeedbackPopupCountdown` via `appSettings.results.showFeedbackPopup`
 - `startSurveyPopupCountdown` via `appSettings.survey.showIn`
 - `onMount` `results_ranked`/`results_browse` page-entry event
@@ -63,55 +55,31 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // see phase 61 voter-side parallel fix: reactive context getters
-  // (constituenciesSelectable, matches, nominationsAvailable, resultsAvailable,
-  // selectedConstituencies, selectedElections) are read via voterCtx.X.
-  // Genuinely stable members (getRoute, t, answers, startEvent, *Countdown)
-  // remain destructured.
+  // The reactive context getters (constituenciesSelectable, matches, nominationsAvailable, resultsAvailable, selectedConstituencies, selectedElections) are read via voterCtx.X.
+  // Genuinely stable members (getRoute, t, answers, startEvent, *Countdown) remain destructured.
   //
-  // appSettings and dataRoot are NOT in that set. Both are bare reactive
-  // accessors, so per CLAUDE.md's Context Destructuring Rule neither may be
-  // destructured: appSettings is value-replacing, so a destructured local stops
-  // updating, and dataRoot is identity-stable behind a #version bridge, so the
-  // destructure takes the version dependency once at init and never again.
+  // appSettings and dataRoot are NOT in that set. Both are bare reactive accessors, so per CLAUDE.md's Context Destructuring Rule neither may be destructured: appSettings is value-replacing, so a destructured local stops updating, and dataRoot is identity-stable behind a #version bridge, so the destructure takes the version dependency once at init and never again.
   const voterCtx = getVoterContext();
   const { answers, getRoute, startEvent, startFeedbackPopupCountdown, startSurveyPopupCountdown, t } = voterCtx;
   // appSettings is value-replacing: a $derived read alias is safe and correct.
   const appSettings = $derived(voterCtx.appSettings);
-  // dataRoot is identity-stable: read `voterCtx.dataRoot.<prop>` directly inside
-  // the consuming tracking scope, never through an intermediate $derived alias
-  // (referential equality would suppress downstream notification and the
-  // cold/direct-URL snapshot would stay empty). See CLAUDE.md "Context
-  // Destructuring Rule" and its stable-reference carve-out.
-  // Re-named local aliases preserved for template readability:
+  // dataRoot is identity-stable: read `voterCtx.dataRoot.<prop>` directly inside the consuming tracking scope, never through an intermediate $derived alias (referential equality would suppress downstream notification and the cold/direct-URL snapshot would stay empty). See CLAUDE.md "Context Destructuring Rule" and its stable-reference carve-out.
+  // Local aliases for template readability:
   const elections = $derived(voterCtx.selectedElections);
   const constituencies = $derived(voterCtx.selectedConstituencies);
 
   ////////////////////////////////////////////////////////////////////
-  // URL-derived state — see phase 88 refactor
+  // URL-derived state
   ////////////////////////////////////////////////////////////////////
   //
   // Two name-disjoint election surfaces coexist on the URL:
-  //   - ROUTE side: `page.params.electionTab` (singular) — the *selected*
-  //     election whose results-page is being rendered. New.
-  //   - SEARCH side: `?electionId=…` / `electionId[N]=…` (zero-or-more)
-  //     — the AVAILABLE elections (voter scope set at `/elections`),
-  //     surfaced via `voterContext.selectedElections`. Unchanged from prior
-  //     phases.
-  // The two share NO key name (electionTab vs electionId) — different
-  // identifiers throughout the codebase. The server-side guard at
-  // `[[electionTab]]/+layout.ts` validates that `params.electionTab`
-  // is a member of the AVAILABLE array (Task 6).
+  //   - ROUTE side: `page.params.electionTab` (singular) — the *selected* election whose results-page is being rendered. New.
+  //   - SEARCH side: `?electionId=…` / `electionId[N]=…` (zero-or-more) — the AVAILABLE elections (voter scope set at `/elections`), surfaced via `voterContext.selectedElections`.
+  // The two share NO key name (electionTab vs electionId) — different identifiers throughout the codebase. The server-side guard at `[[electionTab]]/+layout.ts` validates that `params.electionTab` is a member of the AVAILABLE array.
   //
-  // entityTab + entity + id are route params (renamed from
-  // the prior plural/singular matcher-gated segments via the new etPl /
-  // etSg short-name matchers).
+  // entityTab + entity + id are route params, gated by the etPl / etSg short-name matchers.
   //
-  // Single-election fallback: when the route segment is absent AND there's
-  // exactly one available election, auto-select it — preserves the legacy
-  // layout behaviour (line 101 of the pre-refactor file). Task 6's server
-  // guard will eventually redirect-and-canonicalize this case, so this
-  // fallback is the client-side safety net.
+  // Single-election fallback: when the route segment is absent AND there's exactly one available election, auto-select it. The server guard in `[[electionTab]]/+layout.ts` is expected to redirect-and-canonicalize this case, so this fallback is the client-side safety net.
 
   type EntityPlural = 'candidates' | 'organizations' | 'alliances';
 
@@ -132,9 +100,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
       : undefined
   );
 
-  // The map of plurals available for the active election (possibly just candidates,
-  // possibly just organizations, possibly both). Computed from matches so we always
-  // render consistent tab labels without going through a separate $state twin.
+  // The map of plurals available for the active election (possibly just candidates, possibly just organizations, possibly both). Computed from matches so we always render consistent tab labels without going through a separate $state twin.
   type EntityTab = { type: EntityType; label: string };
   const entityTabs = $derived<Array<EntityTab>>(
     activeElectionId && voterCtx.matches[activeElectionId]
@@ -145,19 +111,19 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
       : []
   );
 
-  // Plural → singular mapping uses American spelling (RESEARCH Open Question 1
-  // RESOLVED). The implied entity type now lives on voterContext via
-  // `currentResultsEntityType` (see phase 88 post-88-02 loop fix): URL-first
-  // with default-pick fallback to the first available tab for the active
-  // election. Reading through `voterCtx.X` per the CLAUDE.md Context
-  // Destructuring Rule preserves reactivity (must not destructure).
+  // Plural → singular mapping uses American spelling. The implied entity type lives on voterContext via `currentResultsEntityType`: URL-first with default-pick fallback to the first available tab for the active election. Reading through `voterCtx.X` per the CLAUDE.md Context Destructuring Rule preserves reactivity (must not destructure).
   const activeEntityType = $derived(voterCtx.currentResultsEntityType);
 
+  // `compareMaybeWrappedEntities` re-sorts what the matcher already ordered, and the primary key is the same one: it compares match score DESC, which is exactly `MatchingAlgorithm`'s ascending distance. What it adds is a TIE-BREAK — election symbol asc, then name asc — for entities the matcher scores identically.
+  //
+  // Why this is needed (debug session `tied-match-order-churn`): `matchingAlgorithm.ts:122` sorts on distance alone, and `Array.prototype.sort` is stable, so distance-tied entities keep their ARRIVAL order. That order is the `get_nominations` row order, which falls back to the `gen_random_uuid()` primary key for any nomination lacking `sort_order` — so tied candidates permuted between page loads. The seed-side half is fixed in `dev-seed`'s pipeline, but an imported dataset without `sort_order` would still churn; this makes `/results` stable regardless of what the data layer hands us.
+  //
+  // `toSorted`, NOT `sort`: `voterCtx.matches[...]` is reactive context state and must not be mutated in place.
   const activeMatches = $derived<Array<MaybeWrappedEntityVariant> | undefined>(
     activeElectionId && activeEntityType ? voterCtx.matches[activeElectionId]?.[activeEntityType] : undefined
   );
 
-  // Tabs.activeIndex — non-bound, passed as a $derived value (Pitfall 3).
+  // Tabs.activeIndex — non-bound, passed as a $derived value.
   const activeTabIndex = $derived.by(() => {
     if (!activeEntityType) return 0;
     const i = entityTabs.findIndex((tab) => tab.type === activeEntityType);
@@ -194,7 +160,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   });
 
   ////////////////////////////////////////////////////////////////////
-  // Start countdowns and track events (Pitfall 6 — PRESERVE VERBATIM)
+  // Start countdowns and track events
   ////////////////////////////////////////////////////////////////////
 
   onMount(() => {
@@ -206,8 +172,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   });
 
   // Use $effect for popup countdowns so they react to app settings updates.
-  // The settings store may update after the component mounts (async data load),
-  // and the countdown functions handle repeated calls by clearing prior timeouts.
+  // The settings store may update after the component mounts (async data load), and the countdown functions handle repeated calls by clearing prior timeouts.
   $effect(() => {
     if (appSettings.results.showFeedbackPopup != null)
       startFeedbackPopupCountdown(appSettings.results.showFeedbackPopup);
@@ -218,9 +183,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
       startSurveyPopupCountdown(appSettings.results.showSurveyPopup);
   });
 
-  // Drawer-view tracking — fires on drawer open transitions (covers both
-  // matched and unmatched entity pools per the legacy `results_ranked_*` /
-  // `results_browse_*` event pair).
+  // Drawer-view tracking — fires on drawer open transitions (covers both matched and unmatched entity pools per the legacy `results_ranked_*` / `results_browse_*` event pair).
   $effect(() => {
     if (!drawerVisible || !drawerEntity) return;
     const entityType = page.params.entity as EntityType;
@@ -237,32 +200,16 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   ////////////////////////////////////////////////////////////////////
 
   /**
-   * Build a path-only /results URL with the SELECTED election landing on the
-   * new `electionTab` route segment and the existing
-   * search params preserved verbatim.
+   * Build a path-only /results URL with the SELECTED election landing on the new `electionTab` route segment and the existing search params preserved verbatim.
    *
-   * Name-disjoint dissociation: `electionTab` is the route-side singular
-   * (route side); `electionId` is the search-side AVAILABLE-array
-   * (existing PERSISTENT_SEARCH_PARAMS member at `$lib/utils/route/params.ts`).
-   * The two never alias. The pre-88-02 qs.parse round-trip that overwrote
-   * the search-side `electionId` is GONE — the search-side AVAILABLE array
-   * is preserved as-is, and the route-side electionTab is the canonical
-   * SELECTED-singular surface.
+   * Name-disjoint dissociation: `electionTab` is the route-side singular (route side); `electionId` is the search-side AVAILABLE-array (existing PERSISTENT_SEARCH_PARAMS member at `$lib/routes/params.ts`).
+   * The two never alias: the search-side AVAILABLE array is preserved as-is, and the route-side electionTab is the canonical SELECTED-singular surface.
    */
   function buildListRoute(electionTab: string | undefined, plural: EntityPlural | undefined): string {
     const electionSegment = electionTab ? `/${electionTab}` : '';
-    // Post-88-02 loop fix: no `/candidates` force-fill when plural is
-    // absent. The URL `/results/{electionTab}` is a valid render shape —
-    // voterContext.currentResultsEntityType implies the active tab and the
-    // layout renders the entity-type selector only when 2+ types exist
-    // for the election. Callers that want a specific tab in the URL
-    // (handleEntityTabChange, post-drawer-close) still pass an explicit
-    // plural.
+    // No `/candidates` force-fill when plural is absent: the URL `/results/{electionTab}` is itself a valid render shape — voterContext.currentResultsEntityType implies the active tab and the layout renders the entity-type selector only when 2+ types exist for the election. Callers that want a specific tab in the URL (handleEntityTabChange, post-drawer-close) still pass an explicit plural.
     const pluralSegment = plural ? `/${plural}` : '';
-    // Preserve any persistent search params (electionId AVAILABLE array,
-    // constituencyId, etc.) on the URL verbatim. The route side now owns
-    // the SELECTED election surface; the search side keeps its existing
-    // AVAILABLE-array role.
+    // Preserve any persistent search params (electionId AVAILABLE array, constituencyId, etc.) on the URL verbatim. The route side now owns the SELECTED election surface; the search side keeps its existing AVAILABLE-array role.
     return `/results${electionSegment}${pluralSegment}${page.url.search}`;
   }
 
@@ -293,10 +240,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
   }
 
   function handleDrawerClose(): void {
-    // `noScroll: true` mirrors the entity-card open path (EntityCardAction
-    // uses `data-sveltekit-noscroll`). Without it, SvelteKit's default
-    // scroll-on-navigation snaps the list back to the top — surfaced during
-    // see phase 64 manual smoke as "page scrolls when drawer closes".
+    // `noScroll: true` mirrors the entity-card open path (EntityCard's `cardAction` snippet sets `data-sveltekit-noscroll` on its anchor branch). Without it, SvelteKit's default scroll-on-navigation snaps the list back to the top, which reads as "the page scrolls when the drawer closes".
     goto(buildListRoute(activeElectionId, _urlPlural ?? _pluralForActiveType()), { noScroll: true });
   }
 
@@ -315,10 +259,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
 {#if Object.values(voterCtx.nominationsAvailable).some(Boolean)}
   <!--
     DRAWER-FIRST SOURCE ORDER (Open Question 4 RESOLVED — cheapest-first).
-    Rendered before MainContent so that on a cold deeplink the drawer paints
-    before the list container below it (the list carries
-    `content-visibility: auto` so the browser defers its layout/paint until
-    in view).
+    Rendered before MainContent so that on a cold deeplink the drawer paints before the list container below it (the list carries `content-visibility: auto` so the browser defers its layout/paint until in view).
   -->
   {#if drawerVisible && drawerEntity}
     <EntityDetailsDrawer entity={drawerEntity} onClose={handleDrawerClose} data-testid="voter-results-drawer" />
@@ -370,10 +311,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
 
     {#snippet fullWidth()}
       <!--
-        LIST CONTAINER — `content-visibility: auto` defers layout/paint until
-        scrolled into view (Open Question 4 RESOLVED). Renders AFTER the
-        drawer block above in source order so the drawer wins the paint race
-        on cold deeplinks.
+        LIST CONTAINER — `content-visibility: auto` defers layout/paint until scrolled into view (Open Question 4 RESOLVED). Renders AFTER the drawer block above in source order so the drawer wins the paint race on cold deeplinks.
       -->
       <div
         class="bg-base-300 flex min-h-[120vh] flex-col items-center [content-visibility:auto]"
@@ -400,7 +338,7 @@ Sibling tracking concerns (Pitfall 6) preserved verbatim:
                       : activeEntityType === 'alliance'
                         ? 'voter-results-alliance-section'
                         : undefined}>
-                  <!-- {#key}: keep — scope-tuple change (see phase 62) discards per-scope filter UI state; without remount, EntityListWithControls would carry filter selections from one election:entityType context into the next. -->
+                  <!-- {#key}: keep — a scope-tuple change discards per-scope filter UI state; without remount, EntityListWithControls would carry filter selections from one election:entityType context into the next. -->
                   {#key `${activeElectionId}:${activeEntityType}`}
                     <h3 class="my-lg mx-10 text-xl">
                       {t(`results.${activeEntityType}.numShown`, { numShown: activeMatches.length })}

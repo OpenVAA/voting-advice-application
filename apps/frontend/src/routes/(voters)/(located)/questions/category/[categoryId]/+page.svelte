@@ -34,21 +34,16 @@ Display the intro to a question category and possibly a button with which to ski
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // see phase 61 voter-side parallel fix: selectedQuestionBlocks is a reactive
-  // context getter; access via voterCtx.X (live $state).
+  // selectedQuestionBlocks is a reactive context getter; access via voterCtx.X (live $state).
   const voterCtx = getVoterContext();
   const { getRoute, t } = voterCtx;
-  // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via voterCtx.X, never destructure.
+  // appSettings/dataRoot are reactive accessors — read via voterCtx.X, never destructure.
   const appSettings = $derived(voterCtx.appSettings);
-  // dataRoot is identity-stable (#version-bridge): read `voterCtx.dataRoot.<prop>` directly in the tracking scope,
-  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" and the
-  // stable-reference alias anti-pattern (see spike 024, see phase 117).
+  // dataRoot is identity-stable (#version-bridge): read `voterCtx.dataRoot.<prop>` directly in the tracking scope, never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" and the stable-reference alias anti-pattern.
   const { pageStyles, video } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
-  // Get the current category and first question id
-  // Use $derived to avoid effect-writes-state pattern that causes
-  // effect_update_depth_exceeded during SvelteKit navigation
+  // Get the current category and first question id Use $derived to avoid effect-writes-state pattern that causes effect_update_depth_exceeded during SvelteKit navigation
   ////////////////////////////////////////////////////////////////////
 
   let categoryId = $derived(parseParams(page).categoryId);

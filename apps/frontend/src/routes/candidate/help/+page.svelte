@@ -22,8 +22,7 @@ Shows a FAQ and other support content for the candidate application.
 
   const ctx = getCandidateContext();
   const { appCustomization, getRoute, t, userData } = ctx;
-  // appSettings is a reactive accessor (see phase 113 flatten) — read via ctx.appSettings,
-  // never destructure. This is a one-time init read, so read off ctx directly (no $derived alias).
+  // appSettings is a reactive accessor — read via ctx.appSettings, never destructure. This is a one-time init read, so read off ctx directly (no $derived alias).
 
   ////////////////////////////////////////////////////////////////////
   // Build support email link

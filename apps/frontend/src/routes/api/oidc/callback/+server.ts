@@ -1,8 +1,7 @@
 /**
  * Provider-agnostic OIDC callback endpoint.
  *
- * The identity provider redirects the browser here after authentication with an
- * authorization code in the query string. This handler:
+ * The identity provider redirects the browser here after authentication with an authorization code in the query string. This handler:
  *
  * 1. Validates the authorization code is present
  * 2. Verifies the `state` parameter against the `oidc_state` cookie (CSRF protection)

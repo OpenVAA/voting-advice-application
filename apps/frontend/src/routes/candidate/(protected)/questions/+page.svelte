@@ -29,10 +29,10 @@ Shows the opinion questions for the candidate to answer.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // see phase 61 follow-up: read reactive context getters via candCtx.X.
+  // Read the reactive context getters via candCtx.X.
   const candCtx = getCandidateContext();
   const { getRoute, t, translate, userData } = candCtx;
-  // appSettings is a reactive accessor (see phase 113 flatten) — read via candCtx.X, never destructure.
+  // appSettings is a reactive accessor — read via candCtx.X, never destructure.
   const appSettings = $derived(candCtx.appSettings);
   ////////////////////////////////////////////////////////////////////
   // Choose page variant to show
@@ -56,10 +56,7 @@ Shows the opinion questions for the candidate to answer.
    */
   function getSavedAnswer(question: AnyQuestionVariant): Answer | undefined {
     const localizedAnswer = userData.savedCandidateData?.answers?.[question.id];
-    // Use the canonical emptiness predicate, not a truthiness test (which discarded a saved `false`) nor a bare
-    // null check, so this stays consistent with candidateContext's completion gating. `isEmptyValue(undefined)` is
-    // `true`, so the first clause already covers a missing `localizedAnswer`; the second is unreachable at runtime
-    // and exists only to narrow the type, since the predicate returns a plain `boolean`.
+    // Use the canonical emptiness predicate, not a truthiness test (which discarded a saved `false`) nor a bare null check, so this stays consistent with candidateContext's completion gating. `isEmptyValue(undefined)` is `true`, so the first clause already covers a missing `localizedAnswer`; the second is unreachable at runtime and exists only to narrow the type, since the predicate returns a plain `boolean`.
     if (isEmptyValue(localizedAnswer?.value) || localizedAnswer == null) return undefined;
     const { value, info } = localizedAnswer;
     const answer = {

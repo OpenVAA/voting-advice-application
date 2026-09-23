@@ -4,11 +4,8 @@
 
 - Display an error if we can't load the questions.
 - Set top bar actions and initiate progess.
-- Owns question rendering for the `[questionId]` leaf (see phase 100
-  hoist — unified-layout-with-empty-leaf shape, mirrors
-  `results/[[electionTab]]/+layout.svelte`). The leaf `[questionId]/+page.svelte`
-  is an empty stub. The intro (`questions/+page.svelte`) and category
-  (`category/[categoryId]/+page.svelte`) siblings render via `{@render children()}`.
+- Owns question rendering for the `[questionId]` leaf: a
+  unified-layout-with-empty-leaf shape mirroring `results/[[electionTab]]/+layout.svelte`. The leaf `[questionId]/+page.svelte` is an empty stub. The intro (`questions/+page.svelte`) and category (`category/[categoryId]/+page.svelte`) siblings render via `{@render children()}`.
 
 ## Params (on the `[questionId]` route)
 
@@ -51,15 +48,12 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // see phase 61 voter-side parallel fix: opinionQuestions + selectedQuestionBlocks
-  // are reactive context getters; access via voterCtx.X (live $state).
+  // opinionQuestions + selectedQuestionBlocks are reactive context getters; access via voterCtx.X (live $state).
   const voterCtx = getVoterContext();
   const { answers, getRoute, startEvent, t } = voterCtx;
-  // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via voterCtx.X, never destructure.
+  // appSettings/dataRoot are reactive accessors — read via voterCtx.X, never destructure.
   const appSettings = $derived(voterCtx.appSettings);
-  // dataRoot is identity-stable (#version-bridge): read `voterCtx.dataRoot.<prop>` directly in the tracking scope,
-  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" and the
-  // stable-reference alias anti-pattern (see spike 024, see phase 117).
+  // dataRoot is identity-stable (#version-bridge): read `voterCtx.dataRoot.<prop>` directly in the tracking scope, never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" and the stable-reference alias anti-pattern.
   const { topBarSettings, progress, video } = getLayoutContext();
 
   let { children }: { children: Snippet } = $props();
@@ -84,19 +78,10 @@
   // Get the current question and update related variables
   ////////////////////////////////////////////////////////////////////
 
-  // Derive question and questionBlock synchronously so they are always
-  // up to date when event handlers read them (e.g., handleJump).
-  // Using $derived instead of $state + $effect avoids a timing gap
-  // where the URL has changed but the state hasn't updated yet.
+  // Derive question and questionBlock synchronously so they are always up to date when event handlers read them (e.g., handleJump).
+  // Using $derived instead of $state + $effect avoids a timing gap where the URL has changed but the state hasn't updated yet.
   //
-  // see phase 100 sibling-route guard: on the intro (`questions/+page.svelte`)
-  // and category (`category/[categoryId]/+page.svelte`) routes
-  // `page.params.questionId` is `undefined`. EARLY-RETURN `undefined` there
-  // (the leaf's old absent-id throw is dropped) so the question UI does not
-  // render and no error path fires — the render branch gates on
-  // `question && questionBlock` truthiness and falls back to
-  // `{@render children?.()}`. The unknown-id `error(404)` is preserved for a
-  // real `[questionId]` route with a bad id.
+  // Sibling-route guard: on the intro (`questions/+page.svelte`) and category (`category/[categoryId]/+page.svelte`) routes `page.params.questionId` is `undefined`. EARLY-RETURN `undefined` there so the question UI does not render and no error path fires — the render branch gates on `question && questionBlock` truthiness and falls back to `{@render children?.()}`. The unknown-id `error(404)` is preserved for a real `[questionId]` route with a bad id.
   let question = $derived.by<AnyQuestionVariant | undefined>(() => {
     const questionId = parseParams(page).questionId;
     if (!questionId) return undefined;
@@ -135,12 +120,7 @@
   // Handle `start` query param
   ////////////////////////////////////////////////////////////////////
 
-  // Assumption A2 / Pitfall 3: kept as `onMount`. The `start` param is only
-  // present on the entry URL of a "start answering from here" deep-link, so the
-  // handler must run once per session — exactly what `onMount` on the persistent
-  // layout provides (the layout mounts once per session, like the leaf did under
-  // SvelteKit's page-reuse). Porting to `afterNavigate`/$effect would re-fire on
-  // every hop and is unnecessary; `onMount` preserves current behavior verbatim.
+  // `onMount`, deliberately. The `start` param is only present on the entry URL of a "start answering from here" deep-link, so the handler must run once per session — exactly what `onMount` on this persistent layout provides. An `afterNavigate` or `$effect` would re-fire on every hop within the questions flow.
   onMount(() => {
     if (!question) return;
     if (page.url.searchParams.get('start')) {
@@ -155,52 +135,36 @@
   // Anwering and moving between questions
   ////////////////////////////////////////////////////////////////////
 
-  // Kept in the layout script, OUTSIDE any {#key} — survives the variant
-  // remount and accumulated answers (voterCtx.answers) survive Q→Q.
+  // Kept in the layout script, OUTSIDE any {#key} — survives the variant remount and accumulated answers (voterCtx.answers) survive Q→Q.
   /** Use to disable the response buttons when an answer is set but we're still waiting for the next page to load */
   let disabled = $state(false);
 
-  // Validity surfaced by `OpinionQuestionInput`. Lives OUTSIDE the {#key}
-  // so it survives same-type Q→Q reuse (the input is not remounted between two
-  // multi-choice questions). Reset to `true` on question-id change so a stale
-  // invalid state from the previous question does not linger before the input
-  // recomputes; only the multi-choice branch ever sets it false.
+  // Validity surfaced by `OpinionQuestionInput`. Lives OUTSIDE the {#key} so it survives same-type Q→Q reuse (the input is not remounted between two multi-choice questions). Reset to `true` on question-id change so a stale invalid state from the previous question does not linger before the input recomputes; only the multi-choice branch ever sets it false.
   let opinionInputValid = $state(true);
   $effect(() => {
     void question?.id;
     opinionInputValid = true;
   });
 
-  // Bumped on every explicit answer deletion (question-delete button). Combined
-  // with `question.type` in the input's {#key} so an explicit delete remounts
-  // QuestionChoices, forcing its question-keyed seed to re-read the
-  // now-absent answer and visually clear the boxes. Lives OUTSIDE the {#key}.
+  // Bumped on every explicit answer deletion (question-delete button). Combined with `question.type` in the input's {#key} so an explicit delete remounts QuestionChoices, forcing its question-keyed seed to re-read the now-absent answer and visually clear the boxes. Lives OUTSIDE the {#key}.
   let deleteEpoch = $state(0);
 
   function handleAnswer({ question, value }: { question: AnyQuestionVariant; value?: unknown }): void {
-    // Zero selections in a multi-choice question = unanswered: delete the
-    // answer rather than persisting an empty array, keeping matching clean and
-    // the results-CTA answer count honest.
+    // Zero selections in a multi-choice question = unanswered: delete the answer rather than persisting an empty array, keeping matching clean and the results-CTA answer count honest.
     if (Array.isArray(value) && value.length === 0) {
       answers.deleteAnswer(question.id);
       return;
     }
-    // Out-of-range (non-empty) multi-choice selection = in-progress/unanswered
-    // NEVER persist it — an invalid selection must not reach matching.
-    // `opinionInputValid` is fresh here because OpinionQuestionInput assigns the
-    // bound valid synchronously before bubbling onChange.
-    // Delete any previously-persisted answer, but only when one actually exists,
-    // so a fresh invalid toggle does not fire a spurious answer_delete tracking
-    // event / store churn.
+    // Out-of-range (non-empty) multi-choice selection = in-progress/unanswered NEVER persist it — an invalid selection must not reach matching.
+    // `opinionInputValid` is fresh here because OpinionQuestionInput assigns the bound valid synchronously before bubbling onChange.
+    // Delete any previously-persisted answer, but only when one actually exists, so a fresh invalid toggle does not fire a spurious answer_delete tracking event / store churn.
     if (Array.isArray(value) && !opinionInputValid) {
       if (answers.answers[question.id] != null) answers.deleteAnswer(question.id);
       return;
     }
     answers.setAnswer(question.id, value);
     // Auto-advance is instant only for single-choice / boolean inputs. Number
-    // (slider) and multipleChoiceCategorical (checkbox) inputs must NOT auto-jump:
-    // a per-keystep or per-toggle jump breaks the keyboard exact-value
-    // contract and multi-select entirely — the voter proceeds via Next/Skip.
+    // (slider) and multipleChoiceCategorical (checkbox) inputs must NOT auto-jump: a per-keystep or per-toggle jump breaks the keyboard exact-value contract and multi-select entirely — the voter proceeds via Next/Skip.
     if (isSingleChoiceQuestion(question) || isBooleanQuestion(question)) {
       disabled = true;
       setTimeout(handleJump, DELAY.md);
@@ -210,8 +174,7 @@
   function handleDelete() {
     if (!question) return;
     answers.deleteAnswer(question.id);
-    // Bump the remount epoch so QuestionChoices re-seeds from the now-absent
-    // answer and the rendered selection visually clears.
+    // Bump the remount epoch so QuestionChoices re-seeds from the now-absent answer and the rendered selection visually clears.
     deleteEpoch += 1;
   }
 
@@ -234,8 +197,7 @@
       // Show category intro if moving forward from the first question in a category
     } else {
       const newQuestion = voterCtx.selectedQuestionBlocks.questions[newIndex];
-      // Show the next category intro if the next question is the first question in a new category and we're not moving backwards
-      // TODO: Handle category showing more centrally, e.g. during onMount of this page, so that sources linking here need to concern themselves with choosing whether to show the category intro. In that case, though, another search param will be necessary that can be used to suppress category intro display.
+      // Show the next category intro if the next question is the first question in a new category and we're not moving backwards TODO: Handle category showing more centrally, e.g. during onMount of this page, so that sources linking here need to concern themselves with choosing whether to show the category intro. In that case, though, another search param will be necessary that can be used to suppress category intro display.
       if (
         appSettings.questions.categoryIntros?.show &&
         steps > 0 &&
@@ -299,11 +261,7 @@
 
       {#snippet primaryActions()}
         <!-- {#key `${question.type}-${deleteEpoch}`}: remount the variant input at
-             a question-type boundary (Likert↔open-text↔slider), NOT per question
-             id — AND on explicit answer deletion (deleteEpoch
-             bump) so QuestionChoices' question-keyed seed re-reads
-             the now-absent answer and visually clears the boxes. A same-type Q→Q
-             run keeps the input mounted (deleteEpoch only bumps on the delete
+             a question-type boundary (Likert↔open-text↔slider), NOT per question id — AND on explicit answer deletion (deleteEpoch bump) so QuestionChoices' question-keyed seed re-reads the now-absent answer and visually clears the boxes. A same-type Q→Q run keeps the input mounted (deleteEpoch only bumps on the delete
              button); layout-owned `disabled` $state + voterCtx.answers survive. -->
         {#key `${question.type}-${deleteEpoch}`}
           <OpinionQuestionInput
@@ -343,8 +301,7 @@
   {:else if parseParams(page).questionId}
     <!-- A real [questionId] route whose `question`/`questionBlock` is still
          resolving (or is being redirected away by the side-effect $effect).
-         Match the old leaf's <Loading> fallback rather than the empty leaf stub
-         (which would flash a blank screen). Sibling routes (intro/category —
+         Match the old leaf's <Loading> fallback rather than the empty leaf stub (which would flash a blank screen). Sibling routes (intro/category —
          no `questionId`) render their own page via {@render children}. -->
     <Loading class="mt-lg" />
   {:else}

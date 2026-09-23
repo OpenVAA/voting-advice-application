@@ -30,8 +30,7 @@ export async function load({ parent, params, route, url }) {
   dataRoot.provideElectionData(await electionData);
   dataRoot.provideConstituencyData(await constituencyData);
 
-  // If startFromConstituencyGroup is set, election selection will come after this page and we'll show  the constituency selector
-  // NB. We don't try to imply it, because we assume that if startFromConstituencyGroup is set, the constituency must be selected
+  // If startFromConstituencyGroup is set, election selection will come after this page and we'll show  the constituency selector NB. We don't try to imply it, because we assume that if startFromConstituencyGroup is set, the constituency must be selected
   if (appSettings.elections?.startFromConstituencyGroup) return;
 
   // StartFromConstituencyGroup is not set, this route is the last one before questions
@@ -50,9 +49,7 @@ export async function load({ parent, params, route, url }) {
     selectedElectionIds: electionId ? [electionId].flat() : undefined
   });
 
-  // Deferred-target handling (see phase 78): forward the `?next=` target past
-  // auto-redirects on this page. `next` is not a persistent search param, so
-  // buildRoute strips it unless passed through `extraParams`.
+  // Deferred-target handling: forward the `?next=` target past auto-redirects on this page. `next` is not a persistent search param, so buildRoute strips it unless passed through `extraParams`.
   const nextSearch = url.searchParams.get('next');
   const nextForward: { next?: string } = nextSearch ? { next: nextSearch } : {};
 

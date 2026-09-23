@@ -1,8 +1,7 @@
 /**
  * Load the data for a logged-in candidate (server-side).
  *
- * Uses `event.locals.supabase` as the server client for the DataWriter,
- * ensuring authenticated RPC calls use the session from cookies.
+ * Uses `event.locals.supabase` as the server client for the DataWriter, ensuring authenticated RPC calls use the session from cookies.
  *
  * Redirects to login with an error message if the user is not logged in.
  */

@@ -25,20 +25,11 @@ export async function load({ fetch, parent, untrack, url }) {
   // We need to be careful to not rerun the load function unnecessarily
   untrack(() => ({ electionId, constituencyId } = parseParams({ url })));
 
-  // reason: voter-app routes allowlist for ?next= deferred target — prevents
-  // open-redirect attacks. The whitelist accepts
-  // either a locale-prefixed path (`/en/...`) or one of the bare voter-app
-  // route roots (`/results`, `/questions`, `/nominations`). Cross-origin
-  // values (`https://...`, `//evil.com`) fail the regex and are dropped —
-  // the redirect proceeds to the selector without a `?next=` parameter.
+  // reason: voter-app routes allowlist for ?next= deferred target — prevents open-redirect attacks. The whitelist accepts either a locale-prefixed path (`/en/...`) or one of the bare voter-app route roots (`/results`, `/questions`, `/nominations`). Cross-origin values (`https://...`, `//evil.com`) fail the regex and are dropped — the redirect proceeds to the selector without a `?next=` parameter.
   const isVoterRoute = /^\/[a-z]{2}\/.*|^\/(results|questions|nominations)\b/.test(url.pathname);
   const nextKv = isVoterRoute ? `next=${encodeURIComponent(url.pathname + url.search)}` : '';
   /**
-   * Append `next=…` to a redirect target with the correct separator. `buildRoute`
-   * may emit a base URL that already carries `?electionId=…` (Constituencies branch
-   * below), in which case the next-param must join with `&`, not `?`. Concatenating
-   * a leading-`?` next directly produced `…?electionId=…?next=…` — a malformed URL
-   * that SvelteKit's URL parser 500s on (test 3 reproducer).
+   * Append `next=…` to a redirect target with the correct separator. `buildRoute` may emit a base URL that already carries `?electionId=…` (Constituencies branch below), in which case the next-param must join with `&`, not `?`. Concatenating a leading-`?` next directly produced `…?electionId=…?next=…` — a malformed URL that SvelteKit's URL parser 500s on (test 3 reproducer).
    */
   function withNext(base: string): string {
     return nextKv ? `${base}${base.includes('?') ? '&' : '?'}${nextKv}` : base;
@@ -96,6 +87,7 @@ export async function load({ fetch, parent, untrack, url }) {
   const dataProvider = await dataProviderPromise;
   dataProvider.init({ fetch });
   return {
+    // Both promises below are returned UNAWAITED on purpose: they stream, and SvelteKit resolves them after this load returns. That is safe under per-request instancing because the promise captures THIS request's own adapter, which nothing else can rebind; do not "fix" it by awaiting.
     questionData: dataProvider
       .getQuestionData({
         electionId,

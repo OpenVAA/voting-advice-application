@@ -31,14 +31,12 @@ Shows the candidate's basic information, some of which is editable.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // see phase 61 follow-up: read reactive context getters via candCtx.X.
+  // Read the reactive context getters via candCtx.X.
   const candCtx = getCandidateContext();
   const { getRoute, t, userData } = candCtx;
-  // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via candCtx.X, never destructure.
+  // appSettings/dataRoot are reactive accessors — read via candCtx.X, never destructure.
   const appSettings = $derived(candCtx.appSettings);
-  // dataRoot is identity-stable (#version-bridge): read `candCtx.dataRoot.<prop>` directly in the tracking scope,
-  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" and the
-  // stable-reference alias anti-pattern (see spike 024, see phase 117).
+  // dataRoot is identity-stable (#version-bridge): read `candCtx.dataRoot.<prop>` directly in the tracking scope, never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" and the stable-reference alias anti-pattern.
   const { pageStyles } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
@@ -52,10 +50,8 @@ Shows the candidate's basic information, some of which is editable.
   // Display immutable data
   ////////////////////////////////////////////////////////////////////
 
-  // The candidate's nominations are loaded as raw partial data on `userData`
-  // (NOT provided to `dataRoot` — see the candidate protected +layout.svelte).
-  // We format them directly here, resolving election/constituency names from
-  // `dataRoot` (which DOES hold elections + constituencies via question data).
+  // The candidate's nominations are loaded as raw partial data on `userData` (NOT provided to `dataRoot` — see the candidate protected +layout.svelte).
+  // We format them directly here, resolving election/constituency names from `dataRoot` (which DOES hold elections + constituencies via question data).
   let nominations = $derived(userData.current?.nominations?.nominations ?? []);
 
   /**
@@ -74,9 +70,7 @@ Shows the candidate's basic information, some of which is editable.
       return {
         election: election.name,
         constituency: constituency.name,
-        // Raw partial nomination data carries no parent-nomination (election
-        // list / organization) nor confirmed-state info — those live only in
-        // the full nomination graph, which the candidate app does not load.
+        // Raw partial nomination data carries no parent-nomination (election list / organization) nor confirmed-state info — those live only in the full nomination graph, which the candidate app does not load.
         organization: undefined,
         electionSymbol: nomination.electionSymbol ?? undefined,
         unconfirmed: false

@@ -25,8 +25,7 @@
   ////////////////////////////////////////////////////////////////////
 
   // Stable references (functions, queues): destructure-safe.
-  // Reactive accessors (constituenciesSelectable, electionsSelectable, idTokenClaims,
-  // isPreregistered) read via candCtx.X — see CLAUDE.md "Context Destructuring Rule".
+  // Reactive accessors (constituenciesSelectable, electionsSelectable, idTokenClaims, isPreregistered) read via candCtx.X — see CLAUDE.md "Context Destructuring Rule".
   const candCtx = getCandidateContext();
   const { getRoute, popupQueue, t } = candCtx;
   const { navigationSettings } = getLayoutContext();
@@ -91,8 +90,7 @@
       // Signicat: client-side PKCE redirect via provider abstraction
       const { codeVerifier, codeChallenge } = await generateChallenge(window.crypto);
 
-      // Call the authorize endpoint to get the provider-constructed URL
-      // and store state cookies server-side if the provider returns them
+      // Call the authorize endpoint to get the provider-constructed URL and store state cookies server-side if the provider returns them
       const response = await fetch('/api/oidc/authorize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

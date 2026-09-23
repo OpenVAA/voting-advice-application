@@ -45,7 +45,7 @@
   // Reactive accessors (answersLocked) read via candCtx.X — see CLAUDE.md "Context Destructuring Rule".
   const candCtx = getCandidateContext();
   const { appCustomization, darkMode, getRoute, t } = candCtx;
-  // appSettings is a reactive accessor (see phase 113 flatten) — read via candCtx.X, never destructure.
+  // appSettings is a reactive accessor — read via candCtx.X, never destructure.
   const appSettings = $derived(candCtx.appSettings);
   const answersLocked = $derived(candCtx.answersLocked);
   const { pageStyles, topBarSettings } = getLayoutContext();
@@ -73,9 +73,7 @@
     }
   }
 
-  // Plain `let` (not `$state`): captured once at init so reads inside `$effect`
-  // do not register a reactive dependency. Lets us focus the password field
-  // only when the email was prefilled from context, not when the user types it.
+  // Plain `let` (not `$state`): captured once at init so reads inside `$effect` do not register a reactive dependency. Lets us focus the password field only when the email was prefilled from context, not when the user types it.
   let emailFromContext = false;
   if (candCtx.newUserEmail != null) {
     email = candCtx.newUserEmail;

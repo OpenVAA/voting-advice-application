@@ -9,9 +9,7 @@ export async function POST({ cookies, request: _request, locals }) {
     error(401, { message: 'ID token has expired.' });
   }
 
-  // Call identity-callback Edge Function with the raw id_token.
-  // The Edge Function handles JWE decryption, JWT verification, user/candidate
-  // creation, and returns a magic link for session establishment.
+  // Call identity-callback Edge Function with the raw id_token. The Edge Function handles JWE decryption, JWT verification, user/candidate creation, and returns a magic link for session establishment.
   try {
     const { data, error: fnError } = await locals.supabase.functions.invoke('identity-callback', {
       body: { id_token: idToken }

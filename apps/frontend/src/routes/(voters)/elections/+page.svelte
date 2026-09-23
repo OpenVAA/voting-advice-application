@@ -25,13 +25,10 @@ See `+page.ts` for possible redirects.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // see phase 61 voter-side parallel fix: read selectedConstituencies +
-  // selectedElections via voterCtx.X (live $state) rather than destructured
-  // snapshots. Stable stores/functions (appSettings, dataRoot, getRoute, t)
-  // remain destructured.
+  // Read selectedConstituencies + selectedElections via voterCtx.X (live $state) rather than as destructured snapshots, which never update. Genuinely stable members (getRoute, t) remain destructured.
   const voterCtx = getVoterContext();
   const { getRoute, t } = voterCtx;
-  // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via voterCtx.X, never destructure.
+  // appSettings/dataRoot are reactive accessors — read via voterCtx.X, never destructure.
   const appSettings = $derived(voterCtx.appSettings);
 
   ////////////////////////////////////////////////////////////////////
@@ -44,13 +41,7 @@ See `+page.ts` for possible redirects.
     let result = voterCtx.dataRoot.elections;
     if (appSettings.elections?.startFromConstituencyGroup) {
       // Only show elections for which a Constituency is available.
-      // `getApplicableConstituency` throws when more than one of the passed
-      // constituencies maps to one of the election's groups (e.g. a municipality
-      // and its parent region both end up in selectedConstituencies for an
-      // election whose cgs include both Regions and Municipalities). Treat
-      // that throw as "applicable" — the election clearly matches *something*
-      // in the selection — so the multi-cg election still appears in the list
-      // (variant-startfromcg.spec.ts:145 hierarchy edge case).
+      // `getApplicableConstituency` throws when more than one of the passed constituencies maps to one of the election's groups (e.g. a municipality and its parent region both end up in selectedConstituencies for an election whose cgs include both Regions and Municipalities). Treat that throw as "applicable" — the election clearly matches *something* in the selection — so the multi-cg election still appears in the list (variant-startfromcg.spec.ts:145 hierarchy edge case).
       result = result.filter((e) => {
         try {
           return !!e.getApplicableConstituency(voterCtx.selectedConstituencies);
@@ -72,24 +63,11 @@ See `+page.ts` for possible redirects.
 
   let canSubmit = $derived(selected?.length > 0);
 
-  // Async + awaited so the click handler reports navigation errors instead of
-  // swallowing them. Prior implementation `function handleSubmit(): void`
-  // discarded the goto() promise — when SvelteKit's client-side navigation
-  // raced with a $effect (e.g. a stores' `.set()` triggered on first click
-  // hydration) goto() resolved to undefined and the URL never changed
-  // (multi-election.spec.ts:173 documents the same flake). The Array.from
-  // copy decouples the URL builder from the $state proxy on `selected` so
-  // qs.stringify sees a plain array.
+  // Async + awaited so the click handler reports navigation errors instead of swallowing them. Prior implementation `function handleSubmit(): void` discarded the goto() promise — when SvelteKit's client-side navigation raced with a $effect (e.g. a stores' `.set()` triggered on first click hydration) goto() resolved to undefined and the URL never changed (multi-election.spec.ts:173 documents the same flake). The Array.from copy decouples the URL builder from the $state proxy on `selected` so qs.stringify sees a plain array.
   async function handleSubmit(): Promise<void> {
     if (!canSubmit) return;
     const electionId = Array.from(selected);
-    // Deferred-target handling (see phase 78): forward the `?next=` target
-    // parameter through to the constituency selector so the final selector
-    // step can resume the originally-requested route. `next` is NOT a
-    // persistent search param (see params.ts PERSISTENT_SEARCH_PARAMS), so
-    // buildRoute drops it unless we pass it explicitly. No whitelist
-    // re-check here — the entry-point check in `(located)/+layout.ts`
-    // already filtered before this point.
+    // Deferred-target handling: forward the `?next=` target parameter through to the constituency selector so the final selector step can resume the originally-requested route. `next` is NOT a persistent search param (see params.ts PERSISTENT_SEARCH_PARAMS), so buildRoute drops it unless we pass it explicitly. No whitelist re-check here — the entry-point check in `(located)/+layout.ts` already filtered before this point.
     const next = page.url.searchParams.get('next');
     const nextForward: { next?: string } = next ? { next } : {};
     await goto(

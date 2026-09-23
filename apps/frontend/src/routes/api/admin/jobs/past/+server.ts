@@ -8,8 +8,7 @@ import type { JobInfo, PastJobStatus } from '$lib/server/admin/jobs/jobStore.typ
 type PastJobsResponse = Array<JobInfo> | { error: string };
 
 /**
- * GET /api/admin/jobs/past
- * Query params:
+ * GET /api/admin/jobs/past Query params:
  * - jobType?: string
  * - statuses?: PastJobStatus[]  // array format
  * - startFrom?: ISO timestamp (delta mode)

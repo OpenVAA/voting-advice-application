@@ -1,6 +1,5 @@
 /**
- * POST /api/admin/jobs/start
- * Start a new job for a specific feature
+ * POST /api/admin/jobs/start Start a new job for a specific feature
  */
 
 import { json } from '@sveltejs/kit';

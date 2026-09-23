@@ -42,8 +42,7 @@ Used to show a preview of the candidate's own profile using the `EntityDetails` 
 
   $effect(() => {
     // Read locale via store subscription to create reactive dependency.
-    // Locale is constant within a page lifecycle (changes trigger full page reload),
-    // so this effect runs loadCandidate() once on mount.
+    // Locale is constant within a page lifecycle (changes trigger full page reload), so this effect runs loadCandidate() once on mount.
     void locale;
     loadCandidate();
   });

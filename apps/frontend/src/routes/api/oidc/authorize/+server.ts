@@ -1,13 +1,9 @@
 /**
  * Server-side OIDC authorization endpoint.
  *
- * Constructs the authorization URL using the active identity provider and returns
- * it to the client. For Idura, this builds a signed JAR (JWT Authorization Request)
- * server-side so that signing keys never reach the browser. For Signicat, this
- * constructs a PKCE authorize URL.
+ * Constructs the authorization URL using the active identity provider and returns it to the client. For Idura, this builds a signed JAR (JWT Authorization Request) server-side so that signing keys never reach the browser. For Signicat, this constructs a PKCE authorize URL.
  *
- * If the provider returns `state` and `nonce` values (Idura), they are stored in
- * httpOnly cookies for CSRF and replay protection on callback.
+ * If the provider returns `state` and `nonce` values (Idura), they are stored in httpOnly cookies for CSRF and replay protection on callback.
  */
 
 import { error, json } from '@sveltejs/kit';

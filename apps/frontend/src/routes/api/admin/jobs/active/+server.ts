@@ -8,8 +8,7 @@ import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 type ActiveJobsResponse = Array<JobInfo> | { error: string };
 
 /**
- * GET /api/admin/jobs/active
- * Query params:
+ * GET /api/admin/jobs/active Query params:
  * - jobType?: string
  *
  * Returns: JobInfo[]

@@ -37,6 +37,7 @@ export const actions = {
         authToken: ''
       });
 
+      // The job gets this request's own source, not this action's writer, so it builds ONE writer of its own and holds it for its whole run.
       const result = await condenseArguments({
         electionId,
         questionIds,

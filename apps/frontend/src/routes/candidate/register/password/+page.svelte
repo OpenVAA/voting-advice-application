@@ -28,8 +28,7 @@
   ////////////////////////////////////////////////////////////////////
 
   // Stable references (functions, userData object): destructure-safe.
-  // Reactive accessor isAuthenticated read via candCtx.X (one-shot read at
-  // component init via $derived) — see CLAUDE.md "Context Destructuring Rule".
+  // Reactive accessor isAuthenticated read via candCtx.X (one-shot read at component init via $derived) — see CLAUDE.md "Context Destructuring Rule".
   const candCtx = getCandidateContext();
   const { getRoute, register, setPassword, t, userData } = candCtx;
 
@@ -76,8 +75,7 @@
 
     if (isInviteFlow) {
       // Invite flow: user already has a session, set the password and redirect to login.
-      // The session from verifyOtp may not reliably persist through client-side navigation
-      // to the protected route, so we redirect to login for a clean auth flow.
+      // The session from verifyOtp may not reliably persist through client-side navigation to the protected route, so we redirect to login for a clean auth flow.
       const result = await setPassword({ password }).catch((e) => {
         logDebugError(`Error with setPassword (invite flow): ${e?.message}`);
         return undefined;

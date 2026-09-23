@@ -1,12 +1,7 @@
 /**
  * # Admin App login server action
  *
- * Uses the Supabase server client directly (via `event.locals.supabase`) instead
- * of going through the `/api/auth/login` route. This ensures session cookies are
- * set on THIS form-action response (not a nested API-route response, whose
- * Set-Cookie headers do not propagate back to the browser), which is required
- * for the redirect to the protected admin home page to work. Mirrors the
- * candidate login action.
+ * A thin wrapper over the shared password-login helper, which owns the sign-in, the session read-back, the claims decode and the grant-shape gate. What stays here is what differs between the two login entry points: the grant-shape set, the redirect target and the log label. The helper is handed THIS request's own auth surface rather than making a client of its own, which is what puts the session cookies on THIS form-action response; a nested API route's `Set-Cookie` headers do not propagate back to the browser, and the redirect to the protected admin home page does not work without them.
  */
 
 import { fail, redirect } from '@sveltejs/kit';
