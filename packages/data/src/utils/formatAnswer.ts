@@ -3,14 +3,9 @@ import type { DateQuestion, Image, NumberQuestion } from '../internal';
 /**
  * The locale used by the `Intl`-backed formatters when no `locale` is supplied.
  *
- * This exists so that formatting NEVER falls back to the ambient machine locale. `Intl` treats an
- * `undefined` locale as "use the runtime default", which makes the output a function of the host
- * the code happens to run on: the same `Date` renders `10/5/2023` on a `en-US` machine and
- * `5.10.2023` on a `fi` one. In a server-rendered app that means a user's dates depend on the
- * server's environment rather than on their locale — a latent defect, not merely a test hazard.
+ * This exists so that formatting NEVER falls back to the ambient machine locale. `Intl` treats an `undefined` locale as "use the runtime default", which makes the output a function of the host the code happens to run on: the same `Date` renders `10/5/2023` on a `en-US` machine and `5.10.2023` on a `fi` one. In a server-rendered app that means a user's dates depend on the server's environment rather than on their locale — a latent defect, not merely a test hazard.
  *
- * Callers that care about the rendered locale must pass one explicitly (`DataRoot` threads its own
- * `locale` through to every formatter). This constant only decides what happens when nobody did.
+ * Callers that care about the rendered locale must pass one explicitly (`DataRoot` threads its own `locale` through to every formatter). This constant only decides what happens when nobody did.
  */
 export const DEFAULT_LOCALE = 'en-US';
 

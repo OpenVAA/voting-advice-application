@@ -13,8 +13,7 @@ import {
 import type { DataRoot, QuestionType } from '../../../internal';
 
 /**
- * Question variants
- * This file contains a utility function for creating question variants as well as type and class mappings for all concrete question types, i.e. those that are not abstract base classes.
+ * Question variants This file contains a utility function for creating question variants as well as type and class mappings for all concrete question types, i.e. those that are not abstract base classes.
  * NB. Make sure to update the types below whenever implemeting new question variants. The code below could most likely be refactored to get rid of some redundancy.
  */
 

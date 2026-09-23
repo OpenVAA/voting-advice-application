@@ -12,7 +12,9 @@ export const staticSettings: StaticSettings = {
   dataAdapter: {
     type: 'supabase',
     supportsCandidateApp: true,
-    supportsAdminApp: true
+    supportsAdminApp: true,
+    // Must equal PostgREST `max_rows` in apps/supabase/supabase/config.toml (50000) or a hosted project's API setting.
+    pageSize: 50000
   },
   colors: {
     light: {
@@ -40,7 +42,7 @@ export const staticSettings: StaticSettings = {
   },
   font: {
     name: 'Inter',
-    url: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap',
+    url: '/fonts/inter.css',
     style: 'sans'
   },
   supportedLocales: [

@@ -16,7 +16,7 @@ test('Should have the correct number of dimensions and normalize value', () => {
     { id: '1', label: 'A' },
     { id: '2', label: 'B' }
   ];
-  const quatenaryChoices: Array<Choice<undefined>> = [
+  const quaternaryChoices: Array<Choice<undefined>> = [
     { id: '1', label: 'A' },
     { id: '2', label: 'B' },
     { id: '3', label: 'C' },
@@ -31,9 +31,9 @@ test('Should have the correct number of dimensions and normalize value', () => {
   expect(obj.normalizeValue(binaryChoices[1].id)).toBe(COORDINATE.Max);
   expect(obj.normalizeValue('MISSING')).toBe(MISSING_VALUE);
 
-  obj.data.choices = quatenaryChoices;
+  obj.data.choices = quaternaryChoices;
   expect(obj.normalizedDimensions).toBe(4);
-  expect(obj.normalizeValue(quatenaryChoices[0].id), 'To spread normalized values to multiple dimesions').toEqual([
+  expect(obj.normalizeValue(quaternaryChoices[0].id), 'To spread normalized values to multiple dimensions').toEqual([
     COORDINATE.Max,
     COORDINATE.Min,
     COORDINATE.Min,

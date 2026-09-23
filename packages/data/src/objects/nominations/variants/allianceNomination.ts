@@ -53,10 +53,7 @@ export class AllianceNomination
     super({ data, root });
 
     // Create nested nominations only when nested `organizations` data is provided.
-    // The id-only path (e.g. supabase adapter reverse-fill) supplies
-    // `organizationNominationIds` directly; in that case the org-noms have already
-    // been created elsewhere in the same `provideNominationData` batch and there is
-    // nothing to create here.
+    // The id-only path (e.g. supabase adapter reverse-fill) supplies `organizationNominationIds` directly; in that case the org-noms have already been created elsewhere in the same `provideNominationData` batch and there is nothing to create here.
     if (this.data.organizations?.length) {
       const { organizationNominations } = this.root.provideNominationData(
         this.data.organizations.map((d) => ({

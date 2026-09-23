@@ -12,11 +12,13 @@
   },
   "scripts": {
     "generate": "supabase gen types typescript --local --workdir ../../apps/supabase > src/database.ts && prettier --write src/database.ts",
+    "typecheck": "tsc --noEmit",
     "build": "echo 'Raw .ts source — no build step needed'"
   },
   "devDependencies": {
     "@openvaa/shared-config": "workspace:^",
     "prettier": "catalog:",
-    "supabase": "catalog:"
+    "supabase": "catalog:",
+    "typescript": "catalog:"
   }
 }

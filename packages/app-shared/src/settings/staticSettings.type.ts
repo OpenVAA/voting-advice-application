@@ -121,13 +121,27 @@ export type StaticSettings = {
   };
 };
 
-export type LocalDataAdapter = {
+/**
+ * Settings shared by every `dataAdapter` variant, readable without narrowing on `type`.
+ */
+export type DataAdapterBase = {
+  /**
+   * Rows requested per page by the Supabase data provider's paged reads.
+   *
+   * It is declared on every variant because the client uses the Supabase data provider whatever `dataAdapter.type` names (`apps/frontend/src/lib/api/dataProvider.ts`), so a `local` configuration must not leave it unreadable.
+   *
+   * Must equal PostgREST `max_rows` — `apps/supabase/supabase/config.toml` sets `max_rows = 50000` locally, and a hosted project sets it in its API settings. A server cap below this value is caught by the provider's short-page guard, which issues one confirming request and logs a warning rather than truncating the read.
+   */
+  readonly pageSize: number;
+};
+
+export type LocalDataAdapter = DataAdapterBase & {
   readonly type: 'local';
   readonly supportsCandidateApp: false;
   readonly supportsAdminApp: false;
 };
 
-export type SupabaseDataAdapter = {
+export type SupabaseDataAdapter = DataAdapterBase & {
   readonly type: 'supabase';
   readonly supportsCandidateApp: true;
   readonly supportsAdminApp: true;

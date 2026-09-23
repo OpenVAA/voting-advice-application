@@ -312,10 +312,8 @@ test('ChoiceQuestionFilter', () => {
   expect(filter.active, 'Not active if reset').toBe(false);
 });
 
-test('ChoiceQuestionFilter: TIR3 empty-include semantics', () => {
-  // TIR3 cluster 1: distinguish `include = undefined` (filter inactive, all
-  // pass) from `include = []` (filter ACTIVE with zero allowed → 0 results).
-  // Prior to this contract, both states collapsed to "filter inactive".
+test('ChoiceQuestionFilter: empty-include semantics', () => {
+  // The contract this pins: `include = undefined` (filter inactive, all pass) is distinct from `include = []` (filter ACTIVE with zero allowed → 0 results). Without the distinction the two states collapse into "filter inactive", and an empty allow-list silently passes everything.
   const choices: Array<Choice> = [
     { id: '0', label: 'M' },
     { id: '1', label: 'A' },
