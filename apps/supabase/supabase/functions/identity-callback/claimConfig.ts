@@ -1,10 +1,7 @@
 /**
  * Provider claim configuration and extraction logic.
  *
- * Pure functions extracted from the identity-callback Edge Function for
- * testability. This module has NO Deno imports (no Deno.env, no Deno.serve,
- * no URL imports from deno.land) so it can be imported by both the Edge
- * Function and vitest.
+ * Pure functions extracted from the identity-callback Edge Function for testability. This module has NO Deno imports (no Deno.env, no Deno.serve, no URL imports from deno.land) so it can be imported by both the Edge Function and vitest.
  */
 
 /**
@@ -12,7 +9,7 @@
  * Maps provider-specific claim names to a common interface.
  */
 export interface ProviderClaimConfig {
-  /** Which id_token claim to use as the identity key (e.g., 'sub' for Idura, 'birthdate' for Signicat) */
+  /** Which id_token claim to use as the identity key. MUST be unique per person -- see PROVIDER_CONFIGS. */
   identityMatchProp: string;
   /** Which claim maps to first name */
   firstNameProp: string;
@@ -25,17 +22,24 @@ export interface ProviderClaimConfig {
 /**
  * Per-provider claim configurations.
  *
- * - Signicat: Uses `birthdate` for identity matching (Finnish bank auth pattern).
- *   No extra claims extracted.
+ * - Signicat: Uses `sub` (stable OIDC subject) for identity matching. `birthdate` is
+ *   still captured, as metadata only.
  * - Idura: Uses `sub` (persistent pseudonym) for identity matching.
  *   Extracts `birthdate` and `hetu` (Finnish personal identity code) as metadata.
+ *
+ * `identityMatchProp` MUST name a claim that is unique per person. It is not merely a lookup hint: its value becomes `app_metadata.identity_match_value` (the key `findUserByIdentityMatch` matches on) AND the local part of the placeholder email the auth user is created with, so two people whose claim values collide resolve to ONE Supabase account -- the second to authenticate is silently logged in as the first.
+ * `birthdate` is the worked counter-example: keying on it makes that collision a certainty for any realistic candidate population rather than a corner case. Never key on a claim that is not an identifier.
+ *
+ * CONFIRMED AGAINST PROVIDER DOCUMENTATION, 2026-08-29 (REVIEW-EDGE-04). Signicat's `sub` is the HASHED, PERSISTENT subject: the provider's Subject page lists Finnish Trust Network as returning a *transient* raw subject, and then states that for such an eID it substitutes a unique-and-consistent attribute -- the national identity number -- and hashes that instead, so the `sub` we receive is stable per person for a given Signicat organisation. Two consequences a change here must respect: the organisation identifier is an input to that hash, so moving to a different Signicat organisation re-keys every stored user, and the substitution is the provider's choice rather than an intrinsic property.
+ * DO NOT substitute `ftn_sub` for `sub`. It looks like the more specific identifier and is not one: the provider's own note says "Do not use this attribute as a permanent identifier for the end-user, as it may be transient and is not guaranteed to be globally unique" -- switching to it would reintroduce the collision class Phase 142.1 removed.
+ * Full quotes, source URLs, retrieval dates and the three caveats are in `.planning/phases/155-edge-function-hardening-env-jwt-provider-identity/155-SIGNICAT-SUBJECT-CITATION.md`.
  */
 export const PROVIDER_CONFIGS: Record<string, ProviderClaimConfig> = {
   signicat: {
-    identityMatchProp: 'birthdate',
+    identityMatchProp: 'sub',
     firstNameProp: 'given_name',
     lastNameProp: 'family_name',
-    extractClaims: []
+    extractClaims: ['birthdate']
   },
   idura: {
     identityMatchProp: 'sub',

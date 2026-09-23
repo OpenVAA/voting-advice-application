@@ -1,4 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { callerMayOnProject } from './callerAuthority.ts';
+import { writeEntityGrant } from './entityGrant.ts';
+import { requireEnv } from './envConfig.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -31,12 +34,12 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
-    const { firstName, lastName, email, projectId, organizationId } = body as {
+    // The request body used to accept an optional `organizationId`, assigned straight to the candidate insert below. 162-07b removed `candidates.organization_id`, so there is nothing for it to name. A candidate's nominating organization is now expressed by the `parent_nomination_id` edge on the nomination created for them, not by a field on the invitation. Measured before narrowing the contract: ZERO callers in tracked source sent the field, so nothing breaks.
+    const { firstName, lastName, email, projectId } = body as {
       firstName?: string;
       lastName?: string;
       email?: string;
       projectId?: string;
-      organizationId?: string;
     };
 
     if (!firstName || !lastName || !email || !projectId) {
@@ -49,7 +52,7 @@ Deno.serve(async (req) => {
     }
 
     // -------------------------------------------------------------------------
-    // 2. Verify caller is admin
+    // 2. Verify the caller may create entities in this project
     // -------------------------------------------------------------------------
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
@@ -76,20 +79,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Decode JWT to check roles from claims (Custom Access Token Hook)
-    const token = authHeader.replace('Bearer ', '');
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const userRoles: Array<{ role: string; scope_type: string; scope_id: string }> = payload.user_roles || [];
+    // THE AUTHORITY DECISION IS THE DATABASE'S, asked through the caller's own token (162-REVIEW CR-05). This function creates a candidate in `projectId`, writes that candidate's entity grant and sends an invitation, all through the service-role client below -- so this is the only check standing between a caller and another tenant's project. It used to be a TypeScript re-derivation of the matrix over the raw `grants` claim, and it admitted an account admin of ANY account (it never resolved which account owns `projectId`) while refusing a ProjectEditor the matrix grants `project.edit_entities`. SPEC section 9 forbids that second copy; `user_can` holds the reach rules, including the project-to-account hop.
+    //
+    // The permission is `project.edit_entities`: inviting a candidate creates an entity in the project. A caller with no grants claim, or a claim the hook did not write, is denied by `user_can` itself.
+    const mayInvite = await callerMayOnProject(callerClient, projectId, 'project.edit_entities');
 
-    const isAdmin = userRoles.some(
-      (r) =>
-        r.role === 'super_admin' ||
-        r.role === 'account_admin' ||
-        (r.role === 'project_admin' && r.scope_type === 'project' && r.scope_id === projectId)
-    );
-
-    if (!isAdmin) {
-      return new Response(JSON.stringify({ error: 'Forbidden: caller does not have admin role for this project' }), {
+    if (!mayInvite) {
+      return new Response(JSON.stringify({ error: 'Forbidden: caller may not create candidates in this project' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -108,9 +104,6 @@ Deno.serve(async (req) => {
       last_name: lastName,
       project_id: projectId
     };
-    if (organizationId) {
-      candidateInsert.organization_id = organizationId;
-    }
 
     const { data: candidate, error: candidateError } = await supabaseAdmin
       .from('candidates')
@@ -128,7 +121,8 @@ Deno.serve(async (req) => {
     // -------------------------------------------------------------------------
     // 5. Send invite email
     // -------------------------------------------------------------------------
-    const siteUrl = Deno.env.get('SITE_URL') || Deno.env.get('SUPABASE_URL');
+    // This read used to fall back to the Supabase API host, which is a wrong-host default rather than a degraded one: an unset SITE_URL addressed the invite link at the API origin, so the recipient followed a link that could not complete their registration, and nothing in the deployment reported a problem -- REVIEW-EDGE-02.
+    const siteUrl = requireEnv('SITE_URL', Deno.env.get('SITE_URL'));
     const redirectTo = `${siteUrl}/candidate/complete-registration`;
 
     const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
@@ -147,19 +141,29 @@ Deno.serve(async (req) => {
     }
 
     // -------------------------------------------------------------------------
-    // 6. Create role assignment
+    // 6. Write the grant that makes the invited identity able to act
     // -------------------------------------------------------------------------
-    const { error: roleError } = await supabaseAdmin.from('user_roles').insert({
-      user_id: inviteData.user.id,
-      role: 'candidate',
-      scope_type: 'candidate',
-      scope_id: candidate.id
-    });
+    // THIS FAILURE ABORTS, and the comment that used to sit here is the reason rather than an argument against it: the invite email has already been sent. Under the grant model an identity holding no grant row can do nothing at all -- the access-token hook projects the grant table and the claim it builds for a grant-less user answers false for every permission -- so reporting success here hands a candidate an invite into an application that will refuse them everything, with no error anywhere to attribute it to.
+    //
+    // The rollback undoes EVERYTHING this request created (162-REVIEW WR-07): the invited auth user as well as the candidate row. Deleting only the candidate left the invited `auth.users` row behind, so a retry failed with "already registered" while the invitee held a live invite link to an account with no authority. Deleting the auth user also removes any grant row it holds (`grants.user_id` is ON DELETE CASCADE).
+    //
+    // The entity type is named HERE and nowhere else in this function: the grant write itself is entity-type parameterised, so adding a second entity kind later is a second call site rather than a change to the write.
+    try {
+      await writeEntityGrant(supabaseAdmin, {
+        userId: inviteData.user.id,
+        entityType: 'candidate',
+        entityId: candidate.id
+      });
+    } catch (grantErr) {
+      await rollbackInvite(supabaseAdmin, { candidateId: candidate.id, userId: inviteData.user.id });
 
-    if (roleError) {
-      // Log but don't fail -- invite email already sent, user can still complete registration.
-      // The role can be assigned manually later if needed.
-      console.error('Failed to create role assignment:', roleError.message);
+      return new Response(
+        JSON.stringify({
+          error: 'Failed to grant the invited candidate access to their own record',
+          details: grantErr instanceof Error ? grantErr.message : String(grantErr)
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // -------------------------------------------------------------------------
@@ -170,9 +174,14 @@ Deno.serve(async (req) => {
       .update({ auth_user_id: inviteData.user.id })
       .eq('id', candidate.id);
 
+    // FATAL, with the same full rollback (162-REVIEW WR-07). This used to be logged and followed by a success response, but `get_candidate_user_data` resolves the candidate's own row by `auth_user_id`, so an unlinked candidate holds a grant yet can never load their own record -- the invite "succeeds" into an account that cannot work, and nothing later establishes the link.
     if (linkError) {
-      // Log but don't fail -- the link can be established later
-      console.error('Failed to link auth user to candidate:', linkError.message);
+      await rollbackInvite(supabaseAdmin, { candidateId: candidate.id, userId: inviteData.user.id });
+
+      return new Response(
+        JSON.stringify({ error: 'Failed to link the invited user to the candidate record', details: linkError.message }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // -------------------------------------------------------------------------
@@ -187,10 +196,31 @@ Deno.serve(async (req) => {
       { status: 201, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Internal server error';
-    return new Response(JSON.stringify({ error: message }), {
+    // Logged, never returned. This arm now catches the ERR_ENV_UNCONFIGURED throw above, whose message names an environment variable; echoing it would hand a caller the deployment's configuration surface in exchange for a misconfiguration. Matches the identity-callback convention.
+    console.error('invite-candidate error:', err);
+
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 });
+
+/**
+ * Undo an invitation that failed after the invite was sent: delete the invited auth user -- which also removes any grant row it holds, because `grants.user_id` is ON DELETE CASCADE -- and the candidate row this request created (162-REVIEW WR-07).
+ *
+ * Best effort by design: a rollback step that fails is logged and the next one still runs, because the caller is already returning a failure and a throw here would replace that failure's message with the rollback's.
+ * @param supabaseAdmin - The service-role client.
+ * @param ids.candidateId - The candidate row this request inserted.
+ * @param ids.userId - The auth user this request invited.
+ */
+async function rollbackInvite(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  { candidateId, userId }: { candidateId: string; userId: string }
+): Promise<void> {
+  const { error: userError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+  if (userError) console.error('invite-candidate rollback: failed to delete the invited auth user:', userError.message);
+  const { error: candidateError } = await supabaseAdmin.from('candidates').delete().eq('id', candidateId);
+  if (candidateError)
+    console.error('invite-candidate rollback: failed to delete the candidate row:', candidateError.message);
+}

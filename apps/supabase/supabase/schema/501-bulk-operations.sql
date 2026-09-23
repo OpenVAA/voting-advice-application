@@ -1,16 +1,13 @@
 -- Bulk import and delete RPC functions
 --
 -- Provides transactional bulk data management operations:
---   bulk_import(data jsonb)  - upsert records by external_id with relationship resolution
---   bulk_delete(data jsonb)  - delete records by prefix, UUID list, or external_id list
+--   bulk_import(data jsonb)  - upsert records by external_id with relationship resolution bulk_delete(data jsonb)  - delete records by prefix, UUID list, or external_id list
 --
 -- Both functions are SECURITY INVOKER so admin RLS policies are enforced.
--- PostgREST automatically wraps RPC calls in transactions, providing
--- all-or-nothing guarantees without explicit transaction management.
+-- PostgREST automatically wraps RPC calls in transactions, providing all-or-nothing guarantees without explicit transaction management.
 --
--- Depends on: 015-external-id.sql (external_id columns + unique indexes)
---             010-rls.sql (admin RLS policies via can_access_project)
-
+-- Depends on: 500-external-id.sql (external_id columns + unique indexes)
+--             302-rls.sql (admin RLS policies via user_can)
 --------------------------------------------------------------------------------
 -- resolve_external_ref: resolve an external_id reference to a UUID
 --
@@ -21,14 +18,11 @@
 --
 -- Raises exception if external_id not found in target table.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.resolve_external_ref(
+CREATE OR REPLACE FUNCTION public.resolve_external_ref (
   p_ref jsonb,
   p_target_table text,
   p_project_id uuid
-)
-RETURNS uuid
-LANGUAGE plpgsql
-AS $$
+) RETURNS uuid LANGUAGE plpgsql AS $$
 DECLARE
   resolved_id uuid;
   ext_id text;
@@ -74,20 +68,15 @@ $$;
 -- Handles relationship field resolution using resolve_external_ref().
 -- Returns true if the row was inserted (created), false if updated.
 --
--- Relationship mapping defines which JSON keys map to FK columns and
--- which target tables they reference.
+-- Relationship mapping defines which JSON keys map to FK columns and which target tables they reference.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public._bulk_upsert_record(
+CREATE OR REPLACE FUNCTION public._bulk_upsert_record (
   p_table_name text,
   p_item jsonb,
   p_project_id uuid
-)
-RETURNS boolean
-LANGUAGE plpgsql
-AS $$
+) RETURNS boolean LANGUAGE plpgsql AS $$
 DECLARE
   -- Relationship mappings: json_key -> (fk_column, target_table)
-  rel_key text;
   rel_fk_col text;
   rel_target text;
   relationships jsonb;
@@ -113,7 +102,8 @@ BEGIN
   -- Define relationship mappings per table
   relationships := '{}'::jsonb;
   CASE p_table_name
-    WHEN 'candidates' THEN
+    -- 162-07b moved this arm off `candidates`, whose organization column is gone, and onto `factions`, whose organization column is now NOT NULL. The `candidates` arm is REMOVED rather than left declaring an empty object: an empty arm and a missing arm behave identically here (the ELSE supplies '{}'), and the one that says nothing is the one that cannot be misread as a relationship still being resolved. `RELATIONSHIP_REFS` in packages/dev-seed/src/template/permittedKeys.ts is the TypeScript transcription of this block, and the two-directional parity test in that package reads this SQL from disk -- so this CASE and that const must move in the same change or the test reddens naming whichever side lags.
+    WHEN 'factions' THEN
       relationships := '{"organization": {"fk": "organization_id", "table": "organizations"}}'::jsonb;
     WHEN 'nominations' THEN
       relationships := '{
@@ -190,8 +180,7 @@ BEGIN
     END IF;
   END LOOP;
 
-  -- Build and execute upsert SQL
-  -- ON CONFLICT uses the partial unique index on (project_id, external_id) WHERE external_id IS NOT NULL
+  -- Build and execute upsert SQL ON CONFLICT uses the partial unique index on (project_id, external_id) WHERE external_id IS NOT NULL
   sql_text := format(
     'INSERT INTO public.%I (%s) VALUES (%s) ON CONFLICT (project_id, external_id) WHERE external_id IS NOT NULL DO UPDATE SET %s RETURNING (xmax = 0) AS inserted',
     p_table_name,
@@ -209,27 +198,18 @@ $$;
 --------------------------------------------------------------------------------
 -- bulk_import: import collection-keyed JSON data with transactional guarantee
 --
--- Input format:
--- {
---   "elections": [{"external_id": "election-2024", "name": {...}, ...}],
---   "candidates": [{"external_id": "cand-001", "organization": {"external_id": "party-sdp"}, ...}],
---   "nominations": [{"external_id": "nom-001", "candidate": {"external_id": "cand-001"}, ...}]
--- }
+-- Input format: {
+--   "elections": [{"external_id": "election-2024", "name": {...}, ...}], "candidates": [{"external_id": "cand-001", "organization": {"external_id": "org-sdp"}, ...}], "nominations": [{"external_id": "nom-001", "candidate": {"external_id": "cand-001"}, ...}] }
 --
 -- Each item MUST include:
 --   - "external_id": unique identifier within the project
 --   - "project_id": UUID of the target project (for RLS enforcement)
 --
--- Relationship fields (e.g., "organization", "election") are expressed as
--- {"external_id": "..."} objects and resolved to UUIDs internally.
+-- Relationship fields (e.g., "organization", "election") are expressed as {"external_id": "..."} objects and resolved to UUIDs internally.
 --
 -- Returns: {"elections": {"created": N, "updated": M}, ...}
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.bulk_import(p_data jsonb)
-RETURNS jsonb
-LANGUAGE plpgsql
-SECURITY INVOKER
-AS $$
+CREATE OR REPLACE FUNCTION public.bulk_import (p_data jsonb) RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER AS $$
 DECLARE
   collection_name text;
   collection_data jsonb;
@@ -301,13 +281,8 @@ $$;
 --------------------------------------------------------------------------------
 -- bulk_delete: delete records by prefix, UUID list, or external_id list
 --
--- Input format:
--- {
---   "project_id": "uuid",
---   "collections": {
---     "elections": {"prefix": "import-2024-"},
---     "candidates": {"ids": ["uuid-1", "uuid-2"]},
---     "nominations": {"external_ids": ["nom-1", "nom-2"]}
+-- Input format: {
+--   "project_id": "uuid", "collections": { "elections": {"prefix": "import-2024-"}, "candidates": {"ids": ["uuid-1", "uuid-2"]}, "nominations": {"external_ids": ["nom-1", "nom-2"]}
 --   }
 -- }
 --
@@ -319,11 +294,7 @@ $$;
 -- Processes in reverse dependency order to avoid FK violations.
 -- Returns: {"elections": {"deleted": N}, ...}
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.bulk_delete(p_data jsonb)
-RETURNS jsonb
-LANGUAGE plpgsql
-SECURITY INVOKER
-AS $$
+CREATE OR REPLACE FUNCTION public.bulk_delete (p_data jsonb) RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER AS $$
 DECLARE
   p_project_id uuid;
   collections jsonb;
@@ -424,10 +395,13 @@ $$;
 --------------------------------------------------------------------------------
 -- Grant execute to authenticated role
 --
--- Functions are SECURITY INVOKER, so RLS policies are enforced even though
--- the authenticated role can call them. Only users with can_access_project()
--- (admins) will be able to successfully import/delete data.
+-- Functions are SECURITY INVOKER, so RLS policies are enforced even though the authenticated role can call them. Only callers whom user_can answers true for on the target project's rows (admins) will be able to successfully import/delete data.
 --------------------------------------------------------------------------------
-GRANT EXECUTE ON FUNCTION public.bulk_import(jsonb) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.bulk_delete(jsonb) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.resolve_external_ref(jsonb, text, uuid) TO authenticated;
+GRANT
+EXECUTE ON FUNCTION public.bulk_import (jsonb) TO authenticated;
+
+GRANT
+EXECUTE ON FUNCTION public.bulk_delete (jsonb) TO authenticated;
+
+GRANT
+EXECUTE ON FUNCTION public.resolve_external_ref (jsonb, text, uuid) TO authenticated;

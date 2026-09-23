@@ -1,61 +1,62 @@
 -- Question categories and questions
 --
 -- Includes validation trigger: choice-type questions must have valid choices array.
-
 CREATE TABLE public.question_categories (
-  id              uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id      uuid          NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
-  name            jsonb,
-  short_name      jsonb,
-  info            jsonb,
-  color           jsonb,
-  image           jsonb,
-  sort_order      integer,
-  subtype         text,
-  custom_data     jsonb,
-  is_generated    boolean       DEFAULT false,
-  created_at      timestamptz   NOT NULL DEFAULT now(),
-  updated_at      timestamptz   NOT NULL DEFAULT now(),
-  category_type   public.category_type DEFAULT 'opinion',
-  election_ids    jsonb,
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id uuid NOT NULL REFERENCES public.projects (id) ON DELETE CASCADE,
+  name jsonb,
+  short_name jsonb,
+  info jsonb,
+  color jsonb,
+  image jsonb,
+  sort_order integer,
+  subtype text,
+  custom_data jsonb,
+  is_generated boolean DEFAULT false,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  category_type public.category_type DEFAULT 'opinion',
+  election_ids jsonb,
   election_rounds jsonb,
   constituency_ids jsonb,
-  entity_type     jsonb
+  entity_type jsonb,
+  external_id text
 );
 
 CREATE TRIGGER set_updated_at
-  BEFORE UPDATE ON public.question_categories
-  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+BEFORE UPDATE ON public.question_categories FOR EACH ROW
+EXECUTE FUNCTION public.update_updated_at ();
 
 CREATE TABLE public.questions (
-  id              uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id      uuid          NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
-  name            jsonb,
-  short_name      jsonb,
-  info            jsonb,
-  color           jsonb,
-  image           jsonb,
-  sort_order      integer,
-  subtype         text,
-  custom_data     jsonb,
-  is_generated    boolean       DEFAULT false,
-  created_at      timestamptz   NOT NULL DEFAULT now(),
-  updated_at      timestamptz   NOT NULL DEFAULT now(),
-  type            public.question_type NOT NULL,
-  category_id     uuid          NOT NULL REFERENCES public.question_categories(id),
-  choices         jsonb,
-  settings        jsonb,
-  election_ids    jsonb,
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id uuid NOT NULL REFERENCES public.projects (id) ON DELETE CASCADE,
+  name jsonb,
+  short_name jsonb,
+  info jsonb,
+  color jsonb,
+  image jsonb,
+  sort_order integer,
+  subtype text,
+  custom_data jsonb,
+  is_generated boolean DEFAULT false,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  type public.question_type NOT NULL,
+  category_id uuid NOT NULL REFERENCES public.question_categories (id),
+  choices jsonb,
+  settings jsonb,
+  election_ids jsonb,
   election_rounds jsonb,
   constituency_ids jsonb,
-  entity_type     jsonb,
-  allow_open      boolean       DEFAULT true,
-  required        boolean       DEFAULT true
+  entity_type jsonb,
+  allow_open boolean DEFAULT true,
+  required boolean DEFAULT true,
+  external_id text
 );
 
 CREATE TRIGGER set_updated_at
-  BEFORE UPDATE ON public.questions
-  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+BEFORE UPDATE ON public.questions FOR EACH ROW
+EXECUTE FUNCTION public.update_updated_at ();
 
 --------------------------------------------------------------------------------
 -- validate_question_choices: enforce valid choices for choice-type questions
@@ -67,8 +68,7 @@ CREATE TRIGGER set_updated_at
 --
 -- Uses is_valid_choice_id helper from 011-validation-functions.sql.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.validate_question_choices()
-RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION public.validate_question_choices () RETURNS TRIGGER AS $$
 DECLARE
   p_choice JSONB;
   p_choice_count INTEGER;
@@ -110,5 +110,5 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER validate_question_choices_before_insert_or_update
-  BEFORE INSERT OR UPDATE ON public.questions
-  FOR EACH ROW EXECUTE FUNCTION public.validate_question_choices();
+BEFORE INSERT OR UPDATE ON public.questions FOR EACH ROW
+EXECUTE FUNCTION public.validate_question_choices ();
