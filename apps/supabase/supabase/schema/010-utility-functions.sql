@@ -1,14 +1,11 @@
 -- Utility functions
 --
 -- Functions:
---   update_updated_at()  - trigger for automatic updated_at timestamps
---   get_localized()      - extract locale string from JSONB (email helpers only)
-
+--   update_updated_at()  - trigger for automatic updated_at timestamps get_localized()      - extract locale string from JSONB (email helpers only)
 --------------------------------------------------------------------------------
 -- update_updated_at
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.update_updated_at()
-RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION public.update_updated_at () RETURNS TRIGGER AS $$
 BEGIN
   NEW.updated_at = now();
   RETURN NEW;
@@ -18,9 +15,7 @@ $$ LANGUAGE plpgsql;
 --------------------------------------------------------------------------------
 -- get_localized: extract locale string from JSONB with fallback chain
 --
--- NOTE: Only used by email helpers (502-email-helpers.sql) for server-side
--- variable resolution. Voter/candidate API responses return all locales as
--- JSONB; locale selection happens client-side.
+-- NOTE: Only used by email helpers (502-email-helpers.sql) for server-side variable resolution. Voter/candidate API responses return all locales as JSONB; locale selection happens client-side.
 --
 -- Fallback order:
 --   1. p_val->>p_locale          (requested locale)
@@ -28,14 +23,11 @@ $$ LANGUAGE plpgsql;
 --   3. first available key       (any content is better than NULL)
 --   4. NULL                      (p_val is NULL or empty)
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.get_localized(
-    p_val JSONB,
-    p_locale TEXT,
-    p_default_locale TEXT DEFAULT 'en'
-)
-RETURNS TEXT
-LANGUAGE plpgsql IMMUTABLE
-AS $$
+CREATE OR REPLACE FUNCTION public.get_localized (
+  p_val JSONB,
+  p_locale TEXT,
+  p_default_locale TEXT DEFAULT 'en'
+) RETURNS TEXT LANGUAGE plpgsql IMMUTABLE AS $$
 BEGIN
   IF p_val IS NULL THEN
     RETURN NULL;

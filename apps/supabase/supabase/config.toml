@@ -1,5 +1,8 @@
 # For detailed configuration reference documentation, visit:
 # https://supabase.com/docs/guides/local-development/cli/config
+#
+# Every port below is a literal, not an environment lookup. See "Local ports" in
+# ../README.md for the full list of ten and what pinning them costs.
 # A string used to distinguish different Supabase projects on the same host. Defaults to the
 # working directory name when running `supabase init`.
 project_id = "openvaa-local"
@@ -15,7 +18,15 @@ schemas = ["public", "graphql_public"]
 extra_search_path = ["public", "extensions"]
 # The maximum number of rows returns from a view, table, or stored procedure. Limits payload size
 # for accidental or malicious requests.
-max_rows = 1000
+#
+# Raised from Supabase's default 1000: the frontend adapter reads each collection in ONE request and does
+# not paginate, so a response over the cap was silently truncated (a Helsinki-sized constituency returned
+# 1000 of 1510 nominations with HTTP 200; spike 026, finding F1). 50000 holds the largest Finnish election
+# (municipal, ~39k nominations) in a single response.
+# ⚠ This file configures the LOCAL stack only. A hosted Supabase project sets the same limit in its
+# dashboard (Project Settings -> Data API -> Max rows) and keeps 1000 until someone changes it. See
+# .planning/todos/pending/2026-09-18-document-supabase-api-limits-for-deployments.md.
+max_rows = 50000
 
 [api.tls]
 # Enable HTTPS endpoints locally using a self-signed certificate.
@@ -127,13 +138,12 @@ file_size_limit = "500MiB"
 enabled = true
 
 # Image transformation API is available to Supabase Pro plan.
-# see phase 83 D-01c escalation: re-enabled to unblock the
-# filechooser TIMEOUT cascade in cold-start E2E (the imgproxy container
-# is required for the image-upload happy path; without it, the
-# storage layer may fail to acknowledge the multipart upload and the
-# filechooser event never settles). D-01a (selector fix) and D-01b
-# (500ms settle delay) were both insufficient — see
-# post-fix/smoke-output.txt for the audit.
+# Enabled deliberately: the imgproxy container is required for the
+# image-upload happy path in cold-start E2E. Without it the storage
+# layer may fail to acknowledge the multipart upload, the filechooser
+# event never settles, and the run collapses into a TIMEOUT cascade.
+# Test-side workarounds (a selector fix, then a 500ms settle delay) were
+# both tried and were insufficient; the container is the fix.
 [storage.image_transformation]
 enabled = true
 
@@ -164,7 +174,24 @@ enabled = true
 # in emails.
 site_url = "http://127.0.0.1:5173"
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://127.0.0.1:3000", "http://127.0.0.1:5173/en/candidate/auth/callback"]
+# Two things about this list were MEASURED against the running auth service rather than assumed, and
+# both change how it should be read.
+#
+# 1. The list is not the whole matcher. The auth service first compares the HOSTNAME of the requested
+#    redirect against the hostname of `site_url` above and allows any match outright, ignoring scheme,
+#    port and path. Every URL on `127.0.0.1` is therefore already permitted here and needs no entry.
+#    `localhost` is a different hostname, so URLs on it are matched against this list and only this
+#    list. The browser reaches the dev server on `localhost`, which is why both entries below name it.
+# 2. A single `*` is honoured and does not cross a path separator. `/*/` matches exactly one segment,
+#    so the second entry admits one locale prefix and nothing else. It was measured accepting
+#    `/fi/api/candidate/auth/callback` and rejecting `/fi/en/api/...`, `/api/...`,
+#    `/fi/api/candidate/auth/callback/extra`, `/fi/api/evil` and `/`.
+#
+# The first entry is the base locale, which Paraglide serves unprefixed. The second is every other
+# locale. Do NOT replace either with a trailing wildcard, a prefix wildcard, a bare `**` or a host
+# wildcard: those stop pinning the path suffix or the host and turn a closed redirect boundary into
+# an open one.
+additional_redirect_urls = ["https://127.0.0.1:3000", "http://localhost:5173/api/candidate/auth/callback", "http://localhost:5173/*/api/candidate/auth/callback"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to the local API URL (http://127.0.0.1:<port>/auth/v1).
@@ -376,8 +403,10 @@ inspector_port = 8083
 # The Deno major version to use.
 deno_version = 2
 
-# [edge_runtime.secrets]
-# secret_key = "env(SECRET_VALUE)"
+[edge_runtime.secrets]
+# The entry names an environment variable and carries no value, so nothing secret enters git.
+# identity-callback requires this variable and refuses to run without it.
+PUBLIC_PROJECT_ID = "env(PUBLIC_PROJECT_ID)"
 
 [analytics]
 enabled = true

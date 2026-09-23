@@ -1,25 +1,20 @@
--- JSONB answer storage
+-- JSONB answer validation, cascade and type-change protection
 --
--- Stores answers as a JSONB column on candidates and organizations:
--- Record<QuestionId, {value: ..., info?: ...}>
+-- Answers are stored as a JSONB column shaped Record<QuestionId, {value: ..., info?: ...}> on public.candidates and public.organizations.
+-- Both columns are declared in those tables' CREATE TABLE bodies in 102-entities.sql; this file owns the behaviour that keeps their contents valid.
 --
 -- Features:
 --   1. Smart validation trigger: validates only changed answer keys on UPDATE
 --   2. Question delete cascade: removes orphaned answer keys when a question is deleted
 --   3. Question type change protection: prevents type changes that would invalidate existing answers
-
-ALTER TABLE public.candidates ADD COLUMN answers jsonb DEFAULT '{}'::jsonb;
-ALTER TABLE public.organizations ADD COLUMN answers jsonb DEFAULT '{}'::jsonb;
-
+--
+-- Depends on: 102-entities.sql, 103-questions.sql
 --------------------------------------------------------------------------------
 -- JSONB answer validation trigger function (smart: validates only changed keys)
 --
--- On INSERT: validates all keys
--- On UPDATE: validates only new or modified keys (skips unchanged)
--- Short-circuits if answers column is unchanged or empty
+-- On INSERT: validates all keys On UPDATE: validates only new or modified keys (skips unchanged) Short-circuits if answers column is unchanged or empty
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.validate_answers_jsonb()
-RETURNS trigger AS $$
+CREATE OR REPLACE FUNCTION public.validate_answers_jsonb () RETURNS trigger AS $$
 DECLARE
   p_question_id text;
   p_answer_value jsonb;
@@ -70,18 +65,17 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER validate_answers_before_insert_or_update
-BEFORE INSERT OR UPDATE ON public.candidates
-FOR EACH ROW EXECUTE FUNCTION public.validate_answers_jsonb();
+BEFORE INSERT OR UPDATE ON public.candidates FOR EACH ROW
+EXECUTE FUNCTION public.validate_answers_jsonb ();
 
 CREATE TRIGGER validate_answers_before_insert_or_update
-BEFORE INSERT OR UPDATE ON public.organizations
-FOR EACH ROW EXECUTE FUNCTION public.validate_answers_jsonb();
+BEFORE INSERT OR UPDATE ON public.organizations FOR EACH ROW
+EXECUTE FUNCTION public.validate_answers_jsonb ();
 
 --------------------------------------------------------------------------------
 -- Question delete cascade: remove orphaned answer keys from JSONB
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.cascade_question_delete_to_jsonb_answers()
-RETURNS trigger AS $$
+CREATE OR REPLACE FUNCTION public.cascade_question_delete_to_jsonb_answers () RETURNS trigger AS $$
 BEGIN
   UPDATE public.candidates
   SET answers = answers - OLD.id::text
@@ -98,14 +92,13 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER cascade_question_delete_to_answers
-AFTER DELETE ON public.questions
-FOR EACH ROW EXECUTE FUNCTION public.cascade_question_delete_to_jsonb_answers();
+AFTER DELETE ON public.questions FOR EACH ROW
+EXECUTE FUNCTION public.cascade_question_delete_to_jsonb_answers ();
 
 --------------------------------------------------------------------------------
 -- Question type/choices change protection
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.validate_question_type_change()
-RETURNS trigger AS $$
+CREATE OR REPLACE FUNCTION public.validate_question_type_change () RETURNS trigger AS $$
 DECLARE
   p_entity_record record;
   p_valid_choices jsonb;
@@ -154,5 +147,5 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER validate_question_type_change_trigger
-BEFORE UPDATE ON public.questions
-FOR EACH ROW EXECUTE FUNCTION public.validate_question_type_change();
+BEFORE UPDATE ON public.questions FOR EACH ROW
+EXECUTE FUNCTION public.validate_question_type_change ();

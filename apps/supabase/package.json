@@ -12,9 +12,11 @@
     "lint:sql": "supabase db lint --schema public --fail-on warning",
     "lint:schema": "node scripts/lint-schema.mjs",
     "lint:all": "yarn lint:sql && yarn lint:schema",
-    "test:unit": "vitest run"
+    "test:unit": "vitest run",
+    "test:db": "supabase test db"
   },
   "devDependencies": {
+    "jose": "^6.2.1",
     "supabase": "catalog:",
     "vitest": "catalog:"
   }
