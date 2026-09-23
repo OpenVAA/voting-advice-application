@@ -1,0 +1,24 @@
+upload as service_role: HTTP 200
+anon_select_public_assets qual md5 (shipped): 2c137e2b
+
+== SHIPPED policy
+  200  GET /object/public/…  (what the voter app uses)      70 bytes
+  200  GET /object/authenticated/… (RLS read)               70 bytes
+  200  POST /object/list (RLS list)                         1 objects listed
+  200  GET /object/info/public/…                            436 bytes
+
+== HTTP latency, shipped policy, anon
+  GET /object/public/…                                 median 3.0 ms  p95 5.6 ms  (n=50)
+  GET /object/authenticated/… (evaluates the policy)   median 3.0 ms  p95 4.5 ms  (n=50)
+
+anon_select_public_assets qual md5 (PERTURBED to false): 68934a3e
+
+== PERTURBED policy: USING (false) - denies every row
+  200  GET /object/public/…  (what the voter app uses)      70 bytes
+  200  GET /object/authenticated/… (RLS read)               70 bytes
+  200  POST /object/list (RLS list)                         0 objects listed
+  200  GET /object/info/public/…                            436 bytes
+
+cleanup: delete as service_role HTTP 200
+
+(policy left perturbed on purpose; `yarn db:reset` restores the committed schema)

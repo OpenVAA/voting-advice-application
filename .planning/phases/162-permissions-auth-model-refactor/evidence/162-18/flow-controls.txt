@@ -1,0 +1,36 @@
+# 162-18 flow-gate controls (D-37: reddened = T0 minus passed; failure lines are never counted)
+# HEAD: 400366a27932f0f8442cce0c930c4e2ac20f346a (working tree carries this plan's uncommitted flow-conformance edits)
+# Date: 2026-09-19T15:28:15Z
+# Method: scratch copy under apps/supabase/.m18-controls (supabase/functions/<fn>/*.ts, supabase/functions/invite-candidate/callerAuthority.ts, supabase/schema/000-enums.sql + 301-auth-functions.sql), pristine re-copy before every control, run with node_modules/.bin/vitest run --root apps/supabase/.m18-controls <file> --reporter=json; counts read from numPassedTests.
+
+## invite-candidate (Task 1)
+T0 invite-candidate: passed=17 of total=17 (unperturbed scratch copy)
+G1 [invite-candidate] plant: perl -0pi -e 's/if \(!mayInvite\)/if (false)/' index.ts | plant applied: 1 | T0=17 | passed=16 | reddened: 1 | failing: "refuses on the answer of the gate, with a 403, before the service-role client exists"
+G2 [invite-candidate] plant: perl -0pi -e 's/^import \{ callerMayOnProject \} from .\.\/callerAuthority\.ts.;\n//m' index.ts && printf '\nasync function callerMayOnProject(..._args: unknown[]): Promise<boolean> { return true; } // PLANTED-SHADOW\n' >> index.ts | plant applied: 1 | T0=17 | passed=16 | reddened: 1 | failing: "takes its gate from the shared callerAuthority module and declares none of its own"
+G3 [invite-candidate] plant: perl -0pi -e 's/await callerMayOnProject\(callerClient, projectId, .project\.edit_entities.\)/<hand-rolled claim check>/' index.ts where <hand-rolled claim check> = (JSON.parse(atob(authHeader.replace('Bearer ', '').split('.')[1])).grants ?? []).some((g) => (g.scope === 'global' && g.role === 'admin') || (g.scope === 'account' && g.role === 'admin') || (g.scope === 'project' && g.role === 'admin' && g.target_id === projectId)) /* PLANTED-CLAIM-GATE */ | plant applied: 1 | T0=17 | passed=14 | reddened: 3 | failing: "asks the database for the authority decision rather than re-deriving it (SPEC section 9, 162-REVIEW CR-05)"; "refuses on the answer of the gate, with a 403, before the service-role client exists"; "asks the gate through the CALLER client, never the service-role client"
+G4 [invite-candidate] plant: perl -0pi -e 's/(CREATE OR REPLACE FUNCTION public\.user_can \(\s*p_scope public\.grant_scope_type,\s*)p_target_id/${1}p_target_uuid/' schema/301-auth-functions.sql | plant applied: 1 | T0=17 | passed=16 | reddened: 1 | failing: "binds the gate RPC to the parameter names user_can declares in the schema"
+
+scratch tree removed: yes
+git status --porcelain after removal (Task 1):
+ M .planning/STATE.md
+ M .planning/config.json
+ M .planning/state.json
+ M apps/supabase/supabase/functions/invite-candidate/flowConformance.test.ts
+?? .planning/milestone.lock
+?? .planning/phases/162-permissions-auth-model-refactor/evidence/
+
+## send-email (Task 2) — HEAD 5e2b19665aa6c00d74940158b66500a767645e98, 2026-09-19T15:31:21Z; the scratch copy also carried invite-candidate/callerAuthority.ts for the byte-identity test
+T0 send-email: passed=16 of total=16 (unperturbed scratch copy)
+G1s [send-email] plant: perl -0pi -e 's/if \(!mayBulkSend\)/if (false)/' index.ts | plant applied: 1 | T0=16 | passed=15 | reddened: 1 | failing: "refuses on the answer of the gate, with a 403, before the service-role client exists"
+G2s [send-email] plant: perl -0pi -e 's/^import \{ callerMayOnProject \} from .\.\/callerAuthority\.ts.;\n//m' index.ts && printf '\nasync function callerMayOnProject(..._args: unknown[]): Promise<boolean> { return true; } // PLANTED-SHADOW\n' >> index.ts | plant applied: 1 | T0=16 | passed=15 | reddened: 1 | failing: "takes its gate from the shared callerAuthority module and declares none of its own"
+G3s [send-email] plant: perl -0pi -e 's/await callerMayOnProject\(callerClient, project_id, .project\.edit_entities.\)/<hand-rolled claim check>/' index.ts where <hand-rolled claim check> = (JSON.parse(atob(authHeader.replace('Bearer ', '').split('.')[1])).grants ?? []).some((g) => (g.scope === 'global' && g.role === 'admin') || (g.scope === 'account' && g.role === 'admin') || (g.scope === 'project' && (g.role === 'admin' || g.role === 'editor') && g.target_id === project_id)) /* PLANTED-CLAIM-GATE */ | plant applied: 1 | T0=16 | passed=13 | reddened: 3 | failing: "asks the database for the authority decision rather than re-deriving it (SPEC section 9, 162-REVIEW WR-09)"; "refuses on the answer of the gate, with a 403, before the service-role client exists"; "asks the gate through the CALLER client, before the service-role client exists"
+G5 [send-email] plant: perl -0pi -e 's/p_project_id: configuredProjectId/p_project_id: project_id/' index.ts | plant applied: 1 | T0=16 | passed=15 | reddened: 1 | failing: "binds bulk send to the configured project after the gate, and resolves recipients only in that project"
+
+scratch tree removed: yes
+git status --porcelain after removal (Task 2):
+ M .planning/STATE.md
+ M .planning/config.json
+ M .planning/phases/162-permissions-auth-model-refactor/evidence/162-18/flow-controls.txt
+ M .planning/state.json
+ M apps/supabase/supabase/functions/send-email/flowConformance.test.ts
+?? .planning/milestone.lock

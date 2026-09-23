@@ -1,0 +1,15 @@
+162.1-07 Task 1 — GREEN after the fix
+
+GREEN ATTEMPT 1 (tests/e2e-runs/162.1-07-green-run01-red), with the adapter returning { access: { voterApp: false } }
+  exit: 1; observed_expected=161 observed_unexpected=1 observed_flaky=0 observed_skipped=0
+  PASSED: anon voter home shows the not-released maintenance page, not an error
+  FAILED: anon can reach the candidate login and the admin login on a closed project
+    getByTestId('login-email') not found; the page snapshot was the CANDIDATE maintenance page:
+    heading "Sorry, the Election Compass for Candidates is not yet available" [level=1]
+  Root cause: the app context merges DB settings with mergeAppSettings (apps/frontend/src/lib/utils/settings.ts), a SHALLOW root-key merge, so a bare { voterApp: false } replaced the whole `access` object and `candidateApp` became undefined (falsy) -> candidate/+layout.svelte rendered MaintenancePage.
+  Fix: the adapter returns { access: { ...dynamicSettings.access, voterApp: false } }.
+
+GREEN ATTEMPT 2 — the plan's command
+  tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/162.1-07-green --project perm-closed-project
+  exit: 0; preflight failures 0, successes 1
+  observed_expected=162 observed_unexpected=0 observed_flaky=0 observed_skipped=0

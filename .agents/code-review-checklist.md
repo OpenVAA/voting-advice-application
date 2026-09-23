@@ -23,7 +23,7 @@ When performing code review, double check all of the items below:
 
 _Apply when changes touch `apps/supabase/` or database-related code._
 
-- [ ] New content tables include all common columns (id, project_id, name, published, external_id, etc.) with correct types and defaults.
+- [ ] New content tables include all common columns (id, project_id, name, external_id, etc.) with correct types and defaults. There is NO per-row publication column: public visibility is section 3.4's all-of rule (the project is open for voters, the nomination is confirmed, every entity that nomination links is confirmed), and 162-16 deleted the last of the ten flags that answered the same question a second way.
 - [ ] RLS is enabled on new tables with at least the standard 5-policy pattern (anon_select, authenticated_select, admin_insert, admin_update, admin_delete).
 - [ ] RLS policies use `(SELECT auth.uid())` and `(SELECT auth.jwt())` scalar subqueries — never bare function calls.
 - [ ] RLS policies specify `TO anon` or `TO authenticated` — never omit the role target.
@@ -45,6 +45,6 @@ _Apply when changes touch `apps/frontend/src/lib/api/adapters/supabase/`._
 
 _Apply when changes touch `apps/supabase/supabase/functions/`._
 
-- [ ] Edge Functions verify caller is admin via JWT claims before performing privileged operations.
+- [ ] Edge Functions decide authority by asking `user_can` through the caller's own token (the shared `callerMayOnProject` helper in `callerAuthority.ts`), never by reading the grants claim in TypeScript, and refuse before any service-role client exists.
 - [ ] Edge Functions use `createClient()` with `service_role` key for privileged database operations.
 - [ ] Error responses include appropriate HTTP status codes and descriptive error messages.

@@ -4,7 +4,7 @@ title: Disable hover and pointer on disabled Results header button
 area: ui
 priority: high
 files:
-  - apps/frontend/src/routes/Banner.svelte:76-84
+  - apps/frontend/src/lib/layouts/main/Banner.svelte:76-84
   - apps/frontend/src/lib/components/button/Button.svelte
 ---
 

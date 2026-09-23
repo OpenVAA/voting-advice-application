@@ -1,0 +1,1 @@
+No external API integration: the phase corrects existing calls to the project's own Supabase stack (the Storage single-object delete route reached through pg_net, PostgREST `range`/`order` paging and one existing RPC) and adds no new external service, SDK or capability surface.

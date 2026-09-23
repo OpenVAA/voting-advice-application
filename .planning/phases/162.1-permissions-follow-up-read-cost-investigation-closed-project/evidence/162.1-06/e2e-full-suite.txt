@@ -1,0 +1,21 @@
+# 162.1-06 full E2E suite: tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/162.1-06 --no-db-reset
+# Written BEFORE the run; the observed_* lines are appended from results.json AFTER it,
+observed_workers=6
+observed_retries=0
+observed_expected=158
+observed_unexpected=0
+observed_flaky=0
+observed_skipped=0
+observed_duration_ms=641243
+e2e-run.sh: run dir /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/e2e-runs/162.1-06
+e2e-run.sh: HEAD    82da882ced26dd6a9b6beb9b82fb5e95fc6ba5ad
+e2e-run.sh: --no-db-reset -- yarn db:start only, existing data left in place ...
+e2e-run.sh: polling REST + Storage readiness (deadline 120s) ...
+e2e-run.sh: Supabase ready (REST 200, public-assets bucket present)
+e2e-run.sh: starting dev server on port 5273 (project 00000000-0000-0000-0000-0000000000e2) -> /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/e2e-runs/162.1-06/devserver.log
+e2e-run.sh: dev server listening on 5273
+e2e-run.sh: npx playwright test -c /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright.config.ts /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests --grep-invert @probe --reporter=html,json
+  158 passed (10.7m)
+e2e-run.sh: playwright exit 0
+e2e-run.sh: preflight failures 0, successes 1
+E2E_EXIT=0

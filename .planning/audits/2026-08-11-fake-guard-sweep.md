@@ -43,7 +43,7 @@ did (the Phase-135 NF-01 wall-clock gate) is already fixed. The residue is almos
 | F10 | `voter-journey.spec.ts` header claims a "3-slot `expect.soft` budget"; the file has **137** | Doc drift | High |
 | F11 | `a11y-smoke.spec.ts:364-365` + `00-helpers.test.sql:421` — tautological shape checks | Benign | High |
 | **F12** | **`expect.arrayContaining` used to assert *filtering* — 9 sites in `@openvaa/data` + `@openvaa/filters`. A filter that becomes a no-op and returns everything passes.** | **Blind** (systemic) | High |
-| F13 | `TemplateSchema` is not `.strict()` → 6 "accepts field X" tests cannot fail | Blind | High |
+| F13 | `TemplateSchema` is not `.strict()` → **4 blind** "accepts field X" tests cannot fail (**count amended in place 2026-08-23 from this sweep's original "6"** — re-derived by measurement as **4 blind + 3 already-failable + 3 unfailable-by-construction = 10** sites in this shape; see the F13 section) | Blind — **REMEDIATED, Phase 144** | High |
 | F14 | `supabaseDataWriter.test.ts:303` — the File→path substitution the test is named for is never asserted (the matcher is built, then unused) | Blind | High |
 | F15 | `questionTypes.test.ts` (9 sites) + `condenserStandalone.test.ts` — AI-package tests assert wiring, never output | Blind | High |
 | F16 | `handleQuestion.test.ts:56` — bare `rejects.toThrow()` against a mock that throws from every method | Blind | High |
@@ -72,6 +72,131 @@ would benefit from a lint rule rather than site-by-site fixes:
 - **Matchers satisfiable by the broken state** (F2, F19, F20) — a regex that matches the raw i18n
   key; `toBeDefined()` on an API that returns `null`; `rejects.toThrow()` where three unrelated
   things throw first.
+
+---
+
+## Remediation status — ASSERT-07 corpus (F15, F16, F17, F18, F20), closed by Phase 142
+
+Phase 139 (ASSERT-01) confirmed these findings by injection; **Phase 142 remediated them and proved
+each remediation with an executed negative-control pair.** Per-finding annotations, each naming its
+commit and its row in the ledger, are inline in the F15 / F16 / F17 / F18 / F20 sections below.
+
+**Ledger:** `.planning/phases/142-assertion-design-wiring-only-tests-assert-output/142-NEGATIVE-CONTROL-LEDGER.md`
+
+| Count | Value | Meaning |
+|---|---|---|
+| Findings in the corpus | **12** | F15-A, F15-B, F15-C, F16, F17, F18, F20-1 … F20-6 |
+| **Remediated** | **12** | every one; verdict recorded on every ledger row |
+| **Withdrawn** | **0** | **stated explicitly, not implied.** D-13 permitted withdrawal only on a ground 139 could not have seen — the strengthened assertion *provably unwritable*, not merely awkward. No finding met that bar, so ASSERT-07's scope did **not** shrink and nothing here is struck |
+| **Negative-control pairs executed** | **13** | **11** driven by 139's own pre-specified regression (one per finding, all except F17) + **2 supplementary pairs**: ledger row **5s**, standing in for F17, and ledger row **1s**, a second pair for **F15-A** added on 2026-08-21 to close verification finding **W-1** (Configuration 2 of `questionTypes.test.ts` carried no assertion on the prompt, so three of F15-A's eleven blind sites were still blind after the first remediation). Of the 13, **8** OLD halves are cited from 139 § 5.N.4 and **5** were re-run in this phase (rows 1, 7, 9, 5s and 1s) |
+| **Scoped exceptions to criterion 1** | **1** | **F17 only** (ledger row 5, `N/A — by construction`) — pre-predicted by 139 § 5.5.6 and independently forbidden by § 8.3 R-10. **Remediated, not withdrawn**; see the F17 section for the full four-part reasoning |
+
+**Not in this corpus:** **F19** belongs to ASSERT-03 and was closed by Phase 140; **F3** to
+ASSERT-02, **F9** to ASSERT-05 and **F10** to ASSERT-06, likewise Phase 140. **F13** is ASSERT-04 —
+**closed by Phase 144 on 2026-08-23**, with its corpus figure amended in place from this sweep's "6"
+to the re-derived **4 blind + 3 already-failable + 3 unfailable-by-construction = 10**; ledger
+`.planning/phases/144-seed-template-strict-typing-unknown-prop-guard/144-NEGATIVE-CONTROL-LEDGER.md`. The remaining findings are unrelated to ASSERT-07.
+
+**Gates:** root `yarn test:unit` (turbo, parallel, all 11 wired workspaces) exited 0 on **three
+consecutive** runs, plus the full `yarn test:e2e` suite and the opt-in bank-auth projects under
+CLAUDE.md's cardinal rule. Commands, exit codes, counts and log paths are in the ledger's gate
+section — a stated result is not a measured one, so none is recorded without its evidence.
+
+---
+
+## Post-sweep addendum — a guard class this sweep never saw (Phase 142.1, ASSERT-11)
+
+**Added 2026-08-22.** This section records a finding the 2026-08-11 sweep did **not** produce, and the
+reason it did not — which is a property of the sweep, not of the code.
+
+### The guard class
+
+```ts
+it('implements getIdTokenClaims as a function', () => {
+  expect(typeof provider.getIdTokenClaims).toBe('function');
+});
+```
+
+Under a title claiming the method is **implemented**, the assertion checks only that a property of the
+object graph is callable. It is wiring-only in exactly the sense F15/F16/F20 are: it cannot fail for
+any behavioural regression of the thing its title names. Six such guards existed —
+`apps/frontend/src/lib/api/utils/auth/providers/idura.test.ts` and `…/signicat.test.ts`, three each,
+covering `getIdTokenClaims`, `getAuthorizeUrl` and `exchangeCodeForToken`.
+
+**They are almost certainly why the duplication drifted.** Phase 142's **P-2** found that
+`/api/oidc/token/+server.ts:26` called `provider.getIdTokenClaims` — a **duplicated** copy of the
+decrypt→verify→claims logic in each provider — and not the shared helper A-07 had just fixed. So
+A-07's discriminating failure codes and its lazy env parse did not reach the production path at all.
+The only tests pinning that path asserted that a function was a function, so nothing went red while the
+copies diverged from the helper for as long as they did.
+
+### Remediation — Phase 142.1 (ASSERT-11). All six guards; none withdrawn.
+
+Ledger:
+`.planning/phases/142.1-provider-getidtokenclaims-duplication-make-a-07-reach-produc/142.1-NEGATIVE-CONTROL-LEDGER.md`
+— **8 pairs, both halves measured in that phase, 0 cited, 0 withdrawn.** Commit range
+`950c97aa2 … fa5fc5ec7`.
+
+- **Product — the collapse.** `950c97aa2` extracts a shared core
+  `apps/frontend/src/lib/api/utils/auth/decryptAndVerifyIdToken.ts` and reduces both provider bodies to
+  *core → authConfig claim mapping*, catch arms byte-unchanged; `8889be52b` repoints the third caller
+  (`candidate/preregister/+layout.server.ts`) and **deletes** `getIdTokenClaims.ts`, so exactly one
+  entry point to decrypt→verify→claim mapping remains in `apps/frontend/src`; `387c0b653` makes the
+  failure-class code visible at both `/api/oidc/*` call sites with the HTTP surface unchanged.
+- **Tests — the six guards replaced.** `f8b48347a` (signicat) and `0e0ddcca9` (idura) delete all six
+  `typeof … === 'function'` guards and put claims deep-equality, per-branch coded-error assertions and
+  real `exchangeCodeForToken` request-body assertions in their place.
+  `grep -rn "toBe('function')" providers/*.test.ts` now returns nothing.
+- **Evidence — 8 freshly measured pairs.** `c1177f4b1` (pairs 1–6) and `fa5fc5ec7` (pairs 7–8).
+  **Ledger rows 1–8**: claims-mapping × 2 providers, error-discrimination × 2, lazy-parse × 2, and
+  D-04's two `exchangeCodeForToken` axes. **8 of 8 OLD halves observed GREEN (blind)** on the
+  pre-collapse tree — not one of the six guards saw the regression its own title promises to catch —
+  and **8 of 8 NEW halves observed RED**, each naming its own strengthened assertion. Eleven collateral
+  reds were observed across six injection instances and **none** was credited.
+- **Gates.** Five static gates (`yarn test:unit`, `yarn lint:check`, `yarn format:check`, `yarn build`,
+  and `yarn workspace @openvaa/frontend check` — the last being the frontend typecheck CI runs and
+  neither lint nor build provides), plus three E2E runs 1× each under CLAUDE.md's cardinal rule.
+  Commands, exit codes, counts and log paths are in the ledger's gate section.
+
+### The finding about this sweep's reach
+
+**Neither `providers/idura.test.ts` nor `providers/signicat.test.ts` was ever enumerated by the
+2026-08-11 sweep.** They appear in no finding, in no *Cleared* entry, and in no *Not assessed* bullet —
+they were simply never opened. The § Not assessed section is honest about the files it knows it
+skipped; these two were not among the things it knew it had skipped.
+
+That matters for three reasons, and the third is the one worth carrying forward:
+
+1. **It is why ASSERT-11's criterion 4 is categorical.** *"Nothing is citable from Phase 139"* is not a
+   methodological preference — there is no recorded OLD half to cite and no pre-specified injection to
+   reuse, because the sweep never produced one for these files. Phase 142.1 therefore measured **both**
+   halves of all eight pairs itself, where Phase 142 could legitimately cite 8 of its 13 OLD halves
+   from 139.
+2. **The missed class is one this sweep already had a name for.** F15's mock-in/mock-out shape, F16's
+   throw-from-every-method mock and F20's title-vs-matcher gap are all "the assertion cannot fail for
+   the regression the title promises". `typeof x === 'function'` is the same defect in its purest form.
+   The sweep did not lack the concept; it lacked the files.
+3. **The consequence was not hypothetical.** The unenumerated guards sat on an **authentication** path,
+   and the drift they hid meant a live security-relevant fix (A-07's failure-class split) never reached
+   production. A file-selection gap in an assertion-quality audit propagates as an unfixed defect in the
+   thing the audit exists to protect.
+
+**Two sibling observations from the same phase, recorded because together they are a pattern rather
+than an anecdote.** (a) `yarn format:check` — one of the four static gates every recent phase names —
+had been **red on this branch since within a week of the 2026-08-10 repo-wide formatting pass**, on two
+files no phase had touched. It was not invisible: Phase 151 filed both in `.planning/WINDOWS.md` (#7,
+#8) on 2026-08-16 as *"format:check red at 151-03 baseline, DEFERRED per PD-03"*. It stayed red for six
+more days across several phases that each named that gate as their own — **a deferred entry in a defect
+register is not the same as a gate that runs**. (b) The E2E
+preflight's identity clause (b) was **unsatisfiable against a correct checkout** under Vite 6.4.1 and
+blocked every E2E run in the repo until `b8de9ff06` repaired it — split into a 200-check plus an
+absolute-module-root equality that fails closed, rather than relaxed to accept the relative id, which
+would have converted an identity gate into a willingness-to-serve gate.
+
+Three independent instances, found in one phase, of a single property: **a guard that cannot run, or
+that was never pointed at the code, is indistinguishable from an absent guard — and it is worse,
+because it reads as coverage.** A sweep that misses a class of guard *in files it never opened* has a
+coverage property worth writing down, and this is it.
 
 ---
 
@@ -539,10 +664,52 @@ by reading the surrounding comments and matchers directly.
 
 ---
 
-### F13 — `TemplateSchema` is not `.strict()`, so 6 "accepts X" tests cannot fail
+### F13 — `TemplateSchema` is not `.strict()`, so **4** "accepts X" tests cannot fail
 
 **Files:** `packages/dev-seed/tests/template.test.ts:46,56,74`;
 `packages/dev-seed/tests/template/latent.schema.test.ts:31,35,39` — all of the form:
+
+> ⚠ **AMENDED IN PLACE 2026-08-23 by Phase 144 — this section originally said the corpus was six
+> sites, and that figure is wrong twice over.** It is corrected here rather than appended to, because
+> an addendum alone lets a stale figure propagate false premises into later phases. The corpus was
+> **re-derived by measurement** in `144-05`, by enumerating every "accepts field X"-shape site in these
+> two files at execution HEAD and classifying each by *running* it rather than by reading it:
+>
+> | Class | Count | Sites |
+> |---|---|---|
+> | **Blind → now failable** | **4** | `template.test.ts:39`, `:49`, `:59` · `latent.schema.test.ts:42` |
+> | Already-failable (never blind — **not** repaired by Phase 144) | **3** | `template.test.ts:79`, `:84` · `latent.schema.test.ts:46` |
+> | Unfailable by construction (assert `validateTemplate({})`; no declaration to remove) | **3** | `template.test.ts:22`, `:95` · `latent.schema.test.ts:30` |
+> | **Total sites in this shape** | **10** | |
+>
+> **"Six" is wrong as a count of blind sites — it is 4** — **and wrong as a count of sites in this
+> shape — it is 10.** Of the six this sweep named, four are genuinely blind; the other two were never
+> blind and are re-measured as such (`latent.schema.test.ts:46` is failable because `latentBlock` has
+> carried its own `.strict()` since Phase 57, proven non-circularly on the **pre-phase** blob). And
+> there are **four further sites in the same shape that this sweep did not count at all.** The line
+> numbers in the **Files:** list above are this sweep's own and have since moved; the table cites the
+> re-measured ones.
+>
+> **Remediation — Phase 144 (ASSERT-04), closed.** `TemplateSchema` **and** `perEntityFragment` are
+> both `.strict()`; tightening only the top level would have left the nested blindness intact, which
+> is measured rather than asserted (`Z2-OLD`: deleting `fixed` from `perEntityFragment` cost **zero**
+> failures). Each of the four blind sites carries a **two-directional** negative control at its own
+> HEAD. This sweep's own "suggested fix" — the round-trip assertion — was also applied where it is the
+> right repair, at `latent.schema.test.ts`, **complementing** rather than replacing the `.not.toThrow()`.
+> Phase 144 additionally found and closed a reach gap this sweep could not see: `resolveTemplate`'s
+> built-in branch ended in a bare `return builtIn;` and **never reached the validator at any HEAD**, so
+> `default`, `e2e/base` and every `perm-*` template bypassed the zod layer at seed time entirely —
+> which means F13's blindness was, for the built-in path, not merely a test-quality problem.
+>
+> **Evidence:** `.planning/phases/144-seed-template-strict-typing-unknown-prop-guard/144-NEGATIVE-CONTROL-LEDGER.md`
+> (**37 rows · 28 measured halves · 0 borrowed observations · 0 cache replays · fallout 0 · seven gates
+> green at one HEAD with the full E2E suite last at 135 passed / 0 failed / 0 flaky / 0 skipped /
+> 0 did-not-run**). Rows `Z1-NEW` … `Z4-NEW` (the four), `AF` (already-failable), `NA`
+> (unfailable-by-construction), `V-OLD` / `V-NEW` (the built-in bypass).
+>
+> **Not claimed as done:** `template.test.ts:95` is unfailable by construction and is still on the bare
+> `.not.toThrow()` form. Phase 144 left it exactly as found and says so rather than absorbing it into
+> the count.
 
 ```ts
 expect(() => validateTemplate(allEntities)).not.toThrow();
@@ -655,6 +822,41 @@ the three "Configurations" actually differ from one another.
 
 **Confidence: high.**
 
+> **REMEDIATED — Phase 142 (ASSERT-07).** Three findings, three ledger rows, each with an executed
+> negative-control pair recorded in
+> `.planning/phases/142-assertion-design-wiring-only-tests-assert-output/142-NEGATIVE-CONTROL-LEDGER.md`.
+>
+> - **F15-A** — **ledger row 1**. Test remediation in `0d3700e58` (prompt-capture helper guarded by
+>   `toHaveBeenCalledTimes`, the A-04 same-name/varying-type fixture T2/T3, D-03's repoint onto
+>   `responseTransformer.ts`'s three renames, D-05's sibling at `:388`), with the A-09 guard rationale
+>   reworded in `80acc432c`. The finding could not be closed by test edits alone: the shipped code
+>   genuinely did not put question type or choice labels into the prompt, so **D-01's product fix**
+>   landed first in `0bc21e3b3` (+ `0b15c5e86`, which hoists the guard above the `try` so its message
+>   is not re-wrapped). OLD half **re-run** in this phase against the pre-fix tree (green blind,
+>   package-wide 20/20 — the *whole package*, not merely the eleven assertions, was blind); NEW half
+>   red at `questionTypes.test.ts:113:36` under 139 § 5.1.2's substitute injection. **139 § 5.1.6's
+>   own headline target was deliberately NOT written (A-04)** — it passes today for the wrong reason.
+> - **F15-A, second pass — ledger row 1s (2026-08-21, verification finding W-1).** Row 1's remediation
+>   covered Configuration 1 (T1) and Configuration 3 (D-05), and A-04's substitute fixture used
+>   **Boolean + Categorical only** — so **Configuration 2 (Ordinal) was left with no assertion on the
+>   prompt at all**, and three of the eleven sites row 1 lists as *"passed blind"* (`:199`, `:263`,
+>   `:264`) were still passing blind. Closed in `d1fc0f745`: the 5-point test asserts the type reaching
+>   the prompt (read from `QUESTION_TYPE.SingleChoiceOrdinal`) plus its five choice labels as the
+>   product's own joined string; the 7-point test asserts its seven, which is the only thing that can
+>   separate the two — both are `singleChoiceOrdinal` (D-01-iii). **Both halves measured**, under two
+>   new post-D-01 injections: type-emptied (`infoGeneration.ts:104`) and choices-emptied (`:105`). OLD
+>   half green blind under both; NEW half red at `:239:22`, `:246:22` and `:318:36`. **No product
+>   change** — D-01 already carried the data; only the observation was missing. A-04's rejection of
+>   139 § 5.1.6's target 2 is **untouched**: nothing added here compares differently-named fixtures.
+> - **F15-B** — **ledger row 2**. `fbb103c10`. `result.data.arguments` now carries an exact length plus
+>   canned-text equality; red at `:155:35` under 139 § 5.2.2.
+> - **F15-C** — **ledger row 3**. `fbb103c10` (the same injection instance as row 2, two vehicle runs,
+>   one revert). All three clusters assert content and all three go red.
+> - **The incidental wall-clock line is DELETED, not weakened** — `fbb103c10`, under D-12's bounded
+>   sweep of `question-info` + `argument-condensation`: one site found, one removed, **zero** others.
+>
+> **Withdrawn: 0 of 3.**
+
 ---
 
 ### F16 — `rejects.toThrow()` against a mock that throws from every method
@@ -677,6 +879,16 @@ passes.
 **Suggested fix.** `.rejects.toThrow(/language/i)` plus a non-empty `entities` array.
 
 **Confidence: high.**
+
+> **REMEDIATED — Phase 142 (ASSERT-07), ledger row 4.** `73eda4ff7`. The test now supplies a
+> **non-empty `entities`** fixture and asserts the exact rejection prefix `Unsupported language: lol`
+> rather than a bare `rejects.toThrow()`. Negative-control pair executed: OLD half **cited** from
+> 139 § 5.4.4 row B (assertion PASS, file green); NEW half **red** under 139 § 5.4.2 **injection B**
+> at `api.ts:119-121` — `expected [Function] to throw error including 'Unsupported language: lol'`.
+> Injection **A** (the audit's own sentence) was **not** used: it reds before *and* after, which
+> would have made the remediation unverifiable. Collateral **measured** package-wide rather than
+> cited (`1 failed | 29 passed (30)`), because `api.ts` is imported by three sibling test files.
+> **Not withdrawn.**
 
 ---
 
@@ -714,6 +926,40 @@ a legitimate if much smaller contract.
 
 **Confidence: high** (read directly).
 
+> **REMEDIATED, NOT WITHDRAWN — Phase 142 (ASSERT-07), ledger rows 5 and 5s.** `a25355369`.
+> The **second** of the two suggested fixes above was taken (D-04): the file is renamed
+> `EntityListWithControls.helpers.test.ts` and `Contract 4` now compares an observed per-cycle
+> result list against an independently-derived expectation, instead of asserting `10 === 10` on its
+> own `for` loop.
+>
+> **⚠ This finding carries the phase's one scoped exception to ROADMAP Phase 142 criterion 1 — the
+> requirement that every confirmed finding be closed by a pair driven by 139's own pre-specified
+> regression.** Row 5's `NEW-assertion outcome` reads **`N/A — by construction`**, and the reasoning
+> is four-part, all of it predicted in advance rather than discovered at remediation time:
+>
+> 1. D-04 selected the **rename** branch, not the **mount** branch.
+> 2. **139 § 5.5.6 predicted this in advance**, before D-04 was taken: *"only remedy 1 makes the
+>    pre-specified regression above red"* — and remedy 1 is mounting.
+> 3. **139 § 8.3 R-10 independently forbids** the `EntityListWithControls.svelte:120` control on the
+>    same mechanism: the component module is not in the renamed test's import graph, so that
+>    injection reds **neither** before nor after and proves nothing.
+> 4. Inventing a substitute would mean either designing an injection 139 never validated, or
+>    crediting a red on an unrelated axis — the two failure modes the ledger exists to prevent.
+>
+> **Compensating evidence — measured, not asserted.** Ledger **row 5s** supplies a real, complete
+> pair for the contract the renamed file now claims: a **new** injection at
+> `EntityListWithControls.helpers.ts:19` (discard the filter group's result while still invoking it)
+> with **both** halves run in this phase — OLD **green/blind** (isolated, exit 0,
+> `1 passed | 7 skipped (8)`), NEW **red on the value axis** (`helpers.test.ts:129:24`, exit 1). It is
+> labelled *"supplementary — not 139 § 5.5.2"* so it can never be misread as a citation of 139.
+> Recorded honestly alongside it: the **file** was never wholly blind to that supplementary
+> regression — the pre-existing `Contract 3` sibling catches it too (collateral `C-142-1`, red in
+> **both** halves and never credited as either). What was blind is the assertion F17 names.
+>
+> So criterion 1's **intent** is satisfied for F17; what is unsatisfiable is its **letter**. This is
+> **remediated, not withdrawn** — D-13's withdrawal bar is not engaged and the phase's withdrawal
+> count stays **0**.
+
 ---
 
 ### F18 — "Faker locale cycling" asserts only that names are non-empty
@@ -743,6 +989,17 @@ deterministic at `seed: 42`), or assert character-class differences (Finnish/Swe
 `ä/ö/å`).
 
 **Confidence: high.**
+
+> **REMEDIATED — Phase 142 (ASSERT-07), ledger row 6.** `c456a381f`. Test 10 now asserts the
+> **locale block boundary** itself, on two independent axes: the derived block size, and that a row
+> at an `fi` index carries an `fi` name rather than an `en` one. Negative-control pair executed:
+> OLD half **cited** from 139 § 5.6.4; NEW half **red** under 139 § 5.6.2 (`LOCALE_BLOCK_SIZE`
+> 109 → 327) at **both** `:151:36` (`327` vs `109`) and `:167:43`/`:168:42`. One deliberate,
+> recorded departure from the suggested fix: the boundary indices are derived from `rows.length / 3`,
+> **never** from the constant the injection mutates — deriving them from `LOCALE_BLOCK_SIZE` would
+> have made the assertion move with the regression and stay green. `expect.soft` was introduced to
+> this repository here (zero prior uses) so both axes are observable in a single run.
+> **Not withdrawn.**
 
 ---
 
@@ -788,6 +1045,82 @@ validator most needs. That is a missing test, not a fake one, but it belongs in 
 conversation.
 
 **Confidence: medium** on impact for each; high that the matcher is weaker than the title.
+
+> **REMEDIATED — Phase 142 (ASSERT-07). All six rows; none withdrawn.** Each row below names its
+> commit and its row in
+> `.planning/phases/142-assertion-design-wiring-only-tests-assert-output/142-NEGATIVE-CONTROL-LEDGER.md`.
+>
+> - **F20-1** (`authorize-endpoint.test.ts`, now `:234` — **+1 line drift** from Phase 151's
+>   comment-hygiene codemod) — **ledger row 7**. Test in `ea5d34109`
+>   (`.rejects.toMatchObject({ status: 400 })`), product fix in `0f8e99a68`. The suggested matcher
+>   alone would **not** have worked: `error()` throws, so the endpoint's own in-`try` `error(400, …)`
+>   was caught by its own catch and re-reported as a 500. The fix is an `isHttpError` re-throw at the
+>   head of the catch arm (**A-02** applied the same 2-line fix to the sibling token route). The
+>   negative control therefore **inverts** post-fix (**A-03**): OLD half **re-run** here under 139's
+>   injection **B** on the pre-fix tree (green blind, 9/9 — post-fix, B is off-path and the OLD half
+>   is measurable *only* pre-fix); NEW half red under injection **A**, `- "status": 400` /
+>   `+ HttpError { "status": 500 }`. Injection B post-fix passes 9/9 and is labelled
+>   **`not the negative control`** — it is evidence the swallow is gone, not a second pair.
+> - **F20-2** (`overrides.test.ts`) — **ledger row 8**. `cba97b2a1`. Exactly the suggested fix:
+>   `toBe('{broken, plural, }')`. OLD half **cited** (139 § 5.11.4); NEW half red at `:39:20`, zero
+>   collateral.
+> - **F20-3** (`getIdTokenClaims.test.ts:236,259`) — **ledger row 9**. Test in `ea5d34109`, product
+>   in `0f8e99a68` (**A-07**: the two incidents now carry distinct opaque codes, so "no error code
+>   asserted" became assertable). Two **measured divergences** from 139's record, both recorded
+>   rather than smoothed over: (i) 139's **injection A is zero-delta** on both sites post-fix — both
+>   fixtures throw before the injected success return is reachable — so its green proves nothing and
+>   it is **not** this row's control; (ii) the controls are instead the relocated **B** plus a new
+>   **symmetric B′**, and each site reds **alone** under its own branch while staying green under the
+>   other's, which proves the two branches are genuinely discriminated rather than that one of them
+>   is. Control **C** stays forbidden (139 § 8.3 R-9).
+> - **F20-4** (`supabaseAdminClient.test.ts`, now `:160`/`:169`, **+9 line drift**) — **ledger row 10**.
+>   `2372935bf`. The substring-matching `toContain('id')` is replaced by an exact `toBe` on
+>   the recorded `.select(...)` string. OLD half **cited** (139 § 5.13.4); NEW half red at `:169:40`.
+>   The three sibling `toContain` matchers were kept and moved **ahead** of the exact match, which
+>   converts the zero-collateral claim from a citation into a measurement.
+> - **F20-5** (`variants.test.ts`) — **ledger row 11**. `a02b92e51`. Both halves of the finding are
+>   closed: a fixture-derived **length** guard (killing the vacuous-`forEach` hole) *and* **id
+>   membership** (killing the wrong-ID hole). OLD half **cited** (139 § 5.14.4); **two** NEW-half reds
+>   on **different** axes — injection **A** reds the length assertion at `:21:26`, injection **B** the
+>   membership assertion at `:33:25`. Collateral measured package-wide per injection (7 and 11 further
+>   tests) rather than cited from 139's `file green 1/1`, which for a one-test file says nothing about
+>   blast radius.
+> - **F20-6** (`planValidation.test.ts:104`) — **ledger row 12**. `8e71038c1`. The bare
+>   `rejects.toThrow()` now pins the traced exact invariant message. OLD half **cited**
+>   (139 § 5.15.4); NEW half red at `:111:62` in an **isolated** verdict run
+>   (`1 failed | 9 skipped (10)` — exactly one title matched). The whole-file run is red **twice**;
+>   the second red is the pre-existing `:94` sibling pinning the *old* message (collateral `C-1`) and
+>   is **never** credited as the control. `:94-96` is byte-unchanged (D-05) — it is the contrast, not
+>   a defect.
+>
+> **On the adjacent coverage gap above** (`getIdTokenClaims` has no bad-signature / wrong-issuer /
+> wrong-audience test): **still open, deliberately.** It is a missing test rather than a fake one, so
+> it was scoped out (D-05 / D-19 ii) and captured as a standing todo —
+> `.planning/todos/pending/getidtokenclaims-negative-tests.md`.
+>
+> **⚠ NEW FINDING of this sweep's own class, discovered while closing F20-3 — not part of the
+> original twelve, and NOT remediated.** `apps/frontend/src/lib/api/utils/auth/providers/idura.test.ts:90-91`
+> and `providers/signicat.test.ts:54-55` each read, under a title claiming the method is
+> *implemented*:
+>
+> ```ts
+> it('implements getIdTokenClaims as a function', () => {
+>   expect(typeof provider.getIdTokenClaims).toBe('function');
+> });
+> ```
+>
+> That is a **wiring-only assertion of exactly the class ASSERT-07 exists to remove** — it asserts a
+> property of the object graph, never an output. It is almost certainly *why* the duplicated provider
+> copies drifted from the shared helper undetected, because it is the only thing pinning
+> `getIdTokenClaims` on either provider. This matters for A-07's reach: the production
+> `/api/oidc/token/+server.ts:26` calls **`provider.getIdTokenClaims(idToken)`** — the providers' own
+> implementations at `providers/idura.ts:114` and `providers/signicat.ts:77`, each carrying a
+> duplicated copy of the logic **including an identical uncoded kid-lookup `throw`** — **not** the
+> `getIdTokenClaims.ts` helper A-07 split. So: **the phase criterion is met** (D-11 E6 asks that
+> F20-3's two *tests* differ observably against the helper they exercise, and they now do), **but the
+> production path is untouched** — the operational benefit of the two-code split does not yet reach
+> `/api/oidc/token`. Recorded as **P-2**, the phase's highest-value follow-up; see the ledger's
+> *"New findings from `142-04`"* section and `.planning/todos/pending/provider-getidtokenclaims-duplication.md`.
 
 ---
 
@@ -948,6 +1281,19 @@ they are internally consistent with what I did verify, but treat them as one-sou
 ---
 
 ## Not assessed
+
+- **`apps/frontend/src/lib/api/utils/auth/providers/idura.test.ts` and `…/signicat.test.ts` — never
+  enumerated at all.** Added 2026-08-22, retrospectively. These two files appear in no finding, in no
+  *Cleared* entry, and in no bullet of this section — they were not assessed and were not known to be
+  unassessed, which is the harder failure mode. Between them they carried **six**
+  `typeof … === 'function'` guards, a wiring-only class this sweep already had three names for
+  (F15's mock-in/mock-out, F16's throw-from-every-method mock, F20's title-vs-matcher gap). Phase 142
+  found the consequence as **P-2** — the guards had let two duplicated copies of an ID-token
+  decrypt→verify path drift from the shared helper on an **authentication** route, so A-07's
+  discriminating failure codes never reached production — and Phase 142.1 remediated all six with
+  **8 freshly measured negative-control pairs, 0 cited, 0 withdrawn**. See § Post-sweep addendum above
+  for the full record. Stated here rather than only there because *this* is the section a later reader
+  checks to learn what the sweep did not cover.
 
 - **F15, F16, F18, F19 and the F20 table are single-source** (the delegated sweep). I verified the
   four highest-value unit findings myself but not these; see the *Method note* in Cleared. My

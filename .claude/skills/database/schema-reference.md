@@ -6,14 +6,14 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 
 ### Multi-tenancy
 
-**accounts** (001-tenancy.sql)
+**accounts** (100-tenancy.sql)
 
 - id: uuid PK DEFAULT gen_random_uuid()
 - name: text NOT NULL
 - created_at: timestamptz NOT NULL DEFAULT now()
 - updated_at: timestamptz NOT NULL DEFAULT now()
 
-**projects** (001-tenancy.sql)
+**projects** (100-tenancy.sql)
 
 - id: uuid PK DEFAULT gen_random_uuid()
 - account_id: uuid NOT NULL FK accounts(id) ON DELETE CASCADE
@@ -24,7 +24,7 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 
 ### Elections
 
-**elections** (002-elections.sql)
+**elections** (101-elections.sql)
 
 - id: uuid PK DEFAULT gen_random_uuid()
 - project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
@@ -32,12 +32,12 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 - sort_order: integer, subtype: text, custom_data: jsonb
 - is_generated: boolean DEFAULT false
 - created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
-- election_date: date, election_start_date: date, election_type: text
+- election_date: date, election_start_date: date
+- election_type: public.nomination_shape NOT NULL DEFAULT 'organization_list' — REPURPOSED in 162-07 (D-16). The column keeps its name and now carries which of the three nomination flows an election runs: organization_only / candidate_only / organization_list. Its previous meaning is deleted and its previous values are not members of the type, so a row carrying one is rejected by PostgreSQL. `subtype` on the same table is a DIFFERENT axis and is not this.
 - multiple_rounds: boolean DEFAULT false, current_round: integer DEFAULT 1
-- published: boolean NOT NULL DEFAULT false (011)
 - external_id: text (015)
 
-**constituency_groups** (002-elections.sql)
+**constituency_groups** (101-elections.sql)
 
 - id: uuid PK DEFAULT gen_random_uuid()
 - project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
@@ -45,10 +45,9 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 - sort_order: integer, subtype: text, custom_data: jsonb
 - is_generated: boolean DEFAULT false
 - created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
-- published: boolean NOT NULL DEFAULT false (011)
 - external_id: text (015)
 
-**constituencies** (002-elections.sql)
+**constituencies** (101-elections.sql)
 
 - id: uuid PK DEFAULT gen_random_uuid()
 - project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
@@ -58,16 +57,15 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 - created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
 - keywords: jsonb
 - parent_id: uuid FK constituencies(id) ON DELETE SET NULL
-- published: boolean NOT NULL DEFAULT false (011)
 - external_id: text (015)
 
-**constituency_group_constituencies** (002-elections.sql) -- join table
+**constituency_group_constituencies** (101-elections.sql) -- join table
 
 - constituency_group_id: uuid NOT NULL FK constituency_groups(id) ON DELETE CASCADE
 - constituency_id: uuid NOT NULL FK constituencies(id) ON DELETE CASCADE
 - PRIMARY KEY (constituency_group_id, constituency_id)
 
-**election_constituency_groups** (002-elections.sql) -- join table
+**election_constituency_groups** (101-elections.sql) -- join table
 
 - election_id: uuid NOT NULL FK elections(id) ON DELETE CASCADE
 - constituency_group_id: uuid NOT NULL FK constituency_groups(id) ON DELETE CASCADE
@@ -75,11 +73,11 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 
 ### Entities
 
-**candidates** (003-entities.sql)
+**candidates** (102-entities.sql)
 
 - id: uuid PK DEFAULT gen_random_uuid()
 - project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
-- name: jsonb, short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
+- short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
 - sort_order: integer, subtype: text, custom_data: jsonb
 - is_generated: boolean DEFAULT false
 - created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
@@ -87,10 +85,9 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 - organization_id: uuid FK organizations(id) ON DELETE SET NULL
 - auth_user_id: uuid FK auth.users(id) ON DELETE SET NULL
 - answers: jsonb DEFAULT '{}'::jsonb (006)
-- published: boolean NOT NULL DEFAULT false (011)
 - external_id: text (015)
 
-**organizations** (003-entities.sql)
+**organizations** (102-entities.sql)
 
 - id: uuid PK DEFAULT gen_random_uuid()
 - project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
@@ -100,10 +97,9 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 - is_generated: boolean DEFAULT false
 - created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
 - answers: jsonb DEFAULT '{}'::jsonb (006)
-- published: boolean NOT NULL DEFAULT false (011)
 - external_id: text (015)
 
-**factions** (003-entities.sql)
+**factions** (102-entities.sql)
 
 - id: uuid PK DEFAULT gen_random_uuid()
 - project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
@@ -111,10 +107,9 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 - sort_order: integer, subtype: text, custom_data: jsonb
 - is_generated: boolean DEFAULT false
 - created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
-- published: boolean NOT NULL DEFAULT false (011)
 - external_id: text (015)
 
-**alliances** (003-entities.sql)
+**alliances** (102-entities.sql)
 
 - id: uuid PK DEFAULT gen_random_uuid()
 - project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
@@ -122,12 +117,11 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 - sort_order: integer, subtype: text, custom_data: jsonb
 - is_generated: boolean DEFAULT false
 - created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
-- published: boolean NOT NULL DEFAULT false (011)
 - external_id: text (015)
 
 ### Questions
 
-**question_categories** (004-questions.sql)
+**question_categories** (103-questions.sql)
 
 - id: uuid PK DEFAULT gen_random_uuid()
 - project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
@@ -137,10 +131,9 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 - created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
 - category_type: category_type DEFAULT 'opinion'
 - election_ids: jsonb, election_rounds: jsonb, constituency_ids: jsonb, entity_type: jsonb
-- published: boolean NOT NULL DEFAULT false (011)
 - external_id: text (015)
 
-**questions** (004-questions.sql)
+**questions** (103-questions.sql)
 
 - id: uuid PK DEFAULT gen_random_uuid()
 - project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
@@ -153,12 +146,11 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 - choices: jsonb, settings: jsonb
 - election_ids: jsonb, election_rounds: jsonb, constituency_ids: jsonb, entity_type: jsonb
 - allow_open: boolean DEFAULT true, required: boolean DEFAULT true
-- published: boolean NOT NULL DEFAULT false (011)
 - external_id: text (015)
 
 ### Nominations
 
-**nominations** (005-nominations.sql)
+**nominations** (104-nominations.sql)
 
 - id: uuid PK DEFAULT gen_random_uuid()
 - project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
@@ -175,26 +167,34 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 - constituency_id: uuid NOT NULL FK constituencies(id) ON DELETE CASCADE
 - election_round: integer DEFAULT 1, election_symbol: text
 - parent_nomination_id: uuid FK nominations(id) ON DELETE CASCADE
-- unconfirmed: boolean DEFAULT false
+- confirmed: boolean NOT NULL DEFAULT false
 - CHECK (num_nonnulls(candidate_id, organization_id, faction_id, alliance_id) = 1)
-- published: boolean NOT NULL DEFAULT false (011)
 - external_id: text (015)
 
 ### Auth
 
-**user_roles** (011-auth-tables.sql)
+**grants** (300-auth-tables.sql)
 
 - id: uuid PK DEFAULT gen_random_uuid()
 - user_id: uuid NOT NULL FK auth.users(id) ON DELETE CASCADE
-- role: user_role_type NOT NULL
-- scope_type: text NOT NULL (values: 'candidate', 'party', 'project', 'account', 'global')
-- scope_id: uuid (NULL for super_admin global scope)
+- scope: grant_scope_type NOT NULL (values: 'global', 'account', 'project', 'entity')
+- target_type: entity_type (NOT NULL exactly when scope = 'entity'; NULL otherwise)
+- target_id: uuid (NULL exactly when scope = 'global')
+- role: grant_role_type NOT NULL (values: 'admin', 'editor')
 - created_at: timestamptz NOT NULL DEFAULT now()
-- UNIQUE (user_id, role, scope_type, scope_id)
+- CONSTRAINT grants_user_scope_target_role_key
+  **UNIQUE NULLS NOT DISTINCT** (user_id, scope, target_type, target_id, role)
+  -- the NULLS clause is load-bearing and not decoration: three of the four scopes carry a NULL in the
+  key, and a plain UNIQUE enforces NOTHING on them. Asserted by name and in both directions in
+  `26-uniqueness-keys.test.sql`.
+- CONSTRAINT grants_entity_scope_target_type_check
+  CHECK ((target_type IS NOT NULL) = (scope = 'entity'))
+- CONSTRAINT grants_target_id_scope_check
+  CHECK ((target_id IS NULL) = (scope = 'global'))
 
 ### Settings
 
-**app_settings** (007-app-settings.sql)
+**app_settings** (106-app-settings.sql)
 
 - id: uuid PK DEFAULT gen_random_uuid()
 - project_id: uuid NOT NULL UNIQUE FK projects(id)
@@ -205,7 +205,7 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 
 ### Infrastructure
 
-**storage_config** (014-storage.sql)
+**storage_config** (400-storage.sql)
 
 - key: text PK
 - value: text NOT NULL
@@ -228,15 +228,13 @@ Storage cleanup tables: candidates, organizations, factions, alliances, election
 
 ## Indexes
 
-**project_id B-tree** (009-indexes.sql): idx\_{table}\_project_id on elections, constituency_groups, constituencies, organizations, candidates, factions, alliances, question_categories, questions, nominations, app_settings (11 tables).
+**project_id B-tree** (200-indexes.sql): idx\_{table}\_project_id on elections, constituency_groups, constituencies, organizations, candidates, factions, alliances, question_categories, questions, nominations, app_settings (11 tables).
 
-**FK B-tree** (009-indexes.sql): idx*projects_account_id, idx_candidates_organization_id, idx_questions_category_id, idx_constituencies_parent_id, idx_nominations*{candidate_id, organization_id, faction_id, alliance_id, election_id, constituency_id, parent_nomination_id}, idx_candidates_auth_user_id, idx_organizations_auth_user_id.
+**FK B-tree** (200-indexes.sql): idx*projects_account_id, idx_candidates_organization_id, idx_questions_category_id, idx_constituencies_parent_id, idx_nominations*{candidate_id, organization_id, faction_id, alliance_id, election_id, constituency_id, parent_nomination_id}, idx_candidates_auth_user_id, idx_organizations_auth_user_id.
 
-**Published partial** (011-auth-tables.sql): idx\_{table}\_published WHERE published = true on elections, candidates, organizations, questions, nominations (5 tables).
+**External ID composite unique partial** (500-external-id.sql): idx\_{table}\_external_id ON (project_id, external_id) WHERE external_id IS NOT NULL on all 11 content tables.
 
-**External ID composite unique partial** (015-external-id.sql): idx\_{table}\_external_id ON (project_id, external_id) WHERE external_id IS NOT NULL on all 11 content tables.
-
-**user_roles** (011-auth-tables.sql): idx_user_roles_user_id.
+**grants** (300-auth-tables.sql): idx_grants_scope_target -- the reverse lookup "who holds a grant on this target", which the UNIQUE cannot serve because it leads with user_id. There is deliberately no index on user_id alone: the UNIQUE already leads with it.
 
 ## Utility Functions
 
@@ -249,11 +247,15 @@ Storage cleanup tables: candidates, organizations, factions, alliances, election
 | validate_answers_jsonb()                           | 006  | -                | Trigger: smart validation of JSONB answers               |
 | cascade_question_delete_to_jsonb_answers()         | 006  | -                | Trigger: removes orphaned answer keys on question delete |
 | validate_question_type_change()                    | 006  | -                | Trigger: prevents type changes invalidating answers      |
-| custom_access_token_hook(jsonb)                    | 012  | STABLE           | Injects user_roles into JWT claims                       |
-| has_role(text, text?, uuid?)                       | 012  | SECURITY DEFINER | Checks JWT claims for role assignment                    |
-| can_access_project(uuid)                           | 012  | SECURITY DEFINER | Checks admin access to project                           |
-| is_candidate_self(uuid)                            | 012  | SECURITY DEFINER | Checks auth_user_id = auth.uid()                         |
-| is_storage_entity_published(text, text)            | 014  | SECURITY DEFINER | Checks if entity at storage path is published            |
+| custom_access_token_hook(jsonb)                    | 012  | STABLE           | Projects public.grants into the JWT `grants` claim       |
+| grant_role_permissions(grant_role_type, grant_scope_type) | 012 | IMMUTABLE | The role x permission matrix, encoded ONCE               |
+| user_can(grant_scope_type, uuid, grant_permission) | 012  | SECURITY DEFINER | THE authority question; resolves the claim downward      |
+| user_has_account_grant(uuid)                       | 012  | SECURITY DEFINER | Grant EXISTENCE on an account or a project it owns       |
+| is_child_nominee(entity_type, uuid, uuid)          | 012  | SECURITY DEFINER | The one-hop parent -> child nomination reach             |
+| project_open_for_voters(uuid)                      | 012  | SECURITY DEFINER | The project-level anon visibility sub-rule               |
+| entity_has_confirmed_nomination(entity_type, uuid, uuid) | 012 | SECURITY DEFINER | The nomination-level anon visibility sub-rule      |
+| storage_path_can(grant_scope_type, text, text, text, storage_verb) | 014 | SECURITY DEFINER | The storage authority question, asked of a PATH |
+| storage_path_is_public(text, text, text)           | 014  | SECURITY DEFINER | The storage visibility question, asked of a PATH          |
 | delete_storage_object(text, text)                  | 014  | SECURITY DEFINER | Deletes storage file via pg_net HTTP                     |
 | cleanup_entity_storage_files()                     | 014  | SECURITY DEFINER | Trigger: deletes storage files on entity DELETE          |
 | cleanup_old_image_file()                           | 014  | SECURITY DEFINER | Trigger: deletes old image file on UPDATE                |
@@ -283,7 +285,7 @@ Key mappings from COLUMN_MAP:
 - election_round -> electionRound, election_symbol -> electionSymbol
 - parent_nomination_id -> parentNominationId, parent_id -> parentId
 - election_date -> electionDate, election_start_date -> electionStartDate
-- election_type -> electionType, multiple_rounds -> multipleRounds, current_round -> currentRound
+- election_type -> electionType (the COLUMN MAP entry only; the frontend adapter no longer maps this column onto any application property — 162-07 removed that term so `ElectionData.subtype` is fed by `elections.subtype` alone), multiple_rounds -> multipleRounds, current_round -> currentRound
 - project_id -> projectId, account_id -> accountId, default_locale -> defaultLocale
 - created_at -> createdAt, updated_at -> updatedAt, auth_user_id -> authUserId
 

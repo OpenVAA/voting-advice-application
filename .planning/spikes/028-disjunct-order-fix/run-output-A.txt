@@ -1,0 +1,32 @@
+# load average at start: { 6,56 10,36 9,71 }
+# 106 probe ids (104 grid entities + 1 absent + 1 NULL); 80 grid nominations
+# fingerprint (before) entity+nomination SELECT quals: b3fa76a649a26e5aacbcfeec97008c87
+# NOTICE:  reordered authenticated_select_alliances
+# NOTICE:  reordered authenticated_select_candidates
+# NOTICE:  reordered authenticated_select_factions
+# NOTICE:  reordered authenticated_select_nominations
+# NOTICE:  reordered authenticated_select_organizations
+# authenticated_select_candidates
+#    ((( SELECT project_open_for_voters(candidates.project_id) AS project_open_for_voters) AND confirmed AND ( SELECT entity_has_confirmed_nomination('candidate'::entity_type, candidates.id, candidates.project_id) AS entity_has_confirmed_nomination) AND (terms_of_use_accepted IS NOT NULL) AND (terms_of_use_accepted < now())) OR ( SELECT user_can('project'::grant_scope_type, candidates.project_id, 'project.read_entities'::grant_permission) AS user_can) OR ( SELECT user_can('entity'::grant_scope_type, candidates.id, 'entity.read_answers'::grant_permission) AS user_can) OR ( SELECT user_can('entity'::grant_scope_type, candidates.id, 'nomination.read'::grant_permission) AS user_can))
+# authenticated_select_nominations
+#    ((( SELECT project_open_for_voters(nominations.project_id) AS project_open_for_voters) AND confirmed AND ( SELECT nomination_entities_confirmed(nominations.id) AS nomination_entities_confirmed)) OR ( SELECT user_can('project'::grant_scope_type, nominations.project_id, 'project.read_entities'::grant_permission) AS user_can) OR ( SELECT user_can('entity'::grant_scope_type, COALESCE(nominations.candidate_id, nominations.organization_id, nominations.faction_id, nominations.alliance_id), 'nomination.read'::grant_permission) AS user_can))
+# fingerprint (after) entity+nomination SELECT quals: ea7c63b821006235fa06e1d214b04448
+census visible rows (before / after), per reader: admin_grid 118/118, anon 14/14, auth_nogrant 14/14, cand_grid 16/16, org_grid 58/58
+visible: before EXCEPT ALL after = 0
+visible: after EXCEPT ALL before = 0
+truth grid: 2120 probes per phase, 110 true / 2010 false
+truth: before EXCEPT ALL after = 0
+truth: after EXCEPT ALL before = 0
+per-reader visible counts before: admin_grid:alliances=11 admin_grid:candidates=26 admin_grid:factions=11 admin_grid:nominations=59 admin_grid:organizations=11 anon:alliances=2 anon:candidates=1 anon:factions=2 anon:nominations=7 anon:organizations=2 auth_nogrant:alliances=2 auth_nogrant:candidates=1 auth_nogrant:factions=2 auth_nogrant:nominations=7 auth_nogrant:organizations=2 cand_grid:alliances=2 cand_grid:candidates=2 cand_grid:factions=2 cand_grid:nominations=8 cand_grid:organizations=2 org_grid:alliances=2 org_grid:candidates=18 org_grid:factions=7 org_grid:nominations=29 org_grid:organizations=2
+
+reader        q    rows   before_med_ms  after_med_ms  speedup
+auth_nogrant  Q1    1510          177.4         130.7    1.36x
+candidate     Q1    1510          277.6         129.2    2.15x
+admin         Q1    1510           54.0         130.8    0.41x
+auth_nogrant  Q2   38986         4315.4        3269.1    1.32x
+candidate     Q2   38986         7148.3        3323.5    2.15x
+admin         Q2   38986         1296.1        3338.6    0.39x
+auth_nogrant  Q3   36056         1068.8         473.5    2.26x
+candidate     Q3   36056         2520.9         486.7    5.18x
+admin         Q3   36056          604.4         480.0    1.26x
+# exit 0 ; load average at end: { 5,88 8,85 9,19 }

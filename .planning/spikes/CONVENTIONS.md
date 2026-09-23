@@ -593,3 +593,47 @@ don't). A dedicated aria-live region whose text derives reactively
 from `page.params.X` is the universal fix.
 
 Established in Spike 016.
+
+---
+
+# Database / RLS Performance Spikes (grant-model-read-cost, spikes 025–028)
+
+These held across all four spikes and apply to any future spike that measures policy cost.
+
+## Stack
+
+- **psql + bash drivers** for SQL-level measurement; **node `.mjs`** for HTTP-level (real PostgREST) and
+  for `@supabase/ssr` behaviour, resolving packages from `apps/frontend` via `createRequire`.
+- Local Supabase only. Keys come from `yarn workspace @openvaa/supabase exec supabase status -o env`.
+  Never read the root `.env`.
+
+## Patterns
+
+1. **Fixture inside one transaction, rolled back.** `BEGIN; <fixture>; <measure>; ROLLBACK;`, so nothing
+   persists. When PostgREST must see the data (HTTP benches), commit it deliberately (`load.sh`) and
+   `yarn db:reset` at the end.
+2. **Fingerprint inside the timing transaction.** Print the md5 of the policy quals and relevant function
+   bodies next to every timing (D-36 § 9). Verify the shipped fingerprints after the final reset.
+3. **Measure PostgREST's own query shape**: `SELECT coalesce(json_agg(_t), '[]') FROM (<query>) _t`.
+   **Never** a bare `count(*)` wrapper: it flips `get_nominations` to a nested-loop plan (> 80 s).
+4. **SQL and HTTP both.** SQL gives the uncapped database cost; HTTP gives what is deployed (`max_rows`,
+   role `statement_timeout`, JSON-parameter plans). They disagree in instructive ways.
+5. **Readers as minted JWTs** (HS256 with the local `JWT_SECRET`) whose `grants` claim has exactly the
+   access-token hook's shape. **Sanity-check that tokens are honoured**: a grant holder must see a row
+   anon cannot.
+6. **Every time carries its row count**, and every fix carries a correctness column: `EXCEPT ALL` both
+   directions + a truth-probe grid with negative cases (closed project, unconfirmed, other-project,
+   terms-of-use, child-nominee chains). An all-visible fixture cannot prove correctness.
+7. **Perturb to prove a check has teeth.** A green estate proves nothing until the guard's known
+   perturbations are replayed on top of the change and go red.
+
+## Gotchas
+
+- **Locale:** this host prints decimals with a comma (`12,481 ms` = 12.5 ms). Export `LC_NUMERIC=C` in
+  drivers, and read psql `\timing` output with care.
+- **Host load:** other projects share this machine. Record `vm.loadavg` at start and end; gate
+  whole-project cells on 1-min load < 8; discard, do not average, contaminated runs.
+- `auto_explain` is **not** loadable on the local stack; reproduce a function's plan with
+  `PREPARE` + `plan_cache_mode = force_generic_plan` instead.
+- `nominations.entity_type` is a **generated column**: never insert it.
+- `session_replication_role = replica` skips validation triggers for bulk fixture loads (constraints still apply).

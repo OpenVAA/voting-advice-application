@@ -1,0 +1,17 @@
+tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/162.1-07 --no-db-reset
+HEAD: 157a0c84ef8d9995aa6d4301d412ef8a8d70aa0c
+exit: 0; preflight failures 0, successes 1
+# Written BEFORE the run; the observed_* lines are appended from results.json AFTER it,
+observed_workers=6
+observed_retries=0
+observed_expected=165
+observed_unexpected=0
+observed_flaky=0
+observed_skipped=0
+observed_duration_ms=649547
+
+Wide node run (Task 3): tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/162.1-07-wide --project perm-closed-project
+# Written BEFORE the run; the observed_* lines are appended from results.json AFTER it, observed_workers=6 observed_retries=0 observed_expected=165 observed_unexpected=0 observed_flaky=0 observed_skipped=0 observed_duration_ms=637889 
+exit: 0
+
+Static gates on the same tree: yarn typecheck 0, yarn lint:check 0, yarn format:check 0, yarn test:unit 0

@@ -351,4 +351,4 @@ Source files available in:
 - `sources/002-dataroot-native-rune/dataRootRuneContext.svelte.ts`
 - `sources/008-ssr-hydration-runes/appSettingsVariantB.svelte.ts` — the SSR-aware shape promoted here
 - `sources/012-getroute-rune/getRouteRuneStore.svelte.ts` — Pattern 3 (4 variants); Approach C is the promoted shape
-- `sources/012-getroute-rune/README.md` — multi-step nav evidence table + answers to clarifier questions
+- `.planning/spikes/012-getroute-rune/README.md` — multi-step nav evidence table + answers to clarifier questions

@@ -16,7 +16,9 @@ provides:
   - "151-DISPOSITION.md § Deferred and carried forward — the next phase inherits a list, not a search"
   - "151-VALIDATION.md validated on measured state: wave_0_complete true, nyquist_compliant true"
   - "F-89 raised: 151-18's own perf fix leaked a planning reference into shipped source"
-  - "criterion 7 green AT REST after the final re-cut, with the recursion closed by construction"
+  - "criterion 7 green AT REST as of 14afb2d80, reproduced by the operator rather than trusted"
+  - "operator phase-close approval, given on reproduction of three claims rather than on reading"
+  - "F-89 dispositioned as a post-merge follow-up WITH ITS FIX NAMED, so it is inherited rather than re-derived"
 affects:
   - "whoever merges the stack — F-89 is open and needs an operator decision; F-81, F-86 and the two gsd-tools defects are post-merge"
   - "the next phase to run a large ship sweep — the skill is the durable carrier"
@@ -26,9 +28,9 @@ metrics:
   completed: 2026-08-17
 
 actuals:
-  tokens: 47500   # chars/4 over the realized diff (189,853 added chars)
-  tasks: 3
-  commits: 6
+  tokens: 55000   # chars/4 over the realized diff, including the phase-close writes
+  tasks: 3        # Task 3 is the phase-close checkpoint: APPROVED 2026-08-18
+  commits: 8
 
 tech-stack:
   added: []
@@ -60,6 +62,8 @@ key-decisions:
   - "F-89 was NOT absorbed into criterion 3's expected-red state — the fourth declined gate-massage, and the first available to an agent"
   - "Task 2's acceptance grep (substring 'pending' == 0) was unsatisfiable without falsifying history; the CHECK was wrong, not the content"
   - "The final re-cut's SHA is recorded OUTSIDE slice 11 — that is the fix for the recursion, not an omission"
+  - "F-89 is a post-merge follow-up: one comment line does not warrant a second six-branch force-push, and no PR carries a human review"
+  - "The phase-close writes drift criterion 7 again and are LEFT drifted — re-cutting to make the last sentence true is how the loop never ends"
   - "hygiene-codemod.mjs was reformatted in BOTH locations to keep them byte-identical, with the transform proved unchanged by its committed fixtures"
 ---
 
@@ -261,5 +265,91 @@ git rev-parse ship/v0.2-akita-11-planning
 bash scripts/verify-identity.sh feat-gsd-roadmap ship/v0.2-akita-11-planning   # exit 0
 ```
 
-**Criterion 7 is now green at rest**, not merely as of a past commit — until the next write to slice
-11's pathspec, which is a property of the arrangement and is stated rather than implied.
+**Criterion 7 was green at rest** at `14afb2d80`, not merely as of a past commit — and the operator
+reproduced it rather than trusting this record. See the section below for its standing after the
+phase-close writes, which is stated rather than repaired.
+
+## Task 3 — the phase-close checkpoint: APPROVED
+
+**Approved 2026-08-18, on reproduction rather than on reading**, which is the only test that
+distinguishes a record from a claim. All three headline assertions were re-run independently:
+
+| claim | reproduced | result |
+|---|---|---|
+| criterion 7 | `verify-identity.sh feat-gsd-roadmap ship/v0.2-akita-11-planning` | `changed files: 0`, both trees `b606ed169`, **BYTE-IDENTICAL**, exit 0 — green **at rest**, where it was red one wave earlier |
+| F-88 closed | `audit-skill-drift.sh`, **with a pre-fix control** | `Drifted: 2` before, `Checked: 5  Drifted: 0` after, exit 0 |
+| F-89 real | opened the cited line | present at `performance-budget.spec.ts:55` |
+
+Taking a control reading *before* the fix is the part worth noting: it is the difference between "the
+audit is green" and "the audit went from red to green because of this change".
+
+### F-89 — post-merge follow-up, with its fix named
+
+**Do not fix it in the stack; do not widen the gate.** The operator's reasoning, recorded so it is not
+re-argued: it is one comment line, a second six-branch force-push is not warranted for it, and no PR in
+the stack carries a human review yet — so an honest open finding costs nothing.
+
+**The fix, named so whoever picks it up does not re-derive it:** collapse the heading to D-14's
+authorised bare form — `## Why a warm-up reload (see phase 151)`. That single edit clears **both** rows
+at once: `plan-number` stops matching because no `NN-NN` plan number survives, and `phase-ref` returns
+to 11 bare because the surviving reference is preceded by `see`. Re-verify with
+`hygiene-grep-report.sh --assert-clean`, expecting `task-id` 82 and `phase-ref` bare 11.
+
+**The refusal to absorb it into the expected-red was explicitly endorsed**, and is now the fourth row
+of the declined-gate-massage table and the closing argument of the skill's gate section. It is the only
+one of the four available to an *agent* rather than to the operator, and the only one that disguises
+itself as bookkeeping.
+
+### Two corrections carried into the record rather than waived
+
+**The skill's drift targets.** The plan directed that the seven scripts be declared;
+`audit-skill-drift.sh:81` treats a file target as *"directory not found"*, so that would have satisfied
+the plan's wording and produced an audit **incapable of ever going red** — the same defect class as a
+linter pointed at a port that does not exist. Three real directories declared instead, and logged as
+the **~16th** plan-encoded claim in this phase found wrong as written, rather than quietly absorbed.
+
+**The fixpoint rule, now explicit in the skill** at the operator's request: writing the final cut's SHA
+into a file that cut contains re-breaks the identity the SHA records. Put it in the pull request body
+and let the repository carry the *command* — `git rev-parse <slice-branch>` — instead of the value. A
+recomputable pointer is stable; a written-down hash inside its own subject is a fixpoint that does not
+exist.
+
+### Criterion 7 after the phase close — stated, not silently repaired
+
+**`14afb2d80` is the closing state. It was NOT re-cut again, and nothing was force-pushed to close the
+phase.** The one-branch authorisation is now **spent**, exactly as 151-18's six-branch grant was.
+
+These phase-close writes — this section, the manifest's, the two approvals — are inside slice 11's
+pathspec, so **they drift the identity by construction**. That is the recursion this phase spent three
+plans closing, and the correct response is to say so:
+
+> Criterion 7 is proven green **at rest as of `14afb2d80`**, reproduced by the operator. **These
+> closing lines drift it again**, because a phase-close approval is itself a planning write. That is
+> not a regression, and it is not repaired by another cut — re-cutting to make the last sentence true
+> is how the loop never ends.
+
+**Anyone re-running the gate now sees a delta of exactly seven files — enumerated, not characterised:**
+
+```
+.claude/skills/ship-review-stack/SKILL.md            # the 4th declined massage + the fixpoint rule
+.planning/ROADMAP.md                                 # phase marked complete
+.planning/STATE.md                                   # close recorded
+.planning/phases/151-…/151-19-SUMMARY.md
+.planning/phases/151-…/151-DISPOSITION.md            # approval + F-89's named fix
+.planning/phases/151-…/151-STACK-MANIFEST.md         # this section
+.planning/phases/151-…/151-VALIDATION.md             # approval
+```
+
+**A correction to this record's own first draft, made by measuring it.** Both this section and the
+summary first said the delta was *".planning/-only"*. It is not: `.claude/skills/ship-review-stack/SKILL.md`
+is in it, because slice 11's pathspec is `.planning .claude .agents CLAUDE.md` — four roots, not one.
+The claim was written from the shape of the work rather than from `git diff --name-only`, which is the
+same species of error this phase has been cataloguing all along, committed in its closing paragraph.
+Corrected by enumeration. **No application code differs: `git diff --name-only feat-gsd-roadmap
+ship/v0.2-akita-11-planning -- apps packages tests` returns 0 files.**
+
+`main` is unmoved at `ac30f132a`, the backup worktree is intact and clean at `fe91f3099`, and PR #860
+remains the repurposed umbrella entry point.
+
+**Open follow-ups inherited by whoever merges:** F-89 (fix named above), F-81, F-86, the two
+`gsd-tools` defects, the dev-seed locality guard, and F-21 option (a) with F-29 riding its migration.

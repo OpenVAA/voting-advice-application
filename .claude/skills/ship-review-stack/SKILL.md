@@ -145,6 +145,20 @@ The wrong fix, which will be offered: re-scope the identity check to ignore that
 the board green and the guarantee weaker, and removes the only check that would catch a real drift
 there.
 
+**Stated as the rule, because the next person will otherwise rediscover it the hard way:**
+
+> **Writing the final cut's SHA into a file the final cut contains re-breaks the identity that SHA
+> records.** It is not a bookkeeping preference. Put the SHA in the pull request body, the release
+> note, the phase-close report -- anywhere outside the pathspec -- and let the repository carry the
+> _command_ instead of the value: `git rev-parse <slice-branch>`. A recomputable pointer is stable;
+> a written-down hash inside its own subject is a fixpoint that does not exist.
+
+**Two consequences worth planning for.** The re-cut must be the genuinely last action, so schedule it
+after the summary and the state updates, not before. And once it is done, **any further write to that
+pathspec drifts it again** -- including a phase-close approval note. When that happens, say so and
+leave it: the honest record is "green at rest as of X, and these three closing lines drifted it",
+never a silent re-cut to make the last sentence true.
+
 ## Lessons, each with the failure it prevents
 
 Nine that generalise beyond this repository, then the ones this environment taught.
@@ -199,15 +213,33 @@ nothing to do with the change.
 ### On gates
 
 **10. An honestly-red gate with enumerated exceptions beats a gate massaged until it passes.**
-Three massages were available in Phase 151 and all three were declined: raise a performance budget to
-green a red test; waive a red end-to-end suite and ship; re-scope the identity check past the one
-directory that always differs. **Every one would have produced a green board and a weaker guarantee.**
-When a gate is red, the question is whether the _gate_ or the _content_ is wrong -- and "make the gate
-stop asking" answers neither. _Prevents:_ the whole class of green boards that mean nothing.
+**Four** massages were available in Phase 151 and all four were declined:
+
+| #   | Available                                                              | Decision                                                   |
+| --- | ---------------------------------------------------------------------- | ---------------------------------------------------------- |
+| 1   | Raise a performance budget to green a red test                         | **Declined** -- fixed the measurement; threshold untouched |
+| 2   | Waive a red end-to-end suite and ship                                  | **Declined** -- fixed the defect, re-cut six branches      |
+| 3   | Re-scope the identity check past the one directory that always differs | **Declined** -- recorded the honest standing               |
+| 4   | Widen a red gate's _expected_ state to absorb a newly-appeared row     | **Declined** -- raised it as a finding                     |
+
+**Every one would have produced a green board and a weaker guarantee.** When a gate is red, the
+question is whether the _gate_ or the _content_ is wrong -- and "make the gate stop asking" answers
+neither. Note that #4 is the dangerous one, because it is the only one available to an _agent_ rather
+than to the operator, and it disguises itself as bookkeeping. _Prevents:_ the whole class of green
+boards that mean nothing.
 
 **11. A gate may be red by design -- but then write down the exact expected red.**
-"Exactly these two rows, and any other row is a real failure." _Prevents:_ a reader who cannot tell
-red-by-design from red-by-regression, which is the same as having no gate.
+"Exactly these two rows at exactly these counts, and **any other row is a real failure**." _Prevents:_
+a reader who cannot tell red-by-design from red-by-regression, which is the same as having no gate.
+
+**This is the closing argument for the whole approach, and it was paid for inside the phase that made
+it.** The comment-hygiene gate was red by design on two enumerated rows. At phase close it returned
+**three** -- and the third was a real planning-reference leak that the phase's _own_ cardinal-gate fix
+had put into shipped source, three plans after that criterion was declared closed. Absorbing it into
+the expected state would have taken one line and produced a board that agreed with itself forever.
+**It was findable only because the expected red had been written down precisely enough that a third
+row could not hide inside it.** An enumerated red is not a weaker green; it is the only red that can
+still tell you something.
 
 **12. A gate that has never run is not a passing gate.**
 The schema linter had been "passing" against a database port that does not exist in this project,
@@ -329,6 +361,20 @@ abbreviates by default and `update-index` then dies with `fatal: malformed index
 `-c diff.renameLimit=20000` on every rename-sensitive invocation so a measurement never silently
 degrades; a usage block and an exit-code table so a caller can branch on status alone.
 
+**Never `((VAR++))` under `set -e`. Use `((++VAR))` or `VAR=$((VAR + 1))`.** Post-increment evaluates
+to the counter's *old* value, and bash's arithmetic command returns exit status **1** when the
+expression evaluates to 0 -- so the very first increment of a counter initialised to 0 is a failing
+command. Whether that kills the script is bash-version-dependent, which is what makes it a latent
+defect rather than an obvious one: measured 2026-08-29, bash 3.2.57 (macOS, the host every author
+here develops on) runs straight through, while bash 5.2.15 (glibc) and 5.2.37 (musl) both abort.
+Ubuntu runners ship bash 5.2, so the defect is invisible locally and fatal in CI. `.claude/scripts/audit-skill-drift.sh`
+carried it at four sites and died in CI after printing only its banner. Full measurement:
+`.planning/phases/153-build-tooling-config-correctness/153-BASH5-REPRODUCTION.md`.
+
+The same shell-portability caution applies to reading a script's exit status through a pipe: `script | tail`
+reports **`tail`'s** status, not the script's. Use `${PIPESTATUS[0]}`, or capture the status without a
+pipe at all. This produced a false "passing" reading of the drift audit during Phase 153.
+
 ## What this procedure does not do
 
 - **It does not make the intermediate stack states build or pass.** They are not expected to. In Phase
@@ -343,3 +389,36 @@ degrades; a usage block and an exit-code table so a caller can branch on status 
   force-push's real cost by hashing each slice's **own patch** (`parent..self`), not its cumulative
   tree -- for five of six branches the reviewer-visible content was unchanged and only the parent
   pointer moved.
+
+## Freshness Record
+
+**Reviewed 2026-08-29** (Phase 153, plan 153-08) at HEAD `20e61fa40`, branch
+`integration/ship-12-squash`. Previous baseline -- the last commit touching
+`.claude/skills/ship-review-stack/` -- was `2026-08-28`.
+`.claude/scripts/audit-skill-drift.sh` reported `DRIFT 1 commits, 1 files` under the `.claude/scripts`
+target. The other two targets, `.agents` and
+`.planning/phases/151-ship-v0-2-akita-review-stack/scripts`, showed **no** commits in range.
+
+### What changed, and what it did to this skill
+
+The single drifting commit is `7d6aaac47` (this same plan, 153-08 Task 2): a four-line
+post-increment-to-pre-increment correction in `.claude/scripts/audit-skill-drift.sh`, the only file in
+that directory. It was **deliberately** committed before this record, because the audit's baseline for
+a skill is the last commit touching the skill's own directory -- a freshness record written first
+would have resolved nothing and the drift would have reappeared the moment the script landed.
+
+**Effect: additive, not corrective.** Nothing this skill previously said became untrue. What the fix
+earned is a new standing convention, added to the list above: never `((VAR++))` under `set -e`, and
+never read a script's exit status through a pipe. Both are shell-portability rules of exactly the kind
+that section collects, and both were measured rather than inferred.
+
+`.claude/scripts/audit-skill-drift.sh` is **not** one of the seven scripts this skill documents; it is
+a neighbour in the same directory. Measured 2026-08-29: the seven scripts contain **zero** post-increment
+arithmetic commands (`grep -rc '((.*++))'` over both copies sums to 0), so the new convention is
+preventive for them, not a repair.
+
+### Verified still true
+
+`diff -r .claude/skills/ship-review-stack/sources/ .planning/phases/151-ship-v0-2-akita-review-stack/scripts/`
+reports no differences -- the byte-identity this skill asserts between its `sources/` copy and the
+phase-151 originals still holds.

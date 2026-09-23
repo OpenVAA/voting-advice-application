@@ -1,0 +1,11 @@
+# tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/162.1-05 --no-db-reset  (exit 0)
+  158 passed (11.0m)
+e2e-run.sh: playwright exit 0
+e2e-run.sh: preflight failures 0, successes 1
+observed_workers=6
+observed_retries=0
+observed_expected=158
+observed_unexpected=0
+observed_flaky=0
+observed_skipped=0
+observed_duration_ms=660047

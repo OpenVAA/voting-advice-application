@@ -1,0 +1,65 @@
+Sort (actual time=3143.398..3146.695 rows=38986 loops=1)
+  Sort Key: n.sort_order, n.id
+  Sort Method: external merge  Disk: 7120kB
+  ->  Hash Left Join (actual time=430.069..3105.425 rows=38986 loops=1)
+        Hash Cond: (n.alliance_id = a.id)
+        Filter: (COALESCE(c.id, o.id, f.id, a.id) IS NOT NULL)
+        ->  Hash Left Join (actual time=428.962..3093.994 rows=38986 loops=1)
+              Hash Cond: (n.faction_id = f.id)
+              ->  Hash Left Join (actual time=428.954..3087.294 rows=38986 loops=1)
+                    Hash Cond: (n.organization_id = o.id)
+                    ->  Hash Left Join (actual time=428.491..3080.281 rows=38986 loops=1)
+                          Hash Cond: (n.candidate_id = c.id)
+                          ->  Bitmap Heap Scan on nominations n (actual time=1.956..2635.989 rows=38986 loops=1)
+                                Recheck Cond: (project_id = '6516328f-1ab4-4dd6-87b0-359b834e72d3'::uuid)
+                                Filter: (confirmed AND confirmed AND (SubPlan 1) AND (SubPlan 2))
+                                Heap Blocks: exact=828
+                                ->  Bitmap Index Scan on idx_nominations_project_id (actual time=0.381..0.381 rows=38986 loops=1)
+                                      Index Cond: (project_id = '6516328f-1ab4-4dd6-87b0-359b834e72d3'::uuid)
+                                SubPlan 1
+                                  ->  Result (actual time=0.004..0.004 rows=1 loops=38986)
+                                SubPlan 2
+                                  ->  Result (actual time=0.063..0.063 rows=1 loops=38986)
+                          ->  Hash (actual time=426.530..426.533 rows=36056 loops=1)
+                                Buckets: 65536 (originally 16384)  Batches: 1 (originally 1)  Memory Usage: 4762kB
+                                ->  Bitmap Heap Scan on candidates c (actual time=0.449..414.843 rows=36056 loops=1)
+                                      Recheck Cond: (project_id = '6516328f-1ab4-4dd6-87b0-359b834e72d3'::uuid)
+                                      Filter: (confirmed AND (terms_of_use_accepted IS NOT NULL) AND (terms_of_use_accepted < now()) AND (SubPlan 3) AND (SubPlan 4))
+                                      Heap Blocks: exact=740
+                                      ->  Bitmap Index Scan on idx_candidates_project_id (actual time=0.327..0.327 rows=36056 loops=1)
+                                            Index Cond: (project_id = '6516328f-1ab4-4dd6-87b0-359b834e72d3'::uuid)
+                                      SubPlan 3
+                                        ->  Result (actual time=0.003..0.003 rows=1 loops=36056)
+                                      SubPlan 4
+                                        ->  Result (actual time=0.008..0.008 rows=1 loops=36056)
+                    ->  Hash (actual time=0.450..0.452 rows=10 loops=1)
+                          Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                          ->  Bitmap Heap Scan on organizations o (actual time=0.255..0.449 rows=10 loops=1)
+                                Recheck Cond: (project_id = '6516328f-1ab4-4dd6-87b0-359b834e72d3'::uuid)
+                                Filter: (confirmed AND (SubPlan 5) AND (SubPlan 6))
+                                Heap Blocks: exact=1
+                                ->  Bitmap Index Scan on idx_organizations_project_id (actual time=0.003..0.003 rows=10 loops=1)
+                                      Index Cond: (project_id = '6516328f-1ab4-4dd6-87b0-359b834e72d3'::uuid)
+                                SubPlan 5
+                                  ->  Result (actual time=0.013..0.013 rows=1 loops=10)
+                                SubPlan 6
+                                  ->  Result (actual time=0.030..0.030 rows=1 loops=10)
+              ->  Hash (actual time=0.004..0.005 rows=0 loops=1)
+                    Buckets: 1024  Batches: 1  Memory Usage: 8kB
+                    ->  Seq Scan on factions f (actual time=0.003..0.004 rows=0 loops=1)
+                          Filter: (confirmed AND (project_id = '6516328f-1ab4-4dd6-87b0-359b834e72d3'::uuid) AND (SubPlan 7) AND (SubPlan 8))
+                          SubPlan 7
+                            ->  Result (never executed)
+                          SubPlan 8
+                            ->  Result (never executed)
+        ->  Hash (actual time=1.099..1.099 rows=0 loops=1)
+              Buckets: 1024  Batches: 1  Memory Usage: 8kB
+              ->  Seq Scan on alliances a (actual time=1.098..1.099 rows=0 loops=1)
+                    Filter: (confirmed AND (project_id = '6516328f-1ab4-4dd6-87b0-359b834e72d3'::uuid) AND (SubPlan 9) AND (SubPlan 10))
+                    Rows Removed by Filter: 2
+                    SubPlan 9
+                      ->  Result (never executed)
+                    SubPlan 10
+                      ->  Result (never executed)
+Planning Time: 1.986 ms
+Execution Time: 3148.179 ms

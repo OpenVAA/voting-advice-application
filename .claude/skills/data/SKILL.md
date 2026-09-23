@@ -154,3 +154,34 @@ via `internal.ts` for use within the data package.
 
 - For complete object hierarchy and DataRoot collection types, read [object-model.md](object-model.md)
 - For step-by-step guides to adding new entity and question types, read [extension-patterns.md](extension-patterns.md)
+
+## Freshness Record
+
+**Reviewed 2026-08-29** (Phase 153, plan 153-08) at HEAD `7d6aaac47`, branch
+`integration/ship-12-squash`. Previous baseline -- the last commit touching `.claude/skills/data/` --
+was `14afb2d80` (2026-08-17). `.claude/scripts/audit-skill-drift.sh` reported
+`DRIFT 5 commits, 13 files` under this skill's single target, `packages/data/src/`.
+
+### What changed, and what it did to this skill
+
+| Commit | What it did | Effect here |
+|---|---|---|
+| `34d6535ce` | wired `test:unit` across workspaces; rewrote a nomination-tree test to assert output (one item per tree leaf, each carrying its own election and constituency id) rather than wiring | none -- test assertions only |
+| `a81378639` | renamed the test-local `quatenaryChoices` to `quaternaryChoices` | none -- a `const` inside two `*.test.ts` files, not exported API |
+| `269e44462` | corrected the `dimesions` typo left in an assertion message | none -- a string literal in a test description |
+| `87e02f40b` | comment sweep across core, data, matching, filters | none -- comments only |
+| `dce80642f` | unwrapped 3,796 forced line breaks across `packages/` | none -- presentation only |
+
+**Measured, not assumed.** `git diff -w 14afb2d80..HEAD -- packages/data/src/`, with comment and
+blank lines filtered out, yields **28** changed lines, and **every one of them is inside a
+`*.test.ts` file**. No production source line under `packages/data/src/` changed semantically since
+this skill was last reviewed, so the object hierarchy, the entity and question variants, the
+nomination model, the smart-default and `MISSING_VALUE` conventions, and the
+`MatchableQuestion` / `HasAnswers` cross-package interfaces described above are all unaffected.
+
+**Checked for citation staleness:** `grep -rnE 'quatenary|dimesion' .claude/skills/` returns nothing,
+so no skill text quoted either misspelling and nothing needed rewriting on that account.
+
+**No content correction was required by this review** -- recorded as a reviewed no-change rather
+than resolved with a content-free touch, because the audit exists to make a human look and this is
+what the look found.

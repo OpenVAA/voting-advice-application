@@ -103,7 +103,19 @@ slice_11_final_recut_sha_recorded_in: ["PR #874 body", "the 151-19 phase-close r
 # ^ DELIBERATELY NOT a SHA in this file. Recording the final cut's SHA inside the slice that
 #   contains this file would re-break the identity it records -- the recursion 151-17 and 151-18
 #   each handed forward. The fixpoint is reached by moving the record of the last cut OUT of the cut.
-criterion_7_green_at_rest: true              # as of the final re-cut, with no later write to slice 11
+criterion_7_green_at_rest: true              # AS OF 14afb2d80, reproduced by the operator, not trusted
+closing_slice_11_sha: 14afb2d80              # the CLOSING state -- NOT re-cut again; the grant is spent
+
+# --- PHASE CLOSE, operator-approved 2026-08-18 ---
+phase_close_approved: true
+phase_close_approved_date: 2026-08-18
+phase_close_verified_by_operator: ["criterion-7 identity", "audit-skill-drift exit 0", "F-89 line present"]
+declined_gate_massages: 4                    # #4 added at 151-19 and explicitly endorsed at the checkpoint
+f_89_disposition: post-merge-follow-up       # fix named: collapse to D-14's bare `see phase 151` form
+f_89_fix_clears_rows: ["plan-number", "phase-ref-bare"]   # one edit, both rows
+force_push_authorisation_151_19_spent: true  # as 151-18's six-branch grant was
+plan_claim_corrections_total: 16             # the drift-target instruction is the latest
+identity_drifted_by_phase_close_writes: true # stated, NOT repaired by another cut -- that is the loop
 ---
 
 # Phase 151 — Stack Manifest
@@ -1690,6 +1702,7 @@ rather than the individual decisions:
 | 1 | Raise `TIME_TO_MATCHES_BUDGET_MS` to make a red perf test green | **Declined** — fixed the measurement instead; budget untouched |
 | 2 | Waive the red E2E gate and ship (`ship-with-waiver`) | **Declined** — fixed the defect and re-cut six branches |
 | 3 | Re-scope `verify-identity.sh` to ignore `.planning/` | **Declined** — record the honest standing instead |
+| 4 | Widen criterion 3's **expected-red** to absorb a newly-appeared row (added at 151-19) | **Declined** — raised it as **F-89** instead. The only one of the four available to an *agent* rather than the operator, and the only one that disguises itself as bookkeeping. **Operator explicitly endorsed the refusal at the phase-close checkpoint.** |
 
 **Every one of the three would have produced a green board and a weaker guarantee.** 151-19 codifies
 this phase's procedure as a skill, and this table is the part worth codifying: *when a gate is red,
@@ -1844,3 +1857,91 @@ bash scripts/verify-identity.sh feat-gsd-roadmap ship/v0.2-akita-11-planning   #
 That is the generalisable form, and it is written into the skill: **a slice containing the record
 cannot reach a stable identity while the phase is still writing artifacts — so make the last write
 precede the last cut, and keep the last cut's record outside the cut.**
+
+---
+
+## PHASE CLOSE — approved by the operator, 2026-08-18
+
+**The phase is closed.** The approval was given after the three headline claims were **reproduced
+independently rather than read**, which is what the criteria exist for:
+
+| claim | reproduced how | result |
+|---|---|---|
+| criterion 7 | `verify-identity.sh feat-gsd-roadmap ship/v0.2-akita-11-planning` | `changed files: 0`, both trees `b606ed169`, `Checks failed: 0`, **BYTE-IDENTICAL**, exit 0 — green **at rest**, where it was red one wave earlier |
+| F-88 closed | `bash .claude/scripts/audit-skill-drift.sh` | `Checked: 5  Drifted: 0  Skipped: 3`, exit 0. It read `Drifted: 2` when reproduced *before* the fix — the negative control was run, not assumed |
+| F-89 real | opened the cited line | present at `tests/tests/specs/perf/performance-budget.spec.ts:55` |
+
+### F-89 — DISPOSITION: post-merge follow-up, with its fix named
+
+**Do not fix it in the stack, and do not widen the gate.** The operator's reasoning, recorded so it is
+not re-argued: it is **one comment line**; a second six-branch force-push is not warranted for it; and
+no PR in the stack carries a human review yet, so keeping the record honest and the finding open costs
+nothing.
+
+| | |
+|---|---|
+| **What** | `tests/tests/specs/perf/performance-budget.spec.ts:55` reads `## Why a warm-up reload (phase 151, plan 151-18)` |
+| **Introduced by** | `0c24e87dd` — 151-18's own fix, the one that took the cardinal E2E gate from red to green, three plans after criterion 3 was declared closed |
+| **Effect** | trips two rows of `hygiene-grep-report.sh --assert-clean`: `plan-number` 0 → **1**, `phase-ref` bare 11 → **12**. Both are the same line. |
+| **Owning slice** | **05**, published as PR #868, with six slices chained above it |
+| **The fix, stated so nobody re-derives it** | Rewrite the heading to **D-14's authorised bare form**: `## Why a warm-up reload (see phase 151)`. That is the collapse D-14 permits — bare `see phase N`, with the plan number, the artifact path and any anchor stripped. It clears **both** rows at once: `plan-number` stops matching because no `NN-NN` plan number survives, and `phase-ref` returns to 11 bare because the surviving reference is preceded by `see`. Re-verify with `bash scripts/hygiene-grep-report.sh --assert-clean` and expect exactly `task-id` 82 and `phase-ref` bare 11. |
+| **When** | post-merge, or before merge **only** if the operator grants a fresh authorisation to re-cut and force-push slices 05–11. That authorisation has **not** been granted. |
+
+### A plan-claim correction, recorded so the count stays honest
+
+**The plan directed that the skill declare the seven scripts as its drift targets. That instruction was
+not followed, and the deviation is accepted rather than waived.** `audit-skill-drift.sh:81` tests
+`[[ ! -d "$target" ]]` and treats a file target as *"directory not found"*, contributing zero commits —
+so the skill would have been `CHECKED`, scored `OK`, and been **incapable of ever going red**.
+Declaring the files would have satisfied the plan's wording exactly while producing an audit that can
+never fail: **the same defect class as a linter pointed at a database port that does not exist**, and
+as `"engine"` (singular) in `package.json`. The declared targets are three directories that genuinely
+change — `.agents`, `.claude/scripts`, and this phase's `scripts/`.
+
+This is the **~16th** plan-encoded claim in this phase found wrong as written, and it belongs in that
+count rather than being quietly absorbed.
+
+### Criterion 7's standing after this section was written — stated, not silently repaired
+
+**The final re-cut at `14afb2d80` is the closing state, and it is NOT re-cut again.** The
+one-branch authorisation is now **spent**, exactly as 151-18's six-branch grant was.
+
+These phase-close writes are inside slice 11's pathspec, so they drift the identity by construction —
+the same recursion this phase has been closing all along. The honest statement, which is the one the
+skill now teaches:
+
+> **Criterion 7 is proven green AT REST as of `14afb2d80`** — `changed files: 0`, both trees
+> `b606ed169`, reproduced by the operator rather than trusted. **These closing lines drift it again**,
+> because a phase-close approval is itself a planning write. That is not a regression and it is not
+> repaired by another cut: re-cutting to make the last sentence true is how the loop never ends.
+
+**Anyone re-running the gate now sees a delta of exactly seven files — enumerated, not characterised:**
+
+```
+.claude/skills/ship-review-stack/SKILL.md            # the 4th declined massage + the fixpoint rule
+.planning/ROADMAP.md                                 # phase marked complete
+.planning/STATE.md                                   # close recorded
+.planning/phases/151-…/151-19-SUMMARY.md
+.planning/phases/151-…/151-DISPOSITION.md            # approval + F-89's named fix
+.planning/phases/151-…/151-STACK-MANIFEST.md         # this section
+.planning/phases/151-…/151-VALIDATION.md             # approval
+```
+
+**A correction to this record's own first draft, made by measuring it.** Both this section and the
+summary first said the delta was *".planning/-only"*. It is not: `.claude/skills/ship-review-stack/SKILL.md`
+is in it, because slice 11's pathspec is `.planning .claude .agents CLAUDE.md` — four roots, not one.
+The claim was written from the shape of the work rather than from `git diff --name-only`, which is the
+same species of error this phase has been cataloguing all along, committed in its closing paragraph.
+Corrected by enumeration. **No application code differs: `git diff --name-only feat-gsd-roadmap
+ship/v0.2-akita-11-planning -- apps packages tests` returns 0 files.**
+
+No slice other than 11 is affected, and **nothing was force-pushed to close the phase.**
+
+| | |
+|---|---|
+| closing slice-11 commit | **`14afb2d80`** (published; PR #874 head) |
+| force-pushes at 151-19 | **1**, `ship/v0.2-akita-11-planning`, authorisation now spent |
+| `main` | **`ac30f132a`**, unmoved |
+| backup worktree | **`fe91f3099`**, detached, clean, retained for the duration of the review |
+| PR #860 | untouched, still the repurposed umbrella entry point |
+| open follow-ups | **F-89**, F-81, F-86, `gsd-tools` ×2, the dev-seed locality guard, F-21 option (a) with F-29 riding it |

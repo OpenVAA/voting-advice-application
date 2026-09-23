@@ -1,13 +1,14 @@
 ---
 phase: 140-blind-matcher-remediation-teardowns-null-matchers-positive-controls
 verified: 2026-08-15T19:15:00Z
-status: gaps_found
-score: 5/6 must-haves verified
+reverified: 2026-08-18T00:00:00Z
+status: passed
+score: 6/6 must-haves verified (6th resolved on re-verification 2026-08-18)
 behavior_unverified: 0
 overrides_applied: 0
 gaps:
   - truth: "The F3 matcher does not introduce a new nondeterministic-failure hazard for the duplicated `e2e-perm-notloc-` prefix (plan `140-06`'s `verification: backstop` truth: 'whichever executes second legitimately observes before === 0')"
-    status: failed
+    status: RESOLVED 2026-08-18 (see § Re-verification addendum)
     reason: >
       Independently confirmed, not merely inherited from 140-REVIEW.md's CR-01: `tests/playwright.config.ts`
       declares `data-setup-bank-auth-journey` (:319) with NO `dependencies` entry ordering it relative to the
@@ -29,9 +30,14 @@ gaps:
         issue: "The before/after equality assertion (`rowsDeleted === rowsBefore`, `rowsAfter === 0`) is not concurrency-safe when two teardown projects share one prefix."
       - path: "tests/playwright.config.ts"
         issue: "`data-setup-bank-auth-journey` (:319) carries no `dependencies` ordering it relative to `data-teardown-perm-not-located-2e2cg`, and `fullyParallel: true` / `workers: 6` (local) permit concurrent scheduling of the two teardown projects that share `PREFIX = 'e2e-perm-notloc-'`."
-    missing:
-      - "Give the bank-auth journey its own external-ID namespace (e.g. `e2e-bankauth-notloc-`) so no two teardown projects can ever own one prefix, and stop it pre-clearing the `test-`/`e2e-perm-` namespaces it does not own — OR order the two projects explicitly (`dependencies: ['perm-not-located-2e2cg']` on `data-setup-bank-auth-journey`)."
-      - "A config-load prefix-uniqueness guard mirroring the existing ORPHAN-PROBE / SOFT-ASSERTION-BUDGET guards in `tests/playwright.config.ts`, so a future duplicate prefix cannot be reintroduced silently."
+    missing: []   # BOTH RETIRED — amended 2026-08-20; see `missing_retired` below for the original wording and its closing evidence.
+    missing_retired:
+      - item: "Give the bank-auth journey its own external-ID namespace (e.g. `e2e-bankauth-notloc-`) so no two teardown projects can ever own one prefix, and stop it pre-clearing the `test-`/`e2e-perm-` namespaces it does not own — OR order the two projects explicitly (`dependencies: ['perm-not-located-2e2cg']` on `data-setup-bank-auth-journey`)."
+        retired: 2026-08-18
+        closed_by: "700678a2d — dedicated `e2e-bankauth-notloc-` namespace (bank-auth-journey.teardown.ts:31) AND the serial-chain edge `dependencies: ['voter-prefs-tracking']` (playwright.config.ts:488). Both remedies the item named, landed together. See § Re-verification addendum — 2026-08-18."
+      - item: "A config-load prefix-uniqueness guard mirroring the existing ORPHAN-PROBE / SOFT-ASSERTION-BUDGET guards in `tests/playwright.config.ts`, so a future duplicate prefix cannot be reintroduced silently."
+        retired: 2026-08-18
+        closed_by: "Wrong when written — the guard already shipped inside Phase 140 itself: `abe1fabb0` (playwright.config.ts:138-240), hardened by `bdb759575` (IN-01 fs.existsSync precondition) and `c15e444e8` (IN-02 enumeration widened to the whole of TESTS_DIR). What was genuinely outstanding was the negative-control evidence, supplied by Phase 141 in `141-ASSERT10-LEDGER.md` (nine rows at HEAD 9b6d939a1). See § Phase 141 addendum — 2026-08-18."
 human_verification: []
 ---
 
@@ -53,9 +59,9 @@ human_verification: []
 | 3 | **F9** — `perm-hide-category-tags` / `perm-hide-election-tags` FAIL when the tag stops rendering anywhere; positive control is seeded data, not a comment | ✓ VERIFIED | Templates confirmed: `perm-hide-category-tags.ts:40` sets `elections: 2` (the load-bearing precondition per `electionTags.ts:13`'s two-election floor); `perm-hide-election-tags.ts:37-38` sets `elections: { showElectionTags: false }, questions: { showCategoryTags: true }`. Both specs carry a `toBeGreaterThan(0)` presence assertion (`perm-hide-category-tags.spec.ts:39-43`, `perm-hide-election-tags.spec.ts:39-43`) beside the byte-identical absence assertion. `140-NEGATIVE-CONTROL.md` §§ 15-16: both specs observed green pre-injection (86/86), both green (vacuously) under the render-path deletion before the presence assertions existed, and both red at their own presence-assertion line after — proven **severally** (each individually, per `140-NEGATIVE-CONTROL.md` § 16.4's documented Playwright serial-chain limit that a downstream project is skipped once its upstream dependency fails), which is a defensible reading of "the pair go red." |
 | 4 | **F10** — `voter-journey.spec.ts`'s stated `expect.soft` budget matches its real count (136), OR a counted guard enforces the budget and fails when one more is added | ✓ VERIFIED | `tests/playwright.config.ts:59-107`: `SOFT_ASSERTION_BUDGETS['specs/voter/voter-journey.spec.ts'] = 136`; guard counts by global regex occurrence, asserts equality (fails on addition AND removal). Independently confirmed `grep -c 'expect\.soft(' voter-journey.spec.ts` → 136 at current HEAD. `npx playwright test --list --project=voter-journey` (run by this verifier) succeeds cleanly with the guard in place. `140-NEGATIVE-CONTROL.md` §§ 9-12 documents the two-run control: unguarded config silently accepts an added assertion; guarded config throws at config-load time (including under `--list`), reverted, re-confirmed. |
 | 5 | Unit and E2E suites return to green after the edits, with the Phase-137 preflight satisfied on every run used as evidence | ✓ VERIFIED | `140-NEGATIVE-CONTROL.md` § 20.1: `yarn build` 14/14, `yarn test:unit` 21/21 (773 + 444 tests), `yarn lint:check` 11/11, `e2e-run.sh` (no `--project`) 135 passed / 0 unexpected / 0 flaky / 0 skipped, preflight 1 success / 0 failures. Git history independently confirms the ordering claim: `15d2e6687` (`test(140-06): adjudicate the F3 matcher…`) is the last commit touching source (`assertTeardown.ts`); every commit after it (`9872b5593`, `e61663f03`, `feaa57ee7`, `da89a2bb9`) touches only `.planning/` files. The phase-gate full-suite run is recorded inside `e61663f03`, which post-dates the last source change and precedes no further source edits. |
-| 6 | *(Added must-have — plan `140-06` `verification: backstop` truth)* The duplicated `e2e-perm-notloc-` prefix does not create a nondeterministic-failure hazard under the new equality assertion | ✗ FAILED | See Gaps below. `140-VALIDATION.md`/`140-NEGATIVE-CONTROL.md` § 22 itself marks this truth "REASONED, not observed" and instructs an unconfirming verifier to abstain to `human_needed`; this verifier instead found concrete counter-evidence in `tests/playwright.config.ts` (no ordering dependency + `fullyParallel: true`) that the race the truth dismisses is architecturally reachable, which is recorded as a gap rather than an abstention. |
+| 6 | *(Added must-have — plan `140-06` `verification: backstop` truth)* The duplicated `e2e-perm-notloc-` prefix does not create a nondeterministic-failure hazard under the new equality assertion | ✓ VERIFIED *(on re-verification 2026-08-18; ✗ FAILED at initial verification 2026-08-15)* | See Gaps below. `140-VALIDATION.md`/`140-NEGATIVE-CONTROL.md` § 22 itself marks this truth "REASONED, not observed" and instructs an unconfirming verifier to abstain to `human_needed`; this verifier instead found concrete counter-evidence in `tests/playwright.config.ts` (no ordering dependency + `fullyParallel: true`) that the race the truth dismisses is architecturally reachable, which is recorded as a gap rather than an abstention. |
 
-**Score:** 5/6 must-haves verified (0 present-behavior-unverified)
+**Score:** 6/6 must-haves verified (0 present-behavior-unverified) — 5/6 at initial verification; must-have 6 resolved 2026-08-18, see § Re-verification addendum.
 
 ### Weighing the phase's own flagged concerns (per verification notes)
 
@@ -194,3 +200,120 @@ lane (referenced in the bank-auth determinism-gate work) is next exercised.
 
 _Verified: 2026-08-15T19:15:00Z_
 _Verifier: Claude (gsd-verifier)_
+
+---
+
+## Re-verification addendum — 2026-08-18
+
+**Scope:** must-have 6 only. Must-haves 1–5 were VERIFIED on 2026-08-15 and no source
+touching them has changed since; they are not re-litigated here.
+
+**Verdict: RESOLVED.** The gap recorded above was real when written and was closed the
+following day. The fix landed in `700678a2d` (*fix(140): WR-03 append bank-auth setup to
+the perm serial chain*), which post-dates the 2026-08-15 verification by one day.
+
+The gap rested on two premises, and **both are false at HEAD**:
+
+| Premise (2026-08-15) | State at HEAD (2026-08-18) |
+|---|---|
+| "Both `bank-auth-journey.teardown.ts:26` and `perm-not-located-2e2cg.teardown.ts:11` declare the identical `const PREFIX = 'e2e-perm-notloc-'`" | **False.** `bank-auth-journey.teardown.ts:31` declares `const PREFIX = 'e2e-bankauth-notloc-'` — its own dedicated namespace, registered via the `perm-bankauth-notloc` template. The only surviving `e2e-perm-notloc-` occurrences in that file are docblock prose (`:10`) explaining the disjointness. `grep -rn "e2e-perm-notloc-" tests/tests/setup/` returns exactly one declaration site, `perm-not-located-2e2cg.teardown.ts:11`. |
+| "`data-setup-bank-auth-journey` carries no `dependencies` ordering it relative to the perm chain" | **False.** `tests/playwright.config.ts:488` declares `dependencies: ['voter-prefs-tracking']` — the perm serial chain's last leaf — so the project cannot share a Playwright phase with any other `app_settings` REPLACE. The adjacent comment block records why the two cheaper wirings (`['data-setup-base']`, `['voter-journey','candidate-journey']`) were each measured unsound. |
+
+This closes the hazard **twice over and independently**: prefix disjointness alone makes the
+two teardown projects incapable of racing on the same before/after row counts regardless of
+scheduling, and the serial-chain edge alone would serialise them regardless of prefix. The
+first also discharges the recorded `missing:` item verbatim — it is the exact remedy that
+entry named (*"Give the bank-auth journey its own external-ID namespace (e.g.
+`e2e-bankauth-notloc-`)"*).
+
+**Empirical confirmation.** The reasoning is not the only evidence. `140-GATES.md` records a
+purpose-built **Gate 4** for the precise invocation WR-03 was about —
+`PLAYWRIGHT_BANK_AUTH=1 yarn test:e2e` — which no gate had previously exercised:
+
+```json
+{ "total": 144, "expected": 144, "unexpected": 0,
+  "flaky": 0, "skipped": 0, "ok": true }
+```
+
+Gate 1 (blocking default suite) was re-run in the same pass and is cardinal-clean at 135/135.
+Notably the first re-run attempt **failed** identically across three determinism runs (`[EL1]`
+matched 2 elections, not 1) — the chain move surfaced a genuine latent ambiguity that was then
+fixed, which is the gate earning its keep rather than rubber-stamping the change.
+
+**Outstanding (not blocking):** the second `missing:` item — a config-load prefix-uniqueness
+guard mirroring the existing ORPHAN-PROBE / SOFT-ASSERTION-BUDGET guards — was **not**
+implemented. Prefix disjointness is currently maintained by convention and docblock, not
+enforced by a guard, so a future duplicate prefix could be reintroduced silently. This is a
+defence-in-depth hardening, not a live defect, and it is carried forward as a follow-up rather
+than held against phase closure. It belongs to the same guard-the-invariant family as Phase
+141's `test:unit` invariant guard.
+
+---
+
+## Phase 141 addendum — 2026-08-18: the second `missing:` item is retired
+
+**Appended by Phase 141, plan `141-04`. Nothing above this line has been edited.** The front-matter
+`missing:` list and the § "Outstanding (not blocking)" paragraph at `:238` are left exactly as written,
+including the claim this addendum retires. That is deliberate: both were **true at their own timestamp**,
+and the drift between that timestamp and this one is itself the finding.
+
+### What the record said
+
+The second `missing:` item, and the paragraph at `:238` restating it, both asked for:
+
+> "A config-load prefix-uniqueness guard mirroring the existing ORPHAN-PROBE / SOFT-ASSERTION-BUDGET
+> guards in `tests/playwright.config.ts`, so a future duplicate prefix cannot be reintroduced silently."
+
+— and recorded that it "was **not** implemented", so that "prefix disjointness is currently maintained by
+convention and docblock, not enforced by a guard."
+
+### Why it was true when written, and false by the time it was read
+
+Both statements were written at the **initial verification, 2026-08-15**, whose front-matter timestamp is
+`verified: 2026-08-15T19:15:00Z`. At that moment they were accurate.
+
+`abe1fabb0` — *"fix(140): CR-01 give bank-auth-journey its own teardown-prefix namespace"*, committed
+**2026-08-15 20:04:35 +0300**, i.e. roughly one hour later the same evening — delivered **both** halves of
+the CR-01 remedy, not just the namespace rename its subject line advertises. Alongside the dedicated
+`e2e-bankauth-notloc-` namespace it landed the `TEARDOWN-PREFIX-UNIQUENESS GUARD` now at
+`tests/playwright.config.ts:138-240`. Two later commits hardened it: `bdb759575` (2026-08-15 20:44, IN-01 —
+the named `fs.existsSync` precondition on the enumeration directory) and `c15e444e8` (2026-08-16 14:13,
+IN-02 — enumeration widened from `TESTS_DIR/setup` to the whole of `TESTS_DIR`, matching the teardown
+projects' own unanchored `testMatch` scope).
+
+The shipped guard is a **superset** of what this item asked for. It throws at config load on prefix
+**equality**; on prefix **containment** (the sharper hazard — `bulk_delete` scopes by
+`external_id LIKE '<prefix>%'`, so a prefix that merely contains another silently deletes the other's
+rows); and on an **unparsed declaration** in any file that calls `runTeardownAsserted` but whose
+`const PREFIX` the extraction regex cannot read (WR-03) — a completeness check the original item did not
+contemplate, and the one that stops the guard from quietly under-covering as the corpus grows.
+
+**The item was never amended at the re-verification of 2026-08-18** (`reverified: 2026-08-18T00:00:00Z`),
+which resolved must-have 6 by appending the § Re-verification addendum while leaving the `missing:` list
+and `:238` untouched. So a statement that had been overtaken within the hour survived a second pass over
+this very document and became the premise of two downstream records: `ROADMAP.md`'s Phase 140 status line
+(follow-up **F-140-01**) and `REQUIREMENTS.md`'s **ASSERT-10** parenthetical, both of which went on to
+assert that the guard "was never built". Both are corrected as of today, each naming `abe1fabb0` so the
+claim is checkable rather than merely different.
+
+### Status now
+
+**RETIRED.** The guard exists and is enforced on every `playwright test` / `--list` invocation. What Phase
+140 genuinely left outstanding was not the guard but the **negative-control evidence** for it — the
+milestone's standing acceptance rule requires a guard to be observed failing before it is credited, and
+this one was only ever read, never made to throw. Phase 141 supplies that evidence in
+`.planning/phases/141-package-unit-test-coverage-test-unit-invariant-guard/141-ASSERT10-LEDGER.md`: nine
+rows run at HEAD `9b6d939a1`, covering every throwing branch (equality, containment, completeness,
+out-of-`setup/` enumeration scope) and every must-not-fire case (clean baseline, the prefix-free
+legitimate exclusion that `candidate-journey.teardown.ts` ships today, and both sub-cases of the
+empty-prefix edge), with the tree restored to an identical `Total: 143 tests in 94 files`.
+
+Per **D-15**, Phase 141 makes **no edit** to `tests/playwright.config.ts`; it corrects and evidences this
+record, and builds nothing. Construction of the guard belongs to Phase 140.
+
+### The transferable lesson
+
+A verification's `missing:` list is not a snapshot — it is read months later as a live claim about the
+tree. Here the remedy landed **within the hour** and the list was never amended, so the record aged into a
+falsehood while the code was already correct, and three documents inherited it. Re-verification passes
+should re-check the `missing:` list against the tree, not only the must-haves that were previously unmet.

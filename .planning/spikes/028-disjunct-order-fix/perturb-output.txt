@@ -1,0 +1,53 @@
+=== A_public_first + G8A
+A_public_first
+applied A_public_first, quals md5 ea7c63b821006235fa06e1d214b04448
+perturbation applied: exit 0
+test:db exit 1
+Files=28, Tests=1086,  3 wallclock secs ( 0.07 usr  0.03 sys +  0.13 cusr  0.07 csys =  0.30 CPU)
+Result: FAIL
+# Failed test 32: "anon CANNOT see a confirmed, nominated faction whose project is not open for voters -- the project conjunct, flipped alone"
+# Failed test 47: "all FOUR anon entity SELECT policies name BOTH public-visibility helpers directly and neither published nor the withdrawn composition; anon_select_nominations still reaches the project term directly; and nomination_entities_confirmed still requires both helpers in its own body, read from pg_get_functiondef so a term dropped from the function cannot hide behind a policy that merely calls it -- populations pinned, so a clean answer cannot come from an empty instrument"
+# Failed test 34: "eight-assembly guard, RELATIVE: the four anon assemblies are identical once the table and entity type are normalised away"
+# Failed test 38: "eight-assembly guard, ABSOLUTE: all eight assemblies call project_open_for_voters"
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/16-anon-visibility.test.sql            (Wstat: 0 Tests: 52 Failed: 2)
+  Failed tests:  32, 47
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/25-matrix-conformance.test.sql         (Wstat: 0 Tests: 41 Failed: 2)
+  Failed tests:  34, 38
+=== A_public_first + G8B
+A_public_first
+applied A_public_first, quals md5 ea7c63b821006235fa06e1d214b04448
+perturbation applied: exit 0
+test:db exit 1
+Files=28, Tests=1086,  2 wallclock secs ( 0.06 usr  0.03 sys +  0.13 cusr  0.07 csys =  0.29 CPU)
+Result: FAIL
+# Failed test 36: "eight-assembly guard, RELATIVE: each authenticated assembly carries its own table's anon assembly verbatim as its public disjunct"
+# Failed test 37: "eight-assembly guard, ABSOLUTE: all eight assemblies name the `confirmed` column"
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/25-matrix-conformance.test.sql         (Wstat: 0 Tests: 41 Failed: 2)
+  Failed tests:  36-37
+=== B_project_public_entity + G8A
+B_project_public_entity
+applied B_project_public_entity, quals md5 b096e3bbcc51a0f572477e2b68bd3461
+perturbation applied: exit 0
+test:db exit 1
+Files=28, Tests=1086,  2 wallclock secs ( 0.07 usr  0.02 sys +  0.12 cusr  0.08 csys =  0.29 CPU)
+Result: FAIL
+# Failed test 32: "anon CANNOT see a confirmed, nominated faction whose project is not open for voters -- the project conjunct, flipped alone"
+# Failed test 47: "all FOUR anon entity SELECT policies name BOTH public-visibility helpers directly and neither published nor the withdrawn composition; anon_select_nominations still reaches the project term directly; and nomination_entities_confirmed still requires both helpers in its own body, read from pg_get_functiondef so a term dropped from the function cannot hide behind a policy that merely calls it -- populations pinned, so a clean answer cannot come from an empty instrument"
+# Failed test 34: "eight-assembly guard, RELATIVE: the four anon assemblies are identical once the table and entity type are normalised away"
+# Failed test 38: "eight-assembly guard, ABSOLUTE: all eight assemblies call project_open_for_voters"
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/16-anon-visibility.test.sql            (Wstat: 0 Tests: 52 Failed: 2)
+  Failed tests:  32, 47
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/25-matrix-conformance.test.sql         (Wstat: 0 Tests: 41 Failed: 2)
+  Failed tests:  34, 38
+=== B_project_public_entity + G8B
+B_project_public_entity
+applied B_project_public_entity, quals md5 b096e3bbcc51a0f572477e2b68bd3461
+perturbation applied: exit 0
+test:db exit 1
+Files=28, Tests=1086,  3 wallclock secs ( 0.07 usr  0.03 sys +  0.14 cusr  0.07 csys =  0.31 CPU)
+Result: FAIL
+# Failed test 36: "eight-assembly guard, RELATIVE: each authenticated assembly carries its own table's anon assembly verbatim as its public disjunct"
+# Failed test 37: "eight-assembly guard, ABSOLUTE: all eight assemblies name the `confirmed` column"
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/25-matrix-conformance.test.sql         (Wstat: 0 Tests: 41 Failed: 2)
+  Failed tests:  36-37
+final db:reset exit 0
