@@ -1,0 +1,148 @@
+{
+  "contract": "1.0.0",
+  "flavor": "core",
+  "milestone": "v2.15 — Trustworthy Foundations — Guards, Seed Data & CI Coverage",
+  "phases": [
+    {
+      "number": "137",
+      "name": "E2E Preflight Integrity — Assert the Served Application",
+      "status": "pending"
+    },
+    {
+      "number": "138",
+      "name": "DEF-135-04 — `EPERM-07` Root Cause + Waiver Discharge",
+      "status": "complete"
+    },
+    {
+      "number": "139",
+      "name": "Single-Source Sweep Findings — Confirm or Withdraw",
+      "status": "complete"
+    },
+    {
+      "number": "140",
+      "name": "Blind-Matcher Remediation — Teardowns, Null-Matchers, Positive Controls",
+      "status": "complete"
+    },
+    {
+      "number": "141",
+      "name": "Package Unit-Test Coverage + `test:unit` Invariant Guard",
+      "status": "complete"
+    },
+    {
+      "number": "142",
+      "name": "Assertion Design — Wiring-Only Tests Assert Output",
+      "status": "complete"
+    },
+    {
+      "number": "142.1",
+      "name": "Provider `getIdTokenClaims` Duplication — Make A-07 Reach Production",
+      "status": "in_progress"
+    },
+    {
+      "number": "143",
+      "name": "`svelte/store` Guard — App-Wide Reach + Fallout Triage",
+      "status": "pending"
+    },
+    {
+      "number": "144",
+      "name": "Seed-Template Strict Typing + Unknown-Prop Guard",
+      "status": "complete"
+    },
+    {
+      "number": "145",
+      "name": "Default Seed Template Repair",
+      "status": "complete"
+    },
+    {
+      "number": "146",
+      "name": "Visual Gate — Self-Hosted Inter, Height-Independent Sensitivity, Re-baseline",
+      "status": "complete"
+    },
+    {
+      "number": "147",
+      "name": "Candidate-App Scan Reach — Blocking Axe + Raw-Key Gate",
+      "status": "complete"
+    },
+    {
+      "number": "148",
+      "name": "Candidate-App A11y Remediation to Zero",
+      "status": "pending"
+    },
+    {
+      "number": "151",
+      "name": "Ship v0.2 Akita — Review Stack & Commit-History Restructure",
+      "status": "complete"
+    },
+    {
+      "number": "152",
+      "name": "Comment & Naming Hygiene Sweep",
+      "status": "in_progress"
+    },
+    {
+      "number": "153",
+      "name": "Build & Tooling Config Correctness",
+      "status": "complete"
+    },
+    {
+      "number": "154",
+      "name": "dev-seed Determinism & Template Validation",
+      "status": "in_progress"
+    },
+    {
+      "number": "155",
+      "name": "Edge Function Hardening — env, JWT, provider identity",
+      "status": "in_progress"
+    },
+    {
+      "number": "156",
+      "name": "Supabase Schema Corrections — naming, constraints, grants",
+      "status": "complete"
+    },
+    {
+      "number": "157",
+      "name": "Adapter Boundary & Typing",
+      "status": "pending"
+    },
+    {
+      "number": "158",
+      "name": "Routing & Auth Surface Harmonisation",
+      "status": "complete"
+    },
+    {
+      "number": "159",
+      "name": "Component & Context Consolidation",
+      "status": "complete"
+    },
+    {
+      "number": "160",
+      "name": "Agent Docs & Skills Refresh",
+      "status": "complete"
+    },
+    {
+      "number": "161",
+      "name": "Project Scoping — `PROJECT_ID` Parameterisation",
+      "status": "in_progress"
+    },
+    {
+      "number": "162",
+      "name": "Permissions & Auth Model Refactor",
+      "status": "complete"
+    },
+    {
+      "number": "163",
+      "name": "CI Gates — SQL Lint/Format + Secrets & Vulnerability Scanning _(was 149)_",
+      "status": "complete"
+    },
+    {
+      "number": "164",
+      "name": "`RETURNS TABLE` Nullability — Audit + Single Override Mechanism _(was 150)_",
+      "status": "complete"
+    }
+  ],
+  "next": {
+    "command": "/gsd:progress --next",
+    "label": "Advance to the next step (plan phase 162.1)",
+    "reason": "Phase 162.1 of 29 — needs a plan"
+  },
+  "updated_at": "2026-09-20T15:12:59.229Z"
+}
