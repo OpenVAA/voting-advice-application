@@ -1,7 +1,6 @@
 {
   "entityDetails": {
     "links": "Lingid",
-    "memberOfOrganization": "erakonna {organization} liige",
     "tabs": {
       "children": "Liikmed",
       "info": "Põhiandmed",

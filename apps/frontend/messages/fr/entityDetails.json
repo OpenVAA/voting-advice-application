@@ -1,7 +1,6 @@
 {
   "entityDetails": {
     "links": "Liens",
-    "memberOfOrganization": "membre de {organization}",
     "tabs": {
       "children": "Membres",
       "info": "Commentaires",
