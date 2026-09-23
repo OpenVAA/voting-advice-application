@@ -1,6 +1,5 @@
 <!--
-@component
-Component for real-time password validation UI.
+@component Component for real-time password validation UI.
 Password is validated against rules defined in `passwordValidation.ts`.
 
 A progress bar is shown that indicates the number of completed rules.

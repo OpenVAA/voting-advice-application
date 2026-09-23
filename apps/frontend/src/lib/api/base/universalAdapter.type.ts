@@ -3,7 +3,7 @@ import type { ResponseParser } from '../utils/parseResponse';
 
 export type AdapterConfig = {
   /**
-   * The `fetch` function the `DataProvider` will use to make API calls.
+   * The `fetch` function the adapter makes its API calls with. Required: an adapter that could be built without one would be an adapter whose caller never named the request it belongs to.
    */
   fetch: Fetch | undefined;
 };

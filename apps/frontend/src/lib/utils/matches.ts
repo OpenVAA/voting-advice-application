@@ -80,16 +80,14 @@ export function findCandidateNominations({
 
   return candidateMatches as Array<Match<CandidateNomination, QuestionCategory>>;
 
-  // // Use the matches only if these are found for all nominations
-  // if (candidateMatches.length === candidateNominations.length)
+  // // Use the matches only if these are found for all nominations if (candidateMatches.length === candidateNominations.length)
   //   return candidateMatches as Array<Match<CandidateNomination, QuestionCategory>>;
   // return candidateNominations.sort(compareMaybeWrappedEntities);
 }
 
 /**
  * A utility function to find the `OrganizationNomination`s for an `AllianceNomination` in the match tree.
- * Mirror of {@link findCandidateNominations} one level up the parent hierarchy: an alliance's "children"
- * are its member organization-nominations.
+ * Mirror of {@link findCandidateNominations} one level up the parent hierarchy: an alliance's "children" are its member organization-nominations.
  * @param matches - The possible `MatchTree`.
  * @param nomination - The `AllianceNomination` whose member organization-nominations to find.
  * @returns An array of `OrganizationNomination` matches; falls back to the non-matched `OrganizationNomination`s sorted by `compareMaybeWrappedEntities` if matches are not found for all member orgs.

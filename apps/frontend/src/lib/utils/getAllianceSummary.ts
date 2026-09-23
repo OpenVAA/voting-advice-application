@@ -7,7 +7,7 @@ import type { AllianceNomination } from '@openvaa/data';
  *
  * Used by:
  * - `EntityCard.svelte` (list variant) to render the summary line below the alliance name.
- * - `EntityDetails.svelte` (drawer header) to render the same line for context-continuity (see phase 69).
+ * - `EntityDetails.svelte` (drawer header) to render the same line for context-continuity.
  *
  * The shared helper avoids drift between the two render sites.
  */

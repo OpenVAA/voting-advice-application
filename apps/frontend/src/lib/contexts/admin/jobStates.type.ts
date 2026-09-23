@@ -16,13 +16,11 @@ export type JobStates = {
   readonly pastJobsByFeature: Map<AdminFeature, Array<JobInfo>>;
 
   /**
-   * Temporary method to start polling for new jobs
-   * TODO[Svelte 5]: Count subscriptions to $state and automatically start and stop polling.
+   * Temporary method to start polling for new jobs TODO[Svelte 5]: Count subscriptions to $state and automatically start and stop polling.
    */
   startPolling: () => void;
   /**
-   * Temporary method to stop polling for new jobs
-   * TODO[Svelte 5]: Count subscriptions to $state and automatically start and stop polling.
+   * Temporary method to stop polling for new jobs TODO[Svelte 5]: Count subscriptions to $state and automatically start and stop polling.
    */
   stopPolling: () => void;
 };

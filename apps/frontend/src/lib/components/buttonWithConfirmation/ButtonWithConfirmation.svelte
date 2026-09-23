@@ -1,6 +1,5 @@
 <!--
-@component
-A button which will open a confirmation modal when clicked before the action is executed.
+@component A button which will open a confirmation modal when clicked before the action is executed.
 
 ### Properties
 

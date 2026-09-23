@@ -1,6 +1,5 @@
 <!--
-@component
-Display constituency selection inputs for elections.
+@component Display constituency selection inputs for elections.
 
 If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single selector will be shown for them. Also, if any `ConstituencyGroup`s are completely subsumed by another, only the selector for the child group will be shown and the selected parent will be implied.
 
@@ -95,8 +94,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
         }
       ];
     } else {
-      // Build sections with applicable elections and constituency groups
-      // Pre-select the selected constituencies for each section
+      // Build sections with applicable elections and constituency groups Pre-select the selected constituencies for each section
       const root = elections[0].root;
       const allMaybeCombined = root.getCombinedElections(elections);
 
@@ -143,47 +141,21 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
   }
 
   /**
-   * Cross-section linking: when section `changedIndex` was just updated to a
-   * non-empty selectedId, find OTHER sections whose `groups` include the
-   * picked constituency's group and propagate the same constituency id to
-   * them. This binds the choice for elections that share a constituency
-   * group — e.g., when Election A's Municipalities group is the same object
-   * reference as Election B's Municipalities group, picking a municipality
-   * in either selector updates BOTH elections to that municipality. Without
-   * this, the user could choose conflicting constituencies for elections
-   * that resolve to the same group, leading to a downstream
-   * `getApplicableConstituency` multi-match error.
+   * Cross-section linking: when section `changedIndex` was just updated to a non-empty selectedId, find OTHER sections whose `groups` include the picked constituency's group and propagate the same constituency id to them. This binds the choice for elections that share a constituency group — e.g., when Election A's Municipalities group is the same object reference as Election B's Municipalities group, picking a municipality in either selector updates BOTH elections to that municipality. Without this, the user could choose conflicting constituencies for elections that resolve to the same group, leading to a downstream `getApplicableConstituency` multi-match error.
    *
-   * The picked constituency's group is determined by membership: among the
-   * groups rendered in this section, find the one that contains the
-   * selected constituency. Other sections are matched by `group.id` equality
-   * (works for both same-object references and same-id from different
-   * dataRoot instances).
+   * The picked constituency's group is determined by membership: among the groups rendered in this section, find the one that contains the selected constituency. Other sections are matched by `group.id` equality (works for both same-object references and same-id from different dataRoot instances).
    *
-   * Empty selections do NOT propagate (clearing one section does not clear
-   * its linked siblings — the asymmetry keeps the model conservative).
+   * Empty selections do NOT propagate (clearing one section does not clear its linked siblings — the asymmetry keeps the model conservative).
    *
    * KNOWN EDGE CASE — non-shared-group "stickiness" eraser:
-   *   Suppose Election 1 has groups [A, B] and Election 2 has only group [A]
-   *   (A is shared, B is E1-exclusive). The following sequence is permitted
-   *   today but produces a subtly counterintuitive outcome:
+   *   Suppose Election 1 has groups [A, B] and Election 2 has only group [A] (A is shared, B is E1-exclusive). The following sequence is permitted today but produces a subtly counterintuitive outcome:
    *     1. User picks some constituency from group A for Election 2.
-   *        → propagation also sets Election 1's selection to the same value
-   *          in A (because E1 has group A too).
+   *        → propagation also sets Election 1's selection to the same value in A (because E1 has group A too).
    *     2. User then picks a constituency from group B for Election 1.
-   *        → no propagation (E2 has no group B), so E1's selection moves to
-   *          a B-member while E2 keeps its A-member. So far, fine.
+   *        → no propagation (E2 has no group B), so E1's selection moves to a B-member while E2 keeps its A-member. So far, fine.
    *     3. User picks ANOTHER constituency from group A for Election 2.
-   *        → propagation fires again and overwrites Election 1's B-pick
-   *          back to the new A-pick, even though the user thought their
-   *          E1 choice in B was "locked in".
-   *   In other words, any further interaction with the shared-group selector
-   *   in E2 will silently clobber an E1 choice the user made in a non-shared
-   *   group. This is an edge case (requires two groups, one shared, one not,
-   *   plus interleaved selections) and is deferred until it shows up in
-   *   real use. If/when this needs to be fixed, the right approach is
-   *   probably to model "the last-touched group wins per election" rather
-   *   than "any pick in a shared group overwrites all linked sections".
+   *        → propagation fires again and overwrites Election 1's B-pick back to the new A-pick, even though the user thought their E1 choice in B was "locked in".
+   *   In other words, any further interaction with the shared-group selector in E2 will silently clobber an E1 choice the user made in a non-shared group. This is an edge case (requires two groups, one shared, one not, plus interleaved selections) and is deferred until it shows up in real use. If/when this needs to be fixed, the right approach is probably to model "the last-touched group wins per election" rather than "any pick in a shared group overwrites all linked sections".
    */
   function propagateSharedGroup(changedIndex: number): void {
     const changed = sections[changedIndex];
@@ -290,14 +262,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
             onChange={() => handleChange(sectionIndex)} />
 
           <!--
-            If there are multiple applicable elections, show the implied constituency for each — but ONLY once a
-            constituency has actually been selected. see phase 134 Option A: this block previously rendered
-            pre-selection as an em-dash placeholder dimmed to 30% opacity by a global dimming utility (since
-            deleted from app.css — this was its only consumer). That composited `text-secondary` down to 1.52:1
-            light / 1.46:1 dark, failing WCAG 2.1 AA colour contrast. Opacity is a steady state, so no scan-timing
-            settle can clear it; gating the block on selection removes the element from the a11y tree while it has
-            no content. Accepted cost: the "preview of what will be filled in" affordance and its
-            `transition-opacity` fade are gone.
+            If there are multiple applicable elections, show the implied constituency for each — but ONLY once a constituency has actually been selected. Rendering a dimmed em-dash placeholder pre-selection composited `text-secondary` down to 1.52:1 light / 1.46:1 dark, failing WCAG 2.1 AA colour contrast; opacity is a steady state, so no scan-timing settle can clear it. Gating the block on selection removes the element from the a11y tree while it has no content. Accepted cost: the "preview of what will be filled in" affordance and its fade are gone.
           -->
 
           {#if applicableElections.length > 1 && sections[sectionIndex].selectedId}

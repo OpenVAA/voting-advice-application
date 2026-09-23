@@ -1,6 +1,5 @@
 <!--
-@component
-A video player that also includes a switcher between the video and a text transcript. The player also supports a variety of controls that mimic social media video controls.
+@component A video player that also includes a switcher between the video and a text transcript. The player also supports a variety of controls that mimic social media video controls.
 
 The player can be initialized without providing any content in which case it will be hidden until the content is provided using the `load` function.
 
@@ -139,8 +138,7 @@ If not provided, the `video` element will be hidden until these properties are p
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // `locale` here is the i18n plain-string locale from ComponentContext (NOT the
-  // flattened AppContext rune handle); read off `ctx` to keep the audit grep clean.
+  // `locale` here is the i18n plain-string locale from ComponentContext (NOT the flattened AppContext rune handle); read off `ctx` to keep the audit grep clean.
   const ctx = getComponentContext();
   const { t } = ctx;
   const locale = ctx.locale;

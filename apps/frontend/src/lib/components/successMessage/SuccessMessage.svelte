@@ -1,6 +1,5 @@
 <!--
-@component
-Used to display a message when an action succeeds.
+@component Used to display a message when an action succeeds.
 
 ### Properties
 

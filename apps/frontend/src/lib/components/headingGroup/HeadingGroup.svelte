@@ -1,7 +1,5 @@
 <!--
-@component
-Used to group the page's main headings, such as a pre-heading (kicker)
-and the main title.
+@component Used to group the page's main headings, such as a pre-heading (kicker) and the main title.
 
 ### Properties
 

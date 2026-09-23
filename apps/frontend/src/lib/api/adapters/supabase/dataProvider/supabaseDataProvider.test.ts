@@ -35,10 +35,12 @@ vi.mock('$lib/api/utils/parseAnswers', () => ({
  *   .from(table).select(columns).order(col)          -> {data, error}
  *   .from(table).select(columns).eq(col, val)        -> {data, error}
  *   .from(table).select(columns).in(col, vals)       -> {data, error}
+ *   .from(table).select(columns).order(col).range(a, b) -> {data, error}
  *   .rpc(fnName, params)                              -> {data, error}
  *
  * Configure per-table responses via `mockResponses`.
  * Configure RPC responses via `mockRpcResponses`.
+ * Configure a SEQUENCE of per-table responses via `mockResponseQueues`: each awaited chain for that table shifts the next entry, and falls back to `mockResponses` once the queue is empty. This is how a test hands a paged read a full first page followed by a short one.
  */
 function createMockSupabaseClient() {
   const mockResponses: Record<string, { data: unknown; error: unknown }> = {};
@@ -57,8 +59,7 @@ function createMockSupabaseClient() {
       then: undefined as unknown as PromiseLike<unknown>['then']
     };
     // Make the chain itself thenable so `await query` works on non-single queries.
-    // Params are left unannotated so they are contextually typed from
-    // PromiseLike<unknown>['then'] (optional onfulfilled?/onrejected?), matching the field type.
+    // Params are left unannotated so they are contextually typed from PromiseLike<unknown>['then'] (optional onfulfilled?/onrejected?), matching the field type.
     chain.then = (resolve, reject) => {
       const result = mockResponses[table] ?? { data: null, error: null };
       return Promise.resolve(result).then(resolve, reject);
@@ -628,11 +629,11 @@ describe('SupabaseDataProvider', () => {
 
       await provider.getConstituencyData({ id: 'cg1' });
 
-      // constituency_groups should have eq called
+      // constituency_groups should have the id filter applied
       const groupChain = mockSupabase.from.mock.results[0].value;
       expect(groupChain.eq).toHaveBeenCalledWith('id', 'cg1');
 
-      // constituencies should NOT have eq called
+      // constituencies should carry the project filter and NO id filter: a constituency may belong to a group through a parent chain, so narrowing the second read by the caller's group id would drop it. The assertion is on the absence of an `id` filter specifically rather than on the absence of any filter, because every read now carries the project.
       const constChain = mockSupabase.from.mock.results[1].value;
       expect(constChain.eq).not.toHaveBeenCalled();
     });
@@ -1602,12 +1603,8 @@ describe('SupabaseDataProvider', () => {
     });
 
     it('nomination objects include entityType, entityId, electionId, constituencyId fields', async () => {
-      // see phase 64 P01: include orgNomRow so the candidate nomination's parent
-      // (n3 → organization) resolves in the in-memory parent-type lookup.
-      // Without it, the adapter clears parentNominationId to honor the
-      // Nomination "either both or neither" invariant. In production,
-      // get_nominations always returns all nominations for the election so
-      // the parent IS in the same fan-out.
+      // Include orgNomRow so the candidate nomination's parent (n3 → organization) resolves in the in-memory parent-type lookup.
+      // Without it, the adapter clears parentNominationId to honor the Nomination "either both or neither" invariant. In production, get_nominations always returns all nominations for the election so the parent IS in the same fan-out.
       mockSupabase._mockRpcResponses['get_nominations'] = {
         data: [baseCandidateNomRow, orgNomRow],
         error: null
@@ -1623,7 +1620,7 @@ describe('SupabaseDataProvider', () => {
       expect(nom?.electionRound).toBe(1);
       expect(nom?.electionSymbol).toBe('42');
       expect(nom?.parentNominationId).toBe('n3');
-      // see phase 64 P01: parentNominationType is derived from the parent's entity_type.
+      // parentNominationType is derived from the parent's entity_type.
       expect(nom?.parentNominationType).toBe('organization');
     });
 

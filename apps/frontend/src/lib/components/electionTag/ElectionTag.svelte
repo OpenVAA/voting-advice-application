@@ -1,6 +1,5 @@
 <!--
-@component
-Used to display an election tag with the election's color.
+@component Used to display an election tag with the election's color.
 
 Used when the application has multiple elections and question may apply to only some of them.
 

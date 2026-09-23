@@ -11,52 +11,26 @@ import type { AuthContext } from './authContext.type';
 const CONTEXT_KEY = Symbol();
 
 /**
- * The auth context as a Svelte 5 CLASS (Group F leaf; v2.13 context-as-class
- * migration). CONVERTED from the factory closure that returned a
- * `setContext` object literal inside `initAuthContext()`.
+ * The auth context as a Svelte 5 CLASS.
  *
  * `isAuthenticated` is backed by a private `#isAuthenticated = $derived(...)`
- * field reading `page.data.session`, exposed as an OWN-ENUMERABLE accessor
- * assigned in the constructor (the canonical spread-safety shape from
- * `dataContext`'s constructor-assigned own-property handles). Read as
- * `instance.isAuthenticated` it is fully reactive (the getter re-invokes the
- * `$derived` inside the tracking scope).
+ * field reading `page.data.session`, exposed as an OWN-ENUMERABLE accessor assigned in the constructor (the canonical spread-safety shape from `dataContext`'s constructor-assigned own-property handles). Read as `instance.isAuthenticated` it is fully reactive (the getter re-invokes the `$derived` inside the tracking scope).
  *
- * NB. A bare public `$derived` class field would NOT survive the
- * `{ ...authContext }` spread in candidateContext: Svelte 5 compiles `$state`/
- * `$derived` class fields to PRIVATE backing fields + PROTOTYPE accessors, which
- * are NOT own-enumerable and are therefore dropped by object spread (verified
- * headlessly). The original object-literal `get isAuthenticated()` WAS an
- * own-enumerable accessor, so the spread copied it (as a snapshot — the
- * documented spread-of-context trap, CONVENTIONS see spike 009/019). To stay
- * byte-identical at the consumer until the spread-of-context fix (see phase 109),
- * `isAuthenticated` MUST remain own-enumerable. Hence the constructor-assigned
- * accessor rather than a bare `$derived` field.
+ * NB. A bare public `$derived` class field would NOT survive the `{ ...authContext }` spread in candidateContext: Svelte 5 compiles `$state`/ `$derived` class fields to PRIVATE backing fields + PROTOTYPE accessors, which are NOT own-enumerable and are therefore dropped by object spread (verified headlessly). An own-enumerable accessor IS copied by the spread — as a snapshot, which is the documented spread-of-context trap. For the consumer to see the member at all, `isAuthenticated` MUST remain own-enumerable. Hence the constructor-assigned accessor rather than a bare `$derived` field.
  *
- * The four DataWriter wrappers (`logout` / `requestForgotPasswordEmail` /
- * `resetPassword` / `setPassword`) are ARROW-FUNCTION FIELDS (they survive
- * detach: candidateContext does `const { logout: _logout } = authContext`) so
- * they capture `this`. Their bodies are preserved verbatim from the former
- * async-function declarations, including the `prepareDataWriter(dataWriter)`
- * await and the `authToken: ''` cookie-auth stub.
+ * The four DataWriter wrappers (`logout` / `requestForgotPasswordEmail` / `resetPassword` / `setPassword`) are ARROW-FUNCTION FIELDS (they survive detach: candidateContext does `const { logout: _logout } = authContext`) so they capture `this`. Each body builds its own writer with `prepareDataWriter()` for the one call it makes; authorisation is carried by the Supabase session cookie.
  *
- * There is NO init/post-mount effect: the `page.data.session` read is
- * synchronous via `$derived`.
+ * There is NO init/post-mount effect: the `page.data.session` read is synchronous via `$derived`.
  */
 export class AuthContextProvider implements AuthContext {
-  // Private $derived backing field; exposed as an OWN-ENUMERABLE accessor
-  // (assigned in the constructor) so it survives the candidateContext spread.
+  // Private $derived backing field; exposed as an OWN-ENUMERABLE accessor (assigned in the constructor) so it survives the candidateContext spread.
   #isAuthenticated = $derived(!!page.data.session);
 
-  // Own-enumerable `isAuthenticated` accessor (spread-safe). Declared here so the
-  // type is `readonly boolean`; the actual getter is installed in the constructor.
+  // Own-enumerable `isAuthenticated` accessor (spread-safe). Declared here so the type is `readonly boolean`; the actual getter is installed in the constructor.
   readonly isAuthenticated!: boolean;
 
   constructor() {
-    // Define `isAuthenticated` as an OWN-ENUMERABLE getter (not a prototype
-    // accessor) so `{ ...authContext }` copies it (dataContext spread-safety
-    // precedent). Reading `instance.isAuthenticated` re-invokes `#isAuthenticated`
-    // in the tracking scope, so the read stays reactive.
+    // Define `isAuthenticated` as an OWN-ENUMERABLE getter (not a prototype accessor) so `{ ...authContext }` copies it (dataContext spread-safety precedent). Reading `instance.isAuthenticated` re-invokes `#isAuthenticated` in the tracking scope, so the read stays reactive.
     // eslint-disable-next-line @typescript-eslint/no-this-alias -- the defineProperty getter below has its own `this`; `self` captures the instance to reach the private `#isAuthenticated` backing (spread-safe class-conversion pattern).
     const self = this;
     Object.defineProperty(this, 'isAuthenticated', {
@@ -69,10 +43,7 @@ export class AuthContextProvider implements AuthContext {
   }
 
   ////////////////////////////////////////////////////////////////////
-  // Wrappers for DataWriter methods (arrow fields — survive detach)
-  // NB. These automatically handle authentication via Supabase sessions.
-  // authToken is passed as '' to satisfy the WithAuth type constraint --
-  // the Supabase adapter ignores it (auth is cookie-based).
+  // Wrappers for DataWriter methods (arrow fields — survive detach) NB. These automatically handle authentication via Supabase sessions.
   ////////////////////////////////////////////////////////////////////
 
   requestForgotPasswordEmail = async (

@@ -1,9 +1,7 @@
 import type { HTMLAttributes } from 'svelte/elements';
 
 /**
- * The type extends HTMLAttributes<HTMLElement> because restProps are spread onto
- * different element types (div, input, select) depending on the number of options
- * and autocomplete mode.
+ * The type extends HTMLAttributes<HTMLElement> because restProps are spread onto different element types (div, input, select) depending on the number of options and autocomplete mode.
  */
 export type SelectProps = HTMLAttributes<HTMLElement> & {
   /**

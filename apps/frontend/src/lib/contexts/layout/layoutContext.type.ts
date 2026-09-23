@@ -80,13 +80,11 @@ export interface Progress {
 }
 
 /**
- * A reactive signal carrying the active route's already-localized page title for the root
- * `#route-announcer`. Empty string when no title-bearing layout component is mounted.
+ * A reactive signal carrying the active route's already-localized page title for the root `#route-announcer`. Empty string when no title-bearing layout component is mounted.
  */
 export interface RouteTitle {
   /**
-   * The active route's localized title (minus the constant app-name/maintenance suffix), or the
-   * empty string when no title-bearing layout component is currently mounted.
+   * The active route's localized title (minus the constant app-name/maintenance suffix), or the empty string when no title-bearing layout component is currently mounted.
    */
   readonly current: string;
 }
@@ -120,13 +118,11 @@ export interface VideoController {
    */
   load: (props: VideoContent & OptionalVideoProps, options?: { autoshow?: boolean }) => Promise<boolean>;
   /**
-   * Whether to show the video player. @default false
-   * Will be automatically set to `true` when `load` is called.
+   * Whether to show the video player. @default false Will be automatically set to `true` when `load` is called.
    */
   show: boolean;
   /**
-   * Whether the video player has content. @default false
-   * NB. You do not usually need to set this manually. It will instead be automatically set to `true` when `load` is called and `false` on `afterNavigate`.
+   * Whether the video player has content. @default false NB. You do not usually need to set this manually. It will instead be automatically set to `true` when `load` is called and `false` on `afterNavigate`.
    */
   hasContent: boolean;
   /**

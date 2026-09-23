@@ -1,6 +1,5 @@
 <!--
-@component
-Display the question's expandable information content.
+@component Display the question's expandable information content.
 
 ### Properties
 

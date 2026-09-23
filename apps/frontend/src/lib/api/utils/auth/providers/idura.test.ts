@@ -1,9 +1,7 @@
 /**
  * Idura provider interface compliance tests.
  *
- * Verifies that the Idura provider module implements the IdentityProvider
- * interface correctly and that getAuthorizeUrl produces a JAR-based
- * authorization URL with the expected structure (from).
+ * Verifies that the Idura provider module implements the IdentityProvider interface correctly and that getAuthorizeUrl produces a JAR-based authorization URL with the expected structure (from).
  *
  * @vitest-environment node
  */
@@ -50,8 +48,7 @@ vi.mock('$env/dynamic/private', () => ({
 }));
 
 // Mock $lib/server/constants directly to use dynamic values from mockConstants.
-// This is necessary because constants.ts reads env at import time, but we
-// need to inject the signing key generated in beforeAll.
+// This is necessary because constants.ts reads env at import time, but we need to inject the signing key generated in beforeAll.
 vi.mock('$lib/server/constants', () => ({
   get constants() {
     return mockConstants;
@@ -123,10 +120,7 @@ describe('Idura provider', () => {
         redirectUri: 'http://localhost:5173/callback'
       });
 
-      // see phase 140 WR-08: collapsed from a toBeDefined +typeof+length triple
-      // (the sibling null-blind pattern F19 removed elsewhere) into one
-      // non-blind assertion, so a future edit dropping a follow-up line can no
-      // longer silently restore the blindness.
+      // ONE non-blind assertion rather than a toBeDefined + typeof + length triple: a triple is null-blind, and a future edit dropping a follow-up line can silently restore that blindness.
       expect(result.state, 'getAuthorizeUrl returned no CSRF state').toEqual(expect.stringMatching(/.+/));
     });
 

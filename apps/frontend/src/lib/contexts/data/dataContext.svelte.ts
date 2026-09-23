@@ -12,41 +12,21 @@ export function getDataContext(): DataContext {
 }
 
 /**
- * DataContext re-expressed as a Svelte 5 CLASS (class-conversion proof, Spikes
- * 020-023; see CONVENTIONS).
- * The documented Svelte 5 idiom is "use classes with `$state` fields to share
- * reactivity between components, instead of using stores" — here the reactive core
- * is the private `#version` `$state` FIELD.
+ * DataContext as a Svelte 5 CLASS.
+ * The documented Svelte 5 idiom is "use classes with `$state` fields to share reactivity between components, instead of using stores" — here the reactive core is the private `#version` `$state` FIELD.
  *
- * This is the Group-C "version-bridge" class (the dataRoot pattern, NOT wholesale
- * replacement): `DataRoot` has a STABLE identity and is mutated in place; `#version`
- * is bumped (untracked) on every `DataRoot.update()` notification, bridging
- * `Updatable.subscribe ` to `$derived` reactivity. Per this version-bridge is
- * KEPT verbatim — it does NOT simplify away (see spike 022; the bridge is intrinsic to
- * wrapping a non-rune object).
+ * This is a "version-bridge" class (the dataRoot pattern, NOT wholesale replacement): `DataRoot` has a STABLE identity and is mutated in place; `#version` is bumped (untracked) on every `DataRoot.update()` notification, bridging `Updatable.subscribe()` to `$derived` reactivity. The version-bridge does NOT simplify away — it is intrinsic to wrapping a non-rune object.
  *
- * Two deliberate shape choices, both spike-derived:
+ * Two deliberate shape choices:
  *
  * 1. Own-property handles — spread-safe (appContext `{ ...dataCtx }`). The public
- *    `dataRoot` handle and the `setDataRoot` writer are exposed as OWN properties
- *    (instance fields), NOT prototype getters. appContext re-exposes this context via
- *    `{ ...dataCtx }`, and spreading a class INSTANCE copies only own-enumerable
- *    properties — prototype accessors would be silently dropped (see spike 020 finding;
- *    CONVENTIONS "Spread-of-context"). (see phase 113 collapsed the duplicate
- *    read-only mirror + its non-reactive producer-read split into this single
- *    reactive `dataRoot` handle; the one producer-write consumer moved to
- *    `setDataRoot`.)
+ *    `dataRoot` handle and the `setDataRoot` writer are exposed as OWN properties (instance fields), NOT prototype getters. appContext re-exposes this context via `{ ...dataCtx }`, and spreading a class INSTANCE copies only own-enumerable properties — prototype accessors would be silently dropped by the spread.
+ *    There is deliberately ONE reactive `dataRoot` handle and no read-only mirror beside it; every producer write goes through `setDataRoot`.
  *
  * 2. arrow-function field — survives detach. `setDataRoot` is an ARROW-FUNCTION
- *    field, not a method, so it survives being destructured/detached
- *    (`const { setDataRoot } = ctx`) with `this` intact (CONVENTIONS; see spike 020
- *    Group E). It internalizes the `untrack` that producers previously hand-wrote at
- *    the call site, so the old `.instance` handle + hand-written `untrack` collapse to
- *    a single write path (see spike 017/022).
+ *    field, not a method, so it survives being destructured/detached (`const { setDataRoot } = ctx`) with `this` intact. It internalizes the `untrack` that a producer would otherwise have to hand-write at the call site, so there is a single write path rather than a raw handle plus a hand-written `untrack`.
  *
- * NB (silent-loop caveat). With a class private `#version`, a producer that reads
- * the REACTIVE getter then mutates self-perpetuates SILENTLY (no
- * `effect_update_depth_exceeded` throw, unlike the plain-`let` version — see spike 022).
+ * NB (silent-loop caveat). With a class private `#version`, a producer that reads the REACTIVE getter then mutates self-perpetuates SILENTLY (no `effect_update_depth_exceeded` throw that a plain-`let` version would raise).
  * Producers MUST go through `setDataRoot`.
  */
 class DataContextProvider implements DataContext {
@@ -54,29 +34,22 @@ class DataContextProvider implements DataContext {
   #version = $state(0);
 
   // Bare own-enumerable reactive accessor — spread-safe (appContext `{ ...dataCtx }`).
-  // Installed via `Object.defineProperty(this, 'dataRoot', { enumerable: true })` in
-  // the constructor so the accessor survives the spread (own-enumerable, unlike a
-  // prototype getter) AND its getter can close over `this` for the private `#version`
-  // read. (see phase 113: dropped the `.current` wrapper — consumers read
-  // `ctx.dataRoot` bare; the `void #version` reactive re-read is preserved inside.)
+  // Installed via `Object.defineProperty(this, 'dataRoot', { enumerable: true })` in the constructor so the accessor survives the spread (own-enumerable, unlike a prototype getter) AND its getter can close over `this` for the private `#version` read. There is no `.current` wrapper — consumers read `ctx.dataRoot` bare; the `void #version` reactive re-read happens inside the getter.
   readonly dataRoot!: DataRoot;
 
   constructor(dataRoot: DataRoot) {
     this.#dataRoot = dataRoot;
 
     // Subscribe to DataRoot's imperative change notifications and bump `#version`.
-    // The write is wrapped in `untrack()` (Pattern 3 / L-2): should this callback
-    // ever fire synchronously within a producer effect's tracked scope, `untrack`
-    // isolates the write so it cannot retrigger that effect.
+    // The write is wrapped in `untrack()`: should this callback ever fire synchronously within a producer effect's tracked scope, `untrack` isolates the write so it cannot retrigger that effect.
     dataRoot.subscribe(() => {
       untrack(() => {
         this.#version++;
       });
     });
 
-    // `self` lets the accessor reach the class-private `#version`
-    // (private-field access is legal anywhere lexically inside the class body).
-    // eslint-disable-next-line @typescript-eslint/no-this-alias -- the defineProperty getter below has its own `this`; `self` captures the instance to reach the private `#version` reactive backing (spread-safe class-conversion pattern).
+    // `self` lets the accessor reach the class-private `#version` (private-field access is legal anywhere lexically inside the class body).
+    // eslint-disable-next-line @typescript-eslint/no-this-alias -- the defineProperty getter below has its own `this`; `self` captures the instance to reach the private `#version` reactive backing (the spread-safe class pattern).
     const self = this;
     Object.defineProperty(this, 'dataRoot', {
       get(): DataRoot {
@@ -90,9 +63,7 @@ class DataContextProvider implements DataContext {
 
   /**
    * Mutate the DataRoot. Pass an `updater` that calls `dr.update(() => dr.provide*(...))`.
-   * The write runs inside `untrack`, so a producer `$effect` calling this takes NO
-   * dependency on `#version` and cannot self-loop. Replaces the previous
-   * former non-reactive producer-read + hand-written `untrack` idiom (see spike 017/022).
+   * The write runs inside `untrack`, so a producer `$effect` calling this takes NO dependency on `#version` and cannot self-loop. This is the single write path; a producer must never read the reactive getter and then mutate in place.
    */
   setDataRoot = (updater: (dataRoot: DataRoot) => void): void => {
     untrack(() => updater(this.#dataRoot));

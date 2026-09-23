@@ -1,6 +1,5 @@
 <!--
-@component
-Display an opinion `Question`'s answering input. Shows an error if the question is of an unsupported type.
+@component Display an opinion `Question`'s answering input. Shows an error if the question is of an unsupported type.
 
 NB. The layout differs from the `QuestionInput` component, which is used for info questions.
 
@@ -58,14 +57,10 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
   // Multi-choice validity
   ////////////////////////////////////////////////////////////////////
 
-  // The current multi-choice selection, seeded from the ensured answer value and
-  // updated on every checkbox toggle. Reset when the question identity changes
-  // (voter same-type Q→Q reuse does not remount this component).
+  // The current multi-choice selection, seeded from the ensured answer value and updated on every checkbox toggle. Reset when the question identity changes (voter same-type Q→Q reuse does not remount this component).
   let currentMultiSelection = $state<Array<Id>>([]);
   $effect(() => {
-    // Track question identity so the seed re-runs on Q→Q navigation; read the
-    // answer untracked so a parent answer update does not clobber in-progress
-    // toggles.
+    // Track question identity so the seed re-runs on Q→Q navigation; read the answer untracked so a parent answer update does not clobber in-progress toggles.
     void question.id;
     untrack(() => {
       const ensured = question.ensureValue(answer?.value);
@@ -73,10 +68,7 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
     });
   });
 
-  // validity for the current multi-choice selection count, delegating to
-  // the shared `isMultiChoiceCountValid` helper (single source of truth) so the
-  // formula stays in lockstep with its unit test. Reads the authored min/max via
-  // `getCustomData` and the choice count off the question.
+  // validity for the current multi-choice selection count, delegating to the shared `isMultiChoiceCountValid` helper (single source of truth) so the formula stays in lockstep with its unit test. Reads the authored min/max via `getCustomData` and the choice count off the question.
   function computeMultiChoiceValid(count: number): boolean {
     if (!isMultipleChoiceQuestion(question)) return true;
     const { minSelections, maxSelections } = getCustomData(question);
@@ -88,13 +80,7 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
     });
   }
 
-  // Push validity to the bound `valid` prop. Only multi-choice constrains it;
-  // every other question type leaves it `true` (the component never
-  // disables anything — callers gate on this value). This $effect handles the
-  // mount seed, question-identity changes, and the non-multi-choice reset; the
-  // multi-choice onChange wrapper additionally assigns `valid` SYNCHRONOUSLY
-  // (see below) because this $effect flushes too late for the same-stack read
-  // in the voter layout's handleAnswer.
+  // Push validity to the bound `valid` prop. Only multi-choice constrains it; every other question type leaves it `true` (the component never disables anything — callers gate on this value). This $effect handles the mount seed, question-identity changes, and the non-multi-choice reset; the multi-choice onChange wrapper additionally assigns `valid` SYNCHRONOUSLY (see below) because this $effect flushes too late for the same-stack read in the voter layout's handleAnswer.
   $effect(() => {
     if (!isMultipleChoiceQuestion(question)) {
       valid = true;
@@ -103,8 +89,7 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
     valid = computeMultiChoiceValid(currentMultiSelection.length);
   });
 
-  // Debug warning — runs reactively so devs see the warning whenever the
-  // prop combination becomes invalid, not just at mount.
+  // Debug warning — runs reactively so devs see the warning whenever the prop combination becomes invalid, not just at mount.
   $effect(() => {
     if (mode === 'display' && otherAnswer && !otherLabel)
       logDebugError('You should supply an otherLabel when mode is "display" and otherSelected is provided');
@@ -120,19 +105,15 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
   // BooleanQuestion support
   ////////////////////////////////////////////////////////////////////
 
-  // Synthesized pseudo-choices for `BooleanQuestion`. Uses existing i18n keys
-  // under `common.answer.*` (verified present in en/fi/sv/da).
-  // Order: `no` first matches the ordinal low→high left-to-right convention
-  // (see `QuestionChoices.doShowLine` default for booleans).
+  // Synthesized pseudo-choices for `BooleanQuestion`. Uses existing i18n keys under `common.answer.*` (verified present in en/fi/sv/da).
+  // Order: `no` first matches the ordinal low→high left-to-right convention (see `QuestionChoices.doShowLine` default for booleans).
   const booleanChoices = $derived<Array<Choice>>([
     { id: 'no', label: t('common.answer.no') },
     { id: 'yes', label: t('common.answer.yes') }
   ]);
 
   // Translate between stored boolean answer value and pseudo-choice id.
-  // Answers MUST be stored as boolean (`true`/`false`), never as the strings
-  // `'yes'`/`'no'`. The branch's onChange adapter maps `'yes'` → `true` and
-  // `'no'` → `false` before bubbling to the parent.
+  // Answers MUST be stored as boolean (`true`/`false`), never as the strings `'yes'`/`'no'`. The branch's onChange adapter maps `'yes'` → `true` and `'no'` → `false` before bubbling to the parent.
   function booleanToChoiceId(v: unknown): string | null {
     if (v === true) return 'yes';
     if (v === false) return 'no';
@@ -166,8 +147,7 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
       {...restProps} />
   {:else if isNumberQuestion(question) && question.isMatchable}
     <!-- `isMatchable` gates on a defined min/max range so rangeless number
-         questions fall through to the unsupported fallback rather than rendering
-         a broken 0-width slider. Values routed through `ensureValue`; missing /
+         questions fall through to the unsupported fallback rather than rendering a broken 0-width slider. Values routed through `ensureValue`; missing /
          non-number answers coerce to `null` (unanswered). -->
     {@const rawValue = question.ensureValue(answer?.value)}
     {@const rawOther = question.ensureValue(otherAnswer?.value)}

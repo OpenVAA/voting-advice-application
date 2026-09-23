@@ -1,11 +1,5 @@
 <!--
-@component
-Compound component combining search + filter controls with an `EntityList`
-in a fixed layout. Replaces the broken `$effect` +
-`filterGroup.onChange` + `updateFilters` circular chain on
-`EntityListControls.svelte:56-73` with pure `$derived`
-computations bridged to `FilterGroup.onChange` via the version counter
-provided by `filterContext` (see phase 62).
+@component Compound component combining search + filter controls with an `EntityList` in a fixed layout. Uses pure `$derived` computations bridged to `FilterGroup.onChange` via the version counter provided by `filterContext` — NOT an `$effect` + `filterGroup.onChange` + `updateFilters` chain, which is circular and breaks.
 
 ### Properties
 
@@ -19,13 +13,7 @@ provided by `filterContext` (see phase 62).
 
 ### Reactivity bridge
 
-This component reads `fctx.version` inside its `$derived` so that any
-filter-rule mutation (which fires `FilterGroup.onChange` and bumps
-`fctx.version` via the `filterContext` `$effect`) re-runs the filter
-computation. The local `searchVersion` mirrors the same pattern for the
-search filter (no global subscription needed — search state is
-component-local). See `EntityListWithControls.helpers.ts` for the pure
-`computeFiltered` / `countActiveFilters` functions consumed here.
+This component reads `fctx.version` inside its `$derived` so that any filter-rule mutation (which fires `FilterGroup.onChange` and bumps `fctx.version` via the `filterContext` `$effect`) re-runs the filter computation. The local `searchVersion` mirrors the same pattern for the search filter (no global subscription needed — search state is component-local). See `helpers.ts` for the pure `computeFiltered` / `countActiveFilters` functions consumed here.
 -->
 <script lang="ts" generics="TEntity extends MaybeWrappedEntityVariant = MaybeWrappedEntityVariant">
   import { TextPropertyFilter } from '@openvaa/filters';
@@ -51,13 +39,7 @@ component-local). See `EntityListWithControls.helpers.ts` for the pure
     itemsPerPage,
     itemsTolerance,
     scrollIntoView,
-    // Extract `data-testid` so it can be forwarded to the inner <EntityList>
-    // (the actual cards container) rather than landing on the filter-chrome
-    // wrapper below. The outer wrapper keeps its own `entity-list-with-controls`
-    // testId; consumers that pass `data-testid` to this component are
-    // semantically pointing at the cards list (see results layout's
-    // `voter-results-list` anchor), so routing the prop to the cards container
-    // is what they actually expect.
+    // Extract `data-testid` so it can be forwarded to the inner <EntityList> (the actual cards container) rather than landing on the filter-chrome wrapper below. The outer wrapper keeps its own `entity-list-with-controls` testId; consumers that pass `data-testid` to this component are semantically pointing at the cards list (see results layout's `voter-results-list` anchor), so routing the prop to the cards container is what they actually expect.
     'data-testid': dataTestId,
     ...restProps
   }: EntityListWithControlsProps<TEntity> = $props();
@@ -65,25 +47,16 @@ component-local). See `EntityListWithControls.helpers.ts` for the pure
   const ctx = getAppContext();
   const { startEvent, t } = ctx;
   const fctx = getFilterContext();
-  // appContext exposes `locale` as a reactive accessor (see phase 113 flatten) — read
-  // via `ctx.locale`, never destructure it (destructuring would capture
-  // the value once at init and stop updating). The legacy store shape (and
-  // `fromStore` bridge) is gone, so `fromStore(ctx.locale)` would throw
-  // `store.subscribe is not a function`.
+  // appContext exposes `locale` as a reactive accessor — read via `ctx.locale`, never destructure it (destructuring would capture the value once at init and stop updating). It is NOT a store, so `fromStore(ctx.locale)` would throw `store.subscribe is not a function`.
   const locale = $derived(ctx.locale);
 
-  // Active FilterGroup: prop override wins over context (additive contract
-  // for off-context use such as tests and the candidate-app migration).
-  // The cast to FilterGroup<MaybeWrappedEntityVariant> handles the generic
-  // variance gap — FilterGroup<TEntity> is invariant in TEntity, but our
-  // consumers (EntityFilters, computeFiltered helper) treat the FilterGroup
-  // structurally and only call the contravariant `apply` and `filters` shapes.
+  // Active FilterGroup: prop override wins over context (additive contract for off-context use such as tests and the candidate-app migration).
+  // The cast to FilterGroup<MaybeWrappedEntityVariant> handles the generic variance gap — FilterGroup<TEntity> is invariant in TEntity, but our consumers (EntityFilters, computeFiltered helper) treat the FilterGroup structurally and only call the contravariant `apply` and `filters` shapes.
   const activeFilterGroup = $derived(
     (filterGroupProp ?? fctx.filterGroup) as FilterGroup<MaybeWrappedEntityVariant> | undefined
   );
 
-  // Search filter — stable per searchProperty change. TextPropertyFilter is
-  // pure w.r.t. entities `[VERIFIED: packages/filters/src/filter/base/filter.ts:92-105]`.
+  // Search filter — stable per searchProperty change. TextPropertyFilter is pure w.r.t. entities `[VERIFIED: packages/filters/src/filter/base/filter.ts:92-105]`.
   const searchFilter = $derived(
     searchProperty
       ? new TextPropertyFilter<MaybeWrappedEntityVariant>(
@@ -93,8 +66,7 @@ component-local). See `EntityListWithControls.helpers.ts` for the pure
       : undefined
   );
 
-  // Local version counter for searchFilter.onChange. Mirrors the filterContext
-  // pattern for the search-state branch.
+  // Local version counter for searchFilter.onChange. Mirrors the filterContext pattern for the search-state branch.
   let searchVersion = $state(0);
   $effect(() => {
     const sf = searchFilter;
@@ -103,19 +75,13 @@ component-local). See `EntityListWithControls.helpers.ts` for the pure
       searchVersion++;
     }
     sf.onChange(handler, true);
-    // Pitfall 2: mandatory cleanup. The $effect re-runs when searchFilter
-    // changes (rare — only if searchProperty changes), so we MUST detach the
-    // old handler before the new one attaches.
+    // Mandatory cleanup. The $effect re-runs when searchFilter changes (rare — only if searchProperty changes), so we MUST detach the old handler before the new one attaches.
     return () => sf.onChange(handler, false);
   });
 
   // Pure $derived — no side effects, no $effect, no callback chain.
-  // Subscribes to BOTH version counters so mutations through either bridge
-  // trigger a re-run. This is the line that replaces EntityListControls.svelte:56-73
-  // (the circular chain that caused effect_update_depth_exceeded).
-  // The structural casts to `{ apply: ... }` close the generic-variance gap in
-  // TextPropertyFilter / FilterGroup whose `apply` is invariant in TEntity;
-  // computeFiltered only consumes the contravariant `apply` shape.
+  // Subscribes to BOTH version counters so mutations through either bridge trigger a re-run. This is the line that replaces EntityListControls.svelte:56-73 (the circular chain that caused effect_update_depth_exceeded).
+  // The structural casts to `{ apply: ... }` close the generic-variance gap in TextPropertyFilter / FilterGroup whose `apply` is invariant in TEntity; computeFiltered only consumes the contravariant `apply` shape.
   type ApplyFn = { apply: <TFn>(targets: Array<TFn>) => Array<TFn> };
   const filtered = $derived.by(() => {
     void fctx.version; // subscribe to filterGroup mutations via filterContext bridge
@@ -127,13 +93,7 @@ component-local). See `EntityListWithControls.helpers.ts` for the pure
     );
   });
 
-  // Read fctx.version so this $derived re-runs on filter mutations. Without
-  // the subscription, version bumps trigger _filterGroup to re-derive but the
-  // returned FilterGroup is identity-equal (same instance, mutated in place),
-  // so Svelte 5's chained $derived bails on equality and downstream consumers
-  // never see the new active count. Symptom before fix: badge stale at 1
-  // when multiple filters active; reset button shows "disabled" after a
-  // reset because numActiveFilters is still cached from before.
+  // Read fctx.version so this $derived re-runs on filter mutations. Without the subscription, version bumps trigger _filterGroup to re-derive but the returned FilterGroup is identity-equal (same instance, mutated in place), so Svelte 5's chained $derived bails on equality and downstream consumers never see the new active count. Symptom before fix: badge stale at 1 when multiple filters active; reset button shows "disabled" after a reset because numActiveFilters is still cached from before.
   const numActiveFilters = $derived.by(() => {
     void fctx.version;
     return countActiveFilters(activeFilterGroup);

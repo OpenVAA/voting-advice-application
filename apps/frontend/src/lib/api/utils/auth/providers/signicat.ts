@@ -1,10 +1,9 @@
 /**
  * Signicat OIDC identity provider.
  *
- * Wraps the existing PKCE + client_secret auth flow into the `IdentityProvider`
- * interface. This module produces identical behavior to the original inline code
- * in `getIdTokenClaims.ts` and the `/api/oidc/token` route, but uses the
- * `AuthConfig` claim mappings for extraction instead of hardcoded claim names.
+ * Wraps the existing PKCE + client_secret auth flow into the `IdentityProvider` interface. Behaviour is unchanged from the original inline code in the `/api/oidc/token` route, but the `AuthConfig` claim mappings drive extraction instead of hardcoded claim names.
+ *
+ * This module carries NO decrypt/verify logic of its own: it delegates to the shared core `../decryptAndVerifyIdToken.ts` and keeps only the per-provider claim mapping. There is exactly one decrypt/verify path in `src`, and a second copy of it here would be a second thing to keep correct.
  *
  * - Authorization: Client-side PKCE redirect with `code_challenge` in query params
  * - Token exchange: `client_secret` POST to the token endpoint

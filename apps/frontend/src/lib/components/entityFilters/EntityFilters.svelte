@@ -1,6 +1,5 @@
 <!--
-@component
-Show filters for entities. This component and the individual filter components only display the UI for the filters and handle their rule updates. To access the results of the filters, you have to apply the filters to the targets.
+@component Show filters for entities. This component and the individual filter components only display the UI for the filters and handle their rule updates. To access the results of the filters, you have to apply the filters to the targets.
 
 ### Properties
 
@@ -34,12 +33,7 @@ Show filters for entities. This component and the individual filter components o
   }
 
   /**
-   * Type-param-free `isTextFilter` wrapper — same role as `_isEnumeratedFilter`
-   * above. Accepts the base TextFilter PLUS TextQuestionFilter +
-   * TextPropertyFilter subclasses so `customData.filterable: true` on text
-   * questions (built via `buildQuestionFilter → new TextQuestionFilter` per
-   * `filterStore.svelte.ts:55-66`) renders correctly instead of falling
-   * through to the error fallback. see phase 77 P02 fix.
+   * Type-param-free `isTextFilter` wrapper — same role as `_isEnumeratedFilter` above. Accepts the base TextFilter PLUS TextQuestionFilter + TextPropertyFilter subclasses so `customData.filterable: true` on text questions (built via `buildQuestionFilter → new TextQuestionFilter` per `filterStore.svelte.ts:55-66`) renders correctly instead of falling through to the error fallback.
    */
   function _isTextFilter(filter: unknown) {
     return isTextFilter<MaybeWrappedEntityVariant>(filter);

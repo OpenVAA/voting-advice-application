@@ -61,7 +61,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * Create a candidate with a nomination or nominations and send a registration link.
    * @param firstName - First name.
    * @param lastName - Last name.
-   * @param identifier - Personal identifier such as a birthdate.
+   * @param identifier - Personal identifier such as the OIDC `sub` claim.
    * @param email - Email.
    * @param nominations - Nominations.
    * Access:  API token.
@@ -110,7 +110,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * Login a user.
    * @param username - The username.
    * @param password - The password.
-   * @returns A `Promise` resolving to an object with the `authToken` or a `Response` containing one.
+   * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one. Authorisation is carried by the session, so no token is returned.
    */
   login: (opts: { username: string; password: string }) => DWReturnType<DataApiActionResult & Partial<WithAuth>, TType>;
   /**
@@ -126,7 +126,6 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   backendLogout: (opts: WithAuth) => DWReturnType<DataApiActionResult, TType>;
   /**
    * Get the basic data for a user, mostly their username, email, and preferred language.
-   * @param authToken - The authorization token.
    * @returns A `Promise` resolving to a `BasicUserData` object or a `Response` containing one.
    */
   getBasicUserData: (opts: WithAuth) => DWReturnType<BasicUserData, TType>;
@@ -149,8 +148,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    */
   resetPassword: (opts: { code: string; password: string }) => DWReturnType<DataApiActionResult, TType>;
   /**
-   * Change a user’s password.
-   * @param currentPassword - The current password.
+   * Change a user’s password. Authorisation comes from the caller’s active session, not from a supplied current password.
    * @param password - The new password.
    * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
    */
@@ -164,7 +162,6 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
 
   /**
    * Check whether the registration key is valid.
-   * @param authToken - The authorization token.
    * @param loadNominations - If `true`, the `Candidate`’s `Nomination`s and related `Entity`s are also loaded. When updating the user data after initial load, nominations need not be reloaded.
    * @param locale - The `Nomination`-related data are translated to the specified `locale`. Note that the `Candidate` data itself is left untranslated.
    * @returns A `Promise` resolving to a `CandidateUserData` object or a `Response` containing one.
@@ -174,33 +171,27 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   ) => DWReturnType<CandidateUserData<TNominations>, TType>;
 
   ////////////////////////////////////////////////////////////////////
-  // Setting data owned by the user
-  // NB. The answer setters (`updateAnswers`/`overwriteAnswers`) return only the
-  // updated `LocalizedAnswers` map for synchronization, while the property setter
-  // (`updateEntityProperties`) returns the whole updated `LocalizedCandidateData`.
+  // Setting data owned by the user NB. The answer setters (`updateAnswers`/`overwriteAnswers`) return only the updated `LocalizedAnswers` map for synchronization — or {@link UNVERIFIED_ANSWERS}, when the write succeeded but its read-back could not be validated (decision B3) — while the property setter (`updateEntityProperties`) returns the whole updated `LocalizedCandidateData`.
   ////////////////////////////////////////////////////////////////////
 
   /**
    * Update the `answers` of an entity owned by the user, replacing any existing answers. Answers with `null` values are removed.
-   * @param authToken - The authorization token.
    * @param target.type - The type of the entity.
    * @param target.id - The id of the entity.
    * @param answers - A `LocalizedAnswers` object containing the answers to update.
-   * @returns A `Promise` resolving the updated `LocalizedAnswers` for the entity or a `Response` containing them.
+   * @returns A `Promise` resolving the updated `LocalizedAnswers` for the entity, or {@link UNVERIFIED_ANSWERS} when the write succeeded but its read-back could not be validated, or a `Response` containing either.
    */
   updateAnswers: (opts: SetAnswersOptions) => DWReturnType<LocalizedAnswers, TType>;
   /**
    * Overwrite the whole `answers` property of an entity owned by the user.
-   * @param authToken - The authorization token.
    * @param target.type - The type of the entity.
    * @param target.id - The id of the entity.
    * @param answers - A `LocalizedAnswers` object containing the new `answers`.
-   * @returns A `Promise` resolving the updated `LocalizedAnswers` for the entity or a `Response` containing them.
+   * @returns A `Promise` resolving the updated `LocalizedAnswers` for the entity, or {@link UNVERIFIED_ANSWERS} when the write succeeded but its read-back could not be validated, or a `Response` containing either.
    */
   overwriteAnswers: (opts: SetAnswersOptions) => DWReturnType<LocalizedAnswers, TType>;
   /**
    * Update any editable properties of an entity owned by the user.
-   * @param authToken - The authorization token.
    * @param target.type - The type of the entity.
    * @param target.id - The id of the entity.
    * @param properties - An object containing the properties to update.
@@ -211,11 +202,10 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   // TODO: Implement
   // /**
   //  * Update the user settings.
-  //  * @param authToken - The authorization token.
   //  * @param settings - An object containing the settings to update.
   //  * @returns A `Promise` resolving the updated `UserSettings` object or a `Response` containing one.
   //  */
-  // updateUserSettings: (opts: WithAuth & WithUserSettings) => DWReturnType<UserSettings, TType>;
+  // updateUserSettings: (opts: WithUserSettings) => DWReturnType<UserSettings, TType>;
 
   ////////////////////////////////////////////////////////////////////
   // Methods for the Admin App
@@ -279,8 +269,7 @@ export type LocalizedAnswers = {
 
 /**
  * `CandidateData` with localized `answers` and `termsOfUseAccepted`. Used for editing.
- * @remarks
- * The naming is a bit misleading and the type could as well be `EditableCandidateData`.
+ * @remarks The naming is a bit misleading and the type could as well be `EditableCandidateData`.
  */
 export type LocalizedCandidateData = CandidateData & {
   answers?: LocalizedAnswers | null;

@@ -20,10 +20,9 @@ import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
  * - Calls handleQuestion for each question sequentially
  * @param args.electionId - Election id to scope questions and nominations
  * @param args.questionIds - If empty, runs all opinion questions applicable to the election
- * @param args.fetch - SvelteKit fetch function for data loading (not used for job updates)
+ * @param args.source - The initiating admin's request context, read ONCE for its verified session and then left behind; the job's own client is built from that session's credential and carries every read and every write the run makes, so the whole run reads and writes as one identity and none of it depends on the request outliving it
  * @param args.locale - Language for prompts ('en'|'fi' currently supported)
  * @param args.jobId - Job ID for tracking progress
- * @param args.authToken - Authentication token for API calls
  * @returns DataApiActionResult indicating success/failure
  */
 export async function condenseArguments({
@@ -65,6 +64,7 @@ export async function condenseArguments({
   try {
     // 1) Load data
     controller.info('Loading election and question data for argument condensation...');
+    // THE READS MOVE ONTO THE JOB'S CLIENT TOO, and that is a decision rather than a spillover. The parameter documentation above asserts that the whole run reads and writes as one identity; leaving these four reads on the request's client would have made that sentence false the moment the writer moved, and would have left half the run exposed to exactly the expiry this change removes from the other half.
     const dataRoot = await loadElectionData({
       electionId,
       locale,

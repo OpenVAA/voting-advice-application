@@ -124,6 +124,7 @@ describe('SupabaseDataWriter', () => {
 
     it('posts cookie-clear request to /<locale>/candidate/auth/logout using paraglide locale', async () => {
       mockSupabase.auth.signOut.mockResolvedValue({ error: null });
+      // The endpoint clears httpOnly cookies and answers json; it is the same endpoint in every locale. An implementation that reached for the current locale would emit a different URL here than in the case above, and the two assertions together are what pins that it does not.
       i18nMocks.getLocale.mockReturnValue('fi');
 
       await writer.logout({ authToken: '' });
@@ -153,6 +154,7 @@ describe('SupabaseDataWriter', () => {
 
       const result = await writer.requestForgotPasswordEmail({ email: 'test@example.com' });
 
+      // The path is asserted in full rather than by substring: the old path also contained "candidate/auth/callback", so a substring assertion would have passed against it and this move would have gone unnoticed here.
       expect(mockSupabase.auth.resetPasswordForEmail).toHaveBeenCalledWith('test@example.com', {
         redirectTo: expect.stringContaining('candidate/auth/callback')
       });

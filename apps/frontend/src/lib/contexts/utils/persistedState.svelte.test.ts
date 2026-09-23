@@ -204,10 +204,7 @@ describe('persistedState helpers', () => {
       cleanup();
     });
 
-    // CR-01 regression: the default must be persisted on init (not only on
-    // set/update) so a non-deterministic default — e.g. a generated session
-    // UUID that is never explicitly `set` — survives a reload. A fresh handle
-    // created with a DIFFERENT default must read the FIRST handle's value.
+    // Regression guard: the default must be persisted on init (not only on set/update) so a non-deterministic default — e.g. a generated session UUID that is never explicitly `set` — survives a reload. A fresh handle created with a DIFFERENT default must read the FIRST handle's value.
     it('persists the default on init so a never-set value survives a fresh handle (reload)', async () => {
       const { sessionStorageState } = await importWithBrowser(true);
       const cleanup = $effect.root(() => {

@@ -1,6 +1,5 @@
 <!--
-@component
-Functional component used to block user nagivation.
+@component Functional component used to block user nagivation.
 
 ### Properties
 
@@ -44,8 +43,7 @@ Functional component used to block user nagivation.
     addEventListener('beforeunload', handleBeforeUnload);
   });
 
-  // remove event handler on unmount (onDestroy fires on both server and client; guard the
-  // browser-only API so SSR teardown of this component doesn't throw ReferenceError)
+  // remove event handler on unmount (onDestroy fires on both server and client; guard the browser-only API so SSR teardown of this component doesn't throw ReferenceError)
   onDestroy(() => {
     if (browser) removeEventListener('beforeunload', handleBeforeUnload);
   });

@@ -1,6 +1,5 @@
 <!--
-@component
-Show a popup with a data consent form, if data consent has not been given yet.
+@component Show a popup with a data consent form, if data consent has not been given yet.
 
 ### Properties
 

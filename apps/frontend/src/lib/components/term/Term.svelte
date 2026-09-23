@@ -1,6 +1,5 @@
 <!--
-@component
-Show a definition popup when hovering over a term.
+@component Show a definition popup when hovering over a term.
 
 ### Properties
 
@@ -12,9 +11,7 @@ Show a definition popup when hovering over a term.
 
 ### Accessibility
 
-The trigger is a focusable `button` (W3C APG tooltip pattern) whose accessible
-name is the term text; the definition popup uses the `tooltip` role and is linked
-via `aria-describedby` while shown.
+The trigger is a focusable `button` (W3C APG tooltip pattern) whose accessible name is the term text; the definition popup uses the `tooltip` role and is linked via `aria-describedby` while shown.
 
 ### Usage
 
@@ -42,42 +39,31 @@ via `aria-describedby` while shown.
   const definitionId = getUUID();
 
   let triggerElement: HTMLSpanElement;
-  // $state so `bind:this` clears to undefined on unmount and the position
-  // $effect re-runs when the popup mounts.
+  // $state so `bind:this` clears to undefined on unmount and the position $effect re-runs when the popup mounts.
   let definitionDiv = $state<HTMLDivElement | undefined>();
   let leftPadding = $state(0);
   let rightPadding = $state(0);
 
-  // The definition popup is only mounted while the term is hovered or focused
-  // (or `forceShow`). Keeping it out of the DOM otherwise is the a11y fix: as a
-  // permanent (opacity-0) child it polluted the host heading's text content and
-  // accessible name with the full definition. W3C APG tooltip pattern: reveal on
-  // hover + keyboard focus, associate via `aria-describedby` while shown.
+  // The definition popup is only mounted while the term is hovered or focused (or `forceShow`). Keeping it out of the DOM otherwise is the a11y fix: as a permanent (opacity-0) child it polluted the host heading's text content and accessible name with the full definition. W3C APG tooltip pattern: reveal on hover + keyboard focus, associate via `aria-describedby` while shown.
   let hovered = $state(false);
   let focused = $state(false);
-  // `dismissed` overrides the hover/focus reveal so the popup can be closed in
-  // place (Escape key or clicking the trigger) without moving the pointer or
-  // focus — WCAG 2.1 AA SC 1.4.13 (Content on Hover or Focus) dismissibility.
+  // `dismissed` overrides the hover/focus reveal so the popup can be closed in place (Escape key or clicking the trigger) without moving the pointer or focus — WCAG 2.1 AA SC 1.4.13 (Content on Hover or Focus) dismissibility.
   let dismissed = $state(false);
   const visible = $derived(!dismissed && (forceShow || hovered || focused));
 
-  // Clear the dismissal once the trigger is no longer hovered or focused so a
-  // subsequent hover/focus reveals the definition again.
+  // Clear the dismissal once the trigger is no longer hovered or focused so a subsequent hover/focus reveals the definition again.
   $effect(() => {
     if (!hovered && !focused) dismissed = false;
   });
 
   /**
-   * Toggle the definition popup. Gives the trigger `button` real activation
-   * behaviour (click / Enter / Space) so its announced role matches what it
-   * does — WCAG 2.1 AA SC 4.1.2 (Name, Role, Value).
+   * Toggle the definition popup. Gives the trigger `button` real activation behaviour (click / Enter / Space) so its announced role matches what it does — WCAG 2.1 AA SC 4.1.2 (Name, Role, Value).
    */
   function toggle(): void {
     dismissed = visible;
   }
 
-  // Position the popup once it is in the DOM (it cannot be measured at mount
-  // because it is conditionally rendered).
+  // Position the popup once it is in the DOM (it cannot be measured at mount because it is conditionally rendered).
   $effect(() => {
     if (visible && definitionDiv) calculatePosition();
   });
@@ -110,13 +96,8 @@ via `aria-describedby` while shown.
   }} />
 
 <!-- bind: keep — triggerElement is plain let; read in calculatePosition. The trigger is a real
-     <button> (W3C APG toggletip): it owns keyboard focus + Enter/Space/click activation, so the
-     announced "button" role matches real behaviour (WCAG 4.1.2) and no misleading role-on-a-span +
-     tabindex is needed. aria-describedby links the definition while shown; aria-expanded reflects
-     the popup state. The button is unstyled/inline (Tailwind preflight already resets its bg,
-     border, padding, margin and inherits font + colour) so the term renders as plain inline text.
-     Markup is whitespace-FLUSH (the `></button\n  >{#if` trick, mirroring QuestionHeading): a stray
-     text-node space anywhere between the trigger text and the conditional popup would leak into the
+     <button> (W3C APG toggletip): it owns keyboard focus + Enter/Space/click activation, so the announced "button" role matches real behaviour (WCAG 4.1.2) and no misleading role-on-a-span + tabindex is needed. aria-describedby links the definition while shown; aria-expanded reflects the popup state. The button is unstyled/inline (Tailwind preflight already resets its bg, border, padding, margin and inherits font + colour) so the term renders as plain inline text.
+     Markup is whitespace-FLUSH (the `></button\n  >{#if` trick, mirroring QuestionHeading): a stray text-node space anywhere between the trigger text and the conditional popup would leak into the
      host heading's text (e.g. "Likert  7"). -->
 <span class="group relative" bind:this={triggerElement}
   ><button

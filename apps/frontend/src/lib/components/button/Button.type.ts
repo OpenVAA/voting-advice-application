@@ -42,9 +42,7 @@ export type ButtonProps = ButtonBaseElementProps & {
 };
 
 /**
- * Base element properties for Button. Uses a single type instead of a union of
- * `SvelteHTMLElements['a'] | SvelteHTMLElements['button']` to avoid "union too complex"
- * TypeScript errors when consumers spread `Partial<ButtonProps>` as restProps.
+ * Base element properties for Button. Uses a single type instead of a union of `SvelteHTMLElements['a'] | SvelteHTMLElements['button']` to avoid "union too complex" TypeScript errors when consumers spread `Partial<ButtonProps>` as restProps.
  * The component renders as `<a>` or `<button>` dynamically based on `href`.
  */
 type ButtonBaseElementProps = HTMLAttributes<HTMLElement> & {

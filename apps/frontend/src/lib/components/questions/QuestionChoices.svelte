@@ -1,6 +1,5 @@
 <!--
-@component
-Display the buttons used for answering Likert and other single choice questions.
+@component Display the buttons used for answering Likert and other single choice questions.
 
 The buttons are rendered as `<input type="radio">` elements contained inside a `<fieldset>`. Consider passing an `aria-labelledby` pointing to the question or an `aria-label`.
 
@@ -90,12 +89,10 @@ The same component can also be used to display the answers of the voter and anot
   // Multi-select (checkbox) mode
   ////////////////////////////////////////////////////////////////////
 
-  // Checkbox multi-select mode is activated for `MultipleChoiceCategoricalQuestion`
-  // . Radio and boolean modes are untouched below.
+  // Checkbox multi-select mode is activated for `MultipleChoiceCategoricalQuestion` . Radio and boolean modes are untouched below.
   let multiMode = $derived(isMultipleChoiceQuestion(question));
 
-  // For convenience. `explicitChoices` wins when provided (required for
-  // `BooleanQuestion`, which has no native `.choices`; caller synthesizes them).
+  // For convenience. `explicitChoices` wins when provided (required for `BooleanQuestion`, which has no native `.choices`; caller synthesizes them).
   let choices = $derived(explicitChoices ?? ('choices' in question ? question.choices : undefined));
   let text = $derived(question.text);
 
@@ -117,8 +114,7 @@ The same component can also be used to display the answers of the voter and anot
       isObjectType(question, OBJECT_TYPE.BooleanQuestion)
     );
   });
-  // The default layout for ordinal questions is horizontal, and vertical for
-  // categorical ones (both single- and multi-choice categorical).
+  // The default layout for ordinal questions is horizontal, and vertical for categorical ones (both single- and multi-choice categorical).
   let vertical = $derived.by(() => {
     if (variant) return variant === 'vertical';
     return (
@@ -146,15 +142,7 @@ The same component can also be used to display the answers of the voter and anot
   ////////////////////////////////////////////////////////////////////
 
   /**
-   * Holds the currently selected `Id`s in checkbox multi-select mode. Seeded per
-   * question identity: the effect tracks `question.id` (Q→Q re-seed) and reads
-   * the `selectedIds` prop UNTRACKED. The prop is deliberately NOT live-tracked —
-   * when the voter layout deletes an invalid in-progress answer (gate), the
-   * `selectedIds` prop transitions to null and a live-tracking sync would wipe
-   * the voter's checked boxes mid-interaction (the boxes render from
-   * `selectedMulti.includes(id)`). Q→Q re-seeding is preserved via the
-   * `question.id` key; explicit deletes clear via the layout's delete-epoch
-   * remount. Mirrors OpinionQuestionInput.svelte's question-keyed untrack seed.
+   * Holds the currently selected `Id`s in checkbox multi-select mode. Seeded per question identity: the effect tracks `question.id` (Q→Q re-seed) and reads the `selectedIds` prop UNTRACKED. The prop is deliberately NOT live-tracked — when the voter layout deletes an invalid in-progress answer (gate), the `selectedIds` prop transitions to null and a live-tracking sync would wipe the voter's checked boxes mid-interaction (the boxes render from `selectedMulti.includes(id)`). Q→Q re-seeding is preserved via the `question.id` key; explicit deletes clear via the layout's delete-epoch remount. Mirrors OpinionQuestionInput.svelte's question-keyed untrack seed.
    */
   let selectedMulti: Array<Id> = $state([]);
   $effect(() => {
@@ -165,10 +153,7 @@ The same component can also be used to display the answers of the voter and anot
   });
 
   /**
-   * Toggle a checkbox choice and dispatch the full selection as an array of
-   * choice `Id`s. Labels play no role in the value. Over-selection beyond
-   * `maxSelections` stays physically possible and surfaces as invalidity in the
-   * callers — we never disable unchecked boxes here.
+   * Toggle a checkbox choice and dispatch the full selection as an array of choice `Id`s. Labels play no role in the value. Over-selection beyond `maxSelections` stays physically possible and surfaces as invalidity in the callers — we never disable unchecked boxes here.
    */
   function handleToggle(id: Id): void {
     if (disabled || mode !== 'answer') return;
@@ -178,9 +163,8 @@ The same component can also be used to display the answers of the voter and anot
   }
 
   /**
-   * The min/max selection constraints for the helper text. Returns
-   * `undefined` when neither `minSelections` nor `maxSelections` is authored.
-   * `effectiveMin` defaults to 1 and `effectiveMax` to the choice count.
+   * The min/max selection constraints for the helper text. Returns `undefined` when neither `minSelections` nor `maxSelections` is authored.
+   * The bounds themselves come from `getEffectiveSelectionBounds`, the same derivation the saveability gate uses, so the helper text cannot advertise a floor the gate refuses to accept — re-deriving `minSelections ?? 1` here would say "select between 0 and N" for an authored zero while the gate requires at least one selection.
    */
   let multiConstraints = $derived.by<{ effectiveMin: number; effectiveMax: number } | undefined>(() => {
     if (!multiMode) return undefined;
@@ -194,12 +178,7 @@ The same component can also be used to display the answers of the voter and anot
 
   // In order to achieve the correct behaviour with both mouse/touch and keyboard users and on different browsers, we have to listen a number of events. The radio inputs' events are fired in this order:
   //
-  // 1. `keydown`: keyboard only
-  //    `pointerdown`: mouse/touch only (Chrome also fires this when `disabled`)
-  // 2. `pointerup`: mouse/touch only (Chrome also fires this when `disabled`)
-  // 3. `click`:  both mouse/touch and keyboard users, but Safari does not fire this if the `<label>` is clicked even though that selects the radio button
-  // 4. `change`: the group value is only updated at this point
-  // 5. `keyup`: keyboard only
+  // 1. `keydown`: keyboard only `pointerdown`: mouse/touch only (Chrome also fires this when `disabled`) 2. `pointerup`: mouse/touch only (Chrome also fires this when `disabled`) 3. `click`:  both mouse/touch and keyboard users, but Safari does not fire this if the `<label>` is clicked even though that selects the radio button 4. `change`: the group value is only updated at this point 5. `keyup`: keyboard only
   //
   // In addition, a custom `onFocusOut` event is fired when the user leaves the radio group.
   //
@@ -207,11 +186,9 @@ The same component can also be used to display the answers of the voter and anot
   //
   // 1. Listen to `click` events of the `<label>`
   //    - If the source is keyboard, do nothing
-  //    - If the source is mouse/touch, dispatch an event and using the value passed as a parameter to the event handler, because the radio group's value is not yet updated
-  // 2. Listen to `onFocusOut` of the `<div>` containing the radio group
+  //    - If the source is mouse/touch, dispatch an event and using the value passed as a parameter to the event handler, because the radio group's value is not yet updated 2. Listen to `onFocusOut` of the `<div>` containing the radio group
   //    - Dispatch the `change`/`reselect` event using the value of the radio group
-  //    - This event should only fired when the user defocuses the radio group using the keyboard because if it received focus due to a pointer click we would already have dealt it with the click handler
-  // 3. Listen to `keyup` events of the `<input>` elements
+  //    - This event should only fired when the user defocuses the radio group using the keyboard because if it received focus due to a pointer click we would already have dealt it with the click handler 3. Listen to `keyup` events of the `<input>` elements
   //    - For a nicer keyboard UX, also listen to `space` and `enter` keys and and submit the answer if they are pressed inside the radio group
 
   /**
@@ -376,7 +353,7 @@ The same component can also be used to display the answers of the voter and anot
            Both pointer and keyboard interactions are handled. -->
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <label onclick={(e) => handleClick(e, id)} onkeyup={(e) => handleKeyUp(e, id)}>
-        <!-- bind: keep — Pattern 1 ($state target for bind:this; inputs is $state({}) per the fix above (see phase 64)); two-way DOM radio group bind:group={selected}, selected is $state. Bind directives placed AFTER value= as a defensive convention to keep diff-against-v2.6-baseline minimal — the order is order-invariant for these shapes per Svelte 5 semantics. -->
+        <!-- bind: keep — $state target for bind:this; inputs is $state({}) per the declaration above; two-way DOM radio group bind:group={selected}, selected is $state. Directive order is immaterial for these shapes under Svelte 5 semantics. -->
         <input
           type="radio"
           class="radio-primary radio border-lg bg-base-100 relative h-32 w-32 outline outline-4 outline-[var(--radio-bg)] disabled:opacity-100"
@@ -390,11 +367,7 @@ The same component can also be used to display the answers of the voter and anot
           onkeyup={(e) => handleKeyUp(e, id)} />
 
         <!--
-          260524-l1t D6: stable testId marker for the entity's selected answer
-          in display mode. Rendered as a sr-only sibling of the radio so that
-          the existing `data-testid="question-choice"` on the input is
-          preserved (Playwright's getByTestId matches data-testid only and
-          multiple data-testid attributes on one element are invalid HTML).
+          260524-l1t D6: stable testId marker for the entity's selected answer in display mode. Rendered as a sr-only sibling of the radio so that the existing `data-testid="question-choice"` on the input is preserved (Playwright's getByTestId matches data-testid only and multiple data-testid attributes on one element are invalid HTML).
           Consumed by tests/tests/utils/testIds.ts → voter.entityDetail.
           entitySelectedAnswer (voter-mega-journey + voter-detail specs).
         -->

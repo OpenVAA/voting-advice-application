@@ -1,6 +1,5 @@
 <!--
-@component
-Display any data input, its associated label and possible info. The HTML element used to for the input is defined by the `type` property.
+@component Display any data input, its associated label and possible info. The HTML element used to for the input is defined by the `type` property.
 
 The input itself is wrapped in multiple container elements, the outermost of which can be passed the `containerProps` prop.
 
@@ -12,6 +11,8 @@ Multilingual features are only available if the `locales` store contains more th
   - `boolean`: A boolean toggle.render
   - `date`: A date input.
   - `image`: An image file input.
+  - `multiple-text`: A row list of plain text inputs, one per value.
+  - `multiple-text-multilingual`: A row list whose every row is a multilingual text input.
   - `number`: A numeric input.
   - `select`: A select dropdown.
   - `select-multiple`: A select dropdown from which multiple options can be selected. See also the `ordered` prop.
@@ -30,6 +31,8 @@ Multilingual features are only available if the `locales` store contains more th
 - `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default false
 - `options`: The options to show for a `select` or `select-multiple` input.
 - `ordered`: If `true`, enables ordering of the values of a `select-multiple` input. @default false
+- `minItems`: The minimum number of rows for a `multiple-text` input. @default 1
+- `maxItems`: The maximum number of rows for a `multiple-text` input.
 - `maxFilesize`: The maximum file size for `image` inputs. @default `20 * 1024**2` (20MB)
 - `multilingualInfo`: Additional info displayed below the input for multilingual input together with possible `info`. @default t('components.input.multilingualInfo')
 - Any valid attributes of the HTML element (`input`, `select` or `textarea`) used for the input, except in the case of `image` whose input is hidden.
@@ -101,8 +104,7 @@ Multilingual features are only available if the `locales` store contains more th
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // `locale` here is the i18n plain-string locale from ComponentContext (NOT the
-  // flattened AppContext rune handle); read off `ctx` to keep the audit grep clean.
+  // `locale` here is the i18n plain-string locale from ComponentContext (NOT the flattened AppContext rune handle); read off `ctx` to keep the audit grep clean.
   const ctx = getComponentContext();
   const { locales, t } = ctx;
   const currentLocale = ctx.locale;
@@ -157,9 +159,7 @@ Multilingual features are only available if the `locales` store contains more th
   let unselectedOptions = $state(new Array<AnyChoice>());
   $effect(() => {
     if (type === 'select-multiple' && options) {
-      // Compute into a local first so the effect never reads the `selectedOptions`
-      // state it also writes — reading + writing the same state inside an effect
-      // creates a self-invalidating cycle (effect_update_depth_exceeded).
+      // Compute into a local first so the effect never reads the `selectedOptions` state it also writes — reading + writing the same state inside an effect creates a self-invalidating cycle (effect_update_depth_exceeded).
       const selected = ordered
         ? (value as Array<Id>).map((v) => options.find((o) => o.id === v)!) // We can be sure all ids are valid bc we checked it above
         : options.filter((o) => (value as Array<Id>).includes(o.id));
@@ -314,8 +314,6 @@ Multilingual features are only available if the `locales` store contains more th
       }
 
       // Number — coerce the DOM string value to a real JS number (or undefined when cleared).
-      // The backend `validate_answer_value` RPC requires a JSON number, so emitting the raw
-      // string would fail validation ("Answer for number question must be a number").
     } else if (type === 'number' && currentTarget instanceof HTMLInputElement) {
       // `valueAsNumber` is NaN for an empty or non-numeric field — map that to a cleared value.
       const numericValue = currentTarget.valueAsNumber;
@@ -381,10 +379,7 @@ Multilingual features are only available if the `locales` store contains more th
 
 <!-- Add containarProps to the outer container and set styles for it -->
 <!-- a11y note: every <label> in this file uses an `id` referenced by an
-     `aria-labelledby` on the actual <input>/<textarea>/<select>. The
-     a11y_label_has_associated_control rule fires because the label
-     doesn't use `for=""`, but the WCAG association is still satisfied
-     via aria-labelledby. The svelte-ignore comments below are
+     `aria-labelledby` on the actual <input>/<textarea>/<select>. The a11y_label_has_associated_control rule fires because the label doesn't use `for=""`, but the WCAG association is still satisfied via aria-labelledby. The svelte-ignore comments below are
      intentional. -->
 <div
   {...concatClass(containerProps ?? {}, 'w-full flex flex-col items-stretch')}
@@ -479,7 +474,7 @@ Multilingual features are only available if the `locales` store contains more th
         value={`${value}`}></textarea>
     </div>
 
-    <!-- 3. Select multiple -->
+    <!-- 4. Select multiple -->
   {:else if type === 'select-multiple'}
     <div class="join join-vertical items-stretch {joinGap}">
       <div class="{inputContainerClass} join-item">
@@ -593,7 +588,7 @@ Multilingual features are only available if the `locales` store contains more th
       </div>
     </div>
 
-    <!-- 5. Other single-row inputs -->
+    <!-- 6. Other single-row inputs -->
   {:else}
     <div class="{inputContainerClass} vaa-group-join-item">
       <label class={inputLabelClass} for={id}>{label}</label>

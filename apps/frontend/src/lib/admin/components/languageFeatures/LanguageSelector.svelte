@@ -1,6 +1,5 @@
 <!--
-@component
-Reusable component for selecting target language for language-based features (question info, argument condensation, etc.). Automatically selected if only one language is available.
+@component Reusable component for selecting target language for language-based features (question info, argument condensation, etc.). Automatically selected if only one language is available.
 
 ### Properties
 
@@ -24,8 +23,7 @@ Reusable component for selecting target language for language-based features (qu
   import { getUUID } from '$lib/utils/components';
   import type { LanguageSelectorProps } from './LanguageSelector.type';
 
-  // `locale` here is the i18n plain-string locale from ComponentContext (NOT the
-  // flattened AppContext rune handle); read off `ctx` to keep the audit grep clean.
+  // `locale` here is the i18n plain-string locale from ComponentContext, not the AppContext reactive accessor of the same name; read it off `ctx` either way.
   const ctx = getComponentContext();
   const { locales, t } = ctx;
   const locale = ctx.locale;

@@ -15,8 +15,7 @@ vi.mock('$env/dynamic/public', () => ({
 }));
 
 /**
- * Creates a mock Supabase client with chainable PostgREST query patterns
- * and Edge Function invocation support.
+ * Creates a mock Supabase client with chainable PostgREST query patterns and Edge Function invocation support.
  */
 function createMockSupabaseClient() {
   const mockResponses: Record<string, { data: unknown; error: unknown }> = {};

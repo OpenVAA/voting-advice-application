@@ -1,6 +1,5 @@
 <!--
-@component
-Displays detailed information about a job, including its status, progress, and messages.
+@component Displays detailed information about a job, including its status, progress, and messages.
 
 ### Properties
 

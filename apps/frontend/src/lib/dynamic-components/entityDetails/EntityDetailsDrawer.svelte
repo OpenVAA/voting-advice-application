@@ -1,6 +1,5 @@
 <!--
-@component
-A `Drawer` that displays `EntityDetails`.
+@component A `Drawer` that displays `EntityDetails`.
 
 ### Properties
 

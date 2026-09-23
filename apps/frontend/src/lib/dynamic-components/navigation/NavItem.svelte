@@ -1,6 +1,5 @@
 <!--
-@component
-Outputs a navigation item for use inside a `<NavGroup>` which in turn is used within a `<Navigation>` component.
+@component Outputs a navigation item for use inside a `<NavGroup>` which in turn is used within a `<Navigation>` component.
 
 The item is rendered as an `<a>` element if `href` is supplied. Otherwise a `<button>` element will be used. Be sure to provide an `onclick` handler or other way of making the item interactive.
 
@@ -36,9 +35,7 @@ Accesses `LayoutContext`.
 
   const { navigation } = getLayoutContext();
 
-  // reason: Top-level getContext read — NOT inside an element attribute
-  // (Svelte issue #7549). Static structural detection:
-  // NavItem's containment in a NavGroup is fixed at component creation.
+  // reason: Top-level getContext read — NOT inside an element attribute (Svelte issue #7549). Static structural detection: NavItem's containment in a NavGroup is fixed at component creation.
   const inNavGroup = getContext(NAV_GROUP_CONTEXT_KEY) === true;
 
   // Create classes
@@ -55,11 +52,7 @@ Accesses `LayoutContext`.
 
 {#snippet content()}
   <!--
-    `disabled` is non-standard on `<a>`. On the `<a>` branch we set
-    `aria-disabled="true"` and drop `href` so the link is observably
-    disabled (WCAG 2.1 AA + Playwright `toBeDisabled()`-compatible). On
-    the `<button>` branch we keep native `disabled`. CSS targets both via
-    `[disabled]` and `[aria-disabled="true"]`.
+    `disabled` is non-standard on `<a>`. On the `<a>` branch we set `aria-disabled="true"` and drop `href` so the link is observably disabled (WCAG 2.1 AA + Playwright `toBeDisabled()`-compatible). On the `<button>` branch we keep native `disabled`. CSS targets both via `[disabled]` and `[aria-disabled="true"]`.
   -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <svelte:element
@@ -81,7 +74,7 @@ Accesses `LayoutContext`.
   </svelte:element>
 {/snippet}
 
-<!-- The wrapping <div role="listitem"> is rendered ONLY when this NavItem is a child of a NavGroup (auto-detected via getContext; see phase 80). Orphan NavItems (e.g., VoterNav/CandidateNav/AdminNav close-buttons) render bare to avoid the axe aria-required-parent violation. -->
+<!-- The wrapping <div role="listitem"> is rendered ONLY when this NavItem is a child of a NavGroup (auto-detected via getContext). Orphan NavItems (e.g., VoterNav/CandidateNav/AdminNav close-buttons) render bare to avoid the axe aria-required-parent violation. -->
 {#if inNavGroup}
   <div role="listitem">
     {@render content()}

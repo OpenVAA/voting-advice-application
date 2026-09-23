@@ -1,6 +1,5 @@
 <!--
-@component
-Displays jobs for a specific admin feature, showing active and past job details.
+@component Displays jobs for a specific admin feature, showing active and past job details.
 
 ### Properties
 
@@ -100,7 +99,7 @@ Displays jobs for a specific admin feature, showing active and past job details.
       {/if}
     </div>
 
-    <!-- Past Jobs Section. Currently has a bug. TODO: fix bug of not showing past jobs. If we even want to keep this section. Do we?  -->
+    <!-- Past Jobs Section -->
     <div class="border-base-300 space-y-4 border-t-2 pt-4">
       <div class="space-y-3">
         <h3 class="text-base-content text-lg font-semibold">

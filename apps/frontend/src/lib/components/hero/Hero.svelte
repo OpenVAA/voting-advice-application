@@ -1,6 +1,5 @@
 <!--
-@component
-Display a hero illustration.
+@component Display a hero illustration.
 
 ### Properties
 

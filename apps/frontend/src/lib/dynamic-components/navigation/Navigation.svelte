@@ -1,6 +1,5 @@
 <!--
-@component
-Create navigation menus for the application in a predefined style.
+@component Create navigation menus for the application in a predefined style.
 
 ### Properties
 
@@ -14,8 +13,7 @@ Create navigation menus for the application in a predefined style.
 ### Callback Props
 
 - `onKeyboardFocusOut`: Called when the component loses a keyboard user's
-  focus. This can be used to automatically close a drawer menu this is
-  contained in.
+  focus. This can be used to automatically close a drawer menu this is contained in.
 
 ### Usage
 
@@ -45,9 +43,7 @@ Create navigation menus for the application in a predefined style.
     ...restProps
   }: NavigationProps = $props();
 
-  // Call the `onKeyboardFocusOut` callback when the component loses focus
-  // This can be used to automatically close a drawer menu this is
-  // contained in
+  // Call the `onKeyboardFocusOut` callback when the component loses focus This can be used to automatically close a drawer menu this is contained in
   function keyboardFocusOut() {
     onKeyboardFocusOutCallback?.();
   }

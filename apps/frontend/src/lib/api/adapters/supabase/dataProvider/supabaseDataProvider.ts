@@ -36,14 +36,25 @@ import type { InternalFlatNomination } from './supabaseDataProvider.type';
 
 /**
  * Supabase implementation of the DataProvider.
- * Implements read methods that query Supabase PostgREST and transform
- * the raw database rows into the domain types expected by DataRoot.
+ * Implements read methods that query Supabase PostgREST and transform the raw database rows into the domain types expected by DataRoot.
  */
 export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProvider) {
   /**
    * Fetch application settings from the `app_settings` table.
-   * The `settings` JSONB column holds a `Partial<DynamicSettings>`.
-   * Notification title/content fields are localized before return.
+   *
+   * The row is read with `maybeSingle`, so zero rows is a value rather than an error, and there are three outcomes. A row the caller can read is parsed as below. Zero rows asks `project_open_for_voters` for this provider's project: `false` returns the shipped `access` defaults with `voterApp: false`, which `(voters)/+layout.svelte` renders as MaintenancePage (162.1 D-05, D-06); `true` returns `{}`. An RPC error or a non-boolean answer throws. The RPC decides, never the missing row, because nothing creates a settings row for a project, so an OPEN project may legally have none (162.1 D-06).
+   *
+   * The whole `access` object is returned on the closed branch, not just `voterApp`, because the app context merges DB settings with `mergeAppSettings`, which replaces by root key; a bare `{ voterApp: false }` would drop `candidateApp` and close the candidate app too.
+   *
+   * Preview is decided by RLS, not by a role check (162.1 D-17). `authenticated_select_app_settings` returns the row to any grant holder of the project, so a signed-in admin or candidate reads the real row, never reaches the RPC and gets the real voter app; anon, or a signed-in user with no grant, reads zero rows and gets the maintenance page.
+   *
+   * ACCEPTED LIMITATION (a consequence of the ratified 162-08 Q4 policy). While a project is closed, anon cannot read `app_settings`, so DB-stored `access.candidateApp` and `access.underMaintenance` are NOT honoured on the anon candidate and admin login pages; the shipped defaults apply there instead.
+   *
+   * The `settings` JSONB column is validated through `parseWithPartialPreserve` before any field is read, so the members zod accepts survive a malformed sibling and one unrecognised key no longer takes every availability gate down with it (decision **A2**). A value with nothing to preserve still answers with the same `{}` the no-rows branch returns rather than throwing (T-157-04, T-157-06).
+   *
+   * The three-state outcome is INTERNAL to this method and the public return type is unchanged, deliberately: four voter loaders merge this result with no `instanceof Error` guard and no status guard (`(voters)/elections/+page.ts` and three siblings), so an outcome crossing the boundary would spread `status` and `issues` into the application settings object (pitfall P1).
+   *
+   * Notification title/content fields are localized before return, which is the one way the returned value diverges from the stored one.
    */
   protected async _getAppSettings(options?: GetDataOptionsBase): Promise<DPDataType['appSettings']> {
     const { data, error } = await this.supabase.from('app_settings').select('settings').limit(1).single();
@@ -56,7 +67,8 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     const settings = (data?.settings ?? {}) as Record<string, unknown>;
     const locale = options?.locale ?? this.locale;
 
-    // Localize notification title and content fields
+    // Localize notification title and content fields.
+    // The schema makes `notifications` optional rather than provably present, so this runtime guard is still doing work after the parse and is deliberately kept.
     if (settings.notifications && typeof settings.notifications === 'object') {
       const notifications = { ...(settings.notifications as Record<string, unknown>) };
       for (const key of ['candidateApp', 'voterApp']) {
@@ -78,8 +90,9 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
 
   /**
    * Fetch application customization from the `app_settings.customization` JSONB column.
-   * Localizes string fields, converts storage image paths to absolute URLs,
-   * localizes translation overrides and FAQ entries.
+   *
+   * The column is validated against `StoredCustomizationSchema` before any field is read; see {@link parseStoredCustomization} for the per-member degradation the failure branch performs.
+   * Every field below then DERIVES the application shape from the validated stored one: string fields are localized, storage image paths become absolute URLs, and translation overrides and FAQ entries are localized.
    */
   protected async _getAppCustomization(options?: GetAppCustomizationOptions): Promise<DPDataType['appCustomization']> {
     const { data, error } = await this.supabase.from('app_settings').select('customization').limit(1).single();
@@ -117,6 +130,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         const resolved = getLocalized(val, locale, this.defaultLocale);
         if (resolved != null) localized[key] = resolved;
       }
+      // reason: class 3 — `TranslationKey` is a generated frontend union while the stored keys are arbitrary strings, so this narrowing is not decidable at this seam and no schema can validate it.
       result.translationOverrides = localized as Record<TranslationKey, string>;
     }
 
@@ -210,7 +224,8 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
 
     const constituencies = (constData ?? []).map((row) => {
       const obj = toDataObject(row as Record<string, unknown>, locale, this.defaultLocale);
-      // Keywords: localize then split by comma+optional whitespace
+      // Keywords: localize then split by comma+optional whitespace.
+      // reason: class 1 residual — a typed-JSONB read with no schema. `157-02` wrote schemas for the four columns criterion 1 names plus the send-email payload; `constituencies.keywords` is a bare locale object and was not among them, so it is asserted rather than validated until one exists.
       const rawKeywords = row.keywords as Record<string, string> | null;
       const localizedKeywords = getLocalized(rawKeywords, locale, this.defaultLocale);
       const keywords = localizedKeywords ? localizedKeywords.split(/,\s*/).filter(Boolean) : undefined;
@@ -226,9 +241,8 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
   }
 
   /**
-   * Fetch nominations via the `get_nominations` RPC which joins nominations with
-   * all 4 entity tables. Deduplicates entities client-side using a Map keyed by entity_id.
-   * Candidate entities include firstName, lastName, organizationId.
+   * Fetch nominations via the `get_nominations` RPC which joins nominations with all 4 entity tables. Deduplicates entities client-side using a Map keyed by entity_id.
+   * Candidate entities include firstName, lastName. They carry NO organizationId: 162-07b removed `candidates.organization_id` and the `entity_organization_id` output column that projected it, because the candidate-to-organization association is stated once, on the `parent_nomination_id` edge. The reverse-fill below already walks that edge, so nothing that needs the relationship lost access to it.
    */
   protected async _getNominationData(options?: GetNominationsOptions): Promise<DPDataType['nominations']> {
     const locale = options?.locale ?? this.locale;
@@ -272,22 +286,13 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     if (firstError) throw new Error(`getNominationData: ${firstError.message}`);
     const data = results.flatMap((r) => r.data ?? []);
 
-    // Deduplicate entities using a Map keyed by entity_id; nominations have
-    // unique (election_id, constituency_id) keys so the fan-out cannot produce
-    // nomination duplicates, but guard with a Set to be safe.
+    // Deduplicate entities using a Map keyed by entity_id; nominations have unique (election_id, constituency_id) keys so the fan-out cannot produce nomination duplicates, but guard with a Set to be safe.
     const entityMap = new Map<string, AnyEntityVariantData>();
     const nominations: Array<AnyNominationVariantPublicData> = [];
     const seenNominationIds = new Set<string>();
 
     // Build nomination_id → entity_type map for parent-type derivation.
-    // see phase 64 P01: the schema's `nominations` table stores `parent_nomination_id`
-    // but the parent's entity_type is not denormalized into the child row — it
-    // must be looked up from the parent. The Nomination base class
-    // (packages/data/src/objects/nominations/base/nomination.ts:38-45) throws if
-    // `parentNominationId` is set without a matching `parentNominationType`,
-    // so we must populate both. The `get_nominations` RPC returns ALL relevant
-    // nominations (parents and children) in the same fan-out, so this lookup
-    // is purely in-memory and adds no DB round-trips.
+    // The schema's `nominations` table stores `parent_nomination_id` but the parent's entity_type is not denormalized into the child row — it must be looked up from the parent. The Nomination base class (packages/data/src/objects/nominations/base/nomination.ts:38-45) throws if `parentNominationId` is set without a matching `parentNominationType`, so we must populate both. The `get_nominations` RPC returns ALL relevant nominations (parents and children) in the same fan-out, so this lookup is purely in-memory and adds no DB round-trips.
     const nominationTypeById = new Map<string, string>();
     for (const row of data) {
       nominationTypeById.set(row.id, row.entity_type);
@@ -318,13 +323,8 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
       };
       const nomObj = toDataObject(nomRow, locale, this.defaultLocale);
 
-      // see phase 64 P01: enforce the Nomination "either both or neither"
-      // invariant (packages/data/src/objects/nominations/base/nomination.ts:38-45).
-      // mapRow() doesn't synthesize parentNominationType (no column map entry);
-      // we set it here based on the in-memory parent lookup. If the parent's
-      // entity_type can't be resolved (parent not in this fan-out's result
-      // set — e.g., a cross-constituency parent that the RPC filtered out),
-      // we DROP parentNominationId so the constructor doesn't throw.
+      // Enforce the Nomination "either both or neither" invariant (packages/data/src/objects/nominations/base/nomination.ts:38-45).
+      // mapRow() doesn't synthesize parentNominationType (no column map entry); we set it here based on the in-memory parent lookup. If the parent's entity_type can't be resolved (parent not in this fan-out's result set — e.g., a cross-constituency parent that the RPC filtered out), we DROP parentNominationId so the constructor doesn't throw.
       const nominationOut: Record<string, unknown> = {
         ...nomObj,
         entityType: row.entity_type,
@@ -335,8 +335,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
       if (parentNominationId != null && parentNominationType != null) {
         nominationOut.parentNominationType = parentNominationType;
       } else {
-        // Either no parent (default) or unresolvable parent — clear the id
-        // to keep the invariant intact.
+        // Either no parent (default) or unresolvable parent — clear the id to keep the invariant intact.
         nominationOut.parentNominationId = null;
       }
       nominations.push(nominationOut as AnyNominationVariantPublicData);
@@ -358,11 +357,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         const entityObj = toDataObject(entityRow, locale, this.defaultLocale);
         const entityType = row.entity_type;
 
-        // Explicitly-typed shared DataObject fields (localized name/short_name/
-        // info + mapped order/customData from toDataObject) plus the JSONB
-        // runtime guards for image and answers. Building a variant-specific
-        // object below lets the discriminated `AnyEntityVariantData` union
-        // resolve structurally — no union-suppressing cast.
+        // Explicitly-typed shared DataObject fields (localized name/short_name/info + mapped order/customData from toDataObject) plus the JSONB runtime guards for image and answers. Building a variant-specific object below lets the discriminated `AnyEntityVariantData` union resolve structurally — no union-suppressing cast.
         const base = {
           id: entityId,
           name: entityObj.name as string | null | undefined,
@@ -380,6 +375,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
 
         let entity: AnyEntityVariantData;
         if (entityType === ENTITY_TYPE.Candidate) {
+          // `entity_first_name`/`entity_last_name` project `candidates` through a LEFT JOIN, so they are null on every organization/faction/alliance row and the RPC's return type is nullable. On THIS branch the join is proven to have resolved — `nominations.entity_type` is GENERATED from whichever FK is set under `CHECK (num_nonnulls(candidate_id, organization_id, faction_id, alliance_id) = 1)`, so an `entity_type` of candidate means the other three joins cannot match, and the RPC's own `COALESCE(c.id, o.id, f.id, a.id) IS NOT NULL` filter then guarantees the candidates row was visible. That chain lives in SQL where TypeScript cannot see it, so rather than assert it away we fall back to the data model's smart default for a missing name — the same `?? ''` used for the organization branch below — which keeps a broken invariant rendering as an empty name instead of the string "null".
           entity = {
             ...base,
             type: ENTITY_TYPE.Candidate,
@@ -399,16 +395,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
       }
     }
 
-    // Reverse-fill parent → children id arrays. The data layer's nomination
-    // constructors only auto-populate these when nominations arrive in the
-    // nested form (e.g. `org.data.candidates = [...]`). Our flat schema only
-    // sets the child→parent edge (`parent_nomination_id`); without the
-    // reverse fill, `OrganizationNomination.candidateNominationIds` is
-    // undefined, `hasCandidates` is false, and `nominationAndQuestionStore`
-    // filters every org out under the default `hideIfMissingAnswers.candidate`
-    // setting — surfaced as "parties tab is empty" during manual
-    // smoke. The full child→parent → grandparent walk also covers
-    // candidate→faction→organization→alliance and faction→organization edges.
+    // Reverse-fill parent → children id arrays. The data layer's nomination constructors only auto-populate these when nominations arrive in the nested form (e.g. `org.data.candidates = [...]`). Our flat schema only sets the child→parent edge (`parent_nomination_id`); without the reverse fill, `OrganizationNomination.candidateNominationIds` is undefined, `hasCandidates` is false, and `nominationAndQuestionStore` filters every org out under the default `hideIfMissingAnswers.candidate` setting — surfaced as "parties tab is empty" during manual smoke. The full child→parent → grandparent walk also covers candidate→faction→organization→alliance and faction→organization edges.
     const childIdsByParentAndType = new Map<string, Map<string, Array<string>>>();
     for (const child of nominations as Array<InternalFlatNomination>) {
       if (!child.parentNominationId) continue;
@@ -449,8 +436,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
 
   /**
    * Fetch entity data (candidates and/or organizations) from their respective tables.
-   * Sets the `type` field based on entity table, processes answers through parseAnswers,
-   * and converts storage image paths to absolute URLs.
+   * Sets the `type` field based on entity table, processes answers through parseAnswers, and converts storage image paths to absolute URLs.
    */
   protected async _getEntityData(options?: GetEntitiesOptions): Promise<DPDataType['entities']> {
     const locale = options?.locale ?? this.locale;
@@ -492,9 +478,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
   }
 
   /**
-   * Fetch question categories and questions. Localizes choice labels for
-   * choice-type questions, maps category_type to type on categories,
-   * and filters categories by electionId when specified.
+   * Fetch question categories and questions via the `get_questions` RPC, which returns both result sets in one jsonb payload already filtered by election, constituency and election round in SQL. Localizes choice labels for choice-type questions and maps `category_type` to `type` on categories.
    */
   protected async _getQuestionData(options?: GetQuestionsOptions): Promise<DPDataType['questions']> {
     const locale = options?.locale ?? this.locale;
@@ -561,18 +545,12 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         }));
       }
 
-      // The DB `allow_open` column maps to a top-level `allowOpen` via COLUMN_MAP, but
-      // every frontend consumer (candidate per-question editor, EntityOpinions) reads it
-      // from `customData.allowOpen` (per the CustomData type). Bridge the column into
-      // customData so the open-answer field actually renders; an explicit
-      // `custom_data.allowOpen` JSONB value takes precedence over the column.
-      // The explicit annotation keeps the JSONB passthrough keys (min/max etc.)
-      // indexable as `unknown` — the inferred spread type collapses to just
-      // `{ allowOpen: boolean }` and rejects them.
-      const customData: { allowOpen: boolean } & Record<string, unknown> = {
-        allowOpen: (row.allow_open as boolean | null) ?? true,
-        ...((obj.customData as Record<string, unknown> | undefined) ?? {})
-      };
+        // The DB `allow_open` column maps to a top-level `allowOpen` via COLUMN_MAP, but every frontend consumer (candidate per-question editor, EntityOpinions) reads it from `customData.allowOpen` (per the CustomData type). Bridge the column into customData so the open-answer field actually renders; an explicit `custom_data.allowOpen` JSONB value takes precedence over the column.
+        // The explicit annotation keeps the JSONB passthrough keys (min/max etc.) indexable as `unknown` — the inferred spread type collapses to just `{ allowOpen: boolean }` and rejects them.
+        const customData: { allowOpen: boolean } & Record<string, unknown> = {
+          allowOpen: (row.allow_open as boolean | null) ?? true,
+          ...((obj.customData as Record<string, unknown> | undefined) ?? {})
+        };
 
       // NumberQuestionData.min/max have no DB column — the authoring home for a
       // number question's answer-value range is `custom_data.{ min, max }` (see

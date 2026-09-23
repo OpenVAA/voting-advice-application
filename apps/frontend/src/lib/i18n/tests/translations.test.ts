@@ -7,9 +7,7 @@ import { t } from '$lib/i18n/wrapper';
 // Path to inlang message files
 const messagesDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..', 'messages');
 
-// Path to the type-generation translation source catalog. This is the OTHER, independent i18n
-// catalog: `tools/translationKey/generateTranslationKeyType.ts` reads it to build the
-// `TranslationKey` union, while `messagesDir` above feeds the Paraglide runtime.
+// Path to the type-generation translation source catalog. This is the OTHER, independent i18n catalog: `tools/translationKey/generateTranslationKeyType.ts` reads it to build the `TranslationKey` union, while `messagesDir` above feeds the Paraglide runtime.
 const translationsDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'translations');
 
 const translationLocales = fs
@@ -47,13 +45,10 @@ function getMessageKeys(locale: string, filename: string): Array<string> {
 /**
  * Every dotted key authored in the type-generation catalog (`src/lib/i18n/translations/{locale}`).
  *
- * Those files are UNWRAPPED — `translations/en/components.json` starts straight at `accordionSelect` —
- * so the namespace has to come from the FILENAME (`components.json` -> `components`), exactly as
- * `tools/translationKey/generateTranslationKeyType.ts` does when it builds the `TranslationKey` union.
+ * Those files are UNWRAPPED — `translations/en/components.json` starts straight at `accordionSelect` — so the namespace has to come from the FILENAME (`components.json` -> `components`), exactly as `tools/translationKey/generateTranslationKeyType.ts` does when it builds the `TranslationKey` union.
  * Without that prefix every single key would mismatch.
  *
- * The locale directories also hold `index.ts` and `translations.type.ts`, so non-JSON siblings are
- * filtered out rather than parsed.
+ * The locale directories also hold `index.ts` and `translations.type.ts`, so non-JSON siblings are filtered out rather than parsed.
  */
 function getTranslationKeys(locale: string): Array<string> {
   const localeDir = path.join(translationsDir, locale);
@@ -69,13 +64,9 @@ function getTranslationKeys(locale: string): Array<string> {
 /**
  * Every dotted key present in the runtime Paraglide catalog (`messages/{locale}`).
  *
- * Those files are WRAPPED — `messages/en/components.json` is `{ "components": { ... } }`, and
- * `messages/en/adminApp.common.json` is `{ "adminApp.common": { ... } }` — so the file's own top-level
- * key already IS the namespace and the flatten must start from an EMPTY prefix.
+ * Those files are WRAPPED — `messages/en/components.json` is `{ "components": { ... } }`, and `messages/en/adminApp.common.json` is `{ "adminApp.common": { ... } }` — so the file's own top-level key already IS the namespace and the flatten must start from an EMPTY prefix.
  *
- * This is why the parity check cannot reuse `getMessageKeys` above: that helper deliberately
- * re-prefixes the filename for its cross-LOCALE comparison (where a constant offset is harmless) and
- * would yield doubled `components.components.*` keys here.
+ * This is why the parity check cannot reuse `getMessageKeys` above: that helper deliberately re-prefixes the filename for its cross-LOCALE comparison (where a constant offset is harmless) and would yield doubled `components.components.*` keys here.
  */
 function getRuntimeCatalogKeys(locale: string): Array<string> {
   const localeDir = path.join(messagesDir, locale);
@@ -107,11 +98,7 @@ test.each(otherLocales)(`'%s' has same message files as '${firstLocale}'`, (loca
 });
 
 test(`'lang.json' in '${firstLocale}' declares a display name for every locale`, () => {
-  // The `lang.*` message group (`messages/{locale}/lang.json`) supplies the
-  // language-selector display names. Assert the base-locale file carries a
-  // non-empty name for every locale that has a message directory; the
-  // 'same message keys' matching below then guarantees the other locale files
-  // declare the same set of names.
+  // The `lang.*` message group (`messages/{locale}/lang.json`) supplies the language-selector display names. Assert the base-locale file carries a non-empty name for every locale that has a message directory; the 'same message keys' matching below then guarantees the other locale files declare the same set of names.
   const lang = JSON.parse(fs.readFileSync(path.join(messagesDir, firstLocale, 'lang.json'), 'utf8')).lang as Record<
     string,
     string
@@ -130,24 +117,16 @@ describe.each(otherLocales)(`'%s' has same message keys as '${firstLocale}'`, (l
 /**
  * The one legitimate asymmetry between the two catalogs.
  *
- * `messages/{locale}/lang.json` is the language-selector display-name catalog and has no
- * `translations/` counterpart by design: `generateTranslationKeyType.ts:24` SYNTHESISES `lang.{locale}`
- * from the locale directory listing instead of reading a file. Those keys are therefore expected to
- * exist runtime-side only.
+ * `messages/{locale}/lang.json` is the language-selector display-name catalog and has no `translations/` counterpart by design: `generateTranslationKeyType.ts:24` SYNTHESISES `lang.{locale}` from the locale directory listing instead of reading a file. Those keys are therefore expected to exist runtime-side only.
  *
- * Deliberately an allowlist of exact KEYS, not "skip the file `lang.json`": a blanket file exclusion
- * would also hide a genuine regression inside that file (a typo'd `lang.se`, a dropped `lang.et`).
+ * Deliberately an allowlist of exact KEYS, not "skip the file `lang.json`": a blanket file exclusion would also hide a genuine regression inside that file (a typo'd `lang.se`, a dropped `lang.et`).
  */
 const EXPECTED_MESSAGES_ONLY = new Set(translationLocales.map((locale) => `lang.${locale}`));
 
 /**
  * Cross-catalog key-set parity.
  *
- * The two i18n catalogs are independent. `src/lib/i18n/translations/` feeds the `TranslationKey` type;
- * `apps/frontend/messages/` feeds the Paraglide runtime. Adding a key to only the former still
- * type-checks, and at runtime `t()` then renders the raw dotted key path to the user. Seven real
- * user-facing strings shipped through exactly that gap before see phase 134 closed them (including an
- * `aria-label` that announced `components.accordionSelect.listboxAriaLabel` to screen readers).
+ * The two i18n catalogs are independent. `src/lib/i18n/translations/` feeds the `TranslationKey` type; `apps/frontend/messages/` feeds the Paraglide runtime. Adding a key to only the former still type-checks, and at runtime `t()` then renders the raw dotted key path to the user. Seven real user-facing strings shipped through exactly that gap before it was closed (including an `aria-label` that announced `components.accordionSelect.listboxAriaLabel` to screen readers).
  * These two assertions make that defect class structurally unreinventable.
  *
  * This must stay a FILESYSTEM assertion: `vitest.config.ts` aliases `$lib/paraglide/*` to mocks, so a
@@ -217,11 +196,8 @@ test('all message files are valid JSON', () => {
 
 describe('TranslationKey type safety (CLEAN-04)', () => {
   test('t() signature rejects non-TranslationKey strings at compile-time', () => {
-    // reason: regression-locker (see phase 78).
-    // If `t()` in wrapper.ts is loosened back to `key: string`, the @ts-expect-error
-    // directive below becomes "unused @ts-expect-error" and the typecheck (yarn check)
-    // fails. The real assertion is the compiler — the runtime smoke below only satisfies
-    // vitest's "at least one assertion per test" convention.
+    // reason: regression-locker.
+    // If `t()` in wrapper.ts is loosened back to `key: string`, the @ts-expect-error directive below becomes "unused @ts-expect-error" and the typecheck (yarn check) fails. The real assertion is the compiler — the runtime smoke below only satisfies vitest's "at least one assertion per test" convention.
     // @ts-expect-error — 'definitely.not.a.real.key' is not a TranslationKey union member
     t('definitely.not.a.real.key');
     expect(true).toBe(true);

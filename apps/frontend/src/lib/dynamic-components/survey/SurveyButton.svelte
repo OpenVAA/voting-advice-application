@@ -1,6 +1,5 @@
 <!--
-@component
-Display a button for filling out a user survey.
+@component Display a button for filling out a user survey.
 
 ### Dynamic component
 

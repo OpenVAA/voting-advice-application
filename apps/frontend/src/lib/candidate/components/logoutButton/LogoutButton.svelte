@@ -1,6 +1,5 @@
 <!--
-@component
-Allows user to log out. Displays modal notification if the user hasn't filled all the data.
+@component Allows user to log out. Displays modal notification if the user hasn't filled all the data.
 
 ### Dynamic component
 
@@ -37,12 +36,10 @@ Accesses `CandidateContext`.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // see phase 61 follow-up: read reactive context getters via candCtx.X so
-  // updates after data load propagate (the same destructure-snapshot bug class
-  // that 61-03 fixed for candidate-questions).
+  // Read reactive context getters via candCtx.X so updates after data load propagate; destructuring one would capture the mount-time snapshot (CLAUDE.md Context Destructuring Rule).
   const candCtx = getCandidateContext();
   const { getRoute, logout, t } = candCtx;
-  // appSettings is a reactive accessor (see phase 113 flatten) — read via candCtx.X, never destructure.
+  // appSettings is a reactive accessor — read via candCtx.X, never destructure.
   const appSettings = $derived(candCtx.appSettings);
 
   ////////////////////////////////////////////////////////////////////
@@ -51,9 +48,7 @@ Accesses `CandidateContext`.
 
   // reference to TimedModal
   let timedModalRef: TimedModal | undefined = $state();
-  // `timeLeft` is bound by TimedModal (countdown ticks); seed from the
-  // prop's initial value. Reading the prop inside the initializer is
-  // intentional: we want the initial seed, not a reactive dependency.
+  // `timeLeft` is bound by TimedModal (countdown ticks); seed from the prop's initial value. Reading the prop inside the initializer is intentional: we want the initial seed, not a reactive dependency.
   // svelte-ignore state_referenced_locally
   let timeLeft = $state(logoutModalTimer);
 

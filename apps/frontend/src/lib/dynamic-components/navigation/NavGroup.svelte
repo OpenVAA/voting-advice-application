@@ -1,6 +1,5 @@
 <!--
-@component
-Use to group `NavItem` components. Displays a faint line above the group.
+@component Use to group `NavItem` components. Displays a faint line above the group.
 
 ### Properties
 
@@ -37,7 +36,7 @@ Use to group `NavItem` components. Displays a faint line above the group.
   setContext(NAV_GROUP_CONTEXT_KEY, true);
 </script>
 
-<!-- reason: <section> preserved for `:before` line-separator CSS; role="list" migrated to inner <div> for axe `list` rule compliance (see phase 80). -->
+<!-- reason: <section> preserved for `:before` line-separator CSS; role="list" lives on the inner <div> for axe `list` rule compliance. -->
 <section
   {...concatClass(
     restProps,

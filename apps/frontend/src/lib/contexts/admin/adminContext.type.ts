@@ -15,7 +15,7 @@ export type AdminContext = AppContext &
     jobs: JobStates;
 
     ////////////////////////////////////////////////////////////////////
-    // Wrappers for DataWriter methods
+    // Wrappers for writer methods. `updateQuestion` and `insertJobResult` are admin-writer methods; the rest are DataWriter methods.
     ////////////////////////////////////////////////////////////////////
 
     updateQuestion(

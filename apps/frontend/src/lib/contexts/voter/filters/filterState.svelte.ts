@@ -56,9 +56,7 @@ class FilterStateImpl {
             );
           }
 
-          // Build question filters from any question (info or opinion) flagged
-          // `filterable: true`. Opinion-category questions with the flag let
-          // voters narrow results by candidate answer to a specific question.
+          // Build question filters from any question (info or opinion) flagged `filterable: true`. Opinion-category questions with the flag let voters narrow results by candidate answer to a specific question.
           const filterableQuestions = [...infoQuestions, ...opinionQuestions].filter(
             (q) => getCustomData(q).filterable
           );

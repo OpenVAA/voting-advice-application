@@ -2,8 +2,7 @@
  * JWE and JWT token builders using jose v6.
  *
  * Builds properly formatted test tokens using the same jose library as production.
- * JWE tokens wrap a signed JWT (inner layer) inside an encrypted JWE (outer layer),
- * matching the real id_token format from Signicat and Idura.
+ * JWE tokens wrap a signed JWT (inner layer) inside an encrypted JWE (outer layer), matching the real id_token format from Signicat and Idura.
  *
  * NO Deno imports. NO SvelteKit imports. Pure jose v6 only.
  */
@@ -14,8 +13,7 @@ import type { TestKeySet } from './keys';
 /**
  * Create a JWE-encrypted id_token for testing.
  *
- * Builds a signed JWT (inner) encrypted inside a JWE (outer), matching the format
- * returned by real OIDC identity providers:
+ * Builds a signed JWT (inner) encrypted inside a JWE (outer), matching the format returned by real OIDC identity providers:
  * - Inner JWT: RS256-signed with the test signing key
  * - Outer JWE: RSA-OAEP or RSA-OAEP-256 with A256GCM content encryption
  *

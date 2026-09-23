@@ -13,9 +13,7 @@ type LocallyStoredValue<TData> = {
 };
 
 /**
- * A rune-native persisted state handle. Reactive reads happen via the `current`
- * getter (which tracks the underlying `$state` dependency); `set`/`update`
- * write the value through to the backing storage.
+ * A rune-native persisted state handle. Reactive reads happen via the `current` getter (which tracks the underlying `$state` dependency); `set`/`update` write the value through to the backing storage.
  */
 export interface PersistedState<TValue> {
   /** Reactive read — invocation tracks the `$state` dependency. */
@@ -27,12 +25,7 @@ export interface PersistedState<TValue> {
 }
 
 /**
- * Create a rune-native state handle persisted in `localStorage`, replacing the
- * three-layer `$state → store-shaped writable → fromStore` bridge with a single
- * `{ current, set, update }` handle. Reads the initial value via the versioned
- * `getItemFromStorage` helper (so a stale/wrong-version or old-format payload is
- * discarded and `defaultValue` is returned — there is NO format-migration shim,
- * per) and persists every `set`/`update` via `saveItemToStorage`.
+ * Create a rune-native state handle persisted in `localStorage`, replacing the three-layer `$state → store-shaped writable → fromStore` bridge with a single `{ current, set, update }` handle. Reads the initial value via the versioned `getItemFromStorage` helper (so a stale/wrong-version or old-format payload is discarded and `defaultValue` is returned — there is deliberately NO format-migration shim) and persists every `set`/`update` via `saveItemToStorage`.
  *
  * NB. The type of `defaultValue` should be one that can be serialized to JSON.
  * See: https://github.com/microsoft/TypeScript/issues/1897#issuecomment-1415776159
@@ -45,14 +38,8 @@ export function localStorageState<TValue>(key: string, defaultValue: TValue): Pe
 }
 
 /**
- * Create a rune-native state handle persisted in `sessionStorage` — the
- * `sessionStorage` sibling of `localStorageState`, sharing the SAME
- * `StorageType`-parametrized `storageState` core. The only behavioural
- * difference comes from that shared core's session branch:
- *   - reads/writes are NOT version-wrapped (the persisted payload is the RAW
- *     JSON value, not a `{ version, data }` envelope — see `saveItemToStorage`),
- *     so there is no version-expiry check; a malformed/unparseable payload
- *     simply falls back to `defaultValue`, and
+ * Create a rune-native state handle persisted in `sessionStorage` — the `sessionStorage` sibling of `localStorageState`, sharing the SAME `StorageType`-parametrized `storageState` core. The only behavioural difference comes from that shared core's session branch:
+ *   - reads/writes are NOT version-wrapped (the persisted payload is the RAW JSON value, not a `{ version, data }` envelope — see `saveItemToStorage`), so there is no version-expiry check; a malformed/unparseable payload simply falls back to `defaultValue`, and
  *   - both reads and writes are `browser`-gated (SSR → `defaultValue`).
  *
  * NB. The type of `defaultValue` should be one that can be serialized to JSON.
@@ -66,31 +53,13 @@ export function sessionStorageState<TValue>(key: string, defaultValue: TValue): 
 }
 
 /**
- * Shared versioned-payload core backing `localStorageState` and
- * `sessionStorageState` as a Svelte 5 CLASS (Group F helper; v2.13
- * context-as-class migration). Parametrized on `StorageType` so the
- * versioned storage helpers (`getItemFromStorage`/`saveItemToStorage`) are
- * reused — no re-implementation of the `{ version, data }` payload,
- * `requireUserDataVersion` expiry, or `browser` gate.
+ * Shared versioned-payload core backing `localStorageState` and `sessionStorageState` as a Svelte 5 CLASS. Parametrized on `StorageType` so the versioned storage helpers (`getItemFromStorage`/`saveItemToStorage`) are reused — no re-implementation of the `{ version, data }` payload, `requireUserDataVersion` expiry, or `browser` gate.
  *
- * The reactive core is the private `#value` `$state` field; the public
- * `current` getter reads it (reactive read tracks the `$state` dependency).
- * `set`/`update` are ARROW-FUNCTION FIELDS so they survive
- * `const { set } = handle` detach (the candidate stores destructure them) —
- * they capture `this` on detach. Each mutates `#value` then persists
- * IMPERATIVELY via `saveItemToStorage` (NEVER `$effect` — A7); this is what
- * keeps the class constructable OUTSIDE any effect context (e.g. inside
- * `initXxxContext ` factories / module scope) without `effect_orphan`.
+ * The reactive core is the private `#value` `$state` field; the public `current` getter reads it (reactive read tracks the `$state` dependency).
+ * `set`/`update` are ARROW-FUNCTION FIELDS so they survive `const { set } = handle` detach (the candidate stores destructure them) — they capture `this` on detach. Each mutates `#value` then persists IMPERATIVELY via `saveItemToStorage` (NEVER `$effect`); this is what keeps the class constructable OUTSIDE any effect context (e.g. inside `initXxxContext()` factories / module scope) without `effect_orphan`.
  *
- * When nothing valid is stored, the freshly-defaulted value is persisted on
- * init in the CONSTRUCTOR BODY (a synchronous side-effect, NOT an `$effect` —
- * ). The superseded store-shaped bridge persisted on subscribe (which
- * fires synchronously on creation); dropping to `set`/`update`-only persistence
- * silently regressed any consumer whose default is non-deterministic and is
- * never explicitly `set` — notably the tracking `sessionId`, whose generated
- * UUID was regenerated on every fresh load instead of surviving the reload it
- * lives in `sessionStorage` to survive. The write is `browser`-gated via
- * `saveItemToStorage` (SSR → no-op). (CR-01, see phase 96)
+ * When nothing valid is stored, the freshly-defaulted value is persisted on init in the CONSTRUCTOR BODY (a synchronous side-effect, NOT an `$effect`).
+ * Persisting ONLY on `set`/`update` would silently break any consumer whose default is non-deterministic and is never explicitly `set` — notably the tracking `sessionId`, whose generated UUID would be regenerated on every fresh load instead of surviving the reload it lives in `sessionStorage` to survive. The write is `browser`-gated via `saveItemToStorage` (SSR → no-op).
  */
 class PersistedStateImpl<TValue> implements PersistedState<TValue> {
   #type: StorageType;
@@ -108,11 +77,7 @@ class PersistedStateImpl<TValue> implements PersistedState<TValue> {
     const stored = getItemFromStorage<TValue>(type, key);
     this.#value = $state<TValue>(stored ?? defaultValue) as TValue;
 
-    // Persist the default on init when nothing valid was stored (CR-01) so a
-    // non-deterministic default round-trips a reload, matching the old
-    // subscribe-on-init persistence. This is a synchronous constructor
-    // side-effect (NOT an `$effect`); the write is `browser`-gated
-    // inside `saveItemToStorage`, so SSR is a no-op.
+    // Persist the default on init when nothing valid was stored, so a non-deterministic default round-trips a reload. This is a synchronous constructor side-effect (NOT an `$effect`); the write is `browser`-gated inside `saveItemToStorage`, so SSR is a no-op.
     if (stored === null) saveItemToStorage(type, key, defaultValue);
   }
 
@@ -132,17 +97,14 @@ class PersistedStateImpl<TValue> implements PersistedState<TValue> {
 }
 
 /**
- * Shared versioned-payload core backing `localStorageState` and
- * `sessionStorageState`. Returns a `PersistedStateImpl` instance.
+ * Shared versioned-payload core backing `localStorageState` and `sessionStorageState`. Returns a `PersistedStateImpl` instance.
  */
 function storageState<TValue>(type: StorageType, key: string, defaultValue: TValue): PersistedState<TValue> {
   return new PersistedStateImpl(type, key, defaultValue);
 }
 
 /**
- * Get an item from storage. If the `type` is `localStorage`, the version number saved with the
- * item is checked and the data is expired if it does not match the required version defined in
- * `settings`.
+ * Get an item from storage. If the `type` is `localStorage`, the version number saved with the item is checked and the data is expired if it does not match the required version defined in `settings`.
  */
 function getItemFromStorage<TValue>(type: StorageType, key: string): TValue | null {
   let item: TValue | null = null;

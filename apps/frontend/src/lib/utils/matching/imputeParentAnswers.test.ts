@@ -4,23 +4,16 @@ import { imputeParentAnswers } from './imputeParentAnswers';
 import { MatchingProxy } from './imputeParentAnswers.type';
 
 /**
- * see phase 69 regression guard for `imputeParentAnswers`.
+ * Regression guard for `imputeParentAnswers`.
  *
- * 1. **Risk #7 backward-compat (childProxies omitted):** output is byte-identical
- *    to the entity-only read path for Organization / Faction parents. A regression
- *    here would silently degrade voter match scores for ALL parties.
+ * 1. **Backward compatibility (childProxies omitted):** output is byte-identical
+ *    to the entity-only read path for Organization / Faction parents. A regression here would silently degrade voter match scores for ALL parties.
  * 2. **Cascade (childProxies provided):** when a child has an entry in childProxies,
- *    the proxy answer wins over the entity answer. When a child has no entry,
- *    the function falls back to the entity read.
- * 3. **Alliance parent type (see phase 69 new branch):** parent.organizationNominations
+ *    the proxy answer wins over the entity answer. When a child has no entry, the function falls back to the entity read.
+ * 3. **Alliance parent type:** parent.organizationNominations
  *    is read as the children array.
  *
- * Test strategy: synthetic input — no seed coupling. Mock objects conform to the
- * minimum shape `imputeParentAnswers` requires (objectType, id, entity.getAnswer,
- * candidateNominations / organizationNominations accessors as needed). The casts
- * via `as never` are intentional — the test exercises the function's runtime
- * behaviour with minimal-shape mocks rather than constructing fully-typed
- * nomination instances (see phase 67 "no coupling unit tests to seed shape").
+ * Test strategy: synthetic input — no seed coupling. Mock objects conform to the minimum shape `imputeParentAnswers` requires (objectType, id, entity.getAnswer, candidateNominations / organizationNominations accessors as needed). The casts via `as never` are intentional — the test exercises the function's runtime behaviour with minimal-shape mocks rather than constructing fully-typed nomination instances — unit tests are deliberately not coupled to the seed shape.
  */
 
 // --- Synthetic fixtures ---
@@ -126,15 +119,12 @@ describe('imputeParentAnswers', () => {
         makeFakeChild({ id: 'cand1', entityAnswers: { q1: { value: 5 } } }),
         makeFakeChild({ id: 'cand2', entityAnswers: { q1: { value: 7 } } })
       ];
-      // Bind ownAnswers BEFORE constructing the parent so we can reference it after the call
-      // without going through parent.answers (which is typed `never` due to the synthetic-fixture
-      // cast and would trip svelte-check).
+      // Bind ownAnswers BEFORE constructing the parent so we can reference it after the call without going through parent.answers (which is typed `never` due to the synthetic-fixture cast and would trip svelte-check).
       const ownAnswers: FakeAnswers = {};
       const parent = makeFakeOrgParent({ id: 'org1', ownAnswers, candidates: children });
       const ownAnswersBefore = { ...ownAnswers };
       imputeParentAnswers({ nominations: [parent], questions: [q] });
-      // The function must not write to the parent entity's answers; only the returned proxy
-      // object holds the imputed values. Compare via the bound ownAnswers reference.
+      // The function must not write to the parent entity's answers; only the returned proxy object holds the imputed values. Compare via the bound ownAnswers reference.
       expect(ownAnswers).toEqual(ownAnswersBefore);
     });
 
@@ -147,9 +137,7 @@ describe('imputeParentAnswers', () => {
         candidates: children
       });
       const proxies = imputeParentAnswers({ nominations: [parent], questions: [q] });
-      // proxy.answers should retain the parent's own answer (1) — not the imputed
-      // child median (99). The matchableQuestions filter excludes q1 because the
-      // parent already has an answer for it.
+      // proxy.answers should retain the parent's own answer (1) — not the imputed child median (99). The matchableQuestions filter excludes q1 because the parent already has an answer for it.
       expect(proxies[0].answers['q1']?.value).toBe(1);
     });
   });
@@ -177,8 +165,7 @@ describe('imputeParentAnswers', () => {
         childProxies: childProxies as never
       });
 
-      // median of [5, 7] from proxy reads = 6 (NumberQuestion median, even count -> average);
-      // not 99 (entity reads).
+      // median of [5, 7] from proxy reads = 6 (NumberQuestion median, even count -> average); not 99 (entity reads).
       expect(proxies[0].answers['q1']?.value).toBe(6);
     });
 

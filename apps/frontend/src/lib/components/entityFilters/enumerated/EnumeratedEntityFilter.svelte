@@ -1,6 +1,5 @@
 <!--
-@component
-Render an enumerated filter for entities that displays a list of values to include in the results. These can be, for example, parties or answers to enumerated questions, like gender or language. The filter works for both single and multiple selection questions.
+@component Render an enumerated filter for entities that displays a list of values to include in the results. These can be, for example, parties or answers to enumerated questions, like gender or language. The filter works for both single and multiple selection questions.
 
 ### Properties
 
@@ -44,28 +43,18 @@ Render an enumerated filter for entities that displays a list of values to inclu
   /** A unique input.value for missing values */
   const missingValue = getUUID();
 
-  // `filter` and `targets` are stable per parent contract (sister
-  // component NumericEntityFilter follows the same pattern).
+  // `filter` and `targets` are stable per parent contract (sister component NumericEntityFilter follows the same pattern).
   // svelte-ignore state_referenced_locally
   const values = filter.parseValues(targets);
   let selected: Array<string> = $state(convertMissingForInputs(values.map((v) => v.value)));
   /** Track whether `toggleSelectAll()` will select or deselect all */
   let allSelected = $derived(selected.length === values.length);
   /**
-   * Disambiguate "filter inactive (default, no user input)" from "user
-   * explicitly selected nothing (active filter with empty allow-list → 0
-   * results)". The default UI state is all-checked + inactive filter; the
-   * flag flips on the first UI-driven change (`bind:group` checkbox emits,
-   * or `toggleSelectAll()`) AND stays true thereafter so a subsequent empty
-   * selection produces 0 results rather than collapsing back to "no filter".
+   * Disambiguate "filter inactive (default, no user input)" from "user explicitly selected nothing (active filter with empty allow-list → 0 results)". The default UI state is all-checked + inactive filter; the flag flips on the first UI-driven change (`bind:group` checkbox emits, or `toggleSelectAll()`) AND stays true thereafter so a subsequent empty selection produces 0 results rather than collapsing back to "no filter".
    */
   let userActivated = $state(false);
 
-  // If the filter is already populated upstream (URL params, parent
-  // restore), mirror its allow-list. Otherwise the all-selected default
-  // set on `selected` above is the correct UI baseline — `parseSelected`
-  // collapses `selected.length === values.length` to `filter.include =
-  // undefined`, so the all-checked UI and inactive filter stay consistent.
+  // If the filter is already populated upstream (URL params, parent restore), mirror its allow-list. Otherwise the all-selected default set on `selected` above is the correct UI baseline — `parseSelected` collapses `selected.length === values.length` to `filter.include = undefined`, so the all-checked UI and inactive filter stay consistent.
   updateSelected();
 
   ////////////////////////////////////////////////////////////////////
@@ -98,24 +87,17 @@ Render an enumerated filter for entities that displays a list of values to inclu
    *    `selected = []` in the UI; downstream produces 0 results.
    *  - `filter.include === [...ids]` → mirror the explicit allow-list.
    *
-   * NB. `EnumeratedFilter.include` returns `[]` for the undefined case (see
-   * its getter), so we must read `_rules.include` semantics indirectly: the
-   * filter's `active` getter is true ONLY when include is defined.
+   * NB. `EnumeratedFilter.include` returns `[]` for the undefined case (see its getter), so we must read `_rules.include` semantics indirectly: the filter's `active` getter is true ONLY when include is defined.
    */
   function updateSelected() {
     const inc = filter.include;
-    // Default (filter inactive): all checked. Matches the `parseSelected`
-    // contract where `selected.length === values.length` collapses to
-    // `filter.include = undefined`, so the all-checked UI and the inactive
-    // filter remain consistent round-trip.
+    // Default (filter inactive): all checked. Matches the `parseSelected` contract where `selected.length === values.length` collapses to `filter.include = undefined`, so the all-checked UI and the inactive filter remain consistent round-trip.
     if (!filter.active) {
       selected = convertMissingForInputs(values.map((v) => v.value));
       userActivated = false;
       return;
     }
-    // Filter is active. If include is empty ([] explicit allow-none) mirror
-    // empty UI; otherwise mirror the allow-list. Either way the filter is
-    // user-activated from the UI's perspective.
+    // Filter is active. If include is empty ([] explicit allow-none) mirror empty UI; otherwise mirror the allow-list. Either way the filter is user-activated from the UI's perspective.
     selected = convertMissingForInputs(inc);
     userActivated = true;
   }
@@ -132,8 +114,7 @@ Render an enumerated filter for entities that displays a list of values to inclu
    *    empty allow-list → 0 results).
    *  - Otherwise → mapped allow-list.
    *
-   * The previous semantics returned `undefined` for empty selection, which
-   * collapsed "user explicitly selected nothing" into "no filter applied".
+   * The previous semantics returned `undefined` for empty selection, which collapsed "user explicitly selected nothing" into "no filter applied".
    *
    * @param selectedValues - We need to explicitly pass this to trigger reactive updates
    * @param activated - Whether the user has interacted with the filter yet
@@ -157,10 +138,7 @@ Render an enumerated filter for entities that displays a list of values to inclu
    * Convert possibly missing values for use in `<input>` elements
    */
   function convertMissingForInputs(filterValues: Array<MaybeMissing<string>>) {
-    // TIR3 cluster 1: was `isMissing(isMissing)` — a typo that always evaluated
-    // false (the function reference is never missing-equal), so the
-    // MISSING_VALUE sentinel was never substituted into <input value=...>,
-    // leaving the "No answer" row un-toggleable from the DOM.
+    // TIR3 cluster 1: was `isMissing(isMissing)` — a typo that always evaluated false (the function reference is never missing-equal), so the MISSING_VALUE sentinel was never substituted into <input value=...>, leaving the "No answer" row un-toggleable from the DOM.
     return filterValues.map((v) => (isMissing(v) ? missingValue : v));
   }
 
@@ -199,8 +177,7 @@ Render an enumerated filter for entities that displays a list of values to inclu
         <!-- Disable the input if there is only one value -->
         <!-- bind: keep — two-way DOM checkbox group bind:group={selected}; selected is $state -->
         <!-- value: render MISSING_VALUE as the placeholder string so the input's
-             __value matches the post-conversion `selected` entries; otherwise the
-             bind:group identity check fails round-trip and the missing-value
+             __value matches the post-conversion `selected` entries; otherwise the bind:group identity check fails round-trip and the missing-value
              checkbox lags one click behind the filter state. -->
         <input
           type="checkbox"

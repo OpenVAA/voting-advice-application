@@ -1,6 +1,5 @@
 <!--
-@component
-Show a modal dialog for sending feedback.
+@component Show a modal dialog for sending feedback.
 
 ### Properties
 

@@ -1,6 +1,5 @@
 <!--
-@component
-Render a numeric filter for entities.
+@component Render a numeric filter for entities.
 
 ### Properties
 
@@ -37,10 +36,7 @@ Render a numeric filter for entities.
   let max: number = $state(0);
   let includeMissing = $state(true);
 
-  // `filter` and `targets` are stable per parent contract:
-  // EntityList remounts via {#key} on filter-scope change, so the
-  // init-time read here matches the component lifecycle. No reactive
-  // re-derivation needed.
+  // `filter` and `targets` are stable per parent contract: EntityList remounts via {#key} on filter-scope change, so the init-time read here matches the component lifecycle. No reactive re-derivation needed.
   // svelte-ignore state_referenced_locally
   const range = filter.parseValues(targets);
   updateValues();

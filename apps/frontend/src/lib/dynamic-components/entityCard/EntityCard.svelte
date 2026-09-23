@@ -77,11 +77,9 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
   const ctx = getAppContext();
   const { appType, getRoute, startEvent, t } = ctx;
-  // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via ctx.X, never destructure.
+  // appSettings/dataRoot are reactive accessors — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
-  // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot` directly inside the consuming `$derived.by`,
-  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" +
-  // (see spike 024). see phase 117.
+  // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot` directly inside the consuming `$derived.by`, never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule".
   const voterContext = appType.current === 'voter' ? getVoterContext() : undefined;
 
   ////////////////////////////////////////////////////////////////////
@@ -103,14 +101,8 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     const elSym = unwrapped.nomination?.electionSymbol;
 
     // The default action is a link to the entity's ResultEntity route.
-    // see phase 62 and see phase 88: ResultEntity now resolves
-    // to the 4-segment shape `[[electionTab]]/[[entityTab]]/[[entity]]/[[id]]`.
-    // The `entity` (singular drawer entity-type matcher) is the entity's own
-    // `type` (candidate | organization | alliance); the `entityTab` (plural
-    // list-tab matcher) is the parent list — defaulting to the same-type
-    // plural preserves the list-plus-matching-drawer shape. The filterContext
-    // auto-scopes per (electionId, entityTab) so a candidate drawer under a
-    // candidates list continues to behave as before.
+    // ResultEntity resolves to the 4-segment shape `[[electionTab]]/[[entityTab]]/[[entity]]/[[id]]`.
+    // The `entity` (singular drawer entity-type matcher) is the entity's own `type` (candidate | organization | alliance); the `entityTab` (plural list-tab matcher) is the parent list — defaulting to the same-type plural preserves the list-plus-matching-drawer shape. The filterContext auto-scopes per (electionId, entityTab) so a candidate drawer under a candidates list continues to behave as before.
     const effectiveAction =
       action ??
       getRoute.current({
@@ -163,9 +155,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     }
 
     // Alliance summary "X candidates across N parties" — rendered on the list-variant alliance card.
-    // The drawer-header surface is rendered by EntityDetails.svelte (which itself wraps EntityCard
-    // variant=details); rendering it only on `'list'` here avoids a visible duplicate when EntityCard
-    // is consumed inside EntityDetails. see phase 69 executor Rule 1 — see SUMMARY.md.
+    // The drawer-header surface is rendered by EntityDetails.svelte (which itself wraps EntityCard variant=details); rendering it only on `'list'` here avoids a visible duplicate when EntityCard is consumed inside EntityDetails.
     let allianceSummary: { numCandidates: number; numParties: number } | undefined;
     if (
       unwrapped.nomination &&
@@ -286,7 +276,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
         {/if}
       </header>
 
-      <!-- Alliance summary line (see phase 69): "X candidates across N parties" -->
+      <!-- Alliance summary line: "X candidates across N parties" -->
       <!-- Composed from 3 keys to work around an inlang plugin-message-format dual-selector compile bug. -->
       {#if parsed.allianceSummary}
         <p class="text-secondary text-sm">

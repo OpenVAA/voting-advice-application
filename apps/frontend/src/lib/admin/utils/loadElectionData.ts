@@ -10,7 +10,7 @@ import type { DPDataType } from '$lib/api/base/dataTypes';
  *
  * @param args.electionId - The ID of the election to load data for
  * @param args.locale - The locale/language for the data
- * @param args.fetch - SvelteKit fetch function for data loading
+ * @param args.source - The caller's request-scoped fetch and client; the reads below run on the same credentials the caller writes with
  * @returns Promise resolving to a DataRoot instance with all election data loaded
  * @throws Error if any required data fails to load
  */

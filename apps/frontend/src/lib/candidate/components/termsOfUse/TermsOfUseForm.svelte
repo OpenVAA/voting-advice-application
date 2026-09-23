@@ -1,6 +1,5 @@
 <!--
-@component
-Show the terms of use along with a checkbox for accepting them.
+@component Show the terms of use along with a checkbox for accepting them.
 
 ### Dynamic component
 
@@ -48,7 +47,7 @@ Accesses `CandidateContext`.
     </div>
   </Expander>
   <label class="label mb-md mt-sm gap-sm cursor-pointer justify-start !p-0">
-    <!-- bind: keep — two-way DOM checkbox; termsAccepted is $bindable(false). Bind placed AFTER type= for symmetry with the reorder revert (see phase 65; see QuestionChoices.svelte). -->
+    <!-- bind: keep — two-way DOM checkbox; termsAccepted is $bindable(false). Bind placed AFTER type= for symmetry with QuestionChoices.svelte. -->
     <input
       type="checkbox"
       class="checkbox"

@@ -1,6 +1,5 @@
 <!--
-@component
-Reusable component for displaying warning and error messages with scrolling.
+@component Reusable component for displaying warning and error messages with scrolling.
 
 ### Properties
 

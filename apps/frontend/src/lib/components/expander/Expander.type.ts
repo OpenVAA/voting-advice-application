@@ -8,8 +8,7 @@ export type ExpanderProps = SvelteHTMLElements['div'] & {
   children?: Snippet;
   /**
    * Title is seen as the text in the expander's visible part, and it is mandatory.
-   * Title will also be used as a 'aria-label' for a checkbow on which the
-   * expander operates on.
+   * Title will also be used as a 'aria-label' for a checkbow on which the expander operates on.
    */
   title: string;
   /**
@@ -25,13 +24,11 @@ export type ExpanderProps = SvelteHTMLElements['div'] & {
    */
   iconPos?: string;
   /**
-   * Variable with which to configure the expanders title if no variants
-   * are in use.
+   * Variable with which to configure the expanders title if no variants are in use.
    */
   titleClass?: string;
   /**
-   * Variable with which to configure the expanders content if no variants
-   * are in use.
+   * Variable with which to configure the expanders content if no variants are in use.
    */
   contentClass?: string;
   /**

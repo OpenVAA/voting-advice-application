@@ -10,30 +10,14 @@ import type { UniversalDataWriter } from '$lib/api/base/universalDataWriter';
 import type { CandidateUserDataState } from './candidateUserDataState.type';
 
 /**
- * A Svelte 5 class implementation of the candidate's composite user-data store
- * (v2.13 context-as-class migration). Holds all data owned by the user;
- * when reading `current`, it returns a composite of the initial data and any
- * unsaved `Answer`s and properties. The edited `Answer`s are stored in
- * `localStorage` for persistence (the persistence + version bridge is INHERITED
- * from `localStorageState`/`PersistedStateImpl` unchanged, — this class does
- * NOT own a `#version`; the `{ version, data }` payload lives in
- * `persistedState.svelte.ts`).
+ * A Svelte 5 class implementation of the candidate's composite user-data store.
+ * Holds all data owned by the user; when reading `current`, it returns a composite of the initial data and any unsaved `Answer`s and properties. The edited `Answer`s are stored in `localStorage` for persistence (the persistence + version bridge is INHERITED from `localStorageState`/`PersistedStateImpl` — this class does NOT own a `#version`; the `{ version, data }` payload lives in `persistedState.svelte.ts`).
  *
- * Per the D2 type-name-clash landmine, the public surface is the TYPE
- * `CandidateUserDataState` that this class `implements`, so the class is named
- * `CandidateUserDataStateImpl` (Phase-110 `AnswerStateImpl` precedent) and the
- * factory `candidateUserDataState(...)` stays byte-identical.
+ * The public surface is the TYPE `CandidateUserDataState` that this class `implements`, which is why the class itself is named `CandidateUserDataStateImpl` (the same suffix as `AnswerStateImpl`) — a class sharing the type's name would clash with it — and the consumer entry point is the `candidateUserDataState(...)` factory.
  *
- * The 12 public methods are ARROW-FUNCTION FIELDS so they survive being
- * held as `userData.X` on the candidate context and called detached. The
- * reactive members (`current`/`hasUnsaved`/`savedCandidateData`/`unsavedQuestionIds`/
- * `unsavedProperties`) are prototype getters read in-place (this store is
- * NOT spread by any consumer, so prototype getters are safe).
+ * The 12 public methods are ARROW-FUNCTION FIELDS so they survive being held as `userData.X` on the candidate context and called detached. The reactive members (`current`/`hasUnsaved`/`savedCandidateData`/`unsavedQuestionIds`/ `unsavedProperties`) are prototype getters read in-place (this store is NOT spread by any consumer, so prototype getters are safe).
  *
- * @internal Construct via the `candidateUserDataState(...)` factory at component
- * init. The constructor installs an `$effect` (reacting to `answersLocked` to
- * clear unsaved edits), so constructing outside an effect context throws
- * `effect_orphan`.
+ * @internal Construct via the `candidateUserDataState(...)` factory at component init. The constructor installs an `$effect` (reacting to `answersLocked` to clear unsaved edits), so constructing outside an effect context throws `effect_orphan`.
  */
 class CandidateUserDataStateImpl implements CandidateUserDataState {
   #answersLocked: () => boolean;
@@ -69,8 +53,7 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
       nominations
     } = this.#savedData;
     // Return clone to prevent mutation of saved data.
-    // Use JSON round-trip instead of structuredClone because Svelte 5's
-    // $state proxy objects cannot be structurally cloned.
+    // Use JSON round-trip instead of structuredClone because Svelte 5's $state proxy objects cannot be structurally cloned.
     return JSON.parse(
       JSON.stringify({
         candidate: {
@@ -116,19 +99,14 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
   }
 
   /**
-   * A utility for merging updated `answers` into the existing `candidate` without
-   * replacing the whole candidate. This preserves the candidate's `id` and all
-   * static fields (`firstName`, `image`, `termsOfUseAccepted`, etc.), which the
-   * answer setters do NOT return — they return only the updated `LocalizedAnswers`.
+   * A utility for merging updated `answers` into the existing `candidate` without replacing the whole candidate. This preserves the candidate's `id` and all static fields (`firstName`, `image`, `termsOfUseAccepted`, etc.), which the answer setters do NOT return — they return only the updated `LocalizedAnswers`.
    */
   #mergeCandidateAnswers(answers: LocalizedAnswers): void {
     if (!this.#savedData) throw new Error('Cannot update candidate data before user data is loaded');
     const mergedAnswers = {
       ...(this.#savedData.candidate.answers ?? {}),
       ...answers
-      // `LocalizedCandidateData.answers` resolves to `Answers & LocalizedAnswers`
-      // (the CandidateData/EntityData base intersected with the LocalizedAnswers
-      // override). The merge yields a valid `LocalizedAnswers`; cast to the field type.
+      // `LocalizedCandidateData.answers` resolves to `Answers & LocalizedAnswers` (the CandidateData/EntityData base intersected with the LocalizedAnswers override). The merge yields a valid `LocalizedAnswers`; cast to the field type.
     } as LocalizedCandidateData['answers'];
     this.#updateCandidateData({
       ...this.#savedData.candidate,
@@ -282,13 +260,10 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
         properties: { image, termsOfUseAccepted }
       });
       if (!updatedCandidate) throw new Error('Failed to update image or termsOfUseAccepted');
-      // The property setter returns ONLY the changed properties (`termsOfUseAccepted`,
-      // `image`) — NOT the whole candidate. Merge them into the existing candidate so
-      // `id` and the other static fields (and any just-merged answers) survive; a
-      // wholesale replace here would drop `id` and break the next save's RPC call.
+      // The property setter returns ONLY the changed properties (`termsOfUseAccepted`, `image`) — NOT the whole candidate. Merge them into the existing candidate so `id` and the other static fields (and any just-merged answers) survive; a wholesale replace here would drop `id` and break the next save's RPC call.
       this.#updateCandidateData({ ...this.#savedData.candidate, ...updatedCandidate });
     }
-    // Only reset the answers after successful save
+    // Only reset the answers after successful save. ALL THREE resets are skipped on the unverified-answers path above — not just the answers one — because an unverified save leaves the image and the terms-acceptance edits equally unconfirmed.
     this.resetAnswers();
     this.resetImage();
     this.resetTermsOfUseAccepted();
@@ -302,7 +277,7 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
  * The saved data is cleared if answers become locked.
  * Dedicated methods are provided for loading, saving, setting or resetting data.
  * @param answersLocked - A getter that indicates whether answers are locked.
- * @param dataWriter - The synchronous `UniversalDataWriter` instance for saving data.
+ * @param dataWriter - A getter returning a `UniversalDataWriter` built for the call that is about to be made.
  * @param locale - The current locale string, used for translating some data when it's fetched.
  */
 export function candidateUserDataState({

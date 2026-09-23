@@ -274,7 +274,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
  * - Active jobs: jobType only
  * - Past jobs: jobType, statuses array, and startFrom date
  *
- * @param opts - Job query options with authToken omitted
+ * @param opts - Job query options
  * @returns URL-encoded query string, empty string if no valid params
  */
 function buildGetJobParams(

@@ -10,14 +10,13 @@ import type { AdapterConfig, FetchOptions, GetOptions, PostOptions, SearchParams
 const DEFAULT_PARSER = 'json' as const;
 
 /**
- * The abstract base class for all the universal Data API services. It implements initialisation, i.e. `fetch` handling for all of these.
+ * The abstract base class for all the universal Data API services. It provides the `fetch` handling, wrapped in possible caching, that all of them share.
  */
 export abstract class UniversalAdapter {
   #fetch: Fetch | undefined;
 
   /**
-   * The `init` method must be called before using any of the `DataProvider` methods.
-   * @returns Self for method chaining.
+   * @param config - The adapter's configuration. Its `fetch` is the one this adapter makes every API call through, and it belongs to a single request.
    */
   init({ fetch }: AdapterConfig): this {
     this.#fetch = fetch;

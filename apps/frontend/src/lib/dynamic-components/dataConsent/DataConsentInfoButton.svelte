@@ -1,6 +1,5 @@
 <!--
-@component
-Show a button that opens a modal describing the data the app collects.
+@component Show a button that opens a modal describing the data the app collects.
 
 ### Dynamic component
 
@@ -32,7 +31,7 @@ Accesses `AppContext` to read `appSettings`.
 
   const ctx = getAppContext();
   const { t } = ctx;
-  // appSettings is a reactive accessor (see phase 113 flatten) — read via ctx.X, never destructure.
+  // appSettings is a reactive accessor — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
 
   const analyticsLink = staticSettings.analytics?.platform?.infoUrl

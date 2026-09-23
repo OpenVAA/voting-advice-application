@@ -14,8 +14,7 @@ export type AppLogoProps = SvelteHTMLElements['div'] & {
   inverse?: boolean | null;
   /**
    * The size of the logo as one of the predefined sizes 'sm', 'md' or 'lg'.
-   * For arbitrary values, you can supply a `class` attribute, such as
-   * class="h-[3.5rem]"`.
+   * For arbitrary values, you can supply a `class` attribute, such as class="h-[3.5rem]"`.
    *
    * @default 'md'
    */

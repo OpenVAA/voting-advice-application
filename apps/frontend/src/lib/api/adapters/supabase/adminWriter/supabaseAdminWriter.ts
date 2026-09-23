@@ -6,9 +6,8 @@ import type { InsertJobResultOptions, SetQuestionOptions } from '$lib/api/base/d
 /**
  * Supabase implementation of admin-specific write operations.
  *
- * This class extracts admin methods that were erroneously placed in DataWriter
- * on the parallel branch. It provides the primary access point for:
- * - Question custom data operations (merge_custom_data RPC)
+ * This class extracts admin methods that were erroneously placed in DataWriter on the parallel branch. It provides the primary access point for:
+ * - Question custom data operations (merge_question_custom_data RPC)
  * - Admin job result storage (admin_jobs table)
  * - Email sending (send-email Edge Function)
  *
@@ -17,7 +16,7 @@ import type { InsertJobResultOptions, SetQuestionOptions } from '$lib/api/base/d
 export class SupabaseAdminWriter extends supabaseAdapterMixin(UniversalAdapter) {
   /**
    * Update a question's custom data by merging new data into the existing JSONB.
-   * Uses the `merge_custom_data` RPC function.
+   * Uses the `merge_question_custom_data` RPC function.
    */
   async updateQuestion({ id, data: { customData } }: SetQuestionOptions): Promise<DataApiActionResult> {
     if (!customData || typeof customData !== 'object')
@@ -33,7 +32,7 @@ export class SupabaseAdminWriter extends supabaseAdapterMixin(UniversalAdapter) 
 
   /**
    * Insert a completed admin job result into the admin_jobs table.
-   * Resolves project_id from the job's electionId.
+   * The project comes from the adapter's configured project, not from the job's electionId.
    */
   async insertJobResult({ data }: InsertJobResultOptions): Promise<DataApiActionResult> {
     // Resolve project_id from election_id (AdminJobRecord doesn't include project_id
@@ -66,6 +65,17 @@ export class SupabaseAdminWriter extends supabaseAdapterMixin(UniversalAdapter) 
 
   /**
    * Send emails via the send-email Edge Function.
+   *
+   * The invoke payload is validated through `parseWithPartialPreserve` before `sent`, `failed` and `results` are read, so the per-recipient outcomes arrive typed rather than as an opaque array (T-157-05).
+   * `sent` and `failed` are absent from the function's dry-run branch, which sends nothing, so both default to zero here and the declared counts stay numbers.
+   *
+   * ## A result that was not verified is not reported as a success (T-157.1-13)
+   *
+   * This method used to answer a payload it could not validate with a fully-populated success object reporting no sends, no failures and no results — a write path claiming an outcome it never verified, and a shape no ban written in terms of empty literals can see. It now returns the failure arm of {@link SendEmailOutcome}, so a caller has to read the discriminant to get at the counts.
+   *
+   * `absent` — the invocation answered with no body at all — takes the same branch. On a READ column absence is not a failure and emits no record, because an operator simply stored nothing; on an INVOCATION response it is the same unverified outcome as a malformed one, so the record is emitted here rather than left to the shared helper, which is correctly silent for it.
+   *
+   * A transport error still THROWS rather than returning the failure arm, because that is the caller's signal that nothing was attempted (T-157-06). Decision **D-DISC-4** records why the malformed case does not join it: a throw lands in a caller's `catch` and is logged as a free-form interpolated string, which decision **C4** NOTE 1 forbids for records this phase touches, whereas a typed failure keeps the structured record here, where the function name and the issue paths are in scope.
    */
   async sendEmail({
     templates,

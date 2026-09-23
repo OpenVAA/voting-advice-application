@@ -1,6 +1,5 @@
 <!--
-@component
-PasswordField is an input box for password that comes with a button to reveal and hide the password
+@component PasswordField is an input box for password that comes with a button to reveal and hide the password
 
 ### Properties
 
@@ -38,8 +37,7 @@ PasswordField is an input box for password that comes with a button to reveal an
     input?.focus();
   }
 
-  // Generate a stable fallback id once at mount (UUID must not regenerate
-  // per-derived-call). Effective id falls back to the prop when supplied.
+  // Generate a stable fallback id once at mount (UUID must not regenerate per-derived-call). Effective id falls back to the prop when supplied.
   const fallbackId = getUUID();
   const id = $derived(idProp ?? fallbackId);
 

@@ -20,6 +20,7 @@ type Constructor<TClass = UniversalAdapter> = abstract new (...args: Array<any>)
  * Provides a typed SupabaseClient<Database>, locale, and defaultLocale.
  * This exposes the Supabase client directly -- the PostgREST query builder IS the abstraction.
  *
+ * The client is an INPUT, never an inference: the mixin builds none of its own and reads no environment flag to decide which one it should have. Whoever constructs the adapter has already named the client, and a caller who names none does not compile.
  * @param base - The base class to extend with the mixin.
  * @returns A class extending both the base and SupabaseAdapter.
  */

@@ -44,8 +44,7 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // `locale` here is the i18n plain-string locale from ComponentContext (NOT the
-  // flattened AppContext rune handle); read off `ctx` to keep the audit grep clean.
+  // `locale` here is the i18n plain-string locale from ComponentContext (NOT the flattened AppContext rune handle); read off `ctx` to keep the audit grep clean.
   const ctx = getComponentContext();
   const { t } = ctx;
   const locale = ctx.locale;

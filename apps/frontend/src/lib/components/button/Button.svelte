@@ -1,6 +1,5 @@
 <!--
-@component
-A component for buttons that mostly contain text and an icon. Use the `variant` prop to specify the button type. When using an `icon`, use `iconPos` to set the position of the icon relative to the text.
+@component A component for buttons that mostly contain text and an icon. Use the `variant` prop to specify the button type. When using an `icon`, use `iconPos` to set the position of the icon relative to the text.
 
 - `main`: A large, prominent button that is used for the main action of the page. In general, there should only be one of these on a page.
 - `prominent`: A large, quite prominent button.
@@ -86,9 +85,7 @@ text="Add to list">
   // Styling
   ////////////////////////////////////////////////////////////////////
 
-  // Check iconPos: certain variants don't support top/bottom; coerce to
-  // 'right' instead. Derived (not a prop reassignment) so it stays
-  // reactive when props change.
+  // Check iconPos: certain variants don't support top/bottom; coerce to 'right' instead. Derived (not a prop reassignment) so it stays reactive when props change.
   const effectiveIconPos = $derived(
     (variant === 'main' || variant === 'prominent' || variant === 'responsive-icon') &&
       (iconPos === 'top' || iconPos === 'bottom')
@@ -148,9 +145,7 @@ text="Add to list">
     return c;
   });
 
-  // `disabled` is non-standard on `<a>`. The `<a>` branch uses `aria-disabled`
-  // and drops `href` when disabled (WCAG 2.1 AA + `toBeDisabled()`-compatible);
-  // the `<button>` branch keeps native `disabled`. `loading` also disables.
+  // `disabled` is non-standard on `<a>`. The `<a>` branch uses `aria-disabled` and drops `href` when disabled (WCAG 2.1 AA + `toBeDisabled()`-compatible); the `<button>` branch keeps native `disabled`. `loading` also disables.
   const isDisabled = $derived(disabled || loading);
 
   let labelClass = $derived.by(() => {
@@ -179,10 +174,7 @@ text="Add to list">
 </script>
 
 <!--
-  a11y note: the element is `<button>` or `<a>` — both interactive — but
-  `<svelte:element>` resolves `this` at runtime, so the compiler cannot see that and
-  reports the tag as static. The explicit `role="button"`, `tabindex`, `disabled` /
-  `aria-disabled` and `aria-label` below carry the semantics on both branches.
+  a11y note: the element is `<button>` or `<a>` — both interactive — but `<svelte:element>` resolves `this` at runtime, so the compiler cannot see that and reports the tag as static. The explicit `role="button"`, `tabindex`, `disabled` / `aria-disabled` and `aria-label` below carry the semantics on both branches.
   `NavItem.svelte` uses the same construct for the same reason.
 -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->

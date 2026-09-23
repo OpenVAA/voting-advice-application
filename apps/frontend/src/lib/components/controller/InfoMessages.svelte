@@ -1,6 +1,5 @@
 <!--
-@component
-Reusable component for displaying informational messages with scrolling.
+@component Reusable component for displaying informational messages with scrolling.
 
 ### Properties
 

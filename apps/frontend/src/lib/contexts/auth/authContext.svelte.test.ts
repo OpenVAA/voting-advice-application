@@ -2,12 +2,8 @@ import { flushSync } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AuthContextProvider } from './authContext.svelte';
 
-// `vi.mock` factories are hoisted to the top of the file, so the mutable holders
-// they reference must be created via `vi.hoisted` (also hoisted, evaluated first).
-// `sessionSource` is an indirection: the mocked `page.data.session` getter calls
-// `sessionSource.read()`. To prove the `$derived isAuthenticated` re-evaluates,
-// the test installs a `$state`-BACKED reader (runes can't run at hoisted module
-// scope, so the reactive cell is created inside `$effect.root` and wired in here).
+// `vi.mock` factories are hoisted to the top of the file, so the mutable holders they reference must be created via `vi.hoisted` (also hoisted, evaluated first).
+// `sessionSource` is an indirection: the mocked `page.data.session` getter calls `sessionSource.read()`. To prove the `$derived isAuthenticated` re-evaluates, the test installs a `$state`-BACKED reader (runes can't run at hoisted module scope, so the reactive cell is created inside `$effect.root` and wired in here).
 // `writer` is the stub the arrow-field DataWriter wrappers forward to.
 const { sessionSource, writer } = vi.hoisted(() => ({
   sessionSource: { read: () => null as unknown },
@@ -19,9 +15,7 @@ const { sessionSource, writer } = vi.hoisted(() => ({
   }
 }));
 
-// `isAuthenticated` is `$derived(!!page.data.session)`. The mocked `page.data`
-// getter delegates to `sessionSource.read()`, which the test backs with a `$state`
-// cell so toggling it propagates through the `$derived`.
+// `isAuthenticated` is `$derived(!!page.data.session)`. The mocked `page.data` getter delegates to `sessionSource.read()`, which the test backs with a `$state` cell so toggling it propagates through the `$derived`.
 vi.mock('$app/state', () => ({
   page: {
     get data() {
@@ -50,11 +44,7 @@ describe('AuthContextProvider', () => {
   });
 
   /**
-   * Construct the provider inside an `$effect.root` so its `$derived` field
-   * settles. A `$state`-backed `session` cell is created in the same root and
-   * wired into `sessionSource.read`, so flipping it via the returned `setSession`
-   * propagates through the `$derived isAuthenticated`. Returns the instance plus
-   * the setter.
+   * Construct the provider inside an `$effect.root` so its `$derived` field settles. A `$state`-backed `session` cell is created in the same root and wired into `sessionSource.read`, so flipping it via the returned `setSession` propagates through the `$derived isAuthenticated`. Returns the instance plus the setter.
    */
   function setup(initial: unknown = null): {
     auth: AuthContextProvider;
@@ -104,8 +94,7 @@ describe('AuthContextProvider', () => {
     }
   });
 
-  // Behavior 3 — own-enumerable members survive the `{ ...authContext }` spread
-  // (the candidateContext line ~367 contract).
+  // Behavior 3 — own-enumerable members survive the `{ ...authContext }` spread (the candidateContext line ~367 contract).
   it('spreading the instance preserves isAuthenticated + all four wrappers as own-enumerable properties', () => {
     const { auth } = setup({ user: { id: 'u1' } });
     const spread = { ...auth };

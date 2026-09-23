@@ -2,6 +2,10 @@ import type { TrackingEvent } from './trackingEvent.type';
 
 /**
  * A service provider for tracking functions.
+ *
+ * This is the ONE tracking-service type: the producer (`trackingService.svelte.ts`) implements it directly and `appContext` forwards it. There is no second, rune-shaped layer — the one this type used to be paired with existed only to re-declare the handle-shaped members while the `appContext` seam still converted them to stores, and that seam is gone.
+ *
+ * CONSUMER-FACING SURFACE — deliberately narrower than the producer. The producer owns two further handle members (the persistent analytics session id and the tracking-enabled gate) that are read only producer-to-producer: the producer stamps the session id onto every event it sends, and `appContext` passes the same handle into the survey-link producer. Both are therefore ABSENT from this type and forwarded onto NO context — see the selective forward in `appContext.svelte.ts`, which names them and says why they are withheld.
  */
 export type TrackingService = {
   /**
@@ -33,7 +37,7 @@ export type TrackingService = {
    */
   resetAllEvents: () => void;
   /**
-   * A writable rune handle containing the function that will send the events. In order for tracking to do anything, this value must be set via `.set(...)`.
+   * A writable rune handle containing the function that will send the events. In order for tracking to do anything, this value must be set via `.set(...)` — it is set from the root layout, which is why it stays consumer-facing while the other two handle members do not.
    */
   sendTrackingEvent: {
     readonly current: TrackingHandler | null | undefined;

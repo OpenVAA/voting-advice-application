@@ -1,13 +1,9 @@
 /**
  * OIDC Authorize endpoint tests.
  *
- * Tests the POST handler that constructs an authorization URL via the active
- * identity provider and manages state/nonce cookies for CSRF and replay
- * protection (from).
+ * Tests the POST handler that constructs an authorization URL via the active identity provider and manages state/nonce cookies for CSRF and replay protection (from).
  *
- * For Idura: verifies the JAR (JWT Authorization Request) is correctly signed
- * with RS256, contains the required payload fields, and is verifiable with
- * the signing public key.
+ * For Idura: verifies the JAR (JWT Authorization Request) is correctly signed with RS256, contains the required payload fields, and is verifiable with the signing public key.
  *
  * @vitest-environment node
  */
@@ -121,10 +117,7 @@ describe('POST /api/oidc/authorize', () => {
     expect(response.status).toBe(200);
 
     const data = await response.json();
-    // see phase 140 WR-08: collapsed from toBeDefined +typeof pair (the sibling
-    // null-blind pattern F19 removed elsewhere) into one non-blind assertion —
-    // `data` crosses a JSON boundary (response.json()), so `authorizeUrl`
-    // could plausibly arrive `null` there.
+    // ONE non-blind assertion rather than a toBeDefined + typeof pair, which is null-blind: `data` crosses a JSON boundary (response.json()), so `authorizeUrl` could plausibly arrive `null` there.
     expect(data.authorizeUrl, 'authorize response is missing authorizeUrl').toEqual(expect.any(String));
   });
 

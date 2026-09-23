@@ -1,6 +1,5 @@
 <!--
-@component
-Used to display an error message. Also logs the error to the console.
+@component Used to display an error message. Also logs the error to the console.
 
 ### Properties
 

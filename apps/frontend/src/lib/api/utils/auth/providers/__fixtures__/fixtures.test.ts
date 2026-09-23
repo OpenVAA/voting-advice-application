@@ -1,8 +1,7 @@
 /**
  * Smoke tests for test fixture factories.
  *
- * Validates that createTestKeySet, createTestJwe, and createTestJwt produce
- * well-formed keys and tokens that can be decrypted/verified with jose.
+ * Validates that createTestKeySet, createTestJwe, and createTestJwt produce well-formed keys and tokens that can be decrypted/verified with jose.
  *
  * @vitest-environment node
  */

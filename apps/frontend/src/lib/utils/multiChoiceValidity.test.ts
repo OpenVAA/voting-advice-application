@@ -4,12 +4,8 @@ import { isMultiChoiceCountValid } from './multiChoiceValidity';
 /**
  * boundary matrix for the multi-choice selection-count validity helper.
  *
- * `isMultiChoiceCountValid` is the single source of truth for whether a
- * multi-choice categorical selection of a given size is a saveable answer:
- * effectiveMin = `minSelections ?? 1`, effectiveMax = `maxSelections ?? choiceCount`,
- * and the count must fall inclusively within `[effectiveMin, effectiveMax]`.
- * Zero selections is always invalid-as-unanswered (the min floor is 1 even when
- * `minSelections` is omitted).
+ * `isMultiChoiceCountValid` is the single source of truth for whether a multi-choice categorical selection of a given size is a saveable answer: effectiveMin = `minSelections ?? 1`, effectiveMax = `maxSelections ?? choiceCount`, and the count must fall inclusively within `[effectiveMin, effectiveMax]`.
+ * Zero selections is always invalid-as-unanswered: the min floor is clamped to 1 whether `minSelections` is omitted, null, or an explicitly supplied zero.
  */
 describe('isMultiChoiceCountValid', () => {
   describe('explicit minSelections=2, maxSelections=3, choiceCount=5', () => {

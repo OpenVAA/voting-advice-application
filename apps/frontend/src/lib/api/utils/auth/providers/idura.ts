@@ -26,9 +26,7 @@ import type {
 /**
  * Load the Idura RS256 signing key from environment configuration.
  *
- * Parses the `IDURA_SIGNING_JWKS` env var (JSON array of JWK objects) and finds
- * the key matching `IDURA_SIGNING_KEY_KID`. This key is used for both JAR signing
- * and `private_key_jwt` client assertions.
+ * Parses the `IDURA_SIGNING_JWKS` env var (JSON array of JWK objects) and finds the key matching `IDURA_SIGNING_KEY_KID`. This key is used for both JAR signing and `private_key_jwt` client assertions.
  *
  * @throws {Error} If the signing key cannot be found for the configured KID.
  */

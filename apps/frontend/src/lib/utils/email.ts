@@ -30,8 +30,7 @@ export function getEmailUrl({
     }
     end = encodeURIComponent(end);
   }
-  // Truncate description if the url would get too long so that we don't get an error when sending the email. See https://stackoverflow.com/questions/13317429/mailto-max-length-of-each-internet-browsers/33041454#33041454
-  // We need to check the length after encoding all the parts
+  // Truncate description if the url would get too long so that we don't get an error when sending the email. See https://stackoverflow.com/questions/13317429/mailto-max-length-of-each-internet-browsers/33041454#33041454 We need to check the length after encoding all the parts
   let mailto = '';
   let trimmedDescription = body.replaceAll(/(\n *)+/g, '\n').substring(0, 1850);
   while (!mailto || mailto.length > 1900) {

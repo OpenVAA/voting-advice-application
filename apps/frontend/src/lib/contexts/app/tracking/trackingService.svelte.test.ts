@@ -141,11 +141,7 @@ describe('trackingService (pure-rune producer)', () => {
   });
 
   describe('spread-safety (gate regression guard)', () => {
-    // `trackingService` is the ONLY app-layer producer consumed via `...tracking`
-    // spread (appContext.svelte.ts:299). Svelte 5 compiles bare `$state`/`$derived`
-    // CLASS fields to PROTOTYPE accessors that are NOT own-enumerable and are
-    // DROPPED by `{ ...instance }`. This case FAILS if any spread-consumed member
-    // was implemented as a bare `$derived`/`$state` public class field.
+    // The members `appContext` takes from this producer travel on through the three downstream `{ ...appContext }` spreads (candidateContext / adminContext / voterContext), and the forward itself is an `Object.assign` — which, exactly like spread, copies OWN-ENUMERABLE properties only. Svelte 5 compiles bare `$state`/`$derived` CLASS fields to PROTOTYPE accessors that are NOT own-enumerable and would be DROPPED by both. This case FAILS if any consumed member was implemented as a bare `$derived`/`$state` public class field. It checks all eight rather than only the six appContext forwards, because `sessionId` is additionally read producer-to-producer straight off `#tracking` and so has to stay own-enumerable too.
     it('reactive members + methods survive `{ ...svc }` spread', async () => {
       const { trackingService } = await importTracking(true);
       const cleanup = $effect.root(() => {

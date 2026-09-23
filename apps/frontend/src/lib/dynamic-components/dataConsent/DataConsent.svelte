@@ -1,6 +1,5 @@
 <!--
-@component
-Show buttons opting in or out of data collection and possibly information about data collection.
+@component Show buttons opting in or out of data collection and possibly information about data collection.
 
 ### Dynamic component
 
@@ -41,7 +40,7 @@ Accesses `AppContext` to set and read `userPreferences`.
 
   const ctx = getAppContext();
   const { userPreferences, setDataConsent, t } = ctx;
-  // appSettings is a reactive accessor (see phase 113 flatten) — read via ctx.X, never destructure.
+  // appSettings is a reactive accessor — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
 
   // Construct the analytics link for privacy translations

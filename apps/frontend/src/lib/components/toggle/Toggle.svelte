@@ -1,6 +1,5 @@
 <!--
-@component
-Display a short list of options as toggleable text or icon buttons from which one can be selected. Semantically a `<fieldset>` with radio buttons.
+@component Display a short list of options as toggleable text or icon buttons from which one can be selected. Semantically a `<fieldset>` with radio buttons.
 
 ### Properties
 

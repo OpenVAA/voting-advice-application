@@ -1,6 +1,5 @@
 <!--
-@component
-A modal dialog that will automatically close after a set amount of time.
+@component A modal dialog that will automatically close after a set amount of time.
 
 ### Snippet Props
 
@@ -83,9 +82,7 @@ See the `<Modal>` component documentation for more information.
     modalRef?.closeModal(noCallbacks);
   }
 
-  // Used for progress bar animation. Reading `timerDuration` here is the
-  // initial seed for the tweened store; the prop is also re-read inside
-  // `startTimeout()` to handle prop changes between mounts.
+  // Used for progress bar animation. Reading `timerDuration` here is the initial seed for the tweened store; the prop is also re-read inside `startTimeout()` to handle prop changes between mounts.
   // svelte-ignore state_referenced_locally
   let progressBarTimer = $state(tweened(timerDuration, { duration: 0 }));
   // Timeout for triggering onTimeout()

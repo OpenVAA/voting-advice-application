@@ -1,6 +1,5 @@
 <!--
-@component
-A template part that language selection options for the navigation menu if these are available.
+@component A template part that language selection options for the navigation menu if these are available.
 
 ### Dynamic component
 
@@ -27,7 +26,7 @@ A template part that language selection options for the navigation menu if these
 
   const ctx = getAppContext();
   const { locales, t } = ctx;
-  // locale is a reactive accessor (see phase 113 flatten) — read via ctx.locale, never destructure.
+  // locale is a reactive accessor — read via ctx.locale, never destructure.
   const currentLocale = $derived(ctx.locale);
 </script>
 

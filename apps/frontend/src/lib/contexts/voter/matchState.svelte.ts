@@ -55,9 +55,7 @@ class MatchStateImpl {
 
     for (const [electionId, electionContent] of Object.entries(nq)) {
       const electionMatches: Record<EntityType, Array<MaybeWrappedEntityVariant>> = {} as never;
-      // see phase 69: cross-iteration org-proxy cache. Populated by the Org branch
-      // in Pass 1; consumed by the Alliance branch in Pass 2 via the imputeParentAnswers
-      // childProxies arg. Per the Org-first invariant documented in imputeParentAnswers.ts.
+      // Cross-iteration org-proxy cache. Populated by the Org branch in Pass 1; consumed by the Alliance branch in Pass 2 via the imputeParentAnswers childProxies arg. Per the Org-first invariant documented in imputeParentAnswers.ts.
       const orgProxiesById = new Map<Id, MatchingProxy<AnyNominationVariant>>();
 
       for (const [entityType, { nominations, opinionQuestions: questions }] of Object.entries(electionContent)) {
@@ -88,7 +86,7 @@ class MatchStateImpl {
                 nominations: nominations as Array<OrganizationNomination | FactionNomination>,
                 questions
               });
-              // see phase 69: cache org proxies for the Alliance branch.
+              // Cache org proxies for the Alliance branch.
               // Faction proxies are NOT cached — alliances aggregate at the organization level.
               if (entityType === ENTITY_TYPE.Organization) {
                 for (const p of proxies) orgProxiesById.set(p.target.id, p);
@@ -101,12 +99,7 @@ class MatchStateImpl {
               throw new Error(`Unsupported parent matching method: ${parentMethod}`);
           }
         } else if (entityType === ENTITY_TYPE.Alliance) {
-          // Org-first invariant: this branch reads orgProxiesById which is populated by the
-          // Organization branch above. The default seed orders sections ['candidate',
-          // 'organization', 'alliance'] so Org runs before Alliance within each electionContent
-          // iteration. A customer override that listed alliance first would result in an empty
-          // orgProxiesById Map; the alliance pass would then fall back to entity-answer reads
-          // (which are null for alliances → no impute → match scores degrade silently).
+          // Org-first invariant: this branch reads orgProxiesById which is populated by the Organization branch above. The default seed orders sections ['candidate', 'organization', 'alliance'] so Org runs before Alliance within each electionContent iteration. A customer override that listed alliance first would result in an empty orgProxiesById Map; the alliance pass would then fall back to entity-answer reads (which are null for alliances → no impute → match scores degrade silently).
           // See JSDoc on imputeParentAnswers for the broader cascading-proxy pattern.
           switch (parentMethod) {
             case 'impute':

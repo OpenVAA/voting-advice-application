@@ -1,10 +1,7 @@
 /**
  * Test stub for `$app/state`.
  *
- * Provides a mutable `page` object whose `params`, `url`, and `route` fields
- * tests can overwrite directly. The fields are intentionally non-reactive
- * (plain JS) — tests that need to assert reactivity should use `vi.mock` with
- * `vi.hoisted` to inject their own controllable shape.
+ * Provides a mutable `page` object whose `params`, `url`, and `route` fields tests can overwrite directly. The fields are intentionally non-reactive (plain JS) — tests that need to assert reactivity should use `vi.mock` with `vi.hoisted` to inject their own controllable shape.
  */
 export const page = {
   params: {} as Record<string, string | undefined>,

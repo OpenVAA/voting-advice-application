@@ -5,15 +5,9 @@ import type { DynamicSettings, StaticSettings } from '@openvaa/app-shared';
 /**
  * Wave-0 purity gate for `mergeAppSettings` (Pattern 8).
  *
- * The historical bug: `mergeAppSettings` returned `Object.assign(target, nonNull)`,
- * mutating the shared `staticSettings` module reference and polluting every other
- * context that read it. The fix makes the merge a pure spread
- * `{ ...target, ...nonNull }`. These tests pin that purity.
+ * The historical bug: `mergeAppSettings` returned `Object.assign(target, nonNull)`, mutating the shared `staticSettings` module reference and polluting every other context that read it. The fix makes the merge a pure spread `{ ...target, ...nonNull }`. These tests pin that purity.
  *
- * NB: the real `StaticSettings`/`DynamicSettings` are deep objects; the merge is a
- * shallow root-key merge that drops nullish values. We exercise that contract with
- * small representative objects cast to the public types — the behaviour under test
- * (root-key spread + nullish filter + no `target` mutation) is shape-agnostic.
+ * NB: the real `StaticSettings`/`DynamicSettings` are deep objects; the merge is a shallow root-key merge that drops nullish values. We exercise that contract with small representative objects cast to the public types — the behaviour under test (root-key spread + nullish filter + no `target` mutation) is shape-agnostic.
  */
 describe('mergeAppSettings', () => {
   it('returns a new object equal to { ...target, ...nonNull(additional) }', () => {
@@ -68,18 +62,9 @@ describe('mergeAppSettings', () => {
 });
 
 /**
- * SSR-init assertion. `appContext` folds the DB override into the
- * INITIAL `$state` value via `mergeInitialAppSettings` (read synchronously from
- * `page.data.appSettingsData`). Because the merge happens at init — NOT in an
- * `$effect` (which never runs on the server) — the server-rendered HTML already
- * carries the DB override (no post-hydration default→override flash).
+ * SSR-init assertion. `appContext` folds the DB override into the INITIAL `$state` value via `mergeInitialAppSettings` (read synchronously from `page.data.appSettingsData`). Because the merge happens at init — NOT in an `$effect` (which never runs on the server) — the server-rendered HTML already carries the DB override (no post-hydration default→override flash).
  *
- * These assertions are the unit-level equivalent of variantB (see spike 008)
- * `initialMergeIncludedDbOverride === true`: they pass through the same pure
- * init-merge the `$state(...)` declaration calls, with NO `$effect` flush, and
- * prove a sentinel DB-override value is present in the initial value. They FAIL
- * if the merge is reverted to `$effect`-only (because then `mergeInitialAppSettings`
- * would no longer apply `dbData` and the sentinel would be absent).
+ * These assertions are the unit-level equivalent of asserting `initialMergeIncludedDbOverride === true` in a browser: they pass through the same pure init-merge the `$state(...)` declaration calls, with NO `$effect` flush, and prove a sentinel DB-override value is present in the initial value. They FAIL if the merge is reverted to `$effect`-only (because then `mergeInitialAppSettings` would no longer apply `dbData` and the sentinel would be absent).
  */
 describe('mergeInitialAppSettings (SSR-init DB-override merge)', () => {
   const staticPart = { colors: { primary: 'red' }, logo: 'default-logo' } as unknown as StaticSettings;

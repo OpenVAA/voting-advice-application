@@ -8,30 +8,16 @@ import type { ComponentContext } from './componentContext.type';
 const CONTEXT_KEY = Symbol();
 
 /**
- * Svelte 5 class implementation of the component context (see phase 107). It
- * is a leaf COMPOSING context: it forwards the i18n surface and owns the
- * `DarkMode` helper.
+ * Svelte 5 class implementation of the component context. It is a leaf COMPOSING context: it forwards the i18n surface and owns the `DarkMode` helper.
  *
- * Spread-safety (load-bearing): `appContext` does `{ ...componentCtx }` (line
- * ~297), and an object spread copies only OWN-enumerable properties — Svelte 5
- * compiles `$state`/`$derived` class fields to private backing + PROTOTYPE
- * accessors, which the spread silently drops (107-01 verified fact). The i18n
- * members (`locale`/`locales`/`t`/`translate`) are therefore copied as OWN
- * properties in the constructor via `Object.assign(this, getI18nContext())`.
- * They are STABLE references (CLAUDE.md): `locale` is constant within a page
- * lifecycle and `t`/`translate`/`locales` are plain values, so a one-time
- * own-property copy reproduces the prior behavior byte-identically.
+ * Spread-safety (load-bearing): `appContext` reads members off `componentCtx`, and an object spread copies only OWN-enumerable properties — Svelte 5 compiles `$state`/`$derived` class fields to private backing + PROTOTYPE accessors, which a spread silently drops (verified). The i18n members (`locale`/`locales`/`t`/`translate`) are therefore copied as OWN properties in the constructor via `Object.assign(this, getI18nContext())`.
+ * They are STABLE references (CLAUDE.md): `locale` is constant within a page lifecycle and `t`/`translate`/`locales` are plain values, so a one-time own-property copy is sufficient.
  *
- * `darkMode` is a delegation GETTER over a private `new DarkMode ` field (
- * Group G). A prototype getter is SAFE here because `appContext` reads it via
- * DIRECT property access (`componentCtx.darkMode`, lines ~292/356) and OVERRIDES
- * it after the spread with its own `{ current }` handle — the spread never needs
- * to carry `darkMode`. This is the "no `{ current }` handle re-export" criterion:
- * the `DarkMode` class is composed directly and forwarded via the getter.
+ * `darkMode` is a delegation GETTER over a private `new DarkMode()` field.
+ * A prototype getter is SAFE here because `appContext` reads it via DIRECT property access (`componentCtx.darkMode`) and OVERRIDES it with its own `{ current }` handle — no spread ever needs to carry `darkMode`. There is deliberately no `{ current }` handle re-export: the `DarkMode` class is composed directly and forwarded via the getter.
  */
 export class ComponentContextProvider implements ComponentContext {
-  // i18n surface — declared with definite-assignment; populated as OWN properties
-  // in the constructor (spread-safe) via `Object.assign(this, getI18nContext())`.
+  // i18n surface — declared with definite-assignment; populated as OWN properties in the constructor (spread-safe) via `Object.assign(this, getI18nContext())`.
   locale!: string;
   locales!: ReadonlyArray<string>;
   t!: I18nContext['t'];

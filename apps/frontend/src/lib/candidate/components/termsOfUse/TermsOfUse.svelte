@@ -1,6 +1,5 @@
 <!--
-@component
-A utility component for displaying candidate app terms of use and privacy statement.
+@component A utility component for displaying candidate app terms of use and privacy statement.
 
 ### Usage
 

@@ -1,7 +1,5 @@
 <!--
-@component
-A utility component to see all the available icons at a glance. You can supply
-any valid props to the icons.
+@component A utility component to see all the available icons at a glance. You can supply any valid props to the icons.
 
 ### Usage
 

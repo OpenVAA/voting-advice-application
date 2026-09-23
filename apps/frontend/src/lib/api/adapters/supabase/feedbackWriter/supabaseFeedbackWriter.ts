@@ -6,9 +6,7 @@ import type { FeedbackData } from '$lib/api/base/feedbackWriter.type';
 /**
  * Supabase implementation of the FeedbackWriter.
  *
- * Inserts into `public.feedback`. The table requires `project_id`; we resolve it
- * from `public.app_settings` (single-project deploy, anon-readable). The
- * `anon_insert_feedback` RLS policy + rate-limit trigger gate the insert.
+ * Inserts into `public.feedback`. The table requires `project_id`, and it comes from the adapter's configured project id, resolved once at construction. The `anon_insert_feedback` RLS policy + rate-limit trigger gate the insert.
  */
 export class SupabaseFeedbackWriter extends supabaseAdapterMixin(UniversalFeedbackWriter) {
   protected async _postFeedback(data: WithRequired<FeedbackData, 'date'>): Promise<DataApiActionResult> {

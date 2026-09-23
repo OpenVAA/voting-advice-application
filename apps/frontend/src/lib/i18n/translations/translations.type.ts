@@ -1,6 +1,5 @@
 /**
- * The record of values that may be passed to `$t` or `parse`
- * for interpolation
+ * The record of values that may be passed to `$t` or `parse` for interpolation
  */
 export type TranslationsPayload = Partial<{
   analyticsLink: string;

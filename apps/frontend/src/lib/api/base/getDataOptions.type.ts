@@ -44,6 +44,6 @@ export type GetNominationsOptions = GetDataOptionsBase &
 export type GetEntitiesOptions = GetDataOptionsBase & FilterById & FilterByEntityType;
 
 /**
- * The options for the `getQuestionData` method. NB. The possible `electionId` filter is applied to the `QuestionCategory`s in such a way that any categories with the specified `electionId` or none at all are returned. All `Question`s belonging to the categories are returned.
+ * The options for the `getQuestionData` method. NB. All three filters are applied in SQL by the `get_questions` RPC, independently to the `QuestionCategory`s and to the `Question`s, so a question scoped more narrowly than its category is excluded on its own terms. On every axis a row whose filter column is `null` or an empty array applies to all, so it is always returned.
  */
 export type GetQuestionsOptions = GetDataOptionsBase & FilterByElection;

@@ -31,7 +31,8 @@ describe('Runtime override wrapper', () => {
 
   test('getOverride returns raw template on ICU parse error', () => {
     setOverrides('en', { bad: { key: '{broken, plural, }' } });
-    // Should not throw, returns raw template
+    // The catch arm at `overrides.ts:36` returns the template *unchanged*, which is what this test's title promises. Asserting the exact string — not merely that a string came back — is what makes an empty string, a key name, or a half-formatted result fail here.
+    // Do not weaken this back to `typeof result`: every one of those wrong values is a string.
     const result = getOverride('bad.key', { broken: 1 });
     expect(typeof result).toBe('string');
   });

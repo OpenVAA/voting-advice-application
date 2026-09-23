@@ -1,6 +1,5 @@
 <!--
-@component
-A convenience wrapper for `Input` which fills in the necessary properties based on the info `Question` and possible `Answer` passed.
+@component A convenience wrapper for `Input` which fills in the necessary properties based on the info `Question` and possible `Answer` passed.
 
 NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$lib/components/questions`.
 
@@ -48,8 +47,7 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
     [QUESTION_TYPE.MultipleChoiceCategorical]: 'select-multiple'
   } as const;
 
-  // Doc declares question/answer/disableMultilingual non-reactive, but
-  // we still derive so Svelte 5 sees the prop reads as reactive edges.
+  // Doc declares question/answer/disableMultilingual non-reactive, but we still derive so Svelte 5 sees the prop reads as reactive edges.
   // Validation runs as an $effect so the warnings re-fire on prop change.
   $effect(() => {
     if (question instanceof DateQuestion && question.format)
@@ -143,7 +141,7 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
     onChange?.({ value, question });
   }
 
-  // Combine props with type assertion to avoid "union too complex" TS error on the 10-way InputProps union
+  // Combine props with type assertion to avoid "union too complex" TS error on the 14-way InputProps union
   const allProps = $derived({ ...inputProps, ...restProps, onChange: handleChange } as InputProps);
 </script>
 

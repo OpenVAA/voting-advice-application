@@ -1,10 +1,7 @@
 <!--
-@component
-An icon component, where the `name` property defines which icon to use.
+@component An icon component, where the `name` property defines which icon to use.
 
-Use the other properties to set the size and color of the icon. The icon
-is `aria-hidden` by default, but that can overriden. You can also pass
-any valid attributes of the `<svg>` element.
+Use the other properties to set the size and color of the icon. The icon is `aria-hidden` by default, but that can overriden. You can also pass any valid attributes of the `<svg>` element.
 
 ### Properties
 
@@ -40,9 +37,7 @@ any valid attributes of the `<svg>` element.
 
   function loadSvg(svgElement: SVGElement, name: IconProps['name']) {
     if (!svgElement || !name) return;
-    // Validate name and split path
-    // We need this part-wise approach because of Vite's dynamic import limitations
-    // https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations
+    // Validate name and split path We need this part-wise approach because of Vite's dynamic import limitations https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations
     const [folder, filename] = name in ICONS ? ICONS[name] : ['custom', 'missing_icon'];
     import(`./svg/${folder}/${filename}.ts`).then((svg) => (svgElement.innerHTML = svg.default));
   }

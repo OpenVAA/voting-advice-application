@@ -1,6 +1,5 @@
 <!--
-@component
-Show a list of possibly wrapped entities with pagination and defined actions.
+@component Show a list of possibly wrapped entities with pagination and defined actions.
 
 ### Dynamic component
 

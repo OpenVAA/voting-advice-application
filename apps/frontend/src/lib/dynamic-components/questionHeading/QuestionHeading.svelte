@@ -1,6 +1,5 @@
 <!--
-@component
-Show a `Question`'s text and metadata, such as category and applicable elections.
+@component Show a `Question`'s text and metadata, such as category and applicable elections.
 
 ### Dynamic component
 
@@ -45,11 +44,9 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 
   const ctx = getAppContext();
   const { appType, t } = ctx;
-  // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via ctx.X, never destructure.
+  // appSettings/dataRoot are reactive accessors — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
-  // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot.<prop>` directly in the tracking scope,
-  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" +
-  // (see spike 024). see phase 117.
+  // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot.<prop>` directly in the tracking scope, never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule".
   // Get the elections source based on app type; reading happens in reactive contexts below
   const voterCtx = appType.current === 'voter' ? getVoterContext() : undefined;
   const candidateCtx = appType.current === 'candidate' ? getCandidateContext() : undefined;

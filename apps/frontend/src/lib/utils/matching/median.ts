@@ -2,8 +2,7 @@
  * Calculates the median of a list of numbers.
  * @param - - values - The list of numbers
  * @param returnFirstWhenTied - If true, return the first encountered value when the list has an even number of elements. If falsish, the average of the two middle values is returned.
- * Orig. author jdmdevdotnet: https://stackoverflow.com/questions/45309447/calculating-median-javascript
- * Modified to support returnFirstWhenTied
+ * Orig. author jdmdevdotnet: https://stackoverflow.com/questions/45309447/calculating-median-javascript Modified to support returnFirstWhenTied
  */
 export function median(
   values: Array<number>,

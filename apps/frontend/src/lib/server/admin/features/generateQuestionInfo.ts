@@ -19,10 +19,9 @@ import type { TemporarySetQuestionData } from '$lib/api/base/dataWriter.type';
  *
  * @param args.electionId - Election id to scope questions
  * @param args.questionIds - If empty, runs all opinion questions applicable to the election
- * @param args.fetch - SvelteKit fetch function for data loading
+ * @param args.source - The initiating admin's request context, read ONCE for its verified session and then left behind; the job's own client is built from that session's credential and carries every read and every write the run makes, so the whole run reads and writes as one identity and none of it depends on the request outliving it
  * @param args.locale - Output language
  * @param args.jobId - Job ID for tracking progress
- * @param args.authToken - Authentication token for API calls
  * @param args.operations - Which operations to perform (Terms, InfoSections, or both)
  * @param args.sectionTopics - Optional custom section topics
  * @param args.customInstructions - Optional custom instructions for LLM
@@ -75,6 +74,7 @@ export async function generateQuestionInfo({
   try {
     // 1) Load data
     controller.info('Loading election and question data for question info generation...');
+    // THE READS MOVE ONTO THE JOB'S CLIENT TOO, and that is a decision rather than a spillover. The parameter documentation above asserts that the whole run reads and writes as one identity; leaving these reads on the request's client would have made that sentence false the moment the writer moved, and would have left half the run exposed to exactly the expiry this change removes from the other half.
     const dataRoot = await loadElectionData({
       electionId,
       locale,

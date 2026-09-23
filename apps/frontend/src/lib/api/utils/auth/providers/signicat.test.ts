@@ -1,9 +1,9 @@
 /**
- * Signicat provider interface compliance tests.
+ * Signicat provider tests.
  *
- * Verifies that the Signicat provider module implements the IdentityProvider
- * interface correctly and that getAuthorizeUrl produces client-side PKCE URLs
- * matching the expected format (from).
+ * Verifies that the Signicat provider produces the OUTPUT its interface promises: client-side PKCE authorize URLs, a `client_secret` token-exchange request body, the configured `authConfig` claim mapping applied to a real decrypted ID token, and each of the three discriminating failure codes.
+ *
+ * The `$lib/server/constants` module mock is the only seam that can inject generated keys: `constants.ts` is an eager object literal evaluated once at import, so mutating a `$env/dynamic/private` mock after import is invisible. Dependency injection through the `IdentityProvider` interface is deliberately NOT used -- it would open a seam production callers could misuse; this mock is test-only.
  *
  * @vitest-environment node
  */

@@ -26,7 +26,7 @@ import type { StoredImage } from '../utils/storageUrl';
 /**
  * Supabase implementation of the DataWriter.
  * Auth methods use Supabase GoTrue via `this.supabase.auth`.
- * Cookie-based sessions are used -- authToken parameters are ignored (kept for interface compatibility).
+ * Cookie-based sessions are used -- the Supabase client attaches the session JWT automatically.
  */
 export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter) {
   ////////////////////////////////////////////////////////////////////
@@ -85,23 +85,11 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     // Supabase verifies the active session via cookies automatically.
     const { error } = await this.supabase.auth.updateUser({ password });
     if (error) throw new Error(error.message);
-    // Future-reference note (see phase 86.1 ToU-406 chase): `auth.updateUser({ password })`
-    // rotates the access token. The browser-side `createBrowserClient` instance is
-    // expected to adopt the new token via its internal storage listener, but under
-    // some Playwright timings the next PostgREST call from `SupabaseDataWriter` was
-    // observed to send a stale/empty JWT, producing `auth.uid() = NULL` and a 406
-    // "Cannot coerce" on the subsequent ToU UPDATE (RLS denies, 0 rows returned).
-    // A targeted `await this.supabase.auth.refreshSession()` here would force the
-    // in-memory client to re-read the freshly-issued session before the caller
-    // proceeds, which should harmlessly close that race. NOT added now because:
-    //  (a) the live failure was not reproduced under 20× repeat-each after the
-    //      previous user-visible error surface was added — only Inbucket polling
-    //      flake remained;
-    //  (b) `refreshSession()` issues an extra network round-trip on every password
-    //      set/reset, and rare edge cases (e.g. expired refresh token, network
-    //      partition) could turn a working setPassword into a thrown error.
-    // If the 406 reappears, add `await this.supabase.auth.refreshSession()` here
-    // (and mirror in `_resetPassword` / `_register` above) and re-verify.
+    // Future-reference note. `auth.updateUser({ password })` rotates the access token. The browser-side `createBrowserClient` instance is expected to adopt the new token via its internal storage listener, but under some Playwright timings the next PostgREST call from `SupabaseDataWriter` was observed to send a stale/empty JWT, producing `auth.uid() = NULL` and a 406 "Cannot coerce" on the subsequent ToU UPDATE (RLS denies, 0 rows returned).
+    // A targeted `await this.supabase.auth.refreshSession()` here would force the in-memory client to re-read the freshly-issued session before the caller proceeds, which should harmlessly close that race. It is deliberately NOT added, for two measured reasons:
+    //  (a) the live failure did not reproduce under 20× repeat-each once the user-visible error surface was in place — only Inbucket polling flake remained;
+    //  (b) `refreshSession()` issues an extra network round-trip on every password set/reset, and rare edge cases (e.g. expired refresh token, network partition) could turn a working setPassword into a thrown error.
+    // If the 406 reappears, add `await this.supabase.auth.refreshSession()` here (and mirror in `_resetPassword` / `_register` above) and re-verify.
     return { type: 'success' as const };
   }
 
@@ -130,7 +118,6 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       throw new Error(`Failed to resolve project for election: ${electionError?.message ?? 'not found'}`);
 
     // identifier is intentionally ignored -- Supabase uses email-based invite, not personal ID.
-    // authToken is ignored -- the Supabase client automatically includes the session JWT.
     const { error } = await this.supabase.functions.invoke('invite-candidate', {
       body: {
         firstName: body.firstName,
@@ -234,11 +221,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       if (nomError) throw new Error(`Failed to load nominations: ${nomError.message}`);
 
       const nominationsList = (nomData ?? []).map((n) => ({
-        // `entityType` + `entityId` are part of the NominationData shape. These
-        // raw partial nominations are surfaced on `userData` (consumed directly
-        // by the candidate profile page) and are intentionally NOT fed to
-        // DataRoot.provideNominationData — they carry no entity graph, so doing
-        // so throws `No matching entity found for nomination`.
+        // `entityType` + `entityId` are part of the NominationData shape. These raw partial nominations are surfaced on `userData` (consumed directly by the candidate profile page) and are intentionally NOT fed to DataRoot.provideNominationData — they carry no entity graph, so doing so throws `No matching entity found for nomination`.
         entityType: ENTITY_TYPE.Candidate,
         entityId: candidate.id,
         electionId: n.election_id,
@@ -309,8 +292,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     // Call upsert_answers RPC
     const { data, error } = await this.supabase.rpc('upsert_answers', {
       p_entity_id: id,
-      // reason: processedAnswers is jsonb-safe at runtime (File values already replaced with { path } in the loop above);
-      // LocalizedAnswer.value's static AnswerValue/File union can't be expressed as Json without a runtime transform.
+      // reason: processedAnswers is jsonb-safe at runtime (File values already replaced with { path } in the loop above); LocalizedAnswer.value's static AnswerValue/File union can't be expressed as Json without a runtime transform.
       p_answers: processedAnswers as Json,
       p_overwrite: overwrite
     });
@@ -368,6 +350,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       .select('terms_of_use_accepted, image')
       .single();
     if (error) throw new Error(`updateEntityProperties: ${error.message}`);
+    // reason: class 4 — the declared return type is wrong for BOTH branches and has been since before this phase. The method returns only the two properties it owns, which the caller documents and relies on ("the property setter returns ONLY the changed properties — NOT the whole candidate"), while `LocalizedCandidateData` also requires `id` and the static fields. Aligning the declared type is an app-wide change to a published contract; the cast is bridged here and named rather than hidden.
     return {
       termsOfUseAccepted: data.terms_of_use_accepted ?? null,
       // reason: JSONB columns return Json (structural superset of StoredImage); parseStoredImage runtime-guards on .path

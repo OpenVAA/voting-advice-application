@@ -1,6 +1,5 @@
 <!--
-@component
-Preview component displaying all available input types.
+@component Preview component displaying all available input types.
 
 ### Properties
 

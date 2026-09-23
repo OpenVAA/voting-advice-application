@@ -1,6 +1,5 @@
 <!--
-@component
-Reusable progress bar component for displaying task progress.
+@component Reusable progress bar component for displaying task progress.
 
 ### Properties
 

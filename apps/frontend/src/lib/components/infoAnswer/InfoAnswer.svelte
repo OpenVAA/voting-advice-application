@@ -1,6 +1,5 @@
 <!--
-@component
-Used to display a possibly wrapped entity's answer to an info question. Depending on the question type it is rendered as a `<span>`, `<ol>` or `<a>` element.
+@component Used to display a possibly wrapped entity's answer to an info question. Depending on the question type it is rendered as a `<span>`, `<ol>` or `<a>` element.
 
 ### Properties
 
@@ -100,13 +99,7 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
     </span>
   {/if}
   <!-- 
-  TODO[preferenceOrder]: Check
-  {:else if question.type === 'preferenceOrder'}
-    <ol {...restProps}>
-      {#each answer as item}
-        <li class:vaa-tag={asTag}>{item}</li>
-      {/each}
-    </ol>
+  TODO[preferenceOrder]: Check {:else if question.type === 'preferenceOrder'} <ol {...restProps}> {#each answer as item} <li class:vaa-tag={asTag}>{item}</li> {/each} </ol>
 -->
 {:else if question.type === 'image'}
   <figure class:vaa-tag={asTag} {...restProps}>

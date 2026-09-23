@@ -3,10 +3,7 @@ import type { ReactiveHandle } from './reactiveHandle.type';
 /**
  * A link to the user survey, including the session ID, or `undefined` if the survey is not configured.
  *
- * Pure-rune producer: reads its `appSettings` / `sessionId` inputs via
- * `.current` getters — no store bridge over the inputs nor the output. The
- * store-shaped exported surface (`$surveyLink` consumers) is owned by the
- * `appContext` seam, which wraps this handle back to a readable store.
+ * Pure-rune producer: reads its `appSettings` / `sessionId` inputs via `.current` getters — no store bridge over the inputs nor the output. The store-shaped exported surface (`$surveyLink` consumers) is owned by the `appContext` seam, which wraps this handle back to a readable store.
  */
 class Survey {
   readonly #appSettings: ReactiveHandle<AppSettings>;
@@ -28,8 +25,7 @@ class Survey {
     this.#sessionId = sessionId;
   }
 
-  // Prototype getter is SAFE here: surveyLink is consumed via DIRECT property
-  // access at appContext (`surveyLink: survey`), never spread.
+  // Prototype getter is SAFE here: surveyLink is consumed via DIRECT property access at appContext (`surveyLink: survey`), never spread.
   get current(): string | undefined {
     return this.#linkValue;
   }

@@ -41,34 +41,16 @@ function sameRefs<TItem>(a: ReadonlyArray<TItem>, b: ReadonlyArray<TItem>): bool
 }
 
 /**
- * The voter context (orchestrator) re-expressed as a Svelte 5 CLASS
- * (`VoterContextProvider`; v2.13 context-as-class migration).
- * CONVERTED from the 559-line object-literal factory that `initVoterContext()`
- * returned. Constructed via `new VoterContextProvider()` inside
- * `initVoterContext()`, at component-init time exactly as the former factory ran.
+ * The voter context (orchestrator) as a Svelte 5 CLASS (`VoterContextProvider`).
+ * Constructed via `new VoterContextProvider()` inside `initVoterContext()`, at component-init time.
  *
- * ── Shape decision (110-PATTERNS) ─────────────────────────────────────────
- * NO consumer spreads `voterContext` (`{ ...voterContext }` → zero hits). So its
- * OWN members are exposed as plain PROTOTYPE GETTERS (the natural class shape;
- * CONVENTIONS) — voterContext does NOT need the Phase-109 own-enumerable
- * discipline that AppContextProvider required. The own-enumerable concern applies
- * ONLY to the INHERITED appContext members, which arrive already own-enumerable
- * from the Phase-109 AppContextProvider instance and are reproduced via
- * `Object.assign(this, appContext)` (replacing the former `...appContext` spread).
+ * ── Shape decision ──────────────────────────────────────────────────────────
+ * NO consumer spreads `voterContext` (`{ ...voterContext }` → zero hits). So its OWN members are exposed as plain PROTOTYPE GETTERS (the natural class shape) — voterContext does NOT need the own-enumerable discipline that AppContextProvider requires. The own-enumerable concern applies ONLY to the INHERITED appContext members, which arrive already own-enumerable from the AppContextProvider instance and are forwarded onto this instance rather than spread into it.
  *
- * ── D1 field-init order ──────────────────────────────────────────────────────
- * The 4 sub-store producers (#answers / #nominationsAndQuestions / #matches /
- * #entityFilters), the 5 `$effect` blocks, and the `$derived.by` projections that
- * read a producer instance are installed in the CONSTRUCTOR, AFTER the `$state` /
- * handle / producer fields they read are assigned (D1 order — appContext +
- * filterContext precedent). They are legal in-constructor because voterContext is
- * constructed during component init, an effect context.
+ * ── Field-init order ─────────────────────────────────────────────────────────
+ * The 4 sub-store producers (#answers / #nominationsAndQuestions / #matches / #entityFilters), the 5 `$effect` blocks, and the `$derived.by` projections that read a producer instance are installed in the CONSTRUCTOR, AFTER the `$state` / handle / producer fields they read are assigned — the same ordering rule as appContext and filterContext. They are legal in-constructor because voterContext is constructed during component init, an effect context.
  *
- * @internal — test seam — do not construct directly; requires effect context;
- * use `initVoterContext()`. Calling `new VoterContextProvider()` outside
- * `initVoterContext()` bypasses the `CONTEXT_KEY` double-init guard, will throw
- * `effect_orphan` outside a component `<script>` or `$effect.root`, and installs
- * `initFilterContext` side effects without the single-init protection.
+ * @internal — test seam — do not construct directly; requires effect context; use `initVoterContext()`. Calling `new VoterContextProvider()` outside `initVoterContext()` bypasses the `CONTEXT_KEY` double-init guard, will throw `effect_orphan` outside a component `<script>` or `$effect.root`, and installs `initFilterContext` side effects without the single-init protection.
  * @throws When constructed outside a Svelte effect context (effect_orphan).
  * @throws When `initFilterContext` has already been called (double-init guard).
  */
@@ -77,26 +59,12 @@ export class VoterContextProvider implements VoterContext {
   // Private $state backings + persisted/param handles
   ////////////////////////////////////////////////////////////
 
-  // follow-up (see phase 61 voter-side parallel fix):
-  // Push-based `$state` + `$effect` mirror, mirroring the candidateContext fix
-  // documented.
-  // The previous `$derived.by` pull-chain captured initial empty values when
-  // consumers destructured the context property; subsequent reads via the
-  // destructured local were not live reactive sources, so updates after data
-  // load did not propagate. `$state` reads through context getters propagate
-  // correctly. Side effects (goto on stale id) live naturally inside `$effect`,
-  // not inside a derivation.
+  // Push-based `$state` + `$effect` mirror — the voter-side counterpart of the same shape in candidateContext.
+  // A `$derived.by` pull-chain here would capture initial empty values whenever a consumer destructured the context property: reads via the destructured local are not live reactive sources, so updates after data load would not propagate. `$state` reads through context getters propagate correctly. Side effects (goto on stale id) live naturally inside `$effect`, not inside a derivation.
   #selectedElections = $state<Array<Election>>([]);
   #selectedConstituencies = $state<Array<Constituency>>([]);
 
-  // follow-up (see phase 61 voter-side parallel fix):
-  // Inlined the previous helper-store pull-chain (`questionCategoryState` /
-  // `questionState` / `questionBlockState`) into a single push-based `$effect`
-  // that writes `$state` mirrors. The helper-store derivations were declared
-  // in another module's scope and did not propagate invalidation across the
-  // function-accessor boundary on the voter side (same root-cause class as
-  // the candidate-side fix in). The behavior is
-  // equivalent; helpers remain available for any non-context consumers.
+  // A single push-based `$effect` writes these `$state` mirrors, rather than a helper-store pull-chain (`questionCategoryState` / `questionState` / `questionBlockState`). Those helper-store derivations are declared in another module's scope and do not propagate invalidation across the function-accessor boundary on the voter side — the same root-cause class as the candidate-side destructure trap. The behaviour is equivalent; the helpers remain available for any non-context consumers.
   #infoQuestionCategories = $state<Array<QuestionCategory>>([]);
   #opinionQuestionCategories = $state<Array<QuestionCategory>>([]);
   #infoQuestions = $state<Array<AnyQuestionVariant>>([]);
@@ -110,26 +78,19 @@ export class VoterContextProvider implements VoterContext {
     getByQuestion: () => undefined
   });
 
-  // fix (see phase 61): pure $state, no sessionStorage.
-  // `bind:group` on a getter/setter context accessor backed by
-  // `fromStore(sessionStorageWritable)` intermittently failed to propagate writes
-  // (known Svelte 5 binding pitfall). Migrated to pure
-  // $state; session-only; default-all-checked seeded here rather than
-  // in the page's onMount so the counter never renders the transient 0 state.
+  // Pure $state, no sessionStorage.
+  // `bind:group` on a getter/setter context accessor backed by `fromStore(sessionStorageWritable)` intermittently fails to propagate writes (a known Svelte 5 binding pitfall), hence pure $state; session-only; default-all-checked seeded here rather than in the page's onMount so the counter never renders the transient 0 state.
   #selectedQuestionCategoryIds = $state<Array<Id>>([]);
   #hasSeededCategorySelection = $state(false);
 
   #firstQuestionId = sessionStorageState('voterContext-firstQuestionId', null as Id | null);
 
-  // Param-based collection stores (now class instances from Plan 01; `.value`
-  // reads unchanged).
+  // Param-based collection stores (class instances; read via `.value`).
   #electionId = paramState('electionId');
   #constituencyId = paramState('constituencyId');
 
   /**
-   * The matching algorithm object used for matching. Stable plain field (it is
-   * exposed on the surface as the `algorithm` member; not spread, so a plain
-   * field is fine).
+   * The matching algorithm object used for matching. Stable plain field (it is exposed on the surface as the `algorithm` member; not spread, so a plain field is fine).
    */
   algorithm = new MatchingAlgorithm({
     distanceMetric: DISTANCE_METRIC.Manhattan,
@@ -139,21 +100,12 @@ export class VoterContextProvider implements VoterContext {
   });
 
   ////////////////////////////////////////////////////////////
-  // Inherited appContext + STABLE refs (field initializers — they run BEFORE the
-  // $derived/producer field initializers below in declaration order, so those
-  // can read them; the appContext members are reproduced via
-  // `Object.assign(this, this.#appContext)` in the constructor — see below).
+  // Inherited appContext + STABLE refs (field initializers — they run BEFORE the $derived/producer field initializers below in declaration order, so those can read them; the appContext members are reproduced via `Object.assign(this, this.#appContext)` in the constructor — see below).
   ////////////////////////////////////////////////////////////
 
   #appContext = getAppContext();
 
-  // The canonical reactive accessors from appContext. (see phase 113: these
-  // are now BARE reactive accessors — `this.#appContext.appSettings` etc. read the
-  // live value directly, no `.current`. They MUST be re-read each access to stay
-  // reactive, so they are private GETTERS, not value-captured fields: a field
-  // initializer `#appSettings = this.#appContext.appSettings` would snapshot the
-  // value once at construction and lose reactivity. The getters re-invoke
-  // `this.#appContext.X` inside the tracking scope on every read.)
+  // The canonical reactive accessors from appContext. These are BARE reactive accessors — `this.#appContext.appSettings` etc. read the live value directly, no `.current`. They MUST be re-read each access to stay reactive, so they are private GETTERS, not value-captured fields: a field initializer `#appSettings = this.#appContext.appSettings` would snapshot the value once at construction and lose reactivity. The getters re-invoke `this.#appContext.X` inside the tracking scope on every read.)
   get #appSettings(): AppContext['appSettings'] {
     return this.#appContext.appSettings;
   }
@@ -166,11 +118,7 @@ export class VoterContextProvider implements VoterContext {
   #t = this.#appContext.t;
 
   ////////////////////////////////////////////////////////////
-  // Sub-store PRODUCER instances (field initializers in D1 order — they read
-  // #appSettings/#dataRoot/#answers above; the getter-args are
-  // lazy thunks, so producer ordering is safe). Declared before the $derived
-  // fields that read them (#resultsAvailable/#nominationsAvailable/
-  // #currentResultsEntityType) — those bodies are lazy too.
+  // Sub-store PRODUCER instances (field initializers in declaration order — they read #appSettings/#dataRoot/#answers above; the getter-args are lazy thunks, so producer ordering is safe). Declared before the $derived fields that read them (#resultsAvailable/#nominationsAvailable/#currentResultsEntityType) — those bodies are lazy too.
   ////////////////////////////////////////////////////////////
 
   #answers = answerState({ startEvent: this.#appContext.startEvent });
@@ -200,10 +148,7 @@ export class VoterContextProvider implements VoterContext {
   });
 
   ////////////////////////////////////////////////////////////
-  // $derived projections (field initializers — bodies are lazy thunks evaluated
-  // on first read, so they may reference fields assigned later (e.g. #matches);
-  // CONVENTIONS reactive-projection-in-$derived + FilterContextProvider
-  // #filterGroup precedent). Read through the prototype getters below.
+  // $derived projections (field initializers — bodies are lazy thunks evaluated on first read, so they may reference fields assigned later (e.g. #matches); the reactive-projection-in-$derived rule, the same shape as FilterContextProvider's `#filterGroup`). Read through the prototype getters below.
   ////////////////////////////////////////////////////////////
 
   // Stores related to selection pages
@@ -214,28 +159,14 @@ export class VoterContextProvider implements VoterContext {
   #constituenciesSelectable = $derived(this.#dataRoot.elections?.some((e) => !e.singleConstituency));
 
   ////////////////////////////////////////////////////////////
-  // currentResultsElection (see phase 88)
+  // currentResultsElection
   ////////////////////////////////////////////////////////////
   //
-  // Singular SELECTED election whose results page is being rendered, sourced
-  // from the NEW route segment `page.params.electionTab`.
+  // Singular SELECTED election whose results page is being rendered, sourced from the NEW route segment `page.params.electionTab`.
   //
-  // SEMANTIC DISSOCIATION (NAME-DISJOINT): `selectedElections` is the
-  // AVAILABLE-array surface sourced from the SEARCH-side `?electionId=…`
-  // persistent search param; `currentResultsElection` is the SELECTED-singular
-  // surface sourced from the ROUTE-side `page.params.electionTab` segment. The
-  // two keys (`electionId` vs `electionTab`) are literally different identifiers
-  // throughout the codebase — they never alias.
+  // SEMANTIC DISSOCIATION (NAME-DISJOINT): `selectedElections` is the AVAILABLE-array surface sourced from the SEARCH-side `?electionId=…` persistent search param; `currentResultsElection` is the SELECTED-singular surface sourced from the ROUTE-side `page.params.electionTab` segment. The two keys (`electionId` vs `electionTab`) are literally different identifiers throughout the codebase — they never alias.
   //
-  // Implementation choice (Decision Q3): `$derived.by` rather than the
-  // push-pattern `$state` + `$effect` mirror used by `selectedElections`. The
-  // push-pattern was needed for `selectedElections` because of the silent-fail
-  // FK-lookup race (a transient throw during navigation when DataRoot doesn't
-  // yet have the election). Here we just lookup against the already-resolved
-  // `selectedElections` array — no FK fetch, no race — so the cheap
-  // `$derived.by` is sufficient. Reactivity propagates correctly because
-  // `page.params.electionTab` is reactive in Svelte 5 (`$app/state`) and
-  // `selectedElections` is reactive via `$state`.
+  // Implementation choice (Decision Q3): `$derived.by` rather than the push-pattern `$state` + `$effect` mirror used by `selectedElections`. The push-pattern was needed for `selectedElections` because of the silent-fail FK-lookup race (a transient throw during navigation when DataRoot doesn't yet have the election). Here we just lookup against the already-resolved `selectedElections` array — no FK fetch, no race — so the cheap `$derived.by` is sufficient. Reactivity propagates correctly because `page.params.electionTab` is reactive in Svelte 5 (`$app/state`) and `selectedElections` is reactive via `$state`.
   //
   // Fallback chain:
   //   1. Route segment present AND found in available array → that election.
@@ -243,9 +174,7 @@ export class VoterContextProvider implements VoterContext {
   //      (mirrors the +layout.svelte single-election fallback).
   //   3. Otherwise (route segment present but stale, OR route segment absent
   //      with 0/2+ available) → `undefined`. The server-side guard at
-  //      `(voters)/(located)/results/[[electionTab]]/+layout.ts` will normally
-  //      have redirected before this derivation runs in the stale case; this
-  //      just defends against late-arriving updates.
+  //      `(voters)/(located)/results/[[electionTab]]/+layout.ts` will normally have redirected before this derivation runs in the stale case; this just defends against late-arriving updates.
   #currentResultsElection = $derived.by<Election | undefined>(() => {
     const tab = page.params.electionTab;
     if (tab) return this.#selectedElections.find((e) => e.id === tab);
@@ -295,25 +224,14 @@ export class VoterContextProvider implements VoterContext {
   /** The parent entity matching method */
   #parentMatchingMethod = $derived(this.#appSettings.matching?.organizationMatching || 'none');
 
-  // currentResultsEntityType — singular EntityType implied for the active
-  // results election. URL-first: when `page.params.entityTab` names a valid
-  // plural (matched against the current election's available types) the mapped
-  // singular wins. Otherwise, default-pick the first available type for
-  // `currentResultsElection`. Returns `undefined` only when there is no active
-  // election or its matches tree hasn't been built yet.
+  // currentResultsEntityType — singular EntityType implied for the active results election. URL-first: when `page.params.entityTab` names a valid plural (matched against the current election's available types) the mapped singular wins. Otherwise, default-pick the first available type for `currentResultsElection`. Returns `undefined` only when there is no active election or its matches tree hasn't been built yet.
   //
   // Why this lives on voterContext (not the route layout):
-  //   - Removes the need for `+layout.ts` to force-fill `entityTab` into the
-  //     URL (previous behavior auto-redirected `/results/{e}` →
-  //     `/results/{e}/candidates`, which combined with downstream consumers
-  //     emitting same-shape URLs produced a redirect loop).
-  //   - Lets `filterContext` resolve the active FilterGroup even when the URL
-  //     omits `entityTab` (see phase 62: the scope tuple becomes implied,
-  //     not URL-derived).
+  //   - Removes the need for `+layout.ts` to force-fill `entityTab` into the URL. Force-filling auto-redirects `/results/{e}` → `/results/{e}/candidates`, which combined with downstream consumers emitting same-shape URLs produces a redirect loop.
+  //   - Lets `filterContext` resolve the active FilterGroup even when the URL omits `entityTab`: the scope tuple is implied, not URL-derived.
   //   - Mirrors `currentResultsElection`'s singular-derived-from-URL pattern.
   //
-  // Per CLAUDE.md Context Destructuring Rule, consumers MUST read via
-  // `ctx.currentResultsEntityType` — never destructure.
+  // Per CLAUDE.md Context Destructuring Rule, consumers MUST read via `ctx.currentResultsEntityType` — never destructure.
   #currentResultsEntityType = $derived.by<EntityType | undefined>(() => {
     if (!this.#currentResultsElection) return undefined;
     const matchesForElection = this.#matches.value[this.#currentResultsElection.id];
@@ -334,9 +252,7 @@ export class VoterContextProvider implements VoterContext {
   });
 
   ////////////////////////////////////////////////////////////
-  // Inherited appContext members (declared for `implements VoterContext`;
-  // INSTALLED via `Object.assign(this, this.#appContext)` in the constructor
-  // from the own-enumerable Phase-109 AppContextProvider instance).
+  // Inherited appContext members (declared for `implements VoterContext`; INSTALLED via `Object.assign(this, this.#appContext)` in the constructor from the own-enumerable AppContextProvider instance).
   // Definite-assignment `!`.
   ////////////////////////////////////////////////////////////
 
@@ -375,16 +291,9 @@ export class VoterContextProvider implements VoterContext {
     // Inheritance from other Contexts
     ////////////////////////////////////////////////////////////
     //
-    // Reproduce the former `...appContext` spread (L488): appContext members are
-    // own-enumerable from the Phase-109 AppContextProvider instance, so
-    // Object.assign copies them correctly onto this instance. (The stable refs +
-    // sub-store producers + $derived projections are field initializers above,
-    // which run in declaration order BEFORE this constructor body — D1.)
+    // Forward appContext INSTEAD of spreading it: appContext members are own-enumerable, so every one can be copied onto this instance. (The stable refs + sub-store producers + $derived projections are field initializers above, which run in declaration order BEFORE this constructor body.)
     //
-    // see phase 113 CR-01: use inheritContextMembers (NOT Object.assign) so the bare
-    // reactive accessors (appSettings / dataRoot / locale) are forwarded as LIVE
-    // accessors. Object.assign would snapshot their construction-time value and
-    // freeze reactivity for every consumer reading them off this orchestrator.
+    // Use inheritContextMembers (NOT Object.assign) so the bare reactive accessors (appSettings / dataRoot / locale) are forwarded as LIVE accessors. Object.assign would snapshot their construction-time value and freeze reactivity for every consumer reading them off this orchestrator.
     inheritContextMembers(this, this.#appContext);
 
     ////////////////////////////////////////////////////////////
@@ -462,8 +371,7 @@ export class VoterContextProvider implements VoterContext {
     // Questions and QuestionCategories
     ////////////////////////////////////////////////////////////
 
-    // Single $effect computes the entire question chain whenever upstream
-    // state (selectedElections / selectedConstituencies / dataRoot) changes.
+    // Single $effect computes the entire question chain whenever upstream state (selectedElections / selectedConstituencies / dataRoot) changes.
     $effect(() => {
       const dr = this.#dataRoot;
       const elections = this.#selectedElections;
@@ -500,9 +408,7 @@ export class VoterContextProvider implements VoterContext {
     });
 
     // Seed default-all-checked once opinion categories are available.
-    // Guarded with `hasSeededCategorySelection` so voter de-selects are preserved
-    // when `_opinionQuestionCategories` later reacts to election/constituency
-    // changes (would otherwise clobber the voter's deliberate selection).
+    // Guarded with `hasSeededCategorySelection` so voter de-selects are preserved when `_opinionQuestionCategories` later reacts to election/constituency changes (would otherwise clobber the voter's deliberate selection).
     $effect(() => {
       if (this.#hasSeededCategorySelection) return;
       const cats = this.#opinionQuestionCategories;
@@ -513,9 +419,7 @@ export class VoterContextProvider implements VoterContext {
       });
     });
 
-    // QuestionBlocks: filtered by the user's selected category ids and ordered
-    // optionally by `firstQuestionId`. Mirrors the original `questionBlockState`
-    // logic verbatim; written into a `$state` for consumer reactivity.
+    // QuestionBlocks: filtered by the user's selected category ids and ordered optionally by `firstQuestionId`. Mirrors the original `questionBlockState` logic verbatim; written into a `$state` for consumer reactivity.
     $effect(() => {
       const firstId = this.#firstQuestionId.current;
       const allOpinionCats = this.#opinionQuestionCategories;
@@ -570,13 +474,8 @@ export class VoterContextProvider implements VoterContext {
     // Initialize the dedicated filterContext
     ////////////////////////////////////////////////////////////
 
-    // see phase 62: initialize the dedicated filterContext using a closure over
-    // the just-built FilterTree. see phase 88 follow-up: also injects
-    // `currentEntityType` so filterContext can resolve its scope tuple via the
-    // voterContext-implied entity type — no longer requires the URL to carry
-    // `entityTab` (the route load function no longer force-fills it).
-    // Single init per voter session — re-init is guarded by initFilterContext()
-    // itself (status-500).
+    // Initialize the dedicated filterContext using a closure over the just-built FilterTree. It also injects `currentEntityType` so filterContext can resolve its scope tuple via the voterContext-implied entity type, which is why the URL does not have to carry `entityTab` (the route load function does not force-fill it).
+    // Single init per voter session — re-init is guarded by initFilterContext() itself (status-500).
     initFilterContext({
       entityFilters: () => this.#entityFilters.value,
       currentEntityType: () => this.#currentResultsEntityType
@@ -590,8 +489,7 @@ export class VoterContextProvider implements VoterContext {
   resetVoterData = (): void => {
     this.#answers.reset();
     this.#firstQuestionId.set(null);
-    // pure $state assignment + reset the seed-guard so the next
-    // render re-seeds default-all-checked via the $effect above.
+    // pure $state assignment + reset the seed-guard so the next render re-seeds default-all-checked via the $effect above.
     this.#selectedQuestionCategoryIds = [];
     this.#hasSeededCategorySelection = false;
   };
@@ -619,10 +517,7 @@ export class VoterContextProvider implements VoterContext {
     return this.#entityFilters.value;
   }
   /**
-   * bundled accessor — delegates to `getFilterContext ` so the same
-   * Symbol-keyed context instance is exposed both directly (future LLM chat)
-   * and via the voter context (voter-flow UI). Getter delegation avoids
-   * capturing a stale reference at construction time.
+   * bundled accessor — delegates to `getFilterContext ` so the same Symbol-keyed context instance is exposed both directly (future LLM chat) and via the voter context (voter-flow UI). Getter delegation avoids capturing a stale reference at construction time.
    */
   get filterContext() {
     return getFilterContext();
