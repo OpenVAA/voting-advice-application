@@ -1,21 +1,18 @@
 /**
  * CandidatesGenerator unit tests.
  *
- * acceptance (a)–(e) plus the answer-emitter seam — the contract that
- * see phase 57's latent-factor emitter will drop in unchanged:
+ * acceptance (a)–(e) plus the answer-emitter seam — the contract that the latent-factor emitter drops in unchanged:
  *   - Default path: `ctx.answerEmitter` undefined → `defaultRandomValidEmit`
  *   - Injected path: `ctx.answerEmitter = customEmitter` → custom function called
  *
- * Plus organization-ref attach/omit behavior and `answersByExternalId` sentinel
- * emission (stripped by bulk_import; consumed by Plan 07's `importAnswers`).
+ * Plus organization-ref attach/omit behavior and `answersByExternalId` sentinel emission (stripped by bulk_import; consumed by the writer's `importAnswers`).
  *
- * Pipeline contract: `ctx.refs.questions` carries full question rows (not just
- * ext_id stubs) after QuestionsGenerator runs. Tests cast through `unknown` at
- * the ref-injection seam to match CandidatesGenerator's internal re-cast.
+ * Pipeline contract: `ctx.refs.questions` carries full question rows (not just ext_id stubs) after QuestionsGenerator runs. Tests cast through `unknown` at the ref-injection seam to match CandidatesGenerator's internal re-cast.
  */
 
 import { describe, expect, it, vi } from 'vitest';
 import { CandidatesGenerator } from '../../src/generators/CandidatesGenerator';
+import { COLLECTION_NON_COLUMNS, permittedKeys } from '../../src/template/permittedKeys';
 import { makeCtx } from '../utils';
 import type { TablesInsert } from '@openvaa/supabase-types';
 import type { AnswerEmitter } from '../../src/types';
@@ -26,14 +23,11 @@ const SAMPLE_QUESTION: TablesInsert<'questions'> = {
   external_id: 'seed_q_001',
   project_id: '00000000-0000-0000-0000-000000000001',
   type: 'boolean',
-  // category_id NOT NULL on TablesInsert but the pipeline supplies full question
-  // rows with IDs resolved post-insert. Tests can cast-through since they only
-  // exercise the emitter seam, not the writer.
+  // category_id NOT NULL on TablesInsert but the pipeline supplies full question rows with IDs resolved post-insert. Tests can cast-through since they only exercise the emitter seam, not the writer.
   category_id: '00000000-0000-0000-0000-000000000099'
 };
 
-// Narrow cast target for refs.questions — the generator casts it back to
-// Array<TablesInsert<'questions'>> internally (see src/generators/CandidatesGenerator.ts).
+// Narrow cast target for refs.questions — the generator casts it back to Array<TablesInsert<'questions'>> internally (see src/generators/CandidatesGenerator.ts).
 const questionRefs = [SAMPLE_QUESTION] as unknown as Array<{ external_id: string }>;
 
 describe('CandidatesGenerator', () => {
@@ -78,6 +72,31 @@ describe('CandidatesGenerator', () => {
       const rowAny = r as unknown as { organization?: { external_id: string } };
       expect(rowAny.organization).toEqual(ORG_REF);
     });
+  });
+
+  // TEST G — THE PAIR, and the pair is the whole point of 162-07b's reclassification of this key. Since that plan there is no `candidates.organization_id` column, so the reference must be PERMITTED ON THE ROW (the latent answer emitter reads it in memory, and an unresolved findOrganizationIndex falls back to random emission SILENTLY for every synthetic candidate) and ABSENT FROM THE PAYLOAD that reaches `bulk_import` (PostgREST would reject an unknown column name on every candidate row).
+  //
+  // The one-sided version of this test would pass against a key stripped EVERYWHERE, including where the emitter reads it — which is the other way this can be wrong, and the way no gate in this repository would otherwise report.
+  it('carries the organization ref on the emitted row AND declares it stripped before the write', () => {
+    const base = makeCtx();
+    const gen = new CandidatesGenerator(makeCtx({ refs: { ...base.refs, organizations: [ORG_REF] } }));
+    const rows = gen.generate({ count: 2 });
+
+    // Half one: present on the row the generator emits, so the emitter can cluster on it.
+    for (const row of rows) {
+      // `toHaveProperty` with a value asserts the shape AND the contents without a narrowing cast, which keeps this test out of the phase-164 cast census that scans the whole diff for widening casts.
+      expect(row).toHaveProperty('organization', ORG_REF);
+    }
+
+    // Half two: named in the const `bulkImport`'s strip loop reads, so it never reaches PostgREST. That loop's `extraStrip?.has(key)` branch consumes exactly this set — see `supabaseAdminClient.ts`'s `cleaned` builder — so naming it here is naming the strip.
+    expect(COLLECTION_NON_COLUMNS.candidates.has('organization')).toBe(true);
+
+    // And it is permitted, so the row-props guard does not reject the row on the way past.
+    expect(permittedKeys('candidates').has('organization')).toBe(true);
+
+    // The column it used to resolve to is gone, in both spellings.
+    expect(permittedKeys('candidates').has('organization_id')).toBe(false);
+    expect(permittedKeys('candidates').has('organizationId')).toBe(false);
   });
 
   it('omits organization ref when refs.organizations empty', () => {
@@ -130,9 +149,7 @@ describe('CandidatesGenerator', () => {
   });
 
   it('forwards candidate.organization into ctx.answerEmitter when refs.organizations populated (Interpretation Note)', () => {
-    // B1 regression test: pins the `candidateForEmit` literal to include the
-    // organization ref. Prevents future narrowing that would silently break
-    // see phase 57 latent emitter's findPartyIndex.
+    // B1 regression test: pins the `candidateForEmit` literal to include the organization ref. Prevents future narrowing that would silently break the latent emitter's findOrganizationIndex.
     const spy = vi.fn(() => ({ seed_q_001: { value: true } })) as unknown as AnswerEmitter;
     const base = makeCtx();
     const gen = new CandidatesGenerator(
@@ -150,8 +167,7 @@ describe('CandidatesGenerator', () => {
   });
 
   it('does NOT forward organization property when refs.organizations is empty (invariant preserved)', () => {
-    // Preserves the existing `omits organization ref when refs.organizations empty`
-    // shape on the emitter boundary too — not just on the emitted row.
+    // Preserves the existing `omits organization ref when refs.organizations empty` shape on the emitter boundary too — not just on the emitted row.
     const spy = vi.fn(() => ({ seed_q_001: { value: true } })) as unknown as AnswerEmitter;
     const base = makeCtx();
     const gen = new CandidatesGenerator(
@@ -168,8 +184,7 @@ describe('CandidatesGenerator', () => {
   });
 
   it('(a): fixed row with answersByExternalId is used verbatim — emitter NOT invoked', () => {
-    // Fixed rows with pre-supplied answersByExternalId must bypass the emitter
-    // entirely. bullet 1.
+    // Fixed rows with pre-supplied answersByExternalId must bypass the emitter entirely. bullet 1.
     const spy = vi.fn(() => ({ seed_q_001: { value: true } })) as unknown as AnswerEmitter;
     const base = makeCtx();
     const gen = new CandidatesGenerator(
@@ -186,8 +201,7 @@ describe('CandidatesGenerator', () => {
           external_id: 'hand_c',
           first_name: 'Hand',
           last_name: 'Authored',
-          // `answersByExternalId` is not on the TablesInsert<'candidates'> surface;
-          // it's a sentinel field the writer layer reads. Cast through.
+          // `answersByExternalId` is not on the TablesInsert<'candidates'> surface; it's a sentinel field the writer layer reads. Cast through.
           ...({ answersByExternalId: supplied } as unknown as Record<string, unknown>)
         }
       ]
@@ -201,9 +215,7 @@ describe('CandidatesGenerator', () => {
   });
 
   it('(b): fixed row without answersByExternalId — emitter NOT invoked; row carries no synthesized answers', () => {
-    // bullet 2: fixed rows skip the latent pipeline entirely. The
-    // generator does NOT invoke the emitter for fixed rows. If a consumer wants
-    // answers on a fixed row, they supply answersByExternalId (branch a above).
+    // bullet 2: fixed rows skip the latent pipeline entirely. The generator does NOT invoke the emitter for fixed rows. If a consumer wants answers on a fixed row, they supply answersByExternalId (branch a above).
     const spy = vi.fn(() => ({ seed_q_001: { value: true } })) as unknown as AnswerEmitter;
     const base = makeCtx();
     const gen = new CandidatesGenerator(
@@ -232,9 +244,7 @@ describe('CandidatesGenerator', () => {
   });
 
   it('(c): synthetic (count-generated) rows always run through the latent emitter', () => {
-    // bullet 3: synthetic rows always go through ctx.answerEmitter (the
-    // latent emitter in production wiring). Emitter invoked once per synthetic
-    // row; each candidate arg carries `organization` (from Task 0's amendment).
+    // bullet 3: synthetic rows always go through ctx.answerEmitter (the latent emitter in production wiring). Emitter invoked once per synthetic row; each candidate arg carries `organization`.
     const spy = vi.fn(() => ({ seed_q_001: { value: false } })) as unknown as AnswerEmitter;
     const base = makeCtx();
     const gen = new CandidatesGenerator(
@@ -249,7 +259,7 @@ describe('CandidatesGenerator', () => {
     const mockCalls = (spy as unknown as { mock: { calls: Array<Array<unknown>> } }).mock.calls;
     mockCalls.forEach((args) => {
       const cand = args[0] as { organization?: { external_id: string } };
-      // Every synthetic call received the organization ref forwarded by Task 0.
+      // Every synthetic call received the forwarded organization ref.
       expect(cand.organization).toEqual(ORG_REF);
     });
   });

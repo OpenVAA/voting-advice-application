@@ -1,18 +1,11 @@
 /**
- * OrganizationsGenerator — foundation generator for the `organizations` table
- * (political parties in VAA terminology).
+ * OrganizationsGenerator — foundation generator for the `organizations` table (the political entities candidates stand for).
  *
- * RESEARCH: `project_id` is required; `auth_user_id` is nullable FK to
- * auth.users (left NULL — see phase 56 scope excludes auth); `answers` defaults to
- * '{}' at the DB level; standard DataObject scaffolding otherwise. No content
- * FK refs on this table.
+ * Schema: `project_id` is required; `auth_user_id` is nullable FK to auth.users and is left NULL — dev-seed writes no auth rows; `answers` defaults to '{}' at the DB level; standard DataObject scaffolding otherwise. No content FK refs on this table.
  *
- * apply — see ElectionsGenerator.ts for the
- * canonical-pattern rationale.
+ * apply — see ElectionsGenerator.ts for the canonical-pattern rationale.
  *
- * Default count = 4: enough parties for matching/filtering sanity-checks
- * (candidates' organization ref picks round-robin over the
- * CandidatesGenerator sample) without bloating the <10s seed budget (NF-01).
+ * Default count = 4: enough organizations for matching/filtering sanity-checks (candidates' organization ref picks round-robin over the CandidatesGenerator sample) without bloating the <10s seed budget.
  */
 
 import type { TablesInsert } from '@openvaa/supabase-types';
@@ -23,7 +16,7 @@ export type OrganizationsFragment = Fragment<TablesInsert<'organizations'>>;
 export class OrganizationsGenerator {
   constructor(private ctx: Ctx) {}
 
-  // see phase 56 ignores ctx here; see phase 57/58 generators read ctx.refs to scale counts.
+  // `defaults` ignores ctx here; reading `ctx.refs` is how a generator would scale its counts.
 
   defaults(ctx: Ctx): OrganizationsFragment {
     return { count: 4 };
@@ -51,7 +44,7 @@ export class OrganizationsGenerator {
         color: { normal: faker.color.rgb(), dark: faker.color.rgb() },
         sort_order: i,
         is_generated: true
-        // `auth_user_id` omitted — see phase 56 scope excludes auth (RESEARCH).
+        // `auth_user_id` omitted — dev-seed writes no auth rows.
         // `answers` omitted — DB default '{}' applies.
       });
     }

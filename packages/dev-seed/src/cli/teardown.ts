@@ -2,37 +2,24 @@
 /**
  * `yarn workspace @openvaa/dev-seed seed:teardown` — entry.
  *
- * Sequence (RESEARCH Pitfall #5):
- *   1. Parse `--prefix` / `--help` via `parseArgs` (node:util; keygen.ts
- *      precedent; NOT commander/yargs).
+ * Sequence:
+ *   1. Parse `--prefix` (alias `--external-id-prefix`, the spelling `seed` uses) / `--help` via `parseArgs` (node:util; keygen.ts precedent; NOT commander/yargs).
  *   2. `--help` short-circuit => print TEARDOWN_USAGE => exit 0.
- *   3. Prefix length guard (T-58-07-02) — `--prefix ''` or a single char
- *      would `LIKE %` against effectively every external_id; refuse.
- *   4. Construct `SupabaseAdminClient` (module-level env fallbacks per
- *      supabaseAdminClient.ts:34-42 — Writer's env enforcement is not
- *      replayed here since bulk_delete works against the local demo key
- *      fallback too).
+ *   3. Prefix length guard — `--prefix ''` or a single char would `LIKE %` against effectively every external_id; refuse.
+ *   4. Construct `SupabaseAdminClient` (module-level env fallbacks per supabaseAdminClient.ts:34-42 — Writer's env enforcement is not replayed here since bulk_delete works against the local demo key fallback too).
  *   5. `bulkDelete({ nominations, candidates, ... 10 tables }, { prefix })`.
  *      RPC enforces reverse-dependency order server-side.
- *   6. Storage Path 2 cleanup: list + remove portraits (authoritative —
- *      pg_net trigger Path 1 is async-racy per Pitfall #5).
+ *   6. Storage Path 2 cleanup: list + remove portraits (authoritative — the pg_net trigger, Path 1, is async-racy).
+ *   6b. Reopen the targeted project to voters (`open_for_voters = true`, 162.1 D-19), which undoes `perm-closed-project`. The CLI asks for this through `runTeardown(prefix, client, { reopenProject: true })`; `runTeardown` never reopens on its own, so the E2E teardowns (`runTeardownAsserted`) cannot reopen the E2E project mid-run.
  *   7. Print summary to stdout (rows deleted + storage objects removed +
  *      echo the prefix used), exit 0.
- *   8. On any error: rephrase `fetch failed`/`ECONNREFUSED`/`ENOTFOUND` to
- *      actionable form, stderr + exit 1.
+ *   8. On any error: rephrase `fetch failed`/`ECONNREFUSED`/`ENOTFOUND` to actionable form, stderr + exit 1.
  *
- * Pitfall #6 explicit guardrail: `bulkDelete` argument MUST include only
- * the 10 tables in `ALLOWED_TEARDOWN_TABLES`. `accounts`, `projects`,
- * `feedback` are NOT in schema's `allowed_collections` (raises
- * `Unknown collection for deletion: %`). `app_settings` is in
- * `allowed_collections` but the writer merges-upserts it (not inserts) —
- * resetting app_settings is `db:reset`'s job, not teardown's.
+ * ⚠ Explicit guardrail: the `bulkDelete` argument MUST include only the 10 tables in `ALLOWED_TEARDOWN_TABLES`. `accounts`, `projects`, `feedback` are NOT in schema's `allowed_collections` (raises `Unknown collection for deletion: %`). `app_settings` is in `allowed_collections` but the writer merges-upserts it (not inserts) — resetting app_settings is `db:reset`'s job, not teardown's.
  *
  * permissive prefix. Trust contract — no shape verification.
  *
- * Split into `runTeardown(prefix, client)` (pure orchestration — unit
- * testable with a mocked client) and a thin CLI wrapper (parseArgs +
- * process.exit side-effects).
+ * Split into `runTeardown(prefix, client, options?)` (pure orchestration — unit testable with a mocked client) and a thin CLI wrapper (parseArgs + process.exit side-effects).
  */
 
 import { parseArgs } from 'node:util';
@@ -45,9 +32,7 @@ try {
 } catch {
   // no .env at repo root — env must be exported manually
 }
-// Fall back to PUBLIC_SUPABASE_URL when SUPABASE_URL is absent (URL is not
-// sensitive; only the service_role key is). Dev ergonomics: root .env shared
-// with the frontend works for teardown too.
+// Fall back to PUBLIC_SUPABASE_URL when SUPABASE_URL is absent (URL is not sensitive; only the service_role key is). Dev ergonomics: root .env shared with the frontend works for teardown too.
 if (!process.env.SUPABASE_URL && process.env.PUBLIC_SUPABASE_URL) {
   process.env.SUPABASE_URL = process.env.PUBLIC_SUPABASE_URL;
 }
@@ -55,16 +40,11 @@ if (!process.env.SUPABASE_URL && process.env.PUBLIC_SUPABASE_URL) {
 /**
  * 10 tables in schema's `allowed_collections`, minus `app_settings`.
  *
- * NOT `accounts` / `projects` / `feedback` — not in schema's
- * `allowed_collections` (Pitfall #6). NOT `app_settings` — writer merges
- * it, doesn't insert; `db:reset` handles that path.
+ * NOT `accounts` / `projects` / `feedback` — not in schema's `allowed_collections`. NOT `app_settings` — writer merges it, doesn't insert; `db:reset` handles that path.
  *
- * Order listed here doesn't matter — the RPC re-orders server-side per
- * schema line 2845-2849.
+ * Order listed here doesn't matter — the RPC re-orders server-side per schema line 2845-2849.
  *
- * Exported (see phase 140 plan 05) so the row-count probe in `tests/` iterates the
- * SAME ten tables `bulk_delete` clears — a second hand-maintained copy under
- * `tests/` would be exactly the duplicated-fact drift this phase exists to close.
+ * Exported so the row-count probe in `tests/` iterates the SAME ten tables `bulk_delete` clears. A second hand-maintained copy under `tests/` would be a duplicated fact free to drift from this one.
  */
 export const ALLOWED_TEARDOWN_TABLES = [
   'nominations',
@@ -80,9 +60,7 @@ export const ALLOWED_TEARDOWN_TABLES = [
 ] as const;
 
 /**
- * Minimal interface of the admin client `runTeardown` relies on — lets
- * tests substitute a lightweight fake without constructing a full
- * `SupabaseAdminClient` (which would try to `createClient`).
+ * Minimal interface of the admin client `runTeardown` relies on — lets tests substitute a lightweight fake without constructing a full `SupabaseAdminClient` (which would try to `createClient`).
  */
 interface TeardownClient {
   bulkDelete(
@@ -91,6 +69,17 @@ interface TeardownClient {
   listCandidateIdsByPrefix(prefix: string): Promise<Array<string>>;
   listCandidatePortraitPaths(candidateIds?: Array<string>): Promise<Array<string>>;
   removePortraitStorageObjects(paths: Array<string>): Promise<number>;
+  setProjectOpenForVoters(open: boolean, projectId?: string): Promise<void>;
+}
+
+/**
+ * Options for {@link runTeardown}.
+ */
+export interface TeardownOptions {
+  /**
+   * Reopen the client's project to voters (`open_for_voters = true`) after the rows and portraits are gone (162.1 D-19). Only the CLI passes it; E2E teardowns must not, or a teardown running mid-suite would reopen a project another node closed.
+   */
+  reopenProject?: boolean;
 }
 
 export interface TeardownResult {
@@ -99,22 +88,13 @@ export interface TeardownResult {
 }
 
 /**
- * T-58-07-02 mass-delete guard. `--prefix ''` (or a 1-character prefix) would
- * be `LIKE %`-adjacent — matching effectively every `external_id` across all
- * 10 content tables. Refuse with an actionable, caller-labelled message.
+ * Mass-delete guard. `--prefix ''` (or a 1-character prefix) would be `LIKE %`-adjacent — matching effectively every `external_id` across all 10 content tables. Refuse with an actionable, caller-labelled message.
  *
- * Exported (see phase 140 review IN-02) so callers outside this package — namely
- * `tests/tests/setup/shared/assertTeardown.ts`'s `runTeardownAsserted`, which
- * re-checks the SAME invariant before probing so an unbounded `LIKE '%'`
- * count scan never runs for a prefix `runTeardown` would refuse anyway —
- * import the ONE implementation rather than hand-maintaining a second copy
- * that could silently drift from this one (the exact duplicated-fact drift
- * this phase exists to close elsewhere).
+ * Exported so callers outside this package — namely `tests/tests/setup/shared/assertTeardown.ts`'s `runTeardownAsserted`, which re-checks the SAME invariant before probing so an unbounded `LIKE '%'` count scan never runs for a prefix `runTeardown` would refuse anyway — import the ONE implementation rather than hand-maintaining a second copy free to drift from this one.
  *
  * @param prefix - the prefix to validate.
  * @param callerLabel - identifies the calling site in the thrown message
- *   (e.g. `'runTeardown'`, `'runTeardownAsserted'`) so a failure reads as a
- *   sentence naming where it was raised.
+ *   (e.g. `'runTeardown'`, `'runTeardownAsserted'`) so a failure reads as a sentence naming where it was raised.
  * @throws Error if `prefix` is falsy or shorter than 2 characters.
  */
 export function assertTeardownPrefix(prefix: string, callerLabel: string): void {
@@ -129,22 +109,19 @@ export function assertTeardownPrefix(prefix: string, callerLabel: string): void 
  * Pure orchestration — no process.exit, no env reads, no stdout writes.
  * The CLI wrapper below composes this with parseArgs + exit codes.
  *
- * Throws on: prefix length guard violation, bulkDelete failure, storage
- * list/remove failure. Caller rephrases + prints.
+ * Throws on: prefix length guard violation, bulkDelete failure, storage list/remove failure, and (with `reopenProject`) a failed openness write. Caller rephrases + prints.
  */
-export async function runTeardown(prefix: string, client: TeardownClient): Promise<TeardownResult> {
+export async function runTeardown(
+  prefix: string,
+  client: TeardownClient,
+  options: TeardownOptions = {}
+): Promise<TeardownResult> {
   assertTeardownPrefix(prefix, 'runTeardown');
 
-  // Step 1: collect the candidate UUIDs matching the prefix BEFORE we delete
-  // the DB rows. After bulkDelete runs, `candidates.external_id LIKE $prefix%`
-  // returns nothing, so we'd have no way to scope the storage cleanup — and
-  // enumerating all portraits under `${projectId}/candidates/` would wipe
-  // every seeded prefix's portraits, not just this one's. Running with a
-  // non-default prefix against a DB that already has rows of another prefix
-  // would silently destroy the other prefix's portraits.
+  // Step 1: collect the candidate UUIDs matching the prefix BEFORE we delete the DB rows. After bulkDelete runs, `candidates.external_id LIKE $prefix%` returns nothing, so we'd have no way to scope the storage cleanup — and enumerating all portraits under `${projectId}/candidates/` would wipe every seeded prefix's portraits, not just this one's. Running with a non-default prefix against a DB that already has rows of another prefix would silently destroy the other prefix's portraits.
   const candidateIds = await client.listCandidateIdsByPrefix(prefix);
 
-  // Step 2: bulkDelete rows with the configured prefix (Pitfall #6 guardrail).
+  // Step 2: bulkDelete rows with the configured prefix (guardrail above).
   const collections: Record<string, { prefix: string }> = {};
   for (const table of ALLOWED_TEARDOWN_TABLES) {
     collections[table] = { prefix };
@@ -152,22 +129,23 @@ export async function runTeardown(prefix: string, client: TeardownClient): Promi
   const deleteResult = await client.bulkDelete(collections);
   const rowsDeleted = countDeletedRows(deleteResult);
 
-  // Step 3: Storage Path 2 — explicit list + remove (RESEARCH primary).
-  // Path 1 (AFTER-DELETE trigger + pg_net) fires asynchronously; we do NOT
-  // rely on it for deterministic teardown. The UUID list from step 1 scopes
-  // the cleanup to exactly the candidates this prefix owned.
+  // Step 3: Storage Path 2 — explicit list + remove; this is the primary path.
+  // Path 1 (AFTER-DELETE trigger + pg_net) fires asynchronously; we do NOT rely on it for deterministic teardown. The UUID list from step 1 scopes the cleanup to exactly the candidates this prefix owned.
   const portraitPaths = await client.listCandidatePortraitPaths(candidateIds);
   const storageRemoved = await client.removePortraitStorageObjects(portraitPaths);
+
+  // Step 4: reopen the project to voters (162.1 D-19) — only when the caller asks, so E2E teardowns never reopen the project mid-run.
+  if (options.reopenProject) {
+    await client.setProjectOpenForVoters(true);
+  }
 
   return { rowsDeleted, storageRemoved };
 }
 
 /**
- * `bulk_delete` RPC returns `{ [table]: { deleted: N } }` per allowed
- * table. Sum the `deleted` counts across the result.
+ * `bulk_delete` RPC returns `{ [table]: { deleted: N } }` per allowed table. Sum the `deleted` counts across the result.
  *
- * Robust to missing entries (returns 0 for tables that weren't in the
- * response) and non-numeric `deleted` fields (returns 0 for that entry).
+ * Robust to missing entries (returns 0 for tables that weren't in the response) and non-numeric `deleted` fields (returns 0 for that entry).
  */
 function countDeletedRows(result: Record<string, unknown>): number {
   let total = 0;
@@ -182,13 +160,10 @@ function countDeletedRows(result: Record<string, unknown>): number {
 
 // ---------------------------------------------------------------------------
 // CLI wrapper — parseArgs + process.exit side-effects.
-// Excluded from unit tests (those exercise `runTeardown` + `TEARDOWN_USAGE`
-// via direct import); integration test (Plan 09) subprocess-execs this file.
+// Excluded from unit tests (those exercise `runTeardown` + `TEARDOWN_USAGE` via direct import); the integration test subprocess-execs this file.
 // ---------------------------------------------------------------------------
 
-// Only run the CLI block when invoked directly (tsx execution). Importing
-// this module from tests re-evaluates the exports but must NOT trigger
-// parseArgs against the test runner's process.argv.
+// Only run the CLI block when invoked directly (tsx execution). Importing this module from tests re-evaluates the exports but must NOT trigger parseArgs against the test runner's process.argv.
 const isDirectInvocation =
   typeof process.argv[1] === 'string' &&
   (process.argv[1].endsWith('teardown.ts') || process.argv[1].endsWith('teardown.js'));
@@ -197,6 +172,8 @@ if (isDirectInvocation) {
   const { values } = parseArgs({
     options: {
       prefix: { type: 'string' },
+      // `seed` spells this same concept `--external-id-prefix`, and its help says teardown filters on it. Under `strict: true` the natural carry-over of that spelling was ERR_PARSE_ARGS_UNKNOWN_OPTION — a hard error whose text names no alternative, which reads as "teardown cannot target this prefix" rather than "teardown spells the flag differently". Accepting both removes the trap; `--prefix` remains the documented primary.
+      'external-id-prefix': { type: 'string' },
       help: { type: 'boolean', short: 'h' }
     },
     strict: true,
@@ -208,14 +185,29 @@ if (isDirectInvocation) {
     process.exit(0);
   }
 
-  const prefix = values.prefix ?? 'seed_';
+  // Both spellings resolve to one value. Supplying both with DIFFERENT values is ambiguous rather than redundant — there is no reading of it that is safe to guess at for a mass-delete — so refuse.
+  if (
+    typeof values.prefix === 'string' &&
+    typeof values['external-id-prefix'] === 'string' &&
+    values.prefix !== values['external-id-prefix']
+  ) {
+    process.stderr.write(
+      'Error: --prefix and --external-id-prefix were both given with different values ' +
+        `('${values.prefix}' vs '${values['external-id-prefix']}'). They are aliases; pass one.\n`
+    );
+    process.exit(1);
+  }
+
+  const prefix = values.prefix ?? values['external-id-prefix'] ?? 'seed_';
 
   try {
     const client = new SupabaseAdminClient();
-    const { rowsDeleted, storageRemoved } = await runTeardown(prefix, client);
+    // The CLI reopens the project it targets (162.1 D-19), which undoes a `perm-closed-project` seed.
+    const { rowsDeleted, storageRemoved } = await runTeardown(prefix, client, { reopenProject: true });
     process.stdout.write(
       `Teardown complete: ${rowsDeleted} rows deleted, ${storageRemoved} storage objects removed.\n` +
-        `Prefix: ${prefix}\n`
+        `Prefix: ${prefix}\n` +
+        'Project reopened to voters (open_for_voters = true).\n'
     );
     process.exit(0);
   } catch (err) {

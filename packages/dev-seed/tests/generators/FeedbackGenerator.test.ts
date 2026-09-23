@@ -1,10 +1,7 @@
 /**
  * FeedbackGenerator unit tests.
  *
- * Minimal stub per Claude's Discretion — returns `[]` by default; supports
- * `fixed[]` pass-through with NO external_id prefix (feedback table has no
- * `external_id` column; the Fragment.external_id key is discarded at the
- * generator boundary).
+ * Minimal stub per Claude's Discretion — returns `[]` by default; supports `fixed[]` pass-through with NO external_id prefix (feedback table has no `external_id` column; the Fragment.external_id key is discarded at the generator boundary).
  */
 
 import { describe, expect, it, vi } from 'vitest';

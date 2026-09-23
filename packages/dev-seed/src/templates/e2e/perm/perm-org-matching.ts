@@ -1,18 +1,10 @@
 /**
  * perm-org-matching minimal-data template.
  *
- * Topology: 1 election, 1 CG with 1 CO, 2 organisations, member candidates,
- * ONE opinion category with FOUR Likert-5 questions. The dataset is shaped so
- * the three `matching.organizationMatching` modes — `none` / `answersOnly` /
- * `impute` — produce DISTINGUISHABLE org match scores (the spec re-seeds the
- * app_settings singleton per mode):
+ * Topology: 1 election, 1 CG with 1 CO, 2 organisations, member candidates, ONE opinion category with FOUR Likert-5 questions. The dataset is shaped so the three `matching.organizationMatching` modes — `none` / `answersOnly` / `impute` — produce DISTINGUISHABLE org match scores (the spec re-seeds the app_settings singleton per mode):
  *
- *   - Organisation `or-1` carries SOME of its OWN answers (`q1`, `q2`) and
- *     leaves `q3`, `q4` BLANK.
- *   - Its member candidate (`ca-1-1a`) answers ALL FOUR questions, covering
- *     the org's blanks `q3`/`q4` — so under `impute` those blanks are filled
- *     from the member, whereas under `answersOnly` they are penalised as the
- *     polar opposite of the voter (standard missing-answer rule).
+ *   - Organisation `or-1` carries SOME of its OWN answers (`q1`, `q2`) and leaves `q3`, `q4` BLANK.
+ *   - Its member candidate (`ca-1-1a`) answers ALL FOUR questions, covering the org's blanks `q3`/`q4` — so under `impute` those blanks are filled from the member, whereas under `answersOnly` they are penalised as the polar opposite of the voter (standard missing-answer rule).
  *
  * This makes the three modes diverge for an answered voter:
  *   - `none`        → the org shows NO match score.
@@ -26,17 +18,11 @@
  *   - q2: or-1 own = '1' (disagrees with voter).
  *   - q3: or-1 BLANK; member ca-1-1a = '5' (imputes agreement).
  *   - q4: or-1 BLANK; member ca-1-1a = '5' (imputes agreement).
- * Under `answersOnly` the blanks q3/q4 are penalised (treated as '1'); under
- * `impute` they become '5'. The two scores therefore differ for the polar-max
- * voter, satisfying the distinguishability requirement.
+ * Under `answersOnly` the blanks q3/q4 are penalised (treated as '1'); under `impute` they become '5'. The two scores therefore differ for the polar-max voter, satisfying the distinguishability requirement.
  *
- * Org own answers are stitched by the Writer's `importAnswers` pass (which —
- * as of the rename (see phase 119) — generalises over candidates AND organizations); the org
- * carries `answersByExternalId` keyed by FULL prefixed question external_ids.
+ * Org own answers are stitched by the Writer's `importAnswers` pass (which — despite its name — generalises over candidates AND organizations); the org carries `answersByExternalId` keyed by FULL prefixed question external_ids.
  *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-orgmatch-'`. Row external_ids
- * bare; nested refs prefixed. Additive — own namespaced dataset, does NOT
- * touch `e2e/base`.
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-orgmatch-'`. Row external_ids bare; nested refs prefixed. Additive — own namespaced dataset, does NOT touch `e2e/base`.
  */
 
 import { buildCandidate, buildElectionConstituencyNoms, LIKERT_5_EN, MINIMAL_BASE_APP_SETTINGS } from './shared';
@@ -78,7 +64,7 @@ export const permOrgMatchingTemplate: Template = {
         external_id: 'el-1',
         name: { en: '[EL1] Org-matching election' },
         short_name: { en: 'EL1' },
-        election_type: 'general',
+        election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 0,
         is_generated: false,
@@ -114,8 +100,7 @@ export const permOrgMatchingTemplate: Template = {
     ]
   },
 
-  // or-1 carries SOME own answers (q1/q2) + leaves q3/q4 blank. or-2 is a
-  // plain comparison party.
+  // or-1 carries SOME own answers (q1/q2) + leaves q3/q4 blank. or-2 is a plain comparison party.
   organizations: {
     count: 0,
     fixed: [
@@ -246,8 +231,7 @@ export const permOrgMatchingTemplate: Template = {
           ...MINIMAL_BASE_APP_SETTINGS,
           matching: {
             ...MINIMAL_BASE_APP_SETTINGS.matching,
-            // Default mode; the spec re-seeds the singleton with each
-            // of {none, answersOnly, impute} to assert distinguishable scores.
+            // Default mode; the spec re-seeds the singleton with each of {none, answersOnly, impute} to assert distinguishable scores.
             organizationMatching: 'impute'
           }
         }

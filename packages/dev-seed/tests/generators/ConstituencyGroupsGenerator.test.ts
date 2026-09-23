@@ -1,9 +1,7 @@
 /**
  * ConstituencyGroupsGenerator unit tests.
  *
- * acceptance criteria (a)–(e) + sentinel-free output. The `_constituencies`
- * join sentinel (RESEARCH) is populated by Plan 07's post-topo pass; this
- * generator emits none.
+ * acceptance criteria (a)–(e) + sentinel-free output. The `_constituencies` join sentinel is populated by the pipeline's post-topo pass; this generator emits none.
  */
 
 import { describe, expect, it } from 'vitest';

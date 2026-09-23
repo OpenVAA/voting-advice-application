@@ -1,23 +1,13 @@
 /**
  * QuestionCategoriesGenerator — content generator for the `question_categories` table.
  *
- * RESEARCH: `project_id` is required; optional `category_type` enum defaults
- * to 'opinion'; `election_ids`/`election_rounds`/`constituency_ids`/`entity_type`
- * JSONB filters default to NULL.
+ * Schema: `project_id` is required; optional `category_type` enum defaults to 'opinion'; `election_ids`/`election_rounds`/`constituency_ids`/`entity_type` JSONB filters default to NULL.
  *
- * Sentinel policy: this generator does NOT emit the `_elections` join sentinel
- * (same deferred-enrichment pattern as Plan 04's ElectionsGenerator). Plan 07's
- * post-topo pass attaches `_elections: { externalId: string[] }` after every
- * generator has run, so the full `ctx.refs.elections` is known. Keeping generator
- * output sentinel-free also means unit tests can assert raw `TablesInsert` shape
- * without filtering sentinels.
+ * Sentinel policy: this generator does NOT emit the `_elections` join sentinel (the same deferred-enrichment pattern ElectionsGenerator uses). The pipeline's post-topo pass attaches `_elections: { externalId: string[] }` after every generator has run, so the full `ctx.refs.elections` is known. Keeping generator output sentinel-free also means unit tests can assert raw `TablesInsert` shape without filtering sentinels.
  *
- * apply — see ElectionsGenerator.ts for the
- * canonical-pattern rationale.
+ * apply — see ElectionsGenerator.ts for the canonical-pattern rationale.
  *
- * Default count = 2: enough category diversity for the plumbing (see phase 56)
- * (e.g. "Economy", "Environment") so QuestionsGenerator's rotation assigns
- * questions across more than one category. see phase 58 templates can override.
+ * Default count = 2: enough category diversity for the plumbing (e.g. "Economy", "Environment") so QuestionsGenerator's rotation assigns questions across more than one category. Templates can override it.
  */
 
 import type { Enums, TablesInsert } from '@openvaa/supabase-types';
@@ -28,7 +18,7 @@ export type QuestionCategoriesFragment = Fragment<TablesInsert<'question_categor
 export class QuestionCategoriesGenerator {
   constructor(private ctx: Ctx) {}
 
-  // see phase 56 ignores ctx here; see phase 57/58 generators read ctx.refs to scale counts.
+  // `defaults` ignores ctx here; reading `ctx.refs` is how a generator would scale its counts.
 
   defaults(ctx: Ctx): QuestionCategoriesFragment {
     return { count: 2 };
@@ -55,7 +45,7 @@ export class QuestionCategoriesGenerator {
         category_type: 'opinion' satisfies Enums<'category_type'>,
         sort_order: i,
         is_generated: true
-        // _elections sentinel added by Plan 07's post-topo pass (RESEARCH).
+        // _elections sentinel added by the pipeline's post-topo pass.
       });
     }
 

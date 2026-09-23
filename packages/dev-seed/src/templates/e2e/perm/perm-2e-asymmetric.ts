@@ -5,12 +5,9 @@
  *   - EL-1 attached to CG-1 (co-1a only).
  *   - EL-2 attached to CG-2 (co-2a + co-2b) AND ALSO to CG-1 (co-1a).
  *
- * When both elections selected, election selector shown; constituency-
- * selection step shows CG-1 prefilled (only co-1a auto-implied) and an
- * active CG-2 picker.
+ * When both elections selected, election selector shown; constituency-selection step shows CG-1 prefilled (only co-1a auto-implied) and an active CG-2 picker.
  *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-2e-asymmetric-'`. Row
- * external_ids bare; refs prefixed.
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-2e-asymmetric-'`. Row external_ids bare; refs prefixed.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS verbatim.
  */
@@ -40,7 +37,7 @@ export const perm2eAsymmetricTemplate: Template = {
         external_id: 'el-1',
         name: { en: '[EL1] CG-1 only' },
         short_name: { en: 'EL1' },
-        election_type: 'general',
+        election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 0,
         is_generated: false,
@@ -52,7 +49,7 @@ export const perm2eAsymmetricTemplate: Template = {
         external_id: 'el-2',
         name: { en: '[EL2] CG-1 + CG-2' },
         short_name: { en: 'EL2' },
-        election_type: 'local',
+        election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 1,
         is_generated: false,

@@ -2,23 +2,16 @@
 /**
  * ONE-OFF maintainer script to refresh the portrait pool.
  *
- * DO NOT invoke on every seed — the 30 fetched images are checked into the
- * repo at `packages/dev-seed/src/assets/portraits/` and consumed from disk
- * by the Writer and by the `default` template.
+ * DO NOT invoke on every seed — the 30 fetched images are checked into the repo at `packages/dev-seed/src/assets/portraits/` and consumed from disk by the Writer and by the `default` template.
  *
- * The one-off nature is deliberate: thispersondoesnotexist.com serves a fresh
- * StyleGAN-generated image per request, so running this script OVERWRITES the
- * committed pool with 30 new faces. Commit the fresh files afterwards to lock
- * the new pool for reproducibility.
+ * The one-off nature is deliberate: thispersondoesnotexist.com serves a fresh StyleGAN-generated image per request, so running this script OVERWRITES the committed pool with 30 new faces. Commit the fresh files afterwards to lock the new pool for reproducibility.
  *
  * Usage:
  *   yarn workspace @openvaa/dev-seed tsx scripts/download-portraits.ts
  *
  * Requires: network access to https://thispersondoesnotexist.com
  *
- * Licensing caveat: see packages/dev-seed/src/assets/portraits/LICENSE.md —
- * the source does NOT publish an explicit license; the legal posture is
- * acknowledged as ambiguous and the pool is intended for local dev / CI only.
+ * Licensing caveat: see packages/dev-seed/src/assets/portraits/LICENSE.md — the source does NOT publish an explicit license; the legal posture is acknowledged as ambiguous and the pool is intended for local dev / CI only.
  */
 import { writeFile, mkdir } from 'node:fs/promises';
 import { join, dirname } from 'node:path';

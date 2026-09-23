@@ -1,5 +1,5 @@
 /**
- * fanOutLocales unit tests (NF-04 Pitfall #1).
+ * fanOutLocales unit tests — the determinism discipline.
  *
  * Exercises:
  *   - Opt-out default (undefined / false → no-op).
@@ -17,7 +17,7 @@ import { describe, expect, it } from 'vitest';
 import { fanOutLocales, LOCALES } from '../src/locales';
 
 describe('fanOutLocales (TMPL-07)', () => {
-  it('LOCALES is the hardcoded array ["en", "fi", "sv"] in exact order (Pitfall #1)', () => {
+  it('LOCALES is the hardcoded array ["en", "fi", "sv"] in exact order', () => {
     expect(LOCALES).toEqual(['en', 'fi', 'sv']);
   });
 
@@ -129,9 +129,7 @@ describe('fanOutLocales (TMPL-07)', () => {
   });
 
   it('different seeds produce different fan-out output when faker fallback fires', () => {
-    // Use a row with NO `en` value so fan-out can't mirror and must fall back
-    // to faker — where seed variance is observable. Rows that carry `en` are
-    // mirrored deterministically regardless of seed (the intended behavior).
+    // Use a row with NO `en` value so fan-out can't mirror and must fall back to faker — where seed variance is observable. Rows that carry `en` are mirrored deterministically regardless of seed (the intended behavior).
     const input1 = { elections: [{ name: { fi: 'Demo' } }] };
     const input2 = { elections: [{ name: { fi: 'Demo' } }] };
     const r1 = fanOutLocales(input1, { generateTranslationsForAllLocales: true }, 42);

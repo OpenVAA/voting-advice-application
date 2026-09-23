@@ -1,17 +1,13 @@
 /**
- * defaultPositions tests (Task 1).
+ * defaultPositions tests.
  *
- * Covers GEN-06d — per-candidate isotropic Gaussian draw around a
- * party centroid. The position default is the only sub-step that runs
- * per-candidate (dims/centroids/loadings/spread are closure-cached
- * by the emitter shell). Tests pin:
+ * Covers the per-candidate isotropic Gaussian draw around a party centroid. The position default is the only sub-step that runs per-candidate (dims/centroids/loadings/spread are closure-cached by the emitter shell). Tests pin:
  *   - shape + higher-dim generalization (Tests 1, 2)
  *   - short-circuit when `spread === 0` (Tests 3, 4)
- *   - statistical correctness: centered at centroid, std matches spread,
- *     isotropic across dims, zero cross-dim correlation (Tests 5, 6, 7)
- *   - API behaviour — partyIdx selection, determinism (Tests 8, 9)
- *   - error handling for out-of-range partyIdx (Test 10)
- *   - Pitfall 1 finiteness regression over 1000 varied-spread calls (Test 11)
+ *   - statistical correctness: centered at centroid, std matches spread, isotropic across dims, zero cross-dim correlation (Tests 5, 6, 7)
+ *   - API behaviour — organizationIdx selection, determinism (Tests 8, 9)
+ *   - error handling for out-of-range organizationIdx (Test 10)
+ *   - finiteness regression over 1000 varied-spread calls (Test 11)
  *
  * contract: pure I/O, no Supabase imports.
  */
@@ -127,7 +123,7 @@ describe('defaultPositions (GEN-06d)', () => {
     expect(Math.abs(r)).toBeLessThan(0.1);
   });
 
-  it('uses partyIdx-specific centroid', () => {
+  it('uses organizationIdx-specific centroid', () => {
     const ctx = makeCtx();
     expect(
       defaultPositions(
@@ -159,14 +155,14 @@ describe('defaultPositions (GEN-06d)', () => {
     expect(a).toEqual(b);
   });
 
-  it('throws on out-of-range partyIdx', () => {
+  it('throws on out-of-range organizationIdx', () => {
     const ctx = makeCtx();
     expect(() => defaultPositions(-1, [[0, 0]], 0.15, ctx)).toThrow(/out of range/);
     expect(() => defaultPositions(5, [[0, 0]], 0.15, ctx)).toThrow(/out of range/);
     expect(() => defaultPositions(0, [], 0.15, ctx)).toThrow(/out of range/);
   });
 
-  it('produces finite coords over 1000 varied-spread calls (Pitfall 1 regression)', () => {
+  it('produces finite coords over 1000 varied-spread calls (regression guard)', () => {
     const ctx = makeCtx();
     for (let i = 0; i < 1000; i++) {
       const spread = (i % 10) * 0.05;

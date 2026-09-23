@@ -5,18 +5,13 @@
  *   - EL-1 → CG-1 → co-1a, co-1b
  *   - EL-2 → CG-2 → co-2a, co-2b
  *
- * Note on the `-1co` suffix: a single-CO CG auto-implies (no picker rendered),
- * which makes the "show constituency picker for CG-1" contract unobservable.
+ * Note on the `-1co` suffix: a single-CO CG auto-implies (no picker rendered), which makes the "show constituency picker for CG-1" contract unobservable.
  * To exercise the picker contract while still minimal, each CG has TWO COs.
- * The slug stays `perm-disjoint-1co` to preserve external_id prefix
- * continuity; this doc-comment is authoritative on the actual shape.
+ * The slug stays `perm-disjoint-1co` to preserve external_id prefix continuity; this doc-comment is authoritative on the actual shape.
  *
- * Election selector shown. When only EL-1 selected, constituency-selection
- * step shows only CG-1 picker (2 options). When both selected, both pickers
- * shown and continue is disabled until both are filled.
+ * Election selector shown. When only EL-1 selected, constituency-selection step shows only CG-1 picker (2 options). When both selected, both pickers shown and continue is disabled until both are filled.
  *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-disjoint-1co-'`. Row
- * external_ids bare; refs prefixed.
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-disjoint-1co-'`. Row external_ids bare; refs prefixed.
  *
  * Settings: MINIMAL_BASE_APP_SETTINGS verbatim.
  */
@@ -46,7 +41,7 @@ export const permDisjoint1coTemplate: Template = {
         external_id: 'el-1',
         name: { en: '[EL1] Region election' },
         short_name: { en: 'EL1' },
-        election_type: 'general',
+        election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 0,
         is_generated: false,
@@ -58,7 +53,7 @@ export const permDisjoint1coTemplate: Template = {
         external_id: 'el-2',
         name: { en: '[EL2] Municipal election' },
         short_name: { en: 'EL2' },
-        election_type: 'local',
+        election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 1,
         is_generated: false,

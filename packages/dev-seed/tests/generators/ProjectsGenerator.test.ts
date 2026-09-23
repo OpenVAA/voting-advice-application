@@ -1,8 +1,7 @@
 /**
  * ProjectsGenerator unit tests — pass-through.
  *
- * scope: pure I/O. Mirrors AccountsGenerator shape — both tables are
- * bootstrapped by seed.sql and dev-seed emits `[]` for any request shape.
+ * scope: pure I/O. Mirrors AccountsGenerator shape — both tables are bootstrapped by seed.sql and dev-seed emits `[]` for any request shape.
  */
 
 import { describe, expect, it, vi } from 'vitest';

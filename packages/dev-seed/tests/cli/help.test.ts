@@ -18,6 +18,14 @@ describe('USAGE (CLI-04)', () => {
     expect(USAGE).toContain('--external-id-prefix');
   });
 
+  /**
+   * The line used to end "Teardown filters on this." That is true of the VALUE and false of the FLAG NAME, and the natural reading — carry the same flag over to seed:teardown — was a hard ERR_PARSE_ARGS_UNKNOWN_OPTION whose text named no alternative. The cross-reference must name the flag teardown actually takes, so this pins the half that was ambiguous rather than the whole sentence, which is free to be reworded.
+   */
+  it('names the flag seed:teardown takes, not just that teardown filters on the value', () => {
+    expect(USAGE).toContain('seed:teardown');
+    expect(USAGE).toMatch(/seed:teardown, whose flag is --prefix/);
+  });
+
   it('documents --help flag with short form -h', () => {
     expect(USAGE).toMatch(/-h, --help/);
   });

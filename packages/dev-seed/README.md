@@ -3,7 +3,7 @@
 Template-driven dev data generator for OpenVAA local development.
 
 Populates a freshly-reset local Supabase with realistic OpenVAA data
-(candidates, parties, elections, questions, nominations, portraits) in one
+(candidates, organizations, elections, questions, nominations, portraits) in one
 command. Designed for contributor ergonomics: a `{}` template produces a valid
 trivial dataset; the `default` template produces a browseable Finnish-flavored
 VAA demo across four locales.
@@ -67,31 +67,48 @@ hand-curated data with the same prefix gets it deleted. Use a distinct prefix
 for hand-curated data to keep it safe. The 2-char minimum (T-58-07-02) prevents
 accidental mass-delete from a single-character prefix.
 
+After the rows and portraits are gone, the CLI **reopens the project it targets**
+(`open_for_voters = true`, the default project), which undoes a
+`perm-closed-project` seed. Only the CLI does this: `runTeardown` reopens only
+when its caller passes `{ reopenProject: true }`, so the E2E teardowns, which
+call it without the option, never reopen the E2E project mid-run.
+
 ## Built-in Templates
 
 ### `default`
 
 A realistic Finnish-flavored parliamentary election:
 
-- 1 election, 1 constituency group, 13 constituencies (invented Finnish-flavored
+- 1 election, 1 constituency group, 5 constituencies (invented Finnish-flavored
   names — NOT real electoral districts)
-- 8 parties (invented — Blue Coalition, Green Wing, Social Democrats Union,
+- 8 organizations (invented — Blue Coalition, Green Wing, Social Democrats Union,
   Rural Alliance, People's Movement, Red Front, Coastal Party, Values Coalition)
-- 100 candidates non-uniformly distributed across parties (weights
-  `[20, 18, 15, 12, 10, 10, 8, 7]` — sorted descending, realistic feel)
-- 24 questions (18 ordinal Likert + 5 single-choice categorical + 1 boolean)
-  across 4 opinion categories
+- 327 candidates non-uniformly distributed across organizations (weights
+  `[61, 56, 49, 43, 38, 33, 26, 21]` — sorted descending, realistic feel)
+- 26 questions (18 ordinal Likert + 5 single-choice categorical + 1 boolean +
+  1 number + 1 multiple-choice categorical) across 4 opinion categories
 - All 4 locales populated (`generateTranslationsForAllLocales: true` —
   en / fi / sv / da)
-- Seed `42` (deterministic — same run produces byte-identical rows)
-- 100 portraits cycled from the committed `src/assets/portraits/` pool
+- Seed `42` (deterministic — same run produces byte-identical rows, except
+  `candidates.image.path`, whose object name is random; see below)
+- 327 portraits cycled from the committed `src/assets/portraits/` pool
   (30 images, public-domain AI-generated — see
   [`src/assets/portraits/LICENSE.md`](./src/assets/portraits/LICENSE.md))
 
+Portraits are uploaded as `<project id>/candidates/<candidate id>/<random uuid>.jpg`,
+the naming convention the application's own uploads use. Which portrait a
+candidate gets is deterministic; the object name is not. A random name is not
+guessable, and the storage cleanup trigger deletes only object names that match
+the UUID convention. Teardown lists each candidate's folder, so it never depends
+on the names. Re-seeding over an existing seed uploads a fresh portrait per
+candidate and updates `candidates.image`; the storage cleanup trigger then deletes
+the portrait that update left unreferenced, asynchronously, via `pg_net`, a few
+seconds after the commit.
+
 Candidate answers are clustered via the latent-factor emitter (see phase 57)
-(`ctx.answerEmitter ??= latentAnswerEmitter(template)`) — parties get
+(`ctx.answerEmitter ??= latentAnswerEmitter(template)`) — organizations get
 per-centroid positions in latent space and candidates sample around their
-party's centroid. Matching / political-compass plots show visible clustering
+organization's centroid. Matching / political-compass plots show visible clustering
 out of the box.
 
 ### `e2e/base`
@@ -108,13 +125,25 @@ when the canonical base dataset moved under `src/templates/e2e/`, and
 ### `perm-*` and `show-feedback-survey`
 
 Minimal-data settings- and topology-permutation fixtures consumed by the
-Playwright suite — 28 of the 30 built-ins. Each carries its own distinct
+Playwright suite — 29 of the 31 built-ins. Each carries its own distinct
 `externalIdPrefix` so per-perm setup and teardown never share a prefix and
 cannot race each other in a parallel run. They are E2E fixtures rather than a
 demo dataset: seed one only when you are reproducing the spec that owns it. The
 authoritative list is the `BUILT_IN_TEMPLATES` map in
 [`src/templates/index.ts`](./src/templates/index.ts), which is also what
 `--help` points at, so this README never carries a second copy to drift.
+
+**`perm-closed-project`** (prefix `e2e-perm-closed-project-`) is the one
+built-in that leaves its project **closed to voters**: it declares
+`openForVoters: false`, so the writer's last pass sets
+`projects.open_for_voters = false` and the project's public data becomes
+unreadable to anon. It keeps `access.voterApp: true`, so a maintenance page seen
+against it is caused by the closure, not by the access flag.
+
+> ⚠ `yarn db:seed --template perm-closed-project` closes the **default**
+> project (`00000000-0000-0000-0000-000000000001`), the one a local `yarn dev`
+> serves. `yarn db:seed:teardown --prefix e2e-perm-closed-project-` deletes its
+> rows and reopens the project (`open_for_voters = true`).
 
 ## Authoring Custom Templates
 
@@ -141,7 +170,7 @@ const template: Template = {
         external_id: 'election_2026',
         name: { en: 'My Demo Election' },
         election_date: '2026-11-01',
-        election_type: 'general'
+        election_type: 'organization_list'
       }
     ]
   },
@@ -159,8 +188,8 @@ const template: Template = {
     count: 4, // 4 total
     fixed: [
       // — 2 hand-authored, 2 synthetic
-      { external_id: 'party_a', name: { en: 'Alpha Party' }, color: '#2546a8' },
-      { external_id: 'party_b', name: { en: 'Beta Party' }, color: '#a82525' }
+      { external_id: 'org_a', name: { en: 'Alpha Party' }, color: '#2546a8' },
+      { external_id: 'org_b', name: { en: 'Beta Party' }, color: '#a82525' }
     ]
   },
 
@@ -233,8 +262,8 @@ await runPipeline(template, overrides);
 ```
 
 The built-in `default` template ships its own overrides
-(`candidates-override.ts` for the `[20, 18, 15, 12, 10, 10, 8, 7]` party
-weighting; `questions-override.ts` for the 18/5/1 question-type mix) and
+(`candidates-override.ts` for the `[61, 56, 49, 43, 38, 33, 26, 21]` organization
+weighting; `questions-override.ts` for the question-type mix) and
 wires them via `BUILT_IN_OVERRIDES` (see
 [`src/templates/index.ts`](./src/templates/index.ts)).
 
@@ -245,10 +274,18 @@ Every `Template` field is documented via JSDoc on the
 in your IDE to see field-level docs. Key top-level fields:
 
 - `seed: number` — deterministic RNG seed (NF-04).
+- `refDate: string` — ISO datetime anchoring every generated date; defaults to
+  the exported `SEED_REF_DATE`. Dates are drawn relative to this anchor rather
+  than to the system clock, so the same seed emits the same dates on any
+  calendar day.
 - `externalIdPrefix: string` — teardown filter + row prefix (GEN-04).
 - `projectId: string` — bootstrap project UUID (defaults to seed.sql bootstrap).
 - `generateTranslationsForAllLocales: boolean` — 4-locale expansion
   (en / fi / sv / da per `staticSettings.supportedLocales`).
+- `openForVoters: boolean` — when present, the writer sets the target project's
+  `open_for_voters` to this value as its last pass; when absent, openness is
+  untouched. dev-seed never creates a project row. Only `perm-closed-project`
+  sets it (`false`).
 - `latent: { dimensions, eigenvalues, centroids, spread, loadings, noise }` —
   latent-factor emitter config (see phase 57).
 - Per-entity `{ count?, fixed? }` fragments for each of the 12 non-system

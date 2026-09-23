@@ -8,19 +8,19 @@
  *   4. Unknown name => error listing built-ins + suggesting path form.
  *
  * Loader:
- *   - `.ts` / `.js` => `await import(pathToFileURL(absPath).href)`. tsx runtime
- *     handles `.ts` transformation. Reads `mod.default` or `mod.template`.
+ *   - `.ts` / `.js` => `await import(pathToFileURL(absPath).href)`. tsx runtime handles `.ts` transformation. Reads `mod.default` or `mod.template`.
  *   - `.json` => `JSON.parse(readFileSync(absPath, 'utf8'))` + zod validate.
  *
  * Validation:
  *   - Every resolved template runs through `validateTemplate()` before return.
  *     field-path errors surface on misconfiguration.
  *
- * Security note (T-58-05-02 in Plan's threat model):
- *   - Loading `.ts`/`.js` from arbitrary paths executes developer-authored
- *     code at runtime. This is INTENTIONAL (custom templates).
+ *     ⚠ Built-ins are NOT exempt. The built-in branch routes through `validateTemplate()` too (see the call below). Without that, the zod layer would guard custom templates only, and `default`, `e2e/base` and every `perm-*` would bypass `.strict()` at seed time.
+ *
+ * Security note:
+ *   - Loading `.ts`/`.js` from arbitrary paths executes developer-authored code at runtime. This is INTENTIONAL (custom templates).
  *     Not a vulnerability — dev tool with same trust model as tsx itself.
- *     LICENSE.md-level warning in README.md (Plan 10).
+ *     LICENSE.md-level warning in README.md.
  */
 
 import { readFileSync } from 'node:fs';
@@ -33,10 +33,9 @@ import type { Template } from '../template/types';
  * Resolve a `--template` argument to a validated Template.
  *
  * @param arg The raw string passed to `--template`. May be a built-in name
- *            (e.g. `'default'`, `'e2e/base'`) or a filesystem path
- *            (`'./my.ts'`, `'/abs/path.json'`, `'../rel.js'`).
- * @param builtIns Map of built-in template name => Template. Plan 05 passes
- *            an empty map (`{}`); Plan 06 populates `{ default, 'e2e/base' }`.
+ *            (e.g. `'default'`, `'e2e/base'`) or a filesystem path (`'./my.ts'`, `'/abs/path.json'`, `'../rel.js'`).
+ * @param builtIns Map of built-in template name => Template. May be empty
+ *            (`{}`), in which case every non-path argument is unknown.
  */
 export async function resolveTemplate(arg: string, builtIns: Record<string, Template>): Promise<Template> {
   if (isPath(arg)) {
@@ -47,7 +46,8 @@ export async function resolveTemplate(arg: string, builtIns: Record<string, Temp
     return loadModuleTemplate(absPath);
   }
 
-  const builtIn = builtIns[arg];
+  // ⚠ Own-property lookup, not a bare index. `builtIns` is a plain object literal, so `builtIns['toString']` resolves through the prototype chain to `Object.prototype.toString` — truthy — and `--template toString` would skip the "Unknown template" branch entirely, losing the actionable message that lists the built-ins. `Object.hasOwn` is what prevents it.
+  const builtIn = Object.hasOwn(builtIns, arg) ? builtIns[arg] : undefined;
   if (!builtIn) {
     const builtInNames = Object.keys(builtIns);
     const builtInList = builtInNames.length > 0 ? builtInNames.join(', ') : '(none registered yet)';
@@ -56,7 +56,8 @@ export async function resolveTemplate(arg: string, builtIns: Record<string, Temp
         "For a custom template, pass a path like './my-template.ts' or '/abs/path.json'."
     );
   }
-  return builtIn;
+  // Validate here too, so every entry path — built-in, path-loaded module and JSON — traverses the same two layers. Costs microseconds per run; without it `.strict()` would never fire on `default`, `e2e/base` or any `perm-*`.
+  return validateTemplate(builtIn);
 }
 
 /**
@@ -75,8 +76,7 @@ function isPath(arg: string): boolean {
 
 /**
  * JSON loader: read + JSON.parse + zod validate.
- * JSON parse errors bubble up with their default message; zod errors include
- * field paths via `validateTemplate`.
+ * JSON parse errors bubble up with their default message; zod errors include field paths via `validateTemplate`.
  */
 function loadJsonTemplate(absPath: string): Template {
   let raw: unknown;
@@ -90,8 +90,7 @@ function loadJsonTemplate(absPath: string): Template {
 
 /**
  * ts/.js loader: dynamic import => mod.default?? mod.template.
- * The `pathToFileURL` conversion is REQUIRED for absolute paths on all
- * platforms (Windows/POSIX) — bare paths don't work with ESM `import()`.
+ * The `pathToFileURL` conversion is REQUIRED for absolute paths on all platforms (Windows/POSIX) — bare paths don't work with ESM `import()`.
  */
 async function loadModuleTemplate(absPath: string): Promise<Template> {
   const url = pathToFileURL(absPath).href;

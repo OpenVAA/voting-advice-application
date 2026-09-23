@@ -1,19 +1,11 @@
 /**
- * Answer emitter — see phase 56 random-valid-per-question-type stub behind the
- * function-pointer seam.
+ * Answer emitter — the random-valid-per-question-type stub behind the function-pointer seam.
  *
- * SINGLE function pointer, NO interface ceremony. see phase 57 supplies a
- * latent-factor emitter by assigning `ctx.answerEmitter`. The candidate generator
- * does not change between the two emitter generations — only `ctx.answerEmitter` gets
- * populated.
+ * SINGLE function pointer, NO interface ceremony. The latent-factor emitter is installed by assigning `ctx.answerEmitter`; the candidate generator does not change between emitter generations — only `ctx.answerEmitter` gets populated.
  *
- * forward note: see phase 57's latent emitter can fall back to
- * `defaultRandomValidEmit` for categorical questions when no explicit loading /
- * choice mapping is supplied, mirroring this stub (see phase 56).
+ * The latent emitter can itself fall back to `defaultRandomValidEmit` for categorical questions when no explicit loading / choice mapping is supplied, mirroring this stub.
  *
- * shape-valid ONLY. Subdimension projection / MISSING_VALUE handling stays in
- * `@openvaa/matching`. This emitter does NOT produce correlated or clustered
- * answers — see phase 57's latent-factor emitter does that.
+ * shape-valid ONLY. Subdimension projection / MISSING_VALUE handling stays in `@openvaa/matching`. This emitter does NOT produce correlated or clustered answers — the latent-factor emitter does that.
  */
 
 import type { Faker } from '@faker-js/faker';
@@ -21,16 +13,14 @@ import type { Enums, TablesInsert } from '@openvaa/supabase-types';
 import type { Ctx } from '../ctx';
 
 /**
- * AnswerEmitter signature per RESEARCH Open Question 4.
+ * AnswerEmitter signature.
  *
  *  - `candidate` — the candidate row being emitted (TablesInsert<'candidates'>).
- *    see phase 56 does not consume it, but see phase 57's latent emitter will (candidate's
- *    latent position).
+ *    The default emitter does not consume it; the latent emitter does, for the candidate's latent position.
  *  - `questions` — the pre-built list of question rows (TablesInsert<'questions'>[]).
  *  - `ctx` — gives access to the seeded `ctx.faker` for RNG.
  *
- * Return value keys by question `external_id`; matches what `importAnswers`
- * expects (the helper then resolves extId → UUID and stitches the JSONB).
+ * Return value keys by question `external_id`; matches what `importAnswers` expects (the helper then resolves extId → UUID and stitches the JSONB).
  */
 export type AnswerEmitter = (
   candidate: TablesInsert<'candidates'>,
@@ -41,16 +31,15 @@ export type AnswerEmitter = (
 type QuestionType = Enums<'question_type'>;
 
 /**
- * see phase 56 default: random-valid-per-question-type.
+ * The default: random-valid-per-question-type.
  *
  * Mapping per question_type enum:
  *  - `text` / `multipleText` — `faker.lorem.sentence()` / array of words.
- *  - `number` — `faker.number.int({ min: 0, max: 100 })`.
+ *  - `number` — `faker.number.int` inside the range the question declares in `custom_data.min` / `custom_data.max`, falling back to `0`–`100` only when the question declares neither (see `emitNumberInDeclaredRange`).
  *  - `boolean` — `faker.datatype.boolean()`.
- *  - `date` — `faker.date.recent().toISOString()`.
- *  - `image` — `null` (opaque JSONB; upload path is see phase 58).
- *  - `singleChoiceOrdinal` / `singleChoiceCategorical` — random choice id from
- *    `q.choices[].id`.
+ *  - `date` — `faker.date.recent({ refDate }).toISOString()`, drawn relative to `ctx.refDate` rather than the system clock.
+ *  - `image` — `null` (opaque JSONB; the upload path lives in the writer).
+ *  - `singleChoiceOrdinal` / `singleChoiceCategorical` — random choice id from `q.choices[].id`.
  *  - `multipleChoiceCategorical` — random non-empty subset of `q.choices[].id`.
  */
 export function defaultRandomValidEmit(
@@ -62,17 +51,16 @@ export function defaultRandomValidEmit(
   for (const q of questions) {
     const qExtId = q.external_id;
     if (!qExtId) continue;
-    out[qExtId] = { value: emitValueFor(q, ctx.faker) };
+    out[qExtId] = { value: emitValueFor(q, ctx.faker, ctx.refDate) };
   }
   return out;
 }
 
-// Compile-time assertion that `defaultRandomValidEmit` conforms to the
-// `AnswerEmitter` seam signature. If the signature drifts, TS reports here.
+// Compile-time assertion that `defaultRandomValidEmit` conforms to the `AnswerEmitter` seam signature. If the signature drifts, TS reports here.
 const _typecheckDefaultEmit: AnswerEmitter = defaultRandomValidEmit;
 void _typecheckDefaultEmit;
 
-function emitValueFor(q: TablesInsert<'questions'>, faker: Faker): unknown {
+function emitValueFor(q: TablesInsert<'questions'>, faker: Faker, refDate: Date): unknown {
   const type = q.type as QuestionType;
   switch (type) {
     case 'text':
@@ -82,11 +70,11 @@ function emitValueFor(q: TablesInsert<'questions'>, faker: Faker): unknown {
       return Array.from({ length: n }, () => faker.lorem.word());
     }
     case 'number':
-      return faker.number.int({ min: 0, max: 100 });
+      return emitNumberInDeclaredRange(q, faker);
     case 'boolean':
       return faker.datatype.boolean();
     case 'date':
-      return faker.date.recent().toISOString();
+      return faker.date.recent({ refDate }).toISOString();
     case 'image':
       return null;
     case 'singleChoiceOrdinal':
@@ -95,15 +83,34 @@ function emitValueFor(q: TablesInsert<'questions'>, faker: Faker): unknown {
     case 'multipleChoiceCategorical':
       return pickMultipleChoiceIds(q, faker);
     default: {
-      // Exhaustiveness guardrail — if a new question_type is added to the DB enum,
-      // this branch fires at compile time via `never`. Runtime fallback to null
-      // keeps the generator running; the DB upsert will surface the error with a
-      // clearer message than a throw from here would.
+      // Exhaustiveness guardrail — if a new question_type is added to the DB enum, this branch fires at compile time via `never`. Runtime fallback to null keeps the generator running; the DB upsert will surface the error with a clearer message than a throw from here would.
       const _exhaustive: never = type;
       void _exhaustive;
       return null;
     }
   }
+}
+
+/**
+ * The span used for a `number` question that declares no range of its own.
+ * Pinned by `tests/emitters/answers.test.ts` so it cannot be dropped silently.
+ */
+const NUMBER_FALLBACK_RANGE = { min: 0, max: 100 } as const;
+
+/**
+ * Emit a `number` answer inside the range the question ITSELF declares.
+ *
+ * `custom_data.min` / `custom_data.max` is the same range `NumberQuestion.isMatchable` reads and the same range `normalizeCoordinate` (`@openvaa/core`) throws outside of. Drawing from a hardcoded `0`–`100` regardless of the declaration produces answers a matchable question cannot normalize. That defect stayed latent for a long time only because anon could not see candidates at all, so no candidate number answer was ever normalized.
+ *
+ * A malformed declaration (`min > max`) is deliberately NOT papered over: faker throws, the seed run fails loudly, and the template author sees the real error rather than a silently-substituted span.
+ *
+ * ONE `faker.number.int` draw whatever the range — the pinned-seed determinism contract depends on the number of faker reads per question staying fixed.
+ */
+function emitNumberInDeclaredRange(q: TablesInsert<'questions'>, faker: Faker): number {
+  const customData = (q.custom_data ?? {}) as { min?: unknown; max?: unknown };
+  const min = typeof customData.min === 'number' ? customData.min : NUMBER_FALLBACK_RANGE.min;
+  const max = typeof customData.max === 'number' ? customData.max : NUMBER_FALLBACK_RANGE.max;
+  return faker.number.int({ min, max });
 }
 
 function pickOneChoiceId(q: TablesInsert<'questions'>, faker: Faker): string | null {

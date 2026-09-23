@@ -1,16 +1,12 @@
 /**
- * Box-Muller statistics + edge-case tests (Task 1).
+ * Box-Muller statistics + edge-case tests.
  *
  * Covers the RED gate for `src/emitters/latent/gaussian.ts`:
- *   - Test 1: approx N(0,1) over 10,000 seeded draws (mean ∈ [-0.05, 0.05],
- *     std ∈ [0.95, 1.05]).
+ *   - Test 1: approx N(0,1) over 10,000 seeded draws (mean ∈ [-0.05, 0.05], std ∈ [0.95, 1.05]).
  *   - Test 2: mean/stdDev scaling — N(3, 0.1²) statistics hold.
- *   - Test 3: Pitfall 1 regression guard — never `NaN` or `Infinity` across 10,000 draws
- *     (proves the `Math.max(u1, Number.MIN_VALUE)` clamp is in place).
- *   - Test 4: short-circuit — `stdDev === 0` returns exactly `mean` and does NOT
- *     consume faker draws.
- *   - Test 5: determinism — two fresh `Faker` instances seeded with 42 produce
- *     byte-identical sequences (Pattern A per RESEARCH).
+ *   - Test 3: `Math.log(0)` regression guard — never `NaN` or `Infinity` across 10,000 draws (proves the `Math.max(u1, Number.MIN_VALUE)` clamp is in place).
+ *   - Test 4: short-circuit — `stdDev === 0` returns exactly `mean` and does NOT consume faker draws.
+ *   - Test 5: determinism — two fresh `Faker` instances seeded with 42 produce byte-identical sequences.
  *
  * contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc `.
  */
@@ -50,7 +46,7 @@ describe('boxMuller (gaussian.ts)', () => {
     expect(std).toBeLessThan(0.105);
   });
 
-  it('never returns NaN or Infinity (Pitfall 1 regression guard)', () => {
+  it('never returns NaN or Infinity (regression guard)', () => {
     const faker = seededFaker();
     for (let i = 0; i < 10_000; i++) {
       const v = boxMuller(faker);

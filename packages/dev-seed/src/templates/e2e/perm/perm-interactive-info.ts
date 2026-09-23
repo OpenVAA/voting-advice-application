@@ -1,35 +1,17 @@
 /**
  * perm-interactive-info minimal-data template.
  *
- * Topology: 1 election, 1 CG with 1 CO, 2 organisations, 2 candidates, ONE
- * opinion category carrying the question-info substrate the spec
- * needs to assert both `questions.interactiveInfo.enabled` modes plus the
- * advanced info content.
+ * Topology: 1 election, 1 CG with 1 CO, 2 organisations, 2 candidates, ONE opinion category carrying the question-info substrate the spec needs to assert both `questions.interactiveInfo.enabled` modes plus the advanced info content.
  *
- * Mode carriers (the `interactiveInfo.enabled` flag is an APP-LEVEL setting —
- * `questions.interactiveInfo.enabled` in app_settings — so the popup-modal vs
- * static-expander distinction is exercised by the spec re-seeding the
- * singleton per mode). This template ships `interactiveInfo.enabled = true`
- * (popup-modal) by default and provides two info-carrying questions:
- *   - `qu-popup`   — carries `info` text (the carrier the popup-modal slice
- *                    clicks to open a modal dialog).
- *   - `qu-default` — carries `info` text too (under the static-expander mode
- *                    re-seed, the SAME question reveals its body inline).
+ * Mode carriers (the `interactiveInfo.enabled` flag is an APP-LEVEL setting — `questions.interactiveInfo.enabled` in app_settings — so the popup-modal vs static-expander distinction is exercised by the spec re-seeding the singleton per mode). This template ships `interactiveInfo.enabled = true` (popup-modal) by default and provides two info-carrying questions:
+ *   - `qu-popup`   — carries `info` text (the carrier the popup-modal slice clicks to open a modal dialog).
+ *   - `qu-default` — carries `info` text too (under the static-expander mode re-seed, the SAME question reveals its body inline).
  *
- * Advanced info content (NOTE, all shapes per
- * `packages/app-shared/src/data/customData.type.ts`):
- *   - `customData.infoSections` (`Array<{title, content(html)}>`) on
- *     `qu-popup` (≥1 question).
- *   - `customData.arguments` (`Array<QuestionArguments>`) on THREE separate
- *     questions, one per opinion type — Likert (`qu-likert`, LikertPros/Cons),
- *     Boolean (`qu-boolean`, BooleanPros/Cons), Categorical (`qu-categorical`,
- *     CategoricalPros with a per-`choiceId` group) — because argument
- *     rendering is type-dependent and the categorical layout groups by
- *     `choiceId`.
+ * Advanced info content (NOTE, all shapes per `packages/app-shared/src/data/customData.type.ts`):
+ *   - `customData.infoSections` (`Array<{title, content(html)}>`) on `qu-popup` (≥1 question).
+ *   - `customData.arguments` (`Array<QuestionArguments>`) on THREE separate questions, one per opinion type — Likert (`qu-likert`, LikertPros/Cons), Boolean (`qu-boolean`, BooleanPros/Cons), Categorical (`qu-categorical`, CategoricalPros with a per-`choiceId` group) — because argument rendering is type-dependent and the categorical layout groups by `choiceId`.
  *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-iinfo-'`. Row external_ids
- * bare; nested refs prefixed. Additive — own namespaced dataset, does NOT
- * touch `e2e/base`.
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-iinfo-'`. Row external_ids bare; nested refs prefixed. Additive — own namespaced dataset, does NOT touch `e2e/base`.
  */
 
 import { ARGUMENT_TYPE } from '@openvaa/app-shared';
@@ -80,8 +62,7 @@ const BOOLEAN_ARGUMENTS: Array<QuestionArguments> = [
 ];
 
 /**
- * Categorical arguments — grouped per `choiceId` (the categorical layout
- * renders one argument group per referenced choice).
+ * Categorical arguments — grouped per `choiceId` (the categorical layout renders one argument group per referenced choice).
  */
 const CATEGORICAL_ARGUMENTS: Array<QuestionArguments> = [
   {
@@ -117,7 +98,7 @@ export const permInteractiveInfoTemplate: Template = {
         external_id: 'el-1',
         name: { en: '[EL1] Interactive-info election' },
         short_name: { en: 'EL1' },
-        election_type: 'general',
+        election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 0,
         is_generated: false,
@@ -209,17 +190,7 @@ export const permInteractiveInfoTemplate: Template = {
         sort_order: 1,
         is_generated: false
       },
-      // Likert argument carrier. Co-seeds a single infoSection alongside the
-      // arguments: the voter questions layout only mounts the interactiveInfo
-      // popup button when `(info || infoSections?.length)` is truthy
-      // (questions/+layout.svelte:238), and QuestionArguments renders ONLY inside
-      // QuestionExtendedInfo's `{#if infoSections?.length}` block
-      // (QuestionExtendedInfo.svelte:52,70). Argument carriers carry no `info`,
-      // so a co-seeded infoSection is what makes the popup disclosure (and hence
-      // the type-dependent argument layout) reachable. Decided at the
-      // spec build per (co-seed infoSections vs. moving
-      // the production `{#if args}` gate — the additive seed choice keeps the
-      // production component untouched).
+      // Likert argument carrier. Co-seeds a single infoSection alongside the arguments: the voter questions layout only mounts the interactiveInfo popup button when `(info || infoSections?.length)` is truthy (questions/+layout.svelte:238), and QuestionArguments renders ONLY inside QuestionExtendedInfo's `{#if infoSections?.length}` block (QuestionExtendedInfo.svelte:52,70). Argument carriers carry no `info`, so a co-seeded infoSection is what makes the popup disclosure (and hence the type-dependent argument layout) reachable. Decided at the spec build per (co-seed infoSections vs. moving the production `{#if args}` gate — the additive seed choice keeps the production component untouched).
       {
         external_id: 'qu-likert',
         type: 'singleChoiceOrdinal',
@@ -257,8 +228,7 @@ export const permInteractiveInfoTemplate: Template = {
         sort_order: 3,
         is_generated: false
       },
-      // Categorical argument carrier (arguments grouped per choiceId; co-seeds an
-      // infoSection — see qu-likert note).
+      // Categorical argument carrier (arguments grouped per choiceId; co-seeds an infoSection — see qu-likert note).
       {
         external_id: 'qu-categorical',
         type: 'singleChoiceCategorical',
@@ -326,9 +296,7 @@ export const permInteractiveInfoTemplate: Template = {
           ...MINIMAL_BASE_APP_SETTINGS,
           questions: {
             ...MINIMAL_BASE_APP_SETTINGS.questions,
-            // Popup-modal mode by default (the static-expander mode is the
-            // spec's per-mode re-seed; default `false` is the absence of this
-            // override). asserts BOTH modes in full.
+            // Popup-modal mode by default (the static-expander mode is the spec's per-mode re-seed; default `false` is the absence of this override). asserts BOTH modes in full.
             interactiveInfo: {
               enabled: true
             }

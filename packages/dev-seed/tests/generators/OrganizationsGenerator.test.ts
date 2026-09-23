@@ -1,8 +1,7 @@
 /**
  * OrganizationsGenerator unit tests.
  *
- * acceptance criteria (a)–(e) + see phase 56 no-auth scope assertion: generated
- * rows MUST NOT carry `auth_user_id` (see phase 56 excludes auth per RESEARCH).
+ * acceptance criteria (a)–(e) + the no-auth scope assertion: generated rows MUST NOT carry `auth_user_id`, because dev-seed writes no auth rows.
  */
 
 import { describe, expect, it } from 'vitest';

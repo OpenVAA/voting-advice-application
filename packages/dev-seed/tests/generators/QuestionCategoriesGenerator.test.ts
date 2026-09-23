@@ -1,9 +1,7 @@
 /**
  * QuestionCategoriesGenerator unit tests.
  *
- * acceptance (a)–(e) + default `category_type: 'opinion'` spot-check
- * (RESEARCH). The `_elections` join sentinel is populated by Plan 07's
- * post-topo pass; generator output here is sentinel-free.
+ * acceptance (a)–(e) + default `category_type: 'opinion'` spot-check The `_elections` join sentinel is populated by the pipeline's post-topo pass; generator output here is sentinel-free.
  */
 
 import { describe, expect, it } from 'vitest';

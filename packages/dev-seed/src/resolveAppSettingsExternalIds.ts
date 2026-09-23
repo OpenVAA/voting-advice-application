@@ -1,29 +1,18 @@
 /**
  * Pre-merge resolver for dev-seed Writer Pass-5.
  *
- * Walks a partial settings payload and replaces every `{ externalId: '<id>' }`
- * shape inside known cardContents paths with the plain UUID string from the
- * questions `external_id` → UUID map. Returns a NEW payload (does NOT mutate
- * the input).
+ * Walks a partial settings payload and replaces every `{ externalId: '<id>' }` shape inside known cardContents paths with the plain UUID string from the questions `external_id` → UUID map. Returns a NEW payload (does NOT mutate the input).
  *
  * Currently handled paths:
  *   - results.cardContents.candidate[*].question
  *   - results.cardContents.organization[*].question
  *   - results.cardContents.alliance[*].question
  *
- * Forward-compatible: additional paths can be added as the cardContents
- * settings schema evolves (see phase 88 Plan 04 ADR follow-up TODO —
- * election-specific cardContents refactor).
+ * Forward-compatible: additional paths can be added as the cardContents settings schema evolves; an election-specific cardContents refactor is the open follow-up.
  *
- * Companion helper {@link settingsContainsExternalIdRefs} returns `true`
- * if any `{ externalId }` shape is present at any handled path — used by the
- * Writer to gate the questions-table SELECT (payloads without externalId
- * references pay zero overhead).
+ * Companion helper {@link settingsContainsExternalIdRefs} returns `true` if any `{ externalId }` shape is present at any handled path — used by the Writer to gate the questions-table SELECT (payloads without externalId references pay zero overhead).
  *
  * Pure / synchronous / SSR-safe. No Supabase dependency.
- *
- * Rationale: see phase 88 Plan 04 ADR at
- * (Option B).
  */
 
 const CARD_CONTENTS_KEYS = ['candidate', 'organization', 'alliance'] as const;
@@ -55,11 +44,9 @@ function getCardContentsArray(settings: Record<string, unknown>, key: CardConten
 }
 
 /**
- * Returns `true` when at least one `{ externalId: '<id>' }` shape is present
- * inside `results.cardContents.{candidate,organization,alliance}[*].question`.
+ * Returns `true` when at least one `{ externalId: '<id>' }` shape is present inside `results.cardContents.{candidate,organization,alliance}[*].question`.
  *
- * Cheap pre-walk used by the Writer to gate the questions-table SELECT —
- * payloads without externalId references pay zero overhead.
+ * Cheap pre-walk used by the Writer to gate the questions-table SELECT — payloads without externalId references pay zero overhead.
  */
 export function settingsContainsExternalIdRefs(settings: unknown): boolean {
   if (!settings || typeof settings !== 'object' || Array.isArray(settings)) return false;
@@ -77,15 +64,12 @@ export function settingsContainsExternalIdRefs(settings: unknown): boolean {
 }
 
 /**
- * Resolve every `{ externalId: '<id>' }` reference inside the settings payload
- * to its plain UUID string using the provided map.
+ * Resolve every `{ externalId: '<id>' }` reference inside the settings payload to its plain UUID string using the provided map.
  *
- * Returns a NEW payload. The input is NOT mutated (structural clone of the
- * affected sub-trees only).
+ * Returns a NEW payload. The input is NOT mutated (structural clone of the affected sub-trees only).
  *
  * @throws Error when an `{ externalId }` shape references an id NOT present
- *   in `externalIdToUuid`. Error message includes the offending cardContents
- *   path + the missing id.
+ *   in `externalIdToUuid`. Error message includes the offending cardContents path + the missing id.
  */
 export function resolveAppSettingsExternalIds(
   settings: Record<string, unknown>,

@@ -1,13 +1,9 @@
 /**
  * ConstituencyGroupsGenerator — foundation generator for `constituency_groups`.
  *
- * Standard DataObject scaffolding (RESEARCH): `project_id` is the only
- * required column; no content FKs to other generated rows. The constituencies
- * join sentinel (see RESEARCH) is populated by Plan 07's post-topo pass
- * once every generator has run (same two-pass pattern as ElectionsGenerator).
+ * Standard DataObject scaffolding: `project_id` is the only required column; no content FKs to other generated rows. The constituencies join sentinel is populated by the pipeline's post-topo pass once every generator has run (same two-pass pattern as ElectionsGenerator).
  *
- * apply — see ElectionsGenerator.ts for the
- * canonical-pattern rationale.
+ * apply — see ElectionsGenerator.ts for the canonical-pattern rationale.
  */
 
 import type { TablesInsert } from '@openvaa/supabase-types';
@@ -18,7 +14,7 @@ export type ConstituencyGroupsFragment = Fragment<TablesInsert<'constituency_gro
 export class ConstituencyGroupsGenerator {
   constructor(private ctx: Ctx) {}
 
-  // see phase 56 ignores ctx here; see phase 57/58 generators read ctx.refs to scale counts.
+  // `defaults` ignores ctx here; reading `ctx.refs` is how a generator would scale its counts.
 
   defaults(ctx: Ctx): ConstituencyGroupsFragment {
     return { count: 1 };

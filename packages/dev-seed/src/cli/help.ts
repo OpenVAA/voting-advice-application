@@ -1,18 +1,15 @@
 /**
  * Static --help output for `yarn workspace @openvaa/dev-seed seed`.
- * documents every flag + lists built-in templates + points to the
- * custom-template authoring README.
+ * documents every flag + lists built-in templates + points to the custom-template authoring README.
  *
- * The built-in template list is HARDCODED here rather than derived from
- * BUILT_IN_TEMPLATES to keep `--help` fast (no module import) and to avoid
- * coupling help output to Plan 06's template map initialization order.
- * Plan 06 adds new built-ins => update this file in the same commit.
+ * The built-in template list is HARDCODED here rather than derived from BUILT_IN_TEMPLATES to keep `--help` fast (no module import) and to avoid coupling help output to the template map's initialization order.
+ * ⚠ Adding a built-in => update this file in the same commit.
  */
 
 export const USAGE = `Usage: yarn workspace @openvaa/dev-seed seed [options]
 
 Seeds the active local Supabase with template-driven synthetic data
-(candidates, parties, elections, questions, nominations, portraits).
+(candidates, organizations, elections, questions, nominations, portraits).
 
 Options:
   -t, --template <name-or-path>    Template to apply. Built-in names resolve first;
@@ -20,12 +17,15 @@ Options:
                                     [default: default]
       --seed <integer>              Override template.seed for deterministic RNG.
       --external-id-prefix <str>    Override generator's external_id prefix
-                                    (default 'seed_'). Teardown filters on this.
+                                    (default 'seed_'). To remove rows seeded
+                                    under it later, pass the SAME value to
+                                    seed:teardown, whose flag is --prefix
+                                    (--external-id-prefix is accepted too).
   -h, --help                        Show this help and exit.
 
 Built-in templates:
-  default              Finnish-flavored election, 13 constituencies / 8 parties /
-                       100 candidates / 24 questions, 4-locale (en/fi/sv/da).
+  default              Finnish-flavored election, 5 constituencies / 8 organizations /
+                       327 candidates / 26 questions, 4-locale (en/fi/sv/da).
   e2e/base             Canonical Playwright base dataset, single-locale.
   perm-*               Settings/topology-permutation fixtures
                        (see packages/dev-seed/src/templates/index.ts).

@@ -1,36 +1,25 @@
 /**
  * Default-template questions override — enforces the type mix: majority Likert
- * (ordinal), some categorical, exactly 1 boolean, plus (see phase 129) one
- * number-scale + one multipleChoiceCategorical opinion question so the demo
- * exercises the new question inputs. NO text/date/image/multipleText.
+ * (ordinal), some categorical, exactly 1 boolean, plus one number-scale and one multipleChoiceCategorical opinion question so the demo exercises those question inputs. NO text/date/image/multipleText.
  *
  * Split:
  *   - 18 singleChoiceOrdinal (5-point Likert)
  *   - 5  singleChoiceCategorical (3-5 choices each)
  *   - 1  boolean
  *   - 1  number (custom_data min/max, matchable)
- *   - 1  multipleChoiceCategorical (4 choices, minSelections 2 / maxSelections 3)
- *   Total: 26
+ *   - 1  multipleChoiceCategorical (4 choices, minSelections 2 / maxSelections 3) Total: 26
  *
- * 1/5 of the questions (indices 0, 5, 10, 15, 20, 25) additionally carry a
- * `customData.terms` definition whose trigger is a word from the question's
- * own name, so the in-text term popup (Term.svelte) renders in the demo data.
+ * 1/5 of the questions (indices 0, 5, 10, 15, 20, 25) additionally carry a `customData.terms` definition whose trigger is a word from the question's own name, so the in-text term popup (Term.svelte) renders in the demo data.
  *
- * The latent emitter (emitters/latent/project.ts) supports number (via the
- * defaultRandomValidEmit fallback) and multipleChoiceCategorical (mapMulti-
- * Categorical), so candidate answers for both new types are emitted for free.
+ * The latent emitter (emitters/latent/project.ts) supports number (via the defaultRandomValidEmit fallback) and multipleChoiceCategorical (mapMultiCategorical), so candidate answers for both new types are emitted.
  *
- * Questions are distributed across the 4 categories from
- * `ctx.refs.question_categories` in round-robin so every category receives
- * questions.
+ * ⚠ They are NOT emitted validly "for free". A fallback that draws every number answer from a hardcoded 0-100, irrespective of the range the question declares below, gives the { min: 0, max: 10 } number question 294 out-of-range answers out of 327 — measured — which normalizeCoordinate (@openvaa/core) throws on. The fallback reads custom_data.min/max, and tests/emitters/answers.test.ts holds it there.
  *
- * The latent emitter (installed in pipeline.ts:177) exercises the latent model
- * for ordinal + categorical types. Boolean falls back to
- * `defaultRandomValidEmit` — same behavior as the default generator.
+ * Questions are distributed across the 4 categories from `ctx.refs.question_categories` in round-robin so every category receives questions.
  *
- * `TYPE_PLAN` contains ordinal / categorical / boolean / number /
- * multipleChoiceCategorical enum values; no `text/date/image/multipleText`
- * path is possible.
+ * The latent emitter (installed in pipeline.ts:177) exercises the latent model for ordinal + categorical types. Boolean falls back to `defaultRandomValidEmit` — same behavior as the default generator.
+ *
+ * `TYPE_PLAN` contains ordinal / categorical / boolean / number / multipleChoiceCategorical enum values; no `text/date/image/multipleText` path is possible.
  */
 
 import type { Faker } from '@faker-js/faker';
@@ -61,10 +50,7 @@ const TYPE_PLAN: ReadonlyArray<QuestionType> = [
 ];
 
 /**
- * Standard 5-point Likert choices. Mirrors QuestionsGenerator.LIKERT_5 exactly
- * (including `normalizableValue` on every entry) so the latent emitter's
- * ordinal dispatch (project.ts:10-13 COORDINATE inverse-normalize) works
- * without special-casing.
+ * Standard 5-point Likert choices. Mirrors QuestionsGenerator.LIKERT_5 exactly (including `normalizableValue` on every entry) so the latent emitter's ordinal dispatch (project.ts:10-13 COORDINATE inverse-normalize) works without special-casing.
  */
 const LIKERT_5 = [
   { id: '1', label: { en: 'Strongly disagree' }, normalizableValue: 1 },
@@ -75,15 +61,10 @@ const LIKERT_5 = [
 ] as const;
 
 /**
- * Build categorical choices for a given category question. Count varies 3-5
- * (faker-driven per index for visual variety). Labels are faker nouns — the
- * locale fan-out expands `label.en` across locales if the template sets
- * `generateTranslationsForAllLocales: true`.
+ * Build categorical choices for a given category question. Count varies 3-5 (faker-driven per index for visual variety). Labels are faker nouns — the locale fan-out expands `label.en` across locales if the template sets `generateTranslationsForAllLocales: true`.
  *
- * Note: fanOutLocales (locales.ts) does not currently expand nested
- * `choices[].label` fields — only top-level `name`/`info`/`short_name`.
- * Synthetic categorical labels therefore stay in `en` only across locales;
- * the default template tolerates this visual trade-off.
+ * Note: fanOutLocales (locales.ts) does not currently expand nested `choices[].label` fields — only top-level `name`/`info`/`short_name`.
+ * Synthetic categorical labels therefore stay in `en` only across locales; the default template tolerates this visual trade-off.
  */
 function buildCategoricalChoices(faker: Faker, count: number): Array<{ id: string; label: { en: string } }> {
   return Array.from({ length: count }, (_, i) => ({
@@ -97,15 +78,9 @@ function capitalize(s: string): string {
 }
 
 /**
- * Pick a term-trigger word from a generated question name: the longest
- * mid-sentence word (first word excluded — it is capitalized), stripped of
- * punctuation, length >= 4. Deterministic: longest wins, ties broken by first
- * occurrence. Returns undefined when no word qualifies.
+ * Pick a term-trigger word from a generated question name: the longest mid-sentence word (first word excluded — it is capitalized), stripped of punctuation, length >= 4. Deterministic: longest wins, ties broken by first occurrence. Returns undefined when no word qualifies.
  *
- * The trigger must appear VERBATIM in the question text — `QuestionHeading`
- * splits `question.text` on the trigger strings to render the `<Term>` popup
- * affordance. Locale fan-out mirrors the `en` name to all locales, so an
- * English trigger matches in every locale.
+ * The trigger must appear VERBATIM in the question text — `QuestionHeading` splits `question.text` on the trigger strings to render the `<Term>` popup affordance. Locale fan-out mirrors the `en` name to all locales, so an English trigger matches in every locale.
  */
 function pickTermTrigger(name: string): string | undefined {
   const words = name
@@ -118,18 +93,12 @@ function pickTermTrigger(name: string): string | undefined {
 }
 
 /**
- * Every TERM_EVERY-th question gets a `customData.terms` definition (1/5 of
- * the 24 questions → indices 0, 5, 10, 15, 20) so the in-text term popup
- * (`Term.svelte` toggletip) is exercised by the default demo dataset.
+ * Every TERM_EVERY-th question gets a `customData.terms` definition (1/5 of the 24 questions → indices 0, 5, 10, 15, 20) so the in-text term popup (`Term.svelte` toggletip) is exercised by the default demo dataset.
  */
 const TERM_EVERY = 5;
 
 /**
- * Questions override. Replaces QuestionsGenerator's type rotation with the
- * fixed split. Row shape matches QuestionsGenerator output (external_id,
- * project_id, type, name, choices[?], category ref, is_generated, sort_order,
- * required, allow_open) so bulk_import + the writer's localization fan-out
- * process these rows identically to generator output.
+ * Questions override. Replaces QuestionsGenerator's type rotation with the fixed split. Row shape matches QuestionsGenerator output (external_id, project_id, type, name, choices[?], category ref, is_generated, sort_order, required, allow_open) so bulk_import + the writer's localization fan-out process these rows identically to generator output.
  */
 export function questionsOverride(_fragment: unknown, ctx: Ctx): Array<Record<string, unknown>> {
   const { faker, projectId, externalIdPrefix } = ctx;
@@ -163,27 +132,20 @@ export function questionsOverride(_fragment: unknown, ctx: Ctx): Array<Record<st
       // 3-5 choices per categorical question for variety.
       const n = 3 + faker.number.int({ min: 0, max: 2 });
       row.choices = buildCategoricalChoices(faker, n);
-      // Mark categorical questions filterable so they render in the voter
-      // results filter modal — combined with the parent-nomination filters
-      // (party affiliation), this exercises the full filter surface against
-      // the default Finnish demo seed.
+      // Mark categorical questions filterable so they render in the voter results filter modal — combined with the parent-nomination filters (organization affiliation), this exercises the full filter surface against the default Finnish demo seed.
       row.custom_data = { filterable: true };
     } else if (type === 'number') {
-      // number-scale opinion question. custom_data min/max makes it
-      // matchable (NumberQuestion.isMatchable) and drives the slider input.
+      // number-scale opinion question. custom_data min/max makes it matchable (NumberQuestion.isMatchable) and drives the slider input.
       row.custom_data = { min: 0, max: 10 };
     } else if (type === 'multipleChoiceCategorical') {
-      // multi-choice opinion question with 4 choices + the
-      // selection-count constraints so the demo exercises the helper text.
+      // multi-choice opinion question with 4 choices + the selection-count constraints so the demo exercises the helper text.
       row.choices = buildCategoricalChoices(faker, 4);
       row.custom_data = { filterable: true, minSelections: 2, maxSelections: 3 };
     }
     // boolean: no choices (QuestionsGenerator pattern — boolean is schema-free).
 
     // 1/5 of questions carry a term definition in customData (see TERM_EVERY).
-    // Merged AFTER the type branches so the categorical `filterable` flag is
-    // preserved. Trigger is a word from the question's own name; content is
-    // seeded-faker prose (deterministic — same seed, same rows).
+    // Merged AFTER the type branches so the categorical `filterable` flag is preserved. Trigger is a word from the question's own name; content is seeded-faker prose (deterministic — same seed, same rows).
     if (i % TERM_EVERY === 0) {
       const trigger = pickTermTrigger((row.name as { en: string }).en);
       if (trigger) {

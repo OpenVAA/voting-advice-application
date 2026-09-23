@@ -1,32 +1,17 @@
 /**
  * perm-question-video minimal-data template.
  *
- * Topology: 1 election, 1 CG with 1 CO, 2 organisations, 2 candidates. The
- * opinion questions span THREE opinion categories (category intros SHOWN) so
- * the voter visibility matrix can assert per-surface video placement:
+ * Topology: 1 election, 1 CG with 1 CO, 2 organisations, 2 candidates. The opinion questions span THREE opinion categories (category intros SHOWN) so the voter visibility matrix can assert per-surface video placement:
  *
- *   q-cat 1: q1 (video), q2 (no video), q3 (video)
- *   q-cat 2: q4 (no video)
- *   q-cat 3: q5 (video)
+ *   q-cat 1: q1 (video), q2 (no video), q3 (video) q-cat 2: q4 (no video) q-cat 3: q5 (video)
  *
- * `customData.video` (`VideoContent`, per
- * `packages/app-shared/src/data/customData.type.ts`) is attached to q1, q3, q5
- * ONLY — NEVER on the category intros (the matrix asserts that the question
- * video and the category-intro video are distinct surfaces). The video is
- * INFO ABOUT the question (rendered by the standalone `Video` component, not
- * the hero `<figure>`), so the URLs are PLACEHOLDERS — the spec
- * asserts visibility/attachment of the rendered Video instance, NOT playback.
+ * `customData.video` (`VideoContent`, per `packages/app-shared/src/data/customData.type.ts`) is attached to q1, q3, q5 ONLY — NEVER on the category intros (the matrix asserts that the question video and the category-intro video are distinct surfaces). The video is INFO ABOUT the question (rendered by the standalone `Video` component, not the hero `<figure>`), so the URLs are PLACEHOLDERS — the spec asserts visibility/attachment of the rendered Video instance, NOT playback.
  *
- * `questions.categoryIntros.show = true` (overriding the MINIMAL base default
- * of `false`) so the 3-category intro walk is visible to the voter slice.
+ * `questions.categoryIntros.show = true` (overriding the MINIMAL base default of `false`) so the 3-category intro walk is visible to the voter slice.
  *
- * Candidates fully answer the 5 opinion questions so the candidate-app
- * questions overview (which the candidate `hideVideo` slice drives) is
- * populated.
+ * Candidates fully answer the 5 opinion questions so the candidate-app questions overview (which the candidate `hideVideo` slice drives) is populated.
  *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-qvid-'`. Row external_ids
- * bare; nested refs prefixed. Additive — own namespaced dataset, does NOT
- * touch `e2e/base`.
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-qvid-'`. Row external_ids bare; nested refs prefixed. Additive — own namespaced dataset, does NOT touch `e2e/base`.
  */
 
 import {
@@ -42,9 +27,7 @@ import type { Template } from '../../../template/types';
 const P = 'e2e-perm-qvid-';
 
 /**
- * A placeholder `VideoContent`. Distinct titles per carrier so a spec can
- * disambiguate which question's video rendered. No real network is hit — the
- * assertions test visibility/attachment, not playback.
+ * A placeholder `VideoContent`. Distinct titles per carrier so a spec can disambiguate which question's video rendered. No real network is hit — the assertions test visibility/attachment, not playback.
  */
 function placeholderVideo(label: string): VideoContent {
   return {
@@ -77,7 +60,7 @@ export const permQuestionVideoTemplate: Template = {
         external_id: 'el-1',
         name: { en: '[EL1] Question-video election' },
         short_name: { en: 'EL1' },
-        election_type: 'general',
+        election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 0,
         is_generated: false,
@@ -252,8 +235,7 @@ export const permQuestionVideoTemplate: Template = {
           ...MINIMAL_BASE_APP_SETTINGS,
           questions: {
             ...MINIMAL_BASE_APP_SETTINGS.questions,
-            // Category intros SHOWN — the voter matrix walks each of
-            // the 3 category intros and asserts NONE carries the question video.
+            // Category intros SHOWN — the voter matrix walks each of the 3 category intros and asserts NONE carries the question video.
             categoryIntros: {
               allowSkip: true,
               show: true

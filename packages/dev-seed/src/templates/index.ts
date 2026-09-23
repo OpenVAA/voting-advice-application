@@ -1,16 +1,12 @@
 /**
- * Built-in template registry. The CLI's `loadBuiltIns` dynamically imports
- * this module (via `../templates/index.js`) and reads both `BUILT_IN_TEMPLATES`
- * and `BUILT_IN_OVERRIDES`.
+ * Built-in template registry. The CLI's `loadBuiltIns` dynamically imports this module (via `../templates/index.js`) and reads both `BUILT_IN_TEMPLATES` and `BUILT_IN_OVERRIDES`.
  *
  * The map-based design means a new built-in template ships in two edits:
  *   1. Add the template declaration under `packages/dev-seed/src/templates/`.
  *   2. Register the name in both maps below (and matching overrides if any).
  *
- * The CLI resolves a `--template <name>` arg by looking up `BUILT_IN_TEMPLATES`
- * first; a miss falls through to filesystem-path resolution.
- * `BUILT_IN_OVERRIDES` is consulted only after a successful built-in match so
- * the pipeline receives the per-template override map at `runPipeline(tpl, ov)`.
+ * The CLI resolves a `--template <name>` arg by looking up `BUILT_IN_TEMPLATES` first; a miss falls through to filesystem-path resolution.
+ * `BUILT_IN_OVERRIDES` is consulted only after a successful built-in match so the pipeline receives the per-template override map at `runPipeline(tpl, ov)`.
  */
 
 import { defaultOverrides, defaultTemplate } from './default';
@@ -22,6 +18,7 @@ import { permAccessDisableTemplate } from './e2e/perm/perm-access-disable';
 import { permAnalyticsTrackingTemplate } from './e2e/perm/perm-analytics-tracking';
 import { permAnswersLockedTemplate } from './e2e/perm/perm-answers-locked';
 import { permBankauthNotLocatedTemplate } from './e2e/perm/perm-bankauth-notloc';
+import { permClosedProjectTemplate } from './e2e/perm/perm-closed-project';
 import { permDisableAllowOpenTemplate } from './e2e/perm/perm-disable-allow-open';
 import { permDisableCandidateAppTemplate } from './e2e/perm/perm-disable-candidate-app';
 import { permDisableElection1coTemplate } from './e2e/perm/perm-disable-election-1co';
@@ -35,7 +32,7 @@ import { permHideElectionTagsTemplate } from './e2e/perm/perm-hide-election-tags
 import { permHideHeroTemplate } from './e2e/perm/perm-hide-hero';
 import { permHideIfMissingAnswersTemplate } from './e2e/perm/perm-hide-if-missing-answers';
 import { permInteractiveInfoTemplate } from './e2e/perm/perm-interactive-info';
-import { permLocalisationPositiveTemplate } from './e2e/perm/perm-localisation-positive';
+import { permLocalizationPositiveTemplate } from './e2e/perm/perm-localisation-positive';
 import { permMissingNominationsTemplate } from './e2e/perm/perm-missing-nominations';
 import { permNotLocated2e2cgTemplate } from './e2e/perm/perm-not-located-2e2cg';
 import { permOrgMatchingTemplate } from './e2e/perm/perm-org-matching';
@@ -47,10 +44,7 @@ import type { Template } from '../template/types';
 import type { Overrides } from '../types';
 
 /**
- * Built-in template name → Template. The canonical e2e base dataset is
- * registered under the `e2e/base` invocation name. The perm-* minimal-data
- * templates cover the election + constituency permutations test family. The
- * `perm-*` invocation KEYS stay FLAT even though the perm template files live
+ * Built-in template name → Template. The canonical e2e base dataset is registered under the `e2e/base` invocation name. The perm-* minimal-data templates cover the election + constituency permutations test family. The `perm-*` invocation KEYS stay FLAT even though the perm template files live
  * under `e2e/perm/*`.
  */
 export const BUILT_IN_TEMPLATES: Record<string, Template> = {
@@ -64,35 +58,21 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   'perm-disable-election-1co': permDisableElection1coTemplate,
   'perm-disable-election-2co': permDisableElection2coTemplate,
   'perm-not-located-2e2cg': permNotLocated2e2cgTemplate,
-  // see phase 140 CR-01 remediation — dedicated copy of perm-not-located-2e2cg's
-  // shape reserved for bank-auth-journey.setup.ts/.teardown.ts, with its own
-  // disjoint externalIdPrefix ('e2e-bankauth-notloc-') so its teardown never
-  // shares a PREFIX with (and cannot race) `data-teardown-perm-not-located-2e2cg`.
+  // Dedicated copy of perm-not-located-2e2cg's shape reserved for bank-auth-journey.setup.ts/.teardown.ts, with its own disjoint externalIdPrefix ('e2e-bankauth-notloc-') so its teardown never shares a PREFIX with (and cannot race) `data-teardown-perm-not-located-2e2cg`.
   'perm-bankauth-notloc': permBankauthNotLocatedTemplate,
-  // 3 settings-permutation templates. Each carries its own distinct
-  // externalIdPrefix ('e2e-perm-novapp-', 'e2e-perm-nocand-',
-  // 'e2e-perm-notif-') for parallel safety across the wider suite.
+  // 3 settings-permutation templates. Each carries its own distinct externalIdPrefix ('e2e-perm-novapp-', 'e2e-perm-nocand-', 'e2e-perm-notif-') for parallel safety across the wider suite.
   'perm-disable-voter-app': permDisableVoterAppTemplate,
   'perm-disable-candidate-app': permDisableCandidateAppTemplate,
   'perm-per-app-notifications': permPerAppNotificationsTemplate,
-  // missing-nominations perm template. Distinct externalIdPrefix
-  // 'e2e-perm-missnoms-' (parallel-safe across the perm chains).
+  // missing-nominations perm template. Distinct externalIdPrefix 'e2e-perm-missnoms-' (parallel-safe across the perm chains).
   'perm-missing-nominations': permMissingNominationsTemplate,
-  // localisation-positive perm template. Distinct externalIdPrefix
-  // 'e2e-perm-l10n-pos-'. Uses the 3-locale staticSettings base (en/fi/sv)
-  // directly — no runtime override. Spec exercises the langSelector
-  // visible-and-switching surface + Finnish-translation authoring on q1/q3.
-  'perm-localisation-positive': permLocalisationPositiveTemplate,
+  // localisation-positive perm template. Distinct externalIdPrefix 'e2e-perm-l10n-pos-'. Uses the 3-locale staticSettings base (en/fi/sv) directly — no runtime override. Spec exercises the langSelector visible-and-switching surface + Finnish-translation authoring on q1/q3.
+  'perm-localisation-positive': permLocalizationPositiveTemplate,
 
-  // 9 settings-permutation templates. Each carries its own distinct
-  // externalIdPrefix. Some specs additionally consume the
-  // candidateSessionMinter helper to author per-perm Playwright storage-state
-  // JSON files.
+  // 9 settings-permutation templates. Each carries its own distinct externalIdPrefix. Some specs additionally consume the candidateSessionMinter helper to author per-perm Playwright storage-state JSON files.
   'perm-answers-locked': permAnswersLockedTemplate,
   'perm-hide-hero': permHideHeroTemplate,
-  // renamed from the former perm-header-show-feedback key. Keeps
-  // header.showFeedback and extends with the survey/feedback-popup result-view
-  // surfaces.
+  // renamed from the former perm-header-show-feedback key. Keeps header.showFeedback and extends with the survey/feedback-popup result-view surfaces.
   'show-feedback-survey': showFeedbackSurveyTemplate,
   'perm-header-show-help': permHeaderShowHelpTemplate,
   'perm-hide-all-nominations': permHideAllNominationsTemplate,
@@ -101,41 +81,28 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   'perm-hide-category-tags': permHideCategoryTagsTemplate,
   'perm-disable-allow-open': permDisableAllowOpenTemplate,
 
-  // see phase 119 Plan 03 — 3 hand-authored perm templates whose layouts
-  // buildMinimal cannot express (multi-category video / multi-type opinion /
-  // org-own-answers). Each carries its own distinct externalIdPrefix
-  // ('e2e-perm-qvid-', 'e2e-perm-iinfo-', 'e2e-perm-orgmatch-') for parallel
-  // safety. Keys stay FLAT even though files live under e2e/perm/.
+  // 3 hand-authored perm templates whose layouts buildMinimal cannot express (multi-category video / multi-type opinion / org-own-answers). Each carries its own distinct externalIdPrefix ('e2e-perm-qvid-', 'e2e-perm-iinfo-', 'e2e-perm-orgmatch-') for parallel safety. Keys stay FLAT even though files live under e2e/perm/.
   'perm-question-video': permQuestionVideoTemplate,
   'perm-interactive-info': permInteractiveInfoTemplate,
   'perm-org-matching': permOrgMatchingTemplate,
 
-  // see phase 119 Plan 04 — consolidated access-gating perm. Covers
-  // access.voterApp/candidateApp/underMaintenance via per-mode singleton
-  // re-seed. Distinct externalIdPrefix 'e2e-perm-access-disable-'. The old
-  // perm-disable-voter-app/candidate-app keys are RETAINED above because their
-  // Phase-120-owned setup consumers still resolve them (Pitfall 3).
+  // Consolidated access-gating perm. Covers access.voterApp/candidateApp/underMaintenance via per-mode singleton re-seed. Distinct externalIdPrefix 'e2e-perm-access-disable-'. The old perm-disable-voter-app/candidate-app keys are RETAINED above because setup consumers still resolve them.
   'perm-access-disable': permAccessDisableTemplate,
 
-  // see phase 121 Plan 04 — analytics overlay perm. Seeds the
-  // app_settings analytics platform object (dummy umami code) + trackEvents:true
-  // so the voter-prefs-tracking spec (Plan 06) can arm trackingIntercept.
-  // Distinct externalIdPrefix 'e2e-perm-analytics-'. Consent NOT seeded —
-  // toggled at runtime by the spec.
-  'perm-analytics-tracking': permAnalyticsTrackingTemplate
+  // Analytics overlay perm. Seeds the app_settings analytics platform object (dummy umami code) + trackEvents:true so the voter-prefs-tracking spec can arm trackingIntercept.
+  // Distinct externalIdPrefix 'e2e-perm-analytics-'. Consent NOT seeded — toggled at runtime by the spec.
+  'perm-analytics-tracking': permAnalyticsTrackingTemplate,
+
+  // Closed-project perm (162.1 D-21): leaves its project with open_for_voters = false. Distinct externalIdPrefix 'e2e-perm-closed-project-'.
+  'perm-closed-project': permClosedProjectTemplate
 };
 
 /**
- * Built-in template name → Overrides. Paired 1:1 with `BUILT_IN_TEMPLATES`
- * entries. When the CLI resolves a built-in name it ALSO looks up this map and
- * passes the overrides to `runPipeline`.
+ * Built-in template name → Overrides. Paired 1:1 with `BUILT_IN_TEMPLATES` entries. When the CLI resolves a built-in name it ALSO looks up this map and passes the overrides to `runPipeline`.
  *
- * Templates with no overrides register an empty object (`{}`) or are omitted
- * (`loadBuiltIns` falls back to `{}` when the key is missing).
+ * Templates with no overrides register an empty object (`{}`) or are omitted (`loadBuiltIns` falls back to `{}` when the key is missing).
  *
- * The `e2e/base` template ships with NO overrides — every row is expressed as
- * a `fixed[]` entry. The generators handle the fixed[] passthrough; no
- * content-shaping override is needed.
+ * The `e2e/base` template ships with NO overrides — every row is expressed as a `fixed[]` entry. The generators handle the fixed[] passthrough; no content-shaping override is needed.
  */
 export const BUILT_IN_OVERRIDES: Record<string, Overrides> = {
   default: defaultOverrides
@@ -151,6 +118,7 @@ export { permAccessDisableTemplate } from './e2e/perm/perm-access-disable';
 export { permAnalyticsTrackingTemplate } from './e2e/perm/perm-analytics-tracking';
 export { permAnswersLockedTemplate } from './e2e/perm/perm-answers-locked';
 export { permBankauthNotLocatedTemplate } from './e2e/perm/perm-bankauth-notloc';
+export { permClosedProjectTemplate } from './e2e/perm/perm-closed-project';
 export { permDisableAllowOpenTemplate } from './e2e/perm/perm-disable-allow-open';
 export { permDisableCandidateAppTemplate } from './e2e/perm/perm-disable-candidate-app';
 export { permDisableElection1coTemplate } from './e2e/perm/perm-disable-election-1co';
@@ -164,7 +132,7 @@ export { permHideElectionTagsTemplate } from './e2e/perm/perm-hide-election-tags
 export { permHideHeroTemplate } from './e2e/perm/perm-hide-hero';
 export { permHideIfMissingAnswersTemplate } from './e2e/perm/perm-hide-if-missing-answers';
 export { permInteractiveInfoTemplate } from './e2e/perm/perm-interactive-info';
-export { permLocalisationPositiveTemplate } from './e2e/perm/perm-localisation-positive';
+export { permLocalizationPositiveTemplate } from './e2e/perm/perm-localisation-positive';
 export { permMissingNominationsTemplate } from './e2e/perm/perm-missing-nominations';
 export { permNotLocated2e2cgTemplate } from './e2e/perm/perm-not-located-2e2cg';
 export { permOrgMatchingTemplate } from './e2e/perm/perm-org-matching';

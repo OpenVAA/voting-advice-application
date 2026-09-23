@@ -1,18 +1,12 @@
 /**
- * `defaultCentroids` unit tests (GEN-06b).
+ * `defaultCentroids` unit tests.
  *
  * Covers the farthest-point greedy max-min default centroid sampler:
  *   - Shape: `Array<Array<number>>`, outer length = N parties, inner length = dims.
- *   - Edge cases: N=0 returns `[]`; N=1 returns a single Gaussian draw; no `NaN` /
- *     `Infinity` anywhere (Pitfall 1 regression guard via `gaussian.ts`).
- *   - Determinism: two `makeCtx()` calls (both seeded 42) emit byte-identical
- *     centroids for the same parties input.
- *   - Anchor handling: full anchor map is honored verbatim; partial
- *     anchor map fills missing parties via farthest-point; wrong-length anchors
- *     are silently ignored and the slot is filled via farthest-point.
- *   - Spread sanity: at N=8 with eigenvalues `[1, 1/3]`, min pairwise Euclidean
- *     distance exceeds 0.3 (a baseline uniform Gaussian cloud would miss with
- *     high probability). Protects against algorithm regression.
+ *   - Edge cases: N=0 returns `[]`; N=1 returns a single Gaussian draw; no `NaN` / `Infinity` anywhere — the `Math.log(0)` regression guard, via `gaussian.ts`.
+ *   - Determinism: two `makeCtx()` calls (both seeded 42) emit byte-identical centroids for the same parties input.
+ *   - Anchor handling: full anchor map is honored verbatim; partial anchor map fills missing parties via farthest-point; wrong-length anchors are silently ignored and the slot is filled via farthest-point.
+ *   - Spread sanity: at N=8 with eigenvalues `[1, 1/3]`, min pairwise Euclidean distance exceeds 0.3 (a baseline uniform Gaussian cloud would miss with high probability). Protects against algorithm regression.
  *
  * contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc `.
  */
@@ -41,7 +35,7 @@ describe('defaultCentroids (GEN-06b)', () => {
     });
   });
 
-  it('returns [] when N === 0 (Pitfall-like edge)', () => {
+  it('returns [] when N === 0 (edge case)', () => {
     const ctx = makeCtx();
     expect(defaultCentroids(2, [1, 1 / 3], [], ctx)).toEqual([]);
   });
@@ -106,8 +100,7 @@ describe('defaultCentroids (GEN-06b)', () => {
         if (d < minDist) minDist = d;
       }
     }
-    // Baseline: 0.3. With eigenvalues [1, 0.333] and pool of 80, farthest-point
-    // reliably exceeds this; a failure indicates algorithm regression.
+    // Baseline: 0.3. With eigenvalues [1, 0.333] and pool of 80, farthest-point reliably exceeds this; a failure indicates algorithm regression.
     expect(minDist).toBeGreaterThan(0.3);
   });
 
@@ -121,7 +114,7 @@ describe('defaultCentroids (GEN-06b)', () => {
     c[0].forEach((v) => expect(Number.isFinite(v)).toBe(true));
   });
 
-  it('produces finite coordinates over many seeds (Pitfall 1 regression via gaussian.ts)', () => {
+  it('produces finite coordinates over many seeds (regression guard via gaussian.ts)', () => {
     for (let seed = 0; seed < 100; seed++) {
       // Build a ctx with a distinct seed
       const base = makeCtx();

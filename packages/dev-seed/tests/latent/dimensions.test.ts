@@ -1,12 +1,11 @@
 /**
- * `defaultDimensions` unit tests (Task 1).
+ * `defaultDimensions` unit tests.
  *
  * Covers the RED/GREEN gate for `src/emitters/latent/dimensions.ts`:
  *   - Test 1: empty template → default `{ dims: 2, eigenvalues: [1, 1/3] }`.
  *   - Tests 2-4: `dims in {1, 3, 4}` → geometric decay `(1/3)^i`.
  *   - Test 5: explicit `eigenvalues` override → verbatim use, `dims` derived from length.
- *   - Test 6: both `dimensions` and `eigenvalues` supplied (schema-enforced length match)
- *     → explicit eigenvalues honored verbatim.
+ *   - Test 6: both `dimensions` and `eigenvalues` supplied (schema-enforced length match) → explicit eigenvalues honored verbatim.
  *   - Test 7: determinism + array-identity — no shared mutable state between calls.
  *
  * contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc `.
