@@ -6,7 +6,7 @@
     "build": "tsup && tsc --emitDeclarationOnly --outDir dist && mkdir -p dist/core/condensation/prompts && find src/core/condensation/prompts -mindepth 1 -maxdepth 1 -type d -exec cp -R {} dist/core/condensation/prompts/ \\;",
     "lint": "eslint --flag v10_config_lookup_from_file src/",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test:unit": "vitest run",
     "test:watch": "vitest watch",
     "dev:vis": "serve tools/visualization"
   },
@@ -21,6 +21,7 @@
     "@types/js-yaml": "catalog:",
     "dotenv": "catalog:",
     "serve": "^14.2.3",
+    "tsup": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },

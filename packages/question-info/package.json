@@ -6,7 +6,7 @@
     "build": "tsup && tsc --emitDeclarationOnly --outDir dist && mkdir -p dist/prompts && cp -R src/prompts/* dist/prompts/",
     "lint": "eslint --flag v10_config_lookup_from_file src/",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test:unit": "vitest run",
     "test:watch": "vitest"
   },
   "type": "module",
@@ -18,6 +18,7 @@
   "devDependencies": {
     "@openvaa/shared-config": "workspace:^",
     "@types/js-yaml": "catalog:",
+    "tsup": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
