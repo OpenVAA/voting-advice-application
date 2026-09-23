@@ -63,6 +63,52 @@ async function settleFonts(page: Page): Promise<void> {
   expect(interLoaded, 'webfont Inter did not load — baselines were captured with it').toBe(true);
 }
 
+/**
+ * Third-party font hosts worth guarding against. Font hosts only: the app's analytics host is deliberately absent, being out of scope.
+ */
+const THIRD_PARTY_FONT_HOSTS =
+  /^https?:\/\/(fonts\.googleapis\.com|fonts\.gstatic\.com|fonts\.bunny\.net|use\.typekit\.net|p\.typekit\.net|cdn\.jsdelivr\.net\/npm\/@fontsource)/;
+
+/** The same-origin stylesheet `staticSettings.font.url` points at. */
+const SELF_HOSTED_FONT_STYLESHEET = '/fonts/inter.css';
+
+/**
+ * Assert the page rasterised the application's OWN Inter, served from its OWN origin — no third-party font request was made, and the same-origin stylesheet actually arrived.
+ *
+ * ## Why a retroactive read rather than a listener
+ *
+ * The primary assertion reads `performance.getEntriesByType('resource')`, which covers the WHOLE document lifetime. That matters because the voter cases are handed an already-navigated page: `answeredVoterPage` has completed a ~20s walk before the test body starts, so a `page.on('request')` listener installed here could not observe a single request the walk made. The retroactive read sees them all. Requests are asserted on as a collected list with the offending URLs named — never by throwing inside an event handler, where the exception is swallowed or surfaces as an unattributed unhandled rejection.
+ *
+ * ## Why the second assertion exists
+ *
+ * `settleFonts` above is MEASURABLY BLIND to a missing stylesheet. Measured in the pinned container: with zero `@font-face` rules present — the exact state produced by an unreachable font host OR by a wrong same-origin `/fonts/inter.css` path — `document.fonts.check('1em Inter')` returns `true` and `document.fonts.size` is `0`. It returns `false` only when a face exists whose `src` fails. So a broken vendored path would sail past `settleFonts` and surface as an inscrutable whole-page pixel diff, or worse, be absorbed into a re-baseline as the new truth. Asserting the stylesheet loaded with status 200 makes that failure say so BY NAME. `settleFonts` itself is unchanged.
+ *
+ * ## The boundary of the claim
+ *
+ * This asserts zero third-party font REQUESTS were observed. It does NOT assert zero occurrences of a font-host string in the build, and must never be described that way: `+layout.svelte` keeps the Google URL as its `??` fallback literal and keeps two preconnect literals in a branch that is dead for the current default but correct for an operator who overrides `staticSettings.font.url` back to Google. All three survive into the bundle by design, so a static grep of `apps/frontend/build/` returns hits forever.
+ */
+async function guardThirdPartyFonts(page: Page): Promise<void> {
+  const resources = await page.evaluate(() => performance.getEntriesByType('resource').map((entry) => entry.name));
+
+  const thirdParty = resources.filter((url) => THIRD_PARTY_FONT_HOSTS.test(url));
+  expect(
+    thirdParty,
+    `third-party font requests observed (VGATE-05 requires none): ${thirdParty.join(', ')}`
+  ).toStrictEqual([]);
+
+  const stylesheet = resources.find((url) => url.includes(SELF_HOSTED_FONT_STYLESHEET));
+  expect(
+    stylesheet,
+    `the same-origin Inter stylesheet ${SELF_HOSTED_FONT_STYLESHEET} was never requested — staticSettings.font.url is not pointing at it`
+  ).toBeDefined();
+
+  const response = await page.request.get(stylesheet!);
+  expect(
+    response.status(),
+    `the same-origin Inter stylesheet ${stylesheet} did not load: status ${response.status()}. The vendored font path is wrong, so the capture is fallback glyphs — settleFonts cannot see this (N-2)`
+  ).toBe(200);
+}
+
 // ── Voter Results - Desktop ──────────────────────────────────────────
 
 voterTest.describe('Voter Results - Desktop @visual', { tag: ['@visual'] }, () => {
@@ -74,6 +120,7 @@ voterTest.describe('Voter Results - Desktop @visual', { tag: ['@visual'] }, () =
     // Pin the election: the walk's landing election is a coin flip between Regional and Municipal, and the two lists differ in length, so an unpinned screenshot compares two different pages.
     await selectElectionByName(page, /Regional/i);
     await settleFonts(page);
+    await guardThirdPartyFonts(page);
 
     await voterTest.expect(page).toHaveScreenshot('voter-results-desktop.png', {
       fullPage: true,
@@ -93,6 +140,7 @@ voterTest.describe('Voter Results - Mobile @visual', { tag: ['@visual'] }, () =>
     // Same election pin as the desktop case — see selectElectionByName.
     await selectElectionByName(page, /Regional/i);
     await settleFonts(page);
+    await guardThirdPartyFonts(page);
 
     await voterTest.expect(page).toHaveScreenshot('voter-results-mobile.png', {
       fullPage: true,
@@ -112,6 +160,7 @@ candidateTest.describe('Candidate Preview - Desktop @visual', { tag: ['@visual']
     // Use the candidatePreviewPage fixture's container-visible assertion — the fixture wraps the testid lookup and offers strict visibility semantics + a future composition surface for follow-up assertions.
     await candidatePreviewPage.expectPortraitVisible();
     await settleFonts(page);
+    await guardThirdPartyFonts(page);
 
     await expect(page).toHaveScreenshot('candidate-preview-desktop.png', {
       fullPage: true,
@@ -135,6 +184,7 @@ candidateTest.describe('Candidate Preview - Mobile @visual', { tag: ['@visual'] 
     await page.goto(buildRoute({ route: 'CandAppPreview', locale: 'en' }));
     await candidatePreviewPage.expectPortraitVisible();
     await settleFonts(page);
+    await guardThirdPartyFonts(page);
 
     await expect(page).toHaveScreenshot('candidate-preview-mobile.png', {
       fullPage: true,

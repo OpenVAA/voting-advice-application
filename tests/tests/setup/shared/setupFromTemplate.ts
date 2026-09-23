@@ -17,7 +17,7 @@ import {
   Writer
 } from '@openvaa/dev-seed';
 import { expect } from '@playwright/test';
-import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
+import { resolveE2eProjectId, SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import type { Template } from '@openvaa/dev-seed';
 
 /**
@@ -45,13 +45,6 @@ export interface SetupFromTemplateOptions {
   appSettingsOverride?: Record<string, unknown>;
 }
 
-// reason: dev-seed `default` template emits `seed_`-prefixed baseline rows into
-// TEST_PROJECT_ID (packages/dev-seed/src/ctx.ts:89 — `externalIdPrefix ?? 'seed_'`).
-// The freshness probe must NOT treat those auto-seeded baseline rows as
-// "non-test contamination". Excluded alongside the per-template teardown prefix;
-// genuinely-contaminated (non-seed_, non-test) rows still warn.
-const BASELINE_SEED_PREFIX = 'seed_';
-
 export interface SetupFromTemplateResult {
   /**
    * Idempotent cleanup function — re-invokes `runTeardown(prefix, client)` to clear all rows with the template's externalIdPrefix. Safe to call multiple times; safe to NOT call (dedicated teardown projects also invoke runTeardown).
@@ -70,19 +63,13 @@ async function probeFreshDatabasePrecondition(client: SupabaseAdminClient, prefi
   const requireFresh = process.env.E2E_REQUIRE_FRESH_DB === 'true';
   // NULL external_id rows stay excluded by NOT LIKE semantics.
   const candQuery = client.query('candidates');
-  const { data: nonTestCands, error: candErr } = await candQuery
-    .not('external_id', 'like', `${prefix}%`)
-    .not('external_id', 'like', `${BASELINE_SEED_PREFIX}%`)
-    .limit(5);
+  const { data: nonTestCands, error: candErr } = await candQuery.not('external_id', 'like', `${prefix}%`).limit(5);
   const orgQuery = client.query('organizations');
-  const { data: nonTestOrgs, error: orgErr } = await orgQuery
-    .not('external_id', 'like', `${prefix}%`)
-    .not('external_id', 'like', `${BASELINE_SEED_PREFIX}%`)
-    .limit(5);
+  const { data: nonTestOrgs, error: orgErr } = await orgQuery.not('external_id', 'like', `${prefix}%`).limit(5);
 
   if (candErr || orgErr) {
     console.warn(
-      `[setupFromTemplate] Fresh-database probe failed (candidates: ${candErr?.message ?? 'ok'}; organizations: ${orgErr?.message ?? 'ok'}) — proceeding without precondition guarantee.`
+      `[setupFromTemplate] Unowned-row probe failed (candidates: ${candErr?.message ?? 'ok'}; organizations: ${orgErr?.message ?? 'ok'}) — proceeding without precondition guarantee.`
     );
     return;
   }
@@ -90,7 +77,7 @@ async function probeFreshDatabasePrecondition(client: SupabaseAdminClient, prefi
   const totalNonTest = (nonTestCands?.length ?? 0) + (nonTestOrgs?.length ?? 0);
   if (totalNonTest === 0) return;
 
-  const message = `[setupFromTemplate] Database is NOT fresh — found ${nonTestCands?.length ?? 0} non-test candidate(s) and ${nonTestOrgs?.length ?? 0} non-test organization(s) (probe limited to 5 each). Pre-existing non-test data will coexist with the seeded dataset and may produce confusing test failures.`;
+  const message = `[setupFromTemplate] The E2E project contains rows this run does not own — ${nonTestCands?.length ?? 0} candidate(s) and ${nonTestOrgs?.length ?? 0} organization(s) whose external_id is not prefixed '${prefix}' (probe limited to 5 each, scoped to this project only). They will coexist with the seeded dataset and may produce confusing test failures.`;
 
   if (requireFresh) {
     throw new Error(message);
@@ -128,7 +115,10 @@ export async function setupFromTemplate(
             throw new Error(`Empty externalIdPrefix for '${templateName}' has no teardown-prefix fallback`);
           })();
 
-  const client = new SupabaseAdminClient();
+  // Resolved once and threaded through all three writing surfaces below. No template declares a `projectId`, and `buildCtx` falls back to the default project, so a client pointed at the E2E project would otherwise read one project while the pipeline and the writer filled another.
+  const projectId = resolveE2eProjectId();
+
+  const client = new SupabaseAdminClient(undefined, undefined, projectId);
 
   // 0. Unowned-row probe over this run's own project (warn by default; opt-in to fail via E2E_REQUIRE_FRESH_DB=true).
   await probeFreshDatabasePrecondition(client, teardownPrefix);
@@ -152,10 +142,12 @@ export async function setupFromTemplate(
 
   // 2. Pipeline + writer. Writer Pass-5 applies app_settings.fixed[] via
   //    merge_jsonb_column.
-  const rows = runPipeline(template!, overrides);
+  //    The template is spread rather than edited on disk: `projectId` is a template field the pipeline reads through `buildCtx`, and overriding it here keeps all 40 template files portable and free of a harness-specific id.
+  const rows = runPipeline({ ...template!, projectId }, overrides);
   fanOutLocales(rows, template!, seed);
-  const writer = new Writer();
-  await writer.write(rows, prefix);
+  const writer = new Writer({ projectId });
+  // The third argument carries the template's openForVoters; the closed-project E2E node (perm-closed-project) depends on it to close the project.
+  await writer.write(rows, prefix, { openForVoters: template!.openForVoters });
 
   // 3. Authoritative app_settings REPLACE + EXACT post-seed assertion.
   //

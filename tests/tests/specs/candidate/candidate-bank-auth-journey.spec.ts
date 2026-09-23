@@ -167,15 +167,17 @@ test.describe('candidate bank-auth journey', { tag: ['@bank-auth'] }, () => {
       const candidateRows = (candidateResult.type === 'success' ? candidateResult.data : undefined) ?? [];
       expect(candidateRows.length, 'a candidate row should be linked to the bank-auth user').toBe(1);
 
-      // 6c. The candidate role assignment exists (public.user_roles via PostgREST).
-      const roleResult = await client.findData('user_roles', { user_id: authUserId, role: 'candidate' });
-      expect(roleResult.type, 'user_roles lookup should succeed').toBe('success');
-      // reason: discriminated-union data-extraction narrowing (not a branch on
-      // test outcome); the line above already asserts `.type === 'success'`. The
-      // downstream expect(roleRows.length, ...) assertion is unchanged.
+      // 6c. The candidate authority row exists (public.grants via PostgREST). 162-15 RETIRED public.user_roles; this step used to query that table, which the identity-callback function had already STOPPED writing at 162-06 -- it writes public.grants through `entityGrant.ts`. The assertion was therefore stale before the table was deleted, and unobserved because this journey runs only under tests/IDURA-TEST-RUNBOOK.md rather than in the standard suite.
+      const roleResult = await client.findData('grants', {
+        user_id: authUserId,
+        scope: 'entity',
+        target_type: 'candidate'
+      });
+      expect(roleResult.type, 'grants lookup should succeed').toBe('success');
+      // reason: discriminated-union data-extraction narrowing (not a branch on test outcome); the line above already asserts `.type === 'success'`. The downstream expect(roleRows.length, ...) assertion is unchanged.
       // eslint-disable-next-line playwright/no-conditional-in-test
       const roleRows = (roleResult.type === 'success' ? roleResult.data : undefined) ?? [];
-      expect(roleRows.length, 'a candidate role should be assigned to the bank-auth user').toBeGreaterThan(0);
+      expect(roleRows.length, 'a candidate entity grant should be held by the bank-auth user').toBeGreaterThan(0);
     });
   });
 });

@@ -31,15 +31,19 @@ type StubOptions = {
   probeStatus: number;
   /** Whether the served HTML carries a `/@fs…/.svelte-kit/…` module reference. */
   withModuleRoot?: boolean;
+  /**
+   * Absolute checkout root the served HTML claims to be rooted at, i.e. what clause (b2) compares against this checkout. Defaults to {@link REPO_ROOT}, which is what a healthy dev server emits; overriding it is how a SIBLING checkout squatting the port is staged.
+   */
+  moduleRoot?: string;
 };
 
 let server: Server | null = null;
 
 function startStub(options: StubOptions): Promise<string> {
-  const { title, probeStatus, withModuleRoot = true } = options;
+  const { title, probeStatus, withModuleRoot = true, moduleRoot = REPO_ROOT } = options;
   const titleTag = title === null ? '' : `<title>${title}</title>`;
   const moduleRef = withModuleRoot
-    ? `<script src="/@fs${REPO_ROOT}/apps/frontend/.svelte-kit/generated/client/app.js"></script>`
+    ? `<script src="/@fs${moduleRoot}/apps/frontend/.svelte-kit/generated/client/app.js"></script>`
     : '';
   const html = `<!doctype html><html><head>${titleTag}${moduleRef}</head><body>ok</body></html>`;
 
@@ -103,6 +107,25 @@ describe('assertServedApp', () => {
     const baseURL = await startStub({ title: 'Election Compass', probeStatus: 403, withModuleRoot: false });
     // `probeStatus: 403` means this fails at clause (b1) and RETURNS BEFORE (b2). That is deliberate and is all this case claims: the extraction on a document with no module root does not crash on the way to the (b1) failure. It is NOT coverage of either (b2) branch — the two cases below are, and they keep the probe at 200 for exactly that reason. Do not "strengthen" this one by matching a (b2) message: it cannot reach one.
     await expect(run(baseURL)).rejects.toThrow(/not this checkout's Vite dev server/);
+  });
+
+  /**
+   * Clause (b2) — the discriminating half of the guard, and the half a passing probe alone cannot supply: any Vite server whose fs.allow list covers this path answers the probe 200, including a sibling checkout of this same repo. Both branches below are reachable ONLY with `probeStatus: 200`; with a failing probe the assertion returns at (b1) and deleting the branches outright leaves the suite green.
+   */
+  it('fails closed when the probe returns 200 but the HTML emits no /@fs module root', async () => {
+    // The minimal adversary: something answers, and even satisfies the probe, but has no `.svelte-kit` to identify itself with. Absent evidence is a REJECTION here, never a skipped assertion — that inversion is the whole point of the branch.
+    const baseURL = await startStub({ title: 'Election Compass', probeStatus: 200, withModuleRoot: false });
+    await expect(run(baseURL)).rejects.toThrow(/emitted no absolute \/@fs module root/);
+  });
+
+  it('fails when the served module root belongs to a different checkout', async () => {
+    // The measured adversary: a sibling checkout of this repo, which passes the probe and (with a matching catalogue) the title clause too. The absolute root it emits is the one thing that cannot collide between checkouts.
+    const baseURL = await startStub({
+      title: 'Election Compass',
+      probeStatus: 200,
+      moduleRoot: '/opt/other-checkout'
+    });
+    await expect(run(baseURL)).rejects.toThrow(/rooted at a DIFFERENT checkout/);
   });
 });
 

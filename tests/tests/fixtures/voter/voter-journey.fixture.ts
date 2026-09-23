@@ -66,6 +66,44 @@ async function followLinkWhenHrefResolved(
   if (href) await page.goto(href);
 }
 
+/**
+ * Settle a navigation the answer walk REQUIRES to have happened, failing LOUDLY and AT THE FAULT SITE when it did not.
+ *
+ * ## Why this is not `waitForURL(...).catch(() => null)`
+ *
+ * Every advance in `answerAndAdvanceToResults`'s loop is a URL change: a question route, a category-intro route, or `/results`. The loop therefore CANNOT make progress without one. Until this helper existed, each of those waits swallowed its timeout and `continue`d, which produced three separate failures — none of them at the real fault site:
+ *
+ *   1. MIS-ATTRIBUTION. The loop re-entered, re-waited on the answer surface, and eventually blew a budget at the loop-entry `waitFor` — in the archived sighting, 70 s and 8 iterations after the navigation that actually failed.
+ *      A long stretch of investigation chased that line instead of the stalled navigation, and the remedy chosen at the time was chartered around a hypothesis (Vite-HMR staleness) the evidence later falsified.
+ *   2. ANSWER-STATE CORRUPTION — the serious one. Re-entering re-answers the SAME question, and `multipleChoiceCategorical` choices are CHECKBOXES, which TOGGLE. The archived run shows the app faithfully recording
+ *      `choice_0,choice_1` -> (cleared) -> (cleared) -> `choice_2,choice_3` ->
+ *      `choice_2,choice_3,choice_0` -> … as the retries toggled boxes on and off.
+ *      A walk that silently rewrites its own answer set feeds a DIFFERENT match result to `/results` — and this fixture is what the visual-regression gate screenshots. A swallowed timeout is therefore a determinism hazard for the pixel baseline, not merely a diagnosis nuisance.
+ *   3. SKEWED `answered`. The counter increments once per iteration, so a retried question is counted repeatedly and an `answerCount`-capped walk silently under-answers.
+ *
+ * `TIMEOUTS.slowPage` is already a very generous budget for a client-side navigation. Exceeding it means something is genuinely wrong upstream (the known cause is a dev-server asset request that never gets a response), and the correct response is to stop and say so rather than to spin.
+ *
+ * @param page - the page whose URL must change.
+ * @param urlBefore - the URL captured at the top of the iteration.
+ * @param action - human-readable description of the action that should have
+ *   navigated, interpolated into the failure message.
+ */
+async function requireNavigation(page: Page, urlBefore: string, action: string): Promise<void> {
+  try {
+    await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage });
+  } catch {
+    throw new Error(
+      `voter-journey: the answer walk did not advance after ${action}. ` +
+        `The URL is still ${page.url()} ${TIMEOUTS.slowPage} ms later. ` +
+        'The walk cannot progress without a URL change, so this fails HERE instead of retrying: ' +
+        'a retry re-answers the same question, and multi-choice checkboxes TOGGLE, which silently ' +
+        'rewrites the answer set the visual baseline is captured from. ' +
+        'Known cause: a host dev-server asset request that never receives a response — see ' +
+        '.planning/debug/answer-surface-wait-timeout.md.'
+    );
+  }
+}
+
 type VoterJourneyFixtureOptions = {
   /** Which extreme to pick on each opinion question. Default: 'max'. */
   answerMode: AnswerMode;
@@ -225,10 +263,8 @@ async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, ans
       // On first paint the href is unresolved; when the block populates the link re-renders and a plain click both detaches mid-click AND is intercepted by the navigating document root ("<html> intercepts pointer events") until the 90s ceiling.
       // Wait for the href to resolve to a real question route, then NAVIGATE to it. See category/[categoryId]/+page.svelte:52,113 (the elections-continue-stall sibling render-timing class).
       await followLinkWhenHrefResolved(page, categoryStart, /\/questions\//, TIMEOUTS.slowPage);
-      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
-      // Reaching here means the category-intro page RENDERED (we waited for its
-      // start link), so any question-page slider is long unmounted — the next
-      // iteration may safely race the slider again.
+      await requireNavigation(page, urlBefore, 'following the category-intro start link');
+      // Reaching here means the category-intro page RENDERED (we waited for its start link), so any question-page slider is long unmounted — the next iteration may safely race the slider again.
       sliderJustAnswered = false;
       continue;
     }
@@ -238,7 +274,7 @@ async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, ans
       // Use Skip to advance past remaining questions when answerCount is capped.
       sliderJustAnswered = false;
       await nextButton.click();
-      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
+      await requireNavigation(page, urlBefore, 'clicking Skip on a capped walk');
       continue;
     }
     // SETTLE-BEFORE-COUNT. On a Q→Q param-only nav SvelteKit REUSES questions/[questionId]/+page.svelte (the page derives `question` via `$derived` rather than remounting), so the OUTGOING question's `[data-testid=question-choice]` options stay mounted until the PREVIOUS click's deferred `goto` resolves and the incoming options swap in. A bare `answerOption.count()` therefore captures the OUTGOING question's option count, and `.nth(count-1)` points at a stale index that the INCOMING question (fewer options — e.g. Likert4 after Likert5) never has → 90s timeout.
@@ -270,14 +306,14 @@ async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, ans
         sliderJustAnswered = true;
         await nextButton.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
         await nextButton.click();
-        await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
+        await requireNavigation(page, urlBefore, 'clicking Next on a number-scale question');
         continue;
       }
       // No selectable choices and no slider (e.g. text rendering) — Skip.
       sliderJustAnswered = false;
       await nextButton.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
       await nextButton.click();
-      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
+      await requireNavigation(page, urlBefore, 'clicking Skip on a question with no answerable surface');
       continue;
     }
     // Checkbox branch: MultipleChoiceCategorical opinion questions render CHECKBOX inputs that reuse the question-choice testid + name=questionChoices-{id} contract, while single-choice / boolean / Likert render RADIOS.
@@ -297,7 +333,7 @@ async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, ans
       sliderJustAnswered = false;
       await nextButton.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
       await nextButton.click();
-      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
+      await requireNavigation(page, urlBefore, 'clicking Next on a multi-choice question');
       continue;
     }
     // Radio path (single-choice / boolean / Likert) — answering behaviour unchanged; only the `sliderJustAnswered` bookkeeping below is new (136).
@@ -315,10 +351,9 @@ async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, ans
         await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
       }
     }
-    // Settle the param-only Q→Q nav: wait until the URL leaves the just-answered
-    // question route before the next iteration counts options, so the stale
-    // outgoing option set can't be captured (the SETTLE-BEFORE-COUNT contract).
-    await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
+    // Settle the param-only Q→Q nav: wait until the URL leaves the just-answered question route before the next iteration counts options, so the stale outgoing option set can't be captured (the SETTLE-BEFORE-COUNT contract).
+    // The `.catch(() => null)` on the two waits ABOVE is deliberate — the 3 s probe is a genuine either/or (auto-advance vs the Next fallback), and the fallback's own wait is superseded by this one. THIS wait is the loop's progress invariant and must fail loudly.
+    await requireNavigation(page, urlBefore, 'answering a single-choice / boolean / Likert question');
   }
 
   // 7. Multi-election results landing: with 2+ elections and no `electionTab`

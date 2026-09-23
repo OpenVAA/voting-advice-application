@@ -195,7 +195,7 @@ export type EmailBucketFixture = ReturnType<typeof createEmailBucket>;
  * @param callbackPath - The frontend auth callback path (default: /en/api/candidate/auth/callback)
  * @returns A URL pointing directly to the frontend callback with token_hash and type params
  */
-export function toCallbackUrl(verifyLink: string, callbackPath = '/en/candidate/auth/callback'): string {
+export function toCallbackUrl(verifyLink: string, callbackPath = '/en/api/candidate/auth/callback'): string {
   const url = new URL(verifyLink.replace(/&amp;/g, '&'));
   const token = url.searchParams.get('token');
   const type = url.searchParams.get('type') ?? 'invite';

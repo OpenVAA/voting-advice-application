@@ -25,10 +25,7 @@ export const testIds = {
       imageUpload: 'profile-image-upload',
       // testids supporting the candidateProfilePage fixture. Placement:
       //  - nominations: <section> wrapping the immutable-nominations list.
-      //  - infoItem: per-question wrapper around each editable info question
-      //    in the candCtx.infoQuestions loop (un-keyed; fixture filters by
-      //    label text).
-      imageError: 'profile-image-error',
+      //  - infoItem: per-question wrapper around each editable info question in the candCtx.infoQuestions loop (un-keyed; fixture filters by label text).
       nominations: 'candidate-profile-nominations',
       infoItem: 'candidate-profile-info-item'
     },
@@ -54,7 +51,7 @@ export const testIds = {
       intro: 'candidate-questions-intro'
     },
     settings: {
-      currentPassword: 'settings-current-password',
+      // NB. the former settings-scoped current-password entry was removed with the field itself (157-10 branch (a)): the field was never verified — GoTrue returns HTTP 200 for a wrong current password with the gate off, and no `config.toml` key turns that gate on at the pinned CLI. The a11y `cand-settings` anchor moved to `newPassword` below.
       newPassword: 'settings-new-password',
       // NB. the password confirmation input's live id is the component-hardcoded `candidate.passwordSetter.confirm` (PasswordSetter.svelte:80) — the former settings-scoped `confirmPassword` entry was dead (its prop fell into <form> restProps and never rendered a usable id) and was removed.
       updateButton: 'settings-update-password'
@@ -270,6 +267,7 @@ export const testIds = {
   },
   shared: {
     errorMessage: 'error-message',
+    maintenancePage: 'maintenance-page',
     loading: 'loading-indicator',
     questionActions: 'question-actions',
     questionDelete: 'question-delete',

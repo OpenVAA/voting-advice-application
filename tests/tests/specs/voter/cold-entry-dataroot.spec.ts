@@ -22,7 +22,9 @@
  */
 
 import { expect, test } from '@playwright/test';
+import { walkUntilQuestionsIntro } from '../../fixtures/voter/voter-journey.fixture';
 import { TIMEOUTS } from '../../helpers';
+import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
 
 test.describe('cold-entry-dataroot', () => {
@@ -43,5 +45,40 @@ test.describe('cold-entry-dataroot', () => {
 
     // Assert the `{#each ctx.dataRoot.elections}` region (NOT the static `voter-info-content` {@html} div) — this region is empty when `dataRoot.elections` is stale, so it proves the cold-path populate landed.
     await expect(page.getByTestId(testIds.voter.info.electionList)).toBeVisible({ timeout: TIMEOUTS.slowPage });
+  });
+
+  test('cold direct-URL entry to the located /en/results renders the election-data region', async ({
+    page,
+    browser
+  }) => {
+    // URL DISCOVERY ONLY, and deliberately on a page nothing is asserted against. The located routes keep their selection in the URL, so the cold target cannot be spelled until the seeded election and constituency ids are known, and the suite knows the seed by external_id rather than by database id.
+    await walkUntilQuestionsIntro(page);
+    const located = new URL(page.url());
+    const coldTarget = new URL(`/en/results${located.search}`, located.origin).toString();
+
+    // COLD: a full document load in a context with no cookies, no local storage and no prior mount — the walk above cannot mask anything here.
+    const coldContext = await browser.newContext();
+    const coldPage = await coldContext.newPage();
+    await coldPage.goto(coldTarget);
+
+    // The election accordion is gated behind a DIRECT `voterCtx.dataRoot.elections.length > 1` read in the results layout, so it is absent for exactly as long as the data root looks empty. WAITING assertion covers the post-hydration mount window.
+    await expect(coldPage.getByTestId(testIds.voter.results.electionAccordion)).toBeVisible({
+      timeout: TIMEOUTS.slowPage
+    });
+
+    // Second, independent data-dependent region on the same page: the ingress renders inside the nominations-gated main content, so it is present only once the located layout has resolved real nomination data.
+    await expect(coldPage.getByTestId(testIds.voter.results.ingress)).toBeVisible({ timeout: TIMEOUTS.element });
+
+    await coldContext.close();
+  });
+});
+
+test.describe('cold-entry-dataroot candidate @cand-session', () => {
+  test('cold direct-URL entry to /candidate/questions renders the question overview', async ({ page }) => {
+    // COLD: bare hard navigation, carrying only the stored session. No login walk, no in-app navigation.
+    await page.goto(buildRoute({ route: 'CandAppQuestions', locale: 'en' }));
+
+    // The overview list is built from `candCtx.opinionQuestionCategories` — the rollup criterion 5 extracts — so it is empty for exactly as long as the candidate context's view of the data root is stale.
+    await expect(page.getByTestId(testIds.candidate.questions.list)).toBeVisible({ timeout: TIMEOUTS.slowPage });
   });
 });

@@ -8,8 +8,12 @@
 import * as jose from 'jose';
 import type { JWK } from 'jose';
 
-/** Default inner-JWT `iss`/`aud` (back-compat with the original in-spec builder). */
-const DEFAULT_OPTS: { issuer: string; audience: string } = {
+/**
+ * Default inner-JWT `iss`/`aud` (back-compat with the original in-spec builder).
+ *
+ * Exported because the Edge Function now binds BOTH claims unconditionally, so whoever configures `IDENTITY_PROVIDER_CLIENT_ID` / `IDENTITY_PROVIDER_ISSUER` for a bank-auth run must configure exactly these values or every token is rejected. `tests/IDURA-TEST-RUNBOOK.md` Step E-1 reads them from here rather than retyping them, so the two cannot drift apart.
+ */
+export const DEFAULT_TOKEN_OPTS: { issuer: string; audience: string } = {
   issuer: 'https://test-idp.example.com',
   audience: 'test-client-id'
 };
@@ -28,7 +32,7 @@ export async function buildTestIdToken(
   claims: Record<string, string>,
   sigPriv: CryptoKey,
   encPubJwk: JWK,
-  opts: { issuer: string; audience: string } = DEFAULT_OPTS
+  opts: { issuer: string; audience: string } = DEFAULT_TOKEN_OPTS
 ): Promise<string> {
   // 1. Create signed inner JWT
   const innerJwt = await new jose.SignJWT(claims)

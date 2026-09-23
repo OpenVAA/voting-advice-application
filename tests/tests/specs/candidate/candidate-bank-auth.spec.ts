@@ -127,7 +127,7 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     // Cleanup: remove the test user if created during the probe
     if (probe?.createdUserId) {
       // Delete candidate record first (FK constraint)
-      await adminClient.from('user_roles').delete().eq('user_id', probe.createdUserId);
+      await adminClient.from('grants').delete().eq('user_id', probe.createdUserId);
       await adminClient.from('candidates').delete().eq('auth_user_id', probe.createdUserId);
       await adminClient.auth.admin.deleteUser(probe.createdUserId);
     }

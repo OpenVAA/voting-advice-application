@@ -40,6 +40,13 @@ import path from 'path';
  */
 export const PROBE_RELATIVE_PATH = 'apps/frontend/src/routes/+layout.svelte';
 
+/**
+ * The repo-relative root of the frontend workspace — the Vite root, and therefore the prefix SvelteKit emits as `/@fs<root>/.svelte-kit/…` into the served HTML.
+ *
+ * Clause (b2) compares the served module root against `path.join(repoRoot, FRONTEND_RELATIVE_ROOT)`. Repo-relative for the same reason {@link PROBE_RELATIVE_PATH} is: CI's checkout path differs from any developer's, so a baked-in absolute path would fail in CI outright.
+ */
+export const FRONTEND_RELATIVE_ROOT = 'apps/frontend';
+
 /** Inputs to {@link assertServedApp}. */
 export type PreflightOptions = {
   /**
@@ -311,17 +318,22 @@ export async function assertServedApp(options: PreflightOptions): Promise<void> 
       `the listener is not this checkout's Vite dev server (GET ${probeURL} returned ${probe.status}, expected 200)`
     );
   }
-  const probeBody = await probe.text();
-  if (!probeBody.includes(probeAbsolutePath)) {
-    // The 200 body normally echoes the absolute path back inside Vite's
-    // `__vite__createHotContext("…")` preamble, which upgrades the check from "a
-    // server was willing to serve this path" to "a server transformed THIS file
-    // and said so". Worded so that a future Vite dropping the preamble is
-    // diagnosable rather than mistaken for a foreign server.
+  // Clause (b2) — the ABSOLUTE identity assertion. `probe.status === 200` above proves only that SOME Vite server's fs.allow list covers this path; another checkout of this same repo satisfies it too. The absolute module root the serving checkout emits into its own HTML is what cannot collide between checkouts, so that is what identity is asserted on.
+  //
+  // Read from the HTML rather than from the probe body deliberately: Vite 6.4.1 emits a ROOT-RELATIVE id in the probe body's HMR preamble for any module inside the Vite root, and the probe target is necessarily inside it (see the module header). The HTML's `/@fs<root>/.svelte-kit/…` reference is still absolute, so the property survives the Vite change intact.
+  const expectedModuleRoot = path.join(repoRoot, FRONTEND_RELATIVE_ROOT);
+  if (observed.servedModuleRoot === MODULE_ROOT_NOT_FOUND) {
+    // Fail CLOSED. A minimal adversary has no `.svelte-kit` at all, so a missing module root is the signature of exactly the server this clause exists to reject — never a reason to skip the assertion.
     fail(
-      `the server answered 200 for ${probeURL} but its response did not echo the probed absolute path, ` +
-        'so it did not demonstrably transform the file in this working tree (a foreign server, or a ' +
-        'Vite version that no longer emits the HMR preamble)'
+      `the server answered 200 for ${probeURL} but its HTML emitted no absolute /@fs module root, ` +
+        'so this checkout could not be identified as the one serving it (a foreign or minimal server, ' +
+        'or a Vite version that no longer emits absolute /@fs references in the document)'
+    );
+  }
+  if (path.resolve(observed.servedModuleRoot) !== path.resolve(expectedModuleRoot)) {
+    fail(
+      `the server on port ${port} is rooted at a DIFFERENT checkout — it serves modules from ` +
+        `${observed.servedModuleRoot}, but this working tree's frontend root is ${expectedModuleRoot}`
     );
   }
 

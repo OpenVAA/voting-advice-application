@@ -55,8 +55,12 @@ PREFLIGHT_OK_HEADLINE='E2E PREFLIGHT OK'
 
 RUN_DIR=""
 PROJECT=""
+DB_RESET=true
 DEV_PID=""
 INTERRUPTED=0
+
+# The project the E2E harness owns, mirrored from the committed default in packages/dev-seed/src/supabaseAdminClient.ts. Only used when E2E_PROJECT_ID is not set; the harness resolves the same fallback itself, so the two agree with no configuration.
+E2E_PROJECT_ID_DEFAULT="00000000-0000-0000-0000-0000000000e2"
 
 usage() {
   # Delimit the header block rather than hardcoding a line range: the previous `sed -n '2,Np'` truncated the exit-code table the header tells the caller to branch on, and drifted further every time the header grew.
@@ -87,6 +91,11 @@ while [ $# -gt 0 ]; do
       require_value --project $#
       PROJECT="$2"
       shift 2
+      ;;
+    --no-db-reset)
+      # Boolean: no require_value call, one shift.
+      DB_RESET=false
+      shift
       ;;
     -h | --help)
       usage
@@ -190,8 +199,14 @@ unset CI || true
   echo "ci_env=unset"
   echo "eperm07_knobs=unset"
   echo "frontend_port=$FRONTEND_PORT"
+  echo "db_reset=$DB_RESET"
   echo "expected_retries=0"
   echo "expected_workers=6"
+  # Machine capacity at run start. Recorded, never enforced: a run is not refused for a busy machine, but an outlier afterwards can be attributed instead of argued about. Phase 162 needed this -- one run took 1069s against a 14-run baseline of 627-651s (a 4% spread) and timed out one spec at 770s against a 90s budget, with identical code, identical worker count and identical dev-server log signatures. Diagnosing it meant reconstructing load after the fact from outside the run directory.
+  # Separators first, decimals second (162-REVIEW IN-04): Linux prints `load average: 1.20, 1.30, 1.40`, so the `, ` separators become spaces before any remaining comma -- a decimal comma under a comma-decimal locale, as macOS prints `1,20 1,30 1,40` -- is turned into a point. Translating every comma blindly left Linux values with trailing dots.
+  echo "load_at_start=$(uptime | sed 's/.*load averages*:[[:space:]]*//' | sed -E 's/,[[:space:]]+/ /g' | tr -s ' ' | tr ',' '.' | awk '{print $1"/"$2"/"$3}')"
+  echo "cpu_count=$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo unknown)"
+  echo "containers_running=$(docker ps -q 2>/dev/null | wc -l | tr -d ' ')"
 } > "$RUN_DIR/env-posture.txt"
 
 # --- 2. provenance ------------------------------------------------------------------
@@ -209,10 +224,19 @@ echo "e2e-run.sh: HEAD    $(cat "$RUN_DIR/head")"
 
 # --- 3. database preparation -----------------------------------------------------------
 
-echo "e2e-run.sh: yarn db:reset (starts Supabase first) ..."
-if ! (cd "$REPO_ROOT" && yarn db:reset > "$RUN_DIR/db-reset.log" 2>&1); then
-  echo "e2e-run.sh: FATAL -- yarn db:reset failed; see $RUN_DIR/db-reset.log" >&2
-  exit 3
+# `yarn db:reset` is `yarn db:start && ... reset`, so it is ALSO what starts Supabase. A --no-db-reset that merely skipped this block would leave nothing to poll in step 4, turning a clean exit 3 into an exit 4 readiness timeout that names the wrong cause. The no-reset branch therefore still starts Supabase, and keeps exit 3 for a database-preparation failure.
+if [ "$DB_RESET" = true ]; then
+  echo "e2e-run.sh: yarn db:reset (starts Supabase first) ..."
+  if ! (cd "$REPO_ROOT" && yarn db:reset > "$RUN_DIR/db-reset.log" 2>&1); then
+    echo "e2e-run.sh: FATAL -- yarn db:reset failed; see $RUN_DIR/db-reset.log" >&2
+    exit 3
+  fi
+else
+  echo "e2e-run.sh: --no-db-reset -- yarn db:start only, existing data left in place ..."
+  if ! (cd "$REPO_ROOT" && yarn db:start > "$RUN_DIR/db-start.log" 2>&1); then
+    echo "e2e-run.sh: FATAL -- yarn db:start failed; see $RUN_DIR/db-start.log" >&2
+    exit 3
+  fi
 fi
 
 # --- 4. readiness poll (NOT a status check) -------------------------------------------
@@ -271,9 +295,16 @@ if [ -n "$pre_holders" ]; then
   exit 5
 fi
 
-echo "e2e-run.sh: starting dev server on port $FRONTEND_PORT -> $RUN_DIR/devserver.log"
+# The served application must query the SAME project the harness seeds. The dev server reads its public environment once, at process start, so the value has to be on the spawn -- a shell prefix there wins over the repo-root .env, which deliberately carries the DEFAULT project so a plain `yarn dev` still shows a locally seeded app. Reuses read_env_var rather than adding a second reader.
+E2E_PROJECT_ID_RESOLVED="$(read_env_var E2E_PROJECT_ID)"
+if [ -z "$E2E_PROJECT_ID_RESOLVED" ]; then
+  E2E_PROJECT_ID_RESOLVED="$E2E_PROJECT_ID_DEFAULT"
+fi
+echo "e2e_project_id=$E2E_PROJECT_ID_RESOLVED" >> "$RUN_DIR/env-posture.txt"
+
+echo "e2e-run.sh: starting dev server on port $FRONTEND_PORT (project $E2E_PROJECT_ID_RESOLVED) -> $RUN_DIR/devserver.log"
 set -m # job control: the background job gets its own process group, so the trap can kill the tree
-(cd "$REPO_ROOT" && FRONTEND_PORT="$FRONTEND_PORT" yarn dev) > "$RUN_DIR/devserver.log" 2>&1 &
+(cd "$REPO_ROOT" && FRONTEND_PORT="$FRONTEND_PORT" PUBLIC_PROJECT_ID="$E2E_PROJECT_ID_RESOLVED" yarn dev) > "$RUN_DIR/devserver.log" 2>&1 &
 DEV_PID=$!
 set +m
 

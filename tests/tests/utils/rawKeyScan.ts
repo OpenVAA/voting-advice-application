@@ -225,8 +225,15 @@ async function collectTokenSightings(page: Page): Promise<Array<TokenSighting>> 
 }
 
 /**
- * Fail if any string the catalog can echo back on a miss is rendered verbatim
- * on `page` — as visible text or as an accessible name.
+ * The raw-key verdict for one surface: what was found, and the failure message that describes it. `message` is `undefined` when `findings` is empty, so it can be passed straight into `expect(findings, message)` — an `undefined` message leaves Playwright's own default in place on the passing path.
+ */
+export interface RawI18nKeyVerdict {
+  findings: Array<RawKeyFinding>;
+  message: string | undefined;
+}
+
+/**
+ * Compute — and do NOT assert — the raw-key verdict for `page`: every string the catalog can echo back on a miss that is rendered verbatim, as visible text or as an accessible name.
  *
  * ## Why this is separate from the assertion
  *
@@ -237,7 +244,7 @@ async function collectTokenSightings(page: Page): Promise<Array<TokenSighting>> 
  * `label` names the surface (the a11y scan label) so a failure says WHICH of the
  * **28** scanned surfaces broke — 14 voter (`a11y-smoke.spec.ts`) and 14 candidate (`candidate-a11y.spec.ts`), each route in both themes. It was 14 before the gate was extended across the candidate `(protected)` family.
  */
-export async function assertNoRawI18nKeys(page: Page, label: string): Promise<void> {
+export async function collectRawI18nKeyFindings(page: Page, label: string): Promise<RawI18nKeyVerdict> {
   const catalogKeys = loadCatalogKeys();
   const sightings = await collectTokenSightings(page);
 
@@ -253,12 +260,25 @@ export async function assertNoRawI18nKeys(page: Page, label: string): Promise<vo
     (finding) => `  - "${finding.key}" (as ${finding.source}) in ${finding.element}\n      excerpt: ${finding.excerpt}`
   );
 
-  expect(
+  return {
     findings,
-    findings.length === 0
-      ? undefined
-      : `Untranslated i18n key(s) rendered on "${label}" — t() echoed the raw key path because the ` +
+    message:
+      findings.length === 0
+        ? undefined
+        : `Untranslated i18n key(s) rendered on "${label}" — t() echoed the raw key path because the ` +
           `catalog lookup missed (i18n/wrapper.ts:40). ${catalogKeys.size} catalog keys were checked.\n` +
           report.join('\n')
-  ).toEqual([]);
+  };
+}
+
+/**
+ * Fail if any string the catalog can echo back on a miss is rendered verbatim on `page` — as visible text or as an accessible name.
+ *
+ * The hard, fail-fast entry point. The shared a11y scan body does NOT use it — it uses `collectRawI18nKeyFindings` and reports the verdict without letting it suppress the axe result (Decision (B)). This wrapper is kept because the fail-fast shape is the right one for any caller that is not also computing a second verdict on the same DOM read.
+ *
+ * There is no allowlist. If this ever fires, the honest reading is that a real catalog/Paraglide-compilation regression shipped and the catalog needs fixing — not that the scanner needs loosening. Should a genuine collision ever appear (legitimate copy that happens to BE a catalog key verbatim), an exclusion must name that exact string and say why it is legitimate; a broad pattern would swallow the failures this exists to catch.
+ */
+export async function assertNoRawI18nKeys(page: Page, label: string): Promise<void> {
+  const { findings, message } = await collectRawI18nKeyFindings(page, label);
+  expect(findings, message).toEqual([]);
 }

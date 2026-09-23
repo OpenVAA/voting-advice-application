@@ -38,73 +38,15 @@
  * Per-rule axe-id assertions + global 0-violation gate are PRESERVED — no weakening, per CLAUDE.md WCAG 2.1 AA discipline.
  */
 
-import { AxeBuilder } from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { createEntityFilters } from '../../fixtures/voter/entityFilters.fixture';
 import { voterJourneyTest, walkUntilQuestionsIntro } from '../../fixtures/voter/voter-journey.fixture';
 import { TIMEOUTS } from '../../helpers';
+import { assertAxeScan, assertDarkThemeApplied, withNoTransition } from '../../utils/axeScan';
 import { buildRoute } from '../../utils/buildRoute';
-import { assertNoRawI18nKeys } from '../../utils/rawKeyScan';
 import { testIds } from '../../utils/testIds';
-import type { Page, TestInfo } from '@playwright/test';
-import type { Route } from '../../../../apps/frontend/src/lib/utils/route/route';
-
-/**
- * Append the `?notr=1` escape hatch (decision) to a URL so the
- * View-Transition layer is deterministically disabled for E2E — `shouldAnimate`
- * short-circuits on `notr=1` (apps/frontend/src/lib/utils/viewTransition.ts), so
- * the navigation completes WITHOUT racing the ~272ms cross-fade against
- * `document.activeElement`. The focus reset (afterNavigate rAF) still runs; only
- * the animation is suppressed.
- */
-function withNoTransition(url: string): string {
-  const u = new URL(url);
-  u.searchParams.set('notr', '1');
-  return u.toString();
-}
-
-/**
- * Wait until every running CSS/Web animation on the document has finished
- * BEFORE an axe scan.
- *
- * ## Why
- * axe composites an element's text colour through any in-flight ancestor
- * opacity. The voter routes fade their content in on entry (an entrance
- * animation animating opacity 0→1 / a View-Transition cross-fade), so a scan
- * that fires as soon as a heading is visible — but before the fade settles —
- * reads label/body text at PARTIAL opacity and reports phantom `color-contrast`
- * failures: e.g. a `#666`-class token rendered ~`#858585` (≈3.69:1) at ~0.2-0.3
- * opacity. At FULL opacity the same tokens pass (isolated, pressure-free scans
- * are 0-violation), so this is a SCAN-TIMING readiness gate, NOT a theme change
- * and NOT a timeout bump. Svelte transitions + View Transitions both run as
- * Web Animations, so awaiting `getAnimations({ subtree: true }).finished` on the
- * document is the real "page has stopped animating" signal. The leading rAF
- * lets a just-started fly/fade register its animation before we collect it.
- *
- * INFINITE animations are EXCLUDED. Some surfaces carry looping CSS animations
- * (e.g. the `infinite` progress/match bar on the results + entity-details
- * surfaces), whose `.finished` promise NEVER resolves — awaiting it would hang
- * the scan until the 90s test timeout. Those loops don't gate text opacity, so
- * we await ONLY the FINITE (entrance) animations: an animation is finite when
- * its effect's computed `endTime` is not Infinity. This exclusion is also why
- * the document-wide settle is now safe on the drawer route, where the looping
- * bar previously forced a dialog-subtree-only settle.
- */
-async function awaitAnimationsSettled(page: Page): Promise<void> {
-  await page.evaluate(async () => {
-    await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
-    // `Element.getAnimations({ subtree: true })` on the document root collects
-    // every running animation in the document (the `Document.getAnimations()`
-    // overload takes no options arg, so go through `documentElement`).
-    const finite = document.documentElement.getAnimations({ subtree: true }).filter((a) => {
-      const endTime = a.effect?.getComputedTiming().endTime;
-      // endTime is a CSSNumberish (number | CSSNumericValue); only a finite
-      // numeric endTime is an entrance (non-looping) animation we should await.
-      return typeof endTime === 'number' && Number.isFinite(endTime);
-    });
-    await Promise.all(finite.map((a) => a.finished.catch(() => undefined)));
-  });
-}
+import type { Page } from '@playwright/test';
+import type { AxeRoute, FixtureAxeRoute, RawAxeRoute } from '../../utils/axeScan';
 
 /**
  * If the post-answer Q→Q auto-advance landed on a category-intro page (the first question of a new category renders the category-intro first), click through it so we settle on an actual question route. Lives at module scope so the branch does not sit inside the test body (playwright/no-conditional-in-test).
@@ -128,61 +70,6 @@ async function advancePastCategoryIntro(page: Page): Promise<void> {
 // The property is file-scoped, NOT project-scoped and NOT family-scoped: the sibling `candidate-a11y.spec.ts` runs the candidate `(protected)` routes WITH a stored candidate session, under its own project. Do not read this line as "the a11y scans are unauthenticated" — half of them are not, and that is the point of the split.
 test.use({ storageState: { cookies: [], origins: [] } });
 voterJourneyTest.use({ storageState: { cookies: [], origins: [] } });
-
-// WCAG 2.1 AA superset — captures the maximum surface so the smoke gate
-// reflects the full WCAG 2.1 AA contract. A downstream consumer can subset
-// later if needed.
-const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
-
-/**
- * Fields every scan entry carries, whatever supplies its page.
- */
-interface AxeRouteBase {
-  name: string;
-  /**
-   * REQUIRED — the data-driven testid proving this route's real content is in
-   * the DOM.
-   *
-   * A route-level heading is NOT acceptable as a content anchor: headings render
-   * from a static i18n title and resolve BEFORE any data-driven content mounts,
-   * so a heading settle lets the scan run against a DOM that does not yet contain
-   * the content the scan exists to check. Making the field required means a new
-   * scan route physically cannot be added without declaring what "loaded" means
-   * for it — and the requirement is uniform, because EVERY scan entry
-   * (raw and fixture-driven alike) is declared in this one table.
-   *
-   * A route-unique anchor also detects a `+page.ts` `redirect(307, …)`
-   * automatically — that is how the `constituencies-selector` entry was found to
-   * have been silently re-scanning `/elections`.
-   */
-  contentTestId: string;
-  /**
-   * OPTIONAL extra navigation/interaction needed to REACH the scan target (e.g.
-   * walk a gate route, open a drawer). Runs BEFORE the `contentTestId` wait, so
-   * the content anchor stays the LAST gate before the scan.
-   */
-  settle?: (page: Page) => Promise<void>;
-}
-
-/**
- * A scan entry the runner navigates to itself, from a clean unauthenticated
- * page — `routeId` is required because nothing else supplies the URL.
- */
-interface RawAxeRoute extends AxeRouteBase {
-  fixture: 'raw';
-  routeId: Route;
-}
-
-/**
- * A scan entry whose page is supplied by a voter-journey fixture, which has
- * already walked the real UI flow to get there. No `routeId`: navigating would
- * discard the located/answered state the fixture exists to establish.
- */
-interface FixtureAxeRoute extends AxeRouteBase {
-  fixture: 'located' | 'answered';
-}
-
-type AxeRoute = RawAxeRoute | FixtureAxeRoute;
 
 const AXE_ROUTES: ReadonlyArray<AxeRoute> = [
   {
@@ -264,148 +151,7 @@ const AXE_ROUTES: ReadonlyArray<AxeRoute> = [
   }
 ];
 
-/**
- * Assert the per-rule + global 0-violation gates against an axe scan result.
- * The per-rule trio (aria-required-parent, list, button-name) are the
- * historically-regressed rule-IDs.
- */
-async function assertAxeGates(
-  results: Awaited<ReturnType<AxeBuilder['analyze']>>,
-  testInfo: TestInfo,
-  routeName: string
-): Promise<void> {
-  await testInfo.attach(`axe-violations-${routeName}.json`, {
-    body: JSON.stringify(results.violations, null, 2),
-    contentType: 'application/json'
-  });
-
-  // Per-rule regression gates.
-  expect(results.violations.filter((v) => v.id === 'aria-required-parent')).toHaveLength(0);
-  expect(results.violations.filter((v) => v.id === 'list')).toHaveLength(0);
-  expect(results.violations.filter((v) => v.id === 'button-name')).toHaveLength(0);
-
-  // Global zero gate — "0 violations across all 7 surfaces". Catches new rule-IDs
-  // that the per-rule trio doesn't name (e.g., heading-order from a latent
-  // h4-hoist outline gap).
-  expect(results.violations).toHaveLength(0);
-
-  // reason: defensive shape checks PRESERVED — defends against AxeBuilder API breakage on future axe-core upgrades; zero runtime cost.
-  expect(results).toHaveProperty('violations');
-  expect(Array.isArray(results.violations)).toBe(true);
-}
-
-/**
- * Assert the page is GENUINELY dark — the whole document, not just the parts
- * that happened to re-render.
- *
- * ## Why this is not just `emulateMedia` + trust
- *
- * The obvious way to give a fixture-driven entry a dark twin is to let the
- * fixture walk in light and then flip `emulateMedia({ colorScheme: 'dark' })` on
- * the page it hands back. MEASURED, that produces a HALF-DARK document. On the
- * /questions intro reached through `locatedVoterPage`:
- *
- *   | mechanism                          | `--color-neutral` at :root | nav-menu-toggle computed colour | elements still painting the LIGHT `#333333` |
- *   | dark emulated AFTER the light walk | `#cccccc` (dark, correct)  | `rgb(51, 51, 51)`  (LIGHT)      | **30** |
- *   | context born dark (`use`)          | `#cccccc` (dark, correct)  | `rgb(204, 204, 204)` (dark)     | **0**  |
- *
- * The custom property itself resolves to the dark token on the stale elements —
- * only their computed `color` is left behind. The stale set is the PERSISTENT
- * layout chrome the fixture rendered before the flip (the header menu-toggle
- * button, the hamburger `svg`/`path`, the OpenVAA logo `svg`); route content,
- * which re-renders after the flip, comes out correctly dark. So the flip is not
- * a full theme change, it is a partial one, and a `-dark` scan built on it
- * reports a confident 0 violations about a document that is still half light.
- *
- * That is precisely the fake-green this scan family exists to prevent, so the
- * dark twins do NOT flip: each is wrapped in a `use({ colorScheme: 'dark' })`
- * group, the browser context is created dark, and the fixture walks the entire
- * voter journey in dark. That also makes the scan more faithful than a flip
- * ever could be — it measures the real dark-mode journey rather than a light
- * journey wearing a dark hat.
- *
- * ## The guard
- *
- * Structure prevents the staleness; this helper stops it silently coming back.
- * A freshly created `.text-neutral` node always resolves the CURRENT token, so
- * comparing it against the persistent chrome detects a stale-light document
- * without hard-coding a single hex value or naming a theme. Validated against
- * both mechanisms above: it FAILS on the flip (`rgb(204,204,204)` vs
- * `rgb(51,51,51)`) and PASSES on the born-dark context.
- */
-async function assertDarkThemeApplied(page: Page): Promise<void> {
-  await expect
-    .poll(() => page.evaluate(() => window.matchMedia('(prefers-color-scheme: dark)').matches), {
-      timeout: TIMEOUTS.page
-    })
-    .toBe(true);
-
-  const { liveTokenColor, chromeColor } = await page.evaluate((menuToggleTestId) => {
-    // A node created NOW cannot be stale, so its colour is the live token.
-    const probe = document.createElement('span');
-    probe.className = 'text-neutral';
-    probe.style.position = 'absolute';
-    probe.style.visibility = 'hidden';
-    document.body.appendChild(probe);
-    const live = getComputedStyle(probe).color;
-    probe.remove();
-    // The header menu-toggle is `text-neutral` layout chrome present on every
-    // scanned voter surface, and it is the element the flip demonstrably
-    // stranded. Reading it as `?? null` (rather than falling back to `live`)
-    // keeps the guard from silently going dead if the testid is ever renamed.
-    const chrome = document.querySelector<HTMLElement>(`[data-testid="${menuToggleTestId}"]`);
-    return { liveTokenColor: live, chromeColor: chrome ? getComputedStyle(chrome).color : null };
-  }, testIds.shared.navigation.menuToggle);
-
-  expect(chromeColor).toBe(liveTokenColor);
-}
-
-/**
- * The one scan body every entry shares, whatever supplied the page:
- * reach-the-target settle → data-driven content anchor → animations settle →
- * scan → gates. The content anchor is deliberately the LAST wait before the
- * settle, so a `+page.ts` loader redirect or an unmounted data surface cannot
- * be scanned unnoticed.
- *
- * Lives at module scope so the shared body is not duplicated per loop and so
- * no branch sits inside a `test()` body (playwright/no-conditional-in-test).
- * Named `assert…` because it terminates in `assertAxeGates` — that also makes it
- * a recognised assertion helper under the repo's `playwright/expect-expect`
- * `assertFunctionPatterns` config (tests/eslint.config.mjs), so the gates stay
- * enforced rather than the rule being disabled at the call sites.
- */
-async function assertAxeScan(page: Page, route: AxeRoute, testInfo: TestInfo, label: string): Promise<void> {
-  await route.settle?.(page);
-  await page.getByTestId(route.contentTestId).first().waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
-  // Gate the scan on the entrance fade/animation finishing — otherwise axe
-  // composites text colour through in-flight opacity and reports phantom
-  // color-contrast failures (see awaitAnimationsSettled).
-  await awaitAnimationsSettled(page);
-
-  // Suite-wide raw-i18n-key gate (sweep finding F2). `t()` returns the raw
-  // dotted key path on a catalog miss (i18n/wrapper.ts:40), so a broken catalog
-  // renders `questions.multiChoice.selectExact` as literal user-visible text —
-  // a state that SATISFIES 21 of the suite's own text matchers (`/Yes/i` passes
-  // against `common.answer.yes`). Checking it here, against a key set derived
-  // from the catalog at runtime, covers all 598 keys and every future one on
-  // every scanned surface, instead of patching 21 individual regexes. The page
-  // is already navigated, content-anchored and animation-settled at this point,
-  // so the marginal cost is one DOM read.
-  //
-  // Runs BEFORE the axe scan deliberately: an untranslated catalog is a content
-  // defect that makes every accessible-name result on the surface meaningless,
-  // so it should be the reported failure rather than a footnote under a
-  // downstream contrast complaint.
-  await assertNoRawI18nKeys(page, label);
-
-  const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
-  await assertAxeGates(results, testInfo, label);
-}
-
-// Module-level for…of route runners, filtered by the `fixture` discriminant —
-// module-level dispatch satisfies playwright/no-conditional-in-test (no `if`
-// inside test() bodies), and the type predicates narrow the union so each loop
-// sees only the fields its variant actually carries.
+// Module-level for…of route runners, filtered by the `fixture` discriminant — module-level dispatch satisfies playwright/no-conditional-in-test (no `if` inside test() bodies), and the type predicates narrow the union so each loop sees only the fields its variant actually carries.
 //
 // THEME COVERAGE — complete. Every entry, raw and fixture-driven alike, emits a light scan and a `-dark` twin, so a dark-only contrast regression on ANY scanned surface fails the gate. The two runner families reach dark differently, and the difference is load-bearing rather than stylistic: raw twins emulate dark before their own `goto`, while fixture-driven twins take a dark browser CONTEXT so the fixture walks the journey in dark from the first paint. Flipping the theme onto an already-walked light page is NOT equivalent — it strands the persistent layout chrome in light. See `assertDarkThemeApplied` for the measurement and the guard that pins it.
 
@@ -519,10 +265,24 @@ async function assertRouteDerivedAnnouncer(page: Page): Promise<void> {
  * Assert focus landed on the question heading after a Q→Q navigation: the active element carries `data-focus-on-nav` (the QuestionHeading callsite marker) or is the first `<h1>` fallback. Module-scope helper so the `expect()` is not an inline test-block expect.
  */
 async function assertFocusOnHeading(page: Page): Promise<void> {
-  const focusedHeading = await page.evaluate(
+  // Poll via expect.poll so the assertion is web-first rather than a one-shot snapshot. The root layout applies the focus reset inside a `requestAnimationFrame` callback scheduled from `afterNavigate`, so "the heading is visible" and "focus has been moved onto it" are two distinct events with no ordering guarantee — on a loaded machine the rAF callback lands after a single `page.evaluate` and the sample reads the pre-focus `document.activeElement`. Polling asserts the settled state; a heading that never receives focus still fails here, on timeout, so this does not mask the defect the assertion exists to catch.
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          () =>
+            document.activeElement?.hasAttribute('data-focus-on-nav') === true ||
+            document.activeElement?.tagName === 'H1'
+        ),
+      { timeout: TIMEOUTS.slowPage }
+    )
+    .toBe(true);
+
+  // The poll alone accepts a TRANSIENT focus: it stops at the first true sample, so a heading that receives focus and then loses it again to a later rAF or an autofocusing child would still pass. Settled focus is the property under test - a screen-reader user who is moved onto the heading and then silently moved off is not served. Re-read once, immediately, with no polling: this can only fail if focus left the heading after the poll observed it there, which is the defect the poll cannot see.
+  const focusStillOnHeading = await page.evaluate(
     () => document.activeElement?.hasAttribute('data-focus-on-nav') === true || document.activeElement?.tagName === 'H1'
   );
-  expect(focusedHeading).toBe(true);
+  expect(focusStillOnHeading, 'focus settled on the heading rather than passing through it').toBe(true);
 }
 
 /**

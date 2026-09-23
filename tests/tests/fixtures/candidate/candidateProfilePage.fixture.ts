@@ -64,9 +64,12 @@ export function createCandidateProfilePage(page: Page) {
       const fileChooser = await fileChooserPromise;
       await fileChooser.setFiles(opts.path);
       if (opts.expectError !== undefined) {
-        const errWrapper = page.getByTestId(testIds.candidate.profile.imageError);
-        await expect(errWrapper).toBeVisible();
-        await expect(errWrapper).toContainText(IMAGE_ERROR_CONTAINS[opts.expectError]);
+        // The error message is Input.svelte's own shared <ErrorMessage>, so it MUST be scoped to this instance: `input-error` unqualified would match any Input in error anywhere on the page. Chaining it inside the portrait Input's own container testid is what makes it address the portrait upload and nothing else.
+        const errMessage = page
+          .getByTestId(testIds.candidate.profile.imageUpload)
+          .getByTestId(testIds.shared.inputError);
+        await expect(errMessage).toBeVisible();
+        await expect(errMessage).toContainText(IMAGE_ERROR_CONTAINS[opts.expectError]);
       }
     },
 

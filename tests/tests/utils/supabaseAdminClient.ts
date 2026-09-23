@@ -40,14 +40,24 @@
  * ```
  */
 
-import { ALLOWED_TEARDOWN_TABLES, SupabaseAdminClient as DevSeedAdminClient, TEST_PROJECT_ID } from '@openvaa/dev-seed';
+import {
+  ALLOWED_TEARDOWN_TABLES,
+  E2E_PROJECT_ID,
+  resolveE2eProjectId,
+  SupabaseAdminClient as DevSeedAdminClient,
+  TEST_PROJECT_ID
+} from '@openvaa/dev-seed';
 import { PROPERTY_MAP, TABLE_MAP } from '@openvaa/supabase-types';
 import type { FindDataResult } from '@openvaa/dev-seed';
+// Direct import, the same shape `buildRoute.ts` uses. Type-only: the constant is consumed as `typeof ADMIN_GRANTS` below, which is a compile-time read of the application's own declaration and needs no runtime binding.
+import type { ADMIN_GRANTS } from '../../../apps/frontend/src/lib/auth/roles';
 
 // Re-exports for backward-compat with existing E2E imports.
 // `tests/seed-test-data.ts` + all tests/tests/**/*.spec.ts files may import
 // these from `./utils/supabaseAdminClient` — preserving the path + names.
 export { TEST_PROJECT_ID };
+// Re-exported beside `TEST_PROJECT_ID` so specs and setups can name the suite's own project without reaching into the dev-seed package for it.
+export { E2E_PROJECT_ID, resolveE2eProjectId };
 export type { FindDataResult };
 
 /**
@@ -55,6 +65,15 @@ export type { FindDataResult };
  * Used by `sendEmail`/`sendForgotPassword` for the frontend redirect URL.
  */
 const SUPABASE_URL = process.env.SUPABASE_URL ?? 'http://localhost:54321';
+
+/**
+ * The admin grant shape `forceRegisterAdmin` mints.
+ *
+ * The annotation is the point: the type is `ADMIN_GRANTS`'s own element type, so this is a COMPILE-TIME membership check against the application's declaration rather than a pair chosen here. A shape removed from `ADMIN_GRANTS` reddens this line under `yarn typecheck:tests` instead of silently minting an identity the app's gates no longer accept.
+ *
+ * The project scope is the NARROWEST of the three — a project grant reaches its own project and nothing else, whereas an account grant reaches every project under an account and a global one reaches everything. A test identity should be no wider than the test needs, and the phase-158 admin baseline was measured at this same width.
+ */
+const TEST_ADMIN_GRANT: (typeof ADMIN_GRANTS)[number] = { scope: 'project', role: 'admin' };
 
 /**
  * Maps camelCase collection names to Supabase snake_case table names.
@@ -94,6 +113,19 @@ function resolveFieldName(field: string): string {
 }
 
 export class SupabaseAdminClient extends DevSeedAdminClient {
+  /**
+   * Same signature as the base constructor; the only difference is the project it falls back to.
+   *
+   * An argument-less client here targets the E2E project, while the base class keeps targeting the default project — which is why `yarn db:seed` and `yarn db:reset-with-data` still fill the project a local development session reads.
+   *
+   * @param url - Supabase URL. Defaults to the base class's local-development value.
+   * @param serviceRoleKey - Service-role key. Defaults to the base class's local-development value.
+   * @param projectId - Explicit project. Defaults to the resolved E2E project.
+   */
+  constructor(url?: string, serviceRoleKey?: string, projectId?: string) {
+    super(url, serviceRoleKey, projectId ?? resolveE2eProjectId());
+  }
+
   /**
    * Safely list all auth users, working around the GoTrue NULL column bug.
    * If listUsers fails, returns an empty array instead of throwing.
@@ -155,7 +187,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     const tablesWithoutProjectId = new Set([
       'election_constituency_groups',
       'constituency_group_constituencies',
-      'user_roles'
+      'grants'
     ]);
     if (!tablesWithoutProjectId.has(tableName)) {
       query = query.eq('project_id', this.projectId);
@@ -325,15 +357,15 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
         throw new Error(`forceRegister: failed to find candidate ${candidateExternalId}: ${cError.message}`);
       }
 
-      // 3. Assign candidate role (user_roles table has no project_id column;
-      //    scope_type + scope_id define the scope)
-      const { error: roleError } = await this.client.from('user_roles').insert({
+      // 3. Write the entity grant that makes this identity able to act. `custom_access_token_hook` projects `public.grants` into the JWT on every token issue, and a caller whose claim is an empty array is denied everything — so an identity minted without this row logs in and is then refused by policies, which reads as a product defect rather than as a fixture gap.
+      const { error: grantError } = await this.client.from('grants').insert({
         user_id: user.id,
-        role: 'candidate',
-        scope_type: 'candidate',
-        scope_id: candidate.id
+        scope: 'entity',
+        target_type: 'candidate',
+        target_id: candidate.id,
+        role: 'editor'
       });
-      if (roleError) throw new Error(`forceRegister: insert user_role failed: ${roleError.message}`);
+      if (grantError) throw new Error(`forceRegister: insert grant failed: ${grantError.message}`);
 
       // 4. Link auth user to candidate record
       const { error: linkError } = await this.client
@@ -360,9 +392,53 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    *
    * Exactly two mutations. The second is wrapped in the SAME compensating rollback shape `forceRegister` uses, and for the same recorded reason rather than as defensive style: a failure between minting the account and writing the grant leaves an orphan `auth.users` row that surfaces as "User already exists" on every subsequent run and needs manual cleanup. That failure class has been paid for once in this project already.
    *
-   * Deletes the candidate row(s) AND their `user_roles` before
-   * `unregisterCandidate` removes the auth user. Idempotent — a no-op when no
-   * user or candidate matches.
+   * The shape is `TEST_ADMIN_GRANT` — a member of the application's own `ADMIN_GRANTS`, checked at compile time by that constant's declaration, not a pair picked here. The target is `TEST_PROJECT_ID`, because the RLS predicate guarding `admin_jobs` is `user_can('project', X, …)` and a project grant reaches only its own project. An admin scoped anywhere else logs in fine and then fails the job insert for a reason that has nothing to do with what a test is measuring.
+   *
+   * Removal is `unregisterCandidate(email)`, which is misnamed for this use but correct for it: its candidate-row update matches no row for an account with no `auth_user_id` link (a harmless no-op), and its remaining two steps delete the grant rows by `user_id` and the auth user itself.
+   *
+   * @param email - Email address for the new admin auth user.
+   * @param password - Password for the new admin auth user.
+   * @throws Error if account creation or the grant insert fails. On a grant-insert failure the account is rolled back and the ORIGINAL cause is re-thrown.
+   */
+  async forceRegisterAdmin(email: string, password: string): Promise<void> {
+    // 1. Create auth user with confirmed email.
+    const { data: createData, error: createError } = await this.client.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true
+    });
+    if (createError) throw new Error(`forceRegisterAdmin: createUser failed: ${createError.message}`);
+    const user = createData.user;
+
+    try {
+      // 2. Write the project-scoped admin grant. `target_type` is null on every non-entity row — the table's CHECK constraint requires exactly that — and `custom_access_token_hook` reads this row on every token issue to build the JWT's `grants` claim.
+      const { error: grantError } = await this.client.from('grants').insert({
+        user_id: user.id,
+        scope: TEST_ADMIN_GRANT.scope,
+        target_type: null,
+        target_id: this.projectId,
+        role: TEST_ADMIN_GRANT.role
+      });
+      if (grantError) throw new Error(`forceRegisterAdmin: insert grant failed: ${grantError.message}`);
+    } catch (mutationErr) {
+      // reason: compensating rollback on partial failure prevents orphan auth users that cascade as "User already exists" errors across subsequent test runs. The rollback failure (if any) is logged but not re-thrown — we always re-throw the original mutationErr so the caller sees the real cause.
+      await this.client.auth.admin.deleteUser(user.id).then(
+        () => {},
+        (rollbackErr) => {
+          console.error('[forceRegisterAdmin] rollback (auth.admin.deleteUser) failed:', rollbackErr);
+        }
+      );
+      throw mutationErr;
+    }
+  }
+
+  /**
+   * Delete the bank-auth candidate row + its entity grant created by the identity-callback Edge Function for a given placeholder email.
+   *
+   * The bank-auth self-registration flow (EFLOW-10b) creates a FRESH `candidates` row (no `external_id`, so `runTeardown` prefix-deletes miss it) linked via `auth_user_id` to the auth user the Edge Function created under the identity-derived placeholder email (`${sub}@bank-auth.placeholder`).
+   * Without this explicit delete the orphan candidate rows accumulate across the 3× determinism gate (each run creates a new candidate, and the prior run's `unregisterCandidate` only nulls `auth_user_id` + deletes the auth user).
+   *
+   * Deletes the candidate row(s) AND their `grants` before `unregisterCandidate` removes the auth user. Idempotent — a no-op when no user or candidate matches.
    *
    * @param placeholderEmail - The `${sub}@bank-auth.placeholder` address the
    *   bank-auth auth user was created with.
@@ -415,14 +491,14 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
       throw new Error(`deleteBankAuthCandidateBySub: find candidates failed: ${findError.message}`);
     }
     for (const candidate of candidates ?? []) {
-      // Delete the candidate's role assignment (scope_id = candidate id).
-      const { error: roleError } = await this.client
-        .from('user_roles')
+      // Delete the candidate's grant (target = the candidate row). THIS path does not delete the auth user, so the `ON DELETE CASCADE` from `auth.users` never fires for it and an authority row would survive into the next run — which is why the deletion is explicit here and merely belt-and-braces in the two paths below.
+      const { error: grantError } = await this.client
+        .from('grants')
         .delete()
-        .eq('scope_type', 'candidate')
-        .eq('scope_id', candidate.id);
-      if (roleError) {
-        throw new Error(`deleteBankAuthCandidateBySub: delete user_roles failed: ${roleError.message}`);
+        .eq('scope', 'entity')
+        .eq('target_id', candidate.id);
+      if (grantError) {
+        throw new Error(`deleteBankAuthCandidateBySub: delete grants failed: ${grantError.message}`);
       }
       // Delete the candidate row itself.
       const { error: candError } = await this.client.from('candidates').delete().eq('id', candidate.id);
@@ -430,6 +506,25 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
         throw new Error(`deleteBankAuthCandidateBySub: delete candidate failed: ${candError.message}`);
       }
     }
+  }
+
+  /**
+   * Delete every `admin_jobs` row written by `author`, in this client's project.
+   *
+   * NOTHING ELSE IN THE SUITE CAN REACH THESE ROWS. `admin_jobs` is not in `ALLOWED_TEARDOWN_TABLES`, so `runTeardown`'s prefix delete never sees it; the table carries no `external_id` column for a prefix to match on in the first place; its `election_id` is `ON DELETE SET NULL` rather than cascading, so an election teardown leaves the row behind with a null reference; and its `project_id` cascades only from a `projects` row the seed bootstraps and nothing deletes. A job row this suite causes therefore accumulates forever unless it is deleted BY AUTHOR, which is what this method is for.
+   *
+   * Idempotent — deleting no rows is not an error. Read-back of what was deleted is deliberately not returned: the caller that needs a count reads it first through `query('admin_jobs')`.
+   *
+   * @param author - The `author` column value, i.e. the admin's email address.
+   * @throws Error if the delete fails.
+   */
+  async deleteAdminJobsByAuthor(author: string): Promise<void> {
+    const { error } = await this.client
+      .from('admin_jobs')
+      .delete()
+      .eq('project_id', this.projectId)
+      .eq('author', author);
+    if (error) throw new Error(`deleteAdminJobsByAuthor: ${error.message}`);
   }
 
   /**
@@ -454,9 +549,9 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
       .eq('auth_user_id', user.id);
     if (clearError) throw new Error(`unregisterCandidate: clear auth_user_id failed: ${clearError.message}`);
 
-    // 3. Delete user roles
-    const { error: roleError } = await this.client.from('user_roles').delete().eq('user_id', user.id);
-    if (roleError) throw new Error(`unregisterCandidate: delete user_roles failed: ${roleError.message}`);
+    // 3. Delete the identity's grants. Step 4 deletes the auth user and `grants.user_id` is `ON DELETE CASCADE`, so this is belt-and-braces rather than the load-bearing step — it is kept explicit so every removal path in this file reads the same way and none of them depends on remembering which constraint does the work.
+    const { error: grantError } = await this.client.from('grants').delete().eq('user_id', user.id);
+    if (grantError) throw new Error(`unregisterCandidate: delete grants failed: ${grantError.message}`);
 
     // 4. Delete auth user
     const { error: deleteError } = await this.client.auth.admin.deleteUser(user.id);
@@ -522,7 +617,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
       // redirectTo points to the auth callback which handles token exchange.
       const frontendUrl = SUPABASE_URL.replace('54321', '5173');
       const { data: inviteData, error: inviteError } = await this.client.auth.admin.inviteUserByEmail(email, {
-        redirectTo: `${frontendUrl}/en/candidate/auth/callback`
+        redirectTo: `${frontendUrl}/en/api/candidate/auth/callback`
       });
       if (inviteError) throw new Error(`sendEmail: inviteUserByEmail failed: ${inviteError.message}`);
 
@@ -535,14 +630,15 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
         .eq('id', candidate.id);
       if (linkError) throw new Error(`sendEmail: link auth user failed: ${linkError.message}`);
 
-      // Assign candidate role
-      const { error: roleError } = await this.client.from('user_roles').insert({
+      // Write the entity grant. Same reason as the other two minting sites: the grant row is the whole of a new identity's authority.
+      const { error: grantError } = await this.client.from('grants').insert({
         user_id: userId,
-        role: 'candidate',
-        scope_type: 'candidate',
-        scope_id: candidate.id
+        scope: 'entity',
+        target_type: 'candidate',
+        target_id: candidate.id,
+        role: 'editor'
       });
-      if (roleError) throw new Error(`sendEmail: insert user_role failed: ${roleError.message}`);
+      if (grantError) throw new Error(`sendEmail: insert grant failed: ${grantError.message}`);
     }
   }
 
@@ -560,7 +656,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     // Use resetPasswordForEmail which sends the actual email via Mailpit.
     // Redirect to the auth callback which exchanges the token and redirects to password-reset.
     const { error } = await this.client.auth.resetPasswordForEmail(email, {
-      redirectTo: `${SUPABASE_URL.replace('54321', '5173')}/en/candidate/auth/callback`
+      redirectTo: `${SUPABASE_URL.replace('54321', '5173')}/en/api/candidate/auth/callback`
     });
     if (error) throw new Error(`sendForgotPassword: failed: ${error.message}`);
   }
@@ -587,9 +683,9 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
         .eq('auth_user_id', user.id);
       if (clearError) errors.push({ user: user.id, step: 'clear-auth-user-id', error: clearError });
 
-      // Delete user roles
-      const { error: rolesError } = await this.client.from('user_roles').delete().eq('user_id', user.id);
-      if (rolesError) errors.push({ user: user.id, step: 'delete-user-roles', error: rolesError });
+      // Delete the identity's grants. The auth-user deletion below cascades to them anyway; explicit for the same symmetry reason as `unregisterCandidate`.
+      const { error: grantsError } = await this.client.from('grants').delete().eq('user_id', user.id);
+      if (grantsError) errors.push({ user: user.id, step: 'delete-grants', error: grantsError });
 
       // Delete auth user
       const { error: deleteError } = await this.client.auth.admin.deleteUser(user.id);
