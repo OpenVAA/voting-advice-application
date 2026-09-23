@@ -1,16 +1,13 @@
 /**
- * Convert a PEM-encoded RSA key (private or public) into a JWK with the
- * metadata OpenVAA's identity provider env vars expect.
+ * Convert a PEM-encoded RSA key (private or public) into a JWK with the metadata OpenVAA's identity provider env vars expect.
  *
- * Supports both signing keys (Idura JAR + private_key_jwt) and encryption keys
- * (JWE id_token decryption for Idura and Signicat).
+ * Supports both signing keys (Idura JAR + private_key_jwt) and encryption keys (JWE id_token decryption for Idura and Signicat).
  *
  * Usage:
  *   yarn workspace @openvaa/dev-tools pem-to-jwk \
  *     --in <path>             PEM file to convert
  *     --type <signing|encryption>
- *     --kid <id>              Key ID to embed in the JWK (e.g. openvaa-signing-1)
- *     [--alg <name>]          Algorithm override. Defaults:
+ *     --kid <id>              Key ID to embed in the JWK (e.g. openvaa-signing-1) [--alg <name>]          Algorithm override. Defaults:
  *                               signing    -> RS256
  *                               encryption -> RSA-OAEP-256 (Idura)
  *                             Signicat encryption keys need --alg RSA-OAEP.
@@ -72,8 +69,7 @@ if (!isPrivate && !isPublic) {
   process.exit(1);
 }
 
-// Passphrase-protected keys are detected and rejected here rather than left to `jose.importPKCS8`,
-// which takes no passphrase argument and would otherwise fail with an opaque decode error.
+// Passphrase-protected keys are detected and rejected here rather than left to `jose.importPKCS8`, which takes no passphrase argument and would otherwise fail with an opaque decode error.
 if (isEncrypted) {
   process.stderr.write(
     `${values.in} is a passphrase-encrypted private key, which this tool cannot read.\n` +

@@ -178,6 +178,21 @@ jobs:
       # Read the connection details off the RUNNING instance rather than
       # hard-coding the local demo keys, so a CLI change to the local key format
       # cannot make this job authenticate as anon and fail confusingly.
+      #
+      # ANON_KEY is exported for the same reason, and its `test -n` guard is
+      # load-bearing rather than defensive boilerplate: `supabase/setup-cli@v1`
+      # above pins `version: latest`, and the CLI already emits a newer
+      # PUBLISHABLE_KEY / SECRET_KEY pair alongside ANON_KEY / SERVICE_ROLE_KEY.
+      # If a future CLI stops emitting ANON_KEY, an unguarded export yields an
+      # EMPTY variable, the anon guard in the dev-seed suite silently falls back
+      # to a hard-coded local demo key that will not authenticate against THIS
+      # runner's instance, PostgREST 401s, the nomination count is 0 and the
+      # build goes red as if the seed template had regressed. The guard converts
+      # that wiring loss into a named failure at this step instead.
+      #
+      # The values are appended to $GITHUB_ENV only — never echoed to stdout,
+      # and `set -x` must not be added here, since either would print a
+      # credential into the job log.
       - name: "Export Supabase connection env"
         working-directory: apps/supabase
         run: |
@@ -269,11 +284,19 @@ jobs:
   # INTENTIONAL UI change they must be regenerated in the container that matches
   # this job (mcr.microsoft.com/playwright:v<version>-noble, --platform
   # linux/amd64, --workers=1) — never on a developer Mac, whose font
-  # rasterisation differs enough to fail here permanently. The full procedure is
-  # in the docblock of tests/tests/specs/visual/visual-regression.spec.ts.
+  # rasterisation differs enough to fail here permanently. The executable
+  # procedure is tests/scripts/visual-container.sh — the single source; do not
+  # restate it as prose anywhere else.
   #
-  # The job needs network access to fonts.googleapis.com: the app loads Inter
-  # with display=swap and the specs assert it resolved before capturing.
+  # The job needs NO third-party font egress. Since Phase 146 the app serves
+  # Inter from its own origin (apps/frontend/static/fonts/, default set in
+  # packages/app-shared/src/settings/staticSettings.ts). Measured, not assumed:
+  # the whole visual project ran green in-container with fonts.googleapis.com
+  # and fonts.gstatic.com blackholed at the runner, with the curl control
+  # failing first to prove the block was real — see rows EG1-CURL and EG2-SUITE
+  # in .planning/phases/146-*/146-NEGATIVE-CONTROL.md. The specs still assert
+  # the font
+  # resolved before capturing, which is why settleFonts exists.
   e2e-visual:
     runs-on: ubuntu-latest
 
