@@ -16,6 +16,7 @@
     "eslint-plugin-simple-import-sort": "catalog:",
     "eslint-plugin-unused-imports": "^4.4.1",
     "prettier": "catalog:",
+    "prettier-plugin-sql": "catalog:",
     "typescript": "catalog:"
   },
   "exports": {

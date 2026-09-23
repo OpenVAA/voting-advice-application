@@ -38,6 +38,8 @@ services:
 
       - key: PUBLIC_DEBUG
         value: 'false'
+      - key: PUBLIC_LOG_LEVEL # debug | info | warn | error; anything else logs one error and falls back to warn
+        value: 'warn'
 
       - key: PUBLIC_BROWSER_FRONTEND_URL # Check value after deployment
         value: https://<INSTANCE_NAME>-frontend.onrender.com
