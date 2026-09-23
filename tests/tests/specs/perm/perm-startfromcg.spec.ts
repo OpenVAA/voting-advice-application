@@ -2,9 +2,7 @@
  * Topology: EL-1=CG-1(2 parent COs); EL-2=CG-2(5 COs with parent refs to CG-1
  * + 1 orphan); `elections.startFromConstituencyGroup: CG-2` set at runtime.
  *
- * Runtime-set mechanism: the template OMITS
- * elections.startFromConstituencyGroup; this spec's beforeAll resolves the
- * CG-2 UUID via SupabaseAdminClient + client.updateAppSettings.
+ * Runtime-set mechanism: the template OMITS elections.startFromConstituencyGroup; this spec's beforeAll resolves the CG-2 UUID via SupabaseAdminClient + client.updateAppSettings.
  *
  * Rigidity contract: every assertion is HARD.
  */
@@ -61,8 +59,7 @@ test.describe('perm-startfromcg', () => {
       selectorText: /\[CG2\]/i,
       optionText: /\[CO1A1\]/i
     });
-    // After selecting CO-1A1 (parent: CO-1A which is EL-1's CG-1 constituency),
-    // BOTH EL-1 and EL-2 apply → election selector shown with 2 options.
+    // After selecting CO-1A1 (parent: CO-1A which is EL-1's CG-1 constituency), BOTH EL-1 and EL-2 apply → election selector shown with 2 options.
     const electionList = await expectElectionSelector(page);
     await expect(electionList.getByTestId(testIds.voter.elections.option)).toHaveCount(2);
   });
@@ -71,13 +68,7 @@ test.describe('perm-startfromcg', () => {
     page
   }) => {
     // Abstract contract: "user selects CO 1C: don't show election selector".
-    // Observed app behavior: /elections renders with EXACTLY
-    // one option that is `[checked] [disabled]` (the single election applicable
-    // to the orphan CO-1C), and the page text reads "Only one election is held
-    // in your selected constituency." Same user experience (no decision to
-    // make), but the route is rendered, not skipped. This rigid contract
-    // captures the actual behavior; if the app is later changed to bypass the
-    // route entirely, this test needs updating.
+    // Observed app behavior: /elections renders with EXACTLY one option that is `[checked] [disabled]` (the single election applicable to the orphan CO-1C), and the page text reads "Only one election is held in your selected constituency." Same user experience (no decision to make), but the route is rendered, not skipped. This rigid contract captures the actual behavior; if the app is later changed to bypass the route entirely, this test needs updating.
     await bypassIntroAndExpectConstituencySelector(page);
     await selectConstituencyAndAdvance(page, {
       selectorText: /\[CG2\]/i,

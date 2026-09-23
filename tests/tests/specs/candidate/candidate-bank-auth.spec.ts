@@ -7,16 +7,9 @@
  * 3. Verifying a candidate is created with the Idura `sub`-based identity match + claim flow-through
  * 4. Verifying a magic-link session (action_link) is returned
  *
- * This spec is Idura-only (the previous generic/legacy-provider assertions are dropped per
- * see phase 122). It asserts the
- * Idura claim model: `identity_provider='idura'`, `identity_match_prop='sub'`,
- * `identity_match_value=<sub>`, and the IDURA_AUTH_CONFIG.extractClaims flow-through
- * (`birthdate`, `hetu` — see apps/supabase/.../identity-callback/claimConfig.ts).
+ * This spec is Idura-only (the previous generic/legacy-provider assertions were dropped). It asserts the Idura claim model: `identity_provider='idura'`, `identity_match_prop='sub'`, `identity_match_value=<sub>`, and the IDURA_AUTH_CONFIG.extractClaims flow-through (`birthdate`, `hetu` — see apps/supabase/.../identity-callback/claimConfig.ts).
  *
- * DETERMINISTIC-GREEN GATE (122): the keys-configured create path runs on EVERY run
- * (never skipped). This requires the served Edge Function to read the FIXED test
- * decryption JWK (`IDENTITY_PROVIDER_DECRYPTION_JWKS` = `decryptionJwks` from
- * tests/tests/utils/testKeys.ts). A "did not run" counts as a CARDINAL failure.
+ * DETERMINISTIC-GREEN GATE: the keys-configured create path runs on EVERY run (never skipped). This requires the served Edge Function to read the FIXED test decryption JWK (`IDENTITY_PROVIDER_DECRYPTION_JWKS` = `decryptionJwks` from tests/tests/utils/testKeys.ts). A "did not run" counts as a CARDINAL failure.
  *
  * Run (see tests/IDURA-TEST-RUNBOOK.md → " deterministic E2E run"):
  *   # Terminal A — serve the Edge Function with the TEST decryption JWKS env file:
@@ -25,9 +18,7 @@
  *   # Terminal B — run the bank-auth project:
  *   PLAYWRIGHT_BANK_AUTH=1 FRONTEND_PORT=5174 npx playwright test --project=bank-auth -c tests/playwright.config.ts
  *
- * NOTE: These tests call the Edge Function directly — they do NOT redirect to a real
- * identity provider. They verify the backend integration, not the full OIDC redirect flow
- * (the full-browser journey is EFLOW-10b, candidate-bank-auth-journey.spec.ts).
+ * NOTE: These tests call the Edge Function directly — they do NOT redirect to a real identity provider. They verify the backend integration, not the full OIDC redirect flow (the full-browser journey is EFLOW-10b, candidate-bank-auth-journey.spec.ts).
  */
 
 import { expect, test } from '@playwright/test';
@@ -38,10 +29,7 @@ import { getTestKeys } from '../../utils/testKeys';
 
 const SUPABASE_URL = process.env.SUPABASE_URL ?? 'http://localhost:54321';
 
-// Throw on missing keys rather than falling back to hardcoded demo JWTs. A
-// silent fallback masks misconfigured environments — tests would run against
-// the demo keys and produce mysterious 401s from the Edge Function. Loud
-// failure here surfaces the misconfiguration immediately.
+// Throw on missing keys rather than falling back to hardcoded demo JWTs. A silent fallback masks misconfigured environments — tests would run against the demo keys and produce mysterious 401s from the Edge Function. Loud failure here surfaces the misconfiguration immediately.
 if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
   throw new Error('SUPABASE_SERVICE_ROLE_KEY required for candidate-bank-auth tests');
 }
@@ -68,20 +56,13 @@ test.use({ storageState: { cookies: [], origins: [] } });
 /**
  * The token builder + fixed test key pair are now shared utils:
  *   - `buildTestIdToken` — tests/tests/utils/buildTestIdToken.ts
- *   - `getTestKeys`      — tests/tests/utils/testKeys.ts (fixed committed pair)
- * The retarget + deterministic-green gate lands;
- * this plan only de-duplicates so the spec compiles against the shared util.
+ *   - `getTestKeys`      — tests/tests/utils/testKeys.ts (fixed committed pair) The retarget + deterministic-green gate lands; this plan only de-duplicates so the spec compiles against the shared util.
  */
 
 /**
- * Edge Function probe result captured once in beforeAll. The bank-auth project is
- * env-gated (PLAYWRIGHT_BANK_AUTH=1 selects the project per playwright.config.ts).
+ * Edge Function probe result captured once in beforeAll. The bank-auth project is env-gated (PLAYWRIGHT_BANK_AUTH=1 selects the project per playwright.config.ts).
  *
- * Under the deterministic-green gate the served Edge Function ALWAYS has the fixed
- * test decryption JWK wired (IDENTITY_PROVIDER_DECRYPTION_JWKS = decryptionJwks from
- * testKeys.ts), so `keysConfigured` is deterministically true and the create path runs
- * every run. The keys-configured test therefore asserts `keysConfigured === true` LOUDLY
- * (no skip) — a silent skip would be a cardinal "did not run" failure.
+ * Under the deterministic-green gate the served Edge Function ALWAYS has the fixed test decryption JWK wired (IDENTITY_PROVIDER_DECRYPTION_JWKS = decryptionJwks from testKeys.ts), so `keysConfigured` is deterministically true and the create path runs every run. The keys-configured test therefore asserts `keysConfigured === true` LOUDLY (no skip) — a silent skip would be a cardinal "did not run" failure.
  */
 type EdgeFunctionProbe = {
   status: number;
@@ -104,10 +85,7 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
   test.beforeAll(async () => {
     testKeys = await getTestKeys();
 
-    // Probe the Edge Function exactly once. The single call captures BOTH the
-    // keys-configured (200 + success) and keys-not-configured (401/500) cases,
-    // so per-test bodies can assert each path unconditionally — gated by the
-    // probe state, not by in-test branching.
+    // Probe the Edge Function exactly once. The single call captures BOTH the keys-configured (200 + success) and keys-not-configured (401/500) cases, so per-test bodies can assert each path unconditionally — gated by the probe state, not by in-test branching.
     //
     // For a full integration test, set these Supabase secrets:
     //   supabase secrets set IDENTITY_PROVIDER_DECRYPTION_JWKS='[{...test encPrivJwk...}]'
@@ -131,10 +109,8 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
       throw new Error(`Unexpected probe response ${status}: ${JSON.stringify(body)}`);
     }
 
-    // The `body.error ?? body.msg ?? body.details` precedence chain is guarded
-    // by an explicit `typeof === 'string'` check so non-string values (e.g.
-    // `{ error: { code: 401 } }`) are not misrepresented as a string. The
-    // typeof check returns null when none of the candidate properties is a string.
+    // The `body.error ?? body.msg ?? body.details` precedence chain is guarded by an explicit `typeof === 'string'` check so non-string values (e.g.
+    // `{ error: { code: 401 } }`) are not misrepresented as a string. The typeof check returns null when none of the candidate properties is a string.
     const candidateErrorValue = body.error ?? body.msg ?? body.details;
     const errorMsg = keysConfigured ? null : typeof candidateErrorValue === 'string' ? candidateErrorValue : null;
 
@@ -159,9 +135,7 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
 
   test('should create candidate via identity-callback Edge Function (Idura sub-based identity)', async () => {
     // deterministic-green gate: the keys-configured create path MUST run every run.
-    // Instead of skipping (a silent "did not run" = cardinal failure), assert LOUDLY that
-    // the served Edge Function had the fixed test decryption JWK wired. If this fails, the
-    // run procedure in tests/IDURA-TEST-RUNBOOK.md was not followed.
+    // Instead of skipping (a silent "did not run" = cardinal failure), assert LOUDLY that the served Edge Function had the fixed test decryption JWK wired. If this fails, the run procedure in tests/IDURA-TEST-RUNBOOK.md was not followed.
     expect(
       probe,
       'EFLOW-10 keys-configured path did not run — the served identity-callback Edge Function ' +
@@ -197,18 +171,13 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     expect(user?.app_metadata?.identity_provider).toBe('idura');
     expect(user?.app_metadata?.identity_match_prop).toBe('sub');
     expect(user?.app_metadata?.identity_match_value).toBe(TEST_IDENTITY.sub);
-    // Idura extra-claim flow-through. The Edge Function's IDURA config extracts ['birthdate', 'hetu']
-    // (apps/supabase/.../identity-callback/claimConfig.ts:40-45) — assert exactly those. `country` is
-    // NOT in the production extractClaims set, so it is intentionally not asserted (see SUMMARY deviation).
+    // Idura extra-claim flow-through. The Edge Function's IDURA config extracts ['birthdate', 'hetu'] (apps/supabase/.../identity-callback/claimConfig.ts:40-45) — assert exactly those. `country` is NOT in the production extractClaims set, so it is intentionally not asserted.
     expect(user?.app_metadata?.hetu).toBe(TEST_IDENTITY.hetu);
     expect(user?.app_metadata?.birthdate).toBe(TEST_IDENTITY.birthdate);
   });
 
   test('should reject an id_token encrypted with a mismatched (wrong) decryption key', async () => {
-    // the inverse "keys-NOT-configured" skip is replaced by a NEGATIVE-PATH test that RUNS
-    // every run. With the fixed test keys wired, the create path is always reachable — so instead
-    // we prove the reject path by encrypting under a DELIBERATELY wrong enc key (kid the served
-    // function has no private half for) → the function returns a structured decryption-failure 401.
+    // the inverse "keys-NOT-configured" skip is replaced by a NEGATIVE-PATH test that RUNS every run. With the fixed test keys wired, the create path is always reachable — so instead we prove the reject path by encrypting under a DELIBERATELY wrong enc key (kid the served function has no private half for) → the function returns a structured decryption-failure 401.
     expect(probe, 'probe must have run (beforeAll)').not.toBeNull();
 
     // Build a JWE under a fresh, unrelated RSA-OAEP-256 key the served function cannot decrypt.
@@ -236,8 +205,7 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
   });
 
   test('should return session with magic link when candidate is created', async () => {
-    // no skip — the create path is guaranteed by the keys-configured gate above, so the
-    // action_link is asserted UNCONDITIONALLY (a silent skip here would be a cardinal "did not run").
+    // no skip — the create path is guaranteed by the keys-configured gate above, so the action_link is asserted UNCONDITIONALLY (a silent skip here would be a cardinal "did not run").
     expect(probe, 'probe must have created a user (keys-configured path)').not.toBeNull();
     expect(probe!.createdUserId, 'createdUserId must be present — keys-configured create path').toBeTruthy();
 
@@ -263,9 +231,7 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     expect(body.user_id).toBe(captured.createdUserId);
 
     // Verify session data is returned with a magic-link action_link containing a token.
-    // Both `session` and `session.action_link` are part of the Supabase magic-link contract
-    // (admin.generateLink response shape) — they MUST be present together when keys are
-    // configured, so the test asserts them unconditionally.
+    // Both `session` and `session.action_link` are part of the Supabase magic-link contract (admin.generateLink response shape) — they MUST be present together when keys are configured, so the test asserts them unconditionally.
     const session = body.session as { action_link?: string } | null;
     expect(session).toBeTruthy();
     expect(session?.action_link).toBeTruthy();

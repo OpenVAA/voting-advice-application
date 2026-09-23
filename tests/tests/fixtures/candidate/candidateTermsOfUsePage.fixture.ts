@@ -1,9 +1,7 @@
 /**
  * @file candidateTermsOfUsePage fixture.
  *
- * Function-fixture for the candidate Terms-of-Use acceptance form
- * (rendered by `apps/frontend/src/routes/candidate/(protected)/+layout.svelte`
- * when `candidate.termsOfUseAccepted == null`).
+ * Function-fixture for the candidate Terms-of-Use acceptance form (rendered by `apps/frontend/src/routes/candidate/(protected)/+layout.svelte` when `candidate.termsOfUseAccepted == null`).
  *
  * Surface:
  *  - accept()                — toggle the terms-checkbox (no submit click).
@@ -11,16 +9,11 @@
  *  - acceptAndAdvance()      — composed: accept() + getSubmit().click().
  *
  * Spec flow at the call site asserts the disabled-state transition:
- *   expect(termsPage.getSubmit()).toBeDisabled()
- *   await termsPage.accept()
- *   await expect(termsPage.getSubmit()).toBeEnabled()
- *   await termsPage.getSubmit().click()
+ *   expect(termsPage.getSubmit()).toBeDisabled() await termsPage.accept() await expect(termsPage.getSubmit()).toBeEnabled() await termsPage.getSubmit().click()
  *
- * `acceptAndAdvance()` is for specs that don't need the disabled-state
- * transition check.
+ * `acceptAndAdvance()` is for specs that don't need the disabled-state transition check.
  *
- * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`,
- * NO `.catch(() => null)` on assertion-bearing locator interactions.
+ * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
 import { expect } from '@playwright/test';
@@ -30,17 +23,14 @@ import type { Locator, Page } from '@playwright/test';
 export function createCandidateTermsOfUsePage(page: Page) {
   return {
     /**
-     * Toggle the terms-checkbox. Does NOT click submit — the spec must
-     * follow this with `getSubmit().click()` (or call `acceptAndAdvance`
-     * for the composed shortcut).
+     * Toggle the terms-checkbox. Does NOT click submit — the spec must follow this with `getSubmit().click()` (or call `acceptAndAdvance` for the composed shortcut).
      */
     async accept(): Promise<void> {
       await page.getByTestId(testIds.candidate.terms.checkbox).click();
     },
 
     /**
-     * Return the terms-of-use-submit Locator. Spec callers use this for
-     * disabled-state assertions and for the click itself.
+     * Return the terms-of-use-submit Locator. Spec callers use this for disabled-state assertions and for the click itself.
      */
     getSubmit(): Locator {
       return page.getByTestId(testIds.candidate.terms.submit);
@@ -48,17 +38,12 @@ export function createCandidateTermsOfUsePage(page: Page) {
 
     /**
      * Composed convenience: tick the checkbox + click the submit button.
-     * Use only when the spec does not need to assert the disabled→enabled
-     * state transition.
+     * Use only when the spec does not need to assert the disabled→enabled state transition.
      */
     async acceptAndAdvance(): Promise<void> {
       await this.accept();
-      // Submit is `disabled` until the checkbox toggle propagates. Bare
-      // `.click()` auto-waits for actionability against the 90s per-test
-      // timeout — a stuck-disabled button produces a 346× click-retry dump.
-      // Assert enabled first so a genuine stuck-disabled state fails fast at
-      // the (bounded) expect timeout with a clear message. Mirrors the
-      // documented disabled→enabled spec flow above.
+      // Submit is `disabled` until the checkbox toggle propagates. Bare `.click()` auto-waits for actionability against the 90s per-test timeout — a stuck-disabled button produces a 346× click-retry dump.
+      // Assert enabled first so a genuine stuck-disabled state fails fast at the (bounded) expect timeout with a clear message. Mirrors the documented disabled→enabled spec flow above.
       await expect(this.getSubmit()).toBeEnabled();
       await this.getSubmit().click();
     }

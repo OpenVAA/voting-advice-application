@@ -9,19 +9,15 @@ import type { Server } from 'http';
 import type { AddressInfo } from 'net';
 
 /**
- * Unit tests for the E2E served-application preflight (see phase 137).
+ * Unit tests for the E2E served-application preflight.
  *
- * They live in `tests/utils/` rather than next to the module in `tests/support/`
- * because this directory is the repo's wired-up vitest location — `tests/vitest.config.ts`
+ * They live in `tests/utils/` rather than next to the module in `tests/support/` because this directory is the repo's wired-up vitest location — `tests/vitest.config.ts`
  * includes `tests/utils/**\/*.test.ts` only, and `tests/eslint.config.mjs` disables the
  * Playwright test-structure rules for exactly that glob. Run them with:
  *
  *   yarn vitest run --config tests/vitest.config.ts
  *
- * The preflight is exercised against a stub HTTP server rather than a real dev
- * server, which is the point of keeping the assertion in a module that takes its
- * target as an argument: every clause can be driven, including the ones a healthy
- * checkout never reaches.
+ * The preflight is exercised against a stub HTTP server rather than a real dev server, which is the point of keeping the assertion in a module that takes its target as an argument: every clause can be driven, including the ones a healthy checkout never reaches.
  */
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
@@ -82,8 +78,7 @@ describe('assertServedApp', () => {
   });
 
   it('fails on a title that is one character off a catalogue value', async () => {
-    // `Valkompass` vs this checkout's sv value `Valkompassen` — the exact shape of
-    // the sibling checkout measured squatting the port during scouting.
+    // `Valkompass` vs this checkout's sv value `Valkompassen` — the exact shape of the sibling checkout measured squatting the port during scouting.
     const baseURL = await startStub({ title: 'Valkompass', probeStatus: 200 });
     await expect(run(baseURL)).rejects.toThrow(/E2E PREFLIGHT FAILED[\s\S]*Valkompass/);
   });
@@ -106,7 +101,7 @@ describe('assertServedApp', () => {
 
   it('does not throw while extracting the module root from HTML that has none', async () => {
     const baseURL = await startStub({ title: 'Election Compass', probeStatus: 403, withModuleRoot: false });
-    // Reaches the clause (b) failure — not a crash inside the extraction.
+    // `probeStatus: 403` means this fails at clause (b1) and RETURNS BEFORE (b2). That is deliberate and is all this case claims: the extraction on a document with no module root does not crash on the way to the (b1) failure. It is NOT coverage of either (b2) branch — the two cases below are, and they keep the probe at 200 for exactly that reason. Do not "strengthen" this one by matching a (b2) message: it cannot reach one.
     await expect(run(baseURL)).rejects.toThrow(/not this checkout's Vite dev server/);
   });
 });

@@ -1,9 +1,7 @@
 /**
  * Unit tests for the shared `buildTestIdToken` synthetic JWE id_token builder.
  *
- * Exercises the pure transform end-to-end against the fixed test key pair: build a
- * JWE, decrypt it with the private encryption key, verify the inner JWS with the
- * public signing key, and assert the claims + iss/aud parameterization contract.
+ * Exercises the pure transform end-to-end against the fixed test key pair: build a JWE, decrypt it with the private encryption key, verify the inner JWS with the public signing key, and assert the claims + iss/aud parameterization contract.
  *
  * Run: cd tests && npx vitest run --config vitest.config.ts
  */

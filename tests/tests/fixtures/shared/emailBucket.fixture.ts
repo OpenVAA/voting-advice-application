@@ -1,25 +1,17 @@
 /**
  * @file emailBucket fixture.
  *
- * Self-contained Mailpit (Inbucket) access for E2E tests. Talks directly to the
- * Mailpit REST API (port 54324, started by `supabase start`) — it owns its own
- * HTTP plumbing and does not depend on any other email module. Sibling to the
- * other candidate fixtures (candidateLoginPage.fixture.ts, etc.); composed in
- * `candidate-journey.ts`.
+ * Self-contained Mailpit (Inbucket) access for E2E tests. Talks directly to the Mailpit REST API (port 54324, started by `supabase start`) — it owns its own HTTP plumbing and does not depend on any other email module. Sibling to the other candidate fixtures (candidateLoginPage.fixture.ts, etc.); composed in `candidate-journey.ts`.
  *
  * Surface:
  *  - expectEmail(subject)              → polls Mailpit until a message with
- *                                        matching Subject arrives (15s timeout,
- *                                        [1000, 2000, 3000] retry intervals).
+ *                                        matching Subject arrives (15s timeout, [1000, 2000, 3000] retry intervals).
  *  - getEmail(subjectOrNth)            → string/RegExp → match by Subject;
  *                                        number → 0-indexed nth latest email.
  *  - getLinksInEmail(subjectOrNth)     → array of href values (cheerio-parsed
  *                                        anchors from the email HTML).
  *
- * Also exports `toCallbackUrl(verifyLink)` — a pure transform that rewrites a
- * Supabase Auth verify link (extracted from an email via `getLinksInEmail`) into
- * a direct frontend auth-callback URL. Absorbed here when the legacy
- * `utils/emailHelper.ts` was retired (its only remaining consumer).
+ * Also exports `toCallbackUrl(verifyLink)` — a pure transform that rewrites a Supabase Auth verify link (extracted from an email via `getLinksInEmail`) into a direct frontend auth-callback URL. Absorbed here when the legacy `utils/emailHelper.ts` was retired (its only remaining consumer).
  *
  * **Rigidity contract**:
  * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
@@ -68,8 +60,7 @@ interface MailpitMessage extends MailpitMessageSummary {
 }
 
 /**
- * Test-facing record returned by getEmail. Exposes the canonical Mailpit
- * fields plus the HTML body for downstream parsing.
+ * Test-facing record returned by getEmail. Exposes the canonical Mailpit fields plus the HTML body for downstream parsing.
  */
 export interface EmailRecord {
   id: string;
@@ -121,9 +112,7 @@ function toEmailRecord(message: MailpitMessage): EmailRecord {
 export function createEmailBucket(_page: Page, recipientEmail: string) {
   return {
     /**
-     * Wait until at least one email with a matching subject arrives in the
-     * recipient's Mailpit queue. Polls via `expect.poll` with the canonical
-     * [1000, 2000, 3000] retry intervals (15s timeout).
+     * Wait until at least one email with a matching subject arrives in the recipient's Mailpit queue. Polls via `expect.poll` with the canonical [1000, 2000, 3000] retry intervals (15s timeout).
      */
     async expectEmail(subject: string | RegExp): Promise<void> {
       await expect
@@ -142,9 +131,7 @@ export function createEmailBucket(_page: Page, recipientEmail: string) {
     },
 
     /**
-     * Retrieve a single email by subject match (string / RegExp) OR by
-     * 0-indexed nth latest position (number). Polls until the target email
-     * exists.
+     * Retrieve a single email by subject match (string / RegExp) OR by 0-indexed nth latest position (number). Polls until the target email exists.
      *
      * Polymorphic-overload dispatch:
      *  - string | RegExp → subject match (returns the newest matching).
@@ -180,9 +167,7 @@ export function createEmailBucket(_page: Page, recipientEmail: string) {
     },
 
     /**
-     * Retrieve all anchor hrefs from a target email's HTML body. Polymorphic
-     * dispatch identical to getEmail (string/RegExp → subject match; number
-     * → nth latest).
+     * Retrieve all anchor hrefs from a target email's HTML body. Polymorphic dispatch identical to getEmail (string/RegExp → subject match; number → nth latest).
      */
     async getLinksInEmail(subjectOrNth: string | RegExp | number): Promise<Array<string>> {
       const email = await this.getEmail(subjectOrNth);
@@ -202,16 +187,12 @@ export type EmailBucketFixture = ReturnType<typeof createEmailBucket>;
 /**
  * Transform a Supabase Auth verify link into a direct auth callback URL.
  *
- * The Supabase invite/recovery email contains a link to the Auth verify endpoint
- * which then redirects to the frontend. This extracts the token from the verify
- * link and constructs a direct URL to the frontend's auth callback, bypassing the
- * Supabase redirect (which may not carry the correct redirect_to).
+ * The Supabase invite/recovery email contains a link to the Auth verify endpoint which then redirects to the frontend. This extracts the token from the verify link and constructs a direct URL to the frontend's auth callback, bypassing the Supabase redirect (which may not carry the correct redirect_to).
  *
- * Pure function (no Mailpit/Page dependency); colocated here because its sole
- * input is a link returned by `getLinksInEmail`.
+ * Pure function (no Mailpit/Page dependency); colocated here because its sole input is a link returned by `getLinksInEmail`.
  *
  * @param verifyLink - The link from the Supabase email (e.g. http://...54321/auth/v1/verify?token=...&type=invite)
- * @param callbackPath - The frontend auth callback path (default: /en/candidate/auth/callback)
+ * @param callbackPath - The frontend auth callback path (default: /en/api/candidate/auth/callback)
  * @returns A URL pointing directly to the frontend callback with token_hash and type params
  */
 export function toCallbackUrl(verifyLink: string, callbackPath = '/en/candidate/auth/callback'): string {

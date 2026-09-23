@@ -1,28 +1,14 @@
 /**
  * Select a specific election in the `/results` election accordion, by name.
  *
- * WHY this exists: `answerAndAdvanceToResults` step 7 lands on whichever
- * election its `options.first()` pick resolves to, and that is NOT deterministic
- * between EL-Reg and EL-Mun. Any assertion — or screenshot — taken on `/results`
- * without pinning the election is a coin flip: the Regional list carries the
- * CO-Reg-N candidates while the Municipal list carries a much shorter one, so
- * the page differs in content AND in height between two runs of identical code.
- * `numberScale.probe.spec.ts` and `voter-journey.spec.ts` each pin the election
- * for this same reason; the visual baselines were the one `/results` consumer
- * that did not, which is why they could never reproduce.
+ * WHY this exists: `answerAndAdvanceToResults` step 7 lands on whichever election its `options.first()` pick resolves to, and that is NOT deterministic between EL-Reg and EL-Mun. Any assertion — or screenshot — taken on `/results` without pinning the election is a coin flip: the Regional list carries the CO-Reg-N candidates while the Municipal list carries a much shorter one, so the page differs in content AND in height between two runs of identical code.
+ * `voter-journey.spec.ts` pins the election for this same reason; the visual baselines were the one `/results` consumer that did not, which is why they could never reproduce.
  *
- * Collapse-aware: `AccordionSelect` renders ONLY the active option when
- * collapsed, so a bare `getByRole('option', { name })` finds nothing whenever
- * the active election is not the wanted one. Expand first (clicking the single
- * rendered option toggles it open), then click the target and wait for the
- * accordion to collapse back — the signal that the selection committed.
+ * Collapse-aware: `AccordionSelect` renders ONLY the active option when collapsed, so a bare `getByRole('option', { name })` finds nothing whenever the active election is not the wanted one. Expand first (clicking the single rendered option toggles it open), then click the target and wait for the accordion to collapse back — the signal that the selection committed.
  *
- * NOTE (known duplication): `numberScale.probe.spec.ts` still carries a private
- * copy of this helper and `voter-journey.spec.ts` carries a stricter variant
- * (`expectElectionOptionAndSelect`, which adds a listbox-accessible-name lock it
- * owns). Consolidating the probe copy onto this module is logged in
- * `deferred-items.md`; it was left out (see phase 136) to keep the
- * visual-repair blast radius on the visual chain.
+ * Focus-convergent: see `settleNavigationFocus` below. Pinning the election pins the page's CONTENT but not the interaction PATH taken to reach it, and the residual DOM focus state differs between the two paths — which leaks into a screenshot. The helper converges it before returning.
+ *
+ * NOTE (known duplication): `voter-journey.spec.ts` carries a stricter variant (`expectElectionOptionAndSelect`, which adds a listbox-accessible-name lock it owns). A third copy once lived in `numberScale.probe.spec.ts`; that probe was deleted as redundant with `voter-journey.spec.ts`, which consumes every fixture it proved.
  */
 
 import { expect } from '@playwright/test';

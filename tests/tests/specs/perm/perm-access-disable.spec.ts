@@ -1,36 +1,18 @@
 /**
  * @file perm-access-disable.spec.ts — consolidated perm-chain spec.
  *
- * Consolidates the former `perm-disable-voter-app` + `perm-disable-candidate-app`
- * specs into ONE access-gating perm covering all three `access.*` modes, and
- * ADDS the net-new global `underMaintenance` slice. The spec re-seeds the
- * `app_settings` singleton per sub-test (perm-singleton pattern via
- * `updateAppSettings`) so each mode is exercised against the same seeded
- * dataset (`data-setup-perm-access-disable` → `perm-access-disable.ts`).
+ * Consolidates the former `perm-disable-voter-app` + `perm-disable-candidate-app` specs into ONE access-gating perm covering all three `access.*` modes, and ADDS the net-new global `underMaintenance` slice. The spec re-seeds the `app_settings` singleton per sub-test (perm-singleton pattern via `updateAppSettings`) so each mode is exercised against the same seeded dataset (`data-setup-perm-access-disable` → `perm-access-disable.ts`).
  *
- * Three access modes (all plain app-availability toggles — they gate the
- * MaintenancePage display, NOT auth/authorization):
+ * Three access modes (all plain app-availability toggles — they gate the MaintenancePage display, NOT auth/authorization):
  *
- *   1. access.voterApp = false        — voter-app routes (`/`, `/elections`)
- *                                       render the MaintenancePage (root <main>
- *                                       + <h1>, voter start button HIDDEN);
- *                                       the candidate-app route stays available.
- *   2. access.candidateApp = false    — candidate-app route (`/candidate`)
- *                                       renders the MaintenancePage (candidate
- *                                       login email input HIDDEN); the voter-app
- *                                       routes stay available.
- *   3. access.underMaintenance = true — NET-NEW global slice: BOTH the voter
- *                                       (`/`, `/elections`) AND candidate
- *                                       (`/candidate`) routes render the
- *                                       MaintenancePage simultaneously.
+ *   1. access.voterApp = false        — voter-app routes (`/`, `/elections`) render the MaintenancePage (root <main>
+ *                                       + <h1>, voter start button HIDDEN); the candidate-app route stays available.
+ *   2. access.candidateApp = false    — candidate-app route (`/candidate`) renders the MaintenancePage (candidate login email input HIDDEN); the voter-app routes stay available.
+ *   3. access.underMaintenance = true — NET-NEW global slice: BOTH the voter (`/`, `/elections`) AND candidate (`/candidate`) routes render the MaintenancePage simultaneously.
  *
- * The afterAll restores the seed's shipped base posture
- * (voterApp:false, candidateApp:true, underMaintenance:false) so the singleton
- * is not left mutated for any downstream perm node.
+ * The afterAll restores the seed's shipped base posture (voterApp:false, candidateApp:true, underMaintenance:false) so the singleton is not left mutated for any downstream perm node.
  *
- * Rigidity contract: every assertion is HARD — no expect.soft, no try/catch
- * wrapping expect(), no .catch fallbacks. Testid-only via `testIds`
- * (`getByRole('main')` / `heading` permitted per the maintenance-page pattern).
+ * Rigidity contract: every assertion is HARD — no expect.soft, no try/catch wrapping expect(), no .catch fallbacks. Testid-only via `testIds` (`getByRole('main')` / `heading` permitted per the maintenance-page pattern).
  */
 
 import { expect, test } from '@playwright/test';
@@ -47,8 +29,7 @@ test.describe('perm-access-disable (EPERM-11)', () => {
   });
 
   test.afterAll(async () => {
-    // Restore the seed's shipped base posture so the singleton is clean for any
-    // downstream perm node (the per-app-notifications node re-points here).
+    // Restore the seed's shipped base posture so the singleton is clean for any downstream perm node (the per-app-notifications node re-points here).
     if (client) {
       await client.updateAppSettings({
         access: { voterApp: false, candidateApp: true, underMaintenance: false }

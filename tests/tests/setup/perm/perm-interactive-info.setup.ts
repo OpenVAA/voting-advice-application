@@ -1,12 +1,9 @@
 /**
  * perm-interactive-info data-setup project.
  *
- * Invokes setupFromTemplate('perm-interactive-info'). UNAUTHENTICATED — the spec
- * exercises the voter questions flow (popup-modal vs static-expander info modes,
- * infoSections, and per-type arguments) and does not need a candidate session.
+ * Invokes setupFromTemplate('perm-interactive-info'). UNAUTHENTICATED — the spec exercises the voter questions flow (popup-modal vs static-expander info modes, infoSections, and per-type arguments) and does not need a candidate session.
  *
- * Prefix: 'e2e-perm-iinfo-' (matches the template's own externalIdPrefix,
- * perm-interactive-info.ts:46).
+ * Prefix: 'e2e-perm-iinfo-' (matches the template's own externalIdPrefix, perm-interactive-info.ts:46).
  */
 
 import { test as setup } from '@playwright/test';

@@ -2,16 +2,10 @@
  * @file Composition root for the EFLOW-10b bank-auth journey fixtures.
  *
  * Sibling to `candidate-journey.ts` (the full candidate composition root).
- * Kept MINIMAL — wires only the fixtures the bank-auth journey spec
- * (`candidate-bank-auth-journey.spec.ts`) consumes: the
- * preregister page-object (elections → constituencies → email/ToU walk),
- * the `emailBucket` (for the preregistration invite email round-trip), and
- * the `candidatePasswordSetter` (for the set-password step after the
- * registration link).
+ * Kept MINIMAL — wires only the fixtures the bank-auth journey spec (`candidate-bank-auth-journey.spec.ts`) consumes: the preregister page-object (elections → constituencies → email/ToU walk), the `emailBucket` (for the preregistration invite email round-trip), and the `candidatePasswordSetter` (for the set-password step after the registration link).
  *
  * Surface:
- *   - `test`   — Playwright test extended with the 3 journey fixtures + a
- *                `recipientEmail` option fixture wired through `emailBucket`.
+ *   - `test`   — Playwright test extended with the 3 journey fixtures + a `recipientEmail` option fixture wired through `emailBucket`.
  *   - `expect` — re-exported from @playwright/test.
  *
  * Usage (illustrative):
@@ -28,9 +22,7 @@
  * });
  * ```
  *
- * **Rigidity contract:** no soft assertions, no try/catch wrapping
- * assertions, no swallowed-rejection fallbacks on assertion-bearing locator
- * interactions.
+ * **Rigidity contract:** no soft assertions, no try/catch wrapping assertions, no swallowed-rejection fallbacks on assertion-bearing locator interactions.
  */
 
 import { expect, test as base } from '@playwright/test';
@@ -44,12 +36,7 @@ import type { CandidatePreregisterPageFixture } from './candidatePreregisterPage
 
 type BankAuthJourneyFixtureOptions = {
   /**
-   * The Mailpit recipient address for the emailBucket fixture. The spec sets
-   * this via `test.use({ recipientEmail: '...' })` at file scope. Default:
-   * `'bank-auth-journey@test.openvaa.local'` — the journey-owned address the
-   * preregistration invite email is sent to and the bank-auth-journey
-   * teardown cleans up (no pre-seeded candidate row carries it; the journey
-   * creates the auth user itself via the identity-callback + invite flow).
+   * The Mailpit recipient address for the emailBucket fixture. The spec sets this via `test.use({ recipientEmail: '...' })` at file scope. Default: `'bank-auth-journey@test.openvaa.local'` — the journey-owned address the preregistration invite email is sent to and the bank-auth-journey teardown cleans up (no pre-seeded candidate row carries it; the journey creates the auth user itself via the identity-callback + invite flow).
    */
   recipientEmail: string;
 };

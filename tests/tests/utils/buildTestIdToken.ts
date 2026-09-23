@@ -1,14 +1,7 @@
 /**
- * Shared synthetic JWE id_token builder for bank-auth (Idura/Signicat OIDC) E2E
- * tests. Extracted verbatim from the in-spec copy in
- * `candidate-bank-auth.spec.ts`, parameterized on `iss`/`aud` so ONE builder
- * serves both the Edge-Function spec and the mock OIDC issuer
- * (EFLOW-10b) — the latter aligns `iss`/`aud` with `IDENTITY_PROVIDER_ISSUER` /
- * `PUBLIC_IDENTITY_PROVIDER_CLIENT_ID`.
+ * Shared synthetic JWE id_token builder for bank-auth (Idura/Signicat OIDC) E2E tests. Extracted verbatim from the in-spec copy in `candidate-bank-auth.spec.ts`, parameterized on `iss`/`aud` so ONE builder serves both the Edge-Function spec and the mock OIDC issuer (EFLOW-10b) — the latter aligns `iss`/`aud` with `IDENTITY_PROVIDER_ISSUER` / `PUBLIC_IDENTITY_PROVIDER_CLIENT_ID`.
  *
- * The output mirrors what Idura (or Signicat) returns: an RS256-signed inner JWT
- * wrapped in an RSA-OAEP-256 / A256GCM JWE. Kid contract: inner JWS `test-sig-1`,
- * outer JWE `test-enc-1` (must match the fixed test key pair in `testKeys.ts`).
+ * The output mirrors what Idura (or Signicat) returns: an RS256-signed inner JWT wrapped in an RSA-OAEP-256 / A256GCM JWE. Kid contract: inner JWS `test-sig-1`, outer JWE `test-enc-1` (must match the fixed test key pair in `testKeys.ts`).
  *
  * Pure transform — owns no key material; callers pass the fixed test keys.
  */

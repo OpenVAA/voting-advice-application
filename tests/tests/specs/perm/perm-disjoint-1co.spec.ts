@@ -30,8 +30,7 @@ test.describe('perm-disjoint-1co', () => {
     await expect(constList.getByRole('combobox')).toHaveCount(2);
     const cont = page.getByTestId(testIds.voter.constituencies.continue);
     await expect(cont).toBeDisabled();
-    // Fill ONE combobox — `.nth(0)` matches a SINGLE combobox so the
-    // loop runs once and picks option 0 of THAT combobox.
+    // Fill ONE combobox — `.nth(0)` matches a SINGLE combobox so the loop runs once and picks option 0 of THAT combobox.
     await iterateSelectOptions(page, constList.getByRole('combobox').nth(0));
     await expect(cont).toBeDisabled();
     // Fill second combobox — now enabled.

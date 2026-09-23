@@ -1,39 +1,22 @@
 /**
  * @file candidateQuestionsOverviewPage fixture.
  *
- * Function-fixture for the candidate /candidate/questions overview page
- * (`apps/frontend/src/routes/candidate/(protected)/questions/+page.svelte`).
+ * Function-fixture for the candidate /candidate/questions overview page (`apps/frontend/src/routes/candidate/(protected)/questions/+page.svelte`).
  *
  * Surface:
- *  - clickStart()                          — click the candidate-questions-start
- *                                            button (empty-state primary action).
- *  - expectIntroMessage()                  — assert the candidate-questions-intro
- *                                            wrapper is visible.
- *  - expectContinuePrompt()                — assert the candidate-questions-continue
- *                                            button is visible (partial-completion
- *                                            shortcut to next unanswered).
+ *  - clickStart()                          — click the candidate-questions-start button (empty-state primary action).
+ *  - expectIntroMessage()                  — assert the candidate-questions-intro wrapper is visible.
+ *  - expectContinuePrompt()                — assert the candidate-questions-continue button is visible (partial-completion shortcut to next unanswered).
  *  - clickContinuePrompt()                 — click candidate-questions-continue.
- *  - expectCompletionMessage()             — assert the candidate-questions-home
- *                                            button is visible AND the completion
- *                                            ingress text is shown.
- *  - getCategoryExpander(name)             — returns an object with click() +
- *                                            expectExpanded(state) methods scoped
- *                                            to the matching category.
- *  - getQuestionCard(label)                — returns the Locator for the matching
- *                                            question card (label-based per
- *                                            general API principle).
+ *  - expectCompletionMessage()             — assert the candidate-questions-home button is visible AND the completion ingress text is shown.
+ *  - getCategoryExpander(name)             — returns an object with click() + expectExpanded(state) methods scoped to the matching category.
+ *  - getQuestionCard(label)                — returns the Locator for the matching question card (label-based per general API principle).
  *  - clickEditQuestion(textOrNth)          — polymorphic dispatch:
  *                                              number → 0-indexed nth edit button
  *                                              string|RegExp → label match.
- *  - goToQuestion(textOrNth)               — expand all categories, click the
- *                                            matching question's edit action,
- *                                            await navigation onto the
- *                                            per-question route. Use instead of
- *                                            page.goto() with an external_id
- *                                            (the URL is keyed on internal id).
+ *  - goToQuestion(textOrNth)               — expand all categories, click the matching question's edit action, await navigation onto the per-question route. Use instead of page.goto() with an external_id (the URL is keyed on internal id).
  *
- * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`,
- * NO `.catch(() => null)` on assertion-bearing locator interactions.
+ * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
 import { expect } from '@playwright/test';
@@ -54,10 +37,7 @@ export function createCandidateQuestionsOverviewPage(page: Page) {
   }
 
   /**
-   * Click the per-card edit/answer action. When passed a number, clicks the
-   * nth (0-indexed) action button in DOM order; when passed a string|RegExp,
-   * clicks the action inside the label-matched card. Shared by
-   * `clickEditQuestion` and `goToQuestion`.
+   * Click the per-card edit/answer action. When passed a number, clicks the nth (0-indexed) action button in DOM order; when passed a string|RegExp, clicks the action inside the label-matched card. Shared by `clickEditQuestion` and `goToQuestion`.
    */
   async function clickEdit(textOrNth: string | RegExp | number): Promise<void> {
     const button =
@@ -102,8 +82,7 @@ export function createCandidateQuestionsOverviewPage(page: Page) {
     },
 
     /**
-     * Assert the partial-completion candidate-questions-continue shortcut
-     * is visible.
+     * Assert the partial-completion candidate-questions-continue shortcut is visible.
      */
     async expectContinuePrompt(): Promise<void> {
       await expect(page.getByTestId('candidate-questions-continue')).toBeVisible();
@@ -117,8 +96,7 @@ export function createCandidateQuestionsOverviewPage(page: Page) {
     },
 
     /**
-     * Assert the completion-state surface: the candidate-questions-home
-     * primary-action button is rendered and the list view is in DOM.
+     * Assert the completion-state surface: the candidate-questions-home primary-action button is rendered and the list view is in DOM.
      */
     async expectCompletionMessage(): Promise<void> {
       await expect(page.getByTestId('candidate-questions-home')).toBeVisible();
@@ -126,17 +104,13 @@ export function createCandidateQuestionsOverviewPage(page: Page) {
     },
 
     /**
-     * Return a handle for the category-expander whose visible title matches
-     * `name`. Filters via hasText against the testid-bearing wrapper.
+     * Return a handle for the category-expander whose visible title matches `name`. Filters via hasText against the testid-bearing wrapper.
      */
     getCategoryExpander(name: string | RegExp): CategoryExpanderHandle {
       const expander = page.getByTestId(testIds.candidate.questions.categoryExpander).filter({ hasText: name }).first();
       return {
         async click(): Promise<void> {
-          // The Expander widget exposes a clickable header (the inner
-          // checkbox toggles open/closed state). Click the inner checkbox
-          // to flip state. The Expander wraps a single role=checkbox per
-          // collapse.
+          // The Expander widget exposes a clickable header (the inner checkbox toggles open/closed state). Click the inner checkbox to flip state. The Expander wraps a single role=checkbox per collapse.
           await expander.getByRole('checkbox').first().click();
         },
         async expectExpanded(state: boolean): Promise<void> {
@@ -153,34 +127,22 @@ export function createCandidateQuestionsOverviewPage(page: Page) {
     },
 
     /**
-     * Click the edit button for a question. When passed a number, clicks
-     * the nth (0-indexed) edit button in DOM order. When passed a string
-     * or RegExp, locates the matching question card by displayed text and
-     * clicks its edit button.
+     * Click the edit button for a question. When passed a number, clicks the nth (0-indexed) edit button in DOM order. When passed a string or RegExp, locates the matching question card by displayed text and clicks its edit button.
      *
-     * The card CONTAINER carries `candidate-questions-card` (filterable by the
-     * question label), while the per-card action button (Answer / Edit) carries
-     * `candidate-questions-card-action`. Click the action button — either the nth
-     * in DOM order, or the one inside the label-matched card.
+     * The card CONTAINER carries `candidate-questions-card` (filterable by the question label), while the per-card action button (Answer / Edit) carries `candidate-questions-card-action`. Click the action button — either the nth in DOM order, or the one inside the label-matched card.
      */
     async clickEditQuestion(textOrNth: string | RegExp | number): Promise<void> {
       await clickEdit(textOrNth);
     },
 
     /**
-     * Navigate to a question's editor by clicking through the overview (the
-     * per-question URL is keyed on the internal question id, NOT the seed
-     * external_id, so `page.goto()` with an external_id is impossible).
+     * Navigate to a question's editor by clicking through the overview (the per-question URL is keyed on the internal question id, NOT the seed external_id, so `page.goto()` with an external_id is impossible).
      *
      * Steps:
-     *   1. Expand EVERY category-expander on the overview (a collapsed
-     *      category hides its question cards; defaultExpanded only fires when
-     *      a category has unanswered questions, so already-answered categories
-     *      render collapsed). Idempotent — expanders already open are skipped.
+     *   1. Expand EVERY category-expander on the overview (a collapsed category hides its question cards; defaultExpanded only fires when a category has unanswered questions, so already-answered categories render collapsed). Idempotent — expanders already open are skipped.
      *   2. Click the matching question's edit/answer action (number → nth in
      *      DOM order; string|RegExp → label match).
-     *   3. Await navigation off the overview onto the per-question route
-     *      (`/candidate/questions/<questionId>`).
+     *   3. Await navigation off the overview onto the per-question route (`/candidate/questions/<questionId>`).
      */
     async goToQuestion(textOrNth: string | RegExp | number): Promise<void> {
       const expanders = page.getByTestId(testIds.candidate.questions.categoryExpander);

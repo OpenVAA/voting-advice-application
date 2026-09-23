@@ -1,17 +1,12 @@
 /**
  * @file voterHomePage fixture.
  *
- * Function-fixture for the voter app front page
- * (`apps/frontend/src/routes/(voters)/+page.svelte`), carrying the canonical
- * `goToPage(locale?)` + `expectPageVisible(visible?)` paradigm.
+ * Function-fixture for the voter app front page (`apps/frontend/src/routes/(voters)/+page.svelte`), carrying the canonical `goToPage(locale?)` + `expectPageVisible(visible?)` paradigm.
  *
  * The route is locale-aware via `buildRoute({ route: 'Home', locale })`.
- * Note: `ROUTE.Home` resolves to just the locale segment, so `buildRoute`
- * returns the bare locale (e.g. `'en'`); prepend `/` to form `/en`.
+ * Note: `ROUTE.Home` resolves to just the locale segment, so `buildRoute` returns the bare locale (e.g. `'en'`); prepend `/` to form `/en`.
  *
- * Load anchor: `testIds.voter.home.page` ('voter-home') — the always-rendered
- * `MainContent` root content div (NOT `startButton`, which is hidden under the
- * access.voterApp=false maintenance variant).
+ * Load anchor: `testIds.voter.home.page` ('voter-home') — the always-rendered `MainContent` root content div (NOT `startButton`, which is hidden under the access.voterApp=false maintenance variant).
  *
  * **Rigidity contract**:
  * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
@@ -36,9 +31,7 @@ export function createVoterHomePage(page: Page) {
      * Navigate to the voter home page (locale-aware) and assert it loaded.
      */
     async goToPage(locale = 'en'): Promise<void> {
-      // buildRoute({route:'Home'}) returns '' (voter ROUTE values carry no [[lang=locale]]
-      // token, and the route-group-only Home path collapses to empty). Base locale 'en' is
-      // served from '/' (Paraglide); non-base locales are prefixed '/<locale>' (e.g. '/fi').
+      // buildRoute({route:'Home'}) returns '' (voter ROUTE values carry no [[lang=locale]] token, and the route-group-only Home path collapses to empty). Base locale 'en' is served from '/' (Paraglide); non-base locales are prefixed '/<locale>' (e.g. '/fi').
       await page.goto((locale === 'en' ? '' : `/${locale}`) + buildRoute({ route: 'Home', locale }) || '/');
       await expectPageVisible(true);
     },

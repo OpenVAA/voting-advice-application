@@ -1,26 +1,24 @@
 /**
- * Cold / direct-URL entry dataRoot reactivity regression (see phase 117).
+ * Cold / direct-URL entry dataRoot reactivity regression.
  *
- * Root cause (LOCKED — debug `dataroot-stale-direct-nav` + see spike 024): an
- * intermediate `const dataRoot = $derived(ctx.dataRoot)` alias over the
- * identity-stable, `#version`-bridge `DataRoot` yields the SAME object reference
- * on every version bump, so Svelte 5's referential-equality rule SKIPS downstream
- * notification. On cold/direct-URL entry (data provided AFTER mount) the
- * downstream consumer keeps the empty pre-mount snapshot → the elections list /
- * info election region never renders.
+ * Root cause (LOCKED): an intermediate `const dataRoot = $derived(ctx.dataRoot)` alias over the identity-stable, `#version`-bridge `DataRoot` yields the SAME object reference on every version bump, so Svelte 5's referential-equality rule SKIPS downstream notification. On cold/direct-URL entry (data provided AFTER mount) the downstream consumer keeps the empty pre-mount snapshot → the elections list / info election region never renders.
  *
- * These tests are the negative control for the codemod: they FAIL against
- * the pre-fix (aliased) source (the data-dependent region never appears → timeout)
- * and PASS once each consumer reads `ctx.dataRoot.<prop>` directly in its tracking
- * scope. NO intro→Continue walk — a bare hard navigation IS the cold entry; the
- * warm intro walk MASKS the bug (data present before the alias first computes).
+ * These tests are the negative control for the codemod: they FAIL against the pre-fix (aliased) source (the data-dependent region never appears → timeout) and PASS once each consumer reads `ctx.dataRoot.<prop>` directly in its tracking scope. NO intro→Continue walk — a bare hard navigation IS the cold entry; the warm intro walk MASKS the bug (data present before the alias first computes).
  *
- * Seed: `data-setup-base` (`e2e/base`) — multi-election. Voter routes are public
- * (no auth). Post-hydration mount hazard: the list mounts a beat after navigation,
- * so use the WAITING assertion `toBeVisible({ timeout })`, never one-shot `isVisible()`.
+ * Seed: `data-setup-base` (`e2e/base`) — multi-election. Voter routes are public (no auth). Post-hydration mount hazard: the list mounts a beat after navigation, so use the WAITING assertion `toBeVisible({ timeout })`, never one-shot `isVisible()`.
  *
- * Rigidity contract (project E2E Hard Rule): every assertion is HARD — no
- * expect.soft, no try/catch around expect(), no .catch fallback.
+ * Rigidity contract (project E2E Hard Rule): every assertion is HARD — no expect.soft, no try/catch around expect(), no .catch fallback.
+ *
+ * ## Phase 159 extension — the two routes plan 07 disturbs
+ *
+ * Criterion 5 extracts the duplicated `questionCategories` rollup out of `voterContext.svelte.ts` and `candidateContext.svelte.ts` into one shared utility. Both rollups read the data root, so both are candidates for reintroducing the alias-skip above, and neither of the two original cases covers them. Two cases are added, one per rollup consumer.
+ *
+ * Neither route is reachable by a BARE `page.goto`, and that is a property of the product's route guards rather than a gap in this control — measured, not assumed: `/en/results` and `/en/questions` both 307 to `/elections?next=…` on a cold hit, because the located routes carry their election and constituency selection in the URL and there is nothing to imply from on a multi-election dataset. The candidate app additionally requires a session. So each case reaches its cold entry differently, and each keeps the cold property intact:
+ *
+ *   - The RESULTS case discovers the located URL by walking once on `page`, then asserts in a BRAND-NEW browser context that shares nothing with that walk but the URL string. The walk is URL discovery, never the observation. The warm-walk masking this file warns about comes from data being present in the SAME document before the alias first computes; a fresh context performing a full document load has no such carry-over.
+ *   - The CANDIDATE case is a genuinely bare hard navigation, carrying only a stored session cookie — the cold entry a returning candidate performs when they open a bookmark. It runs under its own Playwright project (`cold-entry-dataroot-candidate`) because it needs `storageState`, mirroring the split the a11y family already makes for exactly this reason. The `@cand-session` tag in its describe title is what routes it there.
+ *
+ * Rigidity is unchanged for the new cases: waiting `toBeVisible({ timeout })` assertions on `testIds` constants, no `isVisible()`, no soft assertion, no fallback catch.
  */
 
 import { expect, test } from '@playwright/test';
@@ -32,9 +30,7 @@ test.describe('cold-entry-dataroot', () => {
     // COLD: bare hard navigation, no Home→Intro→Continue walk.
     await page.goto('/en/elections');
 
-    // The data-dependent list is gated behind `{#if elections.length}` and is
-    // EMPTY when `voterCtx.dataRoot.elections` is stale. WAITING assertion covers
-    // the post-hydration mount window.
+    // The data-dependent list is gated behind `{#if elections.length}` and is EMPTY when `voterCtx.dataRoot.elections` is stale. WAITING assertion covers the post-hydration mount window.
     await expect(page.getByTestId(testIds.voter.elections.list)).toBeVisible({ timeout: TIMEOUTS.slowPage });
 
     // Stronger signal: at least one selectable election option present.
@@ -45,9 +41,7 @@ test.describe('cold-entry-dataroot', () => {
     // COLD: bare hard navigation.
     await page.goto('/en/info');
 
-    // Assert the `{#each ctx.dataRoot.elections}` region (NOT the static
-    // `voter-info-content` {@html} div) — this region is empty when
-    // `dataRoot.elections` is stale, so it proves the cold-path populate landed.
+    // Assert the `{#each ctx.dataRoot.elections}` region (NOT the static `voter-info-content` {@html} div) — this region is empty when `dataRoot.elections` is stale, so it proves the cold-path populate landed.
     await expect(page.getByTestId(testIds.voter.info.electionList)).toBeVisible({ timeout: TIMEOUTS.slowPage });
   });
 });

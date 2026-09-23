@@ -12,8 +12,7 @@ import { runTeardownAsserted } from '../shared/assertTeardown';
 
 const PREFIX = 'e2e-perm-l10n-pos-';
 // Kept in sync with RECIPIENT_EMAIL in perm-localisation-positive.spec.ts.
-// Re-declared rather than imported: importing the spec module would register
-// its `test.describe` block inside this teardown project.
+// Re-declared rather than imported: importing the spec module would register its `test.describe` block inside this teardown project.
 const RECIPIENT_EMAIL = 'candidate-l10n-pos-aa@test.openvaa.local';
 
 teardown('delete perm-localisation-positive dataset', async () => {

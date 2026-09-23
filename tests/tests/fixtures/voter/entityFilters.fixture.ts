@@ -1,20 +1,13 @@
 /**
  * @file entityFilters fixture.
  *
- * Function-fixture that bundles the `entityFilters` + `entityFilterDialog` +
- * `entityFilter` surfaces into one factory (the dialog + per-filter shapes
- * are tightly coupled — a single `getFilter()` lookup hands the caller a
- * per-filter shape that operates inside the open dialog).
+ * Function-fixture that bundles the `entityFilters` + `entityFilterDialog` + `entityFilter` surfaces into one factory (the dialog + per-filter shapes are tightly coupled — a single `getFilter()` lookup hands the caller a per-filter shape that operates inside the open dialog).
  *
  * **Rigidity contract** (identical to resultsPage):
  * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
  *   `.catch(() => null)` on assertion-bearing locator interactions.
  *
- * **Conditional rendering invariant**: the `entity-list-filter` testid is
- * set on TWO Buttons inside EntityListControls.svelte (one for the
- * active-filter-state variant at line 128, one for the inactive variant at
- * line 137). Only ONE is in the DOM at any time — `.first()` is safe and is
- * the documented pattern.
+ * **Conditional rendering invariant**: the `entity-list-filter` testid is set on TWO Buttons inside EntityListControls.svelte (one for the active-filter-state variant at line 128, one for the inactive variant at line 137). Only ONE is in the DOM at any time — `.first()` is safe and is the documented pattern.
  */
 
 import { expect } from '@playwright/test';
@@ -25,8 +18,7 @@ type Target = RegExp | string | ((count: number) => number);
 
 export function createEntityFilters(page: Page) {
   /**
-   * Returns the dialog-scoped + per-filter API surface, scoped to the
-   * `entity-filter-dialog` testid (the Modal root) that is now open.
+   * Returns the dialog-scoped + per-filter API surface, scoped to the `entity-filter-dialog` testid (the Modal root) that is now open.
    */
   function createDialog(dialogRoot: Locator) {
     function createFilter(filterRow: Locator) {
@@ -52,13 +44,10 @@ export function createEntityFilters(page: Page) {
         },
 
         /**
-         * Checkbox-only set-post-condition selection. Iterates options,
-         * makes the set of CHECKED options exactly match those matching
-         * `values`. If `values === undefined`, selects all options.
+         * Checkbox-only set-post-condition selection. Iterates options, makes the set of CHECKED options exactly match those matching `values`. If `values === undefined`, selects all options.
          *
          * Acceptable inputs:
-         *   - Array of regex / string matchers (text-match each option's
-         *     label).
+         *   - Array of regex / string matchers (text-match each option's label).
          *   - (count) => Array<index> indexer (rare).
          *   - undefined → select-all.
          */
@@ -66,13 +55,7 @@ export function createEntityFilters(page: Page) {
           values: Array<RegExp | string> | ((count: number) => Array<number>) | undefined
         ): Promise<void> {
           const options = this.getOptions();
-          // Settle: getFilter() auto-expands the row and reveals these options
-          // REACTIVELY (Expander toggle), but returns without waiting. Reading
-          // count() before the options mount makes the check/uncheck loop below a
-          // silent no-op (total === 0 → nothing selected), so the filter never
-          // applies — the intermittent voter-journey STAGE-5a flake (13 cards
-          // instead of 12, "9× resolved to 13"). Wait for the first option to
-          // render before counting.
+          // Settle: getFilter() auto-expands the row and reveals these options REACTIVELY (Expander toggle), but returns without waiting. Reading count() before the options mount makes the check/uncheck loop below a silent no-op (total === 0 → nothing selected), so the filter never applies — the intermittent voter-journey STAGE-5a flake (13 cards instead of 12, "9× resolved to 13"). Wait for the first option to render before counting.
           await expect(options.first()).toBeVisible({ timeout: 5_000 });
           const total = await options.count();
           // Compute target index set.
@@ -97,31 +80,21 @@ export function createEntityFilters(page: Page) {
             const isChecked = await checkbox.isChecked();
             const shouldBeChecked = targetIndices.has(i);
             if (isChecked !== shouldBeChecked) {
-              // Click the label itself (DaisyUI-style); the inner checkbox
-              // is bound via bind:group.
+              // Click the label itself (DaisyUI-style); the inner checkbox is bound via bind:group.
               await option.click();
             }
           }
         },
 
         /**
-         * The single select-all/none toggle button on
-         * EnumeratedEntityFilter.svelte. Renders ONLY `{#if values.length > 3}`
-         * (threshold > 3 confirmed) — a categorical filter with ≤4 options never
-         * surfaces it. Its label + icon flip `selectAll`/`unselectAll` via the
-         * component's `allSelected` derived. It is ONE toggle, not two buttons.
+         * The single select-all/none toggle button on EnumeratedEntityFilter.svelte. Renders ONLY `{#if values.length > 3}` (threshold > 3 confirmed) — a categorical filter with ≤4 options never surfaces it. Its label + icon flip `selectAll`/`unselectAll` via the component's `allSelected` derived. It is ONE toggle, not two buttons.
          */
         getSelectAllToggle(): Locator {
           return filterRow.getByTestId(testIds.voter.results.filterSelectAllToggle);
         },
 
         /**
-         * True when every option in this filter is currently checked. Reads the
-         * checked-state of each option after settling on the first option's
-         * render (the same reactive-mount race `setSelection` guards against —
-         * options mount after the Expander auto-expand, so a pre-mount count is
-         * a silent no-op). Used by `selectAll`/`selectNone` to decide whether
-         * the single toggle is currently in the all-selected state.
+         * True when every option in this filter is currently checked. Reads the checked-state of each option after settling on the first option's render (the same reactive-mount race `setSelection` guards against — options mount after the Expander auto-expand, so a pre-mount count is a silent no-op). Used by `selectAll`/`selectNone` to decide whether the single toggle is currently in the all-selected state.
          */
         async isAllSelected(): Promise<boolean> {
           const options = this.getOptions();
@@ -135,14 +108,9 @@ export function createEntityFilters(page: Page) {
         },
 
         /**
-         * Select ALL options by clicking the single toggle. Because the toggle
-         * FLIPS state (selectAll ↔ unselectAll keyed on `allSelected`), this
-         * clicks it only when not-all-selected — clicking an already-all-selected
-         * toggle would unselect everything. After clicking, hard-asserts the
-         * post-state (all checked) per the fixture rigidity contract.
+         * Select ALL options by clicking the single toggle. Because the toggle FLIPS state (selectAll ↔ unselectAll keyed on `allSelected`), this clicks it only when not-all-selected — clicking an already-all-selected toggle would unselect everything. After clicking, hard-asserts the post-state (all checked) per the fixture rigidity contract.
          *
-         * Requires a categorical filter with > 3 options (else the toggle does
-         * not render and `getSelectAllToggle()` resolves to nothing).
+         * Requires a categorical filter with > 3 options (else the toggle does not render and `getSelectAllToggle()` resolves to nothing).
          */
         async selectAll(): Promise<void> {
           const toggle = this.getSelectAllToggle();
@@ -154,12 +122,9 @@ export function createEntityFilters(page: Page) {
         },
 
         /**
-         * Deselect ALL options by clicking the single toggle. Mirror of
-         * `selectAll`: clicks the flip-toggle only when currently all-selected,
-         * then hard-asserts no option remains checked.
+         * Deselect ALL options by clicking the single toggle. Mirror of `selectAll`: clicks the flip-toggle only when currently all-selected, then hard-asserts no option remains checked.
          *
-         * Requires a categorical filter with > 3 options (else the toggle does
-         * not render).
+         * Requires a categorical filter with > 3 options (else the toggle does not render).
          */
         async selectNone(): Promise<void> {
           const toggle = this.getSelectAllToggle();
@@ -175,9 +140,7 @@ export function createEntityFilters(page: Page) {
         },
 
         /**
-         * Drive the numeric filter sliders. `null` leaves the bound
-         * untouched. Per Wave-1.5 testids `entity-filter-numeric-min` /
-         * `-max` on the <input type="range"> elements.
+         * Drive the numeric filter sliders. `null` leaves the bound untouched. Per Wave-1.5 testids `entity-filter-numeric-min` / `-max` on the <input type="range"> elements.
          */
         async setNumberRange(min?: number | null, max?: number | null): Promise<void> {
           if (min != null) {
@@ -206,12 +169,7 @@ export function createEntityFilters(page: Page) {
        * Single filter row by accessible name (regex/string) or indexer.
        * Returns a per-filter API surface scoped to that row.
        *
-       * Auto-expands the filter row if it's currently collapsed (EntityFilters
-       * defaults `defaultExpanded` to false for non-active / non-text
-       * filters — see EntityFilters.svelte:55). The Expander surface
-       * controls visibility via an internal checkbox toggle; clicking
-       * the filter's "Expand or collapse this section" checkbox shows
-       * the inner options.
+       * Auto-expands the filter row if it's currently collapsed (EntityFilters defaults `defaultExpanded` to false for non-active / non-text filters — see EntityFilters.svelte:55). The Expander surface controls visibility via an internal checkbox toggle; clicking the filter's "Expand or collapse this section" checkbox shows the inner options.
        */
       async getFilter(target: Target): Promise<ReturnType<typeof createFilter>> {
         const rows = this.getFilters();
@@ -222,11 +180,8 @@ export function createEntityFilters(page: Page) {
         } else {
           row = rows.filter({ hasText: target as RegExp | string }).first();
         }
-        // Auto-expand if collapsed. Expander uses a checkbox-toggle
-        // internally; check the state and click to expand if needed.
-        // Hard-assert toggle visibility (per fixture rigidity contract) before
-        // reading state — no `.catch(() => true)` swallowing a frontend
-        // regression that would surface as zero-options downstream.
+        // Auto-expand if collapsed. Expander uses a checkbox-toggle internally; check the state and click to expand if needed.
+        // Hard-assert toggle visibility (per fixture rigidity contract) before reading state — no `.catch(() => true)` swallowing a frontend regression that would surface as zero-options downstream.
         const toggle = row.getByRole('checkbox', { name: /expand or collapse/i }).first();
         await expect(toggle).toBeVisible({ timeout: 2_000 });
         const isExpanded = await toggle.isChecked();
@@ -239,19 +194,7 @@ export function createEntityFilters(page: Page) {
       /**
        * Hard-assert the reset Button's disabled state.
        *
-       * The Modal action snippet's `data-testid="entity-filter-dialog-apply"`
-       * / `data-testid="entity-filter-dialog-reset"` are wired on the
-       * `<Button>` component (which forwards via `concatClass(restProps,
-       * classes)` to a `<svelte:element this="button">`). Empirically the
-       * resulting testid-on-button lookup is unreliable inside the open
-       * `getByRole('dialog')` scope — strict-mode resolution fails to
-       * locate the button despite it being in DOM (root cause: the
-       * `<svelte:element>` + concatClass forwarding chain in Svelte 5
-       * apparently doesn't surface `data-testid` on the rendered element
-       * in all cases). Switching to `getByRole('button', { name: <i18n> })`
-       * scoped to the dialog root bypasses the testid mechanism entirely
-       * — buttons have stable accessible names ("Close filters" /
-       * "Reset filters") that are visibility-aware by default.
+       * The Modal action snippet's `data-testid="entity-filter-dialog-apply"` / `data-testid="entity-filter-dialog-reset"` are wired on the `<Button>` component (which forwards via `concatClass(restProps, classes)` to a `<svelte:element this="button">`). Empirically the resulting testid-on-button lookup is unreliable inside the open `getByRole('dialog')` scope — strict-mode resolution fails to locate the button despite it being in DOM (root cause: the `<svelte:element>` + concatClass forwarding chain in Svelte 5 apparently doesn't surface `data-testid` on the rendered element in all cases). Switching to `getByRole('button', { name: <i18n> })` scoped to the dialog root bypasses the testid mechanism entirely — buttons have stable accessible names ("Close filters" / "Reset filters") that are visibility-aware by default.
        *
        * @param disabled default true (assert disabled).
        */
@@ -265,8 +208,7 @@ export function createEntityFilters(page: Page) {
       },
 
       /**
-       * Click the apply Button (closes the dialog). See note on
-       * `expectResetToBeDisabled` re: the role-based lookup.
+       * Click the apply Button (closes the dialog). See note on `expectResetToBeDisabled` re: the role-based lookup.
        */
       async close(): Promise<void> {
         await dialogRoot.getByRole('button', { name: /Close filters/i }).click();
@@ -274,14 +216,9 @@ export function createEntityFilters(page: Page) {
       },
 
       /**
-       * Click the reset Button. NB — `resetFilters()` at
-       * EntityListControls.svelte:96-100 calls `filterGroup?.reset()` AND
-       * `filtersModalRef?.closeModal()` synchronously, so clicking reset
-       * CLOSES the dialog as a side-effect. Callers should NOT call
-       * `close()` afterwards; the dialog is already gone.
+       * Click the reset Button. NB — `resetFilters()` at EntityListControls.svelte:96-100 calls `filterGroup?.reset()` AND `filtersModalRef?.closeModal()` synchronously, so clicking reset CLOSES the dialog as a side-effect. Callers should NOT call `close()` afterwards; the dialog is already gone.
        *
-       * Awaits the dialog being hidden before returning so subsequent
-       * `openFilterDialog()` calls observe a clean baseline.
+       * Awaits the dialog being hidden before returning so subsequent `openFilterDialog()` calls observe a clean baseline.
        */
       async reset(): Promise<void> {
         await dialogRoot.getByRole('button', { name: /Reset filters/i }).click();
@@ -315,37 +252,23 @@ export function createEntityFilters(page: Page) {
     },
 
     /**
-     * Click the `entity-list-filter` Button (using `.first()` — the two
-     * conditional-render variants share the testid but only one is in the
-     * DOM at a time). After clicking, hard-asserts the dialog is visible.
+     * Click the `entity-list-filter` Button (using `.first()` — the two conditional-render variants share the testid but only one is in the DOM at a time). After clicking, hard-asserts the dialog is visible.
      * Returns a dialog-scoped API.
      */
     async openFilterDialog(): Promise<ReturnType<typeof createDialog>> {
       const btn = page.getByTestId(testIds.voter.results.filterButton);
       await btn.first().click();
-      // The Modal forwards the `entity-filter-dialog` testid via concatClass,
-      // but empirically `getByTestId('entity-filter-dialog')` doesn't reliably
-      // resolve.
-      // Use role=dialog (the <dialog> element's implicit role) filtered by
-      // accessible name 'Filters' (i18n key entityFilters.filters →
-      // Modal `title` prop → <h2>). The Modal stays in DOM with the
-      // `hidden` class post-close, but Playwright's getByRole excludes
-      // hidden-by-CSS elements by default (visible=true is the default).
+      // The Modal forwards the `entity-filter-dialog` testid via concatClass, but empirically `getByTestId('entity-filter-dialog')` doesn't reliably resolve.
+      // Use role=dialog (the <dialog> element's implicit role) filtered by accessible name 'Filters' (i18n key entityFilters.filters → Modal `title` prop → <h2>). The Modal stays in DOM with the `hidden` class post-close, but Playwright's getByRole excludes hidden-by-CSS elements by default (visible=true is the default).
       const dialog = page.getByRole('dialog', { name: /Filters/i });
       await expect(dialog).toBeVisible({ timeout: 10_000 });
       return createDialog(dialog);
     },
 
     /**
-     * The filter button's badge surface. Returns the filter button itself
-     * so callers can `toContainText(/<count>/)` against the rendered count.
+     * The filter button's badge surface. Returns the filter button itself so callers can `toContainText(/<count>/)` against the rendered count.
      *
-     * A `<span>` wrapping `<InfoBadge>` does NOT survive Svelte 5's snippet
-     * compilation — the rendered DOM contains only the InfoBadge's inner
-     * `<div class="badge ...">`. Rather than chase the Svelte 5
-     * snippet-wrapping behaviour, scope the assertion to the filter button
-     * itself (which has accessible name "<count> Filter" when active — the
-     * badge count is part of the button's textContent).
+     * A `<span>` wrapping `<InfoBadge>` does NOT survive Svelte 5's snippet compilation — the rendered DOM contains only the InfoBadge's inner `<div class="badge ...">`. Rather than chase the Svelte 5 snippet-wrapping behaviour, scope the assertion to the filter button itself (which has accessible name "<count> Filter" when active — the badge count is part of the button's textContent).
      */
     getFilterButtonBadge(): Locator {
       return page.getByTestId(testIds.voter.results.filterButton).first();

@@ -1,41 +1,28 @@
 /**
  * Combobox/listbox iteration helper for Select.svelte interactions.
  *
- * Thin wrapper around the multi-combobox + listbox-option iteration
- * pattern used to drive every `<Select>` rendered on a page (e.g. the
- * `/constituencies` page renders one Select per applicable-elections
- * group; the helper iterates all sections and picks the first option in
- * each).
+ * Thin wrapper around the multi-combobox + listbox-option iteration pattern used to drive every `<Select>` rendered on a page (e.g. the `/constituencies` page renders one Select per applicable-elections group; the helper iterates all sections and picks the first option in each).
  *
  * Select.svelte ARIA contract:
  *   `<Select>` renders as `role="combobox"` (NOT `role="radiogroup"`).
  *   The opened menu is `role="listbox"`; each item is `role="option"`.
- *   Keep this "NOT a radiogroup" contract in mind before re-extending this
- *   helper — using `radio` / `radiogroup` roles against `<Select>` silently
- *   does nothing.
+ *   Keep this "NOT a radiogroup" contract in mind before re-extending this helper — using `radio` / `radiogroup` roles against `<Select>` silently does nothing.
  *
  * Scope:
- *   This helper is narrow — it iterates EVERY combobox in the locator
- *   and clicks the same `optionIndex` in each. Named-combobox variants
- *   (e.g. picking a SPECIFIC option text in a SPECIFIC combobox among
- *   many) are intentionally NOT supported by this helper.
+ *   This helper is narrow — it iterates EVERY combobox in the locator and clicks the same `optionIndex` in each. Named-combobox variants (e.g. picking a SPECIFIC option text in a SPECIFIC combobox among many) are intentionally NOT supported by this helper.
  */
 
 import { expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
 /**
- * Iterate every combobox in `comboboxLocator`, open it, click the
- * option at `optionIndex` (default 0), and wait for the listbox to hide.
+ * Iterate every combobox in `comboboxLocator`, open it, click the option at `optionIndex` (default 0), and wait for the listbox to hide.
  *
  * Preconditions:
- *   - `comboboxLocator` resolves to ≥1 combobox element. The helper
- *     fails-fast if `count === 0` with a diagnostic message.
- *   - Each combobox opens a `role="listbox"` overlay (configurable via
- *     `opts.listboxRole`, default `'listbox'`) when clicked.
+ *   - `comboboxLocator` resolves to ≥1 combobox element. The helper fails-fast if `count === 0` with a diagnostic message.
+ *   - Each combobox opens a `role="listbox"` overlay (configurable via `opts.listboxRole`, default `'listbox'`) when clicked.
  *
- * See module docstring; the option role is `'option'` by Select.svelte
- * contract, NOT `'radio'`.
+ * See module docstring; the option role is `'option'` by Select.svelte contract, NOT `'radio'`.
  *
  * @param page - Playwright Page (needed to locate the listbox overlay,
  *   which is rendered at page-root via Portal in Select.svelte).

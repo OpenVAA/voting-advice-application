@@ -16,21 +16,12 @@ export const STORAGE_STATE = path.join(TESTS_DIR, '../playwright/.auth/user.json
 const PROBE_TEST_MATCH = /(video|questionInfo|popupNotice|orgMatching|numberScale)\.probe\.spec\.ts$/;
 
 /**
- * ORPHAN-PROBE GUARD (see phase 136 plan 03, fake-guard sweep finding F4).
+ * ORPHAN-PROBE GUARD (fake-guard sweep finding F4).
  *
- * `_probes` is the one project whose `testMatch` enumerates its files by name
- * rather than globbing the directory — deliberately, because each probe must be
- * invocable one-at-a-time. The cost of enumeration is that ADDING a probe file
- * without adding it to the pattern silently produces a test that matches no
- * project and runs from no command, while still sitting in `specs/` looking like
- * coverage. That is precisely what happened to four probe files between two
- * phases (see phase 119, see phase 136): 6 tests, unreachable for ~16 phases,
- * noticed only by an audit.
+ * `_probes` is the one project whose `testMatch` enumerates its files by name rather than globbing the directory — deliberately, because each probe must be invocable one-at-a-time. The cost of enumeration is that ADDING a probe file without adding it to the pattern silently produces a test that matches no project and runs from no command, while still sitting in `specs/` looking like coverage. That is precisely what happened to four probe files added as scaffolding at different times: 6 tests, unreachable for a long stretch of this suite's history, noticed only by an audit.
  *
- * A comment asking future authors to keep the list in sync would be the same
- * kind of non-guard this phase exists to remove, so the invariant is CHECKED.
- * Throwing here fails every `playwright test` / `--list` invocation immediately
- * and by name, which is the earliest point at which the mistake is visible.
+ * A comment asking future authors to keep the list in sync would be the same kind of non-guard this check exists to replace, so the invariant is CHECKED.
+ * Throwing here fails every `playwright test` / `--list` invocation immediately and by name, which is the earliest point at which the mistake is visible.
  */
 const probesDir = path.join(TESTS_DIR, 'specs/_probes');
 if (fs.existsSync(probesDir)) {
@@ -50,42 +41,25 @@ if (fs.existsSync(probesDir)) {
 
 /**
  * Declared soft-assertion budget per spec file, keyed by path relative to `TESTS_DIR`.
- * Hoisted so the budget guard below — and every reader — has ONE place to look for the
- * number, which is why the spec's own header names this symbol instead of restating it.
+ * Hoisted so the budget guard below — and every reader — has ONE place to look for the number, which is why the spec's own header names this symbol instead of restating it.
  *
  * Scoped deliberately to a single file: its scope is `voter-journey.spec.ts`.
- * The three sibling `Rigidity contract` drift files found alongside it are a recorded
- * follow-up, not a licence to widen this table quietly.
+ * The three sibling `Rigidity contract` drift files found alongside it are a recorded follow-up, not a licence to widen this table quietly.
  */
 const SOFT_ASSERTION_BUDGETS: Record<string, number> = {
   'specs/voter/voter-journey.spec.ts': 136
 };
 
 /**
- * SOFT-ASSERTION BUDGET GUARD (see phase 140 plan 02, fake-guard sweep finding F10).
+ * SOFT-ASSERTION BUDGET GUARD (fake-guard sweep finding F10).
  *
- * Soft assertions are budgeted because they do not fail fast. In a long serial walk a
- * growing population silently degrades failure legibility: one genuinely broken card
- * reports alongside — and is buried by — a hundred-odd other checks, so the run stops
- * telling you which failure mattered. A budget is the statement that every soft slot
- * was a deliberate choice rather than a default reached for under time pressure.
+ * Soft assertions are budgeted because they do not fail fast. In a long serial walk a growing population silently degrades failure legibility: one genuinely broken card reports alongside — and is buried by — a hundred-odd other checks, so the run stops telling you which failure mattered. A budget is the statement that every soft slot was a deliberate choice rather than a default reached for under time pressure.
  *
- * `voter-journey.spec.ts` carried a header claiming a 3-slot budget while the file held
- * 136 such calls. It drifted there one honest addition at a time, and every one of those
- * additions ran green, because a prose claim cannot fail. A comment asking future authors
- * to keep the number in sync would be the same kind of non-guard this phase exists to
- * remove, so the invariant is CHECKED — the identical argument this file already makes
- * for its sibling above.
+ * `voter-journey.spec.ts` carried a header claiming a 3-slot budget while the file held 136 such calls. It drifted there one honest addition at a time, and every one of those additions ran green, because a prose claim cannot fail. A comment asking future authors to keep the number in sync would be the same kind of non-guard this check exists to replace, so the invariant is CHECKED — the identical argument this file already makes for its sibling above.
  *
- * The comparison is EQUALITY, not a ceiling: REMOVING a soft assertion without updating
- * the budget throws too, so the declared posture stays honest in both directions and a
- * promotion to a hard `expect()` is recorded rather than absorbed. Counting is by
- * OCCURRENCE — a global regex match over the file contents — not by line, so a line
- * carrying two calls counts as two; `grep -c` semantics would silently undercount it.
+ * The comparison is EQUALITY, not a ceiling: REMOVING a soft assertion without updating the budget throws too, so the declared posture stays honest in both directions and a promotion to a hard `expect()` is recorded rather than absorbed. Counting is by OCCURRENCE — a global regex match over the file contents — not by line, so a line carrying two calls counts as two; `grep -c` semantics would silently undercount it.
  *
- * Throwing here fails every `playwright test` / `--list` invocation immediately and by
- * name. `--list` matters specifically: it does not run `globalSetup`, so a check living
- * in a test or in setup would never see it. Config-load code does.
+ * Throwing here fails every `playwright test` / `--list` invocation immediately and by name. `--list` matters specifically: it does not run `globalSetup`, so a check living in a test or in setup would never see it. Config-load code does.
  */
 for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
   const specPath = path.join(TESTS_DIR, rel);
@@ -96,11 +70,7 @@ for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
         `nothing is a guard that can never fire (fake-guard sweep 2026-08-11, finding F10).`
     );
   }
-  // see phase 140 WR-04: strip comments before counting. A naive whole-file regex
-  // match counts every textual occurrence including inside comments and string
-  // literals — so the remediation instruction below ("state the reason in that
-  // spec's header") could itself contain the literal `expect.soft(` token and
-  // re-trip this very guard by inflating the count with a comment, not code.
+  // Strip comments before counting. A naive whole-file regex match counts every textual occurrence including inside comments and string literals — so the remediation instruction below ("state the reason in that spec's header") could itself contain the literal `expect.soft(` token and re-trip this very guard by inflating the count with a comment, not code.
   const source = fs
     .readFileSync(specPath, 'utf8')
     .replace(/\/\*[\s\S]*?\*\//g, '') // block comments
@@ -109,8 +79,7 @@ for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
   if (actual !== budget) {
     throw new Error(
       `Soft-assertion budget diverged in ${rel} — the declared budget is ${budget} but the file ` +
-        // see phase 140 WR-05: the count is taken outside comments; string literals are
-        // NOT excluded (a naive claim otherwise would itself be the F10 failure mode).
+        // The count is taken outside comments; string literals are NOT excluded (a naive claim otherwise would itself be the F10 failure mode).
         `carries ${actual} (counted outside comments; string literals are NOT excluded). Convert the ` +
         `new assertion to a hard \`expect()\`, or change the budget in SOFT_ASSERTION_BUDGETS in this ` +
         `file AND record the reason in that spec's header (prose only — do not restate the number; the ` +
@@ -118,13 +87,8 @@ for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
         `is not a budget (fake-guard sweep 2026-08-11, finding F10).`
     );
   }
-  // see phase 140 WR-05 (under-count hole): the count above matches only the literal
-  // `expect.soft(` token, so an aliased/destructured soft assertion — e.g.
-  // `const soft = expect.soft; soft(x).toBe(y)` — is invisible to it and the
-  // budget would silently over-report headroom, the direction that produced F10
-  // in the first place. Reject any bare `expect.soft` reference that is not
-  // immediately called, so an alias must be introduced deliberately with a
-  // budget-guard-aware follow-up rather than slipping past unseen.
+  // Under-count hole: the count above matches only the literal `expect.soft(` token, so an aliased/destructured soft assertion — e.g.
+  // `const soft = expect.soft; soft(x).toBe(y)` — is invisible to it and the budget would silently over-report headroom, the direction that produced F10 in the first place. Reject any bare `expect.soft` reference that is not immediately called, so an alias must be introduced deliberately with a budget-guard-aware follow-up rather than slipping past unseen.
   if (/\bexpect\s*\.\s*soft\b(?!\s*\()/.test(source)) {
     throw new Error(
       `${rel} references \`expect.soft\` without calling it directly (an alias or a destructure). ` +
@@ -135,52 +99,20 @@ for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
 }
 
 /**
- * TEARDOWN-PREFIX-UNIQUENESS GUARD (see phase 140 review, finding CR-01).
+ * TEARDOWN-PREFIX-UNIQUENESS GUARD (review finding CR-01).
  *
- * `runTeardownAsserted` (`tests/tests/setup/shared/assertTeardown.ts`) turned the
- * before/after row-count accounting into a HARD assertion. That assertion is only
- * valid if each `*.teardown.ts` project owns an `external_id` prefix that no other
- * project can touch concurrently — two data-teardown projects sharing (or
- * substring-overlapping) a prefix race on the same before/after counts, and
- * Playwright does not order data-teardown projects relative to each other unless an
- * explicit `dependencies` edge forces it (most don't — see the perm family's
- * `extraTeardownPrefix`-based cross-chain isolation instead of hard ordering).
+ * `runTeardownAsserted` (`tests/tests/setup/shared/assertTeardown.ts`) turned the before/after row-count accounting into a HARD assertion. That assertion is only valid if each `*.teardown.ts` project owns an `external_id` prefix that no other project can touch concurrently — two data-teardown projects sharing (or substring-overlapping) a prefix race on the same before/after counts, and Playwright does not order data-teardown projects relative to each other unless an explicit `dependencies` edge forces it (most don't — see the perm family's `extraTeardownPrefix`-based cross-chain isolation instead of hard ordering).
  *
- * `bank-auth-journey.teardown.ts` and `perm-not-located-2e2cg.teardown.ts` shipped
- * with the IDENTICAL prefix `e2e-perm-notloc-` (CR-01) — invisible before this phase
- * because the old `toBeGreaterThanOrEqual(0)` matcher could not fail on the race.
+ * `bank-auth-journey.teardown.ts` and `perm-not-located-2e2cg.teardown.ts` shipped with the IDENTICAL prefix `e2e-perm-notloc-` (CR-01) — invisible until this guard existed, because the old `toBeGreaterThanOrEqual(0)` matcher could not fail on the race.
  * The fix here is scanning every `*.teardown.ts` file's `const PREFIX = '...'`
- * declaration and throwing at config-load time if any two are equal OR one is a
- * string-prefix of another (a `LIKE '<prefix>%'` scoping bug the review flagged
- * separately, WR-06) — a comment asking future authors to pick a distinct prefix
- * would be the same non-guard this file's other two checks exist to remove.
+ * declaration and throwing at config-load time if any two are equal OR one is a string-prefix of another (a `LIKE '<prefix>%'` scoping bug the review flagged separately, WR-06) — a comment asking future authors to pick a distinct prefix would be the same non-guard this file's other two checks exist to remove.
  *
- * Deliberately excludes files with no `const PREFIX = '...'` declaration AND no
- * `runTeardownAsserted(` call (e.g. `candidate-journey.teardown.ts`, which
- * performs no prefix-scoped delete — see `assertTeardown.ts`'s corrected
- * docblock claim, CR-02). A file that DOES call `runTeardownAsserted(` but
- * whose `const PREFIX` this guard fails to parse is a completeness failure,
- * not a legitimate exclusion — see the `unparsed` check below (see phase 140
- * review WR-03: an enumeration guard with no completeness check is the same
- * failure mode as fake-guard finding F4 above).
+ * Deliberately excludes files with no `const PREFIX = '...'` declaration AND no `runTeardownAsserted(` call (e.g. `candidate-journey.teardown.ts`, which performs no prefix-scoped delete — see `assertTeardown.ts`'s corrected docblock claim, CR-02). A file that DOES call `runTeardownAsserted(` but whose `const PREFIX` this guard fails to parse is a completeness failure, not a legitimate exclusion — see the `unparsed` check below (an enumeration guard with no completeness check is the same failure mode as fake-guard finding F4 above).
  *
- * ENUMERATION SCOPE (see phase 140 review IN-02). Scans all of `TESTS_DIR`, not
- * `TESTS_DIR/setup`, even though all 28 `*.teardown.ts` files live under
- * `setup/` today. The teardown projects' `testMatch` patterns are unanchored
- * regexes (e.g. `/base\.teardown\.ts/`) evaluated against the inherited
- * `testDir` — which is `TESTS_DIR` — so a `*.teardown.ts` added anywhere under
- * it would be PICKED UP AND RUN by Playwright. Scoping the scan to `setup/`
- * left exactly that file invisible to the uniqueness check: the same
- * enumeration-drift shape as fake-guard finding F4, one level up from where
- * WR-03 fixed it. Matching the scan to the runner's own scope keeps the two
- * from drifting apart again, which a convention ("put teardowns in setup/")
- * would not.
+ * ENUMERATION SCOPE (review finding IN-02). Scans all of `TESTS_DIR`, not `TESTS_DIR/setup`, even though all 28 `*.teardown.ts` files live under `setup/` today. The teardown projects' `testMatch` patterns are unanchored regexes (e.g. `/base\.teardown\.ts/`) evaluated against the inherited `testDir` — which is `TESTS_DIR` — so a `*.teardown.ts` added anywhere under it would be PICKED UP AND RUN by Playwright. Scoping the scan to `setup/` left exactly that file invisible to the uniqueness check: the same enumeration-drift shape as fake-guard finding F4, one level up from where WR-03 fixed it. Matching the scan to the runner's own scope keeps the two from drifting apart again, which a convention ("put teardowns in setup/") would not.
  */
 const teardownDir = TESTS_DIR;
-// see phase 140 review IN-01: named precondition, mirroring the ORPHAN-PROBE
-// guard's `fs.existsSync` check above. Without it, a missing/renamed
-// tests directory would die on a raw `readdirSync` ENOENT — the opposite of
-// the "fails immediately and by name" property this guard claims for itself.
+// Named precondition, mirroring the ORPHAN-PROBE guard's `fs.existsSync` check above. Without it, a missing/renamed tests directory would die on a raw `readdirSync` ENOENT — the opposite of the "fails immediately and by name" property this guard claims for itself.
 if (!fs.existsSync(teardownDir)) {
   throw new Error(
     `Teardown prefix guard: expected directory '${teardownDir}' does not exist. The ` +
@@ -246,28 +178,13 @@ for (let i = 0; i < teardownPrefixDeclarations.length; i++) {
  *
  *   - journey chains: data-setup-base -> voter-journey
  *     + data-setup-base -> data-setup-candidate-journey -> candidate-journey
- *   - perm-* family: a single sequential chain that runs strictly AFTER the
- *     journey leaves — its first setup (data-setup-perm-1e1cg1co) depends on
- *     [voter-journey, candidate-journey], and every later perm setup chains
- *     off the previous perm spec. Each perm setup clobbers the app_settings
- *     JSONB singleton, so the family runs serially AND must not interleave
- *     with the base/journey chains on the shared single DB. The perm→journey
- *     dependency direction keeps opt-in --project runs pulling only base,
- *     never the perm family.
- *   - specialized projects that run BY DEFAULT and are opt-OUT via env:
- *     performance (disable with PLAYWRIGHT_NO_PERF) and a11y-smoke (disable with
- *     PLAYWRIGHT_NO_A11Y). Each depends on `data-setup-base` (e2e/base dataset).
- *   - OPT-IN projects (excluded from the default run):
- *       · visual-regression (PLAYWRIGHT_VISUAL) — opt-in because its PNG
- *         baselines are Linux/x86_64 captures that only reproduce on the CI
- *         runner image, not because it is broken: it is a BLOCKING job in
- *         .github/workflows/main.yaml (see phase 136 plan 05).
- *       · bank-auth (PLAYWRIGHT_BANK_AUTH) — the spec throws at module load
- *         without SUPABASE_SERVICE_ROLE_KEY/ANON_KEY and needs the
- *         identity-callback Edge Function served.
+ *   - perm-* family: a single sequential chain that runs strictly AFTER the journey leaves — its first setup (data-setup-perm-1e1cg1co) depends on [voter-journey, candidate-journey], and every later perm setup chains off the previous perm spec. Each perm setup clobbers the app_settings JSONB singleton, so the family runs serially AND must not interleave with the base/journey chains on the shared single DB. The perm→journey dependency direction keeps opt-in --project runs pulling only base, never the perm family.
+ *   - specialized projects that run BY DEFAULT and are opt-OUT via env: performance (disable with PLAYWRIGHT_NO_PERF) and the two-project a11y scan family, a11y-smoke + candidate-a11y-scan (both disabled together with PLAYWRIGHT_NO_A11Y). performance and a11y-smoke depend on `data-setup-base` (e2e/base dataset); candidate-a11y-scan additionally depends on `auth-setup`, because it scans candidate `(protected)` routes.
+ *   - OPT-IN projects (excluded from the default run): · visual-regression (PLAYWRIGHT_VISUAL) — opt-in because its PNG baselines are Linux/x86_64 captures that only reproduce on the CI runner image, not because it is broken: it is a BLOCKING job in .github/workflows/main.yaml.
+ *       · bank-auth (PLAYWRIGHT_BANK_AUTH) — the spec throws at module load without SUPABASE_SERVICE_ROLE_KEY/ANON_KEY and needs the identity-callback Edge Function served.
  *
- * `auth-setup` is retained ONLY to back the visual opt-in project; it is
- * dormant in the default run (no default project depends on it).
+ * `auth-setup` runs IN THE DEFAULT RUN (the second scheduling phase, measured
+ * 5.0 s), because the default-on `candidate-a11y-scan` project consumes the candidate session it stores. It was formerly declared only under PLAYWRIGHT_VISUAL and dormant by default. The wiring's derivation is recorded at the `candidate-a11y-scan` project below.
  *
  * See https://playwright.dev/docs/test-global-setup-teardown
  */
@@ -276,17 +193,10 @@ export default defineConfig({
   testIgnore: ['**/*.test.ts'],
   outputDir: path.join(TESTS_DIR, '../playwright-results'),
 
-  /* SERVED-APPLICATION GATE (see phase 137).
-   * Asserts that whatever is listening on `use.baseURL` below is THIS checkout's
-   * Vite dev server — proven by the served application's own response, not by the
-   * listener process — and aborts the run with exit 1 before any spec body if it
-   * is not. There is no bypass: `FRONTEND_PORT` moves the target, it does not
-   * skip the check.
-   * The path resolves relative to THIS config file's directory; that is not the
-   * `webServer.command` cwd gotcha documented further down, which concerns the
-   * spawn cwd instead.
-   * `--list` deliberately does not run it, so the "no dropped specs" check stays
-   * usable without a dev server (tests/README.md); the orphan-probe guard above
+  /* SERVED-APPLICATION GATE.
+   * Asserts that whatever is listening on `use.baseURL` below is THIS checkout's Vite dev server — proven by the served application's own response, not by the listener process — and aborts the run with exit 1 before any spec body if it is not. There is no bypass: `FRONTEND_PORT` moves the target, it does not skip the check.
+   * The path resolves relative to THIS config file's directory; that is not the `webServer.command` cwd gotcha documented further down, which concerns the spawn cwd instead.
+   * `--list` deliberately does not run it, so the "no dropped specs" check stays usable without a dev server (tests/README.md); the orphan-probe guard above
    * runs at config-load time and covers that path. */
   globalSetup: './global-setup.ts',
 
@@ -294,8 +204,7 @@ export default defineConfig({
   snapshotPathTemplate: '{testDir}/__screenshots__/{testFileName}/{arg}{ext}',
 
   /* Per-test timeout — 90s ceiling required for full-suite render-pressured fixtures.
-   * Under --workers=1 full-suite contention the answer-loop + post-loop waitForURL can
-   * exceed lower budgets, so the per-test wrapper timeout is the binding constraint.
+   * Under --workers=1 full-suite contention the answer-loop + post-loop waitForURL can exceed lower budgets, so the per-test wrapper timeout is the binding constraint.
    * Single source of the 90s ceiling: TIMEOUTS.testMax (tests/tests/helpers/timeouts.ts). */
   timeout: TIMEOUTS.testMax,
 
@@ -311,7 +220,14 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [['html', { outputFolder: path.join(TESTS_DIR, '../playwright-report') }]],
 
-  /* Default visual comparison thresholds for toHaveScreenshot */
+  /* Visual-diff budget — the ABSOLUTE cap is the primary knob; the ratio is a small-baseline floor.
+   * `maxDiffPixels: 200` is the operative budget on all four baselines this suite has today.
+   * `maxDiffPixelRatio` is RETAINED but is no longer "the budget".
+   * playwright-core's comparators.js:88-96 computes `maxDiffPixels2 = width × height × maxDiffPixelRatio` and then takes `Math.min(maxDiffPixels, maxDiffPixels2)`, so adding an absolute cap is monotonically strictness-INCREASING — it can never loosen a baseline — and `min(cap, 0.01 × area)` is bounded by `cap` however tall a fullPage capture grows. That bound is the point: before the cap, a page that grew longer silently bought itself more tolerance (1280×3684 → a 47,155 px budget), which is how ~19,500 px of visible damage once passed at 41 % of budget (0.41 % of the image).
+   * Derivation of the 200: `cap = max(observed per-baseline run-to-run noise) × 10`, floored at 200, rounded up, and required to stay strictly < 5,000 so it stays ~4× below that ~19,500 px regression. Read the arithmetic honestly: the measured noise was 0 px in all 40 cells (4 baselines × 10 in-container runs at zero tolerance), so `0 × 10 = 0` and THE FLOOR — a constant fixed in advance, not a quantity these runs produced — set this value. What the measurements contribute is the licence to take the floor: a noise floor of exactly 0 gives any positive cap complete headroom, and 200 sits ~83× below the ~16,650 px the same injected regression measures in this suite today.
+   * Where the ratio would bind: only on a capture whose `0.01 × area` falls below the cap, i.e.
+   * under ~20,000 px² of area (~140×140). The smallest baseline here, candidate-preview-mobile at 390×924, has a 3,603.6 px ratio budget — still 18× above the cap — so the ratio is DORMANT on all four baselines today and is kept only as a floor for hypothetical very small captures.
+   * `threshold` is pixelmatch's per-pixel colour tolerance, not part of the budget. */
   expect: {
     toHaveScreenshot: {
       threshold: 0.2,
@@ -1567,12 +1483,8 @@ export default defineConfig({
   ...(process.env.PLAYWRIGHT_BANK_AUTH
     ? {
         webServer: {
-          // Absolute path derived from TESTS_DIR (the `tests/tests` dir). The
-          // Playwright `webServer.command` is resolved relative to the config
-          // file's directory (`tests/`), so a bare `tests/tests/support/...`
-          // relative path doubled into `tests/tests/tests/...` and failed to
-          // resolve (ERR_MODULE_NOT_FOUND). Using the absolute entry path makes
-          // the spawn cwd-independent.
+          // Absolute path derived from TESTS_DIR (the `tests/tests` dir). The Playwright `webServer.command` is resolved relative to the config file's directory (`tests/`), so a bare `tests/tests/support/...`
+          // relative path doubled into `tests/tests/tests/...` and failed to resolve (ERR_MODULE_NOT_FOUND). Using the absolute entry path makes the spawn cwd-independent.
           command: `npx tsx ${path.join(TESTS_DIR, 'support/mockOidcIssuerEntry.ts')}`,
           url: 'https://127.0.0.1:9443/.well-known/openid-configuration/jwks',
           ignoreHTTPSErrors: true,

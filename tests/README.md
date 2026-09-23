@@ -5,7 +5,19 @@ Playwright-driven cross-monorepo E2E tests covering the voter app, candidate app
 ## Run
 
 ```bash
-# Prereqs: yarn install && (in another shell) yarn dev
+# Prereqs: yarn install. The wrapper starts Supabase and the dev server itself.
+tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/<name> --no-db-reset
+tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/<name> --no-db-reset --project voter-journey
+```
+
+The wrapper starts the dev server it owns with `PUBLIC_PROJECT_ID` set to [the project the suite seeds](#the-project-the-suite-owns), and every artifact of the run — exit status, Playwright's JSON and HTML reports, the dev server's log, the observed worker and retry posture — lands in `--run-dir`. Omitting `--no-db-reset` additionally clears and re-seeds the database, which no run needs (the suite owns its own project) and which is only worth doing after a schema change.
+
+Driving your own server — for `--grep`, a different reporter, or a debugging session — means starting it on that same project, because a plain `yarn dev` serves the **default** one and the specs would then drive an application with no elections, no questions and no nominations:
+
+```bash
+# In another shell. Without the prefix the served-project preflight aborts the run, naming both ids.
+PUBLIC_PROJECT_ID=00000000-0000-0000-0000-0000000000e2 yarn dev
+
 yarn test:e2e                              # the gate suite — 6 workers (1 on CI); EXCLUDES the @probe specs
 yarn test:e2e:probes                       # the 5 isolation probes, run one at a time
 yarn test:e2e --project=voter-journey      # one project (still pulls in its dependency chain)
@@ -16,6 +28,8 @@ yarn test:e2e --reporter=line              # less noisy output
 ### Preflight — every run proves it is driving this checkout
 
 Before any spec body executes, Playwright's global setup runs a preflight against the base URL the specs are about to drive. It asserts that the served application's own HTTP response proves the page under test came from **this** checkout — the server must serve, and echo back, this working tree's absolute path via Vite's `/@fs` endpoint — rather than trusting that something merely answered on the port. If that does not hold, the run aborts with exit 1 before the first spec. Nothing skips it: there is no bypass flag and no bypass environment variable, and `FRONTEND_PORT` moves the target rather than disabling the check. The gate polls for liveness first (30s locally, 120s on CI — a budget ceiling that absorbs a just-started dev server, not a figure derived from observed CI timings), then asserts identity once.
+
+**The second clause — the served project.** Immediately after the checkout is established, global setup reads the project id the served application publishes on its HTML root and compares it with the project this suite creates and seeds. A mismatch aborts the run naming both ids and the remedy; so does an absent attribute, and so does an unsubstituted placeholder — a substitution that stopped happening must never read as agreement. The clause is separate from, and runs after, the checkout clause, because a run against the wrong checkout should be diagnosed as that first. The published value is the `PUBLIC_` project id, which the browser bundle already carries, so nothing is disclosed by putting it on the document.
 
 **Reading a success.** On the happy path the gate prints exactly one line, `E2E PREFLIGHT OK <served module root> (verified against <repo root>)`, once per Playwright invocation. It exists so that "the preflight passed" is a POSITIVE fact rather than the absence of a failure: `tests/scripts/e2e-run.sh` and `tests/scripts/determinism-batch.sh` derive their "preflight-confirmed" verdict from it, and require at least one success line **and** zero failure lines. Without it, a run in which the gate never executed and a run in which it passed produce identical evidence. Both literals are exported constants in `tests/tests/support/preflight.ts`, and `e2e-run.sh` refuses to start (exit 7) if the strings it greps for are no longer present there.
 
@@ -60,8 +74,9 @@ PLAYWRIGHT_NO_PERF=1   yarn test:e2e   # skip performance
 PLAYWRIGHT_NO_A11Y=1   yarn test:e2e   # skip a11y-smoke
 ```
 
-`visual-regression` and `bank-auth` stay **opt-in** (each has a hard blocker —
-see the project table below). Enable explicitly:
+`visual-regression` and `bank-auth` stay **opt-in** (`bank-auth` on a hard
+blocker, `visual-regression` on snapshot portability — see the project table
+below). Enable explicitly:
 
 ```bash
 PLAYWRIGHT_VISUAL=1     yarn test:e2e --project=visual-regression
@@ -76,15 +91,16 @@ npx playwright test -c tests/playwright.config.ts \
   --project=voter-journey --reporter=line
 ```
 
-For a manual reseed of the base dataset before running voter specs, use the manual chain:
+Reseeding the base dataset is not a manual step and does not involve clearing the database. `data-setup-base` is a declared dependency of the voter projects, so invoking a voter spec reseeds `e2e/base` into the E2E project the suite owns, and `data-teardown-base` clears that project's rows when the family finishes. The chain is therefore just the stack plus the spec:
 
 ```bash
-yarn db:reset && yarn db:seed --template e2e/base && yarn dev:clean
-# then in another terminal:
-yarn dev
-# then in a third terminal:
+# Terminal 1 — the stack (Supabase + package watcher + Vite), on the project the suite seeds:
+PUBLIC_PROJECT_ID=00000000-0000-0000-0000-0000000000e2 yarn dev
+# Terminal 2 — the spec; its dependency chain reseeds e2e/base into the E2E project:
 npx playwright test -c tests/playwright.config.ts --project=voter-journey
 ```
+
+Wiping the database is no part of this: the suite's rows live in a project nothing else writes to, so there is nothing outside that project to clear. (`yarn db:seed --template e2e/base` seeds the **default** project, which the suite does not read — it is a local-development command, not a harness one. `yarn dev:clean` remains available for a stale Vite cache, which is a frontend concern rather than a data one.)
 
 > The base dataset (`e2e/base`) is authored so the voter fixtures answer every opinion type natively; no question-set filtering is required.
 
@@ -178,13 +194,13 @@ Each `perm-<short>` spec project depends on its own `data-setup-perm-<short>` an
 | `performance` | `PLAYWRIGHT_NO_PERF=1` | `tests/specs/perf/` | `data-setup-base` | Page-load timing assertions.                                        |
 | `a11y-smoke`  | `PLAYWRIGHT_NO_A11Y=1` | `tests/specs/a11y/` | `data-setup-base` | `@axe-core/playwright` WCAG 2.1 AA scan; consumes the base fixture. |
 
-**Opt-in** (excluded from the default run — each has a hard blocker):
+**Opt-in** (excluded from the default run — see each row for the reason):
 
-| Project             | Enable with              | Spec dir                                            | Depends on                       | Why opt-in                                                                                                                                                                                                               |
-| ------------------- | ------------------------ | --------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `visual-regression` | `PLAYWRIGHT_VISUAL=1`    | `tests/specs/visual/`                               | `data-setup-base` + `auth-setup` | `auth-setup` can't authenticate against the base dataset yet (no registered base candidate / email). Screenshot baselines under `tests/specs/__screenshots__/`; `auth-setup` is declared only under `PLAYWRIGHT_VISUAL`. |
-| `bank-auth`         | `PLAYWRIGHT_BANK_AUTH=1` | `tests/specs/candidate/candidate-bank-auth.spec.ts` | `data-setup-base`                | Spec throws at module load without `SUPABASE_SERVICE_ROLE_KEY`/`SUPABASE_ANON_KEY`, and 3 tests need the `identity-callback` Edge Function served (`--no-verify-jwt`). Idura/Signicat OIDC integration test.             |
-| `bank-auth-journey` | `PLAYWRIGHT_BANK_AUTH=1` | `tests/specs/candidate/candidate-bank-auth-journey.spec.ts` | `data-setup-bank-auth-journey`, which (see phase 140 WR-03) depends on `voter-prefs-tracking` — the **tail of the perm serial chain** | Full-browser preregister journey against a mock OIDC issuer (`webServer`-spawned, HTTPS, self-signed localhost cert). See `IDURA-TEST-RUNBOOK.md` Step B-3. **`--project=bank-auth-journey` pulls the whole chain transitively and takes full-suite time**, by design: the setup does an authoritative `app_settings` REPLACE, and the singleton needs mutual exclusion, which in this config means being in the serial chain. RESEARCH A4 ("stands alone") is deliberately superseded. Selection is identity-based (`[EL1]`/`[CO1]`), so foreign datasets fail the walk loudly rather than being silently preregistered into (see phase 140 CR-01). |
+| Project             | Enable with              | Spec dir                                                    | Depends on                                                                                                                            | Why opt-in                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ------------------- | ------------------------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `visual-regression` | `PLAYWRIGHT_VISUAL=1`    | `tests/specs/visual/`                                       | `data-setup-base` + `auth-setup`                                                                                                      | Snapshot **portability**, not a blocker: the baselines are Linux/x86_64 PNGs that only compare correctly inside the CI-matching container, so the project is gated behind `PLAYWRIGHT_VISUAL` and `auth-setup` is declared only under that variable. The retired reason recorded here — that the base dataset had no registered candidate to log in as — has been false since **Phase 136**: `tests/tests/setup/shared/auth.setup.ts:82-84` force-registers base CA-AA-1 through `SupabaseAdminClient` (`unregisterCandidate` then `forceRegister`), so re-runs are idempotent. Screenshot baselines live under `tests/tests/specs/visual/__screenshots__/` (`snapshotPathTemplate` at `tests/playwright.config.ts:294` over the project's `testDir` at `:415`). **Re-baselining is `tests/scripts/visual-container.sh`** — the single executable recipe; never regenerate on a developer Mac (Phase 146). |
+| `bank-auth`         | `PLAYWRIGHT_BANK_AUTH=1` | `tests/specs/candidate/candidate-bank-auth.spec.ts`         | `data-setup-base`                                                                                                                     | Spec throws at module load without `SUPABASE_SERVICE_ROLE_KEY`/`SUPABASE_ANON_KEY`, and 3 tests need the `identity-callback` Edge Function served (`--no-verify-jwt`). Idura/Signicat OIDC integration test.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `bank-auth-journey` | `PLAYWRIGHT_BANK_AUTH=1` | `tests/specs/candidate/candidate-bank-auth-journey.spec.ts` | `data-setup-bank-auth-journey`, which (see phase 140 WR-03) depends on `voter-prefs-tracking` — the **tail of the perm serial chain** | Full-browser preregister journey against a mock OIDC issuer (`webServer`-spawned, HTTPS, self-signed localhost cert). See `IDURA-TEST-RUNBOOK.md` Step B-3. **`--project=bank-auth-journey` pulls the whole chain transitively and takes full-suite time**, by design: the setup does an authoritative `app_settings` REPLACE, and the singleton needs mutual exclusion, which in this config means being in the serial chain. RESEARCH A4 ("stands alone") is deliberately superseded. Selection is identity-based (`[EL1]`/`[CO1]`), so foreign datasets fail the walk loudly rather than being silently preregistered into (see phase 140 CR-01).                                                                                                                                                                                                                                                       |
 
 ### Isolation probes — excluded from the gate suite
 
@@ -244,7 +260,7 @@ Fixtures + setup follow a role-based shape:
 
 Most specs assume the following baseline established by `data-setup-base`:
 
-- Fresh database with only `test-` prefixed rows
+- An E2E project containing only this run's `test-` prefixed rows. The rest of the database is not "clean" and does not need to be: anything a local development session or a `yarn db:seed` left in the default project sits in a different project and is invisible to every query the suite issues.
 - App settings suppress all intermediate pages by default (questions intro hidden, category intros hidden, popups null)
 - Storage buckets `private-assets` + `public-assets` exist
 
@@ -258,24 +274,34 @@ State that specs **must not assume** (because the chain re-seeds):
 
 ## Setup / teardown specs
 
-| File                                                  | Project                                   | Purpose                                                                                                                  |
-| ----------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `tests/setup/shared/base.setup.ts`                    | `data-setup-base`                         | Seeds the `e2e/base` template; verifies fresh-DB precondition; subset-asserts `app_settings.fixed[0].settings` persisted |
-| `tests/setup/shared/base.teardown.ts`                 | `data-teardown-base`                      | Cleans `test-`-prefixed rows after the base/journey families finish                                                      |
-| `tests/setup/shared/auth.setup.ts`                    | `auth-setup` (opt-in `PLAYWRIGHT_VISUAL`) | Logs in a candidate; writes `STORAGE_STATE`                                                                              |
-| `tests/setup/candidate/candidate-journey.setup.ts`    | `data-setup-candidate-journey`            | Candidate-journey seed overlay                                                                                           |
-| `tests/setup/candidate/candidate-journey.teardown.ts` | `data-teardown-candidate-journey`         | Cleans candidate-journey rows                                                                                            |
-| `tests/setup/perm/perm-*.setup.ts`                    | `data-setup-perm-<short>`                 | Per-permutation seed; pre-clears its own prefix first                                                                    |
-| `tests/setup/perm/perm-*.teardown.ts`                 | `data-teardown-perm-<short>`              | Wipes the permutation's `test-perm-<short>-` rows                                                                        |
+| File                                                  | Project                                   | Purpose                                                                                                                                                       |
+| ----------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tests/setup/shared/base.setup.ts`                    | `data-setup-base`                         | Seeds the `e2e/base` template; warns when the E2E project already holds rows this run does not own; subset-asserts `app_settings.fixed[0].settings` persisted |
+| `tests/setup/shared/base.teardown.ts`                 | `data-teardown-base`                      | Cleans `test-`-prefixed rows after the base/journey families finish                                                                                           |
+| `tests/setup/shared/auth.setup.ts`                    | `auth-setup` (opt-in `PLAYWRIGHT_VISUAL`) | Logs in a candidate; writes `STORAGE_STATE`                                                                                                                   |
+| `tests/setup/candidate/candidate-journey.setup.ts`    | `data-setup-candidate-journey`            | Candidate-journey seed overlay                                                                                                                                |
+| `tests/setup/candidate/candidate-journey.teardown.ts` | `data-teardown-candidate-journey`         | Cleans candidate-journey rows                                                                                                                                 |
+| `tests/setup/perm/perm-*.setup.ts`                    | `data-setup-perm-<short>`                 | Per-permutation seed; pre-clears its own prefix first                                                                                                         |
+| `tests/setup/perm/perm-*.teardown.ts`                 | `data-teardown-perm-<short>`              | Wipes the permutation's `test-perm-<short>-` rows                                                                                                             |
+
+### The project the suite owns
+
+Every row the suite writes and every row it reads belongs to one project, `00000000-0000-0000-0000-0000000000e2` — deliberately **not** the project the Supabase seed creates, which is where `yarn db:seed` and an ordinary `yarn dev` session put their data. That id is a committed default, so a plain checkout needs no configuration to run the suite; `E2E_PROJECT_ID` overrides it, and because the default is spelled out independently in the harness's TypeScript resolver **and** in `tests/scripts/e2e-run.sh`, an override belongs in the environment, where both of them read it. Neither is authoritative over the other.
+
+Playwright's global setup creates the project idempotently, immediately after the served-application preflight — in that order, because creating rows against a server that turned out to be the wrong checkout would be writing into a database the run has no business touching.
+
+Teardown clears the project's **contents** and deliberately leaves the **project row** in place. Content teardown is prefix-scoped, so it never needed the row gone; keeping the row means run _N+1_ finds it already present and takes the same idempotent code path run _N_ took, instead of the create-path being exercised only on the first run after a wipe. A project row with nothing in it is inert.
+
+This is what makes a run independent of the database's prior state, and it is why `tests/scripts/e2e-run.sh` accepts `--no-db-reset`: the flag skips the reset while still starting Supabase (the readiness poll needs something to poll), and records `db_reset=false` plus the resolved project id in the run's `env-posture.txt`. Use it for back-to-back evidence runs, and whenever you want a run to prove it can start from whatever the last one left behind. Omit it when you have changed the schema and want migrations reapplied.
 
 ---
 
 ## Common pitfalls
 
-- **`yarn db:reset` in another terminal will wipe the suite mid-run** — the teardown projects are the only legitimate path to clear test data. Don't reset while the suite is running.
+- **`yarn db:reset` in another terminal will wipe the suite mid-run** — the teardown projects are the only legitimate path to clear test data. Don't reset while the suite is running. This warning carries _more_ weight now that no run asks for a reset: reaching for that command by hand is the one remaining way to destroy a run's data underneath it.
 - **`STORAGE_STATE` (the visual-regression candidate session) is shared** within the opt-in visual chain. If you add a candidate spec that revokes a token, sequence it appropriately.
 - **Fixture timeouts vs locator timeouts.** Per-test `test.setTimeout(N)` and the global timeout are wall budgets — keep them large enough for fixture warm-up (cold dev-server hydration can run 5-8s). Per-locator `{ timeout: N }` options should be smaller (≤ 10s) so individual element waits fail fast; the test-level budget contains them. Timeout constants live in [`tests/tests/helpers/timeouts.ts`](./tests/helpers/timeouts.ts).
-- **Trace files.** Traces land in `tests/playwright-results/<spec>/trace.zip`; open with `npx playwright show-trace <path>`.
+- **Trace files.** Traces are recorded for every test but retained only for **failures** (`trace: 'retain-on-failure'`), so a green run leaves no trace zips behind — that is expected, not a misconfiguration. A failing test's trace lands in `tests/playwright-results/<spec>/trace.zip`; open with `npx playwright show-trace <path>`. If you need the traces of _passing_ tests for an investigation (grepping console output across a green run, say), temporarily set `trace: 'on'` in `tests/playwright.config.ts` and revert it afterwards — it costs 260-340 MB per full-suite run.
 - **Missing-nominations modal — do NOT roll your own dismiss.** The voter-app's `(located)/+layout.svelte` opens a `<Modal>` whenever the selected election + constituency combination produces a partial-nomination state. The modal is rendered as DaisyUI `.modal` (a `<dialog>` styled with `display: grid` even when closed) — so `Locator.waitFor({ state: 'hidden' })` NEVER resolves, and `Locator.evaluate` stalls for ~60s when the modal element is never rendered. The frontend re-fires its `$effect` on every streamed-Promise re-resolve; a `modalShownForKey` guard in the layout suppresses the same-dataset reopen, but specs must still handle a one-shot reopen race after Continue. Use the shared helpers in [`tests/tests/utils/missingNominations.ts`](./tests/utils/missingNominations.ts) — `dismissMissingNominationsIfPresent(page)` for a one-time race, or `installMissingNominationsAutoDismiss(page)` for suites that traverse `/questions` or `/results` repeatedly. Both probe the native `<dialog open>` attribute via `page.evaluate` + CSS selector. The modal carries `data-testid="voter-missing-nominations-modal"`; legacy builds fall back to `getByRole('dialog')`.
 
 ---

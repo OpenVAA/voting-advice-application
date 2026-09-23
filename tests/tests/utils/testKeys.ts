@@ -2,23 +2,17 @@
  * Fixed committed TEST-ONLY key pair for bank-auth (Idura/Signicat OIDC) E2E tests.
  *
  * SECURITY — TEST-ONLY KEYS (threat T-122-01, Spoofing):
- *   These RSA JWKs are committed plaintext in the repository purely so the SAME
- *   keys are shared by three test-side processes:
+ *   These RSA JWKs are committed plaintext in the repository purely so the SAME keys are shared by three test-side processes:
  *     1. the Playwright worker (builds synthetic id_tokens via `buildTestIdToken`),
  *     2. the served Edge Function (`IDENTITY_PROVIDER_DECRYPTION_JWKS` = `encPrivJwk`),
  *     3. the mock OIDC issuer (serves `sigPubJwk` at its JWKS endpoint).
- *   This eliminates per-run key propagation — the #1 source of bank-auth flake
- *   (RESEARCH A2 / Open-Q3, the determinism-preferred path over per-run
- *   `jose.generateKeyPair`). They MUST NEVER be used by any non-test environment;
- *   production decryption/signing keys come from real env/secrets and are never
- *   this committed pair. Reusing these in prod would enable id_token spoofing.
+ *   This eliminates per-run key propagation — the #1 source of bank-auth flake (RESEARCH A2 / Open-Q3, the determinism-preferred path over per-run `jose.generateKeyPair`). They MUST NEVER be used by any non-test environment; production decryption/signing keys come from real env/secrets and are never this committed pair. Reusing these in prod would enable id_token spoofing.
  *
  * Key contract (mirrors the prior in-spec `generateTestKeys`):
  *   - encryption: RSA-OAEP-256, kid `test-enc-1`, use `enc`
  *   - signing:    RS256,        kid `test-sig-1`, use `sig`
  *
- * Generated once locally via `jose.generateKeyPair(...)` and inlined as committed
- * consts. Do NOT regenerate per run.
+ * Generated once locally via `jose.generateKeyPair(...)` and inlined as committed consts. Do NOT regenerate per run.
  */
 import * as jose from 'jose';
 import type { JWK } from 'jose';
@@ -34,9 +28,7 @@ export const encPubJwk: JWK = {
 };
 
 /**
- * Private encryption JWK (RSA-OAEP-256). Used by the served Edge Function to
- * decrypt the JWE. The Edge Function reads `IDENTITY_PROVIDER_DECRYPTION_JWKS`
- * as a JSON `[{...}]` array — see `decryptionJwks` below.
+ * Private encryption JWK (RSA-OAEP-256). Used by the served Edge Function to decrypt the JWE. The Edge Function reads `IDENTITY_PROVIDER_DECRYPTION_JWKS` as a JSON `[{...}]` array — see `decryptionJwks` below.
  */
 export const encPrivJwk: JWK = {
   kty: 'RSA',
@@ -80,10 +72,7 @@ export const sigPrivJwk: JWK = {
 };
 
 /**
- * The value the served Edge Function reads from `IDENTITY_PROVIDER_DECRYPTION_JWKS`
- * (a JSON `[{...}]` array of private decryption JWKs). The bank-auth setup
- * stringifies this into the Edge Function env so the keys-configured create
- * path runs deterministically.
+ * The value the served Edge Function reads from `IDENTITY_PROVIDER_DECRYPTION_JWKS` (a JSON `[{...}]` array of private decryption JWKs). The bank-auth setup stringifies this into the Edge Function env so the keys-configured create path runs deterministically.
  */
 export const decryptionJwks: ReadonlyArray<JWK> = [encPrivJwk];
 
@@ -102,9 +91,7 @@ export interface TestKeys {
 }
 
 /**
- * Accessor returning the fixed test keys in the shape `buildTestIdToken` and
- * downstream consumers need. `sigPriv` is imported via `jose.importJWK(..., 'RS256')`,
- * which in jose v6 returns a WebCrypto `CryptoKey` (not the removed `KeyLike` alias).
+ * Accessor returning the fixed test keys in the shape `buildTestIdToken` and downstream consumers need. `sigPriv` is imported via `jose.importJWK(..., 'RS256')`, which in jose v6 returns a WebCrypto `CryptoKey` (not the removed `KeyLike` alias).
  */
 export async function getTestKeys(): Promise<TestKeys> {
   const sigPriv = (await jose.importJWK(sigPrivJwk, 'RS256')) as CryptoKey;

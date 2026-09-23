@@ -1,8 +1,7 @@
 /**
  * @file Composition root for the voter-view function-fixtures.
  *
- * Consumed by `voter-journey.spec.ts` and any perm-* specs that need the
- * resultsPage / entityFilters / entityDetails abstractions.
+ * Consumed by `voter-journey.spec.ts` and any perm-* specs that need the resultsPage / entityFilters / entityDetails abstractions.
  *
  * Usage:
  * ```ts
@@ -15,9 +14,7 @@
  * });
  * ```
  *
- * The legacy `index.ts` root is UNCHANGED — both roots coexist until a
- * future phase migrates the Page-Object specs to the function-fixture
- * pattern.
+ * The legacy `index.ts` root is UNCHANGED — both roots coexist until a future phase migrates the Page-Object specs to the function-fixture pattern.
  */
 
 import { expect, test as base } from '@playwright/test';
@@ -44,16 +41,14 @@ type ViewFixtures = {
   resultsPage: ResultsPageFixture;
   entityFilters: EntityFiltersFixture;
   entityDetails: EntityDetailsFixture;
-  // Voter page fixtures carrying the goToPage(locale?) + expectPageVisible
-  // paradigm. Registered here so specs importing `test` from this root
-  // receive them by destructuring.
+  // Voter page fixtures carrying the goToPage(locale?) + expectPageVisible paradigm. Registered here so specs importing `test` from this root receive them by destructuring.
   voterHomePage: VoterHomePageFixture;
   voterIntroPage: VoterIntroPageFixture;
   voterQuestionsPage: VoterQuestionsPageFixture;
-  // Phase-119 EPERM voter-scoped readers (Plan 06).
+  // EPERM voter-scoped readers.
   aboutPage: AboutPageFixture;
   questionInfo: QuestionInfoFixture;
-  // Phase-138 forensic capture (auto).
+  // Forensic capture (auto).
   forensicCapture: ForensicLog;
 };
 
@@ -82,20 +77,12 @@ export const test = base.extend<ViewFixtures>({
   questionInfo: async ({ page }, use) => {
     await use(createQuestionInfo(page));
   },
-  // Phase-138: browser console + pageerror + failed-request
-  // capture, attached BEFORE the spec navigates and flushed on teardown.
+  // Browser console + pageerror + failed-request capture, attached BEFORE the spec navigates and flushed on teardown.
   //
-  // NOTE — an auto-registered fixture has NO precedent anywhere in `tests/tests`
-  // (this registration is the only one), and it crosses the standing
+  // NOTE — an auto-registered fixture has NO precedent anywhere in `tests/tests` (this registration is the only one), and it crosses the standing
   // `fixtures/shared/*` convention that such fixtures are
-  // "NOT extended into a composition root". Both facts are deliberate. All 16
-  // spec files importing this root are reached, which is the INTENDED coverage,
-  // not an incidental side effect: the v2.14 waiver's condition 3 ("the next
-  // occurrence is data") only holds if a recurrence during ANY later v2.15
-  // phase's run leaves evidence without someone having opted a spec in first.
-  // Cost is three event listeners per page and no behaviour change; the
-  // fixture asserts nothing. See forensicCapture.fixture.ts for the rationale
-  // in full.
+  // "NOT extended into a composition root". Both facts are deliberate. All 16 spec files importing this root are reached, which is the INTENDED coverage, not an incidental side effect: the standing waiver's condition — that the next occurrence arrives as data — only holds if a recurrence during ANY later run leaves evidence without someone having opted a spec in first.
+  // Cost is three event listeners per page and no behaviour change; the fixture asserts nothing. See forensicCapture.fixture.ts for the rationale in full.
   forensicCapture: [
     async ({ page }, use, testInfo) => {
       const log = attachForensicCapture(page);

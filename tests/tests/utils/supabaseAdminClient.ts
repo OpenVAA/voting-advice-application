@@ -10,26 +10,24 @@
  *
  *   Do NOT use `updateAppSettings` from a `*.setup.ts` file for baseline settings — extend the appropriate template instead.
  *
+ * Project default: this subclass defaults its project to the E2E project (`resolveE2eProjectId()`), while `DevSeedAdminClient` keeps defaulting to the default project. That single difference is what re-points every argument-less `new SupabaseAdminClient()` inside `tests/` at the suite's own project while leaving `yarn db:seed` and `yarn db:reset-with-data` filling the default one.
+ *
  * Inherited from `DevSeedAdminClient`:
- *   - `constructor(url?, serviceRoleKey?, projectId?)`
  *   - `protected client: SupabaseClient`
  *   - `protected projectId: string`
  *   - `public bulkImport(data)`
  *   - `public bulkDelete(collections)`
  *   - `public importAnswers(data)`
  *   - `public linkJoinTables(data)`
+ *   - `public ensureProject(projectId?)` — idempotent project + `app_settings` bootstrap
  *   - `public updateAppSettings(partialSettings)` — see usage-policy note above
  *
  * Added by this subclass:
  *   - Auth helpers (private): `safeListUsers`
- *   - E2E query helpers: `findData`, `query`, `update`, `getAppSettings`,
- *     `countRowsByPrefix`
- *   - Auth actions: `setPassword`, `forceRegister`, `unregisterCandidate`,
- *     `sendEmail`, `sendForgotPassword`, `deleteAllTestUsers`
+ *   - E2E query helpers: `findData`, `query`, `update`, `getAppSettings`, `countRowsByPrefix`
+ *   - Auth actions: `setPassword`, `forceRegister`, `forceRegisterAdmin`, `unregisterCandidate`, `sendEmail`, `sendForgotPassword`, `deleteAllTestUsers`
  *
- * Existing call sites `new SupabaseAdminClient()` or
- * `new SupabaseAdminClient(url, key, projectId)` work unchanged — the constructor
- * is inherited from the parent.
+ * Existing call sites `new SupabaseAdminClient()` or `new SupabaseAdminClient(url, key, projectId)` keep the same signature — the constructor below only substitutes a different project default.
  *
  * @example
  * ```ts
@@ -62,9 +60,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL ?? 'http://localhost:54321';
  * Maps camelCase collection names to Supabase snake_case table names.
  * Extends TABLE_MAP with legacy/alias mappings for backward compatibility.
  *
- * Duplicated locally (mirrors the dev-seed base) so `findData` / `query`
- * can translate camelCase collection names without re-exporting a private
- * helper from the dev-seed package.
+ * Duplicated locally (mirrors the dev-seed base) so `findData` / `query` can translate camelCase collection names without re-exporting a private helper from the dev-seed package.
  */
 const COLLECTION_MAP: Record<string, string> = {
   ...TABLE_MAP,
@@ -84,16 +80,14 @@ const FIELD_MAP: Record<string, string> = {
 };
 
 /**
- * Resolve a collection name: if it matches a COLLECTION_MAP entry, use that;
- * otherwise return as-is (already snake_case).
+ * Resolve a collection name: if it matches a COLLECTION_MAP entry, use that; otherwise return as-is (already snake_case).
  */
 function resolveCollectionName(collection: string): string {
   return COLLECTION_MAP[collection] ?? collection;
 }
 
 /**
- * Convert a camelCase field name to snake_case using FIELD_MAP,
- * or fall through as-is if already snake_case.
+ * Convert a camelCase field name to snake_case using FIELD_MAP, or fall through as-is if already snake_case.
  */
 function resolveFieldName(field: string): string {
   return FIELD_MAP[field] ?? field;
@@ -123,8 +117,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
   /**
    * Find data in a collection with filters.
    *
-   * Translates filter syntax `{ field: { $eq: value } }` to PostgREST
-   * `.eq(field, value)`. Adds `documentId: row.id` alias to each result row.
+   * Translates filter syntax `{ field: { $eq: value } }` to PostgREST `.eq(field, value)`. Adds `documentId: row.id` alias to each result row.
    *
    * @param collection - Collection name (camelCase or snake_case)
    * @param filters - Filter object with `{ field: { $eq: value } }` syntax
@@ -158,8 +151,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
       }
     }
 
-    // Scope to project (most tables have project_id)
-    // Skip for join tables and tables without project_id
+    // Scope to project (most tables have project_id) Skip for join tables and tables without project_id
     const tablesWithoutProjectId = new Set([
       'election_constituency_groups',
       'constituency_group_constituencies',
@@ -230,8 +222,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
       .eq('project_id', this.projectId)
       .single();
     if (error) {
-      // PGRST116 = no rows; treat as null (the bootstrap row is missing,
-      // which a setup-file caller will surface as a clearer error).
+      // PGRST116 = no rows; treat as null (the bootstrap row is missing, which a setup-file caller will surface as a clearer error).
       const code = (error as { code?: string }).code;
       if (code === 'PGRST116') return null;
       throw new Error(`getAppSettings: fetch failed: ${error.message}`);
@@ -242,38 +233,15 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
   /**
    * Exact row count across the ten teardown tables for a given `external_id` prefix.
    *
-   * Iterates `ALLOWED_TEARDOWN_TABLES` imported from `@openvaa/dev-seed` — the SAME
-   * list `runTeardown`'s `bulkDelete` clears — so the probe cannot drift from the
-   * delete it measures.
+   * Iterates `ALLOWED_TEARDOWN_TABLES` imported from `@openvaa/dev-seed` — the SAME list `runTeardown`'s `bulkDelete` clears — so the probe cannot drift from the delete it measures.
    *
-   * Uses a HEAD count query (`{ count: 'exact', head: true }`) and reads the returned
-   * `count`, never the length of a returned row array — that length is bounded by
-   * PostgREST's default page limit and would silently under-report a prefix matching
-   * more rows than one page.
+   * Uses a HEAD count query (`{ count: 'exact', head: true }`) and reads the returned `count`, never the length of a returned row array — that length is bounded by PostgREST's default page limit and would silently under-report a prefix matching more rows than one page.
    *
-   * Read-only — returns integers only, no row content. Scoped by `project_id` and by
-   * `external_id LIKE '<prefix>%'`, matching the delete's own prefix semantics.
+   * Read-only — returns integers only, no row content. Scoped by `project_id` and by `external_id LIKE '<prefix>%'`, matching the delete's own prefix semantics.
    *
-   * see phase 140 WR-06 / WR-02 (iteration-2 correction): only `*` is rejected
-   * before the query runs. PostgREST's `like` filter (used here) maps a
-   * literal `*` in the input to SQL `%`, but `bulk_delete`'s raw SQL
-   * `external_id LIKE $2` (`00001_initial_schema.sql`) does not — a `*` in
-   * the prefix would therefore be counted under a DIFFERENT match set than
-   * `bulk_delete` actually deletes. **This is genuine divergence** and is
-   * correctly rejected.
+   * Review findings WR-06 / WR-02: only `*` is rejected before the query runs. PostgREST's `like` filter (used here) maps a literal `*` in the input to SQL `%`, but `bulk_delete`'s raw SQL `external_id LIKE $2` (`00001_initial_schema.sql`) does not — a `*` in the prefix would therefore be counted under a DIFFERENT match set than `bulk_delete` actually deletes. **This is genuine divergence** and is correctly rejected.
    *
-   * `_` and `%` are NOT rejected (WR-06's original guard rejected them too,
-   * on a rationale that does not hold for either): both PostgREST's `like`
-   * and the RPC's raw SQL `LIKE` treat `_` as a single-character wildcard and
-   * `%` as a multi-character wildcard identically on both sides, so the probe
-   * and the delete over-match the SAME extra rows — `rowsDeleted ===
-   * rowsBefore` still holds; the prefix is merely imprecise, not
-   * mismeasured. Because this probe runs BEFORE the delete
-   * (`runTeardownAsserted`), rejecting `_`/`%` would make a teardown using
-   * such a prefix throw and delete NOTHING — turning an imprecise-but-correct
-   * delete into a silent full leak of the dataset. The dev-seed CLI's default
-   * `seed_` prefix (which contains `_`) is the motivating case this guard
-   * must not break.
+   * `_` and `%` are NOT rejected (WR-06's original guard rejected them too, on a rationale that does not hold for either): both PostgREST's `like` and the RPC's raw SQL `LIKE` treat `_` as a single-character wildcard and `%` as a multi-character wildcard identically on both sides, so the probe and the delete over-match the SAME extra rows — `rowsDeleted === rowsBefore` still holds; the prefix is merely imprecise, not mismeasured. Because this probe runs BEFORE the delete (`runTeardownAsserted`), rejecting `_`/`%` would make a teardown using such a prefix throw and delete NOTHING — turning an imprecise-but-correct delete into a silent full leak of the dataset. The dev-seed CLI's default `seed_` prefix (which contains `_`) is the motivating case this guard must not break.
    *
    * @param prefix - `external_id` prefix, forwarded verbatim (no normalisation).
    * @returns total matching rows summed across the ten tables.
@@ -310,8 +278,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
   /**
    * Set a user's password by email address.
    *
-   * Looks up the auth user by email, then updates their password via the
-   * Admin Auth API.
+   * Looks up the auth user by email, then updates their password via the Admin Auth API.
    *
    * @param email - Email address of the user
    * @param password - New password to set
@@ -328,8 +295,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
   }
 
   /**
-   * Force-register a candidate: create auth user, assign candidate role,
-   * and link the auth user to the candidate record.
+   * Force-register a candidate: create auth user, assign candidate role, and link the auth user to the candidate record.
    *
    * @param candidateExternalId - External ID of the candidate to register
    * @param email - Email address for the new auth user
@@ -346,10 +312,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     if (createError) throw new Error(`forceRegister: createUser failed: ${createError.message}`);
     const user = createData.user;
 
-    // Wrap the 4-step mutation chain in try/catch with a compensating
-    // `auth.admin.deleteUser` rollback on partial failure. Without it, a failure
-    // in step 2/3/4 leaves orphan auth users that surface as "User already
-    // exists" errors on subsequent test runs, requiring manual cleanup.
+    // Wrap the 4-step mutation chain in try/catch with a compensating `auth.admin.deleteUser` rollback on partial failure. Without it, a failure in step 2/3/4 leaves orphan auth users that surface as "User already exists" errors on subsequent test runs, requiring manual cleanup.
     try {
       // 2. Look up candidate ID by external_id
       const { data: candidate, error: cError } = await this.client
@@ -379,11 +342,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
         .eq('id', candidate.id);
       if (linkError) throw new Error(`forceRegister: link auth user failed: ${linkError.message}`);
     } catch (mutationErr) {
-      // reason: compensating rollback on partial failure prevents orphan auth
-      // users that cascade as "User already exists" errors across subsequent
-      // test runs. The rollback failure (if any) is logged but not re-thrown —
-      // we always re-throw the original mutationErr so the caller sees the real
-      // cause.
+      // reason: compensating rollback on partial failure prevents orphan auth users that cascade as "User already exists" errors across subsequent test runs. The rollback failure (if any) is logged but not re-thrown — we always re-throw the original mutationErr so the caller sees the real cause.
       await this.client.auth.admin.deleteUser(user.id).then(
         () => {},
         (rollbackErr) => {
@@ -395,16 +354,11 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
   }
 
   /**
-   * Delete the bank-auth candidate row + its role assignment created by the
-   * identity-callback Edge Function for a given placeholder email.
+   * Force-register an ADMIN: create the auth user, then write ONE project-scoped admin grant row.
    *
-   * The bank-auth self-registration flow (EFLOW-10b) creates a FRESH
-   * `candidates` row (no `external_id`, so `runTeardown` prefix-deletes miss it)
-   * linked via `auth_user_id` to the auth user the Edge Function created under
-   * the identity-derived placeholder email (`${sub}@bank-auth.placeholder`).
-   * Without this explicit delete the orphan candidate rows accumulate across the
-   * 3× determinism gate (each run creates a new candidate, and the prior run's
-   * `unregisterCandidate` only nulls `auth_user_id` + deletes the auth user).
+   * The sibling of {@link forceRegister}, minus its candidate lookup and its `auth_user_id` linking step — an admin identity is one account plus one grant row and nothing else (see `tests/tests/utils/adminCredentials.ts` for why the seed structurally cannot express it).
+   *
+   * Exactly two mutations. The second is wrapped in the SAME compensating rollback shape `forceRegister` uses, and for the same recorded reason rather than as defensive style: a failure between minting the account and writing the grant leaves an orphan `auth.users` row that surfaces as "User already exists" on every subsequent run and needs manual cleanup. That failure class has been paid for once in this project already.
    *
    * Deletes the candidate row(s) AND their `user_roles` before
    * `unregisterCandidate` removes the auth user. Idempotent — a no-op when no
@@ -414,14 +368,9 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    *   bank-auth auth user was created with.
    */
   /**
-   * Look up a bank-auth `auth.users` row by email via the admin list API,
-   * returning the narrowed fields the EFLOW-10b journey end-state assertion
-   * reads: `id` + the bank-auth identity `app_metadata` claims the
-   * identity-callback Edge Function stamped at create time.
+   * Look up a bank-auth `auth.users` row by email via the admin list API, returning the narrowed fields the EFLOW-10b journey end-state assertion reads: `id` + the bank-auth identity `app_metadata` claims the identity-callback Edge Function stamped at create time.
    *
-   * `auth.users` lives in the `auth` schema, NOT the `public` schema that
-   * `findData`/`query` target via PostgREST — so it must be read through the
-   * GoTrue admin API. Returns `undefined` when no user matches (idempotent).
+   * `auth.users` lives in the `auth` schema, NOT the `public` schema that `findData`/`query` target via PostgREST — so it must be read through the GoTrue admin API. Returns `undefined` when no user matches (idempotent).
    *
    * @param email - The auth user's email (for bank-auth: the identity-derived
    *   placeholder `${sub}@bank-auth.placeholder`).
@@ -498,12 +447,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     if (!user) return; // Already unregistered (or listUsers failed - safe to skip)
 
     // 2. Clear auth_user_id AND terms_of_use_accepted on the candidate row.
-    //    Without resetting `terms_of_use_accepted` the candidate-registration
-    //    spec sees a stale "ToU already accepted" state on subsequent runs:
-    //    the auth user is freshly created by the test but the underlying
-    //    candidate row still carries the ToU timestamp from the prior run, so
-    //    the post-login ToU gate is bypassed and the test reaches /candidate
-    //    home directly instead of finding the ToU checkbox.
+    //    Without resetting `terms_of_use_accepted` the candidate-registration spec sees a stale "ToU already accepted" state on subsequent runs: the auth user is freshly created by the test but the underlying candidate row still carries the ToU timestamp from the prior run, so the post-login ToU gate is bypassed and the test reaches /candidate home directly instead of finding the ToU checkbox.
     const { error: clearError } = await this.client
       .from('candidates')
       .update({ auth_user_id: null, terms_of_use_accepted: null })
@@ -522,12 +466,9 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
   /**
    * Send an email to a candidate via the Supabase Admin Auth API.
    *
-   * For test purposes, this uses `auth.admin.inviteUserByEmail` which sends
-   * an invite/magic link email via Inbucket in local dev. The invite email
-   * contains a link the candidate can use to set their password.
+   * For test purposes, this uses `auth.admin.inviteUserByEmail` which sends an invite/magic link email via Inbucket in local dev. The invite email contains a link the candidate can use to set their password.
    *
-   * If the candidate already has an auth user, this generates a magic link
-   * instead (since inviteUserByEmail would fail for existing users).
+   * If the candidate already has an auth user, this generates a magic link instead (since inviteUserByEmail would fail for existing users).
    *
    * @param params - Email parameters
    * @param params.candidateExternalId - External ID of the candidate
@@ -554,8 +495,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     }
 
     if (candidate.auth_user_id) {
-      // Candidate already has an auth user -- generate a magic link
-      // which sends an email via Inbucket
+      // Candidate already has an auth user -- generate a magic link which sends an email via Inbucket
       const {
         data: { user },
         error: getUserError
@@ -570,9 +510,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
       });
       if (linkError) throw new Error(`sendEmail: generateLink failed: ${linkError.message}`);
     } else {
-      // No auth user yet -- use inviteUserByEmail to create the user and
-      // send an invite email via Inbucket. Then link the auth user to the
-      // candidate entity and assign the candidate role.
+      // No auth user yet -- use inviteUserByEmail to create the user and send an invite email via Inbucket. Then link the auth user to the candidate entity and assign the candidate role.
       const email = params.email;
       if (!email) {
         throw new Error(
@@ -611,12 +549,9 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
   /**
    * Trigger a password recovery email for a user.
    *
-   * Uses `auth.admin.generateLink({ type: 'recovery' })` which generates
-   * a recovery link. In local dev with Inbucket, the email is delivered
-   * to the Inbucket inbox for the user's email address.
+   * Uses `auth.admin.generateLink({ type: 'recovery' })` which generates a recovery link. In local dev with Inbucket, the email is delivered to the Inbucket inbox for the user's email address.
    *
-   * Alternatively uses `auth.resetPasswordForEmail` which sends the actual
-   * recovery email via GoTrue/Inbucket.
+   * Alternatively uses `auth.resetPasswordForEmail` which sends the actual recovery email via GoTrue/Inbucket.
    *
    * @param email - Email address of the user to send recovery to
    * @throws Error if the operation fails
@@ -633,8 +568,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
   /**
    * Delete all test auth users (emails containing 'openvaa.org' or 'test').
    *
-   * Used during teardown to clean up auth state. Removes user_roles and
-   * clears auth_user_id on candidates before deleting the auth users.
+   * Used during teardown to clean up auth state. Removes grants and clears auth_user_id on candidates before deleting the auth users.
    */
   async deleteAllTestUsers(): Promise<void> {
     const users = await this.safeListUsers();
@@ -642,10 +576,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     const testUsers = users.filter((u) => u.email && (u.email.includes('openvaa.org') || u.email.includes('test')));
 
     // Propagate per-user step errors instead of silently swallowing them.
-    // Discarding PostgREST/admin-API errors on every step lets a teardown that
-    // fails mid-loop proceed against a corrupted state and produce confusing
-    // downstream failures. Collect errors and throw at the end with an
-    // aggregated message so partial deletions complete first.
+    // Discarding PostgREST/admin-API errors on every step lets a teardown that fails mid-loop proceed against a corrupted state and produce confusing downstream failures. Collect errors and throw at the end with an aggregated message so partial deletions complete first.
     const errors: Array<{ user: string; step: string; error: unknown }> = [];
 
     for (const user of testUsers) {
@@ -666,9 +597,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     }
 
     if (errors.length > 0) {
-      // reason: collect-and-throw at end so partial deletions complete first AND
-      // the caller sees the failures (matches `unregisterCandidate`'s
-      // throw-on-error pattern in this file).
+      // reason: collect-and-throw at end so partial deletions complete first AND the caller sees the failures (matches `unregisterCandidate`'s throw-on-error pattern in this file).
       throw new Error(`deleteAllTestUsers: ${errors.length} failure(s) — ${JSON.stringify(errors)}`);
     }
   }

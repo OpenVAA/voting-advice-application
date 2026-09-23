@@ -1,32 +1,20 @@
 /**
  * @file aboutPage fixture (voter — secondary).
  *
- * Function-fixture exposing the About-page org-matching disclosure reader
- * consumed by the Phase-120 spec. Mirrors the `feedbackDialog.fixture.ts`
- * testid-anchored reader-factory shape and routes every locator through
- * `testIds` (A3 — no raw locators). Composed into the voter `views.ts` root.
+ * Function-fixture exposing the About-page org-matching disclosure reader consumed by the org-matching perm spec. Mirrors the `feedbackDialog.fixture.ts` testid-anchored reader-factory shape and routes every locator through `testIds` (A3 — no raw locators). Composed into the voter `views.ts` root.
  *
  * Surface:
  *  - goToPage(locale?)              — navigate to /about and assert it loaded.
  *  - expectPageVisible(visible?)    — canonical voter-page load-anchor pair.
- *  - expectOrgMatchingDisclosure(mode) — assert the org-matching disclosure
- *      block renders for an active org-matching mode, or is ABSENT when
- *      `mode='none'` (the disclosure renders only when
- *      `matching.organizationMatching !== 'none'`). The disclosure TEXT is
- *      locale-dependent (interpolates the matching method), so the reader
- *      asserts the disclosure block's PRESENCE/ABSENCE per mode rather than a
- *      specific string.
+ *  - expectOrgMatchingDisclosure(mode) — assert the org-matching disclosure block renders for an active org-matching mode, or is ABSENT when `mode='none'` (the disclosure renders only when `matching.organizationMatching !== 'none'`). The disclosure TEXT is locale-dependent (interpolates the matching method), so the reader asserts the disclosure block's PRESENCE/ABSENCE per mode rather than a specific string.
  *
  * **Rigidity contract**:
- *  - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
- *    `.catch(() => null)` on assertion-bearing locator interactions.
+ *  - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO `.catch(() => null)` on assertion-bearing locator interactions.
  *  - All locators are testid-anchored via `testIds` (locale-resilient).
  *
  * Surface bound to:
  *  - about/+page.svelte content root (`testIds.voter.about.content`).
- *  - about/+page.svelte org-matching disclosure block
- *    (`testIds.voter.about.organizationMatching`, rendered only when
- *    `matching.organizationMatching !== 'none'`).
+ *  - about/+page.svelte org-matching disclosure block (`testIds.voter.about.organizationMatching`, rendered only when `matching.organizationMatching !== 'none'`).
  */
 
 import { expect } from '@playwright/test';
@@ -50,8 +38,7 @@ export function createAboutPage(page: Page) {
      * Navigate to the voter About page (locale-aware) and assert it loaded.
      */
     async goToPage(locale = 'en'): Promise<void> {
-      // buildRoute returns a leading-slash path with NO locale segment; base
-      // locale 'en' is served from '/' (Paraglide), non-base locales prefixed.
+      // buildRoute returns a leading-slash path with NO locale segment; base locale 'en' is served from '/' (Paraglide), non-base locales prefixed.
       await page.goto((locale === 'en' ? '' : `/${locale}`) + buildRoute({ route: 'About', locale }) || '/');
       await expectPageVisible(true);
     },

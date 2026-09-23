@@ -1,9 +1,7 @@
 /**
  * perm-org-matching data-teardown project.
  *
- * Scoped to PREFIX='e2e-perm-orgmatch-' (matches the template's own
- * externalIdPrefix, perm-org-matching.ts:45). Bare seed-only teardown — no
- * candidate auth user to unregister (the voter slice is unauthenticated).
+ * Scoped to PREFIX='e2e-perm-orgmatch-' (matches the template's own externalIdPrefix, perm-org-matching.ts:45). Bare seed-only teardown — no candidate auth user to unregister (the voter slice is unauthenticated).
  */
 
 import { test as teardown } from '@playwright/test';

@@ -1,14 +1,12 @@
 /**
  * @file Composition root for the candidate function-fixtures.
  *
- * Sibling to `tests/tests/fixtures/voter/views.ts` (the voter / results
- * composition root) and `tests/tests/fixtures/voter/voter-journey.fixture.ts`.
+ * Sibling to `tests/tests/fixtures/voter/views.ts` (the voter / results composition root) and `tests/tests/fixtures/voter/voter-journey.fixture.ts`.
  *
  * Consumed by the candidate-journey spec (`candidate-journey.spec.ts`).
  *
  * Surface:
- *   - `test`   — Playwright test extended with 11 candidate fixtures +
- *                a `recipientEmail` option fixture wired through `emailBucket`.
+ *   - `test`   — Playwright test extended with 11 candidate fixtures + a `recipientEmail` option fixture wired through `emailBucket`.
  *   - `expect` — re-exported from @playwright/test.
  *
  * Usage (illustrative):
@@ -24,8 +22,7 @@
  * });
  * ```
  *
- * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`,
- * NO `.catch(() => null)` on assertion-bearing locator interactions.
+ * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
 import { expect, test as base } from '@playwright/test';
@@ -54,10 +51,7 @@ import type { CandidateTermsOfUsePageFixture } from './candidateTermsOfUsePage.f
 
 type CandidateJourneyFixtureOptions = {
   /**
-   * The Mailpit recipient address for the emailBucket fixture. Spec sets
-   * this via `test.use({ recipientEmail: '...' })` at file scope. Default:
-   * `'unregistered-aa@test.openvaa.local'` — matches the unregistered
-   * candidate present in the base dataset.
+   * The Mailpit recipient address for the emailBucket fixture. Spec sets this via `test.use({ recipientEmail: '...' })` at file scope. Default: `'unregistered-aa@test.openvaa.local'` — matches the unregistered candidate present in the base dataset.
    */
   recipientEmail: string;
 };
