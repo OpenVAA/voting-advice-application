@@ -57,20 +57,31 @@ Multilingual features are only available if the `locales` store contains more th
 -->
 
 <script lang="ts">
-  import { isLocalizedString } from '@openvaa/app-shared';
+  import { isLocalizedString, log } from '@openvaa/app-shared';
   import { isEmptyValue } from '@openvaa/core';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Icon } from '$lib/components/icon';
-  import { Loading } from '$lib/components/loading';
   import { getComponentContext } from '$lib/contexts/component';
-  import { assertTranslationKey } from '$lib/i18n/utils';
   import { concatClass, getUUID } from '$lib/utils/components';
   import { checkUrl } from '$lib/utils/links';
-  import { logDebugError } from '$lib/utils/logger';
-  import { iconBadgeClass, infoClass, joinGap, outsideLabelClass } from './shared';
+  import ImagePart from './parts/ImagePart.svelte';
+  import MultilingualTextPart from './parts/MultilingualTextPart.svelte';
+  import MultipleTextPart from './parts/MultipleTextPart.svelte';
+  import SelectMultiplePart from './parts/SelectMultiplePart.svelte';
+  import {
+    iconBadgeClass,
+    infoClass,
+    inputAndIconContainerClass,
+    inputClass,
+    inputContainerClass,
+    inputLabelClass,
+    outsideLabelClass,
+    selectClass,
+    textareaClass
+  } from './shared';
   import type { Id } from '@openvaa/core';
-  import type { AnyChoice, Image } from '@openvaa/data';
+  import type { AnyChoice } from '@openvaa/data';
   import type { TranslationsPayload } from '$lib/i18n/translations';
   import type { TranslationKey } from '$types';
   import type { InputProps } from './Input.type';
@@ -92,6 +103,8 @@ Multilingual features are only available if the `locales` store contains more th
     disabled,
     maxFilesize = 20 * 1024 * 1024,
     multilingualInfo,
+    minItems,
+    maxItems,
     ...restProps
   }: InputProps = $props();
 
@@ -115,8 +128,10 @@ Multilingual features are only available if the `locales` store contains more th
 
   const maxFilesizeInMB = $derived(Math.floor((maxFilesize ?? 0) / (1024 * 1024)));
   const multilingual = $derived(type.endsWith('-multilingual'));
+  /** Whether the multi-text row list is rendered instead of a single field. */
+  const isMultipleText = $derived(type.startsWith('multiple-text'));
   /** Whether the label is above the field or inside it */
-  const isLabelOutside = $derived(multilingual || type.startsWith('textarea'));
+  const isLabelOutside = $derived(multilingual || isMultipleText || type.startsWith('textarea'));
 
   /*** Extend info — derived so the prop isn't mutated. */
   const effectiveMultilingualInfo = $derived(
@@ -176,6 +191,11 @@ Multilingual features are only available if the `locales` store contains more th
     if (type === 'text' || type === 'textarea' || type === 'url' || type === 'email') {
       value ??= '';
     }
+    // Multi-text values are collections; the row list pads them to its own floor.
+    if (isMultipleText) {
+      if (!Array.isArray(value)) value = [];
+      return;
+    }
     // Initialize the value for an empty `LocalizedString`
     if (multilingual && !isLocalizedString(value)) {
       value = typeof value === 'string' ? { [currentLocale]: value } : {};
@@ -184,47 +204,20 @@ Multilingual features are only available if the `locales` store contains more th
     if (type.startsWith('select') && options) {
       if (type === 'select-multiple') {
         if (!Array.isArray(value)) value = [];
-        else value = value.filter((v) => options.some((o) => o.id === v));
+        // Narrowed by hand: `Array.isArray` no longer pins the element type now that the union carries a second array-valued kind, and this branch is reached only for `select-multiple`.
+        else value = (value as Array<Id>).filter((v) => options.some((o) => o.id === v));
       } else {
         if (!value || !options.some((o) => o.id === value)) value = undefined;
       }
     }
   }
 
-  /**
-   * Gets the subvalue of `value` for `locale`. Used to ensure typing.
-   */
-  function getLocalizedValue(locale: string): string {
-    return isLocalizedString(value) ? ((value as LocalizedString)[locale] ?? '') : '';
-  }
-
-  /**
-   * Gets the url of the image.
-   */
-  function getImageUrl(value: InputProps['value']): string {
-    return value && typeof value === 'object' && 'url' in value ? (value as Image).url : '';
-  }
-
   ////////////////////////////////////////////////////////////////////
   // Keyboard navigation
   ////////////////////////////////////////////////////////////////////
 
-  /** The input is hidden and triggered when the image preview or custom button is pressed */
-  let fileInput: HTMLInputElement | undefined = $state();
-
-  /**
-   * Open the file dialog when the label or image label when `Space` or `Enter` is pressed.
-   */
-  function handleFileInputLabelKeydown(event: KeyboardEvent): void {
-    if (event.code !== 'Space' && event.code !== 'Enter') return;
-    event.preventDefault(); // Prevent default behavior (e.g., scrolling the page)
-    fileInput?.click();
-  }
-
-  // bind: migrate — `mainInputs` must be $state in Svelte 5 because
-  // `bind:this={mainInputs[i]}` mutates a property on it. A plain array
-  // triggers `binding_property_non_reactive`. Mirrors the earlier fix (see phase 64)
-  // at QuestionChoices.svelte:122-124.
+  // `mainInputs` must be $state in Svelte 5 because `bind:this={mainInputs[i]}` mutates a property on it; a plain array triggers `binding_property_non_reactive`.
+  // QuestionChoices.svelte declares its `inputs` the same way and for the same reason.
   const mainInputs: Array<HTMLElement> = $state([]);
   /**
    * Return focus to the main input after a multilingual item has been expanded or an option has been deleted in select-multiple.
@@ -254,7 +247,7 @@ Multilingual features are only available if the `locales` store contains more th
     // Any multilingual inputs
     if (multilingual) {
       if (locale) (value as LocalizedString)[locale] = currentTarget.value;
-      else logDebugError('Multilingual handleChange called without locale!');
+      else log.debug('Multilingual handleChange called without locale!');
 
       // Boolean
     } else if (currentTarget instanceof HTMLInputElement && currentTarget.type === 'checkbox') {
@@ -328,6 +321,15 @@ Multilingual features are only available if the `locales` store contains more th
   }
 
   /**
+   * Called by the multi-text row list, which owns its own rows and emits the whole collection.
+   */
+  function handleMultipleTextChange(next: Array<string> | Array<LocalizedString>): void {
+    value = next;
+    error = undefined;
+    onChange?.(value);
+  }
+
+  /**
    * Called when an option is deleted in `select-multiple`
    */
   function handleDeleteOption(id: Id): void {
@@ -353,28 +355,7 @@ Multilingual features are only available if the `locales` store contains more th
   // let saveInterval: NodeJS.Timeout;
 
   // if (type.startsWith('textarea')) {
-  //   onMount(() => {
-  //     saveInterval = setInterval(() => {
-  //       // Handle value changes
-  //     }, SAVE_INTERVAL_MS);
-  //   });
-  //   onDestroy(() => clearInterval(saveInterval));
-  // };
-
-  ////////////////////////////////////////////////////////////////////
-  // Styling
-  ////////////////////////////////////////////////////////////////////
-
-  const inputContainerClass =
-    'flex min-h-touch items-center justify-between gap-2 overflow-hidden rounded-lg bg-[var(--inputBgColor)]';
-  const inputLabelClass = 'label-sm label pointer-events-none min-w-[4rem] mx-md my-2 px-0 text-secondary';
-  const inputAndIconContainerClass = 'flex grow justify-end items-center pr-8';
-  const inputClass =
-    'input input-sm input-ghost grow justify-end px-0 text-end w-full disabled:border-none disabled:bg-[var(--inputBgColor)] disabled:text-neutral';
-  const selectClass =
-    'select select-sm grow text-end w-full !bg-transparent disabled:border-none disabled:bg-[var(--inputBgColor)]';
-  const textareaClass =
-    'textarea bg-[var(--inputBgColor)] resize-none px-md py-sm !outline-none disabled:bg-[var(--inputBgColor)] disabled:text-neutral';
+  //   onMount(() => { saveInterval = setInterval(() => { // Handle value changes }, SAVE_INTERVAL_MS); }); onDestroy(() => clearInterval(saveInterval)); };
 </script>
 
 <!-- Add containarProps to the outer container and set styles for it -->
@@ -398,68 +379,33 @@ Multilingual features are only available if the `locales` store contains more th
     </div>
   {/if}
 
-  <!-- 1. Multilingual text inputs and textareas -->
-  {#if multilingual}
-    <div class="join join-vertical items-stretch {joinGap}">
-      <!-- Show the field for the current locale and for all others, if translations are visible -->
-      {#each [currentLocale, ...locales.filter((l) => l !== currentLocale)] as locale, i}
-        {#if locale === currentLocale || isTranslationsVisible}
-          {#if type === 'textarea-multilingual'}
-            <div class="relative flex flex-col items-stretch">
-              <!-- The language label inside the field -->
-              <!-- svelte-ignore a11y_label_has_associated_control -->
-              <label
-                id="{id}-label-{locale}"
-                class="small-label left-md top-sm text-secondary absolute transition-opacity"
-                class:opacity-0={!isTranslationsVisible}>{t(assertTranslationKey(`lang.${locale}`))}</label>
-              <!-- The actual textarea
-                   NB. Join does not work it, so we do it by hand -->
-              <!-- bind: keep — Pattern 1 ($state target for bind:this; mainInputs is $state([]) per declaration above). bind: placed AFTER value/class for symmetry with the reorder revert (see phase 65). -->
-              <textarea
-                id="{id}-{locale}"
-                aria-labelledby="{id}-label {id}-label-{locale}"
-                {placeholder}
-                disabled={isDisabled}
-                rows="4"
-                {...concatClass(restProps, `${textareaClass} transition-[padding]`)}
-                class:pt-24={isTranslationsVisible}
-                class:rounded-t-none={isTranslationsVisible && i > 0}
-                class:rounded-b-none={isTranslationsVisible && i !== locales.length - 1}
-                bind:this={mainInputs[i]}
-                onchange={(e) => handleChange(e, locale)}
-                value={getLocalizedValue(locale)}></textarea>
-            </div>
-          {:else if type === 'text-multilingual'}
-            <div class="{inputContainerClass} join-item">
-              <!-- The language label inside the field -->
-              <!-- svelte-ignore a11y_label_has_associated_control -->
-              <label
-                id="{id}-label-{locale}"
-                class="{inputLabelClass} transition-opacity"
-                class:opacity-0={!isTranslationsVisible}>{t(assertTranslationKey(`lang.${locale}`))}</label>
-              <div class={inputAndIconContainerClass}>
-                <!-- The actual text input -->
-                <!-- bind: keep — Pattern 1 ($state target for bind:this; mainInputs is $state([]) per declaration above). bind: placed AFTER type/value for symmetry with the reorder revert (see phase 65). -->
-                <input
-                  type="text"
-                  id="{id}-{locale}"
-                  aria-labelledby="{id}-label {id}-label-{locale}"
-                  {placeholder}
-                  disabled={isDisabled}
-                  {...concatClass(restProps, inputClass)}
-                  bind:this={mainInputs[i]}
-                  onchange={(e) => handleChange(e, locale)}
-                  value={getLocalizedValue(locale)} />
-              </div>
-            </div>
-          {:else}
-            <ErrorMessage inline message={t('error.general')} />
-          {/if}
-        {/if}
-      {/each}
-    </div>
+  <!-- 1. The multi-text row list -->
+  {#if isMultipleText}
+    <MultipleTextPart
+      {id}
+      value={value as Array<string> | Array<LocalizedString> | null | undefined}
+      {multilingual}
+      {isTranslationsVisible}
+      disabled={isDisabled}
+      {minItems}
+      {maxItems}
+      {mainInputs}
+      onChange={handleMultipleTextChange} />
 
-    <!-- 2. Single-language textareas -->
+    <!-- 2. Multilingual text inputs and textareas -->
+  {:else if multilingual}
+    <MultilingualTextPart
+      {id}
+      type={type as 'text-multilingual' | 'textarea-multilingual'}
+      {value}
+      {placeholder}
+      disabled={isDisabled}
+      {isTranslationsVisible}
+      {mainInputs}
+      {restProps}
+      onChange={handleChange} />
+
+    <!-- 3. Single-language textareas -->
   {:else if type === 'textarea'}
     <div class="relative flex flex-col items-stretch">
       <!-- The actual textarea -->
@@ -476,117 +422,24 @@ Multilingual features are only available if the `locales` store contains more th
 
     <!-- 4. Select multiple -->
   {:else if type === 'select-multiple'}
-    <div class="join join-vertical items-stretch {joinGap}">
-      <div class="{inputContainerClass} join-item">
-        <label class={inputLabelClass} for={id}>{label}</label>
-        <div class={inputAndIconContainerClass}>
-          {#if options?.length}
-            <!-- bind: keep — Pattern 1 ($state target for bind:this; mainInputs is $state([]) per declaration above). bind: placed AFTER class= for symmetry with the reorder revert (see phase 65). -->
-            <select
-              {id}
-              disabled={isDisabled}
-              {...concatClass(restProps, selectClass)}
-              bind:this={mainInputs[0]}
-              onchange={handleChange}>
-              <option disabled selected
-                >{placeholder ||
-                  (selectedOptions.length > 0
-                    ? selectedOptions.length === options.length
-                      ? t('components.input.allSelected')
-                      : t('components.input.selectAnother')
-                    : t('components.input.selectFirst'))}</option>
-              {#each unselectedOptions as option}
-                <option value={option.id}>{option.label}</option>
-              {/each}
-            </select>
-          {:else}
-            <ErrorMessage inline message={t('error.general')} />
-          {/if}
-          {#if showRequired}
-            <div class="required-badge">
-              <Icon name="required" class={iconBadgeClass} /><span>{t('common.required')}</span>
-            </div>
-          {/if}
-          {#if locked}
-            <div class="locked-badge">
-              <Icon name="locked" class={iconBadgeClass} /><span>{t('common.locked')}</span>
-            </div>
-          {/if}
-        </div>
-      </div>
+    <SelectMultiplePart
+      {id}
+      {label}
+      {placeholder}
+      disabled={isDisabled}
+      {locked}
+      {showRequired}
+      {options}
+      {selectedOptions}
+      {unselectedOptions}
+      {mainInputs}
+      {restProps}
+      onChange={handleChange}
+      onDeleteOption={handleDeleteOption} />
 
-      <!-- Selected options -->
-      {#each selectedOptions as option}
-        {@const buttonLabel = t('components.input.deleteOption', { option: option.label })}
-        <div class="{inputContainerClass} join-item !justify-end">
-          <span class={inputLabelClass}>{option.label}</span>
-          <div class="{inputAndIconContainerClass} grow-0">
-            {#if !locked}
-              <button type="button" title={buttonLabel} onclick={() => handleDeleteOption(option.id)}>
-                <span class="sr-only">{buttonLabel}, {label}</span>
-                <Icon name="close" class={iconBadgeClass} />
-              </button>
-            {/if}
-          </div>
-        </div>
-      {/each}
-    </div>
-
-    <!-- 4. Image input -->
+    <!-- 5. Image input -->
   {:else if type === 'image'}
-    {@const url = getImageUrl(value)}
-    <div class="{inputContainerClass} vaa-group-join-item">
-      <!-- svelte-ignore a11y_label_has_associated_control -->
-      <label id="{id}-label" class={inputLabelClass}>{label}</label>
-      <div class={inputAndIconContainerClass}>
-        <button
-          type="button"
-          id="{id}-image-label"
-          class="text-primary flex h-60 justify-stretch"
-          class:cursor-pointer={!isDisabled}
-          disabled={isDisabled}
-          onclick={() => fileInput?.click()}
-          onkeydown={handleFileInputLabelKeydown}>
-          {#if isLoading}
-            <Loading inline />
-          {:else if url}
-            <div class="flex w-60 items-center justify-center overflow-hidden {locked ? 'mr-8' : '-mr-8'}">
-              <img src={url} alt={label} class="h-full w-full object-cover" class:rounded-r-lg={!locked} />
-            </div>
-            <span class="sr-only">{t('components.input.changeImage')}</span>
-          {:else if !isDisabled}
-            <div class="gap-sm flex items-center">
-              {t('components.input.addImage')}
-              <Icon name="photo" />
-            </div>
-          {:else}
-            <div class="text-secondary me-8 flex items-center">
-              {t('components.input.noImage')}
-            </div>
-          {/if}
-        </button>
-        <!-- bind: keep — fileInput is $state(); single ref read in event handlers -->
-        <input
-          bind:this={fileInput}
-          type="file"
-          {id}
-          aria-labelledby="{id}-label {id}-image-label"
-          disabled={isDisabled}
-          class="hidden"
-          onchange={handleChange}
-          accept="image/jpeg, image/png, image/gif" />
-        {#if showRequired}
-          <div class="required-badge">
-            <Icon name="required" class={iconBadgeClass} /><span>{t('common.required')}</span>
-          </div>
-        {/if}
-        {#if locked}
-          <div class="locked-badge">
-            <Icon name="locked" class={iconBadgeClass} /><span>{t('common.locked')}</span>
-          </div>
-        {/if}
-      </div>
-    </div>
+    <ImagePart {id} {label} {value} {isLoading} disabled={isDisabled} {locked} {showRequired} onChange={handleChange} />
 
     <!-- 6. Other single-row inputs -->
   {:else}

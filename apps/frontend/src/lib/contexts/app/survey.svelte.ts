@@ -1,4 +1,4 @@
-import type { ReactiveHandle } from './reactiveHandle.type';
+import type { ReactiveHandle } from '../utils/reactiveHandle.type';
 
 /**
  * A link to the user survey, including the session ID, or `undefined` if the survey is not configured.

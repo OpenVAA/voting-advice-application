@@ -1,5 +1,5 @@
+import { log } from '@openvaa/app-shared';
 import { deepFreeze } from '$lib/utils/freeze';
-import { logDebugError } from '$lib/utils/logger';
 import { localStorageState } from '../utils/persistedState.svelte';
 import type { Answer, Answers } from '@openvaa/data';
 import type { Frozen } from '$lib/utils/freeze';
@@ -41,7 +41,7 @@ class AnswerStateImpl implements AnswerState {
           value: typeof value === 'number' || typeof value === 'boolean' ? value : `${value}`
         });
       }
-      logDebugError(`answerState.setAnswer(${questionId}, ${value})`);
+      log.debug(`answerState.setAnswer(${questionId}, ${value})`);
       return deepFreeze(updated);
     });
   };
@@ -51,7 +51,7 @@ class AnswerStateImpl implements AnswerState {
   reset = (): void => {
     this.#store.set(Object.freeze({}));
     this.#startEvent('answer_resetAll');
-    logDebugError('answerState.reset()');
+    log.debug('answerState.reset()');
   };
 }
 

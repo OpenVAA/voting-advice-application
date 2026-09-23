@@ -1,12 +1,22 @@
+import {
+  dynamicSettings,
+  getLocalized,
+  staticSettings,
+  StoredCustomizationSchema,
+  StoredSettingsSchema
+} from '@openvaa/app-shared';
 import { ENTITY_TYPE } from '@openvaa/data';
 import { UniversalDataProvider } from '$lib/api/base/universalDataProvider';
 import { parseAnswers } from '$lib/api/utils/parseAnswers';
 import { constants } from '$lib/utils/constants';
 import { supabaseAdapterMixin } from '../supabaseAdapter';
-import { getLocalized } from '../utils/getLocalized';
+import { convertFilterValue } from '../utils/convertFilterValue';
+import { fetchAllRows } from '../utils/fetchAllRows';
+import { answersOf, imageOf, parseAnswersColumn, parseImageColumn } from '../utils/parseJsonbColumn';
+import { parseWithPartialPreserve } from '../utils/parseOutcome';
 import { parseStoredImage } from '../utils/storageUrl';
 import { toDataObject } from '../utils/toDataObject';
-import type { DynamicSettings } from '@openvaa/app-shared';
+import type { LocalizedChoice, StoredCustomization, StoredSettings } from '@openvaa/app-shared';
 import type {
   AnyEntityVariantData,
   AnyNominationVariantPublicData,
@@ -17,9 +27,8 @@ import type {
   ElectionData,
   QuestionCategoryData
 } from '@openvaa/data';
-import type { Json } from '@openvaa/supabase-types';
+import type { Json, Tables } from '@openvaa/supabase-types';
 import type { DPDataType } from '$lib/api/base/dataTypes';
-import type { LocalizedAnswers } from '$lib/api/base/dataWriter.type';
 import type {
   GetAppCustomizationOptions,
   GetConstituenciesOptions,
@@ -31,14 +40,87 @@ import type {
 } from '$lib/api/base/getDataOptions.type';
 import type { AppCustomization } from '$lib/contexts/app';
 import type { TranslationKey } from '$types';
-import type { StoredImage } from '../utils/storageUrl';
+import type { SupabaseAdapterConfig } from '../supabaseAdapter.type';
 import type { InternalFlatNomination } from './supabaseDataProvider.type';
+
+type QuestionCategoryRow = Tables<'question_categories'>;
+type QuestionRow = Tables<'questions'>;
+
+/**
+ * The single jsonb value the `get_questions` RPC returns. Both keys are always arrays — `[]` rather than `null` when empty — and each entry is a raw table row, because the function aggregates `to_jsonb(qc)` / `to_jsonb(q)` and therefore emits the same snake_case columns a `select('*')` returned.
+ */
+type GetQuestionsPayload = {
+  categories: Array<QuestionCategoryRow>;
+  questions: Array<QuestionRow>;
+};
+
+/**
+ * Order merged rows the way `get_questions` orders each individual call's result: by `sort_order` with nulls last, then by id. A single-call read already arrives in this order; the fan-out's union has to reapply it so a multi-election read is not served in call order.
+ */
+function bySortOrderThenId(
+  a: { id: string; sort_order: number | null },
+  b: { id: string; sort_order: number | null }
+): number {
+  if (a.sort_order !== b.sort_order) {
+    if (a.sort_order == null) return 1;
+    if (b.sort_order == null) return -1;
+    return a.sort_order - b.sort_order;
+  }
+  return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+}
+
+/**
+ * The event name a customization parse failure is reported under.
+ *
+ * A CONSTANT, never an interpolation: a downstream sink keys events on a stable message and every varying value belongs in the attribute bag instead (decision **C4** NOTE 1). It therefore has to be right once — changing it later is a breaking change for any sink that keyed on it.
+ *
+ * It deliberately makes no claim about what was or was not kept. Under decision **A2** the members zod flagged are removed and the remainder is re-parsed, so how much survived varies per value; the `preserved` attribute on the record carries that, and the message stays an event name.
+ */
+const CUSTOMIZATION_PARSE_FAILURE_MESSAGE = 'A stored app customization did not match its schema.';
+
+/**
+ * The event name a settings parse failure is reported under.
+ *
+ * Same contract as {@link CUSTOMIZATION_PARSE_FAILURE_MESSAGE}. The message this replaced said the read was falling back to empty settings, which under partial preserve is usually false — the members zod accepts are kept and only their malformed siblings go.
+ */
+const SETTINGS_PARSE_FAILURE_MESSAGE = 'Stored application settings did not match their schema.';
+
+/**
+ * Validate the stored `app_settings.customization` value, keeping the members zod accepts when one of the others is malformed.
+ *
+ * A plain whole-object `safeParse` would discard the publisher name over one bad image path, which is a visible regression for a column that is pure presentation. The retry that avoids this used to be implemented here, for this schema alone; decision **A2(a)** moved it into `parseWithPartialPreserve`, so this function is now a CALLER of the shared seam and every other read path inherits the same behaviour.
+ *
+ * Delegating also closed the hole this docstring used to record as a known limitation. zod reports an unrecognised TOP-LEVEL key at the empty path, so a rejected-member derivation that reads `issue.path[0]` names nothing and the retry re-parses an unchanged value; the shared helper reads the refused names off `issue.keys` instead, so such a key is dropped BY NAME and its valid siblings survive (decision **A2** NOTE, fact 3). Ledger row 2 measures that closure, blind and then catching.
+ *
+ * The failure branch never throws: the last resort is the empty customization `_getAppCustomization` already returns when `maybeSingle` finds no row. The record is emitted by the shared helper at `error` (decision **C5(b)**) and carries the zod issue PATHS and the refused KEY NAMES, never the offending value (T-157-17).
+ * @param raw - The unvalidated JSONB value read from the column.
+ * @returns The stored customization, with any members the schema rejected removed.
+ */
+function parseStoredCustomization(raw: Json | undefined): StoredCustomization {
+  const outcome = parseWithPartialPreserve<StoredCustomization>(
+    StoredCustomizationSchema,
+    raw,
+    { column: 'app_settings.customization' },
+    CUSTOMIZATION_PARSE_FAILURE_MESSAGE
+  );
+  // `absent` and a malformed value with nothing preserved both arrive here as no value, and both answer with the empty customization the no-rows branch returns. The distinction is not lost by the collapse — it was already reported on the record, and `_getAppCustomization` returns `AppCustomization`, which has no third state to carry it into.
+  return outcome.value ?? {};
+}
 
 /**
  * Supabase implementation of the DataProvider.
  * Implements read methods that query Supabase PostgREST and transform the raw database rows into the domain types expected by DataRoot.
  */
 export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProvider) {
+  /**
+   * @param config - This request's own client, its `fetch` and the locales it extracts JSONB in.
+   *
+   * Declared explicitly rather than inherited: the mixin's construct signature erases its parameter types, so without this signature an adapter built from any argument at all would typecheck.
+   */
+  constructor(config: SupabaseAdapterConfig) {
+    super(config);
+  }
+
   /**
    * Fetch application settings from the `app_settings` table.
    *
@@ -57,35 +139,56 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
    * Notification title/content fields are localized before return, which is the one way the returned value diverges from the stored one.
    */
   protected async _getAppSettings(options?: GetDataOptionsBase): Promise<DPDataType['appSettings']> {
-    const { data, error } = await this.supabase.from('app_settings').select('settings').limit(1).single();
+    const { data, error } = await this.scopedFrom('app_settings').select('settings').maybeSingle();
 
-    if (error) {
-      if (error.code === 'PGRST116') return {}; // No rows -- return empty settings
-      throw new Error(`getAppSettings: ${error.message}`);
+    if (error) throw new Error(`getAppSettings: ${error.message}`);
+
+    if (!data) {
+      // Zero rows: only the project's own openness decides what that means, never the missing row itself.
+      const { data: open, error: rpcError } = await this.supabase.rpc('project_open_for_voters', {
+        p_project_id: this.projectId
+      });
+      if (rpcError) throw new Error(`getAppSettings: ${rpcError.message}`);
+      if (open === true) return {};
+      if (open === false) {
+        // The WHOLE `access` object is returned, the shipped defaults with `voterApp` overridden, because the app context's `mergeAppSettings` replaces settings by root key: a bare `{ voterApp: false }` would drop `candidateApp` and put the candidate app into its own maintenance page (observed in 162.1-07's first green run).
+        // reason: class 4 — the same shallow-partial bridge as the final return below.
+        return { access: { ...dynamicSettings.access, voterApp: false } } as DPDataType['appSettings'];
+      }
+      throw new Error('getAppSettings: project_open_for_voters returned a non-boolean');
     }
 
-    const settings = (data?.settings ?? {}) as Record<string, unknown>;
+    const outcome = parseWithPartialPreserve<StoredSettings>(
+      StoredSettingsSchema,
+      data?.settings,
+      { column: 'app_settings.settings' },
+      SETTINGS_PARSE_FAILURE_MESSAGE
+    );
+
+    // The outcome is consumed HERE, inside the method that produced it. `absent` — the column held nothing — and a malformed value with nothing preserved both continue on the empty stored value, which is also what an open project with no settings row returns above; the helper already emitted the record for the second of those and, correctly, none for the first.
+    const stored: StoredSettings = outcome.value ?? {};
+    const settings: Record<string, unknown> = { ...stored };
     const locale = options?.locale ?? this.locale;
 
     // Localize notification title and content fields.
     // The schema makes `notifications` optional rather than provably present, so this runtime guard is still doing work after the parse and is deliberately kept.
     if (settings.notifications && typeof settings.notifications === 'object') {
-      const notifications = { ...(settings.notifications as Record<string, unknown>) };
-      for (const key of ['candidateApp', 'voterApp']) {
-        const notif = notifications[key];
+      const notifications: Record<string, unknown> = { ...stored.notifications };
+      for (const key of ['candidateApp', 'voterApp'] as const) {
+        const notif = stored.notifications?.[key];
         if (notif && typeof notif === 'object') {
-          const n = notif as Record<string, unknown>;
           notifications[key] = {
-            ...n,
-            title: getLocalized(n.title as Record<string, string> | null, locale, this.defaultLocale),
-            content: getLocalized(n.content as Record<string, string> | null, locale, this.defaultLocale)
+            ...notif,
+            title: getLocalized(notif.title, locale, this.defaultLocale),
+            content: getLocalized(notif.content, locale, this.defaultLocale)
           };
         }
       }
       settings.notifications = notifications;
     }
 
-    return settings as Partial<DynamicSettings>;
+    // reason: class 4 — the declared return type is wrong in two ways this plan does not own. `Partial<DynamicSettings>` is a SHALLOW partial, but the column is a deep partial merged over the shipped defaults, and the localisation above replaces `notifications.*.title` and `.content` with plain strings that `NotificationData` types as `LocalizedString`. Aligning the declared type is an app-wide change to a published contract, so the divergence is bridged here and named rather than hidden.
+    return settings as DPDataType['appSettings'];
   }
 
   /**
@@ -95,38 +198,32 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
    * Every field below then DERIVES the application shape from the validated stored one: string fields are localized, storage image paths become absolute URLs, and translation overrides and FAQ entries are localized.
    */
   protected async _getAppCustomization(options?: GetAppCustomizationOptions): Promise<DPDataType['appCustomization']> {
-    const { data, error } = await this.supabase.from('app_settings').select('customization').limit(1).single();
+    const { data, error } = await this.scopedFrom('app_settings').select('customization').maybeSingle();
 
-    if (error) {
-      if (error.code === 'PGRST116') return {} as AppCustomization;
-      throw new Error(`getAppCustomization: ${error.message}`);
-    }
+    if (error) throw new Error(`getAppCustomization: ${error.message}`);
+    if (!data) return {};
 
-    const raw = (data?.customization ?? {}) as Record<string, unknown>;
+    // The raw value is handed over unsubstituted: a `null` column is `absent` rather than an empty object that happens to parse, which is the distinction requirement **D8** exists for and the reason no record is emitted for it.
+    const stored = parseStoredCustomization(data?.customization);
     const locale = options?.locale ?? this.locale;
     const supabaseUrl = constants.PUBLIC_SUPABASE_URL;
 
     const result: AppCustomization = {};
 
     // Localize string fields
-    if (raw.publisherName) {
-      result.publisherName =
-        getLocalized(raw.publisherName as Record<string, string>, locale, this.defaultLocale) ?? undefined;
+    if (stored.publisherName) {
+      result.publisherName = getLocalized(stored.publisherName, locale, this.defaultLocale) ?? undefined;
     }
 
-    // Convert image storage paths to URLs
-    // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
-    result.publisherLogo = parseStoredImage(raw.publisherLogo as Json as unknown as StoredImage | null, supabaseUrl);
-    // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
-    result.poster = parseStoredImage(raw.poster as Json as unknown as StoredImage | null, supabaseUrl);
-    // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
-    result.candPoster = parseStoredImage(raw.candPoster as Json as unknown as StoredImage | null, supabaseUrl);
+    // Convert image storage paths to URLs. The images are already validated members of the parsed value, so `parseStoredImage` receives its declared type with no cast.
+    result.publisherLogo = parseStoredImage(stored.publisherLogo, supabaseUrl);
+    result.poster = parseStoredImage(stored.poster, supabaseUrl);
+    result.candPoster = parseStoredImage(stored.candPoster, supabaseUrl);
 
     // Localize translation overrides (each value is a LocalizedString)
-    if (raw.translationOverrides && typeof raw.translationOverrides === 'object') {
-      const overrides = raw.translationOverrides as Record<string, Record<string, string>>;
+    if (stored.translationOverrides) {
       const localized: Record<string, string> = {};
-      for (const [key, val] of Object.entries(overrides)) {
+      for (const [key, val] of Object.entries(stored.translationOverrides)) {
         const resolved = getLocalized(val, locale, this.defaultLocale);
         if (resolved != null) localized[key] = resolved;
       }
@@ -135,10 +232,10 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     }
 
     // Localize FAQ entries
-    if (Array.isArray(raw.candidateAppFAQ)) {
-      result.candidateAppFAQ = raw.candidateAppFAQ.map((faq: Record<string, unknown>) => ({
-        question: getLocalized(faq.question as Record<string, string> | null, locale, this.defaultLocale) ?? '',
-        answer: getLocalized(faq.answer as Record<string, string> | null, locale, this.defaultLocale) ?? ''
+    if (stored.candidateAppFAQ) {
+      result.candidateAppFAQ = stored.candidateAppFAQ.map((faq) => ({
+        question: getLocalized(faq.question, locale, this.defaultLocale) ?? '',
+        answer: getLocalized(faq.answer, locale, this.defaultLocale) ?? ''
       }));
     }
 
@@ -150,30 +247,32 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
    * Maps DB columns to ElectionData properties (date, round, subtype).
    */
   protected async _getElectionData(options?: GetElectionsOptions): Promise<DPDataType['elections']> {
-    let query = this.supabase
-      .from('elections')
-      .select('*, election_constituency_groups(constituency_group_id)')
-      .order('sort_order');
-
-    if (options?.id) {
-      query = Array.isArray(options.id) ? query.in('id', options.id) : query.eq('id', options.id);
-    }
-
-    const { data, error } = await query;
-    if (error) throw new Error(`getElectionData: ${error.message}`);
+    const data = await fetchAllRows(
+      (from, to) => {
+        let query = this.scopedFrom('elections')
+          .select('*, election_constituency_groups(constituency_group_id)')
+          .order('sort_order')
+          .order('id');
+        if (options?.id) {
+          query = Array.isArray(options.id) ? query.in('id', options.id) : query.eq('id', options.id);
+        }
+        return query.range(from, to);
+      },
+      { pageSize: staticSettings.dataAdapter.pageSize, label: 'getElectionData' }
+    );
 
     const locale = options?.locale ?? this.locale;
     const supabaseUrl = constants.PUBLIC_SUPABASE_URL;
 
-    return (data ?? []).map((row) => {
+    return data.map((row) => {
       const obj = toDataObject(row as Record<string, unknown>, locale, this.defaultLocale);
       return {
         ...obj,
         date: row.election_date ? String(row.election_date) : undefined,
         round: row.current_round ?? undefined,
-        subtype: row.election_type ?? row.subtype ?? undefined,
-        // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
-        image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl),
+        // ONE source, deliberately. This term used to read a second column first and fall back to this one. 162-07 repurposes that column to carry the nomination shape (D-16), so leaving the term in place would have made this property silently start carrying nomination shapes with nothing recording that its meaning had changed — the fail-open outcome D-16 exists to prevent. Q2 = (A), ratified 2026-09-16: the term comes out, and the property is fed by the column of the same name and nothing else. The two columns have always been separate axes; only this line conflated them.
+        subtype: row.subtype ?? undefined,
+        image: imageOf(parseImageColumn(row.image, supabaseUrl, { column: 'elections.image', id: row.id })),
         constituencyGroupIds: (
           (row.election_constituency_groups as Array<{ constituency_group_id: string }>) ?? []
         ).map((jt) => jt.constituency_group_id)
@@ -190,24 +289,25 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     const supabaseUrl = constants.PUBLIC_SUPABASE_URL;
 
     // 1. Fetch constituency groups with their constituency join rows
-    let groupQuery = this.supabase
-      .from('constituency_groups')
-      .select('*, constituency_group_constituencies(constituency_id)')
-      .order('sort_order');
+    const groupData = await fetchAllRows(
+      (from, to) => {
+        let groupQuery = this.scopedFrom('constituency_groups')
+          .select('*, constituency_group_constituencies(constituency_id)')
+          .order('sort_order')
+          .order('id');
+        if (options?.id) {
+          groupQuery = Array.isArray(options.id) ? groupQuery.in('id', options.id) : groupQuery.eq('id', options.id);
+        }
+        return groupQuery.range(from, to);
+      },
+      { pageSize: staticSettings.dataAdapter.pageSize, label: 'getConstituencyData (groups)' }
+    );
 
-    if (options?.id) {
-      groupQuery = Array.isArray(options.id) ? groupQuery.in('id', options.id) : groupQuery.eq('id', options.id);
-    }
-
-    const { data: groupData, error: groupError } = await groupQuery;
-    if (groupError) throw new Error(`getConstituencyData (groups): ${groupError.message}`);
-
-    const groups = (groupData ?? []).map((row) => {
+    const groups = groupData.map((row) => {
       const obj = toDataObject(row as Record<string, unknown>, locale, this.defaultLocale);
       return {
         ...obj,
-        // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
-        image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl),
+        image: imageOf(parseImageColumn(row.image, supabaseUrl, { column: 'constituency_groups.image', id: row.id })),
         constituencyIds: ((row.constituency_group_constituencies as Array<{ constituency_id: string }>) ?? []).map(
           (jt) => jt.constituency_id
         )
@@ -215,14 +315,12 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     });
 
     // 2. Fetch all constituencies (not filtered by id -- may belong to groups via parent chains)
-    const { data: constData, error: constError } = await this.supabase
-      .from('constituencies')
-      .select('*')
-      .order('sort_order');
+    const constData = await fetchAllRows(
+      (from, to) => this.scopedFrom('constituencies').select('*').order('sort_order').order('id').range(from, to),
+      { pageSize: staticSettings.dataAdapter.pageSize, label: 'getConstituencyData (constituencies)' }
+    );
 
-    if (constError) throw new Error(`getConstituencyData (constituencies): ${constError.message}`);
-
-    const constituencies = (constData ?? []).map((row) => {
+    const constituencies = constData.map((row) => {
       const obj = toDataObject(row as Record<string, unknown>, locale, this.defaultLocale);
       // Keywords: localize then split by comma+optional whitespace.
       // reason: class 1 residual — a typed-JSONB read with no schema. `157-02` wrote schemas for the four columns criterion 1 names plus the send-email payload; `constituencies.keywords` is a bare locale object and was not among them, so it is asserted rather than validated until one exists.
@@ -231,8 +329,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
       const keywords = localizedKeywords ? localizedKeywords.split(/,\s*/).filter(Boolean) : undefined;
       return {
         ...obj,
-        // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
-        image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl),
+        image: imageOf(parseImageColumn(row.image, supabaseUrl, { column: 'constituencies.image', id: row.id })),
         keywords
       } as ConstituencyData;
     });
@@ -249,42 +346,35 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     const supabaseUrl = constants.PUBLIC_SUPABASE_URL;
 
     // The `get_nominations` RPC accepts a single uuid per election/constituency.
-    // When the caller passes arrays (multi-election voter flow — see
-    // `(voters)/(located)/+layout.ts` which threads URL `electionId` /
-    // `constituencyId` arrays through verbatim), fan out into one RPC per
-    // (election, constituency) pair and concatenate the results. Picking
-    // `[0]` only — the prior shape — silently dropped the other elections'
-    // nominations and broke the multi-election partial-coverage dialog gate
-    // (variant-constituency.spec.ts:237).
-    const electionIds: Array<string | null> = options?.electionId
-      ? Array.isArray(options.electionId)
-        ? (options.electionId as Array<string>)
-        : [options.electionId]
-      : [null];
-    const constituencyIds: Array<string | null> = options?.constituencyId
-      ? Array.isArray(options.constituencyId)
-        ? (options.constituencyId as Array<string>)
-        : [options.constituencyId]
-      : [null];
+    // When the caller passes arrays (multi-election voter flow — see `(voters)/(located)/+layout.ts` which threads URL `electionId` / `constituencyId` arrays through verbatim), fan out into one RPC per (election, constituency) pair and concatenate the results. Picking `[0]` only — the prior shape — silently dropped the other elections' nominations and broke the multi-election partial-coverage dialog gate. The spec that originally caught that regression no longer exists; its assertions were absorbed into the voter specs under `tests/tests/specs/voter/` and the two-election topologies under `tests/tests/specs/perm/` (`perm-2e-shared`, `perm-2e-asymmetric`), which is where a reintroduced `[0]` pick surfaces today.
+    const electionIds = convertFilterValue(options?.electionId);
+    const constituencyIds = convertFilterValue(options?.constituencyId);
 
     const includeUnconfirmed = options?.includeUnconfirmed ?? false;
+    // The election round is a scalar rather than a `FilterValue`, so it adds no level to the fan-out and is passed through unchanged.
+    const electionRound = options?.electionRound;
+    // Each call of the fan-out is paged on its own (D-07). No `.order()` is added: the RPC already orders `sort_order NULLS LAST, id`, a unique key, so its page boundaries are stable (D-08). The helper throws on the first failing page with the `getNominationData` prefix, which `Promise.all` propagates.
     const calls = electionIds.flatMap((eid) =>
       constituencyIds.map((cid) =>
-        this.supabase.rpc('get_nominations', {
-          // The regenerated RPC types both filters as `string | undefined`; the
-          // fan-out locals are `string | null`. Coercing null → undefined omits
-          // the key, applying the SQL DEFAULT NULL — semantically identical to
-          // passing null (behavior-neutral).
-          p_election_id: eid ?? undefined,
-          p_constituency_id: cid ?? undefined,
-          p_include_unconfirmed: includeUnconfirmed
-        })
+        fetchAllRows(
+          (from, to) =>
+            this.supabase
+              .rpc('get_nominations', {
+                // The project is required and has no SQL default, so it is passed on every call of the fan-out including the unfiltered one where both scope ids are null. A call that omitted it would not return fewer rows; it would fail at the database, which is the point of the parameter being required.
+                p_project_id: this.projectId,
+                // The regenerated RPC types both filters as `string | undefined`; the fan-out locals are `string | null`. Coercing null → undefined omits the key, applying the SQL DEFAULT NULL — semantically identical to passing null (behavior-neutral).
+                p_election_id: eid ?? undefined,
+                p_constituency_id: cid ?? undefined,
+                p_include_unconfirmed: includeUnconfirmed,
+                p_election_round: electionRound
+              })
+              .range(from, to),
+          { pageSize: staticSettings.dataAdapter.pageSize, label: 'getNominationData' }
+        )
       )
     );
     const results = await Promise.all(calls);
-    const firstError = results.find((r) => r.error)?.error;
-    if (firstError) throw new Error(`getNominationData: ${firstError.message}`);
-    const data = results.flatMap((r) => r.data ?? []);
+    const data = results.flat();
 
     // Deduplicate entities using a Map keyed by entity_id; nominations have unique (election_id, constituency_id) keys so the fan-out cannot produce nomination duplicates, but guard with a Set to be safe.
     const entityMap = new Map<string, AnyEntityVariantData>();
@@ -302,7 +392,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
       if (seenNominationIds.has(row.id)) continue;
       seenNominationIds.add(row.id);
       // Build nomination object from nomination-level columns
-      const parentNominationId = row.parent_nomination_id as string | null | undefined;
+      const parentNominationId = row.parent_nomination_id;
       const parentNominationType =
         parentNominationId != null ? (nominationTypeById.get(parentNominationId) ?? null) : null;
       const nomRow = {
@@ -329,8 +419,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         ...nomObj,
         entityType: row.entity_type,
         entityId: row.entity_id,
-        // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
-        image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl)
+        image: imageOf(parseImageColumn(row.image, supabaseUrl, { column: 'nominations.image', id: row.id }))
       };
       if (parentNominationId != null && parentNominationType != null) {
         nominationOut.parentNominationType = parentNominationType;
@@ -367,10 +456,18 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
           order: entityObj.order as number | null | undefined,
           subtype: entityObj.subtype as string | null | undefined,
           customData: entityObj.customData as object | null | undefined,
-          // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
-          image: parseStoredImage(row.entity_image as Json as unknown as StoredImage | null, supabaseUrl),
-          // reason: JSONB → LocalizedAnswers shape; structural guard applied inside parseAnswers.
-          answers: parseAnswers(row.entity_answers as Json as unknown as LocalizedAnswers | null, locale)
+          image: imageOf(
+            parseImageColumn(row.entity_image, supabaseUrl, {
+              column: 'get_nominations.entity_image',
+              id: entityId
+            })
+          ),
+          answers: parseAnswers(
+            answersOf(
+              parseAnswersColumn(row.entity_answers, { column: 'get_nominations.entity_answers', id: entityId })
+            ) ?? null,
+            locale
+          )
         };
 
         let entity: AnyEntityVariantData;
@@ -379,9 +476,8 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
           entity = {
             ...base,
             type: ENTITY_TYPE.Candidate,
-            firstName: row.entity_first_name,
-            lastName: row.entity_last_name,
-            organizationId: row.entity_organization_id
+            firstName: row.entity_first_name ?? '',
+            lastName: row.entity_last_name ?? ''
           };
         } else if (entityType === ENTITY_TYPE.Organization) {
           entity = { ...base, type: ENTITY_TYPE.Organization, name: base.name ?? '' };
@@ -454,22 +550,27 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     const results: Array<AnyEntityVariantData> = [];
 
     for (const { table, entityType } of types) {
-      let query = this.supabase.from(table).select('*').order('sort_order');
-      if (options?.id) {
-        query = Array.isArray(options.id) ? query.in('id', options.id) : query.eq('id', options.id);
-      }
-      const { data, error } = await query;
-      if (error) throw new Error(`getEntityData (${table}): ${error.message}`);
+      const data = await fetchAllRows(
+        (from, to) => {
+          let query = this.scopedFrom(table).select('*').order('sort_order').order('id');
+          if (options?.id) {
+            query = Array.isArray(options.id) ? query.in('id', options.id) : query.eq('id', options.id);
+          }
+          return query.range(from, to);
+        },
+        { pageSize: staticSettings.dataAdapter.pageSize, label: `getEntityData (${table})` }
+      );
 
-      for (const row of data ?? []) {
+      for (const row of data) {
         const obj = toDataObject(row as Record<string, unknown>, locale, this.defaultLocale);
         results.push({
           ...obj,
           type: entityType,
-          // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
-          image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl),
-          // reason: JSONB → LocalizedAnswers shape; structural guard applied inside parseAnswers.
-          answers: parseAnswers(row.answers as Json as unknown as LocalizedAnswers | null, locale)
+          image: imageOf(parseImageColumn(row.image, supabaseUrl, { column: `${table}.image`, id: row.id })),
+          answers: parseAnswers(
+            answersOf(parseAnswersColumn(row.answers, { column: `${table}.answers`, id: row.id })) ?? null,
+            locale
+          )
         } as AnyEntityVariantData);
       }
     }
@@ -484,66 +585,68 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     const locale = options?.locale ?? this.locale;
     const supabaseUrl = constants.PUBLIC_SUPABASE_URL;
 
-    // 1. Fetch categories
-    const { data: catData, error: catError } = await this.supabase
-      .from('question_categories')
-      .select('*')
-      .order('sort_order');
-    if (catError) throw new Error(`getQuestionData (categories): ${catError.message}`);
+    // The `get_questions` RPC accepts a single uuid per election/constituency, so fan out into one call per (election, constituency) pair when the caller passes arrays, then union the payloads. Arrays are real here rather than hypothetical: `candidate/(protected)/+layout.server.ts` derives `electionId` from the candidate's own nominations, which spans two elections for any candidate nominated in both, and `(voters)/(located)/+layout.ts` threads the URL's multi-valued `electionId` through verbatim. Picking `[0]` would silently drop the other election's scoped questions — the exact regression the sibling nomination read at `_getNominationData` already had to undo.
+    const electionIds = convertFilterValue(options?.electionId);
+    const constituencyIds = convertFilterValue(options?.constituencyId);
+    // The election round is a scalar rather than a `FilterValue`, so it adds no level to the fan-out and is passed through unchanged.
+    const electionRound = options?.electionRound;
 
-    let categories = (catData ?? []).map((row) => {
-      const obj = toDataObject(row as Record<string, unknown>, locale, this.defaultLocale);
+    // Not paged (D-07): `get_questions` returns ONE aggregated jsonb row per call, so a row cap cannot truncate it.
+    const results = await Promise.all(
+      electionIds.flatMap((eid) =>
+        constituencyIds.map((cid) =>
+          this.supabase.rpc('get_questions', {
+            // The project is required and has no SQL default, so it is passed on every call of the fan-out including the unfiltered one where both scope ids are null. A call that omitted it would not return fewer rows; it would fail at the database, which is the point of the parameter being required.
+            p_project_id: this.projectId,
+            // The regenerated RPC types both filters as `string | undefined`; the fan-out locals are `string | null`. Coercing null → undefined omits the key, applying the SQL DEFAULT NULL — semantically identical to passing null (behavior-neutral).
+            p_election_id: eid ?? undefined,
+            p_constituency_id: cid ?? undefined,
+            p_election_round: electionRound
+          })
+        )
+      )
+    );
+    const firstError = results.find((r) => r.error)?.error;
+    if (firstError) throw new Error(`getQuestionData: ${firstError.message}`);
+
+    // Union the fan-out's payloads keyed by row id, so a row returned by several calls appears once. The union is what reproduces the OR-over-the-array semantics the previous client-side filter had.
+    const categoryRows = new Map<string, QuestionCategoryRow>();
+    const questionRows = new Map<string, QuestionRow>();
+    for (const { data } of results) {
+      // reason: the RPC is declared `RETURNS jsonb`, so its generated type is the opaque `Json`; this single narrowing is the adapter's trust boundary for the payload.
+      const payload = data as GetQuestionsPayload | null;
+      for (const row of payload?.categories ?? []) categoryRows.set(row.id, row);
+      for (const row of payload?.questions ?? []) questionRows.set(row.id, row);
+    }
+
+    const categories = [...categoryRows.values()].sort(bySortOrderThenId).map((row) => {
+      const obj = toDataObject(row, locale, this.defaultLocale);
       return {
         ...obj,
         // QuestionCategoryData uses 'type' not 'categoryType'
         type: row.category_type ?? 'opinion',
-        // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
-        image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl)
+        image: imageOf(parseImageColumn(row.image, supabaseUrl, { column: 'question_categories.image', id: row.id }))
       } as QuestionCategoryData;
     });
 
-    // Client-side filter by electionId if specified
-    if (options?.electionId) {
-      const filterElectionId = Array.isArray(options.electionId) ? options.electionId : [options.electionId];
-      categories = categories.filter((cat) => {
-        // reason: electionIds is a runtime-only field tacked on by toDataObject; not yet in QuestionCategoryData
-        const catElectionIds =
-          (cat as QuestionCategoryData & { electionIds?: Array<string> | null }).electionIds ?? null;
-        // Include categories with no electionIds (applicable to all) or matching
-        return (
-          !catElectionIds ||
-          catElectionIds.length === 0 ||
-          catElectionIds.some((eid: string) => filterElectionId.includes(eid))
-        );
-      });
-    }
-
-    // 2. Fetch questions belonging to the filtered categories
-    const categoryIds = categories.map((c) => c.id);
-    let qQuery = this.supabase.from('questions').select('*').order('sort_order');
-    if (categoryIds.length > 0) {
-      qQuery = qQuery.in('category_id', categoryIds);
-    }
-    const { data: qData, error: qError } = await qQuery;
-    if (qError) throw new Error(`getQuestionData (questions): ${qError.message}`);
-
-    const questions = (qData ?? []).map((row) => {
-      const obj = toDataObject(row, locale, this.defaultLocale);
-      // Localize choice labels for choice-type questions
-      let choices = row.choices as Array<{
-        id: number;
-        label: Record<string, string> | string;
-        [k: string]: unknown;
-      }> | null;
-      if (choices && Array.isArray(choices)) {
-        choices = choices.map((choice) => ({
-          ...choice,
-          label:
-            typeof choice.label === 'object' && choice.label !== null
-              ? (getLocalized(choice.label as Record<string, string>, locale, this.defaultLocale) ?? '')
-              : choice.label
-        }));
-      }
+    // The RPC filters categories and questions independently on their own columns, so an unscoped question under a scoped category outlives its category. `Question.category` resolves through `DataRoot.getQuestionCategory`, which throws `DataNotFoundError` when the category is absent, so such an orphan must be dropped here rather than handed to the data model. This restores the constraint the previous `.in('category_id', categoryIds)` narrowing carried, without its `length > 0` guard, which had inverted it into reading the entire questions table whenever the filtered category list came back empty.
+    const questions = [...questionRows.values()]
+      .filter((row) => categoryRows.has(row.category_id))
+      .sort(bySortOrderThenId)
+      .map((row) => {
+        const obj = toDataObject(row, locale, this.defaultLocale);
+        // Localize choice labels for choice-type questions.
+        // reason: class 1 residual — a typed-JSONB read with no schema. `LocalizedChoice` is a published `@openvaa/app-shared` type but `157-02` wrote no `StoredChoices` schema for it, so this read is asserted rather than validated until one exists. The `Array.isArray` guard below is the runtime check that stands in for it.
+        let choices = row.choices as Array<LocalizedChoice> | null;
+        if (choices && Array.isArray(choices)) {
+          choices = choices.map((choice) => ({
+            ...choice,
+            label:
+              typeof choice.label === 'object' && choice.label !== null
+                ? (getLocalized(choice.label, locale, this.defaultLocale) ?? '')
+                : choice.label
+          }));
+        }
 
         // The DB `allow_open` column maps to a top-level `allowOpen` via COLUMN_MAP, but every frontend consumer (candidate per-question editor, EntityOpinions) reads it from `customData.allowOpen` (per the CustomData type). Bridge the column into customData so the open-answer field actually renders; an explicit `custom_data.allowOpen` JSONB value takes precedence over the column.
         // The explicit annotation keeps the JSONB passthrough keys (min/max etc.) indexable as `unknown` — the inferred spread type collapses to just `{ allowOpen: boolean }` and rejects them.
@@ -552,42 +655,28 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
           ...((obj.customData as Record<string, unknown> | undefined) ?? {})
         };
 
-      // NumberQuestionData.min/max have no DB column — the authoring home for a
-      // number question's answer-value range is `custom_data.{ min, max }` (see
-      // numberQuestion.ts getters, which read this.data.min/this.data.max and
-      // gate isMatchable on the range). Lift those into top-level fields for
-      // number rows only, and only when they are actual numbers: non-numeric
-      // JSONB values are dropped rather than coerced (untrusted-JSONB tampering
-      // guard T-129-02), and absent keys are omitted (spread-conditional) rather
-      // than set to undefined so NumberQuestion's zero-range check never fires on
-      // pass-through values.
-      const numberRange =
-        row.type === 'number'
-          ? {
-              ...(typeof customData.min === 'number' ? { min: customData.min } : {}),
-              ...(typeof customData.max === 'number' ? { max: customData.max } : {})
-            }
-          : {};
+        // NumberQuestionData.min/max have no DB column — the authoring home for a number question's answer-value range is `custom_data.{ min, max }` (see numberQuestion.ts getters, which read this.data.min/this.data.max and gate isMatchable on the range). Lift those into top-level fields for number rows only, and only when they are actual numbers: non-numeric JSONB values are dropped rather than coerced (untrusted-JSONB tampering guard), and absent keys are omitted (spread-conditional) rather than set to undefined so NumberQuestion's zero-range check never fires on pass-through values.
+        const numberRange =
+          row.type === 'number'
+            ? {
+                ...(typeof customData.min === 'number' ? { min: customData.min } : {}),
+                ...(typeof customData.max === 'number' ? { max: customData.max } : {})
+              }
+            : {};
 
-      // Name the discriminant (`type`) plus the identity fields (`id`, `name`,
-      // `categoryId`) explicitly — drawn from the typed row / localized `obj`
-      // rather than relying on the opaque `...obj` spread — so the object
-      // structurally overlaps the discriminated `AnyQuestionVariantData` union
-      // . The `type` column is the question_type enum; localized `name`
-      // falls back to '' (the data model's smart default for a missing name).
-      return {
-        ...obj,
-        id: obj.id as string,
-        type: row.type,
-        name: (obj.name as string | null) ?? '',
-        categoryId: obj.categoryId as string,
-        choices,
-        customData,
-        ...numberRange,
-        // reason: JSONB → StoredImage shape; runtime-guarded by parseStoredImage downstream.
-        image: parseStoredImage(row.image as Json as unknown as StoredImage | null, supabaseUrl)
-      } as AnyQuestionVariantData;
-    });
+        // Name the discriminant (`type`) plus the identity fields (`id`, `name`, `categoryId`) explicitly — drawn from the typed row / localized `obj` rather than relying on the opaque `...obj` spread — so the object structurally overlaps the discriminated `AnyQuestionVariantData` union . The `type` column is the question_type enum; localized `name` falls back to '' (the data model's smart default for a missing name).
+        return {
+          ...obj,
+          id: obj.id as string,
+          type: row.type,
+          name: (obj.name as string | null) ?? '',
+          categoryId: obj.categoryId as string,
+          choices,
+          customData,
+          ...numberRange,
+          image: imageOf(parseImageColumn(row.image, supabaseUrl, { column: 'questions.image', id: row.id }))
+        } as AnyQuestionVariantData;
+      });
 
     return { categories, questions };
   }

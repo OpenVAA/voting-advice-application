@@ -34,7 +34,7 @@ describe('Runtime override wrapper', () => {
     // The catch arm at `overrides.ts:36` returns the template *unchanged*, which is what this test's title promises. Asserting the exact string — not merely that a string came back — is what makes an empty string, a key name, or a half-formatted result fail here.
     // Do not weaken this back to `typeof result`: every one of those wrong values is a string.
     const result = getOverride('bad.key', { broken: 1 });
-    expect(typeof result).toBe('string');
+    expect(result).toBe('{broken, plural, }');
   });
 
   test('clearOverrides removes all overrides', () => {

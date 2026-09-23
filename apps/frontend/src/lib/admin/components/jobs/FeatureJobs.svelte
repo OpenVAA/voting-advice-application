@@ -30,19 +30,18 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////////
 
-  const {
-    getRoute,
-    jobs: { activeJobsByFeature, pastJobsByFeature },
-    t
-  } = getAdminContext();
+  const ctx = getAdminContext();
+  // Stable members: safe to destructure. The job projections are NOT — see below.
+  const { getRoute, t } = ctx;
 
   ////////////////////////////////////////////////////////////////////////
   // Get jobs for feature
   ////////////////////////////////////////////////////////////////////////
 
-  const activeJob: JobInfo | undefined = $derived(activeJobsByFeature.get(feature));
+  // `activeJobsByFeature` / `pastJobsByFeature` are read-only PROTOTYPE GETTERS over `$derived.by` (`jobStates.svelte.ts`), and `$derived.by` returns a NEW `Map` on every recompute. Destructuring them — as this file did — invokes each getter ONCE at component init and binds the initial empty `Map` to a local, so the polling service updates the registry and nothing here ever sees it: every panel stays frozen at its mount-time value. Read them through `ctx.jobs.X` inside the tracking scope instead, per CLAUDE.md § Context Destructuring Rule. `ctx.jobs` itself is a plain instance field whose reference never changes; the reactive edge is the getter on it, which is why the read has to reach that far and no further.
+  const activeJob: JobInfo | undefined = $derived(ctx.jobs.activeJobsByFeature.get(feature));
   const pastJobs: Array<JobInfo> = $derived(
-    (pastJobsByFeature.get(feature) ?? []).sort((a, b) => compareDates(b.startTime, a.startTime))
+    (ctx.jobs.pastJobsByFeature.get(feature) ?? []).sort((a, b) => compareDates(b.startTime, a.startTime))
   );
 
   ////////////////////////////////////////////////////////////////////////

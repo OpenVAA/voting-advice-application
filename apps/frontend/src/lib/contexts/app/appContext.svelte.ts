@@ -3,7 +3,7 @@ import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { browser } from '$app/environment';
 import { page } from '$app/state';
-import { feedbackWriter as feedbackWriterPromise } from '$lib/api/feedbackWriter';
+import { createFeedbackWriter } from '$lib/api/feedbackWriter';
 import { FeedbackPopup } from '$lib/dynamic-components/feedback/popup';
 import { SurveyPopup } from '$lib/dynamic-components/survey/popup';
 import { mergeAppSettings, mergeInitialAppSettings } from '$lib/utils/settings';
@@ -137,8 +137,6 @@ export class AppContextProvider implements AppContext {
 
   // Forwarded tracking members — a SELECTIVE forward of six of the producer's eight own-enumerable members (a `{ current, set }` handle object + five arrow fields, all copied by reference; see the forwarding block for the two that are deliberately withheld). The producer's own exact eight-member surface stays locked by a dedicated case in `tracking/trackingService.svelte.test.ts`.
   readonly sendTrackingEvent!: AppContext['sendTrackingEvent'];
-  readonly sessionId!: AppContext['sessionId'];
-  readonly shouldTrack!: AppContext['shouldTrack'];
   readonly startPageview!: AppContext['startPageview'];
   readonly startEvent!: AppContext['startEvent'];
   readonly track!: AppContext['track'];
@@ -259,13 +257,19 @@ export class AppContextProvider implements AppContext {
     // dataCtx — WHOLESALE forward of its two own-enumerable members: `dataRoot` (re-installed as a live forwarding accessor over the source's bare reactive accessor) and the `setDataRoot` arrow-field writer (copied by reference).
     inheritContextMembers(this, this.#dataCtx);
 
-    // tracking — WHOLESALE forward of the producer's eight own-enumerable members
-    // (`{ current }` handle objects + arrow-field methods, all copied by
-    // reference). A wholesale forward re-exports whatever the producer exposes, so
-    // its surface is pinned by an exact-`Object.keys` case in
-    // `tracking/trackingService.svelte.test.ts` — without that lock, a new public
-    // member on the producer would silently widen this context's public surface.
-    inheritContextMembers(this, this.#tracking);
+    // tracking — EXPLICIT SELECTIVE forward, deliberately NOT wholesale (it used to be). The producer exposes eight own-enumerable members; exactly these SIX are consumer-facing and are copied by reference. All six are data properties on the producer (a `{ current, set }` handle object plus five arrow fields), so a value copy is the same thing `inheritContextMembers` would install for them — no accessor liveness is at stake here, unlike `dataRoot` above.
+    //
+    // WITHHELD, deliberately: `sessionId` and `shouldTrack`. Both are internal to the producer — `sessionId` is stamped onto every event the producer sends and is handed to `surveyLink(...)` above STRAIGHT OFF `#tracking`, producer-to-producer, never through this public surface; `shouldTrack` gates `track()` inside the producer and has no reader outside it. Forwarding either would put an analytics identifier and an internal gate on every context and every `{ ...appContext }` spread for no consumer.
+    //
+    // Why a selective forward rather than hiding them on the producer: they must REMAIN on the producer (the two internal reads above), and making them private or non-enumerable would break both plus the producer's own exact-`Object.keys` lock in `tracking/trackingService.svelte.test.ts`. That lock still pins the producer's eight-member surface; because the forward below is now an explicit list, a new public member on the producer no longer reaches this context implicitly — it has to be added here on purpose.
+    Object.assign(this, {
+      sendTrackingEvent: this.#tracking.sendTrackingEvent,
+      startPageview: this.#tracking.startPageview,
+      startEvent: this.#tracking.startEvent,
+      track: this.#tracking.track,
+      submitAllEvents: this.#tracking.submitAllEvents,
+      resetAllEvents: this.#tracking.resetAllEvents
+    });
 
     ////////////////////////////////////////////////////////////////////
     // Prev-ref-guarded $effect RE-MERGE. Legal in the constructor — the class is constructed during component init, an effect context (the same argument as `filterContext`). The INITIAL merge stays a field initializer above; these effects handle only post-navigation page.data changes.
@@ -298,9 +302,8 @@ export class AppContextProvider implements AppContext {
 
   sendFeedback = async (feedback: FeedbackData): Promise<DataApiActionResult> => {
     if (!browser) error(500, 'sendFeedback() called in a non-browser environment');
-    const feedbackWriter = await feedbackWriterPromise;
-    feedbackWriter.init({ fetch });
-    return feedbackWriter.postFeedback(feedback);
+    // The guard above is what lets the `browser` arm be named here: the client is the tab's memoized one, and the writer around it exists for this submission only.
+    return createFeedbackWriter({ fetch, browser: true }).postFeedback(feedback);
   };
 
   ////////////////////////////////////////////////////////////////////
@@ -328,8 +331,16 @@ export class AppContextProvider implements AppContext {
     if (this.#surveyTimeout) clearTimeout(this.#surveyTimeout);
     if (delay <= 0) return;
     this.#surveyTimeout = setTimeout(() => {
-      if (this.#userPreferences.current.survey?.status !== 'received')
-        this.#popupQueue.push({ component: SurveyPopup });
+      const surveyStatus = this.#userPreferences.current.survey?.status;
+      if (surveyStatus !== 'received' && surveyStatus !== 'dismissed')
+        this.#popupQueue.push({
+          component: SurveyPopup,
+          onClose: () => {
+            // Persist dismissal so the popup doesn't reappear after reload or re-arming.
+            // The `received` check is load-bearing, not symmetry: `SurveyButton` sets `received` and `SurveyPopup` then closes itself on a timeout, so this handler ALWAYS runs after a successful click-through and would otherwise downgrade it to `dismissed`.
+            if (this.#userPreferences.current.survey?.status !== 'received') this.setSurveyStatus('dismissed');
+          }
+        });
     }, delay * 1000);
   };
 

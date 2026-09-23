@@ -4,6 +4,7 @@ import { FilterGroup } from '@openvaa/filters';
 import { ucFirst } from '$lib/utils/text/ucFirst';
 import { buildParentFilters } from './buildParentFilters';
 import { buildQuestionFilter } from './buildQuestionFilter';
+import { retainRelevantFilters } from './filterRelevance';
 import type { Filter } from '@openvaa/filters';
 import type { TranslationKey } from '$types';
 import type { NominationAndQuestionTree } from '../nominationAndQuestionState.svelte';
@@ -66,7 +67,8 @@ class FilterStateImpl {
               .filter((f) => f != null)
           );
 
-          return [entityType, new FilterGroup(filters)];
+          // Offer a filter only when THIS entity type's own nominations produce more than one distinct value for it. A question that declares no `entityType` restriction applies to every entity type, so without this pass the organizations and alliances tabs are offered candidate-facing filters their entities never answered. The pass is purely subtractive over the filters assembled above, and an entity type left with none loses the whole filter affordance, because both list controls gate the Button and the Modal on `filterGroup.filters.length`.
+          return [entityType, new FilterGroup(retainRelevantFilters({ filters, targets: nominations }))];
         })
       );
     }

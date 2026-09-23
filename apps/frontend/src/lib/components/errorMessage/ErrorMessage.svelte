@@ -16,9 +16,9 @@
 -->
 
 <script lang="ts">
+  import { log } from '@openvaa/app-shared';
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
-  import { logDebugError } from '$lib/utils/logger';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { HeroEmoji } from '../heroEmoji';
   import type { ErrorMessageProps } from './ErrorMessage.type';
@@ -36,7 +36,7 @@
   ////////////////////////////////////////////////////////////////////
 
   $effect(() => {
-    logDebugError(`[ErrorMessage] ${logMessage || effectiveMessage}`);
+    log.error(`[ErrorMessage] ${logMessage || effectiveMessage}`);
   });
 
   ////////////////////////////////////////////////////////////////////

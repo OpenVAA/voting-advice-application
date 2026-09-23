@@ -24,7 +24,7 @@ import type { IdentityProvider, ProviderType } from './types';
  * @throws {Error} If `PUBLIC_IDENTITY_PROVIDER_TYPE` contains an unsupported value.
  */
 export function getActiveProvider(): IdentityProvider {
-  const providerType = (constants.PUBLIC_IDENTITY_PROVIDER_TYPE || 'signicat') as ProviderType;
+  const providerType = constants.PUBLIC_IDENTITY_PROVIDER_TYPE as ProviderType;
   switch (providerType) {
     case 'idura':
       return iduraProvider;

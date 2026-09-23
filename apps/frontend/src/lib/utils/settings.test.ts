@@ -111,3 +111,81 @@ describe('mergeInitialAppSettings (SSR-init DB-override merge)', () => {
     expect(target).toEqual(snapshot);
   });
 });
+
+/**
+ * The `access.underMaintenance` fail-safe (criterion 3, decision **B2** as corrected by research **C-2**).
+ *
+ * `+layout.svelte` used to derive `underMaintenance` from the RAW loader payload — the DB column alone — with the shipped default duplicated inline as `?? false`. Under decision **B1(a)** a malformed settings column never becomes an `Error`; partial-preserve degrades it to `{}`, `isValidResult(…, { allowEmpty: true })` accepts that, and the inline default then resolved the gate to OFF. So a malformed column could silently UN-maintenance a deployment whose build-time `dynamicSettings` had declared `underMaintenance: true`. Nothing was observably broken, because the duplicate coincides with the shipped default — which is exactly why only a fail-safe-direction assertion catches it.
+ *
+ * These cases assert the merge behaviour the layout now reads. They are paired with the source-level case below, which is what binds them to the layout: the merge has always resolved fail-safe, so a merge-only assertion would have been green before the fix and would prove nothing.
+ */
+describe('access.underMaintenance fail-safe (the value the maintenance gate reads)', () => {
+  const staticPart = { colors: { primary: 'red' } } as unknown as StaticSettings;
+  const maintenanceOn = { access: { candidateApp: true, underMaintenance: true } } as unknown as DynamicSettings;
+  const maintenanceOff = { access: { candidateApp: true, underMaintenance: false } } as unknown as DynamicSettings;
+
+  it('resolves ON when the build-time settings declare maintenance and the stored column is malformed', () => {
+    // A malformed `access` member is dropped whole by partial-preserve (decision A2), so the column reaches the layout as `{}`.
+    const malformedColumn = {} as unknown as DynamicSettings;
+
+    const merged = mergeInitialAppSettings(staticPart, maintenanceOn, malformedColumn);
+
+    // The fail-safe direction: the build-time value survives a column that carries nothing usable.
+    expect(merged.access?.underMaintenance).toBe(true);
+    // And the mechanism of the defect, pinned: reading the RAW payload with an inline default yields the UN-safe answer from the very same inputs. A revert to `validity.appSettingsData.access?.underMaintenance ?? false` reinstates exactly this value.
+    const asTheRawPayloadReadWouldResolveIt =
+      (malformedColumn as { access?: { underMaintenance?: boolean } }).access?.underMaintenance ?? false;
+    expect(asTheRawPayloadReadWouldResolveIt).toBe(false);
+  });
+
+  it('resolves ON when the build-time settings declare maintenance and the column is absent entirely', () => {
+    const merged = mergeInitialAppSettings(staticPart, maintenanceOn, undefined);
+
+    expect(merged.access?.underMaintenance).toBe(true);
+  });
+
+  it('lets an explicit column value override the build-time one (the override layer still overrides)', () => {
+    const merged = mergeInitialAppSettings(staticPart, maintenanceOn, maintenanceOff);
+
+    expect(merged.access?.underMaintenance).toBe(false);
+  });
+
+  it('resolves OFF when the build-time settings declare no maintenance and there is no column', () => {
+    const merged = mergeInitialAppSettings(staticPart, maintenanceOff, undefined);
+
+    expect(merged.access?.underMaintenance).toBe(false);
+  });
+});
+
+/**
+ * The source-level half of the same assertion: that the root layout actually READS the merged value.
+ *
+ * Stable anchor, deliberately NOT a line citation: the derivation is the `const underMaintenance = $derived(...)` declaration in `apps/frontend/src/routes/+layout.svelte`. Line ranges move on every edit (CONTEXT's own citation for this block was already off by one at both ends); the identifier does not.
+ *
+ * It lives in this file rather than beside the component because the merge is the thing under test — `+layout.svelte` is a route component with no unit harness, and the merge-behaviour cases above are green both before and after the fix. This case is what makes them mean something: it is the assertion that flips when the derivation's SOURCE changes.
+ */
+describe('the root layout reads the merged settings for the maintenance gate', () => {
+  it('derives underMaintenance from the merged appSettings alias, not from the raw loader payload', async () => {
+    const { existsSync, readFileSync } = await import('node:fs');
+    const { resolve } = await import('node:path');
+    // Resolved from the working directory rather than from `import.meta.url`: vitest serves modules over an http origin, so `import.meta.url` is not a `file:` URL here. Both candidates are tried and the miss is asserted, so a cwd change fails this case loudly instead of silently skipping it.
+    const candidates = ['src/routes/+layout.svelte', 'apps/frontend/src/routes/+layout.svelte'].map((rel) =>
+      resolve(process.cwd(), rel)
+    );
+    const layoutPath = candidates.find((candidate) => existsSync(candidate));
+    expect(layoutPath, `+layout.svelte not found from cwd ${process.cwd()}`).toBeDefined();
+    const layout = readFileSync(layoutPath as string, 'utf8');
+
+    // Sliced from the declaration to its closing `);` rather than taken as one line, so a derivation that is reformatted across several lines is still read whole — a line-wise `find` would silently truncate it and turn the two negative assertions below into no-ops.
+    const start = layout.indexOf('const underMaintenance = $derived(');
+    expect(start, 'the underMaintenance derivation is no longer declared in +layout.svelte').toBeGreaterThan(-1);
+    const derivation = layout.slice(start, layout.indexOf(');', start) + 2);
+
+    // Reads the merged static ∪ dynamic ∪ column value…
+    expect(derivation).toContain('appSettings.access');
+    // …and NOT the DB column alone, which is what a malformed column degrades to `{}`.
+    expect(derivation).not.toContain('validity.appSettingsData');
+    // …with no inline duplicate of the shipped default, which is the mechanism by which the gate reset itself.
+    expect(derivation).not.toContain('?? false');
+  });
+});

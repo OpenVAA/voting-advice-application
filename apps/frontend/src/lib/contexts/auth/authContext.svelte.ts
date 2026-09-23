@@ -1,8 +1,7 @@
+import { log } from '@openvaa/app-shared';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { page } from '$app/state';
-import { dataWriter } from '$lib/api/dataWriter';
-import { logDebugError } from '$lib/utils/logger';
 import { prepareDataWriter } from '../utils/prepareDataWriter';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { DataWriter } from '$lib/api/base/dataWriter.type';
@@ -49,28 +48,25 @@ export class AuthContextProvider implements AuthContext {
   requestForgotPasswordEmail = async (
     ...args: Parameters<DataWriter['requestForgotPasswordEmail']>
   ): ReturnType<DataWriter['requestForgotPasswordEmail']> => {
-    const dw = await prepareDataWriter(dataWriter);
+    const dw = prepareDataWriter();
     return dw.requestForgotPasswordEmail(...args);
   };
 
   resetPassword = async (...args: Parameters<DataWriter['resetPassword']>): ReturnType<DataWriter['resetPassword']> => {
-    const dw = await prepareDataWriter(dataWriter);
+    const dw = prepareDataWriter();
     return dw.resetPassword(...args);
   };
 
   logout = async (): Promise<void> => {
-    const dw = await prepareDataWriter(dataWriter);
-    await dw.logout({ authToken: '' }).catch((e) => {
-      logDebugError(`Error logging out: ${e?.message ?? '-'}`);
+    const dw = prepareDataWriter();
+    await dw.logout().catch((e) => {
+      log.error(`Error logging out: ${e?.message ?? '-'}`);
     });
   };
 
-  setPassword = async (opts: { currentPassword?: string; password: string }): Promise<DataApiActionResult> => {
-    const dw = await prepareDataWriter(dataWriter);
-    // Behavior-neutral: the Supabase `_setPassword` ignores currentPassword — the active
-    // session is verified via cookies, not the old password (Pitfall 1). Default to '' for
-    // the register/reset flows that omit it (mirrors the former hardcoded currentPassword: '').
-    return dw.setPassword({ password: opts.password, currentPassword: opts.currentPassword ?? '', authToken: '' });
+  setPassword = async (opts: { password: string }): Promise<DataApiActionResult> => {
+    const dw = prepareDataWriter();
+    return dw.setPassword({ password: opts.password });
   };
 }
 

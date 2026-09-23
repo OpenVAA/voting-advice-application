@@ -1,4 +1,4 @@
-import { getLocalized } from './getLocalized';
+import { getLocalized } from '@openvaa/app-shared';
 
 /**
  * Localize multiple fields on a database row in one pass.

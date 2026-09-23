@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { page } from '$app/state';
-import { parseParams } from '$lib/utils/route';
+import { parseParams } from '$lib/routes';
 import type { FilterGroup } from '@openvaa/filters';
 import type { FilterContext, InitFilterContextArgs } from './filterContext.type';
 

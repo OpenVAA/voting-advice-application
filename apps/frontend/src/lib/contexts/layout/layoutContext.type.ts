@@ -1,7 +1,7 @@
 import type { DeepPartial, VideoContent } from '@openvaa/app-shared';
 import type { Tween } from 'svelte/motion';
 import type { OptionalVideoProps, Video, VideoMode } from '$lib/components/video';
-import type { SettingsOverlayApi } from '../utils/SettingsOverlay.svelte';
+import type { SettingsOverlayApi } from '../utils/settingsOverlay.svelte';
 
 export type LayoutContext = {
   /**

@@ -20,7 +20,7 @@ popupQueue.push({
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import type { Route } from '$lib/utils/route';
+  import type { Route } from '$lib/routes';
   import type { PreregisteredNotificationProps } from './PreregisteredNotification.type';
 
   let { ...restProps }: PreregisteredNotificationProps = $props();
@@ -38,8 +38,9 @@ popupQueue.push({
   //
   // Reading the href first means the navigation target is a plain string owned by this closure by the time anything unmounts, so neither the read nor the `goto` depends on this component still being alive.
   function handleClick(route: Route): void {
+    const href = getRoute.current(route);
     alertRef?.closeAlert();
-    goto(getRoute.current(route));
+    void goto(href, { invalidateAll: true });
   }
 </script>
 

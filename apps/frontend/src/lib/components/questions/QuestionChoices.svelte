@@ -63,6 +63,8 @@ The same component can also be used to display the answers of the voter and anot
   import { isMultipleChoiceQuestion, isObjectType, OBJECT_TYPE } from '@openvaa/data';
   import { untrack } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
+  import { cn } from '$lib/utils/components';
+  import { getEffectiveSelectionBounds } from '$lib/utils/multiChoiceValidity';
   import { onKeyboardFocusOut } from '$lib/utils/onKeyboardFocusOut';
   import type { Id } from '@openvaa/core';
   import type { QuestionChoicesProps } from './QuestionChoices.type';
@@ -84,6 +86,20 @@ The same component can also be used to display the answers of the voter and anot
     onChange = undefined,
     ...restProps
   }: QuestionChoicesProps = $props();
+
+  ////////////////////////////////////////////////////////////////////
+  // Display-mode styling
+  ////////////////////////////////////////////////////////////////////
+
+  /**
+   * How a choice is drawn in `display` mode when NEITHER the voter NOR the entity picked it: a small dot sitting on the connecting line, rather than a full-size ring.
+   *
+   * This used to be a pair of stacked pseudo-class rules in the scoped style block below, matching inputs that were disabled, unchecked and not entity-selected. Naming the class set and applying it from a visible predicate puts the condition next to the markup it governs. It is applied ON TOP OF an input's base class string, and `cn` resolves the overlap — the base sizes and outline width lose to these — so the two need not be partitioned by hand.
+   */
+  const UNPICKED_DOT = 'm-8 h-16 w-16 border-none bg-(--line-bg) outline-2';
+
+  /** The checkbox form of {@link UNPICKED_DOT}: the same dot, keeping the checkbox's squared corners. */
+  const UNPICKED_DOT_CHECKBOX = `${UNPICKED_DOT} rounded-sm`;
 
   ////////////////////////////////////////////////////////////////////
   // Multi-select (checkbox) mode
@@ -170,10 +186,7 @@ The same component can also be used to display the answers of the voter and anot
     if (!multiMode) return undefined;
     const { minSelections, maxSelections } = getCustomData(question);
     if (minSelections == null && maxSelections == null) return undefined;
-    return {
-      effectiveMin: minSelections ?? 1,
-      effectiveMax: maxSelections ?? choices?.length ?? 0
-    };
+    return getEffectiveSelectionBounds({ minSelections, maxSelections, choiceCount: choices?.length ?? 0 });
   });
 
   // In order to achieve the correct behaviour with both mouse/touch and keyboard users and on different browsers, we have to listen a number of events. The radio inputs' events are fired in this order:
@@ -258,6 +271,7 @@ The same component can also be used to display the answers of the voter and anot
   use:onKeyboardFocusOut={handleGroupFocusOut}
   style:--radio-bg={onShadedBg ? 'var(--color-base-200)' : 'var(--color-base-100)'}
   style:--line-bg={onShadedBg ? 'var(--color-base-100)' : 'var(--color-base-200)'}
+  style:--num-choices={choices?.length ?? 0}
   class:vertical
   data-testid="question-choices"
   {...restProps}>
@@ -269,16 +283,14 @@ The same component can also be used to display the answers of the voter and anot
     {#if vertical}
       <div
         aria-hidden="true"
-        class="absolute left-16 w-4 -translate-x-1/2 bg-[var(--line-bg)]"
-        style="grid-column: 2; height: calc(100% / {choices?.length} * {(choices?.length ?? 0) -
-          1}); top: calc(50% / {choices?.length})">
+        class="absolute left-16 w-4 -translate-x-1/2 bg-(--line-bg)"
+        style="grid-column: 2; height: calc(100% / var(--num-choices) * (var(--num-choices) - 1)); top: calc(50% / var(--num-choices))">
       </div>
     {:else}
       <div
         aria-hidden="true"
-        class="absolute top-16 h-4 -translate-y-1/2 bg-[var(--line-bg)]"
-        style="grid-row: 2; width: calc(100% / {choices?.length} * {(choices?.length ?? 0) -
-          1}); left: calc(50% / {choices?.length})">
+        class="absolute top-16 h-4 -translate-y-1/2 bg-(--line-bg)"
+        style="grid-row: 2; width: calc(100% / var(--num-choices) * (var(--num-choices) - 1)); left: calc(50% / var(--num-choices))">
       </div>
     {/if}
   {/if}
@@ -290,6 +302,10 @@ The same component can also be used to display the answers of the voter and anot
       {@const voterSelected = selectedIds?.includes(id) ?? false}
       {@const entitySelected = otherSelectedIds?.includes(id) ?? false}
       {@const hasAnySelection = (selectedIds?.length ?? 0) > 0 || (otherSelectedIds?.length ?? 0) > 0}
+      <!-- NB. deliberately NOT the same predicate as the `sr-only` one below, which additionally
+           requires that SOMETHING is selected. With nothing selected the labels stay visible but every
+           option is still drawn as a dot. -->
+      {@const unpicked = mode === 'display' && !voterSelected && !entitySelected}
 
       <!-- The voter's and entity's answers in `display` mode -->
       {#if mode === 'display'}
@@ -311,7 +327,10 @@ The same component can also be used to display the answers of the voter and anot
       <label>
         <input
           type="checkbox"
-          class="checkbox-primary checkbox border-lg bg-base-100 relative h-32 w-32 outline outline-4 outline-[var(--radio-bg)] disabled:opacity-100"
+          class={cn(
+            'checkbox-primary checkbox border-lg relative h-32 w-32 outline-4 outline-(--radio-bg) disabled:opacity-100',
+            unpicked && UNPICKED_DOT_CHECKBOX
+          )}
           class:entitySelected
           name="questionChoices-{question.id}"
           disabled={mode !== 'answer'}
@@ -333,6 +352,11 @@ The same component can also be used to display the answers of the voter and anot
         </div>
       </label>
     {:else}
+      <!-- NB. deliberately NOT the same predicate as the `sr-only` one below, which additionally
+           requires that SOMETHING is selected. With nothing selected the labels stay visible but every
+           option is still drawn as a dot. -->
+      {@const unpicked = mode === 'display' && selectedId != id && otherSelected != id}
+
       <!-- The voter's and entity's answers in `display` mode -->
       {#if mode === 'display'}
         {@const style = `grid-${vertical ? 'row' : 'column'}: ${i + 1};`}
@@ -356,7 +380,10 @@ The same component can also be used to display the answers of the voter and anot
         <!-- bind: keep — $state target for bind:this; inputs is $state({}) per the declaration above; two-way DOM radio group bind:group={selected}, selected is $state. Directive order is immaterial for these shapes under Svelte 5 semantics. -->
         <input
           type="radio"
-          class="radio-primary radio border-lg bg-base-100 relative h-32 w-32 outline outline-4 outline-[var(--radio-bg)] disabled:opacity-100"
+          class={cn(
+            'radio-primary radio border-lg bg-base-100 relative h-32 w-32 outline-4 outline-(--radio-bg) disabled:opacity-100',
+            unpicked && UNPICKED_DOT
+          )}
           class:entitySelected={otherSelected == id}
           name="questionChoices-{question.id}"
           disabled={mode !== 'answer'}
@@ -444,10 +471,9 @@ The same component can also be used to display the answers of the voter and anot
     grid-row: 1;
   }
 
-  input[type='radio']:disabled:not(:checked):not(.entitySelected) {
-    @apply m-8 h-16 w-16 border-none bg-[var(--line-bg)] outline-2;
-  }
-
+  /* NB. the styling of an option nobody picked is no longer here — it is the `UNPICKED_DOT` const in
+     the script block, applied from a visible predicate. The rule below stays: it needs
+     `.entitySelected` as a selector hook, and its `box-shadow` has no utility equivalent. */
   input.entitySelected:disabled:not(:checked) {
     @apply border-neutral bg-neutral;
     box-shadow:

@@ -1,6 +1,6 @@
+import { log } from '@openvaa/app-shared';
 import { isObjectType, OBJECT_TYPE } from '@openvaa/data';
 import { Match } from '@openvaa/matching';
-import { logDebugError } from '$lib/utils/logger';
 import { MatchingProxy } from './imputeParentAnswers.type';
 import { median } from './median';
 import { mode } from './mode';
@@ -116,7 +116,7 @@ export function imputeParentAnswers<
         }
         // TODO: For preference order questions, use the Borda count (https://en.wikipedia.org/wiki/Borda_count)
       } catch (e) {
-        logDebugError(`Matching.imputeParentAnswers: Error imputing answer for question ${question.id}:`, e);
+        log.error(`Matching.imputeParentAnswers: Error imputing answer for question ${question.id}`, { err: e });
         continue;
       }
 

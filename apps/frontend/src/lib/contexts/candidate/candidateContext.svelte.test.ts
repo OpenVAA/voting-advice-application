@@ -74,7 +74,7 @@ vi.mock('./candidateUserDataState.svelte', () => ({
 vi.mock('$lib/api/dataWriter', () => ({ dataWriter: Promise.resolve({}) }));
 // `$app/navigation` is resolved via the vitest.config alias stub (src/lib/i18n/tests/__mocks__/app-navigation.ts) — no per-test mock needed.
 
-describe('candidateContext questionBlocks — Bug 1 (RUNES-05): entityType passed to getApplicableQuestions', () => {
+describe('candidateContext questionBlocks — RUNES-05: entityType passed to getApplicableQuestions', () => {
   let cleanup: (() => void) | undefined;
 
   afterEach(() => {
@@ -83,7 +83,7 @@ describe('candidateContext questionBlocks — Bug 1 (RUNES-05): entityType passe
     vi.clearAllMocks();
   });
 
-  it('every blocks-path getApplicableQuestions call receives entityType === Candidate (RED until :378 fix)', async () => {
+  it('every blocks-path getApplicableQuestions call receives entityType === Candidate', async () => {
     spies.getApplicableQuestions.mockReturnValue([
       { id: 'opinion-cat-q1', isMatchable: true, category: { id: 'opinion-cat' } } as unknown as AnyQuestionVariant
     ]);

@@ -1,4 +1,4 @@
-import { logDebugError } from '../logger';
+import { log } from '@openvaa/app-shared';
 import type { RGB } from './rgb';
 
 /**
@@ -13,12 +13,12 @@ export function parseColorString(color: string): RGB | undefined {
   if (color.startsWith('rgb(') && color.endsWith(')')) {
     const rgbValues = color.substring(4, color.length - 1).split(',');
     if (rgbValues.length !== 3) {
-      logDebugError('Invalid RGB color format. Please provide three comma-separated values.');
+      log.debug('Invalid RGB color format. Please provide three comma-separated values.');
       return undefined;
     }
     const out = rgbValues.map((v) => parseInt(v, 10));
     if (out.find((v) => isNaN(v))) {
-      logDebugError('Invalid RGB color format. RGB values must be integers.');
+      log.debug('Invalid RGB color format. RGB values must be integers.');
       return undefined;
     }
     return out as RGB;
@@ -26,7 +26,7 @@ export function parseColorString(color: string): RGB | undefined {
   // Remove '#' if present
   if (color.startsWith('#')) color = color.slice(1);
   if (!color.match(/^(?:[0-9a-f]{3}|[0-9a-f]{6})$/i)) {
-    logDebugError(`Invalid color format (${color}). Please use hex format or RGB format.`);
+    log.debug(`Invalid color format (${color}). Please use hex format or RGB format.`);
     return undefined;
   }
   // Short hex

@@ -90,8 +90,7 @@ The trigger is a focusable `button` (W3C APG tooltip pattern) whose accessible n
     if (visible) calculatePosition();
   }}
   onkeydown={(e) => {
-    // WCAG 2.1 AA SC 1.4.13: content shown on hover/focus must be dismissible
-    // without moving the pointer or focus. Escape hides the popup in place.
+    // WCAG 2.1 AA SC 1.4.13: content shown on hover/focus must be dismissible without moving the pointer or focus. Escape hides the popup in place.
     if (e.key === 'Escape' && visible) dismissed = true;
   }} />
 

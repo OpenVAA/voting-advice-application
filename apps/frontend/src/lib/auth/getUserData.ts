@@ -1,6 +1,25 @@
-import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
-import { logDebugError } from '$lib/utils/logger';
+import { log } from '@openvaa/app-shared';
+import { createDataWriter } from '$lib/api/dataWriter';
 import type { BasicUserData } from '$lib/api/base/dataWriter.type';
+import type { AdapterSource } from '$lib/api/dataProvider';
+
+/**
+ * The one member of the ancestor's data this helper reads.
+ *
+ * `session` was typed `unknown`, which made the pre-check `if (!parentData.session)` accept ANY truthy value as evidence of a session — a string, a number, `true`. Naming a member the ancestor's session data actually carries rejects those at the type level, and the member below is REQUIRED rather than optional precisely so that a truthy scalar cannot pass as evidence of a session. It is described structurally rather than imported, because `Session` comes from `@supabase/supabase-js`, which the adapter-boundary guard bans outside `src/lib/api/adapters/**`, and this helper has no business naming the auth vendor.
+ *
+ * NARROWED with its producers (phase 158, D10 criterion 13). It named `access_token` while the two ancestor server loads returned the whole `Session`; those loads now return a PROJECTION — `{ userId, expiresAt }` — because everything a server load returns is serialised into the hydration payload, and the whole `Session` put a refresh token into the document of every authenticated page. The type follows the payload: it names `userId`, which the payload carries, rather than a credential the payload no longer has. The REQUIRED-member property is preserved, not relaxed — `{ session: true }` and `{ session: { expiresAt: 1 } }` are both still rejected, and `routes/admin/layout.server.test.ts` asserts that at compile time.
+ *
+ * @example
+ * ```ts
+ * // Accepted — the shape `routes/admin/+layout.server.ts` and `routes/candidate/+layout.server.ts` return.
+ * { session: { userId: 'a1b2', expiresAt: 1893456000 } }
+ * { session: null }
+ * // Rejected — a truthy value that is not evidence of a session.
+ * { session: true }
+ * ```
+ */
+type ParentSessionData = { session?: { userId: string } | null };
 
 /**
  * A utility for getting the user data in a load or server function.
@@ -18,25 +37,22 @@ import type { BasicUserData } from '$lib/api/base/dataWriter.type';
  * @param options.parent - The ancestor data loader used for the session pre-check.
  * @returns BasicUserData or undefined if user data is not available.
  */
-export async function getUserData({
-  fetch,
-  parent
-}: {
-  fetch: Fetch;
-  parent?: () => Promise<{ session?: unknown }>;
-}): Promise<BasicUserData | undefined> {
+export async function getUserData(
+  source: AdapterSource,
+  options?: { parent?: () => Promise<ParentSessionData> }
+): Promise<BasicUserData | undefined> {
+  const parent = options?.parent;
+
   // If parent provided, check if session exists
   if (parent) {
     const parentData = await parent();
     if (!parentData.session) return undefined;
   }
 
-  const dataWriter = await dataWriterPromise;
-  dataWriter.init({ fetch });
+  const dataWriter = createDataWriter(source);
 
-  // authToken is ignored by Supabase adapter -- session is cookie-based
-  const userData = await dataWriter.getBasicUserData({ authToken: '' }).catch((e) => {
-    logDebugError(`Error fetching user data: ${e?.message ?? 'No error message'}`);
+  const userData = await dataWriter.getBasicUserData().catch((e) => {
+    log.error(`Error fetching user data: ${e?.message ?? 'No error message'}`);
     return undefined;
   });
 

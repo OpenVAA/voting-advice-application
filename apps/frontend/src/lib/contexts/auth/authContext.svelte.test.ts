@@ -24,13 +24,9 @@ vi.mock('$app/state', () => ({
   }
 }));
 
-// The arrow-field DataWriter wrappers await `prepareDataWriter(dataWriterPromise)`
-// then forward to the resolved writer. Stub both so the wrappers are invocable
-// without a live DataWriter; we assert the wrappers are callable / detach-safe,
-// NOT the DataWriter behavior (that is the adapter's contract, unchanged here).
-vi.mock('$lib/api/dataWriter', () => ({ dataWriter: writer }));
+// The arrow-field DataWriter wrappers call `prepareDataWriter()` and forward to the writer it builds. Stub it so the wrappers are invocable without a live DataWriter; we assert the wrappers are callable / detach-safe, NOT the DataWriter behavior (that is the adapter's contract, unchanged here).
 vi.mock('../utils/prepareDataWriter', () => ({
-  prepareDataWriter: vi.fn(async () => writer)
+  prepareDataWriter: vi.fn(() => writer)
 }));
 
 describe('AuthContextProvider', () => {

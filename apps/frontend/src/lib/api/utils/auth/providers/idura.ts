@@ -13,8 +13,10 @@
 import * as jose from 'jose';
 import { constants } from '$lib/server/constants';
 import { constants as publicConstants } from '$lib/utils/constants';
-import { IDURA_AUTH_CONFIG } from './authConfig';
+import { requireConfigured } from './requireConfigured';
+import { decryptAndVerifyIdToken } from '../decryptAndVerifyIdToken';
 import type {
+  AuthConfig,
   AuthorizeParams,
   AuthorizeResult,
   IdentityProvider,
@@ -22,6 +24,22 @@ import type {
   TokenExchangeParams,
   TokenExchangeResult
 } from './types';
+
+/**
+ * Idura claim mapping configuration.
+ *
+ * Idura Finnish Trust Network authentication returns a stable `sub` claim as the primary identifier. Additional Finnish-specific claims (`birthdate`, `hetu`, `country`) are extracted for metadata storage. `identityMatchProp` names the claim used to match a returning user to their existing candidate record and MUST be unique per person -- see `AuthConfig.identityMatchProp` in `types.ts` for what goes wrong when it is not.
+ *
+ * - Identity matching: `sub` (stable OIDC subject identifier)
+ * - Name claims: Standard OIDC `given_name` and `family_name`
+ * - Extra claims: `birthdate`, `hetu` (Finnish personal identity code), `country`
+ */
+export const IDURA_AUTH_CONFIG: AuthConfig = {
+  identityMatchProp: 'sub',
+  extractClaims: ['birthdate', 'hetu', 'country'],
+  firstNameProp: 'given_name',
+  lastNameProp: 'family_name'
+};
 
 /**
  * Load the Idura RS256 signing key from environment configuration.
@@ -46,6 +64,13 @@ export const iduraProvider: IdentityProvider = {
 
   async getAuthorizeUrl({ redirectUri }: AuthorizeParams): Promise<AuthorizeResult> {
     const clientId = publicConstants.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID;
+
+    // Ordered BEFORE `getSigningKey()` deliberately. Both can fail on missing configuration, and when several variables are unset at once the first error a caller sees should name the plain missing ones rather than the signing key — "Idura signing key not found for kid: " with an empty kid sends you looking at JWKS parsing when the real problem is that no env file was read at all. An empty `IDURA_DOMAIN` would otherwise build `https:///oauth2/authorize` and an empty `clientId` would sign a JAR with `iss: ''`, both of which fail much later and much less legibly.
+    requireConfigured({
+      PUBLIC_IDENTITY_PROVIDER_CLIENT_ID: clientId,
+      IDURA_DOMAIN: constants.IDURA_DOMAIN
+    });
+
     const { key: signingKey, jwk: signingJwk } = await getSigningKey();
 
     const state = crypto.randomUUID();
@@ -111,24 +136,7 @@ export const iduraProvider: IdentityProvider = {
 
   async getIdTokenClaims(idToken: string): Promise<IdTokenClaimsResult> {
     try {
-      const privateEncryptionJWKSet: Array<jose.JWK> = JSON.parse(constants.IDENTITY_PROVIDER_DECRYPTION_JWKS || '[]');
-
-      const { kid } = jose.decodeProtectedHeader(idToken);
-      const privateEncryptionJWK = privateEncryptionJWKSet.find((jwk) => jwk.kid === kid);
-
-      if (!privateEncryptionJWK) {
-        throw new Error(`Cannot decode ID token: JWK not found: kid=${kid}.`);
-      }
-
-      const { plaintext } = await jose.compactDecrypt(idToken, await jose.importJWK(privateEncryptionJWK));
-      const { payload } = await jose.jwtVerify(
-        new TextDecoder().decode(plaintext),
-        jose.createRemoteJWKSet(new URL(constants.IDENTITY_PROVIDER_JWKS_URI!)),
-        {
-          audience: publicConstants.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID,
-          issuer: constants.IDENTITY_PROVIDER_ISSUER
-        }
-      );
+      const payload = await decryptAndVerifyIdToken(idToken);
 
       const extractedClaims: Record<string, string> = Object.fromEntries(
         IDURA_AUTH_CONFIG.extractClaims.map((claim) => [claim, String(payload[claim] ?? '')])

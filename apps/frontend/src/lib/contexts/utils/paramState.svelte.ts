@@ -1,6 +1,6 @@
 import { page } from '$app/state';
-import { parseParams } from '$lib/utils/route';
-import type { ArrayParam, Param } from '$lib/utils/route';
+import { parseParams } from '$lib/routes';
+import type { ArrayParam, Param } from '$lib/routes';
 
 /**
  * A Svelte 5 class holding the reactive value of a route or search parameter.

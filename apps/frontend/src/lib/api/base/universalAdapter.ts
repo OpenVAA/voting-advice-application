@@ -3,6 +3,7 @@ import { constants } from '$lib/utils/constants';
 import { addHeader } from '../utils/addHeader';
 import { hasAuthHeaders } from '../utils/authHeaders';
 import { cachifyUrl } from '../utils/cachifyUrl';
+import { isRefusedResponse } from '../utils/isRefusedResponse';
 import { parseResponse } from '../utils/parseResponse';
 import type { ParsedResponse, ResponseParser } from '../utils/parseResponse';
 import type { AdapterConfig, FetchOptions, GetOptions, PostOptions, SearchParams } from './universalAdapter.type';
@@ -13,14 +14,13 @@ const DEFAULT_PARSER = 'json' as const;
  * The abstract base class for all the universal Data API services. It provides the `fetch` handling, wrapped in possible caching, that all of them share.
  */
 export abstract class UniversalAdapter {
-  #fetch: Fetch | undefined;
+  readonly #fetch: Fetch;
 
   /**
    * @param config - The adapter's configuration. Its `fetch` is the one this adapter makes every API call through, and it belongs to a single request.
    */
-  init({ fetch }: AdapterConfig): this {
+  constructor({ fetch }: AdapterConfig) {
     this.#fetch = fetch;
-    return this;
   }
 
   /**
@@ -39,8 +39,6 @@ export abstract class UniversalAdapter {
     init: RequestInit = {},
     { authToken, disableCache }: FetchOptions = {}
   ): Promise<Response> {
-    if (!this.#fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
-
     const { headers, ...initRest } = init;
     const fullHeaders = authToken ? addHeader(headers, 'Authorization', `Bearer ${authToken}`) : headers;
 
@@ -60,7 +58,8 @@ export abstract class UniversalAdapter {
       );
     });
 
-    if (!response.ok) {
+    // The refusal test is the shared predicate, not a second inline spelling of it: `parseResponse` applies the SAME one, so the adapter and the parser cannot disagree about what a refusal is.
+    if (isRefusedResponse(response)) {
       const body = await response.json().catch(() => ({}));
       const message = body?.message ?? '(Could not parse error message from Response.)';
       throw new Error(

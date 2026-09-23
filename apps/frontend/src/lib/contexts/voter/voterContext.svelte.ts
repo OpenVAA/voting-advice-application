@@ -1,10 +1,9 @@
-import { QUESTION_CATEGORY_TYPE } from '@openvaa/data';
+import { log } from '@openvaa/app-shared';
 import { DISTANCE_METRIC, MatchingAlgorithm, MISSING_VALUE_METHOD } from '@openvaa/matching';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext, untrack } from 'svelte';
 import { page } from '$app/state';
-import { logDebugError } from '$lib/utils/logger';
-import { getImpliedConstituencyIds, getImpliedElectionIds } from '$lib/utils/route';
+import { getImpliedConstituencyIds, getImpliedElectionIds } from '$lib/routes';
 import { answerState } from './answerState.svelte';
 import { countAnswers } from './countAnswers';
 import { filterState } from './filters/filterState.svelte';
@@ -15,6 +14,7 @@ import { getFilterContext, initFilterContext } from '../filter';
 import { inheritContextMembers } from '../utils/inheritContextMembers';
 import { paramState } from '../utils/paramState.svelte';
 import { sessionStorageState } from '../utils/persistedState.svelte';
+import { rollUpQuestionCategories } from '../utils/questionRollup';
 import type { CustomData } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { AnyQuestionVariant, Constituency, Election, EntityType, QuestionCategory } from '@openvaa/data';
@@ -23,22 +23,6 @@ import type { QuestionBlocks } from '../utils/questionBlockState.type';
 import type { VoterContext } from './voterContext.type';
 
 const CONTEXT_KEY = Symbol();
-
-// Content-equality short-circuit: every URL change runs `parseParams(page)`
-// which produces fresh query-param arrays even when content is unchanged
-// (e.g., drawer open/close adds /candidate/[id] route segments while
-// electionId search param is identical). Without this guard, every
-// navigation cascaded selectedElections → nominationAndQuestionState →
-// filterState, rebuilding FilterGroup instances and dropping any active
-// filter rules — surfaced during manual smoke (see phase 64) as "filter badge
-// disappears after closing candidate drawer". Svelte 4 stores absorbed this
-// via `writable.set()`'s no-op-write skip; Svelte 5 raw `$state` writes
-// need an explicit equality check.
-function sameRefs<TItem>(a: ReadonlyArray<TItem>, b: ReadonlyArray<TItem>): boolean {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
-  return true;
-}
 
 /**
  * The voter context (orchestrator) as a Svelte 5 CLASS (`VoterContextProvider`).
@@ -271,8 +255,6 @@ export class VoterContextProvider implements VoterContext {
   readonly dataRoot!: AppContext['dataRoot'];
   readonly setDataRoot!: AppContext['setDataRoot'];
   readonly sendTrackingEvent!: AppContext['sendTrackingEvent'];
-  readonly sessionId!: AppContext['sessionId'];
-  readonly shouldTrack!: AppContext['shouldTrack'];
   readonly startPageview!: AppContext['startPageview'];
   readonly startEvent!: AppContext['startEvent'];
   readonly track!: AppContext['track'];
@@ -324,15 +306,8 @@ export class VoterContextProvider implements VoterContext {
         const next = ids.map((id) => dr.getElection(id));
         if (!sameRefs(next, this.#selectedElections)) this.#selectedElections = next;
       } catch (e) {
-        // DataRoot lookup throws transiently during navigation: when the URL
-        // changes the page params arrive on the new route before the loader
-        // has finished re-providing the corresponding data. Falling back to a
-        // `goto('Elections')` here races with the in-flight navigation and
-        // boomerangs the user back to /elections — the silent-fail flake
-        // documented at multi-election.spec.ts:173. Clear the local mirror
-        // and let the route's `+page.ts` / `+layout.ts` `redirect()` decide
-        // whether a redirect is actually needed.
-        logDebugError(`[selectedElections] Error fetching election: ${e}`);
+        // DataRoot lookup throws transiently during navigation: when the URL changes the page params arrive on the new route before the loader has finished re-providing the corresponding data. Falling back to a `goto('Elections')` here races with the in-flight navigation and boomerangs the user back to /elections — the silent-fail flake documented at multi-election.spec.ts:173. Clear the local mirror and let the route's `+page.ts` / `+layout.ts` `redirect()` decide whether a redirect is actually needed.
+        log.error(`[selectedElections] Error fetching election: ${e}`);
         if (this.#selectedElections.length !== 0) this.#selectedElections = [];
       }
     });
@@ -359,10 +334,8 @@ export class VoterContextProvider implements VoterContext {
         const next = ids.map((id) => dr.getConstituency(id));
         if (!sameRefs(next, this.#selectedConstituencies)) this.#selectedConstituencies = next;
       } catch (e) {
-        // See parallel selectedElections catch above — clear the local mirror
-        // and let the route loader handle redirects so we don't race the
-        // in-flight navigation.
-        logDebugError(`[selectedConstituencies] Error fetching constituency: ${e}`);
+        // See parallel selectedElections catch above — clear the local mirror and let the route loader handle redirects so we don't race the in-flight navigation.
+        log.error(`[selectedConstituencies] Error fetching constituency: ${e}`);
         if (this.#selectedConstituencies.length !== 0) this.#selectedConstituencies = [];
       }
     });
@@ -376,29 +349,18 @@ export class VoterContextProvider implements VoterContext {
       const dr = this.#dataRoot;
       const elections = this.#selectedElections;
       const constituencies = this.#selectedConstituencies;
-      const nextQuestionCategories =
-        dr.questionCategories?.filter(
-          (c) =>
-            c.appliesTo({ elections, constituencies }) &&
-            c.getApplicableQuestions({ elections, constituencies }).length > 0
-        ) ?? [];
-      const nextInfoCats = nextQuestionCategories.filter((qc) => qc.type !== QUESTION_CATEGORY_TYPE.Opinion);
-      const nextOpinionCats = nextQuestionCategories.filter((qc) => qc.type === QUESTION_CATEGORY_TYPE.Opinion);
-      // Voter-app filters out hidden questions (per `questionState` original
-      // behavior with appType: 'voter'). The opinion-question matchability check
-      // mirrors the helper's invariant.
-      const nextInfoQuestions = nextInfoCats.flatMap((c) =>
-        c
-          .getApplicableQuestions({ elections, constituencies })
-          .filter((q) => !(q.customData as CustomData['Question'])?.hidden)
-      );
-      const nextOpinionQuestions = nextOpinionCats.flatMap((c) => {
-        const questions = c
-          .getApplicableQuestions({ elections, constituencies })
-          .filter((q) => !(q.customData as CustomData['Question'])?.hidden);
-        if (c.type === QUESTION_CATEGORY_TYPE.Opinion && questions.some((q) => !q.isMatchable))
-          error(500, `Some opinion questions in category ${c.id} is not matchable.`);
-        return questions;
+      // `dr` was read above, inside this effect's tracking scope, and is handed to the shared rollup BY VALUE — never as a `$derived` alias and never as a thunk. See `../utils/questionRollup` for why either shape goes stale on cold entry.
+      // Voter-app filters out hidden questions (per `questionState` original behavior with appType: 'voter') on BOTH question kinds; the rollup applies the predicate to each. The opinion-question matchability check moved into the rollup unchanged.
+      const {
+        infoCategories: nextInfoCats,
+        opinionCategories: nextOpinionCats,
+        infoQuestions: nextInfoQuestions,
+        opinionQuestions: nextOpinionQuestions
+      } = rollUpQuestionCategories({
+        dataRoot: dr,
+        elections,
+        constituencies,
+        questionFilter: (q) => !(q.customData as CustomData['Question'])?.hidden
       });
 
       this.#infoQuestionCategories = nextInfoCats;
@@ -437,7 +399,7 @@ export class VoterContextProvider implements VoterContext {
       if (firstId) {
         const indexOfBlock = blocks.findIndex((b) => b.find((q) => q.id === firstId));
         if (indexOfBlock === -1) {
-          logDebugError(`Bypassing invalid first question id: ${firstId}.`);
+          log.debug(`Bypassing invalid first question id: ${firstId}.`);
         } else {
           const block = blocks[indexOfBlock];
           const indexInBlock = block.findIndex((q) => q.id === firstId);
@@ -578,4 +540,11 @@ export function getVoterContext(): VoterContext {
 export function initVoterContext(): VoterContext {
   if (hasContext(CONTEXT_KEY)) error(500, 'initVoterContext() called for a second time');
   return setContext<VoterContext>(CONTEXT_KEY, new VoterContextProvider());
+}
+
+// Content-equality short-circuit: every URL change runs `parseParams(page)` which produces fresh query-param arrays even when content is unchanged (e.g., drawer open/close adds /candidate/[id] route segments while electionId search param is identical). Without this guard, every navigation cascaded selectedElections → nominationAndQuestionState → filterState, rebuilding FilterGroup instances and dropping any active filter rules — observed in the browser as "filter badge disappears after closing candidate drawer". Svelte 4 stores absorbed this via `writable.set()`'s no-op-write skip; Svelte 5 raw `$state` writes need an explicit equality check.
+function sameRefs<TItem>(a: ReadonlyArray<TItem>, b: ReadonlyArray<TItem>): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
 }

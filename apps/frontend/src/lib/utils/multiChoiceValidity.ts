@@ -10,6 +10,21 @@
  *
  * `getEffectiveSelectionBounds` exposes the same two bounds for callers that need to DISPLAY them rather than decide saveability — `QuestionChoices`' selection-count helper text. It is exported so that derivation lives here once: a caller that recomputed `minSelections ?? 1` for a label would tell the user zero selections are allowed while this gate refuses to save them.
  */
+export function getEffectiveSelectionBounds({
+  minSelections,
+  maxSelections,
+  choiceCount
+}: {
+  minSelections?: number | null;
+  maxSelections?: number | null;
+  choiceCount: number;
+}): { effectiveMin: number; effectiveMax: number } {
+  return {
+    effectiveMin: Math.max(minSelections ?? 1, 1),
+    effectiveMax: maxSelections ?? choiceCount
+  };
+}
+
 export function isMultiChoiceCountValid({
   count,
   minSelections,
@@ -21,7 +36,6 @@ export function isMultiChoiceCountValid({
   maxSelections?: number | null;
   choiceCount: number;
 }): boolean {
-  const effectiveMin = minSelections ?? 1;
-  const effectiveMax = maxSelections ?? choiceCount;
+  const { effectiveMin, effectiveMax } = getEffectiveSelectionBounds({ minSelections, maxSelections, choiceCount });
   return count >= effectiveMin && count <= effectiveMax;
 }

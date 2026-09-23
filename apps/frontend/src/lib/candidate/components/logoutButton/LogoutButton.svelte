@@ -23,11 +23,11 @@ Accesses `CandidateContext`.
 -->
 
 <script lang="ts">
+  import { log } from '@openvaa/app-shared';
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
   import { TimedModal } from '$lib/components/modal/timed';
   import { getCandidateContext } from '$lib/contexts/candidate';
-  import { logDebugError } from '$lib/utils/logger';
   import type { LogoutButtonProps } from './LogoutButton.type';
 
   let { stayOnPage = false, logoutModalTimer = 30, ...restProps }: LogoutButtonProps = $props();
@@ -65,7 +65,7 @@ Accesses `CandidateContext`.
 
   async function handleLogout() {
     await logout().catch((e) => {
-      logDebugError(`Error logging out: ${e?.message}`);
+      log.error(`Error logging out: ${e?.message}`);
     });
     timedModalRef?.closeModal();
     if (!stayOnPage) {

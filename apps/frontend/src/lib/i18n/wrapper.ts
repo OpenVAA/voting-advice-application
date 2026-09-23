@@ -1,5 +1,5 @@
+import { log } from '@openvaa/app-shared';
 import * as m from '$lib/paraglide/messages';
-import { logDebugError } from '$lib/utils/logger';
 import { getOverride } from './overrides';
 import type { TranslationKey } from '$lib/types/generated/translationKey';
 
@@ -27,7 +27,7 @@ export function t(key: TranslationKey, params?: Record<string, unknown>): string
     try {
       return messageFn(params);
     } catch (e) {
-      logDebugError(e);
+      log.error('Paraglide message function threw; falling back to the message key', { err: e });
       return key;
     }
   }

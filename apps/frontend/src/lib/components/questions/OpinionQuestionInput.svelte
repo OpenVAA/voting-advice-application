@@ -29,11 +29,10 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
 -->
 
 <script lang="ts">
-  import { getCustomData } from '@openvaa/app-shared';
+  import { getCustomData, log } from '@openvaa/app-shared';
   import { isBooleanQuestion, isMultipleChoiceQuestion, isNumberQuestion, isSingleChoiceQuestion } from '@openvaa/data';
   import { untrack } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
-  import { logDebugError } from '$lib/utils/logger';
   import { isMultiChoiceCountValid } from '$lib/utils/multiChoiceValidity';
   import NumberScaleInput from './NumberScaleInput.svelte';
   import QuestionChoices from './QuestionChoices.svelte';
@@ -92,7 +91,7 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
   // Debug warning — runs reactively so devs see the warning whenever the prop combination becomes invalid, not just at mount.
   $effect(() => {
     if (mode === 'display' && otherAnswer && !otherLabel)
-      logDebugError('You should supply an otherLabel when mode is "display" and otherSelected is provided');
+      log.debug('You should supply an otherLabel when mode is "display" and otherSelected is provided');
   });
 
   ////////////////////////////////////////////////////////////////////
@@ -121,7 +120,7 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
   }
 </script>
 
-<div data-testid="opinion-question-input">
+<div data-testid="opinion-question-input" class="w-full">
   {#if isSingleChoiceQuestion(question)}
     {@const selectedId = question.ensureValue(answer?.value)}
     {@const otherSelected = question.ensureValue(otherAnswer?.value)}
@@ -182,12 +181,7 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
       onChange={(d) => {
         if (Array.isArray(d.value)) {
           currentMultiSelection = d.value;
-          // Assign the bound `valid` SYNCHRONOUSLY before bubbling onChange:
-          // `$bindable` writes propagate to the parent's bound $state within this
-          // same call stack, whereas the validity $effect above flushes only
-          // after the event handler returns. The voter layout's handleAnswer
-          // reads `opinionInputValid` inside this synchronous
-          // onChange stack, so it must see fresh validity here.
+          // Assign the bound `valid` SYNCHRONOUSLY before bubbling onChange: `$bindable` writes propagate to the parent's bound $state within this same call stack, whereas the validity $effect above flushes only after the event handler returns. The voter layout's handleAnswer reads `opinionInputValid` inside this synchronous onChange stack, so it must see fresh validity here.
           valid = computeMultiChoiceValid(d.value.length);
         }
         onChange?.({ value: d.value, question: d.question });

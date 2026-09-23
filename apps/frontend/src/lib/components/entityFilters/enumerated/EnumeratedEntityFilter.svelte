@@ -15,12 +15,12 @@
 -->
 
 <script lang="ts">
+  import { log } from '@openvaa/app-shared';
   import { isMissing, MISSING_VALUE } from '@openvaa/filters';
   import { onDestroy } from 'svelte';
   import { Icon } from '$lib/components/icon';
   import { getComponentContext } from '$lib/contexts/component';
   import { concatProps, getUUID } from '$lib/utils/components';
-  import { logDebugError } from '$lib/utils/logger';
   import type { AnyChoice, AnyEntityVariant } from '@openvaa/data';
   import type { MaybeMissing } from '@openvaa/filters';
   import type { EnumeratedEntityFilterProps } from './EnumeratedEntityFilter.type';
@@ -159,7 +159,7 @@
     if ('shortName' in object) return object.shortName;
     // Choice
     if ('label' in object) return object.label;
-    logDebugError(`EnumeratedEntityFilter: entity's answer resulted in an invalid object: ${object}`);
+    log.debug(`EnumeratedEntityFilter: entity's answer resulted in an invalid object: ${object}`);
     return undefined;
   }
 </script>

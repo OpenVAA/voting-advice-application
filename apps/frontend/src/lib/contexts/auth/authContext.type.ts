@@ -37,5 +37,5 @@ export type AuthContext = {
    * The one argument is the new password: authorisation comes from the active Supabase session (verified via cookies), so no current password is collected or forwarded. The wrapper serves three flows that all supply only a new password — the settings change-password page, the register first-set page and the post-recovery password-reset page.
    * @param password - The new password.
    */
-  setPassword: (opts: { currentPassword?: string; password: string }) => Promise<DataApiActionResult>;
+  setPassword: (opts: { password: string }) => Promise<DataApiActionResult>;
 };

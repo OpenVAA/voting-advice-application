@@ -6,7 +6,7 @@ import { Tween } from 'svelte/motion';
 import { afterNavigate, beforeNavigate } from '$app/navigation';
 import { DELAY } from '$lib/utils/timing';
 import { VideoController } from './VideoController.svelte';
-import { settingsOverlay } from '../utils/SettingsOverlay.svelte';
+import { settingsOverlay } from '../utils/settingsOverlay.svelte';
 import type { DeepPartial } from '@openvaa/app-shared';
 import type {
   LayoutContext,

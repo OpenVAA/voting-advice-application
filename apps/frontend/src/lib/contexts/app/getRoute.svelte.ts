@@ -1,6 +1,6 @@
 import { page } from '$app/state';
-import { buildRoute } from '$lib/utils/route';
-import type { RouteOptions } from '$lib/utils/route';
+import { buildRoute } from '$lib/routes';
+import type { RouteOptions } from '$lib/routes';
 
 export type RouteBuilder = (options: RouteOptions) => string;
 

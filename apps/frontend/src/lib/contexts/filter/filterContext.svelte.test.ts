@@ -24,8 +24,6 @@ vi.mock('@sveltejs/kit', () => ({
   }
 }));
 
-vi.mock('$lib/utils/logger', () => ({ logDebugError: vi.fn() }));
-
 /**
  * Fake Filter implementing the subset of the @openvaa/filters Filter API used by filterContext.
  * Mirrors the public surface: `name`, `active`, `setRule()`, `reset()`, `onChange(handler, add)`.
@@ -255,7 +253,7 @@ describe('filterContext', () => {
     expect(resetSpy).toHaveBeenCalledTimes(1);
   });
 
-  it('removes the onChange listener on unmount (Pitfall 2 cleanup)', () => {
+  it('removes the onChange listener on unmount', () => {
     const oldGroup = new FakeGroup([new FakeFilter('old')]);
     const tree = { e1: { candidate: oldGroup } } as unknown as FilterTree;
     setParams({ electionId: 'e1', entityTab: 'candidates' });

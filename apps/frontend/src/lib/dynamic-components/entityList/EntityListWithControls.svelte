@@ -28,7 +28,7 @@ This component reads `fctx.version` inside its `$derived` so that any filter-rul
   import { concatClass } from '$lib/utils/components';
   import { DELAY } from '$lib/utils/timing';
   import EntityList from './EntityList.svelte';
-  import { computeFiltered, countActiveFilters } from './EntityListWithControls.helpers';
+  import { computeFiltered, countActiveFilters } from './helpers';
   import type { FilterGroup } from '@openvaa/filters';
   import type { EntityListWithControlsProps } from './EntityListWithControls.type';
 

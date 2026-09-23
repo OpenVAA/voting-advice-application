@@ -1,6 +1,6 @@
+import { log } from '@openvaa/app-shared';
 import { ADMIN_FEATURES } from '$lib/admin/features';
 import { UNIVERSAL_API_ROUTES } from '$lib/api/base/universalApiRoutes';
-import { logDebugError } from '$lib/utils/logger';
 import { compareDates } from '$lib/utils/sorting';
 import type { AdminFeature } from '$lib/admin/features';
 import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
@@ -62,7 +62,7 @@ export class JobStatesProvider implements JobStates {
 
   startPolling = () => {
     if (this.#pollInterval) return;
-    logDebugError('[JobPollingService] Starting polling...');
+    log.debug('[JobPollingService] Starting polling...');
     // Poll every 2 seconds
     this.#pollInterval = setInterval(async () => {
       await this.#fetchAndUpdateJobs();
@@ -74,7 +74,7 @@ export class JobStatesProvider implements JobStates {
 
   stopPolling = () => {
     if (!this.#pollInterval) return;
-    logDebugError('[JobPollingService] Stopping polling service...');
+    log.debug('[JobPollingService] Stopping polling service...');
     clearInterval(this.#pollInterval);
     this.#pollInterval = undefined;
   };
@@ -86,7 +86,7 @@ export class JobStatesProvider implements JobStates {
   // Fetch jobs from API and update state
   #fetchAndUpdateJobs = async () => {
     try {
-      logDebugError('[JobPollingService] Fetching jobs...');
+      log.debug('[JobPollingService] Fetching jobs...');
 
       // Always fetch all active jobs (no delta)
       const activeUrl = new URL(UNIVERSAL_API_ROUTES.jobsActive, window.location.origin);
@@ -155,6 +155,6 @@ function isActive(job: JobInfo): boolean {
 
 function filterByKnownNames(job: JobInfo): boolean {
   const ok = ADMIN_FEATURES.includes(job.jobType);
-  if (!ok) logDebugError(`[JobPollingService] Ignoring unknown job: ${job.jobType}`);
+  if (!ok) log.debug(`[JobPollingService] Ignoring unknown job: ${job.jobType}`);
   return ok;
 }

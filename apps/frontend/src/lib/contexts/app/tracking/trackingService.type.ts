@@ -1,3 +1,4 @@
+import type { WritableHandle } from '../../utils/reactiveHandle.type';
 import type { TrackingEvent } from './trackingEvent.type';
 
 /**
@@ -39,18 +40,7 @@ export type TrackingService = {
   /**
    * A writable rune handle containing the function that will send the events. In order for tracking to do anything, this value must be set via `.set(...)` — it is set from the root layout, which is why it stays consumer-facing while the other two handle members do not.
    */
-  sendTrackingEvent: {
-    readonly current: TrackingHandler | null | undefined;
-    set(v: TrackingHandler | null | undefined): void;
-  };
-  /**
-   * A `{ readonly current }` rune handle containing the persistent sessionId.
-   */
-  sessionId: { readonly current: string };
-  /**
-   * A `{ readonly current }` rune handle resolving to `true` if we should track events.
-   */
-  shouldTrack: { readonly current: boolean };
+  sendTrackingEvent: WritableHandle<TrackingHandler | null | undefined>;
 };
 
 export type TrackingHandler = (event: TrackingEvent<Record<string, JSONData>>) => void;

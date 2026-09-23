@@ -110,7 +110,7 @@
     {#if actions}
       {@render actions()}
     {:else}
-      <Button onclick={closeAlert} color="warning" text={t('common.close')} class="-mt-[1rem] sm:mt-0" />
+      <Button onclick={closeAlert} color="warning" text={t('common.close')} class="-mt-16 sm:mt-0" />
     {/if}
   </div>
   <!-- spacing: keep top-2/right-2. It is already a project @theme token (--spacing-2 = 0.125rem = 2px), not an arbitrary value; the review's suggested top-sm/right-sm is --spacing-sm = 0.5rem = 8px, four times the current offset, and the nearest named token (xs = 0.25rem = 4px) still doubles it, so every named alternative changes the rendering that D-H6 requires to stay identical. The same class string is the four-site close-button house idiom, shared verbatim with Video.svelte:856, Modal.svelte:99 and Drawer.svelte:89. -->

@@ -35,7 +35,7 @@
     alliance: 'alliance',
     candidate: 'candidate',
     faction: 'candidates',
-    organization: 'party'
+    organization: 'organization'
   };
 </script>
 

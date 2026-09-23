@@ -1,19 +1,18 @@
-import { getCustomData } from '@openvaa/app-shared';
-import { ENTITY_TYPE, isEmptyValue, QUESTION_CATEGORY_TYPE } from '@openvaa/data';
+import { getCustomData, log } from '@openvaa/app-shared';
+import { ENTITY_TYPE, isEmptyValue } from '@openvaa/data';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import { dataWriter } from '$lib/api/dataWriter';
-import { logDebugError } from '$lib/utils/logger';
+import { getImpliedElectionIds } from '$lib/routes';
 import { removeDuplicates } from '$lib/utils/removeDuplicates';
-import { getImpliedElectionIds } from '$lib/utils/route';
 import { candidateUserDataState } from './candidateUserDataState.svelte';
 import { getAppContext } from '../app';
 import { getAuthContext } from '../auth';
 import { inheritContextMembers } from '../utils/inheritContextMembers';
 import { localStorageState, sessionStorageState } from '../utils/persistedState.svelte';
 import { prepareDataWriter } from '../utils/prepareDataWriter';
+import { rollUpQuestionCategories } from '../utils/questionRollup';
 import type { Id } from '@openvaa/core';
 import type { AnyQuestionVariant, Constituency, Election, QuestionCategory } from '@openvaa/data';
 import type { DataWriter } from '$lib/api/base/dataWriter.type';
@@ -85,7 +84,7 @@ export class CandidateContextProvider implements CandidateContext {
   // userData composite producer — declared AFTER #answersLocked + #locale because the getter-thunks read them. The thunks are lazy, so this is safe.
   #userData = candidateUserDataState({
     answersLocked: () => this.#answersLocked,
-    dataWriter,
+    dataWriter: prepareDataWriter,
     locale: () => this.#locale
   });
 
@@ -199,8 +198,6 @@ export class CandidateContextProvider implements CandidateContext {
   readonly dataRoot!: AppContext['dataRoot'];
   readonly setDataRoot!: AppContext['setDataRoot'];
   readonly sendTrackingEvent!: AppContext['sendTrackingEvent'];
-  readonly sessionId!: AppContext['sessionId'];
-  readonly shouldTrack!: AppContext['shouldTrack'];
   readonly startPageview!: AppContext['startPageview'];
   readonly startEvent!: AppContext['startEvent'];
   readonly track!: AppContext['track'];
@@ -253,7 +250,7 @@ export class CandidateContextProvider implements CandidateContext {
           current.nominations.nominations.map((n) => dr.getElection(n.electionId))
         );
       } catch (e) {
-        logDebugError(`[candidateContext selectedElections] Error fetching election: ${e}`);
+        log.error(`[candidateContext selectedElections] Error fetching election: ${e}`);
         this.#selectedElections = [];
       }
     });
@@ -270,7 +267,7 @@ export class CandidateContextProvider implements CandidateContext {
           current.nominations.nominations.map((n) => dr.getConstituency(n.constituencyId))
         );
       } catch (e) {
-        logDebugError(`[candidateContext selectedConstituencies] Error fetching constituency: ${e}`);
+        log.error(`[candidateContext selectedConstituencies] Error fetching constituency: ${e}`);
         this.#selectedConstituencies = [];
       }
     });
@@ -280,23 +277,14 @@ export class CandidateContextProvider implements CandidateContext {
       const elections = this.#selectedElections;
       const constituencies = this.#selectedConstituencies;
       const entityType = ENTITY_TYPE.Candidate;
-      const nextQuestionCategories =
-        dr.questionCategories?.filter(
-          (c) =>
-            c.appliesTo({ elections, constituencies, entityType }) &&
-            c.getApplicableQuestions({ elections, constituencies, entityType }).length > 0
-        ) ?? [];
-      const nextInfoCats = nextQuestionCategories.filter((qc) => qc.type !== QUESTION_CATEGORY_TYPE.Opinion);
-      const nextOpinionCats = nextQuestionCategories.filter((qc) => qc.type === QUESTION_CATEGORY_TYPE.Opinion);
-      const nextInfoQuestions = nextInfoCats.flatMap((c) =>
-        c.getApplicableQuestions({ elections, constituencies, entityType })
-      );
-      const nextOpinionQuestions = nextOpinionCats.flatMap((c) => {
-        const questions = c.getApplicableQuestions({ elections, constituencies, entityType });
-        if (c.type === QUESTION_CATEGORY_TYPE.Opinion && questions.some((q) => !q.isMatchable))
-          error(500, `Some opinion questions in category ${c.id} is not matchable.`);
-        return questions;
-      });
+      // `dr` was read above, inside this effect's tracking scope, and is handed to the shared rollup BY VALUE — never as a `$derived` alias and never as a thunk. See `../utils/questionRollup` for why either shape goes stale on cold entry.
+      const {
+        infoCategories: nextInfoCats,
+        opinionCategories: nextOpinionCats,
+        infoQuestions: nextInfoQuestions,
+        opinionQuestions: nextOpinionQuestions
+      } = rollUpQuestionCategories({ dataRoot: dr, elections, constituencies, entityType });
+      // Blocks stay here: the candidate app builds them from every opinion category, the voter app from a filtered and reordered subset, so sharing them would be a parameterised branch rather than shared logic.
       const nextBlocks = nextOpinionCats
         .map((c) => c.getApplicableQuestions({ elections, constituencies, entityType }))
         .filter((b) => b.length > 0);
@@ -337,11 +325,11 @@ export class CandidateContextProvider implements CandidateContext {
   checkRegistrationKey = (
     ...args: Parameters<DataWriter['checkRegistrationKey']>
   ): ReturnType<DataWriter['checkRegistrationKey']> => {
-    return prepareDataWriter(dataWriter).then((dw) => dw.checkRegistrationKey(...args));
+    return prepareDataWriter().checkRegistrationKey(...args);
   };
 
   register = (...args: Parameters<DataWriter['register']>): ReturnType<DataWriter['register']> => {
-    return prepareDataWriter(dataWriter).then((dw) => dw.register(...args));
+    return prepareDataWriter().register(...args);
   };
 
   exchangeCodeForIdToken = async (opts: {
@@ -349,14 +337,14 @@ export class CandidateContextProvider implements CandidateContext {
     codeVerifier: string;
     redirectUri: string;
   }): Promise<void> => {
-    const dw = await prepareDataWriter(dataWriter);
+    const dw = prepareDataWriter();
     try {
       const result = await dw.exchangeCodeForIdToken(opts);
       if (result.type === 'success') {
         return await goto(this.#getRoute.current('CandAppPreregister'), { invalidateAll: true });
       }
     } catch (e) {
-      logDebugError(`Error exchanging authorization code for ID token: ${e ?? '-'}`);
+      log.error(`Error exchanging authorization code for ID token: ${e ?? '-'}`);
     }
     return await goto(
       this.#getRoute.current({
@@ -378,7 +366,7 @@ export class CandidateContextProvider implements CandidateContext {
       };
     };
   }): Promise<void> => {
-    const dw = await prepareDataWriter(dataWriter);
+    const dw = prepareDataWriter();
     try {
       const result = await dw.preregisterWithIdToken(opts);
       const errorMap: Record<number, string> = { 401: 'tokenExpiredError', 409: 'candidateExistsError' };
@@ -397,7 +385,7 @@ export class CandidateContextProvider implements CandidateContext {
         { invalidateAll: true }
       );
     } catch (e) {
-      logDebugError(`Error preregistering a candidate: ${e ?? '-'}`);
+      log.error(`Error preregistering a candidate: ${e ?? '-'}`);
     }
     return await goto(this.#getRoute.current({ route: 'CandAppPreregisterStatus', code: 'unknownError' }), {
       invalidateAll: true
@@ -405,9 +393,9 @@ export class CandidateContextProvider implements CandidateContext {
   };
 
   clearIdToken = async (): Promise<void> => {
-    const dw = await prepareDataWriter(dataWriter);
+    const dw = prepareDataWriter();
     await dw.clearIdToken().catch((e) => {
-      logDebugError(`Error logging out: ${e?.message ?? '-'}`);
+      log.error(`Error logging out: ${e?.message ?? '-'}`);
     });
   };
 

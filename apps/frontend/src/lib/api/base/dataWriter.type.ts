@@ -67,17 +67,15 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * Access:  API token.
    * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
    */
-  preregisterWithApiToken: (
-    opts: {
-      body: {
-        firstName: string;
-        lastName: string;
-        identifier: string;
-        email: string;
-        nominations: Array<{ electionId: Id; constituencyId: Id }>;
-      };
-    } & WithAuth
-  ) => DWReturnType<DataApiActionResult, TType>;
+  preregisterWithApiToken: (opts: {
+    body: {
+      firstName: string;
+      lastName: string;
+      identifier: string;
+      email: string;
+      nominations: Array<{ electionId: Id; constituencyId: Id }>;
+    };
+  }) => DWReturnType<DataApiActionResult, TType>;
 
   /**
    * Clear the OIDC ID token.
@@ -112,23 +110,23 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * @param password - The password.
    * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one. Authorisation is carried by the session, so no token is returned.
    */
-  login: (opts: { username: string; password: string }) => DWReturnType<DataApiActionResult & Partial<WithAuth>, TType>;
+  login: (opts: { username: string; password: string }) => DWReturnType<DataApiActionResult, TType>;
   /**
    * Logout a user from both the frontend and the backend.
    * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
    */
-  logout: (opts: WithAuth) => DWReturnType<DataApiActionResult, TType>;
+  logout: () => DWReturnType<DataApiActionResult, TType>;
   /**
    * Logout a user from the backend only.
    * This is mostly used by the login server api route to undo a login attempt.
    * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
    */
-  backendLogout: (opts: WithAuth) => DWReturnType<DataApiActionResult, TType>;
+  backendLogout: () => DWReturnType<DataApiActionResult, TType>;
   /**
    * Get the basic data for a user, mostly their username, email, and preferred language.
    * @returns A `Promise` resolving to a `BasicUserData` object or a `Response` containing one.
    */
-  getBasicUserData: (opts: WithAuth) => DWReturnType<BasicUserData, TType>;
+  getBasicUserData: () => DWReturnType<BasicUserData, TType>;
 
   ////////////////////////////////////////////////////////////////////
   // Password handling
@@ -152,9 +150,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * @param password - The new password.
    * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
    */
-  setPassword: (
-    opts: WithAuth & { currentPassword: string; password: string }
-  ) => DWReturnType<DataApiActionResult, TType>;
+  setPassword: (opts: { password: string }) => DWReturnType<DataApiActionResult, TType>;
 
   ////////////////////////////////////////////////////////////////////
   // Getting data owned by the user
@@ -181,7 +177,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * @param answers - A `LocalizedAnswers` object containing the answers to update.
    * @returns A `Promise` resolving the updated `LocalizedAnswers` for the entity, or {@link UNVERIFIED_ANSWERS} when the write succeeded but its read-back could not be validated, or a `Response` containing either.
    */
-  updateAnswers: (opts: SetAnswersOptions) => DWReturnType<LocalizedAnswers, TType>;
+  updateAnswers: (opts: SetAnswersOptions) => DWReturnType<SetAnswersResult, TType>;
   /**
    * Overwrite the whole `answers` property of an entity owned by the user.
    * @param target.type - The type of the entity.
@@ -189,7 +185,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * @param answers - A `LocalizedAnswers` object containing the new `answers`.
    * @returns A `Promise` resolving the updated `LocalizedAnswers` for the entity, or {@link UNVERIFIED_ANSWERS} when the write succeeded but its read-back could not be validated, or a `Response` containing either.
    */
-  overwriteAnswers: (opts: SetAnswersOptions) => DWReturnType<LocalizedAnswers, TType>;
+  overwriteAnswers: (opts: SetAnswersOptions) => DWReturnType<SetAnswersResult, TType>;
   /**
    * Update any editable properties of an entity owned by the user.
    * @param target.type - The type of the entity.
@@ -211,24 +207,13 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   // Methods for the Admin App
   ////////////////////////////////////////////////////////////////////
 
-  /**
-   * Update the a `Question`.
-   * NB. This is a temporary implementation, which will be updated later to allow for setting other data as well, and which will return the updated, multi-locale data.
-   * @param authToken - The authorization token.
-   * @param id - The id of the question.
-   * @param data - The data to update.
-   * @returns A `Promise` resolving a `DataApiActionResult` or a `Response` containing one.
-   */
-  updateQuestion: (opts: SetQuestionOptions) => DWReturnType<DataApiActionResult, TType>;
-
   // Job management methods for the Admin App
   getActiveJobs: (opts: GetActiveJobsOptions) => DWReturnType<Array<JobInfo>, TType>;
   getPastJobs: (opts: GetPastJobsOptions) => DWReturnType<Array<JobInfo>, TType>;
   startJob: (opts: StartJobOptions) => DWReturnType<JobInfo, TType>;
   getJobProgress: (opts: GetJobProgressOptions) => DWReturnType<JobInfo, TType>;
   abortJob: (opts: AbortJobOptions) => DWReturnType<DataApiActionResult, TType>;
-  abortAllJobs: (opts: AbortAllJobsOptions) => DWReturnType<DataApiActionResult, TType>;
-  insertJobResult: (opts: InsertJobResultOptions) => DWReturnType<DataApiActionResult, TType>;
+  abortAllJobs: () => DWReturnType<DataApiActionResult, TType>;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -266,6 +251,22 @@ export type CheckRegistrationData = DataApiActionResult & {
 export type LocalizedAnswers = {
   [questionId: Id]: LocalizedAnswer | null;
 };
+
+/**
+ * What an answer setter reports when the write SUCCEEDED but the value it read back could not be validated (decision **B3**, requirement **D8**).
+ *
+ * The write is not in doubt — the RPC returned without an error. What is in doubt is the state the adapter is about to report as the entity's new answers, and reporting an unverified state as a verified one is what let a malformed read-back clear a candidate's edit buffer (fact 5). This says "the write happened, its result is unknown" instead.
+ *
+ * A STRING rather than an empty object or a branded record. `LocalizedAnswers` is an open record keyed by question id, so any object-shaped sentinel could in principle collide with a real question id — `{ unverified: true }` is indistinguishable from an entity that answered a question called `unverified`. A string can never be a `LocalizedAnswers`, so the union narrows unambiguously and no collision is expressible. It also survives the `devalue` serialization boundary, which a `Symbol` would not (the reason decision **B1** rejected symbol branding).
+ */
+export type UnverifiedAnswers = 'unverified-answers';
+
+/**
+ * What the answer setters resolve to: the validated answers map, or {@link UnverifiedAnswers}.
+ *
+ * The union is deliberately NOT collapsible by a `??` or a spread — the two arms have different TYPES, so a consumer that ignores the distinction fails to typecheck rather than silently degrading. That is the property requirement **D8** asks for and the one the previous `?? {}` destroyed.
+ */
+export type SetAnswersResult = LocalizedAnswers | UnverifiedAnswers;
 
 /**
  * `CandidateData` with localized `answers` and `termsOfUseAccepted`. Used for editing.
@@ -320,22 +321,15 @@ export type AdminJobRecord = {
 // Types for building the params to DataWriter methods
 ////////////////////////////////////////////////////////////////////
 
-export type SetAnswersOptions = WithAuth & WithTargetEntity & WithAnswerData;
+export type SetAnswersOptions = WithTargetEntity & WithAnswerData;
 
-export type SetPropertiesOptions = WithAuth & WithTargetEntity & WithEditableEntityProps;
+export type SetPropertiesOptions = WithTargetEntity & WithEditableEntityProps;
 
-export type SetQuestionOptions = WithAuth & WithTargetId & { data: TemporarySetQuestionData };
+export type SetQuestionOptions = WithTargetId & { data: TemporarySetQuestionData };
 
-export type GetCandidateUserDataOptions<TNominations extends boolean | undefined> = WithAuth & {
+export type GetCandidateUserDataOptions<TNominations extends boolean | undefined> = {
   loadNominations?: TNominations;
   locale?: string;
-};
-
-export type WithAuth = {
-  /**
-   * The JWT token for authentication.
-   */
-  authToken: string;
 };
 
 export type WithTargetId = {
@@ -388,25 +382,22 @@ export type TemporarySetQuestionData = {
   };
 };
 
-export type GetActiveJobsOptions = WithAuth & ActiveJobQueryParams;
+export type GetActiveJobsOptions = ActiveJobQueryParams;
 
-export type GetPastJobsOptions = WithAuth & PastJobQueryParams;
+export type GetPastJobsOptions = PastJobQueryParams;
 
-export type StartJobOptions = WithAuth & {
+export type StartJobOptions = {
   feature: string;
   author: string;
 };
 
-export type GetJobProgressOptions = WithAuth & {
+export type GetJobProgressOptions = {
   jobId: string;
 };
 
-export type AbortJobOptions = WithAuth & {
+export type AbortJobOptions = {
   jobId: string;
   reason?: string;
 };
 
-// Most likely will be extended in the future (e.g. cancel queued jobs also?)
-export type AbortAllJobsOptions = WithAuth;
-
-export type InsertJobResultOptions = WithAuth & { data: AdminJobRecord };
+export type InsertJobResultOptions = { data: AdminJobRecord };

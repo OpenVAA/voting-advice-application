@@ -1,14 +1,14 @@
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
-import { dataWriter } from '$lib/api/dataWriter';
 import { jobStates } from './jobStates.svelte';
 import { getAppContext } from '../app';
 import { getAuthContext } from '../auth';
 import { inheritContextMembers } from '../utils/inheritContextMembers';
+import { prepareAdminWriter } from '../utils/prepareAdminWriter';
 import { prepareDataWriter } from '../utils/prepareDataWriter';
-import type { BasicUserData, DataWriter, WithAuth } from '$lib/api/base/dataWriter.type';
+import type { BasicUserData, DataWriter } from '$lib/api/base/dataWriter.type';
 import type { AppContext } from '../app';
-import type { AdminContext, WithOptionalAuth } from './adminContext.type';
+import type { AdminContext } from './adminContext.type';
 
 const CONTEXT_KEY = Symbol('admin');
 
@@ -60,8 +60,6 @@ export class AdminContextProvider implements AdminContext {
   readonly dataRoot!: AppContext['dataRoot'];
   readonly setDataRoot!: AppContext['setDataRoot'];
   readonly sendTrackingEvent!: AppContext['sendTrackingEvent'];
-  readonly sessionId!: AppContext['sessionId'];
-  readonly shouldTrack!: AppContext['shouldTrack'];
   readonly startPageview!: AppContext['startPageview'];
   readonly startEvent!: AppContext['startEvent'];
   readonly track!: AppContext['track'];
@@ -110,56 +108,40 @@ export class AdminContextProvider implements AdminContext {
   // `updateQuestion` and `insertJobResult` build an admin writer for the single call they make; the rest build a DataWriter the same way, and neither kind outlives the call it was built for.
   ////////////////////////////////////////////////////////////////////
 
-  /**
-   * Inject authToken into requests. With Supabase, auth is cookie-based so
-   * authToken is passed as '' to satisfy the WithAuth type constraint.
-   */
-  #injectAuthToken = <TParams extends { authToken?: string }>(opts: TParams): TParams & WithAuth => {
-    return { authToken: '', ...opts };
-  };
-
   updateQuestion = (
-    opts: WithOptionalAuth<Parameters<DataWriter['updateQuestion']>[0]>
-  ): ReturnType<DataWriter['updateQuestion']> => {
-    return prepareDataWriter(dataWriter).then((dw) => dw.updateQuestion(this.#injectAuthToken(opts)));
+    opts: Parameters<AdminContext['updateQuestion']>[0]
+  ): ReturnType<AdminContext['updateQuestion']> => {
+    return prepareAdminWriter().updateQuestion(opts);
   };
 
-  getActiveJobs = (
-    opts: WithOptionalAuth<Parameters<DataWriter['getActiveJobs']>[0]>
-  ): ReturnType<DataWriter['getActiveJobs']> => {
-    return prepareDataWriter(dataWriter).then((dw) => dw.getActiveJobs(this.#injectAuthToken(opts)));
+  getActiveJobs = (opts: Parameters<DataWriter['getActiveJobs']>[0]): ReturnType<DataWriter['getActiveJobs']> => {
+    return prepareDataWriter().getActiveJobs(opts);
   };
 
-  getPastJobs = (
-    opts: WithOptionalAuth<Parameters<DataWriter['getPastJobs']>[0]>
-  ): ReturnType<DataWriter['getPastJobs']> => {
-    return prepareDataWriter(dataWriter).then((dw) => dw.getPastJobs(this.#injectAuthToken(opts)));
+  getPastJobs = (opts: Parameters<DataWriter['getPastJobs']>[0]): ReturnType<DataWriter['getPastJobs']> => {
+    return prepareDataWriter().getPastJobs(opts);
   };
 
-  startJob = (opts: WithOptionalAuth<Parameters<DataWriter['startJob']>[0]>): ReturnType<DataWriter['startJob']> => {
-    return prepareDataWriter(dataWriter).then((dw) => dw.startJob(this.#injectAuthToken(opts)));
+  startJob = (opts: Parameters<DataWriter['startJob']>[0]): ReturnType<DataWriter['startJob']> => {
+    return prepareDataWriter().startJob(opts);
   };
 
-  getJobProgress = (
-    opts: WithOptionalAuth<Parameters<DataWriter['getJobProgress']>[0]>
-  ): ReturnType<DataWriter['getJobProgress']> => {
-    return prepareDataWriter(dataWriter).then((dw) => dw.getJobProgress(this.#injectAuthToken(opts)));
+  getJobProgress = (opts: Parameters<DataWriter['getJobProgress']>[0]): ReturnType<DataWriter['getJobProgress']> => {
+    return prepareDataWriter().getJobProgress(opts);
   };
 
-  abortJob = (opts: WithOptionalAuth<Parameters<DataWriter['abortJob']>[0]>): ReturnType<DataWriter['abortJob']> => {
-    return prepareDataWriter(dataWriter).then((dw) => dw.abortJob(this.#injectAuthToken(opts)));
+  abortJob = (opts: Parameters<DataWriter['abortJob']>[0]): ReturnType<DataWriter['abortJob']> => {
+    return prepareDataWriter().abortJob(opts);
   };
 
-  abortAllJobs = (
-    opts: WithOptionalAuth<Parameters<DataWriter['abortAllJobs']>[0]>
-  ): ReturnType<DataWriter['abortAllJobs']> => {
-    return prepareDataWriter(dataWriter).then((dw) => dw.abortAllJobs(this.#injectAuthToken(opts)));
+  abortAllJobs = (): ReturnType<DataWriter['abortAllJobs']> => {
+    return prepareDataWriter().abortAllJobs();
   };
 
   insertJobResult = (
-    opts: WithOptionalAuth<Parameters<DataWriter['insertJobResult']>[0]>
-  ): ReturnType<DataWriter['insertJobResult']> => {
-    return prepareDataWriter(dataWriter).then((dw) => dw.insertJobResult(this.#injectAuthToken(opts)));
+    opts: Parameters<AdminContext['insertJobResult']>[0]
+  ): ReturnType<AdminContext['insertJobResult']> => {
+    return prepareAdminWriter().insertJobResult(opts);
   };
 
   constructor() {

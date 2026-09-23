@@ -87,7 +87,7 @@ function makeFakeAllianceParent(opts: {
 // --- Tests ---
 
 describe('imputeParentAnswers', () => {
-  describe('Risk #7 backward-compat (childProxies omitted)', () => {
+  describe('backward-compat when childProxies is omitted', () => {
     it('returns proxies whose imputed answers match the median of child entity-answers for ordinal questions', () => {
       const q = makeFakeQuestion({
         id: 'q1',

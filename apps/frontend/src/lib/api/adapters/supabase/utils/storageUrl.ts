@@ -1,19 +1,5 @@
+import type { StoredImage } from '@openvaa/app-shared';
 import type { Image } from '@openvaa/data';
-
-/**
- * Shape of the image JSONB stored in Supabase content tables.
- * Required: `path`. Optional: `pathDark`, `alt`, dimensions, focal point.
- *
- * @see database skill — StoredImage structure in schema conventions.
- */
-export interface StoredImage {
-  path: string;
-  pathDark?: string;
-  alt?: string;
-  width?: number;
-  height?: number;
-  focalPoint?: { x: number; y: number };
-}
 
 /**
  * Convert a Supabase storage path to a fully-qualified public URL.

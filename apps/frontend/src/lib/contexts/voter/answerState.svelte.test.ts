@@ -12,12 +12,6 @@ vi.mock('$app/environment', () => ({
   version: 'test'
 }));
 
-vi.mock('$lib/utils/logger', () => ({
-  logDebugError: vi.fn(),
-  logDebugWarning: vi.fn(),
-  logError: vi.fn()
-}));
-
 describe('answerState', () => {
   let cleanup: (() => void) | undefined;
   let startEvent: ReturnType<typeof vi.fn>;

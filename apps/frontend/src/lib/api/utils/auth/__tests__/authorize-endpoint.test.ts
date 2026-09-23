@@ -10,6 +10,7 @@
 
 import * as jose from 'jose';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { COOKIE } from '$lib/cookies';
 import { POST } from '../../../../../routes/api/oidc/authorize/+server';
 
 // Use vi.hoisted for dynamic mock state (signing keys injected in beforeAll)
@@ -192,7 +193,7 @@ describe('POST /api/oidc/authorize', () => {
     await POST(event);
 
     expect(event.cookies.set).toHaveBeenCalledWith(
-      'oidc_state',
+      COOKIE.oidcState,
       expect.any(String),
       expect.objectContaining({
         httpOnly: true,
@@ -209,7 +210,7 @@ describe('POST /api/oidc/authorize', () => {
     await POST(event);
 
     expect(event.cookies.set).toHaveBeenCalledWith(
-      'oidc_nonce',
+      COOKIE.oidcNonce,
       expect.any(String),
       expect.objectContaining({
         httpOnly: true,
@@ -222,8 +223,10 @@ describe('POST /api/oidc/authorize', () => {
   it('returns 400 when redirectUri is missing', async () => {
     const event = createMockRequestEvent({});
 
-    // The error() function from @sveltejs/kit throws -- we need to handle this
-    // The handler calls error(400, ...) which throws an HttpError
-    await expect(POST(event)).rejects.toThrow();
+    // Assert the STATUS, not merely that something was thrown: the title promises a 400, and a bare rejection matcher is satisfied by the 500 this endpoint used to return (its own catch arm swallowed the 400 until the re-throw landed).
+    //
+    // `toMatchObject` rather than `toThrow(expect.objectContaining(...))`: kit's HttpError is NOT an Error subclass -- it is a plain class carrying its own `status` and `body` -- so a throw-shape matcher will not match it.
+    // Do not weaken this back to a bare `rejects` matcher.
+    await expect(POST(event)).rejects.toMatchObject({ status: 400 });
   });
 });

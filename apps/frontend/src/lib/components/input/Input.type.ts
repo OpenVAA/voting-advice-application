@@ -22,6 +22,12 @@ export type InputProps =
       type: 'textarea-multilingual';
     } & InputPropsBase<LocalizedString, 'textarea'>)
   | ({
+      type: 'multiple-text';
+    } & InputPropsBase<Array<string>>)
+  | ({
+      type: 'multiple-text-multilingual';
+    } & InputPropsBase<Array<LocalizedString>>)
+  | ({
       type: 'number';
     } & InputPropsBase<number>)
   | ({
@@ -111,11 +117,19 @@ export type InputPropsBase<TValue, TElement extends string = 'input'> = Omit<
    */
   ordered?: TValue extends Array<unknown> ? boolean : never;
   /**
+   * The minimum number of rows for a `multiple-text` input. When `> 1`, that many rows are rendered initially and per-row removal is prevented below this floor. @default 1
+   */
+  minItems?: TValue extends Array<unknown> ? number : never;
+  /**
+   * The maximum number of rows for a `multiple-text` input. When set, the Add button is disabled once the row count reaches this ceiling.
+   */
+  maxItems?: TValue extends Array<unknown> ? number : never;
+  /**
    * The maximum file size for `image` inputs. @default 20 * 1024**2 (20MB)
    */
   maxFilesize?: TValue extends Image ? number : never;
   /**
    * Additional info displayed below the input for multilingual input together with possible `info`. @default t('components.input.multilingualInfo')
    */
-  multilingualInfo?: TValue extends LocalizedString ? string : never;
+  multilingualInfo?: TValue extends LocalizedString | Array<LocalizedString> ? string : never;
 };

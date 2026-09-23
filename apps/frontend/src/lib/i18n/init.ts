@@ -1,7 +1,6 @@
-import { isLocalizedObject, staticSettings } from '@openvaa/app-shared';
+import { isLocalizedObject, log, staticSettings } from '@openvaa/app-shared';
 import { error } from '@sveltejs/kit';
 import { getLocale, locales as paraglideLocales, setLocale } from '$lib/paraglide/runtime';
-import { logDebugError } from '$lib/utils/logger';
 import { matchLocale } from './utils';
 
 export { clearOverrides, setOverrides } from './overrides';
@@ -31,7 +30,7 @@ for (const { code, isDefault } of supportedLocales) {
 }
 
 if (!defaultLocale) {
-  logDebugError(
+  log.debug(
     `[/lib/i18n/init] Using the first locale as default because no locale has isDefault set: ${supportedLocales[0].code}`
   );
   defaultLocale = supportedLocales[0].code;

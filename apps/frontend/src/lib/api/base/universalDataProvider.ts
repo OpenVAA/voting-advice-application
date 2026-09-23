@@ -6,6 +6,7 @@ import type { DPDataType } from './dataTypes';
 import type {
   GetAppCustomizationOptions,
   GetConstituenciesOptions,
+  GetDataOptionsBase,
   GetElectionsOptions,
   GetEntitiesOptions,
   GetNominationsOptions,
@@ -22,8 +23,9 @@ export abstract class UniversalDataProvider extends UniversalAdapter implements 
   // PUBLIC DATA GETTERS
   /////////////////////////////////////////////////////////////////////
 
-  getAppSettings(): DPReturnType<'appSettings'> {
-    return this._getAppSettings();
+  // The options are FORWARDED. This wrapper used to declare no parameter and call `_getAppSettings()` with none, so the Supabase implementation's `options?.locale ?? this.locale` had no first arm and every notification banner in the app was localized against the adapter's construction locale alone. Its six siblings below always forwarded theirs; this one was the outlier, and the `DataProvider` interface has declared the parameter all along (`dataProvider.type.ts`).
+  getAppSettings(options?: GetDataOptionsBase): DPReturnType<'appSettings'> {
+    return this._getAppSettings(options);
   }
 
   getAppCustomization(options?: GetAppCustomizationOptions): DPReturnType<'appCustomization'> {
@@ -72,7 +74,7 @@ export abstract class UniversalDataProvider extends UniversalAdapter implements 
   // PROTECTED INTERNAL GETTERS TO BE IMPLEMENTED BY SUBCLASSES
   /////////////////////////////////////////////////////////////////////
 
-  protected abstract _getAppSettings(): Promise<DPDataType['appSettings']>;
+  protected abstract _getAppSettings(options?: GetDataOptionsBase): Promise<DPDataType['appSettings']>;
   protected abstract _getAppCustomization(
     options?: GetAppCustomizationOptions
   ): Promise<DPDataType['appCustomization']>;

@@ -1,33 +1,16 @@
+import { log } from '@openvaa/app-shared';
 import { browser } from '$app/environment';
 import { getUUID } from '$lib/utils/components';
-import { logDebugError } from '$lib/utils/logger';
 import { purgeNullish } from '../../../utils/purgeNullish';
 import { sessionStorageState } from '../../utils/persistedState.svelte';
-import type { ReactiveHandle, WritableHandle } from '../reactiveHandle.type';
+import type { ReactiveHandle, WritableHandle } from '../../utils/reactiveHandle.type';
 import type { UserPreferences } from '../userPreferences.type';
 import type { TrackingEvent } from './trackingEvent.type';
 import type { TrackingHandler, TrackingService } from './trackingService.type';
 
 /**
- * The pure-rune internal shape of the tracking service. The `appContext` seam
- * owns the store conversion of the store-shaped properties (`sendTrackingEvent`,
- * `sessionId`, `shouldTrack`) declared on the exported `TrackingService` type —
- * this producer exposes them as rune handles.
- */
-export type RuneTrackingService = Omit<TrackingService, 'sendTrackingEvent' | 'sessionId' | 'shouldTrack'> & {
-  sendTrackingEvent: WritableHandle<TrackingHandler | null | undefined>;
-  sessionId: ReactiveHandle<string>;
-  shouldTrack: ReactiveHandle<boolean>;
-};
-
-/**
- * Pure-rune tracking-service producer as a Svelte 5 CLASS (v2.13 context-as-class
- * migration). CONVERTED from the factory closure that returned a plain
- * object literal. Reads its `appSettings` / `userPreferences` inputs via `.current`
- * getters and exposes its outputs as rune handles — no store bridge over the
- * inputs nor the outputs. The store-shaped exported surface
- * (`sendTrackingEvent`/`sessionId`/`shouldTrack` per `trackingService.type.ts`)
- * is reconstructed by the `appContext` seam.
+ * Pure-rune tracking-service producer as a Svelte 5 CLASS.
+ * Reads its `appSettings` / `userPreferences` inputs via `.current` getters and exposes its outputs as rune handles — no store bridge over the inputs nor the outputs.
  *
  * ONE TYPE, ONE IMPLEMENTATION: this class implements `TrackingService` (`trackingService.type.ts`) directly. The second, rune-shaped type layer this file used to declare — it subtracted three members from `TrackingService` only to re-declare the same three as rune handles — is gone: it existed only while the `appContext` seam converted those members to stores, and the two handle shapes have since converged.
  *
@@ -42,7 +25,7 @@ export type RuneTrackingService = Omit<TrackingService, 'sendTrackingEvent' | 's
  *
  * There is NO `$effect`: `shouldTrack` is a synchronous `$derived`.
  */
-class TrackingServiceImpl implements RuneTrackingService {
+export class TrackingServiceImpl implements TrackingService {
   ////////////////////////////////////////////////////////////////////
   // Injected inputs (private readonly rune handles)
   ////////////////////////////////////////////////////////////////////
@@ -127,7 +110,7 @@ class TrackingServiceImpl implements RuneTrackingService {
   ////////////////////////////////////////////////////////////////////
 
   startPageview = (href: string, from?: string | null) => {
-    if (this.#pageviewEvent) logDebugError('Pageview already started');
+    if (this.#pageviewEvent) log.debug('Pageview already started');
     this.#pageviewEvent = {
       href,
       from: from ?? undefined,
@@ -146,14 +129,14 @@ class TrackingServiceImpl implements RuneTrackingService {
       const events: Record<string, TrackingEvent['data']> = {};
       // This shouldn't happen
       if (!this.#pageviewEvent) {
-        logDebugError(`No pageviewEvent is available for events: ${JSON.stringify(this.#unsubmittedEvents)}`);
+        log.debug(`No pageviewEvent is available for events: ${JSON.stringify(this.#unsubmittedEvents)}`);
         this.#pageviewEvent = { href: 'UNKNOWN' };
       }
       // Prefix a number to all subevent names
       for (let i = 0; i < this.#unsubmittedEvents.length; i++) {
         // We limit the max events to 50 (umami's limit) minus the ones we're adding by default
         if (i >= 50 - 5) {
-          logDebugError(`Too many unsubmitted events: ${this.#unsubmittedEvents.length}`);
+          log.debug(`Too many unsubmitted events: ${this.#unsubmittedEvents.length}`);
           break;
         }
         const { name, data } = this.#unsubmittedEvents[i];
@@ -171,7 +154,7 @@ class TrackingServiceImpl implements RuneTrackingService {
     const send = this.#sendTrackingEventValue;
     if (!send) return;
     const dataToSend = purgeNullish({ vaaSessionId: this.sessionId.current, ...data });
-    logDebugError({ name, data: dataToSend });
+    log.debug('Tracking event dispatched', { name, data: dataToSend });
     send({ name, data: dataToSend });
   };
 
@@ -192,6 +175,6 @@ export function trackingService({
 }: {
   appSettings: ReactiveHandle<AppSettings>;
   userPreferences: ReactiveHandle<UserPreferences>;
-}): RuneTrackingService {
+}): TrackingServiceImpl {
   return new TrackingServiceImpl({ appSettings, userPreferences });
 }

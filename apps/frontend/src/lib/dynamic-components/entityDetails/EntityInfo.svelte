@@ -25,7 +25,7 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
 
 <script lang="ts">
   import { getCustomData } from '@openvaa/app-shared';
-  import { ENTITY_TYPE, isObjectType, OBJECT_TYPE } from '@openvaa/data';
+  import { ENTITY_TYPE } from '@openvaa/data';
   import { ElectionSymbol } from '$lib/components/electionSymbol';
   import { EntityTag } from '$lib/components/entityTag';
   import { InfoAnswer } from '$lib/components/infoAnswer';
@@ -83,9 +83,6 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
             </a>
           {:else}
             <EntityTag entity={parentNomination} variant="full" />
-          {/if}
-          {#if isObjectType(nakedEntity, OBJECT_TYPE.Candidate) && nakedEntity.organization && nakedEntity.organization !== parentNomination.entity}
-            ({t('entityDetails.memberOfOrganization', { organization: nakedEntity.organization.shortName })})
           {/if}
         </InfoItem>
       {/if}

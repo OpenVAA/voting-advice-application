@@ -1,5 +1,5 @@
 import type { ButtonProps } from '$lib/components/button';
-import type { Route } from '$lib/utils/route';
+import type { Route } from '$lib/routes';
 
 export type LogoutButtonProps = Partial<ButtonProps> & {
   /**

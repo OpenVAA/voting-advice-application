@@ -1,6 +1,5 @@
-import { staticSettings } from '@openvaa/app-shared';
+import { log, staticSettings } from '@openvaa/app-shared';
 import { browser } from '$app/environment';
-import { logDebugError } from '$lib/utils/logger';
 
 export type StorageType = 'localStorage' | 'sessionStorage';
 
@@ -116,7 +115,7 @@ function getItemFromStorage<TValue>(type: StorageType, key: string): TValue | nu
     try {
       savedValue = JSON.parse(savedItem);
     } catch (e) {
-      logDebugError(`Failed to parse ${key} from ${type}`, e);
+      log.error(`Failed to parse ${key} from ${type}`, { err: e });
       savedValue = null;
     }
     if (type === 'localStorage') {

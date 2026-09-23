@@ -1,8 +1,9 @@
 import { DataRoot } from '@openvaa/data';
-import { dataProvider as dataProviderPromise } from '$lib/api/dataProvider';
+import { createDataProvider } from '$lib/api/dataProvider';
 import { isValidResult } from '$lib/api/utils/isValidResult';
 import type { Id } from '@openvaa/core';
 import type { DPDataType } from '$lib/api/base/dataTypes';
+import type { AdapterSource } from '$lib/api/dataProvider';
 
 /**
  * Loads election-related data for admin features like argument condensation and question info generation.
@@ -17,15 +18,14 @@ import type { DPDataType } from '$lib/api/base/dataTypes';
 export async function loadElectionData({
   electionId,
   locale,
-  fetch
+  source
 }: {
   electionId: Id;
   locale: string;
-  fetch: Fetch;
+  source: AdapterSource;
 }): Promise<DataRoot> {
-  // Initialize data provider
-  const dataProvider = await dataProviderPromise;
-  dataProvider.init({ fetch });
+  // This call's own provider, over the caller's client, so the four reads below are made as the admin who asked for them.
+  const dataProvider = createDataProvider(source);
 
   // Load all required data in parallel
   const [electionData, constituencyData, questionData, nominationData] = (await Promise.all([

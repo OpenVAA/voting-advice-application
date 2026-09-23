@@ -1,11 +1,16 @@
 import { ENTITY_TYPE } from '@openvaa/data';
+import { UNVERIFIED_ANSWERS } from '$lib/api/base/universalDataWriter';
 import { localStorageState } from '../utils/persistedState.svelte';
-import { prepareDataWriter } from '../utils/prepareDataWriter';
 import type { LocalizedAnswer } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { Image } from '@openvaa/data';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
-import type { CandidateUserData, LocalizedAnswers, LocalizedCandidateData } from '$lib/api/base/dataWriter.type';
+import type {
+  CandidateUserData,
+  LocalizedAnswers,
+  LocalizedCandidateData,
+  SetAnswersResult
+} from '$lib/api/base/dataWriter.type';
 import type { UniversalDataWriter } from '$lib/api/base/universalDataWriter';
 import type { CandidateUserDataState } from './candidateUserDataState.type';
 
@@ -21,7 +26,8 @@ import type { CandidateUserDataState } from './candidateUserDataState.type';
  */
 class CandidateUserDataStateImpl implements CandidateUserDataState {
   #answersLocked: () => boolean;
-  #dataWriter: UniversalDataWriter;
+  // A getter, not an instance: the store builds a writer for each backend call and holds none between them.
+  #dataWriter: () => UniversalDataWriter;
   #locale: () => string;
 
   ////////////////////////////////////////////////////////////////////
@@ -74,7 +80,7 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
     locale
   }: {
     answersLocked: () => boolean;
-    dataWriter: UniversalDataWriter;
+    dataWriter: () => UniversalDataWriter;
     locale: () => string;
   }) {
     this.#answersLocked = answersLocked;
@@ -209,9 +215,8 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
   };
 
   reloadCandidateData = async (): Promise<LocalizedCandidateData> => {
-    const dataWriter = await prepareDataWriter(this.#dataWriter);
+    const dataWriter = this.#dataWriter();
     const userData = await dataWriter.getCandidateUserData({
-      authToken: '',
       loadNominations: false,
       locale: this.#locale()
     });
@@ -228,20 +233,17 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
     const image = this.#editedImage;
     const termsOfUseAccepted = this.#editedTermsOfUseAccepted;
     const updateArgs = {
-      authToken: '',
       target: {
         type: ENTITY_TYPE.Candidate,
         id: this.#savedData.candidate.id
       }
     };
 
-    const dataWriter = await prepareDataWriter(this.#dataWriter);
+    const dataWriter = this.#dataWriter();
 
-    // The answer setters return only the updated `LocalizedAnswers` map, while
-    // the property setter returns the whole updated `LocalizedCandidateData`.
-    // These two shapes MUST be handled distinctly so the answers-only path does
-    // not replace the candidate (which would drop its `id` and static fields).
-    let updatedAnswers: LocalizedAnswers | undefined;
+    // The answer setters return only the updated `LocalizedAnswers` map, while the property setter returns the whole updated `LocalizedCandidateData`.
+    // These two shapes MUST be handled distinctly so the answers-only path does not replace the candidate (which would drop its `id` and static fields).
+    let updatedAnswers: SetAnswersResult | undefined;
     let updatedCandidate: LocalizedCandidateData | undefined;
 
     if (answers && Object.keys(answers).length > 0) {
@@ -249,7 +251,12 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
         ...updateArgs,
         answers
       });
-      if (!updatedAnswers) throw new Error('Failed to update answers');
+      // The detector, in its original position and still guarding the nullish case (decision E1 forbids removing a guard whose negative control has not been re-run); only its consequent changed, and it was widened to cover the unverified signal the writer now returns.
+      //
+      // A FAILURE RETURN, not a throw (decision B3). A throw lands in the caller's `.catch`, which logs `e?.message` as a free-form interpolated string — forbidden for the records this phase touches (decision C4 NOTE 1) — while the one structured `error` record, carrying the column, the row id and the issue paths, was already emitted at the adapter. Both checked entrances branch on `result?.type !== 'success'`, so a returned failure reaches the identical UI a throw did: the existing `candidateApp.error.saveFailed` message, which exists in every shipped locale (decision B4(a) — no new component, status value or translation key).
+      //
+      // The exit is positioned BEFORE the merge and before the three resets below, and that position is the whole point. The catastrophic step was never the empty value; it was `resetAnswers()` discarding the candidate's typing on the strength of it. Keeping the buffer is recoverable, clearing it is not (ledger row 4).
+      if (!updatedAnswers || updatedAnswers === UNVERIFIED_ANSWERS) return { type: 'failure' };
       // Merge the updated answers into the existing candidate, preserving id + static fields.
       this.#mergeCandidateAnswers(updatedAnswers);
     }
@@ -286,7 +293,7 @@ export function candidateUserDataState({
   locale
 }: {
   answersLocked: () => boolean;
-  dataWriter: UniversalDataWriter;
+  dataWriter: () => UniversalDataWriter;
   locale: () => string;
 }): CandidateUserDataState {
   return new CandidateUserDataStateImpl({ answersLocked, dataWriter, locale });

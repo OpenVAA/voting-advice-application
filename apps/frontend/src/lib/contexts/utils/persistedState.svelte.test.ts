@@ -2,16 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // These top-level vi.mock calls are hoisted and apply to ALL dynamic imports.
 vi.mock('@openvaa/app-shared', () => ({
+  // `persistedState` now logs through the shared logger, so this factory must supply it or the parse-failure path throws on an undefined member.
+  log: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
   staticSettings: {
     appVersion: {
       version: 2,
       requireUserDataVersion: 1
     }
   }
-}));
-
-vi.mock('$lib/utils/logger', () => ({
-  logDebugError: vi.fn()
 }));
 
 /**

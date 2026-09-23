@@ -1,9 +1,11 @@
 import { ENTITY_TYPE } from '@openvaa/data';
-import { UniversalDataWriter } from '$lib/api/base/universalDataWriter';
-import { getLocale } from '$lib/i18n';
+import { UniversalDataWriter, UNVERIFIED_ANSWERS } from '$lib/api/base/universalDataWriter';
+// Imported from the module rather than the `$lib/auth` barrel on purpose: the barrel also re-exports `getUserData`, which reaches `$lib/api/dataWriter` and back to this file.
+import { ADMIN_GRANTS, CANDIDATE_GRANTS, hasAnyGrant, readGrants } from '$lib/auth/roles';
+import { buildRoute, ROUTE } from '$lib/routes';
 import { constants } from '$lib/utils/constants';
 import { supabaseAdapterMixin } from '../supabaseAdapter';
-import { parseStoredImage } from '../utils/storageUrl';
+import { answersOf, imageOf, parseAnswersColumn, parseImageColumn } from '../utils/parseJsonbColumn';
 import { toDataObject } from '../utils/toDataObject';
 import type { Json } from '@openvaa/supabase-types';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
@@ -13,15 +15,23 @@ import type {
   CheckRegistrationData,
   DWReturnType,
   GetCandidateUserDataOptions,
-  InsertJobResultOptions,
-  LocalizedAnswers,
   LocalizedCandidateData,
   SetAnswersOptions,
-  SetPropertiesOptions,
-  SetQuestionOptions,
-  WithAuth
+  SetAnswersResult,
+  SetPropertiesOptions
 } from '$lib/api/base/dataWriter.type';
-import type { StoredImage } from '../utils/storageUrl';
+import type { SupabaseAdapterConfig } from '../supabaseAdapter.type';
+
+/**
+ * The file extensions a candidate upload may end up carrying in its Storage object path.
+ *
+ * ## Why a whitelist rather than the uploader's own suffix
+ *
+ * The path used to be built as `` `${projectId}/candidates/${id}/${crypto.randomUUID()}.${file.name.split('.').pop() ?? 'jpg'}` ``, and `file.name` is fully controlled by the uploading candidate. `split('.').pop()` cannot yield a `..` segment — the result contains no dot by construction — so classic traversal was blocked, but it CAN contain a `/`: a file named `a.b/c/d` yields `"/d"` and a path of `…/<uuid>./d`, letting the uploader place objects at chosen sub-paths inside the prefix. It can also be arbitrarily long, or carry control characters, `%`, `?`, `#` or non-ASCII, any of which can confuse a Storage RLS policy or a later parser written against the expected `<project>/candidates/<id>/<uuid>.<ext>` shape. The extension is additionally copied verbatim into the stored `{ path }`, which `parseImageColumn`/`storageUrl` later turn into a public URL.
+ *
+ * Deriving the extension from a fixed set makes the produced path a member of a small, known language regardless of what was uploaded.
+ */
+const ALLOWED_IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif']);
 
 /**
  * Supabase implementation of the DataWriter.
@@ -29,6 +39,15 @@ import type { StoredImage } from '../utils/storageUrl';
  * Cookie-based sessions are used -- the Supabase client attaches the session JWT automatically.
  */
 export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter) {
+  /**
+   * @param config - This request's own client, its `fetch` and the locales it extracts JSONB in.
+   *
+   * Declared explicitly rather than inherited: the mixin's construct signature erases its parameter types, so without this signature an adapter built from any argument at all would typecheck.
+   */
+  constructor(config: SupabaseAdapterConfig) {
+    super(config);
+  }
+
   ////////////////////////////////////////////////////////////////////
   // AUTH METHODS
   ////////////////////////////////////////////////////////////////////
@@ -46,10 +65,8 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     // In the browser, call the server-side logout endpoint to clear httpOnly cookies.
     // Client-side signOut alone cannot remove httpOnly cookies set by createServerClient.
     if (typeof window !== 'undefined') {
-      // reason: read locale from paraglide runtime — splitting window.location.pathname returns
-      // 'candidate' for unprefixed routes (e.g. /candidate/...), producing /candidate/candidate/auth/logout.
-      const locale = getLocale();
-      await fetch(`/${locale}/candidate/auth/logout`, { method: 'POST' });
+      // reason: the endpoint is named by route key, never assembled from the current URL. The earlier implementation read the locale off `window.location.pathname`, which returns 'candidate' for an unprefixed candidate route and produced a doubled path; a constant cannot go wrong that way. The endpoint clears cookies and returns json, so it carries no locale prefix.
+      await fetch(ROUTE.CandAppAuthLogout, { method: 'POST' });
     }
     const { error } = await this.supabase.auth.signOut({ scope: 'local' });
     if (error) throw new Error(error.message);
@@ -60,13 +77,14 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
    * Override the public `logout` to skip UniversalDataWriter's dual POST+backendLogout pattern.
    * Supabase handles everything via `signOut` -- no separate client-side POST is needed.
    */
-  async logout(_opts: WithAuth): DWReturnType<DataApiActionResult> {
+  async logout(): DWReturnType<DataApiActionResult> {
     return this._logout();
   }
 
   protected async _requestForgotPasswordEmail({ email }: { email: string }) {
     const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/candidate/auth/callback`
+      // The mail link has to come back to THIS origin, and it has to carry the reader's locale so the page they land on speaks the language they asked in. The builder names the endpoint by route key and hands the result to Paraglide, which prefixes every non-base locale and leaves the base one unprefixed; the auth service's redirect allowlist admits both forms. Sending an unprefixed URL, as this did before, sent every non-base-locale reader to a base-locale page.
+      redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}${buildRoute('CandAppAuthCallback')}`
     });
     if (error) throw new Error(error.message);
     return { type: 'success' as const };
@@ -80,9 +98,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     return { type: 'success' as const };
   }
 
-  protected async _setPassword({ password }: { password: string; currentPassword: string; authToken: string }) {
-    // currentPassword and authToken are WithAuth compatibility shims -- ignored by Supabase.
-    // Supabase verifies the active session via cookies automatically.
+  protected async _setPassword({ password }: { password: string }) {
     const { error } = await this.supabase.auth.updateUser({ password });
     if (error) throw new Error(error.message);
     // Future-reference note. `auth.updateUser({ password })` rotates the access token. The browser-side `createBrowserClient` instance is expected to adopt the new token via its internal storage listener, but under some Playwright timings the next PostgREST call from `SupabaseDataWriter` was observed to send a stale/empty JWT, producing `auth.uid() = NULL` and a 406 "Cannot coerce" on the subsequent ToU UPDATE (RLS denies, 0 rows returned).
@@ -107,23 +123,14 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       email: string;
       nominations: Array<{ electionId: string; constituencyId: string }>;
     };
-  } & WithAuth): DWReturnType<DataApiActionResult> {
-    // Resolve projectId from the first nomination's electionId
-    const { data: election, error: electionError } = await this.supabase
-      .from('elections')
-      .select('project_id')
-      .eq('id', body.nominations[0].electionId)
-      .single();
-    if (electionError || !election)
-      throw new Error(`Failed to resolve project for election: ${electionError?.message ?? 'not found'}`);
-
+  }): DWReturnType<DataApiActionResult> {
     // identifier is intentionally ignored -- Supabase uses email-based invite, not personal ID.
     const { error } = await this.supabase.functions.invoke('invite-candidate', {
       body: {
         firstName: body.firstName,
         lastName: body.lastName,
         email: body.email,
-        projectId: election.project_id
+        projectId: this.projectId
       }
     });
 
@@ -149,24 +156,32 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
   // USER DATA METHODS
   ////////////////////////////////////////////////////////////////////
 
-  protected async _getBasicUserData(_opts: WithAuth): DWReturnType<BasicUserData> {
+  protected async _getBasicUserData(): DWReturnType<BasicUserData> {
+    // THE VERIFYING ROUND-TRIP, AND IT COMES FIRST. `getSession()` alone reads the session straight out of the configured storage — the request's `sb-*` cookies — and checks only its SELF-REPORTED `expires_at`; `@supabase/auth-js` wraps the `user` it returns in an insecure-use proxy for exactly that reason. Nothing on that path checks a signature, so the authority claim decoded below is attacker-suppliable unless the token it is decoded from has been verified first. `getUser()` is that check: it sends the stored access token to Supabase Auth, which validates it, so a session that survives this call is one whose access token is genuine.
+    //
+    // The ORDER — verify, then read — is the same one `hooks.server.ts`'s `safeGetSession` uses, and it is what lets `requireVerifiedAdmin` gate the six `/api/admin/jobs/**` endpoints on a role rather than on a claim. `user` is taken from HERE rather than from `session.user` so the returned identity is the verified one and never the proxy.
+    const {
+      data: { user },
+      error: userError
+    } = await this.supabase.auth.getUser();
+    if (userError || !user) throw new Error('No active session');
+
     const {
       data: { session },
       error
     } = await this.supabase.auth.getSession();
     if (error || !session) throw new Error('No active session');
 
-    const user = session.user;
+    // Read the VERIFIED access token's grant claim through the SHARED reader rather than decoding it here. This module used to carry its own inline decode beside the one in `$lib/auth/roles.ts`, which made the claim's shape a thing two modules each had an opinion about; the reader is now the single place a token's authority claim is parsed, and it fails closed on every malformed shape.
+    const grants = readGrants(session.access_token);
 
-    // Decode JWT access token to extract user_roles custom claim
-    const payload = JSON.parse(atob(session.access_token.split('.')[1]));
-    const userRoles: Array<{ role: string; scope_type: string; scope_id: string }> = payload.user_roles ?? [];
-
-    // Determine role from JWT claims
+    // Determine the coarse role from the grant shapes, against the ONE declaration of each entry-point set. Both sets used to be inlined here as a third copy of the arrays the two login gates carried, which is how a shape added to one gate silently fails to reach the other.
+    //
+    // The candidate arm is tested first, and the order is the one this method has always had: an identity holding both an entity grant and an admin grant is an administrator who also maintains an entity, and the two apps are reached by different routes anyway.
     let role: 'candidate' | 'admin' | null = null;
-    if (userRoles.some((r) => r.role === 'candidate' || r.role === 'party')) {
+    if (hasAnyGrant(grants, CANDIDATE_GRANTS)) {
       role = 'candidate';
-    } else if (userRoles.some((r) => ['project_admin', 'account_admin', 'super_admin'].includes(r.role))) {
+    } else if (hasAnyGrant(grants, ADMIN_GRANTS)) {
       role = 'admin';
     }
 
@@ -187,13 +202,21 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     locale
   }: GetCandidateUserDataOptions<TNominations>): DWReturnType<CandidateUserData<TNominations>> {
     // Get basic user data first
-    const user = await this._getBasicUserData({ authToken: '' });
+    const user = await this._getBasicUserData();
 
     // Get candidate entity data via RPC
     const { data: entityRow, error } = await this.supabase
-      .rpc('get_candidate_user_data', { p_entity_type: 'candidate' })
+      .rpc('get_candidate_user_data', { p_project_id: this.projectId, p_entity_type: 'candidate' })
       .single();
     if (error || !entityRow) throw new Error(`Failed to load candidate data: ${error?.message ?? 'no data'}`);
+
+    // The rpc is scoped by the caller's IDENTITY — it reads `auth.uid()` — AND by this adapter's project, which it takes as a required `p_project_id` (162-REVIEW WR-08). Without the project term an identity holding candidate rows in several projects got whichever row `LIMIT 1` happened to return, and the check below then failed at random. The returned row's own `project_id` is still compared here, as defence in depth: a mismatch stops the read rather than rendering another project's candidate.
+    //
+    // Neither uuid is interpolated. The message names the condition, which is what an operator needs to act on; the pair of ids is exactly what a deployment in this state should not be putting into logs and error reporters.
+    if (entityRow.project_id !== this.projectId)
+      throw new Error(
+        'getCandidateUserData: the authenticated candidate belongs to a different project than this deployment is configured for. Check PUBLIC_PROJECT_ID against the account this session was issued for.'
+      );
 
     // Transform row to LocalizedCandidateData using established utilities
     const defaultLocale = 'en';
@@ -204,17 +227,22 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       ...mapped,
       type: ENTITY_TYPE.Candidate,
       id: entityRow.id,
-      answers: (entityRow.answers as LocalizedAnswers) ?? {},
+      // 157.1-04 D-DISC-3: the candidate reading their OWN stored answers collapses malformed to empty here, deliberately. Research flagged this as the same severity class as the post-RPC read-back below and instructed the planner to name the choice rather than silently widen scope: it is a CALL site, not one of the six PARSE sites the phase scoped, and branching it on `.status` would be a UI decision with no ruling behind it. What made the collapse acceptable is that partial preserve (A2) now keeps the good question ids instead of wiping the blob over one bad answer, and the degradation is reported at `error` (C5(b)) rather than `warn`.
+      answers:
+        answersOf(parseAnswersColumn(entityRow.answers, { column: 'candidates.answers', id: entityRow.id })) ?? {},
       termsOfUseAccepted: entityRow.terms_of_use_accepted ?? null,
-      // reason: JSONB columns return Json (structural superset of StoredImage); parseStoredImage runtime-guards on .path
-      image: parseStoredImage(entityRow.image as Json as unknown as StoredImage | null, constants.PUBLIC_SUPABASE_URL)
+      image: imageOf(
+        parseImageColumn(entityRow.image, constants.PUBLIC_SUPABASE_URL, {
+          column: 'candidates.image',
+          id: entityRow.id
+        })
+      )
     } as LocalizedCandidateData;
 
     // Load nominations if requested
     let nominations: CandidateUserData<TNominations>['nominations'];
     if (loadNominations) {
-      const { data: nomData, error: nomError } = await this.supabase
-        .from('nominations')
+      const { data: nomData, error: nomError } = await this.scopedFrom('nominations')
         .select('election_id, constituency_id, election_round, election_symbol, parent_nomination_id, entity_type, id')
         .eq('candidate_id', entityRow.id);
 
@@ -246,16 +274,35 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
   // ANSWER/PROPERTY METHODS
   ////////////////////////////////////////////////////////////////////
 
+  /**
+   * Upload one candidate-supplied file to the `public-assets` bucket and return the object path it was stored at.
+   *
+   * ONE helper for BOTH upload sites. `_setAnswers` and `_updateEntityProperties` carried this block byte for byte, which is precisely how a path sanitizer applied to one copy would silently have left the other unsanitized. The extension is chosen from {@link ALLOWED_IMAGE_EXTENSIONS} rather than taken from the upload, so the returned path is always `<project>/candidates/<id>/<uuid>.<known-ext>` no matter what the candidate named their file.
+   * @param options.projectId - The project the object is written under, which is this adapter's configured project.
+   * @param options.id - The candidate's id.
+   * @param options.file - The uploaded file. Its `name` is attacker-controlled and is used only to CHOOSE from the whitelist.
+   * @returns The Storage object path, safe to persist in an image column.
+   */
+  async #uploadCandidateFile({ projectId, id, file }: { projectId: string; id: string; file: File }): Promise<string> {
+    const suffix = file.name.split('.').pop()?.toLowerCase() ?? '';
+    const ext = ALLOWED_IMAGE_EXTENSIONS.has(suffix) ? suffix : 'jpg';
+    const storagePath = `${projectId}/candidates/${id}/${crypto.randomUUID()}.${ext}`;
+    const { error } = await this.supabase.storage
+      .from('public-assets')
+      .upload(storagePath, file, { cacheControl: '3600', upsert: true });
+    if (error) throw new Error(`Image upload failed: ${error.message}`);
+    return storagePath;
+  }
+
   protected async _setAnswers({
     target: { type, id },
     answers,
     overwrite
-  }: SetAnswersOptions & { overwrite: boolean }): DWReturnType<LocalizedAnswers> {
+  }: SetAnswersOptions & { overwrite: boolean }): DWReturnType<SetAnswersResult> {
     if (type !== ENTITY_TYPE.Candidate) throw new Error(`Unsupported entity type for setting answers: ${type}`);
 
     // Process answers: detect File objects and upload to Storage
     const processedAnswers: Record<string, unknown> = {};
-    let projectId: string | null = null;
 
     for (const [questionId, answer] of Object.entries(answers)) {
       if (answer === null) {
@@ -264,24 +311,11 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       }
       // Check if answer value contains a File object (SSR-safe guard)
       if (answer?.value != null && typeof File !== 'undefined' && answer.value instanceof File) {
-        // Lazily fetch project_id for Storage path construction
-        if (!projectId) {
-          const { data: candidateRow, error: fetchError } = await this.supabase
-            .from('candidates')
-            .select('project_id')
-            .eq('id', id)
-            .single();
-          if (fetchError || !candidateRow)
-            throw new Error(`Failed to fetch candidate project_id: ${fetchError?.message ?? 'not found'}`);
-          projectId = candidateRow.project_id;
-        }
-        const file = answer.value as File;
-        const ext = file.name.split('.').pop() ?? 'jpg';
-        const storagePath = `${projectId}/candidates/${id}/${crypto.randomUUID()}.${ext}`;
-        const { error: uploadError } = await this.supabase.storage
-          .from('public-assets')
-          .upload(storagePath, file, { cacheControl: '3600', upsert: true });
-        if (uploadError) throw new Error(`Image upload failed: ${uploadError.message}`);
+        const storagePath = await this.#uploadCandidateFile({
+          projectId: this.projectId,
+          id,
+          file: answer.value as File
+        });
         // Replace File with StoredImage-compatible path object
         processedAnswers[questionId] = { ...answer, value: { path: storagePath } };
       } else {
@@ -297,7 +331,16 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       p_overwrite: overwrite
     });
     if (error) throw new Error(`setAnswers: ${error.message}`);
-    return (data as unknown as LocalizedAnswers) ?? {};
+    // The RPC hands back the whole answers blob it just wrote, which is the same unvalidated jsonb shape a read returns, so it is validated on the way back in rather than asserted.
+    //
+    // A status BRANCH, not a collapse (decision **B3**, requirement **D8**). The previous form coalesced the outcome's value to an empty object, turning a malformed read-back into an empty answers map — TRUTHY, and therefore indistinguishable from an entity that legitimately has no answers. Downstream that empty map passed the store's nullish guard, was merged, and then the candidate's edit buffer was cleared on the strength of it: the write had succeeded, but the state being reported as the entity's new answers was never verified (fact 5). Ledger row 4.
+    //
+    // `absent` joins `malformed` deliberately. From the caller's point of view they are the same fact — the adapter cannot confirm what was stored — and only `ok` licenses a caller to treat the write as verified. `answersOf` is NOT used here for that reason: this is one of the three sites that acts on `.status` rather than collapsing it.
+    //
+    // The `error` record naming the column, the row id and the issue paths is emitted inside `parseAnswersColumn`, so nothing is logged here; adding a second record would double-report one failure, and an interpolated one would break decision C4's NOTE 1.
+    const readBack = parseAnswersColumn(data, { column: 'upsert_answers.result', id });
+    if (readBack.status === 'ok') return readBack.value;
+    return UNVERIFIED_ANSWERS;
   }
 
   protected async _updateEntityProperties({
@@ -316,22 +359,10 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       } else {
         const imageWithFile = image as ImageWithFile;
         if (imageWithFile.file && typeof File !== 'undefined' && imageWithFile.file instanceof File) {
-          // Upload image file to Storage
-          const { data: candidateRow, error: fetchError } = await this.supabase
-            .from('candidates')
-            .select('project_id')
-            .eq('id', id)
-            .single();
-          if (fetchError || !candidateRow)
-            throw new Error(`Failed to fetch candidate project_id: ${fetchError?.message ?? 'not found'}`);
-          const file = imageWithFile.file;
-          const ext = file.name.split('.').pop() ?? 'jpg';
-          const storagePath = `${candidateRow.project_id}/candidates/${id}/${crypto.randomUUID()}.${ext}`;
-          const { error: uploadError } = await this.supabase.storage
-            .from('public-assets')
-            .upload(storagePath, file, { cacheControl: '3600', upsert: true });
-          if (uploadError) throw new Error(`Image upload failed: ${uploadError.message}`);
-          updateFields.image = { path: storagePath };
+          // Upload image file to Storage. The same helper `_setAnswers` uses: the block was byte-for-byte duplicated between the two methods, which is how a sanitizer applied to one copy would have missed the other.
+          updateFields.image = {
+            path: await this.#uploadCandidateFile({ projectId: this.projectId, id, file: imageWithFile.file })
+          };
         } else if (image.url) {
           // Image already has a URL (no file to upload), keep as-is
           updateFields.image = image;
@@ -339,69 +370,17 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       }
     }
 
-    if (Object.keys(updateFields).length === 0) {
-      return { termsOfUseAccepted: undefined } as unknown as LocalizedCandidateData;
-    }
-
-    const { data, error } = await this.supabase
-      .from('candidates')
-      .update(updateFields)
-      .eq('id', id)
-      .select('terms_of_use_accepted, image')
-      .single();
+    // NOTHING TO WRITE: READ THE STORED PROPERTIES BACK rather than fabricating a return value. This used to be `return { termsOfUseAccepted: undefined } as unknown as LocalizedCandidateData` — an object that is not a `LocalizedCandidateData` at all (no `id`, no `type`), laundered through a double cast. The caller SPREADS the result into the stored candidate (`candidateUserDataState.svelte.ts`, "merge them into the existing candidate so `id` and the other static fields survive"), so the no-op path wrote `termsOfUseAccepted: undefined` over the acceptance it had just read. Returning the row as stored means the merge is a no-op too, which is what "nothing was updated" should mean, and it costs one `select` on a path that does no work anyway.
+    const columns = 'terms_of_use_accepted, image';
+    const { data, error } =
+      Object.keys(updateFields).length === 0
+        ? await this.scopedFrom('candidates').select(columns).eq('id', id).single()
+        : await this.scopedFrom('candidates').update(updateFields).eq('id', id).select(columns).single();
     if (error) throw new Error(`updateEntityProperties: ${error.message}`);
     // reason: class 4 — the declared return type is wrong for BOTH branches and has been since before this phase. The method returns only the two properties it owns, which the caller documents and relies on ("the property setter returns ONLY the changed properties — NOT the whole candidate"), while `LocalizedCandidateData` also requires `id` and the static fields. Aligning the declared type is an app-wide change to a published contract; the cast is bridged here and named rather than hidden.
     return {
       termsOfUseAccepted: data.terms_of_use_accepted ?? null,
-      // reason: JSONB columns return Json (structural superset of StoredImage); parseStoredImage runtime-guards on .path
-      image: parseStoredImage(data.image as Json as unknown as StoredImage | null, constants.PUBLIC_SUPABASE_URL)
+      image: imageOf(parseImageColumn(data.image, constants.PUBLIC_SUPABASE_URL, { column: 'candidates.image', id }))
     } as unknown as LocalizedCandidateData;
-  }
-
-  ////////////////////////////////////////////////////////////////////
-  // ADMIN METHODS
-  // TODO: Primary access point is SupabaseAdminWriter. These
-  // implementations satisfy the abstract contract on UniversalDataWriter.
-  ////////////////////////////////////////////////////////////////////
-
-  protected async _updateQuestion({ id, data: { customData } }: SetQuestionOptions): DWReturnType<DataApiActionResult> {
-    if (!customData || typeof customData !== 'object')
-      throw new Error(`Expected a customData object but got type: ${typeof customData}`);
-
-    const { error } = await this.supabase.rpc('merge_custom_data', {
-      p_question_id: id,
-      p_patch: customData
-    });
-    if (error) throw new Error(`updateQuestion: ${error.message}`);
-    return { type: 'success' as const };
-  }
-
-  protected async _insertJobResult({ data }: InsertJobResultOptions): DWReturnType<DataApiActionResult> {
-    // Resolve project_id from election_id (AdminJobRecord doesn't include project_id
-    // but the admin_jobs table requires it for RLS)
-    const { data: election, error: electionError } = await this.supabase
-      .from('elections')
-      .select('project_id')
-      .eq('id', data.electionId)
-      .single();
-    if (electionError || !election)
-      throw new Error(`Failed to resolve project for election: ${electionError?.message ?? 'not found'}`);
-
-    const { error } = await this.supabase.from('admin_jobs').insert({
-      project_id: election.project_id,
-      job_id: data.jobId,
-      job_type: data.jobType,
-      election_id: data.electionId,
-      author: data.author,
-      end_status: data.endStatus,
-      start_time: data.startTime ?? null,
-      end_time: data.endTime ?? null,
-      input: data.input ?? null,
-      output: data.output ?? null,
-      messages: data.messages ?? null,
-      metadata: data.metadata ?? null
-    });
-    if (error) throw new Error(`insertJobResult: ${error.message}`);
-    return { type: 'success' as const };
   }
 }

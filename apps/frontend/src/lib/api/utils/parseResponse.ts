@@ -1,3 +1,5 @@
+import { isRefusedResponse } from './isRefusedResponse';
+
 /**
  * A typed utility for parsing the response based on the specified parser.
  *
@@ -10,6 +12,9 @@ export function parseResponse<TParser extends ResponseParser>(
   response: Response,
   parser: TParser
 ): ParsedResponse<TParser> {
+  if (isRefusedResponse(response))
+    throw new Error(`Refusing to parse a response the server refused: ${response.status}.`);
+
   switch (parser) {
     case 'json':
       return response.json() as ParsedResponse<TParser>;

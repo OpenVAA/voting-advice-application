@@ -57,7 +57,6 @@ When using this component, the `validPassword` property should be bound to a boo
 
   // Perform debounced validation, validation status is updated after a delay when the user stops typing
   let validationDetails: Record<string, ValidationDetail> = $state({});
-  let validationProgress = $state(0);
   let timeout: NodeJS.Timeout;
 
   $effect(() => {
@@ -105,11 +104,15 @@ When using this component, the `validPassword` property should be bound to a boo
   const negativeEnforcedRules = $derived(filterRules(validationDetails, true, true));
   const negativeNonEnforcedRules = $derived(filterRules(validationDetails, true, false));
 
-  // Update the progress bar based on the number of completed rules
-  $effect(() => {
+  // The completed share of the positive rules. This is a pure function of `validationRules`, so it is derived rather than pushed by an effect, and `validationRules` is read directly inside the derived's tracking scope.
+  const completedRuleRatio = $derived.by(() => {
     const completedRules = validationRules.filter((rule) => rule.status).length;
-    validationProgress = completedRules === 0 ? 0 : completedRules / validationRules.length;
-    progress.set(validationProgress);
+    return completedRules === 0 ? 0 : completedRules / validationRules.length;
+  });
+
+  // Pushing the target into the tweened handle stays an effect: animating the bar is a genuine side effect, and a derived produces a value rather than driving an animation.
+  $effect(() => {
+    progress.set(completedRuleRatio);
   });
 </script>
 

@@ -1,7 +1,13 @@
 import { flushSync } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { UNVERIFIED_ANSWERS } from '$lib/api/base/universalDataWriter';
 import { candidateUserDataState } from './candidateUserDataState.svelte';
-import type { CandidateUserData, LocalizedAnswers, LocalizedCandidateData } from '$lib/api/base/dataWriter.type';
+import type {
+  CandidateUserData,
+  LocalizedAnswers,
+  LocalizedCandidateData,
+  SetAnswersResult
+} from '$lib/api/base/dataWriter.type';
 import type { UniversalDataWriter } from '$lib/api/base/universalDataWriter';
 import type { CandidateUserDataState } from './candidateUserDataState.type';
 
@@ -12,12 +18,6 @@ vi.mock('$app/environment', () => ({
   dev: true,
   building: false,
   version: 'test'
-}));
-
-vi.mock('$lib/utils/logger', () => ({
-  logDebugError: vi.fn(),
-  logDebugWarning: vi.fn(),
-  logError: vi.fn()
 }));
 
 /**
@@ -49,7 +49,7 @@ type FakeTarget = { target: { type: string; id?: string } };
 
 function makeFakeWriter() {
   const updateAnswers = vi.fn(
-    async ({ answers }: FakeTarget & { answers: LocalizedAnswers }): Promise<LocalizedAnswers> => ({ ...answers })
+    async ({ answers }: FakeTarget & { answers: LocalizedAnswers }): Promise<SetAnswersResult> => ({ ...answers })
   );
   const updateEntityProperties = vi.fn(
     async ({
@@ -64,9 +64,7 @@ function makeFakeWriter() {
       }) as unknown as LocalizedCandidateData
   );
   const getCandidateUserData = vi.fn();
-  const init = vi.fn();
   const writer = {
-    init,
     updateAnswers,
     updateEntityProperties,
     getCandidateUserData
@@ -97,7 +95,7 @@ describe('candidateUserDataState.save()', () => {
     cleanup = $effect.root(() => {
       store = candidateUserDataState({
         answersLocked: () => false,
-        dataWriter: fake.writer,
+        dataWriter: () => fake.writer,
         locale: () => 'en'
       });
     });
@@ -204,5 +202,81 @@ describe('candidateUserDataState.save()', () => {
 
     expect(updateAnswers).not.toHaveBeenCalled();
     expect(updateEntityProperties).not.toHaveBeenCalled();
+  });
+
+  /**
+   * The unverified-save path (decision **B3**, ledger row 4).
+   *
+   * Before this phase a malformed post-upsert read-back reached the store as a truthy `{}`: it passed the nullish guard, was merged, and then `resetAnswers()` discarded the candidate's typing while `save()` reported `{ type: 'success' }`. The write itself had succeeded — only the read-back failed to parse — so what was lost was not the answer but the candidate's ability to try again.
+   *
+   * Each case asserts BOTH halves: the returned discriminant AND the preserved buffer. Asserting only the discriminant would pass with the exit placed after the resets, which is exactly the defect.
+   */
+  describe('unverified answers read-back (decision B3)', () => {
+    it('Test 7: resolves a failure and preserves ALL THREE edit buffers when the writer reports an unverified write', async () => {
+      const { store, updateAnswers, updateEntityProperties } = setup(makeUserData());
+      updateAnswers.mockResolvedValue(UNVERIFIED_ANSWERS);
+
+      store.setAnswer('q1', { value: 3 });
+      store.setImage({ file: new File(['x'], 'p.png', { type: 'image/png' }) } as never);
+      store.setTermsOfUseAccepted('2026-05-31T00:00:00Z');
+      flushSync();
+      const result = await store.save();
+      flushSync();
+
+      expect(result.type).toBe('failure');
+      // The candidate's typing survives — this is the assertion the defect was about.
+      expect(store.unsavedQuestionIds).toEqual(['q1']);
+      // …and so do the other two edits: the exit sits ahead of all three resets, not just the answers one.
+      expect(store.unsavedProperties).toEqual(expect.arrayContaining(['image', 'termsOfUseAccepted']));
+      expect(store.hasUnsaved).toBe(true);
+      // The exit is ahead of the property write too, so an unverified answers save does not half-commit.
+      expect(updateEntityProperties).not.toHaveBeenCalled();
+    });
+
+    it('Test 8: resolves a failure and preserves the buffer when the writer returns a genuinely nullish value', async () => {
+      const { store, updateAnswers } = setup(makeUserData());
+      // The pre-existing nullish detector, kept in place by decision E1. Its consequent is now a failure return rather than a throw.
+      updateAnswers.mockResolvedValue(undefined as unknown as SetAnswersResult);
+
+      store.setAnswer('q1', { value: 3 });
+      flushSync();
+      const result = await store.save();
+      flushSync();
+
+      expect(result.type).toBe('failure');
+      expect(store.unsavedQuestionIds).toEqual(['q1']);
+    });
+
+    it('Test 9: a clean read-back still resolves success and still runs all three resets', async () => {
+      const { store } = setup(makeUserData());
+
+      store.setAnswer('q1', { value: 3 });
+      store.setTermsOfUseAccepted('2026-05-31T00:00:00Z');
+      flushSync();
+      const result = await store.save();
+      flushSync();
+
+      expect(result.type).toBe('success');
+      // Behaviour neutrality on the success path: the buffers are cleared exactly as before.
+      expect(store.unsavedQuestionIds).toEqual([]);
+      expect(store.unsavedProperties).toEqual([]);
+      expect(store.hasUnsaved).toBe(false);
+      expect(store.savedCandidateData?.answers?.q1).toEqual({ value: 3 });
+    });
+
+    it('Test 10: a save that does not touch answers is unaffected by the unverified path', async () => {
+      const { store, updateAnswers } = setup(makeUserData());
+      // Even with the writer primed to report an unverified answers write, a properties-only save never calls it.
+      updateAnswers.mockResolvedValue(UNVERIFIED_ANSWERS);
+
+      store.setTermsOfUseAccepted('2026-05-31T00:00:00Z');
+      flushSync();
+      const result = await store.save();
+      flushSync();
+
+      expect(updateAnswers).not.toHaveBeenCalled();
+      expect(result.type).toBe('success');
+      expect(store.hasUnsaved).toBe(false);
+    });
   });
 });

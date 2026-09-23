@@ -46,8 +46,6 @@ const { stubs, dataRootHolder, initialDataRoot } = vi.hoisted(() => {
       // Only the SIX members appContext's selective forward actually takes. The producer's two internal-only handle members — the persistent analytics session id and the tracking-enabled gate — are deliberately absent from this fixture: offering members the context is not allowed to forward would let a re-widened forward pass this guard unnoticed.
       tracking: {
         sendTrackingEvent: { current: () => {}, set: (_v: unknown) => {} },
-        sessionId: handle('sess-0'),
-        shouldTrack: handle(false),
         startPageview: (_href: string) => {},
         startEvent: (_name: string) => {},
         track: (_name: string, _data?: unknown) => {},
@@ -148,8 +146,6 @@ describe('AppContextProvider — own-enumerability spread guard', () => {
     'setDataRoot',
     // forwarded tracking members — SIX of the producer's eight. The other two (the analytics session id and the tracking-enabled gate) are deliberately withheld by appContext's selective forward because they are producer-internal, so they must NOT appear here.
     'sendTrackingEvent',
-    'sessionId',
-    'shouldTrack',
     'startPageview',
     'startEvent',
     'track',
