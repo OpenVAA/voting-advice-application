@@ -9,8 +9,8 @@ Display a question's secondary actions, such as skip.
 - `disablePrevious`: Whether to disable the previous button. @default `false`
 - `variant`: Use to switch between looser and tighter layouts. @default `'default'`
 - `separateSkip`: Whether to separate `skip` and `next` actions both as events and button symbols. @default `false`
-- `nextLabel`: The text label for the `next` button. @default `$t('questions.next')` or `$t('questions.skip')`
-- `previousLabel`: The text label for the `previous` button. @default `$t('questions.previous')`
+- `nextLabel`: The text label for the `next` button. @default `t('questions.next')` or `t('questions.skip')`
+- `previousLabel`: The text label for the `previous` button. @default `t('questions.previous')`
 - Any valid properties of a `<div>` element
 
 ### Callbacks
@@ -38,6 +38,6 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
 
 ## Source
 
-[frontend/src/lib/components/questions/QuestionActions.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionActions.svelte)
+[apps/frontend/src/lib/components/questions/QuestionActions.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionActions.svelte)
 
-[frontend/src/lib/components/questions/QuestionActions.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionActions.type.ts)
+[apps/frontend/src/lib/components/questions/QuestionActions.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionActions.type.ts)

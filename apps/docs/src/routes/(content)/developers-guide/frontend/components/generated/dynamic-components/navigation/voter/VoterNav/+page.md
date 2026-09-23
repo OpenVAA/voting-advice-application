@@ -20,12 +20,12 @@ A template part that outputs the navigation menu for the Voter App for use in `L
 
 ```tsx
 <VoterNav>
-  <NavItem href={$getRoute('Home')} icon="home" text={$t('common.home')} />
+  <NavItem href={getRoute.current('Home')} icon="home" text={t('common.home')} />
 </VoterNav>
 ```
 
 ## Source
 
-[frontend/src/lib/dynamic-components/navigation/voter/VoterNav.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/voter/VoterNav.svelte)
+[apps/frontend/src/lib/dynamic-components/navigation/voter/VoterNav.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/voter/VoterNav.svelte)
 
-[frontend/src/lib/dynamic-components/navigation/voter/VoterNav.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/voter/VoterNav.type.ts)
+[apps/frontend/src/lib/dynamic-components/navigation/voter/VoterNav.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/voter/VoterNav.type.ts)

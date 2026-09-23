@@ -10,7 +10,7 @@ Show a radial or a linear score gauge for a sub-match.
 - `variant`: The format of the gauge. @default 'linear'
 - `showScore`: Whether to also show the score as numbers. @default true
 - `unit`: The string to add to the score if it's shown, e.g. '%'. @default ''
-- `colors`: The colors of the gauge. @default 'oklch(var(--n))' i.e. the `neutral` color.
+- `colors`: The colors of the gauge. @default 'var(--color-neutral)' i.e. the `neutral` color.
 - Any valid attributes of a `<div>` element
 
 ```tsx
@@ -22,6 +22,6 @@ Show a radial or a linear score gauge for a sub-match.
 
 ## Source
 
-[frontend/src/lib/components/scoreGauge/ScoreGauge.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/scoreGauge/ScoreGauge.svelte)
+[apps/frontend/src/lib/components/scoreGauge/ScoreGauge.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/scoreGauge/ScoreGauge.svelte)
 
-[frontend/src/lib/components/scoreGauge/ScoreGauge.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/scoreGauge/ScoreGauge.type.ts)
+[apps/frontend/src/lib/components/scoreGauge/ScoreGauge.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/scoreGauge/ScoreGauge.type.ts)

@@ -14,12 +14,12 @@ A template part that outputs the navigation menu for the Admin App for use in `L
 
 ```tsx
 <AdminNav>
-  <NavItem slot="close" on:click={closeMenu} icon="close" text="Close" />
+  <NavItem onclick={closeMenu} icon="close" text="Close" />
 </AdminNav>
 ```
 
 ## Source
 
-[frontend/src/lib/dynamic-components/navigation/admin/AdminNav.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/admin/AdminNav.svelte)
+[apps/frontend/src/lib/dynamic-components/navigation/admin/AdminNav.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/admin/AdminNav.svelte)
 
-[frontend/src/lib/dynamic-components/navigation/admin/AdminNav.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/admin/AdminNav.type.ts)
+[apps/frontend/src/lib/dynamic-components/navigation/admin/AdminNav.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/admin/AdminNav.type.ts)

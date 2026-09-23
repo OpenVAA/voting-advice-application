@@ -1,8 +1,7 @@
 #!/usr/bin/env tsx
 
 /**
- * Main script to generate all documentation
- * This orchestrates TypeDoc, component extraction, and route mapping
+ * Main script to generate all documentation This orchestrates TypeDoc, component extraction, and route mapping
  */
 import { exec } from 'child_process';
 import * as fs from 'fs/promises';

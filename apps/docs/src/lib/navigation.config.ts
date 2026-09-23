@@ -1,7 +1,5 @@
 /**
- * Automatically updated navigation configuration
- * Check and prepare update with scripts/generate-navigation-config.ts
- * To mark fix sections titles, set `fixedTitle: true` for them, otherwise the titles are updated automatically.
+ * Automatically updated navigation configuration Check and prepare update with scripts/generate-navigation-config.ts To mark fix sections titles, set `fixedTitle: true` for them, otherwise the titles are updated automatically.
  *
  * NB. Any comments or content other than the navigation object will be removed!
  */

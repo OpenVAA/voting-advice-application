@@ -4,13 +4,13 @@
 
 Displays a select input with optional autocomplete support.
 
-If there’s only one option available, the selected value will be set automatically and a non-interactive 'input' will be displayed.
+If there's only one option available, the selected value will be set automatically and a non-interactive 'input' will be displayed.
 
 ### Properties
 
 - `label`: The `aria-label` and `placeholder` text for the select input.
 - `options`: The list of selectable options. You can provide an array of objects with `id` and `label` properties, or an array of strings in which case the ids will be the same as the labels.
-- `selected`: A bindable value for the id of the selected option. @default the only option if there’s only one, `undefined` otherwise.
+- `selected`: A bindable value for the id of the selected option. @default the only option if there's only one, `undefined` otherwise.
 - `onChange`: A callback function triggered when the selection changes.
 - `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default `false`
 - `autocomplete`: Controls autocomplete behavior; supported values: `on` or `off`. @default `off`
@@ -35,6 +35,6 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
 
 ## Source
 
-[frontend/src/lib/components/select/Select.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/select/Select.svelte)
+[apps/frontend/src/lib/components/select/Select.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/select/Select.svelte)
 
-[frontend/src/lib/components/select/Select.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/select/Select.type.ts)
+[apps/frontend/src/lib/components/select/Select.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/select/Select.type.ts)

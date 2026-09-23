@@ -2,10 +2,6 @@
 
 A modal dialog.
 
-### Slots
-
-- default: The modal.
-
 ### Properties
 
 - `title`: The title of the modal
@@ -33,22 +29,20 @@ A modal dialog.
 
 ```tsx
 <script lang="ts">
-  export let title;
-  export let isOpen;
-  export let closeModal;
-  export let openModal;
+  let title = 'My Modal';
+  let containerRef: ModalContainer;
 </script>
 
-<ModalContainer {...$$restProps} {title} bind:isOpen bind:closeModal bind:openModal>
+<ModalContainer bind:this={containerRef} {title}>
   <div class="modal-box">
     <h2 class="mb-lg text-center">{title}</h2>
-    <slot />
+    Content here
   </div>
 </ModalContainer>
 ```
 
 ## Source
 
-[frontend/src/lib/components/modal/ModalContainer.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/ModalContainer.svelte)
+[apps/frontend/src/lib/components/modal/ModalContainer.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/ModalContainer.svelte)
 
-[frontend/src/lib/components/modal/ModalContainer.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/ModalContainer.type.ts)
+[apps/frontend/src/lib/components/modal/ModalContainer.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/ModalContainer.type.ts)

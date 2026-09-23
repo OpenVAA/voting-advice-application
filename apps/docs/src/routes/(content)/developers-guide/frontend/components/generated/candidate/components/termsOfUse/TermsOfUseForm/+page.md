@@ -16,13 +16,12 @@ Accesses `CandidateContext`.
 ```tsx
 <script lang="ts">
   let termsAccepted: boolean;
-  $: console.info('termsAccepted:', termsAccepted);
 </script>
 <TermsOfUseForm bind:termsAccepted/>
 ```
 
 ## Source
 
-[frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.svelte)
+[apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.svelte)
 
-[frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.type.ts)
+[apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.type.ts)

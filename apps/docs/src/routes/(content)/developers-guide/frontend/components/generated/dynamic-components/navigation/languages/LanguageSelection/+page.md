@@ -4,7 +4,7 @@ A template part that language selection options for the navigation menu if these
 
 ### Dynamic component
 
-- Accesses `getRoute` from `AppContext`.
+- Uses Paraglide `localizeHref` for language switching.
 
 ### Usage
 
@@ -14,4 +14,4 @@ A template part that language selection options for the navigation menu if these
 
 ## Source
 
-[frontend/src/lib/dynamic-components/navigation/languages/LanguageSelection.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/languages/LanguageSelection.svelte)
+[apps/frontend/src/lib/dynamic-components/navigation/languages/LanguageSelection.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/languages/LanguageSelection.svelte)

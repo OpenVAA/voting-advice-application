@@ -4,7 +4,7 @@ Used for a pre-title, or kicker, above the main title of a page within a `Headin
 
 ### Properties
 
-- `aria-roledescription`: The Aria role description of the `<p>` element representing the pre-title. Default: `$t('aria.preHeading')`
+- `aria-roledescription`: The Aria role description of the `<p>` element representing the pre-title. Default: `t('aria.preHeading')`
 - Any valid attributes of a `<p>` element.
 
 ### Slots
@@ -14,11 +14,11 @@ Used for a pre-title, or kicker, above the main title of a page within a `Headin
 ### Usage
 
 ```tsx
-<PreHeading class="text-accent">{$t('categories.environment')}</PreHeading>
+<PreHeading class="text-accent">{t('categories.environment')}</PreHeading>
 ```
 
 ## Source
 
-[frontend/src/lib/components/headingGroup/PreHeading.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/headingGroup/PreHeading.svelte)
+[apps/frontend/src/lib/components/headingGroup/PreHeading.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/headingGroup/PreHeading.svelte)
 
-[frontend/src/lib/components/headingGroup/PreHeading.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/headingGroup/PreHeading.type.ts)
+[apps/frontend/src/lib/components/headingGroup/PreHeading.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/headingGroup/PreHeading.type.ts)

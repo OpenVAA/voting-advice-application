@@ -11,11 +11,11 @@ Display an `@openvaa/data: Image` object, automatically switching between dark a
 ### Usage
 
 ```tsx
-<Image image={candidate.image} format="thumbnail" on:load={() => console.info('Loaded!')} />
+<Image image={candidate.image} format="thumbnail" onload={() => console.info('Loaded!')} />
 ```
 
 ## Source
 
-[frontend/src/lib/components/image/Image.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/image/Image.svelte)
+[apps/frontend/src/lib/components/image/Image.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/image/Image.svelte)
 
-[frontend/src/lib/components/image/Image.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/image/Image.type.ts)
+[apps/frontend/src/lib/components/image/Image.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/image/Image.type.ts)

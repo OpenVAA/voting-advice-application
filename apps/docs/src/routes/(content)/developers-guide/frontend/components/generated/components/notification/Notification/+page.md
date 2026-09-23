@@ -10,11 +10,11 @@ Show a notification popup to the user.
 ### Usage
 
 ```tsx
-<Notification data={$appSettings.notifications.voterApp} />
+<Notification data={appSettings.notifications.voterApp} />
 ```
 
 ## Source
 
-[frontend/src/lib/components/notification/Notification.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/notification/Notification.svelte)
+[apps/frontend/src/lib/components/notification/Notification.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/notification/Notification.svelte)
 
-[frontend/src/lib/components/notification/Notification.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/notification/Notification.type.ts)
+[apps/frontend/src/lib/components/notification/Notification.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/notification/Notification.type.ts)

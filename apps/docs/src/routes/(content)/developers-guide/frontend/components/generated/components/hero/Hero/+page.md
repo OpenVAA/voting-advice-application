@@ -15,6 +15,6 @@ Display a hero illustration.
 
 ## Source
 
-[frontend/src/lib/components/hero/Hero.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/hero/Hero.svelte)
+[apps/frontend/src/lib/components/hero/Hero.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/hero/Hero.svelte)
 
-[frontend/src/lib/components/hero/Hero.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/hero/Hero.type.ts)
+[apps/frontend/src/lib/components/hero/Hero.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/hero/Hero.type.ts)

@@ -1,10 +1,7 @@
 <!--
-@component
-Display the OpenVAA logo. You can define the `color` and `size` of the logo using
-predefined values.
+@component Display the OpenVAA logo. You can define the `color` and `size` of the logo using predefined values.
 
-The logo is rendered as a `<svg>` element, and you can also pass any valid 
-attributes of one.
+The logo is rendered as a `<svg>` element, and you can also pass any valid attributes of one.
 
 ### Properties
 

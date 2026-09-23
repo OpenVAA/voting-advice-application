@@ -1,7 +1,6 @@
 # Expander
 
-A component for expanders that contain a title and some content. Use the
-`variant` prop to specify the expander type.
+A component for expanders that contain a title and some content. Use the `variant` prop to specify the expander type.
 
 - `read-more`: the default style of the expander. Used, for example, for getting
   more information about a question.
@@ -44,6 +43,6 @@ You should not try to use a variant and customize at the same time.
 
 ## Source
 
-[frontend/src/lib/components/expander/Expander.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/expander/Expander.svelte)
+[apps/frontend/src/lib/components/expander/Expander.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/expander/Expander.svelte)
 
-[frontend/src/lib/components/expander/Expander.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/expander/Expander.type.ts)
+[apps/frontend/src/lib/components/expander/Expander.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/expander/Expander.type.ts)

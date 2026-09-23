@@ -14,9 +14,9 @@ Accesses `AppContext` to set and read the current survey status and link.
 
 - `clicked`: Whether the button has been clicked.
 
-### Events
+### Callback Props
 
-- `click`: Dispatched when the button is clicked. The event has no details.
+- `onClick`: Called when the button is clicked.
 
 ### Tracking events
 
@@ -25,12 +25,12 @@ Accesses `AppContext` to set and read the current survey status and link.
 ### Usage
 
 ```tsx
-<SurveyButton bind:clicked on:click={() => console.info('Clicked!')}/>
-  <SurveyButton variant="main"/>
+<SurveyButton bind:clicked onClick={() => console.info('Clicked!')}/>
+<SurveyButton variant="main"/>
 ```
 
 ## Source
 
-[frontend/src/lib/dynamic-components/survey/SurveyButton.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/survey/SurveyButton.svelte)
+[apps/frontend/src/lib/dynamic-components/survey/SurveyButton.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/survey/SurveyButton.svelte)
 
-[frontend/src/lib/dynamic-components/survey/SurveyButton.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/survey/SurveyButton.type.ts)
+[apps/frontend/src/lib/dynamic-components/survey/SurveyButton.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/survey/SurveyButton.type.ts)

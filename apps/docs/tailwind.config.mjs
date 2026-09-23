@@ -6,8 +6,7 @@ function getColor(name, defaultValue, theme = 'light') {
   return staticSettings.colors?.[theme]?.[name] ?? defaultValue;
 }
 
-// Other DaisyUI variables: https://daisyui.com/docs/themes/
-// We define them here, so they can be used in both the light and the dark themes
+// Other DaisyUI variables: https://daisyui.com/docs/themes/ We define them here, so they can be used in both the light and the dark themes
 const themeCSSVars = {
   '--rounded-box': 'var(--rounded-md)', // border radius rounded-box utility class, used in card and other large boxes
   '--rounded-btn': 'var(--rounded-lg)', // border radius rounded-btn utility class, used in buttons and similar element
@@ -27,10 +26,7 @@ const fixedScreenHeight = ['100vh', '-webkit-fill-available', '100dvh'];
 // This defines the minimum touch target size
 const touchTargetSize = `${44 / 16}rem`;
 
-// We'll use this below to generate color classes to safelist
-// Make sure to check that this matches the `Color` type in
-// `./src/lib/components/color/color.type.ts`
-// as well as the color definitions in the DaisyUI themes futher below.
+// We'll use this below to generate color classes to safelist Make sure to check that this matches the `Color` type in `./src/lib/components/color/color.type.ts` as well as the color definitions in the DaisyUI themes futher below.
 const colorNames = [
   'current',
   'primary',
@@ -76,10 +72,7 @@ const fontFallbacks = {
 
 export default {
   content: ['./src/**/*.{html,js,svelte,ts}'],
-  // We need to safelist these color utility classes so that we can freely use
-  // the DaisyUI color classes as variables like `fill-${color}`. See:
-  // https://tailwindcss.com/docs/content-configuration#dynamic-class-names and
-  // https://tailwindcss.com/docs/content-configuration#safelisting-classes
+  // We need to safelist these color utility classes so that we can freely use the DaisyUI color classes as variables like `fill-${color}`. See: https://tailwindcss.com/docs/content-configuration#dynamic-class-names and https://tailwindcss.com/docs/content-configuration#safelisting-classes
   safelist: [
     ...colorNames.map((c) => `btn-${c}`),
     ...colorNames.map((c) => `bg-${c}`),
@@ -205,9 +198,7 @@ export default {
       }),
       screens: {
         xs: '320px',
-        // The 36rem should match the value for max-w-xl. We have to use
-        // a raw media query because an error will otherwise be generated
-        // when using units other than pixels.
+        // The 36rem should match the value for max-w-xl. We have to use a raw media query because an error will otherwise be generated when using units other than pixels.
         'match-w-xl': { raw: 'screen and (min-width: 36rem)' }
       }
     }

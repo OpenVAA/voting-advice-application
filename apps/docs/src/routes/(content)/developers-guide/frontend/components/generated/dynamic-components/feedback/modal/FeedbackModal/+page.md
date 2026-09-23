@@ -4,7 +4,7 @@ Show a modal dialog for sending feedback.
 
 ### Properties
 
-- `title`: Optional title for the modal. Defaults to `{$t('feedback.title')}`
+- `title`: Optional title for the modal. Defaults to `{t('feedback.title')}`
 - Any valid properties of a `<Modal>` component.
 
 ### Usage
@@ -14,11 +14,11 @@ Show a modal dialog for sending feedback.
   let openFeedback: () => void;
 </script>
 <FeedbackModal bind:openFeedback>
-<Button on:click={openFeedback} text="Open feedback"/>
+<Button onclick={openFeedback} text="Open feedback"/>
 ```
 
 ## Source
 
-[frontend/src/lib/dynamic-components/feedback/modal/FeedbackModal.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/feedback/modal/FeedbackModal.svelte)
+[apps/frontend/src/lib/dynamic-components/feedback/modal/FeedbackModal.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/feedback/modal/FeedbackModal.svelte)
 
-[frontend/src/lib/dynamic-components/feedback/modal/FeedbackModal.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/feedback/modal/FeedbackModal.type.ts)
+[apps/frontend/src/lib/dynamic-components/feedback/modal/FeedbackModal.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/feedback/modal/FeedbackModal.type.ts)

@@ -1,10 +1,8 @@
 # OpenVAALogo
 
-Display the OpenVAA logo. You can define the `color` and `size` of the logo using
-predefined values.
+Display the OpenVAA logo. You can define the `color` and `size` of the logo using predefined values.
 
-The logo is rendered as a `<svg>` element, and you can also pass any valid
-attributes of one.
+The logo is rendered as a `<svg>` element, and you can also pass any valid attributes of one.
 
 ### Properties
 
@@ -22,6 +20,6 @@ attributes of one.
 
 ## Source
 
-[frontend/src/lib/components/openVAALogo/OpenVAALogo.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/openVAALogo/OpenVAALogo.svelte)
+[apps/frontend/src/lib/components/openVAALogo/OpenVAALogo.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/openVAALogo/OpenVAALogo.svelte)
 
-[frontend/src/lib/components/openVAALogo/OpenVAALogo.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/openVAALogo/OpenVAALogo.type.ts)
+[apps/frontend/src/lib/components/openVAALogo/OpenVAALogo.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/openVAALogo/OpenVAALogo.type.ts)

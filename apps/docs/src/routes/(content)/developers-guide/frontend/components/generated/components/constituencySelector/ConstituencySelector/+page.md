@@ -19,14 +19,15 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
 
 ```tsx
 <ConstituencySelector
-  elections={$dataRoot.elections}
-  bind:selected={$selectedConstituencies}
+  elections={ctx.dataRoot.elections}
+  bind:selected
+  bind:selectionComplete
   onChange={(sel) => console.info('Selected', sel)}
 />
 ```
 
 ## Source
 
-[frontend/src/lib/components/constituencySelector/ConstituencySelector.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/constituencySelector/ConstituencySelector.svelte)
+[apps/frontend/src/lib/components/constituencySelector/ConstituencySelector.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/constituencySelector/ConstituencySelector.svelte)
 
-[frontend/src/lib/components/constituencySelector/ConstituencySelector.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/constituencySelector/ConstituencySelector.type.ts)
+[apps/frontend/src/lib/components/constituencySelector/ConstituencySelector.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/constituencySelector/ConstituencySelector.type.ts)

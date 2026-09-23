@@ -19,13 +19,11 @@ export interface BrokenLink {
 }
 
 /**
- * Extract all markdown links from content
- * Matches [text](url) and [text](<url>) formats
+ * Extract all markdown links from content Matches [text](url) and [text](<url>) formats
  */
 export function extractMarkdownLinks(content: string): Array<MarkdownLink> {
   const links: Array<MarkdownLink> = [];
-  // Match both [text](url) and [text](<url>) formats
-  // The second format allows parentheses in the URL
+  // Match both [text](url) and [text](<url>) formats The second format allows parentheses in the URL
   const linkRegex = /\[([^\]]+)\]\((?:<([^>]+)>|([^)]+))\)/g;
   const lines = content.split('\n');
 
@@ -77,9 +75,7 @@ export function resolveLink(linkUrl: string, currentFilePath: string, routesDir:
   if (!urlWithoutHash) return ''; // Just a hash link
 
   if (urlWithoutHash.startsWith('/')) {
-    // Absolute link - relative to routes dir
-    // For absolute links, we need to search for the actual file path
-    // because layout groups (like (content)) don't appear in URLs
+    // Absolute link - relative to routes dir For absolute links, we need to search for the actual file path because layout groups (like (content)) don't appear in URLs
     return resolveAbsoluteLink(urlWithoutHash, routesDir);
   } else {
     // Relative link - relative to current file
@@ -89,9 +85,7 @@ export function resolveLink(linkUrl: string, currentFilePath: string, routesDir:
 }
 
 /**
- * Resolve an absolute link to the actual filesystem path
- * Handles layout groups (parenthesized folders) that don't appear in URLs
- * E.g., "/about" might be at "routes/about" or "routes/(content)/about"
+ * Resolve an absolute link to the actual filesystem path Handles layout groups (parenthesized folders) that don't appear in URLs E.g., "/about" might be at "routes/about" or "routes/(content)/about"
  */
 function resolveAbsoluteLink(urlPath: string, routesDir: string): string {
   // Try the direct path first
@@ -101,9 +95,7 @@ function resolveAbsoluteLink(urlPath: string, routesDir: string): string {
 }
 
 /**
- * Check if a resolved link path exists
- * Checks for the path as-is, with +page.md, and as a directory
- * Also searches within layout groups (parenthesized folders)
+ * Check if a resolved link path exists Checks for the path as-is, with +page.md, and as a directory Also searches within layout groups (parenthesized folders)
  */
 export async function checkLinkExists(resolvedPath: string): Promise<boolean> {
   // First try direct paths
@@ -111,15 +103,13 @@ export async function checkLinkExists(resolvedPath: string): Promise<boolean> {
     return true;
   }
 
-  // If not found, try searching within layout groups
-  // E.g., if looking for routes/about, also check routes/(content)/about
+  // If not found, try searching within layout groups E.g., if looking for routes/about, also check routes/(content)/about
   const routesDir = findRoutesDir(resolvedPath);
   if (!routesDir) return false;
 
   const relativePath = path.relative(routesDir, resolvedPath);
 
-  // Try inserting layout groups at different positions
-  // Look for directories with parentheses in the routes dir
+  // Try inserting layout groups at different positions Look for directories with parentheses in the routes dir
   try {
     const entries = await fs.readdir(routesDir, { withFileTypes: true });
     const layoutGroups = entries
@@ -183,9 +173,7 @@ function findRoutesDir(resolvedPath: string): string | null {
 }
 
 /**
- * Normalize route path by removing layout groups (segments in parentheses)
- * In SvelteKit, folders wrapped in parentheses like (group) don't contribute to the URL
- * E.g., "(content)/about/features" becomes "/about/features"
+ * Normalize route path by removing layout groups (segments in parentheses) In SvelteKit, folders wrapped in parentheses like (group) don't contribute to the URL E.g., "(content)/about/features" becomes "/about/features"
  */
 function normalizeRoutePath(routePath: string): string {
   const segments = routePath.split('/').filter(Boolean);

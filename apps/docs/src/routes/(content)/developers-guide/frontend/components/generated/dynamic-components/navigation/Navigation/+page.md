@@ -7,37 +7,32 @@ Create navigation menus for the application in a predefined style.
 - `hidden`: Set to `true` to whenever the navigation is hidden. Default: `false`
 - Any valid attributes of a `<nav>` element.
 
-### Slots
+### Snippets
 
-- default: The content of the navigation menu. It should mainly consist of `<NavGroup>` components containing `<NavItem>` components.
+- children: The content of the navigation menu. It should mainly consist of `<NavGroup>` components containing `<NavItem>` components.
 
-### Events
+### Callback Props
 
-- `keyboardFocusOut`: Emitted when the component loses a keyboard user's
-  focus. This can be used to automatically close a drawer menu this is
-  contained in.
+- `onKeyboardFocusOut`: Called when the component loses a keyboard user's
+  focus. This can be used to automatically close a drawer menu this is contained in.
 
 ### Usage
 
 ```tsx
-<Navigation aria-label="Main navigation" on:keyboardFocusOut={closeDrawer}>
+<Navigation aria-label="Main navigation" onKeyboardFocusOut={closeDrawer}>
   <NavGroup>
-    <NavItem href={$getRoute(ROUTE.Info)} icon="info">
-      Show info
-    </NavItem>
-    <NavItem on:click={(e) => foo(e)}>Do foo</NavItem>
+    <NavItem href={getRoute.current(ROUTE.Info)} icon="info" text="Show info" />
+    <NavItem onclick={(e) => foo(e)} text="Do foo" />
     <div>Some other content</div>
   </NavGroup>
   <NavGroup>
-    <NavItem href={$getRoute(ROUTE.Help)} icon="help">
-      Show help
-    </NavItem>
+    <NavItem href={getRoute.current(ROUTE.Help)} icon="help" text="Show help" />
   </NavGroup>
 </Navigation>
 ```
 
 ## Source
 
-[frontend/src/lib/dynamic-components/navigation/Navigation.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/Navigation.svelte)
+[apps/frontend/src/lib/dynamic-components/navigation/Navigation.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/Navigation.svelte)
 
-[frontend/src/lib/dynamic-components/navigation/Navigation.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/Navigation.type.ts)
+[apps/frontend/src/lib/dynamic-components/navigation/Navigation.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/Navigation.type.ts)

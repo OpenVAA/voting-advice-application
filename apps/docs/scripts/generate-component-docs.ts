@@ -182,12 +182,10 @@ async function generateComponentMarkdown(doc: ComponentDoc): Promise<string> {
     // lines.push('## Type Definition\n');
 
     // if (typeDocPath) {
-    //   lines.push(`See [TypeDoc documentation](${typeDocPath}) for detailed type information.\n`);
-    // }
+    //   lines.push(`See [TypeDoc documentation](${typeDocPath}) for detailed type information.\n`); }
 
     // lines.push(
-    //   `Source: [\`${typeGithubPath}\`](${GITHUB_BASE}/${typeGithubPath})\n`
-    // );
+    //   `Source: [\`${typeGithubPath}\`](${GITHUB_BASE}/${typeGithubPath})\n` );
   }
 
   // README content if exists
@@ -205,8 +203,7 @@ async function generateComponentMarkdown(doc: ComponentDoc): Promise<string> {
 //  * Get the TypeDoc link for a type file (relative to generated API docs)
 //  */
 // async function getTypeDocLink(typeFilePath: string): Promise<string | null> {
-//   // This is a simplified version - TypeDoc will generate the actual paths
-//   // The link structure will depend on TypeDoc's output
+//   // This is a simplified version - TypeDoc will generate the actual paths // The link structure will depend on TypeDoc's output
 //   const relativePath = typeFilePath.replace('frontend/src/lib/', '').replace('.type.ts', '');
 //   return `../api/frontend/${relativePath}.md`;
 // }

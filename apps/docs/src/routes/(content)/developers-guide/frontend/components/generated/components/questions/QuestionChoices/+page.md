@@ -46,20 +46,20 @@ The same component can also be used to display the answers of the voter and anot
 ```tsx
 <QuestionChoices
   {question}
-  selectedId={$voterAnswers[question.id]}
+  selectedId={question.ensureValue(answers.answers[question.id]?.value)}
   onChange={answerQuestion}
   onReselect={doFoo} />
 
 <QuestionChoices
   {question}
   mode="display"
-  selectedId={$voterAnswers[question.id]}
+  selectedId={question.ensureValue(answers.answers[question.id]?.value)}
   otherSelected={candidateAnswer}
-  otherLabel={$t('candidateApp.common.candidateAnswerLabel')} />
+  otherLabel={t('candidateApp.common.candidateAnswerLabel')} />
 ```
 
 ## Source
 
-[frontend/src/lib/components/questions/QuestionChoices.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionChoices.svelte)
+[apps/frontend/src/lib/components/questions/QuestionChoices.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionChoices.svelte)
 
-[frontend/src/lib/components/questions/QuestionChoices.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionChoices.type.ts)
+[apps/frontend/src/lib/components/questions/QuestionChoices.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionChoices.type.ts)

@@ -26,14 +26,11 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
 
 ```tsx
 <h2>{itemsShown} candidates of {candidates.length}</h2>
-<EntityList
-  bind:itemsShown
-  contents={candidates}
-  actionCallBack={({id}) => $getRoute({route: ROUTE.Candidate, id})}/>
+<EntityList bind:itemsShown contents={candidates} actionCallBack={({id}) => getRoute.current({route: ROUTE.Candidate, id})}/>
 ```
 
 ## Source
 
-[frontend/src/lib/dynamic-components/entityList/EntityList.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityList/EntityList.svelte)
+[apps/frontend/src/lib/dynamic-components/entityList/EntityList.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityList/EntityList.svelte)
 
-[frontend/src/lib/dynamic-components/entityList/EntityList.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityList/EntityList.type.ts)
+[apps/frontend/src/lib/dynamic-components/entityList/EntityList.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityList/EntityList.type.ts)
