@@ -35,8 +35,7 @@ export default [
       '**/yarn.lock',
       'src/app.html',
       'src/error.html',
-      // Frozen Svelte-5 migration spike fixtures (v2.13): kept as regression
-      // tests but intentionally not held to production lint standards.
+      // Frozen Svelte-5 migration fixtures: kept as regression tests but intentionally not held to production lint standards.
       '**/_spikes-*/**'
     ]
   },

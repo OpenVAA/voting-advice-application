@@ -2,15 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { match } from './etPl';
 
 /**
- * Unit test for the `etPl` SvelteKit param matcher (short-name alias of
- * `entityTypePlural`; see phase 88).
+ * Unit test for the `etPl` SvelteKit param matcher (short-name alias of `entityTypePlural`).
  *
- * Accept-set (American spelling, see phase 62;
- * extended with `alliances`; see phase 69):
+ * Accept-set (American spelling):
  *   `candidates` | `organizations` | `alliances`
  *
- * Rejects singular forms, British spellings, legacy `party`/`parties`,
- * empty strings and case variants.
+ * Rejects singular forms, British spellings, legacy `party`/`parties`, empty strings and case variants.
  */
 describe('etPl matcher', () => {
   it.each([

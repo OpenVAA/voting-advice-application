@@ -5,10 +5,8 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   plugins: [svelte({ hot: !process.env.VITEST })],
   resolve: {
-    // Force svelte to resolve via its browser entrypoint so `mount()` /
-    // `unmount()` from `svelte` are available in jsdom-backed unit tests.
-    // Without this, vitest picks svelte's `index-server.js` (SSR build) and
-    // any test that mounts a component fails with `lifecycle_function_unavailable`.
+    // Force svelte to resolve via its browser entrypoint so `mount()` / `unmount()` from `svelte` are available in jsdom-backed unit tests.
+    // Without this, vitest picks svelte's `index-server.js` (SSR build) and any test that mounts a component fails with `lifecycle_function_unavailable`.
     conditions: ['browser'],
     alias: [
       // Paraglide generated output doesn't exist during tests.
