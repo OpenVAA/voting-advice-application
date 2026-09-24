@@ -1,17 +1,13 @@
 /**
  * @file candidatePasswordSetter fixture.
  *
- * Function-fixture for the PasswordSetter widget rendered by the
- * /candidate/register/password route (and the password-reset flow). The
- * widget contains two PasswordField inputs (new + confirm) and is paired
- * with an external submit button.
+ * Function-fixture for the PasswordSetter widget rendered by the /candidate/register/password route (and the password-reset flow). The widget contains two PasswordField inputs (new + confirm) and is paired with an external submit button.
  *
  * Surface:
  *  - setPassword(password) — fill register-password + register-confirm-password
  *    + click register-password-submit.
  *
- * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`,
- * NO `.catch(() => null)` on assertion-bearing locator interactions.
+ * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
 import { expect } from '@playwright/test';

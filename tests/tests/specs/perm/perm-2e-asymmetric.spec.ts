@@ -22,8 +22,7 @@ test.describe('perm-2e-asymmetric', () => {
     await selectElectionAndAdvance(page, { optionText: /\[EL1\]|\[EL2\]/i });
     const constList = await expectConstituencySelector(page);
     // CG-1 has a single CO (co-1a) auto-implied; CG-2 has 2 COs requiring picker.
-    // Expect at least one combobox (the CG-2 picker); the CG-1 picker may be
-    // visually disabled / not rendered as an active combobox.
+    // Expect at least one combobox (the CG-2 picker); the CG-1 picker may be visually disabled / not rendered as an active combobox.
     await expect(constList.getByRole('combobox').first()).toBeVisible();
     // Pick CG-2's CO-2A — matches the bracketed CG2 symbol.
     await selectConstituencyAndAdvance(page, {

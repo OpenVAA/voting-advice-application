@@ -1,16 +1,9 @@
 /**
  * perm-question-video data-setup project.
  *
- * Invokes setupFromTemplate('perm-question-video') then mints a per-perm
- * Playwright storage-state JSON via real `forceRegister` + real UI login through
- * the candidate-app login form (synthetic tokens fail server-side JWT
- * validation).
+ * Invokes setupFromTemplate('perm-question-video') then mints a per-perm Playwright storage-state JSON via real `forceRegister` + real UI login through the candidate-app login form (synthetic tokens fail server-side JWT validation).
  *
- * The spec consumes the storage state for the candidate `hideVideo` slice
- * (navigate to /en/candidate/questions/[questionId] as an authenticated
- * candidate and assert the question video shows with hideVideo=false, then is
- * suppressed after re-seeding hideVideo=true). The voter slice runs
- * unauthenticated.
+ * The spec consumes the storage state for the candidate `hideVideo` slice (navigate to /en/candidate/questions/[questionId] as an authenticated candidate and assert the question video shows with hideVideo=false, then is suppressed after re-seeding hideVideo=true). The voter slice runs unauthenticated.
  *
  * Prefix: 'e2e-perm-qvid-' (matches `perm-question-video.ts:42` `const P`).
  */
@@ -30,9 +23,7 @@ const PREFIX = 'e2e-perm-qvid-';
 export const STORAGE_STATE_PATH = path.join(TESTS_DIR, '../playwright/.auth/perm-question-video.json');
 
 /**
- * Wait for the candidate-app login form to be visible, reloading up to
- * `maxAttempts - 1` times if the backend is cold-starting. Mirrors the
- * canonical helper in `auth.setup.ts:23-57`.
+ * Wait for the candidate-app login form to be visible, reloading up to `maxAttempts - 1` times if the backend is cold-starting. Mirrors the canonical helper in `auth.setup.ts:23-57`.
  */
 async function waitForLoginForm(page: Page, loginRoute: string, emailTestId: string, maxAttempts = 3): Promise<void> {
   for (let attempt = 0; attempt < maxAttempts; attempt++) {

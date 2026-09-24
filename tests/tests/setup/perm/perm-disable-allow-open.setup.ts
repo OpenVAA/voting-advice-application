@@ -21,9 +21,7 @@ const PREFIX = 'e2e-perm-no-allowopen-';
 export const STORAGE_STATE_PATH = path.join(TESTS_DIR, '../playwright/.auth/perm-disable-allow-open.json');
 
 /**
- * Wait for the candidate-app login form to be visible, reloading up to
- * `maxAttempts - 1` times if the backend is cold-starting. Mirrors the
- * canonical helper in `auth.setup.ts:23-57`.
+ * Wait for the candidate-app login form to be visible, reloading up to `maxAttempts - 1` times if the backend is cold-starting. Mirrors the canonical helper in `auth.setup.ts:23-57`.
  */
 async function waitForLoginForm(page: Page, loginRoute: string, emailTestId: string, maxAttempts = 3): Promise<void> {
   for (let attempt = 0; attempt < maxAttempts; attempt++) {

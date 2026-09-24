@@ -1,13 +1,9 @@
 /**
  * Candidate journey end-to-end spec.
  *
- * Structure: ONE serial-describe → ONE long test('full candidate journey
- * end-to-end', ...) → 22 named `test.step` segments. The walk covers:
- *   1-2.  Public static pages (/candidate/help + /candidate/privacy) reachable
- *         while unauthenticated.
- *   3.    Trigger registration email via SupabaseAdminClient.sendEmail —
- *         polls Mailpit, extracts the verify link, transforms to the
- *         frontend auth callback URL.
+ * Structure: ONE serial-describe → ONE long test('full candidate journey end-to-end', ...) → 22 named `test.step` segments. The walk covers:
+ *   1-2.  Public static pages (/candidate/help + /candidate/privacy) reachable while unauthenticated.
+ *   3.    Trigger registration email via SupabaseAdminClient.sendEmail — polls Mailpit, extracts the verify link, transforms to the frontend auth callback URL.
  *   4.    Navigate to the callback URL + set initial password (PASSWORD_1).
  *   5.    Accept Terms of Use + advance.
  *   6.    Candidate home renders three tasks; profile-active.
@@ -19,47 +15,32 @@
  *         (PASSWORD_1 → error), correct password (PASSWORD_2 → home).
  *   10.   Return from a static page (/candidate/help) via the return button.
  *   11.   Candidate home renders three tasks; profile-active (unchanged).
- *   12.   Profile renders static info + filtered questions partition +
- *         required badge on the required text question.
- *   13.   Portrait upload error paths (invalid file + oversize file) +
- *         valid upload + fill all info questions EXCEPT the required one
- *         and the first one + submit + assert home still profile-active
- *         (opinions still disabled because the required field is empty).
+ *   12.   Profile renders static info + filtered questions partition + required badge on the required text question.
+ *   13.   Portrait upload error paths (invalid file + oversize file) + valid upload + fill all info questions EXCEPT the required one and the first one + submit + assert home still profile-active (opinions still disabled because the required field is empty).
  *   14.   Revisit profile; fill the required field; submit → questions
  *         overview.
  *   15.   Questions overview shows intro message; clickStart → first
  *         opinion question.
- *   16.   First opinion question: hero emoji + continue-disabled +
- *         select choice + continue-enabled + enterInfo + clickContinue.
- *   17.   Return to overview: continue-prompt + Q1 answered (round-trip
- *         OPEN_ANSWER_1) + Q2 has answer button + category expander
- *         toggles.
+ *   16.   First opinion question: hero emoji + continue-disabled + select choice + continue-enabled + enterInfo + clickContinue.
+ *   17.   Return to overview: continue-prompt + Q1 answered (round-trip OPEN_ANSWER_1) + Q2 has answer button + category expander toggles.
  *   18.   Edit Q1: change choice + change info + clickContinue → overview
  *         shows updated values.
- *   19.   Walk remaining opinion questions (first choice, clickContinue)
- *         until home renders "completed" status + preview enabled.
+ *   19.   Walk remaining opinion questions (first choice, clickContinue) until home renders "completed" status + preview enabled.
  *   20.   Overview shows completion message + no continue prompt.
- *   21.   Preview renders all info answers + portrait + opinion answers +
- *         NO voter-comparison messaging.
- *   22.   Final logout without dialog (post-completion path) →
- *         /candidate/login.
+ *   21.   Preview renders all info answers + portrait + opinion answers + NO voter-comparison messaging.
+ *   22.   Final logout without dialog (post-completion path) → /candidate/login.
  *
  * Rigidity contract:
  *   - 0 try/catch wrapping expect()
  *   - 0 .catch(() => null) on assertion-bearing locator interactions
- *   - expect.soft is used, in the three optional-page and disabled-button checks
- *     where a failure should not abort the remaining 20 steps of the walk. This
- *     spec is outside SOFT_ASSERTION_BUDGETS, which is deliberately scoped to
- *     voter-journey.spec.ts; see the note above that table in playwright.config.ts.
+ *   - expect.soft is used, in the three optional-page and disabled-button checks where a failure should not abort the remaining 20 steps of the walk. This spec is outside SOFT_ASSERTION_BUDGETS, which is deliberately scoped to voter-journey.spec.ts; see the note above that table in playwright.config.ts.
  *
  * Starts UNAUTHENTICATED (test.use storageState empty-cookies).
  *
  * Running:
  *   yarn test:e2e --project=candidate-journey --reporter=list
  *
- * Runs under the `data-setup-candidate-journey → candidate-journey →
- * data-teardown-candidate-journey` chain, sequenced after voter-journey via
- * `dependencies: ['voter-journey']` (shared 'test-' prefix race).
+ * Runs under the `data-setup-candidate-journey → candidate-journey → data-teardown-candidate-journey` chain, sequenced after voter-journey via `dependencies: ['voter-journey']` (shared 'test-' prefix race).
  */
 
 import fs from 'node:fs';
@@ -91,30 +72,18 @@ import type { CandidateQuestionPageFixture } from '../../fixtures/candidate/cand
 // FILE-SCOPE CONSTANTS
 //
 // Timeout buckets are imported from the central helpers/timeouts.ts.
-// testMax (90_000) equals the playwright.config global ceiling, so
-// test.setTimeout(TIMEOUTS.testMax) keeps the full 90s budget for this walk.
+// testMax (90_000) equals the playwright.config global ceiling, so test.setTimeout(TIMEOUTS.testMax) keeps the full 90s budget for this walk.
 // ====================================================================
 
 // ====================================================================
 // candidate nav-menu auth-state item sets
 //
-// Exact ordered accessible-name lists for the items the navMenu fixture's
-// `items()` reader resolves (the `nav-menu-item` testid). Derived at build by
-// reading the rendered candidate drawer on the e2e/base dataset (4 locales →
-// the active `en` plus three language items Suomi / Svenska / English).
+// Exact ordered accessible-name lists for the items the navMenu fixture's `items()` reader resolves (the `nav-menu-item` testid). Derived at build by reading the rendered candidate drawer on the e2e/base dataset (4 locales → the active `en` plus three language items Suomi / Svenska / English).
 //
-// NOTE: the AUTHENTICATED candidate nav group (Start / Basic Information /
-// Your Opinions / Preview / Settings) carries its OWN `candidate-nav-*`
-// testids — NavItem.svelte spreads the caller's `data-testid` over its default
-// `nav-menu-item`, so those items are invisible to the `nav-menu-item` reader
-// and are asserted separately via `assertCandidateAuthNavPresent`.
+// NOTE: the AUTHENTICATED candidate nav group (Start / Basic Information / Your Opinions / Preview / Settings) carries its OWN `candidate-nav-*` testids — NavItem.svelte spreads the caller's `data-testid` over its default `nav-menu-item`, so those items are invisible to the `nav-menu-item` reader and are asserted separately via `assertCandidateAuthNavPresent`.
 // ====================================================================
 
-// The active-locale language item (`en`, since this walk runs on `/en`) is
-// `disabled={loc === currentLocale}` in LanguageSelection.svelte. NavItem drops
-// `href` and sets `aria-disabled` for a disabled link, so the current-locale
-// item computes an EMPTY accessible name (`/^$/`) — the other languages are
-// real links carrying their language name.
+// The active-locale language item (`en`, since this walk runs on `/en`) is `disabled={loc === currentLocale}` in LanguageSelection.svelte. NavItem drops `href` and sets `aria-disabled` for a disabled link, so the current-locale item computes an EMPTY accessible name (`/^$/`) — the other languages are real links carrying their language name.
 const CANDIDATE_NAV_LOGGED_OUT: ReadonlyArray<RegExp> = Object.freeze([
   /^Close menu$/,
   /^Sign in$/,
@@ -140,11 +109,7 @@ const CANDIDATE_NAV_LOGGED_IN: ReadonlyArray<RegExp> = Object.freeze([
 
 /**
  * Assert the authenticated candidate nav group is present in the open drawer.
- * These items carry their own `candidate-nav-*` testids (not `nav-menu-item`),
- * so they're asserted directly rather than through the navMenu fixture's
- * `items()` reader. Hoisted to module scope so the per-id `expect` runs outside
- * the test body's flow (playwright/no-standalone-expect is satisfied by the
- * test-body call site; the loop-free explicit list keeps each assert flat).
+ * These items carry their own `candidate-nav-*` testids (not `nav-menu-item`), so they're asserted directly rather than through the navMenu fixture's `items()` reader. Hoisted to module scope so the per-id `expect` runs outside the test body's flow (playwright/no-standalone-expect is satisfied by the test-body call site; the loop-free explicit list keeps each assert flat).
  */
 async function assertCandidateAuthNavPresent(menu: Locator): Promise<void> {
   await expect(menu.getByTestId('candidate-nav-home')).toBeVisible();
@@ -158,8 +123,7 @@ async function assertCandidateAuthNavPresent(menu: Locator): Promise<void> {
 }
 
 /**
- * Valid portrait path — reuses the existing tests/tests/data/assets/test-poster.jpg
- * fixture (passes Input.svelte's image-type check; well under the 20MB ceiling).
+ * Valid portrait path — reuses the existing tests/tests/data/assets/test-poster.jpg fixture (passes Input.svelte's image-type check; well under the 20MB ceiling).
  */
 const VALID_PORTRAIT_PATH = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -167,9 +131,7 @@ const VALID_PORTRAIT_PATH = path.resolve(
 );
 
 /**
- * Invalid portrait path — the existing tests/tests/data/test-not-an-image.txt
- * fixture (text file, fails the image-type check). Same fixture
- * candidate-profile-validation.spec.ts uses for the invalid-file cell.
+ * Invalid portrait path — the existing tests/tests/data/test-not-an-image.txt fixture (text file, fails the image-type check). Same fixture candidate-profile-validation.spec.ts uses for the invalid-file cell.
  */
 const INVALID_PORTRAIT_PATH = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -177,44 +139,27 @@ const INVALID_PORTRAIT_PATH = path.resolve(
 );
 
 /**
- * Tmp-dir path for the runtime-generated oversized PNG. Built once per
- * file in `test.beforeAll` to avoid committing a 21MB binary.
+ * Tmp-dir path for the runtime-generated oversized PNG. Built once per file in `test.beforeAll` to avoid committing a 21MB binary.
  */
 const OVERSIZED_PNG_PATH = path.join(os.tmpdir(), 'candidate-journey-oversized.png');
 
 /**
- * Subset of INFO_QUESTION_ANSWERS to fill in step 13 — excludes
- * test-qu-info-text (the required field, deliberately left blank).
- * Pre-computed at module scope to avoid an `if` inside the test body
- * (playwright/no-conditional-in-test).
+ * Subset of INFO_QUESTION_ANSWERS to fill in step 13 — excludes test-qu-info-text (the required field, deliberately left blank).
+ * Pre-computed at module scope to avoid an `if` inside the test body (playwright/no-conditional-in-test).
  */
 const STEP_13_INFO_FILL_ENTRIES: ReadonlyArray<readonly [string, string]> = Object.freeze(
   Object.entries(INFO_QUESTION_ANSWERS).filter(([externalId]) => externalId !== 'test-qu-info-text')
 );
 
 /**
- * Walk the per-question editor for the candidate opinion-question loop in
- * step 19. At each /candidate/questions/{id} URL: select choice 0 +
- * clickContinue. Loop until the URL leaves the per-question editor surface
- * (the candidate is dispatched to /candidate or /candidate/questions when
- * the last applicable question is answered).
+ * Walk the per-question editor for the candidate opinion-question loop in step 19. At each /candidate/questions/{id} URL: select choice 0 + clickContinue. Loop until the URL leaves the per-question editor surface (the candidate is dispatched to /candidate or /candidate/questions when the last applicable question is answered).
  *
- * The loop ceiling (`MAX_STEPS`) is a defensive guard against an infinite
- * walk if the dispatch logic regresses; base currently exposes ~10
- * applicable opinion questions to the unregistered candidate (Base ×7 —
- * incl. the Phase-129 number + multi-choice questions — + Opt-A ×1 +
- * Opt-B ×1 + EL-Reg ×1), so 20 is a loose ceiling.
+ * The loop ceiling (`MAX_STEPS`) is a defensive guard against an infinite walk if the dispatch logic regresses; base currently exposes ~10 applicable opinion questions to the unregistered candidate (Base ×7 — incl. the number + multi-choice questions — + Opt-A ×1 + Opt-B ×1 + EL-Reg ×1), so 20 is a loose ceiling.
  *
- * Per-question answering is TYPE-AWARE (see phase 129): a number-scale
- * question is answered via the native slider (focus + End); a multi-choice
- * checkbox question via the first 2 choices (min 2 / max 3); every other
- * (radio) question via the first choice. Without per-type driving the number
- * question has no choice to click and the multi-choice needs ≥2 selections, so
- * Save would stay disabled and the walk would stall.
+ * Per-question answering is TYPE-AWARE: a number-scale question is answered via the native slider (focus + End); a multi-choice checkbox question via the first 2 choices (min 2 / max 3); every other
+ * (radio) question via the first choice. Without per-type driving the number question has no choice to click and the multi-choice needs ≥2 selections, so Save would stay disabled and the walk would stall.
  *
- * Hoisted to module scope (mirrors voter-journey precedent) to
- * satisfy `playwright/no-conditional-in-test` — the `if` inside is the
- * walk's loop-exit condition, not a race mask.
+ * Hoisted to module scope (mirrors voter-journey precedent) to satisfy `playwright/no-conditional-in-test` — the `if` inside is the walk's loop-exit condition, not a race mask.
  */
 async function walkRemainingOpinionQuestions(
   page: Page,
@@ -223,16 +168,12 @@ async function walkRemainingOpinionQuestions(
 ): Promise<void> {
   const MAX_STEPS = 20;
   const PER_QUESTION_URL_RE = /\/candidate\/questions\/[^/?]+/;
-  // The caller arrives here right after a SPA navigation (clickContinuePrompt's
-  // <a href> click), which is NOT reflected in page.url() synchronously. Wait for
-  // the first per-question editor to settle before reading the URL — otherwise the
-  // loop sees the stale overview URL and exits having answered nothing.
+  // The caller arrives here right after a SPA navigation (clickContinuePrompt's <a href> click), which is NOT reflected in page.url() synchronously. Wait for the first per-question editor to settle before reading the URL — otherwise the loop sees the stale overview URL and exits having answered nothing.
   await page.waitForURL(PER_QUESTION_URL_RE, { timeout: timeoutMs });
   for (let i = 0; i < MAX_STEPS; i++) {
     const current = page.url();
     if (!PER_QUESTION_URL_RE.test(current)) return;
-    // Type-aware answer scoped to THIS question's id (from the URL), so a
-    // mid-transition read never clicks the outgoing question's stale choices.
+    // Type-aware answer scoped to THIS question's id (from the URL), so a mid-transition read never clicks the outgoing question's stale choices.
     const currentId =
       current
         .replace(/[?#].*$/, '')
@@ -242,20 +183,13 @@ async function walkRemainingOpinionQuestions(
     await questionPage.answerCurrentQuestion(currentId);
     await questionPage.expectContinueEnabled();
     await questionPage.clickContinue();
-    // `clickContinue` (Save and Continue) saves then SPA-navigates to the next
-    // question — or, after the last one, to the overview/home. Wait for the URL to
-    // actually leave the current question so the next iteration reads fresh state
-    // (and doesn't re-answer the same question on a stale URL read).
+    // `clickContinue` (Save and Continue) saves then SPA-navigates to the next question — or, after the last one, to the overview/home. Wait for the URL to actually leave the current question so the next iteration reads fresh state (and doesn't re-answer the same question on a stale URL read).
     await page.waitForURL((u) => u.toString() !== current, { timeout: timeoutMs });
   }
 }
 
 /**
- * Generate the oversized PNG fixture on disk. The handler at Input.svelte
- * checks `file.type.startsWith('image/')` first (passes when the browser
- * maps the `.png` extension to `image/png`), then checks
- * `file.size > maxFilesize` (trips because 21MB > 20MB ceiling). A real
- * PNG decode is NOT required — the rejection branch fires on size alone.
+ * Generate the oversized PNG fixture on disk. The handler at Input.svelte checks `file.type.startsWith('image/')` first (passes when the browser maps the `.png` extension to `image/png`), then checks `file.size > maxFilesize` (trips because 21MB > 20MB ceiling). A real PNG decode is NOT required — the rejection branch fires on size alone.
  */
 function buildOversizedPng(): void {
   const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
@@ -268,15 +202,9 @@ function buildOversizedPng(): void {
  * After the PasswordSetter form submits the page lands on EITHER
  *   (a) `/candidate/login` (the unconditional `goto` in PasswordSetter
  *       +page.svelte), if the post-setPassword session was dropped/expired;
- *   (b) a protected `/candidate(/...)` route, if the post-setPassword
- *       session is still valid and the login page auto-redirected
- *       authenticated users onward (the candidate context's
- *       `isAuthenticated` guard).
+ *   (b) a protected `/candidate(/...)` route, if the post-setPassword session is still valid and the login page auto-redirected authenticated users onward (the candidate context's `isAuthenticated` guard).
  *
- * Branch (a) requires us to fill the login form. Branch (b) lands us at
- * the ToU acceptance form directly. Hoisted out of the test body to
- * satisfy `playwright/no-conditional-in-test` — the `if` inside is a
- * deterministic post-await dispatch on a settled URL, not a race mask.
+ * Branch (a) requires us to fill the login form. Branch (b) lands us at the ToU acceptance form directly. Hoisted out of the test body to satisfy `playwright/no-conditional-in-test` — the `if` inside is a deterministic post-await dispatch on a settled URL, not a race mask.
  */
 async function loginIfRedirectedToLoginPage(
   page: Page,
@@ -307,12 +235,7 @@ async function loginIfRedirectedToLoginPage(
 }
 
 /**
- * Extract the internal question id from a settled per-question editor URL
- * (`/candidate/questions/<id>`). The choice inputs carry
- * `name="questionChoices-<id>"`, so this id scopes the type-specific choice
- * locators below (mirrors candidateQuestionPage.answerCurrentQuestion's
- * id-scoping idiom, so a mid-transition read never touches a stale question's
- * choices).
+ * Extract the internal question id from a settled per-question editor URL (`/candidate/questions/<id>`). The choice inputs carry `name="questionChoices-<id>"`, so this id scopes the type-specific choice locators below (mirrors candidateQuestionPage.answerCurrentQuestion's id-scoping idiom, so a mid-transition read never touches a stale question's choices).
  */
 function currentQuestionId(page: Page): string {
   return (
@@ -327,9 +250,7 @@ function currentQuestionId(page: Page): string {
 
 /**
  * Id-scoped `question-choice` inputs for the question currently in the editor.
- * The `name="questionChoices-<id>"` conjunction with the `question-choice`
- * testid is not expressible via getByTestId, so a raw attribute locator is used
- * (same idiom as candidateQuestionPage.answerCurrentQuestion).
+ * The `name="questionChoices-<id>"` conjunction with the `question-choice` testid is not expressible via getByTestId, so a raw attribute locator is used (same idiom as candidateQuestionPage.answerCurrentQuestion).
  */
 function scopedChoices(page: Page, questionId: string): Locator {
   // eslint-disable-next-line playwright/no-restricted-locators -- testid+name conjunction not expressible via getByTestId
@@ -338,9 +259,7 @@ function scopedChoices(page: Page, questionId: string): Locator {
 
 /**
  * Id-scoped `question-choice` inputs further filtered by native input `type`.
- * The input `type` is the render discriminant asserted by the type-specific
- * steps: multi-choice categorical → `checkbox` (QuestionChoices.svelte multi
- * branch), single-choice categorical / boolean / ordinal → `radio`.
+ * The input `type` is the render discriminant asserted by the type-specific steps: multi-choice categorical → `checkbox` (QuestionChoices.svelte multi branch), single-choice categorical / boolean / ordinal → `radio`.
  */
 function scopedChoicesByType(page: Page, questionId: string, inputType: 'checkbox' | 'radio'): Locator {
   // eslint-disable-next-line playwright/no-restricted-locators -- testid+name+type conjunction not expressible via getByTestId
@@ -353,8 +272,7 @@ test.use({ storageState: { cookies: [], origins: [] } });
 test.describe('candidate journey', { tag: ['@candidate'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
-  // Build the oversized PNG once per file (used by step 13's portrait
-  // upload error-path assertions). Avoids committing a 21MB binary fixture.
+  // Build the oversized PNG once per file (used by step 13's portrait upload error-path assertions). Avoids committing a 21MB binary fixture.
   test.beforeAll(async () => {
     buildOversizedPng();
   });
@@ -386,9 +304,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
 
     await test.step('1. static: /candidate/help reachable while unauthenticated', async () => {
       await page.goto('/en/candidate/help');
-      // The help page renders a return-home button with testid
-      // `candidate-help-home`. Visibility proves the page rendered without
-      // the auth gate redirecting to /candidate/login.
+      // The help page renders a return-home button with testid `candidate-help-home`. Visibility proves the page rendered without the auth gate redirecting to /candidate/login.
       await expect.soft(page.getByTestId(testIds.candidate.help.home)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
@@ -404,11 +320,8 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
     // ============== Step 2.5: candidate nav-menu (logged-out) ====
 
     // candidate nav-menu logged-out vs logged-in.
-    // Logged-out item set: the menu (still unauthenticated on the public
-    // /candidate/privacy page) renders the EXACT ordered list below. All ten
-    // are anchored on the `nav-menu-item` testid the navMenu fixture reads.
-    // Labels derived at build by reading the rendered drawer on the e2e/base
-    // dataset (4 locales → 3 extra language items beyond the active `en`).
+    // Logged-out item set: the menu (still unauthenticated on the public /candidate/privacy page) renders the EXACT ordered list below. All ten are anchored on the `nav-menu-item` testid the navMenu fixture reads.
+    // Labels derived at build by reading the rendered drawer on the e2e/base dataset (4 locales → 3 extra language items beyond the active `en`).
     await test.step('2.5. EFLOW-09: candidate nav-menu logged-out item set', async () => {
       await page.goto('/en/candidate/privacy');
       const navMenu = createNavMenu(page);
@@ -424,8 +337,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
 
     await test.step('3. registration: send invite email + extract link', async () => {
       // Trigger the registration / invite email via the Supabase admin API.
-      // SupabaseAdminClient.sendEmail (since the candidate has no
-      // auth_user_id yet) invokes inviteUserByEmail under the hood.
+      // SupabaseAdminClient.sendEmail (since the candidate has no auth_user_id yet) invokes inviteUserByEmail under the hood.
       await client.sendEmail({
         candidateExternalId: UNREGISTERED_CANDIDATE_EXTERNAL_ID,
         email: UNREGISTERED_CANDIDATE_EMAIL,
@@ -437,8 +349,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await emailBucket.expectEmail(REGISTRATION_EMAIL_SUBJECT_REGEX);
       const links = await emailBucket.getLinksInEmail(REGISTRATION_EMAIL_SUBJECT_REGEX);
       expect(links.length, 'registration email should contain at least one link').toBeGreaterThan(0);
-      // The first link is the Supabase verify URL — transform to the
-      // frontend auth callback URL so verifyOtp runs server-side.
+      // The first link is the Supabase verify URL — transform to the frontend auth callback URL so verifyOtp runs server-side.
       registrationCallbackUrl = toCallbackUrl(links[0]);
     });
 
@@ -453,12 +364,8 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
     // ============== Step 5: accept Terms of Use ===========================
 
     await test.step('5. ToU: accept and advance', async () => {
-      // The PasswordSetter navigates to /candidate/login post-submit. The
-      // helper dispatches deterministically on the settled URL: if /login,
-      // fill the form; otherwise we've already auto-redirected onward.
-      // The post-helper landing is the ToU form (terms_of_use_accepted is
-      // null on the unregistered candidate so the protected layout shows
-      // the ToU form before any other content).
+      // The PasswordSetter navigates to /candidate/login post-submit. The helper dispatches deterministically on the settled URL: if /login, fill the form; otherwise we've already auto-redirected onward.
+      // The post-helper landing is the ToU form (terms_of_use_accepted is null on the unregistered candidate so the protected layout shows the ToU form before any other content).
       await loginIfRedirectedToLoginPage(page, UNREGISTERED_CANDIDATE_EMAIL, PASSWORD_1, TIMEOUTS.slowPage);
       const touCheckbox = page.getByTestId(testIds.candidate.terms.checkbox);
       await touCheckbox.waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
@@ -472,8 +379,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
     // ============== Step 6: home renders three tasks =====================
 
     await test.step('6. home: three tasks with profile-active', async () => {
-      // Profile is enabled (the candidate has just landed and needs to
-      // fill it). Opinions + preview are disabled until profile completes.
+      // Profile is enabled (the candidate has just landed and needs to fill it). Opinions + preview are disabled until profile completes.
       await candidateHomePage.expectTasks({
         enabled: ['profile'],
         disabled: ['opinions', 'preview']
@@ -483,13 +389,11 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
     // ============== Step 7: mid-flow logout with dialog ==================
 
     await test.step('7. logout: mid-flow with TimedModal dialog + re-attempted nav redirects to login', async () => {
-      // Profile is incomplete (no answers + no portrait yet) so the
-      // logout button opens the TimedModal confirmation dialog.
+      // Profile is incomplete (no answers + no portrait yet) so the logout button opens the TimedModal confirmation dialog.
       await candidateLogoutButton.clickWithDialog();
       // Post-logout lands at /candidate/login.
       await expect(page).toHaveURL(/\/candidate\/login/, { timeout: TIMEOUTS.slowPage });
-      // Navigate directly to /candidate/profile while unauthenticated —
-      // protected layout redirects back to /candidate/login.
+      // Navigate directly to /candidate/profile while unauthenticated — protected layout redirects back to /candidate/login.
       await page.goto('/en/candidate/profile');
       await expect(page).toHaveURL(/\/candidate\/login/, { timeout: TIMEOUTS.slowPage });
     });
@@ -507,12 +411,9 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       expect(links.length, 'reset email should contain at least one link').toBeGreaterThan(0);
       resetCallbackUrl = toCallbackUrl(links[0]);
       await page.goto(resetCallbackUrl);
-      // Password reset uses the same PasswordSetter component as
-      // registration — fill the new password.
+      // Password reset uses the same PasswordSetter component as registration — fill the new password.
       await candidatePasswordSetter.setPassword(PASSWORD_2);
-      // Post-reset the user is authenticated (verifyOtp established a
-      // session). ToU was already accepted in step 5, so we land on
-      // /candidate home directly.
+      // Post-reset the user is authenticated (verifyOtp established a session). ToU was already accepted in step 5, so we land on /candidate home directly.
       await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
@@ -528,8 +429,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       // Login with PASSWORD_1 (old, now wrong) → error message.
       await candidateLoginPage.login(UNREGISTERED_CANDIDATE_EMAIL, PASSWORD_1);
       await candidateLoginPage.expectErrorMessage();
-      // Login with PASSWORD_2 (correct) → home (ToU already accepted, no
-      // re-acceptance prompt expected).
+      // Login with PASSWORD_2 (correct) → home (ToU already accepted, no re-acceptance prompt expected).
       await candidateLoginPage.enterPassword(PASSWORD_2);
       await candidateLoginPage.submit();
       await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
@@ -561,19 +461,13 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
     await test.step('12. profile: static info + filtered questions partition + required badge', async () => {
       await candidateHomePage.clickTask('profile');
       await expect(page).toHaveURL(/\/candidate\/profile/, { timeout: TIMEOUTS.slowPage });
-      // Static info: candidate first name visible; nomination block carries
-      // election_symbol "999" (the sentinel for the unregistered candidate
-      // in the base dataset).
+      // Static info: candidate first name visible; nomination block carries election_symbol "999" (the sentinel for the unregistered candidate in the base dataset).
       await candidateProfilePage.expectStaticInfo({
         name: 'Unregistered',
         nomination: { electionSymbol: '999' }
       });
-      // Visible info questions: all of test-qg-info EXCEPT the mun-only
-      // (filtered by election) and the south-only (filtered by
-      // constituency). North-only IS visible (the candidate is in CO-Reg-N).
-      // Match the full bracketed `[id]` token (not a bare substring) so each
-      // regex resolves to exactly one rendered question — e.g. `[qu-info-text]`
-      // must not also match `[qu-info-text-longText]` / `[qu-info-text-link]`.
+      // Visible info questions: all of test-qg-info EXCEPT the mun-only (filtered by election) and the south-only (filtered by constituency). North-only IS visible (the candidate is in CO-Reg-N).
+      // Match the full bracketed `[id]` token (not a bare substring) so each regex resolves to exactly one rendered question — e.g. `[qu-info-text]` must not also match `[qu-info-text-longText]` / `[qu-info-text-link]`.
       await candidateProfilePage.expectQuestionsVisible([
         /\[qu-info-multipleChoiceCategorical\]/,
         /\[qu-info-singleChoiceCategorical\]/,
@@ -583,14 +477,12 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
         /\[qu-info-number\]/,
         /\[qu-info-boolean\]/,
         /\[qu-info-date\]/,
-        // see phase 129: multipleText info question restored + now rendered
-        // by the MultipleTextInput row-list (plan 05).
+        // multipleText info question, rendered by the MultipleTextPart row-list inside Input.
         /\[qu-info-multipleText\]/,
         /\[qu-info-filt-co-reg-n\]/
       ]);
       await candidateProfilePage.expectQuestionsAbsent([/\[qu-info-filt-mun-only\]/, /\[qu-info-filt-co-reg-s\]/]);
-      // Required badge on test-qu-info-text (only question with required:true
-      // in the info category of the base dataset).
+      // Required badge on test-qu-info-text (only question with required:true in the info category of the base dataset).
       await candidateProfilePage.expectRequiredBadge(/\[qu-info-text\]/);
     });
 
@@ -609,32 +501,15 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       });
       // Valid image upload (no expectError → no assertion on error wrapper).
       await candidateProfilePage.uploadPortrait({ path: VALID_PORTRAIT_PATH });
-      // Fill all info questions EXCEPT the required one (test-qu-info-text)
-      // AND the first one (the categorical-input questions are not in
-      // INFO_QUESTION_ANSWERS because the fillQuestion textbox helper
-      // can't fill them). Pre-filtered subset at module scope per
-      // playwright/no-conditional-in-test.
+      // Fill all info questions EXCEPT the required one (test-qu-info-text) AND the first one (the categorical-input questions are not in INFO_QUESTION_ANSWERS because the fillQuestion textbox helper can't fill them). Pre-filtered subset at module scope per playwright/no-conditional-in-test.
       for (const [externalId, value] of STEP_13_INFO_FILL_ENTRIES) {
-        // The rendered question label is the base `name` (`[qu-info-…]`),
-        // which drops the `test-` prefix carried by the externalId. Strip it
-        // and wrap in the full bracketed `[id]` token so the label regex
-        // resolves to exactly one question (mirrors steps 12 + 13.5 + 14).
+        // The rendered question label is the base `name` (`[qu-info-…]`), which drops the `test-` prefix carried by the externalId. Strip it and wrap in the full bracketed `[id]` token so the label regex resolves to exactly one question (mirrors steps 12 + 13.5 + 14).
         const id = externalId.replace(/^test-/, '');
         await candidateProfilePage.fillQuestion(new RegExp(`\\[${id}\\]`), value);
       }
-      // Fill the multipleText info question (a string[] row list, so it lives
-      // outside INFO_QUESTION_ANSWERS). required:false → this must NOT change
-      // the required-empty submit-disabled gate the step already asserts; the
-      // values are round-tripped in step 21 (candidate leg).
+      // Fill the multipleText info question (a string[] row list, so it lives outside INFO_QUESTION_ANSWERS). required:false → this must NOT change the required-empty submit-disabled gate the step already asserts; the values are round-tripped in step 21 (candidate leg).
       await candidateProfilePage.fillMultipleTextQuestion(/\[qu-info-multipleText\]/, [...MULTIPLE_TEXT_ANSWERS]);
-      // lock for `components.multipleTextInput.*`: with two rows filled,
-      // all four controls are in the DOM (move-up/move-down/remove render per
-      // row — only their `disabled` state is conditional — and add renders while
-      // the input is editable). Their accessible names come from the runtime
-      // Paraglide catalog, so a catalog regression would surface the raw dotted
-      // key here. Scoped to the multipleText question so a control elsewhere on
-      // the profile page cannot satisfy the assertion; located via testIds
-      // constants, never raw selector literals.
+      // lock for `components.multipleTextInput.*`: with two rows filled, all four controls are in the DOM (move-up/move-down/remove render per row — only their `disabled` state is conditional — and add renders while the input is editable). Their accessible names come from the runtime Paraglide catalog, so a catalog regression would surface the raw dotted key here. Scoped to the multipleText question so a control elsewhere on the profile page cannot satisfy the assertion; located via testIds constants, never raw selector literals.
       const multiTextQuestion = candidateProfilePage.getQuestion(/\[qu-info-multipleText\]/).first();
       await expect(multiTextQuestion.getByTestId(testIds.voter.questions.multipleTextAdd)).toHaveAccessibleName(
         'Add item'
@@ -649,8 +524,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
         multiTextQuestion.getByTestId(testIds.voter.questions.multipleTextRemove).first()
       ).toHaveAccessibleName('Remove item');
       await candidateProfilePage.submit();
-      // Post-submit lands on home (opinions still disabled because the
-      // required field is empty).
+      // Post-submit lands on home (opinions still disabled because the required field is empty).
       await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
@@ -663,51 +537,27 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
     // ============== Step 13.5: invalid URL → invalidUrl error ============
 
     await test.step('13.5. profile rejects an invalid URL in a link question with an inline error', async () => {
-      // Step 13 submitted from profile → landed on home. Re-enter profile
-      // to exercise the Link-type URL validation on test-qu-info-text-link.
-      // The base dataset already seeds this URL-type info question
-      // (subtype='link', settings.type='link').
+      // Step 13 submitted from profile → landed on home. Re-enter profile to exercise the Link-type URL validation on test-qu-info-text-link.
+      // The base dataset already seeds this URL-type info question (subtype='link', settings.type='link').
       await candidateHomePage.clickTask('profile');
       await expect(page).toHaveURL(/\/candidate\/profile/, { timeout: TIMEOUTS.slowPage });
       // Fill the link question with a clearly invalid URL.
       await candidateProfilePage.fillQuestion(/\[qu-info-text-link\]/, 'not-a-url');
-      // Trigger validation by blurring the field (Input.svelte's checkUrl
-      // runs on input change; tab off to force evaluation in headless mode).
+      // Trigger validation by blurring the field (Input.svelte's checkUrl runs on input change; tab off to force evaluation in headless mode).
       await page.keyboard.press('Tab');
-      // Assert the inline ErrorMessage's input-error testid surfaces the
-      // invalidUrl error. The element renders the *translated value* (not the
-      // key), so the regex matches the actual en + fi strings for
-      // components.input.error.invalidUrl: en "The URL is not valid.",
-      // fi "Verkko-osoite ei ole kelvollinen."
+      // Assert the inline ErrorMessage's input-error testid surfaces the invalidUrl error. The element renders the *translated value* (not the key), so the regex matches the actual en + fi strings for components.input.error.invalidUrl: en "The URL is not valid.", fi "Verkko-osoite ei ole kelvollinen."
       await expect
         .soft(page.getByTestId(testIds.shared.inputError))
         .toContainText(/not valid|ei ole kelvollinen/i, { timeout: TIMEOUTS.element });
-      // Clear the field so step 14 isn't blocked by validation when it
-      // re-submits the form with the required field filled.
+      // Clear the field so step 14 isn't blocked by validation when it re-submits the form with the required field filled.
       await candidateProfilePage.fillQuestion(/\[qu-info-text-link\]/, '');
       // Return to home so step 14's clickTask('profile') re-navigates cleanly.
       await page.getByTestId(testIds.candidate.profile.submit).click();
-      // Positively settle on the candidate-home route BEFORE asserting the home
-      // status message. The field-cleared submit takes the not-canSubmit branch of
-      // profile/+page.svelte, which navigates to getRoute.current('CandAppHome') →
-      // '/candidate'. Asserting that exact destination (rather than "anything that
-      // isn't /profile") makes a misroute — to login, an error page, or any other
-      // candidate sub-route — fail fast here and name the true destination, instead
-      // of passing and deferring the failure to the downstream status-message check.
-      // The regex matches '/candidate', '/candidate/', '/candidate?…' and
-      // '/candidate#…' (tolerating an optional locale prefix), but not
-      // '/candidate/profile' or any other sub-route.
+      // Positively settle on the candidate-home route BEFORE asserting the home status message. The field-cleared submit takes the not-canSubmit branch of profile/+page.svelte, which navigates to getRoute.current('CandAppHome') → '/candidate'. Asserting that exact destination (rather than "anything that isn't /profile") makes a misroute — to login, an error page, or any other candidate sub-route — fail fast here and name the true destination, instead of passing and deferring the failure to the downstream status-message check.
+      // The regex matches '/candidate', '/candidate/', '/candidate?…' and '/candidate#…' (tolerating an optional locale prefix), but not '/candidate/profile' or any other sub-route.
       //
-      // The settle stays split from the element-visibility wait: under the
-      // full-perm-DAG concurrent gate the save()+goto()+home-remount chain can
-      // exceed TIMEOUTS.slowPage when the visibility check races it directly
-      // (candidate-journey:661 cold-start load-contention flake surfaced by the
-      // see phase 131 P05 with-deps gate → see phase 132 harden). Splitting the
-      // URL-settle (generous slowPage budget) from the element-visibility wait
-      // composes the two additively, so the status check runs against an
-      // already-navigated, interactive home route rather than a mid-transition DOM.
-      // Mirrors the navigateToFirstQuestion waitForURL-then-settle idiom
-      // (voterNavigation.ts).
+      // The settle stays split from the element-visibility wait: under the full-perm-DAG concurrent gate the save()+goto()+home-remount chain can exceed TIMEOUTS.slowPage when the visibility check races it directly (candidate-journey:661 cold-start load-contention flake, surfaced by a with-deps gate run and hardened after it). Splitting the URL-settle (generous slowPage budget) from the element-visibility wait composes the two additively, so the status check runs against an already-navigated, interactive home route rather than a mid-transition DOM.
+      // Mirrors the navigateToFirstQuestion waitForURL-then-settle idiom (voterNavigation.ts).
       await page.waitForURL(/\/candidate\/?(?:\?|#|$)/, { timeout: TIMEOUTS.slowPage });
       await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
         timeout: TIMEOUTS.slowPage
@@ -722,8 +572,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       // Fill the required test-qu-info-text field this time.
       await candidateProfilePage.fillQuestion(/\[qu-info-text\]/, INFO_QUESTION_ANSWERS['test-qu-info-text']);
       await candidateProfilePage.submit();
-      // Post-submit when required-empty gate is satisfied: navigation to
-      // the questions overview per profile/+page.svelte:104-116 canSubmit branch.
+      // Post-submit when required-empty gate is satisfied: navigation to the questions overview per profile/+page.svelte:104-116 canSubmit branch.
       await expect(page).toHaveURL(/\/candidate\/questions/, { timeout: TIMEOUTS.slowPage });
     });
 
@@ -741,8 +590,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
     // ============== Step 16: first opinion question =====================
 
     await test.step('16. first opinion question: hero emoji + continue gate + select + info + continue', async () => {
-      // Q1 (test-qu-opin-base-1-likert5) carries custom_data.hero =
-      // { emoji: '🗳️' } in the base dataset.
+      // Q1 (test-qu-opin-base-1-likert5) carries custom_data.hero = { emoji: '🗳️' } in the base dataset.
       await candidateQuestionPage.expectHeroVisible('emoji');
       // No choice selected yet → continue disabled.
       await candidateQuestionPage.expectContinueDisabled();
@@ -758,8 +606,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
     // ============== Step 17: overview round-trip + expander toggle =======
 
     await test.step('17. overview: continue prompt + Q1 round-trip + Q2 answer button + expander toggle', async () => {
-      // Navigation post-Q1 may land at next question; navigate back to
-      // overview explicitly.
+      // Navigation post-Q1 may land at next question; navigate back to overview explicitly.
       await page.goto('/en/candidate/questions');
       await expect(page).toHaveURL(/\/candidate\/questions(\?|$|#)/, {
         timeout: TIMEOUTS.slowPage
@@ -773,8 +620,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       // Q2 card is visible and rendered as an answer-able question.
       const q2Card = candidateQuestionsOverviewPage.getQuestionCard(/\[qu-opin-base-2-likert4\]/);
       await expect(q2Card.first()).toBeVisible();
-      // Category-expander toggle: collapse + re-expand. The Base category
-      // expander matches its name.
+      // Category-expander toggle: collapse + re-expand. The Base category expander matches its name.
       const expander = candidateQuestionsOverviewPage.getCategoryExpander(/\[qg-opin-base\]/);
       // Track initial state, click to toggle, click again to restore.
       await expander.click();
@@ -800,47 +646,27 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
 
     // ============== Step 18.5: multi-choice type-specific ========
 
-    // candidate leg (129): the walk answers the multi-choice
-    // question generically; nothing asserts its type-specific input contract.
-    // Assert here that the multi-choice opinion question renders CHECKBOX inputs
-    // (not radios), the min/max helper text, and Save gating on BOTH sides of the
-    // 2..3 selection window (incl. the over-max 4th). Entry point is step 18's
-    // overview state; this pre-answers qu-opin-base-7-multichoice, which is
-    // compatible with the step-19 walk (it covers only REMAINING unanswered
-    // questions).
+    // candidate leg: the walk answers the multi-choice question generically; nothing asserts its type-specific input contract.
+    // Assert here that the multi-choice opinion question renders CHECKBOX inputs (not radios), the min/max helper text, and Save gating on BOTH sides of the
+    // 2..3 selection window (incl. the over-max 4th). Entry point is step 18's overview state; this pre-answers qu-opin-base-7-multichoice, which is compatible with the step-19 walk (it covers only REMAINING unanswered questions).
     await test.step('18.5. EQTYP-01: multi-choice opinion — type-specific input contract (checkboxes + helper + save gating)', async () => {
-      // Navigate from the overview to the multi-choice question editor via its
-      // card action (goToQuestion expands every category then clicks the card's
-      // Answer/Edit affordance and awaits navigation off the overview).
+      // Navigate from the overview to the multi-choice question editor via its card action (goToQuestion expands every category then clicks the card's Answer/Edit affordance and awaits navigation off the overview).
       await candidateQuestionsOverviewPage.goToQuestion(/\[qu-opin-base-7-multichoice\]/);
       await expect(page).toHaveURL(/\/candidate\/questions\/[^/]+/, { timeout: TIMEOUTS.slowPage });
       const qid = currentQuestionId(page);
 
-      // Type-specific render: 4 CHECKBOX choices and ZERO radios (the categorical
-      // / likert questions render radios — the input type is the discriminant,
-      // mirroring candidateQuestionPage.answerCurrentQuestion's detection idiom).
+      // Type-specific render: 4 CHECKBOX choices and ZERO radios (the categorical / likert questions render radios — the input type is the discriminant, mirroring candidateQuestionPage.answerCurrentQuestion's detection idiom).
       await expect(scopedChoicesByType(page, qid, 'checkbox')).toHaveCount(4);
       await expect(scopedChoicesByType(page, qid, 'radio')).toHaveCount(0);
 
-      // The min/max helper text renders — it is a TYPE-SPECIFIC contract element:
-      // QuestionChoices.svelte only emits `question-choice-helper` for a
-      // multi-choice question carrying authored min/max constraints
-      // (`{#if mode === 'answer' && multiConstraints}`), so its mere presence
-      // discriminates multi-choice from the categorical/boolean radios below.
+      // The min/max helper text renders — it is a TYPE-SPECIFIC contract element: QuestionChoices.svelte only emits `question-choice-helper` for a multi-choice question carrying authored min/max constraints (`{#if mode === 'answer' && multiConstraints}`), so its mere presence discriminates multi-choice from the categorical/boolean radios below.
       //
-      // The text assertion below is the lock for
-      // `questions.multiChoice.selectRange`: the question's effective 2..3 window
-      // renders the range variant ("Select 2 to 3 options." in en), so a runtime
-      // catalog regression that fell back to the raw key would fail here.
+      // The text assertion below is the lock for `questions.multiChoice.selectRange`: the question's effective 2..3 window renders the range variant ("Select 2 to 3 options." in en), so a runtime catalog regression that fell back to the raw key would fail here.
       const helper = page.getByTestId(testIds.voter.questions.choiceHelper);
       await expect(helper).toBeVisible();
       await expect(helper).toHaveText(/2.*3/);
 
-      // save gating across the 2..3 window. QuestionChoices.svelte never
-      // disables unchecked boxes ("we never disable unchecked boxes here" —
-      // QuestionChoices.svelte:170-178 handleToggle); over/under-selection surfaces
-      // on the caller's Save button via isMultiChoiceCountValid (valid iff the
-      // count is within [effectiveMin=2, effectiveMax=3] — multiChoiceValidity.ts:30).
+      // save gating across the 2..3 window. QuestionChoices.svelte never disables unchecked boxes ("we never disable unchecked boxes here" — QuestionChoices.svelte:170-178 handleToggle); over/under-selection surfaces on the caller's Save button via isMultiChoiceCountValid (valid iff the count is within [effectiveMin=2, effectiveMax=3] — multiChoiceValidity.ts:30).
       const boxes = scopedChoices(page, qid);
       // 1 selected → below min → Save DISABLED.
       await boxes.nth(0).click();
@@ -854,10 +680,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await boxes.nth(2).click();
       await expect(boxes.nth(2)).toBeChecked();
       await candidateQuestionPage.expectContinueEnabled();
-      // 4 selected → over max → the 4th box still CHECKS (unchecked boxes are
-      // never disabled — QuestionChoices.svelte:170-178), but Save DISABLES
-      // (over-max is invalid: isMultiChoiceCountValid count<=effectiveMax —
-      // multiChoiceValidity.ts:30).
+      // 4 selected → over max → the 4th box still CHECKS (unchecked boxes are never disabled — QuestionChoices.svelte:170-178), but Save DISABLES (over-max is invalid: isMultiChoiceCountValid count<=effectiveMax — multiChoiceValidity.ts:30).
       await boxes.nth(3).click();
       await expect(boxes.nth(3)).toBeChecked();
       await candidateQuestionPage.expectContinueDisabled();
@@ -867,9 +690,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await candidateQuestionPage.expectContinueEnabled();
       await candidateQuestionPage.clickContinue();
 
-      // Overview reflects the answered multi-choice: the card renders the
-      // display-mode answer (question-choice markup), which is emitted ONLY when
-      // the question is answered (+page.svelte gates the display on `answer != null`).
+      // Overview reflects the answered multi-choice: the card renders the display-mode answer (question-choice markup), which is emitted ONLY when the question is answered (+page.svelte gates the display on `answer != null`).
       // Mirror step 18's post-save overview re-read.
       await page.goto('/en/candidate/questions');
       const mcCard = candidateQuestionsOverviewPage.getQuestionCard(/\[qu-opin-base-7-multichoice\]/);
@@ -879,11 +700,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
 
     // ============== Step 18.6: categorical + boolean type-specific ===
 
-    // tighten the existing categorical + boolean opinion coverage from
-    // generic choice-select to type-specific input contracts, in the SAME spec
-    // region as 18.5 (no general journey-spec refactor — steps 16-18's likert
-    // choreography and the step-19 walk are untouched). Radio input `type` +
-    // exact choice count is the discriminant vs the multi-choice checkboxes above.
+    // tighten the existing categorical + boolean opinion coverage from generic choice-select to type-specific input contracts, in the SAME spec region as 18.5 (no general journey-spec refactor — steps 16-18's likert choreography and the step-19 walk are untouched). Radio input `type` + exact choice count is the discriminant vs the multi-choice checkboxes above.
     await test.step('18.6. categorical + boolean opinion — type-specific input contracts', async () => {
       // Categorical (qu-opin-base-4): singleChoiceCategorical → 3 RADIO choices.
       await candidateQuestionsOverviewPage.goToQuestion(/\[qu-opin-base-4-categorical\]/);
@@ -906,11 +723,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       const boolId = currentQuestionId(page);
       await expect(scopedChoicesByType(page, boolId, 'radio')).toHaveCount(2);
       await expect(scopedChoicesByType(page, boolId, 'checkbox')).toHaveCount(0);
-      // lock. OpinionQuestionInput synthesizes boolean choices as
-      // ['no'→false, 'yes'→true], so index 0 saves the FALSY value deliberately —
-      // the exact value the overview's old truthiness guard discarded. On an
-      // unfixed build the card below renders no display markup and its action
-      // reads "Answer this question", so all three assertions fail.
+      // lock. OpinionQuestionInput synthesizes boolean choices as ['no'→false, 'yes'→true], so index 0 saves the FALSY value deliberately — the exact value the overview's old truthiness guard discarded. On an unfixed build the card below renders no display markup and its action reads "Answer this question", so all three assertions fail.
       await candidateQuestionPage.selectChoice(0);
       await candidateQuestionPage.expectContinueEnabled();
       await candidateQuestionPage.clickContinue();
@@ -918,9 +731,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       const boolCard = candidateQuestionsOverviewPage.getQuestionCard(/\[qu-opin-base-5-boolean\]/);
       await expect(boolCard.first()).toBeVisible();
       await expect(boolCard.first().getByTestId('question-choice').first()).toBeVisible();
-      // Discriminating assertion: the card's call to action must be the EDIT
-      // label ("Edit Your Answer"), not the unanswered "Answer this question" —
-      // the card markup alone would render either way once the guard is right.
+      // Discriminating assertion: the card's call to action must be the EDIT label ("Edit Your Answer"), not the unanswered "Answer this question" — the card markup alone would render either way once the guard is right.
       await expect(boolCard.first().getByTestId(testIds.candidate.questions.cardAction)).toHaveText(/edit/i);
     });
 
@@ -930,12 +741,9 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       // Start from the continue-prompt shortcut.
       await candidateQuestionsOverviewPage.clickContinuePrompt();
       // Walk: at each /questions/{id} page, select first choice + continue.
-      // Module-scope helper hoists the loop-exit condition out of the test
-      // body per playwright/no-conditional-in-test.
+      // Module-scope helper hoists the loop-exit condition out of the test body per playwright/no-conditional-in-test.
       await walkRemainingOpinionQuestions(page, candidateQuestionPage, TIMEOUTS.slowPage);
-      // After the last opinion: land at home with completed state. Navigate
-      // explicitly to home to assert the completed state (the post-last
-      // question may redirect to overview or home; force the assertion at home).
+      // After the last opinion: land at home with completed state. Navigate explicitly to home to assert the completed state (the post-last question may redirect to overview or home; force the assertion at home).
       await page.goto('/en/candidate');
       await candidateHomePage.expectStatusMessage();
       // Preview task is now enabled (profile + opinions complete).
@@ -947,20 +755,12 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
 
     // ============== Step 19.5: candidate nav-menu (logged-in) ===
 
-    // candidate nav-menu logged-in item set, asserted to DIFFER from
-    // the logged-out set.
+    // candidate nav-menu logged-in item set, asserted to DIFFER from the logged-out set.
     //
-    // Fixture-visibility note (build finding): the authenticated candidate nav
-    // group (Start / Basic Information / Your Opinions / Preview / Settings)
-    // carries its OWN `candidate-nav-*` testids — `NavItem.svelte` spreads the
-    // caller's `data-testid` over its default `nav-menu-item`, so those items
-    // are NOT visible to the navMenu fixture's `items()` (`nav-menu-item`)
-    // reader. So the logged-in assertion has two halves:
-    //   (a) the `nav-menu-item`-anchored set the fixture sees (the auth group
-    //       has DROPPED login/register/forgot-password vs logged-out), and
+    // Fixture-visibility note (build finding): the authenticated candidate nav group (Start / Basic Information / Your Opinions / Preview / Settings) carries its OWN `candidate-nav-*` testids — `NavItem.svelte` spreads the caller's `data-testid` over its default `nav-menu-item`, so those items are NOT visible to the navMenu fixture's `items()` (`nav-menu-item`) reader. So the logged-in assertion has two halves:
+    //   (a) the `nav-menu-item`-anchored set the fixture sees (the auth group has DROPPED login/register/forgot-password vs logged-out), and
     //   (b) the authenticated group is PRESENT via its `candidate-nav-*` ids.
-    // login/register being gone (a) AND the candidate-nav-* group appearing (b)
-    // is the auth-state difference.
+    // login/register being gone (a) AND the candidate-nav-* group appearing (b) is the auth-state difference.
     await test.step('19.5. EFLOW-09: candidate nav-menu logged-in item set (differs from logged-out)', async () => {
       const navMenu = createNavMenu(page);
       await navMenu.openMobileNav();
@@ -968,9 +768,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await navMenu.expectNavMenuItems([...CANDIDATE_NAV_LOGGED_IN]);
       // (b) The authenticated nav group is present (own testids).
       await assertCandidateAuthNavPresent(navMenu.menu);
-      // The two `nav-menu-item` sets differ (logged-out had Sign in / Registration
-      // / Forgot Password? which the authenticated menu drops). Compare by regex
-      // source so the inequality is a content check, not a reference check.
+      // The two `nav-menu-item` sets differ (logged-out had Sign in / Registration / Forgot Password? which the authenticated menu drops). Compare by regex source so the inequality is a content check, not a reference check.
       expect(CANDIDATE_NAV_LOGGED_IN.map((r) => r.source)).not.toEqual(CANDIDATE_NAV_LOGGED_OUT.map((r) => r.source));
       await page.keyboard.press('Escape');
     });
@@ -996,10 +794,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       // Info answers round-trip (sample the required + the link + the number).
       await candidatePreviewPage.expectInfoAnswer(/\[qu-info-text\]/, INFO_QUESTION_ANSWERS['test-qu-info-text']);
       await candidatePreviewPage.expectInfoAnswer(/\[qu-info-number\]/, INFO_QUESTION_ANSWERS['test-qu-info-number']);
-      // multipleText round-trip (candidate leg): both values filled in
-      // step 13 must appear verbatim in the multipleText info answer. Assert the
-      // distinct [MULTITEXT-1]/[MULTITEXT-2] marker tokens so no normalization /
-      // encoding mangling can silently pass.
+      // multipleText round-trip (candidate leg): both values filled in step 13 must appear verbatim in the multipleText info answer. Assert the distinct [MULTITEXT-1]/[MULTITEXT-2] marker tokens so no normalization / encoding mangling can silently pass.
       await candidatePreviewPage.expectInfoAnswer(/\[qu-info-multipleText\]/, /\[MULTITEXT-1\]/);
       await candidatePreviewPage.expectInfoAnswer(/\[qu-info-multipleText\]/, /\[MULTITEXT-2\]/);
       // Opinion answer round-trip: Q1 was edited to choice index 1 in step 18.
@@ -1016,8 +811,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
-      // Profile + opinions complete → logout dispatches without a confirmation
-      // dialog (the post-completion LogoutButton path).
+      // Profile + opinions complete → logout dispatches without a confirmation dialog (the post-completion LogoutButton path).
       await candidateLogoutButton.clickWithoutDialog();
     });
   });

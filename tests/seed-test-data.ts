@@ -1,12 +1,8 @@
 #!/usr/bin/env npx tsx
 /**
- * Standalone manual-dev entry to seed the local Supabase database with the
- * canonical `e2e/base` built-in template.
+ * Standalone manual-dev entry to seed the local Supabase database with the canonical `e2e/base` built-in template.
  *
- * Equivalent to `yarn db:seed --template e2e/base` (from the repo root); kept
- * as a convenience wrapper because it loads the repo-root .env the same way the
- * Playwright harness does (dotenv.config()) and exits with a clear message on
- * seed-path failures.
+ * Equivalent to `yarn db:seed --template e2e/base` (from the repo root); kept as a convenience wrapper because it loads the repo-root .env the same way the Playwright harness does (dotenv.config()) and exits with a clear message on seed-path failures.
  *
  * Usage:   cd tests && npx tsx seed-test-data.ts
  * Prereqs: Supabase running (`yarn db:start`); env vars SUPABASE_URL +

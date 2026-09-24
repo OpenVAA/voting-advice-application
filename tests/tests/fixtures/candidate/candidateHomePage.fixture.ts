@@ -1,32 +1,15 @@
 /**
  * @file candidateHomePage fixture.
  *
- * Function-fixture for the candidate /candidate home page (the three-task
- * dashboard: profile / opinions / preview).
+ * Function-fixture for the candidate /candidate home page (the three-task dashboard: profile / opinions / preview).
  *
  * Surface:
- *  - expectTasks({ enabled, disabled }) — partitioned enabled/disabled
- *                                          assertion across the three task
- *                                          buttons. Replaces the prior
- *                                          state-enum expectThreeTasks(state).
- *  - expectStatusMessage(text?)         — visibility + optional text-content
- *                                          match on candidate-home-status.
- *  - clickTask('profile' | 'opinions' | 'preview') — dispatch to the
- *                                          candidate-home-{profile,questions,
- *                                          preview} button. Note: 'opinions'
- *                                          maps to candidate-home-questions
- *                                          (the UI label is "Opinions" but the
- *                                          testid is `candidate-home-questions`).
- *  - clickContinue()                    — click candidate-home-continue
- *                                          (variant="main" primary action).
+ *  - expectTasks({ enabled, disabled }) — partitioned enabled/disabled assertion across the three task buttons. Replaces the prior state-enum expectThreeTasks(state).
+ *  - expectStatusMessage(text?)         — visibility + optional text-content match on candidate-home-status.
+ *  - clickTask('profile' | 'opinions' | 'preview') — dispatch to the candidate-home-{profile,questions, preview} button. Note: 'opinions' maps to candidate-home-questions (the UI label is "Opinions" but the testid is `candidate-home-questions`).
+ *  - clickContinue()                    — click candidate-home-continue (variant="main" primary action).
  *
- * **Rigidity contract:** NO `try/catch` wrapping `expect(...)`, NO
- * `.catch(() => null)` on assertion-bearing locator interactions. This fixture is
- * one of three that DOES use `expect.soft` — 4 call sites, in the two
- * multi-property readers below, so a single wrong task-tile state reports
- * alongside its siblings instead of hiding them. It is outside
- * `SOFT_ASSERTION_BUDGETS`, which is deliberately scoped to `voter-journey.spec.ts`;
- * see the note above that table in `playwright.config.ts`.
+ * **Rigidity contract:** NO `try/catch` wrapping `expect(...)`, NO `.catch(() => null)` on assertion-bearing locator interactions. This fixture is one of three that DOES use `expect.soft` — 4 call sites, in the two multi-property readers below, so a single wrong task-tile state reports alongside its siblings instead of hiding them. It is outside `SOFT_ASSERTION_BUDGETS`, which is deliberately scoped to `voter-journey.spec.ts`; see the note above that table in `playwright.config.ts`.
  */
 
 import { expect } from '@playwright/test';
@@ -36,10 +19,8 @@ import type { Page } from '@playwright/test';
 export type CandidateHomeTask = 'profile' | 'opinions' | 'preview';
 
 /**
- * Maps the SETTINGS-keyword task identifiers to the underlying testids on
- * `candidate/(protected)/+page.svelte`.
- * 'opinions' → candidate-home-questions per the source-of-truth attribute
- * at `apps/frontend/src/routes/candidate/(protected)/+page.svelte:131`.
+ * Maps the SETTINGS-keyword task identifiers to the underlying testids on `candidate/(protected)/+page.svelte`.
+ * 'opinions' → candidate-home-questions per the source-of-truth attribute at `apps/frontend/src/routes/candidate/(protected)/+page.svelte:131`.
  */
 const TASK_TESTIDS: Readonly<Record<CandidateHomeTask, string>> = Object.freeze({
   profile: 'candidate-home-profile',
@@ -50,9 +31,7 @@ const TASK_TESTIDS: Readonly<Record<CandidateHomeTask, string>> = Object.freeze(
 export function createCandidateHomePage(page: Page) {
   return {
     /**
-     * Assert the enabled/disabled partitioning of the three home-page task
-     * buttons. Replaces the prior state-enum expectThreeTasks(state) surface
-     * with an explicit per-task assertion.
+     * Assert the enabled/disabled partitioning of the three home-page task buttons. Replaces the prior state-enum expectThreeTasks(state) surface with an explicit per-task assertion.
      */
     async expectTasks(spec: { enabled: Array<CandidateHomeTask>; disabled: Array<CandidateHomeTask> }): Promise<void> {
       for (const task of spec.enabled) {
@@ -64,10 +43,8 @@ export function createCandidateHomePage(page: Page) {
     },
 
     /**
-     * Assert the candidate-home-status paragraph is visible. When `text`
-     * is supplied, additionally assert the rendered content matches.
-     * Folds in the prior expectCompletedMessage() use case (callers pass a
-     * "completed"-matching RegExp).
+     * Assert the candidate-home-status paragraph is visible. When `text` is supplied, additionally assert the rendered content matches.
+     * Folds in the prior expectCompletedMessage() use case (callers pass a "completed"-matching RegExp).
      */
     async expectStatusMessage(text?: RegExp): Promise<void> {
       const status = page.getByTestId(testIds.candidate.home.statusMessage);

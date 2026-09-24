@@ -1,22 +1,15 @@
 /**
  * @file resultsPage fixture.
  *
- * Function-fixture that exposes a narrow `ResultsPageFixture` surface for the
- * voter results listing screen. Sibling to `entityFilters.fixture.ts` and
- * `entityDetails.fixture.ts`; composed in `tests/tests/fixtures/voter/views.ts`.
+ * Function-fixture that exposes a narrow `ResultsPageFixture` surface for the voter results listing screen. Sibling to `entityFilters.fixture.ts` and `entityDetails.fixture.ts`; composed in `tests/tests/fixtures/voter/views.ts`.
  *
  * **Rigidity contract**:
  * - NO `expect.soft` in any helper.
  * - NO `try/catch` wrapping `expect(...)`.
  * - NO best-effort `.catch(() => null)` on assertion-bearing locator
- *   interactions. The sole exception is `dismissAllDialogs`, which is a
- *   purely best-effort cleanup helper and is explicitly documented as such;
- *   callers MUST follow it with a hard assertion on the desired post-state.
+ *   interactions. The sole exception is `dismissAllDialogs`, which is a purely best-effort cleanup helper and is explicitly documented as such; callers MUST follow it with a hard assertion on the desired post-state.
  *
- * **Caller-supplied locators / regexes / indexers** (fixture coupling guard):
- * every method that targets a specific entity / tab takes a
- * `RegExp | string | ((count: number) => number)` from the caller. NO
- * hardcoded base-specific strings (e.g. `'Party AA'`) in fixture bodies.
+ * **Caller-supplied locators / regexes / indexers** (fixture coupling guard): every method that targets a specific entity / tab takes a `RegExp | string | ((count: number) => number)` from the caller. NO hardcoded base-specific strings (e.g. `'Party AA'`) in fixture bodies.
  */
 
 import { expect } from '@playwright/test';
@@ -25,15 +18,12 @@ import { testIds } from '../../utils/testIds';
 import type { Locator, Page } from '@playwright/test';
 
 /**
- * Target descriptor used by lookups that accept either a textual matcher
- * (regex or string) or a count-driven indexer.
+ * Target descriptor used by lookups that accept either a textual matcher (regex or string) or a count-driven indexer.
  */
 type Target = RegExp | string | ((count: number) => number);
 
 /**
- * Mapping from SETTINGS keyword to the accessible name regex Playwright
- * uses to find the matching entity-tab. Internal to the fixture; tests pass
- * the SETTINGS keyword.
+ * Mapping from SETTINGS keyword to the accessible name regex Playwright uses to find the matching entity-tab. Internal to the fixture; tests pass the SETTINGS keyword.
  */
 const ENTITY_TAB_LABELS = Object.freeze({
   cands: /Candidates/i,
@@ -42,8 +32,7 @@ const ENTITY_TAB_LABELS = Object.freeze({
 }) as Readonly<Record<'cands' | 'orgs' | 'alliances', RegExp>>;
 
 /**
- * Mapping from SETTINGS keyword to the entity-section testid. Used to
- * scope `getEntityCards()` to the currently active section.
+ * Mapping from SETTINGS keyword to the entity-section testid. Used to scope `getEntityCards()` to the currently active section.
  */
 const ENTITY_SECTION_TESTID = Object.freeze({
   cands: testIds.voter.results.candidateSection,
@@ -53,13 +42,7 @@ const ENTITY_SECTION_TESTID = Object.freeze({
 
 export function createResultsPage(page: Page) {
   /**
-   * Active entity-section locator. The frontend conditionally renders
-   * ONE of three section testids
-   * (`voter-results-{candidate,party,alliance}-section`) based on the
-   * active entity-type — only one is in DOM at a time. The OR locator
-   * resolves to whichever is currently present. Callers MUST call
-   * selectEntityTab first (or otherwise navigate so a section is rendered)
-   * before consuming `getEntityCards()`.
+   * Active entity-section locator. The frontend conditionally renders ONE of three section testids (`voter-results-{candidate,party,alliance}-section`) based on the active entity-type — only one is in DOM at a time. The OR locator resolves to whichever is currently present. Callers MUST call selectEntityTab first (or otherwise navigate so a section is rendered) before consuming `getEntityCards()`.
    */
   function activeSectionLocator(): Locator {
     const cand = page.getByTestId(ENTITY_SECTION_TESTID.cands);
@@ -79,13 +62,10 @@ export function createResultsPage(page: Page) {
   return {
     /**
      * Navigate to the voter results page (locale-aware) and assert it loaded.
-     * Requires an already-located voter session (an unlocated /results
-     * bounces through the selector chain).
+     * Requires an already-located voter session (an unlocated /results bounces through the selector chain).
      */
     async goToPage(locale = 'en'): Promise<void> {
-      // buildRoute already returns a leading-slash path (e.g. '/results') with NO locale
-      // segment (voter ROUTE values carry no [[lang=locale]] token). Base locale 'en' is
-      // served from '/' (Paraglide); non-base locales are prefixed '/<locale>' (e.g. '/fi/results').
+      // buildRoute already returns a leading-slash path (e.g. '/results') with NO locale segment (voter ROUTE values carry no [[lang=locale]] token). Base locale 'en' is served from '/' (Paraglide); non-base locales are prefixed '/<locale>' (e.g. '/fi/results').
       await page.goto((locale === 'en' ? '' : `/${locale}`) + buildRoute({ route: 'Results', locale }) || '/');
       await expectPageVisible(true);
     },
@@ -93,11 +73,9 @@ export function createResultsPage(page: Page) {
     expectPageVisible,
 
     /**
-     * Click the matching election option inside the
-     * `voter-results-election-select` accordion.
+     * Click the matching election option inside the `voter-results-election-select` accordion.
      *
-     * The inner clickable is a `<button role="option">` whose accessible name
-     * comes from the election's name field (e.g. `[el-reg] Regional Election`).
+     * The inner clickable is a `<button role="option">` whose accessible name comes from the election's name field (e.g. `[el-reg] Regional Election`).
      *
      * @param target accepted as RegExp / string (text match on the option's
      *   accessible name) OR a `(count) => index` indexer.
@@ -113,11 +91,7 @@ export function createResultsPage(page: Page) {
     },
 
     /**
-     * Click the entity-tab matching the SETTINGS keyword. The fixture maps
-     * the keyword to the visible (i18n) label internally so spec bodies
-     * stay free of i18n details. After clicking, hard-asserts the matching
-     * entity-section is visible so subsequent `getEntityCards()` reads
-     * resolve against a populated section (not a transitioning DOM).
+     * Click the entity-tab matching the SETTINGS keyword. The fixture maps the keyword to the visible (i18n) label internally so spec bodies stay free of i18n details. After clicking, hard-asserts the matching entity-section is visible so subsequent `getEntityCards()` reads resolve against a populated section (not a transitioning DOM).
      */
     async selectEntityTab(entityType: 'cands' | 'orgs' | 'alliances'): Promise<void> {
       const tablist = page.getByTestId(testIds.voter.results.entityTabs);
@@ -127,8 +101,7 @@ export function createResultsPage(page: Page) {
     },
 
     /**
-     * Assert the entity-tabs list contains exactly the expected SETTINGS
-     * keywords in the given order.
+     * Assert the entity-tabs list contains exactly the expected SETTINGS keywords in the given order.
      */
     async expectEntityTabs(expectedTypes: Array<'cands' | 'orgs' | 'alliances'>): Promise<void> {
       const tablist = page.getByTestId(testIds.voter.results.entityTabs);
@@ -141,11 +114,7 @@ export function createResultsPage(page: Page) {
 
     /**
      * Outer entity-cards under the currently-active entity-tab section.
-     * The EntityCard.svelte testid is conditional: outer cards carry
-     * `entity-card`, subcards carry `entity-card-subcard`. So
-     * `getByTestId('entity-card')` ALREADY excludes subcards — no `hasNot`
-     * filter is needed (and applying one would incorrectly exclude OUTER
-     * cards that CONTAIN subcards as descendants).
+     * The EntityCard.svelte testid is conditional: outer cards carry `entity-card`, subcards carry `entity-card-subcard`. So `getByTestId('entity-card')` ALREADY excludes subcards — no `hasNot` filter is needed (and applying one would incorrectly exclude OUTER cards that CONTAIN subcards as descendants).
      *
      * Returns a synchronous Playwright Locator (no `await`).
      */
@@ -168,14 +137,9 @@ export function createResultsPage(page: Page) {
     },
 
     /**
-     * Best-effort cleanup: press Escape, then if any role=dialog is still
-     * visible, click any visible close button. NOT a hard assertion —
-     * callers MUST follow this with their own hard assertion on the desired
-     * post-state (e.g. `expect(page.getByRole('dialog')).toBeHidden()`).
+     * Best-effort cleanup: press Escape, then if any role=dialog is still visible, click any visible close button. NOT a hard assertion — callers MUST follow this with their own hard assertion on the desired post-state (e.g. `expect(page.getByRole('dialog')).toBeHidden()`).
      *
-     * Uses `Locator.waitFor` + `.catch(() => null)` because the helper is
-     * purely best-effort; assertion-bearing locator interactions in the
-     * fixture's API surface NEVER use `.catch(() => null)`.
+     * Uses `Locator.waitFor` + `.catch(() => null)` because the helper is purely best-effort; assertion-bearing locator interactions in the fixture's API surface NEVER use `.catch(() => null)`.
      */
     async dismissAllDialogs(): Promise<void> {
       await page.keyboard.press('Escape').catch(() => null);
@@ -196,15 +160,9 @@ export function createResultsPage(page: Page) {
     /**
      * Open the entity-details view for the card matching `target`.
      *
-     * Implementation note (EntityCardAction structure): when the card has
-     * subcards, the outer article is NOT click-navigable — only the inner
-     * header gets an EntityCardAction <a> wrap (so each subcard is
-     * independently navigable). Clicking the outer article does nothing.
-     * Robust approach: click the FIRST entity-card-action descendant —
-     * which is always the parent card's primary action (the whole-article
-     * wrap for no-subcard cards, the header wrap for subcard cards).
-     * Subcards have their own entity-card-action descendants too, but the
-     * FIRST one in DOM order is always the parent's.
+     * Implementation note (EntityCardAction structure): when the card has subcards, the outer article is NOT click-navigable — only the inner header gets an EntityCardAction <a> wrap (so each subcard is independently navigable). Clicking the outer article does nothing.
+     * Robust approach: click the FIRST entity-card-action descendant — which is always the parent card's primary action (the whole-article wrap for no-subcard cards, the header wrap for subcard cards).
+     * Subcards have their own entity-card-action descendants too, but the FIRST one in DOM order is always the parent's.
      *
      * After click, hard-asserts entity-details container visible.
      */
@@ -215,16 +173,9 @@ export function createResultsPage(page: Page) {
     },
 
     /**
-     * Org-match-score readout. Asserts the match-score callout for
-     * the organization/party card matching `target` is visible, and returns its
-     * value as an integer percentage so the spec can assert the EXACT per-mode
-     * score (the org-matching mode produces a distinguishable score per mode —
-     * the spec re-seeds the singleton per mode and compares the read-out value).
+     * Org-match-score readout. Asserts the match-score callout for the organization/party card matching `target` is visible, and returns its value as an integer percentage so the spec can assert the EXACT per-mode score (the org-matching mode produces a distinguishable score per mode — the spec re-seeds the singleton per mode and compares the read-out value).
      *
-     * Reads the RESULTS-LIST card callout (`testIds.voter.results.matchScore`,
-     * rendered by MatchScore.svelte as the "<n>%" header readout) scoped to the
-     * matched card — NOT the `score-gauge` testid, which only renders inside the
-     * entity-details SubMatches drawer (trace-confirmed).
+     * Reads the RESULTS-LIST card callout (`testIds.voter.results.matchScore`, rendered by MatchScore.svelte as the "<n>%" header readout) scoped to the matched card — NOT the `score-gauge` testid, which only renders inside the entity-details SubMatches drawer (trace-confirmed).
      * The target card scopes the callout; no org-scoped disambiguation id is needed.
      */
     async expectOrgMatchScore(target: Target): Promise<number> {
@@ -240,22 +191,9 @@ export function createResultsPage(page: Page) {
     /**
      * Per-category sub-match reader (optional encapsulation).
      *
-     * Opening an entity-details view renders a `sub-matches`
-     * (`testIds.voter.results.subMatches`) container holding one
-     * `score-gauge` (`testIds.voter.results.scoreGauge`) per VOTER-ANSWERED
-     * category. This reader scopes to the sub-matches container, finds the
-     * row matching `category` (text match on the category name), asserts its
-     * score gauge is visible, and returns the gauge Locator so the spec can
-     * read its rendered value/attribute and assert the expected `score` —
-     * the spec asserts only the voter-answered categories appear with their
-     * expected scores.
+     * Opening an entity-details view renders a `sub-matches` (`testIds.voter.results.subMatches`) container holding one `score-gauge` (`testIds.voter.results.scoreGauge`) per VOTER-ANSWERED category. This reader scopes to the sub-matches container, finds the row matching `category` (text match on the category name), asserts its score gauge is visible, and returns the gauge Locator so the spec can read its rendered value/attribute and assert the expected `score` — the spec asserts only the voter-answered categories appear with their expected scores.
      *
-     * Caller-supplied `category` matcher keeps base-specific names out of the
-     * fixture (the resultsPage caller-locator coupling guard). The optional
-     * `score` argument is accepted for call-site symmetry with the spec's
-     * intent; the gauge value comparison is performed by the caller against
-     * the returned Locator (the rendered representation — text / aria — is
-     * settings-driven and owned by the spec).
+     * Caller-supplied `category` matcher keeps base-specific names out of the fixture (the resultsPage caller-locator coupling guard). The optional `score` argument is accepted for call-site symmetry with the spec's intent; the gauge value comparison is performed by the caller against the returned Locator (the rendered representation — text / aria — is settings-driven and owned by the spec).
      *
      * Reuses sub-matches + score-gauge testids; adds no new id.
      */
