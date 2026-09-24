@@ -6,21 +6,11 @@
  * - Language fallback with localization instructions
  * - Simple function API for loading prompts
  *
- * @example
- * // Register prompts (once per feature, in feature's prompts.ts):
- * import { registerPrompts, type PromptYaml } from '@openvaa/llm';
- * registerPrompts({
- *   packageName: 'my-feature',
- *   promptsDir: path.join(__dirname, 'prompts')
- * });
+ * @example // Register prompts (once per feature, in feature's prompts.ts): import { registerPrompts, type PromptYaml } from '@openvaa/llm'; registerPrompts({
+ *   packageName: 'my-feature', promptsDir: path.join(__dirname, 'prompts') });
  *
- * // Load prompts (anywhere in feature code):
- * import { loadPrompt } from '@openvaa/llm';
- * const { promptText } = await loadPrompt({
- *   promptId: 'my_prompt',
- *   language: 'fi',
- *   variables: { topic: 'Test' }
- * });
+ * // Load prompts (anywhere in feature code): import { loadPrompt } from '@openvaa/llm'; const { promptText } = await loadPrompt({
+ *   promptId: 'my_prompt', language: 'fi', variables: { topic: 'Test' } });
  */
 
 export * from './localizationInstructions';

@@ -101,6 +101,9 @@ describe('validatePlan', () => {
       createStep(CondensationOperations.REDUCE, { denominator: 10 }),
       createStep(CondensationOperations.MAP, { batchSize: 1 }) // Invalid use of map
     ];
-    expect(() => validatePlan({ steps, commentCount: 100 })).toThrow();
+    // Pin the exact message this invariant throws, matching the seven message-matcher siblings in this file. A bare `toThrow()` here was satisfied by ANY throw from `validatePlan` — including a different invariant's, e.g. `refine can only be followed by ground` from `:110`. The batch count below is 100, NOT the 2 that the sibling at `:94-96` pins for the same invariant: REDUCE(denominator 10) over 100 comments gives batchCount 1 / structure 'list', then MAP(batchSize 1) gives batchCount ceil(100/1) = 100 / structure 'listOfLists'. Copying the sibling's literal instead of tracing this input is the obvious way to get it wrong.
+    expect(() => validatePlan({ steps, commentCount: 100 })).toThrow(
+      'Pipeline must end with a single list, but ends with listOfLists in 100 batch(es)'
+    );
   });
 });

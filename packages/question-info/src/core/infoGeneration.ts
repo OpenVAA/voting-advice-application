@@ -36,6 +36,18 @@ export async function generateInfo({
   questions: Array<AnyQuestionVariant>;
   options: QuestionInfoOptions;
 }): Promise<Array<QuestionInfoResult>> {
+  // Boundary guard, deliberately OUTSIDE the `try` below: that catch re-wraps everything it sees as `Error generating question info: ...`, and a guard whose message arrives double-prefixed does not say what it means.
+  //
+  // Why this guard exists at all, given that `questionType` is declared a REQUIRED prompt param: the required-param check at promptRegistry.ts:352 is `!(param in variables)` — key-PRESENCE, not value-definedness — and setPromptVars.ts:60 repeats the same `in` test. So `questionType: undefined` satisfies both, and setPromptVars.ts:54 interpolates `String(undefined)`, shipping the literal token `undefined` to the LLM under its own heading. Measured, not assumed. No production caller can reach that today (DataRoot selects a question's constructor BY its type discriminant, so an instance without a valid type cannot be built), but the hole is real at the framework level and this is the package boundary where it belongs closed.
+  for (const question of questions) {
+    // Read through an `unknown` local: the static type declares `type` non-nullable, so testing `question.type` directly narrows `question` to `never` and the runtime hazard becomes inexpressible. The hazard is real regardless of what the type says.
+    const questionType: unknown = question.type;
+    if (!questionType)
+      throw new Error(
+        `[question-info] Question '${question.id}' ("${question.name}") has no \`type\`. Question type is required to compose the prompt.`
+      );
+  }
+
   try {
     // Generate a unique run ID for this generation batch
     const runId = `run_${Date.now()}_${Math.random().toString(36).substring(7)}`;
@@ -74,6 +86,10 @@ export async function generateInfo({
         // Build variables object based on the operation type. Start with tasks' shared variables
         const variables: Record<string, unknown> = {
           question: question.name,
+          // The question's structural type and its answering choices. Without these two, two questions sharing a name and differing only in type compose byte-identical prompts.
+          // The `'choices' in question` guard is load-bearing: `choices` exists only on ChoiceQuestion subclasses, so Boolean and choice-less inputs must not dereference it.
+          questionType: question.type,
+          choices: 'choices' in question ? question.choices.map((choice) => choice.label).join(', ') : '',
           generalInstructions: GENERAL_INSTRUCTIONS,
           neutralityRequirements: NEUTRALITY_REQUIREMENTS,
           questionContext: options.questionContext || '',
