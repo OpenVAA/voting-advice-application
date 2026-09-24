@@ -7,7 +7,7 @@ import { derived, get } from 'svelte/store';
 import { logDebugError } from '$lib/utils/logger';
 import { ucFirst } from '$lib/utils/text/ucFirst';
 import { DEFAULT_PAYLOAD_KEYS, staticTranslations } from './translations';
-import { matchLocale } from './utils';
+import { getLocaleDir, matchLocale } from './utils';
 import type { Config } from '@sveltekit-i18n/parser-icu';
 import type { TranslationKey } from '$types';
 import type { TranslationsPayload } from './translations';
@@ -101,6 +101,11 @@ export const t = {
 };
 
 export const { locale, locales, loading, addTranslations, loadTranslations, translations, setRoute, setLocale } = i18n;
+
+/**
+ * A store reflecting the writing direction (`'ltr'` | `'rtl'`) of the current locale, derived from the `dir` field of the active locale in settings. Use this to drive the document `dir` attribute reactively.
+ */
+export const dir = derived(locale, ($locale) => getLocaleDir($locale));
 
 export { defaultLocale };
 

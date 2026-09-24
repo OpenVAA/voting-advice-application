@@ -53,7 +53,7 @@ List all nominations in the application.
   </figure>
   <p class="text-center">{@html sanitizeHtml($t('dynamic.nominations.content'))}</p>
   <div slot="fullWidth" class="flex min-h-[120vh] flex-col items-center bg-base-300">
-    <div class="w-full max-w-xl pb-safelgb pl-safemdl pr-safemdr match-w-xl:px-0">
+    <div class="w-full max-w-xl pb-safelgb ps-safemds pe-safemde match-w-xl:px-0">
       <h3 class="mx-10 my-lg text-xl">
         {$t('results.candidate.numShown', { numShown: filteredEntities.length })}
       </h3>

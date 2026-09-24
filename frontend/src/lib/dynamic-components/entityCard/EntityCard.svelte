@@ -193,7 +193,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
         <!-- Title -->
         <div class="grid grid-flow-col items-center gap-sm" style="grid-area: title">
-          <svelte:element this={variant === 'subcard' ? 'h4' : 'h3'} id="{baseId}_title">
+          <svelte:element this={variant === 'subcard' ? 'h4' : 'h3'} id="{baseId}_title" dir="auto">
             {nakedEntity.name}
           </svelte:element>
           {#if variant === 'subcard' && electionSymbol}
@@ -211,7 +211,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
               <ElectionSymbol text={electionSymbol} />
             {/if}
             {#if showElection && nomination?.election && nomination?.constituency}
-              <span>
+              <span dir="auto">
                 {nomination.election.shortName}
                 {$t('common.multipleAnswerSeparator')}
                 {nomination.constituency.name}
@@ -244,7 +244,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
             {#if !hideLabel || answer != null}
               <div class="grid gap-xs">
                 {#if !hideLabel}
-                  <div class="small-label text-left">
+                  <div dir="auto" class="small-label text-start">
                     {question.shortName}
                   </div>
                 {/if}

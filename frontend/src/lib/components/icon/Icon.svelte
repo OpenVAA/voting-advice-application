@@ -26,7 +26,7 @@ any valid attributes of the `<svg>` element.
 
 <script lang="ts">
   import { concatProps } from '$lib/utils/components';
-  import { ICONS } from './icons';
+  import { DIRECTIONAL_ICONS, ICONS } from './icons';
   import type { IconProps } from './Icon.type';
 
   type $$Props = IconProps;
@@ -35,6 +35,7 @@ any valid attributes of the `<svg>` element.
   export let color: $$Props['color'] = 'current';
   export let customColor: $$Props['customColor'] = undefined;
   export let customColorDark: $$Props['customColorDark'] = undefined;
+  export let mirrored: $$Props['mirrored'] = undefined;
 
   // Load svg contents
   let svgElement: SVGElement;
@@ -80,6 +81,10 @@ any valid attributes of the `<svg>` element.
     }
     if (!customColor && !customColorDark) {
       classes += ` fill-${color}`;
+    }
+    // Mirror directional icons (e.g. forward/back arrows) under RTL. Defaults to auto-detection via `DIRECTIONAL_ICONS`; pass `mirrored={false}` to opt out (e.g. when the arrow is rotated into a vertical chevron) or `mirrored={true}` to force it.
+    if (mirrored ?? DIRECTIONAL_ICONS.has(name)) {
+      classes += ' rtl:-scale-x-100';
     }
   }
 </script>

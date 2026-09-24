@@ -22,7 +22,7 @@
   }
 </script>
 
-<main class="flex flex-grow flex-col items-center gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg">
+<main class="flex flex-grow flex-col items-center gap-y-lg pb-safelgb ps-safelgs pe-safelge pt-lg">
   <MainContent {title}>
     <figure role="presentation" slot="hero">
       <HeroEmoji {emoji} />

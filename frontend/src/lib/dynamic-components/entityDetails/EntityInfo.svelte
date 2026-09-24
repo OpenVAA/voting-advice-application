@@ -66,7 +66,8 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
 <div class="grid p-lg pb-safelgb">
   {#if nakedEntity.info}
     <div class="infoGroup" role="group">
-      <div>
+      <!-- Author-supplied free-text; auto-detect direction independent of the UI locale. -->
+      <div dir="auto">
         {@html sanitizeHtml(nakedEntity.info)}
       </div>
     </div>
@@ -87,6 +88,7 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
       {/if}
       {#if parentNomination}
         <InfoItem
+          autoDir={false}
           label={entityType === ENTITY_TYPE.Organization ? $t('common.alliance.singular') : $t('common.electionList')}>
           <!-- Add a link to the nomination page for parties -->
           {#if $appSettings.results.sections?.includes(ENTITY_TYPE.Organization) && parentNomination.entityType === ENTITY_TYPE.Organization}

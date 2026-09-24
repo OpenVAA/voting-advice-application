@@ -156,6 +156,7 @@ text="Add to list">
         labelClass += ' flex-grow text-center';
         if (icon) {
           // If an icon is used, add left or right margin so that the text is  nicely centered: ml/r is calculated so that it is the sum of the gap (4) and icon widths (24) = 28/16 rem
+          // allowlist: physical — this offset balances optical centring against the physical `iconPos` ('left'/'right'), so it must track `iconPos`, not the reading direction. Revisit if `iconPos` becomes logical.
           labelClass += iconPos === 'right' ? ' ml-[1.75rem]' : ' mr-[1.75rem]';
         }
         break;

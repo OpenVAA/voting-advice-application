@@ -64,7 +64,7 @@ If there's only one option, it is automatically selected and no interactions are
   }
 </script>
 
-<div {...concatClass($$restProps, 'grid pl-0 gap-xs min-w-xs !max-w-full items-stretch join join-vertical')}>
+<div {...concatClass($$restProps, 'grid ps-0 gap-xs min-w-xs !max-w-full items-stretch join join-vertical')}>
   {#each options as option, index}
     {#if expanded || activeIndex === index}
       <button

@@ -47,7 +47,7 @@ NB. Use this component only in cases of irrecoverable errors, as the template wi
 <main
   {...concatClass(
     $$restProps,
-    'flex w-full flex-grow flex-col items-center justify-center bg-base-300 pb-safelgb pl-safelgl pr-safelgr pt-lg sm:items-center'
+    'flex w-full flex-grow flex-col items-center justify-center bg-base-300 pb-safelgb ps-safelgs pe-safelge pt-lg sm:items-center'
   )}>
   <!-- Hero image -->
   <figure role="presentation">

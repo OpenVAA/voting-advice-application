@@ -90,7 +90,7 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
       })
     )}
   {:else if asTag}
-    <div {...$$restProps}>
+    <div dir="auto" {...$$restProps}>
       {@html sanitizeHtml(
         question.formatAnswer({
           answer,
@@ -100,7 +100,7 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
       )}
     </div>
   {:else}
-    <span {...$$restProps}>
+    <span dir="auto" {...$$restProps}>
       {question.formatAnswer({ answer, separator: $t('common.multipleAnswerSeparator') })}
     </span>
   {/if}
@@ -118,7 +118,7 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
     {@html sanitizeHtml(question.formatAnswer({ answer }))}
   </figure>
 {:else}
-  <span class:vaa-tag={asTag} {...concatClass($$restProps, 'uc-first')}>
+  <span dir="auto" class:vaa-tag={asTag} {...concatClass($$restProps, 'uc-first')}>
     {question.formatAnswer({ answer })}
   </span>
 {/if}

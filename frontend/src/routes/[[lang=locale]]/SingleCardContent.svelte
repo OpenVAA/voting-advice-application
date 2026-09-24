@@ -36,7 +36,7 @@ Defines the layout of the content of the `main` element (following the possible 
 </svelte:head>
 
 <div
-  {...concatClass($$restProps, 'flex flex-grow flex-col items-center gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg')}>
+  {...concatClass($$restProps, 'flex flex-grow flex-col items-center gap-y-lg pb-safelgb ps-safelgs pe-safelge pt-lg')}>
   <!-- Note -->
   {#if $$slots.note}
     <div class={noteClass} role={noteRole}>

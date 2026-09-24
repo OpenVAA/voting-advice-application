@@ -64,7 +64,7 @@ A template part that outputs the navigation menu for the Candidate App for use i
           <InfoBadge
             text={String($unansweredOpinionQuestions.length)}
             disabled={$unansweredRequiredInfoQuestions.length !== 0}
-            classes="-left-8 -top-4" />
+            classes="-start-8 -top-4" />
         {/if}
       </NavItem>
       <NavItem href={$getRoute('CandAppPreview')} icon="previewProfile" text={$t('candidateApp.preview.title')} />

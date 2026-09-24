@@ -48,7 +48,7 @@ Accesses `LayoutContext`.
       'nav-item flex items-center gap-md px-10 py-md min-h-touch min-w-touch w-full !text-neutral hover:bg-base-200 active:bg-base-200';
     if (!icon) {
       // This corresponds to the width of an icon (24/16 rem) and the gap between the icon and the text (md = 10/16 rem)
-      classes += ' pl-[2.75rem]';
+      classes += ' ps-[2.75rem]';
     }
   }
 </script>

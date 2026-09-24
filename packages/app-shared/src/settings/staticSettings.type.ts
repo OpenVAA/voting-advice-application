@@ -75,6 +75,19 @@ export type StaticSettings = {
      * The style of the font, i.e. 'sans' (the default) or 'serif', which will decide the fallback fonts to use.
      */
     readonly style?: 'sans' | 'serif';
+    /**
+     * An optional secondary font, loaded alongside the main font and inserted into the font stack right after it. Use this to cover scripts the main font lacks, e.g. an Arabic-capable face such as 'Noto Sans Arabic' for RTL locales. The browser selects it per-glyph via the font fallback chain, so the main (Latin) font is unaffected. Load it from a source that provides `unicode-range` subsetting and `display: swap` (e.g. the Google Fonts CSS2 API) so it does not block first paint.
+     */
+    readonly secondary?: {
+      /**
+       * The name of the secondary font. Be sure to escape any spaces or enclose the name in quotes. You must also supply the url property.
+       */
+      readonly name: string;
+      /**
+       * The download url of the secondary font, added to a <link> tag in the <head> section of the HTML.
+       */
+      readonly url: string;
+    };
   };
   /**
    * A list of the locales supported by the application.
@@ -92,6 +105,10 @@ export type StaticSettings = {
      * Whether the language is the default language for the application. Only mark one language as the default language for the application.
      */
     readonly isDefault?: boolean;
+    /**
+     * The writing direction of the language, either 'ltr' (left-to-right, the default) or 'rtl' (right-to-left, e.g. for Arabic or Hebrew). This is the single source of truth for the document direction; see the `getLocaleDir`/`isRtl` helpers in the frontend.
+     */
+    readonly dir?: 'ltr' | 'rtl';
   }>;
   /**
    * Settings related to data collection and other research or analytics use.
