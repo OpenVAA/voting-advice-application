@@ -13,6 +13,55 @@ related:
   - 2026-05-16-extend-e2e-tests-to-cover-election-and-constituency-scoped-q.md
 ---
 
+## ⚠ Note added 2026-08-23 by Phase 144 (144-03 / 144-07) — this todo stays OPEN
+
+**Phase 144 derived the sentinel key SET. It did not touch the fan-out POLICY, which is this todo's
+territory.** The distinction matters, because a reader skimming `144-03`'s commits could easily
+mistake one for the other.
+
+**What `144-03` DID change.** `hasDeclaredScope` no longer carries a hand-written argument list; it
+consumes the key list `LINK_SENTINELS` declares for the collection (`sentinelKeysFor`). The set of keys
+that **suppresses** the fan-out is now byte-identical to the set the resolver **reads**, for all time,
+because both read one declaration. That closed two latent defects for free, each with its in-tree
+exploitation **measured at 0** across all 30 built-in templates:
+
+- **`_constituency_groups` override hole.** `linkJoinTables` read `_constituency_groups` on an
+  `elections` row, but `hasDeclaredScope` checked only `_constituencyGroups` / `constituencyGroups` /
+  `constituency_groups`. An author scoping an election with `_constituency_groups` was therefore *not*
+  recognised as having declared scope, `attachSentinels` overwrote the row with a full-fan-out
+  `_constituencyGroups`, and the resolver's `??` chain preferred the fan-out — **the author's explicit
+  scoping silently replaced by everything-wired-to-everything.**
+- **The bare-`elections` phantom.** `hasDeclaredScope(qc, '_elections', 'elections')` treated a bare
+  `elections` array on a `question_categories` row as declared scope and suppressed the fan-out, but
+  `linkJoinTables` reads that key on no collection at all, so the row ended with
+  `election_ids = null = "all"` anyway. The two outcomes agreed **only** because the fan-out would have
+  listed every election; change the election set and they diverge.
+
+Closing both changed no built-in's output — the golden link plan for `e2e/base` and `default` is
+byte-identical across the change (`diff` exits 0).
+
+**What `144-03` deliberately did NOT change — i.e. what is still owed here.** The fan-out *policy*
+stays hand-written. Measured: of the **10** `(collection, key)` combinations `LINK_SENTINELS` declares,
+only **3** receive a default at all —
+
+| Gets a fan-out default | Gets none |
+|---|---|
+| `elections._constituencyGroups` | every `questions` pair |
+| `constituency_groups._constituencies` | both `_constituencies` jsonb pairs |
+| `question_categories._elections` | the remaining sentinel forms |
+
+**3 of 10.** That asymmetry — and the opposite-defaults problem this todo describes between
+`_elections` (fans out) and `_constituencies` (stays NULL) — is untouched and is exactly what this todo
+asks for.
+
+**Timing is also unchanged.** This todo is explicitly paired with the `jsonb` → `uuid[]` /
+join-table column migration below, and Phase 144 did not do that migration either.
+
+Reference: `.planning/phases/144-seed-template-strict-typing-unknown-prop-guard/144-NEGATIVE-CONTROL-LEDGER.md`
+§ Residue (RES-10, RES-11, RES-17).
+
+---
+
 ## Problem
 
 `packages/dev-seed/src/pipeline.ts:227-256` (`attachSentinels`) auto-fans-out three M:N sentinels whenever a row doesn't explicitly declare scoping:

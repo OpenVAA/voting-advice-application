@@ -1,0 +1,12 @@
+# page size 1000, reader anon, 2026-09-18T08:44:54.625Z, loadavg 5.8 7.2 7.1
+Helsinki (get_nominations)               rows   1510 unique   1510 pages   2  per-page median    179 ms  total    0.31 s
+whole municipal (get_nominations)        rows  38986 unique  38986 pages  39  per-page median   2914 ms  total  114.90 s
+candidates table (order sort_order,id)   rows  36056 unique  36056 pages  37  per-page median    325 ms  total   12.25 s
+# page size 10000, reader anon, 2026-09-18T08:47:46.016Z, loadavg 6.7 6.9 7.0
+Helsinki (get_nominations)               rows   1510 unique   1510 pages   1  per-page median    177 ms  total    0.18 s
+whole municipal (get_nominations)        rows  38986 unique  38986 pages   4  per-page median   2952 ms  total   11.81 s
+candidates table (order sort_order,id)   rows  36056 unique  36056 pages   4  per-page median    365 ms  total    1.53 s
+# page size 50000, reader anon, 2026-09-18T08:47:59.588Z, loadavg 6.9 7.0 7.0
+Helsinki (get_nominations)               rows   1510 unique   1510 pages   1  per-page median    154 ms  total    0.16 s
+whole municipal (get_nominations)        rows  38986 unique  38986 pages   1  per-page median   3416 ms  total    3.47 s
+candidates table (order sort_order,id)   rows  36056 unique  36056 pages   1  per-page median    554 ms  total    0.60 s

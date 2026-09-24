@@ -1,0 +1,39 @@
+A user_can(project, read_entities) x5000
+0
+Time: 74,364 ms
+B user_can(entity, id, entity.read_answers) x5000
+1
+Time: 66,980 ms
+C user_can(entity, id, nomination.read) x5000 -- reaches is_child_nominee
+1
+Time: 126,077 ms
+D is_child_nominee(candidate, grantee, id) x5000 alone
+Time: 0,261 ms
+0
+Time: 45,803 ms
+CREATE OR REPLACE FUNCTION public.is_child_nominee(p_parent_type entity_type, p_parent_id uuid, p_child_id uuid)
+ RETURNS boolean
+ LANGUAGE sql
+ STABLE SECURITY DEFINER
+ SET search_path TO ''
+AS $function$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.nominations child
+    JOIN public.nominations parent ON parent.id = child.parent_nomination_id
+    WHERE (
+        child.candidate_id = p_child_id
+        OR child.organization_id = p_child_id
+        OR child.faction_id = p_child_id
+        OR child.alliance_id = p_child_id
+      )
+      AND parent.entity_type = p_parent_type
+      AND CASE p_parent_type
+            WHEN 'candidate' THEN parent.candidate_id
+            WHEN 'organization' THEN parent.organization_id
+            WHEN 'faction' THEN parent.faction_id
+            WHEN 'alliance' THEN parent.alliance_id
+          END = p_parent_id
+  );
+$function$
+

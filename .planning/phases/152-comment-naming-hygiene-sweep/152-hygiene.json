@@ -1,0 +1,33 @@
+{
+  "mode": "dry-run",
+  "filesScanned": 1571,
+  "filesRewritten": 41,
+  "linesDeleted": 7,
+  "totalMatches": 1115,
+  "totalHits": 128,
+  "totalResidue": 987,
+  "absorbed": 13,
+  "byRule": {
+    "artifact-path": 26,
+    "section-anchor": 0,
+    "plan-number": 1,
+    "decision-id-long": 1,
+    "decision-id-bare": 65,
+    "task-id": 35,
+    "phase-ref": 0,
+    "spike-ref": 0
+  },
+  "byReason": {
+    "not-a-comment-span": 98,
+    "markdown-file": 0,
+    "milestone-version": 44,
+    "todo-class": 59,
+    "unstrippable-section-anchor": 16,
+    "ambiguous-reference": 9,
+    "attributive-reference": 27,
+    "phase-ref-deferred": 694,
+    "spike-ref-deferred": 40
+  },
+  "residueFiles": 318,
+  "proseFlags": 0
+}

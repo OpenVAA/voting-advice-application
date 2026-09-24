@@ -12,6 +12,9 @@ wave_0_scripts_delivered: 7    # all seven exist, all seven have run, all seven 
 criteria_green_by_command: [1, 2, 4, 5, 6, 7]
 criteria_red_by_design: [3]    # hygiene gate exits 1 on a written, enumerated expected state -- see below
 open_regression: F-89          # the one row of criterion 3's red that is NOT expected
+approval: operator-approved
+approval_date: 2026-08-18
+f_89_disposition: post-merge-follow-up
 ---
 
 # Phase 151 — Validation Strategy
@@ -149,5 +152,12 @@ decision* rather than an agent's assertion. The one row that is not green is cri
 **by design against a written expected state**, plus **F-89**, the single row of that red which is a
 real regression and is open.
 
-**Approval:** the phase-close approval is requested at plan 151-19 Task 3 and is the operator's to
-give. This document is complete; it does not claim its own sign-off.
+**Approval: GRANTED — operator, 2026-08-18, at plan 151-19 Task 3.** Given on reproduction rather than
+on reading: `verify-identity.sh` re-run (0 changed files, both trees `b606ed169`, exit 0),
+`audit-skill-drift.sh` re-run against a pre-fix control (`Drifted: 2` → `Drifted: 0`, exit 0), and
+F-89's cited line opened at `tests/tests/specs/perf/performance-budget.spec.ts:55`.
+
+**One row of this contract is knowingly left open, and that is the approved state, not an oversight.**
+Criterion 3 remains red by design on its enumerated rows plus **F-89**, dispositioned as a post-merge
+follow-up with its fix named (collapse to D-14's bare `see phase 151` form). Widening the expected-red
+to absorb it was available and was **declined**; the refusal was explicitly endorsed.

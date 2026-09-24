@@ -234,5 +234,5 @@ Source files available in:
 - `sources/007-context-orchestration-end-to-end/CanonicalConsumer.svelte` — `ctx.X` reads
 - `sources/007-context-orchestration-end-to-end/DestructureTrapConsumer.svelte` — anti-pattern demo
 - `sources/007-context-orchestration-end-to-end/page.svelte` — full cascade harness
-- `sources/011-hmr-rune-contexts/README.md` — HMR investigation trail (no separate sources;
+- `.planning/spikes/011-hmr-rune-contexts/README.md` — HMR investigation trail (no separate sources;
   used Spike 007's environment as the test bed)

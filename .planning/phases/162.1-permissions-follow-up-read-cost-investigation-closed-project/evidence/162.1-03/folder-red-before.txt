@@ -1,0 +1,221 @@
+# 162.1-03 Task 1 pre-fix pgTAP run (tree = 162.1-02 + appended D-12 cases), command: yarn workspace @openvaa/supabase test:db, exit 1
+# git HEAD: 01f1988bb (schema unchanged from 162.1-02)
+
+Connecting to local database...
+psql:apps/supabase/supabase/tests/database/00-helpers.test.sql:15: NOTICE:  extension "pgtap" already exists, skipping
+psql:apps/supabase/supabase/tests/database/00-helpers.test.sql:280: NOTICE:  function set_test_user(text,uuid,jsonb) does not exist, skipping
+apps/supabase/supabase/tests/database/00-helpers.test.sql ....................... ok
+psql:apps/supabase/supabase/tests/database/01-tenant-isolation.test.sql:15: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/01-tenant-isolation.test.sql .............. ok
+psql:apps/supabase/supabase/tests/database/02-candidate-self-edit.test.sql:13: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/02-candidate-self-edit.test.sql ........... ok
+psql:apps/supabase/supabase/tests/database/03-anon-read.test.sql:15: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/03-anon-read.test.sql ..................... ok
+psql:apps/supabase/supabase/tests/database/04-admin-crud.test.sql:20: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/04-admin-crud.test.sql .................... ok
+psql:apps/supabase/supabase/tests/database/05-organization-admin.test.sql:16: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/05-organization-admin.test.sql ............ ok
+psql:apps/supabase/supabase/tests/database/06-storage-rls.test.sql:18: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/06-storage-rls.test.sql ................... ok
+psql:apps/supabase/supabase/tests/database/07-rpc-security.test.sql:24: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/07-rpc-security.test.sql .................. ok
+psql:apps/supabase/supabase/tests/database/08-triggers.test.sql:20: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/08-triggers.test.sql ...................... ok
+psql:apps/supabase/supabase/tests/database/09-column-restrictions.test.sql:22: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/09-column-restrictions.test.sql ........... ok
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:16: NOTICE:  table "__tcache__" does not exist, skipping
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/elections/dddddddd-dddd-dddd-dddd-000000000001/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/elections/dddddddd-dddd-dddd-dddd-000000000001/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/constituency_groups/dddddddd-dddd-dddd-dddd-000000000007/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/constituency_groups/dddddddd-dddd-dddd-dddd-000000000007/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/constituencies/dddddddd-dddd-dddd-dddd-000000000009/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/constituencies/dddddddd-dddd-dddd-dddd-000000000009/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/organizations/dddddddd-dddd-dddd-dddd-000000000003/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/organizations/dddddddd-dddd-dddd-dddd-000000000003/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/dddddddd-dddd-dddd-dddd-000000000005/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/dddddddd-dddd-dddd-dddd-000000000005/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/dddddddd-dddd-dddd-dddd-000000000027/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/dddddddd-dddd-dddd-dddd-000000000027/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/factions/dddddddd-dddd-dddd-dddd-000000000021/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/factions/dddddddd-dddd-dddd-dddd-000000000021/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/alliances/dddddddd-dddd-dddd-dddd-000000000023/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/alliances/dddddddd-dddd-dddd-dddd-000000000023/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/question_categories/dddddddd-dddd-dddd-dddd-000000000013/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/question_categories/dddddddd-dddd-dddd-dddd-000000000013/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/questions/eeeeeeee-eeee-eeee-eeee-000000000301/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/questions/eeeeeeee-eeee-eeee-eeee-000000000301/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/questions/dddddddd-dddd-dddd-dddd-000000000015/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/questions/dddddddd-dddd-dddd-dddd-000000000015/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/nominations/dddddddd-dddd-dddd-dddd-000000000017/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/nominations/dddddddd-dddd-dddd-dddd-000000000017/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/nominations/dddddddd-dddd-dddd-dddd-000000000018/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/nominations/dddddddd-dddd-dddd-dddd-000000000018/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/nominations/dddddddd-dddd-dddd-dddd-000000000031/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/nominations/dddddddd-dddd-dddd-dddd-000000000031/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/nominations/dddddddd-dddd-dddd-dddd-000000000032/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/nominations/dddddddd-dddd-dddd-dddd-000000000032/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/nominations/31d6cdf4-d573-4e29-9776-96203f63e5e8/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/nominations/31d6cdf4-d573-4e29-9776-96203f63e5e8/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/nominations/97bec1a8-8fcd-4347-9106-e3f991775ce6/
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:1395: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/nominations/97bec1a8-8fcd-4347-9106-e3f991775ce6/
+apps/supabase/supabase/tests/database/10-schema-migrations.test.sql ............. ok
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:23: NOTICE:  table "__tcache__" does not exist, skipping
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:872: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/questions/dddddddd-dddd-dddd-dddd-000000000015/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:872: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/questions/dddddddd-dddd-dddd-dddd-000000000015/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:872: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/questions/dddddddd-dddd-dddd-dddd-000000000016/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:872: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/questions/dddddddd-dddd-dddd-dddd-000000000016/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:872: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/questions/eeeeeeee-eeee-eeee-eeee-000000000011/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:872: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/questions/eeeeeeee-eeee-eeee-eeee-000000000011/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:872: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/questions/eeeeeeee-eeee-eeee-eeee-000000000012/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:872: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/questions/eeeeeeee-eeee-eeee-eeee-000000000012/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:872: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/questions/eeeeeeee-eeee-eeee-eeee-000000000013/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:872: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/questions/eeeeeeee-eeee-eeee-eeee-000000000013/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:872: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/questions/eeeeeeee-eeee-eeee-eeee-000000000014/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:872: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/questions/eeeeeeee-eeee-eeee-eeee-000000000014/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:872: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/questions/eeeeeeee-eeee-eeee-eeee-000000000015/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:872: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/questions/eeeeeeee-eeee-eeee-eeee-000000000015/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:874: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/question_categories/dddddddd-dddd-dddd-dddd-000000000013/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:874: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/question_categories/dddddddd-dddd-dddd-dddd-000000000013/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:874: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/question_categories/dddddddd-dddd-dddd-dddd-000000000014/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:874: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/question_categories/dddddddd-dddd-dddd-dddd-000000000014/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:874: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/question_categories/eeeeeeee-eeee-eeee-eeee-000000000001/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:874: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/question_categories/eeeeeeee-eeee-eeee-eeee-000000000001/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:874: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/question_categories/eeeeeeee-eeee-eeee-eeee-000000000002/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:874: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/question_categories/eeeeeeee-eeee-eeee-eeee-000000000002/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:874: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/question_categories/eeeeeeee-eeee-eeee-eeee-000000000003/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:874: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/question_categories/eeeeeeee-eeee-eeee-eeee-000000000003/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:874: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/question_categories/eeeeeeee-eeee-eeee-eeee-000000000004/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:874: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/question_categories/eeeeeeee-eeee-eeee-eeee-000000000004/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:874: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/question_categories/eeeeeeee-eeee-eeee-eeee-000000000005/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:874: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/question_categories/eeeeeeee-eeee-eeee-eeee-000000000005/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:874: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/question_categories/eeeeeeee-eeee-eeee-eeee-000000000031/
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:874: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/question_categories/eeeeeeee-eeee-eeee-eeee-000000000031/
+apps/supabase/supabase/tests/database/11-question-rpcs.test.sql ................. ok
+psql:apps/supabase/supabase/tests/database/12-user-can.test.sql:22: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/12-user-can.test.sql ...................... ok
+psql:apps/supabase/supabase/tests/database/14-grants-migration.test.sql:18: NOTICE:  table "__tcache__" does not exist, skipping
+psql:apps/supabase/supabase/tests/database/14-grants-migration.test.sql:20: NOTICE:  table "mig_backfill_image" does not exist, skipping
+psql:apps/supabase/supabase/tests/database/14-grants-migration.test.sql:22: NOTICE:  table "mig_oracle_image" does not exist, skipping
+apps/supabase/supabase/tests/database/14-grants-migration.test.sql .............. ok
+psql:apps/supabase/supabase/tests/database/15-visibility-flags.test.sql:23: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/15-visibility-flags.test.sql .............. ok
+psql:apps/supabase/supabase/tests/database/16-anon-visibility.test.sql:15: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/16-anon-visibility.test.sql ............... ok
+psql:apps/supabase/supabase/tests/database/17-project-structure-authority.test.sql:18: NOTICE:  table "__tcache__" does not exist, skipping
+psql:apps/supabase/supabase/tests/database/17-project-structure-authority.test.sql:704: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/elections/eeeeeeee-eeee-eeee-eeee-0000000000e1/
+psql:apps/supabase/supabase/tests/database/17-project-structure-authority.test.sql:704: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/elections/eeeeeeee-eeee-eeee-eeee-0000000000e1/
+psql:apps/supabase/supabase/tests/database/17-project-structure-authority.test.sql:738: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/constituency_groups/eeeeeeee-eeee-eeee-eeee-0000000000c2/
+psql:apps/supabase/supabase/tests/database/17-project-structure-authority.test.sql:738: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/constituency_groups/eeeeeeee-eeee-eeee-eeee-0000000000c2/
+psql:apps/supabase/supabase/tests/database/17-project-structure-authority.test.sql:772: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/constituencies/eeeeeeee-eeee-eeee-eeee-0000000000d1/
+psql:apps/supabase/supabase/tests/database/17-project-structure-authority.test.sql:772: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/constituencies/eeeeeeee-eeee-eeee-eeee-0000000000d1/
+apps/supabase/supabase/tests/database/17-project-structure-authority.test.sql ... ok
+psql:apps/supabase/supabase/tests/database/18-entity-policies.test.sql:17: NOTICE:  table "__tcache__" does not exist, skipping
+psql:apps/supabase/supabase/tests/database/18-entity-policies.test.sql:728: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/10100001-0000-0000-0000-00000000000d/
+psql:apps/supabase/supabase/tests/database/18-entity-policies.test.sql:728: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/10100001-0000-0000-0000-00000000000d/
+psql:apps/supabase/supabase/tests/database/18-entity-policies.test.sql:741: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/organizations/10100002-0000-0000-0000-00000000000d/
+psql:apps/supabase/supabase/tests/database/18-entity-policies.test.sql:741: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/organizations/10100002-0000-0000-0000-00000000000d/
+psql:apps/supabase/supabase/tests/database/18-entity-policies.test.sql:754: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/factions/10100003-0000-0000-0000-00000000000d/
+psql:apps/supabase/supabase/tests/database/18-entity-policies.test.sql:754: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/factions/10100003-0000-0000-0000-00000000000d/
+psql:apps/supabase/supabase/tests/database/18-entity-policies.test.sql:767: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/alliances/10100004-0000-0000-0000-00000000000d/
+psql:apps/supabase/supabase/tests/database/18-entity-policies.test.sql:767: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/alliances/10100004-0000-0000-0000-00000000000d/
+apps/supabase/supabase/tests/database/18-entity-policies.test.sql ............... ok
+psql:apps/supabase/supabase/tests/database/19-entity-immutability.test.sql:25: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/19-entity-immutability.test.sql ........... ok
+psql:apps/supabase/supabase/tests/database/20-storage-authority.test.sql:16: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/20-storage-authority.test.sql ............. ok
+psql:apps/supabase/supabase/tests/database/21-entity-organization.test.sql:25: NOTICE:  table "__tcache__" does not exist, skipping
+psql:apps/supabase/supabase/tests/database/21-entity-organization.test.sql:171: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path eeeeeeee-eeee-eeee-eeee-000000000002/organizations/eeeeeeee-eeee-eeee-eeee-000000000003/
+psql:apps/supabase/supabase/tests/database/21-entity-organization.test.sql:171: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path eeeeeeee-eeee-eeee-eeee-000000000002/organizations/eeeeeeee-eeee-eeee-eeee-000000000003/
+psql:apps/supabase/supabase/tests/database/21-entity-organization.test.sql:171: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path eeeeeeee-eeee-eeee-eeee-000000000002/factions/eeeeeeee-eeee-eeee-eeee-000000000005/
+psql:apps/supabase/supabase/tests/database/21-entity-organization.test.sql:171: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path eeeeeeee-eeee-eeee-eeee-000000000002/factions/eeeeeeee-eeee-eeee-eeee-000000000005/
+apps/supabase/supabase/tests/database/21-entity-organization.test.sql ........... ok
+psql:apps/supabase/supabase/tests/database/22-content-policies.test.sql:23: NOTICE:  table "__tcache__" does not exist, skipping
+psql:apps/supabase/supabase/tests/database/22-content-policies.test.sql:824: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/question_categories/efefefef-efef-efef-efef-000000000011/
+psql:apps/supabase/supabase/tests/database/22-content-policies.test.sql:824: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/question_categories/efefefef-efef-efef-efef-000000000011/
+psql:apps/supabase/supabase/tests/database/22-content-policies.test.sql:859: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/questions/efefefef-efef-efef-efef-000000000012/
+psql:apps/supabase/supabase/tests/database/22-content-policies.test.sql:859: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/questions/efefefef-efef-efef-efef-000000000012/
+apps/supabase/supabase/tests/database/22-content-policies.test.sql .............. ok
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:17: NOTICE:  table "__tcache__" does not exist, skipping
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/elections/dddddddd-dddd-dddd-dddd-000000000002/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/elections/dddddddd-dddd-dddd-dddd-000000000002/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/constituency_groups/dddddddd-dddd-dddd-dddd-000000000008/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/constituency_groups/dddddddd-dddd-dddd-dddd-000000000008/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/constituencies/dddddddd-dddd-dddd-dddd-000000000010/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/constituencies/dddddddd-dddd-dddd-dddd-000000000010/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/organizations/dddddddd-dddd-dddd-dddd-000000000004/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/organizations/dddddddd-dddd-dddd-dddd-000000000004/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/candidates/dddddddd-dddd-dddd-dddd-000000000006/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/candidates/dddddddd-dddd-dddd-dddd-000000000006/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/factions/dddddddd-dddd-dddd-dddd-000000000022/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/factions/dddddddd-dddd-dddd-dddd-000000000022/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/alliances/dddddddd-dddd-dddd-dddd-000000000024/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/alliances/dddddddd-dddd-dddd-dddd-000000000024/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/question_categories/dddddddd-dddd-dddd-dddd-000000000014/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/question_categories/dddddddd-dddd-dddd-dddd-000000000014/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/questions/dddddddd-dddd-dddd-dddd-000000000016/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/questions/dddddddd-dddd-dddd-dddd-000000000016/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/nominations/dddddddd-dddd-dddd-dddd-000000000020/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/nominations/dddddddd-dddd-dddd-dddd-000000000020/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/nominations/dddddddd-dddd-dddd-dddd-000000000033/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/nominations/dddddddd-dddd-dddd-dddd-000000000033/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/nominations/dddddddd-dddd-dddd-dddd-000000000034/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/nominations/dddddddd-dddd-dddd-dddd-000000000034/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/nominations/dddddddd-dddd-dddd-dddd-000000000019/
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:1160: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/nominations/dddddddd-dddd-dddd-dddd-000000000019/
+apps/supabase/supabase/tests/database/23-nominations-write.test.sql ............. ok
+psql:apps/supabase/supabase/tests/database/24-legacy-removal.test.sql:26: NOTICE:  table "__tcache__" does not exist, skipping
+psql:apps/supabase/supabase/tests/database/24-legacy-removal.test.sql:28: NOTICE:  table "retired_grid" does not exist, skipping
+apps/supabase/supabase/tests/database/24-legacy-removal.test.sql ................ ok
+psql:apps/supabase/supabase/tests/database/25-matrix-conformance.test.sql:24: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/25-matrix-conformance.test.sql ............ ok
+psql:apps/supabase/supabase/tests/database/26-uniqueness-keys.test.sql:20: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/26-uniqueness-keys.test.sql ............... ok
+psql:apps/supabase/supabase/tests/database/27-parent-nomination-queue.test.sql:18: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/27-parent-nomination-queue.test.sql ....... ok
+psql:apps/supabase/supabase/tests/database/28-storage-table-parity.test.sql:22: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/28-storage-table-parity.test.sql .......... ok
+psql:apps/supabase/supabase/tests/database/29-authenticated-disjunct-order.test.sql:21: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/29-authenticated-disjunct-order.test.sql .. ok
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:17: NOTICE:  table "__tcache__" does not exist, skipping
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:265: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/../../../bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/candidates/dddddddd-dddd-dddd-dddd-000000000006/31310000-0000-4000-8000-0000000000c1.jpg
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:275: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/31310000-0000-4000-8000-0000000000c2.jpg?x=1
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:285: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/31310000-0000-4000-8000-0000000000c3.jpg#x
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:295: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/%2e%2e/31310000-0000-4000-8000-0000000000c4.jpg
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:305: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/..\31310000-0000-4000-8000-0000000000c5.jpg
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:315: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/31310000-0000-4000-8000-0000000000c6 copy.jpg
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:325: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/31310000-0000-4000-8000-0000000000C7.jpg
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:335: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/31310000-0000-4000-8000-0000000000c8.jpg/
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:345: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/seed-portrait.jpg
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:538: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/../../../x.jpg
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:554: WARNING:  Storage cleanup refused a path outside the upload convention: bucket other-bucket, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/31310000-0000-4000-8000-0000000000f5.jpg
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:668: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000002/
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:668: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000002/
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:758: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/constituency_groups/31310000-0000-4000-8000-000000000011/
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:758: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/constituency_groups/31310000-0000-4000-8000-000000000011/
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:816: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000003/
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:816: WARNING:  Storage cleanup refused a path outside the upload convention: bucket private-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000003/
+apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql ............... 
+# Failed test 28: "D-12: deleting a candidate enqueues exactly three requests for its folder of two public objects, one private object and one stray name"
+#         have: 0
+#         want: 3
+# Failed test 29: "D-12: the three requests are one DELETE each of the two public-assets objects and the private-assets object, at their exact single-object URLs"
+#         have: 0
+#         want: 3
+# Failed test 32: "D-12: deleting a constituency group enqueues exactly one request"
+#         have: 0
+#         want: 1
+# Failed test 33: "D-12: that one request is the DELETE of the object in the group's real folder, not of the constituencyXgroups lookalike"
+#         have: 0
+#         want: 1
+# Failed test 34: "D-12: cleanup_entity_storage_files enumerates with starts_with (name, path_prefix) and uses no LIKE (`_` in constituency_groups and question_categories is a LIKE wildcard)"
+# Looks like you failed 5 tests of 35
+Failed 5/35 subtests 
+
+Test Summary Report
+-------------------
+apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql             (Wstat: 0 Tests: 35 Failed: 5)
+  Failed tests:  28-29, 32-34
+Files=30, Tests=1128,  3 wallclock secs ( 0.09 usr  0.04 sys +  0.14 cusr  0.09 csys =  0.36 CPU)
+Result: FAIL
+error running container: exit 1
+Try rerunning the command with --debug to troubleshoot the error.

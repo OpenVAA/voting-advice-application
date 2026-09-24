@@ -226,5 +226,5 @@ Source files available in:
 
 - `sources/010-adjacent-store-bridges/popupRuneStore.svelte.ts` — representative spike
 - `sources/010-adjacent-store-bridges/page.svelte` — browser-verified demo harness
-- `sources/010-adjacent-store-bridges/README.md` — full Tier 1/2/3 inventory + investigation trail
-- `sources/012-getroute-rune/README.md` — getRoute migration verdict (Wave 3 unblocked)
+- `.planning/spikes/010-adjacent-store-bridges/README.md` — full Tier 1/2/3 inventory + investigation trail
+- `.planning/spikes/012-getroute-rune/README.md` — getRoute migration verdict (Wave 3 unblocked)

@@ -193,6 +193,6 @@ Synthesized from spike: 009
 Source files available in:
 
 - `sources/009-store-codemod-feasibility/spike-009-store-codemod.mjs` — the codemod itself
-- `sources/009-store-codemod-feasibility/README.md` — full investigation
+- `.planning/spikes/009-store-codemod-feasibility/README.md` — full investigation
   trail including the AdminNav production hit + spread-of-context bonus
   discovery

@@ -1,0 +1,14 @@
+# gated: started when 1-min load < 8
+# load average at start: { 7.45 13.72 10.51 }
+# fingerprint entity_select_quals: b3fa76a649a26e5aacbcfeec97008c87
+# fingerprint helper_bodies: entity_has_confirmed_nomination=03a6f09d get_nominations=30341431 is_child_nominee=d32702f4 nomination_entities_confirmed=86860ed8 project_open_for_voters=94280a7e user_can=bf8fb016
+reader        q      rows    min_ms median_ms    max_ms
+anon          Q2    38986    3146.1    3206.7    3293.9
+auth_nogrant  Q2    38986    4257.3    4292.6    4360.2
+candidate     Q2    38986    6913.8    6960.1    7071.3
+admin         Q2    38986    1197.6    1213.1    1296.6
+anon          Q3    36056     413.3     423.3     428.6
+auth_nogrant  Q3    36056    1024.7    1047.1    1086.6
+candidate     Q3    36056    2387.2    2499.2    2625.0
+admin         Q3    36056     539.6     566.6     598.3
+# load average at end: { 6.64 10.90 9.86 }

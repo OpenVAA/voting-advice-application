@@ -161,9 +161,26 @@ provideEntityData → provideNominationData` each triggers downstream
 
 ## Source Files
 
-Original spike source files are preserved in `sources/` for complete reference.
-Each spike's `README.md` includes the full investigation trail (initial design,
-verification attempts, failures, fixes, browser-verified results).
+Two halves, in two places, because only one of them was ever a duplicate.
+
+**The write-ups live at `.planning/spikes/<spike-id>/README.md`** — that is the
+canonical copy and the only one. Each carries the full investigation trail:
+initial design, verification attempts, failures, fixes, browser-verified
+results. This skill used to carry a second copy of all seventeen under
+`sources/`; they were removed in phase 160 after each was measured against its
+`.planning/spikes/` counterpart and shown to carry no unique wording (thirteen
+matched on a whitespace- and punctuation-stripped checksum, the remaining four
+— 008, 009, 013, 016 — on a sorted word bag, so the residue was Prettier
+reflow, not content). `.planning/spikes/` is also the superset: it holds
+twenty-five spikes where this skill wraps seventeen, including
+`.planning/spikes/024-derived-alias-stable-ref-skip/README.md`, which this
+skill never had.
+
+**The runnable spike code stays here, under `sources/`** — 59 files: the Svelte
+component harnesses, the rune-based context and store implementations, and the
+codemod script. **It exists nowhere else.** `.planning/spikes/` holds write-ups
+only, so these are not duplicates of anything and were kept for that reason.
+The reference files below cite them by path; those citations still resolve.
 </findings_index>
 
 <production_landing_map>

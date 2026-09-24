@@ -16,7 +16,7 @@ Do NOT duplicate these diagrams -- always refer to the README as the single sour
 
 ## Object Type Hierarchy
 
-All 21 concrete types organized by inheritance chain. Values in parentheses are `OBJECT_TYPE` string values from `core/objectTypes.ts`.
+All 21 concrete types organized by inheritance chain. Values in parentheses are `OBJECT_TYPE` string values from `packages/data/src/core/objectTypes.ts`.
 
 ```
 Updatable (abstract)
@@ -52,11 +52,11 @@ Updatable (abstract)
       AllianceNomination ('allianceNomination')
 ```
 
-Source: `core/objectTypes.ts` defines the `OBJECT_TYPE` const and `ObjectTypeMap`.
+Source: `packages/data/src/core/objectTypes.ts` defines the `OBJECT_TYPE` const and `ObjectTypeMap`.
 
 ## DataRoot Collection Getters
 
-All collections available on `DataRoot` (source: `root/dataRoot.ts`):
+All collections available on `DataRoot` (source: `packages/data/src/root/dataRoot.ts`):
 
 | Collection Getter         | Returns                    | Id Getter                       | Provision Method            |
 | ------------------------- | -------------------------- | ------------------------------- | --------------------------- |
@@ -84,7 +84,7 @@ Additional cross-cutting getters:
 
 ## Entity Type Constants
 
-Source: `objects/entities/base/entityTypes.ts`
+Source: `packages/data/src/objects/entities/base/entityTypes.ts`
 
 | ENTITY_TYPE    | Value            | Explicit/Implied                                                  |
 | -------------- | ---------------- | ----------------------------------------------------------------- |
@@ -97,7 +97,7 @@ Implied entities get deterministic IDs via `DataRoot.createId()`. They are const
 
 ## Question Type Constants
 
-Source: `objects/questions/base/questionTypes.ts`
+Source: `packages/data/src/objects/questions/base/questionTypes.ts`
 
 - **SIMPLE_QUESTION_TYPE:** Text, Number, Boolean, Image, Date, MultipleText
 - **SINGLE_CHOICE_QUESTION_TYPE:** SingleChoiceOrdinal, SingleChoiceCategorical
@@ -119,7 +119,7 @@ Source: `objects/questions/base/questionTypes.ts`
 
 ## Question Category Types
 
-Source: `objects/questions/category/questionCategoryTypes.ts`
+Source: `packages/data/src/objects/questions/category/questionCategoryTypes.ts`
 
 | QUESTION_CATEGORY_TYPE | Value       | Purpose                                         |
 | ---------------------- | ----------- | ----------------------------------------------- |
@@ -132,20 +132,27 @@ Category filtering uses `appliesTo(filters)` on `QuestionAndCategoryBase`, which
 ## Key Relationships
 
 - **Election -> ConstituencyGroup(s) -> Constituency(ies):** Elections have constituency groups; each group contains constituencies the voter chooses from.
+- **One constituency per election -- selection semantics, not a model invariant:** The voter chooses one constituency per election, and in a multi-election setting those choices are not independent: where two elections share a constituency group, or where their constituencies are nested, the two choices meet and cannot be contradictory -- they are one choice, so selecting for one election constrains the other.
 - **Constituency -> parentConstituency:** Optional nesting for multi-level elections (e.g., regional + municipal).
+- **Child constituency implies its parent -- selection semantics, not a model invariant:** The `parentConstituency` nesting lets the voter select only the child constituency; the parent is implied from it, so a selector need not ask for both.
 - **Nomination links Entity + Election + Constituency:** A Nomination represents an entity nominated in a specific election-constituency pair.
 - **CandidateNomination -> Candidate:** Links to the nominated person.
-- **OrganizationNomination -> Organization:** Links to the party/association; may contain CandidateNominations and FactionNominations as children.
+- **OrganizationNomination -> Organization:** Links to the nominated Organization, most often a party; may contain CandidateNominations and FactionNominations as children.
+- **Party list -- an OrganizationNomination with CandidateNomination children:** The common case of the relationship above, and the name the code itself uses; CandidateNomination.list returns the parent OrganizationNomination -- `null` when the candidate is not nominated on a list -- and OrganizationNomination.candidateNominations returns its members.
 - **AllianceNomination -> Alliance:** Contains OrganizationNominations as children.
 - **FactionNomination -> Faction:** Contains CandidateNominations as children; must be part of an OrganizationNomination.
 - **Question -> QuestionCategory:** Each question belongs to exactly one category.
 - **Entity has Answers:** Record of `Id -> Answer` stored in entity data; accessed via `entity.getAnswer(question)`.
 
+Both selection rules above are voter-facing semantics recorded from the product owner's review of PR #874, not facts read off a source file -- an agent cannot recover them from the class definitions, which is why they are stated here. `@openvaa/data` enforces neither: nothing rejects a conflicting pair of selections. It does supply what a constituency selector needs to honour them -- `ConstituencyGroup.impliedBy()` and `ConstituencyGroup.getImpliedConstituency()` in `packages/data/src/objects/constituency/constituencyGroup.ts`, and `DataRoot.getCombinedElections()` in `packages/data/src/root/dataRoot.ts`, which collapses elections whose constituency groups imply one another so the voter is asked once. The nearest thing to a guard is `Election.getApplicableConstituency()` in `packages/data/src/objects/election/election.ts`, which throws when a voter's selection resolves to more than one constituency for a single election -- a read-site check, not an invariant of the model.
+
 ## Factory Functions
 
-- `createQuestion({ data, root })` in `objects/questions/variants/variants.ts` -- selects the correct Question subclass from `data.type` using the `QUESTION_VARIANT` map.
-- `parseEntityTree(data)` in `objects/entities/variants/variants.ts` -- converts `EntityVariantTree` (keyed by EntityType) to a flat `AnyEntityVariantData[]`.
-- `parseNominationTree(data)` in `objects/nominations/variants/variants.ts` -- converts `NominationVariantTree` (keyed by electionId/constituencyId) to a flat array.
-- `parseFullVaaData(data)` in `utils/parseFullVaaData.ts` -- parses a complete VAA data structure with all collections.
+- `createQuestion({ data, root })` in `packages/data/src/objects/questions/variants/variants.ts` -- selects the correct Question subclass from `data.type` using the `QUESTION_VARIANT` map.
+- `parseEntityTree(data)` in `packages/data/src/objects/entities/variants/variants.ts` -- converts `EntityVariantTree` (keyed by EntityType) to a flat `AnyEntityVariantData[]`.
+- `parseNominationTree(data)` in `packages/data/src/objects/nominations/variants/variants.ts` -- converts `NominationVariantTree` (keyed by electionId/constituencyId) to a flat array.
+- `parseFullVaaData(data)` in `packages/data/src/utils/parseFullVaaData.ts` -- parses a complete VAA data structure with all collections.
+
+<!-- skill-link-allow: data.type -->
 
 Objects are NEVER created directly with `new` in application code. Always use DataRoot provision methods (`provideEntityData()`, `provideQuestionData()`, etc.) which call these factories internally.

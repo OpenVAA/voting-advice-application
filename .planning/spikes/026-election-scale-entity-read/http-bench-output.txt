@@ -1,0 +1,33 @@
+# sanity anon         sees municipal project row: 0
+# sanity auth_nogrant sees municipal project row: 0
+# sanity candidate    sees municipal project row: 1
+# sanity admin        sees municipal project row: 1
+# 2026-09-18T07:10:57.145Z  runs=10  loadavg=5.0 6.1 6.1
+query reader              rows    KB   min_ms  med_ms  p95_ms  max_ms
+Q1    anon                 1000   824     128     133     138     138
+Q1    auth_nogrant         1000   824     173     183     207     207
+Q1    candidate            1000   824     272     282     297     297
+Q1    admin                1000   824      61      63      66      66
+Q2    anon                 1000   820    2871    2901    2945    2945
+Q2    auth_nogrant         1000   820    4088    4250    5067    5067
+Q2    candidate            1000   820    6581    6701    6996    6996
+Q2    admin                1000   820    1076    1095    1119    1119
+Q3    anon                 1000   501     325     334     370     370
+Q3    auth_nogrant         1000   501     949     984    1039    1039
+Q3    candidate            1000   501    2222    2275    2325    2325
+Q3    admin                1000   501     483     507     557     557
+Q4    anon                  440   362      39      41      43      43
+Q4    auth_nogrant          440   362      52      53      56      56
+Q4    candidate             440   362      81      84     104     104
+Q4    admin                 440   362      77      80      88      88
+Q5    anon                 1000   821     190     196     207     207
+Q5    auth_nogrant         1000   821     270     282     302     302
+Q5    candidate            1000   821     417     428     489     489
+Q5    admin                1000   821     402     423     468     468
+
+# concurrency: 10 simultaneous clients x 5 requests of Q1 (voter, largest municipal constituency)
+reader        requests  med_ms  p95_ms  max_ms  wall_s
+anon                50     158     251     255     1.0
+auth_nogrant        50     214     261     276     1.2
+candidate           50     326     363     385     1.8
+admin               50      72     109     121     0.5

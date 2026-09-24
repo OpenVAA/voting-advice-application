@@ -1,0 +1,16 @@
+# 162-19 flow-gate controls re-measured (D-37: reddened = T0 minus passed; failure lines are never counted)
+# HEAD: 3f2f1e46ea7b5aad179dfac723a16a1259e1b36a
+# Date: 2026-09-19T15:46:37Z
+# Method: 162-17's F1/F2 method against the current corpus. Scratch copy under apps/supabase/.m19-controls (supabase/functions/{invite-candidate,send-email,identity-callback}/*.ts, supabase/schema/000-enums.sql + 301-auth-functions.sql), pristine re-copy before every control, run with node_modules/.bin/vitest run --root apps/supabase/.m19-controls <the three flowConformance.test.ts files> --reporter=json; counts read from numPassedTests / numTotalTests.
+# History: 162-NEGATIVE-CONTROL-LEDGER.md rows F1 and F2 are 162-17's measurement at 64d2995c1 over 36 tests (F1 reddened 5, F2 reddened 2); they are cited, not rewritten. This file is the measurement for the current corpus.
+
+T0 three flow files: passed=46 of total=46 (unperturbed scratch copy; vitest exit=0)
+F1 [the grant_permission enum body reduced to ONE non-member literal] plant: perl -0pi -e 's/(CREATE TYPE public\.grant_permission AS ENUM\()[^;]*?(\);)/$1\n  \x27not.a_member\x27\n$2/s' supabase/schema/000-enums.sql | plant applied: 1 | T0=46 | passed=40 | reddened: 6 | failing: "derived a 23-member permission vocabulary before any membership assertion uses it"; "derived a 23-member permission vocabulary before any membership assertion uses it"; "names no permission literal outside the derived enum"; "derived a 23-member permission vocabulary before any membership assertion uses it"; "names no permission literal outside the derived enum"; "names the permission bulk send asks for, and it is a member of the ratified 23 (D-30, operator S-3 NOTE)" | vitest exit=1
+F2 [send-email: a non-member permission literal planted] plant: perl -0pi -e 's/\z/\nconst plantedPermission = \x27project.edit_everything\x27; \/\/ PLANTED-NON-MEMBER\n/' supabase/functions/send-email/index.ts | plant applied: 1 | T0=46 | passed=45 | reddened: 1 | failing: "names no permission literal outside the derived enum" | vitest exit=1
+F2i [invite-candidate: a non-member permission literal planted] plant: perl -0pi -e 's/\z/\nconst plantedPermission = \x27project.edit_everything\x27; \/\/ PLANTED-NON-MEMBER\n/' supabase/functions/invite-candidate/index.ts | plant applied: 1 | T0=46 | passed=45 | reddened: 1 | failing: "names no permission literal outside the derived enum" | vitest exit=1
+
+scratch tree removed: yes
+git status --porcelain after removal:
+ M .planning/config.json
+ M .planning/state.json
+?? .planning/milestone.lock

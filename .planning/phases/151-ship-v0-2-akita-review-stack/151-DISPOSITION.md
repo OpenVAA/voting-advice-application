@@ -48,9 +48,10 @@ comparable_total: 4413  # re-measured at 151-16; every rise attributed by set di
 slices_dispositioned: ["01a", "01b", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11"]
 findings_total: 85  # F-89 raised at 151-19 (a criterion-3 regression from 151-18's own perf fix)
 status: complete
-approval: awaiting-operator-at-151-19-task-3   # a named, owned, dated state -- NOT an unfilled placeholder.
-                                              # This record cannot assert its own operator approval; the
-                                              # phase-close checkpoint is where it is given or refused.
+approval: operator-approved
+approval_date: 2026-08-18
+approval_basis: "reproduced, not read -- the operator re-ran criterion 7's identity check and the skill-drift audit, and opened F-89's cited line, rather than accepting this record's word"
+f_89_disposition: post-merge-follow-up   # fix named below; NOT fixed in the stack, NOT absorbed into the gate
 # --- plan 151-19: the record finalised ---
 criterion_evidence_map: 7        # one row per ROADMAP success criterion, each naming a re-runnable command
 pending_markers_live: 0          # every PENDING->NN in a verdict column resolved to a terminal disposition.
@@ -73,11 +74,10 @@ checklist_items_verified: 31     # grep -c '^- \[ \] ' .agents/code-review-check
 **Plan:** 06 (scaffold + phase-level rows); cells filled by plans 151-09 … 151-18; finalised by 151-19.
 **Status:** ✅ **COMPLETE — 163 / 163 cells filled, `blank_cells: 0`, `cells_pending: 0`.** Every
 criterion maps to re-runnable evidence in § "Criterion evidence map" below.
-**Approval gate:** the record is complete and the **operator's phase-close approval is the one thing
-this file cannot assert about itself** — it is requested at plan 151-19 Task 3, whose test is that a
-reader reproduces at least two criteria from this record alone. `approval:` in the frontmatter
-therefore reads `awaiting-operator-at-151-19-task-3` until that happens. It is a named, owned, dated
-state, not an unfilled placeholder.
+**Approval gate: CLOSED — operator-approved 2026-08-18.** The test was that a reader reproduces
+criteria from this record alone, and it was met literally: the operator re-ran `verify-identity.sh`
+(0 changed files, both trees `b606ed169`) and `audit-skill-drift.sh` (`Drifted: 0`, exit 0, against a
+`Drifted: 2` control taken before the fix), and opened F-89's cited line. **Reproduced, not read.**
 
 This is the single canonical view D-17 requires: one cell per (checklist item × slice) pair for the
 per-slice items, plus a phase-level section for the items that are not per-slice at all.
@@ -3347,7 +3347,7 @@ it would cost — because "deferred" without a cost is indistinguishable from "f
 
 | ID | What | Why not fixed here | Cost to close |
 |---|---|---|---|
-| **F-89** *(new, 151-19)* | **151-18's own perf fix leaked a planning reference into shipped source.** `tests/tests/specs/perf/performance-budget.spec.ts:55` reads `## Why a warm-up reload (phase 151, plan 151-18)`. One line, but it trips **two** criterion-3 gate rows: `plan-number` 0 → **1** and `phase-ref` bare 11 → **12**. | The file is in slice **05**, published as PR #868 with six slices chained above it. Fixing it means re-cutting 05–11 and force-pushing six branches; **151-19's authorisation is one branch (slice 11) and 151-18's six-branch grant is spent.** Not an agent's call. | One operator decision, then one script run per slice and six force-pushes — or leave it and merge, since it is a comment. **Recorded, not massaged into the expected-red state.** |
+| **F-89** *(new, 151-19)* | **151-18's own perf fix leaked a planning reference into shipped source.** `tests/tests/specs/perf/performance-budget.spec.ts:55` reads `## Why a warm-up reload (phase 151, plan 151-18)`. One line, but it trips **two** criterion-3 gate rows: `plan-number` 0 → **1** and `phase-ref` bare 11 → **12**. | The file is in slice **05**, published as PR #868 with six slices chained above it. Fixing it means re-cutting 05–11 and force-pushing six branches; **151-19's authorisation is one branch (slice 11) and 151-18's six-branch grant is spent.** Not an agent's call. | **DISPOSITIONED at the phase-close checkpoint: post-merge follow-up.** One comment line does not warrant a second six-branch force-push, and no PR in the stack carries a human review, so an open finding costs nothing. **The fix, stated so nobody re-derives it:** collapse the heading to D-14's authorised bare form — `## Why a warm-up reload (see phase 151)`. That single edit clears **both** rows: `plan-number` stops matching (no `NN-NN` survives) and `phase-ref` returns to 11 bare (the survivor is preceded by `see`). Re-verify with `hygiene-grep-report.sh --assert-clean`, expecting `task-id` 82 and `phase-ref` bare 11. **Recorded, never massaged into the expected-red state — the refusal was explicitly endorsed by the operator.** |
 | **F-81** | `.bg-shell/manifest.json` is a literal `[]`, referenced by nothing, not gitignored, so it ships. | Slice **10**, published, authorisation spent. Operator decision at 151-19: not worth a fresh force-push for a two-byte file. | Post-merge: delete or gitignore. |
 | **F-86** | Root `package.json` declares **`"engine"` (singular)**, so its Node/yarn floor is **inert** — no package manager reads that key. Pre-existing at `origin/main`, but v0.2 **edits its values** (`node: 20.18.1 → >=22`, `yarn: 4.6 → 4.13`), so a slice-10 reviewer sees the block and would reasonably assume it is enforced. | Same slice, same spent authorisation — and **it is not a typo fix**: correcting the key changes install behaviour for every contributor and every CI job. | Post-merge, as its own decision with its own CI observation. |
 | **F-03** | Two one-shot v2.13/v2.14 migration codemods still ship in the product tree. | They are the in-repo precedent `hygiene-codemod.mjs` is modelled on; deleting them mid-phase would remove the reference while the citation stands. | Post-merge cleanup, with the citation updated in the same commit. |

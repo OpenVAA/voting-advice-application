@@ -50,12 +50,12 @@ audit_skill() {
   done < "$skill_md"
 
   if [[ ${#targets[@]} -eq 0 ]]; then
-    ((SKIPPED++))
+    ((++SKIPPED))
     printf "  %-14s  SKIP  (no targets defined)\n" "$skill_name"
     return
   fi
 
-  ((CHECKED++))
+  ((++CHECKED))
 
   # Last commit touching any file in the skill directory
   local skill_commit
@@ -63,7 +63,7 @@ audit_skill() {
 
   if [[ -z "$skill_commit" ]]; then
     printf "  %-14s  SKIP  (skill not yet committed)\n" "$skill_name"
-    ((SKIPPED++))
+    ((++SKIPPED))
     return
   fi
 
@@ -97,7 +97,7 @@ audit_skill() {
   if [[ "$total_commits" -eq 0 ]]; then
     printf "  %-14s  OK    (synced as of %s)\n" "$skill_name" "$skill_date"
   else
-    ((DRIFTED++))
+    ((++DRIFTED))
     printf "  %-14s  DRIFT  %d commits, %d files since %s\n" "$skill_name" "$total_commits" "$changed_files" "$skill_date"
     printf "$target_details"
   fi

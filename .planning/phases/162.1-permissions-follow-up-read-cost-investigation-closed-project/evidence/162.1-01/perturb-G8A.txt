@@ -1,0 +1,90 @@
+Connecting to local database...
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/00-helpers.test.sql:15: NOTICE:  extension "pgtap" already exists, skipping
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/00-helpers.test.sql:280: NOTICE:  function set_test_user(text,uuid,jsonb) does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/00-helpers.test.sql ....................... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/01-tenant-isolation.test.sql:15: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/01-tenant-isolation.test.sql .............. ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/02-candidate-self-edit.test.sql:13: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/02-candidate-self-edit.test.sql ........... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/03-anon-read.test.sql:15: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/03-anon-read.test.sql ..................... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/04-admin-crud.test.sql:20: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/04-admin-crud.test.sql .................... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/05-organization-admin.test.sql:16: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/05-organization-admin.test.sql ............ ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/06-storage-rls.test.sql:18: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/06-storage-rls.test.sql ................... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/07-rpc-security.test.sql:24: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/07-rpc-security.test.sql .................. ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/08-triggers.test.sql:20: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/08-triggers.test.sql ...................... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/09-column-restrictions.test.sql:22: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/09-column-restrictions.test.sql ........... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:16: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/10-schema-migrations.test.sql ............. ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:23: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/11-question-rpcs.test.sql ................. ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/12-user-can.test.sql:22: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/12-user-can.test.sql ...................... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/14-grants-migration.test.sql:18: NOTICE:  table "__tcache__" does not exist, skipping
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/14-grants-migration.test.sql:20: NOTICE:  table "mig_backfill_image" does not exist, skipping
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/14-grants-migration.test.sql:22: NOTICE:  table "mig_oracle_image" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/14-grants-migration.test.sql .............. ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/15-visibility-flags.test.sql:23: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/15-visibility-flags.test.sql .............. ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/16-anon-visibility.test.sql:15: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/16-anon-visibility.test.sql ............... 
+# Failed test 32: "anon CANNOT see a confirmed, nominated faction whose project is not open for voters -- the project conjunct, flipped alone"
+#         have: 1
+#         want: 0
+# Failed test 47: "all FOUR anon entity SELECT policies name BOTH public-visibility helpers directly and neither published nor the withdrawn composition; anon_select_nominations still reaches the project term directly; and nomination_entities_confirmed still requires both helpers in its own body, read from pg_get_functiondef so a term dropped from the function cannot hide behind a policy that merely calls it -- populations pinned, so a clean answer cannot come from an empty instrument"
+#         have: 3/4 1/1 1
+#         want: 4/4 1/1 1
+# Looks like you failed 2 tests of 52
+Failed 2/52 subtests 
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/17-project-structure-authority.test.sql:18: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/17-project-structure-authority.test.sql ... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/18-entity-policies.test.sql:17: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/18-entity-policies.test.sql ............... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/19-entity-immutability.test.sql:25: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/19-entity-immutability.test.sql ........... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/20-storage-authority.test.sql:16: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/20-storage-authority.test.sql ............. ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/21-entity-organization.test.sql:25: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/21-entity-organization.test.sql ........... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/22-content-policies.test.sql:23: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/22-content-policies.test.sql .............. ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/23-nominations-write.test.sql:17: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/23-nominations-write.test.sql ............. ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/24-legacy-removal.test.sql:26: NOTICE:  table "__tcache__" does not exist, skipping
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/24-legacy-removal.test.sql:28: NOTICE:  table "retired_grid" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/24-legacy-removal.test.sql ................ ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/25-matrix-conformance.test.sql:24: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/25-matrix-conformance.test.sql ............ 
+# Failed test 34: "eight-assembly guard, RELATIVE: the four anon assemblies are identical once the table and entity type are normalised away"
+#         have: 2
+#         want: 1
+# Failed test 38: "eight-assembly guard, ABSOLUTE: all eight assemblies call project_open_for_voters"
+#         have: 7
+#         want: 8
+# Looks like you failed 2 tests of 41
+Failed 2/41 subtests 
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/26-uniqueness-keys.test.sql:20: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/26-uniqueness-keys.test.sql ............... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/27-parent-nomination-queue.test.sql:18: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/27-parent-nomination-queue.test.sql ....... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/28-storage-table-parity.test.sql:22: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/28-storage-table-parity.test.sql .......... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/29-authenticated-disjunct-order.test.sql:21: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/29-authenticated-disjunct-order.test.sql .. ok
+
+Test Summary Report
+-------------------
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/16-anon-visibility.test.sql             (Wstat: 0 Tests: 52 Failed: 2)
+  Failed tests:  32, 47
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/25-matrix-conformance.test.sql          (Wstat: 0 Tests: 41 Failed: 2)
+  Failed tests:  34, 38
+Files=29, Tests=1093,  3 wallclock secs ( 0.08 usr  0.04 sys +  0.14 cusr  0.10 csys =  0.36 CPU)
+Result: FAIL
+error running container: exit 1
+Try rerunning the command with --debug to troubleshoot the error.

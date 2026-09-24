@@ -1,0 +1,112 @@
+# 162.1-02 Task 2 negative control: the APPLIED delete_storage_object with its path regex check removed (psql CREATE OR REPLACE from pg_get_functiondef, bucket check kept; no tracked file edited)
+# expected: the nine D-20(a) crafted-path trigger cases and the direct crafted-call case of 31-storage-cleanup.test.sql go red; the D-20(b) own-folder cases stay green (confinement, not the regex, guards them)
+Connecting to local database...
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/00-helpers.test.sql:15: NOTICE:  extension "pgtap" already exists, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/00-helpers.test.sql ....................... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/01-tenant-isolation.test.sql:15: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/01-tenant-isolation.test.sql .............. ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/02-candidate-self-edit.test.sql:13: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/02-candidate-self-edit.test.sql ........... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/03-anon-read.test.sql:15: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/03-anon-read.test.sql ..................... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/04-admin-crud.test.sql:20: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/04-admin-crud.test.sql .................... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/05-organization-admin.test.sql:16: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/05-organization-admin.test.sql ............ ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/06-storage-rls.test.sql:18: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/06-storage-rls.test.sql ................... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/07-rpc-security.test.sql:24: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/07-rpc-security.test.sql .................. ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/08-triggers.test.sql:20: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/08-triggers.test.sql ...................... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/09-column-restrictions.test.sql:22: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/09-column-restrictions.test.sql ........... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:16: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/10-schema-migrations.test.sql ............. ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:23: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/11-question-rpcs.test.sql ................. ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/12-user-can.test.sql:22: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/12-user-can.test.sql ...................... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/14-grants-migration.test.sql:18: NOTICE:  table "__tcache__" does not exist, skipping
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/14-grants-migration.test.sql:20: NOTICE:  table "mig_backfill_image" does not exist, skipping
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/14-grants-migration.test.sql:22: NOTICE:  table "mig_oracle_image" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/14-grants-migration.test.sql .............. ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/15-visibility-flags.test.sql:23: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/15-visibility-flags.test.sql .............. ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/16-anon-visibility.test.sql:15: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/16-anon-visibility.test.sql ............... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/17-project-structure-authority.test.sql:18: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/17-project-structure-authority.test.sql ... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/18-entity-policies.test.sql:17: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/18-entity-policies.test.sql ............... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/19-entity-immutability.test.sql:25: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/19-entity-immutability.test.sql ........... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/20-storage-authority.test.sql:16: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/20-storage-authority.test.sql ............. ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/21-entity-organization.test.sql:25: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/21-entity-organization.test.sql ........... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/22-content-policies.test.sql:23: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/22-content-policies.test.sql .............. ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/23-nominations-write.test.sql:17: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/23-nominations-write.test.sql ............. ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/24-legacy-removal.test.sql:26: NOTICE:  table "__tcache__" does not exist, skipping
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/24-legacy-removal.test.sql:28: NOTICE:  table "retired_grid" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/24-legacy-removal.test.sql ................ ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/25-matrix-conformance.test.sql:24: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/25-matrix-conformance.test.sql ............ ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/26-uniqueness-keys.test.sql:20: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/26-uniqueness-keys.test.sql ............... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/27-parent-nomination-queue.test.sql:18: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/27-parent-nomination-queue.test.sql ....... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/28-storage-table-parity.test.sql:22: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/28-storage-table-parity.test.sql .......... ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/29-authenticated-disjunct-order.test.sql:21: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/29-authenticated-disjunct-order.test.sql .. ok
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:17: NOTICE:  table "__tcache__" does not exist, skipping
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:315: WARNING:  Storage cleanup failed for public-assets/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/31310000-0000-4000-8000-0000000000c6 copy.jpg: URL using bad/illegal format or missing URL
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:554: WARNING:  Storage cleanup refused a path outside the upload convention: bucket other-bucket, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/31310000-0000-4000-8000-0000000000f5.jpg
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql ............... 
+# Failed test 8: "D-20(a): an old path with a `..` segment inside the own folder enqueues nothing (pg_net would resolve it out of the folder)"
+#         have: 1
+#         want: 0
+# Failed test 9: "D-20(a): an old path with a `?` query suffix enqueues nothing"
+#         have: 1
+#         want: 0
+# Failed test 10: "D-20(a): an old path with a `#` fragment suffix enqueues nothing"
+#         have: 1
+#         want: 0
+# Failed test 11: "D-20(a): an old path with a `%` escape (%2e%2e) enqueues nothing"
+#         have: 1
+#         want: 0
+# Failed test 12: "D-20(a): an old path with a backslash enqueues nothing"
+#         have: 1
+#         want: 0
+# Failed test 14: "D-20(a): an old path whose file uuid is uppercase enqueues nothing (canonical lowercase only)"
+#         have: 1
+#         want: 0
+# Failed test 15: "D-20(a): an old path with a trailing slash enqueues nothing"
+#         have: 1
+#         want: 0
+# Failed test 16: "D-20(a): an old path with a non-uuid file name (seed-portrait.jpg) enqueues nothing"
+#         have: 1
+#         want: 0
+# Failed test 25: "D-20(a): a direct owner call with a crafted `..` path enqueues nothing"
+#         have: 1
+#         want: 0
+# Looks like you failed 9 tests of 27
+Failed 9/27 subtests 
+
+Test Summary Report
+-------------------
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql             (Wstat: 0 Tests: 27 Failed: 9)
+  Failed tests:  8-12, 14-16, 25
+Files=30, Tests=1120,  3 wallclock secs ( 0.13 usr  0.04 sys +  0.16 cusr  0.12 csys =  0.45 CPU)
+Result: FAIL
+error running container: exit 1
+Try rerunning the command with --debug to troubleshoot the error.
+exit=1
+
+# RESULT: 9 of the 10 crafted-path assertions went red with the regex removed (tests 8-12, 14-16, 25).
+# Test 13 (space) stayed green: with the regex gone, net.http_delete itself refused the URL at enqueue time, 'URL using bad/illegal format or missing URL' (the WARNING at file line 315 above), so no request row was written. The space case is therefore guarded by two independent layers, the whitelist and pg_net's own URL parser; this control can only show the first of them able to fail for the nine other shapes.
+# D-20(b) own-folder cases (17-19), the D-20(c) cases and the private-bucket case stayed green, as expected: confinement and the still-referenced rule, not the regex, guard them.
+# Restored afterwards with 'yarn db:reset' (committed schema re-applied) and a green test:db.

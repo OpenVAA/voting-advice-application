@@ -1,0 +1,6 @@
+cookies carried from sign-in: sb-127-auth-token
+A. no cookies (anonymous voter): status=200 rows=1
+   anon           /rest/v1/candidates
+B. signed-in cookies (candidate/admin opening the voter app): status=200 rows=1
+   authenticated  /rest/v1/candidates
+cleanup: throwaway user deleted
