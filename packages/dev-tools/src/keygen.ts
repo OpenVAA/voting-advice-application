@@ -1,22 +1,16 @@
 /**
- * Generate a fresh RSA-2048 key pair entirely in memory and print both JWKs
- * formatted for OpenVAA's identity provider env vars and provider dashboards.
+ * Generate a fresh RSA-2048 key pair entirely in memory and print both JWKs formatted for OpenVAA's identity provider env vars and provider dashboards.
  *
- * No PEM files are written to disk, which matches the security guidance in
- * docs/key-generation.md ("Delete the .pem files after converting to JWK").
+ * No PEM files are written to disk, which matches the security guidance in docs/key-generation.md ("Delete the .pem files after converting to JWK").
  *
  * Usage:
  *   yarn workspace @openvaa/dev-tools keygen \
  *     --type <signing|encryption> \
- *     --kid <id> \
- *     [--alg <name>] \
- *     [--size <bits>]   Default: 2048 (Traficom 213/2023 minimum).
+ *     --kid <id> \ [--alg <name>] \ [--size <bits>]   Default: 2048 (Traficom 213/2023 minimum).
  *
  * Output — two JSON blocks on stdout:
- *   1. Private JWK, wrapped in a `[ ... ]` array, ready to paste into
- *      IDURA_SIGNING_JWKS or IDENTITY_PROVIDER_DECRYPTION_JWKS.
- *   2. Public JWK, ready to paste into the provider dashboard's JWKS field
- *      (wrapped in `{ "keys": [...] }` when a dashboard expects a JWKS document).
+ *   1. Private JWK, wrapped in a `[ ... ]` array, ready to paste into IDURA_SIGNING_JWKS or IDENTITY_PROVIDER_DECRYPTION_JWKS.
+ *   2. Public JWK, ready to paste into the provider dashboard's JWKS field (wrapped in `{ "keys": [...] }` when a dashboard expects a JWKS document).
  */
 
 import { parseArgs } from 'node:util';

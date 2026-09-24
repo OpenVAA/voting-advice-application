@@ -1640,8 +1640,10 @@ __metadata:
   dependencies:
     "@openvaa/data": "workspace:^"
     "@openvaa/shared-config": "workspace:^"
+    tsup: "catalog:"
     typescript: "catalog:"
     vitest: "catalog:"
+    zod: "catalog:"
   languageName: unknown
   linkType: soft
 
@@ -1658,6 +1660,7 @@ __metadata:
     dotenv: "catalog:"
     js-yaml: "catalog:"
     serve: "npm:^14.2.3"
+    tsup: "catalog:"
     typescript: "catalog:"
     vitest: "catalog:"
   languageName: unknown
@@ -1668,6 +1671,7 @@ __metadata:
   resolution: "@openvaa/core@workspace:packages/core"
   dependencies:
     "@openvaa/shared-config": "workspace:^"
+    tsup: "catalog:"
     typescript: "catalog:"
     vitest: "catalog:"
   languageName: unknown
@@ -1679,6 +1683,7 @@ __metadata:
   dependencies:
     "@openvaa/core": "workspace:^"
     "@openvaa/shared-config": "workspace:^"
+    tsup: "catalog:"
     tsx: "catalog:"
     typescript: "catalog:"
     vitest: "catalog:"
@@ -1773,6 +1778,7 @@ __metadata:
     "@openvaa/core": "workspace:^"
     "@openvaa/data": "workspace:^"
     "@openvaa/shared-config": "workspace:^"
+    tsup: "catalog:"
     typescript: "catalog:"
     vitest: "catalog:"
   languageName: unknown
@@ -1807,6 +1813,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": "catalog:"
     "@typescript-eslint/parser": "catalog:"
     "@vitest/coverage-v8": "npm:^3.2.4"
+    clsx: "npm:^2.1.1"
     daisyui: "catalog:"
     eslint: "catalog:"
     eslint-plugin-svelte: "catalog:"
@@ -1824,6 +1831,7 @@ __metadata:
     svelte-check: "catalog:"
     svelte-eslint-parser: "npm:^1.6.0"
     svelte-visibility-change: "npm:^0.6.0"
+    tailwind-merge: "npm:^3.7.0"
     tailwindcss: "catalog:"
     tslib: "npm:^2.8.1"
     tsx: "catalog:"
@@ -1847,6 +1855,7 @@ __metadata:
     ai: "npm:^5.0.0"
     jsonrepair: "npm:^3.13.0"
     openai: "npm:^4.96.0"
+    tsup: "catalog:"
     typescript: "catalog:"
     vitest: "catalog:"
     zod: "catalog:"
@@ -1859,6 +1868,7 @@ __metadata:
   dependencies:
     "@openvaa/core": "workspace:^"
     "@openvaa/shared-config": "workspace:^"
+    tsup: "catalog:"
     typescript: "catalog:"
     vitest: "catalog:"
   languageName: unknown
@@ -1874,6 +1884,7 @@ __metadata:
     "@openvaa/shared-config": "workspace:^"
     "@types/js-yaml": "catalog:"
     js-yaml: "catalog:"
+    tsup: "catalog:"
     typescript: "catalog:"
     vitest: "catalog:"
     zod: "catalog:"
@@ -1894,6 +1905,7 @@ __metadata:
     eslint-plugin-simple-import-sort: "catalog:"
     eslint-plugin-unused-imports: "npm:^4.4.1"
     prettier: "catalog:"
+    prettier-plugin-sql: "catalog:"
     typescript: "catalog:"
   languageName: unknown
   linkType: soft
@@ -1905,6 +1917,7 @@ __metadata:
     "@openvaa/shared-config": "workspace:^"
     prettier: "catalog:"
     supabase: "catalog:"
+    typescript: "catalog:"
   languageName: unknown
   linkType: soft
 
@@ -1912,6 +1925,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@openvaa/supabase@workspace:apps/supabase"
   dependencies:
+    jose: "npm:^6.2.1"
     supabase: "catalog:"
     vitest: "catalog:"
   languageName: unknown
@@ -2951,6 +2965,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/pegjs@npm:^0.10.0":
+  version: 0.10.6
+  resolution: "@types/pegjs@npm:0.10.6"
+  checksum: 10c0/ee4a31cf07679ae5422fec95e499ad059483a9ab2815af1ada0ee858a00af6c7e6579a8e172810c1c9db04005941bef96d0dd2c28648769211f57df330f9c30f
+  languageName: node
+  linkType: hard
+
 "@types/phoenix@npm:^1.6.6":
   version: 1.6.7
   resolution: "@types/phoenix@npm:1.6.7"
@@ -3933,6 +3954,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"big-integer@npm:^1.6.48":
+  version: 1.6.52
+  resolution: "big-integer@npm:1.6.52"
+  checksum: 10c0/9604224b4c2ab3c43c075d92da15863077a9f59e5d4205f4e7e76acd0cd47e8d469ec5e5dba8d9b32aa233951893b29329ca56ac80c20ce094b4a647a66abae0
+  languageName: node
+  linkType: hard
+
 "bin-links@npm:^6.0.0":
   version: 6.0.0
   resolution: "bin-links@npm:6.0.0"
@@ -4364,6 +4392,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"commander@npm:^2.19.0":
+  version: 2.20.3
+  resolution: "commander@npm:2.20.3"
+  checksum: 10c0/74c781a5248c2402a0a3e966a0a2bba3c054aad144f5c023364be83265e796b20565aa9feff624132ff629aa64e16999fa40a743c10c12f7c61e96a794b99288
+  languageName: node
+  linkType: hard
+
 "commander@npm:^4.0.0":
   version: 4.1.1
   resolution: "commander@npm:4.1.1"
@@ -4760,6 +4795,13 @@ __metadata:
   dependencies:
     path-type: "npm:^4.0.0"
   checksum: 10c0/dcac00920a4d503e38bb64001acb19df4efc14536ada475725e12f52c16777afdee4db827f55f13a908ee7efc0cb282e2e3dbaeeb98c0993dd93d1802d3bf00c
+  languageName: node
+  linkType: hard
+
+"discontinuous-range@npm:1.0.0":
+  version: 1.0.0
+  resolution: "discontinuous-range@npm:1.0.0"
+  checksum: 10c0/487b105f83c1cc528e25e65d3c4b73958ec79769b7bd0e264414702a23a7e2b282c72982b4bef4af29fcab53f47816c3f0a5c40d85a99a490f4bc35b83dc00f8
   languageName: node
   linkType: hard
 
@@ -7274,6 +7316,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jsox@npm:^1.2.123":
+  version: 1.2.128
+  resolution: "jsox@npm:1.2.128"
+  bin:
+    jsox: lib/cli.js
+  checksum: 10c0/3c8925b95e1e444ec9daea6ac57e3bc2f3f646e6d6cd29a0fd0e37f060718636e09ba3afb72f5b844a0cee44e6177e584187ada17d1e4864c20be74e01798231
+  languageName: node
+  linkType: hard
+
 "keyv@npm:^4.5.4":
   version: 4.5.4
   resolution: "keyv@npm:4.5.4"
@@ -7957,6 +8008,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"moo@npm:^0.5.0":
+  version: 0.5.3
+  resolution: "moo@npm:0.5.3"
+  checksum: 10c0/5c5e00d7c57a69ce1cc2f21a90655ff10556481cc10fa70528c01e91f00deff8a65fa8da6dc7b27d136d66085055aab238fd1b19a75070263e0028e8f07c8213
+  languageName: node
+  linkType: hard
+
 "mri@npm:^1.1.0, mri@npm:^1.2.0":
   version: 1.2.0
   resolution: "mri@npm:1.2.0"
@@ -8018,6 +8076,23 @@ __metadata:
   version: 1.4.0
   resolution: "natural-compare@npm:1.4.0"
   checksum: 10c0/f5f9a7974bfb28a91afafa254b197f0f22c684d4a1731763dda960d2c8e375b36c7d690e0d9dc8fba774c537af14a7e979129bca23d88d052fbeb9466955e447
+  languageName: node
+  linkType: hard
+
+"nearley@npm:^2.20.1":
+  version: 2.20.1
+  resolution: "nearley@npm:2.20.1"
+  dependencies:
+    commander: "npm:^2.19.0"
+    moo: "npm:^0.5.0"
+    railroad-diagrams: "npm:^1.0.0"
+    randexp: "npm:0.4.6"
+  bin:
+    nearley-railroad: bin/nearley-railroad.js
+    nearley-test: bin/nearley-test.js
+    nearley-unparse: bin/nearley-unparse.js
+    nearleyc: bin/nearleyc.js
+  checksum: 10c0/d25e1fd40b19c53a0ada6a688670f4a39063fd9553ab62885e81a82927d51572ce47193b946afa3d85efa608ba2c68f433c421f69b854bfb7f599eacb5fae37e
   languageName: node
   linkType: hard
 
@@ -8084,6 +8159,16 @@ __metadata:
   bin:
     node-gyp: bin/node-gyp.js
   checksum: 10c0/a3b885bbee2d271f1def32ba2e30ffcf4562a3db33af06b8b365e053153e2dd2051b9945783c3c8e852d26a0f20f65b251c7e83361623383a99635c0280ee573
+  languageName: node
+  linkType: hard
+
+"node-sql-parser@npm:^5.3.10":
+  version: 5.4.0
+  resolution: "node-sql-parser@npm:5.4.0"
+  dependencies:
+    "@types/pegjs": "npm:^0.10.0"
+    big-integer: "npm:^1.6.48"
+  checksum: 10c0/fb62be3f5b960e3ce41440e6f2b4060f0f0df7b3734f7aefe169d245fc250773a43d49c811e0dda9b7e24e44ace54df6765be0cf4d7dad4eb9e6855eeef63b8e
   languageName: node
   linkType: hard
 
@@ -8740,6 +8825,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prettier-plugin-sql@npm:^0.20.0":
+  version: 0.20.0
+  resolution: "prettier-plugin-sql@npm:0.20.0"
+  dependencies:
+    jsox: "npm:^1.2.123"
+    node-sql-parser: "npm:^5.3.10"
+    sql-formatter: "npm:^15.7.0"
+    tslib: "npm:^2.8.1"
+  peerDependencies:
+    prettier: ^3.0.3
+  checksum: 10c0/6d77b11013c6e56f959df2b411d9b011663feda5bc81e6c9f1f5ad554b9930eb9831f420d26747c166ce87f3c65ea789884682d40e4ea13705d396263c7ba26f
+  languageName: node
+  linkType: hard
+
 "prettier-plugin-svelte@npm:^3.5.1":
   version: 3.5.1
   resolution: "prettier-plugin-svelte@npm:3.5.1"
@@ -8907,6 +9006,23 @@ __metadata:
   version: 1.2.3
   resolution: "queue-microtask@npm:1.2.3"
   checksum: 10c0/900a93d3cdae3acd7d16f642c29a642aea32c2026446151f0778c62ac089d4b8e6c986811076e1ae180a694cedf077d453a11b58ff0a865629a4f82ab558e102
+  languageName: node
+  linkType: hard
+
+"railroad-diagrams@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "railroad-diagrams@npm:1.0.0"
+  checksum: 10c0/81bf8f86870a69fb9ed243102db9ad6416d09c4cb83964490d44717690e07dd982f671503236a1f8af28f4cb79d5d7a87613930f10ac08defa845ceb6764e364
+  languageName: node
+  linkType: hard
+
+"randexp@npm:0.4.6":
+  version: 0.4.6
+  resolution: "randexp@npm:0.4.6"
+  dependencies:
+    discontinuous-range: "npm:1.0.0"
+    ret: "npm:~0.1.10"
+  checksum: 10c0/14ee14b6d7f5ce69609b51cc914fb7a7c82ad337820a141c5f762c5ad1fe868f5191ea6e82359aee019b625ee1359486628fa833909d12c3b5dd9571908c3345
   languageName: node
   linkType: hard
 
@@ -9118,6 +9234,13 @@ __metadata:
     onetime: "npm:^7.0.0"
     signal-exit: "npm:^4.1.0"
   checksum: 10c0/c2ba89131eea791d1b25205bdfdc86699767e2b88dee2a590b1a6caa51737deac8bad0260a5ded2f7c074b7db2f3a626bcf1fcf3cdf35974cbeea5e2e6764f60
+  languageName: node
+  linkType: hard
+
+"ret@npm:~0.1.10":
+  version: 0.1.15
+  resolution: "ret@npm:0.1.15"
+  checksum: 10c0/01f77cad0f7ea4f955852c03d66982609893edc1240c0c964b4c9251d0f9fb6705150634060d169939b096d3b77f4c84d6b6098a5b5d340160898c8581f1f63f
   languageName: node
   linkType: hard
 
@@ -9350,7 +9473,7 @@ __metadata:
     husky: "npm:^9.1.7"
     lint-staged: "npm:^16.4.0"
     prettier: "catalog:"
-    tsup: "npm:^8.5.1"
+    tsup: "catalog:"
     tsx: "catalog:"
     turbo: "npm:^2.8.17"
     vitest: "catalog:"
@@ -9768,6 +9891,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"sql-formatter@npm:^15.7.0":
+  version: 15.8.2
+  resolution: "sql-formatter@npm:15.8.2"
+  dependencies:
+    argparse: "npm:^2.0.1"
+    nearley: "npm:^2.20.1"
+  bin:
+    sql-formatter: bin/sql-formatter-cli.cjs
+  checksum: 10c0/5ed8c5927f2ad20300a47397567749658411ff3813be9c4b989746e8e84465fc801b445685f218f5906e07b9ffd80b10a27b41fbd3c55fa4dd1ecfc2ad4dd759
+  languageName: node
+  linkType: hard
+
 "sqlite-wasm-kysely@npm:0.3.0":
   version: 0.3.0
   resolution: "sqlite-wasm-kysely@npm:0.3.0"
@@ -10131,6 +10266,13 @@ __metadata:
   version: 3.2.4
   resolution: "symbol-tree@npm:3.2.4"
   checksum: 10c0/dfbe201ae09ac6053d163578778c53aa860a784147ecf95705de0cd23f42c851e1be7889241495e95c37cabb058edb1052f141387bef68f705afc8f9dd358509
+  languageName: node
+  linkType: hard
+
+"tailwind-merge@npm:^3.7.0":
+  version: 3.7.0
+  resolution: "tailwind-merge@npm:3.7.0"
+  checksum: 10c0/1b1439fe30b6ee63fc3abc1c985bf9beb8529eb2db21cc321bd8c7cf73f36cd4ec80846ea10af8ae09175810f385336c22a6ce355a0b5cce69432d49672f90c1
   languageName: node
   linkType: hard
 
