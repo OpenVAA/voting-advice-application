@@ -1,10 +1,7 @@
 /**
- * Custom controller that integrates with the job store directly
- * This controller can be used to track progress of a sequential pipeline of operations
- * This way we can track progress of long running jobs more granularly
+ * Custom controller that integrates with the job store directly This controller can be used to track progress of a sequential pipeline of operations This way we can track progress of long running jobs more granularly
  *
- *  Supports hierarchical operations where operations can be broken down into
- * sub-operations at execution time for more granular progress tracking.
+ *  Supports hierarchical operations where operations can be broken down into sub-operations at execution time for more granular progress tracking.
  */
 
 import { AbortError, BaseController } from '@openvaa/core';
@@ -20,8 +17,7 @@ import {
 import type { Controller } from '@openvaa/core';
 
 /**
- * An operation is a step in a pipeline that can be tracked separately
- * This way we can track progress of long running jobs more granularly
+ * An operation is a step in a pipeline that can be tracked separately This way we can track progress of long running jobs more granularly
  */
 interface Operation {
   id: string;
@@ -30,11 +26,9 @@ interface Operation {
 }
 
 /**
- * A controller that can be used to track progress of a sequential pipeline of operations
- * This way we can track progress of long running jobs more granularly
+ * A controller that can be used to track progress of a sequential pipeline of operations This way we can track progress of long running jobs more granularly
  *
- * Supports hierarchical operations where operations can be broken down into
- * sub-operations at execution time for more granular progress tracking.
+ * Supports hierarchical operations where operations can be broken down into sub-operations at execution time for more granular progress tracking.
  */
 export class PipelineController extends BaseController implements Controller {
   private jobId: string;
@@ -55,8 +49,7 @@ export class PipelineController extends BaseController implements Controller {
   }
 
   /**
-   * Initialize the pipeline with operations
-   * This can be called after construction when the pipeline is known
+   * Initialize the pipeline with operations This can be called after construction when the pipeline is known
    */
   initializePipeline(pipeline: Array<{ id: string; weight?: number }>): void {
     this.operations = pipeline.map((op) => ({
@@ -72,9 +65,7 @@ export class PipelineController extends BaseController implements Controller {
   }
 
   /**
-   * Define sub-operations for a specific operation
-   * This allows the caller to break down an operation into more granular steps
-   * at execution time when they know the specific breakdown
+   * Define sub-operations for a specific operation This allows the caller to break down an operation into more granular steps at execution time when they know the specific breakdown
    *
    * @param operationId - The ID of the operation to break down
    * @param subOperations - Array of sub-operations with their weights
@@ -103,9 +94,7 @@ export class PipelineController extends BaseController implements Controller {
   }
 
   /**
-   * Update progress for the current operation
-   * Automatically determines whether to update sub-operations or the main operation
-   * based on the current state
+   * Update progress for the current operation Automatically determines whether to update sub-operations or the main operation based on the current state
    */
   progress(value: number): void {
     // Call parent controller first
@@ -160,9 +149,7 @@ export class PipelineController extends BaseController implements Controller {
   }
 
   /**
-   * Update progress for a specific operation by ID
-   * This avoids confusion with multiple progress(1.0) calls
-   * Ignores the update if the operation is not the current operation
+   * Update progress for a specific operation by ID This avoids confusion with multiple progress(1.0) calls Ignores the update if the operation is not the current operation
    * @param id - The operation ID to update
    * @param value - Progress value between 0 and 1
    */
@@ -207,8 +194,7 @@ export class PipelineController extends BaseController implements Controller {
   }
 
   /**
-   *  Update progress for a specific sub-operation
-   * This allows granular progress tracking within an operation
+   *  Update progress for a specific sub-operation This allows granular progress tracking within an operation
    * @param operationId - The ID of the parent operation
    * @param subOperationId - The ID of the sub-operation to update
    * @param value - Progress value between 0 and 1

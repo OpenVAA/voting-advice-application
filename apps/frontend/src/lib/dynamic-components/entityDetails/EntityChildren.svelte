@@ -1,6 +1,5 @@
 <!--
-@component
-Used to show an entity's children in an `EntityDetails` component.
+@component Used to show an entity's children in an `EntityDetails` component.
 
 ### Properties
 
@@ -27,8 +26,7 @@ Used to show an entity's children in an `EntityDetails` component.
 
   const { t } = getComponentContext();
 
-  // filteredEntities seeds from `entities` prop and is then replaced
-  // by EntityListControls' onUpdate callback (mutable thereafter).
+  // filteredEntities seeds from `entities` prop and is then replaced by EntityListControls' onUpdate callback (mutable thereafter).
   // svelte-ignore state_referenced_locally
   let filteredEntities = $state(entities);
 

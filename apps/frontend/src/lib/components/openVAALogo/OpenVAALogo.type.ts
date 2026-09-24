@@ -2,8 +2,7 @@ import type { SvelteHTMLElements } from 'svelte/elements';
 
 export type OpenVAALogoProps = SvelteHTMLElements['svg'] & {
   /**
-   * The `<title>` of the SVG logo. Functions much the same way as the `alt``
-   * attribute of an `<img>`.
+   * The `<title>` of the SVG logo. Functions much the same way as the `alt`` attribute of an `<img>`.
    *
    * @default 'OpenVAA'
    */
@@ -11,8 +10,7 @@ export type OpenVAALogoProps = SvelteHTMLElements['svg'] & {
 
   /**
    * The size of the logo as one of the predefined sizes 'sm', 'md' or 'lg'.
-   * For arbitrary values, you can supply a `class` property, such as
-   * `h-[3.15rem] w-[3.15rem]`.
+   * For arbitrary values, you can supply a `class` property, such as `h-[3.15rem] w-[3.15rem]`.
    *
    * @default 'md'
    */
@@ -20,8 +18,7 @@ export type OpenVAALogoProps = SvelteHTMLElements['svg'] & {
 
   /**
    * The color of the logo as one of the predefined colours.
-   * For arbitrary values, you can supply a `class` property, such as
-   * `fill-[#123456]`.
+   * For arbitrary values, you can supply a `class` property, such as `fill-[#123456]`.
    *
    * @default 'neutral'
    */

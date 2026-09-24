@@ -1,19 +1,16 @@
 /**
  * OIDC Authorize endpoint tests.
  *
- * Tests the POST handler that constructs an authorization URL via the active
- * identity provider and manages state/nonce cookies for CSRF and replay
- * protection (from).
+ * Tests the POST handler that constructs an authorization URL via the active identity provider and manages state/nonce cookies for CSRF and replay protection (from).
  *
- * For Idura: verifies the JAR (JWT Authorization Request) is correctly signed
- * with RS256, contains the required payload fields, and is verifiable with
- * the signing public key.
+ * For Idura: verifies the JAR (JWT Authorization Request) is correctly signed with RS256, contains the required payload fields, and is verifiable with the signing public key.
  *
  * @vitest-environment node
  */
 
 import * as jose from 'jose';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { COOKIE } from '$lib/cookies';
 import { POST } from '../../../../../routes/api/oidc/authorize/+server';
 
 // Use vi.hoisted for dynamic mock state (signing keys injected in beforeAll)
@@ -121,10 +118,7 @@ describe('POST /api/oidc/authorize', () => {
     expect(response.status).toBe(200);
 
     const data = await response.json();
-    // see phase 140 WR-08: collapsed from toBeDefined +typeof pair (the sibling
-    // null-blind pattern F19 removed elsewhere) into one non-blind assertion —
-    // `data` crosses a JSON boundary (response.json()), so `authorizeUrl`
-    // could plausibly arrive `null` there.
+    // ONE non-blind assertion rather than a toBeDefined + typeof pair, which is null-blind: `data` crosses a JSON boundary (response.json()), so `authorizeUrl` could plausibly arrive `null` there.
     expect(data.authorizeUrl, 'authorize response is missing authorizeUrl').toEqual(expect.any(String));
   });
 
@@ -199,7 +193,7 @@ describe('POST /api/oidc/authorize', () => {
     await POST(event);
 
     expect(event.cookies.set).toHaveBeenCalledWith(
-      'oidc_state',
+      COOKIE.oidcState,
       expect.any(String),
       expect.objectContaining({
         httpOnly: true,
@@ -216,7 +210,7 @@ describe('POST /api/oidc/authorize', () => {
     await POST(event);
 
     expect(event.cookies.set).toHaveBeenCalledWith(
-      'oidc_nonce',
+      COOKIE.oidcNonce,
       expect.any(String),
       expect.objectContaining({
         httpOnly: true,
@@ -229,8 +223,10 @@ describe('POST /api/oidc/authorize', () => {
   it('returns 400 when redirectUri is missing', async () => {
     const event = createMockRequestEvent({});
 
-    // The error() function from @sveltejs/kit throws -- we need to handle this
-    // The handler calls error(400, ...) which throws an HttpError
-    await expect(POST(event)).rejects.toThrow();
+    // Assert the STATUS, not merely that something was thrown: the title promises a 400, and a bare rejection matcher is satisfied by the 500 this endpoint used to return (its own catch arm swallowed the 400 until the re-throw landed).
+    //
+    // `toMatchObject` rather than `toThrow(expect.objectContaining(...))`: kit's HttpError is NOT an Error subclass -- it is a plain class carrying its own `status` and `body` -- so a throw-shape matcher will not match it.
+    // Do not weaken this back to a bare `rejects` matcher.
+    await expect(POST(event)).rejects.toMatchObject({ status: 400 });
   });
 });

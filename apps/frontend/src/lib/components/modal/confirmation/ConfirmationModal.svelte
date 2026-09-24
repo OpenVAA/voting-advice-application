@@ -1,6 +1,5 @@
 <!--
-@component
-A modal dialog that asks for user confirmation.
+@component A modal dialog that asks for user confirmation.
 
 ### Properties
 

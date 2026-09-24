@@ -1,6 +1,5 @@
 <!--
-@component
-A button that will display the question's extended information content in a `Drawer`.
+@component A button that will display the question's extended information content in a `Drawer`.
 
 ### Properties
 

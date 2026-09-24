@@ -1,6 +1,5 @@
 <!--
-@component
-Display an entity's election symbol, which is usually a number but may also be an image, e.g. in Pakistan.
+@component Display an entity's election symbol, which is usually a number but may also be an image, e.g. in Pakistan.
 
 ### Properties
 

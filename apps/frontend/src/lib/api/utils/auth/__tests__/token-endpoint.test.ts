@@ -1,17 +1,13 @@
 /**
  * OIDC Token exchange endpoint tests.
  *
- * Tests the POST handler that exchanges an authorization code for an id_token
- * via the active identity provider (from).
+ * Tests the POST handler that exchanges an authorization code for an id_token via the active identity provider (from).
  *
- * For Idura: verifies that private_key_jwt client assertion is sent with
- * correct structure (iss, sub, aud, exp, jti).
+ * For Idura: verifies that private_key_jwt client assertion is sent with correct structure (iss, sub, aud, exp, jti).
  *
- * For Signicat: verifies that client_secret is sent (backward compat) and
- * no client_assertion is present.
+ * For Signicat: verifies that client_secret is sent (backward compat) and no client_assertion is present.
  *
- * Strategy: Mock global fetch to intercept token endpoint calls and inspect
- * the request body.
+ * Strategy: Mock global fetch to intercept token endpoint calls and inspect the request body.
  *
  * @vitest-environment node
  */
@@ -71,25 +67,11 @@ vi.mock('$lib/utils/constants', () => ({
 }));
 
 /**
- * The rejection every Idura test below asserts against (see phase 140 review IN-03).
+ * The rejection every Idura test below asserts against.
  *
- * `POST` wraps its whole body in `try/catch` and re-raises every failure as
- * `error(401, { message: 'Unauthorized' })`, so the value it rejects with is a
- * SvelteKit `HttpError` — `{ status, body }`, NOT an `Error`, and with NO
- * `message` property. That rules out the obvious strengthening of a bare
- * `.rejects.toThrow()`: a message matcher (`.rejects.toThrow(/claims|jwt/i)`)
- * cannot pass here, because there is no message to match. Do not "fix" this
- * back to a message regex — verified 2026-08-16 against the running test:
- * `ctor=HttpError, isError=false, message=undefined, keys=['status','body']`.
+ * `POST` wraps its whole body in `try/catch` and re-raises every failure as `error(401, { message: 'Unauthorized' })`, so the value it rejects with is a SvelteKit `HttpError` — `{ status, body }`, NOT an `Error`, and with NO `message` property. That rules out the obvious strengthening of a bare `.rejects.toThrow()`: a message matcher (`.rejects.toThrow(/claims|jwt/i)`) cannot pass here, because there is no message to match. Do not "fix" this back to a message regex — measured against the running test: `ctor=HttpError, isError=false, message=undefined, keys=['status','body']`.
  *
- * What the shape assertion buys over a bare `toThrow()`: the bare form is
- * satisfied by ANY throw, including one raised while constructing the request
- * — i.e. before `fetch` is ever called — while the test's own name claims the
- * handler got as far as exchanging the code. Pairing this matcher with the
- * `expect(capturedFetchBody).not.toBeNull()` guard that follows every call
- * site pins BOTH halves: the token request was actually issued, and the
- * handler then failed the documented way (`getIdTokenClaims` on the mock
- * token) rather than some other way that happens to also throw.
+ * What the shape assertion buys over a bare `toThrow()`: the bare form is satisfied by ANY throw, including one raised while constructing the request — i.e. before `fetch` is ever called — while the test's own name claims the handler got as far as exchanging the code. Pairing this matcher with the `expect(capturedFetchBody).not.toBeNull()` guard that follows every call site pins BOTH halves: the token request was actually issued, and the handler then failed the documented way (`getIdTokenClaims` on the mock token) rather than some other way that happens to also throw.
  */
 const EXPECTED_REJECTION = { status: 401, body: { message: 'Unauthorized' } };
 
@@ -288,27 +270,14 @@ describe('POST /api/oidc/token (Idura - private_key_jwt)', () => {
 
 // ── Signicat test suite (backward compatibility) ──
 
-// see phase 140 review WR-04 — DELIBERATELY OUT OF SCOPE, not an oversight.
+// DELIBERATELY OUT OF SCOPE, not an oversight.
 //
-// The four `try { await POST(event) } catch {}` blocks below are structurally
-// identical to the six in the Idura describe above, which see phase 140 converted
-// to `await expect(POST(event)).rejects.toMatchObject(EXPECTED_REJECTION)`.
-// They were NOT converted,
-// and that asymmetry is a scoping decision recorded here so the file does not
-// read as half-migrated:
+// The four `try { await POST(event) } catch {}` blocks below are structurally identical to the six in the Idura describe above, which DO assert `await expect(POST(event)).rejects.toMatchObject(EXPECTED_REJECTION)`.
+// These four do not, and that asymmetry is a scoping decision recorded here so the file does not read as half-migrated:
 //
-//   see phase 140 — its remit is the Idura (private_key_jwt) bank-auth path. Signicat
-//   (client_secret) is a separate provider whose own coverage phase has not
-//   run; converting its assertions here would change what this describe proves
-//   without any Signicat-side gate to catch a regression in the conversion.
+//   The strengthening covered the Idura (private_key_jwt) bank-auth path. Signicat (client_secret) is a separate provider with no coverage work of its own yet; converting its assertions here would change what this describe proves without any Signicat-side gate to catch a regression in the conversion.
 //
-// The gap is real and unchanged: each block discards every rejection from the
-// call under test, so it cannot distinguish "the handler threw at
-// getIdTokenClaims as intended" from "the handler threw during argument
-// construction before fetch was reached". Do NOT copy this pattern into new
-// tests — the converted Idura blocks above are the convention. Apply the same
-// `.rejects.toMatchObject(EXPECTED_REJECTION)` conversion, plus the
-// reached-`fetch` guard, when Signicat coverage is next touched.
+// The gap is real and unchanged: each block discards every rejection from the call under test, so it cannot distinguish "the handler threw at getIdTokenClaims as intended" from "the handler threw during argument construction before fetch was reached". Do NOT copy this pattern into new tests — the converted Idura blocks above are the convention. Apply the same `.rejects.toMatchObject(EXPECTED_REJECTION)` conversion, plus the reached-`fetch` guard, when Signicat coverage is next touched.
 describe('POST /api/oidc/token (Signicat - client_secret)', () => {
   let capturedFetchBody: URLSearchParams | null = null;
 

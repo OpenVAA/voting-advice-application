@@ -1,5 +1,4 @@
-// Utilities for focusing elements accessible by keyboard navigation
-// Partly derived from example code at https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/dialog/ which is licensed according to the W3C Software License at https://www.w3.org/Consortium/Legal/2015/copyright-software-and-document
+// Utilities for focusing elements accessible by keyboard navigation Partly derived from example code at https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/dialog/ which is licensed according to the W3C Software License at https://www.w3.org/Consortium/Legal/2015/copyright-software-and-document
 
 /**
  * Set focus on descendant elements until the first focusable element is found.

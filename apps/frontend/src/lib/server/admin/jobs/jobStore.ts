@@ -1,6 +1,5 @@
 /**
- * Centralized job store for tracking admin operations across different features
- * This is a global in-memory store that will be replaced with a database later
+ * Centralized job store for tracking admin operations across different features This is a global in-memory store that will be replaced with a database later
  */
 
 import { DEFAULT_MAX_MESSAGES } from '$lib/admin/components/jobs/shared';
@@ -189,8 +188,7 @@ export function cleanupPastJobsForFeature(feature: string): void {
 }
 
 /**
- * Request cooperative abort for a running job
- * Sets status to 'aborting' and logs a warning
+ * Request cooperative abort for a running job Sets status to 'aborting' and logs a warning
  * @param jobId - The job ID
  * @param reason - Optional reason
  */

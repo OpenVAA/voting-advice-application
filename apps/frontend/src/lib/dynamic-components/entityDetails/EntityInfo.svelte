@@ -1,6 +1,5 @@
 <!--
-@component
-Used to show an entity's basic info and their answers to `info` questions in an `EntityDetails` component.
+@component Used to show an entity's basic info and their answers to `info` questions in an `EntityDetails` component.
 
 ### Dynamic component
 
@@ -26,7 +25,7 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
 
 <script lang="ts">
   import { getCustomData } from '@openvaa/app-shared';
-  import { ENTITY_TYPE, isObjectType, OBJECT_TYPE } from '@openvaa/data';
+  import { ENTITY_TYPE } from '@openvaa/data';
   import { ElectionSymbol } from '$lib/components/electionSymbol';
   import { EntityTag } from '$lib/components/entityTag';
   import { InfoAnswer } from '$lib/components/infoAnswer';
@@ -42,11 +41,9 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
 
   const ctx = getAppContext();
   const { getRoute, t } = ctx;
-  // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via ctx.X, never destructure.
+  // appSettings/dataRoot are reactive accessors — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
-  // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot.<prop>` directly in the tracking scope,
-  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" +
-  // (see spike 024). see phase 117.
+  // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot.<prop>` directly in the tracking scope, never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule".
 
   const unwrapped = $derived(unwrapEntity(entity));
   let nakedEntity: AnyEntityVariant = $derived(unwrapped.entity);
@@ -86,9 +83,6 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
             </a>
           {:else}
             <EntityTag entity={parentNomination} variant="full" />
-          {/if}
-          {#if isObjectType(nakedEntity, OBJECT_TYPE.Candidate) && nakedEntity.organization && nakedEntity.organization !== parentNomination.entity}
-            ({t('entityDetails.memberOfOrganization', { organization: nakedEntity.organization.shortName })})
           {/if}
         </InfoItem>
       {/if}

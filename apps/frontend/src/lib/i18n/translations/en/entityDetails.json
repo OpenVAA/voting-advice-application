@@ -1,6 +1,5 @@
 {
   "links": "Links",
-  "memberOfOrganization": "member of {organization}",
   "tabs": {
     "children": "Members",
     "info": "Basic Info",

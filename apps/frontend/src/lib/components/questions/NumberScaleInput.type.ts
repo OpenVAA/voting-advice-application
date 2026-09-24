@@ -3,15 +3,11 @@ import type { SvelteHTMLElements } from 'svelte/elements';
 
 export type NumberScaleInputProps = SvelteHTMLElements['div'] & {
   /**
-   * The `NumberQuestion` whose value to input or display. The component assumes
-   * a valid range (`question.min` and `question.max` both defined and non-equal);
-   * the caller (`OpinionQuestionInput`) gates on `question.isMatchable` so a
-   * rangeless number question never reaches this component. Not reactive.
+   * The `NumberQuestion` whose value to input or display. The component assumes a valid range (`question.min` and `question.max` both defined and non-equal); the caller (`OpinionQuestionInput`) gates on `question.isMatchable` so a rangeless number question never reaches this component. Not reactive.
    */
   question: NumberQuestion;
   /**
-   * The same component can be used both for answering the question (`'answer'`)
-   * and displaying answers read-only (`'display'`). @default 'answer'
+   * The same component can be used both for answering the question (`'answer'`) and displaying answers read-only (`'display'`). @default 'answer'
    */
   mode?: 'answer' | 'display';
   /**
@@ -23,8 +19,7 @@ export type NumberScaleInputProps = SvelteHTMLElements['div'] & {
    */
   otherValue?: number | null;
   /**
-   * The label for the other entity's answer in `display` mode. Be sure to supply
-   * this if `otherValue` is supplied.
+   * The label for the other entity's answer in `display` mode. Be sure to supply this if `otherValue` is supplied.
    */
   otherLabel?: string;
   /**
@@ -32,9 +27,7 @@ export type NumberScaleInputProps = SvelteHTMLElements['div'] & {
    */
   onShadedBg?: boolean;
   /**
-   * Triggered when the voter releases the slider or steps it with the keyboard —
-   * fired on the `change` event only, never per drag pixel. The `value` is routed
-   * through `question.ensureValue`.
+   * Triggered when the voter releases the slider or steps it with the keyboard — fired on the `change` event only, never per drag pixel. The `value` is routed through `question.ensureValue`.
    */
   onChange?: (details: { question: NumberQuestion; value: number }) => void;
 };

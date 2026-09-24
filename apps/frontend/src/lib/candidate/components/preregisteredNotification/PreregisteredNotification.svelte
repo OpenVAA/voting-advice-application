@@ -1,6 +1,5 @@
 <!--
-@component
-Show a notification prompting the user to login instead of preregistering again.
+@component Show a notification prompting the user to login instead of preregistering again.
 
 ### Properties
 
@@ -21,7 +20,7 @@ popupQueue.push({
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import type { Route } from '$lib/utils/route';
+  import type { Route } from '$lib/routes';
   import type { PreregisteredNotificationProps } from './PreregisteredNotification.type';
 
   let { ...restProps }: PreregisteredNotificationProps = $props();
@@ -33,9 +32,15 @@ popupQueue.push({
   const title = t('candidateApp.preregister.isPreregisteredNotification.title');
   const content = t('candidateApp.preregister.isPreregisteredNotification.content');
 
+  // RESOLVE THE URL BEFORE CLOSING, then navigate. The order is the fix, not a style preference.
+  //
+  // `closeAlert()` calls the `onClose` the root layout passes in, and that handler is `popupQueue.shift()` -- which drops this item from the queue and so UNMOUNTS this component, synchronously, from inside its own click handler. The previous body read `getRoute.current(route)` AFTER that call, i.e. it read a context accessor on a component Svelte had already destroyed, and then called `goto` from it. The URL changed while the page behind it did not re-render.
+  //
+  // Reading the href first means the navigation target is a plain string owned by this closure by the time anything unmounts, so neither the read nor the `goto` depends on this component still being alive.
   function handleClick(route: Route): void {
+    const href = getRoute.current(route);
     alertRef?.closeAlert();
-    goto(getRoute.current(route));
+    void goto(href, { invalidateAll: true });
   }
 </script>
 

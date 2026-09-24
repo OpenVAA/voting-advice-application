@@ -1,4 +1,4 @@
-import { getLocalized } from './getLocalized';
+import { getLocalized } from '@openvaa/app-shared';
 
 /**
  * Localize multiple fields on a database row in one pass.
@@ -6,11 +6,9 @@ import { getLocalized } from './getLocalized';
  * For each field in `fields`:
  * - Top-level fields (e.g. `"name"`) are resolved via `getLocalized`.
  * - Nested dot-notation fields (e.g. `"custom_data.fillingInfo"`) traverse into
- *   JSONB objects, shallow-cloning each intermediate level to avoid mutating
- *   the input row.
+ *   JSONB objects, shallow-cloning each intermediate level to avoid mutating the input row.
  *
- * Fields that are `null`, `undefined`, or point to non-object intermediates
- * are silently skipped.
+ * Fields that are `null`, `undefined`, or point to non-object intermediates are silently skipped.
  */
 export function localizeRow(
   row: Record<string, unknown>,

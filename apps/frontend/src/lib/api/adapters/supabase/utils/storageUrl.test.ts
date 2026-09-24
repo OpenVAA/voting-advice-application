@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { parseStoredImage } from '../utils/storageUrl';
-import type { StoredImage } from '../utils/storageUrl';
 
 describe('parseStoredImage', () => {
   const supabaseUrl = 'http://localhost:54321';
@@ -33,9 +32,9 @@ describe('parseStoredImage', () => {
     expect(result).toBeUndefined();
   });
 
-  it('returns undefined for missing path', () => {
-    // reason: fixture intentionally omits required `path` to exercise the missing-path guard
-    const result = parseStoredImage({} as Partial<StoredImage> as StoredImage, supabaseUrl);
+  it('returns undefined for an empty path', () => {
+    // An absent `path` key can no longer reach this function from the adapter: `parseImageColumn` rejects it against the schema first, which `parseJsonbColumn.test.ts` asserts. The falsy-path guard is the same branch either way, so the fixture is a legal `StoredImage` rather than a cast around one.
+    const result = parseStoredImage({ path: '' }, supabaseUrl);
     expect(result).toBeUndefined();
   });
 

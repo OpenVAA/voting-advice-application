@@ -41,6 +41,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
 <script lang="ts">
   import { ENTITY_TYPE, isObjectType, OBJECT_TYPE } from '@openvaa/data';
+  import { error } from '@sveltejs/kit';
   import { Avatar } from '$lib/components/avatar';
   import { Button } from '$lib/components/button';
   import { ElectionSymbol } from '$lib/components/electionSymbol';
@@ -56,10 +57,10 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import { getAllianceSummary } from '$lib/utils/getAllianceSummary';
   import { findCandidateNominations, findOrganizationNominations } from '$lib/utils/matches';
   import EntityCard from './EntityCard.svelte';
-  import EntityCardAction from './EntityCardAction.svelte';
   import type { AnyQuestionVariant } from '@openvaa/data';
+  import type { Snippet } from 'svelte';
   import type { InfoAnswerProps } from '$lib/components/infoAnswer';
-  import type { EntityCardProps } from './EntityCard.type';
+  import type { CardAction, EntityCardProps } from './EntityCard.type';
 
   let {
     action,
@@ -77,11 +78,9 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
   const ctx = getAppContext();
   const { appType, getRoute, startEvent, t } = ctx;
-  // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via ctx.X, never destructure.
+  // appSettings/dataRoot are reactive accessors — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
-  // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot` directly inside the consuming `$derived.by`,
-  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" +
-  // (see spike 024). see phase 117.
+  // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot` directly inside the consuming `$derived.by`, never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule".
   const voterContext = appType.current === 'voter' ? getVoterContext() : undefined;
 
   ////////////////////////////////////////////////////////////////////
@@ -103,14 +102,8 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     const elSym = unwrapped.nomination?.electionSymbol;
 
     // The default action is a link to the entity's ResultEntity route.
-    // see phase 62 and see phase 88: ResultEntity now resolves
-    // to the 4-segment shape `[[electionTab]]/[[entityTab]]/[[entity]]/[[id]]`.
-    // The `entity` (singular drawer entity-type matcher) is the entity's own
-    // `type` (candidate | organization | alliance); the `entityTab` (plural
-    // list-tab matcher) is the parent list — defaulting to the same-type
-    // plural preserves the list-plus-matching-drawer shape. The filterContext
-    // auto-scopes per (electionId, entityTab) so a candidate drawer under a
-    // candidates list continues to behave as before.
+    // ResultEntity resolves to the 4-segment shape `[[electionTab]]/[[entityTab]]/[[entity]]/[[id]]`.
+    // The `entity` (singular drawer entity-type matcher) is the entity's own `type` (candidate | organization | alliance); the `entityTab` (plural list-tab matcher) is the parent list — defaulting to the same-type plural preserves the list-plus-matching-drawer shape. The filterContext auto-scopes per (electionId, entityTab) so a candidate drawer under a candidates list continues to behave as before.
     const effectiveAction =
       action ??
       getRoute.current({
@@ -121,14 +114,13 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
         nominationId: unwrapped.nomination?.id
       });
 
-    // The questions and possible submatches to display in the card
-    // TODO: Add support for all entity types by expanding the setting type to cover all of them
-    let qs: CardQuestions | undefined;
-    let showSM = false;
+    // The questions and possible submatches to display in the card TODO: Add support for all entity types by expanding the setting type to cover all of them
+    let cardQuestions: CardQuestions | undefined;
+    let showSubMatches = false;
     if (type === ENTITY_TYPE.Candidate || type === ENTITY_TYPE.Organization) {
-      showSM = appSettings.results?.cardContents?.[type]?.includes('submatches') ?? false;
+      showSubMatches = appSettings.results?.cardContents?.[type]?.includes('submatches') ?? false;
       if (variant !== 'details') {
-        qs = getCardQuestions({
+        cardQuestions = getCardQuestions({
           type,
           appSettings: appSettings,
           dataRoot: ctx.dataRoot
@@ -137,35 +129,35 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     }
 
     // The possible subentities to display in the card, shown only in the list variant
-    let scs: Array<EntityCardProps> | undefined;
-    let scsMaxOverride: number | undefined; // see phase 69: alliance branch overrides maxSubcards to render all member orgs
+    let subcards: Array<EntityCardProps> | undefined;
+    let subcardsMaxOverride: number | undefined; // the alliance branch overrides maxSubcards to render all member orgs
     if (
       variant === 'list' &&
       unwrapped.nomination &&
       isObjectType(unwrapped.nomination, OBJECT_TYPE.OrganizationNomination) &&
       appSettings.results?.cardContents?.organization?.includes('children')
     ) {
-      scs = findCandidateNominations({ matches: voterContext?.matches, nomination: unwrapped.nomination }).map((e) => ({
-        entity: e
-      }));
+      subcards = findCandidateNominations({ matches: voterContext?.matches, nomination: unwrapped.nomination }).map(
+        (e) => ({
+          entity: e
+        })
+      );
     } else if (
       variant === 'list' &&
       unwrapped.nomination &&
       isObjectType(unwrapped.nomination, OBJECT_TYPE.AllianceNomination) &&
       appSettings.results?.cardContents?.alliance?.includes('children')
     ) {
-      scs = findOrganizationNominations({ matches: voterContext?.matches, nomination: unwrapped.nomination }).map(
+      subcards = findOrganizationNominations({ matches: voterContext?.matches, nomination: unwrapped.nomination }).map(
         (e) => ({
           entity: e
         })
       );
-      scsMaxOverride = Infinity; // see phase 69: render all member orgs, not just top-3
+      subcardsMaxOverride = Infinity; // render all member orgs, not just top-3
     }
 
     // Alliance summary "X candidates across N parties" — rendered on the list-variant alliance card.
-    // The drawer-header surface is rendered by EntityDetails.svelte (which itself wraps EntityCard
-    // variant=details); rendering it only on `'list'` here avoids a visible duplicate when EntityCard
-    // is consumed inside EntityDetails. see phase 69 executor Rule 1 — see SUMMARY.md.
+    // The drawer-header surface is rendered by EntityDetails.svelte (which itself wraps EntityCard variant=details); rendering it only on `'list'` here avoids a visible duplicate when EntityCard is consumed inside EntityDetails.
     let allianceSummary: { numCandidates: number; numParties: number } | undefined;
     if (
       unwrapped.nomination &&
@@ -181,10 +173,10 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
       nomination: unwrapped.nomination,
       electionSymbol: elSym,
       action: effectiveAction,
-      questions: qs,
-      showSubMatches: showSM,
-      subcards: scs,
-      subcardsMax: scsMaxOverride,
+      questions: cardQuestions,
+      showSubMatches,
+      subcards,
+      subcardsMax: subcardsMaxOverride,
       allianceSummary
     };
   });
@@ -216,21 +208,60 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   });
 </script>
 
-<!-- If there are no subcards, we make the whole card clickable... -->
-<EntityCardAction
-  action={variant === 'details' || parsed.subcards?.length ? false : parsed.action}
-  shadeOnHover={variant === 'subcard'}>
+<!--
+Possibly wraps `content` in a clickable action. This was a separate utility component until Svelte 5 snippets made one unnecessary; it is card-local by design and is not exported.
+
+### Parameters
+
+- `action`: The action to take when the part or card is clicked. A `null`, `false` or empty-string action renders `content` bare, with no wrapping element at all.
+- `shadeOnHover`: Whether to shade the wrapping element on hover. Use when applying to subcards or their parent card's header.
+- `extraClass`: Classes to fold into the wrapping element's own classes. These are only applied when a wrapping element is rendered.
+- `content`: The contents to wrap.
+
+### Usage
+
+```svelte
+{@render cardAction(getRoute.current({route: 'ResultEntity', id}), false, undefined, someSnippet)}
+```
+-->
+{#snippet cardAction(
+  action: CardAction | undefined,
+  shadeOnHover: boolean,
+  extraClass: string | undefined,
+  content: Snippet
+)}
+  {#if action == null || action === false || action === ''}
+    {@render content()}
+  {:else if typeof action === 'function'}
+    <button
+      onclick={action}
+      class:hover-shaded={shadeOnHover}
+      data-testid="entity-card-action"
+      {...concatClass({ class: extraClass }, 'transition-all !text-neutral')}>
+      {@render content()}
+    </button>
+  {:else if typeof action === 'string'}
+    <a
+      href={action}
+      data-sveltekit-noscroll
+      class:hover-shaded={shadeOnHover}
+      data-testid="entity-card-action"
+      {...concatClass({ class: extraClass }, 'transition-all !text-neutral')}>
+      {@render content()}
+    </a>
+  {:else}
+    {error(500, `Unknown action type: ${typeof action}`)}
+  {/if}
+{/snippet}
+
+{#snippet cardBody()}
   <article
     aria-labelledby="{baseId}_title {parsed.match ? `${baseId}_callout` : ''}"
     aria-describedby="{baseId}_subtitle"
     data-testid={variant === 'subcard' ? 'entity-card-subcard' : 'entity-card'}
     {...concatClass(restProps, classes)}>
     <!-- Card header -->
-    <!-- ...but if subcards are present, only the card header is clickable -->
-    <EntityCardAction
-      action={variant !== 'details' && parsed.subcards?.length ? parsed.action : false}
-      shadeOnHover
-      class={gridClasses}>
+    {#snippet cardHeaderBody()}
       <header
         class="gap-x-md gap-y-xs grid items-center justify-items-start"
         style="
@@ -286,7 +317,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
         {/if}
       </header>
 
-      <!-- Alliance summary line (see phase 69): "X candidates across N parties" -->
+      <!-- Alliance summary line: "X candidates across N parties" -->
       <!-- Composed from 3 keys to work around an inlang plugin-message-format dual-selector compile bug. -->
       {#if parsed.allianceSummary}
         <p class="text-secondary text-sm">
@@ -330,7 +361,15 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
           {/each}
         </div>
       {/if}
-    </EntityCardAction>
+    {/snippet}
+
+    <!-- ...but if subcards are present, only the card header is clickable -->
+    {@render cardAction(
+      variant !== 'details' && parsed.subcards?.length ? parsed.action : false,
+      true,
+      gridClasses,
+      cardHeaderBody
+    )}
 
     <!-- Subentities -->
     {#if parsed.subcards?.length}
@@ -357,12 +396,24 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
     {@render children?.()}
   </article>
-</EntityCardAction>
+{/snippet}
+
+<!-- If there are no subcards, we make the whole card clickable... -->
+{@render cardAction(
+  variant === 'details' || parsed.subcards?.length ? false : parsed.action,
+  variant === 'subcard',
+  undefined,
+  cardBody
+)}
 
 <style lang="postcss">
   @reference "../../../tailwind-theme.css";
   .offset-border {
     /* after: is a valid prefix */
     @apply after:border-t-md after:border-base-300 after:absolute after:top-[calc(-10rem/16)] after:right-0 after:left-0 after:content-[''];
+  }
+  /* Relocated here from the action-wrapper component's own style block (phase 159, D-H3). A snippet is a markup fragment and carries no style scope of its own, so the rule has to live in the component that renders the markup. */
+  .hover-shaded {
+    @apply hover:bg-base-content/20 hover:ring-base-content/20 rounded-md hover:ring-4;
   }
 </style>

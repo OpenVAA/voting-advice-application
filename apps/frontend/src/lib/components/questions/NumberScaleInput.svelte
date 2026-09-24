@@ -1,19 +1,10 @@
 <!--
-@component
-Display a `NumberQuestion`'s answering input as a native range slider (DaisyUI
-`range range-primary`) with a live numeric value label. The same component
-renders a read-only dual-marker view in `display` mode (voter value + entity
-value), mirroring the `QuestionChoices` display-mode marker pattern and reused
-by `EntityOpinions`.
+@component Display a `NumberQuestion`'s answering input as a native range slider (DaisyUI `range range-primary`) with a live numeric value label. The same component renders a read-only dual-marker view in `display` mode (voter value + entity value), mirroring the `QuestionChoices` display-mode marker pattern and reused by `EntityOpinions`.
 
 **Contract:** the component assumes the question has a valid range
-(`question.min` and `question.max` both defined, non-equal). The caller
-(`OpinionQuestionInput`) gates on `question.isMatchable`, so a rangeless number
-question never reaches this component and cannot render a broken 0-width range.
+(`question.min` and `question.max` both defined, non-equal). The caller (`OpinionQuestionInput`) gates on `question.isMatchable`, so a rangeless number question never reaches this component and cannot render a broken 0-width range.
 
-Native `<input type="range">` is chosen deliberately so keyboard-arrow exact-value
-stepping works for free: ArrowUp/ArrowRight step +1, ArrowDown/ArrowLeft −1,
-Home→min, End→max. Values at exactly `min`/`max` are reachable and clamp.
+Native `<input type="range">` is chosen deliberately so keyboard-arrow exact-value stepping works for free: ArrowUp/ArrowRight step +1, ArrowDown/ArrowLeft −1, Home→min, End→max. Values at exactly `min`/`max` are reachable and clamp.
 
 ### Properties
 
@@ -64,8 +55,7 @@ Home→min, End→max. Values at exactly `min`/`max` are reachable and clamp.
   // Range bounds
   ////////////////////////////////////////////////////////////////////
 
-  // The caller guarantees a valid range (isMatchable). We fall back to 0/0 only
-  // to keep TypeScript happy — this branch is never reached at runtime.
+  // The caller guarantees a valid range (isMatchable). We fall back to 0/0 only to keep TypeScript happy — this branch is never reached at runtime.
   const min = $derived(question.min ?? 0);
   const max = $derived(question.max ?? 0);
   const midpoint = $derived(Math.round((min + max) / 2));
@@ -74,15 +64,10 @@ Home→min, End→max. Values at exactly `min`/`max` are reachable and clamp.
   // Answer mode: live local value
   ////////////////////////////////////////////////////////////////////
 
-  // Whether the voter has set a value. Starts true when a stored answer exists;
-  // becomes true on the first slider interaction. Drives the unanswered-opinion
-  // convention: no `text-primary` on the label until the value is set.
-  // Init reads are intentionally non-reactive (the $effect below re-syncs on
-  // every later `value` change) — untrack() is the documented remedy for
-  // state_referenced_locally on a deliberate one-shot init read.
+  // Whether the voter has set a value. Starts true when a stored answer exists; becomes true on the first slider interaction. Drives the unanswered-opinion convention: no `text-primary` on the label until the value is set.
+  // Init reads are intentionally non-reactive (the $effect below re-syncs on every later `value` change) — untrack() is the documented remedy for state_referenced_locally on a deliberate one-shot init read.
   let isSet = $state(untrack(() => value != null));
-  // The live numeric value shown in the label. Updates on every `input` event
-  // so the label tracks the thumb during a drag; unset sliders sit at midpoint.
+  // The live numeric value shown in the label. Updates on every `input` event so the label tracks the thumb during a drag; unset sliders sit at midpoint.
   let liveValue = $state<number>(untrack(() => value ?? midpoint));
 
   $effect(() => {
@@ -118,8 +103,7 @@ Home→min, End→max. Values at exactly `min`/`max` are reachable and clamp.
 
   const voterPct = $derived(value != null ? percent(value) : null);
   const otherPct = $derived(otherValue != null ? percent(otherValue) : null);
-  // When both values are equal we render a single combined marker so neither
-  // label hides the other (backstop: equal-marker overlap).
+  // When both values are equal we render a single combined marker so neither label hides the other (backstop: equal-marker overlap).
   const bothEqual = $derived(value != null && otherValue != null && value === otherValue);
 </script>
 

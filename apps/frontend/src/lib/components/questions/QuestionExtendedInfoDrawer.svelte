@@ -1,6 +1,5 @@
 <!--
-@component
-A `Drawer` that displays the question's extended information.
+@component A `Drawer` that displays the question's extended information.
 
 ### Properties
 

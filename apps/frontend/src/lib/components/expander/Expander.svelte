@@ -1,7 +1,5 @@
 <!--
-@component
-A component for expanders that contain a title and some content. Use the
-`variant` prop to specify the expander type.
+@component A component for expanders that contain a title and some content. Use the `variant` prop to specify the expander type.
 
 - `read-more`: the default style of the expander. Used, for example, for getting
   more information about a question.
@@ -73,8 +71,7 @@ You should not try to use a variant and customize at the same time.
   // Handle expansion/collapse
   ////////////////////////////////////////////////////////////////////
 
-  // `defaultExpanded` is a render-time-only prop; consumers do not
-  // toggle it after mount. Seed once, then own state locally.
+  // `defaultExpanded` is a render-time-only prop; consumers do not toggle it after mount. Seed once, then own state locally.
   // svelte-ignore state_referenced_locally
   let expanded = $state(defaultExpanded);
 
@@ -91,14 +88,11 @@ You should not try to use a variant and customize at the same time.
   // Styling
   ////////////////////////////////////////////////////////////////////
 
-  // Build classes (Svelte 5: derive reactively from props instead of
-  // mutating top-level locals at init).
+  // Build classes (Svelte 5: derive reactively from props instead of mutating top-level locals at init).
   // 1. Base classes for all collapse components
   const collapseClasses = 'collapse rounded-none min-h-touch min-w-touch h-auto w-full';
 
-  // 2. Variant + iconPos resolution. The original code mutated `iconPos`
-  // when variant === 'category'; we replicate that with an effective
-  // iconPos derived from variant.
+  // 2. Variant + iconPos resolution. The original code mutated `iconPos` when variant === 'category'; we replicate that with an effective iconPos derived from variant.
   const effectiveIconPos = $derived(variant === 'category' ? 'left' : iconPos);
 
   const titleClasses = $derived.by(() => {

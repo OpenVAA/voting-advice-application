@@ -1,6 +1,5 @@
 <!--
-@component
-Display the question's expandable information content.
+@component Display the question's expandable information content.
 
 ### Properties
 
@@ -53,7 +52,7 @@ Display the question's expandable information content.
     <div class="prose">
       {#each infoSections as { title, content }, index}
         {#if title}
-          <!-- Per-infoSection testid (keyed by index) so the Phase-120
+          <!-- Per-infoSection testid (keyed by index) so the E2E
                expectInfoSections([...]) reader can enumerate sections. -->
           <div data-testid="voter-questions-info-section-{index}">
             <Expander
@@ -70,7 +69,7 @@ Display the question's expandable information content.
       {#if args}
         {@const title = t('questions.arguments.title')}
         <!-- Arguments-block testid (sibling to the per-section infoSection
-             testids above) so the Phase-120 expectArguments reader can expand the
+             testids above) so the E2E expectArguments reader can expand the
              arguments Expander and read its per-group blocks. -->
         <Expander
           {title}

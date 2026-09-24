@@ -1,4 +1,4 @@
-import type { Route } from '$lib/utils/route';
+import type { Route } from '$lib/routes';
 
 /**
  * A type that lists all features that are available in the Admin App

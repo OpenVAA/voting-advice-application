@@ -1,9 +1,7 @@
 /**
  * Shared async test fixture for RSA key pair generation.
  *
- * Generates signing (RS256) and encryption (RSA-OAEP or RSA-OAEP-256) key pairs
- * for use in JWE/JWT test token construction. All keys are generated using the
- * jose library -- the same library used in production.
+ * Generates signing (RS256) and encryption (RSA-OAEP or RSA-OAEP-256) key pairs for use in JWE/JWT test token construction. All keys are generated using the jose library -- the same library used in production.
  *
  * NO Deno imports. NO SvelteKit imports. Pure jose v6 only.
  */

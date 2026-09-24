@@ -2,7 +2,7 @@ import type { SvelteHTMLElements } from 'svelte/elements';
 
 export type EntityTagProps = SvelteHTMLElements['div'] & {
   /**
-   * A possibly wrapped entity, e.g. candidate or a party.
+   * A possibly wrapped entity, e.g. candidate or an organization.
    */
   entity: MaybeWrappedEntityVariant;
   /**

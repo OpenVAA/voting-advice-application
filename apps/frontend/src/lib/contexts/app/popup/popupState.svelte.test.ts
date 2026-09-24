@@ -4,10 +4,7 @@ import { popupState } from './popupState.svelte';
 import type { PopupQueueItem } from './popupComponent.type';
 import type { PopupState } from './popupState.type';
 
-// A minimal `PopupQueueItem` stub carrying a unique `props.marker` so queue
-// items can be distinguished by content. Identity comparison via `toBe` is not
-// usable: `.current` reads through the `$state` array proxy, which wraps each
-// item in a reactive proxy distinct from the original object reference.
+// A minimal `PopupQueueItem` stub carrying a unique `props.marker` so queue items can be distinguished by content. Identity comparison via `toBe` is not usable: `.current` reads through the `$state` array proxy, which wraps each item in a reactive proxy distinct from the original object reference.
 function makeItem(marker: string): PopupQueueItem {
   return {
     component: (() => undefined) as unknown as PopupQueueItem['component'],
@@ -24,8 +21,7 @@ describe('popupState', () => {
   });
 
   /**
-   * Create the store inside an `$effect.root` so its `$state`/`$derived` settle,
-   * returning the store handle.
+   * Create the store inside an `$effect.root` so its `$state`/`$derived` settle, returning the store handle.
    */
   function setup(): PopupState {
     let store!: PopupState;

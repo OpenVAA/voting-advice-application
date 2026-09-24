@@ -4,19 +4,12 @@ import { answerState } from './answerState.svelte';
 import type { TrackingService } from '../app/tracking';
 import type { AnswerState } from './answerState.type';
 
-// `localStorageState` only persists when `browser` is `true`. The default
-// app-environment stub sets `browser = false`, so override it here.
+// `localStorageState` only persists when `browser` is `true`. The default app-environment stub sets `browser = false`, so override it here.
 vi.mock('$app/environment', () => ({
   browser: true,
   dev: true,
   building: false,
   version: 'test'
-}));
-
-vi.mock('$lib/utils/logger', () => ({
-  logDebugError: vi.fn(),
-  logDebugWarning: vi.fn(),
-  logError: vi.fn()
 }));
 
 describe('answerState', () => {
@@ -36,8 +29,7 @@ describe('answerState', () => {
   });
 
   /**
-   * Create the store inside an `$effect.root` so its `$state` settles, returning
-   * the store handle.
+   * Create the store inside an `$effect.root` so its `$state` settles, returning the store handle.
    */
   function setup(): AnswerState {
     let store!: AnswerState;
@@ -85,8 +77,7 @@ describe('answerState', () => {
     const store = setup();
     store.setAnswer('q1', { foo: 'bar' } as never);
     flushSync();
-    // Frozen — the returned answers map and its nested values are deep-frozen,
-    // preventing accidental external mutation of stored answers.
+    // Frozen — the returned answers map and its nested values are deep-frozen, preventing accidental external mutation of stored answers.
     expect(Object.isFrozen(store.answers)).toBe(true);
     expect(Object.isFrozen(store.answers.q1)).toBe(true);
     expect(Object.isFrozen(store.answers.q1?.value)).toBe(true);

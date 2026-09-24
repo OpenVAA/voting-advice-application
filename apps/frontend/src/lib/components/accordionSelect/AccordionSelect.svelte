@@ -1,6 +1,5 @@
 <!--
-@component
-Show a select widget which is expanded when no selection is made and collapsed when an option is selected.
+@component Show a select widget which is expanded when no selection is made and collapsed when an option is selected.
 
 If there's only one option, it is automatically selected and no interactions are allowed.
 
@@ -48,11 +47,7 @@ If there's only one option, it is automatically selected and no interactions are
 
   let expanded = $state(activeIndex == null || activeIndex < 0);
 
-  // Auto-select when only one option exists. Wrap the write in `untrack` so
-  // that the `activeIndex` / `expanded` / `onChange` writes inside `activate`
-  // don't retrigger this effect when the parent re-derives `options` with
-  // different identity (Svelte 5 `effect_update_depth_exceeded` guard —
-  // mirrors the pattern used elsewhere in the codebase, e.g.
+  // Auto-select when only one option exists. Wrap the write in `untrack` so that the `activeIndex` / `expanded` / `onChange` writes inside `activate` don't retrigger this effect when the parent re-derives `options` with different identity (Svelte 5 `effect_update_depth_exceeded` guard — mirrors the pattern used elsewhere in the codebase, e.g.
   // protected-layout $effect).
   $effect(() => {
     if (options.length === 1) untrack(() => activate(0));
@@ -75,9 +70,7 @@ If there's only one option, it is automatically selected and no interactions are
 </script>
 
 <!-- role=listbox: the children carry role=option, which axe's aria-required-parent
-  rule (WCAG 2.1 AA, critical) requires to be contained by a listbox/group — most
-  visibly in the collapsed state where only the selected option button is in the
-  DOM with no wrapping role. aria-label gives the listbox an accessible name;
+  rule (WCAG 2.1 AA, critical) requires to be contained by a listbox/group — most visibly in the collapsed state where only the selected option button is in the DOM with no wrapping role. aria-label gives the listbox an accessible name;
   callers may override it via restProps. -->
 <div
   role="listbox"

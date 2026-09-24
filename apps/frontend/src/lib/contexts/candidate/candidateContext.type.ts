@@ -71,8 +71,7 @@ export type CandidateContext = AppContext &
     questionBlocks: QuestionBlocks;
 
     ////////////////////////////////////////////////////////////////////
-    // Wrappers for DataWriter methods
-    // NB. These automatically handle authentication
+    // Wrappers for DataWriter methods NB. These automatically handle authentication
     ////////////////////////////////////////////////////////////////////
 
     /**

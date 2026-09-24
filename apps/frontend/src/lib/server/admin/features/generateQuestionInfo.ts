@@ -1,15 +1,17 @@
-import { AbortError } from '@openvaa/core';
 import { generateQuestionInfo as generateQuestionInfoAPI } from '@openvaa/question-info';
 import { loadElectionData } from '$lib/admin/utils/loadElectionData';
-import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
+import { createAdminWriter } from '$lib/api/adminWriter';
+import { createSupabaseJobClient } from '$lib/api/dataProvider';
 import { getLLMProvider } from '../../llm/llmProvider';
-import { getAllMessagesFromJob, getJob, markAborted } from '../jobs/jobStore';
+import { assertValidJobId } from '../jobs/assertValidJobId';
+import { createJobRecorder } from '../jobs/jobRecord';
 import { PipelineController } from '../jobs/pipelineController';
 import type { Id, Serializable } from '@openvaa/core';
 import type { AnyQuestionVariant } from '@openvaa/data';
 import type { QuestionInfoOperation, QuestionInfoResult } from '@openvaa/question-info';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { TemporarySetQuestionData } from '$lib/api/base/dataWriter.type';
+import type { AdapterSource } from '$lib/api/dataProvider';
 
 /**
  * Generate question info (terms and/or info sections) for selected or all opinion questions.
@@ -19,10 +21,9 @@ import type { TemporarySetQuestionData } from '$lib/api/base/dataWriter.type';
  *
  * @param args.electionId - Election id to scope questions
  * @param args.questionIds - If empty, runs all opinion questions applicable to the election
- * @param args.fetch - SvelteKit fetch function for data loading
+ * @param args.source - The initiating admin's request context, read ONCE for its verified session and then left behind; the job's own client is built from that session's credential and carries every read and every write the run makes, so the whole run reads and writes as one identity and none of it depends on the request outliving it
  * @param args.locale - Output language
  * @param args.jobId - Job ID for tracking progress
- * @param args.authToken - Authentication token for API calls
  * @param args.operations - Which operations to perform (Terms, InfoSections, or both)
  * @param args.sectionTopics - Optional custom section topics
  * @param args.customInstructions - Optional custom instructions for LLM
@@ -32,10 +33,9 @@ import type { TemporarySetQuestionData } from '$lib/api/base/dataWriter.type';
 export async function generateQuestionInfo({
   electionId,
   questionIds,
-  fetch,
+  source,
   locale,
   jobId,
-  authToken,
   operations,
   sectionTopics,
   customInstructions,
@@ -43,20 +43,36 @@ export async function generateQuestionInfo({
 }: {
   electionId: Id;
   questionIds: Array<Id>;
-  fetch: Fetch;
+  source: { fetch: Fetch; locals: App.Locals };
   locale: string;
   jobId: string;
-  authToken: string;
   operations: Array<QuestionInfoOperation>;
   sectionTopics?: Array<string>;
   customInstructions?: string;
   questionContext?: string;
 }): Promise<DataApiActionResult> {
+  // THE IDENTIFIER GUARD, AND IT IS FIRST — ahead of the pipeline controller, ahead of the job recorder, and ahead of the writer construction below, so an invalid start does no credential work and makes no outbound call. Order is the property here: the same rejection placed after the writer would let exactly the same work happen and only change what is reported afterwards. This line owns whether the identifier the job was handed is usable at all; the writer construction under it owns where that writer's credentials come from — two edits, one under the other, neither inside the other.
+  assertValidJobId(jobId);
+
+  // THIS JOB'S OWN CREDENTIAL, RESOLVED ONCE AND FIXED FOR THE WHOLE RUN — after the guard above and ahead of everything else, so an invalid start still does no credential work. `locals.safeGetSession` is this application's ONE verification path: it calls `getSession()` and then the `getUser()` round-trip that checks the token against Supabase Auth, and hands back nothing when that fails. Reading a jar or a header here instead would be a second verification path and a second thing to get wrong. Nothing below resolves it again — resolving mid-run would put the job back on the request's clock under a different name, which is the coupling this removes.
+  const { session } = await source.locals.safeGetSession();
+
+  // The job's own source, and it names a CLIENT rather than the request's `locals`. `createSupabaseJobClient` raises if the lookup above found no session, so a job that nobody authorised does not proceed anonymously. The transport is the plain global `fetch` rather than `source.fetch`: the request's `fetch` is scoped to a response this job outlives, and the point of the whole change is that nothing the job does depends on that response still being there.
+  const jobSource: AdapterSource = {
+    fetch: globalThis.fetch,
+    client: createSupabaseJobClient({ accessToken: session?.access_token })
+  };
+
   // Create controller immediately - it will be initialized with pipeline later
   const controller = new PipelineController(jobId);
 
-  const dataWriter = await dataWriterPromise;
-  dataWriter.init({ fetch });
+  // This job's own writer, over this job's own credential, constructed here and held for the whole run — so neither a second admin's job nor the initiating request's own lifetime can reach it.
+  //
+  // reason: the writer used to be built from the initiating request's client, which carries an adapter onto that request's jar, while the action awaits this call for the job's whole multi-minute duration. Two failure modes followed from that, and BOTH ARE NOW CLOSED by the client above rather than by care taken here — they stay named because a reader arriving after the next incident needs to know what was considered, not only what was chosen:
+  //   1. A refreshed session emitted as a `Set-Cookie` on a response that is only generated when the job finishes reaches nobody once the platform gateway has timed the connection out (Render's default is 100s; these jobs run for minutes), and the initiating admin's session silently regresses to the tokens it held before. CLOSED: the job's client renews nothing on its own and has no adapter to write through, so no such emission is ever attempted.
+  //   2. Once the response HAS been generated, `@sveltejs/kit` replaces `event.cookies.set` with a thrower ("Cannot use 'cookies.set(...)' after the response has been generated"), so any path outliving its response — a late `insertJobResult` on an aborted job, or a future move to fire-and-forget — raised inside the Supabase client's own renewal rather than at an obvious call site. CLOSED: there is no such path left for it to raise on.
+  // What this does NOT settle is what a job should do when the initiating admin's session expires partway through the run: the crash mode is gone, the authority question is open.
+  const adminWriter = createAdminWriter(jobSource);
 
   // Track start time and input parameters for job record
   const startTime = new Date().toISOString();
@@ -72,13 +88,27 @@ export async function generateQuestionInfo({
 
   let results: Array<QuestionInfoResult> | undefined;
 
+  // The job-record half — the `AdminJobRecord` assembly and the abort/fail branch — lives in `createJobRecorder`, which `condenseArguments` shares. Only the `getOutput` thunk and the two prefixes below differ between the two features; everything else was duplicated verbatim until it moved.
+  const jobRecord = createJobRecorder({
+    jobId,
+    electionId,
+    startTime,
+    input: inputParams,
+    adminWriter,
+    controller,
+    getOutput: () => (results ? (results as unknown as Array<Serializable>) : null),
+    logPrefix: 'generateQuestionInfo',
+    failureMessage: 'Question info generation failed'
+  });
+
   try {
     // 1) Load data
     controller.info('Loading election and question data for question info generation...');
+    // THE READS MOVE ONTO THE JOB'S CLIENT TOO, and that is a decision rather than a spillover. The parameter documentation above asserts that the whole run reads and writes as one identity; leaving these reads on the request's client would have made that sentence false the moment the writer moved, and would have left half the run exposed to exactly the expiry this change removes from the other half.
     const dataRoot = await loadElectionData({
       electionId,
       locale,
-      fetch
+      source: jobSource
     });
     controller.info('Data loaded successfully!');
 
@@ -164,9 +194,8 @@ export async function generateQuestionInfo({
       controller.info(`Saving question info for question "${question.name}"`);
 
       try {
-        const saveResult = await dataWriter.updateQuestion({
+        const saveResult = await adminWriter.updateQuestion({
           id: question.id,
-          authToken,
           data: updateData as TemporarySetQuestionData
         });
 
@@ -189,73 +218,13 @@ export async function generateQuestionInfo({
     controller.complete();
 
     // Save job record
-    const job = getJob(jobId);
-    if (job) {
-      await dataWriter.insertJobResult({
-        authToken,
-        data: {
-          ..._getResultData(),
-          endStatus: 'completed',
-          metadata: { questionsProcessed: results.length }
-        }
-      });
-    }
+    await jobRecord.recordCompletion({ questionsProcessed: results.length });
 
     return { type: 'success' };
   } catch (error) {
-    const job = getJob(jobId);
-
-    // Job was aborted if the error is an AbortError
-    if (error && typeof error === 'object' && 'name' in error && error.name === AbortError.name) {
-      markAborted(jobId);
-
-      // Save aborted job record
-      if (job) {
-        await dataWriter.insertJobResult({
-          authToken,
-          data: {
-            ..._getResultData(),
-            endStatus: 'aborted',
-            metadata: null
-          }
-        });
-      }
-    } else {
-      // else it's a real error so we fail the job
-      const message =
-        error && typeof error === 'object' && 'message' in error ? String(error.message) : JSON.stringify(error);
-      controller.fail(`Question info generation failed: ${message}`);
-
-      // Save failed job record
-      if (job) {
-        await dataWriter.insertJobResult({
-          authToken,
-          data: {
-            ..._getResultData(),
-            endStatus: 'failed',
-            metadata: { error: message }
-          }
-        });
-      }
-    }
+    // Marks the job aborted and records it, or fails the pipeline and records that; the branch itself is shared with `condenseArguments`.
+    await jobRecord.recordFailure(error);
     throw error;
-  }
-
-  function _getResultData() {
-    const job = getJob(jobId);
-    if (!job) throw new Error(`[generateQuestionInfo] Job ${jobId} not found in the job store.`);
-    const { jobType, author } = job;
-    return {
-      jobId,
-      jobType,
-      electionId,
-      author,
-      startTime,
-      endTime: new Date().toISOString(),
-      input: inputParams,
-      output: results ? (results as unknown as Array<Serializable>) : null,
-      messages: getAllMessagesFromJob(jobId)
-    };
   }
 }
 

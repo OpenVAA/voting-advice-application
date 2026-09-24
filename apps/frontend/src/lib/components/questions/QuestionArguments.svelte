@@ -1,6 +1,5 @@
 <!--
-@component
-Display the pros and cons arguments related to a question.
+@component Display the pros and cons arguments related to a question.
 
 ### Properties
 
@@ -58,9 +57,8 @@ Display the pros and cons arguments related to a question.
       {#if argument.arguments?.length}
         {@const { choiceId } = argument}
         <!-- Per-argument-group testid. For categorical questions the group is keyed
-             by choiceId; otherwise it falls back to the argument `type` (mirrors the
-             keyed feedback-rating-{value} pattern) so the Phase-120
-             expectArguments(q,type) reader can target a group. -->
+             by choiceId; otherwise it falls back to the argument `type` (mirrors the keyed feedback-rating-{value} pattern) so the E2E
+             expectArguments(q, type) reader can target a group. -->
         <div data-testid="voter-questions-argument-group-{choiceId ?? argument.type}">
           <h5 class="font-bold">
             {t(TITLE_KEYS[argument.type], {

@@ -2,16 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // These top-level vi.mock calls are hoisted and apply to ALL dynamic imports.
 vi.mock('@openvaa/app-shared', () => ({
+  // `persistedState` now logs through the shared logger, so this factory must supply it or the parse-failure path throws on an undefined member.
+  log: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
   staticSettings: {
     appVersion: {
       version: 2,
       requireUserDataVersion: 1
     }
   }
-}));
-
-vi.mock('$lib/utils/logger', () => ({
-  logDebugError: vi.fn()
 }));
 
 /**
@@ -204,10 +202,7 @@ describe('persistedState helpers', () => {
       cleanup();
     });
 
-    // CR-01 regression: the default must be persisted on init (not only on
-    // set/update) so a non-deterministic default — e.g. a generated session
-    // UUID that is never explicitly `set` — survives a reload. A fresh handle
-    // created with a DIFFERENT default must read the FIRST handle's value.
+    // Regression guard: the default must be persisted on init (not only on set/update) so a non-deterministic default — e.g. a generated session UUID that is never explicitly `set` — survives a reload. A fresh handle created with a DIFFERENT default must read the FIRST handle's value.
     it('persists the default on init so a never-set value survives a fresh handle (reload)', async () => {
       const { sessionStorageState } = await importWithBrowser(true);
       const cleanup = $effect.root(() => {

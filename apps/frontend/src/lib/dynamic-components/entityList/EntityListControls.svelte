@@ -1,6 +1,5 @@
 <!--
-@component
-Show filter, sorting (TBA) and search tools for an associated `<EntityList>`.
+@component Show filter, sorting (TBA) and search tools for an associated `<EntityList>`.
 
 TODO: Consider moving the tracking events away from the component and just adding callbacks that the consumer can use to trigger tracking events.
 
@@ -42,28 +41,25 @@ TODO: Consider moving the tracking events away from the component and just addin
 
   const ctx = getAppContext();
   const { startEvent, t } = ctx;
-  // locale is a reactive accessor (see phase 113 flatten) — read via ctx.locale, never destructure.
+  // locale is a reactive accessor — read via ctx.locale, never destructure.
   const locale = $derived(ctx.locale);
   let filtersModalRef: Modal | undefined = $state();
   let filteredContents: EntityListControlsProps['entities'] = $state([]);
   let output: EntityListControlsProps['entities'] = $state([]);
   let numActiveFilters = $state(0);
 
-  // searchFilter depends on searchProperty + locale; recompute reactively
-  // (the props are typically stable, but this honors Svelte 5 idioms).
+  // searchFilter depends on searchProperty + locale; recompute reactively (the props are typically stable, but this honors Svelte 5 idioms).
   const searchFilter = $derived(
     searchProperty
       ? new TextPropertyFilter<MaybeWrappedEntityVariant>(
           { property: searchProperty as keyof MaybeWrappedEntityVariant },
-          // `locale` is a rune handle (`{ readonly current: string }`) post Phase
-          // 97/98 store→rune migration; TextPropertyFilter wants the string.
+          // `ctx.locale` is a bare reactive accessor read through the `$derived` alias above; TextPropertyFilter wants the string.
           locale
         )
       : undefined
   );
 
-  // Wire onChange handlers via $effect so cleanup runs symmetrically and
-  // re-attaches if filterGroup / searchFilter ever change.
+  // Wire onChange handlers via $effect so cleanup runs symmetrically and re-attaches if filterGroup / searchFilter ever change.
   $effect(() => {
     filterGroup?.onChange(updateFilters);
     return () => filterGroup?.onChange(updateFilters, false);
@@ -74,12 +70,8 @@ TODO: Consider moving the tracking events away from the component and just addin
     return () => searchFilter?.onChange(updateSearch, false);
   });
 
-  // Re-run when the `entities` prop reference changes. The body is wrapped in
-  // `untrack` so reactive reads inside updateFilters → updateSearch → onUpdate
-  // (notably the `onUpdate` callback prop, which the consumer re-creates on
-  // every render via inline arrow) do NOT become dependencies of this effect.
-  // Without untrack, the inline-arrow identity churn produced an
-  // effect_update_depth_exceeded loop on the nominations page.
+  // Re-run when the `entities` prop reference changes. The body is wrapped in `untrack` so reactive reads inside updateFilters → updateSearch → onUpdate (notably the `onUpdate` callback prop, which the consumer re-creates on every render via inline arrow) do NOT become dependencies of this effect.
+  // Without untrack, the inline-arrow identity churn produced an effect_update_depth_exceeded loop on the nominations page.
   $effect(() => {
     void entities;
     untrack(() => updateFilters());

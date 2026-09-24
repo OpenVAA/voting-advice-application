@@ -27,8 +27,7 @@ declare global {
   type JSONData = Parameters<typeof JSON.stringify>[0];
 
   /**
-   * Make specific properties of an interface required. Works the same way as
-   * `Required<Type>` but only applies to keys listed.
+   * Make specific properties of an interface required. Works the same way as `Required<Type>` but only applies to keys listed.
    * Source: https://stackoverflow.com/questions/69327990/how-can-i-make-one-property-non-optional-in-a-typescript-type
    */
   type WithRequired<TType, TKey extends keyof TType> = TType & { [Prop in TKey]-?: TType[Prop] };
@@ -72,9 +71,7 @@ declare global {
 
   /**
    * These are all the DaisyUI colors supported by the application.
-   * These can be used in utility classes like ``fill-${color}``,
-   * but be sure to check `tailwind.config.cjs` for the classes
-   * that are safelisted for use.
+   * These can be used in utility classes like ``fill-${color}``, but be sure to check `tailwind.config.cjs` for the classes that are safelisted for use.
    */
   type Color =
     | 'current'

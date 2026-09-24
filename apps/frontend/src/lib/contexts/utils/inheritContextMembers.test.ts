@@ -2,11 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { inheritContextMembers } from './inheritContextMembers';
 
 /**
- * see phase 113 CR-01 regression guard. inheritContextMembers must forward accessor
- * members as LIVE accessors (not snapshot their current value the way Object.assign
- * does), while copying data members by value. A regression here silently freezes the
- * reactivity of inherited bare reactive accessors (appSettings / dataRoot / locale)
- * on the voter / candidate / admin orchestrator contexts.
+ * Regression guard. inheritContextMembers must forward accessor members as LIVE accessors (not snapshot their current value the way Object.assign does), while copying data members by value. A regression here silently freezes the reactivity of inherited bare reactive accessors (appSettings / dataRoot / locale) on the voter / candidate / admin orchestrator contexts.
  */
 describe('inheritContextMembers', () => {
   test('forwards a getter accessor as a LIVE accessor (reads current value, not a snapshot)', () => {

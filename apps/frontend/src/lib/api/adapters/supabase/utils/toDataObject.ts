@@ -9,8 +9,7 @@ const STANDARD_LOCALIZED_FIELDS = ['name', 'short_name', 'info'];
 
 /**
  * Transform a raw database row into a domain object by:
- *   1. Localizing standard fields (name, short_name, info) plus any additional
- *      fields — resolving JSONB locale objects to plain strings via 3-tier fallback.
+ *   1. Localizing standard fields (name, short_name, info) plus any additional fields — resolving JSONB locale objects to plain strings via 3-tier fallback.
  *   2. Mapping snake_case column names to camelCase properties via COLUMN_MAP.
  *
  * This is the shared pipeline used by all SupabaseDataProvider read methods.

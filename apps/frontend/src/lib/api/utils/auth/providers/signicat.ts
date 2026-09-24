@@ -1,21 +1,21 @@
 /**
  * Signicat OIDC identity provider.
  *
- * Wraps the existing PKCE + client_secret auth flow into the `IdentityProvider`
- * interface. This module produces identical behavior to the original inline code
- * in `getIdTokenClaims.ts` and the `/api/oidc/token` route, but uses the
- * `AuthConfig` claim mappings for extraction instead of hardcoded claim names.
+ * Wraps the existing PKCE + client_secret auth flow into the `IdentityProvider` interface. Behaviour is unchanged from the original inline code in the `/api/oidc/token` route, but the `AuthConfig` claim mappings drive extraction instead of hardcoded claim names.
+ *
+ * This module carries NO decrypt/verify logic of its own: it delegates to the shared core `../decryptAndVerifyIdToken.ts` and keeps only the per-provider claim mapping. There is exactly one decrypt/verify path in `src`, and a second copy of it here would be a second thing to keep correct.
  *
  * - Authorization: Client-side PKCE redirect with `code_challenge` in query params
  * - Token exchange: `client_secret` POST to the token endpoint
  * - Claims extraction: JWE decrypt + JWT verify with config-driven claim mapping
  */
 
-import * as jose from 'jose';
 import { constants } from '$lib/server/constants';
 import { constants as publicConstants } from '$lib/utils/constants';
-import { SIGNICAT_AUTH_CONFIG } from './authConfig';
+import { requireConfigured } from './requireConfigured';
+import { decryptAndVerifyIdToken } from '../decryptAndVerifyIdToken';
 import type {
+  AuthConfig,
   AuthorizeParams,
   AuthorizeResult,
   IdentityProvider,
@@ -24,6 +24,24 @@ import type {
   TokenExchangeResult
 } from './types';
 
+/**
+ * Signicat claim mapping configuration.
+ *
+ * Signicat returns standard OIDC claims in the id_token. `identityMatchProp` names the claim used to match a returning user to their existing candidate record and MUST be unique per person; `extractClaims` are additional claims stored in user metadata for audit and verification purposes.
+ *
+ * - Identity matching: `sub` (stable OIDC subject identifier)
+ * - Name claims: Standard OIDC `given_name` and `family_name`
+ * - Extra claims: `birthdate` (Finnish date of birth), captured as metadata only
+ *
+ * Keyed on `sub`, and it MUST NOT be keyed on `birthdate`, which is NOT an identifier: the Edge Function twin of this config (`identity-callback/claimConfig.ts`) turns `identityMatchProp`'s value into both the `app_metadata.identity_match_value` lookup key and the placeholder email local part, so keying on a birthdate collapses every candidate sharing a date of birth into a single Supabase auth account. The two configs must stay in agreement -- a mismatch keys the frontend and the backend to different claims.
+ */
+export const SIGNICAT_AUTH_CONFIG: AuthConfig = {
+  identityMatchProp: 'sub',
+  extractClaims: ['birthdate'],
+  firstNameProp: 'given_name',
+  lastNameProp: 'family_name'
+};
+
 export const signicatProvider: IdentityProvider = {
   type: 'signicat',
 
@@ -31,6 +49,17 @@ export const signicatProvider: IdentityProvider = {
 
   async getAuthorizeUrl({ redirectUri, codeChallenge }: AuthorizeParams): Promise<AuthorizeResult> {
     const { PUBLIC_IDENTITY_PROVIDER_CLIENT_ID, PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT } = publicConstants;
+
+    // Assert BEFORE concatenating, never after. An empty endpoint produces a string starting `?`, which is a valid RELATIVE url the browser resolves against the current document — so the failure mode is a silent same-origin reload, not an error. See `requireConfigured` for the incident this guards.
+    requireConfigured({
+      PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT,
+      PUBLIC_IDENTITY_PROVIDER_CLIENT_ID
+    });
+
+    // `codeChallenge` is optional on `AuthorizeParams` because the Idura branch uses JAR instead of PKCE, but it is MANDATORY here: an absent one yields `code_challenge=undefined` (or `=`), which the IdP accepts at the authorize step and only rejects later at token exchange, far from the cause.
+    if (codeChallenge === undefined || codeChallenge.trim() === '') {
+      throw new Error('Signicat authorization requires a PKCE `codeChallenge`, but none was supplied.');
+    }
 
     const authorizeUrl =
       `${PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT}` +
@@ -76,24 +105,7 @@ export const signicatProvider: IdentityProvider = {
 
   async getIdTokenClaims(idToken: string): Promise<IdTokenClaimsResult> {
     try {
-      const privateEncryptionJWKSet: Array<jose.JWK> = JSON.parse(constants.IDENTITY_PROVIDER_DECRYPTION_JWKS || '[]');
-
-      const { kid } = jose.decodeProtectedHeader(idToken);
-      const privateEncryptionJWK = privateEncryptionJWKSet.find((jwk) => jwk.kid === kid);
-
-      if (!privateEncryptionJWK) {
-        throw new Error(`Cannot decode ID token: JWK not found: kid=${kid}.`);
-      }
-
-      const { plaintext } = await jose.compactDecrypt(idToken, await jose.importJWK(privateEncryptionJWK));
-      const { payload } = await jose.jwtVerify(
-        new TextDecoder().decode(plaintext),
-        jose.createRemoteJWKSet(new URL(constants.IDENTITY_PROVIDER_JWKS_URI!)),
-        {
-          audience: publicConstants.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID,
-          issuer: constants.IDENTITY_PROVIDER_ISSUER
-        }
-      );
+      const payload = await decryptAndVerifyIdToken(idToken);
 
       const extractedClaims: Record<string, string> = Object.fromEntries(
         SIGNICAT_AUTH_CONFIG.extractClaims.map((claim) => [claim, String(payload[claim] ?? '')])

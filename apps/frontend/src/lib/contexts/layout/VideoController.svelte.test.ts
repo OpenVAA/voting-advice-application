@@ -4,9 +4,7 @@ import { VideoController } from './VideoController.svelte';
 import type { VideoContent } from '@openvaa/app-shared';
 import type { OptionalVideoProps, Video } from '$lib/components/video';
 
-// A minimal `Video` stub: `load` resolves to a configurable boolean and
-// `togglePlay` is a no-op. Only the members `VideoController` touches are
-// implemented; the rest of the `Video` surface is unused here.
+// A minimal `Video` stub: `load` resolves to a configurable boolean and `togglePlay` is a no-op. Only the members `VideoController` touches are implemented; the rest of the `Video` surface is unused here.
 function makePlayer(loadResult: boolean, marker = 'player'): Video {
   return {
     marker,
@@ -15,8 +13,7 @@ function makePlayer(loadResult: boolean, marker = 'player'): Video {
   } as unknown as Video;
 }
 
-// A throwaway `load` props payload — its shape is irrelevant to the controller,
-// which forwards it straight to `player.load(props)`.
+// A throwaway `load` props payload — its shape is irrelevant to the controller, which forwards it straight to `player.load(props)`.
 const PROPS = {} as VideoContent & OptionalVideoProps;
 
 describe('VideoController', () => {
@@ -56,8 +53,7 @@ describe('VideoController', () => {
     expect(video.show).toBe(true);
     expect(video.hasContent).toBe(true);
     expect(video.mode).toBe('text');
-    // `.player` reads through the `$state` proxy (a distinct ref from the original
-    // object — see popupStore.svelte.test.ts), so compare by marker, not identity.
+    // `.player` reads through the `$state` proxy (a distinct ref from the original object — see popupStore.svelte.test.ts), so compare by marker, not identity.
     expect((video.player as unknown as { marker: string }).marker).toBe('round-trip');
   });
 

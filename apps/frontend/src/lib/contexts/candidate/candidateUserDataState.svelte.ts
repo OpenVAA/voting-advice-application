@@ -1,43 +1,33 @@
 import { ENTITY_TYPE } from '@openvaa/data';
+import { UNVERIFIED_ANSWERS } from '$lib/api/base/universalDataWriter';
 import { localStorageState } from '../utils/persistedState.svelte';
-import { prepareDataWriter } from '../utils/prepareDataWriter';
 import type { LocalizedAnswer } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { Image } from '@openvaa/data';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
-import type { CandidateUserData, LocalizedAnswers, LocalizedCandidateData } from '$lib/api/base/dataWriter.type';
+import type {
+  CandidateUserData,
+  LocalizedAnswers,
+  LocalizedCandidateData,
+  SetAnswersResult
+} from '$lib/api/base/dataWriter.type';
 import type { UniversalDataWriter } from '$lib/api/base/universalDataWriter';
 import type { CandidateUserDataState } from './candidateUserDataState.type';
 
 /**
- * A Svelte 5 class implementation of the candidate's composite user-data store
- * (v2.13 context-as-class migration). Holds all data owned by the user;
- * when reading `current`, it returns a composite of the initial data and any
- * unsaved `Answer`s and properties. The edited `Answer`s are stored in
- * `localStorage` for persistence (the persistence + version bridge is INHERITED
- * from `localStorageState`/`PersistedStateImpl` unchanged, — this class does
- * NOT own a `#version`; the `{ version, data }` payload lives in
- * `persistedState.svelte.ts`).
+ * A Svelte 5 class implementation of the candidate's composite user-data store.
+ * Holds all data owned by the user; when reading `current`, it returns a composite of the initial data and any unsaved `Answer`s and properties. The edited `Answer`s are stored in `localStorage` for persistence (the persistence + version bridge is INHERITED from `localStorageState`/`PersistedStateImpl` — this class does NOT own a `#version`; the `{ version, data }` payload lives in `persistedState.svelte.ts`).
  *
- * Per the D2 type-name-clash landmine, the public surface is the TYPE
- * `CandidateUserDataState` that this class `implements`, so the class is named
- * `CandidateUserDataStateImpl` (Phase-110 `AnswerStateImpl` precedent) and the
- * factory `candidateUserDataState(...)` stays byte-identical.
+ * The public surface is the TYPE `CandidateUserDataState` that this class `implements`, which is why the class itself is named `CandidateUserDataStateImpl` (the same suffix as `AnswerStateImpl`) — a class sharing the type's name would clash with it — and the consumer entry point is the `candidateUserDataState(...)` factory.
  *
- * The 12 public methods are ARROW-FUNCTION FIELDS so they survive being
- * held as `userData.X` on the candidate context and called detached. The
- * reactive members (`current`/`hasUnsaved`/`savedCandidateData`/`unsavedQuestionIds`/
- * `unsavedProperties`) are prototype getters read in-place (this store is
- * NOT spread by any consumer, so prototype getters are safe).
+ * The 12 public methods are ARROW-FUNCTION FIELDS so they survive being held as `userData.X` on the candidate context and called detached. The reactive members (`current`/`hasUnsaved`/`savedCandidateData`/`unsavedQuestionIds`/ `unsavedProperties`) are prototype getters read in-place (this store is NOT spread by any consumer, so prototype getters are safe).
  *
- * @internal Construct via the `candidateUserDataState(...)` factory at component
- * init. The constructor installs an `$effect` (reacting to `answersLocked` to
- * clear unsaved edits), so constructing outside an effect context throws
- * `effect_orphan`.
+ * @internal Construct via the `candidateUserDataState(...)` factory at component init. The constructor installs an `$effect` (reacting to `answersLocked` to clear unsaved edits), so constructing outside an effect context throws `effect_orphan`.
  */
 class CandidateUserDataStateImpl implements CandidateUserDataState {
   #answersLocked: () => boolean;
-  #dataWriter: UniversalDataWriter;
+  // A getter, not an instance: the store builds a writer for each backend call and holds none between them.
+  #dataWriter: () => UniversalDataWriter;
   #locale: () => string;
 
   ////////////////////////////////////////////////////////////////////
@@ -69,8 +59,7 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
       nominations
     } = this.#savedData;
     // Return clone to prevent mutation of saved data.
-    // Use JSON round-trip instead of structuredClone because Svelte 5's
-    // $state proxy objects cannot be structurally cloned.
+    // Use JSON round-trip instead of structuredClone because Svelte 5's $state proxy objects cannot be structurally cloned.
     return JSON.parse(
       JSON.stringify({
         candidate: {
@@ -91,7 +80,7 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
     locale
   }: {
     answersLocked: () => boolean;
-    dataWriter: UniversalDataWriter;
+    dataWriter: () => UniversalDataWriter;
     locale: () => string;
   }) {
     this.#answersLocked = answersLocked;
@@ -116,19 +105,14 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
   }
 
   /**
-   * A utility for merging updated `answers` into the existing `candidate` without
-   * replacing the whole candidate. This preserves the candidate's `id` and all
-   * static fields (`firstName`, `image`, `termsOfUseAccepted`, etc.), which the
-   * answer setters do NOT return — they return only the updated `LocalizedAnswers`.
+   * A utility for merging updated `answers` into the existing `candidate` without replacing the whole candidate. This preserves the candidate's `id` and all static fields (`firstName`, `image`, `termsOfUseAccepted`, etc.), which the answer setters do NOT return — they return only the updated `LocalizedAnswers`.
    */
   #mergeCandidateAnswers(answers: LocalizedAnswers): void {
     if (!this.#savedData) throw new Error('Cannot update candidate data before user data is loaded');
     const mergedAnswers = {
       ...(this.#savedData.candidate.answers ?? {}),
       ...answers
-      // `LocalizedCandidateData.answers` resolves to `Answers & LocalizedAnswers`
-      // (the CandidateData/EntityData base intersected with the LocalizedAnswers
-      // override). The merge yields a valid `LocalizedAnswers`; cast to the field type.
+      // `LocalizedCandidateData.answers` resolves to `Answers & LocalizedAnswers` (the CandidateData/EntityData base intersected with the LocalizedAnswers override). The merge yields a valid `LocalizedAnswers`; cast to the field type.
     } as LocalizedCandidateData['answers'];
     this.#updateCandidateData({
       ...this.#savedData.candidate,
@@ -231,9 +215,8 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
   };
 
   reloadCandidateData = async (): Promise<LocalizedCandidateData> => {
-    const dataWriter = await prepareDataWriter(this.#dataWriter);
+    const dataWriter = this.#dataWriter();
     const userData = await dataWriter.getCandidateUserData({
-      authToken: '',
       loadNominations: false,
       locale: this.#locale()
     });
@@ -250,20 +233,17 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
     const image = this.#editedImage;
     const termsOfUseAccepted = this.#editedTermsOfUseAccepted;
     const updateArgs = {
-      authToken: '',
       target: {
         type: ENTITY_TYPE.Candidate,
         id: this.#savedData.candidate.id
       }
     };
 
-    const dataWriter = await prepareDataWriter(this.#dataWriter);
+    const dataWriter = this.#dataWriter();
 
-    // The answer setters return only the updated `LocalizedAnswers` map, while
-    // the property setter returns the whole updated `LocalizedCandidateData`.
-    // These two shapes MUST be handled distinctly so the answers-only path does
-    // not replace the candidate (which would drop its `id` and static fields).
-    let updatedAnswers: LocalizedAnswers | undefined;
+    // The answer setters return only the updated `LocalizedAnswers` map, while the property setter returns the whole updated `LocalizedCandidateData`.
+    // These two shapes MUST be handled distinctly so the answers-only path does not replace the candidate (which would drop its `id` and static fields).
+    let updatedAnswers: SetAnswersResult | undefined;
     let updatedCandidate: LocalizedCandidateData | undefined;
 
     if (answers && Object.keys(answers).length > 0) {
@@ -271,7 +251,12 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
         ...updateArgs,
         answers
       });
-      if (!updatedAnswers) throw new Error('Failed to update answers');
+      // The detector, in its original position and still guarding the nullish case (decision E1 forbids removing a guard whose negative control has not been re-run); only its consequent changed, and it was widened to cover the unverified signal the writer now returns.
+      //
+      // A FAILURE RETURN, not a throw (decision B3). A throw lands in the caller's `.catch`, which logs `e?.message` as a free-form interpolated string — forbidden for the records this phase touches (decision C4 NOTE 1) — while the one structured `error` record, carrying the column, the row id and the issue paths, was already emitted at the adapter. Both checked entrances branch on `result?.type !== 'success'`, so a returned failure reaches the identical UI a throw did: the existing `candidateApp.error.saveFailed` message, which exists in every shipped locale (decision B4(a) — no new component, status value or translation key).
+      //
+      // The exit is positioned BEFORE the merge and before the three resets below, and that position is the whole point. The catastrophic step was never the empty value; it was `resetAnswers()` discarding the candidate's typing on the strength of it. Keeping the buffer is recoverable, clearing it is not (ledger row 4).
+      if (!updatedAnswers || updatedAnswers === UNVERIFIED_ANSWERS) return { type: 'failure' };
       // Merge the updated answers into the existing candidate, preserving id + static fields.
       this.#mergeCandidateAnswers(updatedAnswers);
     }
@@ -282,13 +267,10 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
         properties: { image, termsOfUseAccepted }
       });
       if (!updatedCandidate) throw new Error('Failed to update image or termsOfUseAccepted');
-      // The property setter returns ONLY the changed properties (`termsOfUseAccepted`,
-      // `image`) — NOT the whole candidate. Merge them into the existing candidate so
-      // `id` and the other static fields (and any just-merged answers) survive; a
-      // wholesale replace here would drop `id` and break the next save's RPC call.
+      // The property setter returns ONLY the changed properties (`termsOfUseAccepted`, `image`) — NOT the whole candidate. Merge them into the existing candidate so `id` and the other static fields (and any just-merged answers) survive; a wholesale replace here would drop `id` and break the next save's RPC call.
       this.#updateCandidateData({ ...this.#savedData.candidate, ...updatedCandidate });
     }
-    // Only reset the answers after successful save
+    // Only reset the answers after successful save. ALL THREE resets are skipped on the unverified-answers path above — not just the answers one — because an unverified save leaves the image and the terms-acceptance edits equally unconfirmed.
     this.resetAnswers();
     this.resetImage();
     this.resetTermsOfUseAccepted();
@@ -302,7 +284,7 @@ class CandidateUserDataStateImpl implements CandidateUserDataState {
  * The saved data is cleared if answers become locked.
  * Dedicated methods are provided for loading, saving, setting or resetting data.
  * @param answersLocked - A getter that indicates whether answers are locked.
- * @param dataWriter - The synchronous `UniversalDataWriter` instance for saving data.
+ * @param dataWriter - A getter returning a `UniversalDataWriter` built for the call that is about to be made.
  * @param locale - The current locale string, used for translating some data when it's fetched.
  */
 export function candidateUserDataState({
@@ -311,7 +293,7 @@ export function candidateUserDataState({
   locale
 }: {
   answersLocked: () => boolean;
-  dataWriter: UniversalDataWriter;
+  dataWriter: () => UniversalDataWriter;
   locale: () => string;
 }): CandidateUserDataState {
   return new CandidateUserDataStateImpl({ answersLocked, dataWriter, locale });

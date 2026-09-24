@@ -1,6 +1,5 @@
 <!--
-@component
-Render a text filter for entities.
+@component Render a text filter for entities.
 
 ### Properties
 
@@ -34,9 +33,7 @@ Render a text filter for entities.
   // Filtering
   ////////////////////////////////////////////////////////////////////
 
-  // value seeds from filter.include at mount; mutable thereafter (bound
-  // by the input element). filter is treated as a stable reference for
-  // the component's lifetime per filterContext design.
+  // value seeds from filter.include at mount; mutable thereafter (bound by the input element). filter is treated as a stable reference for the component's lifetime per filterContext design.
   // svelte-ignore state_referenced_locally
   let value: string = $state(filter.include);
 
@@ -45,8 +42,7 @@ Render a text filter for entities.
     filter.include = value;
   });
 
-  // Wire onChange in an effect so the cleanup handler runs symmetrically
-  // (matches the pattern used elsewhere in the filter components).
+  // Wire onChange in an effect so the cleanup handler runs symmetrically (matches the pattern used elsewhere in the filter components).
   $effect(() => {
     filter.onChange(updateText);
     return () => filter.onChange(updateText, false);

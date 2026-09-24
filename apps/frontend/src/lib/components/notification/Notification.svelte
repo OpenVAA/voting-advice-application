@@ -1,6 +1,5 @@
 <!--
-@component
-Show a notification popup to the user.
+@component Show a notification popup to the user.
 
 ### Properties
 

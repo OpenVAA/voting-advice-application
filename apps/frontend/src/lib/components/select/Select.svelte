@@ -106,18 +106,9 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
     }
   });
 
-  // Re-sync the visible `inputValue` whenever `selected` changes externally
-  // (e.g., a sibling Select bound to the same `selectedId` was picked, or the
-  // parent reset the binding to ''). Without this, the displayed text in
-  // siblings stays stale because `inputValue` is only updated by user-driven
-  // focus/blur handlers (`closeOptionList` / `handleFocus`). Gated on the
-  // listbox being closed so we never interrupt the user mid-type.
+  // Re-sync the visible `inputValue` whenever `selected` changes externally (e.g., a sibling Select bound to the same `selectedId` was picked, or the parent reset the binding to ''). Without this, the displayed text in siblings stays stale because `inputValue` is only updated by user-driven focus/blur handlers (`closeOptionList` / `handleFocus`). Gated on the listbox being closed so we never interrupt the user mid-type.
   //
-  // The body reads/writes `inputValue` inside `untrack` so the effect's
-  // dependency set is ONLY {`selected`, `canonicalOptions`, `isOptionListOpen`}
-  // — without that, `handleFocus`'s `inputValue = ''` would re-trigger this
-  // effect mid-flow and instantly restore the prior label, defeating the
-  // clear-for-retyping intent.
+  // The body reads/writes `inputValue` inside `untrack` so the effect's dependency set is ONLY {`selected`, `canonicalOptions`, `isOptionListOpen`} — without that, `handleFocus`'s `inputValue = ''` would re-trigger this effect mid-flow and instantly restore the prior label, defeating the clear-for-retyping intent.
   $effect(() => {
     void selected;
     void canonicalOptions;
@@ -290,7 +281,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
   </div>
 {:else if autocomplete === 'on'}
   <div class="w-full max-w-md place-self-center" onfocusout={handleFocusOut}>
-    <!-- bind: keep — autocompleteInput is $state single ref; bind:value={inputValue} is two-way DOM input ($state). Bind directives placed AFTER value-affecting attributes (see phase 65 reorder reverted). -->
+    <!-- bind: keep — autocompleteInput is $state single ref; bind:value={inputValue} is two-way DOM input ($state). -->
     <input
       {...concatClass(restProps, `select ${inputClass}`)}
       class:text-secondary={selected === ''}
@@ -315,9 +306,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
             : 'bg-base-300'}">
           {#each filteredOptions as option, optionIndex}
             <!-- Keyboard interaction lives on the parent <input> via
-                 onkeydown={handleKeydown} (Enter selects the option at
-                 focusIndex; aria-activedescendant points the screen
-                 reader at the matching <li>). The click handler here
+                 onkeydown={handleKeydown} (Enter selects the option at focusIndex; aria-activedescendant points the screen reader at the matching <li>). The click handler here
                  is just the pointer-only path. -->
             <!-- svelte-ignore a11y_click_events_have_key_events -->
             <!-- tabindex is necessary for the parents onfocusout to be able to detect focus held by the li element -->
@@ -345,7 +334,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
     {/if}
   </div>
 {:else}
-  <!-- bind: keep — two-way DOM select bind:value={selected}; selected is $bindable(''). Bind placed AFTER class= for symmetry with the reorder revert (see phase 65). -->
+  <!-- bind: keep — two-way DOM select bind:value={selected}; selected is $bindable(''). -->
   <select
     aria-label={effectiveLabel}
     {...concatClass(restProps, `select ${inputClass}`)}

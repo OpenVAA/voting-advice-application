@@ -1,6 +1,5 @@
 <!--
-@component
-A modal dialog that looks like a drawer.
+@component A modal dialog that looks like a drawer.
 
 ### Properties
 

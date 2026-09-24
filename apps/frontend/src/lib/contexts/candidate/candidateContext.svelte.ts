@@ -1,19 +1,18 @@
-import { getCustomData } from '@openvaa/app-shared';
-import { ENTITY_TYPE, isEmptyValue, QUESTION_CATEGORY_TYPE } from '@openvaa/data';
+import { getCustomData, log } from '@openvaa/app-shared';
+import { ENTITY_TYPE, isEmptyValue } from '@openvaa/data';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import { dataWriter } from '$lib/api/dataWriter';
-import { logDebugError } from '$lib/utils/logger';
+import { getImpliedElectionIds } from '$lib/routes';
 import { removeDuplicates } from '$lib/utils/removeDuplicates';
-import { getImpliedElectionIds } from '$lib/utils/route';
 import { candidateUserDataState } from './candidateUserDataState.svelte';
 import { getAppContext } from '../app';
 import { getAuthContext } from '../auth';
 import { inheritContextMembers } from '../utils/inheritContextMembers';
 import { localStorageState, sessionStorageState } from '../utils/persistedState.svelte';
 import { prepareDataWriter } from '../utils/prepareDataWriter';
+import { rollUpQuestionCategories } from '../utils/questionRollup';
 import type { Id } from '@openvaa/core';
 import type { AnyQuestionVariant, Constituency, Election, QuestionCategory } from '@openvaa/data';
 import type { DataWriter } from '$lib/api/base/dataWriter.type';
@@ -33,71 +32,34 @@ type QuestionBlocksShape = {
 };
 
 /**
- * The candidate context (orchestrator) re-expressed as a Svelte 5 CLASS
- * (`CandidateContextProvider`; v2.13 context-as-class migration).
- * CONVERTED from the 452-line object-literal factory that `initCandidateContext()`
- * returned. Constructed via `new CandidateContextProvider()` inside
- * `initCandidateContext()`, at component-init time exactly as the former factory ran.
+ * The candidate context (orchestrator) as a Svelte 5 CLASS (`CandidateContextProvider`).
+ * Constructed via `new CandidateContextProvider()` inside `initCandidateContext()`, at component-init time.
  *
- * ── Shape decision (111-PATTERNS) ─────────────────────────────────────────
- * NO consumer spreads `candidateContext` (`{ ...candidateContext }` /
- * `...getCandidateContext()` / `...userData` → zero hits). So its OWN members are
- * exposed as plain PROTOTYPE GETTERS (the natural class shape; CONVENTIONS) —
- * candidateContext does NOT need the Phase-109 own-enumerable discipline. The
- * own-enumerable concern applies ONLY to the INHERITED appContext + authContext
- * members, which arrive already own-enumerable from the Phase-109
- * AppContextProvider + Phase-107 AuthContextProvider instances and are reproduced
- * via two `Object.assign` calls (replacing the former `...appContext` /
- * `...authContext` spreads).
+ * ── Shape decision ──────────────────────────────────────────────────────────
+ * NO consumer spreads `candidateContext` (`{ ...candidateContext }` / `...getCandidateContext()` / `...userData` → zero hits). So its OWN members are exposed as plain PROTOTYPE GETTERS (the natural class shape) — candidateContext does NOT need the own-enumerable discipline. The own-enumerable concern applies ONLY to the INHERITED appContext + authContext members, which arrive already own-enumerable from the AppContextProvider + AuthContextProvider instances and are forwarded onto this instance rather than spread into it.
  *
  * ── logout override (LANDMINE) ───────────────────────────────────────────────
- * `logout` is declared on CandidateContext (the surface) and wraps the inherited
- * authContext logout with a post-logout `goto(...).then(#reset)`. Because field
- * initializers run BEFORE the constructor body, an arrow-FIELD `logout` would be
- * CLOBBERED by `Object.assign(this, this.#authContext)`. So `logout` is exposed as
- * a PROTOTYPE GETTER delegating to a private `#logout` arrow — prototype members
- * are NOT own-enumerable, so `Object.assign` does NOT overwrite them.
+ * `logout` is declared on CandidateContext (the surface) and wraps the inherited authContext logout with a post-logout `goto(...).then(#reset)`. Because field initializers run BEFORE the constructor body, an arrow-FIELD `logout` would be CLOBBERED by `Object.assign(this, this.#authContext)`. So `logout` is exposed as a PROTOTYPE GETTER delegating to a private `#logout` arrow — prototype members are NOT own-enumerable, so `Object.assign` does NOT overwrite them.
  *
  * ── Destructure-trap contract ────────────────────────────────────────────────
- * This very context is the canonical Phase-61 destructure-trap diagnostic
- * (CLAUDE.md Context Destructuring Rule; the push-based `$state`
- * mirrors below are the FIX). Class prototype getters preserve the contract:
- * reads via `ctx.X` re-invoke the getter in the tracking scope, so updates after
- * data load propagate. Do NOT regress to destructured-capture or pull-chain.
+ * This context is the canonical example of the destructure trap (CLAUDE.md Context Destructuring Rule; the push-based `$state` mirrors below are what keeps it from firing). Class prototype getters preserve the contract: reads via `ctx.X` re-invoke the getter in the tracking scope, so updates after data load propagate. Do NOT regress to destructured-capture or a pull-chain.
  *
- * ── D1 field-init order ──────────────────────────────────────────────────────
- * The stable refs / persisted handles / `$state` / `$derived` fields + the
- * `#userData` composite are field initializers (run in declaration order BEFORE
- * the constructor body). `#userData` is declared AFTER `#answersLocked` +
- * `#locale` because its getter-thunks read them. The 3 `$effect` blocks +
- * the two `Object.assign` calls are installed in the CONSTRUCTOR (D1) — legal
- * because candidateContext is constructed during component init, an effect context.
+ * ── Field-init order ─────────────────────────────────────────────────────────
+ * The stable refs / persisted handles / `$state` / `$derived` fields + the `#userData` composite are field initializers (run in declaration order BEFORE the constructor body). `#userData` is declared AFTER `#answersLocked` + `#locale` because its getter-thunks read them. The 3 `$effect` blocks + the two member forwards are installed in the CONSTRUCTOR — legal because candidateContext is constructed during component init, an effect context.
  *
- * @internal — test seam — do not construct directly; requires effect context;
- * use `initCandidateContext()`. Calling `new CandidateContextProvider()` outside
- * `initCandidateContext()` bypasses the `CONTEXT_KEY` double-init guard and will
- * throw `effect_orphan` outside a component `<script>` or `$effect.root`.
+ * @internal — test seam — do not construct directly; requires effect context; use `initCandidateContext()`. Calling `new CandidateContextProvider()` outside `initCandidateContext()` bypasses the `CONTEXT_KEY` double-init guard and will throw `effect_orphan` outside a component `<script>` or `$effect.root`.
  * @throws When constructed outside a Svelte effect context (effect_orphan).
  */
 export class CandidateContextProvider implements CandidateContext {
   ////////////////////////////////////////////////////////////
-  // Inheritance from other Contexts + STABLE refs (field initializers — they run
-  // BEFORE the $derived/producer field initializers below in declaration order,
-  // so those can read them; the appContext + authContext members are reproduced
-  // via `Object.assign(this, this.#appContext)` + `Object.assign(this,
-  // this.#authContext)` in the constructor).
+  // Inheritance from other Contexts + STABLE refs (field initializers — they run BEFORE the $derived/producer field initializers below in declaration order, so those can read them; the appContext + authContext members are reproduced via `Object.assign(this, this.#appContext)` + `Object.assign(this, this.#authContext)` in the constructor).
   ////////////////////////////////////////////////////////////
 
   #appContext = getAppContext();
   #authContext = getAuthContext();
 
-  // getRoute is a rune-native `{ readonly current }` handle; read
-  // directly via `#getRoute.current(...)`. appSettings/locale/dataRoot are now BARE
-  // reactive accessors (see phase 113) — read `this.#appContext.X` directly.
-  // They are exposed here as private GETTERS (not value-captured fields): a field
-  // initializer would snapshot the bare value once at construction and lose
-  // reactivity; the getters re-invoke `this.#appContext.X` inside the tracking scope
-  // on every read.
+  // getRoute is a rune-native `{ readonly current }` handle; read directly via `#getRoute.current(...)`. appSettings/locale/dataRoot are BARE reactive accessors — read `this.#appContext.X` directly.
+  // They are exposed here as private GETTERS (not value-captured fields): a field initializer would snapshot the bare value once at construction and lose reactivity; the getters re-invoke `this.#appContext.X` inside the tracking scope on every read.
   #getRoute = this.#appContext.getRoute;
   get #appSettings(): AppContext['appSettings'] {
     return this.#appContext.appSettings;
@@ -108,8 +70,7 @@ export class CandidateContextProvider implements CandidateContext {
   get #dataRoot(): AppContext['dataRoot'] {
     return this.#appContext.dataRoot;
   }
-  // The private handle the logout override delegates to (replaces the former
-  // `const { logout: _logout } = authContext`).
+  // The private handle the logout override delegates to (replaces the former `const { logout: _logout } = authContext`).
   #authLogout = this.#authContext.logout;
 
   ////////////////////////////////////////////////////////////////////
@@ -120,11 +81,10 @@ export class CandidateContextProvider implements CandidateContext {
 
   #idTokenClaims = $derived(page.data.claims ?? undefined);
 
-  // userData composite producer — declared AFTER #answersLocked + #locale
-  // (D1): the getter-thunks read them. The thunks are lazy, so this is safe.
+  // userData composite producer — declared AFTER #answersLocked + #locale because the getter-thunks read them. The thunks are lazy, so this is safe.
   #userData = candidateUserDataState({
     answersLocked: () => this.#answersLocked,
-    dataWriter,
+    dataWriter: prepareDataWriter,
     locale: () => this.#locale
   });
 
@@ -138,8 +98,7 @@ export class CandidateContextProvider implements CandidateContext {
 
   #constituenciesSelectable = $derived(this.#dataRoot.elections?.some((e) => !e.singleConstituency));
 
-  // Persisted handles — imperative round-trip via.current/.set (see spike 021/023);
-  // NO $effect-driven init.
+  // Persisted handles — imperative round-trip via `.current`/`.set`; NO $effect-driven init.
   #preregistrationElectionIds = sessionStorageState('candidateContext-preselectedElectionIds', new Array<Id>());
 
   #preregistrationConstituencyIds = sessionStorageState<{
@@ -169,33 +128,16 @@ export class CandidateContextProvider implements CandidateContext {
     }>;
   });
 
-  // (see phase 61 Plan 03, Hypothesis A reactivity fix):
-  // The pull-chain `$derived.by` pattern (via helper stores) did not propagate
-  // reactive invalidation correctly to cross-module consumers — confirmed by
-  // console trace: selectedElections/opinionQuestions
-  // derivations evaluated ONCE at component-init with pre-data values and never
-  // re-ran after the protected layout `$effect` populated dataRoot + userData.
-  // Root mechanism: Svelte 5 tracks reactive reads from within a tracking scope,
-  // but a DESTRUCTURED context-object property (`const { opinionQuestions } = ctx`)
-  // captures the getter's INITIAL return value as a plain local binding — the
-  // consumer's `$effect` reading `opinionQuestions.length` thereafter has no
-  // live reactive source. The `$derived` chain did recompute internally, but
-  // downstream reads via the destructured property saw only the pre-data snapshot.
+  // A pull-chain `$derived.by` pattern (via helper stores) does NOT propagate reactive invalidation correctly to cross-module consumers — measured by console trace: the selectedElections/opinionQuestions derivations evaluated ONCE at component-init with pre-data values and never re-ran after the protected layout `$effect` populated dataRoot + userData.
+  // Root mechanism: Svelte 5 tracks reactive reads from within a tracking scope, but a DESTRUCTURED context-object property (`const { opinionQuestions } = ctx`) captures the getter's INITIAL return value as a plain local binding — the consumer's `$effect` reading `opinionQuestions.length` thereafter has no live reactive source. The `$derived` chain did recompute internally, but downstream reads via the destructured property saw only the pre-data snapshot.
   //
-  // Fix: switch selectedElections/selectedConstituencies + downstream question
-  // chain to push-based `$state` mirrors updated by a single `$effect`. `$state`
-  // reads through context getters propagate correctly (verified in this plan).
-  // Consumers that previously destructured now read `ctx.X` directly; inline
-  // derivations replace the helper-store pull chain (helpers kept for voterContext).
+  // So selectedElections/selectedConstituencies + the downstream question chain are push-based `$state` mirrors updated by a single `$effect`. `$state` reads through context getters propagate correctly. Consumers MUST read `ctx.X` directly rather than destructure; inline derivations take the place of a helper-store pull chain (the helpers remain for voterContext).
   #selectedElections = $state<Array<Election>>([]);
   #selectedConstituencies = $state<Array<Constituency>>([]);
 
   /**
    * All applicable, non-empty question categories to be used as a base for the other stores.
-   * (see phase 61 Plan 03): inlined the pull-chain helper-store derivations
-   * into a single push-based `$effect` that writes `$state` mirrors. Behavior is
-   * equivalent to `questionCategoryState`/`questionState`/`questionBlockState` but
-   * the consumer-facing reactivity works via context getters.
+   * Written by a single push-based `$effect` rather than a pull-chain of helper-store derivations. Behaviour is equivalent to `questionCategoryState`/`questionState`/`questionBlockState`, but the consumer-facing reactivity works via context getters.
    */
   #infoQuestionCategories = $state<Array<QuestionCategory>>([]);
   #opinionQuestionCategories = $state<Array<QuestionCategory>>([]);
@@ -238,9 +180,7 @@ export class CandidateContextProvider implements CandidateContext {
   );
 
   ////////////////////////////////////////////////////////////
-  // Inherited appContext members (declared for `implements CandidateContext`;
-  // INSTALLED via `Object.assign(this, this.#appContext)` in the constructor from
-  // the own-enumerable Phase-109 AppContextProvider instance). Definite-assignment `!`.
+  // Inherited appContext members (declared for `implements CandidateContext`; INSTALLED via `Object.assign(this, this.#appContext)` in the constructor from the own-enumerable AppContextProvider instance). Definite-assignment `!`.
   ////////////////////////////////////////////////////////////
 
   readonly appType!: AppContext['appType'];
@@ -258,8 +198,6 @@ export class CandidateContextProvider implements CandidateContext {
   readonly dataRoot!: AppContext['dataRoot'];
   readonly setDataRoot!: AppContext['setDataRoot'];
   readonly sendTrackingEvent!: AppContext['sendTrackingEvent'];
-  readonly sessionId!: AppContext['sessionId'];
-  readonly shouldTrack!: AppContext['shouldTrack'];
   readonly startPageview!: AppContext['startPageview'];
   readonly startEvent!: AppContext['startEvent'];
   readonly track!: AppContext['track'];
@@ -274,10 +212,7 @@ export class CandidateContextProvider implements CandidateContext {
   readonly popupQueue!: AppContext['popupQueue'];
 
   ////////////////////////////////////////////////////////////
-  // Inherited authContext members (declared for `implements CandidateContext`;
-  // INSTALLED via `Object.assign(this, this.#authContext)` in the constructor from
-  // the own-enumerable Phase-107 AuthContextProvider instance). `logout` is NOT
-  // declared here — candidateContext overrides it via a prototype getter (below).
+  // Inherited authContext members (declared for `implements CandidateContext`; INSTALLED via `Object.assign(this, this.#authContext)` in the constructor from the own-enumerable AuthContextProvider instance). `logout` is NOT declared here — candidateContext overrides it via a prototype getter (below).
   ////////////////////////////////////////////////////////////
 
   readonly isAuthenticated!: AuthContext['isAuthenticated'];
@@ -290,26 +225,11 @@ export class CandidateContextProvider implements CandidateContext {
     // Inheritance from other Contexts
     ////////////////////////////////////////////////////////////
     //
-    // Reproduce the former `...appContext` (L366) + `...authContext` (L367)
-    // spreads: both sources are own-enumerable class instances (Phase-109
-    // AppContextProvider + Phase-107 AuthContextProvider), so Object.assign copies
-    // their members correctly onto this instance. (The stable refs, persisted
-    // handles, $state, $derived, and #userData are field initializers above, which
-    // run in declaration order BEFORE this constructor body — D1.)
+    // Forward appContext + authContext INSTEAD of spreading them: both sources are own-enumerable class instances (AppContextProvider + AuthContextProvider), so every member can be copied onto this instance. (The stable refs, persisted handles, $state, $derived, and #userData are field initializers above, which run in declaration order BEFORE this constructor body.)
     //
-    // LANDMINE FIX (111-03): `logout` is overridden by a getter-ONLY prototype
-    // accessor (no setter — see the `get logout()` block below). Under SSR the
-    // server renderer executes in strict-mode ESM, where `Object.assign` ATTEMPTING
-    // to write the authContext's own-enumerable `logout` arrow onto a getter-only
-    // accessor throws `TypeError: Cannot set property logout ... which has only a
-    // getter`. The Plan-02 reasoning ("prototype getter is not clobbered") was only
-    // half-right: the getter survives, but the WRITE itself throws. So we copy every
-    // authContext member EXCEPT `logout`; the inherited logout is already captured in
-    // `#authLogout` and wrapped by the prototype getter.
+    // LANDMINE: `logout` is overridden by a getter-ONLY prototype accessor (no setter — see the `get logout()` block below). Under SSR the server renderer executes in strict-mode ESM, where `Object.assign` ATTEMPTING to write the authContext's own-enumerable `logout` arrow onto a getter-only accessor throws `TypeError: Cannot set property logout ... which has only a getter`. "A prototype getter is not clobbered" is only half the story: the getter survives, but the WRITE itself throws. So we copy every authContext member EXCEPT `logout`; the inherited logout is already captured in `#authLogout` and wrapped by the prototype getter.
 
-    // see phase 113 CR-01: inheritContextMembers (NOT Object.assign) forwards the bare
-    // reactive accessors (appSettings / dataRoot / locale) as LIVE accessors;
-    // Object.assign would snapshot and freeze their reactivity for consumers.
+    // Use inheritContextMembers (NOT Object.assign) so the bare reactive accessors (appSettings / dataRoot / locale) as LIVE accessors; Object.assign would snapshot and freeze their reactivity for consumers.
     inheritContextMembers(this, this.#appContext);
     const { logout: _inheritedLogout, ...authContextRest } = this.#authContext;
     Object.assign(this, authContextRest);
@@ -330,7 +250,7 @@ export class CandidateContextProvider implements CandidateContext {
           current.nominations.nominations.map((n) => dr.getElection(n.electionId))
         );
       } catch (e) {
-        logDebugError(`[candidateContext selectedElections] Error fetching election: ${e}`);
+        log.error(`[candidateContext selectedElections] Error fetching election: ${e}`);
         this.#selectedElections = [];
       }
     });
@@ -347,7 +267,7 @@ export class CandidateContextProvider implements CandidateContext {
           current.nominations.nominations.map((n) => dr.getConstituency(n.constituencyId))
         );
       } catch (e) {
-        logDebugError(`[candidateContext selectedConstituencies] Error fetching constituency: ${e}`);
+        log.error(`[candidateContext selectedConstituencies] Error fetching constituency: ${e}`);
         this.#selectedConstituencies = [];
       }
     });
@@ -357,23 +277,14 @@ export class CandidateContextProvider implements CandidateContext {
       const elections = this.#selectedElections;
       const constituencies = this.#selectedConstituencies;
       const entityType = ENTITY_TYPE.Candidate;
-      const nextQuestionCategories =
-        dr.questionCategories?.filter(
-          (c) =>
-            c.appliesTo({ elections, constituencies, entityType }) &&
-            c.getApplicableQuestions({ elections, constituencies, entityType }).length > 0
-        ) ?? [];
-      const nextInfoCats = nextQuestionCategories.filter((qc) => qc.type !== QUESTION_CATEGORY_TYPE.Opinion);
-      const nextOpinionCats = nextQuestionCategories.filter((qc) => qc.type === QUESTION_CATEGORY_TYPE.Opinion);
-      const nextInfoQuestions = nextInfoCats.flatMap((c) =>
-        c.getApplicableQuestions({ elections, constituencies, entityType })
-      );
-      const nextOpinionQuestions = nextOpinionCats.flatMap((c) => {
-        const questions = c.getApplicableQuestions({ elections, constituencies, entityType });
-        if (c.type === QUESTION_CATEGORY_TYPE.Opinion && questions.some((q) => !q.isMatchable))
-          error(500, `Some opinion questions in category ${c.id} is not matchable.`);
-        return questions;
-      });
+      // `dr` was read above, inside this effect's tracking scope, and is handed to the shared rollup BY VALUE — never as a `$derived` alias and never as a thunk. See `../utils/questionRollup` for why either shape goes stale on cold entry.
+      const {
+        infoCategories: nextInfoCats,
+        opinionCategories: nextOpinionCats,
+        infoQuestions: nextInfoQuestions,
+        opinionQuestions: nextOpinionQuestions
+      } = rollUpQuestionCategories({ dataRoot: dr, elections, constituencies, entityType });
+      // Blocks stay here: the candidate app builds them from every opinion category, the voter app from a filtered and reordered subset, so sharing them would be a parameterised branch rather than shared logic.
       const nextBlocks = nextOpinionCats
         .map((c) => c.getApplicableQuestions({ elections, constituencies, entityType }))
         .filter((b) => b.length > 0);
@@ -406,9 +317,7 @@ export class CandidateContextProvider implements CandidateContext {
   }
 
   ////////////////////////////////////////////////////////////////////
-  // Wrappers for DataWriter methods (arrow fields — survive detach)
-  // NB. These automatically handle authentication
-  // See also userData which handles other methods
+  // Wrappers for DataWriter methods (arrow fields — survive detach) NB. These automatically handle authentication See also userData which handles other methods
   ////////////////////////////////////////////////////////////////////
 
   // These are exported for convenience so that all relevant methods can be accessed via the context on the client-side.
@@ -416,11 +325,11 @@ export class CandidateContextProvider implements CandidateContext {
   checkRegistrationKey = (
     ...args: Parameters<DataWriter['checkRegistrationKey']>
   ): ReturnType<DataWriter['checkRegistrationKey']> => {
-    return prepareDataWriter(dataWriter).then((dw) => dw.checkRegistrationKey(...args));
+    return prepareDataWriter().checkRegistrationKey(...args);
   };
 
   register = (...args: Parameters<DataWriter['register']>): ReturnType<DataWriter['register']> => {
-    return prepareDataWriter(dataWriter).then((dw) => dw.register(...args));
+    return prepareDataWriter().register(...args);
   };
 
   exchangeCodeForIdToken = async (opts: {
@@ -428,14 +337,14 @@ export class CandidateContextProvider implements CandidateContext {
     codeVerifier: string;
     redirectUri: string;
   }): Promise<void> => {
-    const dw = await prepareDataWriter(dataWriter);
+    const dw = prepareDataWriter();
     try {
       const result = await dw.exchangeCodeForIdToken(opts);
       if (result.type === 'success') {
         return await goto(this.#getRoute.current('CandAppPreregister'), { invalidateAll: true });
       }
     } catch (e) {
-      logDebugError(`Error exchanging authorization code for ID token: ${e ?? '-'}`);
+      log.error(`Error exchanging authorization code for ID token: ${e ?? '-'}`);
     }
     return await goto(
       this.#getRoute.current({
@@ -457,7 +366,7 @@ export class CandidateContextProvider implements CandidateContext {
       };
     };
   }): Promise<void> => {
-    const dw = await prepareDataWriter(dataWriter);
+    const dw = prepareDataWriter();
     try {
       const result = await dw.preregisterWithIdToken(opts);
       const errorMap: Record<number, string> = { 401: 'tokenExpiredError', 409: 'candidateExistsError' };
@@ -476,7 +385,7 @@ export class CandidateContextProvider implements CandidateContext {
         { invalidateAll: true }
       );
     } catch (e) {
-      logDebugError(`Error preregistering a candidate: ${e ?? '-'}`);
+      log.error(`Error preregistering a candidate: ${e ?? '-'}`);
     }
     return await goto(this.#getRoute.current({ route: 'CandAppPreregisterStatus', code: 'unknownError' }), {
       invalidateAll: true
@@ -484,19 +393,14 @@ export class CandidateContextProvider implements CandidateContext {
   };
 
   clearIdToken = async (): Promise<void> => {
-    const dw = await prepareDataWriter(dataWriter);
+    const dw = prepareDataWriter();
     await dw.clearIdToken().catch((e) => {
-      logDebugError(`Error logging out: ${e?.message ?? '-'}`);
+      log.error(`Error logging out: ${e?.message ?? '-'}`);
     });
   };
 
   ////////////////////////////////////////////////////////////////////
-  // logout override (LANDMINE — see class JSDoc). `logout` wraps the inherited
-  // authContext logout with a post-logout goto + #reset. It is a PROTOTYPE GETTER
-  // delegating to a private `#logout` arrow: prototype members are NOT
-  // own-enumerable, so `Object.assign(this, this.#authContext)` does NOT overwrite
-  // it (whereas an arrow FIELD `logout` WOULD be clobbered, because field
-  // initializers run BEFORE the constructor body).
+  // logout override (LANDMINE — see class JSDoc). `logout` wraps the inherited authContext logout with a post-logout goto + #reset. It is a PROTOTYPE GETTER delegating to a private `#logout` arrow: prototype members are NOT own-enumerable, so `Object.assign(this, this.#authContext)` does NOT overwrite it (whereas an arrow FIELD `logout` WOULD be clobbered, because field initializers run BEFORE the constructor body).
   ////////////////////////////////////////////////////////////////////
 
   get logout() {
@@ -516,8 +420,7 @@ export class CandidateContextProvider implements CandidateContext {
   };
 
   ////////////////////////////////////////////////////////////
-  // Surface members (prototype get/set accessors — spread-safe). Reads via
-  // `ctx.X` re-invoke the getter in the tracking scope (destructure-trap contract).
+  // Surface members (prototype get/set accessors — spread-safe). Reads via `ctx.X` re-invoke the getter in the tracking scope (destructure-trap contract).
   ////////////////////////////////////////////////////////////
 
   get answersLocked() {

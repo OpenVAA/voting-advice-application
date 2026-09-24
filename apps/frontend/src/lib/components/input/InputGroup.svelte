@@ -1,6 +1,5 @@
 <!--
-@component
-A componend used to group `Input`-components together.
+@component A componend used to group `Input`-components together.
 
 NB. Only single-row `Input`s are joined and they should not have the `info` property set.
 

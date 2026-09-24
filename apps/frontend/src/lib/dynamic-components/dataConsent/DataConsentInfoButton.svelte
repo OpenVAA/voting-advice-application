@@ -1,6 +1,5 @@
 <!--
-@component
-Show a button that opens a modal describing the data the app collects.
+@component Show a button that opens a modal describing the data the app collects.
 
 ### Dynamic component
 
@@ -19,12 +18,11 @@ Accesses `AppContext` to read `appSettings`.
 -->
 
 <script lang="ts">
-  import { staticSettings } from '@openvaa/app-shared';
+  import { log, staticSettings } from '@openvaa/app-shared';
   import { Button } from '$lib/components/button';
   import { Modal } from '$lib/components/modal';
   import { getAppContext } from '$lib/contexts/app';
   import { assertTranslationKey } from '$lib/i18n/utils';
-  import { logDebugError } from '$lib/utils/logger';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import type { DataConsentInfoButtonProps } from './DataConsentInfoButton.type';
 
@@ -32,7 +30,7 @@ Accesses `AppContext` to read `appSettings`.
 
   const ctx = getAppContext();
   const { t } = ctx;
-  // appSettings is a reactive accessor (see phase 113 flatten) — read via ctx.X, never destructure.
+  // appSettings is a reactive accessor — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
 
   const analyticsLink = staticSettings.analytics?.platform?.infoUrl
@@ -64,7 +62,7 @@ Accesses `AppContext` to read `appSettings`.
       )}
     </p>
   {:else}
-    {logDebugError('No analytics platform configured!')}
+    {log.debug('No analytics platform configured!')}
   {/if}
   {#snippet actions()}
     <div class="mx-auto flex w-full max-w-md flex-col">

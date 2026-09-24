@@ -1,6 +1,5 @@
 <!--
-@component
-Display an entity's match score.
+@component Display an entity's match score.
 
 ### Properties
 

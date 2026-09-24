@@ -1,6 +1,5 @@
 <!--
-@component
-Allows user to log out.
+@component Allows user to log out.
 
 ### Dynamic component
 

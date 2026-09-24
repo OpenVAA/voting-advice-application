@@ -1,6 +1,5 @@
 <!--
-@component
-Used to display a question category tag with the category's color.
+@component Used to display a question category tag with the category's color.
 
 ### Properties
 

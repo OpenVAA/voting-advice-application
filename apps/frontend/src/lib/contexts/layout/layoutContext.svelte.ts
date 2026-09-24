@@ -6,7 +6,7 @@ import { Tween } from 'svelte/motion';
 import { afterNavigate, beforeNavigate } from '$app/navigation';
 import { DELAY } from '$lib/utils/timing';
 import { VideoController } from './VideoController.svelte';
-import { settingsOverlay } from '../utils/SettingsOverlay.svelte';
+import { settingsOverlay } from '../utils/settingsOverlay.svelte';
 import type { DeepPartial } from '@openvaa/app-shared';
 import type {
   LayoutContext,
@@ -81,9 +81,7 @@ export function initLayoutContext(): LayoutContext {
     current: progressTween
   };
 
-  // Route-announcer title signal (NAVA11Y-01 / CR-01): carries the active route's already-localized
-  // page title (the value fed to the document `<title>`, minus the constant app-name suffix) up to
-  // the root `#route-announcer`. Empty string when no title-bearing layout component is mounted.
+  // Route-announcer title signal: carries the active route's already-localized page title (the value fed to the document `<title>`, minus the constant app-name suffix) up to the root `#route-announcer`. Empty string when no title-bearing layout component is mounted.
   let routeTitleValue = $state('');
   const routeTitle: RouteTitle = {
     get current() {
@@ -93,15 +91,11 @@ export function initLayoutContext(): LayoutContext {
 
   const navigation: Navigation = {};
 
-  // The video player controller is now a standalone `class VideoController`
-  // (extracted from the formerly-embedded `video` const-ref — v2.13).
-  // Its public read/write surface (`show`/`hasContent`/`mode`/`player`/`load`) is
-  // byte-identical, so the 34 `getLayoutContext()` consumers are unchanged.
+  // The video player controller is a standalone `class VideoController`.
+  // Its public read/write surface is `show`/`hasContent`/`mode`/`player`/`load`, which is what every `getLayoutContext()` consumer reads.
   const video = new VideoController();
 
-  // Setup video player auto-hiding. The navigation-driven auto-hide stays here in
-  // the host's beforeNavigate/afterNavigate hooks (NOT an `$effect` on the class —
-  // ); they toggle the instance's `shouldClearContent` flag and drive it.
+  // Setup video player auto-hiding. The navigation-driven auto-hide stays here in the host's beforeNavigate/afterNavigate hooks, NOT an `$effect` on the class; they toggle the instance's `shouldClearContent` flag and drive it.
   let timeout: NodeJS.Timeout | undefined;
   beforeNavigate(() => {
     video.shouldClearContent = true;
@@ -125,23 +119,14 @@ export function initLayoutContext(): LayoutContext {
     video,
     routeTitle,
     setRouteTitle(title) {
-      // Declarative, $effect-scoped registrar: the mounted title component calls this with its
-      // already-localized `title`. We assign the signal on mount/update of the calling component
-      // and reset it on teardown via the $effect cleanup (last-writer-wins). The writes are
-      // wrapped in `untrack` to avoid the write-after-read hazard SettingsOverlay documents (a
-      // write inside an $effect that the effect also reads would otherwise loop / disable the
-      // scheduler).
+      // Declarative, $effect-scoped registrar: the mounted title component calls this with its already-localized `title`. We assign the signal on mount/update of the calling component and reset it on teardown via the $effect cleanup (last-writer-wins). The writes are wrapped in `untrack` to avoid the write-after-read hazard settingsOverlay.svelte.ts documents (a write inside an $effect that the effect also reads would otherwise loop / disable the scheduler).
       $effect(() => {
         untrack(() => {
           routeTitleValue = title;
         });
         return () => {
           untrack(() => {
-            // Guard the cleanup: on a route swap between two title-bearing layout components
-            // (e.g. MainContent ↔ SingleCardContent) the incoming component can register its
-            // title before the outgoing component's teardown runs. Clear only if the signal
-            // still holds the value THIS registrar set, so a stale teardown can't blank the
-            // announcer that a newer writer already populated.
+            // Guard the cleanup: on a route swap between two title-bearing layout components (e.g. MainContent ↔ SingleCardContent) the incoming component can register its title before the outgoing component's teardown runs. Clear only if the signal still holds the value THIS registrar set, so a stale teardown can't blank the announcer that a newer writer already populated.
             if (routeTitleValue === title) routeTitleValue = '';
           });
         };
@@ -162,11 +147,7 @@ export function initLayoutContext(): LayoutContext {
 /**
  * Get the `LayoutContext` object.
  *
- * Consumers register layout overlays declaratively via `useTopBar` / `usePageStyles` /
- * `useNavigation` (or `topBarSettings.use(...)` etc.), whose cleanup is `$effect`-scoped —
- * the overlay is auto-reverted when the calling component is destroyed. No `onDestroy`
- * plumbing is required (the old index-revert bookkeeping is gone, and out-of-order
- * mount/unmount no longer corrupts the merged overlay).
+ * Consumers register layout overlays declaratively via `useTopBar` / `usePageStyles` / `useNavigation` (or `topBarSettings.use(...)` etc.), whose cleanup is `$effect`-scoped — the overlay is auto-reverted when the calling component is destroyed. No `onDestroy` plumbing is required, and out-of-order mount/unmount cannot corrupt the merged overlay because the registry is token-keyed rather than index-based.
  * @returns The `LayoutContext` object
  */
 export function getLayoutContext() {

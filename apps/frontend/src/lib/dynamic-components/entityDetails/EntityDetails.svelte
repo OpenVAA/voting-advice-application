@@ -1,6 +1,5 @@
 <!--
-@component
-Used to show an entity's details, possibly including their answers to `info` questions, `opinion` questions and their child nominations. You can supply either a naked entity or a ranking containing an entity.
+@component Used to show an entity's details, possibly including their answers to `info` questions, `opinion` questions and their child nominations. You can supply either a naked entity or a ranking containing an entity.
 
 If the provided entity is a (possibly matched) nomination, the questions to include will be those applicable to the election and constiuency of the nomination.
 
@@ -50,12 +49,10 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
   const ctx = getAppContext();
   const { appType, startEvent, t } = ctx;
-  // appSettings is a reactive accessor (see phase 113 flatten) — read via ctx.X, never destructure.
+  // appSettings is a reactive accessor — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
-  // appType is determined at app boot and does not change at runtime; we
-  // read it once at init to decide whether voter context is available.
-  // `answers` is consumed in the template so it must be in the reactive
-  // graph — declare with $state.
+  // appType is determined at app boot and does not change at runtime; we read it once at init to decide whether voter context is available.
+  // `answers` is consumed in the template so it must be in the reactive graph — declare with $state.
   let voterContext: VoterContext | undefined;
   let answers: AnswerState | undefined = $state(undefined);
   if (appType.current === 'voter') {
@@ -69,9 +66,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
   let contentTabs: Array<ContentTab> = $derived.by(() => {
     const { entity: nakedEntity } = unwrapEntity(entity);
-    // see phase 69: cardContents.alliance / entityDetails.contents.alliance are typed
-    // as optional in @openvaa/app-shared, so the indexed access can yield
-    // `undefined` when the alliance entry is missing from the active settings.
+    // cardContents.alliance / entityDetails.contents.alliance are typed as optional in @openvaa/app-shared, so the indexed access can yield `undefined` when the alliance entry is missing from the active settings.
     // The `!tabs?.length` guard already handles undefined at runtime.
     let tabs: Array<EntityDetailsContent | ParentEntityDetailsContent> | undefined =
       appSettings.entityDetails.contents[nakedEntity.type as keyof AppSettings['entityDetails']['contents']];
@@ -97,7 +92,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     return [];
   });
 
-  // see phase 69: alliance drawer-header "X candidates across N parties" summary
+  // Alliance drawer-header "X candidates across N parties" summary
   let allianceSummary: { numCandidates: number; numParties: number } | undefined = $derived.by(() => {
     const { nomination } = unwrapEntity(entity);
     if (isObjectType(nomination, OBJECT_TYPE.AllianceNomination)) {
@@ -148,8 +143,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   {#if contentTabs.length > 1}
     <!-- bind: keep — Pattern 2: Tabs.activeIndex is $bindable(0) -->
     <!-- transitionOnChange (O-1): the drawer tabs switch via LOCAL state (not a
-         navigation), so the global root-layout onNavigate VT hook never fires for
-         them. Opt into the minimal local startViewTransition wrapper so the tab
+         navigation), so the global root-layout onNavigate VT hook never fires for them. Opt into the minimal local startViewTransition wrapper so the tab
          content cross-fades (same shouldAnimate gate, no bespoke choreography). -->
     <Tabs
       tabs={contentTabs}

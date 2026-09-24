@@ -52,7 +52,7 @@ export const ICONS = {
   missingIcon: ['custom', 'missing_icon'],
   next: ['material', 'arrow_forward_ios'],
   opinion: ['custom', 'opinion'],
-  party: ['material', 'flag'],
+  organization: ['material', 'flag'],
   pause: ['material', 'pause'],
   photo: ['material', 'photo_camera'],
   play: ['material', 'play_arrow'],

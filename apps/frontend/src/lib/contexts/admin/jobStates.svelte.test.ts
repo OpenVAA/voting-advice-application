@@ -12,9 +12,7 @@ describe('JobStatesProvider', () => {
   });
 
   /**
-   * Construct the provider inside an `$effect.root` so its `$state`/`$derived`
-   * fields settle (mirrors VideoController.svelte.test.ts). jobStates has no
-   * `$effect`, so the root is for consistency + predictable `$derived` settling.
+   * Construct the provider inside an `$effect.root` so its `$state`/`$derived` fields settle (mirrors VideoController.svelte.test.ts). jobStates has no `$effect`, so the root is for consistency + predictable `$derived` settling.
    */
   function setup(): JobStatesProvider {
     let instance!: JobStatesProvider;
@@ -54,8 +52,7 @@ describe('JobStatesProvider', () => {
     const { startPolling, stopPolling } = jobs;
     expect(typeof startPolling).toBe('function');
     expect(typeof stopPolling).toBe('function');
-    // stopPolling detached is a safe no-op: no #pollInterval set → early return,
-    // no `this` access beyond the guard, no network. Must NOT throw.
+    // stopPolling detached is a safe no-op: no #pollInterval set → early return, no `this` access beyond the guard, no network. Must NOT throw.
     expect(() => stopPolling()).not.toThrow();
   });
 });

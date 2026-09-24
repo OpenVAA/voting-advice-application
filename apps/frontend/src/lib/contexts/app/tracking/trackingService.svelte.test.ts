@@ -1,10 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { UserPreferences } from '../userPreferences.type';
 
-// Force the `browser` branch of the shouldTrack derivation to true by default;
-// individual cases flip it as needed via doMock + resetModules.
-vi.mock('$lib/utils/logger', () => ({ logDebugError: vi.fn() }));
-
 /** Minimal rune-shaped `{ current }` handle for a producer input. */
 function handle<TValue>(value: TValue): { current: TValue } {
   return { current: value };
@@ -141,11 +137,7 @@ describe('trackingService (pure-rune producer)', () => {
   });
 
   describe('spread-safety (gate regression guard)', () => {
-    // `trackingService` is the ONLY app-layer producer consumed via `...tracking`
-    // spread (appContext.svelte.ts:299). Svelte 5 compiles bare `$state`/`$derived`
-    // CLASS fields to PROTOTYPE accessors that are NOT own-enumerable and are
-    // DROPPED by `{ ...instance }`. This case FAILS if any spread-consumed member
-    // was implemented as a bare `$derived`/`$state` public class field.
+    // The members `appContext` takes from this producer travel on through the three downstream `{ ...appContext }` spreads (candidateContext / adminContext / voterContext), and the forward itself is an `Object.assign` — which, exactly like spread, copies OWN-ENUMERABLE properties only. Svelte 5 compiles bare `$state`/`$derived` CLASS fields to PROTOTYPE accessors that are NOT own-enumerable and would be DROPPED by both. This case FAILS if any consumed member was implemented as a bare `$derived`/`$state` public class field. It checks all eight rather than only the six appContext forwards, because `sessionId` is additionally read producer-to-producer straight off `#tracking` and so has to stay own-enumerable too.
     it('reactive members + methods survive `{ ...svc }` spread', async () => {
       const { trackingService } = await importTracking(true);
       const cleanup = $effect.root(() => {
@@ -163,16 +155,8 @@ describe('trackingService (pure-rune producer)', () => {
       cleanup();
     });
 
-    // EXACT own-enumerable surface lock — deliberately NOT a `toContain` superset
-    // check. `appContext` blanket-forwards this producer's WHOLE own-enumerable
-    // surface via `inheritContextMembers(this, this.#tracking)`, so ANY new public
-    // own-enumerable member added to `TrackingServiceImpl` silently WIDENS
-    // appContext's public runtime surface beyond the `AppContext` type. The
-    // appContext spread guard (`appContext.spread.svelte.test.ts`) is a superset
-    // check and is therefore blind to that widening — this case is the tripwire.
-    // If you add a member here on purpose, add it to `AppContext` and to this
-    // list in the same change.
-    it('exposes EXACTLY the eight own-enumerable members appContext forwards', async () => {
+    // EXACT own-enumerable surface lock — deliberately NOT a `toContain` superset check. It pins THIS PRODUCER's surface at eight members. `appContext` no longer blanket-forwards them: since the tracking-layer collapse it forwards an EXPLICIT list of SIX (the `Object.assign` in `appContext.svelte.ts`'s forwarding block), deliberately withholding `sessionId` and `shouldTrack`. That explicit list is what now stops a new producer member from reaching the contexts implicitly, so this case is no longer a tripwire on silent downstream widening — it locks the producer surface that the list is maintained against, and it is the only place the two withheld members are pinned at all. Add a member here on purpose and you must add it to this list AND decide explicitly whether it joins the six in appContext's forward and the `AppContext` type. The appContext spread guard (`appContext.spread.svelte.test.ts`) is a superset check over `AppContext` and says nothing about this producer.
+    it('exposes EXACTLY eight own-enumerable members, of which appContext forwards six', async () => {
       const { trackingService } = await importTracking(true);
       const cleanup = $effect.root(() => {
         const svc = trackingService({

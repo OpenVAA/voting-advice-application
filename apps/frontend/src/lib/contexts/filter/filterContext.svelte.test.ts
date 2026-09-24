@@ -1,20 +1,14 @@
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-// Import the test stub directly. The vitest.config alias rewrites `$app/state`
-// → `src/lib/i18n/tests/__mocks__/app-state.ts`, so the `page` singleton seen
-// by `filterContext.svelte.ts` IS the same object as `mockPage` here.
+// Import the test stub directly. The vitest.config alias rewrites `$app/state` → `src/lib/i18n/tests/__mocks__/app-state.ts`, so the `page` singleton seen by `filterContext.svelte.ts` IS the same object as `mockPage` here.
 import { page as mockPage } from '$app/state';
 import FilterContextHarness from './__tests__/FilterContextHarness.svelte';
 import GetFilterContextHarness from './__tests__/GetFilterContextHarness.svelte';
 import type { FilterTree } from '$lib/contexts/voter/filters/filterState.svelte';
 import type { FilterContext } from './filterContext.type';
 
-// Helper: assigns to the `mockPage.params` stub. Cast to a permissive Record
-// because SvelteKit's auto-generated `app.d.ts` constrains `page.params` to
-// the route params that exist today (no `electionId` route — that key still
-// lives on the search side; `entityTab` is the route key).
-// filterContext reads via `parseParams` which is typed `Partial<Params>` and
-// accepts arbitrary string keys.
+// Helper: assigns to the `mockPage.params` stub. Cast to a permissive Record because SvelteKit's auto-generated `app.d.ts` constrains `page.params` to the route params that exist today (no `electionId` route — that key still lives on the search side; `entityTab` is the route key).
+// filterContext reads via `parseParams` which is typed `Partial<Params>` and accepts arbitrary string keys.
 type LooseParams = Record<string, string | undefined>;
 function setParams(params: LooseParams): void {
   (mockPage as unknown as { params: LooseParams }).params = params;
@@ -29,8 +23,6 @@ vi.mock('@sveltejs/kit', () => ({
     throw err;
   }
 }));
-
-vi.mock('$lib/utils/logger', () => ({ logDebugError: vi.fn() }));
 
 /**
  * Fake Filter implementing the subset of the @openvaa/filters Filter API used by filterContext.
@@ -103,8 +95,7 @@ function mountTarget(): HTMLElement {
 
 describe('filterContext', () => {
   beforeEach(() => {
-    // Reset the page-state stub between tests (the stub is a module singleton
-    // — the alias means the same object is shared across tests).
+    // Reset the page-state stub between tests (the stub is a module singleton — the alias means the same object is shared across tests).
     setParams({});
   });
 
@@ -262,7 +253,7 @@ describe('filterContext', () => {
     expect(resetSpy).toHaveBeenCalledTimes(1);
   });
 
-  it('removes the onChange listener on unmount (Pitfall 2 cleanup)', () => {
+  it('removes the onChange listener on unmount', () => {
     const oldGroup = new FakeGroup([new FakeFilter('old')]);
     const tree = { e1: { candidate: oldGroup } } as unknown as FilterTree;
     setParams({ electionId: 'e1', entityTab: 'candidates' });

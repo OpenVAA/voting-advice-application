@@ -1,6 +1,5 @@
 <!--
-@component
-Small badge component used to display information next to other components.
+@component Small badge component used to display information next to other components.
 
 ### Properties
 

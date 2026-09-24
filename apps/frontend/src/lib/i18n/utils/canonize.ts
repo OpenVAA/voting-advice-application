@@ -1,6 +1,5 @@
 /**
- * Return a canonical locale name for `locale` or `undefined``
- * if it's not a valid locale.
+ * Return a canonical locale name for `locale` or `undefined`` if it's not a valid locale.
  */
 export function canonize(locale: string): string | undefined {
   try {

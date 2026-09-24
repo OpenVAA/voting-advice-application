@@ -1,6 +1,5 @@
 <!--
-@component
-Show a popup asking for user feedback.
+@component Show a popup asking for user feedback.
 
 ### Properties
 

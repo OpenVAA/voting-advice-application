@@ -1,6 +1,5 @@
 <!--
-@component
-Used to display an error message. Also logs the error to the console.
+@component Used to display an error message. Also logs the error to the console.
 
 ### Properties
 
@@ -17,9 +16,9 @@ Used to display an error message. Also logs the error to the console.
 -->
 
 <script lang="ts">
+  import { log } from '@openvaa/app-shared';
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
-  import { logDebugError } from '$lib/utils/logger';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { HeroEmoji } from '../heroEmoji';
   import type { ErrorMessageProps } from './ErrorMessage.type';
@@ -37,7 +36,7 @@ Used to display an error message. Also logs the error to the console.
   ////////////////////////////////////////////////////////////////////
 
   $effect(() => {
-    logDebugError(`[ErrorMessage] ${logMessage || effectiveMessage}`);
+    log.error(`[ErrorMessage] ${logMessage || effectiveMessage}`);
   });
 
   ////////////////////////////////////////////////////////////////////

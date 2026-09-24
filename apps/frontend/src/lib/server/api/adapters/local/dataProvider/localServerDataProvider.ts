@@ -1,9 +1,8 @@
-import { staticSettings } from '@openvaa/app-shared';
+import { log, staticSettings } from '@openvaa/app-shared';
 import { translate } from '@openvaa/data';
 import { json } from '@sveltejs/kit';
 import { filterData } from '$lib/api/utils/filterData';
 import { filterEntitiesByNomination } from '$lib/api/utils/filterEntitiesByNomination';
-import { logDebugError } from '$lib/utils/logger';
 import { LocalServerAdapter } from '../localServerAdapter';
 import type {
   AnyEntityVariantData,
@@ -155,5 +154,5 @@ export class LocalServerDataProvider extends LocalServerAdapter implements DataP
 function warnIfUnsupported(options?: GetDataOptionsBase): void {
   if (!options) return;
   if ('includeUnconfirmed' in options)
-    logDebugError('[LocalServerDataProvider] includeUnconfirmed is not yet supported. Ignoring it.');
+    log.debug('[LocalServerDataProvider] includeUnconfirmed is not yet supported. Ignoring it.');
 }

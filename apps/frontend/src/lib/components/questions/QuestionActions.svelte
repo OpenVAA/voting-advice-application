@@ -1,6 +1,5 @@
 <!--
-@component
-Display a question's secondary actions, such as skip.
+@component Display a question's secondary actions, such as skip.
 
 ### Properties
 

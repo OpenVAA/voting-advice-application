@@ -10,10 +10,7 @@ import type { UserPreferences } from './userPreferences.type';
 /**
  * The AppContext type.
  *
- * ComponentContext properties are overridden: `locale` is a BARE reactive accessor
- * (see phase 113, read `ctx.locale`); `locales`/`darkMode` remain
- * `{ readonly current }` rune handles for downstream Phase-52 contexts (VoterContext,
- * CandidateContext, AdminContext) which read them via `.current`.
+ * ComponentContext properties are overridden: `locale` is a BARE reactive accessor (read `ctx.locale`); `locales`/`darkMode` remain `{ readonly current }` rune handles for the downstream contexts (VoterContext, CandidateContext, AdminContext) which read them via `.current`.
  *
  * Plain function properties (`t`, `translate`) are kept as-is from ComponentContext.
  */
@@ -21,9 +18,8 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
   DataContext &
   TrackingService & {
     /**
-     * The current locale, exposed as a BARE reactive accessor (see phase 113).
-     * Read directly via `ctx.locale`. MUST be read off `ctx` (never destructured) —
-     * it is a reactive accessor per CLAUDE.md's Context Destructuring Rule.
+     * The current locale, exposed as a BARE reactive accessor.
+     * Read directly via `ctx.locale`. MUST be read off `ctx` (never destructured) — it is a reactive accessor per CLAUDE.md's Context Destructuring Rule.
      */
     readonly locale: string;
     /**
@@ -52,11 +48,8 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
       update(fn: (v: AppCustomization) => AppCustomization): void;
     };
     /**
-     * Currently effective app settings, exposed as a BARE reactive accessor (see phase 113
-     * ). Read directly via `ctx.appSettings`. MUST be read off `ctx` (never
-     * destructured) — it is a reactive accessor per CLAUDE.md's Context Destructuring
-     * Rule. The former writable `set`/`update` surface had no external callers; internal
-     * writes go through the private `#appSettingsValue` $state (re-merge `$effect`s).
+     * Currently effective app settings, exposed as a BARE reactive accessor.
+     * Read directly via `ctx.appSettings`. MUST be read off `ctx` (never destructured) — it is a reactive accessor per CLAUDE.md's Context Destructuring Rule. There is deliberately no writable `set`/`update` surface: internal writes go through the private `#appSettingsValue` $state (re-merge `$effect`s).
      */
     readonly appSettings: AppSettings;
     /**
@@ -68,8 +61,7 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
      */
     surveyLink: { readonly current: string | undefined };
     /**
-     * User (not necessarily a voter) preferences maintained in local storage,
-     * exposed as a writable rune handle backed by `localStorageState`.
+     * User (not necessarily a voter) preferences maintained in local storage, exposed as a writable rune handle backed by `localStorageState`.
      */
     userPreferences: {
       readonly current: UserPreferences;

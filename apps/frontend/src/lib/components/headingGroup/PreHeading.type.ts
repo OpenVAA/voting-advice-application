@@ -7,8 +7,7 @@ export type PreHeadingProps = SvelteHTMLElements['p'] & {
    */
   children?: Snippet;
   /**
-   * The Aria role description of the `<p>` element representing
-   * the pre-title.
+   * The Aria role description of the `<p>` element representing the pre-title.
    *
    * @default t('aria.preHeading')
    */

@@ -1,34 +1,21 @@
+import { log } from '@openvaa/app-shared';
 import { ADMIN_FEATURES } from '$lib/admin/features';
 import { UNIVERSAL_API_ROUTES } from '$lib/api/base/universalApiRoutes';
-import { logDebugError } from '$lib/utils/logger';
 import { compareDates } from '$lib/utils/sorting';
 import type { AdminFeature } from '$lib/admin/features';
 import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 import type { JobStates } from './jobStates.type';
 
 /**
- * The job-polling store re-expressed as a Svelte 5 CLASS (`JobStatesProvider`;
- * v2.13 context-as-class migration, jobStates half). CONVERTED from the
- * `jobStates()` closure-factory that returned a `{ readonly ... }` object literal.
+ * The job-polling store as a Svelte 5 CLASS (`JobStatesProvider`).
  *
- * The reactive core is the private `#jobs` `$state` Map registry + the three
- * private `$derived` projections (`#pastJobs` / `#activeJobsByFeature` /
- * `#pastJobsByFeature`), exposed as READ-ONLY PROTOTYPE GETTERS (CONVENTIONS)
- * so reads via `instance.X` re-invoke the getter in the tracking scope and keep
- * the projections reactive.
+ * The reactive core is the private `#jobs` `$state` Map registry + the three private `$derived` projections (`#pastJobs` / `#activeJobsByFeature` / `#pastJobsByFeature`), exposed as READ-ONLY PROTOTYPE GETTERS so reads via `instance.X` re-invoke the getter in the tracking scope and keep the projections reactive.
  *
- * `startPolling` / `stopPolling` are ARROW-FUNCTION FIELDS so they survive
- * `const { startPolling } = instance` detach (they capture `this`) — both are
- * returned to and called by consumers (`WithPolling.svelte`). `#fetchAndUpdateJobs`
- * is a PRIVATE arrow field (read only by `startPolling`; not on the `JobStates`
- * surface).
+ * `startPolling` / `stopPolling` are ARROW-FUNCTION FIELDS so they survive `const { startPolling } = instance` detach (they capture `this`) — both are returned to and called by consumers (`WithPolling.svelte`). `#fetchAndUpdateJobs` is a PRIVATE arrow field (read only by `startPolling`; not on the `JobStates` surface).
  *
- * Self-contained; no `$effect` → constructible outside any effect context, unlike
- * the orchestrator providers (adminContext / candidateContext). It polls its own
- * URLs and takes no constructor deps.
+ * Self-contained; no `$effect` → constructible outside any effect context, unlike the orchestrator providers (adminContext / candidateContext). It polls its own URLs and takes no constructor deps.
  *
- * D1 field-init order: `#pastJobs` is declared BEFORE `#pastJobsByFeature` because
- * the latter reads the former.
+ * Field-init order: `#pastJobs` is declared BEFORE `#pastJobsByFeature` because the latter reads the former.
  *
  * @internal — do not construct directly; use the `jobStates()` factory.
  */
@@ -75,7 +62,7 @@ export class JobStatesProvider implements JobStates {
 
   startPolling = () => {
     if (this.#pollInterval) return;
-    logDebugError('[JobPollingService] Starting polling...');
+    log.debug('[JobPollingService] Starting polling...');
     // Poll every 2 seconds
     this.#pollInterval = setInterval(async () => {
       await this.#fetchAndUpdateJobs();
@@ -87,7 +74,7 @@ export class JobStatesProvider implements JobStates {
 
   stopPolling = () => {
     if (!this.#pollInterval) return;
-    logDebugError('[JobPollingService] Stopping polling service...');
+    log.debug('[JobPollingService] Stopping polling service...');
     clearInterval(this.#pollInterval);
     this.#pollInterval = undefined;
   };
@@ -99,7 +86,7 @@ export class JobStatesProvider implements JobStates {
   // Fetch jobs from API and update state
   #fetchAndUpdateJobs = async () => {
     try {
-      logDebugError('[JobPollingService] Fetching jobs...');
+      log.debug('[JobPollingService] Fetching jobs...');
 
       // Always fetch all active jobs (no delta)
       const activeUrl = new URL(UNIVERSAL_API_ROUTES.jobsActive, window.location.origin);
@@ -121,8 +108,7 @@ export class JobStatesProvider implements JobStates {
         Array<JobInfo>
       ];
 
-      // Update the delta cursor for past jobs only after a successful parse, so a JSON
-      // parse failure does not advance the cursor past jobs we never managed to read.
+      // Update the delta cursor for past jobs only after a successful parse, so a JSON parse failure does not advance the cursor past jobs we never managed to read.
       this.#lastPastJobsUpdate = new Date().toISOString();
 
       // Filter by known job names
@@ -169,6 +155,6 @@ function isActive(job: JobInfo): boolean {
 
 function filterByKnownNames(job: JobInfo): boolean {
   const ok = ADMIN_FEATURES.includes(job.jobType);
-  if (!ok) logDebugError(`[JobPollingService] Ignoring unknown job: ${job.jobType}`);
+  if (!ok) log.debug(`[JobPollingService] Ignoring unknown job: ${job.jobType}`);
   return ok;
 }

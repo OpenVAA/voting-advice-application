@@ -1,6 +1,5 @@
 <!--
-@component
-Used to display a loading spinner with an optionally visible text label.
+@component Used to display a loading spinner with an optionally visible text label.
 
 ### Properties
 

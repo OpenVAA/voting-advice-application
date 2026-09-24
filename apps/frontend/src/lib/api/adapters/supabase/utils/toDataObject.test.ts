@@ -74,10 +74,8 @@ describe('toDataObject', () => {
   });
 
   it('accepts a concrete typed row without an input cast and maps identically to an untyped call (locks generic)', () => {
-    // A concrete row type — NOT Record<string, unknown>. This must flow into the
-    // defaulted generic `toDataObject<TRow>` without an `as Record<string, unknown>` cast.
-    // If a future change narrowed the parameter back to `Record<string, unknown>`,
-    // this typed literal would fail to typecheck (excess-property / index-signature).
+    // A concrete row type — NOT Record<string, unknown>. This must flow into the defaulted generic `toDataObject<TRow>` without an `as Record<string, unknown>` cast.
+    // If a future change narrowed the parameter back to `Record<string, unknown>`, this typed literal would fail to typecheck (excess-property / index-signature).
     type NominationRow = {
       id: string;
       name: { en: string };

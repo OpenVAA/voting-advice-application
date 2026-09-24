@@ -1,6 +1,5 @@
 <!--
-@component
-A modal dialog.
+@component A modal dialog.
 
 ### Properties
 

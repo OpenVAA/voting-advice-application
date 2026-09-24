@@ -1,6 +1,5 @@
 <!--
-@component
-Display an `@openvaa/data: Image` object, automatically switching between dark and normal variants if available.
+@component Display an `@openvaa/data: Image` object, automatically switching between dark and normal variants if available.
 
 ### Properties
 

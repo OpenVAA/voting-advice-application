@@ -1,6 +1,5 @@
 <!--
-@component
-Contains a password validator, a password input field and a second confirmation password input field.
+@component Contains a password validator, a password input field and a second confirmation password input field.
 
 ### Dynamic component
 
@@ -10,17 +9,23 @@ Contains the dynamic `PasswordValidator` component.
 
 - `password`: Bindable: The password value.
 - `autocomplete`: The autocomplete attribute for the password input field. Default: `'new-password'`
-- `errorMessage`: Bindable: Error message if the password is invalid or doesn't match the confirmation password.
-- `valid`: Bindable: Whether the password is valid and the confirmation password matches.
+- `onValidityChange`: Called whenever the validity verdict or the error message changes, with `{ valid, errorMessage }`.
 - `reset`: Bindable: Function to clear the form.
 - Any valid attributes of a `<form>` element
+
+### Reactivity
+
+`valid` and `errorMessage` are pure functions of this component's own inputs, so they are `$derived` values rather than state pushed by an effect. They are therefore not bindable props: Svelte 5 does not permit a derived value to hold a `$bindable`. The parent receives them through `onValidityChange` instead.
 
 ### Usage
 
 ```tsx
 <PasswordSetter
   bind:password={password}
-  bind:valid={canSubmit}/>
+  onValidityChange={({ valid, errorMessage }) => {
+    canSubmit = valid;
+    validationError = errorMessage;
+  }}/>
 ```
 -->
 
@@ -34,15 +39,13 @@ Contains the dynamic `PasswordValidator` component.
   let {
     password = $bindable(''),
     autocomplete = 'new-password',
-    errorMessage = $bindable(undefined),
-    valid = $bindable(false),
+    onValidityChange,
     ...restProps
   }: PasswordSetterProps = $props();
 
   export function reset(): void {
     password = '';
     passwordConfirmation = '';
-    errorMessage = undefined;
   }
 
   const { t } = getComponentContext();
@@ -52,17 +55,19 @@ Contains the dynamic `PasswordValidator` component.
   let passwordConfirmation = $state('');
   let validPassword = $state(false);
 
-  $effect(() => {
-    valid = !!(password && passwordConfirmation && validPassword && password === passwordConfirmation);
+  // A pure function of this component's own inputs, so it is derived rather than pushed by an effect. The equality between the password and its confirmation is load-bearing and not a stylistic clause: dropping it would let a mismatched credential pass the client gate.
+  const valid = $derived(!!(password && passwordConfirmation && validPassword && password === passwordConfirmation));
+
+  // Total over the same inputs — every path through the ladder yields a value — so it is likewise derived. The branches return translation keys, never credential material.
+  const errorMessage = $derived.by(() => {
+    if (!validPassword) return t('candidateApp.setPassword.passwordNotValid');
+    if (password !== passwordConfirmation) return t('candidateApp.setPassword.passwordsDontMatch');
+    return undefined;
   });
+
+  // Handing the pair to the parent is a genuine side effect, not a value, so this one effect survives. It reads the two deriveds and nothing else, which is what keeps it from re-entering.
   $effect(() => {
-    if (!validPassword) {
-      errorMessage = t('candidateApp.setPassword.passwordNotValid');
-    } else if (password !== passwordConfirmation) {
-      errorMessage = t('candidateApp.setPassword.passwordsDontMatch');
-    } else {
-      errorMessage = undefined;
-    }
+    onValidityChange?.({ valid, errorMessage });
   });
 </script>
 

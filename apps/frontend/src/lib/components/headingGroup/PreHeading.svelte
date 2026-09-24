@@ -1,6 +1,5 @@
 <!--
-@component
-Used for a pre-title, or kicker, above the main title of a page within a `HeadingGroup`.
+@component Used for a pre-title, or kicker, above the main title of a page within a `HeadingGroup`.
 
 ### Properties
 

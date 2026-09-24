@@ -1,6 +1,5 @@
 <!--
-@component
-Display an `Entity`’s open answer to a question. If the content is empty, nothing will be rendered.
+@component Display an `Entity`’s open answer to a question. If the content is empty, nothing will be rendered.
 
 ### Properties
 

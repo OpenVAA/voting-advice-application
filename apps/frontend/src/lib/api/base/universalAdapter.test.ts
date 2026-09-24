@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { UniversalAdapter } from './universalAdapter';
+import { isRefusedResponse } from '../utils/isRefusedResponse';
+import { parseResponse } from '../utils/parseResponse';
+import type * as ParseResponseModule from '../utils/parseResponse';
 
 // Only mock the constants - everything else should use real implementations
 vi.mock('$lib/utils/constants', () => ({
@@ -7,6 +10,12 @@ vi.mock('$lib/utils/constants', () => ({
     PUBLIC_CACHE_ENABLED: false
   }
 }));
+
+// The parser is SPIED, not replaced: every case in this file runs the real implementation. The spy exists so the seam pin below can assert the parser was never INVOKED for a refused response, which is a different property from "an error was produced" and is the one that fails if the response check is deleted, moved after the parse, or made conditional.
+vi.mock('../utils/parseResponse', async (importOriginal) => {
+  const actual = await importOriginal<typeof ParseResponseModule>();
+  return { ...actual, parseResponse: vi.fn(actual.parseResponse) };
+});
 
 // Concrete implementation for testing
 class TestAdapter extends UniversalAdapter {}
@@ -16,26 +25,29 @@ describe('UniversalAdapter', () => {
   let mockFetch: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    adapter = new TestAdapter();
     mockFetch = vi.fn();
+    adapter = new TestAdapter({ fetch: mockFetch });
+    vi.mocked(parseResponse).mockClear();
   });
 
-  describe('init', () => {
-    test('should initialize with fetch function', () => {
-      const result = adapter.init({ fetch: mockFetch });
-      expect(result).toBe(adapter);
-    });
+  describe('construction', () => {
+    test('each adapter makes its requests through the fetch it was constructed with', async () => {
+      const mockResponse = { ok: true, status: 200, json: vi.fn().mockResolvedValue({}) } as unknown as Response;
+      const otherFetch = vi.fn().mockResolvedValue(mockResponse);
+      mockFetch.mockResolvedValue(mockResponse);
+      const other = new TestAdapter({ fetch: otherFetch });
 
-    test('should throw error if fetch is used before init', async () => {
-      await expect(adapter.fetch('http://openvaa.org')).rejects.toThrow();
+      await adapter.fetch('http://openvaa.org/a');
+      await other.fetch('http://openvaa.org/b');
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(mockFetch).toHaveBeenCalledWith('http://openvaa.org/a', {});
+      expect(otherFetch).toHaveBeenCalledTimes(1);
+      expect(otherFetch).toHaveBeenCalledWith('http://openvaa.org/b', {});
     });
   });
 
   describe('fetch (without caching)', () => {
-    beforeEach(() => {
-      adapter.init({ fetch: mockFetch });
-    });
-
     test('should make successful fetch request', async () => {
       const mockResponse = {
         ok: true,
@@ -124,9 +136,8 @@ describe('UniversalAdapter', () => {
       originalCacheEnabled = constants.constants.PUBLIC_CACHE_ENABLED;
       vi.mocked(constants.constants).PUBLIC_CACHE_ENABLED = true;
 
-      adapterWithCache = new TestAdapter();
       mockFetchForCache = vi.fn();
-      adapterWithCache.init({ fetch: mockFetchForCache });
+      adapterWithCache = new TestAdapter({ fetch: mockFetchForCache });
     });
 
     afterEach(() => {
@@ -265,10 +276,6 @@ describe('UniversalAdapter', () => {
   });
 
   describe('get', () => {
-    beforeEach(() => {
-      adapter.init({ fetch: mockFetch });
-    });
-
     test('should make GET request with default json parser', async () => {
       const mockData = { result: 'success' };
       const mockResponse = {
@@ -376,10 +383,6 @@ describe('UniversalAdapter', () => {
   });
 
   describe('delete', () => {
-    beforeEach(() => {
-      adapter.init({ fetch: mockFetch });
-    });
-
     test('should make DELETE request', async () => {
       const mockResponse = {
         ok: true,
@@ -413,10 +416,6 @@ describe('UniversalAdapter', () => {
   });
 
   describe('post', () => {
-    beforeEach(() => {
-      adapter.init({ fetch: mockFetch });
-    });
-
     test('should make POST request with json body', async () => {
       const mockData = { created: true };
       const mockResponse = {
@@ -525,10 +524,6 @@ describe('UniversalAdapter', () => {
   });
 
   describe('put', () => {
-    beforeEach(() => {
-      adapter.init({ fetch: mockFetch });
-    });
-
     test('should make PUT request', async () => {
       const mockResponse = {
         ok: true,
@@ -563,6 +558,134 @@ describe('UniversalAdapter', () => {
       });
 
       expect(result).toBe(mockBlob);
+    });
+  });
+
+  /**
+   * THE SEAM PIN.
+   *
+   * `should throw error when response is not ok`, above, asserts that a refused response produces an error. It does NOT assert that nothing was parsed, and those are different properties: a check moved to after the parse still produces the error while having handed the refusal's body to a parser first. These cases assert the second property, at the parser, for every verb.
+   */
+  describe('the refusal seam', () => {
+    const VERBS = ['get', 'delete', 'post', 'put'] as const;
+
+    /**
+     * Drive one adapter verb against whatever the mocked fetch is currently returning.
+     * @param verb - The verb to drive.
+     * @returns The verb's promise, unawaited.
+     */
+    function drive(verb: (typeof VERBS)[number]): Promise<unknown> {
+      const args = { url: 'http://openvaa.org/api', parser: 'text' } as const;
+      switch (verb) {
+        case 'get':
+          return adapter.get(args);
+        case 'delete':
+          return adapter.delete(args);
+        case 'post':
+          return adapter.post({ ...args, body: { data: 'test' } });
+        case 'put':
+          return adapter.put({ ...args, body: { data: 'test' } });
+      }
+    }
+
+    test.each(VERBS)('%s: a refused response never reaches the parser', async (verb) => {
+      const mockResponse = {
+        ok: false,
+        status: 403,
+        json: vi.fn().mockResolvedValue({ message: 'Forbidden' }),
+        text: vi.fn().mockResolvedValue('Forbidden')
+      } as unknown as Response;
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await expect(drive(verb)).rejects.toThrow(/403/);
+
+      // The parsing helper was never invoked at all — not invoked and then thrown past.
+      expect(parseResponse).not.toHaveBeenCalled();
+      // And the response's own parser was never touched by anything else on the path either.
+      expect(mockResponse.text).not.toHaveBeenCalled();
+    });
+
+    test.each(VERBS)('%s: a successful response DOES reach the parser', async (verb) => {
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        text: vi.fn().mockResolvedValue('parsed body')
+      } as unknown as Response;
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await expect(drive(verb)).resolves.toBe('parsed body');
+
+      // The positive control for the case above: the assertion CAN observe an invocation, so a zero there is the check doing its work rather than the spy being wired to nothing.
+      expect(parseResponse).toHaveBeenCalledTimes(1);
+      expect(mockResponse.text).toHaveBeenCalledOnce();
+    });
+
+    test.each([
+      { label: '200 OK', response: { ok: true, status: 200 }, refused: false },
+      { label: '204 No Content', response: { ok: true, status: 204 }, refused: false },
+      { label: '401 Unauthorized', response: { ok: false, status: 401 }, refused: true },
+      { label: '403 Forbidden', response: { ok: false, status: 403 }, refused: true },
+      { label: '500 Internal Server Error', response: { ok: false, status: 500 }, refused: true }
+    ])('fetch refuses $label exactly when the shared predicate does', async ({ response, refused }) => {
+      const mockResponse = {
+        ...response,
+        json: vi.fn().mockResolvedValue({ message: 'refused' })
+      } as unknown as Response;
+      mockFetch.mockResolvedValue(mockResponse);
+
+      expect(isRefusedResponse(mockResponse)).toBe(refused);
+      if (refused) {
+        await expect(adapter.fetch('http://openvaa.org/api')).rejects.toThrow(/UniversalAdapter\.fetch/);
+      } else {
+        await expect(adapter.fetch('http://openvaa.org/api')).resolves.toBe(mockResponse);
+      }
+    });
+
+    test('two interleaved calls, one refused and one successful, each get their own outcome', async () => {
+      const okResponse = {
+        ok: true,
+        status: 200,
+        json: vi.fn().mockResolvedValue({ id: 'the successful call’s own body' })
+      } as unknown as Response;
+      const refusedResponse = {
+        ok: false,
+        status: 403,
+        json: vi.fn().mockResolvedValue({ message: 'Forbidden' })
+      } as unknown as Response;
+
+      // The only ordering mechanism here is a promise resolved from the outside: no timer, so the interleaving is program control flow rather than a race that happened to be won.
+      let openRefused!: () => void;
+      const refusedGate = new Promise<void>((resolve) => {
+        openRefused = resolve;
+      });
+
+      mockFetch.mockImplementation(async (url: string) => {
+        if (String(url).includes('refused')) {
+          await refusedGate;
+          return refusedResponse;
+        }
+        return okResponse;
+      });
+
+      const settled: Array<string> = [];
+      const refused = adapter.get({ url: 'http://openvaa.org/refused' }).then(
+        (value) => settled.push(`refused resolved with ${JSON.stringify(value)}`),
+        (error: Error) => settled.push(`refused rejected: ${error.message}`)
+      );
+
+      // The successful call runs to completion INSIDE the refused call's window.
+      const okValue = await adapter.get({ url: 'http://openvaa.org/ok' });
+      expect(okValue).toEqual({ id: 'the successful call’s own body' });
+      // The refused call cannot have settled: nothing has opened its gate.
+      expect(settled).toEqual([]);
+
+      openRefused();
+      await refused;
+
+      expect(settled).toEqual([expect.stringContaining('refused rejected')]);
+      expect(settled[0]).toContain('403');
+      // The successful call's value is still its own, unaffected by the refusal that settled after it.
+      expect(okValue).toEqual({ id: 'the successful call’s own body' });
     });
   });
 });

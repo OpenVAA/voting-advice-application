@@ -3,10 +3,7 @@ import { defaultLocale, translate } from '../';
 import { canonize, isLocale, matchLocale, parseAcceptedLanguages } from '../utils';
 
 test('canonize and isLocale', () => {
-  // Locale names are based on the examples in the RFC:
-  // https://datatracker.ietf.org/doc/html/rfc5646#appendix-A
-  // NB. Some more complicated ones don't seem to be work with the Intl module, such as
-  // i-enochian and zh-cmn-Hans-CN, but these should not be needed anyway
+  // Locale names are based on the examples in the RFC: https://datatracker.ietf.org/doc/html/rfc5646#appendix-A NB. Some more complicated ones don't seem to be work with the Intl module, such as i-enochian and zh-cmn-Hans-CN, but these should not be needed anyway
   const validLocales = ['fi-FI', 'en-US', 'es', 'es-419', 'zh-Hant', 'hy-Latn-IT-arevela'];
   const invalidLocales = ['de-419-DE', 'ar-a-aaa-b-bbb-a-ccc'];
   for (const locale of validLocales) {

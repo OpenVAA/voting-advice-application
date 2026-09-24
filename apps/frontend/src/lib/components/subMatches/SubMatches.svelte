@@ -1,6 +1,5 @@
 <!--
-@component
-Display an entity's sub-matches.
+@component Display an entity's sub-matches.
 
 ### Properties
 
