@@ -1,9 +1,9 @@
-import { error, json } from '@sveltejs/kit';
+import { log } from '@openvaa/app-shared';
+import { error, isHttpError, json } from '@sveltejs/kit';
 import crypto from 'crypto';
 import { FlatCache } from 'flat-cache';
 import { constants } from '$lib/server/constants';
 import { constants as publicConstants } from '$lib/utils/constants';
-import { logDebugError } from '$lib/utils/logger';
 import type { RequestEvent } from '@sveltejs/kit';
 
 const cacheTtl = Number(constants.CACHE_TTL);
@@ -34,7 +34,7 @@ export async function GET({ fetch, url }: RequestEvent): Promise<Response> {
   const cacheValue = cache.getKey<{ data: object }>(cacheKey);
 
   if (cacheValue?.data) {
-    logDebugError(`[api/cache] Returned cached data for ${resource}`);
+    log.debug(`[api/cache] Returned cached data for ${resource}`);
     return json(cacheValue.data);
   }
 
@@ -60,13 +60,14 @@ export async function GET({ fetch, url }: RequestEvent): Promise<Response> {
 
     cache.setKey(cacheKey, { timestamp: Date.now(), data });
     cache.save();
-    logDebugError(`[api/cache] Fetched and cached fresh data for ${resource}`);
+    log.debug(`[api/cache] Fetched and cached fresh data for ${resource}`);
 
     return json(data);
   } catch (e) {
-    logDebugError(
-      `[api/cache] Failed to fetch data from ${resource} with error: ${e instanceof Error ? e.message : e}`
-    );
+    // Preserve the upstream status: the in-`try` `error(response.status, ...)` is thrown by `error()`, so without this an upstream 404 reaches the client as a
+    // 500. Do not simplify this back into the `log.error` below.
+    if (isHttpError(e)) throw e;
+    log.error(`[api/cache] Failed to fetch data from ${resource} with error: ${e instanceof Error ? e.message : e}`);
     return error(500, { message: `Failed to fetch data from ${resource}` });
   }
 }

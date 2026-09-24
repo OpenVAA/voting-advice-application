@@ -10,12 +10,12 @@ The frontpage of the app for voters.
 -->
 
 <script lang="ts">
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { Footer } from '$lib/dynamic-components/footer';
   import { SurveyBanner } from '$lib/dynamic-components/survey/banner';
-  import MainContent from '../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -23,7 +23,7 @@ The frontpage of the app for voters.
 
   const ctx = getAppContext();
   const { appCustomization, darkMode, getRoute, t } = ctx;
-  // appSettings is a reactive accessor (see phase 113 flatten) — read via ctx.X, never destructure.
+  // appSettings is a reactive accessor — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
   const { pageStyles, topBarSettings } = getLayoutContext();
 

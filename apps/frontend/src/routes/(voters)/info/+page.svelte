@@ -6,20 +6,16 @@ Displays information about the elections in the VAA.
 -->
 
 <script lang="ts">
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import MainContent from '../../MainContent.svelte';
 
   const ctx = getAppContext();
   const { getRoute, t } = ctx;
-  // dataRoot is identity-stable (#version-bridge): NEVER bind it to an intermediate $derived alias and read through
-  // the alias — the alias yields the same DataRoot ref on each #version bump, so Svelte 5 skips downstream
-  // notification and the cold/direct-URL election region stays empty. Read `ctx.dataRoot.<prop>` directly inside each
-  // consuming tracking scope. See CLAUDE.md "Context Destructuring Rule" and the
-  // stable-reference alias anti-pattern (see spike 024, see phase 117).
+  // dataRoot is identity-stable (#version-bridge): NEVER bind it to an intermediate $derived alias and read through the alias — the alias yields the same DataRoot ref on each #version bump, so Svelte 5 skips downstream notification and the cold/direct-URL election region stays empty. Read `ctx.dataRoot.<prop>` directly inside each consuming tracking scope. See CLAUDE.md "Context Destructuring Rule" and the stable-reference alias anti-pattern.
 
   const { topBarSettings } = getLayoutContext();
   topBarSettings.use({

@@ -1,24 +1,23 @@
 import { json } from '@sveltejs/kit';
 import qs from 'qs';
-import { getUserData } from '$lib/auth';
 import { getPastJobs } from '$lib/server/admin/jobs/jobStore';
+import { requireVerifiedAdmin } from '$lib/server/admin/requireVerifiedAdmin';
 import type { AdminFeature } from '$lib/admin/features';
 import type { JobInfo, PastJobStatus } from '$lib/server/admin/jobs/jobStore.type';
 
 type PastJobsResponse = Array<JobInfo> | { error: string };
 
 /**
- * GET /api/admin/jobs/past
- * Query params:
+ * GET /api/admin/jobs/past Query params:
  * - jobType?: string
  * - statuses?: PastJobStatus[]  // array format
  * - startFrom?: ISO timestamp (delta mode)
  *
  * Returns: JobInfo[]
  */
-export async function GET({ url, fetch }) {
-  if ((await getUserData({ fetch }))?.role !== 'admin')
-    return json({ error: 'Forbidden' } as PastJobsResponse, { status: 403 });
+export async function GET({ url, fetch, locals }) {
+  const denied = await requireVerifiedAdmin({ fetch, locals });
+  if (denied) return denied;
 
   try {
     const params = qs.parse(url.search.replace(/^\?/g, '')) as {

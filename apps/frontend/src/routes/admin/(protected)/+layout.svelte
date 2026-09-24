@@ -8,10 +8,10 @@
 -->
 
 <script lang="ts">
+  import { log } from '@openvaa/app-shared';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
   import { getAdminContext } from '$lib/contexts/admin';
-  import { logDebugError } from '$lib/utils/logger';
   import type { Snippet } from 'svelte';
   import type { LayoutData } from './$types';
 
@@ -38,7 +38,7 @@
       ready = true;
     } else {
       error = new Error('No user data available');
-      logDebugError('[Admin protected layout] Error: No user data available');
+      log.error('[Admin protected layout] Error: No user data available');
     }
   });
 </script>

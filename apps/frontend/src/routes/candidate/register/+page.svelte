@@ -11,15 +11,15 @@
 -->
 
 <script lang="ts">
+  import { log } from '@openvaa/app-shared';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
+  import { MainContent } from '$layouts/main';
   import { LogoutButton } from '$lib/candidate/components/logoutButton';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { getCandidateContext } from '$lib/contexts/candidate';
-  import { logDebugError } from '$lib/utils/logger';
-  import MainContent from '../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -27,7 +27,7 @@
 
   const ctx = getCandidateContext();
   const { checkRegistrationKey, getRoute, t, userData } = ctx;
-  // appSettings is a reactive accessor (see phase 113 flatten) — read via ctx.X, never destructure.
+  // appSettings is a reactive accessor — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
 
   ////////////////////////////////////////////////////////////////////
@@ -40,8 +40,7 @@
   // Get key from search params
   let registrationKey = $state(page.url.searchParams.get('registrationKey') ?? '');
   // One-shot init-only kickoff: validate the key from URL on mount.
-  // Subsequent registrationKey changes are tracked by the $effect at
-  // line 43-48 (the changedAfterCheck flag).
+  // Subsequent registrationKey changes are tracked by the $effect at line 43-48 (the changedAfterCheck flag).
   // svelte-ignore state_referenced_locally
   if (registrationKey) checkKeyAndContinue(registrationKey);
 
@@ -60,7 +59,7 @@
   async function checkKeyAndContinue(registrationKey: string): Promise<void> {
     status = 'loading';
     const result = await checkRegistrationKey({ registrationKey }).catch((e) => {
-      logDebugError(`Error checking registration key: ${e?.message}`);
+      log.error(`Error checking registration key: ${e?.message}`);
       return undefined;
     });
     if (result?.type !== 'success') {

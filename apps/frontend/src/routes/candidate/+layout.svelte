@@ -15,13 +15,12 @@
 
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { Layout, MaintenancePage } from '$layouts/main';
   import { Notification } from '$lib/components/notification';
   import { getAppContext } from '$lib/contexts/app';
   import { initCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { CandidateNav } from '$lib/dynamic-components/navigation/candidate';
-  import Layout from '../Layout.svelte';
-  import MaintenancePage from '../MaintenancePage.svelte';
   import type { Snippet } from 'svelte';
 
   let { children }: { children: Snippet } = $props();
@@ -32,7 +31,7 @@
 
   const ctx = getAppContext();
   const { appType, popupQueue, t } = ctx;
-  // appSettings is a reactive accessor (see phase 113 flatten) — read via ctx.X, never destructure.
+  // appSettings is a reactive accessor — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
 
   ////////////////////////////////////////////////////////////////////
@@ -46,13 +45,7 @@
   // Popup management
   ////////////////////////////////////////////////////////////////////
 
-  // onMount one-shot queue (NOT a reactive $effect) — mirrors the voters layout's
-  // REVERT-TO-ONMOUNT decision (apps/frontend/src/routes/(voters)/+layout.svelte:100-119).
-  // A reactive $effect re-queues on every appSettings change and, on a busy
-  // page, its repeated re-runs keep resetting downstream debounced effects — observed
-  // on /candidate/register/password where PasswordValidator's 200ms debounce
-  // (clearTimeout on each re-run) never settled, so validPassword stayed false and the
-  // set-password submit button stayed disabled (perm-localisation-positive hang).
+  // onMount one-shot queue (NOT a reactive $effect), matching the voter layout. A reactive $effect re-queues on every appSettings change and, on a busy page, its repeated re-runs keep resetting downstream debounced effects: on /candidate/register/password that leaves PasswordValidator's 200ms debounce (cleared on each re-run) unsettled, so validPassword stays false and the set-password submit button stays disabled.
   onMount(() => {
     if (!appSettings.access.candidateApp || !appSettings.dataAdapter.supportsCandidateApp) return;
     // Show possible notification

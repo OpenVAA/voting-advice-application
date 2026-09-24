@@ -1,16 +1,15 @@
 <script lang="ts">
   import { TermsOfUseForm } from '$candidate/components/termsOfUse';
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import MainContent from '../../../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // see phase 61 follow-up: idTokenClaims + preregistrationNominations are
-  // reactive; access via candCtx.X.
+  // idTokenClaims + preregistrationNominations are reactive; access via candCtx.X.
   const candCtx = getCandidateContext();
   const { preregister, t, getRoute } = candCtx;
 

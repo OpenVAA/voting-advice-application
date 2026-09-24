@@ -10,7 +10,9 @@ Used to show a preview of the candidate's own profile using the `EntityDetails` 
 -->
 
 <script lang="ts">
+  import { log } from '@openvaa/app-shared';
   import { goto } from '$app/navigation';
+  import { SingleCardContent } from '$layouts/main';
   import { translateLocalizedCandidate } from '$lib/api/utils/translateLocalizedCandidate';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Icon } from '$lib/components/icon';
@@ -18,8 +20,6 @@ Used to show a preview of the candidate's own profile using the `EntityDetails` 
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { EntityDetails } from '$lib/dynamic-components/entityDetails';
-  import { logDebugError } from '$lib/utils/logger';
-  import SingleCardContent from '../../../SingleCardContent.svelte';
   import type { Candidate } from '@openvaa/data';
 
   ////////////////////////////////////////////////////////////////////
@@ -28,8 +28,7 @@ Used to show a preview of the candidate's own profile using the `EntityDetails` 
 
   const ctx = getCandidateContext();
   const { getRoute, t, userData } = ctx;
-  // dataRoot/locale are reactive accessors (see phase 113 flatten) — read via ctx.X, never destructure.
-  const dataRoot = $derived(ctx.dataRoot);
+  // `locale` is a scalar, value-replacing accessor, so a read alias over it is safe. `dataRoot` is NOT: it is identity-stable behind a `#version` bridge, so an alias hands back the same reference on every bump and Svelte skips downstream notification. It is read at its point of use in `loadCandidate` instead (spike 024, CLAUDE.md carve-out).
   const locale = $derived(ctx.locale);
   const { pageStyles, topBarSettings } = getLayoutContext();
 
@@ -42,8 +41,7 @@ Used to show a preview of the candidate's own profile using the `EntityDetails` 
 
   $effect(() => {
     // Read locale via store subscription to create reactive dependency.
-    // Locale is constant within a page lifecycle (changes trigger full page reload),
-    // so this effect runs loadCandidate() once on mount.
+    // Locale is constant within a page lifecycle (changes trigger full page reload), so this effect runs loadCandidate() once on mount.
     void locale;
     loadCandidate();
   });
@@ -54,7 +52,7 @@ Used to show a preview of the candidate's own profile using the `EntityDetails` 
   async function loadCandidate(): Promise<void> {
     status = 'loading';
     const result = await userData.reloadCandidateData().catch((e) => {
-      logDebugError(`Error with reloadCandidateData: ${e?.message}`);
+      log.error(`Error with reloadCandidateData: ${e?.message}`);
       return undefined;
     });
     if (!result) {
@@ -62,12 +60,13 @@ Used to show a preview of the candidate's own profile using the `EntityDetails` 
       return;
     }
     try {
-      // Use locale (store subscription) to get the string value
+      // Use locale (store subscription) to get the string value. `dataRoot` is read directly here, past the await, so this runs outside the effect's tracking scope and no intermediate alias is bound over the identity-stable accessor.
+      const dataRoot = ctx.dataRoot;
       dataRoot.provideEntityData([translateLocalizedCandidate(result, locale)]);
       entity = dataRoot.getCandidate(result.id);
       status = 'success';
     } catch (e) {
-      logDebugError(`Error providing candidate data to dataRoot or  getting the object: ${e}`);
+      log.error(`Error providing candidate data to dataRoot or  getting the object: ${e}`);
       status = 'error';
       return;
     }

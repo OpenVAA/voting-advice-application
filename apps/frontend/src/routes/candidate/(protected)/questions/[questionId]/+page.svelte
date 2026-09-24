@@ -16,11 +16,12 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
 -->
 
 <script lang="ts">
-  import { getCustomData } from '@openvaa/app-shared';
+  import { getCustomData, log } from '@openvaa/app-shared';
   import { isEmptyValue } from '@openvaa/data';
   import { error } from '@sveltejs/kit';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Hero } from '$lib/components/hero';
@@ -32,9 +33,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { QuestionHeading } from '$lib/dynamic-components/questionHeading';
-  import { logDebugError } from '$lib/utils/logger';
-  import { parseParams } from '$lib/utils/route';
-  import MainContent from '../../../../MainContent.svelte';
+  import { parseParams } from '$lib/routes';
   import type { LocalizedAnswer } from '@openvaa/app-shared';
   import type { Id } from '@openvaa/core';
   import type { AnyQuestionVariant } from '@openvaa/data';
@@ -46,13 +45,10 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   // Stable references (functions, stores, objects with internal getters): destructure-safe.
   const candCtx = getCandidateContext();
   const { getRoute, t, userData } = candCtx;
-  // appSettings/dataRoot are reactive accessors (see phase 113 flatten) — read via candCtx.X, never destructure.
+  // appSettings/dataRoot are reactive accessors — read via candCtx.X, never destructure.
   const appSettings = $derived(candCtx.appSettings);
-  // dataRoot is identity-stable (#version-bridge): read `candCtx.dataRoot.<prop>` directly in the tracking scope,
-  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" and the
-  // stable-reference alias anti-pattern (see spike 024, see phase 117).
-  // Reactive accessors ($state / $derived backed): read via candCtx.X. Aliased
-  // through $derived for template readability — see CLAUDE.md "Context Destructuring Rule".
+  // dataRoot is identity-stable (#version-bridge): read `candCtx.dataRoot.<prop>` directly in the tracking scope, never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" and the stable-reference alias anti-pattern.
+  // Reactive accessors ($state / $derived backed): read via candCtx.X. Aliased through $derived for template readability — see CLAUDE.md "Context Destructuring Rule".
   const answersLocked = $derived(candCtx.answersLocked);
   const questionBlocks = $derived(candCtx.questionBlocks);
   const unansweredOpinionQuestions = $derived(candCtx.unansweredOpinionQuestions);
@@ -65,10 +61,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   let bypassPreventNavigation = $state(false);
   let errorMessage = $state<string | undefined>(undefined);
   let status = $state<ActionStatus>('loading');
-  // Validity surfaced by `OpinionQuestionInput`. The `{#key question.id}`
-  // remount around the input resets it per question; only the multi-choice branch
-  // ever sets it false (selection outside min/max). ANDed into `canSubmit` so
-  // Save is gated while a multi-choice selection is out of range.
+  // Validity surfaced by `OpinionQuestionInput`. The `{#key question.id}` remount around the input resets it per question; only the multi-choice branch ever sets it false (selection outside min/max). ANDed into `canSubmit` so Save is gated while a multi-choice selection is out of range.
   let answerValid = $state(true);
 
   ////////////////////////////////////////////////////////////////////
@@ -112,13 +105,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   /**
    * Returns the next unanswered question’s id.
    *
-   * `findIndex` returning -1 is the NORMAL state here, not an edge case: reads inside
-   * this function ARE tracked by the enclosing `$derived.by`, so saving an answer
-   * (which removes the current question from `unansweredOpinionQuestions`) re-runs
-   * this with the current question absent. The -1 fall-through (`[-1 + 1] === [0]`)
-   * makes "Save & continue" resume at the FIRST unanswered question — both after a
-   * normal save and when re-editing an already-answered question. Do not "fix" -1
-   * to return undefined: that reroutes every save to the questions list.
+   * `findIndex` returning -1 is the NORMAL state here, not an edge case: reads inside this function ARE tracked by the enclosing `$derived.by`, so saving an answer (which removes the current question from `unansweredOpinionQuestions`) re-runs this with the current question absent. The -1 fall-through (`[-1 + 1] === [0]`) makes "Save & continue" resume at the FIRST unanswered question — both after a normal save and when re-editing an already-answered question. Do not "fix" -1 to return undefined: that reroutes every save to the questions list.
    */
   function getNextQuestionId(question: AnyQuestionVariant): Id | undefined {
     const index = unansweredOpinionQuestions.findIndex((q) => q.id === question.id);
@@ -171,7 +158,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
     if (inputQuestion.id !== question.id) {
       status = 'error';
       errorMessage = undefined;
-      logDebugError('handleValueChange: questionId mismatch');
+      log.debug('handleValueChange: questionId mismatch');
       return;
     }
     setAnswer({ value });
@@ -192,15 +179,14 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
     if (answersLocked) {
       status = 'error';
       errorMessage = t('candidateApp.common.editingNotAllowed');
-      logDebugError('[Candidate app question page]: setAnswer called when answersLocked');
+      log.debug('[Candidate app question page]: setAnswer called when answersLocked');
       return;
     }
     if (value == null && info == null) {
       status = 'error';
-      // Internal empty-payload guard (programmer error) — not a lock condition,
-      // so use the generic save-failure message rather than "editing not allowed".
+      // Internal empty-payload guard (programmer error) — not a lock condition, so use the generic save-failure message rather than "editing not allowed".
       errorMessage = t('candidateApp.error.saveFailed');
-      logDebugError('[Candidate app question page]: setAnswer called with no value nor info');
+      log.debug('[Candidate app question page]: setAnswer called with no value nor info');
       return;
     }
     const answer: Partial<LocalizedAnswer> = userData.current?.candidate.answers?.[question.id] ?? {};
@@ -217,13 +203,13 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
     if (!canSubmit) {
       status = 'error';
       errorMessage = t('candidateApp.error.saveFailed');
-      logDebugError('[Candidate app question page]: handleSubmit called when canSubmit is false');
+      log.debug('[Candidate app question page]: handleSubmit called when canSubmit is false');
       return;
     }
     status = 'loading';
     // Request email to be sent in the backend
     const result = await userData.save().catch((e) => {
-      logDebugError(`Error saving userData: ${e?.message}`);
+      log.error(`Error saving userData: ${e?.message}`);
       return undefined;
     });
     if (result?.type !== 'success') {
@@ -317,9 +303,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
 
           {#if customData.allowOpen}
             <!-- Honor the per-question `disableMultilingual` opt-out on the
-                 open-answer comment, mirroring QuestionInput.svelte:73 (which
-                 gates info-question inputs). Without this the comment always
-                 rendered the multilingual translations toggle, ignoring the
+                 open-answer comment, mirroring QuestionInput.svelte:73 (which gates info-question inputs). Without this the comment always rendered the multilingual translations toggle, ignoring the
                  opt-out that info questions respect. -->
             <Input
               type={customData.disableMultilingual ? 'textarea' : 'textarea-multilingual'}

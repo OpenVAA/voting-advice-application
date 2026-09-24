@@ -11,17 +11,17 @@ Displays information about the application.
 -->
 
 <script lang="ts">
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import MainContent from '../../MainContent.svelte';
 
   const ctx = getAppContext();
   const { getRoute, t } = ctx;
-  // appSettings is a reactive accessor (see phase 113 flatten) — read via ctx.X, never destructure.
+  // appSettings is a reactive accessor — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
 
   const { topBarSettings } = getLayoutContext();

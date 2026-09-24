@@ -1,9 +1,9 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import MainContent from '../../MainContent.svelte';
   import type { Snippet } from 'svelte';
 
   ////////////////////////////////////////////////////////////////////
@@ -12,7 +12,7 @@
 
   let { children }: { children: Snippet } = $props();
 
-  // see phase 61 follow-up: answersLocked is reactive; access via candCtx.X.
+  // answersLocked is reactive; access via candCtx.X.
   const candCtx = getCandidateContext();
   const { getRoute, t } = candCtx;
   const { pageStyles } = getLayoutContext();

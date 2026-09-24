@@ -1,10 +1,10 @@
 <script lang="ts">
   import { page } from '$app/state';
+  import { MainContent } from '$layouts/main';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { t } from '$lib/i18n';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import MainContent from './MainContent.svelte';
 
   const description = $derived(page.error?.description || t('error.content'));
   const emoji = $derived(page.error?.emoji || t('dynamic.error.heroEmoji'));

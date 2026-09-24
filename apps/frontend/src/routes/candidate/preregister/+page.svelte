@@ -8,25 +8,26 @@
 -->
 
 <script lang="ts">
+  import { untrack } from 'svelte';
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { PreregisteredNotification } from '$candidate/components/preregisteredNotification';
+  import { MainContent } from '$layouts/main';
   import { generateChallenge } from '$lib/api/utils/auth/generateChallenge';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
+  import { COOKIE } from '$lib/cookies';
   import { constants } from '$lib/utils/constants';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import MainContent from '../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
   // Stable references (functions, queues): destructure-safe.
-  // Reactive accessors (constituenciesSelectable, electionsSelectable, idTokenClaims,
-  // isPreregistered) read via candCtx.X — see CLAUDE.md "Context Destructuring Rule".
+  // Reactive accessors (constituenciesSelectable, electionsSelectable, idTokenClaims, isPreregistered) read via candCtx.X — see CLAUDE.md "Context Destructuring Rule".
   const candCtx = getCandidateContext();
   const { getRoute, popupQueue, t } = candCtx;
   const { navigationSettings } = getLayoutContext();
@@ -35,12 +36,18 @@
   // Popup management
   ////////////////////////////////////////////////////////////////////
 
+  // ONE-SHOT, AND THE PUSH IS UNTRACKED. Both halves are load-bearing; without either, dismissing the notification did not dismiss it.
+  //
+  // `PopupState.push` is `this.#queue = [...this.#queue, item]` -- it READS `#queue` before writing it. Called bare inside this `$effect`, that read makes the effect depend on the queue, and the root layout dismisses a popup by calling `popupQueue.shift()`, which reassigns `#queue`. So closing the alert re-ran this effect, whose condition was still true, which pushed the notification straight back: the ✕ worked and the popup reappeared in the same frame. `untrack` keeps the write out of this effect's dependency set -- the write-after-read invariant recorded in the runes spike findings.
+  //
+  // `notified` then makes it a one-shot. `untrack` alone stops the self-retrigger, but `isPreregistered` and `idTokenClaims` are both live accessors, so any later change to either would re-push a notification the user has already dismissed. The flag is a plain `let`, deliberately not `$state`: nothing renders it, and making it reactive would hand this effect another dependency for no gain.
+  let notified = false;
   $effect(() => {
-    // Show possible notification
-    if (candCtx.isPreregistered && !candCtx.idTokenClaims)
-      popupQueue.push({
-        component: PreregisteredNotification
-      });
+    if (notified) return;
+    if (candCtx.isPreregistered && !candCtx.idTokenClaims) {
+      notified = true;
+      untrack(() => popupQueue.push({ component: PreregisteredNotification }));
+    }
   });
 
   ////////////////////////////////////////////////////////////////////
@@ -91,8 +98,7 @@
       // Signicat: client-side PKCE redirect via provider abstraction
       const { codeVerifier, codeChallenge } = await generateChallenge(window.crypto);
 
-      // Call the authorize endpoint to get the provider-constructed URL
-      // and store state cookies server-side if the provider returns them
+      // Call the authorize endpoint to get the provider-constructed URL and store state cookies server-side if the provider returns them
       const response = await fetch('/api/oidc/authorize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -106,9 +112,8 @@
 
       const { authorizeUrl } = await response.json();
 
-      // Store code_verifier in a cookie so the callback server route can access it
-      // (localStorage is client-only and not available in server routes)
-      document.cookie = `oidc_code_verifier=${codeVerifier}; path=/; max-age=600; secure; samesite=lax`;
+      // Store code_verifier in a cookie so the callback server route can access it (localStorage is client-only and not available in server routes)
+      document.cookie = `${COOKIE.oidcCodeVerifier}=${codeVerifier}; path=/; max-age=600; secure; samesite=lax`;
 
       window.location.href = authorizeUrl;
     }

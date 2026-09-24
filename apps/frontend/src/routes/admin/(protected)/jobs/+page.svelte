@@ -1,9 +1,9 @@
 <script lang="ts">
+  import { MainContent } from '$layouts/main';
   import { FeatureJobs } from '$lib/admin/components/jobs';
   import { ADMIN_FEATURES } from '$lib/admin/features';
   import { ButtonWithConfirmation } from '$lib/components/buttonWithConfirmation';
   import { getAdminContext } from '$lib/contexts/admin';
-  import MainContent from '../../../MainContent.svelte';
 
   // TODO: add error handling & info updates if polling service refresh, abortAllJobs or abortJob fails
 
@@ -11,17 +11,16 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////////
 
-  const {
-    t,
-    jobs: { activeJobsByFeature, pastJobs },
-    abortAllJobs
-  } = getAdminContext();
+  const ctx = getAdminContext();
+  // Stable members: safe to destructure. The job projections are NOT — see below.
+  const { t, abortAllJobs } = ctx;
 
   ////////////////////////////////////////////////////////////////////////
   // Get jobs
   ////////////////////////////////////////////////////////////////////////
 
-  let activeJobsCount = $derived([...activeJobsByFeature.values()].filter((j) => !!j).length);
+  // `activeJobsByFeature` and `pastJobs` are read-only PROTOTYPE GETTERS over `$derived`/`$derived.by` (`jobStates.svelte.ts`), and both return a NEW collection on every recompute. Destructuring them — as this file did — bound the initial empty `Map`/array at component init, so the polling service updated the registry while every tile below stayed frozen at zero: the page rendered perfectly and showed nothing. Read them through `ctx.jobs.X` inside the tracking scope instead, per CLAUDE.md § Context Destructuring Rule. That includes the template reads further down; a local alias would reintroduce the same freeze.
+  let activeJobsCount = $derived([...ctx.jobs.activeJobsByFeature.values()].filter((j) => !!j).length);
 
   ////////////////////////////////////////////////////////////////////////
   // Handle aborting jobs
@@ -30,7 +29,7 @@
   // Emergency: abort all running jobs
   async function performEmergencyCleanup() {
     try {
-      await abortAllJobs({});
+      await abortAllJobs();
     } catch (error) {
       console.error(error);
       alert(t('adminApp.jobs.abortAllFailed'));
@@ -66,21 +65,21 @@
               <div class="stat">
                 <div class="stat-title">{t('adminApp.jobs.successfulJobs')}</div>
                 <div class="stat-value text-success">
-                  {pastJobs.filter((job) => job.status === 'completed').length}
+                  {ctx.jobs.pastJobs.filter((job) => job.status === 'completed').length}
                 </div>
               </div>
 
               <div class="stat">
                 <div class="stat-title">{t('adminApp.jobs.failedJobs')}</div>
                 <div class="stat-value text-error">
-                  {pastJobs.filter((job) => job.status === 'failed').length}
+                  {ctx.jobs.pastJobs.filter((job) => job.status === 'failed').length}
                 </div>
               </div>
 
               <div class="stat">
                 <div class="stat-title">{t('adminApp.jobs.abortedJobs')}</div>
                 <div class="stat-value text-warning">
-                  {pastJobs.filter((job) => job.status === 'aborted').length}
+                  {ctx.jobs.pastJobs.filter((job) => job.status === 'aborted').length}
                 </div>
               </div>
             </div>

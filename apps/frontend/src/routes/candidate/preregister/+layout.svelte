@@ -1,10 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import MainContent from '../../MainContent.svelte';
   import type { Snippet } from 'svelte';
 
   ////////////////////////////////////////////////////////////////////
@@ -13,7 +13,7 @@
 
   let { children }: { children: Snippet } = $props();
 
-  // see phase 61 follow-up: read reactive context getters via candCtx.X.
+  // Read the reactive context getters via candCtx.X.
   const candCtx = getCandidateContext();
   const { getRoute, t, userData, clearIdToken } = candCtx;
   const { pageStyles, topBarSettings } = getLayoutContext();

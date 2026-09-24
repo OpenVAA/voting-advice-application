@@ -17,6 +17,7 @@
   import { applyAction, enhance } from '$app/forms';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
+  import { MainContent } from '$layouts/main';
   import { getErrorTranslationKey } from '$lib/admin/utils/loginError';
   import { PasswordField } from '$lib/candidate/components/passwordField';
   import { Button } from '$lib/components/button';
@@ -25,17 +26,14 @@
   import { getAdminContext } from '$lib/contexts/admin';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { Footer } from '$lib/dynamic-components/footer';
-  import MainContent from '../../MainContent.svelte';
   import type { LoginError } from '$lib/admin/utils/loginError';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // `darkMode` / `getRoute` are stable rune-native `{ readonly current }` handles
-  // from AdminContext (inherited from AppContext); read `.current` directly.
-  // `appSettings` is a reactive accessor (see phase 113 flatten) — read via
-  // `ctx.appSettings`, never destructure (the alias below tracks it).
+  // `darkMode` / `getRoute` are stable rune-native `{ readonly current }` handles from AdminContext (inherited from AppContext); read `.current` directly.
+  // `appSettings` is a reactive accessor — read via `ctx.appSettings`, never destructure (the alias below tracks it).
   const ctx = getAdminContext();
   const { darkMode, getRoute, t } = ctx;
   const appSettings = $derived(ctx.appSettings);
@@ -58,8 +56,7 @@
     const errorKey = getErrorTranslationKey(errorParam);
     if (errorKey) errorMessage = t(errorKey);
   }
-  // One-shot init-only translation of URL ?error= → status; subsequent
-  // errorMessage updates flow through form-action handlers.
+  // One-shot init-only translation of URL ?error= → status; subsequent errorMessage updates flow through form-action handlers.
   // svelte-ignore state_referenced_locally
   if (errorMessage) status = 'error';
 

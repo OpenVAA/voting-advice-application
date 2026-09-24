@@ -1,16 +1,15 @@
 /**
- * POST /api/admin/jobs/[id]/abort
- * Request a cooperative abort for a specific job
+ * POST /api/admin/jobs/[id]/abort Request a cooperative abort for a specific job
  */
 import { json } from '@sveltejs/kit';
-import { getUserData } from '$lib/auth';
 import { requestAbort } from '$lib/server/admin/jobs/jobStore';
+import { requireVerifiedAdmin } from '$lib/server/admin/requireVerifiedAdmin';
 
 type AbortSingleResponse = { message: string; jobId: string } | { error: string };
 
-export async function POST({ params, request, fetch }) {
-  if ((await getUserData({ fetch }))?.role !== 'admin')
-    return json({ error: 'Forbidden' } as AbortSingleResponse, { status: 403 });
+export async function POST({ params, request, fetch, locals }) {
+  const denied = await requireVerifiedAdmin({ fetch, locals });
+  if (denied) return denied;
 
   try {
     const { jobId } = params;

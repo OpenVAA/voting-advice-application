@@ -8,12 +8,12 @@
 -->
 
 <script lang="ts">
+  import { log } from '@openvaa/app-shared';
   import WithPolling from '$lib/admin/components/jobs/WithPolling.svelte';
   import { isValidResult } from '$lib/api/utils/isValidResult';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
   import { getAdminContext } from '$lib/contexts/admin';
-  import { logDebugError } from '$lib/utils/logger';
   import type { Snippet } from 'svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
   import type { LayoutData } from './$types';
@@ -43,12 +43,12 @@
   });
 
   $effect(() => {
-    if (error) logDebugError(error.message);
+    if (error) log.error(error.message);
   });
 
   /**
    * Handle the update inside a function so that we don't track dataRoot, which would result in an infinite loop.
-   * The producer write goes through `setDataRoot` (internalizes `untrack`; see spike 017/022).
+   * The producer write goes through `setDataRoot`, which internalizes `untrack`.
    * @returns `Error` if the data is invalid, `undefined` otherwise.
    */
   function update([questionData]: [DPDataType['questions'] | Error]): Error | undefined {

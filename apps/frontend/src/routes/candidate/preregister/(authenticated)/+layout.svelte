@@ -10,11 +10,11 @@ Contains the parts of the pre-registration process taking part after a successfu
 
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import MainContent from '../../../MainContent.svelte';
   import type { Snippet } from 'svelte';
 
   ////////////////////////////////////////////////////////////////////
@@ -23,7 +23,7 @@ Contains the parts of the pre-registration process taking part after a successfu
 
   let { children }: { children: Snippet } = $props();
 
-  // see phase 61 follow-up: idTokenClaims is reactive; access via candCtx.X.
+  // idTokenClaims is reactive; access via candCtx.X.
   const candCtx = getCandidateContext();
   const { getRoute, t } = candCtx;
   const { navigationSettings } = getLayoutContext();

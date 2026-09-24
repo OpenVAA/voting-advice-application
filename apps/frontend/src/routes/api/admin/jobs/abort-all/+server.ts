@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
-import { getUserData } from '$lib/auth';
 import { getActiveJobs, requestAbort } from '$lib/server/admin/jobs/jobStore';
+import { requireVerifiedAdmin } from '$lib/server/admin/requireVerifiedAdmin';
 
 type AbortAllResponse =
   | {
@@ -10,10 +10,10 @@ type AbortAllResponse =
     }
   | { error: string };
 
-export async function POST({ fetch, request }) {
+export async function POST({ fetch, locals, request }) {
   // TODO: Consider checking the user role with claims in the server hook when the route matches /api/admin
-  if ((await getUserData({ fetch }))?.role !== 'admin')
-    return json({ error: 'Forbidden' } as AbortAllResponse, { status: 403 });
+  const denied = await requireVerifiedAdmin({ fetch, locals });
+  if (denied) return denied;
 
   try {
     // Body is optional

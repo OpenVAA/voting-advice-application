@@ -14,26 +14,22 @@ Display a general intro before starting answering the questions and possibly all
   import { error } from '@sveltejs/kit';
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
-  import MainContent from '../../../MainContent.svelte';
   import type { QuestionCategory } from '@openvaa/data';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // see phase 61 voter-side parallel fix: read reactive context properties
-  // (opinionQuestions, voterCtx.opinionQuestionCategories, selectedElections,
-  // selectedConstituencies, voterCtx.selectedQuestionBlocks) via voterCtx.X. These were
-  // previously destructured into local consts and snapshot the empty initial
-  // state — the originating symptom.
+  // Read the reactive context properties (opinionQuestions, voterCtx.opinionQuestionCategories, selectedElections, selectedConstituencies, voterCtx.selectedQuestionBlocks) via voterCtx.X: destructuring them into local consts snapshots the empty initial state and never updates.
   const voterCtx = getVoterContext();
   const { getRoute, t } = voterCtx;
-  // appSettings is a reactive accessor (see phase 113 flatten) — read via voterCtx.X, never destructure.
+  // appSettings is a reactive accessor — read via voterCtx.X, never destructure.
   const appSettings = $derived(voterCtx.appSettings);
   const elections = $derived(voterCtx.selectedElections);
   const constituencies = $derived(voterCtx.selectedConstituencies);
@@ -49,8 +45,7 @@ Display a general intro before starting answering the questions and possibly all
   onMount(() => {
     voterCtx.firstQuestionId = null;
     // Filter stale category IDs (holdovers from a different election/constituency).
-    // Navigation-level concern — stays here. Default-seeding moved to voterContext
-    // per the voter-context default seeding (see phase 61).
+    // Navigation-level concern — stays here. Default-seeding is voterContext's.
     const filtered = voterCtx.selectedQuestionCategoryIds.filter((id) =>
       voterCtx.opinionQuestionCategories.find((c) => c.id === id)
     );

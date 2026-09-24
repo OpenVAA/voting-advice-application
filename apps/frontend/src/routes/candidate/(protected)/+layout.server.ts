@@ -1,36 +1,26 @@
 /**
  * Load the data for a logged-in candidate (server-side).
  *
- * Uses `event.locals.supabase` as the server client for the DataWriter,
- * ensuring authenticated RPC calls use the session from cookies.
+ * Uses `event.locals.supabase` as the server client for the DataWriter, ensuring authenticated RPC calls use the session from cookies.
  *
  * Redirects to login with an error message if the user is not logged in.
  */
 
+import { log } from '@openvaa/app-shared';
 import { redirect } from '@sveltejs/kit';
-import { dataProvider as dataProviderPromise } from '$lib/api/dataProvider';
-import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
+import { createDataProvider } from '$lib/api/dataProvider';
+import { createDataWriter } from '$lib/api/dataWriter';
 import { getLocale } from '$lib/paraglide/runtime';
-import { logDebugError } from '$lib/utils/logger';
+import { buildRoute } from '$lib/routes';
 import { removeDuplicates } from '$lib/utils/removeDuplicates';
-import { buildRoute } from '$lib/utils/route';
 import type { Id } from '@openvaa/core';
 import type { CandidateLoginError } from '$candidate/utils/loginError';
-import type { SupabaseAdapterConfig } from '$lib/api/adapters/supabase/supabaseAdapter.type';
 
 export async function load({ fetch, locals }) {
   const lang = getLocale();
 
-  // Init dataWriter with the server client from hooks.server.ts.
-  // This ensures authenticated calls (getCandidateUserData, etc.)
-  // use the session cookies from the request.
-  const dataWriter = await dataWriterPromise;
-  // Typed local: SupabaseAdapterConfig legitimises `serverClient` at the concrete seam.
-  // The mixin's return-type annotation (Constructor<SupabaseAdapter> & TBase) erases the
-  // widened init override, so a subtype value assignable to AdapterConfig sidesteps the
-  // fresh-object-literal excess-property check without widening the universal layer.
-  const writerConfig: SupabaseAdapterConfig = { fetch, serverClient: locals.supabase };
-  dataWriter.init(writerConfig);
+  // A writer this request alone holds, over the cookie-bearing client `hooks.server.ts` built for this request, so the authenticated calls below (`getCandidateUserData`) run on THIS candidate's session cookies and cannot be rebound by a concurrent request.
+  const dataWriter = createDataWriter({ fetch, locals });
 
   // Check for valid session
   const { session } = await locals.safeGetSession();
@@ -43,9 +33,9 @@ export async function load({ fetch, locals }) {
       })
     );
 
-  // Get user data -- authToken is '' because Supabase uses cookie-based sessions
-  const userData = await dataWriter.getCandidateUserData({ authToken: '', loadNominations: true }).catch((e) => {
-    logDebugError(`Error fetching user data: ${e?.message ?? 'No error message'}`, e);
+  // Get user data -- Supabase uses cookie-based sessions
+  const userData = await dataWriter.getCandidateUserData({ loadNominations: true }).catch((e) => {
+    log.error(`Error fetching user data: ${e?.message ?? 'No error message'}`, { err: e });
     return undefined;
   });
   if (!userData) return await handleError('loginFailed');
@@ -68,11 +58,8 @@ export async function load({ fetch, locals }) {
   }
   if (!electionId.length || !constituencyId.length) return await handleError('candidateNoNomination');
 
-  // Get question data
-  const dataProvider = await dataProviderPromise;
-  // Typed local (see writerConfig above): legitimises `serverClient` at the concrete seam.
-  const providerConfig: SupabaseAdapterConfig = { fetch, serverClient: locals.supabase };
-  dataProvider.init(providerConfig);
+  // Get the question data on this request's own provider instance, built over the same cookie-bearing client and likewise reachable from nowhere else.
+  const dataProvider = createDataProvider({ fetch, locals });
 
   // Await questionData to avoid SvelteKit streaming issues in dev mode.
   const questionData = await dataProvider
@@ -93,7 +80,7 @@ export async function load({ fetch, locals }) {
   async function handleError(error: CandidateLoginError): Promise<void> {
     await locals.supabase.auth
       .signOut({ scope: 'local' })
-      .catch((e: Error) => logDebugError(`[Candidate App protected layout] Error logging out: ${e?.message ?? '-'}`));
+      .catch((e: Error) => log.error(`[Candidate App protected layout] Error logging out: ${e?.message ?? '-'}`));
     redirect(
       307,
       buildRoute({

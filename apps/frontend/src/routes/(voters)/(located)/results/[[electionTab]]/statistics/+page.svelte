@@ -9,13 +9,13 @@ Usually accessed by direct link only and not meant for the wide public.
 
 <script lang="ts">
   import { isSingleChoiceQuestion } from '@openvaa/data';
+  import { MainContent } from '$layouts/main';
   import { Expander } from '$lib/components/expander';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import QuestionChoices from '$lib/components/questions/QuestionChoices.svelte';
   import { getVoterContext } from '$lib/contexts/voter';
   import { unwrapEntity } from '$lib/utils/entities';
   import { removeDuplicates } from '$lib/utils/removeDuplicates';
-  import MainContent from '../../../../../MainContent.svelte';
   import type { Id, MaybeWrappedEntity } from '@openvaa/core';
   import type {
     Candidate,
@@ -30,8 +30,7 @@ Usually accessed by direct link only and not meant for the wide public.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // see phase 61 voter-side parallel fix: matches + opinionQuestions are
-  // reactive context getters, accessed via voterCtx to avoid stale snapshots.
+  // matches + opinionQuestions are reactive context getters, accessed via voterCtx to avoid stale snapshots.
   const voterCtx = getVoterContext();
   const { answers, t } = voterCtx;
 
@@ -123,8 +122,7 @@ Usually accessed by direct link only and not meant for the wide public.
           <!-- All candidates -->
           <div>
             <!-- h2, not h4: the only heading above these on this page is MainContent's <h1>, so h4
-                 skips two levels. `text-base` holds the rendered size at the former h4 (app.css @layer
-                 base gives h2 `text-xl font-bold` and h4 `text-base font-bold`; the utility wins on
+                 skips two levels. `text-base` holds the rendered size at the former h4 (app.css @layer base gives h2 `text-xl font-bold` and h4 `text-base font-bold`; the utility wins on
                  size only, so the weight is unchanged). -->
             <h2 class="text-base">{t('statistics.allCandidates')}</h2>
             <div

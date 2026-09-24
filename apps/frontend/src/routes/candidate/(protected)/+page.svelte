@@ -10,88 +10,72 @@ Shows a dynamic list of the actions the candidate should take to be included in 
 -->
 
 <script lang="ts">
+  import { MainContent } from '$layouts/main';
   import { LogoutButton } from '$lib/candidate/components/logoutButton';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { InfoBadge } from '$lib/components/infoBadge';
   import { Warning } from '$lib/components/warning';
   import { getCandidateContext } from '$lib/contexts/candidate';
-  import MainContent from '../../MainContent.svelte';
+  import { computeBadges, computeNextAction } from './candidateHome.helpers';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // see phase 61 follow-up: read reactive context getters via candCtx.X.
+  // Read the reactive context getters via candCtx.X.
   const candCtx = getCandidateContext();
   const { getRoute, t, userData } = candCtx;
-  // appSettings is a reactive accessor (see phase 113 flatten) — read via candCtx.X, never destructure.
+  // appSettings is a reactive accessor — read via candCtx.X, never destructure.
   const appSettings = $derived(candCtx.appSettings);
+
+  ////////////////////////////////////////////////////////////////////
+  // Precomputed facts
+  ////////////////////////////////////////////////////////////////////
+
+  // Every conditional in the markup below reads one of these instead of recomputing a context value inline.
+  const answersLocked = $derived(candCtx.answersLocked);
+  const profileComplete = $derived(candCtx.profileComplete);
+  const missingInfoCount = $derived(candCtx.unansweredRequiredInfoQuestions?.length);
+  const missingOpinionCount = $derived(candCtx.unansweredOpinionQuestions?.length);
+  // Required info counts as outstanding whenever the count is anything other than zero, an absent array included.
+  const infoOutstanding = $derived(missingInfoCount !== 0);
+  const hiddenForMissingAnswers = $derived(
+    infoOutstanding || (Boolean(appSettings.entities?.hideIfMissingAnswers?.candidate) && missingOpinionCount !== 0)
+  );
 
   ////////////////////////////////////////////////////////////////////
   // Create action list
   ////////////////////////////////////////////////////////////////////
 
-  // React to changes in language and stores
-  let nextAction = $derived.by(() => {
-    const username = userData.current?.candidate.firstName || '?';
-    if (candCtx.profileComplete) {
-      return {
-        title: t('candidateApp.home.ready'),
-        explanation: t('candidateApp.home.ingress.ready'),
-        tip: t('candidateApp.home.previewTip'),
-        buttonTextBasicInfo: !candCtx.answersLocked
-          ? t('candidateApp.home.basicInfo.edit')
-          : t('candidateApp.home.basicInfo.view'),
-        buttonTextQuestion: !candCtx.answersLocked
-          ? t('candidateApp.home.questions.edit')
-          : t('candidateApp.home.questions.view'),
-        buttonTextPrimaryActions: t('candidateApp.home.preview'),
-        href: getRoute.current('CandAppPreview')
-      };
-    } else if (
-      candCtx.unansweredRequiredInfoQuestions?.length === 0 &&
-      candCtx.unansweredOpinionQuestions?.length !== 0
-    ) {
-      return {
-        title: t('candidateApp.common.greeting', { username }),
-        explanation: t('candidateApp.home.ingress.notDone'),
-        buttonTextBasicInfo: !candCtx.answersLocked
-          ? t('candidateApp.home.basicInfo.edit')
-          : t('candidateApp.home.basicInfo.view'),
-        buttonTextQuestion: !candCtx.answersLocked
-          ? t('candidateApp.home.questions.enter')
-          : t('candidateApp.home.questions.view'),
-        buttonTextPrimaryActions: !candCtx.answersLocked
-          ? t('candidateApp.home.questions.enter')
-          : t('candidateApp.home.questions.view'),
-        href: getRoute.current('CandAppQuestions')
-      };
-    } else {
-      return {
-        title: t('candidateApp.common.greeting', { username }),
-        explanation: t('candidateApp.home.ingress.notDone'),
-        buttonTextBasicInfo: !candCtx.answersLocked
-          ? t('candidateApp.home.basicInfo.enter')
-          : t('candidateApp.home.basicInfo.view'),
-        buttonTextQuestion: !candCtx.answersLocked
-          ? t('candidateApp.home.questions.enter')
-          : t('candidateApp.home.questions.view'),
-        buttonTextPrimaryActions: !candCtx.answersLocked
-          ? t('candidateApp.home.basicInfo.enter')
-          : t('candidateApp.home.basicInfo.view'),
-        href: getRoute.current('CandAppProfile')
-      };
-    }
-  });
+  // React to changes in language and stores. The context's reactive accessors are read INSIDE this tracking scope and their VALUES are handed to the pure helper; the context object itself is never passed, since that would move the getter reads out of the scope and freeze the page on its initial empty snapshot.
+  const nextAction = $derived.by(() =>
+    computeNextAction({
+      profileComplete,
+      answersLocked,
+      missingInfoCount,
+      missingOpinionCount,
+      username: userData.current?.candidate.firstName || '?',
+      t,
+      resolveRoute: getRoute.current
+    })
+  );
+
+  // The badge set, defined up front as data rather than as two conditionals in the markup.
+  const badges = $derived(
+    computeBadges({
+      requiredInfoQuestions: candCtx.unansweredRequiredInfoQuestions,
+      opinionQuestions: candCtx.unansweredOpinionQuestions
+    })
+  );
 </script>
 
 <MainContent title={nextAction.title}>
   {#snippet note()}
-    {#if candCtx.answersLocked}
+    {#if answersLocked}
       <Warning data-testid="candidate-answers-locked-warning">
         {t('candidateApp.common.editingNotAllowed')}
-        {#if candCtx.unansweredRequiredInfoQuestions?.length !== 0 || (appSettings.entities?.hideIfMissingAnswers?.candidate && candCtx.unansweredOpinionQuestions?.length !== 0)}
+        {#if hiddenForMissingAnswers}
           {t('candidateApp.common.isHiddenBecauseMissing')}
         {/if}
       </Warning>
@@ -100,7 +84,7 @@ Shows a dynamic list of the actions the candidate should take to be included in 
 
   {#snippet hero()}
     <figure role="presentation">
-      <HeroEmoji emoji={candCtx.profileComplete ? t('dynamic.success.heroEmoji') : undefined} />
+      <HeroEmoji emoji={profileComplete ? t('dynamic.success.heroEmoji') : undefined} />
     </figure>
   {/snippet}
 
@@ -122,8 +106,8 @@ Shows a dynamic list of the actions the candidate should take to be included in 
       href={getRoute.current('CandAppProfile')}
       data-testid="candidate-home-profile">
       {#snippet badge()}
-        {#if candCtx.unansweredRequiredInfoQuestions && candCtx.unansweredRequiredInfoQuestions.length > 0}
-          <InfoBadge text={String(candCtx.unansweredRequiredInfoQuestions.length)} />
+        {#if badges.profile}
+          <InfoBadge text={badges.profile.text} disabled={badges.profile.disabled} />
         {/if}
       {/snippet}
     </Button>
@@ -131,14 +115,12 @@ Shows a dynamic list of the actions the candidate should take to be included in 
       text={nextAction.buttonTextQuestion}
       icon="opinion"
       iconPos="left"
-      disabled={candCtx.unansweredRequiredInfoQuestions?.length !== 0}
+      disabled={infoOutstanding}
       href={getRoute.current('CandAppQuestions')}
       data-testid="candidate-home-questions">
       {#snippet badge()}
-        {#if candCtx.unansweredOpinionQuestions && candCtx.unansweredOpinionQuestions?.length > 0}
-          <InfoBadge
-            text={candCtx.unansweredOpinionQuestions.length}
-            disabled={candCtx.unansweredRequiredInfoQuestions?.length !== 0} />
+        {#if badges.questions}
+          <InfoBadge text={badges.questions.text} disabled={badges.questions.disabled} />
         {/if}
       {/snippet}
     </Button>
@@ -146,7 +128,7 @@ Shows a dynamic list of the actions the candidate should take to be included in 
       text={t('candidateApp.home.preview')}
       icon="previewProfile"
       iconPos="left"
-      disabled={candCtx.unansweredRequiredInfoQuestions?.length !== 0}
+      disabled={infoOutstanding}
       href={getRoute.current('CandAppPreview')}
       data-testid="candidate-home-preview" />
   </div>

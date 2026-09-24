@@ -6,12 +6,12 @@ Page for controlling the question info generation feature.
 
 <script lang="ts">
   import { enhance } from '$app/forms';
+  import { MainContent } from '$layouts/main';
   import { FeatureJobs } from '$lib/admin/components/jobs';
   import { LanguageSelector } from '$lib/admin/components/languageFeatures';
   import { Button } from '$lib/components/button';
   import { getAdminContext } from '$lib/contexts/admin';
   import { getUUID } from '$lib/utils/components';
-  import MainContent from '../../../MainContent.svelte';
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { ActionResult, SubmitFunction } from '@sveltejs/kit';
   import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
@@ -20,9 +20,7 @@ Page for controlling the question info generation feature.
   // Get contexts
   ////////////////////////////////////////////////////////////////////////
 
-  // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot.<prop>` directly in the tracking scope,
-  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" and the
-  // stable-reference alias anti-pattern (see spike 024, see phase 117).
+  // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot.<prop>` directly in the tracking scope, never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" and the stable-reference alias anti-pattern.
   const ctx = getAdminContext();
   const {
     t,

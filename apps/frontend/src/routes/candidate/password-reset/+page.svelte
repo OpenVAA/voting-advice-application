@@ -10,25 +10,23 @@ Shows a form with which to set a new password when it has been reset.
 -->
 
 <script lang="ts">
+  import { log } from '@openvaa/app-shared';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
+  import { MainContent } from '$layouts/main';
   import { PasswordSetter } from '$lib/candidate/components/passwordSetter';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { logDebugError } from '$lib/utils/logger';
-  import MainContent from '../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // see phase 61 follow-up: isAuthenticated is reactive; access via candCtx.X.
-  // (This page evaluates isSessionFlow once at component init, so the original
-  // destructure was effectively safe — but switching to candCtx.X future-proofs
-  // any later code that re-reads isSessionFlow inside an effect/derived.)
+  // isAuthenticated is reactive; access via candCtx.X.
+  // (This page evaluates isSessionFlow once at component init, so the original destructure was effectively safe — but switching to candCtx.X future-proofs any later code that re-reads isSessionFlow inside an effect/derived.)
   const candCtx = getCandidateContext();
   const { getRoute, resetPassword, setPassword, t } = candCtx;
   const { pageStyles } = getLayoutContext();
@@ -54,7 +52,7 @@ Shows a form with which to set a new password when it has been reset.
 
   async function handleSubmit() {
     if (!canSubmit) {
-      logDebugError('HandleSubmit called when canSubmit is false');
+      log.debug('HandleSubmit called when canSubmit is false');
       return undefined;
     }
 
@@ -63,7 +61,7 @@ Shows a form with which to set a new password when it has been reset.
     if (isSessionFlow) {
       // Session-based flow: user already has a session from verifyOtp, just set the password
       const result = await setPassword({ password }).catch((e) => {
-        logDebugError(`Error with setPassword: ${e?.message}`);
+        log.error(`Error with setPassword: ${e?.message}`);
         return undefined;
       });
 
@@ -73,13 +71,12 @@ Shows a form with which to set a new password when it has been reset.
       }
 
       status = 'success';
-      // User is already authenticated — navigate to candidate home via full page load
-      // to ensure session cookies are sent to the server-side loader.
+      // User is already authenticated — navigate to candidate home via full page load to ensure session cookies are sent to the server-side loader.
       window.location.href = getRoute.current('CandAppHome');
     } else {
       // Code-based flow: use resetPassword with the code
       const result = await resetPassword({ code: code!, password }).catch((e) => {
-        logDebugError(`Error with resetPassword: ${e?.message}`);
+        log.error(`Error with resetPassword: ${e?.message}`);
         return undefined;
       });
 
@@ -108,7 +105,13 @@ Shows a form with which to set a new password when it has been reset.
     </HeadingGroup>
   {/snippet}
   <div class="flex-nowarp flex flex-col items-center">
-    <PasswordSetter bind:valid={isPasswordValid} bind:errorMessage={validationError} bind:password />
+    <!-- bind: keep — PasswordSetter.password is $bindable(''). Validity and the error message are derived inside the component and arrive through onValidityChange, so neither is bindable. -->
+    <PasswordSetter
+      bind:password
+      onValidityChange={({ valid, errorMessage }) => {
+        isPasswordValid = valid;
+        validationError = errorMessage;
+      }} />
     {#if status === 'error'}
       <ErrorMessage
         inline

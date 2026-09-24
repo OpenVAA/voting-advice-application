@@ -1,10 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { ElectionSelector } from '$lib/components/electionSelector';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import MainContent from '../../../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -14,9 +14,7 @@
   // Reactive accessors (constituenciesSelectable) read via candCtx.X — see CLAUDE.md "Context Destructuring Rule".
   const candCtx = getCandidateContext();
   const { getRoute, t } = candCtx;
-  // dataRoot is identity-stable (#version-bridge): read `candCtx.dataRoot.<prop>` directly in the tracking scope,
-  // never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" and the
-  // stable-reference alias anti-pattern (see spike 024, see phase 117).
+  // dataRoot is identity-stable (#version-bridge): read `candCtx.dataRoot.<prop>` directly in the tracking scope, never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" and the stable-reference alias anti-pattern.
   const nextRoute = $derived(
     candCtx.constituenciesSelectable ? 'CandAppPreregisterConstituency' : 'CandAppPreregisterEmail'
   );

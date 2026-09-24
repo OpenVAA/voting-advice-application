@@ -7,11 +7,10 @@
 -->
 
 <script lang="ts">
+  import { Layout, MaintenancePage } from '$layouts/main';
   import { initAdminContext } from '$lib/contexts/admin';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { AdminNav } from '$lib/dynamic-components/navigation/admin';
-  import Layout from '../Layout.svelte';
-  import MaintenancePage from '../MaintenancePage.svelte';
   import type { Snippet } from 'svelte';
 
   let { children }: { children: Snippet } = $props();
@@ -20,10 +19,7 @@
   // Init Admin Context
   ////////////////////////////////////////////////////////////////////
 
-  // `appType` is a rune handle from AdminContext (inherited from AppContext);
-  // `appType.set(...)` is unchanged — the handle exposes `.set`. `appSettings` is
-  // a reactive accessor (see phase 113 flatten) — read via `ctx.appSettings`,
-  // never destructure (the alias below tracks it).
+  // `appType` is a rune handle from AdminContext (inherited from AppContext); `appType.set(...)` uses that handle's own `.set`. `appSettings` is a reactive accessor — read via `ctx.appSettings`, never destructure (the alias below tracks it).
   const ctx = initAdminContext();
   const { appType, t } = ctx;
   const appSettings = $derived(ctx.appSettings);

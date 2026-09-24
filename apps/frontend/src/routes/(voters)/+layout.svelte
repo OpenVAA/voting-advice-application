@@ -20,31 +20,19 @@
 
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { Layout, MaintenancePage } from '$layouts/main';
   import { Notification } from '$lib/components/notification';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { initVoterContext } from '$lib/contexts/voter';
   import { DataConsentPopup } from '$lib/dynamic-components/dataConsent/popup';
   import { VoterNav } from '$lib/dynamic-components/navigation/voter/';
-  import Layout from '../Layout.svelte';
-  import MaintenancePage from '../MaintenancePage.svelte';
   import type { Snippet } from 'svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Init Voter Context
   ////////////////////////////////////////////////////////////////////
 
-  // WR-04 (see phase 86.3 review): popupQueue is a stable instance reference per
-  // CLAUDE.md "Context Destructuring Rule" — popupStore() returns an object
-  // literal `{ push, shift, subscribe }` (popupStore.svelte.ts:23) attached as
-  // a plain context property (appContext.svelte.ts:226), NOT a $state/$derived
-  // getter. The `push`/`shift`/`subscribe` methods are bound function
-  // references; destructuring captures the instance once at component init
-  // and subsequent `popupQueue.push(...)` calls correctly mutate the live
-  // queue. DO NOT swap popupQueue for a $derived/$state-based collection (or
-  // a getter on the context object) without migrating consumers to
-  // `ctx.popupQueue.push(...)` per the destructuring rule.
-  // appSettings is a reactive accessor (see phase 113 flatten) — read via
-  // `ctx.appSettings`, never destructure (the alias below tracks it).
+  // appSettings is a reactive accessor — read via `ctx.appSettings`; destructuring it captures one value at init and stops updating.
   const ctx = initVoterContext();
   const { appType, popupQueue, userPreferences, t } = ctx;
   const appSettings = $derived(ctx.appSettings);
@@ -56,23 +44,6 @@
 
   const { navigation, useTopBar } = getLayoutContext();
 
-  // see phase 86.3-01 wave A fix (cells #1 + #2): the top-bar overlay must
-  // be reactive on appSettings so runtime overrides via
-  // mergeAppSettings(page.data.appSettingsData) (appContext.svelte.ts:93-100)
-  // propagate to the header Banner. Mirrors the canonical $effect pattern at
-  // appContext.svelte.ts:93-100.
-  //
-  // Migrated (see phase 95) off the StackedState revert/push-baseline
-  // pattern to the token-keyed settingsOverlay registry. `useTopBar(...)` is
-  // `$effect(() => topBar.push(overlay))` — a NESTED effect. When this OUTER
-  // $effect re-runs on an appSettings change, Svelte tears down the nested
-  // `use()` effect first (its cleanup reverts the prior overlay) and then
-  // re-creates it (pushing the fresh overlay). This is structurally robust to
-  // out-of-order child mount/unmount: each overlay is token-keyed, so a child
-  // consumer's overlay is never silently erased by this parent re-run (the
-  // WR-02 interleave hazard the index-based stack carried is gone). No
-  // `untrack` is required here — the push/revert write-after-read is already
-  // untrack-guarded inside settingsOverlay (SettingsOverlay.svelte.ts).
   $effect(() => {
     // Reactive reads — these register the OUTER $effect's dependencies.
     const feedback = appSettings.header.showFeedback;
@@ -89,24 +60,9 @@
   // Popup management
   ////////////////////////////////////////////////////////////////////
 
-  // see phase 86.3-01 cell #3 (notifications.voterApp) REVERTED 2026-05-20 to the
-  // pre-86.3 onMount-only queueing semantic. The reactive `$effect` rewrite
-  // surfaced an unintended interaction with test-infrastructure conventions:
-  // multiple e2e specs leave `notifications.voterApp.show: true` in their
-  // afterAll (e.g. voter-popup-hydration.spec.ts:70 defaultPopupSettings),
-  // which the prior onMount-only queue-then-dismiss flow tolerated but a
-  // reactive $effect re-queues on every page mount — blocking the
-  // answeredVoterPage fixture from advancing past the intro page in any
-  // downstream voter spec. Cells #1 + #2 (header.showFeedback / showHelp via
-  // reactive topBar $effect above) remain reactive — those changed in app
-  // settings UI and the topBar reactivity is the user-visible value.
-  //
-  // Cell #3 disposition is now REVERT-TO-ONMOUNT (downgraded from FIX-PASS),
-  // matching the baseline (see phase 77). The DataConsentPopup branch (below) stays
-  // in the same onMount, per the same small-fix constraint.
+  // Queued once on mount rather than reactively: a reactive queue re-pushes on every settings change, re-showing a dismissed popup.
   onMount(() => {
     if (!appSettings.access.voterApp) return;
-    // Queue the voter-app notification popup (cell #3 — onMount one-shot).
     if (appSettings.notifications.voterApp?.show) {
       popupQueue.push({
         component: Notification,
