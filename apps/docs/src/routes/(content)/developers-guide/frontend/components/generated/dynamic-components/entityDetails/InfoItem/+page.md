@@ -15,11 +15,11 @@ Used to show a label-content pair in a Candidate's basic information.
 ### Usage
 
 ```tsx
-<InfoItem label={$t('candidateApp.common.firstNameLabel')}>{candidate.firstName}</InfoItem>
+<InfoItem label={t('candidateApp.common.firstNameLabel')}>{candidate.firstName}</InfoItem>
 ```
 
 ## Source
 
-[frontend/src/lib/dynamic-components/entityDetails/InfoItem.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/InfoItem.svelte)
+[apps/frontend/src/lib/dynamic-components/entityDetails/InfoItem.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/InfoItem.svelte)
 
-[frontend/src/lib/dynamic-components/entityDetails/InfoItem.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/InfoItem.type.ts)
+[apps/frontend/src/lib/dynamic-components/entityDetails/InfoItem.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/InfoItem.type.ts)

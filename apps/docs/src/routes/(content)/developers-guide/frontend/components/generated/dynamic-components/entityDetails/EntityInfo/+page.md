@@ -20,11 +20,11 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
 ### Usage
 
 ```tsx
-<EntityInfo entity={candidate} questions={$infoQuestions} />
+<EntityInfo entity={candidate} questions={infoQuestions} />
 ```
 
 ## Source
 
-[frontend/src/lib/dynamic-components/entityDetails/EntityInfo.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/EntityInfo.svelte)
+[apps/frontend/src/lib/dynamic-components/entityDetails/EntityInfo.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/EntityInfo.svelte)
 
-[frontend/src/lib/dynamic-components/entityDetails/EntityInfo.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/EntityInfo.type.ts)
+[apps/frontend/src/lib/dynamic-components/entityDetails/EntityInfo.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/EntityInfo.type.ts)

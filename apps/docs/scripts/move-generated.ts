@@ -19,8 +19,7 @@ function transformMarkdownLinks(content: string): string {
   content = content.replace(/\[([^\]]+)\]\(([^)]+)\/README\.md\)/g, '[$1]($2)');
   content = content.replace(/\[([^\]]+)\]\(README\.md\)/g, '[$1](.)');
 
-  // Remove .md extension from all relative links (not URLs), including those with hash fragments
-  // This transforms foo/bar.md#anchor to foo/bar#anchor
+  // Remove .md extension from all relative links (not URLs), including those with hash fragments This transforms foo/bar.md#anchor to foo/bar#anchor
   content = content.replace(/\[([^\]]+)\]\((?!https?:\/\/)([^)#]+)\.md(#[^)]+)?\)/g, '[$1]($2$3)');
 
   return content;

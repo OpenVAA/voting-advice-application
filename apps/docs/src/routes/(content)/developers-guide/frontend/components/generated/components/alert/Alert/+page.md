@@ -9,45 +9,42 @@ Show a non-model alert or dialog that appears at the bottom of the screen.
 - `autoOpen`: Whether to open the alert automatically. Default: `true`
 - `isOpen`: Bind to this to get the alert's open state.
 - `onClose`: The callback triggered when the alert is closed.
+- `onOpen`: The callback triggered when the alert is opened.
 - Any valid attributes of a `<dialog>` element
+
+### Snippet Props
+
+- `actions`: The action buttons to display.
+- `children`: The content of the alert.
 
 ### Bindable functions
 
 - `openAlert`: Opens the alert
 - `closeAlert`: Closes the alert
 
-### Slots
-
-- `actions`: The action buttons to display.
-- default: The content of the alert.
-
-### Events
-
-- `open`: Fired after the alert is opened.
-- `close`: Fired when the alert is closed by any means.
-- Neither event has any details.
-
 ### Usage
 
 ```tsx
 <script lang="ts">
-  let closeAlert: () => void;
+  let alertRef: Alert;
 </script>
 <Alert
-  bind:closeAlert
+  bind:this={alertRef}
   title="Can we help you?"
   icon="warning"
   onClose={() => console.info('Alert closed')}>
   Please tell us whether we can help you?
-  <div slot="actions" class="flex flex-col w-full max-w-md mx-auto">
-    <Button on:click={() => {console.info('Yes'); closeAlert();}} text="Yes" variant="main"/>
-    <Button on:click={closeAlert} text="No"/>
-  </div>
+  {#snippet actions()}
+    <div class="flex flex-col w-full max-w-md mx-auto">
+      <Button onclick={() => {console.info('Yes'); alertRef.closeAlert();}} text="Yes" variant="main"/>
+      <Button onclick={() => alertRef.closeAlert()} text="No"/>
+    </div>
+  {/snippet}
 </Alert>
 ```
 
 ## Source
 
-[frontend/src/lib/components/alert/Alert.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/alert/Alert.svelte)
+[apps/frontend/src/lib/components/alert/Alert.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/alert/Alert.svelte)
 
-[frontend/src/lib/components/alert/Alert.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/alert/Alert.type.ts)
+[apps/frontend/src/lib/components/alert/Alert.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/alert/Alert.type.ts)

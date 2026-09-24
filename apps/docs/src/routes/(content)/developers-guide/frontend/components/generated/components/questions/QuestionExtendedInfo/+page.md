@@ -4,9 +4,8 @@ Display the question's expandable information content.
 
 ### Properties
 
-- `title`: The title for the info, usually the question text.
-- `info`: The info content to show as a plain or HTML string.
-- `infoSections`: An array of objects with `title` and `content` properties to show as expandable sections.
+- `question`: The question to show the info for.
+- `title`: Optional title for the info, by default the question text.
 - Any valid properties of a `<div>` element
 
 ### Callback properties
@@ -17,11 +16,11 @@ Display the question's expandable information content.
 ### Usage
 
 ```tsx
-<QuestionExtendedInfo info={question.info} infoSections={customData.infoSections} />
+<QuestionExtendedInfo {question} />
 ```
 
 ## Source
 
-[frontend/src/lib/components/questions/QuestionExtendedInfo.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionExtendedInfo.svelte)
+[apps/frontend/src/lib/components/questions/QuestionExtendedInfo.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionExtendedInfo.svelte)
 
-[frontend/src/lib/components/questions/QuestionExtendedInfo.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionExtendedInfo.type.ts)
+[apps/frontend/src/lib/components/questions/QuestionExtendedInfo.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionExtendedInfo.type.ts)

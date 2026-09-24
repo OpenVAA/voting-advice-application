@@ -19,6 +19,6 @@ Accesses `AppContext` to read `appSettings`.
 
 ## Source
 
-[frontend/src/lib/dynamic-components/dataConsent/DataConsentInfoButton.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/dataConsent/DataConsentInfoButton.svelte)
+[apps/frontend/src/lib/dynamic-components/dataConsent/DataConsentInfoButton.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/dataConsent/DataConsentInfoButton.svelte)
 
-[frontend/src/lib/dynamic-components/dataConsent/DataConsentInfoButton.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/dataConsent/DataConsentInfoButton.type.ts)
+[apps/frontend/src/lib/dynamic-components/dataConsent/DataConsentInfoButton.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/dataConsent/DataConsentInfoButton.type.ts)

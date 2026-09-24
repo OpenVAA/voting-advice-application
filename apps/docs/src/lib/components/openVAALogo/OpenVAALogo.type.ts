@@ -2,8 +2,7 @@ import type { SvelteHTMLElements } from 'svelte/elements';
 
 export type OpenVAALogoProps = SvelteHTMLElements['svg'] & {
   /**
-   * The `<title>` of the SVG logo. Functions much the same way as the `alt``
-   * attribute of an `<img>`.
+   * The `<title>` of the SVG logo. Functions much the same way as the `alt`` attribute of an `<img>`.
    *
    * @default 'OpenVAA'
    */

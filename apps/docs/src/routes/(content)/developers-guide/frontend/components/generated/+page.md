@@ -94,6 +94,10 @@ This documentation is automatically generated from the `@component` docstrings i
 
   `import { Image } from '$lib/components/image';`
 
+- [ImagePart](/developers-guide/frontend/components/generated/components/input/parts/ImagePart)
+
+  `import { ImagePart } from '$lib/components/input/parts';`
+
 - [InfoAnswer](/developers-guide/frontend/components/generated/components/infoAnswer/InfoAnswer)
 
   `import { InfoAnswer } from '$lib/components/infoAnswer';`
@@ -130,9 +134,21 @@ This documentation is automatically generated from the `@component` docstrings i
 
   `import { ModalContainer } from '$lib/components/modal';`
 
+- [MultilingualTextPart](/developers-guide/frontend/components/generated/components/input/parts/MultilingualTextPart)
+
+  `import { MultilingualTextPart } from '$lib/components/input/parts';`
+
+- [MultipleTextPart](/developers-guide/frontend/components/generated/components/input/parts/MultipleTextPart)
+
+  `import { MultipleTextPart } from '$lib/components/input/parts';`
+
 - [Notification](/developers-guide/frontend/components/generated/components/notification/Notification)
 
   `import { Notification } from '$lib/components/notification';`
+
+- [NumberScaleInput](/developers-guide/frontend/components/generated/components/questions/NumberScaleInput)
+
+  `import { NumberScaleInput } from '$lib/components/questions';`
 
 - [NumericEntityFilter](/developers-guide/frontend/components/generated/components/entityFilters/numeric/NumericEntityFilter)
 
@@ -170,6 +186,10 @@ This documentation is automatically generated from the `@component` docstrings i
 
   `import { QuestionActions } from '$lib/components/questions';`
 
+- [QuestionArguments](/developers-guide/frontend/components/generated/components/questions/QuestionArguments)
+
+  `import { QuestionArguments } from '$lib/components/questions';`
+
 - [QuestionBasicInfo](/developers-guide/frontend/components/generated/components/questions/QuestionBasicInfo)
 
   `import { QuestionBasicInfo } from '$lib/components/questions';`
@@ -205,6 +225,10 @@ This documentation is automatically generated from the `@component` docstrings i
 - [Select](/developers-guide/frontend/components/generated/components/select/Select)
 
   `import { Select } from '$lib/components/select';`
+
+- [SelectMultiplePart](/developers-guide/frontend/components/generated/components/input/parts/SelectMultiplePart)
+
+  `import { SelectMultiplePart } from '$lib/components/input/parts';`
 
 - [SingleGroupConstituencySelector](/developers-guide/frontend/components/generated/components/constituencySelector/SingleGroupConstituencySelector)
 
@@ -280,10 +304,6 @@ This documentation is automatically generated from the `@component` docstrings i
 
   `import { EntityCard } from '$lib/dynamic-components/entityCard';`
 
-- [EntityCardAction](/developers-guide/frontend/components/generated/dynamic-components/entityCard/EntityCardAction)
-
-  `import { EntityCardAction } from '$lib/dynamic-components/entityCard';`
-
 - [EntityChildren](/developers-guide/frontend/components/generated/dynamic-components/entityDetails/EntityChildren)
 
   `import { EntityChildren } from '$lib/dynamic-components/entityDetails';`
@@ -307,6 +327,10 @@ This documentation is automatically generated from the `@component` docstrings i
 - [EntityListControls](/developers-guide/frontend/components/generated/dynamic-components/entityList/EntityListControls)
 
   `import { EntityListControls } from '$lib/dynamic-components/entityList';`
+
+- [EntityListWithControls](/developers-guide/frontend/components/generated/dynamic-components/entityList/EntityListWithControls)
+
+  `import { EntityListWithControls } from '$lib/dynamic-components/entityList';`
 
 - [EntityOpinions](/developers-guide/frontend/components/generated/dynamic-components/entityDetails/EntityOpinions)
 
@@ -404,4 +428,4 @@ This documentation is automatically generated from the `@component` docstrings i
 
 ---
 
-Total: 98 components
+Total: 104 components

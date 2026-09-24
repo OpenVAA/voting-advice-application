@@ -2,10 +2,10 @@
 
 A modal dialog that will automatically close after a set amount of time.
 
-### Slots
+### Snippet Props
 
 - `actions`: The action buttons to display.
-- default: The content of the modal.
+- `children`: The content of the modal.
 
 ### Properties
 
@@ -18,7 +18,7 @@ A modal dialog that will automatically close after a set amount of time.
 
 - `onClose`: Callback for when the modal closes. Note that the modal may still be transitioning to `hidden`.
 - `onOpen`: Callback for when the modal opens. Note that the modal may still be transitioning from `hidden`.
-- `timeout`: Callback triggered right before the modal is closed due to a timeout. Note that the `onClose` callback will be triggered after this.
+- `onTimeout`: Callback triggered right before the modal is closed due to a timeout. Note that the `onClose` callback will be triggered after this.
 
 ### Bindable functions
 
@@ -32,19 +32,25 @@ See the `<Modal>` component documentation for more information.
 ### Usage
 
 ```tsx
+<script lang="ts">
+  let timedModal: TimedModal;
+</script>
+
 <TimedModal
-  bind:closeModal
-  title="Timout modal"
+  bind:this={timedModal}
+  title="Timeout modal"
   onOpen={() => console.info('Opened')}
   onClose={() => console.info('Closed')}
   onTimeout={() => console.info('Timeout!')}>
-  <p>Wait for it…</p>
-  <Button slot="actions" on:click={closeModal} text="Close" variant="main" />
+  <p>Wait for it...</p>
+  {#snippet actions()}
+    <Button onclick={() => timedModal.closeModal()} text="Close" variant="main"/>
+  {/snippet}
 </TimedModal>
 ```
 
 ## Source
 
-[frontend/src/lib/components/modal/timed/TimedModal.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/timed/TimedModal.svelte)
+[apps/frontend/src/lib/components/modal/timed/TimedModal.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/timed/TimedModal.svelte)
 
-[frontend/src/lib/components/modal/timed/TimedModal.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/timed/TimedModal.type.ts)
+[apps/frontend/src/lib/components/modal/timed/TimedModal.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/timed/TimedModal.type.ts)

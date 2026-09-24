@@ -18,18 +18,18 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
 ```tsx
 <OpinionQuestionInput
   {question}
-  answer={$voterAnswers[question.id]}
+  answer={answers.answers[question.id]}
   onChange={answerQuestion} />
 <OpinionQuestionInput
   {question}
   mode="display"
-  answer={$voterAnswers[question.id]}
+  answer={answers.answers[question.id]}
   otherAnswer={candidate.getAnswer(question)}
-  otherLabel={$t('candidateApp.common.candidateAnswerLabel')} />
+  otherLabel={t('candidateApp.common.candidateAnswerLabel')} />
 ```
 
 ## Source
 
-[frontend/src/lib/components/questions/OpinionQuestionInput.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/OpinionQuestionInput.svelte)
+[apps/frontend/src/lib/components/questions/OpinionQuestionInput.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/OpinionQuestionInput.svelte)
 
-[frontend/src/lib/components/questions/OpinionQuestionInput.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/OpinionQuestionInput.type.ts)
+[apps/frontend/src/lib/components/questions/OpinionQuestionInput.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/OpinionQuestionInput.type.ts)

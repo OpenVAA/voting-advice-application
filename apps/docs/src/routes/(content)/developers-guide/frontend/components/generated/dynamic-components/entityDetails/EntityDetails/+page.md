@@ -4,7 +4,7 @@ Used to show an entity's details, possibly including their answers to `info` que
 
 If the provided entity is a (possibly matched) nomination, the questions to include will be those applicable to the election and constiuency of the nomination.
 
-If `AppContext.$appType` is `voter`, the voter’s possible answers will included in the `opinions` tab.
+If `AppContext.$appType` is `voter`, the voter's possible answers will included in the `opinions` tab.
 
 ### Dynamic component
 
@@ -22,15 +22,12 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 ### Usage
 
 ```tsx
-<EntityDetails
-  entity={matchedCandidate}/>
-<EntityDetails
-  entity={matchedOrganization}
-  tabs={$appSettings.entityDetails.contents.organization}/>
+<EntityDetails entity={matchedCandidate}/>
+<EntityDetails entity={matchedOrganization} tabs={appSettings.entityDetails.contents.organization}/>
 ```
 
 ## Source
 
-[frontend/src/lib/dynamic-components/entityDetails/EntityDetails.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/EntityDetails.svelte)
+[apps/frontend/src/lib/dynamic-components/entityDetails/EntityDetails.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/EntityDetails.svelte)
 
-[frontend/src/lib/dynamic-components/entityDetails/EntityDetails.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/EntityDetails.type.ts)
+[apps/frontend/src/lib/dynamic-components/entityDetails/EntityDetails.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/EntityDetails.type.ts)

@@ -2,13 +2,10 @@
 
 Used for large emojis acting as decorative illustrations.
 
-The content is hidden from screen readers by default, because the
-intended use is for [decorative purposes](https://www.w3.org/WAI/tutorials/images/decorative/).
-To override, add `aria-hidden="false"` to the tag and also consider
-adding an `aria-label`.
+The content is hidden from screen readers by default, because the intended use is for [decorative purposes](https://www.w3.org/WAI/tutorials/images/decorative/).
+To override, add `aria-hidden="false"` to the tag and also consider adding an `aria-label`.
 
-To change the size of the emoji, add a `text-[size]` utility class
-using the `class` attribute, e.g. `class="text-[10rem]"`.
+To change the size of the emoji, add a `text-[size]` utility class using the `class` attribute, e.g. `class="text-[10rem]"`.
 
 ### Properties
 
@@ -23,6 +20,6 @@ using the `class` attribute, e.g. `class="text-[10rem]"`.
 
 ## Source
 
-[frontend/src/lib/components/heroEmoji/HeroEmoji.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/heroEmoji/HeroEmoji.svelte)
+[apps/frontend/src/lib/components/heroEmoji/HeroEmoji.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/heroEmoji/HeroEmoji.svelte)
 
-[frontend/src/lib/components/heroEmoji/HeroEmoji.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/heroEmoji/HeroEmoji.type.ts)
+[apps/frontend/src/lib/components/heroEmoji/HeroEmoji.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/heroEmoji/HeroEmoji.type.ts)

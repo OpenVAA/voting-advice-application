@@ -12,7 +12,7 @@ A component for buttons that mostly contain text and an icon. Use the `variant` 
 
 Only `main` buttons have a backround color. The other variants use DaisyUI's `btn-ghost` class, i.e. they do not have a background color.
 
-The button is rendered as an `<a>` element if `href` is supplied. Otherwise a `<button>` element will be used. Be sure to provide an `on:click` event handler or other way of making the item interactive.
+The button is rendered as an `<a>` element if `href` is supplied. Otherwise a `<button>` element will be used. Be sure to provide an `onclick` event handler or other way of making the item interactive.
 
 ### Properties
 
@@ -23,13 +23,13 @@ The button is rendered as an `<a>` element if `href` is supplied. Otherwise a `<
 - `variant`: Type of the button, which defines it's appearance. Default: `'normal'`
 - `iconPos`: Position of the icon in the button. Only relevant if `icon` is not `null` and `variant` is not `icon` or `floating-icon`. Note that `top` and `bottom` are not supported if `variant='main'`. Default: `'right'` if `variant='main'`, otherwise `'left'`
 - `loading`: Set to `true` to show a loading spinner instead of the possible icon and disable the button. Default: `false`
-- `loadingText`: The text shown when `loading` is `true`. Default: `$t('common.loading')`
-- `href`: The URL to navigate to. If this is not supplied be sure to provide an `on:click` event handler or other way of making the item interactive.
+- `loadingText`: The text shown when `loading` is `true`. Default: `t('common.loading')`
+- `href`: The URL to navigate to. If this is not supplied be sure to provide an `onclick` event handler or other way of making the item interactive.
 - Any valid attributes of either an `<a>` or `<button>` element depending whether `href` was defined or not, respectively.
 
-### Slots
+### Snippet Props
 
-- `badge`: A slot for adding a badge to the button.
+- `badge`: A snippet for adding a badge to the button.
 
 ### Reactivity
 
@@ -38,18 +38,18 @@ Reactivity is not supported for the properties: `variant`, `iconPos`.
 ### Usage
 
 ```tsx
-<Button on:click={next} variant="main" icon="next"
+<Button onclick={next} variant="main" icon="next"
 text="Continue"/>
-<Button on:click={skip} icon="skip" iconPos="top" color="secondary"
+<Button onclick={skip} icon="skip" iconPos="top" color="secondary"
 text="Skip this question"/>
-<Button on:click={addToList} variant="icon" icon="addToList"
+<Button onclick={addToList} variant="icon" icon="addToList"
 text="Add to list">
- <InfoBadge text="5" slot="badge"/>
+ {#snippet badge()}<InfoBadge text="5" />{/snippet}
 </Button>
 ```
 
 ## Source
 
-[frontend/src/lib/components/button/Button.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/button/Button.svelte)
+[apps/frontend/src/lib/components/button/Button.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/button/Button.svelte)
 
-[frontend/src/lib/components/button/Button.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/button/Button.type.ts)
+[apps/frontend/src/lib/components/button/Button.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/button/Button.type.ts)

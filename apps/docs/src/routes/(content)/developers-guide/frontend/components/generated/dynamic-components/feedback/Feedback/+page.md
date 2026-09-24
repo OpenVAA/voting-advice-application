@@ -19,15 +19,15 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
 - `submit`: Submit the feedback or close the modal if it's already been submitted.
 - `reset`: Reset the form so that if the user opens it again, they can fill new feedback. You should call this when closing any modal containing the feedback.
 
-### Events
+### Callback Props
 
-- `cancel`: Fired when the user clicks the cancel button or the submit button again after submitting or an error, indicating that the form should close.
-- `error`: Fired when there is an error sending the feedback.
-- `sent`: Fired when the feedback is successfully sent.
+- `onCancel`: Called when the user clicks the cancel button or the submit button again after submitting or an error, indicating that the form should close.
+- `onError`: Called when there is an error sending the feedback.
+- `onSent`: Called when the feedback is successfully sent.
 
 ### Tracking events
 
-- `feedback_sent`: Feedback is succesfully sent. Contains `rating` and `description` properties.
+- `feedback_sent`: Feedback is successfully sent. Contains `rating` and `description` properties.
 - `feedback_error`: There was an error sending the feedback. Contains `rating` and `description` properties.
 
 ### Usage
@@ -40,11 +40,11 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
     reset();
   }
 </script>
-<Feedback bind:reset on:cancel={close} on:sent={close}/>
+<Feedback bind:reset onCancel={close} onSent={close}/>
 ```
 
 ## Source
 
-[frontend/src/lib/dynamic-components/feedback/Feedback.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/feedback/Feedback.svelte)
+[apps/frontend/src/lib/dynamic-components/feedback/Feedback.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/feedback/Feedback.svelte)
 
-[frontend/src/lib/dynamic-components/feedback/Feedback.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/feedback/Feedback.type.ts)
+[apps/frontend/src/lib/dynamic-components/feedback/Feedback.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/feedback/Feedback.type.ts)

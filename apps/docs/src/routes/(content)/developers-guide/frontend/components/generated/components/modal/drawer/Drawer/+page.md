@@ -2,10 +2,6 @@
 
 A modal dialog that looks like a drawer.
 
-### Slots
-
-- default: The content of the modal.
-
 ### Properties
 
 - `title`: The title of the modal
@@ -37,6 +33,6 @@ See the `<ModalContainer>` component documentation for more information.
 
 ## Source
 
-[frontend/src/lib/components/modal/drawer/Drawer.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/drawer/Drawer.svelte)
+[apps/frontend/src/lib/components/modal/drawer/Drawer.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/drawer/Drawer.svelte)
 
-[frontend/src/lib/components/modal/drawer/Drawer.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/drawer/Drawer.type.ts)
+[apps/frontend/src/lib/components/modal/drawer/Drawer.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/drawer/Drawer.type.ts)

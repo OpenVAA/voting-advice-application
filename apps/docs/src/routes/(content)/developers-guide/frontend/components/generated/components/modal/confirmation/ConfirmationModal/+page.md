@@ -1,50 +1,35 @@
 # ConfirmationModal
 
-A modal dialog that will automatically close after a set amount of time.
-
-### Slots
-
-- `actions`: The action buttons to display.
-- default: The content of the modal.
+A modal dialog that asks for user confirmation.
 
 ### Properties
 
 - `title`: The title of the modal
-- `timerDuration`: Logout timer duration in seconds. @default `30`
-- `timeLeft`: Bind to this to get time left in seconds
+- `onConfirm`: The action to perform when the user confirms.
+- `onCancel`: The action to perform when the user cancels.
+- `confirmLabel`: Optional label for the confirm button. @default t('common.continue')
+- `cancelLabel`: Optional label for the cancel button. @default t('common.cancel')
 - Any valid properties of a `<Modal>` component.
-
-### Callbacks
-
-- `onClose`: Callback for when the modal closes. Note that the modal may still be transitioning to `hidden`.
-- `onOpen`: Callback for when the modal opens. Note that the modal may still be transitioning from `hidden`.
-- `timeout`: Callback triggered right before the modal is closed due to a timeout. Note that the `onClose` callback will be triggered after this.
 
 ### Bindable functions
 
 - `openModal`: Opens the modal
 - `closeModal`: Closes the modal
 
-### Accessibility
-
-See the `<Modal>` component documentation for more information.
-
 ### Usage
 
 ```tsx
-<TimedModal
-  bind:closeModal
-  title="Timout modal"
-  onOpen={() => console.info('Opened')}
-  onClose={() => console.info('Closed')}
-  onTimeout={() => console.info('Timeout!')}>
-  <p>Wait for it…</p>
-  <Button slot="actions" on:click={closeModal} text="Close" variant="main" />
-</TimedModal>
+<ConfirmationModal
+  bind:this={confirmModal}
+  title="Are you sure?"
+  onConfirm={() => doSomething()}
+  onCancel={() => console.log('Cancelled')}>
+  <p>This action cannot be undone.</p>
+</ConfirmationModal>
 ```
 
 ## Source
 
-[frontend/src/lib/components/modal/confirmation/ConfirmationModal.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/confirmation/ConfirmationModal.svelte)
+[apps/frontend/src/lib/components/modal/confirmation/ConfirmationModal.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/confirmation/ConfirmationModal.svelte)
 
-[frontend/src/lib/components/modal/confirmation/ConfirmationModal.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/confirmation/ConfirmationModal.type.ts)
+[apps/frontend/src/lib/components/modal/confirmation/ConfirmationModal.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/confirmation/ConfirmationModal.type.ts)

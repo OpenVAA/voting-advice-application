@@ -14,10 +14,9 @@ Accesses `AppContext` to set and read `userPreferences`.
   - `'modal'`: Show a button that opens the description in a modal.
 - Any valid attributes of a `<div>` element.
 
-### Events
+### Callback Props
 
-- `change`: Fired when the user changes their data collection consent. The event `detail` cóntains:
-  - `consent`: the new consent value.
+- `onChange`: Called when the user changes their data collection consent. Receives the new `consent` value.
 
 ### Usage
 
@@ -28,6 +27,6 @@ Accesses `AppContext` to set and read `userPreferences`.
 
 ## Source
 
-[frontend/src/lib/dynamic-components/dataConsent/DataConsent.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/dataConsent/DataConsent.svelte)
+[apps/frontend/src/lib/dynamic-components/dataConsent/DataConsent.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/dataConsent/DataConsent.svelte)
 
-[frontend/src/lib/dynamic-components/dataConsent/DataConsent.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/dataConsent/DataConsent.type.ts)
+[apps/frontend/src/lib/dynamic-components/dataConsent/DataConsent.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/dataConsent/DataConsent.type.ts)

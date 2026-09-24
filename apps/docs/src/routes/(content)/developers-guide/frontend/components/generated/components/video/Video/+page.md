@@ -10,7 +10,7 @@ You can hide some of the controls using the `hideControls` property, in which ca
 
 The player will try to unmute the video when the user first interacts with it. You can disable this by setting `autoUnmute` to `false`.
 
-User choices are stored in the `videoPreferences` store so that they persist across page loads. The preferences included are `muted`, `textTracksHidden` and `transcriptVisible`.
+User choices are held in the in-memory `videoPreferences` rune handle for the lifetime of the session; they are not persisted, so they do not survive a page reload. The preferences included are `muted`, `textTracksHidden` and `transcriptVisible`.
 
 ### Content properties
 
@@ -75,6 +75,6 @@ If not provided, the `video` element will be hidden until these properties are p
 
 ## Source
 
-[frontend/src/lib/components/video/Video.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/video/Video.svelte)
+[apps/frontend/src/lib/components/video/Video.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/video/Video.svelte)
 
-[frontend/src/lib/components/video/Video.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/video/Video.type.ts)
+[apps/frontend/src/lib/components/video/Video.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/video/Video.type.ts)

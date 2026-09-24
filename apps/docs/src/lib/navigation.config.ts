@@ -1,7 +1,5 @@
 /**
- * Automatically updated navigation configuration
- * Check and prepare update with scripts/generate-navigation-config.ts
- * To mark fix sections titles, set `fixedTitle: true` for them, otherwise the titles are updated automatically.
+ * Automatically updated navigation configuration Check and prepare update with scripts/generate-navigation-config.ts To mark fix sections titles, set `fixedTitle: true` for them, otherwise the titles are updated automatically.
  *
  * NB. Any comments or content other than the navigation object will be removed!
  */
@@ -152,7 +150,7 @@ export const navigation: Navigation = [
         route: '/developers-guide/backend',
         children: [
           {
-            title: 'Backend (Legacy Strapi docs)',
+            title: 'Strapi',
             route: '/developers-guide/backend/intro'
           },
           {
@@ -256,7 +254,7 @@ export const navigation: Navigation = [
             route: '/developers-guide/localization/locale-selection-step-by-step'
           },
           {
-            title: 'Localization in Strapi (Legacy)',
+            title: 'Localization in Strapi',
             route: '/developers-guide/localization/localization-in-strapi'
           },
           {
@@ -290,7 +288,7 @@ export const navigation: Navigation = [
             route: '/developers-guide/candidate-user-management/password-validation'
           },
           {
-            title: 'Registration Process in Strapi (Legacy)',
+            title: 'Registration Process in Strapi',
             route: '/developers-guide/candidate-user-management/registration-process-in-strapi'
           },
           {

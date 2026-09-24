@@ -2,7 +2,7 @@
 
 Outputs a navigation item for use inside a `<NavGroup>` which in turn is used within a `<Navigation>` component.
 
-The item is rendered as an `<a>` element if `href` is supplied. Otherwise a `<button>` element will be used. Be sure to provde an `on:click` event handler or other way of making the item interactive.
+The item is rendered as an `<a>` element if `href` is supplied. Otherwise a `<button>` element will be used. Be sure to provide an `onclick` handler or other way of making the item interactive.
 
 ### Dynamic component
 
@@ -19,12 +19,12 @@ Accesses `LayoutContext`.
 ### Usage
 
 ```tsx
-<NavItem href={$getRoute(ROUTE.Info)} icon="info" text="Show info"/>
-<NavItem on:click={(e) => foo(e)} text="Do foo"/>
+<NavItem href={getRoute.current(ROUTE.Info)} icon="info" text="Show info"/>
+<NavItem onclick={(e) => foo(e)} text="Do foo"/>
 ```
 
 ## Source
 
-[frontend/src/lib/dynamic-components/navigation/NavItem.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/NavItem.svelte)
+[apps/frontend/src/lib/dynamic-components/navigation/NavItem.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/NavItem.svelte)
 
-[frontend/src/lib/dynamic-components/navigation/NavItem.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/NavItem.type.ts)
+[apps/frontend/src/lib/dynamic-components/navigation/NavItem.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/NavItem.type.ts)

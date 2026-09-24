@@ -4,7 +4,7 @@
 
 Display constituency selection inputs for elections.
 
-If there’s only one option, it is automatically selected and no interactions are allowed.
+If there's only one option, it is automatically selected and no interactions are allowed.
 
 ### Properties
 
@@ -16,15 +16,11 @@ If there’s only one option, it is automatically selected and no interactions a
 ### Usage
 
 ```tsx
-<ElectionSelector
-  elections={$dataRoot.elections}
-  bind:selected={$selectedElectionIds}
-  onChange={(ids) => console.info('Selected', ids)}
-/>
+<ElectionSelector elections={ctx.dataRoot.elections} bind:selected onChange={(ids) => console.info('Selected', ids)} />
 ```
 
 ## Source
 
-[frontend/src/lib/components/electionSelector/ElectionSelector.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/electionSelector/ElectionSelector.svelte)
+[apps/frontend/src/lib/components/electionSelector/ElectionSelector.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/electionSelector/ElectionSelector.svelte)
 
-[frontend/src/lib/components/electionSelector/ElectionSelector.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/electionSelector/ElectionSelector.type.ts)
+[apps/frontend/src/lib/components/electionSelector/ElectionSelector.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/electionSelector/ElectionSelector.type.ts)

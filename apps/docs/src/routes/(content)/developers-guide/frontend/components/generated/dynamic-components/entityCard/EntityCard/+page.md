@@ -35,13 +35,13 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 ### Usage
 
 ```tsx
-<EntityCard action={$getRoute({route: 'ResultsCandidate', entityId: candidate.id})}
+<EntityCard action={getRoute.current({route: 'ResultCandidate', entityId: candidate.id})}
   content={candidate}>
 <EntityCard content={party} variant="details">
 ```
 
 ## Source
 
-[frontend/src/lib/dynamic-components/entityCard/EntityCard.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityCard/EntityCard.svelte)
+[apps/frontend/src/lib/dynamic-components/entityCard/EntityCard.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityCard/EntityCard.svelte)
 
-[frontend/src/lib/dynamic-components/entityCard/EntityCard.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityCard/EntityCard.type.ts)
+[apps/frontend/src/lib/dynamic-components/entityCard/EntityCard.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityCard/EntityCard.type.ts)

@@ -12,7 +12,7 @@ Show a definition popup when hovering over a term.
 
 ### Accessibility
 
-Uses the `term` and `definition` roles.
+The trigger is a focusable `button` (W3C APG tooltip pattern) whose accessible name is the term text; the definition popup uses the `tooltip` role and is linked via `aria-describedby` while shown.
 
 ### Usage
 
@@ -22,6 +22,6 @@ Uses the `term` and `definition` roles.
 
 ## Source
 
-[frontend/src/lib/components/term/Term.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/term/Term.svelte)
+[apps/frontend/src/lib/components/term/Term.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/term/Term.svelte)
 
-[frontend/src/lib/components/term/Term.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/term/Term.type.ts)
+[apps/frontend/src/lib/components/term/Term.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/term/Term.type.ts)

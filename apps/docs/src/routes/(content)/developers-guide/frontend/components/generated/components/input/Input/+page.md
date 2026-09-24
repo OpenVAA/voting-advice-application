@@ -4,12 +4,16 @@ Display any data input, its associated label and possible info. The HTML element
 
 The input itself is wrapped in multiple container elements, the outermost of which can be passed the `containerProps` prop.
 
+Multilingual features are only available if the `locales` store contains more than one locale.Button
+
 ### Properties
 
 - `type`: The type of input element to use. This also defines the type of the `value` prop, which of the other properties are allowed or required, and the HTML element rendered.
   - `boolean`: A boolean toggle.render
   - `date`: A date input.
   - `image`: An image file input.
+  - `multiple-text`: A row list of plain text inputs, one per value.
+  - `multiple-text-multilingual`: A row list whose every row is a multilingual text input.
   - `number`: A numeric input.
   - `select`: A select dropdown.
   - `select-multiple`: A select dropdown from which multiple options can be selected. See also the `ordered` prop.
@@ -28,8 +32,10 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 - `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default false
 - `options`: The options to show for a `select` or `select-multiple` input.
 - `ordered`: If `true`, enables ordering of the values of a `select-multiple` input. @default false
+- `minItems`: The minimum number of rows for a `multiple-text` input. @default 1
+- `maxItems`: The maximum number of rows for a `multiple-text` input.
 - `maxFilesize`: The maximum file size for `image` inputs. @default `20 * 1024**2` (20MB)
-- `multilingualInfo`: Additional info displayed below the input for multilingual input together with possible `info`. @default $t('components.input.multilingualInfo')
+- `multilingualInfo`: Additional info displayed below the input for multilingual input together with possible `info`. @default t('components.input.multilingualInfo')
 - Any valid attributes of the HTML element (`input`, `select` or `textarea`) used for the input, except in the case of `image` whose input is hidden.
 
 ### Callbacks
@@ -52,6 +58,6 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 
 ## Source
 
-[frontend/src/lib/components/input/Input.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/Input.svelte)
+[apps/frontend/src/lib/components/input/Input.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/Input.svelte)
 
-[frontend/src/lib/components/input/Input.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/Input.type.ts)
+[apps/frontend/src/lib/components/input/Input.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/Input.type.ts)
