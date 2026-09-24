@@ -8,6 +8,7 @@
     "preserveSymlinks": true,
     "types": ["vitest/globals"]
   },
+  "files": ["vite.projectIdEnv.ts", "vite.projectIdEnv.test.ts"],
   "references": [
     { "path": "../../packages/app-shared/tsconfig.json" },
     { "path": "../../packages/argument-condensation/tsconfig.json" },

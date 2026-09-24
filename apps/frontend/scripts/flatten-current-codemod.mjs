@@ -1,11 +1,8 @@
 #!/usr/bin/env node
 /**
- * see phase 113 — Codemod: <handle>.current → <handle> (bare reactive field)
+ * Codemod: <handle>.current → <handle> (bare reactive field)
  *
- * The INVERSE of the earlier store codemod (see spike 009). see phase 106–112 left context handles
- * as back-compat `{ current }` objects; see phase 113 flattens the three canonical
- * handles to bare reactive class fields, so consumer reads drop the `.current`
- * accessor. Two passes:
+ * Context handles that were back-compat `{ current }` objects become bare reactive class fields, so consumer reads drop the `.current` accessor. Two passes:
  *
  *   PASS 1 (rewrite):
  *     appSettings.current  →  appSettings
@@ -14,36 +11,17 @@
  *
  *   PASS 2 (destructure-trap audit, warn-only — does NOT rewrite):
  *     const { appSettings, ... } = getAppContext();
- *   After the flatten these three names become REACTIVE ACCESSORS (no longer
- *   stable `{ current }` handle objects), so destructuring them is a live
- *   destructure-trap (CLAUDE.md "Context Destructuring Rule"). This pass flags
- *   every such callsite for human repair (read via `ctx.X` instead).
+ *   After the flatten these three names become REACTIVE ACCESSORS (no longer stable `{ current }` handle objects), so destructuring them is a live destructure-trap (CLAUDE.md "Context Destructuring Rule"). This pass flags every such callsite for human repair (read via `ctx.X` instead).
  *
  * ── 3-handle HARD ALLOWLIST (and WHY) ───────────────────────────────────────
  * Only `appSettings`, `dataRoot`, `locale` are flattened — EXACTLY these three.
- * The frontend has 606 `.current` reads across many OUT-OF-SCOPE handles. The
- * single largest is `getRoute.current` (~147 sites) which is explicitly NOT in
- * the enumeration and MUST stay `{ current }`. Other out-of-scope
- * handles (`userData`, `topBarSettings`, `overlay`, `store`, `userPreferences`,
- * `appCustomization`, `appType`, `darkMode`, `openFeedbackModal`, …) likewise
- * stay untouched. A broad `\w+\.current` regex is FORBIDDEN (research Pitfall 1)
- * — it would corrupt those reads into bare names that do not exist as fields.
- * The negative lookbehind on `[\w$.#]` additionally rejects member-of-something
- * reads (`foo.appSettings.current`, `reactiveAppSettings.current`,
- * `myAppSettings.current`) AND private-field reads (`this.#appSettings.current`).
- * The `#` exclusion is load-bearing: the trackingService / surveyLink
- * producers hold their input as a PRIVATE `#appSettings: ReactiveHandle<AppSettings>`
- * field and read `this.#appSettings.current`. That `ReactiveHandle` input contract is
- * KEPT (only the consumer-facing `ctx.appSettings` surface goes bare; the appContext
- * call site wraps the bare field back into a `{ current }` handle for the producers).
- * Without `#` in the lookbehind the codemod would corrupt those producer-internal
- * reads and would NOT be idempotent on the `.ts` glob (it would re-flatten them on
- * every run).
+ * The frontend has 606 `.current` reads across many OUT-OF-SCOPE handles. The single largest is `getRoute.current` (~147 sites) which is explicitly NOT in the enumeration and MUST stay `{ current }`. Other out-of-scope handles (`userData`, `topBarSettings`, `overlay`, `store`, `userPreferences`, `appCustomization`, `appType`, `darkMode`, `openFeedbackModal`, …) likewise stay untouched. A broad `\w+\.current` regex is FORBIDDEN — it would corrupt those reads into bare names that do not exist as fields.
+ * The negative lookbehind on `[\w$.#]` additionally rejects member-of-something reads (`foo.appSettings.current`, `reactiveAppSettings.current`, `myAppSettings.current`) AND private-field reads (`this.#appSettings.current`).
+ * The `#` exclusion is load-bearing: the trackingService / surveyLink producers hold their input as a PRIVATE `#appSettings: ReactiveHandle<AppSettings>` field and read `this.#appSettings.current`. That `ReactiveHandle` input contract is KEPT (only the consumer-facing `ctx.appSettings` surface goes bare; the appContext call site wraps the bare field back into a `{ current }` handle for the producers).
+ * Without `#` in the lookbehind the codemod would corrupt those producer-internal reads and would NOT be idempotent on the `.ts` glob (it would re-flatten them on every run).
  *
  * ── Idempotency guarantee ───────────────────────────────────────────────────
- * Structural: after PASS 1 there is no `<handle>.current` left to match, so a
- * second run rewrites nothing and reports `Total rewrites: 0`. The flatten is
- * therefore safely re-runnable as a no-op.
+ * Structural: after PASS 1 there is no `<handle>.current` left to match, so a second run rewrites nothing and reports `Total rewrites: 0`. The flatten is therefore safely re-runnable as a no-op.
  *
  * Default: dry-run (prints what WOULD change, writes nothing, exit 0).
  * --apply: actually writes the changes.
@@ -68,10 +46,8 @@ import { globSync } from 'node:fs';
 const HANDLE_FLATTENS = ['appSettings', 'dataRoot', 'locale'];
 
 /** Destructure-trap candidates for THIS codemod's audit pass. The three
- *  flattened names are reactive accessors post-flatten and MUST NOT be
- *  destructured from a get*Context() call. (That source's own
- *  REACTIVE_ACCESSORS set gains the same names (see phase 113); this
- *  local set keeps the codemod self-contained for its own audit output.) */
+ *  flattened names are reactive accessors post-flatten and MUST NOT be destructured from a get*Context() call. The context source carries the same names in its own REACTIVE_ACCESSORS set; this local copy keeps the codemod
+ *  self-contained for its own audit output. */
 const FLATTENED_ACCESSORS = new Set(['appSettings', 'dataRoot', 'locale']);
 
 // ── CLI args ────────────────────────────────────────────────────────────
@@ -85,11 +61,7 @@ const REPO_ROOT = resolve(process.cwd());
 
 // ── Pass 1: <handle>.current → <handle> rewrite ─────────────────────────
 
-// Negative lookbehind on `[\w$.#]` rejects member-of-something-else reads
-// (`foo.appSettings.current`, `reactiveAppSettings.current`, `myAppSettings.current`)
-// AND private-field reads (`this.#appSettings.current` — the producers'
-// `ReactiveHandle<AppSettings>` input contract, which is KEPT). `\b...\b` bounds the
-// handle + `current` tokens.
+// Negative lookbehind on `[\w$.#]` rejects member-of-something-else reads (`foo.appSettings.current`, `reactiveAppSettings.current`, `myAppSettings.current`) AND private-field reads (`this.#appSettings.current` — the producers' `ReactiveHandle<AppSettings>` input contract, which is KEPT). `\b...\b` bounds the handle + `current` tokens.
 const FLATTEN_RE = new RegExp(`(?<![\\w$.#])\\b(${HANDLE_FLATTENS.join('|')})\\.current\\b`, 'g');
 
 function rewriteFile(filepath) {
@@ -119,8 +91,7 @@ function rewriteFile(filepath) {
 function detectDestructureTraps(content) {
   const warnings = [];
 
-  // Pattern: `const { A, B, C } = get*Context()` where any of A/B/C is a
-  // flattened reactive accessor. Multi-line aware via [\s\S].
+  // Pattern: `const { A, B, C } = get*Context()` where any of A/B/C is a flattened reactive accessor. Multi-line aware via [\s\S].
   const pattern = /const\s*\{([\s\S]*?)\}\s*=\s*(get\w+Context)\s*\(/g;
   let m;
   while ((m = pattern.exec(content)) !== null) {
@@ -144,11 +115,7 @@ function detectDestructureTraps(content) {
 
 // ── Main ────────────────────────────────────────────────────────────────
 
-// Frozen spike-design fixtures (`_spikes-*`) document the ORIGINAL proposed
-// handle shapes (`ReactiveHandle<AppSettings>.current`, `.instance`, `reactive*`)
-// and are git-tracked design artifacts, NOT production consumers (research
-// Assumption A3). They must NEVER be rewritten — their `appSettings.current` reads
-// are producer-input `ReactiveHandle` reads, not the consumer-facing bare accessor.
+// Frozen spike-design fixtures (`_spikes-*`) document the ORIGINAL proposed handle shapes (`ReactiveHandle<AppSettings>.current`, `.instance`, `reactive*`) and are git-tracked design artifacts, NOT production consumers (research Assumption A3). They must NEVER be rewritten — their `appSettings.current` reads are producer-input `ReactiveHandle` reads, not the consumer-facing bare accessor.
 // Skipping them keeps the codemod idempotent on the `.ts` glob (Total rewrites: 0).
 const SKIP_PATH_RE = /(^|\/)_spikes[\w-]*\//;
 

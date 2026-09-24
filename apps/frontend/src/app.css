@@ -100,13 +100,9 @@
    * TW4 resolves max-w-* through three namespaces in order:
    *   1. --max-width-*  2. --spacing-*  3. --container-*
    *
-   * Our custom spacing scale defines names (xs, sm, md, lg, xl) that
-   * collide with the standard container size names. Without these
-   * overrides, max-w-xl resolves to --spacing-xl (2.5rem / 40px)
-   * instead of the intended container width (36rem / 576px).
+   * Our custom spacing scale defines names (xs, sm, md, lg, xl) that collide with the standard container size names. Without these overrides, max-w-xl resolves to --spacing-xl (2.5rem / 40px) instead of the intended container width (36rem / 576px).
    *
-   * By defining --max-width-* (the highest-priority namespace), we
-   * ensure max-w-sm/md/lg/xl resolve to container widths, not spacing.
+   * By defining --max-width-* (the highest-priority namespace), we ensure max-w-sm/md/lg/xl resolve to container widths, not spacing.
    */
   --max-width-3xs: 16rem;
   --max-width-2xs: 18rem;
@@ -468,19 +464,9 @@
   }
 
   /**
-   * WCAG 2.1 AA fix — daisyUI 5's `.label` mutes its text to
-   * `color-mix(in oklab, currentcolor 60%, transparent)`
-   * (packages/daisyui/components/label.css). On a base-100 background that
-   * renders base-content (#333) at 60% ≈ #858585 = 3.69:1 — below the 4.5:1 AA
-   * threshold for normal-size text. This bites primary selectable labels that
-   * carry real content (e.g. the election/constituency option `<label class="label">`
-   * in ElectionSelector.svelte), which the a11y axe gate flags.
+   * WCAG 2.1 AA fix — daisyUI 5's `.label` mutes its text to `color-mix(in oklab, currentcolor 60%, transparent)` (packages/daisyui/components/label.css). On a base-100 background that renders base-content (#333) at 60% ≈ #858585 = 3.69:1 — below the 4.5:1 AA threshold for normal-size text. This bites primary selectable labels that carry real content (e.g. the election/constituency option `<label class="label">` in ElectionSelector.svelte), which the a11y axe gate flags.
    *
-   * Cancel the mute by inheriting the surrounding text colour at FULL strength
-   * (so a label still respects an intentional `text-*`/inherited colour — we
-   * drop only daisyUI's opacity reduction, not the colour itself). `.label`
-   * lives in daisyUI's nested `@layer utilities { @layer daisyui.l1.l2.l3 }`,
-   * so this un-sublayered rule in the same `utilities` layer wins by cascade order.
+   * Cancel the mute by inheriting the surrounding text colour at FULL strength (so a label still respects an intentional `text-*`/inherited colour — we drop only daisyUI's opacity reduction, not the colour itself). `.label` lives in daisyUI's nested `@layer utilities { @layer daisyui.l1.l2.l3 }`, so this un-sublayered rule in the same `utilities` layer wins by cascade order.
    */
   .label {
     color: inherit;

@@ -1,45 +1,21 @@
 #!/usr/bin/env node
 /**
- * see phase 114 — Codemod: rune-native `*Store` identifiers → `*State`
+ * Codemod: rune-native `*Store` identifiers → `*State`
  *
- * After the class conversions (see phase 106 through 113) there are NO Svelte stores behind any
- * of the in-scope `*Store` symbols — they are plain classes / factory functions /
- * `$state`-backed fields. The "Store" suffix is now a misnomer. This codemod rewrites
- * the camelCase identifiers AND the PascalCase type names to `*State`, leaving file
- * renames to `git mv` (done separately) and import-path SEGMENT fixes to this same
- * allowlist (a path like `./answerStore.svelte` contains the whole-word token
- * `answerStore`, so the `\b`-anchored allowlist rewrites it too).
+ * There are NO Svelte stores behind any of the in-scope `*Store` symbols — they are plain classes / factory functions / `$state`-backed fields, so the "Store" suffix is a misnomer. This codemod rewrites the camelCase identifiers AND the PascalCase type names to `*State`, leaving file renames to `git mv` (done separately) and import-path SEGMENT fixes to this same allowlist (a path like `./answerStore.svelte` contains the whole-word token `answerStore`, so the `\b`-anchored allowlist rewrites it too).
  *
- * Mirrors the Phase-113 codemod shape (apps/frontend/scripts/flatten-current-codemod.mjs):
- * dry-run by default, `--apply` to write, `--files <glob>` to restrict scope.
+ * Mirrors the shape of apps/frontend/scripts/flatten-current-codemod.mjs: dry-run by default, `--apply` to write, `--files <glob>` to restrict scope.
  *
  * ── ORDERED ALLOWLIST (LONGEST-TOKEN-FIRST) ─────────────────────────────────
- * Every replacement is a `\b`-anchored WHOLE-WORD swap. The list is ordered so a
- * LONGER token is rewritten before any shorter token it contains, defeating
- * substring double-rename (research Architecture Patterns + Pitfall 1). E.g.
- * `editedAnswersStore` BEFORE `answerStore` is belt-and-braces (the camelCase
- * boundary already protects them, but ordering makes the guarantee structural);
- * `nominationAndQuestionStore` BEFORE `questionStore`; PascalCase `*Impl`/`*Deps`/
- * `*Api` variants BEFORE their base type names.
+ * Every replacement is a `\b`-anchored WHOLE-WORD swap. The list is ordered so a LONGER token is rewritten before any shorter token it contains, defeating substring double-rename. E.g.
+ * `editedAnswersStore` BEFORE `answerStore` is belt-and-braces (the camelCase boundary already protects them, but ordering makes the guarantee structural); `nominationAndQuestionStore` BEFORE `questionStore`; PascalCase `*Impl`/`*Deps`/ `*Api` variants BEFORE their base type names.
  *
- * ── HARD EXCLUSIONS (research Pitfalls 1, 2, 4) ──────────────────
- *  (a) STRING-LITERAL GUARD: a candidate occurrence whose match index falls
- *      between an opening and a closing single/double quote on the same line is
- *      SKIPPED. This protects the two localStorage key literals
- *      (`'VoterContext-answerStore'`, `'CandidateContext-candidateUserDataStore-…'`)
- *      — renaming them would orphan persisted user data (a behavior change).
- *  (b) ALLOWLIST OMISSIONS: the table deliberately OMITS the singular server
- *      job registry symbol, the server `Job*` domain types, the cookie-jar test
- *      mock, and the `*Stored*Value` substring-trap symbols. Because every
- *      replacement is `\b`-anchored whole-word, the longer-token
- *      `JobStatesProvider`/`jobStates`/`JobStates` rewrites NEVER touch the
- *      singular server symbol (no whole-word entry for it exists). The `#store`
- *      field and `localStorageState(...)` are likewise untouched (`store` /
- *      `localStorageState` are not `*Store` whole-word tokens).
+ * ── HARD EXCLUSIONS ─────────────────────────────────────────────
+ *  (a) STRING-LITERAL GUARD: a candidate occurrence whose match index falls between an opening and a closing single/double quote on the same line is SKIPPED. This protects the two localStorage key literals (`'VoterContext-answerStore'`, `'CandidateContext-candidateUserDataStore-…'`) — renaming them would orphan persisted user data (a behavior change).
+ *  (b) ALLOWLIST OMISSIONS: the table deliberately OMITS the singular server job registry symbol, the server `Job*` domain types, the cookie-jar test mock, and the `*Stored*Value` substring-trap symbols. Because every replacement is `\b`-anchored whole-word, the longer-token `JobStatesProvider`/`jobStates`/`JobStates` rewrites NEVER touch the singular server symbol (no whole-word entry for it exists). The `#store` field and `localStorageState(...)` are likewise untouched (`store` / `localStorageState` are not `*Store` whole-word tokens).
  *
  * ── Idempotency guarantee ───────────────────────────────────────────────────
- * After `--apply` no allowlist `*Store` token remains in code, so a second run
- * reports 0 rewrites — the codemod is safely re-runnable as a no-op.
+ * After `--apply` no allowlist `*Store` token remains in code, so a second run reports 0 rewrites — the codemod is safely re-runnable as a no-op.
  *
  * Default: dry-run (prints what WOULD change, writes nothing, exit 0).
  * --apply: actually writes the changes.
@@ -55,10 +31,9 @@ import { readFileSync, writeFileSync, globSync } from 'node:fs';
 import { resolve, relative } from 'node:path';
 
 // ── Ordered allowlist — LONGEST TOKEN FIRST ──────────────────────────────
-// [from, to]. Anchored `\b...\b` whole-word. Order: longer tokens before any
-// shorter token they could contain; `*Impl`/`*Deps`/`*Api` before base names.
+// [from, to]. Anchored `\b...\b` whole-word. Order: longer tokens before any shorter token they could contain; `*Impl`/`*Deps`/`*Api` before base names.
 const RENAMES = [
-  // -- candidate / admin cluster (plans 02/03 reuse this same allowlist) --
+  // -- candidate / admin cluster --
   ['NominationAndQuestionStoreProvider', 'NominationAndQuestionStateProvider'],
   ['NominationAndQuestionStoreImpl', 'NominationAndQuestionStateImpl'],
   ['NominationAndQuestionStoreDeps', 'NominationAndQuestionStateDeps'],
@@ -100,9 +75,7 @@ const FILES_GLOB = filesArgIdx >= 0 ? args[filesArgIdx + 1] : 'src/**/*.{ts,svel
 const REPO_ROOT = resolve(process.cwd());
 
 /**
- * Build a set of [start,end) character ranges on a line that are INSIDE a single-
- * or double-quoted string literal (and template literals). Any match index that
- * falls inside one of these ranges is skipped (string-literal guard).
+ * Build a set of [start,end) character ranges on a line that are INSIDE a single- or double-quoted string literal (and template literals). Any match index that falls inside one of these ranges is skipped (string-literal guard).
  */
 function quotedRanges(line) {
   const ranges = [];
