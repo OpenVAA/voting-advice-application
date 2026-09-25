@@ -1,0 +1,261 @@
+=== SEGMENT 1 ===
+[Summary: The 2024 European Parliament Elections are scheduled for June 6–9, involving 358,861,608 eligible voters competing for 720 MEP seats. While the overall election period is set, specific voting dates, polling stations, and candidate lists are determined individually by each EU Member State. Campaign finance rules include an annual donation cap of €18,000 per donor, but no EU-wide expenditure limit.]
+
+**International Foundation for Electoral Systems**
+
+# Election FAQs: European Parliament Elections
+## June 6–9, 2024
+
+Europe and Eurasia
+International Foundation for Electoral Systems
+2011 Crystal Drive | Floor 10 | Arlington, VA 22202 | USA | www.IFES.org
+Publication Date: June 3, 2024
+
+***
+
+# Frequently Asked Questions (FAQs)
+
+# Election Snapshot
+*   **Election Day:** June 6–9, 2024.
+*   **Eligible voters:** 358,861,608.¹
+*   **Polling stations:** Determined by each European Union (EU) Member State.
+*   **Seats:** 720 Member of the European Parliament (MEP) seats.
+*   **Candidate lists:** Determined by the voting system of each EU Member State.
+*   **Campaign expenditure and donation limits:** Donations are capped at €18,000 annually per donor; there is no EU-wide expenditure limit.
+*   **Domestic and international observers:** Frameworks vary from country to country.
+
+# When is Election Day?
+Elections for the European Parliament will take place over four days from June 6–9, 2024. Each EU Member State² sets its own election date. Voting in the Netherlands will take place on June 6; in Ireland on June 7; in Latvia, Malta, and Slovakia on June 8; and in the remaining Member States on June 9.³
+
+The number of polling stations varies from country to country and depends on the size of the Member State.
+
+
+=== SEGMENT 2 ===
+[Summary: The European Parliament elections are highly important as the Parliament serves as the EU's principal legislative and policymaking body, allowing citizens to collectively shape the bloc's political trajectory. The 2024 elections, the first since the UK's 2020 exit, are critical, with predictions of the highest turnout since 1994. Although the dominant pro-European "grand coalition" (EPP, S&D, and Renew) is expected to lose 20 to 45 seats, it is still projected to retain control of the Parliament.]
+
+# Why are these elections important?
+Millions of Europeans will be able to participate in shaping the future of Europe and European democracy. In every European Parliament election, European citizens can decide collectively on the future of the EU and have a say in important topics that they care about. The European Parliament is the principal legislative and policymaking body of the bloc, and thus parliamentary elections shape the political trajectory and stance of the entire EU.
+
+The 2024 elections, the first since the United Kingdom's 2020 exit from the EU, are particularly critical, as observers predict that the elections may see higher turnout than any other since at least 1994. Polls indicate that the elections could lead to significant changes in the composition of the Parliament. Polls and analysts anticipate that the pro-European “grand coalition” that has dominated EU politics since 1989 – comprising the center-right European People's Party Group; the Progressive Alliance of Socialists and Democrats; and, since 2019, the centrist Renew Europe (Renew) – will lose a collective 20 to 45 seats. Nonetheless, the coalition is expected to retain a majority of seats and thus control of Parliament.
+
+
+=== SEGMENT 3 ===
+[Summary: The upcoming elections are expected to see a continued increase in support for populist right-wing parties, notably the soft Euroskeptic European Conservatives and Reformers (ECR) and the more outright Euroskeptic Identity and Democracy (ID). This anticipated change in parliamentary composition could lead to a rightward shift in policymaking on critical issues like climate regulations and immigration, and potentially undermine the Parliament's unified stance on supporting Ukraine, given ID's opposition to further assistance.]
+
+At the same time, the elections are expected to see the continued rise of populist right-wing parties, with varying degrees of opposition to EU integration. In particular, those parties include the soft Euroskeptic European Conservatives and Reformers (ECR) and the more outright Euroskeptic Identity and Democracy (ID).
+
+These anticipated changes in the composition of the Parliament may have serious ramifications for some of the most significant policy issues that Europe faces. Observers have noted that the anticipated increase in the number of seats held by the ECR and ID parties could result in a rightward shift in the body's policymaking on climate regulations and immigration; ID's opposition to further assistance to Ukraine in its defense against Russia may jeopardize the Parliament's unified position on support for Ukraine.
+
+¹ Eurostat Data Browser. (n.d.).
+² Austria, Belgium, Bulgaria, Croatia, Cyprus, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, the Netherlands, Poland, Portugal, Romania, Slovenia, Slovakia, Spain, and Sweden.
+³ European Parliament. (n.d.).
+
+
+=== SEGMENT 4 ===
+[Summary: The 2024 European elections will elect 720 Members of the European Parliament (MEPs), an increase of 15 seats from the previous election. Seats are allocated to Member States based on degressive proportionality, ensuring smaller countries receive a proportionally higher number of seats, with a minimum of six and a maximum of 96 MEPs per country. Although elections are contested by national parties, elected MEPs typically join transnational political groups, and Member States set minimum electoral thresholds for parties to gain seats.]
+
+# Who are citizens voting for on Election Day?
+A total of 720 MEPs will be elected in the 2024 elections, 15 more than in the previous election. Each EU Member State will elect a different number of MEPs, apportioned on a degressively proportionate basis to the population of the state. The result will be a proportionally higher allocation of seats to Member States with lower populations. The minimum number of MEPs from any country is six, and the maximum is 96.⁴
+
+Elections are contested by national political parties. However, once MEPs are elected, most opt to join a transnational political group. Most national parties are affiliated with a Europe-wide political party. Each Member State can set the minimum electoral thresholds for national political parties to gain seats in the European Parliament. In the 2019 elections, the threshold for France, Croatia, Czechia, Hungary, Latvia, Lithuania, Poland, and Slovakia was 5 percent; Austria, Italy, and Sweden set a 4 percent threshold; Greece set a 3 percent threshold; and Cyprus set a 1.8 percent threshold. The remaining Member States did not set thresholds.⁵
+
+
+=== SEGMENT 5 ===
+[Summary: The European Parliament is currently structured around seven political groups and ten represented political parties. The seven political groups include the Group of the European People's Party and the Progressive Alliance of Socialists and Democrats. The ten represented parties, such as the European People's Party and the Party of European Socialists, include some that have undergone name changes, like the Identity and Democracy Party and the European Conservatives and Reformists Party.]
+
+There are currently seven political groups in the European Parliament:⁶
+
+1.  Group of the European People's Party (Christian Democrats);
+2.  Group of the Progressive Alliance of Socialists and Democrats in the European Parliament;
+3.  Renew Europe Group;
+4.  Group of the Greens/European Free Alliance;
+5.  European Conservatives and Reformists Group;
+6.  Identity and Democracy Group; and
+7.  The Left group in the European Parliament.
+
+Ten political parties are represented in the European Parliament⁷
+
+1.  European People's Party;
+2.  Party of European Socialists;
+3.  Alliance of Liberals and Democrats for Europe Party;
+4.  European Democratic Party;
+5.  European Green Party;
+6.  European Free Alliance;
+7.  Identity and Democracy Party (previously the Movement for a Europe of Nations and Freedom);
+8.  European Conservatives and Reformists Party (previously the Alliance of Conservatives and Reformists in Europe);
+9.  Party of the European Left; and
+10. European Christian Political Movement.
+
+⁴ European Elections. (n.d.). How European Elections Work.
+⁵ Del Monte, M., Crego, M., & Kotanidis, S. (2023). BRIEFING European elections 2024. European Parliament.
+⁶ European Parliament. (2020, January 12). The political groups.
+⁷ European Parliament. (n.d.). The Political Groups of the European Parliament.
+
+
+=== SEGMENT 6 ===
+[Summary: The election of MEPs is primarily governed by national electoral systems, allowing Member States significant flexibility in administration, though common EU provisions, such as proportional representation, must be followed. Voting mechanisms vary widely across Member States, ranging from closed lists where candidate order cannot be changed, to preferential voting systems like semi-open or open lists, and the single transferable vote (STV) system where voters rank candidates.]
+
+# What is the electoral system?
+MEPs are elected according to national electoral systems, and thus – with the exception of certain common provisions established by EU law, such as proportional representation – Member States have significant leeway to administer elections according to their own rules. In general, voters can choose among political parties, individual candidates, or both. In some Member States, voters can vote only for a list and cannot change the order of candidates on the list (closed list); in others, voters can express their preference for one or more candidates (preferential voting). Depending on the degree of freedom voters enjoy when casting preferential votes, they can choose between semi-open lists, where they can change the position of one or all candidates on a single list, and open lists, where they can vote for candidates from different lists. Instead of a list system, some Member States use the single transferable vote. Under this system, each voter has one vote but can rank the candidates as first, second, or third choice (and so on). To be elected, a candidate must receive a minimum number of votes.
+
+
+=== SEGMENT 7 ===
+[Summary: Amendments adopted in 2018 to the 1976 Electoral Act introduced mandatory thresholds for the allocation of seats, setting a maximum national threshold of 5% of valid votes cast. For list systems in constituencies with over 35 seats, the threshold must be between 2% and 5%; however, these new rules will not be enforced until at least the 2029 European elections. The text also outlines common EU election rules, including a four-day voting period, proportional representation, and the right of EU citizens residing in another EU country to vote there.]
+
+Amendments to the 1976 Electoral Act, adopted by Council Decision of July 13, 2018,⁸ include a measure on thresholds. The new rules set an obligatory threshold in certain cases for the allocation of seats. At the national level, this threshold may not exceed 5 percent of valid votes cast. Moreover, Member States that use the list system set a minimum threshold for the allocation of seats for constituencies that comprise more than 35 seats. This threshold cannot be lower than 2 percent or greater than 5 percent of the valid votes cast in the constituency, including a single-constituency Member State. In practice, this provision concerns only the largest Member States. As the amendments have not yet entered into force, Member States will not have to comply with the obligation on thresholds until at least the 2029 European elections.
+
+European election rules that are common in all EU countries include:
+
+*   Elections take place during a four-day period, from Thursday to Sunday;
+*   The number of MEPs elected from a political party is proportional to the number of votes the party receives;
+*   EU citizens of one country who reside in another EU country can vote and stand for election that country; and
+*   Each citizen can vote only once.⁹
+
+
+=== SEGMENT 8 ===
+[Summary: The legal framework for electing Members of the European Parliament (MEPs) is dual, relying on both common European legislation and specific national provisions that vary among states. European legislation establishes fundamental principles like proportional representation, thresholds, and incompatibilities, while national laws govern specifics such as the electoral system and the number of constituencies. Key EU legislation, including Article 14 of the TEU and the 1976 Act, governs the composition of the Parliament, electoral rights, and the system of direct universal suffrage.]
+
+# What is the legal framework for conducting the elections?
+The procedures for electing MEPs are governed both by European legislation that establishes rules common to all Member States and by specific national provisions, which vary among states. The common provisions lay down the principle of proportional representation, rules on thresholds, and certain incompatibilities with the MEP mandate. National laws govern many other matters, such as the exact electoral system used and the number of constituencies.¹⁰
+
+EU-wide legislation governs the composition of the European Parliament, and electoral framework common among each EU Member State. Article 14 of the Treaty on European Union defines the number of seats, degressively proportional representation, and terms for MEPs. Articles 20, 22, and 223, define the right to vote and stand for election for all EU citizens, the right of EU citizens to vote and stand for candidates in the Member State in which they reside, and defines the system of direct universal suffrage for EU elections.¹¹ Act 20 September 1976,¹² amended July 13, 2028 defines electoral procedures, including common EU-wide rules, and electoral arrangements governed by Member State national provisions.¹³
+
+⁸ EUR-Lex. (2018, July 13). Amending the Act Concerning the Election of the Members of the European Parliament by Direct Universal Suffrage
+⁹ European Parliament. (n.d.). How European Elections Work.
+¹⁰ European Parliament. (
+
+
+=== SEGMENT 9 ===
+[Summary: The analyzed segment consists entirely of citations, referencing key legal documents governing European elections, including the 2012 Consolidated Version of the Treaty on European Union and the 1976 Act concerning the election of representatives to the Assembly by direct universal suffrage. It also cites general information provided by the European Parliament regarding electoral procedures.]
+
+n.d.). The European Parliament: electoral procedures.Â¹Â¹ EUR-Lex (2012, October 26). Consolidated Version of the Treaty on European UnionÂ¹Â² EUR-Lex. (1976, September 20). Act concerning the election of the representatives of the Assembly by direct universal suffrage.Â¹Â³ European Parliament. (n.d.). The European Parliament: electoral procedures.
+
+# Who is eligible to run as a candidate?
+Article 39 of the EU Charter of Fundamental Rights grants every citizen of the EU the right to vote and stand as a candidate for election to the European Parliament in the Member State in which he or she resides, under the same conditions as nationals of that state.Â¹â´ The minimum age to run as a candidate in the European Parliament elections is established by the national laws of each Member State, varying from 18 to 25 years.Â¹âµ
+
+# Are there reserved seats for women? What is the gender balance within the candidate list?
+As MEPs are elected from each Member State, no reserved seats are mandated for women in the European Parliament. However, Member States are free to apply gender quotas for candidate lists. For the upcoming elections, 11 countries applied gender quotas for elections at the EU level. Belgium, France, Italy, and Luxembourg require 50 percent of candidates on each list to be women; Croatia, Greece, Portugal, Slovenia, and Spain have a 40 percent quota, and Poland has a 35 percent quota. Although Romanian law requires candidate lists to include women and to ensure balanced gender representation, it does not impose a specific quota or threshold for women on candidate lists.
+
+
+=== SEGMENT 10 ===
+[Summary: Campaign finance rules impose limits on donations and require immediate reporting for large contributions. Donations from citizens and legal entities are capped at €18,000 per donor annually, with any single donation over €12,000 requiring immediate reporting to the Authority for Political Parties and Foundations. Although there is no EU-wide limit on campaign spending, Member States are permitted to set expenditure limits for candidates, a provision established by 2002 amendments to the 1976 Electoral Act.]
+
+# What are the campaign expenditure and donation limits?
+Donations from citizens and legal entities are capped at â‚¬18,000 per year for each donor; any single donation in excess of â‚¬12,000 to a political party or foundation must be reported immediately to the Authority for Political Parties and Foundations. While EU Member States are free to implement expenditure limits, there is no limit on campaign spending at the EU level. Per amendments approved in 2002 to the 1976 Electoral Act, Member States may set expenditure limits for candidates, but there is no EU-wide limit.Â¹â¶
+
+Â¹â´ European Union Agency for Fundamental Human Rights. (n.d.). Article 39 - Right to vote and to stand as a candidate at elections to the European Parliament.
+Â¹âµ European Parliament. (2024, April). Infographic: 2024 European elections: National rules.
+Â¹â¶ EUR-Lex. (2022, September 23). Council Decision of 25 June and 23 September 2002 amending the Act concerning the election of the representatives of the European Parliament by direct universal suffrage, annexed to Decision 76/787/ECSC, EEC, Euratom.
+
+
+=== SEGMENT 11 ===
+[Summary: National election authorities, such as central election commissions and electoral management bodies in each Member State, are responsible for ensuring the fairness and integrity of European elections, including defending against manipulation and cyber threats. Voting methods vary across countries, utilizing ballot papers, electronic, or online systems, but established routines are in place to double-check counting and correct technical errors. These national authorities also cooperate through the European Cooperation Network on Elections.]
+
+# What is the election management body? What are its powers?
+National election authorities â€“ in particular central election commissions and other electoral management bodies of each Member State â€“ work to ensure that European elections are fair and free from interference and manipulation. They do this in accordance with European and national law and with the support of EU institutions. This work includes defending the elections against potential attempts at information manipulation, cyberattacks, data breaches, and hybrid threats.
+
+The ways that citizens vote in the European elections differ from country to country. In some countries, citizens vote using ballot papers; in others they can vote electronically or online. Established routines are in place to double-check the counting of ballots regardless of how the vote is cast. Because small irregularities and human errors may occur in every election, systems are in place in each Member State to report, check, and correct possible technical errors.
+
+The European Cooperation Network on ElectionsÂ¹â· brings together Member State authorities in charge of electoral matters. The individual authorities of each Member State responsible for ensuring election integrity are listed below.
+
+Austria, Belgium, Bulgaria, Croatia, Cyprus, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden.Â¹â¸
+
+
+=== SEGMENT 12 ===
+[Summary: The cybersecurity of European elections is the responsibility of each EU country, requiring them to protect electoral networks and information systems against disruptive cyberthreats like hacks and attacks. Ahead of elections, EU countries cooperate on preparedness and receive support from EU bodies such as the EU Agency for Cybersecurity (ENISA) and CERT-EU. National election authorities also ensure high data protection for personal voter data by adhering to EU and national rules against unauthorized processing and accidental loss.]
+
+# What is the election management body doing to strengthen its technology and procedures to resist vulnerabilities and counter foreign interference?
+Ensuring the cybersecurity of the European elections is the responsibility of each EU country. This involves protecting networks and information systems related to the elections, as well as their users, against cyberthreats that could negatively affect them, with disrupting effects for the electoral process and the voters. This could include, for example, hacks or cyberattacks.
+
+Ahead of the European elections, EU countries cooperate to prepare for potential cyberthreats. They are supported by EU institutions, bodies, and agencies, such as the EU Agency for CybersecurityÂ¹â¹ and the Computer Emergency Response TeamÂ²â° for the EU institutions, bodies, and agencies. Organizing safe elections means handling personal data, such as each voter's name, address, date of birth, or identification number. National election authorities follow EU and national rules to ensure a high level of data protection during the European elections. This includes protecting of personal data against unauthorized or unlawful processing and accidental loss.Â²Â¹
+
+Â¹â· European Commission. (n.d.). European cooperation network on elections.
+Â¹â¸ European Elections. (n.d.). How are free and fair elections ensured?
+Â¹â¹ ENISA. (n.d.). About ENISA - The European Union Agency for Cybersecurity
+Â²â° CERT-EU. (n.d.). The Computer Emergency Response Team for the EU institutions, bodies and agencies
+Â²Â¹ European Elections. (n.d.). How are free and fair elections ensured?/
+
+
+=== SEGMENT 13 ===
+[Summary: The right to vote in European Parliament elections is granted to all EU citizens by Article 39 of the EU Charter of Fundamental Rights, following the national voting conventions of their state of residence. While the voting age is 18 in most Member States, it is 17 in Greece and 16 in Austria, Belgium, Germany, and Malta. Additionally, voting is compulsory in four Member States: Belgium, Bulgaria, Greece, and Luxembourg, although Greece provides specific exemptions based on age, residence, or distance from the polling station.]
+
+# Who can vote in these elections?
+Article 39 of the EU Charter of Fundamental Rights grants all EU citizens the right to vote in European Parliament elections following the national voting conventions of the state in which they reside.Â²Â² The voting age is 18 years in most Member States except Greece, where the voting age is 17, and in Austria, Belgium, Germany, and Malta, where the voting age is 16.Â²Â³
+
+Voting is compulsory in only four Member States â€“ Belgium, Bulgaria, Greece, and Luxembourg â€“ where the legal obligation to vote applies to both nationals and registered non-national EU citizens. In Greece, voting is not compulsory for voters over the age of 70, residents abroad, or voters who are over 200 kilometers from their polling station on Election Day.
+
+
+=== SEGMENT 14 ===
+[Summary: As of May 9, 2024, the EU had over 358 million eligible voters, including nearly 20 million first-time voters, with Germany, France, and Italy expected to have the highest voter turnout numbers. The segment also addresses the rights of persons with disabilities, noting that while the EU Charter guarantees the right to vote and run in elections irrespective of disability status, EU regulations do not prescribe specific safeguarding measures, resulting in varying accessibility provisions across Member States.]
+
+# How many registered voters are there?
+As of May 9, 2024, there were 358,861,608 eligible voters in the EU, including 19,757,390 first-time voters.
+
+National estimates indicate that the highest numbers of eligible voters for the 2024 parliamentary elections are expected in Germany (64.9 million voters), France (49.7 million), and Italy (47 million). The lowest numbers are expected in Cyprus (700,000), Luxembourg (500,000), and Malta (400,000).
+
+The highest number of first-time voters (those who reached voting age since the last European elections in 2019) are expected in Germany (5.1 million), France (4.0 million) and Italy (2.8 million). The fewest first-time voters are expected in Estonia (70,000), Cyprus (37,000), and Malta (20,000). The highest percentages of first-time voters are expected in Belgium, France, and Germany, with 9.7 percent, 8.0 percent and 7.9 percent of all eligible voters, respectively.Â²â´
+
+# What provisions are in place that support the equal rights of women, persons with disabilities, and other marginalized groups?
+The EU Charter recognizes the right of every citizen of an EU state to vote and run in EU parliamentary elections, irrespective of disability status. The Charter also explicitly recognizes the right to live free from discrimination on the basis of disability status.Â²âµ However, EU regulations do not prescribe measures to safeguard the ability of persons with disabilities to engage with politics as voters or candidates. Provisions to protect the rights of persons with disabilities and ensure the accessibility of EU parliamentary elections vary from country to country.
+
+
+=== SEGMENT 15 ===
+[Summary: Observers have raised concerns about the accessibility of EU parliamentary elections for persons with disabilities across various Member States. A significant issue is the exclusion of voters deemed "legally incapable" or under guardianship, a practice allowed in most states that resulted in the exclusion of at least 400,000 voters in the 2019 elections. Additionally, voters face challenges due to inaccessible polling stations and election information, while potential candidates encounter institutional barriers such as stereotypes and lack of funding.]
+
+Consequently, observers have expressed concerns about the accessibility of EU parliamentary elections in various EU Member States. Only six Member States (Austria, Croatia, Italy, Latvia, Netherlands, and Sweden) have legal frameworks that explicitly prohibit restrictions on the right to vote due to court-dictated legal capacity; the other states allow for the exclusion of voters who have been found â€œlegally incapableâ€  or placed under guardianship, resulting in the exclusion of at least 400,000 voters from the 2019 parliamentary elections. Voters also face accessibility challenges in some states, where polling stations, campaign messaging, election information, and other aspects of the electoral process are inadequate to ensure the full participation of voters with disabilities. In several EU states, concerns have been raised about institutional barriers that limit the ability of persons with disabilities to run for the European Parliament. These include stereotypes, lack of party support, and inadequate funding.Â²â¶
+
+
+=== SEGMENT 16 ===
+[Summary: EU efforts to promote women's political participation and gender equality are based on guidance rather than binding regulations. While Article 8 of the Treaty on the Functioning of the European Union commits Member States to gender equality, it does not mandate specific policy measures. Furthermore, the Commission's 2020–2025 Gender Equality Strategy offers recommendations on various issues, including political participation and the gender wage gap, but these are also non-binding.]
+
+Similarly, EU efforts to promote and protect the right of women to engage in the political process focus largely on guidance rather than on issuing binding regulations. Article 8 of the Treaty on the Functioning of the European Union commits Member States to working toward gender equality and the elimination of gender discrimination, but it does not require specific policy measures to achieve these goals.Â²â· The Commission's 2020â€“2025 Gender Equality Strategy outlines recommendations for how states can address different aspects of gender equality related to women's participation in politics, as well as domestic violence and closing the gender wage gap. These, too, serve as guidance rather than requirements.Â²â¸
+
+Â²Â² European Union Agency for Fundamental Human Rights. (n.d.). Article 39 - Right to v
+
+
+=== SEGMENT 17 ===
+[Summary: This segment consists entirely of citations and footnotes supporting the preceding text regarding EU electoral processes, fundamental rights, and political participation. The sources cited include official documents from the European Parliament and Eurostat concerning the 2024 European elections, the Charter of Fundamental Rights of the European Union, the Treaty on the Functioning of the European Union, and a 2020 Communication from the European Commission.]
+
+ote and to stand as a candidate at elections to the European Parliament.²³ European Parliament. (2024, April). Infographic: 2024 European elections: National rules.²⁴ Eurostat. (2024, April 4). European elections 2024: people eligible to vote.²⁵ European Parliament. (2000, December 18). Charter of Fundamental Rights of the European Union, Articles 21(1), 39(1), and 40.²⁶ "Political participation of people with disabilities in the EU.” (April 2024). European Parliamentary Research Service https://www.europarl.europa.eu/RegData/etudes/BRIE/2023/747889/EPRS_BRI(2023)747889_EN.pdf²⁷ EUR-Lex. (2012, October 26). Consolidated Version of the Treaty on the Functioning of the European Union²⁸ EUR-Lex. (2020, March 5). Communication from the Commission to the European Parliament, the Council, the European Economic and Social Committee and the Committee of the Regions
+
+
+=== SEGMENT 18 ===
+[Summary: Out-of-country voting in European Parliament elections is generally permitted across EU Member States, stemming from amendments to the 1976 Electoral Act which allows for advance, postal, and electronic voting. While requirements, such as pre-registration, vary by country, Member States offering these options must guarantee the reliability of results, the secrecy of votes, and the protection of personal data.]
+
+# Is out-of-country voting allowed?Out-of-country voting in the EU is based on amendments to the 1976 Electoral Act, which states that Member States may provide the possibility of advance voting, postal voting, and electronic voting in European Parliament elections. In most cases, EU Member States allow out-of-country voting in European Parliament Elections. The requirements vary from country to country; Member States may require their citizens to pre-register with their national election commissions to be eligible to vote abroad by post or via an embassy or consulate. In these circumstances, Member States must ensure the results are reliable, and they must guarantee the secrecy of the votes and protection of personal data. Member States may take additional measures to enable citizens who reside in third countries to vote in European Parliament elections.²⁹
+
+
+=== SEGMENT 19 ===
+[Summary: While all EU Member States are signatories to the 1990 Copenhagen Document, which mandates inviting international election observation, the actual electoral laws governing observation vary significantly across the bloc. Member States fall into distinct categories regarding accreditation, ranging from seven states that accredit both domestic and international observers to five states that have no frameworks for election observation whatsoever. Other states either permit only international observers, maintain open processes without explicit laws, or allow observation without requiring permits.]
+
+# Who can observe during Election Day? How can they get accreditation?All EU Member States are parties to the 1990 Copenhagen Document, which commits states to recognizing and inviting other states and international organizations to observe their election proceedings.³⁰ However, in practice, the electoral laws of Member States vary widely in enabling or allowing citizens, parties, and international bodies to observe their elections.Seven Member States have frameworks in place for accrediting both domestic and international observers (Bulgaria, Croatia, Finland, Lithuania, Poland, Romania, and Slovenia); five have frameworks for international but not domestic observers (Austria, Czechia, Hungary, Luxembourg, and the Netherlands); six do not have laws explicitly pertaining to electoral observation but keep their voting and counting processes open to the public (Denmark, France, Germany, Malta, Spain, and Sweden); and five have no frameworks for election observation at all (Cyprus, Greece, Ireland, Italy, and Portugal). Of the remaining states, Belgium permits only international observers; Latvia accredits international and domestic observers but has no framework; and Estonia and Slovakia allow election observation without permits.³¹
+
+
+=== SEGMENT 20 ===
+[Summary: Although election security for EU parliamentary elections is primarily managed by individual Member States, the EU has recently developed shared standards and frameworks, particularly concerning cybersecurity. The European Parliament adopted the Digital Services Act (DSA) in 2022, which went into effect in August 2023, specifically to strengthen election security against disinformation and cyberwarfare.]
+
+²⁹ European Parliament. (2024, April). Infographic: 2024 European elections: National rules.³⁰ Organization for Co-operation and Security in Europe. (1990, June 29). Document of the Copenhagen Meeting of the Conference on the Human Dimension of the CSCE.³¹ "Pre-Election Assessment Report." (February 7, 2024). Elections Watch EU. https://www.wahlbeobachtung.org/wp-content/uploads/2024/02/election-watch.eu-pre-election-assessment-mission-report-7-february-2024.pdf# Who is managing security on Election Day?Although election security – like many other aspects of EU parliamentary elections – falls under the authority of each Member State, the EU has taken steps in recent years to create shared standards and frameworks, particularly with regard to cybersecurity. In 2022, the European Parliament adopted the Digital Services Act with the goal of strengthening the security of EU elections against disinformation and other forms of cyberwarfare. The Act went into effect in August 2023.³²
+
+
+=== SEGMENT 21 ===
+[Summary: The EU is pursuing both legislative and guidance-based approaches to strengthen election cybersecurity. Although the European Parliament approved the Cyber Resilience Act to improve standards, it requires further approval and will not be effective for the 2024 elections. Non-legislative efforts include the Network and Information Systems Cooperation Group issuing an updated compendium in March 2024 to guide Member States, and ENISA organizing readiness workshops and sharing biweekly threat analyses.]
+
+More recently, the European Parliament approved the Cyber Resilience Act, which is designed to improve cybersecurity standards across the EU. It must still be approved by the Council of Europe and will not go into effect in time for the 2024 parliamentary elections.³³Apart from legislative measures, the EU has sought to provide guidance and training to Member States. In March 2024, the Network and Information Systems Cooperation Group, which consists of Member State representatives, commissioners, and the EU Agency for Cybersecurity (ENISA), issued an updated compendium to provide guidance to Member States on securing their elections against cyberattacks.³⁴ Shortly after the publication of the updated compendium, ENISA organized a cybersecurity workshop to test Member States' readiness to handle cybersecurity threats. ENISA also shares biweekly analyses and reports on cybersecurity threats with key electoral stakeholders.³⁵
+
+
+=== SEGMENT 22 ===
+[Summary: The administration of vote counting and tabulation for the European Parliament elections is decentralized, with each Member State managing these processes within its own borders, meaning locations will vary. Official election results will be reported live on the European Union's election results website, with results from each country being posted after the final day of the elections.]
+
+# Where are vote counting and tabulation held?Each Member State administers vote counting and tabulation processes within its borders; thus, the locations of vote counting and tabulation will vary.³² European Commission. (n.d.). The Digital Services Act package³³ Young, M. Maynard, P., and de Oberschelp de Meneses, A. (2024, March 13). The Cyber Resilience Act is One Step Closer to Becoming Law. Inside Privacy.³⁴ European Commission. (2024, March 6). New Cybersecurity compendium on how to protect integrity of elections published.³⁵ ENISA. (2024, March 6). Safeguarding EU elections amidst cybersecurity challenges.# When will official results be announced?The election results will be reported live on the European Union's election results website. The results from each country will be posted after the final day of the European Parliament elections.³⁶
+
+
+=== SEGMENT 23 ===
+[Summary: Legislation at the EU level does not provide uniform procedures for election dispute resolution (EDR); consequently, disputes related to the 2024 parliamentary elections will be governed by the national rules of each Member State and adjudicated nationally. Furthermore, bodies like the Venice Commission and OSCE/ODIHR have expressed concerns about the EDR processes in certain Member States, specifically citing issues such as overly short deadlines, limited court involvement, and the role of ad hoc or elected bodies in certifying results.]
+
+# How will election disputes be adjudicated?Legislation at the EU level does not provide uniform procedures for election dispute resolution (EDR). Therefore disputes, complaints, and appeals related to the 2024 parliamentary elections will be governed by the national rules of each Member State and adjudicated at the national level. Concerns have been raised about the EDR processes and legislation of certain Member States. The EU's European Commission for Democracy Through Law (Venice Commission) and Organization for Co-operation and Security in Europe/Office of Democratic Institutions and Human Rights have each expressed concerns regarding overly short deadlines for the submission and resolution of disputes; the lack of court involvement in the process; and the role of ad hoc or elected bodies in certifying results.³⁷
+
+
+=== SEGMENT 24 ===
+[Summary: The segment lists key resources, including the Charter of Fundamental Rights of the European Union and the 1976 Electoral Act, and describes the role of IFES's Regional Europe Office (REO) located in Prague, Czechia, which works to counter democratic backsliding since 2014. A disclosure notes that the FAQs reflect European Parliament decisions as of June 6, 2024, and acknowledges funding from USAID, clarifying that the document does not represent IFES policy or the views of the US Government.]
+
+# Resources*   Charter of Fundamental Rights of the European Union*   1976 Electoral Act*   Election Results Website# About IFES's Regional Europe OfficeIFES's Regional Europe Office (REO)³⁸ in Prague, Czechia, serves as a strategic counterbalance to democratic backsliding in the region and works to help build the resilience of democratic stakeholders in advance. Since 2014, IFES REO has brought together democratic actors – representatives of public institutions, civil society, and private companies – to convene on critical democratic issues, learn from each other's challenges and successes, and adapt and design innovative approaches so that they can then deploy and use what they have learned to catalyze change in their home countries.# DisclosureThese FAQs reflect decisions made by the European Parliament as of June 6, 2024, to the best of our knowledge. This document does not represent any International Foundation for Electoral Systems policy or technical recommendations.This paper is made possible by the generous support of the American people through the United States Agency for International Development (USAID). The information herein is provided by the authors and does not necessarily reflect the views of USAID or the United States Government.³⁶ European Union. (n.d.). 2024 European election results.³⁷ "Report on Election Dispute Resolution." (2020, October 8). Venice Commission.³⁸ Regional Europe Office. (n.d.). IFES – The International Foundation for Electoral Systems.

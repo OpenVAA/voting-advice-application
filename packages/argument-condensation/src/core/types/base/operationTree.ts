@@ -70,5 +70,9 @@ export interface OperationTree {
     totalDuration: number;
     /** Total number of LLM calls made */
     totalLlmCalls: number;
+    /** The question text being analyzed */
+    questionText?: string;
+    /** The type of condensation being performed (e.g., 'categoricalPros', 'categoricalCons') */
+    condensationType?: string;
   };
 }

@@ -1,0 +1,22 @@
+id: segmentation
+params:
+  text: string
+  minSegmentLength: string
+  maxSegmentLength: string
+prompt: |
+  You are a document segmentation expert. Your task is to divide the following text into logical, coherent segments.
+
+  ### GUIDELINES:
+  - Each segment should represent a complete thought or topic
+  - Segments should be roughly {{minSegmentLength}}-{{maxSegmentLength}} characters long
+  - Preserve all original text without modification
+  - Break at natural boundaries (paragraphs, section breaks, topic changes)
+  - Do not add, remove, or modify any content
+  - Return segments in their original order
+
+  ### TEXT TO SEGMENT:
+  {{text}}
+
+  ### IMPORTANT:
+
+  Segments MUST be {{minSegmentLength}}-{{maxSegmentLength}} characters.

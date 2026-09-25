@@ -1,0 +1,44 @@
+{
+  "private": true,
+  "name": "@openvaa/chatbot",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "yarn tsc --build && yarn tsc-esm-fix && mkdir -p build/prompts && cp -R src/prompts/* build/prompts/ && mkdir -p build/core/tools/tmpDB && cp -R src/core/tools/tmpDB/* build/core/tools/tmpDB/",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:eval": "bun run src/scripts/chatbotEvaluation.ts",
+    "test:promptfoo": "bun run src/scripts/test.ts"
+  },
+  "type": "module",
+  "module": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "import": "./build/index.js"
+    },
+    "./server": {
+      "types": "./build/server.d.ts",
+      "import": "./build/server.js"
+    }
+  },
+  "devDependencies": {
+    "@openvaa/shared-config": "workspace:^",
+    "@types/js-yaml": "^4.0.9",
+    "dotenv": "^16.4.7",
+    "promptfoo": "^0.119.1",
+    "tsc-esm-fix": "^3.1.2",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^2.0.31",
+    "@openvaa/core": "workspace:^",
+    "@openvaa/data": "workspace:^",
+    "@openvaa/llm": "workspace:^",
+    "@openvaa/vector-store": "workspace:^",
+    "ai": "^5.0.0",
+    "js-yaml": "^4.1.0",
+    "zod": "^4.0.0"
+  }
+}

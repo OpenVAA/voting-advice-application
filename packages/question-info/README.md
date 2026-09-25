@@ -44,7 +44,8 @@ const results = await generateQuestionInfo({
     operations: [QUESTION_INFO_OPERATION.Terms, QUESTION_INFO_OPERATION.InfoSections],
     language: 'en',
     llmProvider,
-    runId: 'generation-run-1'
+    runId: 'generation-run-1',
+    questionContext: 'Finnish municipal elections 2025'
   }
 });
 ```
@@ -59,6 +60,21 @@ const results = await generateQuestionInfo({
     language: 'en',
     llmProvider,
     runId: 'generation-run-1'
+  }
+});
+```
+
+### Generate Only Info Sections
+
+```typescript
+const results = await generateQuestionInfo({
+  questions,
+  options: {
+    operations: [QUESTION_INFO_OPERATION.InfoSections],
+    language: 'en',
+    llmProvider,
+    modelConfig: { primary: 'gpt-4o' },
+    sectionTopics: ['Background', 'Current situation', 'Key stakeholders']
   }
 });
 ```

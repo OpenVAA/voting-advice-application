@@ -13,11 +13,10 @@ import type {
   ProviderConfig
 } from './provider.types';
 
-// TODO: add internal rate limit parsing (parse "Try again in ... etc." from error messages)
-// TODO: middleware for centralized rate limiting & usage throttling: track TPM across models & providers, gating users, etc.
+// TODO: add internal rate limit throttling (parse "Try again in ... etc." from error messages)
+// Ask Kalle about using a centralized storage for looking up the org's rate limit settings (TPM, usage across models, different providers, etc.)
 // TODO: implement fallback model usage
 // TODO: sending abort request to model provider for long-running calls (e.g. pdf processing etc.)
-// TODO: if an error occurs due to object generation failure, we can retry by giving the model the error message
 
 /** Orchestrates LLM calls with cost calculation, latency tracking, error handling and validation retries */
 export class LLMProvider {
@@ -76,7 +75,19 @@ export class LLMProvider {
           temperature: options.temperature,
           maxRetries: options.maxRetries ?? 3 // Retries for network errors
         });
-
+        // TODO: create utility function for logging
+        if (options.logging) {
+          console.info('\n\n\n');
+          console.info('--------------------------------');
+          console.info('LLM CALL STARTS');
+          console.info('--------------------------------');
+          console.info('\n[LLMProvider] Messages: ', options.messages);
+          console.info(`\n[LLMProvider] Response [${model}]: ${JSON.stringify(result.object)}`);
+          console.info('--------------------------------');
+          console.info('LLM CALL ENDS');
+          console.info('--------------------------------');
+          console.info('\n\n\n');
+        }
         const costs = this.calculateCosts(model, result.usage);
         this.cumulativeCosts += costs.total; // GenerateMultipleParallel calls this method internally so this tracks its costs as well
 
@@ -192,6 +203,24 @@ export class LLMProvider {
       temperature: options.temperature,
       tools: options.tools,
       stopWhen: options.stopWhen
+    });
+
+    // Log the response when it arrives
+    result.text.then((text) => {
+      if (options.logging) {
+        console.info('\n\n\n\n\n\n');
+        console.info('--------------------------------');
+        console.info('LLM STREAM STARTS');
+        console.info('--------------------------------');
+        console.info('\n[LLMProvider] Streaming text with model:', model);
+        console.info('\n[LLMProvider] Messages: ', options.messages);
+
+        console.info(`\n[LLMProvider] Response: ${text}`);
+        console.info('--------------------------------');
+        console.info('LLM STREAM ENDS');
+        console.info('--------------------------------');
+        console.info('\n\n\n\n\n\n');
+      }
     });
 
     // Calculate costs asynchronously without blocking the return.

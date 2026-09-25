@@ -1,0 +1,95 @@
+import { loadPrompt } from '../utils/promptLoader';
+import type { ModelMessage } from 'ai';
+import type { ConvertPdfOptions, ConvertPdfResult } from './pdfConversion.type';
+
+// TODO: use controller to track progress
+/**
+ * Convert a PDF buffer to Markdown using Gemini 2.5 Pro
+ *
+ * @param options - PDF processor options
+ * @returns Markdown content and metadata
+ *
+ * @example
+ * ```typescript
+ * const result = await convertPdfToMarkdown({
+ *   pdfBuffer: uploadedFile,
+ *   apiKey: process.env.GEMINI_KEY,
+ *   originalFileName: 'document.pdf'
+ * });
+ * console.log(result.markdown);
+ * ```
+ */
+export async function convertPdfToMarkdown(options: ConvertPdfOptions): Promise<ConvertPdfResult> {
+  const startTime = new Date();
+  const { pdfBuffer, model = 'gemini-2.5-pro', runId, llmProvider, controller } = options;
+
+  if (!llmProvider) {
+    throw new Error('LLMProvider must be provided');
+  }
+
+  // Load the prompt from YAML
+  const promptData = await loadPrompt({ promptFileName: 'pdfToMarkdown' });
+
+  // Convert buffer to base64
+  const base64Data = pdfBuffer.toString('base64');
+
+  // TODO: use generateText instead of streaming (llm package should support it)
+  controller?.info(`Converting PDF to Markdown using ${llmProvider.config.provider}'s ${model}`);
+
+  const result = llmProvider.streamText({
+    // = streamText<undefined> because no tools are used
+    modelConfig: { primary: model },
+    messages: [
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: promptData.prompt },
+          {
+            type: 'file',
+            data: base64Data,
+            mediaType: 'application/pdf'
+          }
+        ]
+      }
+    ] as Array<ModelMessage>
+  });
+
+  // Get the complete text from the stream
+  const markdownContent = await result.text;
+
+  if (!markdownContent?.trim()) {
+    throw new Error('Failed to extract markdown content from PDF');
+  }
+
+  // Get costs after stream completes
+  const costs = await result.costs;
+  const tokens = await result.usage;
+
+  return {
+    runId,
+    data: {
+      markdown: markdownContent.trim()
+    },
+    llmMetrics: {
+      processingTimeMs: new Date().getTime() - startTime.getTime(),
+      nLlmCalls: 1,
+      costs: {
+        input: costs.input,
+        output: costs.output,
+        total: costs.total
+      },
+      tokens: {
+        inputTokens: tokens.inputTokens,
+        outputTokens: tokens.outputTokens,
+        totalTokens: tokens.totalTokens
+      }
+    },
+    success: true,
+    metadata: {
+      modelsUsed: [model],
+      language: 'en',
+      startTime,
+      endTime: new Date()
+    }
+  };
+}
