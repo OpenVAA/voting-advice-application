@@ -31,7 +31,7 @@
   import { initLayoutContext } from '$lib/contexts/layout';
   import { FeedbackModal } from '$lib/dynamic-components/feedback/modal';
   import { focusNavigationTarget } from '$lib/utils/focusNavigationTarget';
-  import { shouldAnimate, startViewTransition } from '$lib/utils/viewTransition';
+  import { isOverlayNavigation, shouldAnimate, startViewTransition } from '$lib/utils/viewTransition';
   import type { Snippet } from 'svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
   import type { LayoutData } from './$types';
@@ -154,6 +154,8 @@
     submitAllEvents(); // preserve existing analytics flush
     // LANDMINE: read `navigation.to?.url` — NOT `page.url`, which is the SOURCE url during onNavigate. `shouldAnimate` also gates reduced motion and ?notr=1.
     if (!shouldAnimate(navigation.to?.url)) return;
+    // Opening / closing a modal overlay (the results entity drawer) gets no document VT: named groups would be painted above the top-layer dialog. The overlay's own motion is the transition. See `$lib/utils/viewTransition`.
+    if (isOverlayNavigation(navigation.from, navigation.to)) return;
     return new Promise<void>((resolve) => {
       startViewTransition(async () => {
         resolve(); // tells SvelteKit to apply the new DOM
@@ -256,6 +258,12 @@
   /* Reduced motion: null any escaping ::view-transition animation.
      LANDMINE: the @media query WRAPS the :global selector — never the reverse form (the Svelte CSS parser rejects an at-rule nested inside :global with "Expected a valid CSS
      identifier"). */
+  /* A VT that runs while a modal dialog is open runs without named groups — otherwise they are painted above the top-layer dialog. `startViewTransition` in `$lib/utils/viewTransition` toggles the class (`VT_NO_NAMES_CLASS`).
+     LANDMINE: the `!important` is load-bearing, not decorative. The two named elements in the results tree carry their names as inline `style="view-transition-name: …"` attributes, and an inline declaration beats any stylesheet rule that is not `!important`. Dropping it silently restores the bug on exactly the elements the rule exists for. */
+  :global(html.vt-no-names *) {
+    view-transition-name: none !important;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     :global(::view-transition-group(*)),
     :global(::view-transition-old(*)),
