@@ -2,8 +2,6 @@ export { default as EntityChildren } from './EntityChildren.svelte';
 export * from './EntityChildren.type';
 export { default as EntityDetails } from './EntityDetails.svelte';
 export * from './EntityDetails.type';
-export { default as EntityDetailsDrawer } from './EntityDetailsDrawer.svelte';
-export * from './EntityDetailsDrawer.type';
 export { default as EntityDrawerOpener } from './EntityDrawerOpener.svelte';
 export * from './EntityDrawerOpener.type';
 export { default as EntityInfo } from './EntityInfo.svelte';

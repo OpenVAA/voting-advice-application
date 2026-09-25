@@ -14,7 +14,5 @@ export { default as QuestionExtendedInfo } from './QuestionExtendedInfo.svelte';
 export * from './QuestionExtendedInfo.type';
 export { default as QuestionExtendedInfoButton } from './QuestionExtendedInfoButton.svelte';
 export * from './QuestionExtendedInfoButton.type';
-export { default as QuestionExtendedInfoDrawer } from './QuestionExtendedInfoDrawer.svelte';
-export * from './QuestionExtendedInfoDrawer.type';
 export { default as QuestionOpenAnswer } from './QuestionOpenAnswer.svelte';
 export * from './QuestionOpenAnswer.type';
