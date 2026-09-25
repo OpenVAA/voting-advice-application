@@ -283,7 +283,8 @@ const PROJECT_SCOPED_RPCS = {
   upsert_answers: 'scoped-by-identity: entity id + RLS',
   merge_question_custom_data: 'scoped-by-identity: question id + RLS',
   project_open_for_voters: 'requires p_project_id',
-  user_can: 'scoped-by-identity: the caller JWT grants claim, asked of the target the call names (the adapter passes its own project id)'
+  user_can:
+    'scoped-by-identity: the caller JWT grants claim, asked of the target the call names (the adapter passes its own project id)'
 };
 
 /**

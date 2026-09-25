@@ -271,7 +271,10 @@ SELECT
       FROM
         resolve_email_variables (
           test_id ('project_a'),
-          ARRAY[test_user_id ('admin_b'), test_user_id ('candidate_a')]
+          ARRAY[
+            test_user_id ('admin_b'),
+            test_user_id ('candidate_a')
+          ]
         )
     )::integer,
     1,
@@ -353,7 +356,12 @@ SELECT
   is (
     (
       SELECT
-        string_agg(p.proname, ',' ORDER BY p.proname)
+        string_agg(
+          p.proname,
+          ','
+          ORDER BY
+            p.proname
+        )
       FROM
         pg_proc p
         JOIN pg_namespace n ON n.oid = p.pronamespace
@@ -372,7 +380,12 @@ SELECT
   is (
     (
       SELECT
-        string_agg(p.proname, ',' ORDER BY p.proname)
+        string_agg(
+          p.proname,
+          ','
+          ORDER BY
+            p.proname
+        )
       FROM
         pg_proc p
         JOIN pg_namespace n ON n.oid = p.pronamespace
@@ -392,7 +405,13 @@ SELECT
   is (
     (
       SELECT
-        count(*) FILTER (WHERE n.nspname = 'private') || '/' || count(*) FILTER (WHERE n.nspname = 'public') || '/' || count(*) FILTER (
+        count(*) FILTER (
+          WHERE
+            n.nspname = 'private'
+        ) || '/' || count(*) FILTER (
+          WHERE
+            n.nspname = 'public'
+        ) || '/' || count(*) FILTER (
           WHERE
             n.nspname = 'private'
             AND has_function_privilege('anon', p.oid, 'EXECUTE')

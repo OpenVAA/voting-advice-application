@@ -396,7 +396,13 @@ SELECT
   reset_role ();
 
 INSERT INTO
-  candidates (id, project_id, first_name, last_name, auth_user_id)
+  candidates (
+    id,
+    project_id,
+    first_name,
+    last_name,
+    auth_user_id
+  )
 VALUES
   (
     '21212121-2121-2121-2121-0000000000b1'::uuid,
