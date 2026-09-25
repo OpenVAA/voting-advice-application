@@ -5,6 +5,7 @@
 - Inits VoterContext
 - Sets top bar settings
 - Render the `Layout` component for the Voter App
+- Mounts the Voter App's `DrawerHost`
 - Queues the possible Voter App notification
 - Queues the data consent popup if necessary
 - Shows a maintenance page if the Voter App is not accessible yet
@@ -21,6 +22,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { Layout, MaintenancePage } from '$layouts/main';
+  import { DrawerHost } from '$lib/components/modal/drawerHost';
   import { Notification } from '$lib/components/notification';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { initVoterContext } from '$lib/contexts/voter';
@@ -91,6 +93,9 @@
     {/snippet}
     {@render children?.()}
   </Layout>
+
+  <!-- The voter app's single drawer. Mounted below `initVoterContext()`, so hosted content resolves the voter and filter contexts itself. -->
+  <DrawerHost />
 {:else}
   <MaintenancePage
     title={t('dynamic.voterAppNotAccessible.title')}
