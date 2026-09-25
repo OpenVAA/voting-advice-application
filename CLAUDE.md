@@ -240,6 +240,8 @@ The development stack uses Supabase CLI for backend services:
 
 **Build**: `yarn workspace @openvaa/frontend build` (also copies `apps/frontend/data/` into the build output when that folder is present)
 
+**Results-navigation invariants**: two prohibitions govern View Transitions and the `(located)` load — a document View Transition must never run with names while a modal is open, and the `(located)` load must not read the URL tracked. Stated in full, with their mechanisms and the two files that implement and guard them, in § _Results Navigation Invariants (View Transitions + the `(located)` load)_ below, beside the other two Svelte invariant subsections.
+
 ## Backend (Supabase)
 
 - **Database**: PostgreSQL managed by Supabase — local via `yarn db:start`, production via Supabase Cloud. Migrations in `apps/supabase/supabase/migrations/`, pgTAP tests in `apps/supabase/supabase/tests/`
@@ -301,6 +303,15 @@ Place the comment IMMEDIATELY ABOVE the warning-triggering line. The rationale s
 
 Use sparingly — preferred outcome is to FIX the warning at the source. Acceptance is the fallback when the warning is a framework false-positive OR a design tradeoff that can't be cleanly fixed.
 
+### Results Navigation Invariants (View Transitions + the `(located)` load)
+
+**Two prohibitions, both learned by measurement, both easy to reintroduce from somewhere else in the app.** They are stated here because a doc-comment is only found by someone already editing the right file — which is not the person about to add a `view-transition-name` to an unrelated component, or to reach for `url.pathname` in a voter-side `load`.
+
+- **NEVER let a document View Transition run with names while a modal is open.** _A document View Transition must never run with names while a modal is open._ A modal `<dialog>` lives in the top layer, and every element carrying a `view-transition-name` becomes its own group painted **above** the `root` snapshot — so the page is drawn on top of the dialog for the duration of the transition. The names are stripped by a class on `<html>` whose `!important` is load-bearing: the named elements carry their names as inline `style` attributes, which beat a class selector. Overlay open/close navigations get **no** document transition at all rather than a nameless one.
+- **NEVER read the URL tracked in the `(located)` load.** _The `(located)` load must not read the URL tracked._ SvelteKit reruns a universal `load` when a `url` property it read tracked changes, so a single tracked read defeats the surrounding `untrack`: the load reran on every results tab / drawer navigation, re-streamed the question and nomination data, flipped the layout's `ready` flag and replaced the whole subtree with `<Loading/>` — remount, scroll clamped to 0, intro redraw. The path and search feed only the `next=` redirect target and are read inside `untrack`.
+
+Both invariants were diagnosed in this codebase (spikes 031–034) and landed in v2.15 Phase 165. The two files that implement and guard them are `apps/frontend/src/lib/utils/viewTransition.ts` (the `shouldAnimate` gate, the overlay exemption and the name-strip class) and `apps/frontend/src/routes/(voters)/(located)/layout.tracking.test.ts` (the read-recording `url` Proxy that fails on any tracked read, with its own control case). See `.claude/skills/spike-findings-voting-advice-application-gsd/references/results-redraw.md` for the full reference: the mechanisms, the drawer-host rules that go with them, and the residue the phase accepted.
+
 ## Deployment
 
 Frontend ships as a Docker container; the backend is Supabase Cloud, so no backend service is needed on Render. `render.example.yaml` is the reference deployment: the frontend service with its `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` environment variables, the domain, and the cache disk. `docker-compose.dev.yml` is for production build testing only, not development.
@@ -335,7 +346,8 @@ Every entry here is one hop: it reaches either this file's own content or a skil
 - **Restructuring a long-lived branch into a reviewable stack of PRs** — index-level tree surgery, pure-rename commit reconstruction, path-partition dry runs, byte-identity and commit-taxonomy proofs. Not for ordinary feature branches, which need none of it.
   → `Skill("ship-review-stack")`
 - **Why the skill corpus is shaped the way it is** — `.claude/skills/README.md` records the corpus measurement and the below-threshold verdict it produced, the judgements behind the current shape, the one-level routing rule every entry in this section obeys, and the conventions for adding a skill. Read it before writing a new skill — not to find an existing one, which is what the entries above are for.
-- **Spike findings for voting-advice-application-gsd** — two domains:
+- **Spike findings for voting-advice-application-gsd** — three domains:
   - Svelte 5 rune migration (spikes 001–012): reactive context shapes, `runeLocalStorage` helper, `untrack()` write-after-read invariant, token-keyed overlay registry, SSR-aware synchronous-init for appSettings, voterContext/candidateContext orchestration, destructure-trap reproduction, consumer-migration codemod, 4-wave migration order, HMR DX, `$derived.by` over per-field `page` reads for getRoute.
   - Page navigation + View Transitions + a11y (spikes 013–016): SvelteKit already reuses `+page.svelte` across param-only URL changes (production: 9/25 ≈ 36% element survival); the user-perceived "redraw" is reactive content-node regeneration, fixed via `onNavigate(navigation => Promise(startViewTransition))` with per-element `view-transition-name`; unified-layout-with-empty-leaf shape (matches results pattern) + `{#key question.type}` for variant remount; WCAG 2.1 AA gate via `afterNavigate(focus({preventScroll: true}))` + `aria-live="polite"` route announcer + reduced-motion belt-and-braces.
+  - Results redraw (spikes 031–034, landed by Phase 165): the voter results section was a genuine full-subtree remount, not content-node regeneration — one tracked `url.pathname` read defeated the `(located)` load's own `untrack`. Carries the two durable invariants with the mechanism behind each — a document View Transition must never run with names while a modal is open, and the `(located)` load must not read the URL tracked; overlay navigations get no document View Transition at all; one `DrawerHost` per app, mounted below that app's contexts, serving two openers; the teardown-safe last-defined-value payload; the list on a single innermost page node with every param optional; "did not remount" asserted by DOM node identity.
     → `Skill("spike-findings-voting-advice-application-gsd")`

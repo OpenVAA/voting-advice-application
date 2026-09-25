@@ -137,12 +137,17 @@
       "number": "164",
       "name": "`RETURNS TABLE` Nullability — Audit + Single Override Mechanism _(was 150)_",
       "status": "complete"
+    },
+    {
+      "number": "165",
+      "name": "Results Navigation Redraw",
+      "status": "complete"
     }
   ],
   "next": {
-    "command": "/gsd:progress --next",
-    "label": "Advance to the next step (plan phase 162.1)",
-    "reason": "Phase 162.1 of 29 — needs a plan"
+    "command": "/gsd:progress",
+    "label": "Show progress",
+    "reason": "Unsure of state — showing progress"
   },
-  "updated_at": "2026-09-20T15:12:59.229Z"
+  "updated_at": "2026-09-24T12:31:51.520Z"
 }

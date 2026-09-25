@@ -637,3 +637,23 @@ These held across all four spikes and apply to any future spike that measures po
   `PREPARE` + `plan_cache_mode = force_generic_plan` instead.
 - `nominations.entity_type` is a **generated column**: never insert it.
 - `session_replication_role = replica` skips validation triggers for bulk fixture loads (constraints still apply).
+
+## Live-testable UI spikes (results-redraw, 031–034)
+
+- **Separate worktree + branch + port** when another session owns the source branch: `git worktree add -b spike/<x>
+  ../voting-advice-application-spike <base>`, host Vite on its own port (`npx vite dev --port 5180 --strictPort`),
+  same local Supabase (read-only use — never `db:reset` a shared DB). `.env` copies must be done by the user (secret
+  guard hook).
+- **Redraw-lab pattern:** one `lib/spike/<name>Lab.svelte.ts` class singleton holding the toggles (`$state`, persisted
+  to localStorage, read eagerly in the constructor so loads can consult it) + an event ledger exposed on `window`,
+  and a fixed-position panel mounted in the root layout. Production files only get `// SPIKE` marked call sites that
+  consult the lab. Once a fix is proven, make the FIX the default and keep the toggle only to restore the old
+  behaviour for comparison.
+- **`log()` must `untrack` its own read of the event array** — it is called from inside `$effect`s (mount ledger), and a
+  tracked read-then-write loops.
+- **Headless forensics:** Playwright against the spike port with per-config `addInitScript` localStorage, the lab
+  panel hidden via an init-script stylesheet (it intercepts clicks), a `slowmo` class that stretches VT animations to
+  2 s, and screenshots at +150 ms / +1000 ms to see what is painted mid-transition. Capture `pageerror` — an exception
+  mid-flush looks like "state didn't update", not like an error.
+- **Beware Playwright auto-scroll**: clicking an off-screen element scrolls first; don't read that as an app scroll.
+- **macOS is case-insensitive:** `Foo.svelte` and `foo.svelte.ts` in one folder collide in svelte-check/TS.
