@@ -25,11 +25,12 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { darkMode } = getComponentContext();
+  // `darkMode` is a reactive accessor that follows the OS colour-scheme preference: read it through the context, never destructured, or the image keeps the variant chosen at mount.
+  const componentCtx = getComponentContext();
 </script>
 
 <img
   data-testid="image-img"
   {...restProps}
   alt={alt || (image.alt ?? '')}
-  src={getImageUrl({ image, format, dark: darkMode })} />
+  src={getImageUrl({ image, format, dark: componentCtx.darkMode })} />
