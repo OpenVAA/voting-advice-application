@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 243
+open_count: 248
 waived_count: 0
-fixed_count: 30
-total_count: 273
-last_updated: 2026-09-19T15:32:05.768Z
+fixed_count: 34
+total_count: 282
+last_updated: 2026-09-23T19:10:16.213Z
 ---
 
 # Broken Windows Ledger
@@ -288,6 +288,15 @@ last_updated: 2026-09-19T15:32:05.768Z
 | 271 | 162 | unrun-verify | tests/e2e-runs/162-14-wave5 |  | E2E run 01 of 162-14 reported 2 failed / 35 did-not-run / 118 passed; both failures timeout-shaped (one 770s against a 90s test timeout), both pass in isolation and run 02 of the full suite is 155/0/0. CLAUDE.md forbids writing an intermittent failure off as flaky, so it is recorded open rather than closed by the green re-run. | fixed |  | 2026-09-17T15:34:43.470Z | 2026-09-17T15:43:06.396Z |
 | 272 | 162 | deviation | .planning/phases/162-permissions-auth-model-refactor/162-FLOW-CONFORMANCE.md |  | F-2: invite-candidate redirects to /candidate/complete-registration, a route absent from the frontend tree; live defect, no plan in phase 162 owns it | open |  | 2026-09-17T20:34:51.447Z |  |
 | 273 | 162 | deviation | .planning/ROADMAP.md |  | ROADMAP criterion 5 still names published/unpublished, the retired per-row publication vocabulary; criteria 1 and 2 name three roles and can_edit_project, neither of which shipped | fixed |  | 2026-09-17T20:34:51.627Z | 2026-09-17T20:52:27.092Z |
+| 274 | 165 | unrun-verify | apps/frontend/src/lib/components/modal/drawerHost/DrawerHost.svelte |  | D-12's <svelte:boundary> has never been observed FIRING on this branch: nothing drives a throw during the host's close flush, so the net is present but unproven (research assumption A1). Falsification is D-12's negative control - revert EntityDrawerOpener to a bare entity prop read and drive an entity close. | fixed |  | 2026-09-23T08:58:31.786Z | 2026-09-23T18:05:22.612Z |
+| 275 | 165 | deviation | apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte |  | At maximum document scroll, opening the entity drawer clamps window.scrollY (measured 1464 -> 1187); probable content-visibility:auto collapse under an inert document. Deferred rather than asserted in 165-03 — see .planning/phases/165-results-navigation-redraw/deferred-items.md D-165-03-01 | open |  | 2026-09-23T09:40:11.052Z |  |
+| 276 | 165 | deviation | tests/tests/specs/voter/voter-journey.spec.ts | 1415 | voter-journey EQTYP-02 fails intermittently (~43%, measured 3 red of 7 runs) in the results election AccordionSelect; suspected stuck expanded state / document View Transition interception introduced by 165-02..04. See 165 deferred-items.md. | fixed |  | 2026-09-23T11:49:55.293Z | 2026-09-23T17:17:09.485Z |
+| 277 | 165 | deviation | apps/frontend/src/lib/components/accordionSelect/AccordionSelect.svelte |  | 165-05.1 Rule-1 deviation: the FIRST selection (activeIndex unresolved -> resolved) now collapses immediately and WITHOUT the slide outro, departing from the plan's 'DELAY.lg collapse-after-select timing unchanged'. Required to close the defect: the 450 ms + 225 ms window IS the flake. Option-to-option switches keep DELAY.lg unchanged. | open |  | 2026-09-23T17:18:21.825Z |  |
+| 278 | 165 | deviation | apps/frontend/src/routes/+layout.svelte |  | Document View-Transition pointer interception is UNADDRESSED by 165-05.1: during a VT the root <html> swallows clicks, measured delaying two separate clicks ~250 ms each in the trace of tests/e2e-runs/accordion-probe-01, and responsible for symptom (b) in 2 of the 6 original EQTYP-02 reds. The suite is green now because the accordion fix removed the state it was racing, not because the interception was fixed. Candidate remedy: pointer-events:none on the ::view-transition pseudo-elements. | open |  | 2026-09-23T17:18:21.998Z |  |
+| 279 | 165 | deviation | apps/frontend/src/lib/components/modal/drawerHost/DrawerHost.svelte |  | The host's <svelte:boundary> does NOT wrap the payload's title() read: it is evaluated in the dialog element's own aria-label={shown?.title()} binding, outside the boundary. Measured in 165-06 NC-7 (165-NEGATIVE-CONTROL.md section 13c): with D-12's convention reverted the run carries TWO errors - the payload render throw the boundary caught and logged, and an uncaught pageerror 'Cannot read properties of undefined (reading name)' from the title getter. Not a live defect (reaching it needs an opener that already violates the convention; 0 occurrences in three un-mutated control runs), but a named gap in the net. See deferred-items.md D-165-06-01. | open |  | 2026-09-23T18:05:22.797Z |  |
+| 280 | 165 | unmet-truth | tests/tests/specs/visual/visual-regression.spec.ts |  | No visual baseline captures an OPEN drawer, so phase 165's headline change (the app-wide DrawerHost replacing the per-route drawer) is visually unmeasured. G-9 (165-07 task 3) ran green in the pinned container with 4/4 baselines matched, but all four screenshot a page with no overlay showing. G-8's axe scans of voter-detail-drawer cover CONFORMANCE in both themes at 0 violations; they do not cover appearance. See deferred-items.md D-165-07-01 for the follow-up shape. | open |  | 2026-09-23T18:47:42.790Z |  |
+| 281 | 165 | deviation | apps/supabase/supabase/schema/300-auth-tables.sql |  | 165-07's gate run found yarn format:check ALREADY RED at the phase base 4d023c587: 13 unformatted files, of which 11 were untouched by phase 165 (v2.15 integration-branch debt, none present on main). All 13 were fixed here because CI runs format:check globally. Fixing the schema file's GRANT reflow then desynced the generated 00001_initial_schema.sql and tripped the schema-migration parity guard, remedied via yarn schema:regenerate per D-17. RESOLVED - recorded so the next phase knows the branch's format gate was unattended for multiple phases before 165 surfaced it. | fixed |  | 2026-09-23T18:47:51.660Z | 2026-09-23T18:48:20.205Z |
+| 282 | 165 | deviation | CLAUDE.md |  | 165-08 task 3: D-24 and 165-PATTERNS E3 both place the new Results Navigation Invariants subsection 'under CLAUDE.md § Frontend (SvelteKit)', but the two analog invariant subsections they name (§ Context Destructuring Rule, § Svelte Warning-Accepted Format) actually live under § Important Implementation Notes. Resolved per the plan's own done-clause ('beside the two invariant subsections it belongs with'): the subsection landed beside them, and § Frontend (SvelteKit) gained a pointer line naming both invariants so D-24's stated location still reaches the rule. RESOLVED - recorded so the next editor of either section knows the placement was a decision, not drift. | fixed |  | 2026-09-23T19:10:09.449Z | 2026-09-23T19:10:16.213Z |
 
 ````json
 [
@@ -3566,6 +3575,123 @@ last_updated: 2026-09-19T15:32:05.768Z
     "reason": "",
     "recorded_at": "2026-09-17T20:34:51.627Z",
     "resolved_at": "2026-09-17T20:52:27.092Z"
+  },
+  {
+    "id": 274,
+    "kind": "unrun-verify",
+    "phase": "165",
+    "file": "apps/frontend/src/lib/components/modal/drawerHost/DrawerHost.svelte",
+    "line": null,
+    "description": "D-12's <svelte:boundary> has never been observed FIRING on this branch: nothing drives a throw during the host's close flush, so the net is present but unproven (research assumption A1). Falsification is D-12's negative control - revert EntityDrawerOpener to a bare entity prop read and drive an entity close.",
+    "status": "fixed",
+    "reason": "",
+    "recorded_at": "2026-09-23T08:58:31.786Z",
+    "resolved_at": "2026-09-23T18:05:22.612Z",
+    "milestone": "v2.15"
+  },
+  {
+    "id": 275,
+    "kind": "deviation",
+    "phase": "165",
+    "file": "apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte",
+    "line": null,
+    "description": "At maximum document scroll, opening the entity drawer clamps window.scrollY (measured 1464 -> 1187); probable content-visibility:auto collapse under an inert document. Deferred rather than asserted in 165-03 — see .planning/phases/165-results-navigation-redraw/deferred-items.md D-165-03-01",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-23T09:40:11.052Z",
+    "resolved_at": null,
+    "milestone": "v2.15"
+  },
+  {
+    "id": 276,
+    "kind": "deviation",
+    "phase": "165",
+    "file": "tests/tests/specs/voter/voter-journey.spec.ts",
+    "line": 1415,
+    "description": "voter-journey EQTYP-02 fails intermittently (~43%, measured 3 red of 7 runs) in the results election AccordionSelect; suspected stuck expanded state / document View Transition interception introduced by 165-02..04. See 165 deferred-items.md.",
+    "status": "fixed",
+    "reason": "",
+    "recorded_at": "2026-09-23T11:49:55.293Z",
+    "resolved_at": "2026-09-23T17:17:09.485Z",
+    "milestone": "v2.15"
+  },
+  {
+    "id": 277,
+    "kind": "deviation",
+    "phase": "165",
+    "file": "apps/frontend/src/lib/components/accordionSelect/AccordionSelect.svelte",
+    "line": null,
+    "description": "165-05.1 Rule-1 deviation: the FIRST selection (activeIndex unresolved -> resolved) now collapses immediately and WITHOUT the slide outro, departing from the plan's 'DELAY.lg collapse-after-select timing unchanged'. Required to close the defect: the 450 ms + 225 ms window IS the flake. Option-to-option switches keep DELAY.lg unchanged.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-23T17:18:21.825Z",
+    "resolved_at": null,
+    "milestone": "v2.15"
+  },
+  {
+    "id": 278,
+    "kind": "deviation",
+    "phase": "165",
+    "file": "apps/frontend/src/routes/+layout.svelte",
+    "line": null,
+    "description": "Document View-Transition pointer interception is UNADDRESSED by 165-05.1: during a VT the root <html> swallows clicks, measured delaying two separate clicks ~250 ms each in the trace of tests/e2e-runs/accordion-probe-01, and responsible for symptom (b) in 2 of the 6 original EQTYP-02 reds. The suite is green now because the accordion fix removed the state it was racing, not because the interception was fixed. Candidate remedy: pointer-events:none on the ::view-transition pseudo-elements.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-23T17:18:21.998Z",
+    "resolved_at": null,
+    "milestone": "v2.15"
+  },
+  {
+    "id": 279,
+    "kind": "deviation",
+    "phase": "165",
+    "file": "apps/frontend/src/lib/components/modal/drawerHost/DrawerHost.svelte",
+    "line": null,
+    "description": "The host's <svelte:boundary> does NOT wrap the payload's title() read: it is evaluated in the dialog element's own aria-label={shown?.title()} binding, outside the boundary. Measured in 165-06 NC-7 (165-NEGATIVE-CONTROL.md section 13c): with D-12's convention reverted the run carries TWO errors - the payload render throw the boundary caught and logged, and an uncaught pageerror 'Cannot read properties of undefined (reading name)' from the title getter. Not a live defect (reaching it needs an opener that already violates the convention; 0 occurrences in three un-mutated control runs), but a named gap in the net. See deferred-items.md D-165-06-01.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-23T18:05:22.797Z",
+    "resolved_at": null,
+    "milestone": "v2.15"
+  },
+  {
+    "id": 280,
+    "kind": "unmet-truth",
+    "phase": "165",
+    "file": "tests/tests/specs/visual/visual-regression.spec.ts",
+    "line": null,
+    "description": "No visual baseline captures an OPEN drawer, so phase 165's headline change (the app-wide DrawerHost replacing the per-route drawer) is visually unmeasured. G-9 (165-07 task 3) ran green in the pinned container with 4/4 baselines matched, but all four screenshot a page with no overlay showing. G-8's axe scans of voter-detail-drawer cover CONFORMANCE in both themes at 0 violations; they do not cover appearance. See deferred-items.md D-165-07-01 for the follow-up shape.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-23T18:47:42.790Z",
+    "resolved_at": null,
+    "milestone": "v2.15"
+  },
+  {
+    "id": 281,
+    "kind": "deviation",
+    "phase": "165",
+    "file": "apps/supabase/supabase/schema/300-auth-tables.sql",
+    "line": null,
+    "description": "165-07's gate run found yarn format:check ALREADY RED at the phase base 4d023c587: 13 unformatted files, of which 11 were untouched by phase 165 (v2.15 integration-branch debt, none present on main). All 13 were fixed here because CI runs format:check globally. Fixing the schema file's GRANT reflow then desynced the generated 00001_initial_schema.sql and tripped the schema-migration parity guard, remedied via yarn schema:regenerate per D-17. RESOLVED - recorded so the next phase knows the branch's format gate was unattended for multiple phases before 165 surfaced it.",
+    "status": "fixed",
+    "reason": "",
+    "recorded_at": "2026-09-23T18:47:51.660Z",
+    "resolved_at": "2026-09-23T18:48:20.205Z",
+    "milestone": "v2.15"
+  },
+  {
+    "id": 282,
+    "kind": "deviation",
+    "phase": "165",
+    "file": "CLAUDE.md",
+    "line": null,
+    "description": "165-08 task 3: D-24 and 165-PATTERNS E3 both place the new Results Navigation Invariants subsection 'under CLAUDE.md § Frontend (SvelteKit)', but the two analog invariant subsections they name (§ Context Destructuring Rule, § Svelte Warning-Accepted Format) actually live under § Important Implementation Notes. Resolved per the plan's own done-clause ('beside the two invariant subsections it belongs with'): the subsection landed beside them, and § Frontend (SvelteKit) gained a pointer line naming both invariants so D-24's stated location still reaches the rule. RESOLVED - recorded so the next editor of either section knows the placement was a decision, not drift.",
+    "status": "fixed",
+    "reason": "",
+    "recorded_at": "2026-09-23T19:10:09.449Z",
+    "resolved_at": "2026-09-23T19:10:16.213Z",
+    "milestone": "v2.15"
   }
 ]
 ````

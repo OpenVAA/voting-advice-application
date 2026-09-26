@@ -233,7 +233,7 @@ describe('requireAdminIdentity — the one decision, in its three shapes', () =>
     expect(verdict).toEqual({ outcome: 'forbidden' });
   });
 
-  it('asks user_can about THIS deployment\'s project, for the permission the admin job features act under', async () => {
+  it("asks user_can about THIS deployment's project, for the permission the admin job features act under", async () => {
     const rpc = vi.fn(async () => ({ data: true, error: null }));
     await requireAdminIdentity({ fetch: globalThis.fetch, locals: verifiedLocals({ grants: [ADMIN_GRANTS[0]], rpc }) });
 

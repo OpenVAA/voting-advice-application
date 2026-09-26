@@ -129,7 +129,7 @@ describe('SupabaseAdminWriter', () => {
   });
 
   describe('callerMayOnProject (162-REVIEW WR-03)', () => {
-    it('asks user_can about the adapter\'s own project and answers true only for a literal true', async () => {
+    it("asks user_can about the adapter's own project and answers true only for a literal true", async () => {
       mockSupabase.rpc.mockResolvedValue({ data: true, error: null });
       await expect(writer.callerMayOnProject('project.edit_questions')).resolves.toBe(true);
       expect(mockSupabase.rpc).toHaveBeenCalledWith('user_can', {

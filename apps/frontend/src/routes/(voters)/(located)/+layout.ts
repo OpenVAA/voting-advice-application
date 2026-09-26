@@ -38,8 +38,11 @@ export async function load({ data, fetch, parent, untrack, url }) {
   untrack(() => ({ electionId, constituencyId } = parseParams({ url })));
 
   // reason: voter-app routes allowlist for ?next= deferred target — prevents open-redirect attacks. The whitelist accepts either a locale-prefixed path (`/en/...`) or one of the bare voter-app route roots (`/results`, `/questions`, `/nominations`). Cross-origin values (`https://...`, `//evil.com`) fail the regex and are dropped — the redirect proceeds to the selector without a `?next=` parameter.
-  const isVoterRoute = /^\/[a-z]{2}\/.*|^\/(results|questions|nominations)\b/.test(url.pathname);
-  const nextKv = isVoterRoute ? `next=${encodeURIComponent(url.pathname + url.search)}` : '';
+  // The path + search are read untracked too: they only feed the `next=` redirect target. Read tracked, they defeat the `untrack` above — every results tab / drawer navigation reruns this load, re-streams the question + nomination data and blanks the whole subtree via `+layout.svelte`'s `ready` flag (remount, scroll clamped to 0, intro redraw; spike 031). Guarded by `layout.tracking.test.ts` — NOT by `layout.load.test.ts`, which is the separate empty-selection guard.
+  // Only WHERE the two values come from changed. The allowlist regex and the `nextKv` construction below are byte-identical to the pre-fix form on purpose: this is the one security-relevant line the untrack fix touches (threat T-165-01).
+  const { pathname, search } = untrack(() => ({ pathname: url.pathname, search: url.search }));
+  const isVoterRoute = /^\/[a-z]{2}\/.*|^\/(results|questions|nominations)\b/.test(pathname);
+  const nextKv = isVoterRoute ? `next=${encodeURIComponent(pathname + search)}` : '';
   /**
    * Append `next=…` to a redirect target with the correct separator. `buildRoute` may emit a base URL that already carries `?electionId=…` (Constituencies branch below), in which case the next-param must join with `&`, not `?`. Concatenating a leading-`?` next directly produced `…?electionId=…?next=…` — a malformed URL that SvelteKit's URL parser 500s on (test 3 reproducer).
    */

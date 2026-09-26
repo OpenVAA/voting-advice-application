@@ -179,7 +179,10 @@ Deno.serve(async (req) => {
       await rollbackInvite(supabaseAdmin, { candidateId: candidate.id, userId: inviteData.user.id });
 
       return new Response(
-        JSON.stringify({ error: 'Failed to link the invited user to the candidate record', details: linkError.message }),
+        JSON.stringify({
+          error: 'Failed to link the invited user to the candidate record',
+          details: linkError.message
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

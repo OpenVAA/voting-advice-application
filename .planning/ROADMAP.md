@@ -294,6 +294,7 @@ delivery-origin swap whose visual consequence is re-proven by the baselines them
 - [x] **Phase 162.1: Permissions Follow-Up — Read-Cost Investigation & Closed-Project Voter Coverage** - Two residuals Phase 162 recorded openly: the authenticated entity-read at **4.47x** and the anon storage-bucket read at **6.4x**, both measured and neither shown to matter at real election scale — investigate, then fix/accept/monitor on evidence; and the one user-visible consequence of the new visibility gate, a project not open for voters returning the anon caller **zero** `app_settings` rows, which `.single()` turns into a **throw** and which **no seed or spec can currently reach** because every seeded project is open (completed 2026-09-19)
 - [x] **Phase 163: CI Gates — SQL Lint/Format + Secrets & Vulnerability Scanning** - Invoke the `db:lint:sql` script that nothing runs, put SQL in the standard format gate, add secrets + vuln scanning (CIGATE-01/02/03) — **moved from 149** so the gates land on the post-remediation tree.
 - [x] **Phase 164: `RETURNS TABLE` Nullability — Audit + Single Override Mechanism** - Enumerate every RPC's semantically-nullable columns and fix the lie with one mechanism, not scattered casts (CIGATE-04/05) — **moved from 150** for the same reason.
+- [x] **Phase 165: Results Navigation Redraw** - Stop the voter results page from remounting and flickering on tab / entity / drawer navigation; reshape its routes to follow the layout and hoist the drawer(s) to one app-wide host. Grounded in spikes 031-034 (`spike/results-redraw`). (completed 2026-09-24)
 
 ## Phase Details
 
@@ -1778,9 +1779,64 @@ Plans:
 - [x] 164-04-PLAN.md
 - [x] 164-05-PLAN.md
 
+### Phase 165: Results Navigation Redraw
+
+**Added 2026-09-22** from spikes 031-034 (`.planning/spikes/031-*` … `034-*`, branch `spike/results-redraw`, worktree `../voting-advice-application-spike`). The spike branch carries a working prototype of every item behind a `lib/spike/` "redraw lab" toggle panel; this phase replaces it with production code and deletes the lab.
+
+**Goal**: Navigating within the voter results — switching entity tabs, opening an entity, switching tabs inside it, closing it — never remounts or repaints what did not change, never moves the scroll position, and never paints the page above an open overlay.
+**Depends on**: Nothing in v2.15 (frontend-only; touches no schema, adapter or CI surface). Must be merged onto `integration/ship-12-squash` after the session debugging that branch is done.
+**Requirements**: RNAV-01, RNAV-02, RNAV-03, RNAV-04, RNAV-05, RNAV-06 — mapped one-to-one onto the six success criteria below and **registered by this phase** in `.planning/REQUIREMENTS.md` under decision D-22 (plan 165-08), together with the milestone-counter correction D-22 couples to it.
+**Success Criteria** (what must be TRUE):
+
+  1. **No results navigation remounts the results subtree.** Root cause (spike 031): `(located)/+layout.ts` untracks its params but reads `url.pathname` / `url.search` tracked for the `next=` redirect target, so the load reruns on every path change, re-streams question + nomination data, `(located)/+layout.svelte` sets `ready = false` and `<Loading/>` replaces the subtree. A unit test drives the load with a read-recording `url` and fails on any tracked read, with a positive control proving it catches the old read.
+  2. **Scroll is preserved** on entity open, entity close and entity-tab switch (from a scrolled position, not only from the top), observed in the browser.
+  3. **No document View Transition paints above an open modal.** Overlay open/close navigations run no document VT; any VT that runs while a modal dialog is open runs with every `view-transition-name` stripped. The header is covered by the backdrop from the first frame; a drawer-tab switch never shows the results page in front of the drawer.
+  4. **Results routes follow the layout**: an `[electionTab]` level rendering that election's entity-type tabs, an `[entityTab]` level rendering the list + filters, and an `[entity]/[id]` nomination page that opens the overlay. Existing URLs keep working (or redirect), and the implied-default-tab case does not remount the list.
+  5. **One app-wide drawer host** in the root layout serves the entity-details overlay AND the extended-question-info drawer: entity → entity navigation swaps content without reopening, closing animates out, and hosted content is safe against its opener unmounting (spike 034 found a close that hung the dialog). The mechanism (payload + context bridge vs. global shell + portal) is decided at discuss-phase.
+  6. **The spike scaffolding is gone**: no `lib/spike/`, no `// SPIKE` call sites, no `/results-layered` tree; E2E voter results specs pass.
+
+**Plans**: 9/9 plans executed
+
+Plans:
+
+- [x] 165-05.1-PLAN.md
+
+**Wave 1**
+
+- [x] 165-01-PLAN.md — Branch off `integration/ship-12-squash`, transport the phase documents and spike records, open the evidence doc, and take both baseline measurements (the cold-`/results` hazard, the D-09 emitter derivation) (wave 1)
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [x] 165-02-PLAN.md — **TRACER**: one entity opens and closes end-to-end through the new app-wide drawer host, with the four validated fixes in production form, the two unit guards, and NC-1 (wave 2)
+
+**Wave 3** *(blocked on Wave 2)*
+
+- [x] 165-03-PLAN.md — The committed navigation-behaviour spec: scroll survival from a scrolled start, the two View-Transition invariants, node identity, plus its fixture and its own Playwright project (wave 3)
+
+**Wave 4** *(blocked on Wave 3)*
+
+- [x] 165-04-PLAN.md — Route split per D-08: statistics re-homed (D-25), the shared route builder, the entity-tab level, the innermost page, and the leaf guards pinned (wave 4)
+
+**Wave 5** *(blocked on Wave 4)*
+
+- [x] 165-05-PLAN.md — The extended question info served by the same host (D-13), exercised through it, and the two callerless per-route drawers deleted (wave 5)
+
+**Wave 6** *(blocked on Wave 5)*
+
+- [x] 165-06-PLAN.md — The standing scaffolding guard (D-20) and the remaining negative controls NC-2..NC-6, closing the evidence document (wave 6)
+
+**Wave 7** *(blocked on Wave 6)*
+
+- [x] 165-07-PLAN.md — Phase gate: every static gate forced at one head, the full E2E suite under the cardinal rule, the accessibility scan, and the visual run in the pinned container with its human judgement (wave 7)
+
+**Wave 8** *(blocked on Wave 7)*
+
+- [x] 165-08-PLAN.md — Register RNAV-01..06 with recounted counters (D-22), add the `results-redraw` skill domain (D-23), state the two invariants in `CLAUDE.md` (D-24), close the folded todo and record every residue (wave 8)
+
 ## Progress
 
-**Active milestone: v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage** — Phases 137-164 (29 phases incl. 142.1, 157.1 and 157.2; 148 absorbed into 147), 39/39 original requirements mapped plus the review-remediation set added 2026-08-28. Plan counts are set per phase by `/gsd-plan-phase`.
+**Active milestone: v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage** — Phases 137-164 (29 phases incl. 142.1, 157.1, 157.2 and 162.1; 148 absorbed into 147) **plus Phase 165 — Results Navigation Redraw as an addendum, 30 phases in total**. **110/110 requirements mapped** — the 39 original, the review-remediation set added 2026-08-28, PERMFU-01..10 and RNAV-01..06. Plan counts are set per phase by `/gsd-plan-phase`.
+_(**Recounted 2026-09-23 by `165-08` under D-22**, from `.planning/REQUIREMENTS.md`'s § Traceability data rows rather than incremented — the previous header read "29 phases incl. 142.1, 157.1 and 157.2" and "39/39 original requirements", both of which had been overtaken. The phase count is `ls .planning/phases | grep -v '^999' | wc -l` → 30; the requirement count is the scoped awk over the traceability table recorded in REQUIREMENTS.md's own coverage note → 110, cross-checked against the rollup `Total`.)_
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -1811,6 +1867,7 @@ Plans:
 | 162. Permissions & Auth Model Refactor | 21/21 | Complete    | 2026-09-20 |
 | 163. CI Gates — SQL Lint/Format + Secrets & Vulnerability Scanning _(was 149)_ | 9/9 | Complete    | 2026-09-04 |
 | 164. `RETURNS TABLE` Nullability — Audit + Single Override Mechanism _(was 150)_ | 5/5 | Complete    | 2026-09-03 |
+| 165. Results Navigation Redraw | 9/9 | Complete    | 2026-09-24 |
 
 **Shipped milestones:**
 

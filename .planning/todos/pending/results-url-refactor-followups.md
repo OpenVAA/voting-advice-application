@@ -2,6 +2,7 @@
 title: Results URL refactor follow-ups (shorter IDs, multi-election/constituency, upstream voter routes)
 priority: medium
 created: 2026-04-24
+updated: 2026-09-24
 context: Carried forward from Phase 62 (Results Page Consolidation) discuss-phase on 2026-04-24. Phase 62 ships the path-based /results/[electionId]/[[entityTypePlural]]/[[entityTypeSingular]]/[[id]] shape for the results subtree only. Three related items are explicitly deferred to keep Phase 62 focused.
 ---
 
@@ -171,6 +172,40 @@ The original `session-storage-election-constituency.md` content is
 preserved here (merged 2026-04-29) so the discussion of "URL search
 params vs session storage" stays in one place.
 
+## 6. Decided direction for election + constituency selection (operator, 2026-09-24)
+
+Supersedes the open "URL vs storage" question in items 2, 3 and 5 for the
+*selection* (not for voter answers, which item 5 still owns).
+
+- **Persist both `electionId` and `constituencyId` in `localStorage`**, so the
+  selection syncs across tabs (a `storage`-event listener, or the existing
+  `runeLocalStorage` helper if it already propagates cross-tab — check).
+  The URL is no longer the source of truth for the selection.
+- **Deeplink arrival implies the selection.** When a visitor arrives via
+  `/results/{election}/{tab}/{nominationId}`, derive election AND
+  constituency from the nomination. On a truncated route
+  (`/results/{election}` or `/results/{election}/{tab}`) derive only the
+  election. **Prerequisite:** the results URL must first be refactored to
+  address the nomination directly — item 4. (Post-Phase-165 the route is
+  `results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]`, where
+  `[id]` is still the entity id.)
+- **Tell the user it was chosen for them.** In the implied cases, show a
+  `Note` saying the election / constituency were selected for them, with a
+  link to change them where a change is possible (e.g. not when only one
+  exists).
+  - It must **not be a popup or modal**: it must not compete with the entity
+    details drawer that the deeplink opens. Render it inline in the results
+    page, so the user only sees it after closing the drawer.
+  - Mind the Phase-165 invariants (CLAUDE.md § Results Navigation Invariants):
+    the implication must not add a tracked URL read to the `(located)` load,
+    and the Note must not cause a results-subtree remount.
+- **Implementation ideas to evaluate:**
+  - Do the implication from a **DataRoot fragment** (only the nomination →
+    election/constituency tuple), not the full located dataset.
+  - Consider **server loading** for the pre-located data (the data needed
+    before a selection exists), so the client does not fetch it a second
+    time after SSR.
+
 ## Related
 
 - `.planning/todos/pending/frontend-project-id-scoping.md` — architecture multi-tenant prep; may interact with URL ID shortening if IDs become project-scoped.
@@ -182,4 +217,5 @@ Success for the full follow-up (whether shipped as one milestone or split):
 - URLs for every shareable voter route carry the necessary context (election, constituency if applicable) so new-window deeplinks work without session.
 - IDs in URLs are short enough to share verbally / via SMS / in print materials.
 - Multi-election/constituency selection is either explicitly supported in the UX or explicitly restricted with a clear product rationale.
+- Election + constituency selection lives in localStorage and syncs across tabs; a nomination (or election) deeplink implies it and shows an inline, non-modal Note with a change link (item 6).
 - Each shareable voter route has a documented sharing policy (private / link-with-answers / server-token) — see item 5.

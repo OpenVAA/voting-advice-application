@@ -189,6 +189,8 @@ export const testIds = {
     },
     results: {
       list: 'voter-results-list',
+      // The results list's OUTER container — the node ABOVE the deliberate `{#key}` remount in `results/[[electionTab]]/+layout.svelte`. `list` beside it sits on `EntityListWithControls`, which that `{#key}` remounts ON PURPOSE when the `election:entityType` scope tuple changes, so per-scope filter UI state is discarded. A did-not-remount (node-identity) assertion across an ENTITY-TAB SWITCH must therefore target THIS id; aiming it at `list` produces a test that fails for a correct reason and then gets "fixed" by weakening it (D-18, 165-RESEARCH Pitfall 7). For the entity open/close case `list` is the right node — nothing keys on the `entity`/`id` params.
+      listContainer: 'voter-results-list-container',
       noNominationsWarning: 'voter-results-no-nominations-warning',
       card: 'entity-card',
       cardTitle: 'entity-card-title',

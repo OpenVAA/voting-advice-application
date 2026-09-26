@@ -71,7 +71,9 @@ export const ROUTE = {
   ResultEntity: `${VOTER_LOCATED}/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]`,
   ResultParty: `${VOTER_LOCATED}/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]`,
   Results: `${VOTER_LOCATED}/results`,
-  Statistics: `${VOTER_LOCATED}/results/[[electionTab]]/statistics`,
+  // The statistics page sits BESIDE the election-tab segment rather than under it (phase 165, D-25). Under it the page shared the results leaf's layout chain, and that layout renamed its `children` prop and never rendered it, so the nested URL served the RESULTS page instead; nothing linked to the route and no test covered it, which is why the swallow survived undetected — see `165-NEGATIVE-CONTROL.md` § 2d for the derivation.
+  // Moving it out also keeps it clear of the results hero, ingress and picker once that layout starts rendering its children (D-08), which would otherwise have put two `<h1>`s on one route. This constant and the directory move together or the route 404s.
+  Statistics: `${VOTER_LOCATED}/results/statistics`,
 
   // Candidate App
   CandAppForgotPassword: `${CANDIDATE}/forgot-password`,

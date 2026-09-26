@@ -88,7 +88,10 @@ describe('writeEntityGrant', () => {
   // IDEMPOTENT (162-REVIEW WR-06): the grant already existing is the state the caller wanted, so the unique violation on the grants key is success. That is what lets identity-callback write the grant on every login and repair an identity whose first grant write failed.
   it('treats a unique violation (the grant already exists) as success', async () => {
     const { client, recorded } = recordingClient({
-      error: { message: 'duplicate key value violates unique constraint "grants_user_scope_target_role_key"', code: '23505' }
+      error: {
+        message: 'duplicate key value violates unique constraint "grants_user_scope_target_role_key"',
+        code: '23505'
+      }
     });
 
     await expect(

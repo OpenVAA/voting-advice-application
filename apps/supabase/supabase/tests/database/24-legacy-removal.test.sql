@@ -200,9 +200,21 @@ SELECT
 
 SELECT
   ok (
-    has_function_privilege('supabase_auth_admin', 'public.custom_access_token_hook(jsonb)', 'EXECUTE')
-    AND NOT has_function_privilege('anon', 'public.custom_access_token_hook(jsonb)', 'EXECUTE')
-    AND NOT has_function_privilege('authenticated', 'public.custom_access_token_hook(jsonb)', 'EXECUTE'),
+    has_function_privilege(
+      'supabase_auth_admin',
+      'public.custom_access_token_hook(jsonb)',
+      'EXECUTE'
+    )
+    AND NOT has_function_privilege(
+      'anon',
+      'public.custom_access_token_hook(jsonb)',
+      'EXECUTE'
+    )
+    AND NOT has_function_privilege(
+      'authenticated',
+      'public.custom_access_token_hook(jsonb)',
+      'EXECUTE'
+    ),
     'IN-01: custom_access_token_hook is executable by supabase_auth_admin and by neither API role'
   );
 

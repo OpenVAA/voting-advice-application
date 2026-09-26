@@ -38,7 +38,9 @@ ALTER TABLE public.grants ENABLE ROW LEVEL SECURITY;
 GRANT USAGE ON SCHEMA public TO supabase_auth_admin;
 
 -- SELECT and nothing more (162-REVIEW IN-01): the hook only READS the grant map to build the claim, and its only policy here is a SELECT policy, so INSERT, UPDATE and DELETE were privilege the auth server never needed.
-GRANT SELECT ON TABLE public.grants TO supabase_auth_admin;
+GRANT
+SELECT
+  ON TABLE public.grants TO supabase_auth_admin;
 
 CREATE POLICY "auth_admin_read_grants" ON public.grants FOR
 SELECT

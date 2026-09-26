@@ -77,6 +77,26 @@ per residual (ROADMAP § Phase 162.1, Item 1).
 - Operator decisions 2026-09-18 on the findings: F1 -> raise `max_rows` to 50000 in config.toml + deployment-doc todo, and investigate adapter auto-pagination (spike 030); F2 -> anon `statement_timeout` 8s via `schema/001-role-settings.sql` + the same todo; F3 -> spike solutions with random UUID file names as a candidate (spike 029).
 - A fix is accepted only with row identity proved on a negative-case grid AND the pgTAP estate green AND 162-17's guard perturbations still red (spike 028).
 
+### results-redraw
+
+The voter results navigation flickers: the intro fades on entity-tab switches, opening an entity scrolls to the top and flashes the header above the overlay, closing flickers the list, and switching tabs inside the entity drawer briefly brings the results page to the front. Proposed remedy: restructure the results routes to follow the layout ([electionId] → [etPlural] → nomination page) and hoist the drawer(s) to a root-level host fed by a payload.
+
+**Requirements:**
+
+- Must be live-testable: every candidate fix sits behind a runtime toggle (redraw-lab panel), on its own branch/worktree, never on the branch another session is debugging.
+- Navigating within results must not remount the results subtree nor reset scroll (entity open/close keep the list position).
+- The entity overlay must cover the whole viewport (header included) from its first frame, and the results page must never paint above an open drawer.
+- A document View Transition must never run with `view-transition-name`s while a modal dialog is open, and overlay open/close navigations get no document VT (032).
+- The `(located)` load must not track any URL property; guarded by a unit test (032).
+- Anything rendered by a hoisted/global host must carry the opener's contexts and must not read opener state after the opener unmounts (034).
+
+### drawer-context-scoping
+Question the app-wide `DrawerHost` + `ContextBridge` (034 → Phase 165): can the opener provide only the named contexts its drawer content needs, or can the bridge be designed away? And, more broadly, what does the frontend actually gain from its 10 separate Svelte contexts versus fewer or one?
+
+**Requirements:**
+- Autonomous session (owner away): decisions picked by recommendation and recorded in each README, not asked.
+- Any variant must keep the Phase 165 invariants and pass the full E2E suite (CLAUDE.md E2E Hard Rule).
+
 ## Spikes
 
 | # | Idea | Name | Type | Validates | Verdict | Tags |
@@ -112,3 +132,9 @@ per residual (ROADMAP § Phase 162.1, Item 1).
 | 028 | grant-model-read-cost | disjunct-order-fix | comparison | Public disjunct first: candidate whole-project 7.15→3.32 s, 0 row differences over 2,120 probes, estate + 162-17 guard intact; variant B keeps admins unchanged | VALIDATED | rls, performance, correctness |
 | 029 | grant-model-read-cost | public-assets-leak-surface | comparison | Random UUID names (status quo) protect never-public files; storage cleanup has never worked (POST to a DELETE-only route), so replaced/deleted photos stay public; private bucket + signing costs +736 ms/page | VALIDATED | storage, security, pg_net |
 | 030 | grant-model-read-cost | adapter-autopagination | standard | limit/offset auto-paging returns every row exactly once IF sorted on a unique key (sort_order alone: 768 dupes/768 missing) and pages are large (1000-row pages: 115 s whole-municipal) | VALIDATED | postgrest, pagination, adapter |
+| 031 | results-redraw | results-nav-flicker-forensics | standard | All 4 symptoms attributed: (1)(2a)(3) are a full `(located)` subtree REMOUNT on every results navigation — `(located)/+layout.ts` untracks `parseParams` but reads `url.pathname` tracked, so the load reruns → `ready=false` → `<Loading/>` → remount + scroll clamp to 0; (2b)(4) are document View Transitions painting named groups (`persistent-header`, `main-content`) ABOVE the top-layer dialog. Fixes: untrack path (0 remounts, scroll kept), `vt: scoped`, strip names while a modal is open. Route restructure NOT required | VALIDATED | sveltekit, navigation, view-transitions, load-invalidation, drawer, scroll, forensics |
+| 032 | results-redraw | results-redraw-hardened-fixes | standard | 031 fixes in final form: load reads path untracked (+ Proxy-url unit guard with a control case), no document VT for overlay (entity+id) navigations, names stripped for any VT while a modal is open, `noScroll` on tab switches. legacy→hardened: 4→0 remounts, scroll 700→0 vs 700→700, drawer never under the page. ~30 lines, no restructure | VALIDATED | sveltekit, load-invalidation, view-transitions, dialog, top-layer, scroll, regression-test |
+| 033 | results-redraw | layout-shaped-results-routes | standard | Parallel `/results-layered` tree ([electionTab] tabs → [entityTab] list → [entity]/[id] nomination page opens overlay). With the pre-032 loader it remounts exactly like `/results` (bug is above the routes); with 032 fixes L1/L2 persist, P4 mounts/unmounts alone. Equivalent behaviour, organisational win (4 small files, required params, no fallthrough guards); one extra L3 remount on implied → explicit tab | VALIDATED | sveltekit, routing, layouts, restructure, mount-forensics |
+| 034 | results-redraw | global-drawer-host | standard | Root `DrawerHost` + payload `{ snippet, getAllContexts() }` works: A → B swap without reopen, animated close, header covered from frame 1. Needs a ContextBridge (EntityDetails reads voter context) and teardown-safe payloads (reading the opener's prop after unmount crashed the flush and hung the dialog). Not required for the 4 symptoms; question-info path unexercised locally | PARTIAL | svelte5, dialog, top-layer, context, snippets, drawer, overlay |
+| 035 | drawer-context-scoping | drawer-context-scoping | comparison | Hosted `EntityDetails` needs only voter+filter beyond root; `QuestionExtendedInfo` needs none. Built 3 variants, each full E2E 171/171: **b** host in `(voters)/+layout` (no bridge, −54 lines) ★, **c** named `carry*Context()` carriers (+17), **d** portal opener-rendered DOM into root shell (−26, most invasive). Close-animation frames identical to baseline. bits-ui `Portal` uses the same `getAllContexts()` bridge | VALIDATED (winner 035b) | svelte5, context, drawer, portal, getAllContexts, createContext |
+| 036 | drawer-context-scoping | context-topology-audit | standard | Split pays for lifecycle scoping, 8+1 name collisions, SSR isolation, narrow base-component surface — NOT bundle splitting (Banner imports voter+candidate). Real cost is `AppContext &` inheritance (81 redeclarations, spread test). Live trap: `Image.svelte` destructures `darkMode`. Keep A; optional flatten-don't-merge (~51 files) | VALIDATED | svelte5, context, architecture, audit, ssr |
