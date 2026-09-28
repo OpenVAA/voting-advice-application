@@ -1,0 +1,11 @@
+apps/supabase/supabase/schema/000-enums.sql	c3deff213abe94ce6aab46bc48a2625b7226e0ed	165-16
+apps/supabase/supabase/schema/001-role-settings.sql	771b4b2e91bda58c800365f584682575d32b4201	165-16
+apps/supabase/supabase/schema/010-utility-functions.sql	40616c38dcd42370ae1b07f85073a8391dec650a	165-16
+apps/supabase/supabase/schema/200-indexes.sql	e05dbee89efb9fb2caf32bf3aba2cbf5a03355c7	165-16
+apps/supabase/supabase/schema/500-external-id.sql	1f930daaee1e0447638afb66f179041a493bc0cf	165-16
+apps/supabase/supabase/schema/504-admin-rpcs.sql	3bddb367fcc4278f7d11d775802e13129a3f9337	165-16
+apps/supabase/supabase/schema/900-test-helpers.sql	5279b92f270f2535cfcfb1cbb1dc93c021c707d0	165-16
+apps/supabase/supabase/schema/501-bulk-operations.sql	630ff48bbdac6f1d3cc63989ae5a86763910d2aa	165-16
+apps/supabase/supabase/schema/502-email-helpers.sql	52c4bb21a40f8785361186f16782cae879599028	165-16
+apps/supabase/supabase/schema/505-question-rpcs.sql	c9ffd056df1b174398c803fa119f690399b7a47e	165-16
+apps/supabase/supabase/schema/503-entity-rpcs.sql	b32e4e2b5e3b8ad9551dd54034e396fac2543e9a	165-16

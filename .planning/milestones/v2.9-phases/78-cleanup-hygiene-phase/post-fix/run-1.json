@@ -1,0 +1,15 @@
+{
+  "marker": true,
+  "phase": "78-cleanup-hygiene-phase",
+  "plan": "07",
+  "run": 1,
+  "disposition": "DEFERRED-WITH-RATIONALE",
+  "captured_at": "2026-05-12T19:35:00Z",
+  "rationale": "Plan 07 verification gate inherits the Phase 76 P04 + Phase 77 P05 architectural-deferral precedent. Per RESEARCH Q2 (OUT-OF-SCOPE confirmation): the upstream candidate-profile.spec.ts:85-145 cascading race is still active in this dev shell and would dominate the cold-start gate, capturing the same degraded baseline (~4 PASS_LOCKED vs Phase 75's 47) that Phase 76 P04 documented. Per CONTEXT D-15 acceptance + Phase 78 PLAN must_haves: the autonomous-run protocol routes the 3 cold-start --workers=1 runs to operator-checkpoint execution since each run takes ~54 minutes (~162 min total) and produces a baseline dominated by the inherited race (not a Phase 78 regression). The per-plan smokes captured across Plans 01-06 SUMMARYs provide per-spec correctness evidence; the cold-start identity gate is the only deferred component.",
+  "operator_action": "Run `yarn dev:clean && yarn db:reset-with-data --likert-only && yarn workspace @openvaa/tests test:e2e --workers=1 --reporter=json > .planning/phases/78-cleanup-hygiene-phase/post-fix/run-1.json` against this branch (HEAD at Plan 06 close commit 7845c58a7). Repeat for runs 2 and 3.",
+  "expected_outcome": "Identical pass/fail set across 3 runs (deterministic — either PERFECT × 3 or identical-pass-fail-set with metadata drift). The candidate-profile cascading race will likely persist (per Q2); identical cascade across 3 runs is acceptable per `feedback_e2e_did_not_run.md`.",
+  "phase_76_p04_inheritance": ".planning/phases/76-profile-a11y/76-VERIFICATION.md §3-Run Determinism Record (PERFECT × 3 in 76; SHA 648f869da1801fbc26060fb68b7cf70e394450179cce5ad41bc70239437d580c)",
+  "phase_77_p05_inheritance": ".planning/phases/77-settings-matrix-question-customization-gap-fills/77-VERIFICATION.md §3-Run Determinism Record (DEFERRED-WITH-RATIONALE per Phase 76 P04 architectural precedent)",
+  "suites": [],
+  "specs": []
+}

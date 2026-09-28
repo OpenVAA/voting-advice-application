@@ -1,0 +1,35 @@
+# 162-19 confirmation-flow controls on the APPLIED local database (D-37: failures read from prove's `Failed tests:` numbers, never by counting failure lines)
+# HEAD: 0aa1e5f3a (working tree carries the uncommitted 32-level1-confirmation-flow.test.sql)
+# Date: 2026-09-19T15:42Z
+# Database: local Supabase Postgres at 127.0.0.1:54322 (psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -X -v ON_ERROR_STOP=1)
+# Method: one bash script, no `set -e`, issuing each DISABLE, the full `yarn workspace @openvaa/supabase test:db` run and the matching ENABLE in sequence, so the ENABLE runs whatever the test run returns; tgenabled read after the disable and after the enable.
+#
+# File 32 assertion numbers (declared plan 13):
+#   1 the ProjectEditor holds exactly one grant (the project editor grant on project A)
+#   2 nomination_cand_a starts CONFIRMED
+#   3 L0 project.edit_nominations held
+#   4 L0 nomination.confirm NOT held
+#   5 L1 the ProjectEditor's edit affects exactly one row
+#   6 L1 the ProjectEditor's edit leaves the nomination UNCONFIRMED
+#   7 L2 the ProjectEditor turning confirmation ON is refused naming nomination.confirm
+#   8 L3 the ProjectAdmin edits and confirms in one statement (paired control)
+#   9 candidate_a starts CONFIRMED
+#  10 L4 the ProjectEditor's change of the entity flag lives
+#  11 L4 the change landed
+#  12 L5 the entity user changing its own flag is refused naming entity.confirm (paired contrast)
+#  13 the ProjectEditor still holds exactly one grant at the end
+
+## Baseline (unperturbed, before any control)
+T0 command: yarn workspace @openvaa/supabase test:db | exit=0
+T0 Files=32, Tests=1204 | Result: PASS | 32-level1-confirmation-flow.test.sql ok
+
+## Controls
+N1 ALTER TABLE public.nominations DISABLE TRIGGER enforce_nomination_confirmation_before_insert_or_update (exit=0, tgenabled=D) | test:db exit=1 | Files=32, Tests=1204 | Result: FAIL | 32-level1-confirmation-flow failed: 6-7 (L1 unconfirmation, L2 refusal; L1 row count 5 and L3 paired control 8 stay green, as they must) | also reddened: 23-nominations-write 3-4, 29, 33; 27-parent-nomination-queue 6, 8, 10, 12, 14-15 | ALTER TABLE public.nominations ENABLE TRIGGER enforce_nomination_confirmation_before_insert_or_update (exit=0, tgenabled=O)
+N2 ALTER TABLE public.candidates DISABLE TRIGGER enforce_entity_immutability (exit=0, tgenabled=D) | test:db exit=1 | Files=32, Tests=1204 | Result: FAIL | 32-level1-confirmation-flow failed: 12 (L5 entity-user refusal; the L4 allowance 10-11 stays green, as it must) | also reddened: 02-candidate-self-edit 5; 09-column-restrictions 2-3, 12; 15-visibility-flags 28; 19-entity-immutability 4-5, 29-30, 32, 47, 52, 65, 68 | ALTER TABLE public.candidates ENABLE TRIGGER enforce_entity_immutability (exit=0, tgenabled=O)
+
+## Restore
+Final trigger states (SELECT tgrelid::regclass, tgname, tgenabled FROM pg_trigger ...):
+candidates.enforce_entity_immutability tgenabled=O
+nominations.enforce_nomination_confirmation_before_insert_or_update tgenabled=O
+Restore run: yarn workspace @openvaa/supabase test:db | exit=0 | Files=32, Tests=1204 | Result: PASS
+db:reset fallback: not needed (both triggers confirmed O)

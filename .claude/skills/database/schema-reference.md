@@ -1,0 +1,291 @@
+# Schema Reference
+
+Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source: `apps/supabase/supabase/schema/` (18 SQL files).
+
+## Table Reference
+
+### Multi-tenancy
+
+**accounts** (100-tenancy.sql)
+
+- id: uuid PK DEFAULT gen_random_uuid()
+- name: text NOT NULL
+- created_at: timestamptz NOT NULL DEFAULT now()
+- updated_at: timestamptz NOT NULL DEFAULT now()
+
+**projects** (100-tenancy.sql)
+
+- id: uuid PK DEFAULT gen_random_uuid()
+- account_id: uuid NOT NULL FK accounts(id) ON DELETE CASCADE
+- name: text NOT NULL
+- default_locale: text NOT NULL DEFAULT 'en'
+- created_at: timestamptz NOT NULL DEFAULT now()
+- updated_at: timestamptz NOT NULL DEFAULT now()
+
+### Elections
+
+**elections** (101-elections.sql)
+
+- id: uuid PK DEFAULT gen_random_uuid()
+- project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
+- name: jsonb, short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
+- sort_order: integer, subtype: text, custom_data: jsonb
+- created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
+- election_date: date, election_start_date: date
+- election_type: public.nomination_shape NOT NULL DEFAULT 'organization_list' — REPURPOSED in 162-07 (D-16). The column keeps its name and now carries which of the three nomination flows an election runs: organization_only / candidate_only / organization_list. Its previous meaning is deleted and its previous values are not members of the type, so a row carrying one is rejected by PostgreSQL. `subtype` on the same table is a DIFFERENT axis and is not this.
+- multiple_rounds: boolean DEFAULT false, current_round: integer DEFAULT 1
+- external_id: text (015)
+
+**constituency_groups** (101-elections.sql)
+
+- id: uuid PK DEFAULT gen_random_uuid()
+- project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
+- name: jsonb, short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
+- sort_order: integer, subtype: text, custom_data: jsonb
+- created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
+- external_id: text (015)
+
+**constituencies** (101-elections.sql)
+
+- id: uuid PK DEFAULT gen_random_uuid()
+- project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
+- name: jsonb, short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
+- sort_order: integer, subtype: text, custom_data: jsonb
+- created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
+- keywords: jsonb
+- parent_id: uuid FK constituencies(id) ON DELETE SET NULL
+- external_id: text (015)
+
+**constituency_group_constituencies** (101-elections.sql) -- join table
+
+- constituency_group_id: uuid NOT NULL FK constituency_groups(id) ON DELETE CASCADE
+- constituency_id: uuid NOT NULL FK constituencies(id) ON DELETE CASCADE
+- PRIMARY KEY (constituency_group_id, constituency_id)
+
+**election_constituency_groups** (101-elections.sql) -- join table
+
+- election_id: uuid NOT NULL FK elections(id) ON DELETE CASCADE
+- constituency_group_id: uuid NOT NULL FK constituency_groups(id) ON DELETE CASCADE
+- PRIMARY KEY (election_id, constituency_group_id)
+
+### Entities
+
+**organizations** (102-entities.sql)
+
+- id: uuid PK DEFAULT gen_random_uuid()
+- project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
+- auth_user_id: uuid FK auth.users(id) ON DELETE SET NULL
+- name: jsonb, short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
+- sort_order: integer, subtype: text, custom_data: jsonb
+- confirmed: boolean NOT NULL DEFAULT false
+- created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
+- answers: jsonb DEFAULT '{}'::jsonb
+- external_id: text
+
+**candidates** (102-entities.sql)
+
+- id: uuid PK DEFAULT gen_random_uuid()
+- project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
+- auth_user_id: uuid FK auth.users(id) ON DELETE SET NULL
+- first_name: text NOT NULL, last_name: text NOT NULL
+- short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
+- sort_order: integer, subtype: text, custom_data: jsonb
+- confirmed: boolean NOT NULL DEFAULT false
+- terms_of_use_accepted: timestamptz
+- created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
+- answers: jsonb DEFAULT '{}'::jsonb
+- external_id: text
+
+**factions** (102-entities.sql)
+
+- id: uuid PK DEFAULT gen_random_uuid()
+- project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
+- organization_id: uuid NOT NULL FK organizations(id) ON DELETE CASCADE
+- name: jsonb, short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
+- sort_order: integer, subtype: text, custom_data: jsonb
+- confirmed: boolean NOT NULL DEFAULT false
+- created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
+- external_id: text
+
+**alliances** (102-entities.sql)
+
+- id: uuid PK DEFAULT gen_random_uuid()
+- project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
+- name: jsonb, short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
+- sort_order: integer, subtype: text, custom_data: jsonb
+- confirmed: boolean NOT NULL DEFAULT false
+- created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
+- external_id: text
+
+### Questions
+
+**question_categories** (103-questions.sql)
+
+- id: uuid PK DEFAULT gen_random_uuid()
+- project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
+- name: jsonb, short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
+- sort_order: integer, subtype: text, custom_data: jsonb
+- created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
+- category_type: category_type DEFAULT 'opinion'
+- election_ids: jsonb, election_rounds: jsonb, constituency_ids: jsonb, entity_type: jsonb
+- external_id: text (015)
+
+**questions** (103-questions.sql)
+
+- id: uuid PK DEFAULT gen_random_uuid()
+- project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
+- name: jsonb, short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
+- sort_order: integer, subtype: text, custom_data: jsonb
+- created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
+- type: question_type NOT NULL
+- category_id: uuid NOT NULL FK question_categories(id)
+- choices: jsonb, settings: jsonb
+- election_ids: jsonb, election_rounds: jsonb, constituency_ids: jsonb, entity_type: jsonb
+- allow_open: boolean DEFAULT true, required: boolean DEFAULT true
+- external_id: text (015)
+
+### Nominations
+
+**nominations** (104-nominations.sql)
+
+- id: uuid PK DEFAULT gen_random_uuid()
+- project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
+- name: jsonb, short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
+- sort_order: integer, subtype: text, custom_data: jsonb
+- created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
+- candidate_id: uuid FK candidates(id) ON DELETE CASCADE
+- organization_id: uuid FK organizations(id) ON DELETE CASCADE
+- faction_id: uuid FK factions(id) ON DELETE CASCADE
+- alliance_id: uuid FK alliances(id) ON DELETE CASCADE
+- entity_type: entity_type NOT NULL GENERATED ALWAYS AS (CASE WHEN candidate_id...) STORED
+- election_id: uuid NOT NULL FK elections(id) ON DELETE CASCADE
+- constituency_id: uuid NOT NULL FK constituencies(id) ON DELETE CASCADE
+- election_round: integer DEFAULT 1, election_symbol: text
+- parent_nomination_id: uuid FK nominations(id) ON DELETE CASCADE
+- confirmed: boolean NOT NULL DEFAULT false
+- CHECK (num_nonnulls(candidate_id, organization_id, faction_id, alliance_id) = 1)
+- external_id: text (015)
+
+### Auth
+
+**grants** (300-auth-tables.sql)
+
+- id: uuid PK DEFAULT gen_random_uuid()
+- user_id: uuid NOT NULL FK auth.users(id) ON DELETE CASCADE
+- scope: grant_scope_type NOT NULL (values: 'global', 'account', 'project', 'entity')
+- target_type: entity_type (NOT NULL exactly when scope = 'entity'; NULL otherwise)
+- target_id: uuid (NULL exactly when scope = 'global')
+- role: grant_role_type NOT NULL (values: 'admin', 'editor')
+- created_at: timestamptz NOT NULL DEFAULT now()
+- CONSTRAINT grants_user_scope_target_role_key
+  **UNIQUE NULLS NOT DISTINCT** (user_id, scope, target_type, target_id, role)
+  -- the NULLS clause is load-bearing and not decoration: three of the four scopes carry a NULL in the
+  key, and a plain UNIQUE enforces NOTHING on them. Asserted by name and in both directions in
+  `26-uniqueness-keys.test.sql`.
+- CONSTRAINT grants_entity_scope_target_type_check
+  CHECK ((target_type IS NOT NULL) = (scope = 'entity'))
+- CONSTRAINT grants_target_id_scope_check
+  CHECK ((target_id IS NULL) = (scope = 'global'))
+
+### Settings
+
+**app_settings** (106-app-settings.sql)
+
+- id: uuid PK DEFAULT gen_random_uuid()
+- project_id: uuid NOT NULL UNIQUE FK projects(id)
+- settings: jsonb NOT NULL DEFAULT '{}'::jsonb
+- created_at: timestamptz NOT NULL DEFAULT now()
+- updated_at: timestamptz NOT NULL DEFAULT now()
+- external_id: text (015)
+
+### Infrastructure
+
+**storage_config** (400-storage.sql)
+
+- key: text PK
+- value: text NOT NULL
+- RLS enabled; REVOKE ALL from anon, authenticated, public; GRANT SELECT to service_role
+
+## Triggers
+
+| Trigger Name                                | Table(s)                                | Event                | Function                                   | Source |
+| ------------------------------------------- | --------------------------------------- | -------------------- | ------------------------------------------ | ------ |
+| set_updated_at                              | all content tables + accounts, projects | BEFORE UPDATE        | update_updated_at()                        | 001+   |
+| validate_nomination_before_insert_or_update | nominations                             | BEFORE INSERT/UPDATE | validate_nomination()                      | 005    |
+| validate_answers_before_insert_or_update    | candidates, organizations               | BEFORE INSERT/UPDATE | validate_answers_jsonb()                   | 006    |
+| cascade_question_delete_to_answers          | questions                               | AFTER DELETE         | cascade_question_delete_to_jsonb_answers() | 006    |
+| validate_question_type_change_trigger       | questions                               | BEFORE UPDATE        | validate_question_type_change()            | 006    |
+| enforce_external_id_immutability            | all 11 content tables                   | BEFORE UPDATE        | enforce_external_id_immutability()         | 015    |
+| cleanup_storage_on_delete                   | 10 entity tables                        | AFTER DELETE         | cleanup_entity_storage_files()             | 014    |
+| cleanup_image_on_update                     | 10 entity tables                        | BEFORE UPDATE        | cleanup_old_image_file()                   | 014    |
+
+Storage cleanup tables: candidates, organizations, factions, alliances, elections, constituencies, constituency_groups, nominations, question_categories, questions.
+
+## Indexes
+
+**project_id B-tree** (200-indexes.sql): idx\_{table}\_project_id on elections, constituency_groups, constituencies, organizations, candidates, factions, alliances, question_categories, questions, nominations, app_settings (11 tables).
+
+**FK B-tree** (200-indexes.sql): idx*projects_account_id, idx_candidates_organization_id, idx_questions_category_id, idx_constituencies_parent_id, idx_nominations*{candidate_id, organization_id, faction_id, alliance_id, election_id, constituency_id, parent_nomination_id}, idx_candidates_auth_user_id, idx_organizations_auth_user_id.
+
+**External ID composite unique partial** (500-external-id.sql): idx\_{table}\_external_id ON (project_id, external_id) WHERE external_id IS NOT NULL on all 11 content tables.
+
+**grants** (300-auth-tables.sql): idx_grants_scope_target -- the reverse lookup "who holds a grant on this target", which the UNIQUE cannot serve because it leads with user_id. There is deliberately no index on user_id alone: the UNIQUE already leads with it.
+
+## Utility Functions
+
+| Function                                           | File | Security         | Purpose                                                  |
+| -------------------------------------------------- | ---- | ---------------- | -------------------------------------------------------- |
+| update_updated_at()                                | 000  | -                | Trigger: sets updated_at to NOW()                        |
+| get_localized(jsonb, text, text)                   | 000  | IMMUTABLE        | 3-tier locale fallback (email helpers only)              |
+| validate_answer_value(jsonb, question_type, jsonb) | 000  | -                | Validates answer value against question type             |
+| validate_nomination()                              | 000  | -                | Trigger: enforces nomination hierarchy rules             |
+| validate_answers_jsonb()                           | 006  | -                | Trigger: smart validation of JSONB answers               |
+| cascade_question_delete_to_jsonb_answers()         | 006  | -                | Trigger: removes orphaned answer keys on question delete |
+| validate_question_type_change()                    | 006  | -                | Trigger: prevents type changes invalidating answers      |
+| custom_access_token_hook(jsonb)                    | 012  | STABLE           | Projects public.grants into the JWT `grants` claim       |
+| grant_role_permissions(grant_role_type, grant_scope_type) | 012 | IMMUTABLE | The role x permission matrix, encoded ONCE               |
+| user_can(grant_scope_type, uuid, grant_permission, entity_type DEFAULT NULL) | 012 | SECURITY DEFINER | THE authority question; resolves the claim downward; the entity type is required at entity scope |
+| user_has_account_grant(uuid)                       | 012  | SECURITY DEFINER | Grant EXISTENCE on an account or a project it owns       |
+| is_child_nominee(entity_type, uuid, entity_type, uuid) | 012 | SECURITY DEFINER | The one-hop parent -> child nomination reach, typed on both sides |
+| project_open_for_voters(uuid)                      | 012  | SECURITY DEFINER | The project-level anon visibility sub-rule               |
+| entity_has_confirmed_nomination(entity_type, uuid, uuid) | 012 | SECURITY DEFINER | The nomination-level anon visibility sub-rule      |
+| storage_path_can(grant_scope_type, text, text, text, storage_verb) | 014 | SECURITY DEFINER | The storage authority question, asked of a PATH |
+| storage_path_is_public(text, text, text)           | 014  | SECURITY DEFINER | The storage visibility question, asked of a PATH          |
+| delete_storage_object(text, text)                  | 014  | SECURITY DEFINER | Deletes storage file via pg_net HTTP                     |
+| cleanup_entity_storage_files()                     | 014  | SECURITY DEFINER | Trigger: deletes storage files on entity DELETE          |
+| cleanup_old_image_file()                           | 014  | SECURITY DEFINER | Trigger: deletes old image file on UPDATE                |
+| enforce_external_id_immutability()                 | 015  | -                | Trigger: prevents external_id changes once set           |
+| resolve_external_ref(jsonb, text, uuid)            | 016  | -                | Resolves external_id reference to UUID                   |
+| bulk_import(jsonb)                                 | 016  | SECURITY INVOKER | Bulk upsert via external_id                              |
+| bulk_delete(jsonb)                                 | 016  | SECURITY INVOKER | Bulk delete by prefix/ids/external_ids                   |
+| resolve_email_variables(uuid[], text, text)        | 017  | SECURITY DEFINER | Resolves per-recipient email template variables          |
+| get_nominations(uuid, uuid, uuid, boolean, integer) | 503 | SECURITY INVOKER | Nominations with entity data; `p_project_id` required    |
+| get_entity_basic_data(entity_type, uuid)           | 503  | SECURITY DEFINER | Basic data of an entity the caller holds nomination.read on; probes only the named table |
+| get_candidate_user_data(uuid, entity_type)         | 503  | SECURITY INVOKER | The caller's own entity row in the given project         |
+| upsert_answers(entity_type, uuid, jsonb, boolean)  | 503  | SECURITY INVOKER | Atomic answer write; the type selects the one table written (`candidate` or `organization`), any other type raises |
+
+## COLUMN_MAP / PROPERTY_MAP Bridge
+
+The type bridge in `packages/supabase-types/src/` connects DB column names to TypeScript property names:
+
+- **database.ts** -- generated from Supabase introspection (`npx supabase gen types typescript --local`). Provides Row, Insert, Update types per table.
+- **column-map.ts** -- maps only columns where snake_case differs from TypeScript camelCase.
+- **PROPERTY_MAP** -- auto-generated reverse of COLUMN_MAP.
+- **index.ts** -- exports Database, COLUMN_MAP, PROPERTY_MAP, ColumnName, PropertyName.
+
+Key mappings from COLUMN_MAP:
+
+- sort_order -> order, short_name -> shortName, custom_data -> customData
+- first_name -> firstName, last_name -> lastName, organization_id -> organizationId
+- category_id -> categoryId, election_ids -> electionIds, election_rounds -> electionRounds
+- constituency_ids -> constituencyIds, entity_type -> entityType, allow_open -> allowOpen
+- category_type -> categoryType, candidate_id -> candidateId, faction_id -> factionId
+- alliance_id -> allianceId, election_id -> electionId, constituency_id -> constituencyId
+- election_round -> electionRound, election_symbol -> electionSymbol
+- parent_nomination_id -> parentNominationId, parent_id -> parentId
+- election_date -> electionDate, election_start_date -> electionStartDate
+- election_type -> electionType (the COLUMN MAP entry only; the frontend adapter no longer maps this column onto any application property — 162-07 removed that term so `ElectionData.subtype` is fed by `elections.subtype` alone), multiple_rounds -> multipleRounds, current_round -> currentRound
+- project_id -> projectId, account_id -> accountId, default_locale -> defaultLocale
+- created_at -> createdAt, updated_at -> updatedAt, auth_user_id -> authUserId
+
+To regenerate: `cd apps/supabase && npx supabase gen types typescript --local > ../../packages/supabase-types/src/database.ts`

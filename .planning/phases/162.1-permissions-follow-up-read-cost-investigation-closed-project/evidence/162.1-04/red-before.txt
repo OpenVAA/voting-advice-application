@@ -1,0 +1,234 @@
+npm warn config ignoring workspace config at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend/.npmrc
+16.54.46 [vite-plugin-svelte] WARNING: The following packages have a svelte field in their package.json but no exports condition for svelte.
+
+svelte-visibility-change@0.6.0
+
+Please see https://github.com/sveltejs/vite-plugin-svelte/blob/main/docs/faq.md#missing-exports-condition for details.
+TAP version 13
+1..91
+ok 1 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getAppSettings > fetches from app_settings table and returns the validated settings JSONB # time=2.35ms
+ok 2 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getAppSettings > localizes notification title and content fields when locale provided # time=0.68ms
+ok 3 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getAppSettings > localizes notifications from the per-call `options.locale`, which overrides the construction locale # time=0.22ms
+ok 4 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getAppSettings > returns empty object if no app_settings row exists # time=0.14ms
+ok 5 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getAppSettings > throws on Supabase query error # time=0.57ms
+ok 6 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getAppSettings > parses an empty settings object without degrading # time=0.37ms
+ok 7 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getAppSettings > preserves the members zod accepts and reports an error once when a nested key is unknown # time=0.70ms
+ok 8 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getAppSettings > preserves the access member when an unrecognised top-level key is present # time=0.31ms
+ok 9 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getAppCustomization > returns AppCustomization with localized publisherName string # time=0.37ms
+ok 10 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getAppCustomization > converts publisherLogo, poster, candPoster storage paths to Image objects with absolute URLs # time=0.35ms
+ok 11 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getAppCustomization > localizes translationOverrides (each override value is a LocalizedString) # time=0.16ms
+ok 12 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getAppCustomization > localizes candidateAppFAQ question and answer fields # time=0.26ms
+ok 13 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getAppCustomization > returns empty object if customization column is empty/null # time=0.11ms
+ok 14 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getAppCustomization > parses a customization row missing every field into the same empty customization # time=0.15ms
+ok 15 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getAppCustomization > drops only the malformed publisherLogo and keeps the rest of the customization usable # time=0.27ms
+ok 16 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getAppCustomization > preserves the publisher name when an unrecognised top-level key is present # time=0.19ms
+ok 17 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getElectionData > fetches elections with embedded election_constituency_groups and returns ElectionData array # time=0.32ms
+ok 18 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getElectionData > maps election_date to date and current_round to round, and feeds subtype from its OWN column # time=0.15ms
+ok 19 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getElectionData > never feeds subtype from the nomination-shape column # time=0.18ms
+ok 20 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getElectionData > extracts constituencyGroupIds from join table rows as array of UUID strings # time=0.13ms
+ok 21 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getElectionData > converts image field via parseStoredImage # time=0.13ms
+ok 22 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getElectionData > localizes name, short_name, info fields # time=0.13ms
+ok 23 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getElectionData > applies id filter when options.id is provided # time=0.12ms
+ok 24 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getConstituencyData > returns { groups: ConstituencyGroupData[], constituencies: ConstituencyData[] } # time=0.31ms
+ok 25 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getConstituencyData > extracts constituencyIds from join table rows # time=0.14ms
+ok 26 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getConstituencyData > localizes keywords field then splits by comma+whitespace into string array # time=0.19ms
+ok 27 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getConstituencyData > applies id filter to constituency_groups (not constituencies) # time=0.27ms
+ok 28 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getConstituencyData > converts image fields via parseStoredImage # time=0.21ms
+not ok 29 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getEntityData > orders each entity table by sort_order then id and requests the first page of 50,000 rows # time=4.54ms
+    ---
+    error:
+        name: "AssertionError"
+        message: "expected [ 'sort_order' ] to deeply equal [ 'sort_order', 'id' ]"
+    at: "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts:938:75"
+    actual: "Array [
+  \"sort_order\",
+]"
+    expected: "Array [
+  \"sort_order\",
+  \"id\",
+]"
+    ...
+not ok 30 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getEntityData > reads past a full first page of 50,000 candidates with a second ranged request # time=56.70ms
+    ---
+    error:
+        name: "AssertionError"
+        message: "expected [] to deeply equal [ [ +0, 49999 ], [ 50000, 99999 ] ]"
+    at: "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts:961:57"
+    actual: "Array []"
+    expected: "Array [
+  Array [
+    0,
+    49999,
+  ],
+  Array [
+    50000,
+    99999,
+  ],
+]"
+    ...
+ok 31 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getEntityData > fetches candidates with firstName, lastName, organizationId and type=candidate # time=0.59ms
+ok 32 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getEntityData > fetches organizations and sets type to organization # time=0.22ms
+ok 33 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getEntityData > applies entityType filter (queries only the specified entity table) # time=0.22ms
+ok 34 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getEntityData > applies id filter with eq for single value # time=0.18ms
+ok 35 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getEntityData > applies id filter with in for array values # time=0.16ms
+ok 36 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getEntityData > processes answers through parseAnswers for localization # time=18.29ms
+ok 37 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getEntityData > converts image field via parseStoredImage # time=0.31ms
+ok 38 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getEntityData > localizes name, short_name, info via toDataObject # time=0.41ms
+ok 39 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getQuestionData > returns { categories, questions } arrays # time=0.47ms
+ok 40 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getQuestionData > maps category_type to type on categories # time=0.09ms
+ok 41 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getQuestionData > localizes name, short_name, info on both categories and questions # time=0.13ms
+ok 42 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getQuestionData > localizes choice labels in choice-type questions # time=0.12ms
+ok 43 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getQuestionData > passes through settings, electionIds, constituencyIds, entityType # time=0.14ms
+ok 44 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getQuestionData > bridges the allow_open column into customData.allowOpen (frontend consumer reads customData) # time=0.17ms
+ok 45 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getQuestionData > bridges custom_data.min/max into top-level min/max for number questions only # time=0.14ms
+ok 46 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getQuestionData > forwards electionId to the RPC and does not re-filter the payload client-side # time=0.17ms
+ok 47 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getQuestionData > converts image fields via parseStoredImage # time=0.10ms
+ok 48 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getQuestionData via the get_questions RPC > reads categories and questions out of one jsonb payload # time=0.16ms
+ok 49 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getQuestionData via the get_questions RPC > issues exactly one RPC call per read and no table query # time=0.15ms
+ok 50 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getQuestionData via the get_questions RPC > forwards electionId, constituencyId and electionRound under their p_ names # time=0.08ms
+ok 51 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getQuestionData via the get_questions RPC > fans out over election and constituency arrays and merges the results by id # time=0.15ms
+ok 52 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getQuestionData via the get_questions RPC > defaults a null category_type to opinion # time=0.06ms
+ok 53 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getQuestionData via the get_questions RPC > drops a non-numeric custom_data min/max rather than coercing it # time=0.11ms
+ok 54 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getQuestionData via the get_questions RPC > bridges the allow_open column into customData.allowOpen # time=0.08ms
+ok 55 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getQuestionData via the get_questions RPC > localizes choice labels to the requested locale # time=0.08ms
+ok 56 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getQuestionData via the get_questions RPC > drops a question whose category the RPC filtered out # time=0.08ms
+ok 57 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getQuestionData via the get_questions RPC > returns no questions when the filter leaves no categories # time=0.07ms
+ok 58 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getQuestionData via the get_questions RPC > throws when the RPC returns an error # time=0.13ms
+ok 59 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getNominationData > calls this.supabase.rpc with get_nominations and correct parameters # time=0.24ms
+ok 60 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getNominationData > forwards an electionRound option to the RPC as p_election_round # time=0.08ms
+ok 61 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getNominationData > fans out over arrays without multiplying by the election round # time=0.10ms
+ok 62 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getNominationData > returns 3 nominations (no dedup on nominations) and 2 deduplicated entities # time=0.18ms
+ok 63 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getNominationData > candidate entities have firstName, lastName, type=candidate and NO organizationId # time=0.28ms
+ok 64 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getNominationData > organization entities have type=organization # time=0.11ms
+ok 65 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getNominationData > entity answers are processed through parseAnswers # time=13.56ms
+ok 66 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getNominationData > nomination objects include entityType, entityId, electionId, constituencyId fields # time=0.21ms
+ok 67 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getNominationData > clears parentNominationId when the parent nomination is not in the result set # time=0.09ms
+ok 68 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getNominationData > a ROOT nomination (parent_nomination_id IS null) yields parentNominationId null and no parentNominationType # time=0.08ms
+ok 69 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getNominationData > entity and nomination images are converted via parseStoredImage # time=0.07ms
+ok 70 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getNominationData > returns { nominations, entities } shape # time=0.07ms
+ok 71 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > getNominationData > passes default values when no filter options provided # time=0.07ms
+ok 72 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > project scoping > getAppSettings selects the app_settings row by project and never by limit(1) # time=0.18ms
+ok 73 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > project scoping > getAppCustomization selects the app_settings row by project and never by limit(1) # time=0.13ms
+ok 74 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > project scoping > getElectionData filters elections by project # time=0.09ms
+ok 75 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > project scoping > getElectionData keeps the project filter when an id filter is also applied # time=0.10ms
+ok 76 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > project scoping > getConstituencyData filters both constituency_groups and constituencies by project # time=0.14ms
+ok 77 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > project scoping > getEntityData filters both branches of the union-typed table variable by project # time=0.13ms
+ok 78 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > project scoping > getNominationData passes p_project_id on the unfiltered call, where both scope ids are null # time=0.06ms
+ok 79 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > project scoping > getNominationData passes p_project_id on every call of a multi-election fan-out # time=0.07ms
+ok 80 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > project scoping > getQuestionData passes p_project_id on the unfiltered call, where both scope ids are null # time=0.08ms
+ok 81 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > project scoping > getQuestionData passes p_project_id on every call of a multi-election fan-out # time=0.07ms
+ok 82 - src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts > SupabaseDataProvider > project scoping > the provider issues no unscoped read: every table chain it creates carries the project filter # time=0.39ms
+ok 83 - src/lib/api/adapters/supabase/utils/fetchAllRows.test.ts > fetchAllRows > returns a single short page after one request and logs nothing # time=1.54ms
+not ok 84 - src/lib/api/adapters/supabase/utils/fetchAllRows.test.ts > fetchAllRows > keeps reading after a full page and stops at the empty page when the total is an exact multiple of the page size # time=3.31ms
+    ---
+    error:
+        name: "AssertionError"
+        message: "expected [ +0, 1, 2 ] to deeply equal [ +0, 1, 2, 3, 4, 5 ]"
+    at: "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend/src/lib/api/adapters/supabase/utils/fetchAllRows.test.ts:54:37"
+    actual: "Array [
+  0,
+  1,
+  2,
+]"
+    expected: "Array [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+]"
+    ...
+not ok 85 - src/lib/api/adapters/supabase/utils/fetchAllRows.test.ts > fetchAllRows > reads every row past a server cap below the page size and warns exactly once # time=1.33ms
+    ---
+    error:
+        name: "AssertionError"
+        message: "expected [ { id: +0 }, { id: 1 }, …(998) ] to have a length of 2500 but got 1000"
+    at: "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend/src/lib/api/adapters/supabase/utils/fetchAllRows.test.ts:69:20"
+    actual: "1000"
+    expected: "2500"
+    ...
+not ok 86 - src/lib/api/adapters/supabase/utils/fetchAllRows.test.ts > fetchAllRows > advances each offset by the rows received, never by the page size # time=0.47ms
+    ---
+    error:
+        name: "AssertionError"
+        message: "expected [ [ +0, 2499 ] ] to deeply equal [ [ +0, 2499 ], [ 1000, 3499 ], …(1) ]"
+    at: "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend/src/lib/api/adapters/supabase/utils/fetchAllRows.test.ts:81:34"
+    actual: "Array [
+  Array [
+    0,
+    2499,
+  ],
+]"
+    expected: "Array [
+  Array [
+    0,
+    2499,
+  ],
+  Array [
+    1000,
+    3499,
+  ],
+  Array [
+    2000,
+    4499,
+  ],
+]"
+    ...
+ok 87 - src/lib/api/adapters/supabase/utils/fetchAllRows.test.ts > fetchAllRows > returns an empty array after one request when the read has no rows # time=0.20ms
+not ok 88 - src/lib/api/adapters/supabase/utils/fetchAllRows.test.ts > fetchAllRows > rejects with the label and the server message when the second page fails # time=0.72ms
+    ---
+    error:
+        name: "AssertionError"
+        message: "promise resolved \"[ { id: +0 }, { id: 1 }, { id: 2 } ]\" instead of rejecting"
+    at: "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend/src/lib/api/adapters/supabase/utils/fetchAllRows.test.ts:102:84"
+    actual: "Array [
+  Object {
+    \"id\": 0,
+  },
+  Object {
+    \"id\": 1,
+  },
+  Object {
+    \"id\": 2,
+  },
+]"
+    expected: "[Error: rejected promise]"
+    ...
+not ok 89 - src/lib/api/adapters/supabase/utils/fetchAllRows.test.ts > fetchAllRows > confirms a total of exactly 1,000 rows with one extra request, returns them all and warns once (the false alarm) # time=0.34ms
+    ---
+    error:
+        name: "AssertionError"
+        message: "expected [ [ +0, 2499 ] ] to deeply equal [ [ +0, 2499 ], [ 1000, 3499 ] ]"
+    at: "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend/src/lib/api/adapters/supabase/utils/fetchAllRows.test.ts:112:34"
+    actual: "Array [
+  Array [
+    0,
+    2499,
+  ],
+]"
+    expected: "Array [
+  Array [
+    0,
+    2499,
+  ],
+  Array [
+    1000,
+    3499,
+  ],
+]"
+    ...
+ok 90 - src/lib/api/adapters/supabase/utils/fetchAllRows.test.ts > fetchAllRows > treats a page with null data and no error as an empty page # time=0.18ms
+not ok 91 - src/lib/api/adapters/supabase/utils/fetchAllRows.test.ts > fetchAllRows > rejects a page size that is not a positive integer before issuing any request # time=0.20ms
+    ---
+    error:
+        name: "AssertionError"
+        message: "promise resolved \"[]\" instead of rejecting"
+    at: "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend/src/lib/api/adapters/supabase/utils/fetchAllRows.test.ts:128:73"
+    actual: "Array []"
+    expected: "[Error: rejected promise]"
+    ...
+# footer derived by the executor from the ok/not ok lines above (vitest tap-flat emits none)
+# tests 91
+# pass 83
+# fail 8

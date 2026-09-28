@@ -1,0 +1,71 @@
+Phase 131 — targeted 3x cold-start gate on CHANGED/HARDENED specs (Plan 05 Task 2)
+Captured: 2026-07-22T11:17:01Z
+Method (D-04 §5.3 targeted-3x; full-suite 3x is Phase 132): each changed spec run ISOLATED
+  via db:reset + `yarn db:seed --template <t>` + --project=<spec> --no-deps (the Plan-04
+  established pattern — the perm-DAG's grep-with-deps command pulls the entire journey
+  suite incl. candidate-journey, whose :661 status-message assertion is a COLD-START LOAD
+  flake under concurrent DAG load; isolated it is 2/2 green in 33s — see closing note).
+Changed files this phase: tests/tests/utils/voterNavigation.ts (Plan 02 navigateToFirstQuestion
+  harden) + tests/tests/specs/perm/perm-show-feedback-survey.spec.ts (Plan 04 new HARD test 1b).
+Changed/hardened spec set: perm-hide-election-tags, perm-hide-if-missing-answers,
+  perm-hide-category-tags, perm-disable-allow-open (voter-side navigateToFirstQuestion consumer),
+  perm-show-feedback-survey.
+Server: single fresh vite :5173.
+==============================================================================
+
+########## RUN 1 (cold-start) ##########
+  [perm-hide-election-tags] buckets=[private-assets,public-assets,] seedrc=0 ::   1 passed (26.4s)  
+  [perm-hide-if-missing-answers] buckets=[public-assets,private-assets,] seedrc=0 ::   1 passed (31.5s)  
+  [perm-hide-category-tags] buckets=[public-assets,private-assets,] seedrc=0 ::   1 passed (2.3s)  
+  [perm-disable-allow-open] buckets=[private-assets,public-assets,] seedrc=0 ::   1 passed (28.8s)  
+  [perm-show-feedback-survey] buckets=[public-assets,private-assets,] seedrc=0 ::   6 passed (3.0m)  
+
+########## RUN 2 (cold-start) ##########
+  [perm-hide-election-tags] buckets=[public-assets,private-assets,] seedrc=0 ::   1 passed (11.6s)  
+  [perm-hide-if-missing-answers] buckets=[private-assets,public-assets,] seedrc=0 ::   1 passed (58.8s)  
+  [perm-hide-category-tags] buckets=[private-assets,public-assets,] seedrc=0 ::   1 passed (29.8s)  
+  [perm-disable-allow-open] buckets=[private-assets,public-assets,] seedrc=0 ::   1 passed (59.4s)  
+  [perm-show-feedback-survey] buckets=[private-assets,public-assets,] seedrc=0 ::   6 passed (2.5m)  
+
+########## RUN 3 (cold-start) ##########
+  [perm-hide-election-tags] buckets=[public-assets,private-assets,] seedrc=0 ::   1 passed (5.7s)  
+  [perm-hide-if-missing-answers] buckets=[private-assets,public-assets,] seedrc=0 ::   1 passed (28.3s)  
+  [perm-hide-category-tags] buckets=[private-assets,public-assets,] seedrc=0 ::   1 passed (2.4s)  
+  [perm-disable-allow-open] buckets=[private-assets,public-assets,] seedrc=0 ::   1 passed (28.8s)  
+  [perm-show-feedback-survey] buckets=[public-assets,private-assets,] seedrc=0 ::   6 passed (2.5m)  
+
+====================== ROLL-UP ======================
+spec-run lines with a passed count: 15 (expected 15 = 5 specs x 3 runs)
+GATE-GREEN
+
+====================== CLOSING NOTE: candidate-journey:661 load-flake (D-07) ======================
+FIRST-ATTEMPT with-deps gate (plan verify command `--grep "perm-...|..." ` WITH project deps):
+the perm-DAG anchor project declares `dependencies: ['voter-journey','candidate-journey']`
+(playwright.config.ts:415), so `--grep <perm specs>` transitively pulls the ENTIRE journey suite.
+That first attempt surfaced 27 passed / 1 FAILED — the single failure was NOT a changed spec but
+candidate-journey.spec.ts:661 (step 13.5 "profile rejects an invalid URL in a link question"):
+  Error: expect(getByTestId('candidate-home-status')).toBeVisible() — element(s) not found
+  (post profile-submit status message did not surface within TIMEOUTS.slowPage).
+
+Characterization (feedback: reproduce-in-isolation before accepting a root cause):
+  candidate-journey run ISOLATED (--project=candidate-journey, its own data-setup-base ->
+  data-setup-candidate-journey chain; NO perm, NO concurrent load): 2/2 GREEN — 5 passed (32.8s),
+  5 passed (33.1s). See char evidence below. => The :661 failure is a COLD-START LOAD-CONTENTION
+  FLAKE that manifests ONLY under the full perm-DAG running concurrently against the single shared
+  dev server + DB (post-submit status message exceeds slowPage under load); in isolation the same
+  assertion passes reliably in ~0.5 min.
+
+Attribution: this phase changed ONLY voterNavigation.ts (voter nav helper) + perm-show-feedback-
+survey.spec.ts (voter feedback). candidate-journey.spec.ts + the candidate profile link-question /
+candidate-home-status surface were UNTOUCHED. The flake is NOT introduced by Phase 131.
+
+Disposition (D-07, cardinal no-skip): NO new skip directive added; NO retry-until-green performed.
+Filed a NEW todo (.planning/todos/pending/2026-07-22-candidate-journey-link-url-status-load-flake.md)
+and ESCALATED to the operator / Phase-132 full-suite-gate — a load-contention flake surfacing only
+under the concurrent full-DAG run is precisely full-suite-gate (Phase 132) territory (D-04 §5.3),
+out of this triage phase's budget (its 7 voter/perm todos). The CHANGED specs themselves are proven
+GATE-GREEN 3x isolated above.
+
+candidate-journey isolation evidence (char run):
+  run 1: 5 passed (32.8s)
+  run 2: 5 passed (33.1s)

@@ -1,0 +1,62 @@
+=== voter-journey — cold-start 3x evidence (Phase 131 Plan 03) ===
+Recipe: dev-server-up gate -> yarn db:reset (storage-wedge auto-recovery: stop/start) -> assert public-assets -> playwright (--project=voter-journey)
+Started: 2026-07-22T09:45:55Z
+
+--- run 1/voter-journey ---
+dev-gate:200 ok
+public-assets bucket ready (plain db:reset)
+dev-gate:200 ok
+[dotenv@17.3.1] injecting env (25) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+
+Running 4 tests using 1 worker
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[1/4] [data-setup-base] › tests/tests/setup/shared/base.setup.ts:18:1 › import base dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+
+[1A[2K[2/4] [voter-journey] › tests/tests/specs/voter/voter-journey.spec.ts:485:3 › voter journey › full voter journey end-to-end
+[1A[2K[3/4] [voter-journey] › tests/tests/specs/voter/voter-journey.spec.ts:1646:3 › EQTYP-02: number-scale boundary matching › all-min ranks POLAR_MIN above POLAR_MAX; a mid number answer shifts both scores monotonically without flipping the ordering
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+
+[1A[2K[4/4] [data-teardown-base] › tests/tests/setup/shared/base.teardown.ts:26:1 › delete base dataset
+[1A[2K  4 passed (1.1m)
+--- run 2/voter-journey ---
+dev-gate:200 ok
+public-assets bucket ready (plain db:reset)
+dev-gate:200 ok
+[dotenv@17.3.1] injecting env (25) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+
+Running 4 tests using 1 worker
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+[1A[2K[1/4] [data-setup-base] › tests/tests/setup/shared/base.setup.ts:18:1 › import base dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+
+[1A[2K[2/4] [voter-journey] › tests/tests/specs/voter/voter-journey.spec.ts:485:3 › voter journey › full voter journey end-to-end
+[1A[2K[3/4] [voter-journey] › tests/tests/specs/voter/voter-journey.spec.ts:1646:3 › EQTYP-02: number-scale boundary matching › all-min ranks POLAR_MIN above POLAR_MAX; a mid number answer shifts both scores monotonically without flipping the ordering
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[4/4] [data-teardown-base] › tests/tests/setup/shared/base.teardown.ts:26:1 › delete base dataset
+[1A[2K  4 passed (1.1m)
+--- run 3/voter-journey ---
+dev-gate:200 ok
+public-assets bucket ready (plain db:reset)
+dev-gate:200 ok
+[dotenv@17.3.1] injecting env (25) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+Running 4 tests using 1 worker
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+
+[1A[2K[1/4] [data-setup-base] › tests/tests/setup/shared/base.setup.ts:18:1 › import base dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+
+[1A[2K[2/4] [voter-journey] › tests/tests/specs/voter/voter-journey.spec.ts:485:3 › voter journey › full voter journey end-to-end
+[1A[2K[3/4] [voter-journey] › tests/tests/specs/voter/voter-journey.spec.ts:1646:3 › EQTYP-02: number-scale boundary matching › all-min ranks POLAR_MIN above POLAR_MAX; a mid number answer shifts both scores monotonically without flipping the ordering
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+
+[1A[2K[4/4] [data-teardown-base] › tests/tests/setup/shared/base.teardown.ts:26:1 › delete base dataset
+[1A[2K  4 passed (1.1m)
+Finished: 2026-07-22T09:50:46Z

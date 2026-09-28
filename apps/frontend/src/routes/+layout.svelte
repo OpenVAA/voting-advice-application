@@ -1,0 +1,260 @@
+<!--@component
+
+# App main layout
+
+- Defines the outer layout for the voter and candidate apps, including the header and main content area.
+- Provides the data used by both apps to the `dataRoot`, which are loaded by `+layout.ts`, and handles other global definitions.
+- Handles opening popups.
+- Loads the analytics service.
+
+### Settings
+
+- `access.underMaintenance`: If `true`, the app will display a maintenance page instead of any content.
+- `analytics.platform`: Affects whether the analytics service is loaded.
+-->
+
+<script lang="ts">
+  import '../app.css';
+  import { log, staticSettings } from '@openvaa/app-shared';
+  import { onDestroy } from 'svelte';
+  import { afterNavigate, beforeNavigate, onNavigate } from '$app/navigation';
+  import { updated } from '$app/state';
+  import { MaintenancePage } from '$layouts/main';
+  import { isValidResult } from '$lib/api/utils/isValidResult';
+  import { ErrorMessage } from '$lib/components/errorMessage';
+  import { Loading } from '$lib/components/loading';
+  import { initAppContext } from '$lib/contexts/app';
+  import { initAuthContext } from '$lib/contexts/auth';
+  import { initComponentContext } from '$lib/contexts/component';
+  import { initDataContext } from '$lib/contexts/data';
+  import { initI18nContext } from '$lib/contexts/i18n';
+  import { initLayoutContext } from '$lib/contexts/layout';
+  import { FeedbackModal } from '$lib/dynamic-components/feedback/modal';
+  import { focusNavigationTarget } from '$lib/utils/focusNavigationTarget';
+  import { shouldAnimate, startViewTransition } from '$lib/utils/viewTransition';
+  import type { Snippet } from 'svelte';
+  import type { DPDataType } from '$lib/api/base/dataTypes';
+  import type { LayoutData } from './$types';
+
+  let { data, children }: { data: LayoutData; children: Snippet } = $props();
+
+  ////////////////////////////////////////////////////////////////////
+  // Initialize globally used contexts
+  ////////////////////////////////////////////////////////////////////
+
+  initI18nContext();
+  initComponentContext();
+  initDataContext();
+  const appCtx = initAppContext();
+  const { setDataRoot, openFeedbackModal, popupQueue, sendTrackingEvent, startPageview, submitAllEvents, t } = appCtx;
+  // appSettings is a bare reactive accessor whose own declaration in `appContext.type.ts` states it MUST be read off the context. Destructuring it would bind the value once at init, so the analytics branch below would never see a settings re-merge.
+  const appSettings = $derived(appCtx.appSettings);
+  const layoutCtx = initLayoutContext();
+  // TODO: Consider moving the candidate and admin apps to a (auth) folder with the AuthContext initialized there
+  initAuthContext();
+
+  // Localized route-announcer title. Read via property access on the context object (NOT destructured) per the CLAUDE.md Context Destructuring Rule — `routeTitle.current` is a reactive accessor backed by $state, registered by MainContent / SingleCardContent.
+  const routeTitle = $derived(layoutCtx.routeTitle.current);
+
+  ////////////////////////////////////////////////////////////////////
+  // Provide globally used data and check all loaded data
+  ////////////////////////////////////////////////////////////////////
+
+  // TODO[Svelte 5]: See if this and others like it can be handled in a centralized manner in the DataContext. I.e. by subscribing to individual parts of $page.data.
+  //
+  // Validation is a pure `$derived` over the already-resolved loader data (`+layout.ts` awaits every data field before returning; see its policy comment). No `Promise.all`, no `.then()`, no microtask boundary between `$effect` and `$state` writes, so SSR and hydration cannot race and leave a full page load at <Loading />.
+  // A project that is not open for voters returns zero elections and zero constituencies to anonymous readers by design: the anon read policies are gated on `project_open_for_voters`.
+  //
+  // The adapter maps that state to `access.voterApp = false`, and `(voters)/+layout.svelte` then renders MaintenancePage with `dynamic.voterAppNotAccessible`. Empty data is therefore valid here: rejecting it would render ErrorMessage on every route, both login pages included, so nobody could log in before a project opens.
+  //
+  // Read through the `appSettings` alias above, never destructured (CLAUDE.md's Context Destructuring Rule). `validity` depends on the settings alias and on nothing derived from `validity`, so there is no cycle.
+  const voterAppInaccessible = $derived(appSettings.access?.voterApp === false);
+
+  const validity:
+    | { error: Error }
+    | {
+        appSettingsData: DPDataType['appSettings'];
+        electionData: DPDataType['elections'];
+        constituencyData: DPDataType['constituencies'];
+      } = $derived.by(() => {
+    if (!isValidResult(data.appSettingsData, { allowEmpty: true }))
+      return { error: new Error('Error loading app settings data') };
+    if (!isValidResult(data.appCustomizationData, { allowEmpty: true }))
+      return { error: new Error('Error loading app customization data') };
+    if (!isValidResult(data.electionData, { allowEmpty: voterAppInaccessible }))
+      return { error: new Error('Error loading election data') };
+    if (!isValidResult(data.constituencyData, { allowEmpty: voterAppInaccessible }))
+      return { error: new Error('Error loading constituency data') };
+    return {
+      appSettingsData: data.appSettingsData as DPDataType['appSettings'],
+      electionData: data.electionData as DPDataType['elections'],
+      constituencyData: data.constituencyData as DPDataType['constituencies']
+    };
+  });
+
+  const error = $derived('error' in validity ? validity.error : undefined);
+  const ready = $derived(!('error' in validity));
+  // Read the MERGED settings (`appSettings`, aliased above), never the raw loader payload. `validity.appSettingsData` is the DB column alone, and a malformed column degrades to an empty object rather than to an `Error`, so reading it with an inline nullish-coalescing default would silently lift maintenance on a deployment whose build-time `dynamicSettings` set `underMaintenance: true`. The merged read falls back to that build-time value, the fail-safe direction; a column that explicitly carries `access` still overrides it.
+  //
+  // There is deliberately no inline default: duplicating the shipped default from `packages/app-shared/src/settings/dynamicSettings.ts` here would bypass the merge. The trailing `=== true` is a boolean narrowing of an optional member, not a default — it cannot substitute a value the merge did not supply.
+  //
+  // `appSettings` is read through the existing `$derived` alias and is never destructured (CLAUDE.md's Context Destructuring Rule). The alias is safe for this member because `appSettings` is value-replacing — its reference is replaced on every re-merge — so the identity-stable `dataRoot` carve-out does not apply here.
+  const underMaintenance = $derived(!('error' in validity) && appSettings.access?.underMaintenance === true);
+
+  // Document title: application name ALWAYS, with the maintenance state appended as a suffix rather than replacing the name (a maintenance window should not make the tab stop identifying the application).
+  //
+  // Built here as a string rather than inline in the markup because Svelte 5 rejects a block inside `<title>`: `<title> can only contain text and {tags}` (error code `title_invalid_content`). A template literal also pins the spacing exactly, which markup cannot — whitespace around a tag inside `<title>` is emitted into the rendered title, so the suffix owns its single leading space and there is no trailing one.
+  //
+  // The separator is an en dash character, written literally and never as an HTML entity.
+  const documentTitle = $derived(`${t('dynamic.appName')}${underMaintenance ? ` – ${t('maintenance.title')}` : ''}`);
+
+  // Side effect — applies resolved data to `dataRoot`. Reads `$derived` validity; NEVER calls `.then()` or `await`. Runs after the first `$derived` evaluation on mount and re-runs on any `data` prop change (client-side navigation).
+  // Valid data needs nothing else here: its consumers read it from `page.data`.
+  //
+  // IMPORTANT: mutate the DataRoot via `setDataRoot(updater)` (the encapsulated non-reactive write path on the rune-native DataContext class) rather than the `dataRoot` reactive form. `dataRoot.update(() => provide*(...))` inside a `$effect` creates an infinite reactive loop in Svelte 5: reading `.current` takes a dependency on the dataContext `version` $state, and `DataRoot.update()` notifies subscribers (bumping `version`) — retriggering the effect. `setDataRoot` runs the mutation inside `untrack`, so this effect takes no dependency on the version counter.
+  $effect(() => {
+    if ('error' in validity) return;
+    // Snapshot validity fields inside the effect's tracked scope (so the effect re-runs when they change); the write itself is untracked inside setDataRoot.
+    const snapshot = {
+      electionData: validity.electionData,
+      constituencyData: validity.constituencyData
+    };
+    setDataRoot((dr) => {
+      dr.update(() => {
+        dr.provideElectionData(snapshot.electionData);
+        dr.provideConstituencyData(snapshot.constituencyData);
+      });
+    });
+  });
+
+  // Error logging side-effect — fires once when `error` transitions from absent to present.
+  $effect(() => {
+    if (error) log.error(error.message);
+  });
+
+  ////////////////////////////////////////////////////////////////////
+  // Tracking
+  ////////////////////////////////////////////////////////////////////
+
+  // Reference to UmamiAnalytics component to access its trackEvent export.
+  // `sendTrackingEvent` is the rune handle from AppContext; `.current` is read here in value position only to type `trackEvent`.
+  let umamiRef = $state<{ trackEvent?: typeof sendTrackingEvent.current }>();
+
+  $effect(() => {
+    if (umamiRef?.trackEvent) sendTrackingEvent.set(umamiRef.trackEvent);
+  });
+
+  // Check if the app has been updated and if so, reload the app. The version is checked based on `pollInterval` in frontend/svelte.config.js
+  beforeNavigate(({ willUnload, to }) => {
+    if (updated.current && !willUnload && to?.url) location.href = to.url.href;
+  });
+  // One hook flushes analytics and then starts the view transition, which fixes their order and avoids the two-promise ambiguity of two separate hooks.
+  onNavigate((navigation) => {
+    submitAllEvents(); // flush pending analytics events
+    // Read `navigation.to?.url`, not `page.url`, which is the source URL during onNavigate. `shouldAnimate` also gates reduced motion and ?notr=1.
+    if (!shouldAnimate(navigation.to?.url)) return;
+    return new Promise<void>((resolve) => {
+      startViewTransition(async () => {
+        resolve(); // tells SvelteKit to apply the new DOM
+        await navigation.complete; // SvelteKit swaps the DOM here
+      });
+    });
+  });
+  onDestroy(() => submitAllEvents());
+  // One hook records the analytics pageview and then resets focus.
+  // The focus reset waits for a target that renders after the first frame (the voter question heading does, on a slow host) and is cancelled by the next navigation, so a stale wait never moves focus on a newer page. See `focusNavigationTarget`.
+  let cancelPendingFocus: (() => void) | undefined;
+  afterNavigate(({ from, to }) => {
+    startPageview(to?.url?.href ?? '', from?.url?.href); // record the analytics pageview
+    if (typeof document === 'undefined') return;
+    cancelPendingFocus?.();
+    cancelPendingFocus = focusNavigationTarget();
+  });
+  onDestroy(() => cancelPendingFocus?.());
+
+  // Submit any possible event data if the window is closed or refreshed
+  $effect(() => {
+    if (!appSettings.analytics?.platform) return;
+    function handler() {
+      if (document.visibilityState === 'hidden') submitAllEvents();
+    }
+    document.addEventListener('visibilitychange', handler);
+    return () => document.removeEventListener('visibilitychange', handler);
+  });
+
+  ////////////////////////////////////////////////////////////////////
+  // Other global effects
+  ////////////////////////////////////////////////////////////////////
+
+  let feedbackModalRef = $state<{ openFeedback: () => void }>();
+
+  $effect(() => {
+    if (feedbackModalRef) openFeedbackModal.set(() => feedbackModalRef?.openFeedback());
+  });
+
+  // popupItem reactivity is handled inline at the template tail via popupQueue.current + {@const Component = item.component}
+
+  const fontUrl =
+    staticSettings.font?.url ?? 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap';
+</script>
+
+<svelte:head>
+  <title>{documentTitle}</title>
+  <meta name="theme-color" content={staticSettings.colors.light['base-300']} media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content={staticSettings.colors.dark['base-300']} media="(prefers-color-scheme: dark)" />
+  {#if fontUrl.indexOf('fonts.googleapis') !== -1}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+  {/if}
+  <link href={fontUrl} rel="stylesheet" />
+</svelte:head>
+
+<!-- Route announcer: an always-present aria-live region outside the error, loading and maintenance branches, so screen readers announce every route change. Its text is the active route's localized page title (the document `<title>` without the app-name and maintenance suffix), which MainContent and SingleCardContent register through the layout context's `routeTitle`. -->
+<div aria-live="polite" aria-atomic="true" class="sr-only" id="route-announcer">
+  {routeTitle}
+</div>
+
+{#if error}
+  <ErrorMessage class="bg-base-300 h-dvh" />
+{:else if !ready}
+  <Loading class="bg-base-300 h-dvh" />
+{:else if underMaintenance}
+  <MaintenancePage />
+{:else}
+  {@render children?.()}
+
+  <!-- Feedback modal -->
+  <FeedbackModal bind:this={feedbackModalRef} />
+
+  <!-- Handle analytics loading -->
+  {#if appSettings.analytics?.platform}
+    {#if appSettings.analytics?.platform?.name === 'umami'}
+      {#await import('$lib/components/analytics/umami/UmamiAnalytics.svelte') then UmamiAnalytics}
+        <UmamiAnalytics.default websiteId={appSettings.analytics.platform.code} bind:this={umamiRef} />
+      {/await}
+    {/if}
+  {/if}
+{/if}
+
+<!-- Popup service: inline, runes-idiomatic renderer — no wrapper component -->
+{#if popupQueue.current}
+  {@const item = popupQueue.current}
+  {@const Component = item.component}
+  <Component
+    {...item.props ?? {}}
+    onClose={() => {
+      item.onClose?.();
+      popupQueue.shift();
+    }} />
+{/if}
+
+<style>
+  /* Stops every view-transition animation under reduced motion; the media query wraps the `:global` selectors because Svelte's CSS parser rejects an at-rule nested inside `:global`. */
+  @media (prefers-reduced-motion: reduce) {
+    :global(::view-transition-group(*)),
+    :global(::view-transition-old(*)),
+    :global(::view-transition-new(*)) {
+      animation: none !important;
+    }
+  }
+</style>

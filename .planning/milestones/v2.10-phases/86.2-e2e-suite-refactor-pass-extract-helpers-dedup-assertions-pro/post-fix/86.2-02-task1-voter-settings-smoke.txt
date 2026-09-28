@@ -1,0 +1,23 @@
+[dotenv@17.3.1] injecting env (25) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+
+Running 10 tests using 2 workers
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+
+[1A[2K[1/10] [data-setup] › tests/tests/setup/data.setup.ts:76:1 › import test dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+
+[1A[2K[2/10] [voter-app-settings] › tests/tests/specs/voter/voter-settings.spec.ts:229:3 › category selection (VOTE-13) › should show category checkboxes when allowCategorySelection enabled @voter
+[1A[2K[3/10] [voter-app-settings] › tests/tests/specs/voter/voter-settings.spec.ts:277:3 › category selection (VOTE-13) › should filter questions to selected categories @voter
+[1A[2K[4/10] [voter-app-settings] › tests/tests/specs/voter/voter-settings.spec.ts:337:3 › category intros (VOTE-05) › should show category intro page before each category @voter
+[1A[2K[5/10] [voter-app-settings] › tests/tests/specs/voter/voter-settings.spec.ts:377:3 › category intros (VOTE-05) › should skip category when skip button clicked @voter
+[1A[2K[6/10] [voter-app-settings] › tests/tests/specs/voter/voter-settings.spec.ts:432:3 › question intro page (VOTE-04) › should show question intro page when questionsIntro.show enabled @voter
+[1A[2K[7/10] [voter-app-settings] › tests/tests/specs/voter/voter-settings.spec.ts:481:3 › minimum answers threshold (VOTE-07) › should enforce minimum answers before results available @voter
+[1A[2K[8/10] [voter-app-settings] › tests/tests/specs/voter/voter-settings.spec.ts:549:3 › results link visibility (VOTE-17) › should hide results link when showResultsLink is false @voter
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+
+[1A[2K[9/10] [data-teardown] › tests/tests/setup/data.teardown.ts:17:1 › delete test dataset
+[1A[2K[10/10] [data-teardown] › tests/tests/setup/variant-data.teardown.ts:12:1 › delete variant test dataset
+[1A[2K  10 passed (17.9s)

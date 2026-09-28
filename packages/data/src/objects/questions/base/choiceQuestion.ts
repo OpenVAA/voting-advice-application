@@ -13,11 +13,11 @@ import type {
  * An abstract base class for all questions which have enumerated answering choices. Non-abstract subclasses should inherit from either of the two subclasses `SingleChoiceQuestion` or `MultipleChoiceQuestion`.
  */
 export abstract class ChoiceQuestion<
-    // We need to unelegantly provide `TType` and `TValue` twice because inferring then from `TData` leads to typing issues
-    TType extends ChoiceQuestionType,
-    TValue = undefined,
-    TData extends ChoiceQuestionData<TType, TValue> = ChoiceQuestionData<TType, TValue>
-  >
+  // We need to unelegantly provide `TType` and `TValue` twice because inferring then from `TData` leads to typing issues
+  TType extends ChoiceQuestionType,
+  TValue = undefined,
+  TData extends ChoiceQuestionData<TType, TValue> = ChoiceQuestionData<TType, TValue>
+>
   extends Question<TType, TData>
   implements DataAccessor<ChoiceQuestionData<TType, TValue>>
 {

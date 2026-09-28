@@ -1,0 +1,59 @@
+# 79-02F: No-Op Skip Marker
+
+**Status:** DONE-AS-NOOP
+**Date:** 2026-05-13
+**Trigger gate (Task 0) verdict:** SHORT-CIRCUIT — no restructure tasks executed
+
+## Rationale
+
+Plan 79-02F is the XOR contingency fallback for Plan 79-02. Per 79-02F's Task 0
+contract (and the XOR `xor_with: [79-02]` frontmatter declaration), this plan
+executes ONLY if Plan 79-02 fails the D-02 time-box AND STATUS.md `## Escalation
+Flags` contains `RCA pivot-to-restructure trigger: Y`.
+
+At dispatch time, STATUS.md `## Escalation Flags` recorded:
+
+> [x] **RCA pivot-to-restructure trigger: N** — DETERM-04 fix verified
+> (registration test passes in cold-start). The remaining 5
+> candidate-profile.spec.ts cascade-skips are downstream of the image-upload
+> test failure, NOT downstream of registration. The 79-02F restructure
+> (extract registration into setup) would NOT resolve this — image-upload
+> is the SECOND test in the serial describe block; extracting only
+> registration leaves the 5-test downstream cascade-skip intact. 79-02F
+> should short-circuit to no-op.
+
+Plan 79-02 closed PASS-with-deferral on 2026-05-13T00:32Z. DETERM-04 was
+resolved via a single-line URL-predicate fix at
+`tests/tests/specs/candidate/candidate-profile.spec.ts:51` (per Plan 01's
+RCA-FINDINGS.md verdict). The fix is verified deterministically (3/3
+isolated runs + 1 mutation-project run + 1 D-12 cold-start smoke). See
+`79-02-SUMMARY.md` for full details.
+
+## What Was NOT Modified
+
+Per `<key_constraints>`, NO restructure tasks (Tasks 1-4 of 79-02F-PLAN.md)
+executed. The following files were INTENTIONALLY NOT touched:
+
+- `tests/tests/setup/register-fresh-candidate.setup.ts` — NOT created
+- `tests/playwright.config.ts` — NOT modified (no new project entry; no
+  dependency repointing of `candidate-app-mutation`)
+- `tests/tests/specs/candidate/candidate-profile.spec.ts` — NOT modified by
+  this plan (the registration test remains in the serial describe block;
+  the URL-predicate fix from Plan 02 is preserved as-is)
+
+## What Was Modified
+
+- `.planning/phases/79-determinism-recovery-cascading-race-fix-constants-regen/post-fix/79-02F-skipped.txt` (this file) — created
+- `.planning/phases/79-determinism-recovery-cascading-race-fix-constants-regen/STATUS.md` — appended Plan 02F closure entry
+- `.planning/phases/79-determinism-recovery-cascading-race-fix-constants-regen/79-02F-SUMMARY.md` — created (DONE-AS-NOOP summary)
+
+## Forward Wiring
+
+- Plan 03 (DETERM-05 3-run cold-start gate) is unblocked. The image-upload
+  cascade documented in 79-02-SUMMARY.md's "Deferred Issues" section
+  becomes part of Plan 03's post-fix baseline (mirrors Phase 73 D-09
+  IMGPROXY_TIED_TITLES precedent for documenting known infrastructure-class
+  flakes rather than blocking on them).
+- The XOR contract `xor_with: [79-02]` is satisfied: exactly one of {79-02,
+  79-02F} did meaningful work; the other (this plan) recorded a no-op
+  marker for auditability.

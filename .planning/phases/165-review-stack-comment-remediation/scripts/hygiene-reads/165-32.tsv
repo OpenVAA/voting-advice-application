@@ -1,0 +1,9 @@
+apps/frontend/src/lib/components/questions/QuestionChoices.svelte	24f2c9ea175b5c8092d258ba3dbafeac2c4095cf	165-32
+apps/frontend/src/lib/components/questions/QuestionChoices.svelte.test.ts	69cd79b76d8c0b1e86e77e6f0a0d293488489cb2	165-32
+apps/frontend/src/lib/components/questions/NumberScaleInput.svelte	ea69ba09e6dbc78574d62d1f3bedd5765fd293f1	165-32
+apps/frontend/src/lib/components/questions/QuestionOpenAnswer.svelte	cd1c1a6a29148cc3963703698bef012384db2e14	165-32
+apps/frontend/src/lib/components/scoreGauge/ScoreGauge.svelte	1d8b79ea452553140a558b0aa1bb04f483688b47	165-32
+apps/frontend/src/lib/components/video/Video.svelte	762ac9c6b82ea4698f09e87487dfc5e224dc053a	165-32
+apps/frontend/src/lib/components/questions/NumberScaleInput.svelte	eb6d23f844f6568d3d4fd258c2e772b0392d06da	165-32
+tests/tests/utils/testIds.ts	056f7b1d160987a63417b43b0bf85d0ade30562c	165-32
+tests/tests/fixtures/voter/entityDetails.fixture.ts	5160ab6cc7b60db900b1b2157d5425cd2514cd3f	165-32

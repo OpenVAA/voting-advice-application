@@ -1,0 +1,4 @@
+apps/supabase/supabase/tests/database/29-authenticated-disjunct-order.test.sql	6ee2cc3c83a2c8824f0c2170a2d5c57824ba852d	165-04
+apps/supabase/supabase/tests/database/05-organization-admin.test.sql	2064abd29ed49dfd599523b9d11c37f494c172e1	165-04
+apps/supabase/supabase/tests/database/09-column-restrictions.test.sql	c7d95bda1e8e91270a4514c30ce9520afdae08a7	165-04
+apps/supabase/supabase/tests/database/07-rpc-security.test.sql	e49bcba2fde14f83a231a4919c346f92120d4bc1	165-04

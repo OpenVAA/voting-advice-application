@@ -1,0 +1,32 @@
+# Task 2 command transcript — canonical CLAUDE.md Likert-only chain (BLOCKER 1 audit)
+# Executed: 2026-05-14 14:07 UTC+3 (smoke launches after the second reset chain below)
+# Pre-flight: Supabase containers were already healthy from prior Phase 85 work; the db:reset below restarts them.
+
+# --- ABORTED FIRST ATTEMPT (recorded for audit-trail completeness) ---
+# First attempt started Vite BEFORE the reset chain; yarn dev:clean (last step of the canonical
+# chain) wipes apps/frontend/.svelte-kit/generated/, which broke the already-running Vite SSR
+# (HTTP 500 on every request — "Failed to load url /.svelte-kit/generated/server/internal.js").
+# The smoke ran for ~30 min against a 500-returning Vite. Aborted at 14:06 UTC+3 (no smoke.json
+# was written — JSON reporter only flushes at the end, so the corrupted run produced 0 usable
+# output). Vite + Playwright processes killed; smoke.json + smoke-stderr.log cleaned up.
+
+# --- CORRECTED SEQUENCE ---
+cd /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd
+
+# Step 1: Run canonical Likert-only reset chain. This wipes apps/frontend/.svelte-kit/ (dev:clean
+# is the last step of the &&-chain).
+yarn db:reset && yarn db:seed --template e2e --likert-only && yarn dev:clean
+
+# Step 2: AFTER the reset chain, start Vite (it regenerates .svelte-kit/generated/ on first
+# request). Background process; wait for http://localhost:5173 to return HTTP 200.
+nohup yarn workspace @openvaa/frontend dev > /tmp/vite-dev-85-02-final.log 2>&1 &
+
+# Step 3: Run the 1-run smoke against the now-healthy Vite + freshly-seeded Supabase.
+yarn test:e2e --workers=1 --reporter=json > .planning/phases/85-variant-project-cascade-rca-fix-investigate-and-close-the-47/post-fix/smoke.json 2> .planning/phases/85-variant-project-cascade-rca-fix-investigate-and-close-the-47/post-fix/smoke-stderr.log
+
+# Confirms canonical form per CLAUDE.md §"Yarn arg-forwarding caveat" (BLOCKER 4).
+# Negative invariant: the deprecated `db:reset-with-data` alias paired with `--likert-only`
+# (the LANDMINE-9 form per CLAUDE.md §"Yarn arg-forwarding caveat") was NOT used.
+# The verify gate greps for the literal trailing-flag pattern; the canonical chain above
+# attaches the flag directly to `db:seed`, so it forwards correctly through the &&-chain.
+# The --likert-only flag is attached to its target command (db:seed) directly, so the &&-chain forwards correctly.

@@ -1,0 +1,32 @@
+# Fixture INPUT for `node scripts/assert-comment-hygiene.mjs --self-test`.
+#
+# POSITIVE (rule 1): a literal escape \u2013 inside a YAML comment.
+#
+# POSITIVE (rule 2): this line ends without terminal punctuation and
+# the line under it continues the same comment span at the same indent.
+#
+# =====================
+# NEGATIVE (rule 2, banner-rule): the rule line above is structure and is never joined.
+#
+# NEGATIVE (rule 2, list-item): the two cases are
+# - the first one
+# - the second one.
+#
+# NEGATIVE (rule 2, jsdoc-tag): a tag line is structure even in a YAML file
+# @param one the first operand
+#
+# NEGATIVE (rule 2, hanging-indent): the sample below is code, not prose
+#     yarn db:reset
+#
+# NEGATIVE (rule 2, comment-table): the rows below are a table
+# | key | value |
+# | url | a string |
+
+# NEGATIVE below: every escape is inside a single-quoted scalar, and the hash inside the third one opens no comment span.
+url: 'https://example.org/\u2013not-a-comment'
+label: 'an escape \u2014 inside a scalar must never be flagged'
+token: 'a value#that is not a comment, carrying \u00e9'
+
+items:
+  - one # POSITIVE (rule 1): a trailing comment is a span too, carrying \u2013.
+  - two

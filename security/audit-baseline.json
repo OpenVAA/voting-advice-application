@@ -1,0 +1,638 @@
+{
+  "recorded": "2026-09-03",
+  "recordedAtHead": "5c1295f18db13c50bc901957f391b9b354a169e1",
+  "threshold": "high",
+  "note": "These 70 findings (64 high, 6 critical) are ACCEPTED, NOT ABSENT: the gate does not report them, and they are still in the dependency tree. Four of the six critical rows are the test toolchain (vitest, @vitest/browser) and the other two are shell-quote via concurrently and tar via the supabase CLI, so this file is not a clean bill of health and must not be read as one. A NEW advisory at high or above that is not listed here reddens the build, INCLUDING a new advisory against a package already listed. That is deliberate, and it is why the subtraction in scripts/assert-dependency-audit.mjs is keyed on the advisory ID and never on the package name: silencing a package by name would silence its future as well as its present. This list will drift. Nine of the rows are tar advisories published against an ever-widening version range, and the same pattern holds for brace-expansion and minimatch, so newly published advisories on packages already listed here will redden the build periodically. The first such red is the designed behaviour, not a regression. The remedy is a reviewed baseline update via `yarn audit:deps --update-baseline`, which stamps a fresh `recorded` date and preserves existing rationales; it is never a package-name silence and never a threshold change. This count will not agree with the Dependabot banner GitHub prints on every push, and the disagreement is expected rather than a gap in this file. Measured 2026-09-03: Dependabot reported 315 open alerts (25 critical / 118 high / 136 moderate / 36 low) against the DEFAULT BRANCH, which still carries the pre-v2 layout -- 12 of those alerts are against manifests that do not exist in this tree at all (backend/vaa-strapi/package.json, frontend/package.json), 49 of the 59 distinct high+ advisories it reports and this file does not are for packages absent from this lockfile entirely (Strapi, axios, handlebars, @xmldom/xmldom, fast-uri, tar-fs and others), and the remaining 10 were each checked against the resolved version here and are ranges this branch has already moved past. Dependabot also counts one alert per advisory-and-manifest pair, so its 315 alerts carry 256 distinct advisories and its 143 high+ alerts carry 106.",
+  "accepted": [
+    {
+      "id": 1158500,
+      "package": "@faker-js/faker",
+      "severity": "high",
+      "ghsa": "GHSA-qxc2-j82w-r537",
+      "issue": "Faker: helpers.fake exploitable into arbritary code execution",
+      "via": "root workspace",
+      "rationale": "Direct devDependency used by the seed and test-data generators. The advisory is code execution through `helpers.fake` on an attacker-controlled template string; every template here is a literal in this repo’s own test code."
+    },
+    {
+      "id": 1112954,
+      "package": "@isaacs/brace-expansion",
+      "severity": "high",
+      "ghsa": "GHSA-7h2j-956f-4vf2",
+      "issue": "@isaacs/brace-expansion has Uncontrolled Resource Consumption",
+      "via": "minimatch@10.1.1",
+      "rationale": "Transitive via minimatch@10.1.1; the same dev-tooling resource-consumption class as the brace-expansion rows."
+    },
+    {
+      "id": 1116433,
+      "package": "@sveltejs/kit",
+      "severity": "high",
+      "ghsa": "GHSA-2crg-3p73-43xp",
+      "issue": "@sveltejs/adapter-node has a BODY_SIZE_LIMIT bypass",
+      "via": "@openvaa/docs (workspace), @openvaa/frontend (workspace)",
+      "rationale": "DIRECT dependency of the frontend and docs apps: an adapter-node BODY_SIZE_LIMIT bypass. Accepted pending a coordinated framework upgrade, and recorded here rather than silenced so it stays visible at every ship review."
+    },
+    {
+      "id": 1139523,
+      "package": "@vitest/browser",
+      "severity": "critical",
+      "ghsa": "GHSA-p63j-vcc4-9vmv",
+      "issue": "@vitest/browser: Browser Mode provider commands bypass the file-access permission gate",
+      "via": "@vitest/browser-playwright@4.0.15",
+      "rationale": "CRITICAL, ACCEPTED: browser-mode test runner only. The RCE classes require a running browser-mode API server, which this repo never starts (no browser-mode config, and CI runs node-environment vitest only)."
+    },
+    {
+      "id": 1139526,
+      "package": "@vitest/browser",
+      "severity": "critical",
+      "ghsa": "GHSA-g8mr-85jm-7xhm",
+      "issue": "Vitest Browser: Exposed Browser Mode API Can Proxy CDP and Overwrite Config Files, Leading to RCE",
+      "via": "@vitest/browser-playwright@4.0.15",
+      "rationale": "CRITICAL, ACCEPTED: browser-mode test runner only. The RCE classes require a running browser-mode API server, which this repo never starts (no browser-mode config, and CI runs node-environment vitest only)."
+    },
+    {
+      "id": 1123896,
+      "package": "brace-expansion",
+      "severity": "high",
+      "ghsa": "GHSA-3jxr-9vmj-r5cp",
+      "issue": "brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups",
+      "via": "minimatch@9.0.5",
+      "rationale": "Dev-tooling transitive only, reached exclusively through minimatch 3.x/9.x/10.x; the DoS classes need an attacker-supplied glob, and every glob in this repo is repo-authored."
+    },
+    {
+      "id": 1123897,
+      "package": "brace-expansion",
+      "severity": "high",
+      "ghsa": "GHSA-3jxr-9vmj-r5cp",
+      "issue": "brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups",
+      "via": "minimatch@3.1.2",
+      "rationale": "Dev-tooling transitive only, reached exclusively through minimatch 3.x/9.x/10.x; the DoS classes need an attacker-supplied glob, and every glob in this repo is repo-authored."
+    },
+    {
+      "id": 1123898,
+      "package": "brace-expansion",
+      "severity": "high",
+      "ghsa": "GHSA-3jxr-9vmj-r5cp",
+      "issue": "brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups",
+      "via": "minimatch@10.2.4",
+      "rationale": "Dev-tooling transitive only, reached exclusively through minimatch 3.x/9.x/10.x; the DoS classes need an attacker-supplied glob, and every glob in this repo is repo-authored."
+    },
+    {
+      "id": 1130588,
+      "package": "brace-expansion",
+      "severity": "high",
+      "ghsa": "GHSA-mh99-v99m-4gvg",
+      "issue": "brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash",
+      "via": "minimatch@3.1.2",
+      "rationale": "Dev-tooling transitive only, reached exclusively through minimatch 3.x/9.x/10.x; the DoS classes need an attacker-supplied glob, and every glob in this repo is repo-authored."
+    },
+    {
+      "id": 1130589,
+      "package": "brace-expansion",
+      "severity": "high",
+      "ghsa": "GHSA-mh99-v99m-4gvg",
+      "issue": "brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash",
+      "via": "minimatch@9.0.5",
+      "rationale": "Dev-tooling transitive only, reached exclusively through minimatch 3.x/9.x/10.x; the DoS classes need an attacker-supplied glob, and every glob in this repo is repo-authored."
+    },
+    {
+      "id": 1130591,
+      "package": "brace-expansion",
+      "severity": "high",
+      "ghsa": "GHSA-mh99-v99m-4gvg",
+      "issue": "brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash",
+      "via": "minimatch@10.2.4",
+      "rationale": "Dev-tooling transitive only, reached exclusively through minimatch 3.x/9.x/10.x; the DoS classes need an attacker-supplied glob, and every glob in this repo is repo-authored."
+    },
+    {
+      "id": 1130734,
+      "package": "brace-expansion",
+      "severity": "high",
+      "ghsa": "GHSA-rgw5-rvv9-x895",
+      "issue": "brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation",
+      "via": "minimatch@10.2.4",
+      "rationale": "Dev-tooling transitive only, reached exclusively through minimatch 3.x/9.x/10.x; the DoS classes need an attacker-supplied glob, and every glob in this repo is repo-authored."
+    },
+    {
+      "id": 1130736,
+      "package": "brace-expansion",
+      "severity": "high",
+      "ghsa": "GHSA-rgw5-rvv9-x895",
+      "issue": "brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation",
+      "via": "minimatch@9.0.5",
+      "rationale": "Dev-tooling transitive only, reached exclusively through minimatch 3.x/9.x/10.x; the DoS classes need an attacker-supplied glob, and every glob in this repo is repo-authored."
+    },
+    {
+      "id": 1130737,
+      "package": "brace-expansion",
+      "severity": "high",
+      "ghsa": "GHSA-rgw5-rvv9-x895",
+      "issue": "brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation",
+      "via": "minimatch@3.1.2",
+      "rationale": "Dev-tooling transitive only, reached exclusively through minimatch 3.x/9.x/10.x; the DoS classes need an attacker-supplied glob, and every glob in this repo is repo-authored."
+    },
+    {
+      "id": 1120448,
+      "package": "devalue",
+      "severity": "high",
+      "ghsa": "GHSA-77vg-94rm-hx3p",
+      "issue": "Svelte devalue: DoS via sparse array deserialization",
+      "via": "@sveltejs/kit@2.55.0",
+      "rationale": "Transitive via @sveltejs/kit; it clears with the same framework upgrade as the @sveltejs/kit row above."
+    },
+    {
+      "id": 1114526,
+      "package": "flatted",
+      "severity": "high",
+      "ghsa": "GHSA-25h7-pfq9-p65f",
+      "issue": "flatted vulnerable to unbounded recursion DoS in parse() revive phase",
+      "via": "flat-cache@4.0.1, flat-cache@6.1.20",
+      "rationale": "Transitive via flat-cache, which serialises ESLint’s own cache files written by this repo."
+    },
+    {
+      "id": 1115357,
+      "package": "flatted",
+      "severity": "high",
+      "ghsa": "GHSA-rf6f-7fwh-wjgh",
+      "issue": "Prototype Pollution via parse() in NodeJS flatted",
+      "via": "flat-cache@4.0.1, flat-cache@6.1.20",
+      "rationale": "Transitive via flat-cache, which serialises ESLint’s own cache files written by this repo."
+    },
+    {
+      "id": 1120743,
+      "package": "form-data",
+      "severity": "high",
+      "ghsa": "GHSA-hmw2-7cc7-3qxx",
+      "issue": "form-data: CRLF injection in form-data via unescaped multipart field names and filenames",
+      "via": "@types/node-fetch@2.6.13",
+      "rationale": "Transitive via @types/node-fetch, a types-only devDependency that contributes no runtime code."
+    },
+    {
+      "id": 1109842,
+      "package": "glob",
+      "severity": "high",
+      "ghsa": "GHSA-5j98-mcp5-4vw2",
+      "issue": "glob CLI: Command injection via -c/--cmd executes matches with shell:true",
+      "via": "sucrase@3.35.0",
+      "rationale": "Transitive via sucrase in the build toolchain. The advisory is against the glob CLI’s `-c/--cmd` flag, which nothing in this repo invokes."
+    },
+    {
+      "id": 1130722,
+      "package": "ip-address",
+      "severity": "high",
+      "ghsa": "GHSA-mwp4-54f8-5fhr",
+      "issue": "ip-address: Address4 decodes leading-zero octets as decimal while resolvers decode them as octal, allowing SSRF and trust-boundary bypass",
+      "via": "socks@2.8.3",
+      "rationale": "Transitive via socks, used by proxy-agent machinery during package installs; no application code parses addresses through it."
+    },
+    {
+      "id": 1123911,
+      "package": "js-yaml",
+      "severity": "high",
+      "ghsa": "GHSA-52cp-r559-cp3m",
+      "issue": "js-yaml: YAML merge-key chains can force quadratic CPU consumption",
+      "via": "@eslint/eslintrc@3.3.3, @openvaa/argument-condensation (workspace)",
+      "rationale": "Transitive via @eslint/eslintrc and read-yaml-file, which parse this repo’s own config files, plus @openvaa/argument-condensation, an experimental package not shipped in the app."
+    },
+    {
+      "id": 1123912,
+      "package": "js-yaml",
+      "severity": "high",
+      "ghsa": "GHSA-52cp-r559-cp3m",
+      "issue": "js-yaml: YAML merge-key chains can force quadratic CPU consumption",
+      "via": "read-yaml-file@1.1.0",
+      "rationale": "Transitive via @eslint/eslintrc and read-yaml-file, which parse this repo’s own config files, plus @openvaa/argument-condensation, an experimental package not shipped in the app."
+    },
+    {
+      "id": 1138114,
+      "package": "js-yaml",
+      "severity": "high",
+      "ghsa": "GHSA-5p4m-2wfm-xmqj",
+      "issue": "JS-YAML: Quadratic CPU consumption in !!omap resolution (3.x and 4.x) — CVE-2026-59870 fix not backported",
+      "via": "read-yaml-file@1.1.0",
+      "rationale": "Transitive via @eslint/eslintrc and read-yaml-file, which parse this repo’s own config files, plus @openvaa/argument-condensation, an experimental package not shipped in the app."
+    },
+    {
+      "id": 1138115,
+      "package": "js-yaml",
+      "severity": "high",
+      "ghsa": "GHSA-5p4m-2wfm-xmqj",
+      "issue": "JS-YAML: Quadratic CPU consumption in !!omap resolution (3.x and 4.x) — CVE-2026-59870 fix not backported",
+      "via": "@eslint/eslintrc@3.3.3, @openvaa/argument-condensation (workspace)",
+      "rationale": "Transitive via @eslint/eslintrc and read-yaml-file, which parse this repo’s own config files, plus @openvaa/argument-condensation, an experimental package not shipped in the app."
+    },
+    {
+      "id": 1115131,
+      "package": "kysely",
+      "severity": "high",
+      "ghsa": "GHSA-wmrf-hv6w-mr66",
+      "issue": "SQL Injection via unsanitized JSON path keys when ignoring/silencing compilation errors or using `Kysely<any>`.",
+      "via": "@inlang/sdk@2.8.0",
+      "rationale": "Transitive via @inlang/sdk, the Paraglide i18n build tooling; it compiles repo-local message catalogs at build time and never reaches a production database."
+    },
+    {
+      "id": 1115531,
+      "package": "kysely",
+      "severity": "high",
+      "ghsa": "GHSA-8cpq-38p9-67gx",
+      "issue": "Kysely has a MySQL SQL Injection via Insufficient Backslash Escaping in `sql.lit(string)` usage or similar methods that append string literal values into the compiled SQL strings",
+      "via": "@inlang/sdk@2.8.0",
+      "rationale": "Transitive via @inlang/sdk, the Paraglide i18n build tooling; it compiles repo-local message catalogs at build time and never reaches a production database."
+    },
+    {
+      "id": 1120248,
+      "package": "kysely",
+      "severity": "high",
+      "ghsa": "GHSA-pv5w-4p9q-p3v2",
+      "issue": "Kysely: JSON-path traversal injection via unsanitized path-leg metacharacters in `JSONPathBuilder.key()` / `.at()`",
+      "via": "@inlang/sdk@2.8.0",
+      "rationale": "Transitive via @inlang/sdk, the Paraglide i18n build tooling; it compiles repo-local message catalogs at build time and never reaches a production database."
+    },
+    {
+      "id": 1121797,
+      "package": "linkify-it",
+      "severity": "high",
+      "ghsa": "GHSA-22p9-wv53-3rq4",
+      "issue": "LinkifyIt#match scan loop has quadratic algorithmic complexity",
+      "via": "markdown-it@14.1.0",
+      "rationale": "Transitive via markdown-it in docs tooling; the quadratic-scan classes apply to repo-local markdown."
+    },
+    {
+      "id": 1124012,
+      "package": "linkify-it",
+      "severity": "high",
+      "ghsa": "GHSA-v245-v573-v5vm",
+      "issue": "linkify-it: Quadratic-complexity DoS via the `mailto:` validator scan-loop on attacker text",
+      "via": "markdown-it@14.1.0",
+      "rationale": "Transitive via markdown-it in docs tooling; the quadratic-scan classes apply to repo-local markdown."
+    },
+    {
+      "id": 1115806,
+      "package": "lodash",
+      "severity": "high",
+      "ghsa": "GHSA-r5fr-rjxr-66jc",
+      "issue": "lodash vulnerable to Code Injection via `_.template` imports key names",
+      "via": "@testing-library/jest-dom@6.6.3",
+      "rationale": "Transitive via @testing-library/jest-dom, a test-only dependency. The advisory is against `_.template`, which no code in this repo calls."
+    },
+    {
+      "id": 1113459,
+      "package": "minimatch",
+      "severity": "high",
+      "ghsa": "GHSA-3ppc-4f35-3m26",
+      "issue": "minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern",
+      "via": "eslint-plugin-import@2.32.0",
+      "rationale": "Dev-tooling transitive only (eslint-plugin-import, typedoc, glob); the ReDoS classes need an attacker-supplied pattern, and patterns here come from lint and doc configs in this repo."
+    },
+    {
+      "id": 1113465,
+      "package": "minimatch",
+      "severity": "high",
+      "ghsa": "GHSA-3ppc-4f35-3m26",
+      "issue": "minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern",
+      "via": "typedoc@0.28.15",
+      "rationale": "Dev-tooling transitive only (eslint-plugin-import, typedoc, glob); the ReDoS classes need an attacker-supplied pattern, and patterns here come from lint and doc configs in this repo."
+    },
+    {
+      "id": 1113466,
+      "package": "minimatch",
+      "severity": "high",
+      "ghsa": "GHSA-3ppc-4f35-3m26",
+      "issue": "minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern",
+      "via": "glob@11.1.0",
+      "rationale": "Dev-tooling transitive only (eslint-plugin-import, typedoc, glob); the ReDoS classes need an attacker-supplied pattern, and patterns here come from lint and doc configs in this repo."
+    },
+    {
+      "id": 1113538,
+      "package": "minimatch",
+      "severity": "high",
+      "ghsa": "GHSA-7r86-cg39-jmmj",
+      "issue": "minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments",
+      "via": "eslint-plugin-import@2.32.0",
+      "rationale": "Dev-tooling transitive only (eslint-plugin-import, typedoc, glob); the ReDoS classes need an attacker-supplied pattern, and patterns here come from lint and doc configs in this repo."
+    },
+    {
+      "id": 1113544,
+      "package": "minimatch",
+      "severity": "high",
+      "ghsa": "GHSA-7r86-cg39-jmmj",
+      "issue": "minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments",
+      "via": "typedoc@0.28.15",
+      "rationale": "Dev-tooling transitive only (eslint-plugin-import, typedoc, glob); the ReDoS classes need an attacker-supplied pattern, and patterns here come from lint and doc configs in this repo."
+    },
+    {
+      "id": 1113545,
+      "package": "minimatch",
+      "severity": "high",
+      "ghsa": "GHSA-7r86-cg39-jmmj",
+      "issue": "minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments",
+      "via": "glob@11.1.0",
+      "rationale": "Dev-tooling transitive only (eslint-plugin-import, typedoc, glob); the ReDoS classes need an attacker-supplied pattern, and patterns here come from lint and doc configs in this repo."
+    },
+    {
+      "id": 1113546,
+      "package": "minimatch",
+      "severity": "high",
+      "ghsa": "GHSA-23c5-xmqv-rm74",
+      "issue": "minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions",
+      "via": "eslint-plugin-import@2.32.0",
+      "rationale": "Dev-tooling transitive only (eslint-plugin-import, typedoc, glob); the ReDoS classes need an attacker-supplied pattern, and patterns here come from lint and doc configs in this repo."
+    },
+    {
+      "id": 1113552,
+      "package": "minimatch",
+      "severity": "high",
+      "ghsa": "GHSA-23c5-xmqv-rm74",
+      "issue": "minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions",
+      "via": "typedoc@0.28.15",
+      "rationale": "Dev-tooling transitive only (eslint-plugin-import, typedoc, glob); the ReDoS classes need an attacker-supplied pattern, and patterns here come from lint and doc configs in this repo."
+    },
+    {
+      "id": 1113553,
+      "package": "minimatch",
+      "severity": "high",
+      "ghsa": "GHSA-23c5-xmqv-rm74",
+      "issue": "minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions",
+      "via": "glob@11.1.0",
+      "rationale": "Dev-tooling transitive only (eslint-plugin-import, typedoc, glob); the ReDoS classes need an attacker-supplied pattern, and patterns here come from lint and doc configs in this repo."
+    },
+    {
+      "id": 1138811,
+      "package": "nanoid",
+      "severity": "high",
+      "ghsa": "GHSA-28wg-ghj8-5hjv",
+      "issue": "nanoid: non-secure generators can loop indefinitely with negative size",
+      "via": "postcss@8.4.49, postcss@8.5.6",
+      "rationale": "Transitive via postcss inside the build toolchain; generated ids are non-security build artefacts here."
+    },
+    {
+      "id": 1139427,
+      "package": "nanoid",
+      "severity": "high",
+      "ghsa": "GHSA-2v37-7h3g-55p8",
+      "issue": "nanoid: custom generators can loop indefinitely when size is zero",
+      "via": "postcss@8.4.49, postcss@8.5.6",
+      "rationale": "Transitive via postcss inside the build toolchain; generated ids are non-security build artefacts here."
+    },
+    {
+      "id": 1153189,
+      "package": "nanoid",
+      "severity": "high",
+      "ghsa": "GHSA-xwg4-73v4-xw9w",
+      "issue": "nanoid: Integer Overflow or Wraparound",
+      "via": "postcss@8.4.49, postcss@8.5.6",
+      "rationale": "Transitive via postcss inside the build toolchain; generated ids are non-security build artefacts here."
+    },
+    {
+      "id": 1115552,
+      "package": "picomatch",
+      "severity": "high",
+      "ghsa": "GHSA-c2c7-rcm5-vvqj",
+      "issue": "Picomatch has a ReDoS vulnerability via extglob quantifiers",
+      "via": "micromatch@4.0.8",
+      "rationale": "Transitive via micromatch, lint-staged and vitest for glob matching over repo-local paths; the ReDoS class needs an attacker-supplied extglob."
+    },
+    {
+      "id": 1115554,
+      "package": "picomatch",
+      "severity": "high",
+      "ghsa": "GHSA-c2c7-rcm5-vvqj",
+      "issue": "Picomatch has a ReDoS vulnerability via extglob quantifiers",
+      "via": "lint-staged@16.4.0, vitest@3.2.4",
+      "rationale": "Transitive via micromatch, lint-staged and vitest for glob matching over repo-local paths; the ReDoS class needs an attacker-supplied extglob."
+    },
+    {
+      "id": 1124252,
+      "package": "postcss",
+      "severity": "high",
+      "ghsa": "GHSA-6g55-p6wh-862q",
+      "issue": "PostCSS: Arbitrary file read and information disclosure via attacker-controlled sourceMappingURL in CSS comments",
+      "via": "eslint-plugin-svelte@3.13.1, vite@6.4.1, vite@7.3.0",
+      "rationale": "Build-time CSS toolchain. Both advisories are sourceMappingURL path-traversal classes against attacker-controlled CSS; the input here is this repo’s own stylesheets."
+    },
+    {
+      "id": 1139510,
+      "package": "postcss",
+      "severity": "high",
+      "ghsa": "GHSA-r28c-9q8g-f849",
+      "issue": "PostCSS: Path Traversal in Previous Source Map Auto-Loading (sourceMappingURL) leads to Arbitrary .map File Disclosure",
+      "via": "eslint-plugin-svelte@3.13.1, vite@6.4.1, vite@7.3.0",
+      "rationale": "Build-time CSS toolchain. Both advisories are sourceMappingURL path-traversal classes against attacker-controlled CSS; the input here is this repo’s own stylesheets."
+    },
+    {
+      "id": 1113515,
+      "package": "rollup",
+      "severity": "high",
+      "ghsa": "GHSA-mw96-cpmx-2vgc",
+      "issue": "Rollup 4 has Arbitrary File Write via Path Traversal",
+      "via": "vite@7.3.0",
+      "rationale": "Transitive via vite; part of the build toolchain that runs on repo-local sources, not a deployed runtime component."
+    },
+    {
+      "id": 1120422,
+      "package": "shell-quote",
+      "severity": "critical",
+      "ghsa": "GHSA-w7jw-789q-3m8p",
+      "issue": "shell-quote quote() does not escape newlines in object .op values",
+      "via": "concurrently@9.2.1",
+      "rationale": "CRITICAL, ACCEPTED: transitive via concurrently, which this repo invokes only from the local `yarn dev` script with hard-coded arguments, so no untrusted string is ever quoted or parsed."
+    },
+    {
+      "id": 1123944,
+      "package": "shell-quote",
+      "severity": "high",
+      "ghsa": "GHSA-395f-4hp3-45gv",
+      "issue": "shell-quote: Quadratic-complexity Denial of Service in `parse()` (CWE-407)",
+      "via": "concurrently@9.2.1",
+      "rationale": "CRITICAL, ACCEPTED: transitive via concurrently, which this repo invokes only from the local `yarn dev` script with hard-coded arguments, so no untrusted string is ever quoted or parsed."
+    },
+    {
+      "id": 1112659,
+      "package": "tar",
+      "severity": "high",
+      "ghsa": "GHSA-34x7-hfp2-rc4v",
+      "issue": "node-tar Vulnerable to Arbitrary File Creation/Overwrite via Hardlink Path Traversal",
+      "via": "node-gyp@11.0.0",
+      "rationale": "Transitive via node-gyp and the supabase CLI, both install-time/dev tooling; the extraction classes apply to archives fetched from registries we already trust enough to install from."
+    },
+    {
+      "id": 1113300,
+      "package": "tar",
+      "severity": "high",
+      "ghsa": "GHSA-8qq5-rm4j-mr97",
+      "issue": "node-tar is Vulnerable to Arbitrary File Overwrite and Symlink Poisoning via Insufficient Path Sanitization",
+      "via": "node-gyp@11.0.0",
+      "rationale": "Transitive via node-gyp and the supabase CLI, both install-time/dev tooling; the extraction classes apply to archives fetched from registries we already trust enough to install from."
+    },
+    {
+      "id": 1113375,
+      "package": "tar",
+      "severity": "high",
+      "ghsa": "GHSA-83g3-92jg-28cx",
+      "issue": "Arbitrary File Read/Write via Hardlink Target Escape Through Symlink Chain in node-tar Extraction",
+      "via": "node-gyp@11.0.0",
+      "rationale": "Transitive via node-gyp and the supabase CLI, both install-time/dev tooling; the extraction classes apply to archives fetched from registries we already trust enough to install from."
+    },
+    {
+      "id": 1114200,
+      "package": "tar",
+      "severity": "high",
+      "ghsa": "GHSA-qffp-2rhf-9h96",
+      "issue": "tar has Hardlink Path Traversal via Drive-Relative Linkpath",
+      "via": "node-gyp@11.0.0",
+      "rationale": "Transitive via node-gyp and the supabase CLI, both install-time/dev tooling; the extraction classes apply to archives fetched from registries we already trust enough to install from."
+    },
+    {
+      "id": 1114302,
+      "package": "tar",
+      "severity": "high",
+      "ghsa": "GHSA-9ppj-qmqm-q256",
+      "issue": "node-tar Symlink Path Traversal via Drive-Relative Linkpath",
+      "via": "node-gyp@11.0.0",
+      "rationale": "Transitive via node-gyp and the supabase CLI, both install-time/dev tooling; the extraction classes apply to archives fetched from registries we already trust enough to install from."
+    },
+    {
+      "id": 1114680,
+      "package": "tar",
+      "severity": "high",
+      "ghsa": "GHSA-r6q2-hw4h-h46w",
+      "issue": "Race Condition in node-tar Path Reservations via Unicode Ligature Collisions on macOS APFS",
+      "via": "node-gyp@11.0.0",
+      "rationale": "Transitive via node-gyp and the supabase CLI, both install-time/dev tooling; the extraction classes apply to archives fetched from registries we already trust enough to install from."
+    },
+    {
+      "id": 1123940,
+      "package": "tar",
+      "severity": "critical",
+      "ghsa": "GHSA-23hp-3jrh-7fpw",
+      "issue": "node-tar: Decompression/parse DoS via unlimited input",
+      "via": "node-gyp@11.0.0, supabase@2.83.0",
+      "rationale": "Transitive via node-gyp and the supabase CLI, both install-time/dev tooling; the extraction classes apply to archives fetched from registries we already trust enough to install from."
+    },
+    {
+      "id": 1123941,
+      "package": "tar",
+      "severity": "high",
+      "ghsa": "GHSA-8x88-c5mf-7j5w",
+      "issue": "node-tar: Negative tar entry size causes infinite loop in archive replace",
+      "via": "node-gyp@11.0.0, supabase@2.83.0",
+      "rationale": "Transitive via node-gyp and the supabase CLI, both install-time/dev tooling; the extraction classes apply to archives fetched from registries we already trust enough to install from."
+    },
+    {
+      "id": 1145647,
+      "package": "tar",
+      "severity": "high",
+      "ghsa": "GHSA-r292-9mhp-454m",
+      "issue": "node-tar: Uncontrolled recursion in mapHas/filesFilter allows uncatchable stack-overflow DoS via crafted long-path tar with member selection",
+      "via": "node-gyp@11.0.0, supabase@2.83.0",
+      "rationale": "Transitive via node-gyp and the supabase CLI, both install-time/dev tooling; the extraction classes apply to archives fetched from registries we already trust enough to install from."
+    },
+    {
+      "id": 1114592,
+      "package": "undici",
+      "severity": "high",
+      "ghsa": "GHSA-f269-vfmq-vjvj",
+      "issue": "Undici: Malicious WebSocket 64-bit length overflows parser and crashes the client",
+      "via": "cheerio@1.0.0",
+      "rationale": "Transitive via cheerio in docs tooling. All four advisories are WebSocket-client classes; nothing in this repo opens a WebSocket through undici."
+    },
+    {
+      "id": 1114638,
+      "package": "undici",
+      "severity": "high",
+      "ghsa": "GHSA-vrm6-8vpv-qv8q",
+      "issue": "Undici has Unbounded Memory Consumption in WebSocket permessage-deflate Decompression",
+      "via": "cheerio@1.0.0",
+      "rationale": "Transitive via cheerio in docs tooling. All four advisories are WebSocket-client classes; nothing in this repo opens a WebSocket through undici."
+    },
+    {
+      "id": 1114640,
+      "package": "undici",
+      "severity": "high",
+      "ghsa": "GHSA-v9p9-hfj2-hcw8",
+      "issue": "Undici has Unhandled Exception in WebSocket Client Due to Invalid server_max_window_bits Validation",
+      "via": "cheerio@1.0.0",
+      "rationale": "Transitive via cheerio in docs tooling. All four advisories are WebSocket-client classes; nothing in this repo opens a WebSocket through undici."
+    },
+    {
+      "id": 1121245,
+      "package": "undici",
+      "severity": "high",
+      "ghsa": "GHSA-vxpw-j846-p89q",
+      "issue": "undici WebSocket client vulnerable to denial of service via fragment count bypass",
+      "via": "cheerio@1.0.0",
+      "rationale": "Transitive via cheerio in docs tooling. All four advisories are WebSocket-client classes; nothing in this repo opens a WebSocket through undici."
+    },
+    {
+      "id": 1116232,
+      "package": "vite",
+      "severity": "high",
+      "ghsa": "GHSA-v2wj-q39q-566r",
+      "issue": "Vite: `server.fs.deny` bypassed with queries",
+      "via": "@openvaa/docs (workspace), vitest@4.0.15, vitest@3.2.4",
+      "rationale": "Build and dev-server tooling. Every advisory here is against the DEV server file-serving surface, which is never exposed by the deployed adapter-node bundle."
+    },
+    {
+      "id": 1116234,
+      "package": "vite",
+      "severity": "high",
+      "ghsa": "GHSA-p9ff-h696-f583",
+      "issue": "Vite Vulnerable to Arbitrary File Read via Vite Dev Server WebSocket",
+      "via": "@openvaa/frontend (workspace)",
+      "rationale": "Build and dev-server tooling. Every advisory here is against the DEV server file-serving surface, which is never exposed by the deployed adapter-node bundle."
+    },
+    {
+      "id": 1116235,
+      "package": "vite",
+      "severity": "high",
+      "ghsa": "GHSA-p9ff-h696-f583",
+      "issue": "Vite Vulnerable to Arbitrary File Read via Vite Dev Server WebSocket",
+      "via": "@openvaa/docs (workspace), vitest@4.0.15, vitest@3.2.4",
+      "rationale": "Build and dev-server tooling. Every advisory here is against the DEV server file-serving surface, which is never exposed by the deployed adapter-node bundle."
+    },
+    {
+      "id": 1123525,
+      "package": "vite",
+      "severity": "high",
+      "ghsa": "GHSA-fx2h-pf6j-xcff",
+      "issue": "vite: `server.fs.deny` bypass on Windows alternate paths",
+      "via": "@openvaa/frontend (workspace)",
+      "rationale": "Build and dev-server tooling. Every advisory here is against the DEV server file-serving surface, which is never exposed by the deployed adapter-node bundle."
+    },
+    {
+      "id": 1123526,
+      "package": "vite",
+      "severity": "high",
+      "ghsa": "GHSA-fx2h-pf6j-xcff",
+      "issue": "vite: `server.fs.deny` bypass on Windows alternate paths",
+      "via": "@openvaa/docs (workspace), vitest@4.0.15, vitest@3.2.4",
+      "rationale": "Build and dev-server tooling. Every advisory here is against the DEV server file-serving surface, which is never exposed by the deployed adapter-node bundle."
+    },
+    {
+      "id": 1139528,
+      "package": "vitest",
+      "severity": "critical",
+      "ghsa": "GHSA-5xrq-8626-4rwp",
+      "issue": "When Vitest UI server is listening, arbitrary file can be read and executed",
+      "via": "@openvaa/frontend (workspace), @openvaa/supabase (workspace), root workspace",
+      "rationale": "CRITICAL, ACCEPTED: the test runner itself, a direct devDependency of four workspaces. The advisory requires the Vitest UI server to be listening; this repo never runs `--ui`, and vitest is absent from the production image."
+    },
+    {
+      "id": 1139529,
+      "package": "vitest",
+      "severity": "critical",
+      "ghsa": "GHSA-5xrq-8626-4rwp",
+      "issue": "When Vitest UI server is listening, arbitrary file can be read and executed",
+      "via": "@openvaa/docs (workspace)",
+      "rationale": "CRITICAL, ACCEPTED: the test runner itself, a direct devDependency of four workspaces. The advisory requires the Vitest UI server to be listening; this repo never runs `--ui`, and vitest is absent from the production image."
+    },
+    {
+      "id": 1123259,
+      "package": "ws",
+      "severity": "high",
+      "ghsa": "GHSA-96hv-2xvq-fx4p",
+      "issue": "ws: Memory exhaustion DoS from tiny fragments and data chunks",
+      "via": "@supabase/realtime-js@2.99.3, @vitest/browser@4.0.15, jsdom@26.1.0",
+      "rationale": "Transitive via @supabase/realtime-js, @vitest/browser and jsdom. Accepted pending a @supabase/supabase-js bump; the memory-exhaustion class needs a hostile peer on an open socket."
+    }
+  ]
+}

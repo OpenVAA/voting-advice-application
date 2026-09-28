@@ -1,0 +1,3 @@
+apps/supabase/supabase/tests/database/19-entity-immutability.test.sql	b7ec2e2eadc952b75d871e3fed56f6c80461be9a	165-17
+apps/supabase/supabase/tests/database/20-storage-authority.test.sql	8774dccdb6febf87e654f8291f01d7215ec4ffb3	165-17
+apps/supabase/supabase/tests/database/25-matrix-conformance.test.sql	3cf3bbf3975b362c37d7676b176946b8f34efc2f	165-17
