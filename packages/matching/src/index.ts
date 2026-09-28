@@ -1,6 +1,5 @@
 /*
- * Utility exports for this module. We are using blob exports here because
- * we're using named exports in the folder index files.
+ * Utility exports for this module. We are using blob exports here because we're using named exports in the folder index files.
  */
 
 export * from './algorithms';

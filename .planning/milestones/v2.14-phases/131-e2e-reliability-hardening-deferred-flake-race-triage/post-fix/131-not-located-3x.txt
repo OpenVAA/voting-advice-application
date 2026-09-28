@@ -1,0 +1,28 @@
+# Phase 131 — todo #5 (not-located CLEAN-02) — 3x cold-start evidence
+# Covering spec: tests/tests/specs/perm/perm-not-located-2e2cg.spec.ts (5 redirect contracts)
+# Contract under test (line 54): cold-start /results -> bounces /elections?next= -> /constituencies?next= -> resumes /results (CLEAN-02)
+# Captured: 2026-07-22T08:01:38Z (Phase-131-dated)
+#
+# Harness note (D-11 cold-start prereq): repeated 'yarn db:reset' restarts the Supabase
+# storage container, orphaning Kong's upstream pool -> Kong 502 'invalid response from
+# upstream' on the base-dataset portrait upload (known db:reset storage-502-wedge). Per
+# iteration: db:reset -> restart supabase_{storage,kong,rest} -> POLL STORAGE until it
+# returns non-502 -> run. This clears the wedge without touching the routing contract.
+# Not retry-until-green: each run below is a first-and-only attempt on a freshly-cold DB.
+########################################################################
+
+===== RUN 1 (cold DB + gateway reconnect + storage-ready gate) =====
+RUN 1: storage ready (http 200) after 2
+Running 38 tests using 2 workers
+[1A[2K  38 passed (2.5m)
+
+===== RUN 2 (cold DB + gateway reconnect + storage-ready gate) =====
+RUN 2: storage ready (http 200) after 2
+Running 38 tests using 2 workers
+[1A[2K  38 passed (2.3m)
+
+===== RUN 3 (cold DB + gateway reconnect + storage-ready gate) =====
+RUN 3: storage ready (http 200) after 2
+Running 38 tests using 2 workers
+[1A[2K  38 passed (2.5m)
+========================================================================

@@ -1,0 +1,1407 @@
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+Running 61 tests using 1 worker
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+
+[1A[2K[1/61] [data-setup] › tests/setup/data.setup.ts:76:1 › import test dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+
+[1A[2K[2/61] [voter-app] › tests/specs/voter/voter-allowopen.spec.ts:67:5 › SETTINGS-02 — entity comment display surface › SETTINGS-02 entity comment surface renders for allowOpen-true questions @voter @variant @settings-02
+[1A[2K  1) [voter-app] › tests/specs/voter/voter-allowopen.spec.ts:67:5 › SETTINGS-02 — entity comment display surface › SETTINGS-02 entity comment surface renders for allowOpen-true questions @voter @variant @settings-02 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-allowopen-SETTINGS-0-fda2e-or-allowOpen-true-questions-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-allowopen-SETTINGS-0-fda2e-or-allowOpen-true-questions-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-allowopen-SETTINGS-0-fda2e-or-allowOpen-true-questions-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+
+[1A[2K[3/61] [voter-app] › tests/specs/voter/voter-allowopen.spec.ts:95:5 › SETTINGS-02 — entity comment display surface › SETTINGS-02 entity comment surface present even when allowOpen flipped after authoring @voter @variant @settings-02
+[1A[2K  2) [voter-app] › tests/specs/voter/voter-allowopen.spec.ts:95:5 › SETTINGS-02 — entity comment display surface › SETTINGS-02 entity comment surface present even when allowOpen flipped after authoring @voter @variant @settings-02 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-allowopen-SETTINGS-0-ed704-pen-flipped-after-authoring-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-allowopen-SETTINGS-0-ed704-pen-flipped-after-authoring-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-allowopen-SETTINGS-0-ed704-pen-flipped-after-authoring-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[4/61] [voter-app] › tests/specs/voter/voter-allowopen.spec.ts:128:5 › SETTINGS-02 — entity comment display surface › SETTINGS-02 entity comment surface is absent when entity has no answer.info @voter @variant @settings-02
+[1A[2K  3) [voter-app] › tests/specs/voter/voter-allowopen.spec.ts:128:5 › SETTINGS-02 — entity comment display surface › SETTINGS-02 entity comment surface is absent when entity has no answer.info @voter @variant @settings-02 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-allowopen-SETTINGS-0-c6622-n-entity-has-no-answer-info-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-allowopen-SETTINGS-0-c6622-n-entity-has-no-answer-info-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-allowopen-SETTINGS-0-c6622-n-entity-has-no-answer-info-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+
+[1A[2K[5/61] [voter-app] › tests/specs/voter/voter-browse-without-match.spec.ts:30:3 › voter browse without match (E2E-02) › voter completes location, skips opinions, browses entity list without match scores @voter @variant
+[1A[2K  4) [voter-app] › tests/specs/voter/voter-browse-without-match.spec.ts:30:3 › voter browse without match (E2E-02) › voter completes location, skips opinions, browses entity list without match scores @voter @variant 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-browse-without-match.spec.ts:38:5
+
+    Error Context: playwright-results/voter-browse-without-match-a635e-y-list-without-match-scores-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-browse-without-match-a635e-y-list-without-match-scores-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-browse-without-match-a635e-y-list-without-match-scores-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+
+[1A[2K[6/61] [voter-app] › tests/specs/voter/voter-detail.spec.ts:40:3 › voter entity detail › should open candidate detail drawer when clicking a result card @voter
+[1A[2K  5) [voter-app] › tests/specs/voter/voter-detail.spec.ts:40:3 › voter entity detail › should open candidate detail drawer when clicking a result card @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-detail-voter-entity--c4b90-when-clicking-a-result-card-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-detail-voter-entity--c4b90-when-clicking-a-result-card-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-detail-voter-entity--c4b90-when-clicking-a-result-card-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+
+[1A[2K[7/61] [voter-app] › tests/specs/voter/voter-detail.spec.ts:52:3 › voter entity detail › should display candidate info and opinions tabs @voter
+[1A[2K  6) [voter-app] › tests/specs/voter/voter-detail.spec.ts:52:3 › voter entity detail › should display candidate info and opinions tabs @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-detail-voter-entity--0df99-date-info-and-opinions-tabs-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-detail-voter-entity--0df99-date-info-and-opinions-tabs-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-detail-voter-entity--0df99-date-info-and-opinions-tabs-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+
+[1A[2K[8/61] [voter-app] › tests/specs/voter/voter-detail.spec.ts:76:3 › voter entity detail › should display candidate answers correctly in info and opinions tabs @voter
+[1A[2K  7) [voter-app] › tests/specs/voter/voter-detail.spec.ts:76:3 › voter entity detail › should display candidate answers correctly in info and opinions tabs @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-detail-voter-entity--33c2e-y-in-info-and-opinions-tabs-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-detail-voter-entity--33c2e-y-in-info-and-opinions-tabs-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-detail-voter-entity--33c2e-y-in-info-and-opinions-tabs-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+
+[1A[2K[9/61] [voter-app] › tests/specs/voter/voter-detail.spec.ts:125:3 › voter entity detail › should open party detail drawer with info, candidates, and opinions tabs @voter
+[1A[2K  8) [voter-app] › tests/specs/voter/voter-detail.spec.ts:125:3 › voter entity detail › should open party detail drawer with info, candidates, and opinions tabs @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-detail-voter-entity--2787f-andidates-and-opinions-tabs-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-detail-voter-entity--2787f-andidates-and-opinions-tabs-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-detail-voter-entity--2787f-andidates-and-opinions-tabs-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+
+[1A[2K[10/61] [voter-app] › tests/specs/voter/voter-detail.spec.ts:231:3 › voter-detail answer cases (E2E-05) › case (a) — both answered: voter row and entity row rendered @voter
+[1A[2K  9) [voter-app] › tests/specs/voter/voter-detail.spec.ts:231:3 › voter-detail answer cases (E2E-05) › case (a) — both answered: voter row and entity row rendered @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-detail-voter-detail--8c177-row-and-entity-row-rendered-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-detail-voter-detail--8c177-row-and-entity-row-rendered-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-detail-voter-detail--8c177-row-and-entity-row-rendered-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[11/61] [voter-app] › tests/specs/voter/voter-detail.spec.ts:255:3 › voter-detail answer cases (E2E-05) › case (b) — voter answered, entity missing: voter row only @voter
+[1A[2K  10) [voter-app] › tests/specs/voter/voter-detail.spec.ts:255:3 › voter-detail answer cases (E2E-05) › case (b) — voter answered, entity missing: voter row only @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-detail-voter-detail--ec632-tity-missing-voter-row-only-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-detail-voter-detail--ec632-tity-missing-voter-row-only-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-detail-voter-detail--ec632-tity-missing-voter-row-only-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+
+[1A[2K[12/61] [voter-app] › tests/specs/voter/voter-detail.spec.ts:276:3 › voter-detail answer cases (E2E-05) › case (c) — voter missing, entity answered: entity row only @voter
+[1A[2K  11) [voter-app] › tests/specs/voter/voter-detail.spec.ts:276:3 › voter-detail answer cases (E2E-05) › case (c) — voter missing, entity answered: entity row only @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-detail-voter-detail--9082f-ty-answered-entity-row-only-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-detail-voter-detail--9082f-ty-answered-entity-row-only-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-detail-voter-detail--9082f-ty-answered-entity-row-only-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+[1A[2K[13/61] [voter-app] › tests/specs/voter/voter-detail.spec.ts:299:3 › voter-detail answer cases (E2E-05) › case (d) — both missing: "Neither has answered" message rendered @voter
+[1A[2K  12) [voter-app] › tests/specs/voter/voter-detail.spec.ts:299:3 › voter-detail answer cases (E2E-05) › case (d) — both missing: "Neither has answered" message rendered @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-detail-voter-detail--1b060-s-answered-message-rendered-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-detail-voter-detail--1b060-s-answered-message-rendered-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-detail-voter-detail--1b060-s-answered-message-rendered-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+
+[1A[2K[14/61] [voter-app] › tests/specs/voter/voter-detail.spec.ts:364:3 › voter-detail per-category SubMatches (E2E-07) › per-category SubMatch grid renders Manhattan + directional metric path categories @voter
+[1A[2K  13) [voter-app] › tests/specs/voter/voter-detail.spec.ts:364:3 › voter-detail per-category SubMatches (E2E-07) › per-category SubMatch grid renders Manhattan + directional metric path categories @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-detail-voter-detail--a7305-onal-metric-path-categories-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-detail-voter-detail--a7305-onal-metric-path-categories-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-detail-voter-detail--a7305-onal-metric-path-categories-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[15/61] [voter-app] › tests/specs/voter/voter-detail.spec.ts:407:3 › voter-detail per-category SubMatches (E2E-07) › directional-metric SubMatch row exists for a candidate who answered the categorical question @voter
+[1A[2K  14) [voter-app] › tests/specs/voter/voter-detail.spec.ts:407:3 › voter-detail per-category SubMatches (E2E-07) › directional-metric SubMatch row exists for a candidate who answered the categorical question @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-detail-voter-detail--54a27-ed-the-categorical-question-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-detail-voter-detail--54a27-ed-the-categorical-question-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-detail-voter-detail--54a27-ed-the-categorical-question-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[16/61] [voter-app] › tests/specs/voter/voter-feedback-persistence.spec.ts:84:3 › feedback persistence (E2E-03) › feedback text persists across dismiss and resets after send @voter
+[1A[2K[17/61] [voter-app] › tests/specs/voter/voter-journey.spec.ts:110:3 › voter journey › should load home page and display start button @voter @smoke
+[1A[2K[18/61] [voter-app] › tests/specs/voter/voter-journey.spec.ts:124:3 › voter journey › should auto-imply election and constituency @voter @smoke
+[1A[2K[19/61] [voter-app] › tests/specs/voter/voter-journey.spec.ts:140:3 › voter journey › should show questions intro page with start button @voter @smoke
+[1A[2K[20/61] [voter-app] › tests/specs/voter/voter-journey.spec.ts:159:3 › voter journey › should answer all Likert questions with navigation @voter @smoke
+[1A[2K  15) [voter-app] › tests/specs/voter/voter-journey.spec.ts:159:3 › voter journey › should answer all Likert questions with navigation @voter @smoke 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Target page, context or browser has been closed
+    Call log:
+    [2m  - waiting for getByTestId('question-choice').nth(4)[22m
+
+
+      172 |     async function answerAndWaitForAdvance(optionIndex: number): Promise<void> {
+      173 |       const urlBefore = sharedPage.url();
+    > 174 |       await answerOption.nth(optionIndex).click();
+          |                                           ^
+      175 |       await sharedPage.waitForURL((url) => url.toString() !== urlBefore, { timeout: 10000 });
+      176 |     }
+      177 |
+        at answerAndWaitForAdvance (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-journey.spec.ts:174:43)
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-journey.spec.ts:193:11
+
+    Error Context: playwright-results/voter-journey-voter-journe-b7c5a-t-questions-with-navigation-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-journey-voter-journe-b7c5a-t-questions-with-navigation-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-journey-voter-journe-b7c5a-t-questions-with-navigation-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+
+[1A[2K[21/61] [voter-app] › tests/specs/voter/voter-locale-switching.spec.ts:54:3 › voter locale switching (E2E-08) › locale switches via route prefix @voter
+[1A[2K[22/61] [voter-app] › tests/specs/voter/voter-locale-switching.spec.ts:86:3 › voter locale switching (E2E-08) › locale switches via LanguageSelection widget (when present) @voter
+[1A[2K[23/61] [voter-app] › tests/specs/voter/voter-matching.spec.ts:214:3 › matching algorithm verification › should display candidates in correct match ranking order @voter
+[1A[2K  16) [voter-app] › tests/specs/voter/voter-matching.spec.ts:214:3 › matching algorithm verification › should display candidates in correct match ranking order @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at navigateToResults (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-matching.spec.ts:147:3)
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-matching.spec.ts:215:5
+
+    Error Context: playwright-results/voter-matching-matching-al-8f03f-correct-match-ranking-order-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-matching-matching-al-8f03f-correct-match-ranking-order-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-matching-matching-al-8f03f-correct-match-ranking-order-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[24/61] [voter-app] › tests/specs/voter/voter-matching.spec.ts:242:3 › matching algorithm verification › should show perfect match candidate as top result @voter
+[1A[2K[25/61] [voter-app] › tests/specs/voter/voter-matching.spec.ts:251:3 › matching algorithm verification › should show worst match candidate as last result @voter
+[1A[2K[26/61] [voter-app] › tests/specs/voter/voter-matching.spec.ts:271:3 › matching algorithm verification › should show partial-answer candidate in results with valid score @voter
+[1A[2K[27/61] [voter-app] › tests/specs/voter/voter-matching.spec.ts:288:3 › matching algorithm verification › should NOT show hidden candidate (no termsOfUseAccepted) @voter
+[1A[2K[28/61] [voter-app] › tests/specs/voter/voter-matching.spec.ts:297:3 › matching algorithm verification › should confirm category intros were not shown during journey (VOTE-05 partial negative coverage) @voter
+[1A[2K[29/61] [voter-app] › tests/specs/voter/voter-matching.spec.ts:312:3 › matching algorithm verification › should confirm results accessible after all questions answered (VOTE-07 partial above-threshold coverage) @voter
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+
+[1A[2K[30/61] [voter-app] › tests/specs/voter/voter-navigation.spec.ts:196:3 › voter navigation: skip/delete/back (E2E-06) › results-CTA toggles per minimumAnswers threshold @voter
+[1A[2K  17) [voter-app] › tests/specs/voter/voter-navigation.spec.ts:196:3 › voter navigation: skip/delete/back (E2E-06) › results-CTA toggles per minimumAnswers threshold @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at answerNQuestions (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-navigation.spec.ts:150:3)
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-navigation.spec.ts:189:5
+
+    Error Context: playwright-results/voter-navigation-voter-nav-7f2bf-er-minimumAnswers-threshold-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-navigation-voter-nav-7f2bf-er-minimumAnswers-threshold-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-navigation-voter-nav-7f2bf-er-minimumAnswers-threshold-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[31/61] [voter-app] › tests/specs/voter/voter-navigation.spec.ts:252:3 › voter navigation: skip/delete/back (E2E-06) › browser-back preserves answer state across navigation @voter
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+
+[1A[2K[32/61] [voter-app] › tests/specs/voter/voter-popup-hydration.spec.ts:170:3 › setTimeout popup on full page load (LAYOUT-03 regression gate) › popup appears on full page load to /results (LAYOUT-03 hydration path) @voter
+[1A[2K[33/61] [voter-app] › tests/specs/voter/voter-question-rendering-boolean.spec.ts:109:3 › voter question rendering — boolean (QSPEC-01) › boolean opinion question renders, voter answers, persists across goBack, mirrors on entity-detail @voter
+[1A[2K[34/61] [voter-app] › tests/specs/voter/voter-question-rendering-categorical.spec.ts:109:3 › voter question rendering — categorical (QSPEC-02) › categorical opinion question (single-choice) renders, voter answers, persists across goBack, mirrors on entity-detail @voter
+[1A[2K[35/61] [voter-app] › tests/specs/voter/voter-questions.spec.ts:42:3 › voter questions intro › fresh session defaults to all opinion categories checked + counter non-zero on first paint @voter
+[1A[2K  18) [voter-app] › tests/specs/voter/voter-questions.spec.ts:42:3 › voter questions intro › fresh session defaults to all opinion categories checked + counter non-zero on first paint @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at walkToQuestionsIntro (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:279:3)
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-questions.spec.ts:48:5
+
+    Error Context: playwright-results/voter-questions-voter-ques-067d3-ter-non-zero-on-first-paint-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-questions-voter-ques-067d3-ter-non-zero-on-first-paint-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-questions-voter-ques-067d3-ter-non-zero-on-first-paint-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[36/61] [voter-app] › tests/specs/voter/voter-questions.spec.ts:67:3 › voter questions intro › counter updates reactively on category toggle @voter
+[1A[2K  19) [voter-app] › tests/specs/voter/voter-questions.spec.ts:67:3 › voter questions intro › counter updates reactively on category toggle @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at walkToQuestionsIntro (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:279:3)
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-questions.spec.ts:68:5
+
+    Error Context: playwright-results/voter-questions-voter-ques-ed16b-actively-on-category-toggle-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-questions-voter-ques-ed16b-actively-on-category-toggle-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-questions-voter-ques-ed16b-actively-on-category-toggle-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🤖 agentic secret storage: https://dotenvx.com/as2
+
+[1A[2K[37/61] [voter-app] › tests/specs/voter/voter-results.spec.ts:100:3 › voter results › should display candidates section with result cards @voter
+[1A[2K  20) [voter-app] › tests/specs/voter/voter-results.spec.ts:100:3 › voter results › should display candidates section with result cards @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-results-voter-result-bb8ae-s-section-with-result-cards-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-results-voter-result-bb8ae-s-section-with-result-cards-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-results-voter-result-bb8ae-s-section-with-result-cards-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+[1A[2K[38/61] [voter-app] › tests/specs/voter/voter-results.spec.ts:118:3 › voter results › should display entity type tabs for switching between candidates and organizations @voter
+[1A[2K  21) [voter-app] › tests/specs/voter/voter-results.spec.ts:118:3 › voter results › should display entity type tabs for switching between candidates and organizations @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-results-voter-result-9d642-andidates-and-organizations-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-results-voter-result-9d642-andidates-and-organizations-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-results-voter-result-9d642-andidates-and-organizations-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+
+[1A[2K[39/61] [voter-app] › tests/specs/voter/voter-results.spec.ts:131:3 › voter results › should switch to organizations/parties section and back @voter
+[1A[2K  22) [voter-app] › tests/specs/voter/voter-results.spec.ts:131:3 › voter results › should switch to organizations/parties section and back @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-results-voter-result-55265-ns-parties-section-and-back-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-results-voter-result-55265-ns-parties-section-and-back-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-results-voter-result-55265-ns-parties-section-and-back-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+
+[1A[2K[40/61] [voter-app] › tests/specs/voter/voter-results.spec.ts:158:3 › voter results › canonical URL: /results redirects to /results/candidates (RESEARCH A3) @voter
+[1A[2K  23) [voter-app] › tests/specs/voter/voter-results.spec.ts:158:3 › voter results › canonical URL: /results redirects to /results/candidates (RESEARCH A3) @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-results-voter-result-609a9-lts-candidates-RESEARCH-A3--voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-results-voter-result-609a9-lts-candidates-RESEARCH-A3--voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-results-voter-result-609a9-lts-candidates-RESEARCH-A3--voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+
+[1A[2K[41/61] [voter-app] › tests/specs/voter/voter-results.spec.ts:173:3 › voter results › filter toggle narrows list without effect_update_depth_exceeded (RESULTS-01 + RESULTS-02) @voter
+[1A[2K  24) [voter-app] › tests/specs/voter/voter-results.spec.ts:173:3 › voter results › filter toggle narrows list without effect_update_depth_exceeded (RESULTS-01 + RESULTS-02) @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-results-voter-result-57295-eded-RESULTS-01-RESULTS-02--voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-results-voter-result-57295-eded-RESULTS-01-RESULTS-02--voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-results-voter-result-57295-eded-RESULTS-01-RESULTS-02--voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+[1A[2K[42/61] [voter-app] › tests/specs/voter/voter-results.spec.ts:273:3 › voter results › filter state resets on plural tab switch (D-14) @voter
+[1A[2K  25) [voter-app] › tests/specs/voter/voter-results.spec.ts:273:3 › voter results › filter state resets on plural tab switch (D-14) @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-results-voter-result-4c163--on-plural-tab-switch-D-14--voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-results-voter-result-4c163--on-plural-tab-switch-D-14--voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-results-voter-result-4c163--on-plural-tab-switch-D-14--voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+
+[1A[2K[43/61] [voter-app] › tests/specs/voter/voter-results.spec.ts:331:3 › voter results › filter state survives drawer open/close (D-15) @voter
+[1A[2K  26) [voter-app] › tests/specs/voter/voter-results.spec.ts:331:3 › voter results › filter state survives drawer open/close (D-15) @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-results-voter-result-456f5-ves-drawer-open-close-D-15--voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-results-voter-result-456f5-ves-drawer-open-close-D-15--voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-results-voter-result-456f5-ves-drawer-open-close-D-15--voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+
+[1A[2K[44/61] [voter-app] › tests/specs/voter/voter-results.spec.ts:400:3 › voter results › deeplink list+drawer URL renders both (RESULTS-03, D-08 shape 3) @voter
+[1A[2K  27) [voter-app] › tests/specs/voter/voter-results.spec.ts:400:3 › voter results › deeplink list+drawer URL renders both (RESULTS-03, D-08 shape 3) @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-results-voter-result-130c0-th-RESULTS-03-D-08-shape-3--voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-results-voter-result-130c0-th-RESULTS-03-D-08-shape-3--voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-results-voter-result-130c0-th-RESULTS-03-D-08-shape-3--voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+
+[1A[2K[45/61] [voter-app] › tests/specs/voter/voter-results.spec.ts:419:3 › voter results › deeplink edge case: organizations list + candidate drawer (D-08 shape 4) @voter
+[1A[2K  28) [voter-app] › tests/specs/voter/voter-results.spec.ts:419:3 › voter results › deeplink edge case: organizations list + candidate drawer (D-08 shape 4) @voter 
+
+    [31mTest timeout of 90000ms exceeded while setting up "answeredVoterPage".[39m
+
+    Error: locator.waitFor: Target page, context or browser has been closed
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-results-voter-result-bfde9-didate-drawer-D-08-shape-4--voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-results-voter-result-bfde9-didate-drawer-D-08-shape-4--voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-results-voter-result-bfde9-didate-drawer-D-08-shape-4--voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+
+[1A[2K[46/61] [voter-app] › tests/specs/voter/voter-results.spec.ts:439:3 › voter results › Browser Back steps through tab+drawer changes (D-13) @voter
+[1A[2K  29) [voter-app] › tests/specs/voter/voter-results.spec.ts:439:3 › voter results › Browser Back steps through tab+drawer changes (D-13) @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+    [2m    - waiting for" http://localhost:5173/questions?electionId=8dee9069-a288-4a44-b3ec-66bf7465e062" navigation to finish...[22m
+    [2m    - navigated to "http://localhost:5173/questions?electionId=8dee9069-a288-4a44-b3ec-66bf7465e062"[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-results-voter-result-e5867-gh-tab-drawer-changes-D-13--voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-results-voter-result-e5867-gh-tab-drawer-changes-D-13--voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🤖 agentic secret storage: https://dotenvx.com/as2
+
+[1A[2K[47/61] [voter-app] › tests/specs/voter/voter-results.spec.ts:454:3 › voter results › invalid plural matcher returns 404 (D-11) @voter
+[1A[2K  30) [voter-app] › tests/specs/voter/voter-results.spec.ts:454:3 › voter results › invalid plural matcher returns 404 (D-11) @voter 
+
+    [31mTest timeout of 90000ms exceeded while setting up "answeredVoterPage".[39m
+
+    Error: locator.waitFor: Target page, context or browser has been closed
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-results-voter-result-52788-l-matcher-returns-404-D-11--voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-results-voter-result-52788-l-matcher-returns-404-D-11--voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-results-voter-result-52788-l-matcher-returns-404-D-11--voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+
+[1A[2K[48/61] [voter-app] › tests/specs/voter/voter-results.spec.ts:461:3 › voter results › coupling-rule redirect: singular without id → list view (D-11) @voter
+[1A[2K  31) [voter-app] › tests/specs/voter/voter-results.spec.ts:461:3 › voter results › coupling-rule redirect: singular without id → list view (D-11) @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-results-voter-result-f257f-ithout-id-→-list-view-D-11--voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-results-voter-result-f257f-ithout-id-→-list-view-D-11--voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-results-voter-result-f257f-ithout-id-→-list-view-D-11--voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[49/61] [voter-app] › tests/specs/voter/voter-results.spec.ts:470:3 › voter results › drawer paints before list on cold deeplink (D-10 source-order + content-visibility) @voter
+[1A[2K  32) [voter-app] › tests/specs/voter/voter-results.spec.ts:470:3 › voter results › drawer paints before list on cold deeplink (D-10 source-order + content-visibility) @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-results-voter-result-6bf7d-e-order-content-visibility--voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-results-voter-result-6bf7d-e-order-content-visibility--voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-results-voter-result-6bf7d-e-order-content-visibility--voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+[1A[2K[50/61] [voter-app] › tests/specs/voter/voter-results.spec.ts:613:5 › voter results › SETTINGS-01 wave B — filter-type matrix › SETTINGS-01 wave B — NumberFilter @voter
+[1A[2K  33) [voter-app] › tests/specs/voter/voter-results.spec.ts:613:5 › voter results › SETTINGS-01 wave B — filter-type matrix › SETTINGS-01 wave B — NumberFilter @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-results-voter-result-21a52-GS-01-wave-B-—-NumberFilter-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-results-voter-result-21a52-GS-01-wave-B-—-NumberFilter-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-results-voter-result-21a52-GS-01-wave-B-—-NumberFilter-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+[1A[2K[51/61] [voter-app] › tests/specs/voter/voter-results.spec.ts:672:5 › voter results › SETTINGS-01 wave B — filter-type matrix › SETTINGS-01 wave B — TextFilter @voter
+[1A[2K  34) [voter-app] › tests/specs/voter/voter-results.spec.ts:672:5 › voter results › SETTINGS-01 wave B — filter-type matrix › SETTINGS-01 wave B — TextFilter @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-results-voter-result-0a2ba-INGS-01-wave-B-—-TextFilter-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-results-voter-result-0a2ba-INGS-01-wave-B-—-TextFilter-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-results-voter-result-0a2ba-INGS-01-wave-B-—-TextFilter-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+
+[1A[2K[52/61] [voter-app] › tests/specs/voter/voter-results.spec.ts:731:5 › voter results › SETTINGS-01 wave B — filter-type matrix › SETTINGS-01 wave B — ChoiceQuestionFilter (categorical) @voter
+[1A[2K  35) [voter-app] › tests/specs/voter/voter-results.spec.ts:731:5 › voter results › SETTINGS-01 wave B — filter-type matrix › SETTINGS-01 wave B — ChoiceQuestionFilter (categorical) @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('voter-intro-start').or(getByTestId('voter-elections-list')).or(getByTestId('voter-constituencies-list')).or(getByTestId('voter-questions-start')).or(getByTestId('voter-questions-category-start')).or(getByTestId('question-choice').first()).first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:149
+
+      147 |
+      148 |   for (let step = 0; step < maxSteps; step++) {
+    > 149 |     await anyCheckpoint.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                         ^
+      150 |
+      151 |     // Probe each checkpoint in priority order: closest-to-terminal first so
+      152 |     // an already-visible answer option short-circuits the loop without
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:149:25)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-results-voter-result-eabbe-QuestionFilter-categorical--voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-results-voter-result-eabbe-QuestionFilter-categorical--voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-results-voter-result-eabbe-QuestionFilter-categorical--voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+[1A[2K[53/61] [voter-app] › tests/specs/voter/voter-results.spec.ts:797:5 › voter results › SETTINGS-01 wave B — filter-type matrix › SETTINGS-01 wave B — FilterGroup AND @voter
+[1A[2K  36) [voter-app] › tests/specs/voter/voter-results.spec.ts:797:5 › voter results › SETTINGS-01 wave B — filter-type matrix › SETTINGS-01 wave B — FilterGroup AND @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('question-choice').first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:228
+
+      226 |   // checkpoint rather than a generic loop-out.
+      227 |   if (stopAt === 'first-question') {
+    > 228 |     await answerOption.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                        ^
+      229 |   } else if (stopAt === 'questions-intro') {
+      230 |     await questionsStart.waitFor({ state: 'visible', timeout: perStepTimeout });
+      231 |   } else {
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:228:24)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-results-voter-result-5e3eb-01-wave-B-—-FilterGroup-AND-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-results-voter-result-5e3eb-01-wave-B-—-FilterGroup-AND-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-results-voter-result-5e3eb-01-wave-B-—-FilterGroup-AND-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+[1A[2K[54/61] [voter-app] › tests/specs/voter/voter-results.spec.ts:889:5 › voter results › SETTINGS-01 wave B — filter-type matrix › SETTINGS-01 wave B — MISSING_FILTER_VALUE @voter
+[1A[2K  37) [voter-app] › tests/specs/voter/voter-results.spec.ts:889:5 › voter results › SETTINGS-01 wave B — filter-type matrix › SETTINGS-01 wave B — MISSING_FILTER_VALUE @voter 
+
+    TimeoutError: locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByTestId('question-choice').first() to be visible[22m
+
+
+       at utils/voterNavigation.ts:228
+
+      226 |   // checkpoint rather than a generic loop-out.
+      227 |   if (stopAt === 'first-question') {
+    > 228 |     await answerOption.waitFor({ state: 'visible', timeout: perStepTimeout });
+          |                        ^
+      229 |   } else if (stopAt === 'questions-intro') {
+      230 |     await questionsStart.waitFor({ state: 'visible', timeout: perStepTimeout });
+      231 |   } else {
+        at advanceVoterFlow (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:228:24)
+        at navigateToFirstQuestion (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/utils/voterNavigation.ts:263:3)
+        at Object.answeredVoterPage (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/fixtures/voter.fixture.ts:56:5)
+
+    Error Context: playwright-results/voter-results-voter-result-f1d8e-ve-B-—-MISSING-FILTER-VALUE-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-results-voter-result-f1d8e-ve-B-—-MISSING-FILTER-VALUE-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-results-voter-result-f1d8e-ve-B-—-MISSING-FILTER-VALUE-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+
+[1A[2K[55/61] [voter-app] › tests/specs/voter/voter-static-pages.spec.ts:32:3 › static pages (VOTE-18) › about page renders correctly @voter @smoke
+[1A[2K[56/61] [voter-app] › tests/specs/voter/voter-static-pages.spec.ts:45:3 › static pages (VOTE-18) › info page renders correctly @voter @smoke
+[1A[2K[57/61] [voter-app] › tests/specs/voter/voter-static-pages.spec.ts:58:3 › static pages (VOTE-18) › privacy page renders correctly @voter @smoke
+[1A[2K[58/61] [voter-app] › tests/specs/voter/voter-static-pages.spec.ts:98:5 › nominations page (VOTE-19) › when enabled › should render nominations page with entries @voter
+[1A[2K  38) [voter-app] › tests/specs/voter/voter-static-pages.spec.ts:98:5 › nominations page (VOTE-19) › when enabled › should render nominations page with entries @voter 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByTestId('voter-nominations-list')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByTestId('voter-nominations-list')[22m
+
+
+      113 |
+      114 |       // Verify nominations list is visible
+    > 115 |       await expect(page.getByTestId(testIds.voter.nominations.list)).toBeVisible();
+          |                                                                      ^
+      116 |
+      117 |       // Verify at least one entity card is present in the nominations list
+      118 |       const nominationsList = page.getByTestId(testIds.voter.nominations.list);
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-static-pages.spec.ts:115:70
+
+    Error Context: playwright-results/voter-static-pages-nominat-90254-minations-page-with-entries-voter-app/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    playwright-results/voter-static-pages-nominat-90254-minations-page-with-entries-voter-app/trace.zip
+    Usage:
+
+        yarn playwright show-trace playwright-results/voter-static-pages-nominat-90254-minations-page-with-entries-voter-app/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[59/61] [voter-app] › tests/specs/voter/voter-static-pages.spec.ts:158:5 › nominations page (VOTE-19) › when disabled › should redirect to home when showAllNominations is false @voter
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+
+[1A[2K[60/61] [data-teardown] › tests/setup/data.teardown.ts:17:1 › delete test dataset
+[1A[2K[61/61] [data-teardown] › tests/setup/variant-data.teardown.ts:12:1 › delete variant test dataset
+[1A[2K  38 failed
+    [voter-app] › tests/specs/voter/voter-allowopen.spec.ts:67:5 › SETTINGS-02 — entity comment display surface › SETTINGS-02 entity comment surface renders for allowOpen-true questions @voter @variant @settings-02 
+    [voter-app] › tests/specs/voter/voter-allowopen.spec.ts:95:5 › SETTINGS-02 — entity comment display surface › SETTINGS-02 entity comment surface present even when allowOpen flipped after authoring @voter @variant @settings-02 
+    [voter-app] › tests/specs/voter/voter-allowopen.spec.ts:128:5 › SETTINGS-02 — entity comment display surface › SETTINGS-02 entity comment surface is absent when entity has no answer.info @voter @variant @settings-02 
+    [voter-app] › tests/specs/voter/voter-browse-without-match.spec.ts:30:3 › voter browse without match (E2E-02) › voter completes location, skips opinions, browses entity list without match scores @voter @variant 
+    [voter-app] › tests/specs/voter/voter-detail.spec.ts:40:3 › voter entity detail › should open candidate detail drawer when clicking a result card @voter 
+    [voter-app] › tests/specs/voter/voter-detail.spec.ts:52:3 › voter entity detail › should display candidate info and opinions tabs @voter 
+    [voter-app] › tests/specs/voter/voter-detail.spec.ts:76:3 › voter entity detail › should display candidate answers correctly in info and opinions tabs @voter 
+    [voter-app] › tests/specs/voter/voter-detail.spec.ts:125:3 › voter entity detail › should open party detail drawer with info, candidates, and opinions tabs @voter 
+    [voter-app] › tests/specs/voter/voter-detail.spec.ts:231:3 › voter-detail answer cases (E2E-05) › case (a) — both answered: voter row and entity row rendered @voter 
+    [voter-app] › tests/specs/voter/voter-detail.spec.ts:255:3 › voter-detail answer cases (E2E-05) › case (b) — voter answered, entity missing: voter row only @voter 
+    [voter-app] › tests/specs/voter/voter-detail.spec.ts:276:3 › voter-detail answer cases (E2E-05) › case (c) — voter missing, entity answered: entity row only @voter 
+    [voter-app] › tests/specs/voter/voter-detail.spec.ts:299:3 › voter-detail answer cases (E2E-05) › case (d) — both missing: "Neither has answered" message rendered @voter 
+    [voter-app] › tests/specs/voter/voter-detail.spec.ts:364:3 › voter-detail per-category SubMatches (E2E-07) › per-category SubMatch grid renders Manhattan + directional metric path categories @voter 
+    [voter-app] › tests/specs/voter/voter-detail.spec.ts:407:3 › voter-detail per-category SubMatches (E2E-07) › directional-metric SubMatch row exists for a candidate who answered the categorical question @voter 
+    [voter-app] › tests/specs/voter/voter-journey.spec.ts:159:3 › voter journey › should answer all Likert questions with navigation @voter @smoke 
+    [voter-app] › tests/specs/voter/voter-matching.spec.ts:214:3 › matching algorithm verification › should display candidates in correct match ranking order @voter 
+    [voter-app] › tests/specs/voter/voter-navigation.spec.ts:196:3 › voter navigation: skip/delete/back (E2E-06) › results-CTA toggles per minimumAnswers threshold @voter 
+    [voter-app] › tests/specs/voter/voter-questions.spec.ts:42:3 › voter questions intro › fresh session defaults to all opinion categories checked + counter non-zero on first paint @voter 
+    [voter-app] › tests/specs/voter/voter-questions.spec.ts:67:3 › voter questions intro › counter updates reactively on category toggle @voter 
+    [voter-app] › tests/specs/voter/voter-results.spec.ts:100:3 › voter results › should display candidates section with result cards @voter 
+    [voter-app] › tests/specs/voter/voter-results.spec.ts:118:3 › voter results › should display entity type tabs for switching between candidates and organizations @voter 
+    [voter-app] › tests/specs/voter/voter-results.spec.ts:131:3 › voter results › should switch to organizations/parties section and back @voter 
+    [voter-app] › tests/specs/voter/voter-results.spec.ts:158:3 › voter results › canonical URL: /results redirects to /results/candidates (RESEARCH A3) @voter 
+    [voter-app] › tests/specs/voter/voter-results.spec.ts:173:3 › voter results › filter toggle narrows list without effect_update_depth_exceeded (RESULTS-01 + RESULTS-02) @voter 
+    [voter-app] › tests/specs/voter/voter-results.spec.ts:273:3 › voter results › filter state resets on plural tab switch (D-14) @voter 
+    [voter-app] › tests/specs/voter/voter-results.spec.ts:331:3 › voter results › filter state survives drawer open/close (D-15) @voter 
+    [voter-app] › tests/specs/voter/voter-results.spec.ts:400:3 › voter results › deeplink list+drawer URL renders both (RESULTS-03, D-08 shape 3) @voter 
+    [voter-app] › tests/specs/voter/voter-results.spec.ts:419:3 › voter results › deeplink edge case: organizations list + candidate drawer (D-08 shape 4) @voter 
+    [voter-app] › tests/specs/voter/voter-results.spec.ts:439:3 › voter results › Browser Back steps through tab+drawer changes (D-13) @voter 
+    [voter-app] › tests/specs/voter/voter-results.spec.ts:454:3 › voter results › invalid plural matcher returns 404 (D-11) @voter 
+    [voter-app] › tests/specs/voter/voter-results.spec.ts:461:3 › voter results › coupling-rule redirect: singular without id → list view (D-11) @voter 
+    [voter-app] › tests/specs/voter/voter-results.spec.ts:470:3 › voter results › drawer paints before list on cold deeplink (D-10 source-order + content-visibility) @voter 
+    [voter-app] › tests/specs/voter/voter-results.spec.ts:613:5 › voter results › SETTINGS-01 wave B — filter-type matrix › SETTINGS-01 wave B — NumberFilter @voter 
+    [voter-app] › tests/specs/voter/voter-results.spec.ts:672:5 › voter results › SETTINGS-01 wave B — filter-type matrix › SETTINGS-01 wave B — TextFilter @voter 
+    [voter-app] › tests/specs/voter/voter-results.spec.ts:731:5 › voter results › SETTINGS-01 wave B — filter-type matrix › SETTINGS-01 wave B — ChoiceQuestionFilter (categorical) @voter 
+    [voter-app] › tests/specs/voter/voter-results.spec.ts:797:5 › voter results › SETTINGS-01 wave B — filter-type matrix › SETTINGS-01 wave B — FilterGroup AND @voter 
+    [voter-app] › tests/specs/voter/voter-results.spec.ts:889:5 › voter results › SETTINGS-01 wave B — filter-type matrix › SETTINGS-01 wave B — MISSING_FILTER_VALUE @voter 
+    [voter-app] › tests/specs/voter/voter-static-pages.spec.ts:98:5 › nominations page (VOTE-19) › when enabled › should render nominations page with entries @voter 
+  4 skipped
+  8 did not run
+  11 passed (41.5m)
+
+----
+ANALYSIS — Phase 86.3-05 Task 2 full voter-app project smoke (cascade-side-effect gate per CONTEXT D-09):
+
+Final counts: 38 failed + 4 skipped + 8 did not run + 11 passed = 61 tests.
+
+Regression source: NOT caused by Phase 86.3-05 walkToQuestion helper-resilience
+fix. ALL 38 failures originate from `advanceVoterFlow` at
+voterNavigation.ts:149 — the 5s race-checkpoint timeout fires because the
+voter-app cold-deeplink loader race blocks `/intro` hydration (page renders
+only `Loading…`; NONE of the 6 race-checkpoint testIds paint).
+
+The 38 failed tests use `answeredVoterPage` fixture (per voter.fixture.ts:56
+which calls `navigateToFirstQuestion`); my walkToQuestion change does NOT
+modify that path. The same upstream loader race is documented in:
+  - Phase 86.3-03 trace-analysis.md (cell #5 /questions Loading…)
+  - Phase 86.3-04 cell6-smoke.txt (cell #6 /results Loading…)
+
+git diff tests/tests/utils/voterNavigation.ts shows the only change is the
+defensive isVisible probe in walkToQuestion (lines 308-329); does NOT touch
+`advanceVoterFlow`, `navigateToFirstQuestion`, or `answeredVoterPage`.
+
+DISPOSITION: Pre-existing voter-app upstream cold-deeplink race surfaces
+post-Wave-1. This race was not pre-resolved by Plans 86.3-01..04 (Plan 01
+is reactivity-only; Plans 02/03/04 SKIP-FALLBACK'd cells #4/#5/#6 without
+fixing the underlying race per CONTEXT D-10 STRICT gate + D-08 1h cap).
+
+Cells #7+#8 are CONSISTENT with Wave 1 disposition: SKIP-FALLBACK via the
+shared upstream race route. The helper fix in voterNavigation.ts is LEFT IN
+PLACE as evidence-of-attempt (mirrors Phase 86.3-04 Path 2 LEFT-IN-PLACE).
+
+v2.11+ pickup priority: navigation-from-home redesign (Recommendation #3
+from `2026-05-16-voter-popup-hydration-layout-03-deeplink.md` Phase 86.3-04
+augmentation) — closes ALL 4 affected cells (#5/#6/#7/#8) + the broader
+38-test voter-app cold-deeplink failure with a single test-only redesign
+that uses in-app navigation instead of fixture-driven page.goto.
+
+OUTCOME: NO REGRESSION CAUSED BY 86.3-05 walkToQuestion helper change
+(38 pre-existing voter-app cold-deeplink failures inherit from Wave 1 +
+the broader v2.10 anchor regression that Wave 1 surfaced).

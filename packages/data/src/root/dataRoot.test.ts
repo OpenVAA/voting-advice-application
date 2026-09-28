@@ -82,7 +82,7 @@ describe('FindQuestions', () => {
       entityType: ENTITY_TYPE.Organization // Filter out those with entityType: 'candidate'
     });
     const ids = [1, 2, 6, 7].map((i) => `question-${i}`);
-    expect(questions?.map((q) => q.id)).toEqual(expect.arrayContaining(ids));
+    expect(questions?.map((q) => q.id)).toEqual(ids);
   });
   test('Should exclude those where filter is different', () => {
     const questions = root.findQuestions({
@@ -90,7 +90,7 @@ describe('FindQuestions', () => {
       constituencies: root.getConstituency('constituency-1-2') // question-10 has constituency filter 'constituency-1-1'
     });
     const ids = [8, 9, 11, 12, 13].map((i) => `question-${i}`);
-    expect(questions?.map((q) => q.id)).toEqual(expect.arrayContaining(ids));
+    expect(questions?.map((q) => q.id)).toEqual(ids);
   });
   test('Should include questions where filter is not defined', () => {
     const questions = root.findQuestions({
@@ -98,7 +98,7 @@ describe('FindQuestions', () => {
       entityType: ENTITY_TYPE.Candidate // No opinion question has an entityType filter
     });
     const ids = [8, 9, 10, 11, 12, 13].map((i) => `question-${i}`);
-    expect(questions?.map((q) => q.id)).toEqual(expect.arrayContaining(ids));
+    expect(questions?.map((q) => q.id)).toEqual(ids);
   });
   test('Should apply filters to categories', () => {
     const questions = root.findQuestions({
@@ -106,7 +106,7 @@ describe('FindQuestions', () => {
       entityType: ENTITY_TYPE.Candidate // questionCategory-2 has an Organization entityType filter
     });
     const ids = [1, 2, 3, 4, 5].map((i) => `question-${i}`);
-    expect(questions?.map((q) => q.id)).toEqual(expect.arrayContaining(ids));
+    expect(questions?.map((q) => q.id)).toEqual(ids);
   });
 });
 

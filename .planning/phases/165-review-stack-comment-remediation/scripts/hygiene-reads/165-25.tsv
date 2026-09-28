@@ -1,0 +1,15 @@
+apps/supabase/supabase/functions/invite-candidate/flowConformance.test.ts	4aea3ad12a805567192ec91c87d93659ee99b027	165-25
+apps/supabase/supabase/migrations/00001_initial_schema.sql	ef9a6370263ca93d91208bdb57083a53d33925ab	165-25
+apps/supabase/supabase/schema/011-validation-functions.sql	7d3535293e41345d930fc0bb1cd6d21436233617	165-25
+apps/supabase/supabase/schema/301-auth-functions.sql	191936ae13f4816789f3431f647456441d33fb33	165-25
+apps/supabase/supabase/schema/302-rls.sql	c65e14c763393385b740cd4dbf87c5567d8946aa	165-25
+apps/supabase/supabase/schema/400-storage.sql	0cb9036b2be32ffcb7ea5d1191061fe9edf0f388	165-25
+apps/supabase/supabase/schema/502-email-helpers.sql	b717266943a7734ca39eeaee10b99459eb5c324a	165-25
+apps/supabase/supabase/schema/503-entity-rpcs.sql	289accf8423ad6d897c8802b6045767fecc50595	165-25
+apps/supabase/supabase/tests/database/05-organization-admin.test.sql	99997d4ea658bc2a33852882dd1d82e6a783ef18	165-25
+apps/supabase/supabase/tests/database/12-user-can.test.sql	cc14da49ee764aab62fceaada1785cd66ae379bb	165-25
+apps/supabase/supabase/tests/database/18-entity-policies.test.sql	421987d11a388b3a4b1c8e0d52c92d501a1c2a7b	165-25
+apps/supabase/supabase/tests/database/19-entity-immutability.test.sql	c3b17c3eaf154fdca3e524b9432183d19e319891	165-25
+apps/supabase/supabase/tests/database/25-matrix-conformance.test.sql	a7bb24af0b1f56cb5f297a2e975fb15404b9d300	165-25
+apps/supabase/supabase/tests/database/33-entity-type-collision.test.sql	9ebca6ab29bbbbf7dc957227e78aa41c353929ff	165-25
+packages/supabase-types/src/database.ts	53d3ea51afa037e1c8c8deb9f20029e1355b7843	165-25

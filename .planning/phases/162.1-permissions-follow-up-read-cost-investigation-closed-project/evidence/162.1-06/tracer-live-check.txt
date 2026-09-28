@@ -1,0 +1,4 @@
+# 162.1-06 Task 1 live tracer check
+after yarn db:reset-with-data: non-uuid/any = 0/true (327 portrait objects, all <uuid>.jpg)
+after yarn db:seed:teardown: 0 objects under 00000000-0000-0000-0000-000000000001/candidates/
+teardown CLI: Teardown complete: 751 rows deleted, 327 storage objects removed.

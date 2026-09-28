@@ -1,0 +1,9 @@
+# The exact `path:line` list `node scripts/assert-no-session-in-loads.mjs` must report against
+# `assert-no-session-in-loads.input.ts`, in line order. Five lines: four check-1 pair shapes and
+# one check-2 code mention. The fixture's three NEGATIVE cases are absent from this list on
+# purpose — a guard that flagged them would be caught by this file rather than shipped.
+scripts/fixtures/assert-no-session-in-loads.input.ts:23
+scripts/fixtures/assert-no-session-in-loads.input.ts:30
+scripts/fixtures/assert-no-session-in-loads.input.ts:36
+scripts/fixtures/assert-no-session-in-loads.input.ts:43
+scripts/fixtures/assert-no-session-in-loads.input.ts:49

@@ -70,5 +70,5 @@ test('Should return applicableQuestions', () => {
   if (!nom) throw new Error('Test setup error: the correct alliance nomination not found in test data');
   // The rest of the questions apply to different elections or entityTypes directly or via their categories
   const questionIds = [1, 2, 9, 11, 12, 13].map((i) => `question-${i}`);
-  expect(nom.applicableQuestions.map((q) => q.id)).toEqual(expect.arrayContaining(questionIds));
+  expect(nom.applicableQuestions.map((q) => q.id)).toEqual(questionIds);
 });

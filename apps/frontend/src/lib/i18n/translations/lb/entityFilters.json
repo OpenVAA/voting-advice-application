@@ -1,0 +1,18 @@
+{
+  "applyAndClose": "Filter zoumaachen",
+  "error": "De Filter konnt net geluede ginn, entschëllegt!",
+  "filterButtonLabel": "Filter",
+  "filters": "Filteren",
+  "missingValue": "Keng Äntwert",
+  "numeric": {
+    "maxLabel": "Maximum",
+    "minLabel": "Minimum"
+  },
+  "reset": "Filter zrécksetzen",
+  "selectAll": "All auswielen",
+  "text": {
+    "ariaLabel": "Text:",
+    "placeholder": "Text fir ze sichen"
+  },
+  "unselectAll": "All Deselektéieren"
+}

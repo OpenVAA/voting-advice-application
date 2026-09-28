@@ -1,0 +1,42 @@
+{
+  "storage": [],
+  "storageResponses": [],
+  "storageFailures": [],
+  "allSupabase": [
+    {
+      "ts": 1778702190165,
+      "url": "http://127.0.0.1:54321/rest/v1/app_settings?select=customization&limit=1",
+      "method": "GET",
+      "resourceType": "fetch",
+      "isNavigationRequest": false
+    },
+    {
+      "ts": 1778702190168,
+      "url": "http://127.0.0.1:54321/rest/v1/app_settings?select=settings&limit=1",
+      "method": "GET",
+      "resourceType": "fetch",
+      "isNavigationRequest": false
+    },
+    {
+      "ts": 1778702190168,
+      "url": "http://127.0.0.1:54321/rest/v1/elections?select=*%2Celection_constituency_groups%28constituency_group_id%29&order=sort_order.asc",
+      "method": "GET",
+      "resourceType": "fetch",
+      "isNavigationRequest": false
+    },
+    {
+      "ts": 1778702190168,
+      "url": "http://127.0.0.1:54321/rest/v1/constituency_groups?select=*%2Cconstituency_group_constituencies%28constituency_id%29&order=sort_order.asc",
+      "method": "GET",
+      "resourceType": "fetch",
+      "isNavigationRequest": false
+    },
+    {
+      "ts": 1778702190172,
+      "url": "http://127.0.0.1:54321/rest/v1/constituencies?select=*&order=sort_order.asc",
+      "method": "GET",
+      "resourceType": "fetch",
+      "isNavigationRequest": false
+    }
+  ]
+}

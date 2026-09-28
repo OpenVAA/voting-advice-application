@@ -1,0 +1,73 @@
+{
+  "candidateApp.preregister": {
+    "constituencySelect": {
+      "content": "<p>Valige valimisringkond, kus kandideerite.</p>",
+      "title": "Milline on teie valimisringkond?"
+    },
+    "electionSelect": {
+      "content": "<p>Valige valimised, kus kavatsete kandideerida.</p>",
+      "title": "Millistel valimistel kandideerite?"
+    },
+    "email": {
+      "html": "<p>Tere {firstName},</p><p>Täname teid kandidaadiks registreerumise eest! Registreerumise lõpuleviimiseks kinnitage palun oma e-posti aadress, järgides allolevat linki:</p><p><a href=\"{registrationUrl}\">{registrationUrl}</a></p><p>Seejärel palutakse teil valida salasõna.</p>",
+      "subject": "Palun kinnitage oma e-posti aadress",
+      "text": "Tere {firstName},\nTäname teid kandidaadiks registreerumise eest! Registreerumise lõpuleviimiseks kinnitage palun oma e-posti aadress, järgides allolevat linki:\n{registrationUrl}\nSeejärel palutakse teil valida salasõna."
+    },
+    "emailVerification": {
+      "content": "<p>Edaspidi toimib teie e-posti aadress kasutajanimena. Palun sisestage see allpool kaks korda, et veenduda selle õigsuses.</p>",
+      "title": "Sisestage e-posti aadress ja nõustuge kasutustingimustega"
+    },
+    "identification": {
+      "identifyYourselfButton": "Tuvastage end",
+      "identifyYourselHelpText": "Teid suunatakse pangatuvastuse teenusesse. Kui tuvastamine on lõpetatud, suunatakse teid tagasi sellele lehele.",
+      "start": {
+        "content": "<p>Kandidaadiks registreerumiseks peate esmalt kinnitama oma isiku pangatunnustega. Kui ametlik kandidaatide nimekiri on kinnitatud, avaldame teie profiili, kui leiame teid sellest nimekirjast. Kasutame selleks teie täisnime ja sünnikuupäeva.</p>",
+        "heroEmoji": "🖋️",
+        "step": {
+          "constituencySelect": "Valige oma valimisringkond",
+          "electionSelect": "Vali valimised",
+          "emailVerification": "Kinnita oma e-posti aadress",
+          "identification": "Tuvasta end pangalinkidega",
+          "passwordSelect": "Vali parool"
+        },
+        "title": "Registreeru kandidaadiks"
+      },
+      "success": {
+        "content": "<p>Tuvastamine õnnestus. Vajuta allolevat nuppu, et jätkata registreerimist.</p>",
+        "heroEmoji": "👍",
+        "title": "Tere tulemast valimiskompassi, {firstName} {lastName}!"
+      }
+    },
+    "isPreregisteredNotification": {
+      "content": "Palun logi sisse oma e-posti ja parooliga või kontrolli oma e-posti kinnituslingi osas.",
+      "title": "Paistab, et oled juba registreerunud"
+    },
+    "status": {
+      "candidateExistsError": {
+        "content": "<p>Paistab, et oled juba registreerunud. Kontrolli oma e-posti ja kinnita oma registreerumine. Kui registreerumine on kinnitatud, saad sisse logida oma e-posti ja parooliga.</p><p>Võta ühendust toega, kui usud, et on tekkinud viga.</p>",
+        "title": "Oled juba kandidaadiks registreerunud"
+      },
+      "loggedInError": {
+        "content": "<p>Oled juba kandidaadiks registreerunud. Mine oma kontole, et jätkata.</p>",
+        "title": "Oled juba sisse loginud"
+      },
+      "strongIdentificationError": {
+        "content": "<p>Vajuta allolevat nuppu, et uuesti proovida, või võta ühendust toega, kui probleem püsib.</p>",
+        "title": "Pangatuvastamisega tekkis probleem"
+      },
+      "success": {
+        "content": "<p>Oleme saatnud sõnumi sinu e-postile. Klõpsa sõnumis olevale lingile, et kinnitada oma e-posti aadress ja lõpetada registreerumine.</p><p>Pane tähele, et e-kirja saabumine võib võtta aega. Kontrolli ka rämpsposti kausta, kui sõnumit ei saabu.</p><p>Nüüd võid selle akna sulgeda.</p>",
+        "heroEmoji": "✉️",
+        "title": "Kinnita oma e-posti aadress"
+      },
+      "tokenExpiredError": {
+        "content": "<p>Tuvasta end uuesti, et lõpetada registreerumine.</p>",
+        "title": "Sinu sessioon on aegunud"
+      },
+      "unknownError": {
+        "content": "<p>Vajuta allolevat nuppu, et uuesti proovida, või võta ühendust toega, kui probleem püsib.</p>",
+        "title": "Midagi läks valesti"
+      }
+    }
+  }
+}

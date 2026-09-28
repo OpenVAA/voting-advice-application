@@ -1,0 +1,20 @@
+{
+  "entityList": {
+    "controls": {
+      "noFilterResults": "Filtritega ei leitud ühtegi tulemust. Proovige neid muuta.",
+      "noSearchResults": "Otsinguga ei leitud ühtegi tulemust. Proovi seda muuta.",
+      "searchPlaceholder": "Otsi nime järgi",
+      "showingNumResults": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=one": "Näidatakse 1 tulemus",
+            "numShownPlural=other": "Näidatakse {numShown} tulemust"
+          }
+        }
+      ]
+    },
+    "showMore": "Näita rohkem"
+  }
+}

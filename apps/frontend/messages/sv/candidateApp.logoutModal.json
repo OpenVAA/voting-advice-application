@@ -1,0 +1,37 @@
+{
+  "candidateApp.logoutModal": {
+    "continue": "Fortsätt ange uppgifter",
+    "ingress": "Är du säker på att du vill logga ut? Du kommer automatiskt att loggas ut om {timeLeft} sekunder.",
+    "itemsLeft": [
+      {
+        "declarations": [
+          "input infoQuestionsLeft",
+          "local infoQuestionsLeftPlural = infoQuestionsLeft: plural",
+          "input opinionQuestionsLeft",
+          "local opinionQuestionsLeftPlural = opinionQuestionsLeft: plural"
+        ],
+        "selectors": ["infoQuestionsLeftPlural", "opinionQuestionsLeftPlural"],
+        "match": {
+          "infoQuestionsLeftPlural=one opinionQuestionsLeftPlural=one": "Det återstår fortfarande en uppgift om grundläggande information och en åsikt att fylla i.",
+          "infoQuestionsLeftPlural=one opinionQuestionsLeftPlural=other": "Det återstår fortfarande en uppgift om grundläggande information och {opinionQuestionsLeft} åsikter att fylla i.",
+          "infoQuestionsLeftPlural=other opinionQuestionsLeftPlural=one": "Det återstår fortfarande {infoQuestionsLeft} uppgifter om grundläggande information och en åsikt att fylla i.",
+          "infoQuestionsLeftPlural=other opinionQuestionsLeftPlural=other": "Det återstår fortfarande {infoQuestionsLeft} uppgifter om grundläggande information och {opinionQuestionsLeft} åsikter att fylla i."
+        }
+      }
+    ],
+    "questionsLeft": [
+      {
+        "declarations": [
+          "input opinionQuestionsLeft",
+          "local opinionQuestionsLeftPlural = opinionQuestionsLeft: plural"
+        ],
+        "selectors": ["opinionQuestionsLeftPlural"],
+        "match": {
+          "opinionQuestionsLeftPlural=one": "Det återstår fortfarande en åsikt att fylla i.",
+          "opinionQuestionsLeftPlural=other": "Det återstår fortfarande {opinionQuestionsLeft} åsikter att fylla i."
+        }
+      }
+    ],
+    "title": "Vissa av dina uppgifter saknas fortfarande"
+  }
+}

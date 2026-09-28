@@ -1,0 +1,8 @@
+path	line	before	after
+tests/tests/setup/shared/setupFromTemplate.ts	186	//     see .planning/WINDOWS.md and assertTeardown.ts's RATIONALE docblock.	//     see and assertTeardown.ts's RATIONALE docblock.
+tests/tests/fixtures/voter/voter-journey.fixture.ts	128	* resolved either way. See 120-01-PROBE-DIAGNOSIS.md for the trace.	* resolved either way. See for the trace.
+packages/dev-seed/tests/pipeline.test.ts	7	*     default to 0 rows per D-18 / per-generator defaults; the seven	*     default to 0 rows per per-generator defaults; the seven
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte	13	`entityTab` / `entity` / `id`. As of Plan 88-02 the *selected* election	`entityTab` / `entity` / `id`. As of the *selected* election
+apps/frontend/src/lib/contexts/filter/filterContext.svelte.ts	29	* Per §22 the version-bridge is KEPT verbatim — it does NOT simplify away.	* Per the version-bridge is KEPT verbatim — it does NOT simplify away.
+apps/frontend/src/lib/components/tabs/Tabs.svelte	61	resolve the baselined violations. See 80-VERIFICATION.md §Latent Risk	resolve the baselined violations. See §Latent Risk
+apps/frontend/src/lib/_guards/eslint-store-guard.test.ts	16	* AND that it stays SILENT on clean rune code. Per D-01/D-02 the guard config is	* AND that it stays SILENT on clean rune code. Per the guard config is

@@ -1,0 +1,16 @@
+=== 3x E2E DETERMINISM GATE — RUN 1 of 3 (post-fix, COUNTED) ===
+Recorded: 2026-07-23
+Command: yarn test:e2e (full suite; local profile workers:6, retries:0 — stricter than CI)
+Server / DB: FRESH Vite dev server (yarn workspace @openvaa/frontend dev) on :5173, started clean
+             for this run + clean DB (yarn db:reset → seed.sql, elections=0, no default-template
+             pollution; public-assets bucket asserted).
+Tree: HEAD ad3f46e84 (includes the voterNavigation.ts elections/constituencies-continue harden).
+
+RESULT: PASS — 129 passed / 0 failed / 0 did-not-run (10.5m).
+
+D-02 full-DAG proof: candidate-journey (incl. step 13.5 / :661) ran under the FULL concurrent
+perm-DAG and passed — this is the full-load proof of the Plan 01 :661 harden.
+
+Restart note: this is run 1 of the count RESTARTED after a pre-fix run failed once on the
+elections-continue-stall (voterNavigation.ts:216 unbounded waitFor) — see 132-phase-gate-summary.txt
+restart log. The harness harden (commit ad3f46e84) closed that gap; this run is clean.

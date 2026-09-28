@@ -1,0 +1,15 @@
+/**
+ * perm-localisation-positive data-setup project.
+ *
+ * Invokes setupFromTemplate('perm-localisation-positive').
+ * Prefix: 'e2e-perm-l10n-pos-'.
+ *
+ * `extraTeardownPrefix: ['test-', 'e2e-perm-']` defends against cross-chain leakage from base / candidate-journey / prior perm chains still mid-teardown when this setup starts.
+ */
+
+import { test as setup } from '@playwright/test';
+import { setupFromTemplate } from '../shared/setupFromTemplate';
+
+setup('import perm-localisation-positive dataset', async () => {
+  await setupFromTemplate('perm-localisation-positive', { extraTeardownPrefix: ['test-', 'e2e-perm-'] });
+});

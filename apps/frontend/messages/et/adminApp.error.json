@@ -1,0 +1,7 @@
+{
+  "adminApp.error": {
+    "unauthorized": "Sul ei ole õigust sellele alale ligi pääseda",
+    "unauthorizedDescription": "Sinu konto on autenditud, kuid sul puuduvad vajalikud administraatori õigused.",
+    "unauthorizedContact": "See osa on mõeldud ainult süsteemiadministraatoritele. Kui arvad, et sul peaks olema ligipääs, võta palun ühendust süsteemiadministraatoriga."
+  }
+}
