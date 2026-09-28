@@ -1,0 +1,19 @@
+{
+  "basicInfo": {
+    "edit": "Modifier vos informations de base",
+    "enter": "Saisir vos informations de base",
+    "view": "Afficher vos informations de base"
+  },
+  "ingress": {
+    "notDone": "Pour apparaître dans la Boussole électorale, vous devez saisir des informations de base vous concernant et répondre à des affirmations concernant des enjeux politiques.",
+    "ready": "Vous avez renseigné toutes les informations nécessaires pour la Boussole électorale. Vous pouvez encore modifier vos réponses et même vous reconnecter plus tard pour le faire."
+  },
+  "preview": "Prévisualiser votre profil",
+  "previewTip": "Si vous souhaitez voir comment les électeur·rice·s verront votre profil, vous pouvez le prévisualiser.",
+  "questions": {
+    "edit": "Modifier vos opinions",
+    "enter": "Indiquer vos opinions",
+    "view": "Afficher vos opinions"
+  },
+  "ready": "Tout est prêt !"
+}

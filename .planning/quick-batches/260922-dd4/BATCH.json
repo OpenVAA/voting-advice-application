@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "batch_id": "260922-dd4",
+  "created_at": "2026-09-22T06:37:20.301Z",
+  "options": {},
+  "base_revision": "c957f3716d77c6a1f27fbd9e0b00b417e8207640",
+  "items": [
+    {
+      "quick_id": "260922-dd5",
+      "client_id": null,
+      "description": "Audit reactive popup queueing: candidate/+layout.svelte carries a comment warning that a reactive $effect re-queues popups, which is why its own push is a one-shot onMount. The preregister status page had exactly that shape and was just fixed. Grep the frontend for other $effect-wrapped popupQueue.push sites and convert any that re-queue to the one-shot onMount pattern.",
+      "status": "complete",
+      "depends_on": [],
+      "planned_files": [
+        "apps/frontend/src/lib/contexts/app/appContext.svelte.ts",
+        "apps/frontend/src/lib/contexts/app/appContext.popupCountdown.svelte.test.ts",
+        ".planning/quick/260922-dd5-audit-reactive-popup-queueing-candidate-lay/260922-dd5-SUMMARY.md"
+      ],
+      "directory": null,
+      "worktree": null,
+      "dispatched_worktree": null,
+      "dispatched_branch": null,
+      "dispatched_base": null,
+      "wave": 0,
+      "commit": "15c5ef68d",
+      "failure_reason": null
+    },
+    {
+      "quick_id": "260922-dd6",
+      "client_id": null,
+      "description": "Fix the error surfacing when clicking entities in Results: \"Uncaught TypeError: Cannot read properties of undefined (reading 'startTime') at et.reportAllChanges\" - stack is minified third-party and reads like web-vitals/PerformanceObserver. Identify the source and stop it throwing.",
+      "status": "pending",
+      "depends_on": [],
+      "planned_files": [
+        ".planning/quick/260922-dd6-fix-the-error-surfacing-when-clicking-entit/260922-dd6-SUMMARY.md"
+      ],
+      "directory": null,
+      "worktree": null,
+      "dispatched_worktree": null,
+      "dispatched_branch": null,
+      "dispatched_base": null,
+      "wave": 0,
+      "commit": null,
+      "failure_reason": null
+    },
+    {
+      "quick_id": "260922-dd7",
+      "client_id": null,
+      "description": "Results filters relevance: only show a filter when the entity category actually has more than one distinct answer for it. Currently all filters appear to be offered for all entity types.",
+      "status": "complete",
+      "depends_on": [],
+      "planned_files": [
+        "apps/frontend/src/lib/contexts/voter/filters/filterRelevance.ts",
+        "apps/frontend/src/lib/contexts/voter/filters/filterRelevance.test.ts",
+        "apps/frontend/src/lib/contexts/voter/filters/filterState.svelte.ts"
+      ],
+      "directory": null,
+      "worktree": null,
+      "dispatched_worktree": null,
+      "dispatched_branch": null,
+      "dispatched_base": null,
+      "wave": 0,
+      "commit": "356b1e81c",
+      "failure_reason": null
+    },
+    {
+      "quick_id": "260922-dd8",
+      "client_id": null,
+      "description": "Refactor condition classes in QuestionChoices: introduce a cn utility function for combining classes, use it inside concatClass, and use it in QuestionChoices in place of the complex selectors that apply display-mode styling to unselected options (extract the common classes for those into a const).",
+      "status": "complete",
+      "depends_on": [],
+      "planned_files": [
+        "apps/frontend/package.json",
+        "yarn.lock",
+        "apps/frontend/src/lib/utils/components.ts",
+        "apps/frontend/src/lib/utils/components.test.ts",
+        "apps/frontend/src/lib/utils/CC_DIVERGENCE_RECORDER.ts",
+        "apps/frontend/src/lib/components/questions/QuestionChoices.svelte",
+        "apps/frontend/src/lib/components/questions/QuestionChoices.svelte.test.ts",
+        ".planning/quick/260922-dd8-refactor-condition-classes-in-questionchoic/260922-dd8-SUMMARY.md"
+      ],
+      "directory": null,
+      "worktree": null,
+      "dispatched_worktree": null,
+      "dispatched_branch": null,
+      "dispatched_base": null,
+      "wave": 0,
+      "commit": "884df28de",
+      "failure_reason": null
+    }
+  ]
+}

@@ -2,9 +2,13 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "@openvaa/shared-config/ts",
   "compilerOptions": {
+    "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo",
     "rootDir": "./src",
-    "outDir": "./build"
+    "outDir": "./dist",
+    "declaration": true,
+    "emitDeclarationOnly": true
   },
   "include": ["src/**/*"],
-  "exclude": ["**/*.test.ts"]
+  "exclude": ["**/*.test.ts"],
+  "references": [{ "path": "../data/tsconfig.json" }]
 }

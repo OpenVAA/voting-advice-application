@@ -1,0 +1,171 @@
+# 162.1-08 negative controls -- 2026-09-18T22:44:41Z -- HEAD c60e3e71a (+ uncommitted Task 1 working tree)
+# Each perturbation is applied to the APPLIED database with psql, never to a tracked file, and reverted with yarn db:reset.
+# Why five controls where the plan named two: control (1) as written does NOT redden file 30 -- get_nominations' closed-project zero is over-determined (the nominations policy's project conjunct, nomination_entities_confirmed's own project_open_for_voters call on the linked entity, and the LEFT-JOINed entity policies with the COALESCE filter each close it alone). NC1/NC1B record that measurement; NC1C shows the RPC assertion reddening on the regression it uniquely guards (the RPC losing invoker rights); NC3 covers the get_questions family.
+# File 30 assertion numbering: 1-2 EXECUTE; 3-5 project_open_for_voters answers; 6-8 open controls on project_a; 9-11 closed project_a RPCs; 12-14 admin_b; 15-17 candidate_b; 18-20 no-grant.
+
+=== NC1
+policy: anon_select_nominations -- drop ONLY the project_open_for_voters conjunct (the plan's control (1), as written)
+before:
+  anon_select_nominations USING (( SELECT project_open_for_voters(nominations.project_id) AS project_open_for_voters) AND confirmed AND ( SELECT nomination_entities_confirmed(nominations.id) AS nomination_entities_confirmed))
+command: psql $PG -c "DO $$ DECLARE q text; n text; BEGIN SELECT qual INTO q FROM pg_policies WHERE schemaname = 'public' AND policyname = 'anon_select_nominations';
+  n := replace(q, '( SELECT project_open_for_voters(nominations.project_id) AS project_open_for_voters) AND ', '');
+  IF n = q THEN RAISE EXCEPTION 'project_open_for_voters conjunct not found in %', q; END IF;
+  EXECUTE format('ALTER POLICY anon_select_nominations ON public.nominations USING (%s)', n); END $$;"
+after:
+  anon_select_nominations USING (confirmed AND ( SELECT nomination_entities_confirmed(nominations.id) AS nomination_entities_confirmed))
+test:db exit 1
+Files=31, Tests=1160,  2 wallclock secs ( 0.07 usr  0.02 sys +  0.16 cusr  0.06 csys =  0.31 CPU)
+Result: FAIL
+-- Test Summary Report (every failing file, not only file 30):
+Test Summary Report
+-------------------
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/16-anon-visibility.test.sql             (Wstat: 0 Tests: 52 Failed: 2)
+  Failed tests:  8, 47
+error running container: exit 1
+Try rerunning the command with --debug to troubleshoot the error.
+-- failing assertion descriptions (all files), then the 30-closed-project verdict:
+# Failed test 8: "anon CANNOT see a nomination in a closed project whose linked candidate is fully anon-readable in an OPEN one -- the nomination project conjunct, flipped alone and not over-determined by the transitive one"
+# Failed test 47: "all FOUR anon entity SELECT policies name BOTH public-visibility helpers directly and neither published nor the withdrawn composition; anon_select_nominations still reaches the project term directly; and nomination_entities_confirmed still requires both helpers in its own body, read from pg_get_functiondef so a term dropped from the function cannot hide behind a policy that merely calls it -- populations pinned, so a clean answer cannot come from an empty instrument"
+  30-closed-project: NOT in the failing set
+restore: yarn db:reset
+db:reset exit 0
+
+=== NC1B
+policies: anon_select_nominations + the four anon entity policies get_nominations LEFT JOINs -- drop the project_open_for_voters conjunct from all five (the whole path the RPC reads)
+before:
+  anon_select_alliances USING (( SELECT project_open_for_voters(alliances.project_id) AS project_open_for_voters) AND confirmed AND ( SELECT entity_has_confirmed_nomination('alliance'::entity_type, alliances.id, alliances.project_id) AS entity_has_confirmed_nomination))
+  anon_select_candidates USING (( SELECT project_open_for_voters(candidates.project_id) AS project_open_for_voters) AND confirmed AND ( SELECT entity_has_confirmed_nomination('candidate'::entity_type, candidates.id, candidates.project_id) AS entity_has_confirmed_nomination) AND (terms_of_use_accepted IS NOT NULL) AND (terms_of_use_accepted < now()))
+  anon_select_factions USING (( SELECT project_open_for_voters(factions.project_id) AS project_open_for_voters) AND confirmed AND ( SELECT entity_has_confirmed_nomination('faction'::entity_type, factions.id, factions.project_id) AS entity_has_confirmed_nomination))
+  anon_select_nominations USING (( SELECT project_open_for_voters(nominations.project_id) AS project_open_for_voters) AND confirmed AND ( SELECT nomination_entities_confirmed(nominations.id) AS nomination_entities_confirmed))
+  anon_select_organizations USING (( SELECT project_open_for_voters(organizations.project_id) AS project_open_for_voters) AND confirmed AND ( SELECT entity_has_confirmed_nomination('organization'::entity_type, organizations.id, organizations.project_id) AS entity_has_confirmed_nomination))
+command: psql $PG -c "DO $$ DECLARE r record; n text; BEGIN FOR r IN SELECT tablename, policyname, qual FROM pg_policies WHERE schemaname = 'public'
+  AND policyname IN ('anon_select_nominations','anon_select_candidates','anon_select_organizations','anon_select_factions','anon_select_alliances') LOOP
+  n := replace(r.qual, format('( SELECT project_open_for_voters(%s.project_id) AS project_open_for_voters) AND ', r.tablename), '');
+  IF n = r.qual THEN RAISE EXCEPTION 'project_open_for_voters conjunct not found in %', r.policyname; END IF;
+  EXECUTE format('ALTER POLICY %I ON public.%I USING (%s)', r.policyname, r.tablename, n); END LOOP; END $$;"
+after:
+  anon_select_alliances USING (confirmed AND ( SELECT entity_has_confirmed_nomination('alliance'::entity_type, alliances.id, alliances.project_id) AS entity_has_confirmed_nomination))
+  anon_select_candidates USING (confirmed AND ( SELECT entity_has_confirmed_nomination('candidate'::entity_type, candidates.id, candidates.project_id) AS entity_has_confirmed_nomination) AND (terms_of_use_accepted IS NOT NULL) AND (terms_of_use_accepted < now()))
+  anon_select_factions USING (confirmed AND ( SELECT entity_has_confirmed_nomination('faction'::entity_type, factions.id, factions.project_id) AS entity_has_confirmed_nomination))
+  anon_select_nominations USING (confirmed AND ( SELECT nomination_entities_confirmed(nominations.id) AS nomination_entities_confirmed))
+  anon_select_organizations USING (confirmed AND ( SELECT entity_has_confirmed_nomination('organization'::entity_type, organizations.id, organizations.project_id) AS entity_has_confirmed_nomination))
+test:db exit 1
+Files=31, Tests=1160,  3 wallclock secs ( 0.07 usr  0.03 sys +  0.14 cusr  0.07 csys =  0.31 CPU)
+Result: FAIL
+-- Test Summary Report (every failing file, not only file 30):
+Test Summary Report
+-------------------
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/16-anon-visibility.test.sql             (Wstat: 0 Tests: 52 Failed: 6)
+  Failed tests:  2, 8, 28, 32, 36, 47
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/25-matrix-conformance.test.sql          (Wstat: 0 Tests: 41 Failed: 1)
+  Failed test:  38
+error running container: exit 1
+Try rerunning the command with --debug to troubleshoot the error.
+-- failing assertion descriptions (all files), then the 30-closed-project verdict:
+# Failed test 2: "anon CANNOT see an otherwise-visible candidate whose project is not open for voters -- the project conjunct, flipped alone"
+# Failed test 8: "anon CANNOT see a nomination in a closed project whose linked candidate is fully anon-readable in an OPEN one -- the nomination project conjunct, flipped alone and not over-determined by the transitive one"
+# Failed test 28: "anon CANNOT see a confirmed, nominated organization whose project is not open for voters -- the project conjunct, flipped alone"
+# Failed test 32: "anon CANNOT see a confirmed, nominated faction whose project is not open for voters -- the project conjunct, flipped alone"
+# Failed test 36: "anon CANNOT see a confirmed, nominated alliance whose project is not open for voters -- the project conjunct, flipped alone"
+# Failed test 47: "all FOUR anon entity SELECT policies name BOTH public-visibility helpers directly and neither published nor the withdrawn composition; anon_select_nominations still reaches the project term directly; and nomination_entities_confirmed still requires both helpers in its own body, read from pg_get_functiondef so a term dropped from the function cannot hide behind a policy that merely calls it -- populations pinned, so a clean answer cannot come from an empty instrument"
+# Failed test 38: "eight-assembly guard, ABSOLUTE: all eight assemblies call project_open_for_voters"
+  30-closed-project: NOT in the failing set
+restore: yarn db:reset
+db:reset exit 0
+
+=== NC1C
+function: get_nominations -- SECURITY INVOKER -> SECURITY DEFINER (the owner bypasses RLS, so the closure the RPC inherits from RLS is lost in one step; policies unchanged)
+prosecdef before: f
+before:
+  anon_select_nominations USING (( SELECT project_open_for_voters(nominations.project_id) AS project_open_for_voters) AND confirmed AND ( SELECT nomination_entities_confirmed(nominations.id) AS nomination_entities_confirmed))
+command: psql $PG -c "ALTER FUNCTION public.get_nominations (uuid, uuid, uuid, boolean, integer) SECURITY DEFINER;"
+after:
+  anon_select_nominations USING (( SELECT project_open_for_voters(nominations.project_id) AS project_open_for_voters) AND confirmed AND ( SELECT nomination_entities_confirmed(nominations.id) AS nomination_entities_confirmed))
+test:db exit 1
+Files=31, Tests=1160,  3 wallclock secs ( 0.06 usr  0.03 sys +  0.13 cusr  0.08 csys =  0.30 CPU)
+Result: FAIL
+-- Test Summary Report (every failing file, not only file 30):
+Test Summary Report
+-------------------
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/18-entity-policies.test.sql             (Wstat: 0 Tests: 59 Failed: 1)
+  Failed test:  59
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/30-closed-project.test.sql              (Wstat: 0 Tests: 20 Failed: 1)
+  Failed test:  9
+error running container: exit 1
+Try rerunning the command with --debug to troubleshoot the error.
+-- failing assertion descriptions (all files), then the 30-closed-project verdict:
+# Failed test 59: "every SECURITY DEFINER function in schema public pins its search_path, over a population floored at fifteen -- the floor is asserted too, so a clean NONE cannot come from a query that reached no functions"
+# Failed test 9: "get_nominations returns no rows to anon once project A is closed"
+  30-closed-project   Failed test:  9
+restore: yarn db:reset
+db:reset exit 0
+
+=== NC2
+policy: authenticated_select_app_settings -- drop the user_can disjunct (the plan's control (2))
+before:
+  authenticated_select_app_settings USING (( SELECT user_can('project'::grant_scope_type, app_settings.project_id, 'project.read_structure'::grant_permission) AS user_can) OR ( SELECT project_open_for_voters(app_settings.project_id) AS project_open_for_voters))
+command: psql $PG -c "ALTER POLICY "authenticated_select_app_settings" ON public.app_settings USING ((SELECT project_open_for_voters (project_id)));"
+after:
+  authenticated_select_app_settings USING ( SELECT project_open_for_voters(app_settings.project_id) AS project_open_for_voters)
+test:db exit 1
+Files=31, Tests=1160,  3 wallclock secs ( 0.06 usr  0.04 sys +  0.14 cusr  0.07 csys =  0.31 CPU)
+Result: FAIL
+-- Test Summary Report (every failing file, not only file 30):
+Test Summary Report
+-------------------
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/22-content-policies.test.sql            (Wstat: 0 Tests: 68 Failed: 3)
+  Failed tests:  28-29, 68
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/30-closed-project.test.sql              (Wstat: 0 Tests: 20 Failed: 2)
+  Failed tests:  12, 15
+error running container: exit 1
+Try rerunning the command with --debug to troubleshoot the error.
+-- failing assertion descriptions (all files), then the 30-closed-project verdict:
+# Failed test 28: "cell 4 / app_settings: that SAME caller sees CLOSED project B's settings row, because it holds a grant there -- criterion 5's second clause"
+# Failed test 29: "all three authenticated SELECT policies name the authority predicate, the structure-read permission AND the project-open helper"
+# Failed test 68: "the derived policy-to-permission map equals the declared one, element for element, over all seventeen converted policies"
+# Failed test 12: "admin_b reads the app_settings of the closed project B"
+# Failed test 15: "candidate_b, an entity editor, reads the app_settings of the closed project B (D-16: candidates work before a project opens)"
+  30-closed-project   Failed tests:  12, 15
+restore: yarn db:reset
+db:reset exit 0
+
+=== NC3
+policies: anon_select_questions + anon_select_question_categories -- drop their only (project-open) term (added control for the get_questions family)
+before:
+  anon_select_question_categories USING ( SELECT project_open_for_voters(question_categories.project_id) AS project_open_for_voters)
+  anon_select_questions USING ( SELECT project_open_for_voters(questions.project_id) AS project_open_for_voters)
+command: psql $PG -c "ALTER POLICY "anon_select_questions" ON public.questions USING (true); ALTER POLICY "anon_select_question_categories" ON public.question_categories USING (true);"
+after:
+  anon_select_question_categories USING true
+  anon_select_questions USING true
+test:db exit 1
+Files=31, Tests=1160,  3 wallclock secs ( 0.07 usr  0.03 sys +  0.13 cusr  0.08 csys =  0.31 CPU)
+Result: FAIL
+-- Test Summary Report (every failing file, not only file 30):
+Test Summary Report
+-------------------
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/03-anon-read.test.sql                   (Wstat: 0 Tests: 59 Failed: 2)
+  Failed tests:  19, 21
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/16-anon-visibility.test.sql             (Wstat: 0 Tests: 52 Failed: 2)
+  Failed tests:  22, 24
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/30-closed-project.test.sql              (Wstat: 0 Tests: 20 Failed: 2)
+  Failed tests:  10-11
+error running container: exit 1
+Try rerunning the command with --debug to troubleshoot the error.
+-- failing assertion descriptions (all files), then the 30-closed-project verdict:
+# Failed test 19: "anon cannot see question_categories of a project that is not open for voters"
+# Failed test 21: "anon cannot see questions of a project that is not open for voters"
+# Failed test 22: "anon CANNOT see an question category in a project that is not open for voters -- the project conjunct, flipped alone"
+# Failed test 24: "anon CANNOT see an question in a project that is not open for voters -- the project conjunct, flipped alone"
+# Failed test 10: "get_questions returns an empty questions array to anon once project A is closed"
+# Failed test 11: "get_questions returns an empty categories array to anon once project A is closed"
+  30-closed-project   Failed tests:  10-11
+restore: yarn db:reset
+db:reset exit 0
+
+=== green run on the reset database
+test:db exit 0
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/30-closed-project.test.sql:17: NOTICE:  table "__tcache__" does not exist, skipping
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/30-closed-project.test.sql ................ ok
+Files=31, Tests=1160,  2 wallclock secs ( 0.08 usr  0.03 sys +  0.14 cusr  0.07 csys =  0.32 CPU)
+Result: PASS

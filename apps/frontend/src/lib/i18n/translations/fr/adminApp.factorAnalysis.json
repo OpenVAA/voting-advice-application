@@ -1,0 +1,20 @@
+{
+  "title": "Factor Analysis",
+  "description": "Analyze and manage factors for the election questions.",
+  "compute": {
+    "title": "Compute factors",
+    "description": "Compute the latent factors from the answers given by candidates and parties.",
+    "selectElections": "Select the elections for which to compute the factors.",
+    "button": "Compute factors",
+    "buttonLoading": "Computing factors...",
+    "mayTakeTime": "This may take some time.",
+    "noElections": "No elections available",
+    "candidates": "candidates",
+    "parties": {
+      "some": "and {count} parties",
+      "none": "and no parties"
+    },
+    "haveAnswered": "have answered",
+    "error": "Failed to compute factors"
+  }
+}

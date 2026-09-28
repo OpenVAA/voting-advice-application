@@ -1,0 +1,168 @@
+# 162.1-06 re-seed proof (D-15 x D-11). Plan's Task 2 verify command, run as one chain; timestamps UTC.
+# Exploratory run before it: 378 objects right after the second seed finished, converged (327 objects = 327 candidates with image.path) at the first poll 11 s later.
+20:55:38
+supabase start is already running.
+Stopped services: [supabase_pooler_openvaa-local]
+supabase local development setup is running.
+
+╭──────────────────────────────────────╮
+│ 🔧 Development Tools                 │
+├─────────┬────────────────────────────┤
+│ Studio  │ http://127.0.0.1:54323     │
+│ Mailpit │ http://127.0.0.1:54324     │
+│ MCP     │ http://127.0.0.1:54321/mcp │
+╰─────────┴────────────────────────────╯
+
+╭──────────────────────────────────────────────────────╮
+│ 🌐 APIs                                              │
+├────────────────┬─────────────────────────────────────┤
+│ Project URL    │ http://127.0.0.1:54321              │
+│ REST           │ http://127.0.0.1:54321/rest/v1      │
+│ GraphQL        │ http://127.0.0.1:54321/graphql/v1   │
+│ Edge Functions │ http://127.0.0.1:54321/functions/v1 │
+╰────────────────┴─────────────────────────────────────╯
+
+╭───────────────────────────────────────────────────────────────╮
+│ ⛁ Database                                                    │
+├─────┬─────────────────────────────────────────────────────────┤
+│ URL │ postgresql://postgres:postgres@127.0.0.1:54322/postgres │
+╰─────┴─────────────────────────────────────────────────────────╯
+
+╭──────────────────────────────────────────────────────────────╮
+│ 🔑 Authentication Keys                                       │
+├─────────────┬────────────────────────────────────────────────┤
+│ Publishable │ sb_publishable_<redacted>                      │
+│ Secret      │ sb_secret_<redacted>                           │
+╰─────────────┴────────────────────────────────────────────────╯
+
+╭───────────────────────────────────────────────────────────────────────────────╮
+│ 📦 Storage (S3)                                                               │
+├────────────┬──────────────────────────────────────────────────────────────────┤
+│ URL        │ http://127.0.0.1:54321/storage/v1/s3                             │
+│ Access Key │ 625729a08b95bf1b7ff351a663f3a23c                                 │
+│ Secret Key │ 850181e4652dd023b7a98c58ae0d2d34bd487ee0cc3254aed6eda37307425907 │
+│ Region     │ local                                                            │
+╰────────────┴──────────────────────────────────────────────────────────────────╯
+
+A new version of Supabase CLI is available: v2.117.0 (currently installed v2.83.0)
+We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli
+Resetting local database...
+Recreating database...
+Initialising schema...
+Seeding globals from roles.sql...
+Applying migration 00001_initial_schema.sql...
+Seeding data from supabase/seed.sql...
+NOTICE (00000): OpenVAA seed data executed successfully
+Restarting containers...
+Creating Storage bucket: public-assets
+Creating Storage bucket: private-assets
+Finished supabase db reset on branch main.
+A new version of Supabase CLI is available: v2.117.0 (currently installed v2.83.0)
+We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli
+Applied template: default (built-in)
+Seed: 42                                              Elapsed: 6.56s
+                                                      Portraits uploaded: 327
+
+Table                            Created
+────────────────────────────── ──────────
+accounts                               0
+alliances                              2
+app_settings                           1
+candidates                           327
+constituencies                         5
+constituency_groups                    1
+elections                              1
+factions                               0
+feedback                               0
+nominations                          377
+organizations                          8
+projects                               0
+question_categories                    4
+questions                             26
+────────────────────────────── ──────────
+Total                                752
+Applied template: default (built-in)
+Seed: 42                                              Elapsed: 6.91s
+                                                      Portraits uploaded: 327
+
+Table                            Created
+────────────────────────────── ──────────
+accounts                               0
+alliances                              2
+app_settings                           1
+candidates                           327
+constituencies                         5
+constituency_groups                    1
+elections                              1
+factions                               0
+feedback                               0
+nominations                          377
+organizations                          8
+projects                               0
+question_categories                    4
+questions                             26
+────────────────────────────── ──────────
+Total                                752
+20:56:26
+NOTICE:  converged after 1 s
+20:56:27
+supabase start is already running.
+Stopped services: [supabase_pooler_openvaa-local]
+supabase local development setup is running.
+
+╭──────────────────────────────────────╮
+│ 🔧 Development Tools                 │
+├─────────┬────────────────────────────┤
+│ Studio  │ http://127.0.0.1:54323     │
+│ Mailpit │ http://127.0.0.1:54324     │
+│ MCP     │ http://127.0.0.1:54321/mcp │
+╰─────────┴────────────────────────────╯
+
+╭──────────────────────────────────────────────────────╮
+│ 🌐 APIs                                              │
+├────────────────┬─────────────────────────────────────┤
+│ Project URL    │ http://127.0.0.1:54321              │
+│ REST           │ http://127.0.0.1:54321/rest/v1      │
+│ GraphQL        │ http://127.0.0.1:54321/graphql/v1   │
+│ Edge Functions │ http://127.0.0.1:54321/functions/v1 │
+╰────────────────┴─────────────────────────────────────╯
+
+╭───────────────────────────────────────────────────────────────╮
+│ ⛁ Database                                                    │
+├─────┬─────────────────────────────────────────────────────────┤
+│ URL │ postgresql://postgres:postgres@127.0.0.1:54322/postgres │
+╰─────┴─────────────────────────────────────────────────────────╯
+
+╭──────────────────────────────────────────────────────────────╮
+│ 🔑 Authentication Keys                                       │
+├─────────────┬────────────────────────────────────────────────┤
+│ Publishable │ sb_publishable_<redacted>                      │
+│ Secret      │ sb_secret_<redacted>                           │
+╰─────────────┴────────────────────────────────────────────────╯
+
+╭───────────────────────────────────────────────────────────────────────────────╮
+│ 📦 Storage (S3)                                                               │
+├────────────┬──────────────────────────────────────────────────────────────────┤
+│ URL        │ http://127.0.0.1:54321/storage/v1/s3                             │
+│ Access Key │ 625729a08b95bf1b7ff351a663f3a23c                                 │
+│ Secret Key │ 850181e4652dd023b7a98c58ae0d2d34bd487ee0cc3254aed6eda37307425907 │
+│ Region     │ local                                                            │
+╰────────────┴──────────────────────────────────────────────────────────────────╯
+
+A new version of Supabase CLI is available: v2.117.0 (currently installed v2.83.0)
+We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli
+Resetting local database...
+Recreating database...
+Initialising schema...
+Seeding globals from roles.sql...
+Applying migration 00001_initial_schema.sql...
+Seeding data from supabase/seed.sql...
+NOTICE (00000): OpenVAA seed data executed successfully
+Restarting containers...
+Creating Storage bucket: private-assets
+Creating Storage bucket: public-assets
+Finished supabase db reset on branch main.
+A new version of Supabase CLI is available: v2.117.0 (currently installed v2.83.0)
+We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli
+CHAIN_EXIT=0
+20:56:58

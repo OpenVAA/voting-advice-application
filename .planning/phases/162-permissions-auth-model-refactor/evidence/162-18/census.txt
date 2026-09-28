@@ -1,0 +1,70 @@
+# 162-18 module census — raw evidence. Line numbers below are evidence, not citations.
+# HEAD: ff233807a08d530c66bc7ff3488d6dc0b17a1f6f
+# Date: 2026-09-19T15:33:33Z
+# Scope: non-test source under apps/frontend/src and apps/supabase/supabase/functions (*.test.ts excluded).
+
+## (1) modules that read the access token's grants claim
+$ git grep -nE 'readGrants\(|decodeTokenPayload\(|\.grants\b|\[.grants.\]' -- 'apps/frontend/src' 'apps/supabase/supabase/functions' ':!*.test.ts'
+apps/frontend/src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.ts:176:    const grants = readGrants(session.access_token);
+apps/frontend/src/lib/auth/passwordLogin.ts:53:  if (!hasAnyGrant(readGrants(session.access_token), allowedGrants)) {
+apps/frontend/src/lib/auth/roles.ts:37:export function readGrants(accessToken: string): Array<GrantClaim> {
+apps/frontend/src/lib/auth/roles.ts:38:  const payload = decodeTokenPayload(accessToken);
+apps/frontend/src/lib/auth/roles.ts:108:function decodeTokenPayload(token: string): Record<string, unknown> | undefined {
+(exit 0)
+
+## (1b) consumers of the claim-derived membership test
+$ git grep -nE 'hasAnyGrant\(' -- 'apps/frontend/src' 'apps/supabase/supabase/functions' ':!*.test.ts'
+apps/frontend/src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.ts:182:    if (hasAnyGrant(grants, CANDIDATE_GRANTS)) {
+apps/frontend/src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.ts:184:    } else if (hasAnyGrant(grants, ADMIN_GRANTS)) {
+apps/frontend/src/lib/auth/passwordLogin.ts:53:  if (!hasAnyGrant(readGrants(session.access_token), allowedGrants)) {
+apps/frontend/src/lib/auth/roles.ts:15:export function hasAnyGrant(claims: ReadonlyArray<GrantClaim>, allowed: ReadonlyArray<GrantShape>): boolean {
+(exit 0)
+
+## (2) modules that ask the user_can RPC
+$ git grep -n "'user_can'" -- 'apps/frontend/src' 'apps/supabase/supabase/functions' ':!*.test.ts'
+apps/frontend/src/lib/api/adapters/supabase/adminWriter/supabaseAdminWriter.ts:65:    const { data, error } = await this.supabase.rpc('user_can', {
+apps/supabase/supabase/functions/invite-candidate/callerAuthority.ts:34:    const { data, error } = await callerClient.rpc('user_can', {
+apps/supabase/supabase/functions/send-email/callerAuthority.ts:34:    const { data, error } = await callerClient.rpc('user_can', {
+(exit 0)
+
+## (2b) callers of a user_can asker
+$ git grep -nE 'callerMayOnProject\(' -- 'apps/frontend/src' 'apps/supabase/supabase/functions' ':!*.test.ts'
+apps/frontend/src/lib/api/adapters/supabase/adminWriter/supabaseAdminWriter.ts:64:  async callerMayOnProject(permission: Enums<'grant_permission'>): Promise<boolean> {
+apps/frontend/src/lib/server/admin/requireAdminIdentity.ts:58:    administersProject = await createAdminWriter({ fetch, locals }).callerMayOnProject('project.edit_questions');
+apps/supabase/supabase/functions/invite-candidate/callerAuthority.ts:27:export async function callerMayOnProject(
+apps/supabase/supabase/functions/invite-candidate/index.ts:85:    const mayInvite = await callerMayOnProject(callerClient, projectId, 'project.edit_entities');
+apps/supabase/supabase/functions/send-email/callerAuthority.ts:27:export async function callerMayOnProject(
+apps/supabase/supabase/functions/send-email/index.ts:119:    const mayBulkSend = await callerMayOnProject(callerClient, project_id, 'project.edit_entities');
+(exit 0)
+
+## (3) non-test files that IMPORT jwtSegment (exit 1 = none), then every non-test mention of the name
+$ git grep -nE "from '\./jwtSegment(\.ts)?'" -- 'apps/frontend/src' 'apps/supabase/supabase/functions' ':!*.test.ts'
+(exit 1)
+
+$ git grep -n 'jwtSegment' -- 'apps/frontend/src' 'apps/supabase/supabase/functions' ':!*.test.ts'
+apps/supabase/supabase/functions/identity-callback/entityGrant.ts:6: * DUPLICATED ON PURPOSE. Byte-identical copies of this file live in `apps/supabase/supabase/functions/invite-candidate/` and `apps/supabase/supabase/functions/identity-callback/` -- this file is one of the two -- because Supabase treats each top-level function directory as its own deployment unit and this repository has no shared-module directory for Edge Functions. `jwtSegment.ts` already exists as two copies for exactly the same reason, so a reader who finds two identical files is looking at a choice rather than at an oversight.
+apps/supabase/supabase/functions/invite-candidate/entityGrant.ts:6: * DUPLICATED ON PURPOSE. Byte-identical copies of this file live in `apps/supabase/supabase/functions/invite-candidate/` and `apps/supabase/supabase/functions/identity-callback/` -- this file is one of the two -- because Supabase treats each top-level function directory as its own deployment unit and this repository has no shared-module directory for Edge Functions. `jwtSegment.ts` already exists as two copies for exactly the same reason, so a reader who finds two identical files is looking at a choice rather than at an oversight.
+apps/supabase/supabase/functions/send-email/templateVars.ts:6: * Not duplicated: unlike `jwtSegment.ts` and `envConfig.ts` in this directory, this renderer is used by one function only, so there is no sibling copy to hold identical.
+(exit 0)
+
+## (4) non-test files that import callerAuthority
+$ git grep -nE "from '\./callerAuthority(\.ts)?'" -- 'apps/frontend/src' 'apps/supabase/supabase/functions' ':!*.test.ts'
+apps/supabase/supabase/functions/invite-candidate/index.ts:2:import { callerMayOnProject } from './callerAuthority.ts';
+apps/supabase/supabase/functions/send-email/index.ts:3:import { callerMayOnProject } from './callerAuthority.ts';
+(exit 0)
+
+## (5) grant writers
+$ git grep -nE 'writeEntityGrant\(' -- 'apps/frontend/src' 'apps/supabase/supabase/functions' ':!*.test.ts'
+apps/supabase/supabase/functions/identity-callback/entityGrant.ts:60:export async function writeEntityGrant(
+apps/supabase/supabase/functions/identity-callback/index.ts:312:    await writeEntityGrant(supabaseAdmin, {
+apps/supabase/supabase/functions/invite-candidate/entityGrant.ts:60:export async function writeEntityGrant(
+apps/supabase/supabase/functions/invite-candidate/index.ts:152:      await writeEntityGrant(supabaseAdmin, {
+(exit 0)
+
+## (6) Edge Function entry points
+$ git ls-files 'apps/supabase/supabase/functions/*/index.ts'
+apps/supabase/supabase/functions/identity-callback/index.ts
+apps/supabase/supabase/functions/invite-candidate/index.ts
+apps/supabase/supabase/functions/send-email/index.ts
+(exit 0)
+

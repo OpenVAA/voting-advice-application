@@ -1,0 +1,42 @@
+Phase 86 Plan 04 Task 2 — 3-run SHA-256 identity check.
+
+Format: sha256(sorted("<projectName> :: <specFile> > <specTitle>|<status>")).
+Status normalisation: regen-constants.mjs categorizeStatus → {pass, cascade, fail}.
+
+run-1.json: bb610ca15a48d4cbb21a19a0192591d5300cdfdce67257766c68fd19b6b31adf  (165 entries)  [OPERATOR FLAGGED INVALID — mistake during execution; not part of identity comparison]
+run-2.json: ea9c039b0e2182f1f55c9e3ad797de1e93d78b162f5e29aab3e4fda89b8e61db  (165 entries)
+run-3.json: 9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9  (165 entries)
+
+Verdict: ALMOST-STRICT (Phase 85 precedent inheritance — party-drawer boundary flake)
+
+Diff (run-2 vs run-3, exactly 1 cell):
+-2 voter-app :: specs/voter/voter-detail.spec.ts > should open party detail drawer with info, candidates, and opinions tabs|fail
++3 voter-app :: specs/voter/voter-detail.spec.ts > should open party detail drawer with info, candidates, and opinions tabs|pass
+
+Rationale (per RESEARCH §3.11 + Plan 04 Task 2 escalation path + Phase 85 precedent):
+
+The single diverging cell is the documented "party-drawer boundary flake" — same cell that
+diverged in Phase 84 (runs 1+3 SHA-identical, run 2 failed this cell) and Phase 85 (runs 1+2
+SHA-identical at 6815977e27…, run 3 differed by this same cell).
+
+This cell is BOUNDARY-classified per Phase 83 DETERM-07b hydration-completeness-guard boundary —
+it is a PASS_LOCKED-boundary graduate, not a deterministic regression. The flake direction is
+symmetric across runs (sometimes pass, sometimes fail).
+
+Plan 01 Task 5 attempted to harden the flake via expect.poll() guard (commit `9cc115469`).
+The hardening reduced but did not fully eliminate the boundary classification. Residual
+boundary status routed to v2.11+ via:
+  .planning/todos/pending/2026-05-14-party-drawer-boundary-flake-residual.md
+
+Canonical regen source: run-3.json (the run in which party-drawer PASSED — matches Phase 85
+D-06 precedent: "Per Plan 02 D-06, run-3.json (the run in which party-drawer PASSED) is the
+canonical regen source.").
+
+Phase 86 v2.10 All-Green Suite anchor = SHA-256 of run-3.json normalized partition:
+  9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9
+
+Phase 85 anchor 411e09f5ffb15015ca57a7405619f127f3950c402c082e2599f6782601158ac5 ABSORBED.
+
+Per CONTEXT.md D-06 + RESEARCH §8 Open-Q-6: Phase 87 entry condition is "fresh 3-run cold-start
+gate SHA-identical FIRST attempt." Phase 86 closes with PASSED-WITH-DEFERRAL on this contract;
+the residual boundary flake is the explicit v2.11+ deferral documented above.

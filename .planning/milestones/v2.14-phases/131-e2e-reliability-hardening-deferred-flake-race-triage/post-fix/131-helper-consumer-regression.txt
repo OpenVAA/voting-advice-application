@@ -1,0 +1,28 @@
+# Phase 131 Plan 02 — D-10 5-consumer regression for the navigateToFirstQuestion harden
+# Harden: tests/tests/utils/voterNavigation.ts terminal answer-option settle (commit a6ba83c5a).
+# Captured: 2026-07-22 (Phase-131-dated). Recipe: dev-server-up gate → yarn db:reset →
+#   assert public-assets bucket present → run (see 131-perm-hide-election-tags-3x.txt preamble).
+#
+# The 5 navigateToFirstQuestion consumers (grep-verified):
+#   1. tests/tests/specs/perm/perm-hide-election-tags.spec.ts        (direct)
+#   2. tests/tests/specs/perm/perm-hide-if-missing-answers.spec.ts   (direct + via fixture #5)
+#   3. tests/tests/specs/perm/perm-hide-category-tags.spec.ts        (direct)
+#   4. tests/tests/specs/perm/perm-disable-allow-open.spec.ts        (direct + via fixture #5)
+#   5. tests/tests/fixtures/voter/minimalVoterResultsPage.fixture.ts (called by #2 and #4)
+# → Running the 4 perm specs exercises ALL 5 consumers incl. the fixture path (#5).
+# A did-not-run cell counts as a FAILURE (D-07).
+########################################################################
+
+===== 5-CONSUMER REGRESSION RUN (4 perm specs incl. fixture path) =====
+REGRESSION: public-assets bucket ready after 1s
+[1A[2K[20/89] [perm-disable-election-1co] › tests/tests/specs/perm/perm-disable-election-1co.spec.ts:22:3 › perm-disable-election-1co › disallowSelection + 1 shared CO: no election OR constituency selector
+[1A[2K[22/89] [perm-disable-election-2co] › tests/tests/specs/perm/perm-disable-election-2co.spec.ts:17:3 › perm-disable-election-2co › disallowSelection + 2 COs: no election selector, constituency selector shown
+[1A[2K[46/89] [perm-hide-hero] › tests/tests/specs/perm/perm-hide-hero.spec.ts:40:3 › perm-hide-hero › hideHero=true: candidate-questions-hero figure has no img/span children
+[1A[2K[56/89] [perm-hide-all-nominations] › tests/tests/specs/perm/perm-hide-all-nominations.spec.ts:16:3 › perm-hide-all-nominations › showAllNominations=false: nominations 307-redirects to Home
+[1A[2K[58/89] [perm-hide-if-missing-answers] › tests/tests/specs/perm/perm-hide-if-missing-answers.spec.ts:35:3 › perm-hide-if-missing-answers › hideIfMissingAnswers.candidate=true: cand-1 visible, cand-2 hidden on /results
+[1A[2K[60/89] [perm-hide-election-tags] › tests/tests/specs/perm/perm-hide-election-tags.spec.ts:15:3 › perm-hide-election-tags › showElectionTags=false: election-tag absent on /questions
+[1A[2K[62/89] [perm-hide-category-tags] › tests/tests/specs/perm/perm-hide-category-tags.spec.ts:14:3 › perm-hide-category-tags › showCategoryTags=false: category-tag absent on /questions
+[1A[2K[64/89] [perm-disable-allow-open] › tests/tests/specs/perm/perm-disable-allow-open.spec.ts:56:3 › perm-disable-allow-open (candidate side — authenticated) › Q1 allowOpen=true: candidate-questions-comment visible
+[1A[2K[65/89] [perm-disable-allow-open] › tests/tests/specs/perm/perm-disable-allow-open.spec.ts:63:3 › perm-disable-allow-open (candidate side — authenticated) › Q2 allowOpen=false: candidate-questions-comment absent
+[1A[2K[66/89] [perm-disable-allow-open] › tests/tests/specs/perm/perm-disable-allow-open.spec.ts:72:3 › perm-disable-allow-open (voter side — unauthenticated) › voter detail drawer: Q1 info visible (entity-opinion-open-answer) AND Q2 info hidden
+[1A[2K  89 passed (7.7m)

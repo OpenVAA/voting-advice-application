@@ -1,0 +1,115 @@
+# 162.1-03 Task 2 pre-fix pgTAP run (tree = Task 1 commit 6b74be883 + appended D-13 cases; no trigger watches answers yet), command: yarn workspace @openvaa/supabase test:db, exit 1
+
+Connecting to local database...
+psql:apps/supabase/supabase/tests/database/00-helpers.test.sql:15: NOTICE:  extension "pgtap" already exists, skipping
+psql:apps/supabase/supabase/tests/database/00-helpers.test.sql:280: NOTICE:  function set_test_user(text,uuid,jsonb) does not exist, skipping
+apps/supabase/supabase/tests/database/00-helpers.test.sql ....................... ok
+psql:apps/supabase/supabase/tests/database/01-tenant-isolation.test.sql:15: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/01-tenant-isolation.test.sql .............. ok
+psql:apps/supabase/supabase/tests/database/02-candidate-self-edit.test.sql:13: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/02-candidate-self-edit.test.sql ........... ok
+psql:apps/supabase/supabase/tests/database/03-anon-read.test.sql:15: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/03-anon-read.test.sql ..................... ok
+psql:apps/supabase/supabase/tests/database/04-admin-crud.test.sql:20: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/04-admin-crud.test.sql .................... ok
+psql:apps/supabase/supabase/tests/database/05-organization-admin.test.sql:16: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/05-organization-admin.test.sql ............ ok
+psql:apps/supabase/supabase/tests/database/06-storage-rls.test.sql:18: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/06-storage-rls.test.sql ................... ok
+psql:apps/supabase/supabase/tests/database/07-rpc-security.test.sql:24: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/07-rpc-security.test.sql .................. ok
+psql:apps/supabase/supabase/tests/database/08-triggers.test.sql:20: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/08-triggers.test.sql ...................... ok
+psql:apps/supabase/supabase/tests/database/09-column-restrictions.test.sql:22: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/09-column-restrictions.test.sql ........... ok
+psql:apps/supabase/supabase/tests/database/10-schema-migrations.test.sql:16: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/10-schema-migrations.test.sql ............. ok
+psql:apps/supabase/supabase/tests/database/11-question-rpcs.test.sql:23: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/11-question-rpcs.test.sql ................. ok
+psql:apps/supabase/supabase/tests/database/12-user-can.test.sql:22: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/12-user-can.test.sql ...................... ok
+psql:apps/supabase/supabase/tests/database/14-grants-migration.test.sql:18: NOTICE:  table "__tcache__" does not exist, skipping
+psql:apps/supabase/supabase/tests/database/14-grants-migration.test.sql:20: NOTICE:  table "mig_backfill_image" does not exist, skipping
+psql:apps/supabase/supabase/tests/database/14-grants-migration.test.sql:22: NOTICE:  table "mig_oracle_image" does not exist, skipping
+apps/supabase/supabase/tests/database/14-grants-migration.test.sql .............. ok
+psql:apps/supabase/supabase/tests/database/15-visibility-flags.test.sql:23: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/15-visibility-flags.test.sql .............. ok
+psql:apps/supabase/supabase/tests/database/16-anon-visibility.test.sql:15: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/16-anon-visibility.test.sql ............... ok
+psql:apps/supabase/supabase/tests/database/17-project-structure-authority.test.sql:18: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/17-project-structure-authority.test.sql ... ok
+psql:apps/supabase/supabase/tests/database/18-entity-policies.test.sql:17: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/18-entity-policies.test.sql ............... ok
+psql:apps/supabase/supabase/tests/database/19-entity-immutability.test.sql:25: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/19-entity-immutability.test.sql ........... ok
+psql:apps/supabase/supabase/tests/database/20-storage-authority.test.sql:16: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/20-storage-authority.test.sql ............. ok
+psql:apps/supabase/supabase/tests/database/21-entity-organization.test.sql:25: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/21-entity-organization.test.sql ........... ok
+psql:apps/supabase/supabase/tests/database/22-content-policies.test.sql:23: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/22-content-policies.test.sql .............. ok
+psql:apps/supabase/supabase/tests/database/23-nominations-write.test.sql:17: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/23-nominations-write.test.sql ............. ok
+psql:apps/supabase/supabase/tests/database/24-legacy-removal.test.sql:26: NOTICE:  table "__tcache__" does not exist, skipping
+psql:apps/supabase/supabase/tests/database/24-legacy-removal.test.sql:28: NOTICE:  table "retired_grid" does not exist, skipping
+apps/supabase/supabase/tests/database/24-legacy-removal.test.sql ................ ok
+psql:apps/supabase/supabase/tests/database/25-matrix-conformance.test.sql:24: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/25-matrix-conformance.test.sql ............ ok
+psql:apps/supabase/supabase/tests/database/26-uniqueness-keys.test.sql:20: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/26-uniqueness-keys.test.sql ............... ok
+psql:apps/supabase/supabase/tests/database/27-parent-nomination-queue.test.sql:18: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/27-parent-nomination-queue.test.sql ....... ok
+psql:apps/supabase/supabase/tests/database/28-storage-table-parity.test.sql:22: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/28-storage-table-parity.test.sql .......... ok
+psql:apps/supabase/supabase/tests/database/29-authenticated-disjunct-order.test.sql:21: NOTICE:  table "__tcache__" does not exist, skipping
+apps/supabase/supabase/tests/database/29-authenticated-disjunct-order.test.sql .. ok
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:17: NOTICE:  table "__tcache__" does not exist, skipping
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:265: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/../../../bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/candidates/dddddddd-dddd-dddd-dddd-000000000006/31310000-0000-4000-8000-0000000000c1.jpg
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:275: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/31310000-0000-4000-8000-0000000000c2.jpg?x=1
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:285: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/31310000-0000-4000-8000-0000000000c3.jpg#x
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:295: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/%2e%2e/31310000-0000-4000-8000-0000000000c4.jpg
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:305: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/..\31310000-0000-4000-8000-0000000000c5.jpg
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:315: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/31310000-0000-4000-8000-0000000000c6 copy.jpg
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:325: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/31310000-0000-4000-8000-0000000000C7.jpg
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:335: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/31310000-0000-4000-8000-0000000000c8.jpg/
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:345: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/seed-portrait.jpg
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:538: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/../../../x.jpg
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:554: WARNING:  Storage cleanup refused a path outside the upload convention: bucket other-bucket, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000001/31310000-0000-4000-8000-0000000000f5.jpg
+psql:apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql:668: WARNING:  Storage cleanup refused a path outside the upload convention: bucket public-assets, path aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/candidates/31310000-0000-4000-8000-000000000002/notes.txt
+apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql ............... 
+# Failed test 36: "D-13: replacing a candidate's answer photo X with Y enqueues one DELETE of X at its exact single-object URL"
+#         have: 0
+#         want: 1
+# Failed test 37: "D-13: the answer-photo replace enqueues nothing else"
+#         have: 0
+#         want: 1
+# Failed test 38: "D-13: removing the answer key enqueues one DELETE of the removed photo"
+#         have: 0
+#         want: 1
+# Failed test 39: "D-13: the answer-key removal enqueues nothing else"
+#         have: 0
+#         want: 1
+# Failed test 40: "D-13: deleting the image question, whose cascade strips the answer key after the question row is gone, enqueues one DELETE of the stripped photo"
+#         have: 0
+#         want: 1
+# Failed test 41: "D-13: the question-delete cascade enqueues nothing else (the question's own folder is empty)"
+#         have: 0
+#         want: 1
+# Failed test 45: "D-13: replacing an organization's answer photo enqueues one DELETE under <project>/organizations/<id>/"
+#         have: 0
+#         want: 1
+# Failed test 46: "D-13: the organization answer-photo replace enqueues nothing else"
+#         have: 0
+#         want: 1
+# Failed test 47: "D-13: cleanup_old_answer_files exists and never reads questions (detection is by value shape)"
+# Looks like you failed 9 tests of 47
+Failed 9/47 subtests 
+
+Test Summary Report
+-------------------
+apps/supabase/supabase/tests/database/31-storage-cleanup.test.sql             (Wstat: 0 Tests: 47 Failed: 9)
+  Failed tests:  36-41, 45-47
+Files=30, Tests=1140,  3 wallclock secs ( 0.06 usr  0.04 sys +  0.15 cusr  0.06 csys =  0.31 CPU)
+Result: FAIL
+error running container: exit 1
+Try rerunning the command with --debug to troubleshoot the error.

@@ -1,0 +1,23 @@
+[dotenv@17.3.1] injecting env (25) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+
+Running 10 tests using 2 workers
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+[1A[2K[1/10] [data-setup] › tests/tests/setup/data.setup.ts:76:1 › import test dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+
+[1A[2K[2/10] [voter-app] › tests/tests/specs/voter/voter-matching.spec.ts:214:3 › matching algorithm verification › should display candidates in correct match ranking order @voter
+[1A[2K[3/10] [voter-app] › tests/tests/specs/voter/voter-matching.spec.ts:242:3 › matching algorithm verification › should show perfect match candidate as top result @voter
+[1A[2K[4/10] [voter-app] › tests/tests/specs/voter/voter-matching.spec.ts:251:3 › matching algorithm verification › should show worst match candidate as last result @voter
+[1A[2K[5/10] [voter-app] › tests/tests/specs/voter/voter-matching.spec.ts:271:3 › matching algorithm verification › should show partial-answer candidate in results with valid score @voter
+[1A[2K[6/10] [voter-app] › tests/tests/specs/voter/voter-matching.spec.ts:288:3 › matching algorithm verification › should NOT show hidden candidate (no termsOfUseAccepted) @voter
+[1A[2K[7/10] [voter-app] › tests/tests/specs/voter/voter-matching.spec.ts:297:3 › matching algorithm verification › should confirm category intros were not shown during journey (VOTE-05 partial negative coverage) @voter
+[1A[2K[8/10] [voter-app] › tests/tests/specs/voter/voter-matching.spec.ts:312:3 › matching algorithm verification › should confirm results accessible after all questions answered (VOTE-07 partial above-threshold coverage) @voter
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+
+[1A[2K[9/10] [data-teardown] › tests/tests/setup/variant-data.teardown.ts:12:1 › delete variant test dataset
+[1A[2K[10/10] [data-teardown] › tests/tests/setup/data.teardown.ts:17:1 › delete test dataset
+[1A[2K  10 passed (1.1m)

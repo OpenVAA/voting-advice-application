@@ -1,0 +1,16 @@
+{
+  "editableInfos": {
+    "description": "Ces informations apparaîtront dans votre profil.",
+    "title": "Votre profil"
+  },
+  "error": {
+    "invalidQuestion": "Le type de question ou le type de réponse n’est pas valide pour la question {questionId}"
+  },
+  "instructions": "Commencez par renseigner vos informations de base et, si vous le souhaitez, téléversez une photo. Vos opinions politiques vous seront ensuite demandées.",
+  "nominations": {
+    "description": "Voici les circonscriptions où vous êtes candidat·e. Si la liste électorale ou le symbole électoral manquent, ils seront automatiquement ajoutés plus tard lorsque les listes de candidat·es seront confirmées.",
+    "title": "Candidatures"
+  },
+  "requiredInfo": "Vous devez remplir les champs marqués de cette icône avant de pouvoir répondre aux autres questions. Cependant, vous pouvez enregistrer vos réponses jusqu’ici et continuer plus tard.",
+  "title": "Informations de base"
+}

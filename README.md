@@ -9,7 +9,7 @@ OpenVAA was built for two reasons: to offer a transparent alternative for propri
 ## Version `0.1 Shiba` is out now!
 
 <div style="display: flex; flex-flow: row; align-items: center;">
-  <img alt="A Shiba inu dog, the mascot of the OpenVAA 0.1 release" src="./docs/static/images/shiba-inu-facing-front.png" style="height: 10dvh;"/>
+  <img alt="A Shiba inu dog, the mascot of the OpenVAA 0.1 release" src="./apps/docs/static/images/shiba-inu-facing-front.png" style="height: 10dvh;"/>
   <ul style="margin: 0;">
     <li><a href="https://openvaa.org/developers-guide/quick-start">Quick start for developers</a></li>
     <li><a href="https://openvaa.org/publishers-guide/intro">Guide for publishers of VAAs</a></li>

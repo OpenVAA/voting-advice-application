@@ -1,0 +1,9 @@
+policy qual md5 now: 68934a3e (68934a3e = perturbed to false)
+fresh object, visible candidate folder
+   upload 200 | anon /object/public 200 | anon /object/authenticated 200
+fresh object, NONEXISTENT candidate (policy denies even when shipped)
+   upload 200 | anon /object/public 200 | anon /object/authenticated 200
+fresh object, garbage path (policy denies even when shipped)
+   upload 200 | anon /object/public 200 | anon /object/authenticated 200
+control, PRIVATE bucket (has no anon policy)
+   anon /object/authenticated 400 | anon /object/public 400

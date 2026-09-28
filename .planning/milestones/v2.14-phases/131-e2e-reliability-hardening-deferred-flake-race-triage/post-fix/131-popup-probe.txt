@@ -1,0 +1,19 @@
+# Phase 131 — todo #3 parity: popupNotice.probe.spec.ts explicit execution (Pitfall 4 — @probe is EXCLUDED
+# from the default --grep-invert @probe run; a did-not-run probe cell is a FAILURE, never a silent pass).
+# Covering: tests/tests/specs/_probes/popupNotice.probe.spec.ts (feedback + survey popup surface + dismiss-persist).
+# Recipe: yarn db:reset -> bucket gate -> yarn db:seed --template show-feedback-survey (out-of-band per probe header)
+#         -> yarn playwright test --project=_probes --grep popupNotice (isolated, LEAF, no data-setup).
+# Captured: 2026-07-22 (Phase-131-dated). Correct openvaa-local instance.
+########################################################################
+dev-gate: 200
+public-assets bucket present: 1
+seeded show-feedback-survey
+dev-gate: 200
+===== popupNotice probe (explicit --project=_probes) =====
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+[1A[2K[1/2] [_probes] › tests/specs/_probes/popupNotice.probe.spec.ts:31:3 › @probe popupNotice fixture (EPERM-09) › feedback popup: visible on /results, dismiss persists across reload
+[1A[2K[2/2] [_probes] › tests/specs/_probes/popupNotice.probe.spec.ts:41:3 › @probe popupNotice fixture (EPERM-09) › survey popup: visible on /results, dismiss persists across reload
+[1A[2K  2 passed (1.3m)
+===== end probe =====
