@@ -1,0 +1,3 @@
+apps/supabase/supabase/tests/database/17-project-structure-authority.test.sql	ad4de830b7e191185cc5105ce15f42736be571ad	165-13
+apps/supabase/supabase/tests/database/22-content-policies.test.sql	4b8399258d5cde1fe21246eba33cc1223a7cf817	165-13
+apps/supabase/supabase/tests/database/10-schema-migrations.test.sql	660d9eed0f39554d40ea24cb7f7ff0ce7d2a7f0a	165-13

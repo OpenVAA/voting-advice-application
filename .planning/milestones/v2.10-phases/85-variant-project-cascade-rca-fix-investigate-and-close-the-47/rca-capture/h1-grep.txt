@@ -1,0 +1,49 @@
+# H1 (yarn-arg-forwarding LANDMINE-9) architectural disproof
+# Command:
+grep -n "yarn\|workspace.*seed\|--likert-only\|--external-id-prefix\|spawn\|exec" tests/tests/setup/variant-*.setup.ts
+# Expected: zero hits (variants bypass the CLI entirely)
+# Actual output:
+(no matches)
+# Per CLAUDE.md §"Yarn arg-forwarding caveat": LANDMINE-9 applies to shell-chained yarn commands.
+# Variant setups import dev-seed primitives directly (verified at variant-multi-election.setup.ts:1-7);
+# no shell process boundary exists. H1 is architecturally inapplicable.
+
+# Positive confirmation:
+# Command:
+grep -nE "from ['\"]@openvaa/dev-seed['\"]" tests/tests/setup/variant-*.setup.ts
+# Actual output (8 variant setup files; see note below on 8-vs-9 discrepancy):
+tests/tests/setup/variant-1e-Nc.setup.ts:7:} from '@openvaa/dev-seed';
+tests/tests/setup/variant-allowopen.setup.ts:7:} from '@openvaa/dev-seed';
+tests/tests/setup/variant-constituency.setup.ts:7:} from '@openvaa/dev-seed';
+tests/tests/setup/variant-hidden-required.setup.ts:7:} from '@openvaa/dev-seed';
+tests/tests/setup/variant-low-minimum-answers.setup.ts:7:} from '@openvaa/dev-seed';
+tests/tests/setup/variant-multi-election.setup.ts:7:} from '@openvaa/dev-seed';
+tests/tests/setup/variant-Ne-Nc.setup.ts:7:} from '@openvaa/dev-seed';
+tests/tests/setup/variant-startfromcg.setup.ts:7:} from '@openvaa/dev-seed';
+
+# === 8-VS-9 DISCREPANCY (Rule-1 deviation note) ===
+# Plan 01 and 85-RESEARCH.md both describe "9 variant setup files." Empirically there are 8
+# data-setup-*.setup.ts files; the 9th label refers to variant-results-sections, which is a
+# SPEC project (not a data-setup project) that re-uses the data-setup-multi-election seed.
+# See playwright.config.ts:21-22 + lines 233-262: the linear-chain comment lists
+# variant-results-sections after variant-multi-election but its `dependencies: ['data-setup-multi-election']`
+# (line 244) confirms it has no own setup. So the architectural disproof holds across all
+# 8 variant-data-setup files (which is the relevant universe for H1).
+#
+# Per RESEARCH §"System Architecture Diagram": the linear chain is
+# data-setup-multi-election -> variant-multi-election -> variant-results-sections -> data-setup-constituency -> …
+# (8 data-setups + 10 spec projects = 18 variant chain projects total per playwright.config.ts:225-391).
+
+# === ARCHITECTURAL DISPROOF RATIONALE ===
+# CLAUDE.md §"Seeding local data" §"Yarn arg-forwarding caveat" documents LANDMINE-9: yarn does
+# not forward trailing args through `&&`-chained commands; only the LAST command in the chain
+# receives them. This bug is real and applies to shell-mediated invocations of the dev-seed CLI
+# (`yarn db:seed --template variant-X --likert-only`, etc.).
+#
+# All 8 variant setup files import `runPipeline`, `Writer`, `runTeardown`, and `fanOutLocales`
+# from `@openvaa/dev-seed` and invoke them directly with the template object in scope. The CLI's
+# parseArgs (packages/dev-seed/src/cli/seed.ts:60-70) is NEVER reached. No shell process boundary
+# exists where yarn-arg-forwarding could apply.
+#
+# Therefore H1 is ARCHITECTURALLY INAPPLICABLE — the variant chain physically cannot exhibit
+# the LANDMINE-9 yarn-arg-forwarding propagation pattern described in CONTEXT.md D-03 H1.

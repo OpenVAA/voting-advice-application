@@ -1,0 +1,7 @@
+{
+  "candidateApp.notSupported": {
+    "content": "Denna valkompassversion stöder inte kandidatappen.",
+    "heroEmoji": "🐣",
+    "title": "Kandidatappen inte tillgänglig"
+  }
+}

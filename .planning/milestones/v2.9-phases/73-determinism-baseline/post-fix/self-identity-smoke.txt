@@ -1,0 +1,4 @@
+Baseline: 4p / 29f / 69c
+Post:     4p / 29f / 69c
+Contract: 4 pass-locked, 15 data-race pool, 55 cascade-baseline.
+PARITY GATE: PASS — no regressions detected per D-59-04.

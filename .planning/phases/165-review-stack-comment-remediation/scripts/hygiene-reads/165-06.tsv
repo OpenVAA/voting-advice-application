@@ -1,0 +1,10 @@
+apps/frontend/src/lib/auth/roles.ts	9167486ce5fe729d94dca7c99c328928d6708cc0	165-06
+apps/frontend/src/lib/api/adapters/supabase/supabaseTypes.parity.test.ts	c8613122b5430ba840facd86e7eae6dd84541e1d	165-06
+apps/frontend/src/lib/api/adapters/supabase/supabaseAdapter.type.ts	71ce001c044c8a0d8d3c3f90d5b9f5a77f510e7d	165-06
+apps/frontend/src/app.d.ts	2838f9718261a2fc1917910127781a4b9e520a38	165-06
+apps/frontend/src/lib/api/dataProvider.ts	11f9aaa8c3e58e825abf5c3291810d1943bd3477	165-06
+apps/frontend/src/lib/supabase/anon.ts	c5f4aeda517f5c0909ecd9d139dcb35cc07fcf35	165-06
+apps/frontend/src/lib/supabase/browser.ts	aac10d1e318a866c27ceb2689f520e91b4276fa7	165-06
+apps/frontend/src/lib/supabase/job.ts	2a4abc98b75166ff95e333221a934f1a1622b56f	165-06
+apps/frontend/src/lib/supabase/server.ts	0c0454f4b706d3c2cc790fd9b38fef710cce6e9e	165-06
+apps/frontend/src/lib/supabase/universal.ts	ccbb7398722bf61a819801390a43a019622eacde	165-06

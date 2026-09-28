@@ -1,0 +1,17 @@
+=== Pair 1: run-1 vs run-2 ===
+Baseline: 4p / 42f / 85c
+Post:     4p / 42f / 85c
+Contract: 47 pass-locked, 15 data-race pool, 33 cascade-baseline.
+PARITY GATE: FAIL — 43 regression(s):
+
+=== Pair 2: run-2 vs run-3 ===
+Baseline: 4p / 42f / 85c
+Post:     4p / 42f / 85c
+Contract: 47 pass-locked, 15 data-race pool, 33 cascade-baseline.
+PARITY GATE: FAIL — 43 regression(s):
+
+=== Pair 3: run-1 vs run-3 ===
+Baseline: 4p / 42f / 85c
+Post:     4p / 42f / 85c
+Contract: 47 pass-locked, 15 data-race pool, 33 cascade-baseline.
+PARITY GATE: FAIL — 43 regression(s):

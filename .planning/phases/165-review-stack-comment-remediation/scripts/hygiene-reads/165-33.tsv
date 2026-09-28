@@ -1,0 +1,13 @@
+apps/frontend/src/lib/dynamic-components/entityCard/EntityCard.svelte	516bdb70b83476bab8255f096c1ec6e4ec3d8a77	165-33
+apps/frontend/src/lib/dynamic-components/entityCard/tests/hoverShadedRule.test.ts	3a98c01231360ab9e2f86bd1751113dac5bd138b	165-33
+apps/frontend/src/lib/dynamic-components/entityDetails/EntityDetails.svelte	c81dd0ab38d08209b43542fc9c1d88eb10750822	165-33
+apps/frontend/src/lib/dynamic-components/entityDetails/EntityInfo.svelte	568d728336d28be9361bc510fc8dac5ce87b07a9	165-33
+apps/frontend/src/lib/dynamic-components/entityDetails/InfoItem.svelte	500bc99ec500a1193cb50dd664613aa0b79245c7	165-33
+apps/frontend/src/lib/dynamic-components/navigation/NavItem.svelte	2a2160f2c4be40c21f41e6d725a933e3828f4382	165-33
+apps/frontend/src/lib/layouts/main/Banner.svelte	31fa98bdf36e5d2d297065f638d18bb29442a5d0	165-33
+apps/frontend/src/lib/layouts/main/Header.svelte	5bc84985fed53b82913607b0437dfddec0771ad6	165-33
+apps/frontend/src/routes/(voters)/privacy/+page.svelte	4eeec2adf7117899ed4d873d5d70cf445fb6ddc9	165-33
+apps/frontend/src/routes/+layout.svelte	d89dfd6a54d0fc1284a6602f512159c23341bcbf	165-33
+apps/frontend/src/routes/candidate/(protected)/profile/+page.svelte	79b9e25f8f97738c150418bd8f6473d103d9e1b7	165-33
+apps/frontend/src/routes/candidate/(protected)/questions/+page.svelte	c32b5a1e3f8fddb8fd7710bad0fd1feab9978c90	165-33
+tests/tests/specs/a11y/candidate-a11y.spec.ts	7e5d6e0e2603e5e9a9c2b1501d4bb703d9421bc7	165-33

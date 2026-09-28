@@ -1,0 +1,7 @@
+{
+  "continue": "Daten weider aginn",
+  "ingress": "Sidd Dir sécher, datt Dir Iech auslogge wëllt? Dir gitt automatesch no {timeLeft} Sekonnen ausgeloggt.",
+  "itemsLeft": "Et si nach {infoQuestionsLeft, plural, =1 {eng Positioun} other {# Positiounen}} bei de Basisdaten an {opinionQuestionsLeft, plural, =1 {eng Meenung} other {# Meenungen}} auszefëllen.",
+  "questionsLeft": "Et si nach {opinionQuestionsLeft, plural, =1 {eng Meenung} other {# Meenungen}} auszefëllen.",
+  "title": "E puer vun Ären Donnéeë feelen nach"
+}

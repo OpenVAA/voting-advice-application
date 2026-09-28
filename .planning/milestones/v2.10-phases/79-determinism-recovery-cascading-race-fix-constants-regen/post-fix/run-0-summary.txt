@@ -1,0 +1,17 @@
+Run 0 cold-start summary
+Pass: 81
+Fail: 10
+Skipped/did-not-run: 70
+candidate-profile.spec.ts cascade-skip (DETERM-04 critical metric): 5
+
+--- candidate-profile.spec.ts breakdown ---
+PASS:
+  - should register the fresh candidate via email link
+FAIL:
+  - should upload a profile image (CAND-03) [timedOut]
+DID NOT RUN (cascade):
+  - should show editable info fields on profile page (CAND-03)
+  - should persist profile image after page reload (CAND-12)
+  - A11Y-02 should persist display name after page reload
+  - A11Y-02 should persist bio after page reload
+  - A11Y-02 should persist social link after page reload

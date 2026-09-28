@@ -1,0 +1,16 @@
+{
+  "storageOnHomeRoute": 0,
+  "storageOnProfileRoute": 1,
+  "profileFirstStorageUrl": "http://127.0.0.1:54321/storage/v1/object/public/public-assets/00000000-0000-0000-0000-000000000001/candidates/43ab42bd-a31c-4f14-a0c3-fa4c1909fdcc/seed-portrait.jpg",
+  "renderImagePathCount": 0,
+  "objectPublicPathCount": 1,
+  "profileResponseStatuses": [
+    {
+      "url": "/storage/v1/object/public/public-assets/00000000-0000-0000-0000-000000000001/candidates/43ab42bd-a31c-4f14-a0c3-fa4c1909fdcc/seed-portrait.jpg",
+      "status": 200
+    }
+  ],
+  "profileRequestUrls": [
+    "/storage/v1/object/public/public-assets/00000000-0000-0000-0000-000000000001/candidates/43ab42bd-a31c-4f14-a0c3-fa4c1909fdcc/seed-portrait.jpg"
+  ]
+}

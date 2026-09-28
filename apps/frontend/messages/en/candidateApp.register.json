@@ -1,0 +1,24 @@
+{
+  "candidateApp.register": {
+    "code": "registration code",
+    "codePlaceholder": "E.g. CP23-174a-f4%&-aHAB",
+    "didYouAlreadyRegister": "Have you already registered?",
+    "enterCode": "Enter the registration code that you’ve received by email to complete your registration.",
+    "goToLoginLabel": "Go to the login page",
+    "loggedInWarning": "A user is currently logged in. Log out before proceeding.",
+    "passwordValidation": {
+      "commonPatterns": "Contains common sequences or patterns",
+      "length": "At least {minPasswordLength} characters",
+      "lowercase": "Lowercase letter",
+      "number": "Number",
+      "repetition": "Contains character repetition",
+      "symbol": "Symbol (such as !?%#€)",
+      "uppercase": "Uppercase letter",
+      "username": "Avoid using your name in the password"
+    },
+    "register": "Register",
+    "title": "Registration",
+    "titleWithPreregistration": "Confirm your email address",
+    "wrongRegistrationCode": "Wrong registration code"
+  }
+}

@@ -1,0 +1,44 @@
+Phase 74 Plan 07 — Task 2: 3-Run SHA-256 Identity Gate (per Phase 73 SC #4 protocol)
+====================================================================================
+
+Method: Extract sorted '<projectName> :: <specFile> > <specTitle>|<status>' pairs from
+each run's JSON report (Playwright reporter shape, dotenv banner stripped); join with
+newlines; SHA-256 hash of the byte-sequence. All 3 hashes MUST be identical per
+CONTEXT D-09.
+
+Run 1 — Total tests: 123 | Status counts: {passed:4, timedOut:31, skipped:79, failed:9}
+Run 1 SHA-256: ec349269092251378acbb3ac8bb13c58e36612728b6e4986f43756cff41199b2
+
+Run 2 — Total tests: 123 | Status counts: {passed:4, timedOut:31, skipped:79, failed:9}
+Run 2 SHA-256: ec349269092251378acbb3ac8bb13c58e36612728b6e4986f43756cff41199b2
+
+Run 3 — Total tests: 123 | Status counts: {passed:4, timedOut:31, skipped:79, failed:9}
+Run 3 SHA-256: ec349269092251378acbb3ac8bb13c58e36612728b6e4986f43756cff41199b2
+
+IDENTITY VERDICT: PASS — all 3 hashes byte-identical.
+
+Run timestamps:
+- Run 1: started 2026-05-11T10:13Z (approx); finished 2026-05-11T11:13Z (~60 min)
+- Run 2: started 2026-05-11T11:14Z; finished 2026-05-11T12:10Z (~56 min)
+- Run 3: started 2026-05-11T14:19Z; finished 2026-05-11T15:14Z (~55 min)
+  (Run 3 was initially launched at 12:10Z but the bash background task was killed
+  by user intervention at 13:13Z while still running; re-launched at 14:19Z and
+  ran to completion uninterrupted. The harness-kill did NOT affect Run 3's
+  determinism; the re-launched Run 3's sorted-status set is byte-identical to
+  Run 1 and Run 2.)
+
+Total elapsed wall-clock for 3-run gate (counting from Run 1 start to Run 3 finish):
+~5 hours (10:13Z → 15:14Z). Excluding the killed-and-relaunched Run 3, the
+effective wall-clock for 3 cold-start runs is ~3h (10:13Z + 60min + 56min + 55min).
+
+Phase 73 comparison: Phase 73's 3 anchors finished at 22:01Z / 22:43Z / 23:25Z, each
+~37 min. Phase 74's runs are longer (~55-60 min each) because Phase 74 added 3 new
+variant projects (variant-low-minimum-answers, variant-1e-Nc, variant-Ne-Nc) +
+6 new specs across Plans 01-06 (translation, browse-without-match, feedback,
+navigation, voter-detail extension, locale-switching), each contributing
+data-setup + spec time to the sequential `--workers=1` chain. The total test count
+grew from Phase 73's 102 → Phase 74's 123 (+21 tests).
+
+CONTEXT D-09 binding preserved: all 3 runs produce byte-identical sorted
+title|status sets. Any divergence would have required per-test rationale; no
+divergence observed.

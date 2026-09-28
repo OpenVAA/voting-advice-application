@@ -1,0 +1,4 @@
+scripts/assert-edge-function-env.mjs	65a791cbb8c6943995519e08f85c35770ee346c5	165-14
+packages/dev-seed/tests/edgeFunctionEnvGate.test.ts	91c82c4d2d9e15b290eda9f97c7715bd49709d34	165-14
+packages/dev-tools/src/keygen.ts	2f94d18a7be1d5816bba1b16fd008436059087c4	165-14
+.github/workflows/main.yaml	9d3a634731a418499b1b99ae73244e67c272c2a2	165-14

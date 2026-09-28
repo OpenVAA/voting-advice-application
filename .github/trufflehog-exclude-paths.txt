@@ -1,0 +1,19 @@
+# Paths excluded from the secret scan, as extended-regex patterns matched against the
+# repo-relative file path. Every entry here is a MEASURED false positive from the first
+# observed run of this job (Actions run 33751423659, 2026-09-03), not a speculative
+# suppression. Keep this list narrow: an exact path, never a directory wildcard.
+#
+# Measured findings this file suppresses, by detector:
+#   3x FlatIO   -> yarn.lock                       (dependency integrity hashes)
+#   1x Gitlab   -> .yarn/releases/yarn-4.13.0.cjs  (the vendored Yarn release bundle)
+#   1x PrivateKey -> tests/tests/support/mock-oidc-key.pem
+#
+# On the .pem: it is a throwaway 2048-bit RSA keypair generated for the LOCAL mock OIDC
+# issuer (tests/tests/support/mockOidcIssuer.ts) that the bank-auth E2E suite runs against.
+# Nothing real trusts it and it authenticates nothing. It is excluded so the scan baseline
+# is zero -- which is what makes a planted secret's red ATTRIBUTABLE to the plant. Without
+# a zero baseline the job is red before anything is planted, and criterion 3's second half
+# ("removing it clears the job") can never be observed.
+^yarn\.lock$
+^\.yarn/releases/.*\.cjs$
+^tests/tests/support/mock-oidc-key\.pem$

@@ -1,0 +1,18 @@
+{
+  "candidateApp.basicInfo": {
+    "editableInfos": {
+      "description": "Denna information kommer att visas i din profil.",
+      "title": "Din profil"
+    },
+    "error": {
+      "invalidQuestion": "Frågetyp eller svarstyp är ogiltig för frågan {questionId}"
+    },
+    "instructions": "Fyll först i dina grundläggande uppgifter och ladda upp ett foto om du vill. Därefter får du svara på frågor om dina politiska åsikter.",
+    "nominations": {
+      "description": "Detta är de valkretsar där du är nominerad. Om vallistan eller valsymbolen saknas kommer de att läggas till automatiskt när kandidatlistorna bekräftas.",
+      "title": "Nomineringslistor"
+    },
+    "requiredInfo": "Du måste fylla i fälten markerade med denna ikon innan du kan svara på andra frågor. Du kan dock spara dina svar hittills och fortsätta fylla i dem senare.",
+    "title": "Grundläggande information"
+  }
+}

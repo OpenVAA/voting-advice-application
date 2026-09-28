@@ -30,11 +30,11 @@ export interface AllianceNominationData extends NominationData<typeof ENTITY_TYP
   // - electionSymbol?: string;
 
   /**
-   * The `OrganizationNomination`s forming the alliance. One or more must be provided either as nested nominations or explicit ids.
+   * The `OrganizationNomination`s forming the alliance, provided as nested nomination data. One or more `OrganizationNomination`s must be provided either as nested data here or as explicit ids in `organizationNominationIds` (e.g. by an adapter that already created the org-noms separately and wired the parent edge).
    */
-  organizations: Array<NestedNomination<PublicOrganizationNominationData>>;
+  organizations?: Array<NestedNomination<PublicOrganizationNominationData>>;
   /**
-   * The `OrganizationNomination`s forming the alliance. These will be automatically generated from the `organizations` array. One or more must be provided either as nested nominations or explicit ids.
+   * The `OrganizationNomination`s forming the alliance, referenced by id. Either populated automatically when `organizations` nested data is provided, or set directly by adapters that reverse-fill parent → children relationships from a flat schema (see `supabaseDataProvider`). One or more must be provided either as nested data in `organizations` or as ids here.
    */
   organizationNominationIds?: Array<Id>;
 }
