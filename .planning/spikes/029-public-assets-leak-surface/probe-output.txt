@@ -1,0 +1,30 @@
+ok    S1a list the unpublished candidate's folder (anon)
+      expected: 0 objects (list is policy-gated)
+      observed: 0 objects
+ok    S1b read the unpublished candidate row via REST (anon)
+      expected: no row, so no image path
+      observed: 0 rows
+ok    S1c path of the unpublished candidate in get_nominations (anon)
+      expected: absent
+      observed: absent
+ok    S1d guess the URL knowing only the candidate id
+      expected: infeasible: 122 random bits in the name
+      observed: guessed 9b7fd697-a277-4808-a8e3-b796ccd4bd55.png -> HTTP 400
+LEAK  S1e direct URL, if it is known anyway
+      expected: served (public bucket, spike 027)
+      observed: HTTP 200
+LEAK  S2  URL of a candidate who was public, then unconfirmed
+      expected: ideally 4xx once unpublished
+      observed: HTTP 200 while public -> HTTP 200 after unconfirm
+LEAK  S2b same URL after the whole project is closed to voters
+      expected: ideally 4xx
+      observed: HTTP 200
+LEAK  S3  replaced photo in the image column
+      expected: old file deleted by trigger
+      observed: old URL HTTP 200 (polled up to 10 s)
+LEAK  S4  replaced photo stored in an answer (orphan)
+      expected: old file deleted
+      observed: no trigger covers `answers` (code read: 400-storage.sql)
+LEAK  S5  candidate deleted
+      expected: folder deleted by trigger
+      observed: URL HTTP 200 (polled up to 10 s)

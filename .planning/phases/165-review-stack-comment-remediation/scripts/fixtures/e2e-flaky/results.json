@@ -1,0 +1,6 @@
+{
+  "config": {},
+  "suites": [],
+  "errors": [],
+  "stats": { "startTime": "2026-09-22T19:56:11.781Z", "duration": 640750.764, "expected": 165, "skipped": 0, "unexpected": 0, "flaky": 1 }
+}

@@ -1,0 +1,988 @@
+path	line	reason	rule	text
+tests/global-setup.ts	7	phase-ref-deferred	phase-ref	see phase 137
+tests/playwright.config.ts	19	phase-ref-deferred	phase-ref	see phase 136
+tests/playwright.config.ts	27	phase-ref-deferred	phase-ref	see phase 119
+tests/playwright.config.ts	27	phase-ref-deferred	phase-ref	see phase 136
+tests/playwright.config.ts	65	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	99	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	112	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	121	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	138	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	163	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	167	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	180	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	267	phase-ref-deferred	phase-ref	see phase 136
+tests/playwright.config.ts	272	phase-ref-deferred	phase-ref	phase 2
+tests/playwright.config.ts	275	phase-ref-deferred	phase-ref	phase 147
+tests/playwright.config.ts	277	unstrippable-section-anchor	section-anchor-alpha	§
+tests/playwright.config.ts	286	phase-ref-deferred	phase-ref	see phase 137
+tests/playwright.config.ts	324	phase-ref-deferred	phase-ref	phase 146
+tests/playwright.config.ts	330	milestone-version	milestone-ver	v2.14
+tests/playwright.config.ts	347	unstrippable-section-anchor	section-anchor-alpha	§ Derivation
+tests/playwright.config.ts	370	phase-ref-deferred	phase-ref	phase 65
+tests/playwright.config.ts	383	attributive-reference	phase-ref	phase 147
+tests/playwright.config.ts	398	phase-ref-deferred	phase-ref	see phase 136
+tests/playwright.config.ts	427	attributive-reference	phase-ref	phase 55
+tests/playwright.config.ts	429	attributive-reference	phase-ref	phase 3
+tests/playwright.config.ts	436	unstrippable-section-anchor	section-anchor-alpha	§ Decision
+tests/playwright.config.ts	441	unstrippable-section-anchor	section-anchor-alpha	§ Decision
+tests/playwright.config.ts	496	unstrippable-section-anchor	section-anchor-alpha	§ Decision
+tests/playwright.config.ts	540	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	549	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	568	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	589	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	596	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	655	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	662	phase-ref-deferred	phase-ref	see phase 138
+tests/playwright.config.ts	678	phase-ref-deferred	phase-ref	see phase 138
+tests/playwright.config.ts	699	phase-ref-deferred	phase-ref	see phase 117
+tests/playwright.config.ts	701	spike-ref-deferred	spike-ref	see spike 024
+tests/playwright.config.ts	713	phase-ref-deferred	phase-ref	see phase 121
+tests/playwright.config.ts	726	phase-ref-deferred	phase-ref	see phase 121
+tests/playwright.config.ts	745	phase-ref-deferred	phase-ref	see phase 130
+tests/playwright.config.ts	760	phase-ref-deferred	phase-ref	see phase 130
+tests/playwright.config.ts	796	phase-ref-deferred	phase-ref	see phase 119
+tests/playwright.config.ts	796	phase-ref-deferred	phase-ref	see phase 136
+tests/playwright.config.ts	801	phase-ref-deferred	phase-ref	see phase 136
+tests/playwright.config.ts	856	phase-ref-deferred	phase-ref	see phase 138
+tests/playwright.config.ts	866	unstrippable-section-anchor	section-anchor-alpha	§ Decision
+tests/playwright.config.ts	878	unstrippable-section-anchor	section-anchor-alpha	§ For
+tests/playwright.config.ts	895	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	929	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	956	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	983	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1010	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1037	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1064	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1091	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1132	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1180	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1220	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1248	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1277	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1318	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1344	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1365	phase-ref-deferred	phase-ref	see phase 120
+tests/playwright.config.ts	1375	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1402	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1429	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1456	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1483	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1510	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1538	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1567	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1598	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1631	phase-ref-deferred	phase-ref	see phase 140
+tests/playwright.config.ts	1665	phase-ref-deferred	phase-ref	see phase 140
+tests/eslint.config.mjs	7	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/utils/axeScan.ts	4	attributive-reference	phase-ref	phase 147
+tests/tests/utils/axeScan.ts	181	phase-ref-deferred	phase-ref	phase 147
+tests/tests/utils/axeScan.ts	290	attributive-reference	phase-ref	phase 147
+tests/tests/utils/axeScan.ts	303	unstrippable-section-anchor	section-anchor-alpha	§
+tests/tests/utils/multiChoice.ts	5	phase-ref-deferred	phase-ref	see phase 135
+tests/tests/utils/multiChoice.ts	7	phase-ref-deferred	phase-ref	see phase 135
+tests/tests/utils/multiChoice.ts	10	phase-ref-deferred	phase-ref	see phase 135
+tests/tests/utils/preflight.test.ts	12	phase-ref-deferred	phase-ref	see phase 137
+tests/tests/utils/rawKeyScan.ts	45	attributive-reference	phase-ref	phase 147
+tests/tests/utils/rawKeyScan.ts	52	unstrippable-section-anchor	section-anchor-alpha	§
+tests/tests/utils/rawKeyScan.ts	326	unstrippable-section-anchor	section-anchor-alpha	§
+tests/tests/utils/rawKeyScan.ts	343	phase-ref-deferred	phase-ref	phase 147
+tests/tests/utils/selectElection.ts	28	attributive-reference	phase-ref	phase 136
+tests/tests/utils/selectElection.ts	28	phase-ref-deferred	phase-ref	phase 145
+tests/tests/utils/supabaseAdminClient.ts	257	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/utils/testCredentials.ts	12	phase-ref-deferred	phase-ref	see phase 136
+tests/tests/utils/testCredentials.ts	14	phase-ref-deferred	phase-ref	see phase 89
+tests/tests/utils/testIds.ts	110	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/utils/testIds.ts	209	phase-ref-deferred	phase-ref	see phase 130
+tests/tests/utils/testIds.ts	337	phase-ref-deferred	phase-ref	see phase 117
+tests/tests/utils/voterNavigation.ts	49	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/utils/voterNavigation.ts	54	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/utils/voterNavigation.ts	72	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/support/preflight.ts	6	phase-ref-deferred	phase-ref	see phase 137
+tests/tests/support/preflight.ts	129	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/support/preflight.ts	140	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/specs/voter/cold-entry-dataroot.spec.ts	2	phase-ref-deferred	phase-ref	see phase 117
+tests/tests/specs/voter/cold-entry-dataroot.spec.ts	4	spike-ref-deferred	spike-ref	see spike 024
+tests/tests/specs/voter/eperm07-term-trigger.spec.ts	2	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/specs/voter/eperm07-term-trigger.spec.ts	57	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/specs/voter/eperm07-term-trigger.spec.ts	85	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/specs/voter/eperm07-term-trigger.spec.ts	167	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/specs/voter/eperm07-term-trigger.spec.ts	198	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/specs/voter/voter-alliance.spec.ts	11	phase-ref-deferred	phase-ref	see phase 121
+tests/tests/specs/voter/voter-alliance.spec.ts	47	not-a-comment-span	task-id	EFLOW-02
+tests/tests/specs/voter/voter-alliance.spec.ts	47	not-a-comment-span	task-id	EPERM-03
+tests/tests/specs/voter/voter-alliance.spec.ts	60	not-a-comment-span	task-id	EPERM-03
+tests/tests/specs/voter/voter-alliance.spec.ts	116	not-a-comment-span	task-id	EPERM-04
+tests/tests/specs/voter/voter-alliance.spec.ts	136	not-a-comment-span	task-id	EFLOW-02
+tests/tests/specs/voter/voter-journey-mobile.spec.ts	12	phase-ref-deferred	phase-ref	see phase 121
+tests/tests/specs/voter/voter-journey-mobile.spec.ts	48	phase-ref-deferred	phase-ref	see phase 121
+tests/tests/specs/voter/voter-journey-mobile.spec.ts	51	not-a-comment-span	task-id	EFLOW-11
+tests/tests/specs/voter/voter-journey.spec.ts	201	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/specs/voter/voter-journey.spec.ts	217	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/specs/voter/voter-journey.spec.ts	325	phase-ref-deferred	phase-ref	see phase 129
+tests/tests/specs/voter/voter-journey.spec.ts	349	phase-ref-deferred	phase-ref	see phase 129
+tests/tests/specs/voter/voter-journey.spec.ts	398	phase-ref-deferred	phase-ref	see phase 135
+tests/tests/specs/voter/voter-journey.spec.ts	401	phase-ref-deferred	phase-ref	see phase 134
+tests/tests/specs/voter/voter-journey.spec.ts	887	phase-ref-deferred	phase-ref	see phase 119
+tests/tests/specs/voter/voter-journey.spec.ts	894	not-a-comment-span	task-id	EPERM-07
+tests/tests/specs/voter/voter-journey.spec.ts	903	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/specs/voter/voter-journey.spec.ts	928	phase-ref-deferred	phase-ref	see phase 121
+tests/tests/specs/voter/voter-journey.spec.ts	942	phase-ref-deferred	phase-ref	see phase 129
+tests/tests/specs/voter/voter-journey.spec.ts	942	phase-ref-deferred	phase-ref	see phase 135
+tests/tests/specs/voter/voter-journey.spec.ts	966	phase-ref-deferred	phase-ref	see phase 129
+tests/tests/specs/voter/voter-journey.spec.ts	967	phase-ref-deferred	phase-ref	see phase 135
+tests/tests/specs/voter/voter-journey.spec.ts	1215	phase-ref-deferred	phase-ref	see phase 129
+tests/tests/specs/voter/voter-journey.spec.ts	1347	phase-ref-deferred	phase-ref	see phase 129
+tests/tests/specs/voter/voter-journey.spec.ts	1402	phase-ref-deferred	phase-ref	see phase 129
+tests/tests/specs/voter/voter-journey.spec.ts	1436	phase-ref-deferred	phase-ref	see phase 121
+tests/tests/specs/voter/voter-journey.spec.ts	1673	not-a-comment-span	task-id	EFLOW-01
+tests/tests/specs/voter/voter-journey.spec.ts	1814	not-a-comment-span	task-id	EQTYP-02
+tests/tests/specs/voter/voter-nominations.spec.ts	29	not-a-comment-span	task-id	UNBLK-04
+tests/tests/specs/voter/voter-prefs-tracking.spec.ts	8	phase-ref-deferred	phase-ref	see phase 119
+tests/tests/specs/voter/voter-prefs-tracking.spec.ts	148	not-a-comment-span	task-id	EFLOW-08
+tests/tests/specs/visual/visual-regression.spec.ts	29	attributive-reference	phase-ref	phase 137
+tests/tests/specs/visual/visual-regression.spec.ts	48	milestone-version	milestone-ver	v1.2
+tests/tests/specs/visual/visual-regression.spec.ts	49	phase-ref-deferred	phase-ref	phase 136
+tests/tests/specs/visual/visual-regression.spec.ts	75	phase-ref-deferred	phase-ref	phase 146
+tests/tests/specs/visual/visual-regression.spec.ts	84	milestone-version	milestone-ver	v1.58
+tests/tests/specs/visual/visual-regression.spec.ts	84	attributive-reference	phase-ref	phase 146
+tests/tests/specs/visual/visual-regression.spec.ts	84	unstrippable-section-anchor	section-anchor-alpha	§ N-2
+tests/tests/specs/visual/visual-regression.spec.ts	113	phase-ref-deferred	phase-ref	phase 146
+tests/tests/specs/visual/visual-regression.spec.ts	135	attributive-reference	phase-ref	phase 146
+tests/tests/specs/visual/visual-regression.spec.ts	135	unstrippable-section-anchor	section-anchor-alpha	§ N-2
+tests/tests/specs/visual/visual-regression.spec.ts	144	unstrippable-section-anchor	section-anchor-alpha	§ N-6
+tests/tests/specs/visual/visual-regression.spec.ts	160	not-a-comment-span	task-id	VGATE-05
+tests/tests/specs/perm/perm-access-disable.spec.ts	40	not-a-comment-span	task-id	EPERM-11
+tests/tests/specs/perm/perm-hide-category-tags.spec.ts	40	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/specs/perm/perm-hide-category-tags.spec.ts	50	not-a-comment-span	task-id	ASSERT-05
+tests/tests/specs/perm/perm-hide-election-tags.spec.ts	40	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/specs/perm/perm-hide-election-tags.spec.ts	50	not-a-comment-span	task-id	ASSERT-05
+tests/tests/specs/perm/perm-interactive-info.spec.ts	67	not-a-comment-span	task-id	EPERM-07
+tests/tests/specs/perm/perm-localisation-positive.spec.ts	468	not-a-comment-span	task-id	EFLOW-06
+tests/tests/specs/perm/perm-org-matching.spec.ts	52	not-a-comment-span	task-id	EPERM-10
+tests/tests/specs/perm/perm-show-feedback-survey.spec.ts	4	phase-ref-deferred	phase-ref	see phase 120
+tests/tests/specs/perm/perm-show-feedback-survey.spec.ts	49	not-a-comment-span	task-id	EPERM-09
+tests/tests/specs/perf/performance-budget.spec.ts	8	phase-ref-deferred	phase-ref	see phase 136
+tests/tests/specs/perf/performance-budget.spec.ts	55	phase-ref-deferred	phase-ref	phase 151
+tests/tests/specs/candidate/candidate-bank-auth-journey.spec.ts	141	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/specs/candidate/candidate-bank-auth-journey.spec.ts	148	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/specs/candidate/candidate-bank-auth.spec.ts	11	phase-ref-deferred	phase-ref	see phase 122
+tests/tests/specs/candidate/candidate-bank-auth.spec.ts	167	not-a-comment-span	task-id	EFLOW-10
+tests/tests/specs/candidate/candidate-journey.spec.ts	208	phase-ref-deferred	phase-ref	see phase 129
+tests/tests/specs/candidate/candidate-journey.spec.ts	412	not-a-comment-span	task-id	EFLOW-09
+tests/tests/specs/candidate/candidate-journey.spec.ts	586	phase-ref-deferred	phase-ref	see phase 129
+tests/tests/specs/candidate/candidate-journey.spec.ts	705	phase-ref-deferred	phase-ref	see phase 131
+tests/tests/specs/candidate/candidate-journey.spec.ts	705	phase-ref-deferred	phase-ref	see phase 132
+tests/tests/specs/candidate/candidate-journey.spec.ts	811	not-a-comment-span	task-id	EQTYP-01
+tests/tests/specs/candidate/candidate-journey.spec.ts	964	not-a-comment-span	task-id	EFLOW-09
+tests/tests/specs/a11y/a11y-smoke.spec.ts	72	unstrippable-section-anchor	section-anchor-alpha	§
+tests/tests/specs/a11y/a11y-smoke.spec.ts	129	attributive-reference	phase-ref	phase 147
+tests/tests/specs/a11y/a11y-smoke.spec.ts	213	milestone-version	milestone-ver	v2.14
+tests/tests/specs/_probes/defaultTemplateResults.probe.spec.ts	4	phase-ref-deferred	phase-ref	Phase 145
+tests/tests/specs/_probes/defaultTemplateResults.probe.spec.ts	14	phase-ref-deferred	phase-ref	Phase 145
+tests/tests/specs/_probes/defaultTemplateResults.probe.spec.ts	25	phase-ref-deferred	phase-ref	Phase 145
+tests/tests/specs/_probes/defaultTemplateResults.probe.spec.ts	63	phase-ref-deferred	phase-ref	Phase 145
+tests/tests/specs/_probes/defaultTemplateResults.probe.spec.ts	78	phase-ref-deferred	phase-ref	Phase 145
+tests/tests/specs/_probes/defaultTemplateResults.probe.spec.ts	133	not-a-comment-span	task-id	TMPL-03
+tests/tests/setup/shared/assertTeardown.ts	3	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/shared/assertTeardown.ts	8	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/shared/assertTeardown.ts	20	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/shared/assertTeardown.ts	24	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/shared/assertTeardown.ts	43	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/shared/assertTeardown.ts	79	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/shared/assertTeardown.ts	91	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/shared/assertTeardown.ts	107	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/shared/assertTeardown.ts	124	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/shared/assertTeardown.ts	130	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/shared/assertTeardown.ts	148	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/shared/base.setup.ts	28	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/shared/base.teardown.ts	11	phase-ref-deferred	phase-ref	see phase 136
+tests/tests/setup/shared/base.teardown.ts	23	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/shared/setupFromTemplate.ts	184	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/shared/setupFromTemplate.ts	199	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/shared/setupFromTemplate.ts	283	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/perm/perm-show-feedback-survey.setup.ts	8	phase-ref-deferred	phase-ref	see phase 120
+tests/tests/setup/perm/perm-show-feedback-survey.setup.ts	9	phase-ref-deferred	phase-ref	see phase 119
+tests/tests/setup/perm/perm-show-feedback-survey.teardown.ts	8	phase-ref-deferred	phase-ref	see phase 120
+tests/tests/setup/candidate/bank-auth-journey.setup.ts	11	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/candidate/bank-auth-journey.setup.ts	18	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/candidate/bank-auth-journey.setup.ts	34	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/candidate/bank-auth-journey.setup.ts	64	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/candidate/bank-auth-journey.setup.ts	75	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/candidate/bank-auth-journey.setup.ts	86	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/candidate/bank-auth-journey.teardown.ts	7	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/candidate/bank-auth-journey.teardown.ts	36	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/candidate/bank-auth-journey.teardown.ts	54	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/setup/candidate/bank-auth-journey.teardown.ts	58	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/helpers/navigation.ts	5	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/helpers/navigation.ts	18	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/helpers/navigation.ts	45	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/helpers/navigation.ts	77	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/helpers/navigation.ts	121	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/helpers/navigation.ts	179	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/helpers/navigation.ts	181	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/helpers/navigation.ts	202	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/helpers/navigation.ts	294	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/fixtures/voter/questionInfo.fixture.ts	136	phase-ref-deferred	phase-ref	see phase 120
+tests/tests/fixtures/voter/views.ts	93	milestone-version	milestone-ver	v2.14
+tests/tests/fixtures/voter/views.ts	94	milestone-version	milestone-ver	v2.15
+tests/tests/fixtures/voter/voter-journey.fixture.ts	114	attributive-reference	phase-ref	phase 146
+tests/tests/fixtures/voter/voter-journey.fixture.ts	150	not-a-comment-span	artifact-path	.planning/debug/answer-surface-wait-timeout.md.'
+tests/tests/fixtures/voter/voter-journey.fixture.ts	293	phase-ref-deferred	phase-ref	see phase 120
+tests/tests/fixtures/voter/voter-journey.fixture.ts	334	phase-ref-deferred	phase-ref	see phase 135
+tests/tests/fixtures/voter/voter-journey.fixture.ts	453	phase-ref-deferred	phase-ref	see phase 136
+tests/tests/fixtures/voter/voter-journey.fixture.ts	520	phase-ref-deferred	phase-ref	see phase 135
+tests/tests/fixtures/voter/voterQuestionsPage.fixture.ts	54	phase-ref-deferred	phase-ref	see phase 120
+tests/tests/fixtures/shared/forensicCapture.fixture.ts	2	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/fixtures/shared/forensicCapture.fixture.ts	17	phase-ref-deferred	phase-ref	see phase 138
+tests/tests/fixtures/shared/forensicCapture.fixture.ts	43	milestone-version	milestone-ver	v2.14
+tests/tests/fixtures/shared/forensicCapture.fixture.ts	44	milestone-version	milestone-ver	v2.15
+tests/tests/fixtures/shared/theme.fixture.ts	19	phase-ref-deferred	phase-ref	see phase 121
+tests/tests/fixtures/candidate/candidatePreregisterPage.fixture.ts	66	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/fixtures/candidate/candidatePreregisterPage.fixture.ts	110	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/fixtures/candidate/candidatePreregisterPage.fixture.ts	148	phase-ref-deferred	phase-ref	see phase 140
+tests/tests/fixtures/candidate/candidateQuestionPage.fixture.ts	88	phase-ref-deferred	phase-ref	see phase 129
+tests/tests/fixtures/candidate/candidateQuestionPage.fixture.ts	121	phase-ref-deferred	phase-ref	see phase 135
+tests/scripts/tcp-forward.mjs	17	milestone-version	milestone-ver	v1.58
+tests/scripts/tcp-forward.mjs	18	phase-ref-deferred	phase-ref	phase 146
+tests/scripts/tcp-forward.mjs	19	milestone-version	milestone-ver	v2.14
+tests/scripts/tcp-forward.mjs	23	phase-ref-deferred	phase-ref	phase 146
+tests/scripts/tcp-forward.mjs	23	milestone-version	milestone-ver	v2.14
+tests/scripts/tcp-forward.mjs	199	phase-ref-deferred	phase-ref	phase 146
+tests/scripts/tcp-forward.mjs	344	milestone-version	milestone-ver	v2.14
+tests/scripts/tcp-forward.mjs	347	phase-ref-deferred	phase-ref	phase 146
+tests/scripts/determinism-batch.sh	5	phase-ref-deferred	phase-ref	see phase 138
+tests/scripts/determinism-batch.sh	92	milestone-version	milestone-ver	v2.15
+tests/scripts/determinism-batch.sh	97	not-a-comment-span	task-id	EPERM-07
+tests/scripts/determinism-batch.sh	225	not-a-comment-span	artifact-path	138-DETERMINISM-LEDGER.md
+tests/scripts/determinism-batch.sh	266	not-a-comment-span	task-id	INTEG-02
+tests/scripts/determinism-batch.sh	312	not-a-comment-span	artifact-path	138-NEGATIVE-CONTROL.md
+tests/scripts/determinism-batch.sh	321	not-a-comment-span	task-id	EPERM-07
+tests/scripts/determinism-batch.sh	549	not-a-comment-span	task-id	EPERM-07
+tests/scripts/e2e-run.sh	4	phase-ref-deferred	phase-ref	see phase 138
+tests/scripts/e2e-run.sh	335	phase-ref-deferred	phase-ref	see phase 137
+tests/scripts/visual-container.sh	4	phase-ref-deferred	phase-ref	see phase 146
+tests/scripts/visual-container.sh	9	attributive-reference	phase-ref	phase 137
+tests/scripts/visual-container.sh	10	phase-ref-deferred	phase-ref	Phase 146
+tests/scripts/visual-container.sh	30	attributive-reference	phase-ref	phase 146
+tests/scripts/visual-container.sh	115	phase-ref-deferred	phase-ref	phase 146
+tests/scripts/visual-container.sh	137	attributive-reference	phase-ref	phase 146
+tests/scripts/visual-container.sh	138	milestone-version	milestone-ver	v2.14
+tests/scripts/visual-container.sh	505	not-a-comment-span	decision-id-bare	D-11
+tests/scripts/visual-container.sh	587	milestone-version	milestone-ver	v2.14
+packages/supabase-types/src/column-map.ts	64	phase-ref-deferred	phase-ref	see phase 10
+packages/supabase-types/src/column-map.ts	68	phase-ref-deferred	phase-ref	see phase 22
+packages/question-info/tests/questionTypes.test.ts	110	phase-ref-deferred	phase-ref	Phase 142
+packages/question-info/src/core/infoGeneration.ts	101	phase-ref-deferred	phase-ref	Phase 142
+packages/question-info/src/core/infoGeneration.ts	148	todo-class	todo-class	TODO
+packages/matching/src/distance/metric.ts	220	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/llmProvider.ts	16	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/llmProvider.ts	17	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/llmProvider.ts	18	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/llmProvider.ts	19	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/llmProvider.ts	20	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/llmProvider.ts	69	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/llmProvider.ts	100	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/llmProvider.ts	167	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/llmProvider.ts	205	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/llmProvider.ts	214	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/provider.types.ts	18	todo-class	todo-class	TODO
+packages/dev-seed/tests/assertKnownRowProps.builtins.test.ts	2	phase-ref-deferred	phase-ref	Phase 144
+packages/dev-seed/tests/assertKnownRowProps.test.ts	2	phase-ref-deferred	phase-ref	Phase 144
+packages/dev-seed/tests/assertKnownRowProps.test.ts	54	not-a-comment-span	task-id	TMPL-02
+packages/dev-seed/tests/assertKnownRowProps.test.ts	251	not-a-comment-span	decision-id-bare	D-09
+packages/dev-seed/tests/assets.test.ts	25	not-a-comment-span	task-id	GEN-10
+packages/dev-seed/tests/ciTypecheckGate.test.ts	24	phase-ref-deferred	phase-ref	Phase 144
+packages/dev-seed/tests/ciTypecheckGate.test.ts	81	phase-ref-deferred	phase-ref	Phase 147
+packages/dev-seed/tests/ciTypecheckGate.test.ts	90	phase-ref-deferred	phase-ref	Phase 152
+packages/dev-seed/tests/ciTypecheckGate.test.ts	102	phase-ref-deferred	phase-ref	Phase 147
+packages/dev-seed/tests/determinism.test.ts	19	not-a-comment-span	task-id	TMPL-08
+packages/dev-seed/tests/determinism.test.ts	41	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/tests/determinism.test.ts	49	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/tests/determinism.test.ts	54	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/tests/locales.test.ts	19	not-a-comment-span	task-id	TMPL-07
+packages/dev-seed/tests/pipeline.test.ts	18	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/tests/pipeline.test.ts	25	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/tests/pipeline.test.ts	41	not-a-comment-span	task-id	TMPL-02
+packages/dev-seed/tests/pipeline.test.ts	103	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/tests/pipeline.test.ts	218	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/tests/pipeline.test.ts	223	not-a-comment-span	task-id	GEN-08
+packages/dev-seed/tests/resolveAppSettingsExternalIds.test.ts	3	phase-ref-deferred	phase-ref	see phase 88
+packages/dev-seed/tests/supabaseAdminClient.test.ts	2	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/tests/template.test.ts	22	not-a-comment-span	task-id	TMPL-02
+packages/dev-seed/tests/template.test.ts	27	not-a-comment-span	task-id	TMPL-09
+packages/dev-seed/tests/template.test.ts	31	not-a-comment-span	task-id	TMPL-09
+packages/dev-seed/tests/template.test.ts	35	not-a-comment-span	task-id	TMPL-09
+packages/dev-seed/tests/template.test.ts	77	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/tests/template.test.ts	79	not-a-comment-span	task-id	TMPL-07
+packages/dev-seed/tests/template.test.ts	84	not-a-comment-span	task-id	TMPL-07
+packages/dev-seed/tests/template.test.ts	89	not-a-comment-span	task-id	TMPL-07
+packages/dev-seed/tests/template.test.ts	95	not-a-comment-span	task-id	TMPL-07
+packages/dev-seed/tests/template.test.ts	95	not-a-comment-span	task-id	TMPL-02
+packages/dev-seed/tests/template.test.ts	99	phase-ref-deferred	phase-ref	Phase 144
+packages/dev-seed/tests/template.test.ts	109	not-a-comment-span	task-id	ASSERT-04
+packages/dev-seed/tests/template.test.ts	115	not-a-comment-span	task-id	ASSERT-04
+packages/dev-seed/tests/template.test.ts	126	not-a-comment-span	decision-id-bare	D-04
+packages/dev-seed/tests/template.test.ts	135	not-a-comment-span	decision-id-bare	D-04
+packages/dev-seed/tests/writer.test.ts	69	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/tests/writer.test.ts	70	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/tests/writer.test.ts	190	phase-ref-deferred	phase-ref	see phase 144
+packages/dev-seed/tests/writer.test.ts	193	not-a-comment-span	task-id	TMPL-02
+packages/dev-seed/tests/writer.test.ts	352	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/tests/writer.test.ts	355	not-a-comment-span	task-id	GEN-09
+packages/dev-seed/tests/templates/base-app-settings.test.ts	2	phase-ref-deferred	phase-ref	see phase 93
+packages/dev-seed/tests/templates/base-app-settings.test.ts	125	phase-ref-deferred	phase-ref	see phase 129
+packages/dev-seed/tests/templates/base.test.ts	2	phase-ref-deferred	phase-ref	see phase 93
+packages/dev-seed/tests/templates/default.test.ts	7	phase-ref-deferred	phase-ref	phase 145
+packages/dev-seed/tests/templates/default.test.ts	366	phase-ref-deferred	phase-ref	see phase 67
+packages/dev-seed/tests/templates/default.test.ts	372	phase-ref-deferred	phase-ref	see phase 67
+packages/dev-seed/tests/templates/default.test.ts	377	phase-ref-deferred	phase-ref	phase 145
+packages/dev-seed/tests/templates/default.test.ts	379	phase-ref-deferred	phase-ref	Phase 145
+packages/dev-seed/tests/templates/nominations-override.test.ts	5	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/tests/templates/nominations-override.test.ts	5	phase-ref-deferred	phase-ref	see phase 64
+packages/dev-seed/tests/templates/nominations-override.test.ts	6	phase-ref-deferred	phase-ref	see phase 67
+packages/dev-seed/tests/templates/nominations-override.test.ts	153	phase-ref-deferred	phase-ref	see phase 67
+packages/dev-seed/tests/template/latent.schema.test.ts	5	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/tests/template/latent.schema.test.ts	32	phase-ref-deferred	phase-ref	Phase 144
+packages/dev-seed/tests/template/latent.schema.test.ts	38	phase-ref-deferred	phase-ref	Phase 142
+packages/dev-seed/tests/template/latent.schema.test.ts	60	not-a-comment-span	task-id	TMPL-09
+packages/dev-seed/tests/template/linkSentinels.test.ts	291	not-a-comment-span	decision-id-bare	D-01
+packages/dev-seed/tests/template/permittedKeys.test.ts	2	phase-ref-deferred	phase-ref	Phase 144
+packages/dev-seed/tests/template/strictRowTypes.type-test.ts	2	phase-ref-deferred	phase-ref	Phase 144
+packages/dev-seed/tests/latent/clustering.integration.test.ts	2	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/tests/latent/loadings.test.ts	7	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/tests/latent/loadings.test.ts	10	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/tests/integration/default-template.integration.test.ts	9	phase-ref-deferred	phase-ref	see phase 136
+packages/dev-seed/tests/integration/default-template.integration.test.ts	13	phase-ref-deferred	phase-ref	see phase 135
+packages/dev-seed/tests/integration/default-template.integration.test.ts	29	phase-ref-deferred	phase-ref	see phase 135
+packages/dev-seed/tests/integration/default-template.integration.test.ts	88	phase-ref-deferred	phase-ref	see phase 136
+packages/dev-seed/tests/integration/default-template.integration.test.ts	92	phase-ref-deferred	phase-ref	see phase 135
+packages/dev-seed/tests/integration/default-template.integration.test.ts	117	phase-ref-deferred	phase-ref	phase 145
+packages/dev-seed/tests/integration/default-template.integration.test.ts	182	not-a-comment-span	task-id	TMPL-03
+packages/dev-seed/tests/integration/default-template.integration.test.ts	192	not-a-comment-span	task-id	TMPL-03
+packages/dev-seed/tests/integration/default-template.integration.test.ts	390	phase-ref-deferred	phase-ref	see phase 88
+packages/dev-seed/tests/integration/default-template.integration.test.ts	401	phase-ref-deferred	phase-ref	see phase 64
+packages/dev-seed/tests/integration/default-template.integration.test.ts	410	phase-ref-deferred	phase-ref	see phase 67
+packages/dev-seed/tests/integration/default-template.integration.test.ts	430	phase-ref-deferred	phase-ref	see phase 67
+packages/dev-seed/tests/integration/default-template.integration.test.ts	457	phase-ref-deferred	phase-ref	see phase 67
+packages/dev-seed/tests/integration/default-template.integration.test.ts	459	phase-ref-deferred	phase-ref	see phase 67
+packages/dev-seed/tests/integration/default-template.integration.test.ts	472	phase-ref-deferred	phase-ref	see phase 67
+packages/dev-seed/tests/integration/default-template.integration.test.ts	487	phase-ref-deferred	phase-ref	see phase 67
+packages/dev-seed/tests/integration/default-template.integration.test.ts	499	phase-ref-deferred	phase-ref	see phase 67
+packages/dev-seed/tests/integration/default-template.integration.test.ts	507	phase-ref-deferred	phase-ref	see phase 67
+packages/dev-seed/tests/integration/default-template.integration.test.ts	509	milestone-version	milestone-ver	v2.6
+packages/dev-seed/tests/integration/default-template.integration.test.ts	558	not-a-comment-span	task-id	TMPL-03
+packages/dev-seed/tests/generators/AlliancesGenerator.test.ts	23	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/AlliancesGenerator.test.ts	29	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/AppSettingsGenerator.test.ts	4	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/tests/generators/AppSettingsGenerator.test.ts	41	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/CandidatesGenerator.test.ts	5	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/tests/generators/CandidatesGenerator.test.ts	46	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/CandidatesGenerator.test.ts	135	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/tests/generators/ConstituenciesGenerator.test.ts	19	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/ConstituenciesGenerator.test.ts	25	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/ConstituencyGroupsGenerator.test.ts	19	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/ConstituencyGroupsGenerator.test.ts	25	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/ElectionsGenerator.test.ts	26	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/ElectionsGenerator.test.ts	32	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/FactionsGenerator.test.ts	23	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/FactionsGenerator.test.ts	29	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/NominationsGenerator.test.ts	44	not-a-comment-span	task-id	GEN-08
+packages/dev-seed/tests/generators/NominationsGenerator.test.ts	51	not-a-comment-span	task-id	GEN-08
+packages/dev-seed/tests/generators/NominationsGenerator.test.ts	58	not-a-comment-span	task-id	GEN-08
+packages/dev-seed/tests/generators/NominationsGenerator.test.ts	104	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/OrganizationsGenerator.test.ts	4	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/tests/generators/OrganizationsGenerator.test.ts	5	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/tests/generators/OrganizationsGenerator.test.ts	18	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/OrganizationsGenerator.test.ts	24	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/QuestionCategoriesGenerator.test.ts	19	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/QuestionCategoriesGenerator.test.ts	25	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/QuestionsGenerator.test.ts	23	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/QuestionsGenerator.test.ts	29	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/fixtures/negctl-elections-sentinel.ts	2	phase-ref-deferred	phase-ref	phase 144
+packages/dev-seed/tests/fixtures/negctl-questions-answers.ts	2	phase-ref-deferred	phase-ref	phase 144
+packages/dev-seed/tests/fixtures/negctl-questions-entity-type-camel.ts	2	phase-ref-deferred	phase-ref	phase 144
+packages/dev-seed/tests/fixtures/negctl-questions-entity-type.ts	2	phase-ref-deferred	phase-ref	phase 144
+packages/dev-seed/tests/emitters/answers.test.ts	76	not-a-comment-span	task-id	TMPL-03
+packages/dev-seed/tests/cli/allowedTeardownTables.test.ts	2	phase-ref-deferred	phase-ref	see phase 140
+packages/dev-seed/tests/cli/allowedTeardownTables.test.ts	19	phase-ref-deferred	phase-ref	see phase 140
+packages/dev-seed/tests/cli/help.test.ts	8	not-a-comment-span	task-id	CLI-04
+packages/dev-seed/tests/cli/resolve-template.test.ts	106	phase-ref-deferred	phase-ref	Phase 144
+packages/dev-seed/tests/cli/resolve-template.test.ts	115	not-a-comment-span	decision-id-bare	D-07
+packages/dev-seed/tests/cli/resolve-template.test.ts	122	not-a-comment-span	decision-id-bare	D-07
+packages/dev-seed/tests/cli/resolve-template.test.ts	127	not-a-comment-span	decision-id-bare	D-07
+packages/dev-seed/tests/cli/resolve-template.test.ts	132	not-a-comment-span	decision-id-bare	D-04
+packages/dev-seed/tests/cli/resolve-template.test.ts	132	not-a-comment-span	decision-id-bare	D-07
+packages/dev-seed/tests/cli/teardown.test.ts	3	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/tests/cli/teardown.test.ts	253	not-a-comment-span	task-id	CLI-03
+packages/dev-seed/tests/cli/teardown.test.ts	411	not-a-comment-span	task-id	CLI-04
+packages/dev-seed/src/assertKnownRowProps.ts	2	phase-ref-deferred	phase-ref	Phase 144
+packages/dev-seed/src/assertKnownRowProps.ts	38	unstrippable-section-anchor	section-anchor-alpha	§
+packages/dev-seed/src/ctx.ts	11	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/ctx.ts	14	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/ctx.ts	16	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/ctx.ts	57	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/index.ts	4	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/index.ts	10	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/index.ts	19	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/index.ts	21	phase-ref-deferred	phase-ref	see phase 144
+packages/dev-seed/src/index.ts	24	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/index.ts	24	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/index.ts	26	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/index.ts	64	phase-ref-deferred	phase-ref	see phase 88
+packages/dev-seed/src/locales.ts	132	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/pipeline.ts	9	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/pipeline.ts	65	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/pipeline.ts	87	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/pipeline.ts	144	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/pipeline.ts	172	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/pipeline.ts	173	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/pipeline.ts	274	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/pipeline.ts	281	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/resolveAppSettingsExternalIds.ts	15	phase-ref-deferred	phase-ref	see phase 88
+packages/dev-seed/src/resolveAppSettingsExternalIds.ts	15	todo-class	todo-class	TODO
+packages/dev-seed/src/resolveAppSettingsExternalIds.ts	25	phase-ref-deferred	phase-ref	see phase 88
+packages/dev-seed/src/supabaseAdminClient.ts	4	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/supabaseAdminClient.ts	190	phase-ref-deferred	phase-ref	Phase 145
+packages/dev-seed/src/supabaseAdminClient.ts	204	phase-ref-deferred	phase-ref	Phase 145
+packages/dev-seed/src/supabaseAdminClient.ts	396	phase-ref-deferred	phase-ref	see phase 88
+packages/dev-seed/src/supabaseAdminClient.ts	572	phase-ref-deferred	phase-ref	see phase 63
+packages/dev-seed/src/supabaseAdminClient.ts	656	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/supabaseAdminClient.ts	718	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/supabaseAdminClient.ts	731	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/supabaseAdminClient.ts	802	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/writer.ts	9	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/writer.ts	12	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/writer.ts	29	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/writer.ts	70	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/writer.ts	125	phase-ref-deferred	phase-ref	see phase 144
+packages/dev-seed/src/writer.ts	146	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/writer.ts	159	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/writer.ts	167	phase-ref-deferred	phase-ref	see phase 144
+packages/dev-seed/src/writer.ts	192	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/writer.ts	199	phase-ref-deferred	phase-ref	see phase 88
+packages/dev-seed/src/writer.ts	217	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/writer.ts	230	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/templates/default.ts	36	attributive-reference	phase-ref	phase 145
+packages/dev-seed/src/templates/index.ts	67	phase-ref-deferred	phase-ref	see phase 140
+packages/dev-seed/src/templates/index.ts	104	phase-ref-deferred	phase-ref	see phase 119
+packages/dev-seed/src/templates/index.ts	113	phase-ref-deferred	phase-ref	see phase 119
+packages/dev-seed/src/templates/index.ts	120	phase-ref-deferred	phase-ref	see phase 121
+packages/dev-seed/src/templates/e2e/base.ts	2	phase-ref-deferred	phase-ref	see phase 88
+packages/dev-seed/src/templates/e2e/base.ts	8	phase-ref-deferred	phase-ref	see phase 93
+packages/dev-seed/src/templates/e2e/base.ts	17	phase-ref-deferred	phase-ref	see phase 93
+packages/dev-seed/src/templates/e2e/base.ts	128	phase-ref-deferred	phase-ref	see phase 129
+packages/dev-seed/src/templates/e2e/base.ts	215	phase-ref-deferred	phase-ref	see phase 88
+packages/dev-seed/src/templates/e2e/base.ts	279	phase-ref-deferred	phase-ref	see phase 129
+packages/dev-seed/src/templates/e2e/base.ts	312	phase-ref-deferred	phase-ref	see phase 135
+packages/dev-seed/src/templates/e2e/base.ts	667	phase-ref-deferred	phase-ref	see phase 129
+packages/dev-seed/src/templates/e2e/base.ts	763	phase-ref-deferred	phase-ref	see phase 129
+packages/dev-seed/src/templates/e2e/base.ts	778	phase-ref-deferred	phase-ref	see phase 89
+packages/dev-seed/src/templates/e2e/base.ts	885	phase-ref-deferred	phase-ref	see phase 129
+packages/dev-seed/src/templates/e2e/base.ts	898	phase-ref-deferred	phase-ref	see phase 129
+packages/dev-seed/src/templates/e2e/base.ts	912	phase-ref-deferred	phase-ref	see phase 135
+packages/dev-seed/src/templates/e2e/base.ts	919	phase-ref-deferred	phase-ref	see phase 134
+packages/dev-seed/src/templates/e2e/base.ts	924	phase-ref-deferred	phase-ref	see phase 129
+packages/dev-seed/src/templates/e2e/base.ts	1060	phase-ref-deferred	phase-ref	see phase 135
+packages/dev-seed/src/templates/e2e/base.ts	1197	phase-ref-deferred	phase-ref	see phase 89
+packages/dev-seed/src/templates/e2e/base.ts	1584	phase-ref-deferred	phase-ref	see phase 89
+packages/dev-seed/src/templates/e2e/perm/notLocated2e2cgShape.ts	2	phase-ref-deferred	phase-ref	see phase 140
+packages/dev-seed/src/templates/e2e/perm/notLocated2e2cgShape.ts	13	phase-ref-deferred	phase-ref	see phase 140
+packages/dev-seed/src/templates/e2e/perm/notLocated2e2cgShape.ts	60	phase-ref-deferred	phase-ref	see phase 140
+packages/dev-seed/src/templates/e2e/perm/perm-bankauth-notloc.ts	2	phase-ref-deferred	phase-ref	see phase 140
+packages/dev-seed/src/templates/e2e/perm/perm-bankauth-notloc.ts	4	phase-ref-deferred	phase-ref	see phase 140
+packages/dev-seed/src/templates/e2e/perm/perm-bankauth-notloc.ts	15	phase-ref-deferred	phase-ref	see phase 140
+packages/dev-seed/src/templates/e2e/perm/perm-bankauth-notloc.ts	23	phase-ref-deferred	phase-ref	see phase 140
+packages/dev-seed/src/templates/e2e/perm/perm-not-located-2e2cg.ts	6	phase-ref-deferred	phase-ref	see phase 140
+packages/dev-seed/src/templates/e2e/perm/perm-not-located-2e2cg.ts	12	phase-ref-deferred	phase-ref	see phase 140
+packages/dev-seed/src/templates/e2e/perm/perm-org-matching.ts	34	phase-ref-deferred	phase-ref	see phase 119
+packages/dev-seed/src/templates/e2e/perm/show-feedback-survey.ts	48	phase-ref-deferred	phase-ref	see phase 120
+packages/dev-seed/src/templates/defaults/questions-override.ts	3	phase-ref-deferred	phase-ref	see phase 129
+packages/dev-seed/src/template/index.ts	7	attributive-reference	phase-ref	Phase 144
+packages/dev-seed/src/template/permittedKeys.ts	3	phase-ref-deferred	phase-ref	Phase 144
+packages/dev-seed/src/template/schema.ts	4	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/template/schema.ts	8	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/template/schema.ts	9	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/template/schema.ts	35	phase-ref-deferred	phase-ref	Phase 144
+packages/dev-seed/src/template/schema.ts	50	phase-ref-deferred	phase-ref	Phase 144
+packages/dev-seed/src/template/schema.ts	62	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/template/schema.ts	153	phase-ref-deferred	phase-ref	Phase 144
+packages/dev-seed/src/template/schema.ts	170	phase-ref-deferred	phase-ref	Phase 144
+packages/dev-seed/src/template/types.ts	4	phase-ref-deferred	phase-ref	Phase 144
+packages/dev-seed/src/template/types.ts	30	unstrippable-section-anchor	section-anchor-alpha	§ R1.4.
+packages/dev-seed/src/template/types.ts	77	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/template/types.ts	115	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/generators/AccountsGenerator.ts	26	milestone-version	milestone-ver	v2.5
+packages/dev-seed/src/generators/AccountsGenerator.ts	37	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/AlliancesGenerator.ts	22	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/AlliancesGenerator.ts	22	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/generators/AppSettingsGenerator.ts	23	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/AppSettingsGenerator.ts	27	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/generators/AppSettingsGenerator.ts	46	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/AppSettingsGenerator.ts	57	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/generators/CandidatesGenerator.ts	17	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/generators/CandidatesGenerator.ts	22	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/CandidatesGenerator.ts	24	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/generators/CandidatesGenerator.ts	44	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/generators/CandidatesGenerator.ts	67	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/CandidatesGenerator.ts	67	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/generators/CandidatesGenerator.ts	90	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/generators/CandidatesGenerator.ts	128	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/CandidatesGenerator.ts	129	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/generators/CandidatesGenerator.ts	133	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/generators/CandidatesGenerator.ts	138	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/ConstituenciesGenerator.ts	44	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/ConstituenciesGenerator.ts	44	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/generators/ConstituencyGroupsGenerator.ts	21	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/ConstituencyGroupsGenerator.ts	21	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/generators/ElectionsGenerator.ts	20	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/ElectionsGenerator.ts	20	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/generators/ElectionsGenerator.ts	32	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/ElectionsGenerator.ts	32	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/generators/FactionsGenerator.ts	24	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/FactionsGenerator.ts	24	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/generators/FeedbackGenerator.ts	21	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/generators/FeedbackGenerator.ts	23	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/generators/FeedbackGenerator.ts	39	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/NominationsGenerator.ts	6	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/NominationsGenerator.ts	23	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/NominationsGenerator.ts	35	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/NominationsGenerator.ts	39	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/generators/NominationsGenerator.ts	53	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/NominationsGenerator.ts	56	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/generators/NominationsGenerator.ts	88	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/NominationsGenerator.ts	88	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/generators/NominationsGenerator.ts	92	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/NominationsGenerator.ts	92	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/generators/NominationsGenerator.ts	143	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/OrganizationsGenerator.ts	6	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/OrganizationsGenerator.ts	26	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/OrganizationsGenerator.ts	26	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/generators/OrganizationsGenerator.ts	54	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/ProjectsGenerator.ts	38	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/QuestionCategoriesGenerator.ts	18	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/QuestionCategoriesGenerator.ts	20	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/generators/QuestionCategoriesGenerator.ts	31	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/QuestionCategoriesGenerator.ts	31	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/generators/QuestionsGenerator.ts	16	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/generators/QuestionsGenerator.ts	17	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/QuestionsGenerator.ts	52	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/QuestionsGenerator.ts	66	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/QuestionsGenerator.ts	66	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/generators/QuestionsGenerator.ts	75	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/QuestionsGenerator.ts	90	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/generators/QuestionsGenerator.ts	90	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/generators/QuestionsGenerator.ts	139	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/emitters/answers.ts	2	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/emitters/answers.ts	5	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/emitters/answers.ts	10	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/emitters/answers.ts	12	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/emitters/answers.ts	16	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/emitters/answers.ts	27	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/emitters/answers.ts	27	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/emitters/answers.ts	44	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/emitters/answers.ts	53	phase-ref-deferred	phase-ref	see phase 58
+packages/dev-seed/src/emitters/latent/centroids.ts	2	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/emitters/latent/gaussian.ts	2	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/emitters/latent/index.ts	2	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/emitters/latent/index.ts	4	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/emitters/latent/index.ts	7	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/emitters/latent/latentEmitter.ts	2	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/emitters/latent/latentEmitter.ts	17	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/emitters/latent/latentEmitter.ts	38	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/emitters/latent/latentEmitter.ts	41	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/emitters/latent/latentEmitter.ts	118	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/emitters/latent/latentTypes.ts	2	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/emitters/latent/latentTypes.ts	11	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/emitters/latent/loadings.ts	35	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/emitters/latent/loadings.ts	40	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/emitters/latent/project.ts	2	phase-ref-deferred	phase-ref	see phase 57
+packages/dev-seed/src/emitters/latent/project.ts	9	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/emitters/latent/project.ts	20	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/emitters/latent/project.ts	21	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/emitters/latent/project.ts	120	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/emitters/latent/project.ts	128	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/emitters/latent/project.ts	264	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/emitters/latent/project.ts	306	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/cli/resolve-template.ts	19	attributive-reference	phase-ref	Phase 144
+packages/dev-seed/src/cli/resolve-template.ts	23	phase-ref-deferred	phase-ref	Phase 144
+packages/dev-seed/src/cli/resolve-template.ts	80	phase-ref-deferred	phase-ref	Phase 144
+packages/dev-seed/src/cli/seed.ts	11	phase-ref-deferred	phase-ref	see phase 56
+packages/dev-seed/src/cli/teardown.ts	65	phase-ref-deferred	phase-ref	see phase 140
+packages/dev-seed/src/cli/teardown.ts	106	phase-ref-deferred	phase-ref	see phase 140
+packages/data/src/root/dataRoot.ts	743	todo-class	todo-class	TODO
+packages/data/src/objects/questions/variants/variants.ts	58	todo-class	todo-class	TODO
+packages/data/src/objects/questions/base/answer.type.ts	32	todo-class	todo-class	TODO
+packages/data/src/objects/questions/base/questionTypes.ts	36	todo-class	todo-class	TODO
+packages/argument-condensation/src/core/types/condensation/condensationType.ts	4	todo-class	todo-class	TODO
+packages/argument-condensation/src/core/types/condensation/condensationType.ts	9	todo-class	todo-class	TODO
+packages/argument-condensation/src/core/condensation/condenser.ts	43	todo-class	todo-class	TODO
+packages/argument-condensation/src/core/condensation/condenser.ts	706	ambiguous-reference	phase-ref	PHASE 1
+packages/argument-condensation/src/core/condensation/condenser.ts	745	ambiguous-reference	phase-ref	PHASE 2
+packages/argument-condensation/src/core/condensation/condenser.ts	763	ambiguous-reference	phase-ref	PHASE 3
+packages/argument-condensation/src/core/condensation/condenser.ts	792	ambiguous-reference	phase-ref	PHASE 4
+packages/app-shared/src/utils/mergeSettings.ts	16	phase-ref-deferred	phase-ref	see phase 63
+packages/app-shared/src/settings/dynamicSettings.type.ts	41	phase-ref-deferred	phase-ref	see phase 69
+packages/app-shared/src/settings/dynamicSettings.type.ts	68	todo-class	todo-class	TODO
+packages/app-shared/src/settings/dynamicSettings.type.ts	217	phase-ref-deferred	phase-ref	see phase 69
+packages/app-shared/src/settings/dynamicSettings.type.ts	236	phase-ref-deferred	phase-ref	see phase 69
+packages/app-shared/src/settings/dynamicSettings.type.ts	395	phase-ref-deferred	phase-ref	see phase 69
+apps/supabase/supabase/config.toml	130	phase-ref-deferred	phase-ref	see phase 83
+apps/supabase/supabase/tests/database/00-helpers.test.sql	20	ambiguous-reference	phase-ref	Phase 1
+apps/supabase/supabase/tests/database/00-helpers.test.sql	421	ambiguous-reference	phase-ref	Phase 2
+apps/supabase/supabase/tests/database/10-schema-migrations.test.sql	1	phase-ref-deferred	phase-ref	see phase 22
+apps/supabase/supabase/tests/database/10-schema-migrations.test.sql	1	phase-ref-deferred	phase-ref	see phase 27
+apps/supabase/supabase/functions/identity-callback/claimConfig.ts	38	attributive-reference	phase-ref	Phase 142
+apps/supabase/supabase/functions/identity-callback/index.ts	28	not-a-comment-span	milestone-ver	v5.9
+apps/supabase/supabase/functions/identity-callback/index.ts	271	attributive-reference	phase-ref	Phase 142
+apps/supabase/supabase/functions/identity-callback/index.ts	278	attributive-reference	phase-ref	Phase 142
+apps/supabase/benchmarks/scripts/run-concurrency-scaling.sh	75	ambiguous-reference	phase-ref	PHASE 1
+apps/supabase/benchmarks/scripts/run-concurrency-scaling.sh	77	not-a-comment-span	phase-ref	PHASE 1
+apps/supabase/benchmarks/scripts/run-concurrency-scaling.sh	112	ambiguous-reference	phase-ref	PHASE 2
+apps/supabase/benchmarks/scripts/run-concurrency-scaling.sh	114	not-a-comment-span	phase-ref	PHASE 2
+apps/supabase/benchmarks/scripts/run-concurrency-scaling.sh	138	ambiguous-reference	phase-ref	PHASE 3
+apps/frontend/eslint.config.mjs	38	milestone-version	milestone-ver	v2.13
+apps/frontend/eslint.config.mjs	77	milestone-version	milestone-ver	v2.11
+apps/frontend/eslint.config.mjs	78	phase-ref-deferred	phase-ref	Phase 115
+apps/frontend/eslint.config.mjs	80	phase-ref-deferred	phase-ref	Phase 143
+apps/frontend/static/fonts/inter.css	1	phase-ref-deferred	phase-ref	phase 146
+apps/frontend/static/fonts/inter.css	6	phase-ref-deferred	phase-ref	phase 146
+apps/frontend/src/app.css	464	todo-class	todo-class	TODO
+apps/frontend/src/routes/+layout.svelte	56	todo-class	todo-class	TODO
+apps/frontend/src/routes/+layout.svelte	68	todo-class	todo-class	TODO
+apps/frontend/src/routes/+layout.svelte	116	spike-ref-deferred	spike-ref	see spike 017
+apps/frontend/src/routes/+layout.svelte	161	spike-ref-deferred	spike-ref	see spike 015
+apps/frontend/src/routes/+layout.svelte	260	milestone-version	milestone-ver	v2.1
+apps/frontend/src/routes/+layout.svelte	260	phase-ref-deferred	phase-ref	see phase 60
+apps/frontend/src/routes/Banner.svelte	7	todo-class	todo-class	TODO
+apps/frontend/src/routes/Header.svelte	36	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/candidate/+layout.svelte	35	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/candidate/register/+layout.svelte	15	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/routes/candidate/register/+page.svelte	30	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/candidate/preregister/+layout.svelte	16	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/routes/candidate/preregister/(authenticated)/+layout.svelte	26	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/routes/candidate/preregister/(authenticated)/email/+page.svelte	12	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/routes/candidate/preregister/(authenticated)/elections/+page.svelte	19	spike-ref-deferred	spike-ref	see spike 024
+apps/frontend/src/routes/candidate/preregister/(authenticated)/elections/+page.svelte	19	phase-ref-deferred	phase-ref	see phase 117
+apps/frontend/src/routes/candidate/password-reset/+page.svelte	28	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/routes/candidate/login/+page.svelte	48	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/candidate/help/+page.svelte	25	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/candidate/(protected)/+layout.svelte	109	milestone-version	milestone-ver	v2.1
+apps/frontend/src/routes/candidate/(protected)/+layout.svelte	118	spike-ref-deferred	spike-ref	see spike 017
+apps/frontend/src/routes/candidate/(protected)/+page.svelte	25	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/routes/candidate/(protected)/+page.svelte	28	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/candidate/(protected)/questions/+page.svelte	32	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/routes/candidate/(protected)/questions/+page.svelte	35	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/candidate/(protected)/questions/[questionId]/+page.svelte	49	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/candidate/(protected)/questions/[questionId]/+page.svelte	53	spike-ref-deferred	spike-ref	see spike 024
+apps/frontend/src/routes/candidate/(protected)/questions/[questionId]/+page.svelte	53	phase-ref-deferred	phase-ref	see phase 117
+apps/frontend/src/routes/candidate/(protected)/profile/+page.svelte	34	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/routes/candidate/(protected)/profile/+page.svelte	37	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/candidate/(protected)/profile/+page.svelte	41	spike-ref-deferred	spike-ref	see spike 024
+apps/frontend/src/routes/candidate/(protected)/profile/+page.svelte	41	phase-ref-deferred	phase-ref	see phase 117
+apps/frontend/src/routes/candidate/(protected)/profile/+page.svelte	282	phase-ref-deferred	phase-ref	see phase 89
+apps/frontend/src/routes/candidate/(protected)/preview/+page.svelte	31	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/api/admin/jobs/abort-all/+server.ts	14	todo-class	todo-class	TODO
+apps/frontend/src/routes/admin/+layout.svelte	25	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/admin/login/+page.svelte	37	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/admin/(protected)/question-info/+layout.svelte	51	spike-ref-deferred	spike-ref	see spike 017
+apps/frontend/src/routes/admin/(protected)/question-info/+page.svelte	25	spike-ref-deferred	spike-ref	see spike 024
+apps/frontend/src/routes/admin/(protected)/question-info/+page.svelte	25	phase-ref-deferred	phase-ref	see phase 117
+apps/frontend/src/routes/admin/(protected)/jobs/+page.svelte	8	todo-class	todo-class	TODO
+apps/frontend/src/routes/admin/(protected)/argument-condensation/+layout.svelte	51	spike-ref-deferred	spike-ref	see spike 017
+apps/frontend/src/routes/admin/(protected)/argument-condensation/+page.svelte	24	spike-ref-deferred	spike-ref	see spike 024
+apps/frontend/src/routes/admin/(protected)/argument-condensation/+page.svelte	24	phase-ref-deferred	phase-ref	see phase 117
+apps/frontend/src/routes/(voters)/+layout.svelte	36	phase-ref-deferred	phase-ref	see phase 86
+apps/frontend/src/routes/(voters)/+layout.svelte	46	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/(voters)/+layout.svelte	59	phase-ref-deferred	phase-ref	see phase 86
+apps/frontend/src/routes/(voters)/+layout.svelte	65	phase-ref-deferred	phase-ref	see phase 95
+apps/frontend/src/routes/(voters)/+layout.svelte	92	phase-ref-deferred	phase-ref	see phase 86
+apps/frontend/src/routes/(voters)/+layout.svelte	105	phase-ref-deferred	phase-ref	see phase 77
+apps/frontend/src/routes/(voters)/+page.svelte	26	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/(voters)/privacy/+page.svelte	27	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/(voters)/nominations/+layout.svelte	24	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/(voters)/nominations/+page.svelte	22	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/(voters)/intro/+page.svelte	19	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/routes/(voters)/intro/+page.svelte	25	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/(voters)/info/+page.svelte	22	spike-ref-deferred	spike-ref	see spike 024
+apps/frontend/src/routes/(voters)/info/+page.svelte	22	phase-ref-deferred	phase-ref	see phase 117
+apps/frontend/src/routes/(voters)/elections/+page.ts	41	phase-ref-deferred	phase-ref	see phase 78
+apps/frontend/src/routes/(voters)/elections/+page.svelte	28	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/routes/(voters)/elections/+page.svelte	34	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/(voters)/elections/+page.svelte	86	phase-ref-deferred	phase-ref	see phase 78
+apps/frontend/src/routes/(voters)/constituencies/+page.ts	53	phase-ref-deferred	phase-ref	see phase 78
+apps/frontend/src/routes/(voters)/constituencies/+page.svelte	31	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/routes/(voters)/constituencies/+page.svelte	37	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/(voters)/constituencies/+page.svelte	43	spike-ref-deferred	spike-ref	see spike 024
+apps/frontend/src/routes/(voters)/constituencies/+page.svelte	43	phase-ref-deferred	phase-ref	see phase 117
+apps/frontend/src/routes/(voters)/constituencies/+page.svelte	119	phase-ref-deferred	phase-ref	see phase 78
+apps/frontend/src/routes/(voters)/about/+page.svelte	24	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/(voters)/(located)/+layout.ts	8	todo-class	todo-class	TODO
+apps/frontend/src/routes/(voters)/(located)/+layout.svelte	37	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.ts	6	phase-ref-deferred	phase-ref	see phase 88
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte	9	phase-ref-deferred	phase-ref	see phase 62
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte	9	phase-ref-deferred	phase-ref	see phase 88
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte	67	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte	92	phase-ref-deferred	phase-ref	see phase 88
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte	151	phase-ref-deferred	phase-ref	see phase 88
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte	317	phase-ref-deferred	phase-ref	see phase 64
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte	421	phase-ref-deferred	phase-ref	see phase 62
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/statistics/+page.svelte	33	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/+page.ts	5	phase-ref-deferred	phase-ref	see phase 62
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/+page.ts	6	phase-ref-deferred	phase-ref	see phase 88
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/+page.svelte	3	phase-ref-deferred	phase-ref	see phase 62
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/+page.svelte	4	phase-ref-deferred	phase-ref	see phase 88
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/+page.svelte	22	phase-ref-deferred	phase-ref	see phase 88
+apps/frontend/src/routes/(voters)/(located)/questions/+layout.ts	4	phase-ref-deferred	phase-ref	see phase 100
+apps/frontend/src/routes/(voters)/(located)/questions/+layout.svelte	7	phase-ref-deferred	phase-ref	see phase 100
+apps/frontend/src/routes/(voters)/(located)/questions/+layout.svelte	54	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/routes/(voters)/(located)/questions/+layout.svelte	58	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/(voters)/(located)/questions/+layout.svelte	62	spike-ref-deferred	spike-ref	see spike 024
+apps/frontend/src/routes/(voters)/(located)/questions/+layout.svelte	62	phase-ref-deferred	phase-ref	see phase 117
+apps/frontend/src/routes/(voters)/(located)/questions/+layout.svelte	92	phase-ref-deferred	phase-ref	see phase 100
+apps/frontend/src/routes/(voters)/(located)/questions/+layout.svelte	238	todo-class	todo-class	TODO
+apps/frontend/src/routes/(voters)/(located)/questions/+page.svelte	29	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/routes/(voters)/(located)/questions/+page.svelte	36	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/(voters)/(located)/questions/+page.svelte	53	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/routes/(voters)/(located)/questions/category/[categoryId]/+page.svelte	37	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/routes/(voters)/(located)/questions/category/[categoryId]/+page.svelte	41	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/routes/(voters)/(located)/questions/category/[categoryId]/+page.svelte	45	spike-ref-deferred	spike-ref	see spike 024
+apps/frontend/src/routes/(voters)/(located)/questions/category/[categoryId]/+page.svelte	45	phase-ref-deferred	phase-ref	see phase 117
+apps/frontend/src/routes/(voters)/(located)/questions/[questionId]/+page.svelte	1	spike-ref-deferred	spike-ref	see spike 014
+apps/frontend/src/params/etPl.test.ts	6	phase-ref-deferred	phase-ref	see phase 88
+apps/frontend/src/params/etPl.test.ts	8	phase-ref-deferred	phase-ref	see phase 62
+apps/frontend/src/params/etPl.test.ts	9	phase-ref-deferred	phase-ref	see phase 69
+apps/frontend/src/params/etPl.ts	3	phase-ref-deferred	phase-ref	see phase 88
+apps/frontend/src/params/etPl.ts	11	phase-ref-deferred	phase-ref	see phase 69
+apps/frontend/src/params/etPl.ts	13	phase-ref-deferred	phase-ref	see phase 62
+apps/frontend/src/params/etPl.ts	20	phase-ref-deferred	phase-ref	see phase 62
+apps/frontend/src/params/etSg.test.ts	6	phase-ref-deferred	phase-ref	see phase 88
+apps/frontend/src/params/etSg.test.ts	8	phase-ref-deferred	phase-ref	see phase 62
+apps/frontend/src/params/etSg.test.ts	9	phase-ref-deferred	phase-ref	see phase 69
+apps/frontend/src/params/etSg.ts	11	phase-ref-deferred	phase-ref	see phase 69
+apps/frontend/src/params/etSg.ts	13	phase-ref-deferred	phase-ref	see phase 62
+apps/frontend/src/params/etSg.ts	22	phase-ref-deferred	phase-ref	see phase 62
+apps/frontend/src/lib/utils/getAllianceSummary.ts	10	phase-ref-deferred	phase-ref	see phase 69
+apps/frontend/src/lib/utils/regexp.ts	4	todo-class	todo-class	TODO
+apps/frontend/src/lib/utils/settings.test.ts	77	spike-ref-deferred	spike-ref	see spike 008
+apps/frontend/src/lib/utils/settings.ts	7	todo-class	todo-class	TODO
+apps/frontend/src/lib/utils/sorting.ts	40	todo-class	todo-class	TODO
+apps/frontend/src/lib/utils/route/buildRoute.ts	16	phase-ref-deferred	phase-ref	see phase 88
+apps/frontend/src/lib/utils/route/filterPersistent.ts	7	phase-ref-deferred	phase-ref	see phase 88
+apps/frontend/src/lib/utils/route/params.ts	11	phase-ref-deferred	phase-ref	see phase 88
+apps/frontend/src/lib/utils/route/parseParams.ts	28	phase-ref-deferred	phase-ref	see phase 88
+apps/frontend/src/lib/utils/route/route.ts	26	phase-ref-deferred	phase-ref	see phase 88
+apps/frontend/src/lib/utils/matching/imputeParentAnswers.test.ts	7	phase-ref-deferred	phase-ref	see phase 69
+apps/frontend/src/lib/utils/matching/imputeParentAnswers.test.ts	15	phase-ref-deferred	phase-ref	see phase 69
+apps/frontend/src/lib/utils/matching/imputeParentAnswers.test.ts	23	phase-ref-deferred	phase-ref	see phase 67
+apps/frontend/src/lib/utils/matching/imputeParentAnswers.ts	20	phase-ref-deferred	phase-ref	see phase 69
+apps/frontend/src/lib/utils/matching/imputeParentAnswers.ts	26	phase-ref-deferred	phase-ref	see phase 69
+apps/frontend/src/lib/utils/matching/imputeParentAnswers.ts	136	todo-class	todo-class	TODO
+apps/frontend/src/lib/server/api/adapters/local/dataProvider/localServerDataProvider.ts	153	todo-class	todo-class	TODO
+apps/frontend/src/lib/i18n/tests/translations.test.ts	149	phase-ref-deferred	phase-ref	see phase 134
+apps/frontend/src/lib/i18n/tests/translations.test.ts	218	not-a-comment-span	task-id	CLEAN-04
+apps/frontend/src/lib/i18n/tests/translations.test.ts	220	phase-ref-deferred	phase-ref	see phase 78
+apps/frontend/src/lib/dynamic-components/survey/banner/SurveyBanner.svelte	32	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte	48	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte	52	spike-ref-deferred	spike-ref	see spike 024
+apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte	52	phase-ref-deferred	phase-ref	see phase 117
+apps/frontend/src/lib/dynamic-components/navigation/navGroupContext.ts	3	phase-ref-deferred	phase-ref	see phase 80
+apps/frontend/src/lib/dynamic-components/navigation/NavGroup.svelte	40	phase-ref-deferred	phase-ref	see phase 80
+apps/frontend/src/lib/dynamic-components/navigation/NavItem.svelte	84	phase-ref-deferred	phase-ref	see phase 80
+apps/frontend/src/lib/dynamic-components/navigation/voter/VoterNav.svelte	39	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/lib/dynamic-components/navigation/voter/VoterNav.svelte	43	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/dynamic-components/navigation/languages/LanguageSelection.svelte	30	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/dynamic-components/navigation/candidate/CandidateNav.svelte	33	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/lib/dynamic-components/navigation/candidate/CandidateNav.svelte	36	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/dynamic-components/navigation/admin/AdminNav.svelte	46	todo-class	todo-class	TODO
+apps/frontend/src/lib/dynamic-components/feedback/Feedback.svelte	81	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.type.ts	5	phase-ref-deferred	phase-ref	see phase 62
+apps/frontend/src/lib/dynamic-components/entityList/index.ts	5	phase-ref-deferred	phase-ref	see phase 62
+apps/frontend/src/lib/dynamic-components/entityList/EntityListControls.svelte	5	todo-class	todo-class	TODO
+apps/frontend/src/lib/dynamic-components/entityList/EntityListControls.svelte	45	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.svelte	8	phase-ref-deferred	phase-ref	see phase 62
+apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.svelte	68	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/dynamic-components/entityDetails/EntityDetails.svelte	53	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/dynamic-components/entityDetails/EntityDetails.svelte	72	phase-ref-deferred	phase-ref	see phase 69
+apps/frontend/src/lib/dynamic-components/entityDetails/EntityDetails.svelte	100	phase-ref-deferred	phase-ref	see phase 69
+apps/frontend/src/lib/dynamic-components/entityDetails/EntityInfo.svelte	45	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/dynamic-components/entityDetails/EntityInfo.svelte	49	spike-ref-deferred	spike-ref	see spike 024
+apps/frontend/src/lib/dynamic-components/entityDetails/EntityInfo.svelte	49	phase-ref-deferred	phase-ref	see phase 117
+apps/frontend/src/lib/dynamic-components/entityDetails/EntityOpinions.svelte	33	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/dynamic-components/entityCard/EntityCard.svelte	80	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/dynamic-components/entityCard/EntityCard.svelte	84	spike-ref-deferred	spike-ref	see spike 024
+apps/frontend/src/lib/dynamic-components/entityCard/EntityCard.svelte	84	phase-ref-deferred	phase-ref	see phase 117
+apps/frontend/src/lib/dynamic-components/entityCard/EntityCard.svelte	106	phase-ref-deferred	phase-ref	see phase 62
+apps/frontend/src/lib/dynamic-components/entityCard/EntityCard.svelte	106	phase-ref-deferred	phase-ref	see phase 88
+apps/frontend/src/lib/dynamic-components/entityCard/EntityCard.svelte	125	todo-class	todo-class	TODO
+apps/frontend/src/lib/dynamic-components/entityCard/EntityCard.svelte	141	phase-ref-deferred	phase-ref	see phase 69
+apps/frontend/src/lib/dynamic-components/entityCard/EntityCard.svelte	164	phase-ref-deferred	phase-ref	see phase 69
+apps/frontend/src/lib/dynamic-components/entityCard/EntityCard.svelte	170	phase-ref-deferred	phase-ref	see phase 69
+apps/frontend/src/lib/dynamic-components/entityCard/EntityCard.svelte	291	phase-ref-deferred	phase-ref	see phase 69
+apps/frontend/src/lib/dynamic-components/dataConsent/DataConsent.svelte	44	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/dynamic-components/dataConsent/DataConsentInfoButton.svelte	35	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/voter/answerState.svelte.ts	10	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/voter/answerState.svelte.ts	14	phase-ref-deferred	phase-ref	see phase 96
+apps/frontend/src/lib/contexts/voter/answerState.svelte.ts	15	spike-ref-deferred	spike-ref	see spike 022
+apps/frontend/src/lib/contexts/voter/countAnswers.ts	5	todo-class	todo-class	TODO
+apps/frontend/src/lib/contexts/voter/matchState.svelte.ts	58	phase-ref-deferred	phase-ref	see phase 69
+apps/frontend/src/lib/contexts/voter/matchState.svelte.ts	91	phase-ref-deferred	phase-ref	see phase 69
+apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts	33	phase-ref-deferred	phase-ref	see phase 64
+apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts	45	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts	80	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts	92	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts	113	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts	150	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts	217	phase-ref-deferred	phase-ref	see phase 88
+apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts	311	phase-ref-deferred	phase-ref	see phase 62
+apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts	384	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts	573	phase-ref-deferred	phase-ref	see phase 62
+apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts	574	phase-ref-deferred	phase-ref	see phase 88
+apps/frontend/src/lib/contexts/voter/voterContext.type.ts	35	phase-ref-deferred	phase-ref	see phase 88
+apps/frontend/src/lib/contexts/voter/voterContext.type.ts	68	phase-ref-deferred	phase-ref	see phase 88
+apps/frontend/src/lib/contexts/voter/voterContext.type.ts	107	phase-ref-deferred	phase-ref	see phase 62
+apps/frontend/src/lib/contexts/utils/inheritContextMembers.test.ts	5	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/utils/inheritContextMembers.ts	5	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/utils/inheritContextMembers.ts	16	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/utils/paramState.svelte.ts	7	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/utils/persistedState.svelte.ts	70	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/utils/persistedState.svelte.ts	93	phase-ref-deferred	phase-ref	see phase 96
+apps/frontend/src/lib/contexts/utils/settingsOverlay.svelte.ts	7	phase-ref-deferred	phase-ref	see phase 98
+apps/frontend/src/lib/contexts/utils/settingsOverlay.svelte.ts	57	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/utils/settingsOverlay.svelte.ts	64	spike-ref-deferred	spike-ref	see spike 020
+apps/frontend/src/lib/contexts/layout/VideoController.svelte.ts	6	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/layout/layoutContext.svelte.ts	97	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/i18n/i18nContext.type.ts	9	phase-ref-deferred	phase-ref	see phase 78
+apps/frontend/src/lib/contexts/filter/filterContext.svelte.ts	31	spike-ref-deferred	spike-ref	see spike 020
+apps/frontend/src/lib/contexts/filter/filterContext.svelte.ts	40	spike-ref-deferred	spike-ref	see spike 023
+apps/frontend/src/lib/contexts/filter/filterContext.svelte.ts	43	spike-ref-deferred	spike-ref	see spike 020
+apps/frontend/src/lib/contexts/data/dataContext.svelte.ts	25	spike-ref-deferred	spike-ref	see spike 022
+apps/frontend/src/lib/contexts/data/dataContext.svelte.ts	34	spike-ref-deferred	spike-ref	see spike 020
+apps/frontend/src/lib/contexts/data/dataContext.svelte.ts	35	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/data/dataContext.svelte.ts	42	spike-ref-deferred	spike-ref	see spike 020
+apps/frontend/src/lib/contexts/data/dataContext.svelte.ts	45	spike-ref-deferred	spike-ref	see spike 017
+apps/frontend/src/lib/contexts/data/dataContext.svelte.ts	49	spike-ref-deferred	spike-ref	see spike 022
+apps/frontend/src/lib/contexts/data/dataContext.svelte.ts	60	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/data/dataContext.svelte.ts	95	spike-ref-deferred	spike-ref	see spike 017
+apps/frontend/src/lib/contexts/data/dataContext.type.ts	7	phase-ref-deferred	phase-ref	see phase 98
+apps/frontend/src/lib/contexts/data/dataContext.type.ts	9	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/data/dataContext.type.ts	10	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/data/dataContext.type.ts	19	spike-ref-deferred	spike-ref	see spike 017
+apps/frontend/src/lib/contexts/component/componentContext.svelte.ts	11	phase-ref-deferred	phase-ref	see phase 107
+apps/frontend/src/lib/contexts/component/darkMode.svelte.ts	11	spike-ref-deferred	spike-ref	see spike 020
+apps/frontend/src/lib/contexts/component/darkMode.svelte.ts	15	spike-ref-deferred	spike-ref	see spike 020
+apps/frontend/src/lib/contexts/component/darkMode.svelte.ts	18	phase-ref-deferred	phase-ref	see phase 107
+apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.test.ts	103	not-a-comment-span	task-id	RUNES-05
+apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.ts	37	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.ts	96	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.ts	141	spike-ref-deferred	spike-ref	see spike 021
+apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.ts	172	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.ts	195	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.ts	310	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/candidate/candidateContext.type.ts	24	todo-class	todo-class	TODO
+apps/frontend/src/lib/contexts/candidate/candidateContext.type.ts	28	todo-class	todo-class	TODO
+apps/frontend/src/lib/contexts/candidate/candidateUserDataState.svelte.ts	14	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/auth/authContext.svelte.ts	14	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/auth/authContext.svelte.ts	31	spike-ref-deferred	spike-ref	see spike 009
+apps/frontend/src/lib/contexts/auth/authContext.svelte.ts	32	phase-ref-deferred	phase-ref	see phase 109
+apps/frontend/src/lib/contexts/app/appContext.spread.svelte.test.ts	7	phase-ref-deferred	phase-ref	see phase 109
+apps/frontend/src/lib/contexts/app/appContext.spread.svelte.test.ts	51	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/app/appContext.spread.svelte.test.ts	201	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	31	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	45	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	53	phase-ref-deferred	phase-ref	see phase 109
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	56	phase-ref-deferred	phase-ref	see phase 107
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	63	milestone-version	milestone-ver	v2.11
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	66	spike-ref-deferred	spike-ref	see spike 008
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	108	todo-class	todo-class	TODO
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	114	spike-ref-deferred	spike-ref	see spike 008
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	132	todo-class	todo-class	TODO
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	174	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	196	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	215	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	215	phase-ref-deferred	phase-ref	see phase 109
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	235	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	278	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	281	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	314	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	346	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	395	phase-ref-deferred	phase-ref	see phase 64
+apps/frontend/src/lib/contexts/app/appContext.type.ts	14	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/app/appContext.type.ts	24	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/app/appContext.type.ts	55	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/app/appContext.type.ts	85	todo-class	todo-class	TODO
+apps/frontend/src/lib/contexts/app/survey.svelte.test.ts	9	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/app/tracking/trackingService.svelte.ts	24	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/app/tracking/trackingService.svelte.ts	32	phase-ref-deferred	phase-ref	see phase 108
+apps/frontend/src/lib/contexts/app/tracking/trackingService.svelte.ts	37	phase-ref-deferred	phase-ref	see phase 107
+apps/frontend/src/lib/contexts/app/tracking/trackingService.svelte.ts	38	phase-ref-deferred	phase-ref	see phase 109
+apps/frontend/src/lib/contexts/app/popup/popupState.svelte.ts	6	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/admin/adminContext.svelte.ts	17	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/admin/adminContext.svelte.ts	28	milestone-version	milestone-ver	v2.11
+apps/frontend/src/lib/contexts/admin/adminContext.svelte.ts	30	milestone-version	milestone-ver	v2.11
+apps/frontend/src/lib/contexts/admin/adminContext.svelte.ts	66	milestone-version	milestone-ver	v2.11
+apps/frontend/src/lib/contexts/admin/adminContext.svelte.ts	211	milestone-version	milestone-ver	v2.11
+apps/frontend/src/lib/contexts/admin/adminContext.svelte.ts	215	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/contexts/admin/jobStates.svelte.ts	11	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/admin/jobStates.type.ts	20	todo-class	todo-class	TODO
+apps/frontend/src/lib/contexts/admin/jobStates.type.ts	25	todo-class	todo-class	TODO
+apps/frontend/src/lib/components/video/Video.svelte	521	todo-class	todo-class	TODO
+apps/frontend/src/lib/components/tabs/Tabs.svelte	17	todo-class	todo-class	TODO
+apps/frontend/src/lib/components/tabs/Tabs.svelte	58	phase-ref-deferred	phase-ref	see phase 80
+apps/frontend/src/lib/components/select/Select.svelte	293	phase-ref-deferred	phase-ref	see phase 65
+apps/frontend/src/lib/components/select/Select.svelte	348	phase-ref-deferred	phase-ref	see phase 65
+apps/frontend/src/lib/components/questions/QuestionChoices.svelte	379	phase-ref-deferred	phase-ref	see phase 64
+apps/frontend/src/lib/components/questions/QuestionChoices.svelte	379	milestone-version	milestone-ver	v2.6
+apps/frontend/src/lib/components/input/Input.svelte	226	phase-ref-deferred	phase-ref	see phase 64
+apps/frontend/src/lib/components/input/Input.svelte	353	todo-class	todo-class	TODO
+apps/frontend/src/lib/components/input/Input.svelte	422	phase-ref-deferred	phase-ref	see phase 65
+apps/frontend/src/lib/components/input/Input.svelte	447	phase-ref-deferred	phase-ref	see phase 65
+apps/frontend/src/lib/components/input/Input.svelte	489	phase-ref-deferred	phase-ref	see phase 65
+apps/frontend/src/lib/components/infoAnswer/InfoAnswer.svelte	103	todo-class	todo-class	TODO
+apps/frontend/src/lib/components/entityFilters/EntityFilters.svelte	42	phase-ref-deferred	phase-ref	see phase 77
+apps/frontend/src/lib/components/electionSelector/ElectionSelector.svelte	36	phase-ref-deferred	phase-ref	see phase 64
+apps/frontend/src/lib/components/constituencySelector/ConstituencySelector.svelte	294	phase-ref-deferred	phase-ref	see phase 134
+apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.svelte	51	phase-ref-deferred	phase-ref	see phase 65
+apps/frontend/src/lib/candidate/components/logoutButton/LogoutButton.svelte	40	phase-ref-deferred	phase-ref	see phase 61
+apps/frontend/src/lib/candidate/components/logoutButton/LogoutButton.svelte	45	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/src/lib/api/utils/authHeaders.ts	10	todo-class	todo-class	TODO
+apps/frontend/src/lib/api/utils/auth/providers/authConfig.ts	24	attributive-reference	phase-ref	Phase 142
+apps/frontend/src/lib/api/utils/auth/providers/idura.test.ts	181	phase-ref-deferred	phase-ref	see phase 140
+apps/frontend/src/lib/api/utils/auth/providers/signicat.test.ts	242	phase-ref-deferred	phase-ref	Phase 142
+apps/frontend/src/lib/api/utils/auth/providers/signicat.ts	9	attributive-reference	phase-ref	Phase 142
+apps/frontend/src/lib/api/utils/auth/providers/types.ts	37	attributive-reference	phase-ref	Phase 142
+apps/frontend/src/lib/api/utils/auth/__tests__/authorize-endpoint.test.ts	124	phase-ref-deferred	phase-ref	see phase 140
+apps/frontend/src/lib/api/utils/auth/__tests__/token-endpoint.test.ts	74	phase-ref-deferred	phase-ref	see phase 140
+apps/frontend/src/lib/api/utils/auth/__tests__/token-endpoint.test.ts	291	phase-ref-deferred	phase-ref	see phase 140
+apps/frontend/src/lib/api/utils/auth/__tests__/token-endpoint.test.ts	294	phase-ref-deferred	phase-ref	see phase 140
+apps/frontend/src/lib/api/utils/auth/__tests__/token-endpoint.test.ts	300	phase-ref-deferred	phase-ref	see phase 140
+apps/frontend/src/lib/api/base/dataWriter.type.ts	211	todo-class	todo-class	TODO
+apps/frontend/src/lib/api/base/dataWriter.type.ts	311	todo-class	todo-class	TODO
+apps/frontend/src/lib/api/base/dataWriter.type.ts	321	todo-class	todo-class	TODO
+apps/frontend/src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.ts	88	phase-ref-deferred	phase-ref	see phase 86
+apps/frontend/src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.ts	380	todo-class	todo-class	TODO
+apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts	1605	phase-ref-deferred	phase-ref	see phase 64
+apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts	1626	phase-ref-deferred	phase-ref	see phase 64
+apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts	283	phase-ref-deferred	phase-ref	see phase 64
+apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts	321	phase-ref-deferred	phase-ref	see phase 64
+apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.type.ts	5	milestone-version	milestone-ver	v2.6
+apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.type.ts	5	phase-ref-deferred	phase-ref	see phase 64
+apps/frontend/src/lib/api/adapters/supabase/adminWriter/supabaseAdminWriter.ts	15	todo-class	todo-class	TODO
+apps/frontend/src/lib/admin/components/jobs/FeatureJobs.svelte	103	todo-class	todo-class	TODO
+apps/frontend/src/lib/admin/components/jobs/JobDetails.svelte	83	todo-class	todo-class	TODO
+apps/frontend/src/lib/admin/components/jobs/WithPolling.svelte	5	todo-class	todo-class	TODO
+apps/frontend/src/lib/_guards/eslint-store-guard.test.ts	19	attributive-reference	phase-ref	Phase 115
+apps/frontend/src/lib/_guards/eslint-store-guard.test.ts	21	phase-ref-deferred	phase-ref	Phase 143
+apps/frontend/src/lib/_guards/eslint-store-guard.test.ts	52	attributive-reference	phase-ref	Phase 143
+apps/frontend/src/lib/_guards/eslint-store-guard.test.ts	90	not-a-comment-span	task-id	ASSERT-08
+apps/frontend/src/lib/_guards/eslint-store-guard.test.ts	91	phase-ref-deferred	phase-ref	phase 145-08
+apps/frontend/src/lib/_guards/eslint-store-guard.test.ts	132	attributive-reference	phase-ref	Phase 143
+apps/frontend/src/lib/_guards/eslint-store-guard.test.ts	135	not-a-comment-span	decision-id-bare	D-05
+apps/frontend/src/lib/_guards/eslint-store-guard.test.ts	150	not-a-comment-span	decision-id-bare	D-06
+apps/frontend/scripts/flatten-current-codemod.mjs	3	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/scripts/flatten-current-codemod.mjs	5	spike-ref-deferred	spike-ref	see spike 009
+apps/frontend/scripts/flatten-current-codemod.mjs	5	phase-ref-deferred	phase-ref	see phase 106
+apps/frontend/scripts/flatten-current-codemod.mjs	6	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/scripts/flatten-current-codemod.mjs	73	phase-ref-deferred	phase-ref	see phase 113
+apps/frontend/scripts/store-to-state-codemod.mjs	3	phase-ref-deferred	phase-ref	see phase 114
+apps/frontend/scripts/store-to-state-codemod.mjs	5	phase-ref-deferred	phase-ref	see phase 106

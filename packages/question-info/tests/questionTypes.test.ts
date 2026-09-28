@@ -9,15 +9,33 @@ import {
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { QUESTION_INFO_OPERATION } from '../src';
 import { generateQuestionInfo } from '../src/api';
+import type { AnyQuestionVariant } from '@openvaa/data';
 import type { QuestionInfoOptions } from '../src';
 
-// Mock LLM provider (new API)
+// Mock LLM provider
 const mockLLMProvider = {
   generateObjectParallel: vi.fn()
 } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 // Mock LLM model
 const mockLLMModel = 'gpt-4o';
+
+/** The single argument `generateObjectParallel` is called with. */
+interface CapturedProviderCall {
+  requests: Array<{ messages: Array<{ role: string; content: string }> }>;
+}
+
+/**
+ * The composed prompts the mocked provider received, in question order.
+ *
+ * Assertions on these check what the product composed. Assertions on `results[i].data` alone only see the canned payload the test handed the mock.
+ */
+function capturedPrompts(): Array<string> {
+  // Assert the call first: without it, a regression that makes no call fails as a TypeError on the line below instead of as a missing call.
+  expect(mockLLMProvider.generateObjectParallel).toHaveBeenCalledTimes(1);
+  const [arg] = mockLLMProvider.generateObjectParallel.mock.calls[0] as [CapturedProviderCall];
+  return arg.requests.map((request) => request.messages[0].content);
+}
 
 // Create test data root
 function createTestDataRoot(): DataRoot {
@@ -82,6 +100,9 @@ describe('Question Type Configurations', () => {
       expect(results).toHaveLength(1);
       expect(results[0].data.questionId).toBe('boolean-1');
       expect(results[0].data.infoSections).toBeDefined();
+
+      // The question text must reach the composed prompt: the assertions above also pass when the prompt carries no question.
+      expect(capturedPrompts()[0]).toContain('Do you support universal healthcare?');
     });
 
     test('should handle boolean question with terms generation', async () => {
@@ -197,6 +218,15 @@ describe('Question Type Configurations', () => {
       expect(results).toHaveLength(1);
       expect(results[0].data.questionId).toBe('ordinal-1');
       expect(results[0].data.infoSections).toBeDefined();
+
+      // The assertions above read only the canned payload. These check what the product composed.
+      const prompt = capturedPrompts()[0];
+
+      // The question's type must reach the prompt. It is read from the constant, so renaming the discriminant cannot leave a stale literal here.
+      expect(prompt).toContain(QUESTION_TYPE.SingleChoiceOrdinal);
+
+      // A 5-point and a 7-point ordinal share the type string, so only the choice labels tell them apart. Asserting the joined string also checks the `', '` join and the label order.
+      expect(prompt).toContain('Very dissatisfied, Dissatisfied, Neutral, Satisfied, Very satisfied');
     });
 
     test('should handle 7-point Likert scale question', async () => {
@@ -262,6 +292,11 @@ describe('Question Type Configurations', () => {
       expect(results).toHaveLength(1);
       expect(results[0].data.terms).toBeDefined();
       expect(results[0].data.terms).toHaveLength(2);
+
+      // Seven labels here against the 5-point sibling's five. This test runs the `generateTerms` template, so it also checks that `{{choices}}` is filled there.
+      expect(capturedPrompts()[0]).toContain(
+        'Strongly disagree, Disagree, Somewhat disagree, Neither agree nor disagree, Somewhat agree, Agree, Strongly agree'
+      );
     });
   });
 
@@ -386,6 +421,11 @@ describe('Question Type Configurations', () => {
       expect(results).toHaveLength(1);
       expect(results[0].data.terms).toBeDefined();
       expect(results[0].data.terms).toHaveLength(3);
+
+      // The assertions above read only the canned payload. This checks that the question's own choice labels reach the prompt.
+      const prompt = capturedPrompts()[0];
+      expect(prompt).toContain('Morning person');
+      expect(prompt).toContain('Night person');
     });
   });
 
@@ -531,10 +571,116 @@ describe('Question Type Configurations', () => {
       // All results should have both infoSections and terms
       expect(results.every((r) => r.data.infoSections && r.data.terms)).toBe(true);
 
-      // Verify specific content
-      expect(results[0].data.infoSections![0].title).toBe('Tax Policy');
-      expect(results[1].data.infoSections![0].title).toBe('Income Inequality Priority');
-      expect(results[2].data.infoSections![0].title).toBe('Policy Preference Analysis');
+      // Both operations select the `generateBoth` template, whose `questionType` and `choices` placeholders must be filled per question
+      const [booleanPrompt, ordinalPrompt, categoricalPrompt] = capturedPrompts();
+      expect(booleanPrompt).toContain('Task 2: Term Definition Generation');
+      expect(booleanPrompt).toContain(QUESTION_TYPE.Boolean);
+      expect(ordinalPrompt).toContain(QUESTION_TYPE.SingleChoiceOrdinal);
+      expect(ordinalPrompt).toContain(
+        'Not important, Somewhat important, Important, Very important, Extremely important'
+      );
+      expect(categoricalPrompt).toContain(QUESTION_TYPE.SingleChoiceCategorical);
+      expect(categoricalPrompt).toContain(
+        'Progressive taxation, Education and training, Regulation and oversight, Other approaches'
+      );
+
+      // The response transformer renames three provider fields; these check the renames.
+      // `processingTimeMs` is the provider's `latencyMs` copied verbatim, not a wall-clock measurement, so its exact value checks the rename.
+      expect(results[0].llmMetrics.processingTimeMs).toBe(10); // ← llmResponse.latencyMs
+      expect(results[0].llmMetrics.nLlmCalls).toBe(1); // ← llmResponse.attempts
+      expect(results[0].metadata.modelsUsed).toEqual([mockLLMModel]); // ← llmResponse.response.modelId
+    });
+
+    test('composes different prompts for two questions that share a name and differ only in type', async () => {
+      // The Configuration fixtures above use differently named questions, and the name is part of the prompt, so comparing their prompts would pass for the wrong reason. Holding the question text constant and varying only `type` isolates the property under test.
+      const sharedText = {
+        name: 'Should the voting age be lowered?',
+        categoryId: 'franchise-category',
+        info: 'Identical wording on purpose — only the question type differs.'
+      };
+
+      const booleanQuestion = new BooleanQuestion({
+        data: { id: 'same-name-boolean', type: QUESTION_TYPE.Boolean, ...sharedText },
+        root
+      });
+
+      const categoricalQuestion = new SingleChoiceCategoricalQuestion({
+        data: {
+          id: 'same-name-categorical',
+          type: QUESTION_TYPE.SingleChoiceCategorical,
+          ...sharedText,
+          choices: [
+            { id: 'sixteen', label: 'Yes, lower it to 16' },
+            { id: 'keep', label: 'No, keep it at 18' }
+          ]
+        },
+        root
+      });
+
+      const questions = [booleanQuestion, categoricalQuestion];
+      const options = {
+        runId: 'test-run-id',
+        operations: [QUESTION_INFO_OPERATION.InfoSections],
+        language: 'en',
+        modelConfig: { primary: mockLLMModel },
+        llmProvider: mockLLMProvider,
+        llmModel: mockLLMModel,
+        controller: noOpController
+      } as QuestionInfoOptions;
+
+      const cannedSection = {
+        object: {
+          infoSections: [{ title: 'Voting Age', content: 'Background on the voting-age franchise.' }]
+        },
+        usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+        response: { modelId: mockLLMModel },
+        finishReason: 'stop',
+        latencyMs: 10,
+        attempts: 1,
+        costs: { total: 0 }
+      };
+      mockLLMProvider.generateObjectParallel.mockResolvedValue([cannedSection, cannedSection]);
+
+      await generateQuestionInfo({ questions, options });
+
+      const [booleanPrompt, categoricalPrompt] = capturedPrompts();
+
+      // The question type must change the prompt: a composition that reads only `question.name` makes the two prompts identical.
+      expect(booleanPrompt).not.toBe(categoricalPrompt);
+
+      // The answering choices must reach the prompt.
+      expect(categoricalPrompt).toContain('Yes, lower it to 16');
+
+      // Choices are per question, so the boolean sibling in the same call must not pick up its neighbour's labels. A composition with no choices at all also passes this one, so the two assertions above carry the weight.
+      expect(booleanPrompt).not.toContain('Yes, lower it to 16');
+    });
+  });
+
+  describe('Prompt composition boundary', () => {
+    test('rejects a question that arrives without a type, naming the question', async () => {
+      // `throwIfVarsMissing` cannot catch this case: the `questionType` variable is present but undefined, so the required-param check passes and the prompt would render the literal text `undefined`.
+      const untypedQuestion = {
+        id: 'no-type-1',
+        name: 'A question that never received a type'
+      } as unknown as AnyQuestionVariant;
+
+      const options = {
+        runId: 'test-run-id',
+        operations: [QUESTION_INFO_OPERATION.InfoSections],
+        language: 'en',
+        modelConfig: { primary: mockLLMModel },
+        llmProvider: mockLLMProvider,
+        llmModel: mockLLMModel,
+        controller: noOpController
+      } as QuestionInfoOptions;
+
+      // Anchored at `^`: the guard sits outside `generateInfo`'s catch, which would prefix the message with `Error generating question info: `. The message also names the failing question.
+      await expect(generateQuestionInfo({ questions: [untypedQuestion], options })).rejects.toThrow(
+        /^\[question-info\] Question 'no-type-1' \("A question that never received a type"\) has no `type`\./
+      );
+
+      // It fails before reaching the provider.
+      expect(mockLLMProvider.generateObjectParallel).not.toHaveBeenCalled();
     });
   });
 });

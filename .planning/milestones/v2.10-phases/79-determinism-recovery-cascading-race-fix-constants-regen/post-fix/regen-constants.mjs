@@ -1,0 +1,157 @@
+// Phase 73 D-08 + D-09 + Pitfall 5 constants regen — one-shot.
+// Adapted from .planning/milestones/v2.6-phases/64-voter-results-reactivity-completion/post-fix/regen-constants.mjs
+// (the P64 source — `reportPath` adjusted to point at Phase 73's post-fix anchor capture).
+//
+// Reads the post-fix JSON (Phase 73 Plan 06 run-3-report.json), partitions tests into PASS_LOCKED /
+// DATA_RACE / CASCADE per D-09 rules, emits the 3 arrays formatted for paste into
+// tests/scripts/diff-playwright-reports.ts (lines ~53-138).
+//
+// Source of the IMGPROXY_TIED_TITLES list: .planning/phases/63-e2e-template-extension-greening/post-v2.6/diff.md
+// lines 11-32 (Phase 63 v2.6 baseline that enumerated the 14 imgproxy-tied tests; CONTEXT D-09 binds
+// this list as the DATA_RACE classification target). This list is structural — if any imgproxy-tied
+// test is renamed upstream, the regen MUST fail loudly rather than silently miscount.
+
+import { readFileSync, writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+// __dirname is .planning/phases/79-…/post-fix/. Phase 87 anchor lives 2 levels up
+// then down into the Phase 87 post-fix directory.
+//
+// Phase 87: DETERM-15 v2.10 milestone-close ship anchor. Path B promoted: 2026-05-21.
+// Anchor SHA: b2ad76e5de4f5b435db536bb5d5d05c81c5bd4c8e007a5f0c25078e2ed74ef2e
+// Run-mode: re-capture (Path B; promoted from Path A verbal-accept at operator request)
+// Verdict: ACCEPT-ALMOST-STRICT (Path B) — Phase 86 D-06 precedent extension
+//
+// Per CONTEXT.md D-02: strict SHA-identity gate. Mechanical 3-run hash verdict was FAIL
+// because run-3 differed from runs 1+2 by 2 boundary-class cells (`voter-app ::
+// voter-results.spec.ts` D-08 shape 4 + D-11 — same documented voter-app cold-deeplink
+// loader race already accepted as v2.11+ deferral for cells #3 / #5 / #7 / #8).
+// Runs 1 and 2 were SHA-IDENTICAL (sorted-line-content `b2ad76e5…`) — operator-promoted
+// to canonical PASS-state anchor per Phase 86 D-06 precedent.
+//
+// Canonical regen source: run-2.json (PASS-state representative; runs 1+2 share the
+// content SHA `b2ad76e5…`; run-3 is the boundary-flake instance preserved for audit).
+//
+// D-05 amendment (operator-accepted at Phase 86.3 close per 86.3-SUMMARY.md
+// D-06 RE-PLAN recommendation): CASCADE=36 + 4 SKIPPED (cells #3 / #5 / #7 / #8)
+// are documented v2.11+ deferrals. The 4 hard-coded skips share root causes:
+//   - Cell #3: PASS-WITH-DEFERRAL via candidate-settings skipReason (revert 0a34dfbc7).
+//   - Cells #5 / #7 / #8: SKIP-FALLBACK — shared voter-app cold-deeplink loader
+//     race; v2.11+ navigation-from-home redesign is the closure target (same
+//     approach that closed cell #6 in commit 52a2f077a).
+//   - Path B run-3 boundary-flake: same race manifests on D-08 shape 4 + D-11
+//     (new tests landed in v2 follow-up commits; documentary only — NOT promoted
+//     to const arrays per CONTEXT D-08).
+//
+// PRIOR ANCHORS ABSORBED:
+//   Phase 86 anchor   9a6d74a3088ec2de933cce9ff40797ec1a1cf8180923f02fbfcaf6f690a30af9
+//   Phase 86.3-v1     bc1c94957b8dcadfd79ff7464b39db42685387ae27dc24d69f417a32cfd03cee
+//   Phase 87 Path A   bc1c94957b… (re-bound from 86.3-v1 via verbal-accept; superseded by Path B)
+// See .planning/phases/87-…/post-fix/sha256.txt for the full audit + verdict rationale.
+const reportPath = join(__dirname, '..', '..', '87-v2-10-all-green-milestone-close-anchor-capture-a-fresh-3-run', 'post-fix', 'run-2.json');
+// Strip optional dotenv banner line (Phase 73 captures via `yarn playwright …` write a
+// `[dotenv@…] injecting env …` line ahead of the JSON; the P64 captures did not). Split
+// on first '{' rather than first newline so the strip is robust to multi-line banners.
+const _raw = readFileSync(reportPath, 'utf8');
+const _braceIdx = _raw.indexOf('\n{');
+const report = JSON.parse(_braceIdx === -1 ? _raw : _raw.slice(_braceIdx + 1));
+
+function categorizeStatus(raw, err) {
+  if (raw === 'passed') return 'pass';
+  if (raw === 'skipped') return 'cascade';
+  if (/did not run|setup.*failed|dependency.*failed/i.test(err)) return 'cascade';
+  return 'fail';
+}
+
+function flattenReport(rep) {
+  const out = [];
+  const walk = (suites) => {
+    if (!suites) return;
+    for (const suite of suites) {
+      const suiteFile = suite.file ?? suite.title ?? '';
+      for (const spec of suite.specs ?? []) {
+        const specFile = spec.file ?? suiteFile;
+        const specTitle = spec.title ?? '';
+        for (const t of spec.tests ?? []) {
+          const projectName = t.projectName ?? '';
+          const firstResult = t.results?.[0] ?? {};
+          const raw = firstResult.status ?? t.status ?? 'unknown';
+          const err = firstResult.error?.message ?? firstResult.errors?.[0]?.message ?? '';
+          const id = `${projectName} :: ${specFile} > ${specTitle}`;
+          const status = categorizeStatus(raw, err);
+          out.push({ id, status, rawStatus: raw, errorMessage: err });
+        }
+      }
+      walk(suite.suites);
+    }
+  };
+  walk(rep.suites);
+  return out;
+}
+
+const all = flattenReport(report);
+
+// Phase 84 DETERM-08 + Phase 73 D-09 renegotiation (2026-05-13): pool shrunk 14 → 3.
+// Only image-intrinsic tests remain imgproxy-tied per Phase 84 close. The 11
+// candidate-app-settings tests + dual-project re-auth.setup.ts entries + 2
+// candidate-app-password tests were never initial-paint or background-prefetch
+// imgproxy-tied (per 84-RCA-FINDINGS.md §"Capture Results": 0 storage requests
+// across all cold-start candidate-app navigation paths) — their classification
+// into DATA_RACE was purely Playwright project-dependency cascade from CAND-03's
+// imgproxy 502 inside candidate-app-mutation. Phase 84 broke that cascade
+// structurally via tests/playwright.config.ts (re-auth-setup dependency
+// repointed candidate-app-mutation → candidate-app). The 3 surviving image-
+// intrinsic tests are listed below; they may still flake when the local
+// imgproxy Docker container 502s (per Phase 73 RESEARCH Pitfall 5 — infrastructure
+// debt, not race-fixable). See 84-RESEARCH.md §"Root-Cause Verdict" for the
+// empirical instrumentation evidence.
+const IMGPROXY_TIED_TITLES = [
+  'should upload a profile image (CAND-03)',
+  'should show editable info fields on profile page (CAND-03)',
+  'should persist profile image after page reload (CAND-12)'
+];
+const isImgproxyTied = (id) => IMGPROXY_TIED_TITLES.some((t) => id.endsWith('> ' + t));
+
+// Acceptance gate (Phase 64 review feedback Warning 6): verify every IMGPROXY_TIED_TITLES entry
+// matches at least one test in the new JSON.
+const titleMatchCounts = IMGPROXY_TIED_TITLES.map((t) => ({
+  title: t,
+  count: all.filter((x) => x.id.endsWith('> ' + t)).length
+}));
+const zeroMatches = titleMatchCounts.filter((x) => x.count === 0);
+if (zeroMatches.length > 0) {
+  console.error('ERROR: IMGPROXY_TIED_TITLES match-count assertion failed.');
+  console.error('       The following titles do NOT match any test in the new JSON.');
+  console.error('       Source: .planning/phases/63-e2e-template-extension-greening/post-v2.6/diff.md lines 11-32 (binding per CONTEXT D-09).');
+  console.error('       Either the upstream test was renamed (update the IMGPROXY_TIED_TITLES const) or removed (escalate — D-09 contract changed).');
+  for (const z of zeroMatches) console.error('       - ' + z.title);
+  process.exit(1);
+}
+console.error('IMGPROXY_TIED_TITLES match-count assertion: ' + titleMatchCounts.length + ' titles, ' + titleMatchCounts.reduce((s, x) => s + x.count, 0) + ' total matches.');
+
+// Per CONTEXT D-09 binding: imgproxy-tied tests live exclusively in DATA_RACE,
+// regardless of whether they passed or failed in the canonical capture (the pool
+// is data-race-semantic — "may pass or fail post-swap"). So a passing imgproxy-tied
+// test must NOT also appear in PASS_LOCKED — exclude imgproxy-tied from PASS_LOCKED
+// to maintain the partition.
+const passLocked = all.filter((t) => t.status === 'pass' && !isImgproxyTied(t.id)).map((t) => t.id).sort();
+const dataRace = all.filter((t) => isImgproxyTied(t.id) || t.rawStatus === 'flaky').map((t) => t.id).sort();
+const cascade = all.filter((t) => t.status === 'cascade' && !isImgproxyTied(t.id)).map((t) => t.id).sort();
+
+const fmt = (xs) => xs.map((s) => `  '${s.replace(/'/g, "\\'")}'`).join(',\n');
+
+const out = `
+=== PASS_LOCKED_TESTS (${passLocked.length}) ===
+${fmt(passLocked)}
+
+=== DATA_RACE_TESTS (${dataRace.length}) ===
+${fmt(dataRace)}
+
+=== CASCADE_TESTS (${cascade.length}) ===
+${fmt(cascade)}
+`;
+
+writeFileSync(join(__dirname, 'regen-output.txt'), out, 'utf8');
+console.log(out);

@@ -14,11 +14,9 @@ import type {
 
 /**
  * Defines the steps for a condensation operation based on the comments.
- * This function dynamically calculates the optimal batch size for the map step
- * and the optimal denominator for each reduce step to ensure efficient processing.
+ * This function dynamically calculates the optimal batch size for the map step and the optimal denominator for each reduce step to ensure efficient processing.
  * Note: this function is ad hoc for our Map-Reduce default condensation process.
- * If you want to use a custom condensation process, you need to create your own
- * steps with your own logic for how operation's and their params are chosen.
+ * If you want to use a custom condensation process, you need to create your own steps with your own logic for how operation's and their params are chosen.
  *
  * @param comments - The comments to be processed.
  * @param mapPromptId - The ID for the map prompt.
@@ -64,8 +62,7 @@ export async function createCondensationSteps({
   let currentBatchSize = originalBatchSize;
   let batches = createBatches({ array: comments, batchSize: currentBatchSize });
 
-  // PRE-PROCESSING: Validate parallel batch token counts to prevent API failures
-  // Makes sure that the combined number of tokens in the parallel calls does not exceed the model's TPM limit
+  // PRE-PROCESSING: Validate parallel batch token counts to prevent API failures Makes sure that the combined number of tokens in the parallel calls does not exceed the model's TPM limit
   let validationResult = await validateInputTokenCount({
     batches,
     topic: questionName,

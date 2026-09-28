@@ -13,11 +13,11 @@ import type {
   ProviderConfig
 } from './provider.types';
 
-// TODO: add internal rate limit parsing (parse "Try again in ... etc." from error messages)
+// TODO: add internal rate limit parsing (parse "Try again in ... etc." from error messages).
 // TODO: middleware for centralized rate limiting & usage throttling: track TPM across models & providers, gating users, etc.
-// TODO: implement fallback model usage
-// TODO: sending abort request to model provider for long-running calls (e.g. pdf processing etc.)
-// TODO: if an error occurs due to object generation failure, we can retry by giving the model the error message
+// TODO: implement fallback model usage.
+// TODO: sending abort request to model provider for long-running calls (e.g. pdf processing etc.).
+// TODO: if an error occurs due to object generation failure, we can retry by giving the model the error message.
 
 /** Orchestrates LLM calls with cost calculation, latency tracking, error handling and validation retries */
 export class LLMProvider {
@@ -111,8 +111,7 @@ export class LLMProvider {
     );
   }
   /** Generate multiple objects in parallel with validation retries.
-   *  Requests are processed in batches of maxConcurrent. Batches are processed in order sequentially,
-   *  so each batch is as slow as the slowest request in the batch.
+   *  Requests are processed in batches of maxConcurrent. Batches are processed in order sequentially, so each batch is as slow as the slowest request in the batch.
    * @param requests - The requests to make
    * @param maxConcurrent - The maximum number of concurrent requests to make
    * @returns The generated objects

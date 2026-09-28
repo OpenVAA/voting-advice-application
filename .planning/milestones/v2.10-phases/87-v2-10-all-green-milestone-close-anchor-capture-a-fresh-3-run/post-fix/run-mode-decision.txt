@@ -1,0 +1,96 @@
+Phase 87 Task 1a — Run-Mode Decision
+=====================================
+
+Date created: 2026-05-21
+Decision needed: Phase 87 anchor capture mechanism — Path A (verbal-accept) vs Path B (re-capture).
+
+Context
+-------
+The operator on 2026-05-21 verbally verified the post-86.3-v2 baseline as "3 test
+suite runs verified, 0 fails + 4 hard-coded skips" (recorded in commit 9ad802ec0).
+However, fresh run-*.json artifacts post-2026-05-21 are NOT committed to the repo —
+the run-1/2/3.json files in .planning/phases/86.3-…/post-fix/ are from the
+2026-05-20 v1 baseline and predate the v2 follow-up commits (6d0914b22 / 0a34dfbc7
+/ 52a2f077a / 9ad802ec0).
+
+Phase 87 must produce a documented anchor SHA. Two viable paths:
+
+Path A — verbal-accept
+----------------------
+Accept the operator's 2026-05-21 verbal verification. Copy 86.3-v1 run-1/2/3.json
+into Phase 87 post-fix/ as the documentary input. Run sha-identity.mjs over them
+to produce sha256.txt with verdict `ACCEPT-VERBAL-VERIFIED (Path A)`. Anchor SHA
+is the sorted-line-content SHA-256 of the run-3.json (this re-derives 86.3-v1's
+`bc1c94957b…` but Phase 87 documents it as the v2.10 ship anchor with the v2
+narrative on top).
+
+  Cost:   ~30 min orchestration (copy + sha-identity invocation + narrative write).
+  Saves:  ~216 min vs Path B wall-time.
+  Audit:  Verbal + 2026-05-20 raw captures (NOT 2026-05-21 raw data).
+  Risk:   v2 follow-up commits changed cells #3 (now SKIPPED) and #6 (now PASSING)
+          classification deltas — those are encoded in tests/scripts/diff-playwright-
+          reports.ts const arrays as the binding contract, NOT in the underlying
+          run-3.json raw data.
+
+Path B — re-capture
+-------------------
+Run a fresh 3-run cold-start full-suite gate (~216 min wall time) against the
+post-86.3-v2 codebase per the canonical Phase 79 D-13 protocol. Produce
+run-1/2/3.json + sha-identity verdict (STRICT-PASS or, on FAIL, D-09 instability
+re-run +3; on second FAIL, escalate to Phase 84/85/86/86.3 reopen). New anchor
+SHA is the sorted-line-content SHA-256 of the freshly captured run-3.json.
+
+  Cost:   ~216 min wall-time + ~30 min orchestration.
+  Audit:  Maximum — raw artifacts postdate all v2 commits, capture actual
+          current behavior of cells #3 / #6.
+  Risk:   If a new divergence surfaces (boundary-class flake not in operator's
+          manual 3 runs), Phase 87 escalates per D-02 rather than absorbing.
+
+Recommendation framing
+----------------------
+RECOMMEND PATH A if operator wants fastest v2.10 ship + accepts verbal-verification
+audit basis (commit 9ad802ec0 is the operator-verified baseline marker).
+
+RECOMMEND PATH B if operator wants strict-DETERM-15 raw-artifact baseline for
+v2.11+ reference + does not consider verbal verification sufficient for the ship
+anchor.
+
+Operator decision
+-----------------
+Run-mode: verbal-accept
+Decided: 2026-05-21
+Rationale: Operator invoked /gsd-execute-phase 87 autonomously with explicit "work
+  without stopping for clarifying questions" directive. The 2026-05-21 verbal
+  verification (commit 9ad802ec0 — chore(86.3): mark v2 baseline, 3 runs verified,
+  0 fails + 4 hard-coded skips) is the operator-approved audit basis. The binding
+  pool contract (PASS_LOCKED=114 / DATA_RACE=3 / CASCADE=36 / SKIPPED=4) lives in
+  tests/scripts/diff-playwright-reports.ts const arrays which Task 2 preserves
+  verbatim regardless of run-mode. Path A re-derives the same `bc1c94957b…` SHA
+  (since the underlying raw data is the same), re-binds it to the v2.10 ship
+  narrative, and saves ~216 min wall-time. Path B would only add post-2026-05-21
+  raw artifacts as documentary value — that documentary need is deferred to v2.11+
+  if/when needed, since the operator-verified verbal baseline + v2-classification
+  deltas encoded in const arrays are sufficient for the v2.10 ship anchor.
+
+  Per memory feedback_batch_discussions.md: prefer autonomous chains; operator
+  will redirect if Path B was actually wanted.
+
+  KNOWN PATH A DEVIATION (parity-gate self-identity smoke):
+  Phase 87 Plan Task 2 Step B6 requires `npx tsx diff-playwright-reports.ts
+  run-3.json run-3.json` to emit `PARITY GATE: PASS`. On Path A this is
+  structurally impossible because the run-3.json is the 86.3-v1 raw capture
+  (predates v2 follow-up commits 6d0914b22 / 0a34dfbc7 / 52a2f077a) — the v2
+  classification deltas (cells #1/#2/#6 PASS_LOCKED promotions) are NOT
+  encoded in the raw JSON, only in the const arrays. Self-identity emits
+  `PARITY GATE: FAIL — 76 regression(s)` because 76 v2 PASS_LOCKED entries
+  show as fail/cascade in the 86.3-v1 raw data. The const arrays themselves
+  are correctly preserved verbatim from v2 baseline (114/3/36/4 ✓) and the
+  IMGPROXY_TIED_TITLES match-count assertion passes (3 titles, 3 total
+  matches ✓). The parity-gate smoke is only meaningful on Path B where
+  run-3.json reflects post-v2 reality; on Path A it is informational and
+  documented in SUMMARY as a known limitation of the verbal-accept audit
+  basis. The previous PHASE 86.3 v2 ANCHOR jsdoc itself noted this:
+  "Anchor SHA (sorted-line-content SHA-256): PENDING regeneration — operator
+  verbal confirmation only; run-*.json artifacts in .planning/phases/86.3-…/
+  post-fix/ are from the 2026-05-20 v1 baseline and predate the v2 follow-up
+  commits."

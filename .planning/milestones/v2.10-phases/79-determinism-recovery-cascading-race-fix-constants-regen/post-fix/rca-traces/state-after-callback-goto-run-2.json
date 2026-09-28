@@ -1,0 +1,29 @@
+{
+  "_provenance": "reconstructed-from-trace-run-2.zip per RCA-FINDINGS.md §'State JSON Reconstruction Note'.",
+  "_source_trace": "trace-run-2.zip",
+  "runTag": "2",
+  "checkpoint": "after-callback-goto",
+  "ts_human_approx": "2026-05-12T20:22:08.296Z",
+  "url": "http://localhost:5173/en/candidate/auth/callback?token_hash=7586e21d966e298d184f9044bddd8b7ddc1f150d677a55ae16711dbf&type=invite",
+  "url_redirected_to": "http://localhost:5173/en/candidate/register/password?email=test.unregistered2%40openvaa.org",
+  "http_status_chain": [
+    {
+      "url": "/en/candidate/auth/callback?token_hash=...&type=invite",
+      "status": 303,
+      "location": "/en/candidate/register/password?email=test.unregistered2%40openvaa.org"
+    }
+  ],
+  "cookies": [
+    {
+      "name": "sb-127-auth-token",
+      "value": "<REDACTED-AUTH-TOKEN>",
+      "_note": "Identical pattern to run-1: valid session cookie set by verifyOtp. The deterministic-failure verdict is empirically reproduced."
+    },
+    {
+      "name": "PARAGLIDE_LOCALE",
+      "value": "en"
+    }
+  ],
+  "hydrationMarker": null,
+  "_run_consistency": "Run-2 reproduces run-1's pre-failure trajectory EXACTLY. Same redirect chain, same cookie outcome, same final failure mode."
+}

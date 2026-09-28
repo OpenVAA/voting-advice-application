@@ -1,0 +1,7 @@
+grant_role_type: in the schema declaration, absent from the canon: owner
+grant_permission: in the canon, absent from the schema declaration: entity.confirm
+grant_permission: in the canon, absent from the schema declaration: nomination.create_parent
+grant_permission: in the schema declaration, absent from the canon: entity.confrim
+grant_permission: in the schema declaration, absent from the canon: suggestion.review
+grant_role_type: D-02 prohibition — the schema declaration carries a third role level 'owner'. The brief section 8.1(a) ruled two levels, admin and editor: the eight user types span only those, editor management is project.manage_editors with entity.invite_children as its entity-scope equivalent, so a third level is untested surface in a security enum rather than a capability anything grants.
+grant_permission: D-01 prohibition — the schema declaration carries a suggestion verb 'suggestion.review'. The operator amended PRESHIP-02 criterion 4 and no change_suggestions store is built, so a verb for one would be a capability nothing implements.

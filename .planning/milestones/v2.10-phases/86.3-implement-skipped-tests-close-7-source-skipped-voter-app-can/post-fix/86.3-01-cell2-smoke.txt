@@ -1,0 +1,69 @@
+[dotenv@17.3.1] injecting env (25) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+
+Running 34 tests using 3 workers
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+
+[1A[2K[1/34] [data-setup] › tests/tests/setup/data.setup.ts:76:1 › import test dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🤖 agentic secret storage: https://dotenvx.com/as2
+
+[1A[2K[2/34] [auth-setup] › tests/tests/setup/re-auth.setup.ts:20:1 › re-authenticate as candidate
+[1A[2K[3/34] [auth-setup] › tests/tests/setup/auth.setup.ts:66:1 › authenticate as candidate
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+
+[1A[2K[4/34] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:27:3 › candidate opinion questions › should display question cards organized by category (CAND-05) @candidate
+[1A[2K[5/34] [candidate-app] › tests/tests/specs/candidate/candidate-translation.spec.ts:27:3 › candidate translation surface (E2E-01) › multilocale candidate authors a translation and the value persists across reload @candidate
+[1A[2K[6/34] [candidate-app] › tests/tests/specs/candidate/candidate-auth.spec.ts:19:3 › candidate authentication › should login with valid credentials @candidate @smoke
+[1A[2K[7/34] [candidate-app] › tests/tests/specs/candidate/candidate-auth.spec.ts:33:3 › candidate authentication › should show error on invalid credentials @candidate @smoke
+[1A[2K[8/34] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:55:3 › candidate opinion questions › should answer a Likert opinion question and save (CAND-04) @candidate
+[1A[2K[9/34] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:88:3 › candidate opinion questions › should navigate between categories (CAND-05) @candidate
+[1A[2K[10/34] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:117:3 › candidate opinion questions › should edit a previously answered question (CAND-05) @candidate
+[1A[2K[11/34] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:154:3 › candidate opinion questions › should persist question answers after page reload (CAND-12) @candidate
+[1A[2K[12/34] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:192:3 › candidate opinion questions › should persist comment text on a question after page reload (CAND-12) @candidate
+[1A[2K[13/34] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:239:3 › candidate preview › should display entered profile and opinion data on preview page (CAND-06) @candidate
+[1A[2K[14/34] [candidate-app] › tests/tests/specs/candidate/candidate-questions.spec.ts:262:3 › candidate preview › should show specific candidate data (name or answered question) in preview (CAND-06) @candidate
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🤖 agentic secret storage: https://dotenvx.com/as2
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+
+[1A[2K[15/34] [re-auth-setup] › tests/tests/setup/re-auth.setup.ts:20:1 › re-authenticate as candidate
+[1A[2K[16/34] [candidate-app-mutation] › tests/tests/specs/candidate/candidate-profile.spec.ts:130:3 › candidate profile (fresh candidate) › should register the fresh candidate via email link @candidate
+[1A[2K[17/34] [candidate-app-mutation] › tests/tests/specs/candidate/candidate-registration.spec.ts:84:3 › candidate registration via email › should send registration email and extract link @candidate
+[1A[2K[candidate-app-mutation] › tests/tests/specs/candidate/candidate-registration.spec.ts:84:3 › candidate registration via email › should send registration email and extract link @candidate
+[REG] Callback URL: http://localhost:5173/en/candidate/auth/callback?token_hash=d186cf8363c27a60eb66689b4978813ca8b08c3e37ee5b21a6d17def&type=invite
+
+[1A[2K[18/34] [candidate-app-mutation] › tests/tests/specs/candidate/candidate-registration.spec.ts:116:3 › candidate registration via email › should complete registration via email link @candidate
+[1A[2K[19/34] [candidate-app-mutation] › tests/tests/specs/candidate/candidate-profile.spec.ts:210:3 › candidate profile (fresh candidate) › should upload a profile image (CAND-03) @candidate
+[1A[2K[20/34] [candidate-app-mutation] › tests/tests/specs/candidate/candidate-registration.spec.ts:175:3 › candidate password reset › should complete forgot-password and reset flow via Inbucket email @candidate
+[1A[2K[21/34] [candidate-app-mutation] › tests/tests/specs/candidate/candidate-profile.spec.ts:258:3 › candidate profile (fresh candidate) › should show editable info fields on profile page (CAND-03) @candidate
+[1A[2K[22/34] [candidate-app-mutation] › tests/tests/specs/candidate/candidate-profile.spec.ts:272:3 › candidate profile (fresh candidate) › should persist profile image after page reload (CAND-12) @candidate
+[1A[2K[23/34] [candidate-app-mutation] › tests/tests/specs/candidate/candidate-profile.spec.ts:295:3 › candidate profile (fresh candidate) › A11Y-02 should persist display name after page reload @candidate
+[1A[2K[24/34] [candidate-app-mutation] › tests/tests/specs/candidate/candidate-profile.spec.ts:332:3 › candidate profile (fresh candidate) › A11Y-02 should persist bio after page reload @candidate
+[1A[2K[25/34] [candidate-app-mutation] › tests/tests/specs/candidate/candidate-profile.spec.ts:358:3 › candidate profile (fresh candidate) › A11Y-02 should persist social link after page reload @candidate
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+
+[1A[2K[26/34] [candidate-app-validation] › tests/tests/specs/candidate/candidate-profile-validation.spec.ts:196:5 › A11Y-01 candidate profile validation › A11Y-01 image-type rejection surfaces invalidFile error @candidate
+[1A[2K[27/34] [candidate-app-validation] › tests/tests/specs/candidate/candidate-profile-validation.spec.ts:196:5 › A11Y-01 candidate profile validation › A11Y-01 image-size rejection surfaces oversizeFile error @candidate
+[1A[2K[28/34] [candidate-app-validation] › tests/tests/specs/candidate/candidate-profile-validation.spec.ts:271:5 › A11Y-01 candidate profile validation › A11Y-01 name-too-long caps input value at maxlength=50 on display-name @candidate
+[1A[2K[29/34] [candidate-app-validation] › tests/tests/specs/candidate/candidate-profile-validation.spec.ts:314:5 › A11Y-01 candidate profile validation › A11Y-01 A11Y-05 email-format rejection surfaces invalidEmail error @candidate
+[1A[2K[30/34] [candidate-app-validation] › tests/tests/specs/candidate/candidate-profile-validation.spec.ts:314:5 › A11Y-01 candidate profile validation › A11Y-01 A11Y-06 url-format rejection surfaces invalidUrl error @candidate
+[1A[2K[31/34] [candidate-app-validation] › tests/tests/specs/candidate/candidate-profile-validation.spec.ts:364:3 › A11Y-01 candidate profile validation › A11Y-01 A11Y-07 required-empty disables submit button via canSubmit gate @candidate
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+
+[1A[2K[32/34] [candidate-app-settings] › tests/tests/specs/candidate/candidate-settings.spec.ts:754:7 › SETTINGS-01 wave A — dynamicSettings toggle matrix › SETTINGS-01 wave A — header.showHelp @settings-01 @candidate
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+[1A[2K[33/34] [data-teardown] › tests/tests/setup/variant-data.teardown.ts:12:1 › delete variant test dataset
+[1A[2K[34/34] [data-teardown] › tests/tests/setup/data.teardown.ts:17:1 › delete test dataset
+[1A[2K  34 passed (55.2s)
+OUTCOME: FIX-PASS

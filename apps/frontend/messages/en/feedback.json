@@ -1,0 +1,32 @@
+{
+  "feedback": {
+    "description": {
+      "label": "Further comments",
+      "placeholder": "Further comments or suggestions"
+    },
+    "emailIntro": "If you wish, you can also reach us by email at",
+    "error": {
+      "emailIntro": "We kindly ask you to send your feedback via email by clicking the button below. Any feedback you already wrote is automatically included in the email.",
+      "emailSubject": "Feedack",
+      "message": "We’re terribly sorry, there was an error sending your feedback."
+    },
+    "popupTitle": "Could you rate the Election Compass?",
+    "rating": {
+      "label": "Overall rating for the app",
+      "valueLabel": [
+        {
+          "declarations": ["input rating", "input ratingMax", "local ratingPlural = rating: plural"],
+          "selectors": ["ratingPlural"],
+          "match": {
+            "ratingPlural=zero": "No rating",
+            "ratingPlural=other": "Rating {rating} out of {ratingMax}"
+          }
+        }
+      ]
+    },
+    "send": "Send feedback",
+    "sending": "Sending…",
+    "thanks": "Thanks for Your Feedback!",
+    "title": "Feedback"
+  }
+}

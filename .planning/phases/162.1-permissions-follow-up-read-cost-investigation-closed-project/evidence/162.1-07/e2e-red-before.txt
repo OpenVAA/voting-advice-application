@@ -1,0 +1,33 @@
+162.1-07 Task 1 — RED before the fix (closed-project terminal node)
+Tree: HEAD 033fa29dc + the uncommitted Task 1 Step 1 test files (config trio, setup, teardown, spec). No adapter, layout or guard change was in the served tree.
+
+RUN 1 — the plan's command
+  tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/162.1-07-red --project perm-closed-project
+  exit: 1
+  preflight failures 0, successes 1
+  observed_expected=160 observed_unexpected=1 observed_flaky=0 observed_skipped=1
+  Every dependency project passed (160 passed).
+  FAILED: [perm-closed-project] perm-closed-project (162.1 D-05, D-16) › anon voter home shows the not-released maintenance page, not an error
+    Error: expect(locator).toHaveText(expected) failed
+    Locator: getByRole('heading', { level: 1 })
+    Expected: "Sorry, the Election Compass has not been released yet"
+    Error: element(s) not found
+    Page snapshot: heading "Something went wrong, sorry!" [level=2] — the global ErrorMessage.
+  DID NOT RUN: anon can reach the candidate login and the admin login on a closed project
+    (serial mode stops the describe after the first failure)
+
+RUN 2 — targeted red for the test run 1 could not reach
+  Dev server: FRONTEND_PORT=5273 PUBLIC_PROJECT_ID=00000000-0000-0000-0000-0000000000e2 yarn dev (the wrapper's own spawn line)
+  npx playwright test -c tests/playwright.config.ts --project=data-setup-perm-closed-project --project=perm-closed-project --no-deps -g 'import perm-closed-project dataset|anon can reach the candidate login' --reporter=line,json
+  Setup and spec in ONE invocation, because global setup's ensureProject() reopens the project on every invocation (a first attempt with two separate invocations ran against a reopened project and passed; that attempt is void and is recorded here for that reason).
+  preflight: "E2E PREFLIGHT OK ..." (1 line)
+  exit: 1
+  FAILED: [perm-closed-project] perm-closed-project (162.1 D-05, D-16) › anon can reach the candidate login and the admin login on a closed project
+    Error: expect(locator).toBeVisible() failed
+    Locator: getByTestId('login-email')   (on /en/candidate/login)
+    Error: element(s) not found
+    Page snapshot: heading "Something went wrong, sorry!" [level=2] — the global ErrorMessage.
+  Afterwards: data-teardown-perm-closed-project run with --no-deps (passed); project e2 open_for_voters = t.
+  Artifacts: tests/e2e-runs/162.1-07-red-t2/
+
+Conclusion: on a closed project both the voter home and the candidate login render ErrorMessage (162.1 D-16 reproduced).

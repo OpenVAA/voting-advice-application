@@ -1,0 +1,48 @@
+# 162.1-03 committed-state reds (tests/scripts/e2e-run.sh --project storage-cleanup), each on the tree immediately before its fix
+
+## Folder case (Task 1, D-12) -- tree: 162.1-02 schema (git 01f1988bb) + the new spec case
+run_dir=tests/e2e-runs/162.1-03-red-folder
+command=tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/162.1-03-red-folder --project storage-cleanup
+exit=1
+failing_title=storage cleanup (committed state) › deleting a candidate deletes every object in its folder
+passing_title=storage cleanup (committed state) › replacing a candidate image deletes the old object and keeps the new one
+    Error: the object 00000000-0000-0000-0000-0000000005c1/candidates/18b490f2-1bf1-41c6-9485-e24d30f2deb7/84d44ffd-add2-4a6b-b968-d9db5e307689.jpg must stop being served once its candidate is deleted
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 200
+
+    Call Log:
+    - Timeout 30000ms exceeded while waiting on the predicate
+# Written BEFORE the run; the observed_* lines are appended from results.json AFTER it,
+observed_workers=6
+observed_retries=0
+observed_expected=1
+observed_unexpected=1
+observed_flaky=0
+observed_skipped=0
+observed_duration_ms=36537
+
+## Answer-image case (Task 2, D-13) -- tree: Task 1 commit 6b74be883 (no trigger watches answers) + the new spec case
+run_dir=tests/e2e-runs/162.1-03-red-answers
+command=tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/162.1-03-red-answers --project storage-cleanup
+exit=1
+failing_title=storage cleanup (committed state) › replacing an answer image deletes the old object and keeps the new one
+passing_titles=replacing a candidate image deletes the old object and keeps the new one; deleting a candidate deletes every object in its folder
+    Error: the replaced answer image must stop being served once the answer no longer references it
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 200
+
+    Call Log:
+# Written BEFORE the run; the observed_* lines are appended from results.json AFTER it,
+observed_workers=6
+observed_retries=0
+observed_expected=2
+observed_unexpected=1
+observed_flaky=0
+observed_skipped=0
+observed_duration_ms=34489

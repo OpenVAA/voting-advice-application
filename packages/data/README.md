@@ -12,7 +12,7 @@ The module can be used by itself to build an easily traversable, hierarchical mo
 
 ## Developing
 
-- The module uses [`tsc-esm-fix`](https://github.com/antongolub/tsc-esm-fix) which allows us to use suffixless imports in Typescript.
+- The module uses [`tsup`](https://tsup.egoist.dev/) for building ESM output with automatic import resolution.
 - See also note on [Exports](#exports).
 
 ### Test data
