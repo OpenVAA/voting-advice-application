@@ -1,0 +1,40 @@
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+
+Running 4 tests using 1 worker
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+
+[1A[2K[1/4] [data-setup] › tests/setup/data.setup.ts:76:1 › import test dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+
+[1A[2K[2/4] [voter-app] › tests/specs/voter/voter-question-rendering-boolean.spec.ts:109:3 › voter question rendering — boolean (QSPEC-01) › boolean opinion question renders, voter answers, persists across goBack, mirrors on entity-detail @voter
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🤖 agentic secret storage: https://dotenvx.com/as2
+
+[1A[2K[3/4] [data-teardown] › tests/setup/data.teardown.ts:17:1 › delete test dataset
+[1A[2K[4/4] [data-teardown] › tests/setup/variant-data.teardown.ts:12:1 › delete variant test dataset
+[1A[2K  1 skipped
+  3 passed (4.5s)
+
+----
+LANDMINE-NOTE: cell #7 has no within-spec cascade dependents (single-test describe block).
+
+Empirical investigation (Phase 86.3-05 Task 2):
+  - First-run smoke with walkToQuestion helper-resilience fix applied:
+    `1 failed` (locator.waitFor: Timeout 5000ms exceeded; waiting for
+    voter-intro-start.or(voter-elections-list).or(voter-constituencies-list)
+    .or(voter-questions-start).or(voter-questions-category-start)
+    .or(question-choice.first()).first() to be visible).
+    Trace error-context.md page snapshot: /intro main panel renders
+    only `Loading…`; voter-intro-start testId never paints.
+  - Same upstream voter-app cold-deeplink loader race as:
+      * Phase 86.3-03 cell #5 (/questions Loading… via answeredVoterPage)
+      * Phase 86.3-04 cell #6 (/results Loading… via page.goto)
+    Cross-plan trace reconciliation characterizes the race as SHARED
+    voter-app cold-deeplink (NOT route-specific).
+  - Helper fix in voterNavigation.ts:308-329 LEFT IN PLACE as evidence-
+    of-attempt (defensive, no regression; test.skip short-circuits before
+    any executable statement so the fix never fires at runtime).
+  - Second-run smoke (post-skip): `1 skipped + 3 passed` confirms the
+    SKIP-FALLBACK reports cleanly without polluting CASCADE pool.
+
+OUTCOME: SKIP-FALLBACK

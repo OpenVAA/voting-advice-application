@@ -1,0 +1,23 @@
+=== G8A
+perturbation applied
+test:db exit 1
+Files=31, Tests=1160,  3 wallclock secs ( 0.07 usr  0.02 sys +  0.15 cusr  0.07 csys =  0.31 CPU)
+Result: FAIL
+G8A observed=16-anon-visibility:32,47;25-matrix-conformance:34,38 expected=16-anon-visibility:32,47;25-matrix-conformance:34,38 MATCH
+=== G8B
+perturbation applied
+test:db exit 1
+Files=31, Tests=1160,  2 wallclock secs ( 0.07 usr  0.03 sys +  0.14 cusr  0.08 csys =  0.32 CPU)
+Result: FAIL
+G8B observed=25-matrix-conformance:36,37 expected=25-matrix-conformance:36,37 MATCH
+=== final reset
+final fingerprint: b096e3bbcc51a0f572477e2b68bd3461
+RESULT: PASS
+
+# 162.1-08 note: the script writes its per-case pg_prove logs to evidence/162.1-01/; this run's copies are evidence/162.1-08/perturb-G8A-final.txt and perturb-G8B-final.txt, and 162.1-01's own logs were restored. Files 29, 30 and 31 were present in both cases:
+G8A 29: 29-authenticated-disjunct-order.test.sql ok
+G8A 30: 30-closed-project.test.sql ok
+G8A 31: 31-storage-cleanup.test.sql ok
+G8B 29: 29-authenticated-disjunct-order.test.sql ok
+G8B 30: 30-closed-project.test.sql ok
+G8B 31: 31-storage-cleanup.test.sql ok

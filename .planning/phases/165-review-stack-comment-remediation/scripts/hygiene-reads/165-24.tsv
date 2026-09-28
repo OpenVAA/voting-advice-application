@@ -1,0 +1,12 @@
+apps/frontend/src/lib/contexts/voter/filters/filterRelevance.test.ts	a565321e4030aa1d07c859d875ad3820bd1c430d	165-24
+apps/frontend/src/lib/server/admin/requireAdminIdentity.test.ts	5dd2f791433020c8aa4f47cc4b839a273b5c06b6	165-24
+apps/supabase/supabase/functions/identity-callback/entityGrant.test.ts	4adbcda00b502c1ef9a4c82b4c6de05a7d5c9b15	165-24
+apps/supabase/supabase/functions/invite-candidate/entityGrant.test.ts	4adbcda00b502c1ef9a4c82b4c6de05a7d5c9b15	165-24
+apps/supabase/supabase/functions/invite-candidate/index.ts	1d561780ad70d67a6fd971f10da6a8a515e6706d	165-24
+apps/supabase/supabase/migrations/00001_initial_schema.sql	af48fc5910f98ebbb5b053b5590f2e9fdb59ba23	165-24
+apps/supabase/supabase/schema/300-auth-tables.sql	162dd27efbd425afecb1b12a477c8521836b063a	165-24
+apps/supabase/supabase/tests/database/07-rpc-security.test.sql	eb093fdd47c65564a1b49743400b9c706e8e63f9	165-24
+apps/supabase/supabase/tests/database/21-entity-organization.test.sql	1e23bee0eb704cd9cb1ad3bd5718f76be25d1e9e	165-24
+apps/supabase/supabase/tests/database/24-legacy-removal.test.sql	f25a689accf5d1d96378d4ed64dc332648228e7f	165-24
+scripts/assert-project-scoped-queries.mjs	5e129650a286e79a263b899203e482f57e2b78ec	165-24
+apps/frontend/src/lib/server/admin/requireAdminIdentity.test.ts	8753827af80822e592bef84dc9e315fd192867b1	165-24

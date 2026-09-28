@@ -1,0 +1,24 @@
+{
+  "candidateApp.register": {
+    "code": "Rekisteröintikoodi",
+    "codePlaceholder": "Esimerkiksi CP23-174a-f4%&-aHAB",
+    "didYouAlreadyRegister": "Oletko jo rekisteröitynyt?",
+    "enterCode": "Kirjoita sähköpostitse saamasi rekisteröintikoodi viimeistelläksesi rekisteröitymisen.",
+    "goToLoginLabel": "Siirry kirjautumissivulle",
+    "loggedInWarning": "Käyttäjä on tällä hetkellä kirjautunut sisään. Kirjaudu ulos ennen kuin jatkat rekisteröintiin.",
+    "passwordValidation": {
+      "commonPatterns": "Sisältää yleisiä merkkisarjoja",
+      "length": "Vähintään {minPasswordLength} merkkiä",
+      "lowercase": "Pieni kirjain",
+      "number": "Numero",
+      "repetition": "Sisältää merkkien toistoa",
+      "symbol": "Erikoismerkki (kuten !?%#€)",
+      "uppercase": "Iso kirjain",
+      "username": "Vältä nimesi käyttämistä salasanassa"
+    },
+    "register": "Rekisteröidy",
+    "title": "Rekisteröidy",
+    "titleWithPreregistration": "Vahvista sähköpostiosoitteesi",
+    "wrongRegistrationCode": "Väärä rekisteröintikoodi"
+  }
+}

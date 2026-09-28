@@ -1,0 +1,9 @@
+# tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/162.1-04-tracer --project voter-journey --no-db-reset  (exit 0)
+# Written BEFORE the run; the observed_* lines are appended from results.json AFTER it,
+observed_workers=6
+observed_retries=0
+observed_expected=4
+observed_unexpected=0
+observed_flaky=0
+observed_skipped=0
+observed_duration_ms=61917

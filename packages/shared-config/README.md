@@ -4,12 +4,13 @@ Contains exports for configuring `eslint`, `prettier` and `ts`. Import or extend
 
 ## Shared `devDependencies`
 
-`devDependencies` cannot be shared using packages. Make sure to update the common dependencies below in all workspaces at the same time:
+`devDependencies` cannot be shared through a package's own dependency graph, so each workspace that consumes the shared config declares them itself. Declare them with the specifiers below: `workspace:^` resolves this package from the monorepo (it is `private`, so no registry range can resolve it), and `catalog:` takes the version from the catalog block in `.yarnrc.yml`, so there is a single place to update it rather than a set of ranges to keep in sync by hand.
 
 ```json
 "devDependencies": {
-  "@openvaa/shared-config": "^1.0.0",
-  "tsc-esm-fix": "^3.1.2", // If using TypeScript
-  "typescript": "^5.6.3",  // If using TypeScript
+  "@openvaa/shared-config": "workspace:^",
+  "tsup": "catalog:",
+  "typescript": "catalog:",
+  "vitest": "catalog:"
 }
 ```

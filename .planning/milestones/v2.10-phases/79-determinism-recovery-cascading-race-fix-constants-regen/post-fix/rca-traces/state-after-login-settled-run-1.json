@@ -1,0 +1,32 @@
+{
+  "_provenance": "reconstructed-from-trace-run-1.zip + error-context-run-1.md page-snapshot at test failure moment.",
+  "_source_trace": "trace-run-1.zip",
+  "_source_snapshot": "error-context-run-1.md",
+  "runTag": "1",
+  "checkpoint": "after-login-settled",
+  "ts_wallTime_at_failure": 1778616960371,
+  "ts_human_at_failure": "2026-05-12T20:16:00.371Z",
+  "elapsed_since_setPassword_resolved_ms": 9950,
+  "url_at_failure": "http://localhost:5173/candidate/login (per page-snapshot evidence — heading 'Your password is now set! Please log in using it.' is visible)",
+  "page_snapshot_at_failure": {
+    "_source": "error-context-run-1.md",
+    "heading_h1": "Your password is now set! Please log in using it.",
+    "form_state": {
+      "email_field": "test.unregistered2@openvaa.org (pre-filled — populated by candCtx.newUserEmail = email from register/password/+page.svelte:95)",
+      "password_field": "(empty — focused but no value)",
+      "sign_in_button": "disabled"
+    },
+    "_LANDMARK": "The user successfully landed on /candidate/login WITH email pre-filled, but no automated agent filled the password field because the helper's branch was skipped. Sign-in button remains disabled."
+  },
+  "cookies": [
+    {
+      "name": "sb-127-auth-token",
+      "value": "<REDACTED-AUTH-TOKEN>",
+      "_note": "Cookie STILL VALID — the user has an authenticated session. The /candidate/login page does not auto-redirect them to /candidate because (per the deliberate flow at register/password/+page.svelte:78-80) the login page is the canonical clean-auth entry point post-registration."
+    }
+  ],
+  "hydrationMarker": null,
+  "_hydration_signal": "window.__phase79RcaHydrated was NEVER set throughout this test run. The (protected)/+layout.svelte $effect block did not fire because the user never reached a /candidate/(protected)/ route.",
+  "_H2_disproof": "HYPOTHESIS 2 (ToU hydration timing race) is DISPROVEN BY ABSENCE OF EXERCISE. The protected layout never rendered, so its $derived chain over data.candidateUserData.candidate.terms_of_use_accepted never had a chance to race. The 'terms-checkbox not visible' failure is NOT a hydration race — it is a 'we never got to the page that renders the checkbox' failure.",
+  "_failure_locator": "page.getByTestId('terms-checkbox') — NOT VISIBLE because we are on /candidate/login (which renders a Login form), NOT on /candidate/(protected) (which would render <TermsOfUseForm>)"
+}

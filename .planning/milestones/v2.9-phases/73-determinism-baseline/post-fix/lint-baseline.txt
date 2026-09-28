@@ -1,0 +1,72 @@
+## Per-rule total (playwright/* only, warnings)
+  37 playwright/no-raw-locators
+  36 playwright/no-conditional-in-test
+  18 playwright/no-conditional-expect
+   6 playwright/no-networkidle
+   2 playwright/no-wait-for-timeout
+   1 playwright/no-skipped-test
+   1 playwright/expect-expect
+
+## Per-file per-rule matrix (count, file, rule)
+  12 tests/tests/specs/candidate/candidate-bank-auth.spec.ts	playwright/no-conditional-expect
+  10 tests/tests/specs/voter/voter-results.spec.ts	playwright/no-raw-locators
+   8 tests/tests/specs/voter/voter-settings.spec.ts	playwright/no-conditional-in-test
+   7 tests/tests/specs/candidate/candidate-settings.spec.ts	playwright/no-raw-locators
+   6 tests/tests/specs/voter/voter-detail.spec.ts	playwright/no-raw-locators
+   5 tests/tests/setup/data.setup.ts	playwright/no-conditional-in-test
+   4 tests/tests/specs/visual/visual-regression.spec.ts	playwright/no-networkidle
+   4 tests/tests/specs/variants/startfromcg.spec.ts	playwright/no-conditional-in-test
+   4 tests/tests/specs/candidate/candidate-bank-auth.spec.ts	playwright/no-conditional-in-test
+   3 tests/tests/specs/voter/voter-popups.spec.ts	playwright/no-raw-locators
+   3 tests/tests/specs/candidate/candidate-profile.spec.ts	playwright/no-raw-locators
+   2 tests/tests/specs/variants/startfromcg.spec.ts	playwright/no-raw-locators
+   2 tests/tests/specs/variants/multi-election.spec.ts	playwright/no-conditional-in-test
+   2 tests/tests/specs/variants/constituency.spec.ts	playwright/no-conditional-in-test
+   2 tests/tests/specs/candidate/candidate-questions.spec.ts	playwright/no-conditional-in-test
+   2 tests/tests/specs/candidate/candidate-profile.spec.ts	playwright/no-conditional-expect
+   2 tests/tests/setup/auth.setup.ts	playwright/no-conditional-in-test
+   1 tests/tests/specs/voter/voter-static-pages.spec.ts	playwright/no-networkidle
+   1 tests/tests/specs/voter/voter-results.spec.ts	playwright/no-wait-for-timeout
+   1 tests/tests/specs/voter/voter-popup-hydration.spec.ts	playwright/no-conditional-in-test
+   1 tests/tests/specs/voter/voter-journey.spec.ts	playwright/no-conditional-in-test
+   1 tests/tests/specs/voter/voter-journey.spec.ts	playwright/no-conditional-expect
+   1 tests/tests/specs/variants/startfromcg.spec.ts	playwright/no-conditional-expect
+   1 tests/tests/specs/variants/multi-election.spec.ts	playwright/no-raw-locators
+   1 tests/tests/specs/variants/constituency.spec.ts	playwright/no-raw-locators
+   1 tests/tests/specs/variants/constituency.spec.ts	playwright/no-conditional-expect
+   1 tests/tests/specs/candidate/candidate-settings.spec.ts	playwright/no-networkidle
+   1 tests/tests/specs/candidate/candidate-questions.spec.ts	playwright/no-raw-locators
+   1 tests/tests/specs/candidate/candidate-questions.spec.ts	playwright/no-conditional-expect
+   1 tests/tests/specs/candidate/candidate-profile.spec.ts	playwright/no-wait-for-timeout
+   1 tests/tests/specs/candidate/candidate-profile.spec.ts	playwright/no-conditional-in-test
+   1 tests/tests/specs/candidate/candidate-bank-auth.spec.ts	playwright/no-skipped-test
+   1 tests/tests/specs/candidate/candidate-auth.spec.ts	playwright/expect-expect
+   1 tests/tests/setup/variant-startfromcg.setup.ts	playwright/no-conditional-in-test
+   1 tests/tests/setup/variant-multi-election.setup.ts	playwright/no-conditional-in-test
+   1 tests/tests/setup/variant-constituency.setup.ts	playwright/no-conditional-in-test
+   1 tests/tests/setup/re-auth.setup.ts	playwright/no-conditional-in-test
+   1 tests/tests/pages/voter/EntityDetailPage.ts	playwright/no-raw-locators
+   1 tests/tests/pages/candidate/QuestionsPage.ts	playwright/no-raw-locators
+   1 tests/tests/pages/candidate/ProfilePage.ts	playwright/no-raw-locators
+
+## Total playwright/* warnings: 101
+
+## Notes
+- Probed via `yarn eslint --flag v10_config_lookup_from_file tests` (root) at HEAD 08618b566 + Task 1 commit 5e81276cc.
+- Non-playwright warnings excluded from this baseline: 2 `Unused eslint-disable directive` (no-console) at tests/tests/setup/data.setup.ts:68 and :79. They are out of scope for the Phase 73 playwright/* sweep but in scope for a general-hygiene follow-up — Plan 6's final lint-gate bump should either remove the orphan `eslint-disable` directives or accept them as a known surface delta.
+- ESLint summary line confirmed: `103 problems (0 errors, 103 warnings)` → 101 playwright/* + 2 non-playwright = 103 total.
+- CONTEXT D-03 referenced 103 playwright/* warnings (at context-write time); actual at HEAD is 101 — small downward drift (likely 2 warnings cleared in intervening commits).
+- Binding number for Plans 2-6: **101**.
+
+## Plan ownership
+
+| Rule | Count | Owning Plan |
+|------|-------|-------------|
+| playwright/no-raw-locators | 37 | 02 (mechanical sweep) |
+| playwright/no-conditional-in-test | 36 | 03 / 04 / 05 (per-spec investigative) |
+| playwright/no-conditional-expect | 18 | 03 / 04 / 05 (paired with no-conditional-in-test) |
+| playwright/no-networkidle | 6 | 02 (mechanical sweep) |
+| playwright/no-wait-for-timeout | 2 | 03 (voter-results) + 04 (candidate-profile) |
+| playwright/no-skipped-test | 1 | 04 (candidate-bank-auth — D-07 legitimate-skip + inline rationale) |
+| playwright/expect-expect | 1 | 04 (candidate-auth.spec.ts single site) |
+| **TOTAL** | **101** | — |

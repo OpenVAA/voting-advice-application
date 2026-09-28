@@ -1,0 +1,72 @@
+# 162.1-02 Task 1 — committed-state spec observed RED on the pre-fix tree
+command: tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/162.1-02-red-run02 --project storage-cleanup --no-db-reset
+git_head: f421fafbc8d9ef1d470f59436e1f920d283047b4 (schema pre-fix; spec + config uncommitted in the working tree)
+run_dir: tests/e2e-runs/162.1-02-red-run02
+exit: 1
+failing_test: [storage-cleanup] storage cleanup (committed state) > replacing a candidate image deletes the old object and keeps the new one
+failure: expect.poll(publicStatus(oldPath)).toBe(400) timed out after 30000 ms; last received 200 (the old object was still served)
+env-posture:
+# Environment posture for this run.
+# Written BEFORE the run; the observed_* lines are appended from results.json AFTER it,
+# so the posture is auditable rather than asserted.
+ci_env=unset
+eperm07_knobs=unset
+frontend_port=5273
+db_reset=false
+expected_retries=0
+expected_workers=6
+load_at_start=12.17/11.04/13.77
+cpu_count=14
+containers_running=24
+dirty_files=5
+e2e_project_id=00000000-0000-0000-0000-0000000000e2
+observed_workers=6
+observed_retries=0
+observed_expected=0
+observed_unexpected=1
+observed_flaky=0
+observed_skipped=0
+observed_duration_ms=32953
+
+note: the first attempt tests/e2e-runs/162.1-02-red (exit 1) was an INVALID red — bulkImport rejected the candidate row for a missing project_id before any behaviour was exercised; the fixture was fixed and the run repeated as tests/e2e-runs/162.1-02-red-run02.
+
+--- playwright output ---
+Running 1 test using 1 worker
+
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+
+[1/1] [storage-cleanup] › tests/tests/specs/storage/storage-cleanup.spec.ts:73:3 › storage cleanup (committed state) › replacing a candidate image deletes the old object and keeps the new one
+  1) [storage-cleanup] › tests/tests/specs/storage/storage-cleanup.spec.ts:73:3 › storage cleanup (committed state) › replacing a candidate image deletes the old object and keeps the new one 
+
+    Error: the replaced object must stop being served once the image no longer references it
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 200
+
+    Call Log:
+    - Timeout 30000ms exceeded while waiting on the predicate
+
+      89 |     await client.update('candidates', id, { image: { path: newPath, alt: 'Storage Cleanup' } });
+      90 |
+    > 91 |     await expect
+         |     ^
+      92 |       .poll(() => publicStatus(oldPath), {
+      93 |         ...DELETE_POLL,
+      94 |         message: 'the replaced object must stop being served once the image no longer references it'
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/storage/storage-cleanup.spec.ts:91:5
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    tests/playwright-results/storage-cleanup-storage-cl-65be1-bject-and-keeps-the-new-one-storage-cleanup/trace.zip
+    Usage:
+
+        npx playwright show-trace tests/playwright-results/storage-cleanup-storage-cl-65be1-bject-and-keeps-the-new-one-storage-cleanup/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+  1 failed
+    [storage-cleanup] › tests/tests/specs/storage/storage-cleanup.spec.ts:73:3 › storage cleanup (committed state) › replacing a candidate image deletes the old object and keeps the new one 
+e2e-run.sh: playwright exit 1
+e2e-run.sh: preflight failures 0, successes 1

@@ -1,0 +1,29 @@
+=== STATIC GATE EVIDENCE (Phase 132 Plan 03, Task 1) ===
+Recorded: 2026-07-23 (clean tree, post-132-04 lint remediation)
+
+Tree state: clean (no source edits by Plan 03 itself — Plan 03 ships docs/evidence only).
+Lint drift surfaced at first dispatch was cleared by gap plan 132-04 (commit range
+d44913d64 .. dd09670b3: 14 @openvaa/frontend errors + 6 tests/ errors, behavior-neutral).
+HEAD at recording: dd09670b3.
+
+########## yarn build ##########
+RESULT: PASS — 14/14 turbo tasks successful (FULL TURBO, cached).
+
+########## yarn test:unit ##########
+RESULT: PASS — 19/19 turbo tasks successful.
+  @openvaa/frontend: 759 passed / 54 files / 0 failed
+  @openvaa/dev-seed:  444 passed / 42 files / 0 failed
+
+########## yarn lint:check ##########
+RESULT: PASS — exit 0. 0 errors across all workspaces.
+  (Residual: warnings only — @openvaa/core 2, @openvaa/dev-seed 15, plus one
+   tests/support/mockOidcIssuerEntry.ts unused-disable warning — warnings do NOT fail the
+   command; the milestone standard is 0 ERRORS, matching the v2.13 anchor.)
+  Post-132-04 the 20 blocking errors (func-style x12, simple-import-sort x4,
+  playwright/no-raw-locators x2, playwright/no-conditional-in-test x2) are all cleared.
+
+########## yarn workspace @openvaa/frontend check (svelte-check, phase-close re-verify, D-10) ##########
+RESULT: PASS — exit 0. COMPLETED 2676 FILES  0 ERRORS  0 WARNINGS  0 FILES_WITH_PROBLEMS.
+  (Full evidence in gate/132-svelte-check-close.txt.)
+
+VERDICT: All four static gates GREEN on the clean post-132-04 tree.

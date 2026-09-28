@@ -1,0 +1,11 @@
+apps/supabase/supabase/schema/101-elections.sql	6e76c5201bb1262adcb430edb07502fb1b07d572	165-27
+apps/supabase/supabase/schema/102-entities.sql	1653cff988ba609222fedf571fb19235531aabf0	165-27
+apps/supabase/supabase/schema/103-questions.sql	0d0a3c71912e9ad2a9ad4db9d572c043fa63a04d	165-27
+apps/supabase/supabase/schema/104-nominations.sql	690279f08c93cd6650329e558793556527ccf9e4	165-27
+apps/supabase/supabase/schema/303-column-grants.sql	ced72afbf5fb8656a46ec0b3d797b713b383f08f	165-27
+apps/supabase/supabase/schema/503-entity-rpcs.sql	b27c6a66b54129201a3dbcf279d02567faeed4ec	165-27
+apps/supabase/supabase/migrations/00001_initial_schema.sql	89b6247f57d08082316d7979bcdbb406c318f6d2	165-27
+packages/supabase-types/src/column-map.ts	5961ac0c413e97c07125ea51ded2e69d15a06338	165-27
+packages/dev-seed/src/template/permittedKeys.ts	418190529623a43ccc7c0c429c19a52afd61b67f	165-27
+apps/supabase/supabase/tests/database/09-column-restrictions.test.sql	6126e65ce93fab0af09ab97c9894f7aa21d5fc37	165-27
+apps/frontend/src/lib/api/adapters/supabase/utils/mapRow.test.ts	f3fd277d8c9bd4d6f7fee5b70c9ef0fb22c091a0	165-27

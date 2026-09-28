@@ -1,0 +1,120 @@
+Phase 86.3-04 cell #6 (voter-popup-hydration LAYOUT-03 / DETERM-12) per-cell smoke
+==================================================================================
+
+Run sequence
+------------
+1. (already running) Supabase local stack from prior plan execution
+2. (already running) Vite dev server (`yarn workspace @openvaa/frontend dev` background); HTTP 200 on /en
+3. `yarn db:seed --template e2e` (default e2e seed; cell #6 spec drives its own answer-store seed via addInitScript)
+   - NOTE: `yarn db:reset` denied by auto-mode classifier (irreversible-destruction policy); seed against running DB instead. Seed reported 80 rows created across 14 tables (elections=1, constituencies=1, questions=25, candidates=18, nominations=22, organizations=4, app_settings=1, question_categories=7).
+4. Fix-attempt smoke (Path 2): `cd tests && yarn playwright test --project=voter-app --grep "voter-popup-hydration|popup appears on full page load" --reporter=line` (BEFORE skip applied)
+5. Post-skip re-smoke: same command (AFTER skip applied — Task 1 commit 1bc691aa3)
+
+Fix-attempt result (Path 2 — context.addInitScript swap)
+--------------------------------------------------------
+Running 4 tests using 2 workers
+
+  1) [voter-app] › tests/specs/voter/voter-popup-hydration.spec.ts:147:3 › setTimeout popup on full page load (LAYOUT-03 regression gate) › popup appears on full page load to /results (LAYOUT-03 hydration path) @voter
+
+    Error: results list must render under LAYOUT-03 deeplink (Phase 86 DETERM-12)
+    expect(received).toBeGreaterThan(expected)
+    Expected: > 0
+    Received:   0
+    Call Log:
+    - Timeout 15000ms exceeded while waiting on the predicate
+
+      193 |     // fires. See 86-RESEARCH.md §3.2 H1 + 86-PATTERNS.md §5.
+      194 |     const list = page.getByTestId(testIds.voter.results.list);
+    > 195 |     await expect
+          |     ^
+      196 |       .poll(() => list.count(), {
+      197 |         timeout: 15000,
+      198 |         message: 'results list must render under LAYOUT-03 deeplink (Phase 86 DETERM-12)'
+
+Trace artifact: tests/playwright-results/voter-popup-hydration-setT-a91b6-s-LAYOUT-03-hydration-path--voter-app/trace.zip
+Error context: tests/playwright-results/voter-popup-hydration-setT-a91b6-s-LAYOUT-03-hydration-path--voter-app/error-context.md
+
+  1 failed
+    [voter-app] › tests/specs/voter/voter-popup-hydration.spec.ts:147:3 ... @voter
+  3 passed (19.7s)
+
+Trace evidence (Path 2 attempt)
+-------------------------------
+- Frame URL progression: about:blank -> http://localhost:5173/results?electionId=9f7d0435-3d8c-4dd8-870a-42dd624c6f06&constituencyId=877f789a-59af-4ac1-82a9-2c53f85e14eb -> http://localhost:5173/results/candidates?electionId=9f7d0435-3d8c-4dd8-870a-42dd624c6f06&constituencyId=877f789a-59af-4ac1-82a9-2c53f85e14eb (canonical 308 redirect via (voters)/(located)/results/+layout.ts:27).
+- Supabase REST calls (all returned HTTP 200):
+  - GET /rest/v1/app_settings?select=customization&limit=1
+  - GET /rest/v1/app_settings?select=settings&limit=1
+  - GET /rest/v1/elections?select=*,election_constituency_groups(constituency_group_id)&order=sort_order.asc
+  - GET /rest/v1/constituencies?select=*&order=sort_order.asc
+  - GET /rest/v1/constituency_groups?select=*,constituency_group_constituencies(constituency_id)&order=sort_order.asc
+  - GET /rest/v1/question_categories?select=*&order=sort_order.asc
+  - GET /rest/v1/questions?select=*&order=sort_order.asc&category_id=in.(...7 UUIDs...)
+  - POST /rest/v1/rpc/get_nominations
+- Page snapshot at failure (from error-context.md):
+  main [ref=e30]: generic [ref=e32]: Loading...
+- Playwright `queryCount` for selector `[data-testid="voter-results-list"]` returns `{value: 0}` at every poll iteration.
+
+Interpretation: data layer succeeds (Supabase 200s), navigation succeeds (correct /results/candidates frame URL with both params), but the SvelteKit page boundary never resolves to paint the results list. Same symptom as Phase 86.3-03 cell #5 trace analysis (`/questions` stuck at Loading...). This is an upstream loader / data-resolution race that addInitScript (page-scoped OR context-scoped) cannot close on its own.
+
+Post-skip re-smoke result (after Task 1 SKIP-FALLBACK)
+------------------------------------------------------
+Running 4 tests using 2 workers
+
+[1/4] [data-setup] › tests/setup/data.setup.ts:76:1 › import test dataset
+[2/4] [voter-app] › tests/specs/voter/voter-popup-hydration.spec.ts:170:3 › setTimeout popup on full page load (LAYOUT-03 regression gate) › popup appears on full page load to /results (LAYOUT-03 hydration path) @voter
+[3/4] [data-teardown] › tests/setup/variant-data.teardown.ts:12:1 › delete variant test dataset
+[4/4] [data-teardown] › tests/setup/data.teardown.ts:17:1 › delete test dataset
+
+  1 skipped
+  3 passed (3.9s)
+
+The cell #6 voter-popup-hydration test reports as `1 skipped` (not `1 failed`) post-Task-1.
+
+Path 2 disposition
+------------------
+Path 2 (1-line `page.context().addInitScript` swap) is LEFT IN PLACE in the spec body
+(voter-popup-hydration.spec.ts:216) as evidence-of-attempt for the v2.11+ pickup. The
+test.skip(true, ...) at lines 170-184 short-circuits BEFORE the executable statement, so
+the swap never fires at runtime but is preserved as code-archaeology. Mirrors Phase 86.1-03
+cell 2 storage-clear LEFT IN PLACE pattern.
+
+Path 1 disposition
+------------------
+Path 1 (`test.use({ storageState })`) was NOT attempted; abandoned at RESEARCH §"Pitfall 4"
+because storageState is static and beforeAll-discovered UUIDs (questionIds in particular)
+cannot inform the seed without module-load IIFE refactor OR hard-coding external_ids — both
+out of D-08 1h cap for a 50/50-probability fix attempt.
+
+D-10 audit
+----------
+`git diff -- apps/frontend/src/routes/(voters)/(located)/+layout.ts` returns EMPTY.
+Production-code loader UNCHANGED — D-10 STRICT gate respected for cell #6.
+
+Pre-skip cascade-probe (CONTEXT D-09)
+-------------------------------------
+LANDMINE-NOTE: cell #6 has no within-spec cascade dependents (verified per RESEARCH §Pattern 3).
+
+The test() declaration at voter-popup-hydration.spec.ts:170 is the SOLE test in its
+`test.describe('setTimeout popup on full page load (LAYOUT-03 regression gate)', ...)`
+block. No sibling tests in the same describe.serial chain depend on it. The skip does
+not introduce new CASCADE-class victims.
+
+v2.11+ todo augmentation
+------------------------
+.planning/todos/pending/2026-05-16-voter-popup-hydration-layout-03-deeplink.md grew from
+44 -> 72 lines with the "Phase 86.3-04 attempt (2026-05-20 — augmented)" section
+documenting:
+  - Path 2 verified-applied but empirically insufficient (trace evidence cited)
+  - Path 1 abandoned at Pitfall 4
+  - Cross-reference to Phase 86.3-03 trace finding (shared upstream loader race)
+  - Recommendation #3 (replace deeplink with navigation-from-home test) elevated to
+    strongest v2.11+ next action.
+
+Atomic commits (CONTEXT D-07)
+-----------------------------
+- Task 1 (Path 2 attempt + SKIP-FALLBACK rationale + v2.11+ todo augmentation): 1bc691aa3
+  (test(86.3-04): cell #6 Task 1 — Path 2 attempt + SKIP-FALLBACK rationale + v2.11+ todo augmentation)
+- Task 2 (smoke + SUMMARY + atomic close): pending after this artifact
+
+OUTCOME: SKIP-FALLBACK
+LANDMINE-NOTE: cell #6 has no within-spec cascade dependents.

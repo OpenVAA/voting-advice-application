@@ -1,0 +1,50 @@
+{
+  "privacy": {
+    "analytics": {
+      "content": {
+        "umami": "Käytämme Umami-palvelua sovelluksen toiminnan mittaamiseen. Tämä tapahtuu täysin nimettömästi eikä edellytä evästeiden käyttöä. Lisätietoja: {analyticsLink}."
+      },
+      "title": "Analytiikka"
+    },
+    "cookies": {
+      "content": "Sovellus ei käytä evästeitä tietojen tallentamiseen. Vastauksesi ja asetuksesi tallennetaan selaimesi paikalliseen säilöön (local storage) sovelluksen käyttömukavuuden parantamiseksi. Näitä tietoja voi lukea ainoastaan sinun laitteesi, ei siis esimerkiksi vaalikoneen julkaisija.",
+      "title": "Evästeet"
+    },
+    "dataCollection": {
+      "platform": {
+        "umami": "Keräämiseen käytetetään Umami-alustaa, eikä se edellytä evästeiden käyttöä. Lisätietoja: {analyticsLink}."
+      }
+    },
+    "dataConsentInfoButton": "Lisätietoja käyttötietojen keräämisestä",
+    "dataConsentIntro": {
+      "denied": [
+        {
+          "declarations": [
+            "input consentDate",
+            "local formattedConsentDate = consentDate: datetime year=numeric month=2-digit day=numeric"
+          ],
+          "match": {
+            "formattedConsentDate=*": "Olet kieltänyt tietojesi keräämisen {formattedConsentDate}. Voit muokata valintaasi alla."
+          }
+        }
+      ],
+      "granted": [
+        {
+          "declarations": [
+            "input consentDate",
+            "local formattedConsentDate = consentDate: datetime year=numeric month=2-digit day=numeric"
+          ],
+          "match": {
+            "formattedConsentDate=*": "Olet sallinut tietojesi keräämisen {formattedConsentDate}. Voit muokata valintaasi alla."
+          }
+        }
+      ],
+      "indetermined": "Voit antaa suostumuksesi tai kieltää tietojen keräämisen valitsemalla alla olevista vaihtoehdoista."
+    },
+    "dataConsentLabel": {
+      "denied": "En halua, että tietojani kerätään",
+      "granted": "Kyllä, sallin keräämisen"
+    },
+    "title": "Yksityisyys"
+  }
+}

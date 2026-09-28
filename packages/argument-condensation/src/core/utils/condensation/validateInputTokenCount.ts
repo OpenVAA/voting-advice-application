@@ -13,8 +13,7 @@ import type { VAAComment } from '../../types';
  * @param language - The language for the prompt
  * @param parallelFactor - The number of batches to process in parallel
  * @param modelTPMLimit - The maximum number of tokens the model can handle per minute
- * @returns An object indicating whether the validation was successful. If not, it includes the index
- * of the failed batch group and its estimated token count.
+ * @returns An object indicating whether the validation was successful. If not, it includes the index of the failed batch group and its estimated token count.
  */
 export async function validateInputTokenCount({
   batches,
