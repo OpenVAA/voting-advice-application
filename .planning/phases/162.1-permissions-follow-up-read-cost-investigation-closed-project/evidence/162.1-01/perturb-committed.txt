@@ -1,0 +1,15 @@
+=== G8A
+perturbation applied
+test:db exit 1
+Files=29, Tests=1093,  3 wallclock secs ( 0.08 usr  0.04 sys +  0.14 cusr  0.10 csys =  0.36 CPU)
+Result: FAIL
+G8A observed=16-anon-visibility:32,47;25-matrix-conformance:34,38 expected=16-anon-visibility:32,47;25-matrix-conformance:34,38 MATCH
+=== G8B
+perturbation applied
+test:db exit 1
+Files=29, Tests=1093,  3 wallclock secs ( 0.08 usr  0.03 sys +  0.15 cusr  0.07 csys =  0.33 CPU)
+Result: FAIL
+G8B observed=25-matrix-conformance:36,37 expected=25-matrix-conformance:36,37 MATCH
+=== final reset
+final fingerprint: b096e3bbcc51a0f572477e2b68bd3461
+RESULT: PASS

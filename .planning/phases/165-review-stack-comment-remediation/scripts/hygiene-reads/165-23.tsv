@@ -1,0 +1,8 @@
+packages/app-shared/src/data/schemas/sendEmailResult.schema.ts	05f52288c0c691af1ba7ce8d101f151f2852303a	165-23
+packages/app-shared/src/data/schemas/sendEmailResult.schema.test.ts	ccc803ae766ec860873e6630365d900d8757d27e	165-23
+apps/frontend/src/lib/api/adapters/supabase/adminWriter/supabaseAdminWriter.ts	9add461d8a80a377c1115562ebe0c083c5accf06	165-23
+apps/frontend/src/lib/api/adapters/supabase/adminWriter/supabaseAdminWriter.test.ts	c4903e3803330109c0b83f2db3bd2defb426f072	165-23
+packages/app-shared/src/data/getLocalized.ts	816c50a71e8fab70edd4e66e12c7e3da5041f036	165-23
+packages/app-shared/src/data/getLocalized.test.ts	5763fab98b1cf327587721753fa850bfd3ac42b0	165-23
+apps/frontend/src/lib/server/api/adapters/local/dataProvider/localServerDataProvider.ts	39e99388a02e42e50cb3d8558f085a03d875ba24	165-23
+apps/frontend/src/lib/server/api/adapters/local/dataProvider/localServerDataProvider.test.ts	54c0a327f92da1ada265ba76734f16f47c17fd96	165-23

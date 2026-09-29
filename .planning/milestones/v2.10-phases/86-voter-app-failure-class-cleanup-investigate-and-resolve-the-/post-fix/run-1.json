@@ -1,0 +1,5282 @@
+[dotenv@17.3.1] injecting env (25) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+
+Running 165 tests using 1 worker
+
+[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+  ✓    1 [data-setup] › tests/tests/setup/data.setup.ts:76:1 › import test dataset (619ms)
+[dotenv@17.3.1] injecting env (0) from .env -- tip: 🤖 agentic secret storage: https://dotenvx.com/as2
+  ✘    2 [voter-app-settings] › tests/tests/specs/voter/voter-settings.spec.ts:219:3 › category selection (VOTE-13) › should show category checkboxes when allowCategorySelection enabled @voter (18.0s)
+  -    3 [voter-app-settings] › tests/tests/specs/voter/voter-settings.spec.ts:264:3 › category selection (VOTE-13) › should filter questions to selected categories @voter
+  -    4 [voter-app-settings] › tests/tests/specs/voter/voter-settings.spec.ts:325:3 › category intros (VOTE-05) › should show category intro page before each category @voter
+  -    5 [voter-app-settings] › tests/tests/specs/voter/voter-settings.spec.ts:365:3 › category intros (VOTE-05) › should skip category when skip button clicked @voter
+  -    6 [voter-app-settings] › tests/tests/specs/voter/voter-settings.spec.ts:421:3 › question intro page (VOTE-04) › should show question intro page when questionsIntro.show enabled @voter
+  -    7 [voter-app-settings] › tests/tests/specs/voter/voter-settings.spec.ts:471:3 › minimum answers threshold (VOTE-07) › should enforce minimum answers before results available @voter
+  -    8 [voter-app-settings] › tests/tests/specs/voter/voter-settings.spec.ts:540:3 › results link visibility (VOTE-17) › should hide results link when showResultsLink is false @voter
+
+
+  1) [voter-app-settings] › tests/tests/specs/voter/voter-settings.spec.ts:219:3 › category selection (VOTE-13) › should show category checkboxes when allowCategorySelection enabled @voter 
+
+    Test was interrupted.
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "http://localhost:5173/", waiting until "load"[22m
+
+
+      219 |   test('should show category checkboxes when allowCategorySelection enabled', async ({ page }) => {
+      220 |     // Navigate to the voter home page
+    > 221 |     await page.goto(buildRoute({ route: 'Home', locale: 'en' }));
+          |                ^
+      222 |
+      223 |     // Click start on the home page
+      224 |     await page.getByTestId(testIds.voter.home.startButton).click();
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-settings.spec.ts:221:16
+
+  1 interrupted
+    [voter-app-settings] › tests/tests/specs/voter/voter-settings.spec.ts:219:3 › category selection (VOTE-13) › should show category checkboxes when allowCategorySelection enabled @voter 
+  163 did not run
+  1 passed (20.8s)
+{
+  "config": {
+    "configFile": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright.config.ts",
+    "rootDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-setup",
+        "name": "data-setup",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/data\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-teardown",
+        "name": "data-teardown",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/data\\.teardown\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "auth-setup",
+        "name": "auth-setup",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/auth\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "candidate-app",
+        "name": "candidate-app",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/candidate",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/candidate-(auth|questions|translation)\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "candidate-app-mutation",
+        "name": "candidate-app-mutation",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/candidate",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/candidate-(registration|profile|profile-validation)\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "re-auth-setup",
+        "name": "re-auth-setup",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/re-auth\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "candidate-app-settings",
+        "name": "candidate-app-settings",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/candidate",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/candidate-settings\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "candidate-app-password",
+        "name": "candidate-app-password",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/candidate",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/candidate-password\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "voter-app",
+        "name": "voter-app",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter",
+        "testIgnore": [
+          "/voter-(settings|popups|visibility-required)\\.spec\\.ts/"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "voter-app-settings",
+        "name": "voter-app-settings",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/voter-settings\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "voter-app-popups",
+        "name": "voter-app-popups",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/voter-popups\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-teardown-variants",
+        "name": "data-teardown-variants",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/variant-data\\.teardown\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-setup-multi-election",
+        "name": "data-setup-multi-election",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/variant-multi-election\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "variant-multi-election",
+        "name": "variant-multi-election",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/variants",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/multi-election\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "variant-results-sections",
+        "name": "variant-results-sections",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/variants",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/results-sections\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-setup-constituency",
+        "name": "data-setup-constituency",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/variant-constituency\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "variant-constituency",
+        "name": "variant-constituency",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/variants",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/constituency\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-setup-startfromcg",
+        "name": "data-setup-startfromcg",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/variant-startfromcg\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "variant-startfromcg",
+        "name": "variant-startfromcg",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/variants",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/startfromcg\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-setup-low-minimum-answers",
+        "name": "data-setup-low-minimum-answers",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/variant-low-minimum-answers\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "variant-low-minimum-answers",
+        "name": "variant-low-minimum-answers",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/voter-browse-without-match\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-setup-1e-Nc",
+        "name": "data-setup-1e-Nc",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/variant-1e-Nc\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "variant-1e-Nc",
+        "name": "variant-1e-Nc",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/variants",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/1e-Nc\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-setup-Ne-Nc",
+        "name": "data-setup-Ne-Nc",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/variant-Ne-Nc\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "variant-Ne-Nc",
+        "name": "variant-Ne-Nc",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/variants",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/Ne-Nc\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-setup-allowopen",
+        "name": "data-setup-allowopen",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/variant-allowopen\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "variant-allowopen",
+        "name": "variant-allowopen",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/voter-allowopen\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "data-setup-hidden-required",
+        "name": "data-setup-hidden-required",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/variant-hidden-required\\.setup\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "variant-hidden-required-voter",
+        "name": "variant-hidden-required-voter",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/voter-visibility-required\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      },
+      {
+        "outputDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "variant-hidden-required-candidate",
+        "name": "variant-hidden-required-candidate",
+        "testDir": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/candidate",
+        "testIgnore": [
+          "**/*.test.ts"
+        ],
+        "testMatch": [
+          "/candidate-required-info\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "setup/variant-data.teardown.ts",
+      "file": "setup/variant-data.teardown.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "delete variant test dataset",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "data-teardown-variants",
+              "projectName": "data-teardown-variants",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "03c666fc1bac03ab3725-1c278b8039f4d27078e2",
+          "file": "setup/variant-data.teardown.ts",
+          "line": 12,
+          "column": 1
+        },
+        {
+          "title": "delete variant test dataset",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "data-teardown",
+              "projectName": "data-teardown",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "03c666fc1bac03ab3725-93690b532566d030e62f",
+          "file": "setup/variant-data.teardown.ts",
+          "line": 12,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "setup/re-auth.setup.ts",
+      "file": "setup/re-auth.setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "re-authenticate as candidate",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "re-auth-setup",
+              "projectName": "re-auth-setup",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "13c9519bc5ddfb3cb0d7-a2cdde9ed9f9a28a98d7",
+          "file": "setup/re-auth.setup.ts",
+          "line": 20,
+          "column": 1
+        },
+        {
+          "title": "re-authenticate as candidate",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "auth-setup",
+              "projectName": "auth-setup",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "13c9519bc5ddfb3cb0d7-ced5f2ea453444d74557",
+          "file": "setup/re-auth.setup.ts",
+          "line": 20,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/candidate/candidate-settings.spec.ts",
+      "file": "specs/candidate/candidate-settings.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "app mode: answers locked (CAND-09)",
+          "file": "specs/candidate/candidate-settings.spec.ts",
+          "line": 109,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should show read-only warning when answers are locked",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-settings",
+                  "projectName": "candidate-app-settings",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0320deef90416658bf9d-1a350cf6ef0bf5defb5f",
+              "file": "specs/candidate/candidate-settings.spec.ts",
+              "line": 116,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "app mode: disabled (CAND-10)",
+          "file": "specs/candidate/candidate-settings.spec.ts",
+          "line": 158,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should show maintenance page when candidateApp is disabled",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-settings",
+                  "projectName": "candidate-app-settings",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0320deef90416658bf9d-699c0b344632fa98fb95",
+              "file": "specs/candidate/candidate-settings.spec.ts",
+              "line": 165,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "app mode: maintenance (CAND-11)",
+          "file": "specs/candidate/candidate-settings.spec.ts",
+          "line": 192,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should show maintenance page when underMaintenance is true",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-settings",
+                  "projectName": "candidate-app-settings",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0320deef90416658bf9d-a8679f1370dfc993326f",
+              "file": "specs/candidate/candidate-settings.spec.ts",
+              "line": 199,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "candidate notifications (CAND-13)",
+          "file": "specs/candidate/candidate-settings.spec.ts",
+          "line": 225,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should display notification popup when enabled",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-settings",
+                  "projectName": "candidate-app-settings",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0320deef90416658bf9d-22f3b5c5617ba6bd1006",
+              "file": "specs/candidate/candidate-settings.spec.ts",
+              "line": 241,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "help and privacy pages (CAND-14)",
+          "file": "specs/candidate/candidate-settings.spec.ts",
+          "line": 276,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should render help page correctly",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-settings",
+                  "projectName": "candidate-app-settings",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0320deef90416658bf9d-3278bdace688e053c506",
+              "file": "specs/candidate/candidate-settings.spec.ts",
+              "line": 277,
+              "column": 3
+            },
+            {
+              "title": "should render privacy page correctly",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-settings",
+                  "projectName": "candidate-app-settings",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0320deef90416658bf9d-5bf069f5b783b9ab9d28",
+              "file": "specs/candidate/candidate-settings.spec.ts",
+              "line": 288,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "question visibility settings (CAND-15)",
+          "file": "specs/candidate/candidate-settings.spec.ts",
+          "line": 301,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should hide hero when hideHero is enabled",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-settings",
+                  "projectName": "candidate-app-settings",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0320deef90416658bf9d-5ce6225d3cfbc722edb7",
+              "file": "specs/candidate/candidate-settings.spec.ts",
+              "line": 311,
+              "column": 3
+            },
+            {
+              "title": "should show hero when hideHero is disabled",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-settings",
+                  "projectName": "candidate-app-settings",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0320deef90416658bf9d-ecc0530e2c593678385d",
+              "file": "specs/candidate/candidate-settings.spec.ts",
+              "line": 342,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "SETTINGS-01 wave A — dynamicSettings toggle matrix",
+          "file": "specs/candidate/candidate-settings.spec.ts",
+          "line": 743,
+          "column": 6,
+          "specs": [
+            {
+              "title": "SETTINGS-01 wave A — access.voterApp",
+              "ok": true,
+              "tags": [
+                "settings-01",
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-settings",
+                  "projectName": "candidate-app-settings",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0320deef90416658bf9d-71cf80e0b9b99f51cab1",
+              "file": "specs/candidate/candidate-settings.spec.ts",
+              "line": 773,
+              "column": 7
+            },
+            {
+              "title": "SETTINGS-01 wave A — header.showFeedback",
+              "ok": true,
+              "tags": [
+                "settings-01",
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-settings",
+                  "projectName": "candidate-app-settings",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0320deef90416658bf9d-647ebaa85c1a4e765351",
+              "file": "specs/candidate/candidate-settings.spec.ts",
+              "line": 773,
+              "column": 7
+            },
+            {
+              "title": "SETTINGS-01 wave A — header.showHelp",
+              "ok": true,
+              "tags": [
+                "settings-01",
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-settings",
+                  "projectName": "candidate-app-settings",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0320deef90416658bf9d-d3e04ac33b2a5b5412eb",
+              "file": "specs/candidate/candidate-settings.spec.ts",
+              "line": 773,
+              "column": 7
+            },
+            {
+              "title": "SETTINGS-01 wave A — notifications.voterApp",
+              "ok": true,
+              "tags": [
+                "settings-01",
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-settings",
+                  "projectName": "candidate-app-settings",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0320deef90416658bf9d-85af5184d0bf3b8a01ea",
+              "file": "specs/candidate/candidate-settings.spec.ts",
+              "line": 773,
+              "column": 7
+            },
+            {
+              "title": "SETTINGS-01 wave A — entities.showAllNominations",
+              "ok": true,
+              "tags": [
+                "settings-01",
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-settings",
+                  "projectName": "candidate-app-settings",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0320deef90416658bf9d-f6496e65dab005afc3e7",
+              "file": "specs/candidate/candidate-settings.spec.ts",
+              "line": 773,
+              "column": 7
+            },
+            {
+              "title": "SETTINGS-01 wave A — entities.hideIfMissingAnswers.candidate",
+              "ok": true,
+              "tags": [
+                "settings-01",
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-settings",
+                  "projectName": "candidate-app-settings",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0320deef90416658bf9d-0c4a934111bdeaa4422e",
+              "file": "specs/candidate/candidate-settings.spec.ts",
+              "line": 773,
+              "column": 7
+            },
+            {
+              "title": "SETTINGS-01 wave A — elections.showElectionTags",
+              "ok": true,
+              "tags": [
+                "settings-01",
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-settings",
+                  "projectName": "candidate-app-settings",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0320deef90416658bf9d-7d042c8c82b78c3ea166",
+              "file": "specs/candidate/candidate-settings.spec.ts",
+              "line": 773,
+              "column": 7
+            },
+            {
+              "title": "SETTINGS-01 wave A — questions.showCategoryTags",
+              "ok": true,
+              "tags": [
+                "settings-01",
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-settings",
+                  "projectName": "candidate-app-settings",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0320deef90416658bf9d-0e384da60560d13449df",
+              "file": "specs/candidate/candidate-settings.spec.ts",
+              "line": 773,
+              "column": 7
+            },
+            {
+              "title": "SETTINGS-01 wave A — questions.showResultsLink",
+              "ok": true,
+              "tags": [
+                "settings-01",
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-settings",
+                  "projectName": "candidate-app-settings",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0320deef90416658bf9d-c7949fbb01f0a6d29bde",
+              "file": "specs/candidate/candidate-settings.spec.ts",
+              "line": 773,
+              "column": 7
+            },
+            {
+              "title": "SETTINGS-01 wave A — results.sections",
+              "ok": true,
+              "tags": [
+                "settings-01",
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-settings",
+                  "projectName": "candidate-app-settings",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0320deef90416658bf9d-768a5bb48979b360c0b4",
+              "file": "specs/candidate/candidate-settings.spec.ts",
+              "line": 773,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/candidate/candidate-password.spec.ts",
+      "file": "specs/candidate/candidate-password.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "candidate password change",
+          "file": "specs/candidate/candidate-password.spec.ts",
+          "line": 42,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should change password and login with new password",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-password",
+                  "projectName": "candidate-app-password",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1e35eaa9de9d9ce01ffe-c8a949a402590a952686",
+              "file": "specs/candidate/candidate-password.spec.ts",
+              "line": 43,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "candidate logout",
+          "file": "specs/candidate/candidate-password.spec.ts",
+          "line": 83,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should logout and return to login page",
+              "ok": true,
+              "tags": [
+                "candidate",
+                "smoke"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-password",
+                  "projectName": "candidate-app-password",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1e35eaa9de9d9ce01ffe-944191d0b95067ac8879",
+              "file": "specs/candidate/candidate-password.spec.ts",
+              "line": 84,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "setup/variant-multi-election.setup.ts",
+      "file": "setup/variant-multi-election.setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "import multi-election dataset",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "data-setup-multi-election",
+              "projectName": "data-setup-multi-election",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "a41d3285a2aeb136987f-956284e50f2e20d1ee42",
+          "file": "setup/variant-multi-election.setup.ts",
+          "line": 29,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/variants/multi-election.spec.ts",
+      "file": "specs/variants/multi-election.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Multi-election voter journey",
+          "file": "specs/variants/multi-election.spec.ts",
+          "line": 172,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should show election selection page with 2 elections",
+              "ok": true,
+              "tags": [
+                "variant"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-multi-election",
+                  "projectName": "variant-multi-election",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45e5f66b3307dd5bed50-d9653e32b3655ec88cb4",
+              "file": "specs/variants/multi-election.spec.ts",
+              "line": 205,
+              "column": 3
+            },
+            {
+              "title": "should display questions and reach results",
+              "ok": true,
+              "tags": [
+                "variant"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-multi-election",
+                  "projectName": "variant-multi-election",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45e5f66b3307dd5bed50-70e86f1dc2721c6a4a6c",
+              "file": "specs/variants/multi-election.spec.ts",
+              "line": 256,
+              "column": 3
+            },
+            {
+              "title": "should show election accordion and results after selecting election",
+              "ok": true,
+              "tags": [
+                "variant"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-multi-election",
+                  "projectName": "variant-multi-election",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45e5f66b3307dd5bed50-2802a43868b82b34dde1",
+              "file": "specs/variants/multi-election.spec.ts",
+              "line": 308,
+              "column": 3
+            },
+            {
+              "title": "should display election-specific questions",
+              "ok": true,
+              "tags": [
+                "variant"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-multi-election",
+                  "projectName": "variant-multi-election",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45e5f66b3307dd5bed50-7963792c216109a50289",
+              "file": "specs/variants/multi-election.spec.ts",
+              "line": 326,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "disallowSelection mode",
+          "file": "specs/variants/multi-election.spec.ts",
+          "line": 344,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should bypass election selection when disallowSelection is true",
+              "ok": true,
+              "tags": [
+                "variant"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-multi-election",
+                  "projectName": "variant-multi-election",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45e5f66b3307dd5bed50-19998ddea25615efa101",
+              "file": "specs/variants/multi-election.spec.ts",
+              "line": 384,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "matrix cell: Ne × 1c (E2E-04 cell 3)",
+          "file": "specs/variants/multi-election.spec.ts",
+          "line": 450,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Ne × 1c — election selector shown; constituency auto-implied (single)",
+              "ok": true,
+              "tags": [
+                "variant",
+                "matrix"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-multi-election",
+                  "projectName": "variant-multi-election",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "45e5f66b3307dd5bed50-4f9b6bd1d6d3b42e764b",
+              "file": "specs/variants/multi-election.spec.ts",
+              "line": 451,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/variants/results-sections.spec.ts",
+      "file": "specs/variants/results-sections.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Results section variants",
+          "file": "specs/variants/results-sections.spec.ts",
+          "line": 131,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should show only candidates when sections is [\"candidate\"]",
+              "ok": true,
+              "tags": [
+                "variant"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-results-sections",
+                  "projectName": "variant-results-sections",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "8cfd31c1c27eeae2ea44-8df652fa873a52253fb2",
+              "file": "specs/variants/results-sections.spec.ts",
+              "line": 267,
+              "column": 3
+            },
+            {
+              "title": "should show only organizations when sections is [\"organization\"]",
+              "ok": true,
+              "tags": [
+                "variant"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-results-sections",
+                  "projectName": "variant-results-sections",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "8cfd31c1c27eeae2ea44-0541ea24d2f36bb4273c",
+              "file": "specs/variants/results-sections.spec.ts",
+              "line": 294,
+              "column": 3
+            },
+            {
+              "title": "should show both sections with tabs when sections is [\"candidate\", \"organization\"]",
+              "ok": true,
+              "tags": [
+                "variant"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-results-sections",
+                  "projectName": "variant-results-sections",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "8cfd31c1c27eeae2ea44-d5aaf4013d1de688c016",
+              "file": "specs/variants/results-sections.spec.ts",
+              "line": 321,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "setup/variant-constituency.setup.ts",
+      "file": "setup/variant-constituency.setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "import constituency dataset",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "data-setup-constituency",
+              "projectName": "data-setup-constituency",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "3de8ee083ae27de87e6d-b1b725a02d1c70efbc6e",
+          "file": "setup/variant-constituency.setup.ts",
+          "line": 27,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/variants/constituency.spec.ts",
+      "file": "specs/variants/constituency.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Constituency selection variant",
+          "file": "specs/variants/constituency.spec.ts",
+          "line": 116,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should show constituency selection page after election selection",
+              "ok": true,
+              "tags": [
+                "variant"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-constituency",
+                  "projectName": "variant-constituency",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "941807a2db6b19c548c7-b887a25e1c565bed4257",
+              "file": "specs/variants/constituency.spec.ts",
+              "line": 151,
+              "column": 3
+            },
+            {
+              "title": "should allow constituency selection and proceed to questions",
+              "ok": true,
+              "tags": [
+                "variant"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-constituency",
+                  "projectName": "variant-constituency",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "941807a2db6b19c548c7-53005ae07957dd6d5d65",
+              "file": "specs/variants/constituency.spec.ts",
+              "line": 186,
+              "column": 3
+            },
+            {
+              "title": "should answer questions and reach results",
+              "ok": true,
+              "tags": [
+                "variant"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-constituency",
+                  "projectName": "variant-constituency",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "941807a2db6b19c548c7-1f1581adf3aa9ff54df1",
+              "file": "specs/variants/constituency.spec.ts",
+              "line": 230,
+              "column": 3
+            },
+            {
+              "title": "should show election accordion in multi-election results",
+              "ok": true,
+              "tags": [
+                "variant"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-constituency",
+                  "projectName": "variant-constituency",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "941807a2db6b19c548c7-703c2a6bfa2754950fa6",
+              "file": "specs/variants/constituency.spec.ts",
+              "line": 274,
+              "column": 3
+            },
+            {
+              "title": "should display constituency-filtered results",
+              "ok": true,
+              "tags": [
+                "variant"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-constituency",
+                  "projectName": "variant-constituency",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "941807a2db6b19c548c7-f2a333b85f2fe87a48d0",
+              "file": "specs/variants/constituency.spec.ts",
+              "line": 281,
+              "column": 3
+            },
+            {
+              "title": "should show missing nominations warning for partial-coverage constituency",
+              "ok": true,
+              "tags": [
+                "variant"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-constituency",
+                  "projectName": "variant-constituency",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "941807a2db6b19c548c7-bc81cad0ada8d853b833",
+              "file": "specs/variants/constituency.spec.ts",
+              "line": 293,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "SETTINGS-01 wave B — constituency-filter",
+          "file": "specs/variants/constituency.spec.ts",
+          "line": 385,
+          "column": 6,
+          "specs": [
+            {
+              "title": "SETTINGS-01 wave B — constituency-filter (PRODUCT-GAP / PASS-WITH-DEFERRAL)",
+              "ok": true,
+              "tags": [
+                "variant"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-constituency",
+                  "projectName": "variant-constituency",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "941807a2db6b19c548c7-5ad527508cb9f79bc202",
+              "file": "specs/variants/constituency.spec.ts",
+              "line": 392,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "setup/variant-startfromcg.setup.ts",
+      "file": "setup/variant-startfromcg.setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "import startfromcg dataset",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "data-setup-startfromcg",
+              "projectName": "data-setup-startfromcg",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "64f06a159efa0c017d4e-cf3b050541f112cc498f",
+          "file": "setup/variant-startfromcg.setup.ts",
+          "line": 31,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/variants/startfromcg.spec.ts",
+      "file": "specs/variants/startfromcg.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "startFromConstituencyGroup variant",
+          "file": "specs/variants/startfromcg.spec.ts",
+          "line": 138,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should show constituency selection first (reversed flow)",
+              "ok": true,
+              "tags": [
+                "variant"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-startfromcg",
+                  "projectName": "variant-startfromcg",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "30dca0194313f5adeda0-22da76ed6ebe22b6fa56",
+              "file": "specs/variants/startfromcg.spec.ts",
+              "line": 219,
+              "column": 3
+            },
+            {
+              "title": "should show election selection after constituency selection",
+              "ok": true,
+              "tags": [
+                "variant"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-startfromcg",
+                  "projectName": "variant-startfromcg",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "30dca0194313f5adeda0-5156b9d85f712471bf44",
+              "file": "specs/variants/startfromcg.spec.ts",
+              "line": 249,
+              "column": 3
+            },
+            {
+              "title": "should complete journey through questions to results",
+              "ok": true,
+              "tags": [
+                "variant"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-startfromcg",
+                  "projectName": "variant-startfromcg",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "30dca0194313f5adeda0-047ed4dda6aaded78ecf",
+              "file": "specs/variants/startfromcg.spec.ts",
+              "line": 291,
+              "column": 3
+            },
+            {
+              "title": "should handle orphan municipality without error",
+              "ok": true,
+              "tags": [
+                "variant"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-startfromcg",
+                  "projectName": "variant-startfromcg",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "30dca0194313f5adeda0-a03937fd812f6ccca1b4",
+              "file": "specs/variants/startfromcg.spec.ts",
+              "line": 329,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "matrix cell: startFromConstituency (E2E-04 cell 5)",
+          "file": "specs/variants/startfromcg.spec.ts",
+          "line": 434,
+          "column": 6,
+          "specs": [
+            {
+              "title": "startFromConstituency — constituency selector shown first; elections list hidden; constituency URL segment present",
+              "ok": true,
+              "tags": [
+                "variant",
+                "matrix"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-startfromcg",
+                  "projectName": "variant-startfromcg",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "30dca0194313f5adeda0-71053535f20282171522",
+              "file": "specs/variants/startfromcg.spec.ts",
+              "line": 508,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "setup/variant-low-minimum-answers.setup.ts",
+      "file": "setup/variant-low-minimum-answers.setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "import low-minimum-answers dataset",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "data-setup-low-minimum-answers",
+              "projectName": "data-setup-low-minimum-answers",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "a8658012d45ff7ad81d8-bfbac4cc8b2738018459",
+          "file": "setup/variant-low-minimum-answers.setup.ts",
+          "line": 26,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/voter/voter-browse-without-match.spec.ts",
+      "file": "specs/voter/voter-browse-without-match.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "voter browse without match (E2E-02)",
+          "file": "specs/voter/voter-browse-without-match.spec.ts",
+          "line": 29,
+          "column": 6,
+          "specs": [
+            {
+              "title": "voter completes location, skips opinions, browses entity list without match scores",
+              "ok": true,
+              "tags": [
+                "voter",
+                "variant"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-low-minimum-answers",
+                  "projectName": "variant-low-minimum-answers",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3577577602e010c1e53a-2fa88c82c872e06482cc",
+              "file": "specs/voter/voter-browse-without-match.spec.ts",
+              "line": 30,
+              "column": 3
+            },
+            {
+              "title": "voter completes location, skips opinions, browses entity list without match scores",
+              "ok": true,
+              "tags": [
+                "voter",
+                "variant"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3577577602e010c1e53a-fdd5240444cb29a5408b",
+              "file": "specs/voter/voter-browse-without-match.spec.ts",
+              "line": 30,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "setup/variant-1e-Nc.setup.ts",
+      "file": "setup/variant-1e-Nc.setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "import 1e-Nc dataset",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "data-setup-1e-Nc",
+              "projectName": "data-setup-1e-Nc",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b8b861fc0b0431c1b1da-f922c40104c4b62d3fbe",
+          "file": "setup/variant-1e-Nc.setup.ts",
+          "line": 28,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/variants/1e-Nc.spec.ts",
+      "file": "specs/variants/1e-Nc.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "1e × Nc selector matrix (E2E-04 cell 2)",
+          "file": "specs/variants/1e-Nc.spec.ts",
+          "line": 40,
+          "column": 6,
+          "specs": [
+            {
+              "title": "1e × Nc — election selection bypassed; constituency selector shown with 3 options",
+              "ok": true,
+              "tags": [
+                "variant",
+                "matrix"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-1e-Nc",
+                  "projectName": "variant-1e-Nc",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "935c437713831d35bfc4-5a78d3765cdf21698e79",
+              "file": "specs/variants/1e-Nc.spec.ts",
+              "line": 41,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "setup/variant-Ne-Nc.setup.ts",
+      "file": "setup/variant-Ne-Nc.setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "import Ne-Nc dataset",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "data-setup-Ne-Nc",
+              "projectName": "data-setup-Ne-Nc",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "bdd622fb83ae9d479603-983fd44f08d37a55f517",
+          "file": "setup/variant-Ne-Nc.setup.ts",
+          "line": 30,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/variants/Ne-Nc.spec.ts",
+      "file": "specs/variants/Ne-Nc.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Ne × Nc selector matrix (E2E-04 cell 4)",
+          "file": "specs/variants/Ne-Nc.spec.ts",
+          "line": 43,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Ne × Nc — both selectors shown; constituency dropdown filters by selected election (no cross-bleed)",
+              "ok": true,
+              "tags": [
+                "variant",
+                "matrix"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-Ne-Nc",
+                  "projectName": "variant-Ne-Nc",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c41fc0f5f1851d897c1c-7ea28c98994c4fb3e8d1",
+              "file": "specs/variants/Ne-Nc.spec.ts",
+              "line": 44,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "setup/variant-allowopen.setup.ts",
+      "file": "setup/variant-allowopen.setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "import allowopen dataset",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "data-setup-allowopen",
+              "projectName": "data-setup-allowopen",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "6a3e84ae0a6b0767a965-0a558cf083606da4c869",
+          "file": "setup/variant-allowopen.setup.ts",
+          "line": 32,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/voter/voter-allowopen.spec.ts",
+      "file": "specs/voter/voter-allowopen.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "SETTINGS-02 — entity comment display surface",
+          "file": "specs/voter/voter-allowopen.spec.ts",
+          "line": 63,
+          "column": 6,
+          "specs": [
+            {
+              "title": "SETTINGS-02 entity comment surface renders for allowOpen-true questions",
+              "ok": true,
+              "tags": [
+                "voter",
+                "variant",
+                "settings-02"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-allowopen",
+                  "projectName": "variant-allowopen",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "540f2b100675426e7792-bb9906cbad00ff4a4dd9",
+              "file": "specs/voter/voter-allowopen.spec.ts",
+              "line": 67,
+              "column": 5
+            },
+            {
+              "title": "SETTINGS-02 entity comment surface present even when allowOpen flipped after authoring",
+              "ok": true,
+              "tags": [
+                "voter",
+                "variant",
+                "settings-02"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-allowopen",
+                  "projectName": "variant-allowopen",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "540f2b100675426e7792-f949d403dd44524bd9bb",
+              "file": "specs/voter/voter-allowopen.spec.ts",
+              "line": 95,
+              "column": 5
+            },
+            {
+              "title": "SETTINGS-02 entity comment surface is absent when entity has no answer.info",
+              "ok": true,
+              "tags": [
+                "voter",
+                "variant",
+                "settings-02"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-allowopen",
+                  "projectName": "variant-allowopen",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "540f2b100675426e7792-eea440ccce3be07d50a6",
+              "file": "specs/voter/voter-allowopen.spec.ts",
+              "line": 128,
+              "column": 5
+            },
+            {
+              "title": "SETTINGS-02 entity comment surface renders for allowOpen-true questions",
+              "ok": true,
+              "tags": [
+                "voter",
+                "variant",
+                "settings-02"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "540f2b100675426e7792-02cd61d784f62a0713de",
+              "file": "specs/voter/voter-allowopen.spec.ts",
+              "line": 67,
+              "column": 5
+            },
+            {
+              "title": "SETTINGS-02 entity comment surface present even when allowOpen flipped after authoring",
+              "ok": true,
+              "tags": [
+                "voter",
+                "variant",
+                "settings-02"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "540f2b100675426e7792-bd2f9b0185ab9c04db5b",
+              "file": "specs/voter/voter-allowopen.spec.ts",
+              "line": 95,
+              "column": 5
+            },
+            {
+              "title": "SETTINGS-02 entity comment surface is absent when entity has no answer.info",
+              "ok": true,
+              "tags": [
+                "voter",
+                "variant",
+                "settings-02"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "540f2b100675426e7792-f99ecaf903a21c96f312",
+              "file": "specs/voter/voter-allowopen.spec.ts",
+              "line": 128,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "setup/variant-hidden-required.setup.ts",
+      "file": "setup/variant-hidden-required.setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "import hidden-required dataset",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "data-setup-hidden-required",
+              "projectName": "data-setup-hidden-required",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "3e63d7966ae16907edab-1082ac335f27a4d38609",
+          "file": "setup/variant-hidden-required.setup.ts",
+          "line": 44,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/voter/voter-visibility-required.spec.ts",
+      "file": "specs/voter/voter-visibility-required.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "SETTINGS-03 — voter-side hidden question filter",
+          "file": "specs/voter/voter-visibility-required.spec.ts",
+          "line": 73,
+          "column": 6,
+          "specs": [
+            {
+              "title": "SETTINGS-03 hidden question absent from voter question flow",
+              "ok": true,
+              "tags": [
+                "voter",
+                "variant",
+                "settings-03"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-hidden-required-voter",
+                  "projectName": "variant-hidden-required-voter",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f77e220ea787d4f3c09e-b8eb0811a7a8e56d2ce5",
+              "file": "specs/voter/voter-visibility-required.spec.ts",
+              "line": 77,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/voter/voter-settings.spec.ts",
+      "file": "specs/voter/voter-settings.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "category selection (VOTE-13)",
+          "file": "specs/voter/voter-settings.spec.ts",
+          "line": 193,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should show category checkboxes when allowCategorySelection enabled",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app-settings",
+                  "projectName": "voter-app-settings",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "interrupted",
+                      "duration": 17988,
+                      "error": {
+                        "message": "Error: page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/\", waiting until \"load\"\u001b[22m\n",
+                        "stack": "Error: page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/\", waiting until \"load\"\u001b[22m\n\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-settings.spec.ts:221:16",
+                        "location": {
+                          "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-settings.spec.ts",
+                          "column": 16,
+                          "line": 221
+                        },
+                        "snippet": "  219 |   test('should show category checkboxes when allowCategorySelection enabled', async ({ page }) => {\n  220 |     // Navigate to the voter home page\n> 221 |     await page.goto(buildRoute({ route: 'Home', locale: 'en' }));\n      |                ^\n  222 |\n  223 |     // Click start on the home page\n  224 |     await page.getByTestId(testIds.voter.home.startButton).click();"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-settings.spec.ts",
+                            "column": 16,
+                            "line": 221
+                          },
+                          "message": "Error: page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/\", waiting until \"load\"\u001b[22m\n\n\n  219 |   test('should show category checkboxes when allowCategorySelection enabled', async ({ page }) => {\n  220 |     // Navigate to the voter home page\n> 221 |     await page.goto(buildRoute({ route: 'Home', locale: 'en' }));\n      |                ^\n  222 |\n  223 |     // Click start on the home page\n  224 |     await page.getByTestId(testIds.voter.home.startButton).click();\n    at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-settings.spec.ts:221:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-14T18:52:35.128Z",
+                      "annotations": [],
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/tests/specs/voter/voter-settings.spec.ts",
+                        "column": 16,
+                        "line": 221
+                      }
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "19e80438cfd700b02ab4-c489f447dadbb4949f1e",
+              "file": "specs/voter/voter-settings.spec.ts",
+              "line": 219,
+              "column": 3
+            },
+            {
+              "title": "should filter questions to selected categories",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app-settings",
+                  "projectName": "voter-app-settings",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-14T18:52:53.599Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "19e80438cfd700b02ab4-17ed1e41f849fee5fe5a",
+              "file": "specs/voter/voter-settings.spec.ts",
+              "line": 264,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "category intros (VOTE-05)",
+          "file": "specs/voter/voter-settings.spec.ts",
+          "line": 303,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should show category intro page before each category",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app-settings",
+                  "projectName": "voter-app-settings",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-14T18:52:53.599Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "19e80438cfd700b02ab4-8c7400216fd61621ad26",
+              "file": "specs/voter/voter-settings.spec.ts",
+              "line": 325,
+              "column": 3
+            },
+            {
+              "title": "should skip category when skip button clicked",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app-settings",
+                  "projectName": "voter-app-settings",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-14T18:52:53.599Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "19e80438cfd700b02ab4-be102f0a5d9a195885e1",
+              "file": "specs/voter/voter-settings.spec.ts",
+              "line": 365,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "question intro page (VOTE-04)",
+          "file": "specs/voter/voter-settings.spec.ts",
+          "line": 401,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should show question intro page when questionsIntro.show enabled",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app-settings",
+                  "projectName": "voter-app-settings",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-14T18:52:53.599Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "19e80438cfd700b02ab4-937fbc77cad77a3a74d8",
+              "file": "specs/voter/voter-settings.spec.ts",
+              "line": 421,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "minimum answers threshold (VOTE-07)",
+          "file": "specs/voter/voter-settings.spec.ts",
+          "line": 447,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should enforce minimum answers before results available",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app-settings",
+                  "projectName": "voter-app-settings",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-14T18:52:53.599Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "19e80438cfd700b02ab4-8d39f3230976aab91b07",
+              "file": "specs/voter/voter-settings.spec.ts",
+              "line": 471,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "results link visibility (VOTE-17)",
+          "file": "specs/voter/voter-settings.spec.ts",
+          "line": 520,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should hide results link when showResultsLink is false",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app-settings",
+                  "projectName": "voter-app-settings",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-14T18:52:53.599Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "19e80438cfd700b02ab4-90d5e2ea2a0fb9861879",
+              "file": "specs/voter/voter-settings.spec.ts",
+              "line": 540,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "setup/data.teardown.ts",
+      "file": "setup/data.teardown.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "delete test dataset",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "data-teardown",
+              "projectName": "data-teardown",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "78126b53f91cf451d89e-5cb9b645fe370e63a6b1",
+          "file": "setup/data.teardown.ts",
+          "line": 17,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "setup/data.setup.ts",
+      "file": "setup/data.setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "import test dataset",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "data-setup",
+              "projectName": "data-setup",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 619,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-05-14T18:52:33.834Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/tests/playwright-results/setup-data.setup.ts-import-test-dataset-data-setup/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "126741afc9fe195882b8-615224fdf337b91a3d31",
+          "file": "setup/data.setup.ts",
+          "line": 76,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "setup/auth.setup.ts",
+      "file": "setup/auth.setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "authenticate as candidate",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "auth-setup",
+              "projectName": "auth-setup",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "e717b06d8d484d1cd946-4bbf5ae0a5fc893a93f3",
+          "file": "setup/auth.setup.ts",
+          "line": 66,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "specs/candidate/candidate-auth.spec.ts",
+      "file": "specs/candidate/candidate-auth.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "candidate authentication",
+          "file": "specs/candidate/candidate-auth.spec.ts",
+          "line": 18,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should login with valid credentials",
+              "ok": true,
+              "tags": [
+                "candidate",
+                "smoke"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f79ff6def10e8d34cbda-7a0d44a8b434fa809020",
+              "file": "specs/candidate/candidate-auth.spec.ts",
+              "line": 19,
+              "column": 3
+            },
+            {
+              "title": "should show error on invalid credentials",
+              "ok": true,
+              "tags": [
+                "candidate",
+                "smoke"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f79ff6def10e8d34cbda-ce6f08ec1c012e0c87fe",
+              "file": "specs/candidate/candidate-auth.spec.ts",
+              "line": 33,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/candidate/candidate-questions.spec.ts",
+      "file": "specs/candidate/candidate-questions.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "candidate opinion questions",
+          "file": "specs/candidate/candidate-questions.spec.ts",
+          "line": 18,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should display question cards organized by category (CAND-05)",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d713f3f6e6d38ac7ddeb-ec521d7189454e27a51e",
+              "file": "specs/candidate/candidate-questions.spec.ts",
+              "line": 27,
+              "column": 3
+            },
+            {
+              "title": "should answer a Likert opinion question and save (CAND-04)",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d713f3f6e6d38ac7ddeb-80b35ba41eb02ec0201d",
+              "file": "specs/candidate/candidate-questions.spec.ts",
+              "line": 55,
+              "column": 3
+            },
+            {
+              "title": "should navigate between categories (CAND-05)",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d713f3f6e6d38ac7ddeb-a58416dae03b43249acf",
+              "file": "specs/candidate/candidate-questions.spec.ts",
+              "line": 88,
+              "column": 3
+            },
+            {
+              "title": "should edit a previously answered question (CAND-05)",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d713f3f6e6d38ac7ddeb-1263ee3c5c4ba89b0819",
+              "file": "specs/candidate/candidate-questions.spec.ts",
+              "line": 117,
+              "column": 3
+            },
+            {
+              "title": "should persist question answers after page reload (CAND-12)",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d713f3f6e6d38ac7ddeb-eef40ee40ed9807c0d0d",
+              "file": "specs/candidate/candidate-questions.spec.ts",
+              "line": 154,
+              "column": 3
+            },
+            {
+              "title": "should persist comment text on a question after page reload (CAND-12)",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d713f3f6e6d38ac7ddeb-a7f8a27b963fa830b512",
+              "file": "specs/candidate/candidate-questions.spec.ts",
+              "line": 192,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "candidate preview",
+          "file": "specs/candidate/candidate-questions.spec.ts",
+          "line": 238,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should display entered profile and opinion data on preview page (CAND-06)",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d713f3f6e6d38ac7ddeb-ce877da3dce255027407",
+              "file": "specs/candidate/candidate-questions.spec.ts",
+              "line": 239,
+              "column": 3
+            },
+            {
+              "title": "should show specific candidate data (name or answered question) in preview (CAND-06)",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d713f3f6e6d38ac7ddeb-bbb3cf810bb94ab221a7",
+              "file": "specs/candidate/candidate-questions.spec.ts",
+              "line": 262,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/candidate/candidate-translation.spec.ts",
+      "file": "specs/candidate/candidate-translation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "candidate translation surface (E2E-01)",
+          "file": "specs/candidate/candidate-translation.spec.ts",
+          "line": 19,
+          "column": 6,
+          "specs": [
+            {
+              "title": "multilocale candidate authors a translation and the value persists across reload",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app",
+                  "projectName": "candidate-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "378b40baf0759cbb1d19-d9314f0133ab208bb508",
+              "file": "specs/candidate/candidate-translation.spec.ts",
+              "line": 27,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/candidate/candidate-profile-validation.spec.ts",
+      "file": "specs/candidate/candidate-profile-validation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "A11Y-01 candidate profile validation",
+          "file": "specs/candidate/candidate-profile-validation.spec.ts",
+          "line": 153,
+          "column": 6,
+          "specs": [
+            {
+              "title": "A11Y-01 image-type rejection surfaces invalidFile error",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3176c298771f83e58b92-d1798a9588333cc07f19",
+              "file": "specs/candidate/candidate-profile-validation.spec.ts",
+              "line": 178,
+              "column": 5
+            },
+            {
+              "title": "A11Y-01 image-size rejection surfaces oversizeFile error",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3176c298771f83e58b92-e1079a825fbf188be068",
+              "file": "specs/candidate/candidate-profile-validation.spec.ts",
+              "line": 178,
+              "column": 5
+            },
+            {
+              "title": "A11Y-01 name-too-long caps input value at maxlength=50 on display-name",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3176c298771f83e58b92-352bf880171222f904f5",
+              "file": "specs/candidate/candidate-profile-validation.spec.ts",
+              "line": 246,
+              "column": 5
+            },
+            {
+              "title": "A11Y-01 A11Y-05 email-format rejection surfaces invalidEmail error",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3176c298771f83e58b92-a609049f2e6b55a98f28",
+              "file": "specs/candidate/candidate-profile-validation.spec.ts",
+              "line": 289,
+              "column": 5
+            },
+            {
+              "title": "A11Y-01 A11Y-06 url-format rejection surfaces invalidUrl error",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3176c298771f83e58b92-ef1c280c34c9d9615abe",
+              "file": "specs/candidate/candidate-profile-validation.spec.ts",
+              "line": 289,
+              "column": 5
+            },
+            {
+              "title": "A11Y-01 A11Y-07 required-empty disables submit button via canSubmit gate",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3176c298771f83e58b92-55ddd42d028241749b49",
+              "file": "specs/candidate/candidate-profile-validation.spec.ts",
+              "line": 339,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/candidate/candidate-profile.spec.ts",
+      "file": "specs/candidate/candidate-profile.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "candidate profile (fresh candidate)",
+          "file": "specs/candidate/candidate-profile.spec.ts",
+          "line": 80,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should register the fresh candidate via email link",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0d629d3f780ed259d629-1ae8ef05b411f213a40f",
+              "file": "specs/candidate/candidate-profile.spec.ts",
+              "line": 102,
+              "column": 3
+            },
+            {
+              "title": "should upload a profile image (CAND-03)",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0d629d3f780ed259d629-8fefec99018164acd587",
+              "file": "specs/candidate/candidate-profile.spec.ts",
+              "line": 164,
+              "column": 3
+            },
+            {
+              "title": "should show editable info fields on profile page (CAND-03)",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0d629d3f780ed259d629-856c393c5c0346351486",
+              "file": "specs/candidate/candidate-profile.spec.ts",
+              "line": 212,
+              "column": 3
+            },
+            {
+              "title": "should persist profile image after page reload (CAND-12)",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0d629d3f780ed259d629-6edb2eb452ec0dd578b3",
+              "file": "specs/candidate/candidate-profile.spec.ts",
+              "line": 226,
+              "column": 3
+            },
+            {
+              "title": "A11Y-02 should persist display name after page reload",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0d629d3f780ed259d629-652ccd4eff3a5f6ae73c",
+              "file": "specs/candidate/candidate-profile.spec.ts",
+              "line": 249,
+              "column": 3
+            },
+            {
+              "title": "A11Y-02 should persist bio after page reload",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0d629d3f780ed259d629-12dc9bfc50e98910eacb",
+              "file": "specs/candidate/candidate-profile.spec.ts",
+              "line": 286,
+              "column": 3
+            },
+            {
+              "title": "A11Y-02 should persist social link after page reload",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0d629d3f780ed259d629-6a7f1e8a7708dfda9760",
+              "file": "specs/candidate/candidate-profile.spec.ts",
+              "line": 312,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/candidate/candidate-registration.spec.ts",
+      "file": "specs/candidate/candidate-registration.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "candidate registration via email",
+          "file": "specs/candidate/candidate-registration.spec.ts",
+          "line": 22,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should send registration email and extract link",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "433975f5accc4dc854db-b226561349ab0f00c48b",
+              "file": "specs/candidate/candidate-registration.spec.ts",
+              "line": 30,
+              "column": 3
+            },
+            {
+              "title": "should complete registration via email link",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "433975f5accc4dc854db-da633b73a541226ee089",
+              "file": "specs/candidate/candidate-registration.spec.ts",
+              "line": 62,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "candidate password reset",
+          "file": "specs/candidate/candidate-registration.spec.ts",
+          "line": 108,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should complete forgot-password and reset flow via Inbucket email",
+              "ok": true,
+              "tags": [
+                "candidate"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "candidate-app-mutation",
+                  "projectName": "candidate-app-mutation",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "433975f5accc4dc854db-21d3aaf5536ae07c2544",
+              "file": "specs/candidate/candidate-registration.spec.ts",
+              "line": 116,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/voter/voter-detail.spec.ts",
+      "file": "specs/voter/voter-detail.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "voter entity detail",
+          "file": "specs/voter/voter-detail.spec.ts",
+          "line": 39,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should open candidate detail drawer when clicking a result card",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "db47c94dbd0a28054b61-c79518b8aa731c03045e",
+              "file": "specs/voter/voter-detail.spec.ts",
+              "line": 41,
+              "column": 3
+            },
+            {
+              "title": "should display candidate info and opinions tabs",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "db47c94dbd0a28054b61-48bcd700aba5c5264076",
+              "file": "specs/voter/voter-detail.spec.ts",
+              "line": 55,
+              "column": 3
+            },
+            {
+              "title": "should display candidate answers correctly in info and opinions tabs",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "db47c94dbd0a28054b61-4a89e9cf754279c8a5a9",
+              "file": "specs/voter/voter-detail.spec.ts",
+              "line": 79,
+              "column": 3
+            },
+            {
+              "title": "should open party detail drawer with info, candidates, and opinions tabs",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "db47c94dbd0a28054b61-3a295969ee0031a51984",
+              "file": "specs/voter/voter-detail.spec.ts",
+              "line": 130,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "voter-detail answer cases (E2E-05)",
+          "file": "specs/voter/voter-detail.spec.ts",
+          "line": 235,
+          "column": 6,
+          "specs": [
+            {
+              "title": "case (a) — both answered: voter row and entity row rendered",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "db47c94dbd0a28054b61-f1e6d9017d4fc91d7123",
+              "file": "specs/voter/voter-detail.spec.ts",
+              "line": 236,
+              "column": 3
+            },
+            {
+              "title": "case (b) — voter answered, entity missing: voter row only",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "db47c94dbd0a28054b61-03e6ef168335151c65eb",
+              "file": "specs/voter/voter-detail.spec.ts",
+              "line": 262,
+              "column": 3
+            },
+            {
+              "title": "case (c) — voter missing, entity answered: entity row only",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "db47c94dbd0a28054b61-76d11326ed93173dd790",
+              "file": "specs/voter/voter-detail.spec.ts",
+              "line": 285,
+              "column": 3
+            },
+            {
+              "title": "case (d) — both missing: \"Neither has answered\" message rendered",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "db47c94dbd0a28054b61-92df1b5ac7805129eba4",
+              "file": "specs/voter/voter-detail.spec.ts",
+              "line": 310,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "voter-detail per-category SubMatches (E2E-07)",
+          "file": "specs/voter/voter-detail.spec.ts",
+          "line": 378,
+          "column": 6,
+          "specs": [
+            {
+              "title": "per-category SubMatch grid renders Manhattan + directional metric path categories",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "db47c94dbd0a28054b61-0392d85502a74c75a9d7",
+              "file": "specs/voter/voter-detail.spec.ts",
+              "line": 379,
+              "column": 3
+            },
+            {
+              "title": "directional-metric SubMatch row exists for a candidate who answered the categorical question",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "db47c94dbd0a28054b61-6758d43296ed4a516f73",
+              "file": "specs/voter/voter-detail.spec.ts",
+              "line": 424,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/voter/voter-feedback-persistence.spec.ts",
+      "file": "specs/voter/voter-feedback-persistence.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "feedback persistence (E2E-03)",
+          "file": "specs/voter/voter-feedback-persistence.spec.ts",
+          "line": 42,
+          "column": 6,
+          "specs": [
+            {
+              "title": "feedback text persists across dismiss and resets after send",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "598f43af918b03c66afb-09875824a9cef512bc29",
+              "file": "specs/voter/voter-feedback-persistence.spec.ts",
+              "line": 43,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/voter/voter-journey.spec.ts",
+      "file": "specs/voter/voter-journey.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "voter journey",
+          "file": "specs/voter/voter-journey.spec.ts",
+          "line": 102,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should load home page and display start button",
+              "ok": true,
+              "tags": [
+                "voter",
+                "smoke"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "00bb2ae7b55e530fba81-418135f215ef4f9efbc0",
+              "file": "specs/voter/voter-journey.spec.ts",
+              "line": 115,
+              "column": 3
+            },
+            {
+              "title": "should auto-imply election and constituency",
+              "ok": true,
+              "tags": [
+                "voter",
+                "smoke"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "00bb2ae7b55e530fba81-3ffdcdbb9c4431fcde58",
+              "file": "specs/voter/voter-journey.spec.ts",
+              "line": 129,
+              "column": 3
+            },
+            {
+              "title": "should show questions intro page with start button",
+              "ok": true,
+              "tags": [
+                "voter",
+                "smoke"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "00bb2ae7b55e530fba81-f7c6d05b01cecf74945e",
+              "file": "specs/voter/voter-journey.spec.ts",
+              "line": 145,
+              "column": 3
+            },
+            {
+              "title": "should answer all Likert questions with navigation",
+              "ok": true,
+              "tags": [
+                "voter",
+                "smoke"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "00bb2ae7b55e530fba81-505bb5953b3f34d6d12e",
+              "file": "specs/voter/voter-journey.spec.ts",
+              "line": 164,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/voter/voter-locale-switching.spec.ts",
+      "file": "specs/voter/voter-locale-switching.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "voter locale switching (E2E-08)",
+          "file": "specs/voter/voter-locale-switching.spec.ts",
+          "line": 52,
+          "column": 6,
+          "specs": [
+            {
+              "title": "locale switches via route prefix",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cdc980bdb2d663d39add-6a7d7df3429e949667d0",
+              "file": "specs/voter/voter-locale-switching.spec.ts",
+              "line": 53,
+              "column": 3
+            },
+            {
+              "title": "locale switches via LanguageSelection widget (when present)",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cdc980bdb2d663d39add-b59ead45bb9438459c82",
+              "file": "specs/voter/voter-locale-switching.spec.ts",
+              "line": 85,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/voter/voter-matching.spec.ts",
+      "file": "specs/voter/voter-matching.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "matching algorithm verification",
+          "file": "specs/voter/voter-matching.spec.ts",
+          "line": 198,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should display candidates in correct match ranking order",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1ccf1bda51fc764aadcf-32a658db949647ece6f1",
+              "file": "specs/voter/voter-matching.spec.ts",
+              "line": 201,
+              "column": 3
+            },
+            {
+              "title": "should show perfect match candidate as top result",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1ccf1bda51fc764aadcf-8ec4d08de2e41cbea933",
+              "file": "specs/voter/voter-matching.spec.ts",
+              "line": 229,
+              "column": 3
+            },
+            {
+              "title": "should show worst match candidate as last result",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1ccf1bda51fc764aadcf-9e811fa6f4fb3bb5da4b",
+              "file": "specs/voter/voter-matching.spec.ts",
+              "line": 238,
+              "column": 3
+            },
+            {
+              "title": "should show partial-answer candidate in results with valid score",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1ccf1bda51fc764aadcf-590d5ed24731477e0b90",
+              "file": "specs/voter/voter-matching.spec.ts",
+              "line": 258,
+              "column": 3
+            },
+            {
+              "title": "should NOT show hidden candidate (no termsOfUseAccepted)",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1ccf1bda51fc764aadcf-c9c6929a6894d145209b",
+              "file": "specs/voter/voter-matching.spec.ts",
+              "line": 275,
+              "column": 3
+            },
+            {
+              "title": "should confirm category intros were not shown during journey (VOTE-05 partial negative coverage)",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1ccf1bda51fc764aadcf-4c27ee088bf7a8e56d1f",
+              "file": "specs/voter/voter-matching.spec.ts",
+              "line": 284,
+              "column": 3
+            },
+            {
+              "title": "should confirm results accessible after all questions answered (VOTE-07 partial above-threshold coverage)",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1ccf1bda51fc764aadcf-37d0e2912f453bb30550",
+              "file": "specs/voter/voter-matching.spec.ts",
+              "line": 299,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/voter/voter-navigation.spec.ts",
+      "file": "specs/voter/voter-navigation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "voter navigation: skip/delete/back (E2E-06)",
+          "file": "specs/voter/voter-navigation.spec.ts",
+          "line": 187,
+          "column": 6,
+          "specs": [
+            {
+              "title": "results-CTA toggles per minimumAnswers threshold",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cc9fc2535c09ca320c9e-b630a3d6b753536834a8",
+              "file": "specs/voter/voter-navigation.spec.ts",
+              "line": 201,
+              "column": 3
+            },
+            {
+              "title": "browser-back preserves answer state across navigation",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cc9fc2535c09ca320c9e-7ccd2b9f942b6b7fa2bb",
+              "file": "specs/voter/voter-navigation.spec.ts",
+              "line": 258,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/voter/voter-not-located-redirect.spec.ts",
+      "file": "specs/voter/voter-not-located-redirect.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "CLEAN-02 voter-not-located deferred-target redirect",
+          "file": "specs/voter/voter-not-located-redirect.spec.ts",
+          "line": 56,
+          "column": 6,
+          "specs": [
+            {
+              "title": "CLEAN-02 — direct link to /results route with no election picked bounces twice and resumes /results",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6de6e9512a735139bb67-7f6e496b1ff6b5281a83",
+              "file": "specs/voter/voter-not-located-redirect.spec.ts",
+              "line": 79,
+              "column": 3
+            },
+            {
+              "title": "CLEAN-02 — multi-election multi-constituency bounces twice and resumes deferred target with query params preserved",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6de6e9512a735139bb67-1f9fbceab747be6afe2b",
+              "file": "specs/voter/voter-not-located-redirect.spec.ts",
+              "line": 129,
+              "column": 3
+            },
+            {
+              "title": "CLEAN-02 — election pre-selected via URL bounces only to constituency selector and resumes deferred target",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6de6e9512a735139bb67-8519965207dc50e8618c",
+              "file": "specs/voter/voter-not-located-redirect.spec.ts",
+              "line": 156,
+              "column": 3
+            },
+            {
+              "title": "CLEAN-02 — refresh after localStorage clear mid-session resumes deferred target",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6de6e9512a735139bb67-376cfec7025ae762d48e",
+              "file": "specs/voter/voter-not-located-redirect.spec.ts",
+              "line": 185,
+              "column": 3
+            },
+            {
+              "title": "CLEAN-02 — open-redirect attempt to external URL is rejected by whitelist (defense-in-depth)",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6de6e9512a735139bb67-b282872023cf01f687f8",
+              "file": "specs/voter/voter-not-located-redirect.spec.ts",
+              "line": 219,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/voter/voter-popup-hydration.spec.ts",
+      "file": "specs/voter/voter-popup-hydration.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "setTimeout popup on full page load (LAYOUT-03 regression gate)",
+          "file": "specs/voter/voter-popup-hydration.spec.ts",
+          "line": 44,
+          "column": 6,
+          "specs": [
+            {
+              "title": "popup appears on full page load to /results (LAYOUT-03 hydration path)",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3412f67b0e8ffcf99a9e-e8b7542784145fd0d4eb",
+              "file": "specs/voter/voter-popup-hydration.spec.ts",
+              "line": 122,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/voter/voter-question-rendering-boolean.spec.ts",
+      "file": "specs/voter/voter-question-rendering-boolean.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "voter question rendering — boolean (QSPEC-01)",
+          "file": "specs/voter/voter-question-rendering-boolean.spec.ts",
+          "line": 62,
+          "column": 6,
+          "specs": [
+            {
+              "title": "boolean opinion question renders, voter answers, persists across goBack, mirrors on entity-detail",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "18e1b60c6c90ec99aaa7-1e7083ecef35cb80e7b4",
+              "file": "specs/voter/voter-question-rendering-boolean.spec.ts",
+              "line": 88,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/voter/voter-question-rendering-categorical.spec.ts",
+      "file": "specs/voter/voter-question-rendering-categorical.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "voter question rendering — categorical (QSPEC-02)",
+          "file": "specs/voter/voter-question-rendering-categorical.spec.ts",
+          "line": 88,
+          "column": 6,
+          "specs": [
+            {
+              "title": "categorical opinion question (single-choice) renders, voter answers, persists across goBack, mirrors on entity-detail",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7f419daefaec0c34e21c-c15e9d23cd28ed8b6cbf",
+              "file": "specs/voter/voter-question-rendering-categorical.spec.ts",
+              "line": 105,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/voter/voter-questions.spec.ts",
+      "file": "specs/voter/voter-questions.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "voter questions intro",
+          "file": "specs/voter/voter-questions.spec.ts",
+          "line": 24,
+          "column": 6,
+          "specs": [
+            {
+              "title": "fresh session defaults to all opinion categories checked + counter non-zero on first paint",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "09cd1141b9b95f632421-0f58f227b8a6116894c9",
+              "file": "specs/voter/voter-questions.spec.ts",
+              "line": 42,
+              "column": 3
+            },
+            {
+              "title": "counter updates reactively on category toggle",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "09cd1141b9b95f632421-cdefb048c9514934b13d",
+              "file": "specs/voter/voter-questions.spec.ts",
+              "line": 67,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/voter/voter-results.spec.ts",
+      "file": "specs/voter/voter-results.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "voter results",
+          "file": "specs/voter/voter-results.spec.ts",
+          "line": 98,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should display candidates section with result cards",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1371c49aca7feb847bb2-ba60d2f30ca778a7f576",
+              "file": "specs/voter/voter-results.spec.ts",
+              "line": 99,
+              "column": 3
+            },
+            {
+              "title": "should display entity type tabs for switching between candidates and organizations",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1371c49aca7feb847bb2-60a05904ba27f7b678cd",
+              "file": "specs/voter/voter-results.spec.ts",
+              "line": 117,
+              "column": 3
+            },
+            {
+              "title": "should switch to organizations/parties section and back",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1371c49aca7feb847bb2-6f6f55a933259dc0d56e",
+              "file": "specs/voter/voter-results.spec.ts",
+              "line": 130,
+              "column": 3
+            },
+            {
+              "title": "canonical URL: /results redirects to /results/candidates (RESEARCH A3)",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1371c49aca7feb847bb2-1bd0993a5457206a2fc3",
+              "file": "specs/voter/voter-results.spec.ts",
+              "line": 157,
+              "column": 3
+            },
+            {
+              "title": "filter toggle narrows list without effect_update_depth_exceeded (RESULTS-01 + RESULTS-02)",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1371c49aca7feb847bb2-15aa76a59a46f6e2dd9b",
+              "file": "specs/voter/voter-results.spec.ts",
+              "line": 172,
+              "column": 3
+            },
+            {
+              "title": "filter state resets on plural tab switch (D-14)",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1371c49aca7feb847bb2-ebdfa559ffccf2283be5",
+              "file": "specs/voter/voter-results.spec.ts",
+              "line": 272,
+              "column": 3
+            },
+            {
+              "title": "filter state survives drawer open/close (D-15)",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1371c49aca7feb847bb2-f9f985d4f6da9bcf5763",
+              "file": "specs/voter/voter-results.spec.ts",
+              "line": 330,
+              "column": 3
+            },
+            {
+              "title": "deeplink list+drawer URL renders both (RESULTS-03, D-08 shape 3)",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1371c49aca7feb847bb2-35597ab4f55dc0189f47",
+              "file": "specs/voter/voter-results.spec.ts",
+              "line": 399,
+              "column": 3
+            },
+            {
+              "title": "deeplink edge case: organizations list + candidate drawer (D-08 shape 4)",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1371c49aca7feb847bb2-ad05e33b791bf78e8798",
+              "file": "specs/voter/voter-results.spec.ts",
+              "line": 418,
+              "column": 3
+            },
+            {
+              "title": "Browser Back steps through tab+drawer changes (D-13)",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1371c49aca7feb847bb2-7b4544238bb21cd33a26",
+              "file": "specs/voter/voter-results.spec.ts",
+              "line": 438,
+              "column": 3
+            },
+            {
+              "title": "invalid plural matcher returns 404 (D-11)",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1371c49aca7feb847bb2-7543866bd7db31958e67",
+              "file": "specs/voter/voter-results.spec.ts",
+              "line": 453,
+              "column": 3
+            },
+            {
+              "title": "coupling-rule redirect: singular without id → list view (D-11)",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1371c49aca7feb847bb2-acd46769420a1f8fcb29",
+              "file": "specs/voter/voter-results.spec.ts",
+              "line": 460,
+              "column": 3
+            },
+            {
+              "title": "drawer paints before list on cold deeplink (D-10 source-order + content-visibility)",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1371c49aca7feb847bb2-dac996579cc5a3350936",
+              "file": "specs/voter/voter-results.spec.ts",
+              "line": 469,
+              "column": 3
+            }
+          ],
+          "suites": [
+            {
+              "title": "SETTINGS-01 wave B — filter-type matrix",
+              "file": "specs/voter/voter-results.spec.ts",
+              "line": 541,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "SETTINGS-01 wave B — NumberFilter",
+                  "ok": true,
+                  "tags": [
+                    "voter"
+                  ],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "voter-app",
+                      "projectName": "voter-app",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "1371c49aca7feb847bb2-a60823049a2350c6edab",
+                  "file": "specs/voter/voter-results.spec.ts",
+                  "line": 612,
+                  "column": 5
+                },
+                {
+                  "title": "SETTINGS-01 wave B — TextFilter",
+                  "ok": true,
+                  "tags": [
+                    "voter"
+                  ],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "voter-app",
+                      "projectName": "voter-app",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "1371c49aca7feb847bb2-855de3b87886853edb77",
+                  "file": "specs/voter/voter-results.spec.ts",
+                  "line": 671,
+                  "column": 5
+                },
+                {
+                  "title": "SETTINGS-01 wave B — ChoiceQuestionFilter (categorical)",
+                  "ok": true,
+                  "tags": [
+                    "voter"
+                  ],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "voter-app",
+                      "projectName": "voter-app",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "1371c49aca7feb847bb2-c112351b2f2cff883ed4",
+                  "file": "specs/voter/voter-results.spec.ts",
+                  "line": 730,
+                  "column": 5
+                },
+                {
+                  "title": "SETTINGS-01 wave B — FilterGroup AND",
+                  "ok": true,
+                  "tags": [
+                    "voter"
+                  ],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "voter-app",
+                      "projectName": "voter-app",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "1371c49aca7feb847bb2-656624a87afd784bbaf8",
+                  "file": "specs/voter/voter-results.spec.ts",
+                  "line": 796,
+                  "column": 5
+                },
+                {
+                  "title": "SETTINGS-01 wave B — MISSING_FILTER_VALUE",
+                  "ok": true,
+                  "tags": [
+                    "voter"
+                  ],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "voter-app",
+                      "projectName": "voter-app",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "1371c49aca7feb847bb2-09a84a4253bcd32b033e",
+                  "file": "specs/voter/voter-results.spec.ts",
+                  "line": 888,
+                  "column": 5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/voter/voter-static-pages.spec.ts",
+      "file": "specs/voter/voter-static-pages.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "static pages (VOTE-18)",
+          "file": "specs/voter/voter-static-pages.spec.ts",
+          "line": 31,
+          "column": 6,
+          "specs": [
+            {
+              "title": "about page renders correctly",
+              "ok": true,
+              "tags": [
+                "voter",
+                "smoke"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a577203968f351b2fe58-cd7045a24762c6467dc7",
+              "file": "specs/voter/voter-static-pages.spec.ts",
+              "line": 32,
+              "column": 3
+            },
+            {
+              "title": "info page renders correctly",
+              "ok": true,
+              "tags": [
+                "voter",
+                "smoke"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a577203968f351b2fe58-4f82b979989b03081730",
+              "file": "specs/voter/voter-static-pages.spec.ts",
+              "line": 45,
+              "column": 3
+            },
+            {
+              "title": "privacy page renders correctly",
+              "ok": true,
+              "tags": [
+                "voter",
+                "smoke"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app",
+                  "projectName": "voter-app",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a577203968f351b2fe58-fc36b9dfd56937d6b0c4",
+              "file": "specs/voter/voter-static-pages.spec.ts",
+              "line": 58,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "nominations page (VOTE-19)",
+          "file": "specs/voter/voter-static-pages.spec.ts",
+          "line": 76,
+          "column": 6,
+          "specs": [],
+          "suites": [
+            {
+              "title": "when enabled",
+              "file": "specs/voter/voter-static-pages.spec.ts",
+              "line": 80,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should render nominations page with entries",
+                  "ok": true,
+                  "tags": [
+                    "voter"
+                  ],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "voter-app",
+                      "projectName": "voter-app",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "a577203968f351b2fe58-2aa37be4453b944b9c1d",
+                  "file": "specs/voter/voter-static-pages.spec.ts",
+                  "line": 98,
+                  "column": 5
+                }
+              ]
+            },
+            {
+              "title": "when disabled",
+              "file": "specs/voter/voter-static-pages.spec.ts",
+              "line": 132,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should redirect to home when showAllNominations is false",
+                  "ok": true,
+                  "tags": [
+                    "voter"
+                  ],
+                  "tests": [
+                    {
+                      "timeout": 90000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "voter-app",
+                      "projectName": "voter-app",
+                      "results": [],
+                      "status": "skipped"
+                    }
+                  ],
+                  "id": "a577203968f351b2fe58-1c184a2da09dde7b2b4a",
+                  "file": "specs/voter/voter-static-pages.spec.ts",
+                  "line": 164,
+                  "column": 5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/voter/voter-popups.spec.ts",
+      "file": "specs/voter/voter-popups.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "feedback popup (VOTE-15)",
+          "file": "specs/voter/voter-popups.spec.ts",
+          "line": 75,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should show feedback popup after delay on results page",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app-popups",
+                  "projectName": "voter-app-popups",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "36c3484a8358ac74850b-8864f220e6aeaf376e1d",
+              "file": "specs/voter/voter-popups.spec.ts",
+              "line": 94,
+              "column": 3
+            },
+            {
+              "title": "should remember dismissal after page reload",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app-popups",
+                  "projectName": "voter-app-popups",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "36c3484a8358ac74850b-b9b4035c44d886f79432",
+              "file": "specs/voter/voter-popups.spec.ts",
+              "line": 111,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "survey popup (VOTE-16)",
+          "file": "specs/voter/voter-popups.spec.ts",
+          "line": 159,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should show survey popup after delay on results page",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app-popups",
+                  "projectName": "voter-app-popups",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "36c3484a8358ac74850b-1f6136b2e62eb680cee9",
+              "file": "specs/voter/voter-popups.spec.ts",
+              "line": 178,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "popups disabled",
+          "file": "specs/voter/voter-popups.spec.ts",
+          "line": 201,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should not show any popup when disabled",
+              "ok": true,
+              "tags": [
+                "voter"
+              ],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "voter-app-popups",
+                  "projectName": "voter-app-popups",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "36c3484a8358ac74850b-ba8fe9bfd2fc20683d9e",
+              "file": "specs/voter/voter-popups.spec.ts",
+              "line": 220,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/candidate/candidate-required-info.spec.ts",
+      "file": "specs/candidate/candidate-required-info.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "SETTINGS-03 — candidate-side required-info enforcement",
+          "file": "specs/candidate/candidate-required-info.spec.ts",
+          "line": 95,
+          "column": 6,
+          "specs": [
+            {
+              "title": "SETTINGS-03 unanswered required info question disables profile-dependent CTAs on CandAppHome",
+              "ok": true,
+              "tags": [
+                "candidate",
+                "variant",
+                "settings-03"
+              ],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "variant-hidden-required-candidate",
+                  "projectName": "variant-hidden-required-candidate",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "38ba7b3833426a8c3a6c-647b2ae16b85c882bb31",
+              "file": "specs/candidate/candidate-required-info.spec.ts",
+              "line": 99,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-05-14T18:52:32.802Z",
+    "duration": 20808.071,
+    "expected": 1,
+    "skipped": 164,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

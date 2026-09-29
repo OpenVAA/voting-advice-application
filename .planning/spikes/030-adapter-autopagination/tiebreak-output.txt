@@ -1,0 +1,2 @@
+order=sort_order     rows fetched 36056  unique 35288  duplicates 768  missing 768
+order=sort_order,id  rows fetched 36056  unique 36056  duplicates 0  missing 0

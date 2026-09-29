@@ -1,0 +1,27 @@
+# Revisions git blame should skip.
+#
+# Usage (one-time, per clone):
+#     git config blame.ignoreRevsFile .git-blame-ignore-revs
+# Or per invocation:
+#     git blame --ignore-revs-file .git-blame-ignore-revs <path>
+#
+# Only formatting-only commits belong here. A commit listed below must change
+# no semantics whatsoever, or blame silently attributes real changes to the
+# wrong author.
+
+# Phase 163 (CI Gates: SQL Lint/Format + Secrets & Vulnerability Scanning),
+# roadmap criterion 2 / requirement CIGATE-02, plan 163-07 Task 3.
+#
+# SQL normalisation, FORMATTING ONLY: 42 files, 8535 insertions and 4972
+# deletions = 13,507 changed lines, every changed path ending in `.sql`.
+# Produced by `yarn format` with zero hand edits, after `prettier-plugin-sql`
+# was enabled in `packages/shared-config` so that criterion 2's gate starts
+# from a clean tree rather than from a backlog. Semantics preservation was
+# measured, not asserted: all 42 files are byte-identical to their pre-format
+# versions once whitespace is stripped, and a per-file DDL census matches.
+#
+# `git blame` over `apps/supabase/supabase/` is unusable without this entry.
+# The three follow-up commits that repaired the guards the reformat broke
+# (b05767e06, b2a35e626, 6d910c398) are deliberate, reviewable, non-formatting
+# changes and are deliberately NOT listed here.
+83e07d0ba97c9ea858331155ac39812cb1ef9bfa

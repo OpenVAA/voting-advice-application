@@ -1,0 +1,20 @@
+{
+  "entityList": {
+    "controls": {
+      "noFilterResults": "Keng Resultater mat dëse Filteren. Dir kënnt se änneren.",
+      "noSearchResults": "Keng Resultater mat dëser Sich. Dir kënnt se änneren.",
+      "searchPlaceholder": "No Numm sichen",
+      "showingNumResults": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=one": "Weist 1 Resultat un",
+            "numShownPlural=other": "Weist {numShown} Resultater un"
+          }
+        }
+      ]
+    },
+    "showMore": "Méi weisen"
+  }
+}

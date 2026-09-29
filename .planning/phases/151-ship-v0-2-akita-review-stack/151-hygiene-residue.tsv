@@ -1,0 +1,529 @@
+path	line	reason	rule	text
+tests/playwright.config.ts	26	attributive-reference	phase-ref	Phase 119
+tests/playwright.config.ts	27	attributive-reference	phase-ref	Phase 136
+tests/playwright.config.ts	186	not-a-comment-span	phase-ref	Phase 140
+tests/playwright.config.ts	210	not-a-comment-span	phase-ref	Phase 140
+tests/playwright.config.ts	223	not-a-comment-span	phase-ref	Phase 140
+tests/playwright.config.ts	235	not-a-comment-span	phase-ref	Phase 140
+tests/playwright.config.ts	436	attributive-reference	phase-ref	Phase 140
+tests/playwright.config.ts	477	attributive-reference	phase-ref	Phase 140
+tests/playwright.config.ts	561	unstrippable-section-anchor	section-anchor-alpha	§ DEF-135-04
+tests/playwright.config.ts	692	attributive-reference	phase-ref	Phase 119
+tests/playwright.config.ts	692	attributive-reference	phase-ref	Phase 136
+tests/playwright.config.ts	697	attributive-reference	phase-ref	Phase 136
+tests/IDURA-TEST-RUNBOOK.md	192	markdown-file	task-id	EFLOW-10
+tests/IDURA-TEST-RUNBOOK.md	201	markdown-file	decision-id-bare	D-02
+tests/IDURA-TEST-RUNBOOK.md	279	markdown-file	section-anchor-alpha	§ Run
+tests/IDURA-TEST-RUNBOOK.md	287	markdown-file	plan-number	plan 122-03
+tests/IDURA-TEST-RUNBOOK.md	296	markdown-file	plan-number	plan 122-05
+tests/IDURA-TEST-RUNBOOK.md	301	markdown-file	decision-id-bare	D-01
+tests/IDURA-TEST-RUNBOOK.md	405	markdown-file	task-id	EFLOW-10
+tests/IDURA-TEST-RUNBOOK.md	420	markdown-file	phase-ref	Phase 140
+tests/IDURA-TEST-RUNBOOK.md	430	markdown-file	phase-ref	Phase 140
+tests/IDURA-TEST-RUNBOOK.md	433	markdown-file	artifact-path	140-GATES.md
+tests/README.md	135	markdown-file	phase-ref	Phase 138
+tests/README.md	135	markdown-file	todo-class	TODO
+tests/README.md	186	markdown-file	phase-ref	Phase 140
+tests/README.md	186	markdown-file	phase-ref	Phase 140
+tests/tests/utils/multiChoice.ts	7	attributive-reference	phase-ref	Phase 135
+tests/tests/utils/selectElection.ts	24	attributive-reference	phase-ref	Phase 136
+tests/tests/utils/voterNavigation.ts	53	unstrippable-section-anchor	section-anchor-alpha	§ Named
+tests/tests/utils/voterNavigation.ts	54	attributive-reference	phase-ref	Phase 138
+tests/tests/utils/voterNavigation.ts	72	attributive-reference	phase-ref	Phase 138
+tests/tests/specs/voter/eperm07-term-trigger.spec.ts	10	unstrippable-section-anchor	section-anchor-alpha	§ Hypothesis
+tests/tests/specs/voter/eperm07-term-trigger.spec.ts	152	unstrippable-section-anchor	section-anchor-alpha	§R2.4-C
+tests/tests/specs/voter/eperm07-term-trigger.spec.ts	268	unstrippable-section-anchor	section-anchor-alpha	§R2.4-C
+tests/tests/specs/voter/voter-alliance.spec.ts	47	not-a-comment-span	task-id	EFLOW-02
+tests/tests/specs/voter/voter-alliance.spec.ts	47	not-a-comment-span	task-id	EPERM-03
+tests/tests/specs/voter/voter-alliance.spec.ts	60	not-a-comment-span	task-id	EPERM-03
+tests/tests/specs/voter/voter-alliance.spec.ts	116	not-a-comment-span	task-id	EPERM-04
+tests/tests/specs/voter/voter-alliance.spec.ts	136	not-a-comment-span	task-id	EFLOW-02
+tests/tests/specs/voter/voter-journey-mobile.spec.ts	51	not-a-comment-span	task-id	EFLOW-11
+tests/tests/specs/voter/voter-journey.spec.ts	203	unstrippable-section-anchor	section-anchor-alpha	§ Named
+tests/tests/specs/voter/voter-journey.spec.ts	405	unstrippable-section-anchor	section-anchor-alpha	§
+tests/tests/specs/voter/voter-journey.spec.ts	887	attributive-reference	phase-ref	Phase 119
+tests/tests/specs/voter/voter-journey.spec.ts	894	not-a-comment-span	task-id	EPERM-07
+tests/tests/specs/voter/voter-journey.spec.ts	903	unstrippable-section-anchor	section-anchor-alpha	§ DEF-135-04
+tests/tests/specs/voter/voter-journey.spec.ts	967	attributive-reference	phase-ref	Phase 135
+tests/tests/specs/voter/voter-journey.spec.ts	1225	not-a-comment-span	decision-id-bare	D-10
+tests/tests/specs/voter/voter-journey.spec.ts	1673	not-a-comment-span	task-id	EFLOW-01
+tests/tests/specs/voter/voter-journey.spec.ts	1814	not-a-comment-span	task-id	EQTYP-02
+tests/tests/specs/voter/voter-nominations.spec.ts	29	not-a-comment-span	task-id	UNBLK-04
+tests/tests/specs/voter/voter-prefs-tracking.spec.ts	148	not-a-comment-span	task-id	EFLOW-08
+tests/tests/specs/visual/visual-regression.spec.ts	29	milestone-version	milestone-ver	v1.2
+tests/tests/specs/visual/visual-regression.spec.ts	29	attributive-reference	phase-ref	Phase 136
+tests/tests/specs/visual/visual-regression.spec.ts	35	milestone-version	milestone-ver	v1.58
+tests/tests/specs/perm/perm-access-disable.spec.ts	40	not-a-comment-span	task-id	EPERM-11
+tests/tests/specs/perm/perm-hide-category-tags.spec.ts	50	not-a-comment-span	task-id	ASSERT-05
+tests/tests/specs/perm/perm-hide-election-tags.spec.ts	50	not-a-comment-span	task-id	ASSERT-05
+tests/tests/specs/perm/perm-interactive-info.spec.ts	68	not-a-comment-span	task-id	EPERM-07
+tests/tests/specs/perm/perm-localisation-positive.spec.ts	468	not-a-comment-span	task-id	EFLOW-06
+tests/tests/specs/perm/perm-org-matching.spec.ts	52	not-a-comment-span	task-id	EPERM-10
+tests/tests/specs/perm/perm-show-feedback-survey.spec.ts	49	not-a-comment-span	task-id	EPERM-09
+tests/tests/specs/candidate/candidate-bank-auth-journey.spec.ts	54	unstrippable-section-anchor	section-anchor-alpha	§EFLOW-10b
+tests/tests/specs/candidate/candidate-bank-auth.spec.ts	167	not-a-comment-span	task-id	EFLOW-10
+tests/tests/specs/candidate/candidate-bank-auth.spec.ts	168	not-a-comment-span	decision-id-bare	D-02
+tests/tests/specs/candidate/candidate-journey.spec.ts	409	not-a-comment-span	task-id	EFLOW-09
+tests/tests/specs/candidate/candidate-journey.spec.ts	808	not-a-comment-span	task-id	EQTYP-01
+tests/tests/specs/candidate/candidate-journey.spec.ts	808	not-a-comment-span	decision-id-bare	D-07
+tests/tests/specs/candidate/candidate-journey.spec.ts	884	not-a-comment-span	decision-id-bare	D-02
+tests/tests/specs/candidate/candidate-journey.spec.ts	961	not-a-comment-span	task-id	EFLOW-09
+tests/tests/specs/a11y/a11y-smoke.spec.ts	295	milestone-version	milestone-ver	v2.14
+tests/tests/specs/_probes/numberScale.probe.spec.ts	3	attributive-reference	phase-ref	Phase 130
+tests/tests/specs/_probes/numberScale.probe.spec.ts	115	not-a-comment-span	task-id	EQTYP-01
+tests/tests/specs/_probes/numberScale.probe.spec.ts	115	not-a-comment-span	task-id	EQTYP-02
+tests/tests/specs/_probes/orgMatching.probe.spec.ts	36	not-a-comment-span	task-id	EPERM-10
+tests/tests/specs/_probes/popupNotice.probe.spec.ts	29	not-a-comment-span	task-id	EPERM-09
+tests/tests/specs/_probes/questionInfo.probe.spec.ts	36	not-a-comment-span	task-id	EPERM-07
+tests/tests/specs/_probes/video.probe.spec.ts	51	not-a-comment-span	task-id	EPERM-06
+tests/tests/setup/shared/assertTeardown.ts	42	unstrippable-section-anchor	section-anchor-alpha	§ Adjudication
+tests/tests/setup/shared/assertTeardown.ts	64	unstrippable-section-anchor	section-anchor-alpha	§ Adjudication
+tests/tests/setup/shared/assertTeardown.ts	102	unstrippable-section-anchor	section-anchor-alpha	§ Adjudication
+tests/tests/setup/perm/perm-show-feedback-survey.setup.ts	9	attributive-reference	phase-ref	Phase 119
+tests/tests/setup/candidate/bank-auth-journey.setup.ts	11	attributive-reference	phase-ref	Phase 140
+tests/tests/setup/candidate/bank-auth-journey.teardown.ts	4	unstrippable-section-anchor	section-anchor-alpha	§Runtime
+tests/tests/helpers/navigation.ts	13	unstrippable-section-anchor	section-anchor-alpha	§ Named
+tests/tests/helpers/navigation.ts	18	attributive-reference	phase-ref	Phase 138
+tests/tests/helpers/navigation.ts	46	unstrippable-section-anchor	section-anchor-alpha	§ Named
+tests/tests/helpers/navigation.ts	164	unstrippable-section-anchor	section-anchor-alpha	§B.5
+tests/tests/helpers/navigation.ts	298	unstrippable-section-anchor	section-anchor-alpha	§ Named
+tests/tests/fixtures/voter/views.ts	93	milestone-version	milestone-ver	v2.14
+tests/tests/fixtures/voter/views.ts	94	milestone-version	milestone-ver	v2.15
+tests/tests/fixtures/voter/views.ts	98	unstrippable-section-anchor	section-anchor-alpha	§ U-1
+tests/tests/fixtures/shared/forensicCapture.fixture.ts	12	unstrippable-section-anchor	section-anchor-alpha	§ DEF-135-04:
+tests/tests/fixtures/shared/forensicCapture.fixture.ts	18	unstrippable-section-anchor	section-anchor-alpha	§ U-1
+tests/tests/fixtures/shared/forensicCapture.fixture.ts	42	milestone-version	milestone-ver	v2.14
+tests/tests/fixtures/shared/forensicCapture.fixture.ts	43	milestone-version	milestone-ver	v2.15
+tests/tests/fixtures/shared/theme.fixture.ts	19	attributive-reference	phase-ref	Phase 121
+tests/tests/fixtures/shared/trackingIntercept.fixture.ts	9	unstrippable-section-anchor	section-anchor-alpha	§Tracking
+tests/scripts/determinism-batch.sh	89	attributive-reference	phase-ref	Phase 137
+tests/scripts/determinism-batch.sh	91	milestone-version	milestone-ver	v2.15
+tests/scripts/determinism-batch.sh	96	not-a-comment-span	task-id	EPERM-07
+tests/scripts/determinism-batch.sh	224	not-a-comment-span	artifact-path	138-DETERMINISM-LEDGER.md
+tests/scripts/determinism-batch.sh	265	not-a-comment-span	phase-ref	Phase 138
+tests/scripts/determinism-batch.sh	265	not-a-comment-span	task-id	INTEG-02
+tests/scripts/determinism-batch.sh	296	not-a-comment-span	phase-ref	Phase 137
+tests/scripts/determinism-batch.sh	311	not-a-comment-span	artifact-path	138-NEGATIVE-CONTROL.md
+tests/scripts/determinism-batch.sh	320	not-a-comment-span	task-id	EPERM-07
+tests/scripts/determinism-batch.sh	530	not-a-comment-span	decision-id-bare	D-17
+tests/scripts/determinism-batch.sh	533	not-a-comment-span	decision-id-bare	D-17
+tests/scripts/determinism-batch.sh	548	not-a-comment-span	task-id	EPERM-07
+tests/scripts/e2e-run.sh	251	not-a-comment-span	phase-ref	Phase 138
+tests/scripts/e2e-run.sh	251	not-a-comment-span	decision-id-bare	D-12
+tests/scripts/e2e-run.sh	445	not-a-comment-span	decision-id-bare	D-17
+tests/scripts/e2e-run.sh	456	not-a-comment-span	decision-id-bare	D-17
+packages/question-info/src/core/infoGeneration.ts	119	todo-class	todo-class	TODO
+packages/matching/src/distance/metric.ts	220	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/llmProvider.ts	16	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/llmProvider.ts	17	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/llmProvider.ts	18	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/llmProvider.ts	19	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/llmProvider.ts	20	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/llmProvider.ts	69	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/llmProvider.ts	100	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/llmProvider.ts	167	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/llmProvider.ts	205	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/llmProvider.ts	214	todo-class	todo-class	TODO
+packages/llm/src/llm-providers/provider.types.ts	18	todo-class	todo-class	TODO
+packages/dev-seed/README.md	22	markdown-file	decision-id-long	D-58-11
+packages/dev-seed/README.md	38	markdown-file	decision-id-long	D-58-08
+packages/dev-seed/README.md	51	markdown-file	decision-id-long	D-58-09
+packages/dev-seed/README.md	65	markdown-file	decision-id-long	D-58-17
+packages/dev-seed/README.md	92	markdown-file	phase-ref	Phase 57
+packages/dev-seed/README.md	111	markdown-file	task-id	TMPL-03
+packages/dev-seed/README.md	181	markdown-file	task-id	TMPL-03
+packages/dev-seed/README.md	234	markdown-file	task-id	GEN-04
+packages/dev-seed/README.md	239	markdown-file	phase-ref	Phase 57
+packages/dev-seed/README.md	240	markdown-file	artifact-path	`.planning/phases/57-latent-factor-answer-model/57-CONTEXT.md`
+packages/dev-seed/README.md	255	markdown-file	decision-id-long	D-58-12
+packages/dev-seed/README.md	256	markdown-file	decision-id-bare	D-15
+packages/dev-seed/README.md	285	markdown-file	task-id	TMPL-09
+packages/dev-seed/README.md	285	markdown-file	decision-id-bare	D-16
+packages/dev-seed/README.md	300	markdown-file	phase-ref	Phase 56
+packages/dev-seed/README.md	301	markdown-file	artifact-path	`.planning/phases/56-generator-foundations-plumbing/`
+packages/dev-seed/README.md	302	markdown-file	phase-ref	Phase 57
+packages/dev-seed/README.md	303	markdown-file	artifact-path	`.planning/phases/57-latent-factor-answer-model/`
+packages/dev-seed/README.md	304	markdown-file	phase-ref	Phase 58
+packages/dev-seed/README.md	305	markdown-file	artifact-path	`.planning/phases/58-templates-cli-default-dataset/`
+packages/dev-seed/README.md	307	markdown-file	section-anchor-alpha	§
+packages/dev-seed/tests/assets.test.ts	25	not-a-comment-span	task-id	GEN-10
+packages/dev-seed/tests/assets.test.ts	29	not-a-comment-span	decision-id-long	D-58-05
+packages/dev-seed/tests/determinism.test.ts	18	not-a-comment-span	task-id	TMPL-08
+packages/dev-seed/tests/determinism.test.ts	43	unstrippable-section-anchor	section-anchor-alpha	§Pitfall
+packages/dev-seed/tests/determinism.test.ts	93	not-a-comment-span	phase-ref	Phase 56
+packages/dev-seed/tests/locales.test.ts	19	not-a-comment-span	task-id	TMPL-07
+packages/dev-seed/tests/pipeline.test.ts	41	not-a-comment-span	task-id	TMPL-02
+packages/dev-seed/tests/pipeline.test.ts	63	not-a-comment-span	decision-id-bare	D-25
+packages/dev-seed/tests/pipeline.test.ts	70	not-a-comment-span	decision-id-bare	D-25
+packages/dev-seed/tests/pipeline.test.ts	88	not-a-comment-span	decision-id-bare	D-08
+packages/dev-seed/tests/pipeline.test.ts	198	not-a-comment-span	decision-id-bare	D-06
+packages/dev-seed/tests/pipeline.test.ts	223	not-a-comment-span	task-id	GEN-08
+packages/dev-seed/tests/supabaseAdminClient.test.ts	127	not-a-comment-span	phase-ref	Phase 58
+packages/dev-seed/tests/template.test.ts	22	not-a-comment-span	task-id	TMPL-02
+packages/dev-seed/tests/template.test.ts	22	not-a-comment-span	decision-id-bare	D-18
+packages/dev-seed/tests/template.test.ts	27	not-a-comment-span	task-id	TMPL-09
+packages/dev-seed/tests/template.test.ts	31	not-a-comment-span	task-id	TMPL-09
+packages/dev-seed/tests/template.test.ts	35	not-a-comment-span	task-id	TMPL-09
+packages/dev-seed/tests/template.test.ts	79	not-a-comment-span	task-id	TMPL-07
+packages/dev-seed/tests/template.test.ts	84	not-a-comment-span	task-id	TMPL-07
+packages/dev-seed/tests/template.test.ts	89	not-a-comment-span	task-id	TMPL-07
+packages/dev-seed/tests/template.test.ts	95	not-a-comment-span	task-id	TMPL-07
+packages/dev-seed/tests/template.test.ts	95	not-a-comment-span	task-id	TMPL-02
+packages/dev-seed/tests/writer.test.ts	132	not-a-comment-span	decision-id-bare	D-15
+packages/dev-seed/tests/writer.test.ts	137	not-a-comment-span	decision-id-bare	D-15
+packages/dev-seed/tests/writer.test.ts	184	not-a-comment-span	decision-id-bare	D-11
+packages/dev-seed/tests/writer.test.ts	196	not-a-comment-span	decision-id-bare	D-11
+packages/dev-seed/tests/writer.test.ts	208	not-a-comment-span	decision-id-bare	D-11
+packages/dev-seed/tests/writer.test.ts	289	not-a-comment-span	phase-ref	Phase 58
+packages/dev-seed/tests/writer.test.ts	289	not-a-comment-span	task-id	GEN-09
+packages/dev-seed/tests/templates/base.test.ts	114	not-a-comment-span	decision-id-long	D-58-16
+packages/dev-seed/tests/templates/default.test.ts	142	not-a-comment-span	decision-id-long	D-58-03
+packages/dev-seed/tests/templates/default.test.ts	143	not-a-comment-span	decision-id-bare	D-15
+packages/dev-seed/tests/templates/default.test.ts	151	not-a-comment-span	decision-id-bare	D-15
+packages/dev-seed/tests/templates/default.test.ts	231	not-a-comment-span	decision-id-long	D-58-04
+packages/dev-seed/tests/templates/default.test.ts	235	not-a-comment-span	decision-id-long	D-58-01
+packages/dev-seed/tests/templates/default.test.ts	240	not-a-comment-span	decision-id-long	D-58-02
+packages/dev-seed/tests/templates/default.test.ts	244	not-a-comment-span	decision-id-long	D-58-02
+packages/dev-seed/tests/templates/default.test.ts	248	not-a-comment-span	phase-ref	Phase 64
+packages/dev-seed/tests/templates/default.test.ts	252	not-a-comment-span	decision-id-long	D-58-02
+packages/dev-seed/tests/templates/default.test.ts	256	not-a-comment-span	decision-id-long	D-58-02
+packages/dev-seed/tests/templates/default.test.ts	256	not-a-comment-span	decision-id-bare	D-15
+packages/dev-seed/tests/templates/default.test.ts	260	not-a-comment-span	phase-ref	Phase 64
+packages/dev-seed/tests/template/latent.schema.test.ts	29	not-a-comment-span	decision-id-long	D-57-21
+packages/dev-seed/tests/template/latent.schema.test.ts	30	not-a-comment-span	phase-ref	Phase 56
+packages/dev-seed/tests/template/latent.schema.test.ts	42	not-a-comment-span	decision-id-long	D-57-02
+packages/dev-seed/tests/template/latent.schema.test.ts	52	not-a-comment-span	task-id	TMPL-09
+packages/dev-seed/tests/latent/centroids.test.ts	33	not-a-comment-span	decision-id-long	D-57-03
+packages/dev-seed/tests/latent/centroids.test.ts	33	not-a-comment-span	decision-id-long	D-57-05
+packages/dev-seed/tests/latent/centroids.test.ts	63	not-a-comment-span	decision-id-long	D-57-05
+packages/dev-seed/tests/latent/centroids.test.ts	81	not-a-comment-span	decision-id-long	D-57-05
+packages/dev-seed/tests/latent/clustering.integration.test.ts	94	not-a-comment-span	decision-id-long	D-57-17
+packages/dev-seed/tests/latent/clustering.integration.test.ts	94	not-a-comment-span	decision-id-long	D-57-18
+packages/dev-seed/tests/latent/dimensions.test.ts	19	not-a-comment-span	decision-id-long	D-57-01
+packages/dev-seed/tests/latent/dimensions.test.ts	19	not-a-comment-span	decision-id-long	D-57-02
+packages/dev-seed/tests/latent/gaussian.test.ts	61	not-a-comment-span	decision-id-long	D-57-11
+packages/dev-seed/tests/latent/latentEmitter.test.ts	57	not-a-comment-span	decision-id-long	D-57-13
+packages/dev-seed/tests/latent/latentEmitter.test.ts	57	not-a-comment-span	decision-id-long	D-57-14
+packages/dev-seed/tests/latent/latentEmitter.test.ts	63	not-a-comment-span	decision-id-long	D-57-13
+packages/dev-seed/tests/latent/latentEmitter.test.ts	99	not-a-comment-span	decision-id-long	D-57-14
+packages/dev-seed/tests/latent/latentEmitter.test.ts	114	not-a-comment-span	decision-id-long	D-57-14
+packages/dev-seed/tests/latent/loadings.test.ts	42	not-a-comment-span	decision-id-long	D-57-06
+packages/dev-seed/tests/latent/loadings.test.ts	42	not-a-comment-span	decision-id-long	D-57-07
+packages/dev-seed/tests/latent/loadings.test.ts	63	not-a-comment-span	phase-ref	Phase 56
+packages/dev-seed/tests/latent/loadings.test.ts	90	not-a-comment-span	decision-id-long	D-57-07
+packages/dev-seed/tests/latent/positions.test.ts	23	not-a-comment-span	decision-id-long	D-57-04
+packages/dev-seed/tests/latent/positions.test.ts	38	not-a-comment-span	decision-id-long	D-57-04
+packages/dev-seed/tests/latent/positions.test.ts	83	not-a-comment-span	decision-id-long	D-57-04
+packages/dev-seed/tests/latent/project.test.ts	145	not-a-comment-span	decision-id-long	D-57-09
+packages/dev-seed/tests/latent/spread.test.ts	20	not-a-comment-span	decision-id-long	D-57-04
+packages/dev-seed/tests/integration/default-template.integration.test.ts	13	attributive-reference	phase-ref	Phase 135
+packages/dev-seed/tests/integration/default-template.integration.test.ts	29	attributive-reference	phase-ref	Phase 135
+packages/dev-seed/tests/integration/default-template.integration.test.ts	92	attributive-reference	phase-ref	Phase 135
+packages/dev-seed/tests/integration/default-template.integration.test.ts	200	not-a-comment-span	decision-id-long	D-58-20
+packages/dev-seed/tests/integration/default-template.integration.test.ts	257	attributive-reference	phase-ref	Phase 88
+packages/dev-seed/tests/integration/default-template.integration.test.ts	377	milestone-version	milestone-ver	v2.6
+packages/dev-seed/tests/generators/AccountsGenerator.test.ts	13	not-a-comment-span	decision-id-bare	D-11
+packages/dev-seed/tests/generators/AlliancesGenerator.test.ts	23	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/AlliancesGenerator.test.ts	29	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/AppSettingsGenerator.test.ts	41	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/CandidatesGenerator.test.ts	46	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/CandidatesGenerator.test.ts	89	not-a-comment-span	decision-id-bare	D-27
+packages/dev-seed/tests/generators/CandidatesGenerator.test.ts	106	not-a-comment-span	decision-id-bare	D-27
+packages/dev-seed/tests/generators/CandidatesGenerator.test.ts	106	not-a-comment-span	phase-ref	Phase 57
+packages/dev-seed/tests/generators/CandidatesGenerator.test.ts	132	not-a-comment-span	decision-id-bare	D-57
+packages/dev-seed/tests/generators/CandidatesGenerator.test.ts	152	not-a-comment-span	phase-ref	Phase 56
+packages/dev-seed/tests/generators/CandidatesGenerator.test.ts	170	not-a-comment-span	decision-id-long	D-57-20
+packages/dev-seed/tests/generators/CandidatesGenerator.test.ts	203	not-a-comment-span	decision-id-long	D-57-20
+packages/dev-seed/tests/generators/CandidatesGenerator.test.ts	234	not-a-comment-span	decision-id-long	D-57-20
+packages/dev-seed/tests/generators/ConstituenciesGenerator.test.ts	19	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/ConstituenciesGenerator.test.ts	25	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/ConstituencyGroupsGenerator.test.ts	19	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/ConstituencyGroupsGenerator.test.ts	25	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/ElectionsGenerator.test.ts	26	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/ElectionsGenerator.test.ts	32	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/FactionsGenerator.test.ts	23	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/FactionsGenerator.test.ts	29	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/NominationsGenerator.test.ts	44	not-a-comment-span	task-id	GEN-08
+packages/dev-seed/tests/generators/NominationsGenerator.test.ts	51	not-a-comment-span	task-id	GEN-08
+packages/dev-seed/tests/generators/NominationsGenerator.test.ts	58	not-a-comment-span	task-id	GEN-08
+packages/dev-seed/tests/generators/NominationsGenerator.test.ts	92	not-a-comment-span	section-anchor	§9
+packages/dev-seed/tests/generators/NominationsGenerator.test.ts	104	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/OrganizationsGenerator.test.ts	18	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/OrganizationsGenerator.test.ts	24	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/OrganizationsGenerator.test.ts	52	not-a-comment-span	phase-ref	Phase 56
+packages/dev-seed/tests/generators/OrganizationsGenerator.test.ts	52	not-a-comment-span	section-anchor	§4.8
+packages/dev-seed/tests/generators/ProjectsGenerator.test.ts	13	not-a-comment-span	decision-id-bare	D-11
+packages/dev-seed/tests/generators/QuestionCategoriesGenerator.test.ts	19	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/QuestionCategoriesGenerator.test.ts	25	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/QuestionsGenerator.test.ts	23	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/generators/QuestionsGenerator.test.ts	29	not-a-comment-span	task-id	GEN-04
+packages/dev-seed/tests/cli/allowedTeardownTables.test.ts	75	not-a-comment-span	phase-ref	Phase 140
+packages/dev-seed/tests/cli/help.test.ts	8	not-a-comment-span	task-id	CLI-04
+packages/dev-seed/tests/cli/help.test.ts	8	not-a-comment-span	decision-id-long	D-58-13
+packages/dev-seed/tests/cli/summary.test.ts	8	not-a-comment-span	decision-id-long	D-58-14
+packages/dev-seed/tests/cli/teardown.test.ts	100	not-a-comment-span	phase-ref	Phase 58
+packages/dev-seed/tests/cli/teardown.test.ts	248	not-a-comment-span	task-id	CLI-03
+packages/dev-seed/tests/cli/teardown.test.ts	248	not-a-comment-span	decision-id-long	D-58-07
+packages/dev-seed/tests/cli/teardown.test.ts	248	not-a-comment-span	decision-id-long	D-58-17
+packages/dev-seed/tests/cli/teardown.test.ts	406	not-a-comment-span	task-id	CLI-04
+packages/dev-seed/tests/cli/teardown.test.ts	406	not-a-comment-span	decision-id-long	D-58-13
+packages/dev-seed/tests/cli/teardown.test.ts	428	not-a-comment-span	decision-id-long	D-58-17
+packages/dev-seed/src/index.ts	4	attributive-reference	phase-ref	Phase 56
+packages/dev-seed/src/index.ts	19	attributive-reference	phase-ref	Phase 57
+packages/dev-seed/src/pipeline.ts	171	attributive-reference	phase-ref	Phase 57
+packages/dev-seed/src/pipeline.ts	218	attributive-reference	phase-ref	Phase 58
+packages/dev-seed/src/pipeline.ts	225	attributive-reference	phase-ref	Phase 56
+packages/dev-seed/src/resolveAppSettingsExternalIds.ts	15	todo-class	todo-class	TODO
+packages/dev-seed/src/supabaseAdminClient.ts	130	attributive-reference	phase-ref	Phase 59
+packages/dev-seed/src/supabaseAdminClient.ts	725	unstrippable-section-anchor	section-anchor-alpha	§Specifics:
+packages/dev-seed/src/supabaseAdminClient.ts	750	attributive-reference	phase-ref	Phase 58
+packages/dev-seed/src/writer.ts	9	attributive-reference	phase-ref	Phase 56
+packages/dev-seed/src/writer.ts	69	attributive-reference	phase-ref	Phase 56
+packages/dev-seed/src/writer.ts	138	attributive-reference	phase-ref	Phase 56
+packages/dev-seed/src/writer.ts	171	unstrippable-section-anchor	section-anchor-alpha	§Specifics.
+packages/dev-seed/src/writer.ts	193	attributive-reference	phase-ref	Phase 56
+packages/dev-seed/src/writer.ts	196	not-a-comment-span	phase-ref	Phase 56
+packages/dev-seed/src/writer.ts	197	not-a-comment-span	phase-ref	Phase 58
+packages/dev-seed/src/writer.ts	221	unstrippable-section-anchor	section-anchor-alpha	§Specifics:
+packages/dev-seed/src/templates/e2e/base.ts	287	unstrippable-section-anchor	section-anchor-alpha	§
+packages/dev-seed/src/templates/e2e/base.ts	664	attributive-reference	phase-ref	Phase 129
+packages/dev-seed/src/templates/e2e/base.ts	916	attributive-reference	phase-ref	Phase 134
+packages/dev-seed/src/templates/e2e/base.ts	1040	unstrippable-section-anchor	section-anchor-alpha	§
+packages/dev-seed/src/templates/e2e/perm/perm-org-matching.ts	34	attributive-reference	phase-ref	Phase 119
+packages/dev-seed/src/templates/_helpers/buildMinimal.test.ts	170	not-a-comment-span	decision-id-bare	D-16
+packages/dev-seed/src/templates/_helpers/buildMinimal.test.ts	177	not-a-comment-span	decision-id-bare	D-16
+packages/dev-seed/src/templates/_helpers/buildMinimal.test.ts	183	not-a-comment-span	decision-id-bare	D-16
+packages/dev-seed/src/generators/AccountsGenerator.ts	26	milestone-version	milestone-ver	v2.5
+packages/dev-seed/src/generators/AccountsGenerator.ts	48	not-a-comment-span	decision-id-bare	D-11
+packages/dev-seed/src/generators/AppSettingsGenerator.ts	27	attributive-reference	phase-ref	Phase 58
+packages/dev-seed/src/generators/CandidatesGenerator.ts	19	attributive-reference	phase-ref	Phase 56
+packages/dev-seed/src/generators/CandidatesGenerator.ts	19	attributive-reference	phase-ref	Phase 57
+packages/dev-seed/src/generators/CandidatesGenerator.ts	138	attributive-reference	phase-ref	Phase 56
+packages/dev-seed/src/generators/FeedbackGenerator.ts	4	unstrippable-section-anchor	section-anchor-alpha	§
+packages/dev-seed/src/generators/FeedbackGenerator.ts	4	attributive-reference	phase-ref	Phase 56
+packages/dev-seed/src/generators/FeedbackGenerator.ts	23	attributive-reference	phase-ref	Phase 58
+packages/dev-seed/src/generators/FeedbackGenerator.ts	65	not-a-comment-span	phase-ref	Phase 56
+packages/dev-seed/src/generators/NominationsGenerator.ts	53	attributive-reference	phase-ref	Phase 56
+packages/dev-seed/src/generators/NominationsGenerator.ts	174	not-a-comment-span	decision-id-bare	D-06
+packages/dev-seed/src/generators/OrganizationsGenerator.ts	14	unstrippable-section-anchor	section-anchor-alpha	§generators
+packages/dev-seed/src/generators/ProjectsGenerator.ts	48	not-a-comment-span	decision-id-bare	D-11
+packages/dev-seed/src/generators/QuestionCategoriesGenerator.ts	18	attributive-reference	phase-ref	Phase 56
+packages/dev-seed/src/emitters/answers.ts	7	attributive-reference	phase-ref	Phase 56
+packages/dev-seed/src/emitters/answers.ts	7	attributive-reference	phase-ref	Phase 57
+packages/dev-seed/src/emitters/answers.ts	12	attributive-reference	phase-ref	Phase 56
+packages/dev-seed/src/emitters/latent/centroids.ts	14	unstrippable-section-anchor	section-anchor-alpha	§
+packages/dev-seed/src/emitters/latent/gaussian.ts	14	unstrippable-section-anchor	section-anchor-alpha	§Common
+packages/dev-seed/src/emitters/latent/index.ts	7	attributive-reference	phase-ref	Phase 57
+packages/dev-seed/src/emitters/latent/latentEmitter.ts	38	attributive-reference	phase-ref	Phase 57
+packages/dev-seed/src/emitters/latent/latentEmitter.ts	41	attributive-reference	phase-ref	Phase 56
+packages/dev-seed/src/emitters/latent/latentTypes.ts	2	attributive-reference	phase-ref	Phase 57
+packages/dev-seed/src/emitters/latent/latentTypes.ts	11	attributive-reference	phase-ref	Phase 57
+packages/dev-seed/src/emitters/latent/loadings.ts	33	unstrippable-section-anchor	section-anchor-alpha	§Common
+packages/dev-seed/src/emitters/latent/project.ts	120	attributive-reference	phase-ref	Phase 56
+packages/dev-seed/src/emitters/latent/project.ts	264	attributive-reference	phase-ref	Phase 56
+packages/dev-seed/src/emitters/latent/project.ts	306	attributive-reference	phase-ref	Phase 56
+packages/dev-seed/src/cli/teardown-help.ts	34	not-a-comment-span	decision-id-long	D-58-17
+packages/dev-seed/src/assets/portraits/LICENSE.md	31	markdown-file	decision-id-bare	D-58
+packages/data/src/root/dataRoot.ts	743	todo-class	todo-class	TODO
+packages/data/src/objects/questions/variants/multipleChoiceCategoricalQuestion.test.ts	28	not-a-comment-span	decision-id-bare	D-06
+packages/data/src/objects/questions/variants/multipleChoiceCategoricalQuestion.test.ts	66	not-a-comment-span	decision-id-bare	D-07
+packages/data/src/objects/questions/variants/variants.ts	58	todo-class	todo-class	TODO
+packages/data/src/objects/questions/base/answer.type.ts	32	todo-class	todo-class	TODO
+packages/data/src/objects/questions/base/questionTypes.ts	36	todo-class	todo-class	TODO
+packages/argument-condensation/README.md	255	markdown-file	todo-class	TODO
+packages/argument-condensation/src/core/types/condensation/condensationType.ts	4	todo-class	todo-class	TODO
+packages/argument-condensation/src/core/types/condensation/condensationType.ts	9	todo-class	todo-class	TODO
+packages/argument-condensation/src/core/condensation/condenser.ts	43	todo-class	todo-class	TODO
+packages/argument-condensation/src/core/condensation/condenser.ts	706	ambiguous-reference	phase-ref	PHASE 1
+packages/argument-condensation/src/core/condensation/condenser.ts	745	ambiguous-reference	phase-ref	PHASE 2
+packages/argument-condensation/src/core/condensation/condenser.ts	763	ambiguous-reference	phase-ref	PHASE 3
+packages/argument-condensation/src/core/condensation/condenser.ts	792	ambiguous-reference	phase-ref	PHASE 4
+packages/app-shared/src/utils/mergeSettings.ts	8	attributive-reference	phase-ref	Phase 63
+packages/app-shared/src/settings/dynamicSettings.type.ts	68	todo-class	todo-class	TODO
+packages/app-shared/src/settings/dynamicSettings.type.ts	395	attributive-reference	phase-ref	Phase 69
+apps/supabase/supabase/tests/database/00-helpers.test.sql	20	ambiguous-reference	phase-ref	Phase 1
+apps/supabase/supabase/tests/database/00-helpers.test.sql	412	ambiguous-reference	phase-ref	Phase 2
+apps/supabase/supabase/functions/identity-callback/index.ts	27	not-a-comment-span	milestone-ver	v5.9
+apps/supabase/benchmarks/scripts/run-concurrency-scaling.sh	75	ambiguous-reference	phase-ref	PHASE 1
+apps/supabase/benchmarks/scripts/run-concurrency-scaling.sh	77	not-a-comment-span	phase-ref	PHASE 1
+apps/supabase/benchmarks/scripts/run-concurrency-scaling.sh	112	ambiguous-reference	phase-ref	PHASE 2
+apps/supabase/benchmarks/scripts/run-concurrency-scaling.sh	114	not-a-comment-span	phase-ref	PHASE 2
+apps/supabase/benchmarks/scripts/run-concurrency-scaling.sh	138	ambiguous-reference	phase-ref	PHASE 3
+apps/supabase/benchmarks/scripts/swap-schema.sh	29	attributive-reference	phase-ref	Phase 10
+apps/frontend/eslint.config.mjs	38	milestone-version	milestone-ver	v2.13
+apps/frontend/eslint.config.mjs	77	milestone-version	milestone-ver	v2.11
+apps/frontend/eslint.config.mjs	95	not-a-comment-span	milestone-ver	v2.11
+apps/frontend/eslint.config.mjs	95	not-a-comment-span	artifact-path	.planning/v2.11-DECISIONS.md
+apps/frontend/src/app.css	464	todo-class	todo-class	TODO
+apps/frontend/src/routes/+layout.svelte	59	todo-class	todo-class	TODO
+apps/frontend/src/routes/+layout.svelte	71	todo-class	todo-class	TODO
+apps/frontend/src/routes/+layout.svelte	79	unstrippable-section-anchor	section-anchor-alpha	§Pattern
+apps/frontend/src/routes/+layout.svelte	164	attributive-reference	spike-ref	spike-015
+apps/frontend/src/routes/+layout.svelte	263	milestone-version	milestone-ver	v2.1
+apps/frontend/src/routes/+layout.svelte	263	attributive-reference	phase-ref	Phase 60
+apps/frontend/src/routes/Banner.svelte	7	todo-class	todo-class	TODO
+apps/frontend/src/routes/candidate/register/password/+page.svelte	32	unstrippable-section-anchor	section-anchor-alpha	§Context
+apps/frontend/src/routes/candidate/preregister/+page.svelte	29	unstrippable-section-anchor	section-anchor-alpha	§Context
+apps/frontend/src/routes/candidate/preregister/(authenticated)/elections/+page.svelte	14	unstrippable-section-anchor	section-anchor-alpha	§Context
+apps/frontend/src/routes/candidate/preregister/(authenticated)/elections/+page.svelte	18	unstrippable-section-anchor	section-anchor-alpha	§Context
+apps/frontend/src/routes/candidate/preregister/(authenticated)/constituencies/+page.svelte	14	unstrippable-section-anchor	section-anchor-alpha	§Context
+apps/frontend/src/routes/candidate/login/+page.svelte	45	unstrippable-section-anchor	section-anchor-alpha	§Context
+apps/frontend/src/routes/candidate/(protected)/+layout.svelte	76	unstrippable-section-anchor	section-anchor-alpha	§Pattern
+apps/frontend/src/routes/candidate/(protected)/+layout.svelte	100	unstrippable-section-anchor	section-anchor-alpha	§Alternatives
+apps/frontend/src/routes/candidate/(protected)/+layout.svelte	110	milestone-version	milestone-ver	v2.1
+apps/frontend/src/routes/candidate/(protected)/questions/[questionId]/+page.svelte	52	unstrippable-section-anchor	section-anchor-alpha	§Context
+apps/frontend/src/routes/candidate/(protected)/questions/[questionId]/+page.svelte	55	unstrippable-section-anchor	section-anchor-alpha	§Context
+apps/frontend/src/routes/candidate/(protected)/profile/+page.svelte	40	unstrippable-section-anchor	section-anchor-alpha	§Context
+apps/frontend/src/routes/api/admin/jobs/abort-all/+server.ts	14	todo-class	todo-class	TODO
+apps/frontend/src/routes/admin/(protected)/question-info/+page.svelte	24	unstrippable-section-anchor	section-anchor-alpha	§Context
+apps/frontend/src/routes/admin/(protected)/jobs/+page.svelte	8	todo-class	todo-class	TODO
+apps/frontend/src/routes/admin/(protected)/argument-condensation/+page.svelte	23	unstrippable-section-anchor	section-anchor-alpha	§Context
+apps/frontend/src/routes/(voters)/+layout.svelte	105	attributive-reference	phase-ref	Phase 77
+apps/frontend/src/routes/(voters)/info/+page.svelte	21	unstrippable-section-anchor	section-anchor-alpha	§Context
+apps/frontend/src/routes/(voters)/constituencies/+page.svelte	42	unstrippable-section-anchor	section-anchor-alpha	§Context
+apps/frontend/src/routes/(voters)/(located)/+layout.ts	8	todo-class	todo-class	TODO
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte	9	attributive-reference	phase-ref	Phase 88
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/+page.ts	6	attributive-reference	phase-ref	Phase 88
+apps/frontend/src/routes/(voters)/(located)/questions/+layout.svelte	61	unstrippable-section-anchor	section-anchor-alpha	§Context
+apps/frontend/src/routes/(voters)/(located)/questions/+layout.svelte	238	todo-class	todo-class	TODO
+apps/frontend/src/routes/(voters)/(located)/questions/category/[categoryId]/+page.svelte	44	unstrippable-section-anchor	section-anchor-alpha	§Context
+apps/frontend/src/params/etPl.test.ts	6	attributive-reference	phase-ref	Phase 88
+apps/frontend/src/params/etPl.test.ts	8	attributive-reference	phase-ref	Phase 62
+apps/frontend/src/params/etPl.test.ts	9	attributive-reference	phase-ref	Phase 69
+apps/frontend/src/params/etPl.ts	3	attributive-reference	phase-ref	Phase 88
+apps/frontend/src/params/etPl.ts	13	attributive-reference	phase-ref	Phase 62
+apps/frontend/src/params/etPl.ts	20	unstrippable-section-anchor	section-anchor-alpha	§Pitfall
+apps/frontend/src/params/etSg.test.ts	6	attributive-reference	phase-ref	Phase 88
+apps/frontend/src/params/etSg.test.ts	8	attributive-reference	phase-ref	Phase 62
+apps/frontend/src/params/etSg.test.ts	9	attributive-reference	phase-ref	Phase 69
+apps/frontend/src/params/etSg.ts	13	attributive-reference	phase-ref	Phase 62
+apps/frontend/src/params/etSg.ts	22	unstrippable-section-anchor	section-anchor-alpha	§Pitfall
+apps/frontend/src/lib/utils/getAllianceSummary.ts	10	attributive-reference	phase-ref	Phase 69
+apps/frontend/src/lib/utils/regexp.ts	4	todo-class	todo-class	TODO
+apps/frontend/src/lib/utils/settings.test.ts	77	attributive-reference	spike-ref	spike 008
+apps/frontend/src/lib/utils/settings.ts	7	todo-class	todo-class	TODO
+apps/frontend/src/lib/utils/sorting.ts	40	todo-class	todo-class	TODO
+apps/frontend/src/lib/utils/route/parseParams.test.ts	5	attributive-reference	phase-ref	Phase 88
+apps/frontend/src/lib/utils/route/route.ts	26	attributive-reference	phase-ref	Phase 88
+apps/frontend/src/lib/utils/matching/imputeParentAnswers.test.ts	210	not-a-comment-span	phase-ref	Phase 69
+apps/frontend/src/lib/utils/matching/imputeParentAnswers.ts	136	todo-class	todo-class	TODO
+apps/frontend/src/lib/server/api/adapters/local/dataProvider/localServerDataProvider.ts	153	todo-class	todo-class	TODO
+apps/frontend/src/lib/i18n/tests/translations.test.ts	218	not-a-comment-span	task-id	CLEAN-04
+apps/frontend/src/lib/i18n/tests/translations.test.ts	220	attributive-reference	phase-ref	Phase 78
+apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte	51	unstrippable-section-anchor	section-anchor-alpha	§Context
+apps/frontend/src/lib/dynamic-components/navigation/navGroupContext.ts	14	unstrippable-section-anchor	section-anchor-alpha	§Pattern
+apps/frontend/src/lib/dynamic-components/navigation/NavGroup.svelte	36	unstrippable-section-anchor	section-anchor-alpha	§Pitfall
+apps/frontend/src/lib/dynamic-components/navigation/NavItem.svelte	40	unstrippable-section-anchor	section-anchor-alpha	§Pitfall
+apps/frontend/src/lib/dynamic-components/navigation/NavItem.svelte	84	attributive-reference	phase-ref	Phase 80
+apps/frontend/src/lib/dynamic-components/navigation/admin/AdminNav.svelte	46	todo-class	todo-class	TODO
+apps/frontend/src/lib/dynamic-components/entityList/index.ts	7	unstrippable-section-anchor	section-anchor-alpha	§Runtime
+apps/frontend/src/lib/dynamic-components/entityList/EntityListControls.svelte	5	todo-class	todo-class	TODO
+apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.svelte	97	unstrippable-section-anchor	section-anchor-alpha	§Pitfall
+apps/frontend/src/lib/dynamic-components/entityDetails/EntityInfo.svelte	48	unstrippable-section-anchor	section-anchor-alpha	§Context
+apps/frontend/src/lib/dynamic-components/entityCard/EntityCard.svelte	83	unstrippable-section-anchor	section-anchor-alpha	§Context
+apps/frontend/src/lib/dynamic-components/entityCard/EntityCard.svelte	125	todo-class	todo-class	TODO
+apps/frontend/src/lib/contexts/voter/answerState.svelte.ts	10	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/voter/answerState.svelte.ts	14	attributive-reference	spike-ref	spike-022
+apps/frontend/src/lib/contexts/voter/countAnswers.ts	5	todo-class	todo-class	TODO
+apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts	33	attributive-reference	phase-ref	Phase 64
+apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts	45	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts	116	unstrippable-section-anchor	section-anchor-alpha	§Pitfall
+apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts	145	unstrippable-section-anchor	section-anchor-alpha	§below
+apps/frontend/src/lib/contexts/voter/voterContext.type.ts	68	attributive-reference	phase-ref	Phase 88
+apps/frontend/src/lib/contexts/utils/SettingsOverlay.svelte.ts	7	attributive-reference	phase-ref	Phase 98
+apps/frontend/src/lib/contexts/utils/SettingsOverlay.svelte.ts	57	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/utils/paramState.svelte.ts	7	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/utils/persistedState.svelte.ts	70	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/layout/VideoController.svelte.ts	6	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/layout/layoutContext.svelte.ts	97	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/filter/filterContext.svelte.test.ts	15	attributive-reference	phase-ref	Phase 88
+apps/frontend/src/lib/contexts/filter/filterContext.svelte.ts	28	unstrippable-section-anchor	section-anchor-alpha	§Pattern
+apps/frontend/src/lib/contexts/filter/filterContext.svelte.ts	130	not-a-comment-span	phase-ref	Phase 62
+apps/frontend/src/lib/contexts/filter/filterContext.svelte.ts	130	not-a-comment-span	decision-id-bare	D-06
+apps/frontend/src/lib/contexts/filter/filterContext.svelte.ts	135	not-a-comment-span	phase-ref	Phase 62
+apps/frontend/src/lib/contexts/filter/filterContext.svelte.ts	135	not-a-comment-span	decision-id-bare	D-06
+apps/frontend/src/lib/contexts/filter/filterContext.type.ts	8	attributive-reference	phase-ref	Phase 88
+apps/frontend/src/lib/contexts/filter/filterContext.type.ts	13	attributive-reference	phase-ref	Phase 62
+apps/frontend/src/lib/contexts/filter/filterContext.type.ts	32	unstrippable-section-anchor	section-anchor-alpha	§Pitfall
+apps/frontend/src/lib/contexts/filter/filterContext.type.ts	49	attributive-reference	phase-ref	Phase 62
+apps/frontend/src/lib/contexts/filter/filterContext.type.ts	55	attributive-reference	phase-ref	Phase 62
+apps/frontend/src/lib/contexts/data/dataContext.type.ts	10	attributive-reference	phase-ref	Phase 113
+apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.test.ts	103	not-a-comment-span	task-id	RUNES-05
+apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.ts	37	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/candidate/candidateContext.type.ts	24	todo-class	todo-class	TODO
+apps/frontend/src/lib/contexts/candidate/candidateContext.type.ts	28	todo-class	todo-class	TODO
+apps/frontend/src/lib/contexts/candidate/candidateUserDataState.svelte.ts	14	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/auth/authContext.svelte.ts	14	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/auth/authContext.svelte.ts	32	attributive-reference	phase-ref	Phase 109
+apps/frontend/src/lib/contexts/auth/authContext.svelte.ts	47	unstrippable-section-anchor	section-anchor-alpha	§D
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	30	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	58	milestone-version	milestone-ver	v2.11
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	103	todo-class	todo-class	TODO
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	127	todo-class	todo-class	TODO
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	204	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/app/appContext.svelte.ts	377	attributive-reference	phase-ref	Phase 64
+apps/frontend/src/lib/contexts/app/appContext.type.ts	85	todo-class	todo-class	TODO
+apps/frontend/src/lib/contexts/app/survey.svelte.test.ts	9	attributive-reference	phase-ref	Phase 113
+apps/frontend/src/lib/contexts/app/tracking/trackingService.svelte.test.ts	143	not-a-comment-span	phase-ref	Phase 107
+apps/frontend/src/lib/contexts/app/tracking/trackingService.svelte.ts	24	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/app/tracking/trackingService.svelte.ts	32	attributive-reference	phase-ref	Phase 108
+apps/frontend/src/lib/contexts/app/tracking/trackingService.svelte.ts	36	attributive-reference	phase-ref	Phase 107
+apps/frontend/src/lib/contexts/app/tracking/trackingService.svelte.ts	37	attributive-reference	phase-ref	Phase 109
+apps/frontend/src/lib/contexts/app/popup/popupState.svelte.ts	6	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/admin/adminContext.svelte.ts	17	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/admin/adminContext.svelte.ts	28	milestone-version	milestone-ver	v2.11
+apps/frontend/src/lib/contexts/admin/adminContext.svelte.ts	30	milestone-version	milestone-ver	v2.11
+apps/frontend/src/lib/contexts/admin/adminContext.svelte.ts	66	milestone-version	milestone-ver	v2.11
+apps/frontend/src/lib/contexts/admin/adminContext.svelte.ts	211	milestone-version	milestone-ver	v2.11
+apps/frontend/src/lib/contexts/admin/jobStates.svelte.ts	11	milestone-version	milestone-ver	v2.13
+apps/frontend/src/lib/contexts/admin/jobStates.type.ts	20	todo-class	todo-class	TODO
+apps/frontend/src/lib/contexts/admin/jobStates.type.ts	25	todo-class	todo-class	TODO
+apps/frontend/src/lib/components/video/Video.svelte	521	todo-class	todo-class	TODO
+apps/frontend/src/lib/components/tabs/Tabs.svelte	17	todo-class	todo-class	TODO
+apps/frontend/src/lib/components/tabs/Tabs.svelte	61	unstrippable-section-anchor	section-anchor-alpha	§Latent
+apps/frontend/src/lib/components/select/Select.svelte	348	attributive-reference	phase-ref	Phase 65
+apps/frontend/src/lib/components/questions/QuestionChoices.svelte	379	attributive-reference	phase-ref	Phase 64
+apps/frontend/src/lib/components/questions/QuestionChoices.svelte	379	milestone-version	milestone-ver	v2.6
+apps/frontend/src/lib/components/input/Input.svelte	226	attributive-reference	phase-ref	Phase 64
+apps/frontend/src/lib/components/input/Input.svelte	353	todo-class	todo-class	TODO
+apps/frontend/src/lib/components/input/Input.svelte	422	attributive-reference	phase-ref	Phase 65
+apps/frontend/src/lib/components/input/Input.svelte	447	attributive-reference	phase-ref	Phase 65
+apps/frontend/src/lib/components/input/Input.svelte	489	attributive-reference	phase-ref	Phase 65
+apps/frontend/src/lib/components/infoAnswer/InfoAnswer.svelte	103	todo-class	todo-class	TODO
+apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.svelte	51	attributive-reference	phase-ref	Phase 65
+apps/frontend/src/lib/api/utils/authHeaders.ts	10	todo-class	todo-class	TODO
+apps/frontend/src/lib/api/utils/auth/providers/idura.test.ts	77	not-a-comment-span	decision-id-bare	D-04
+apps/frontend/src/lib/api/utils/auth/providers/signicat.test.ts	41	not-a-comment-span	decision-id-bare	D-04
+apps/frontend/src/lib/api/utils/auth/providers/signicat.test.ts	68	not-a-comment-span	decision-id-bare	D-09
+apps/frontend/src/lib/api/utils/auth/providers/signicat.test.ts	68	not-a-comment-span	decision-id-bare	D-10
+apps/frontend/src/lib/api/base/dataWriter.type.ts	211	todo-class	todo-class	TODO
+apps/frontend/src/lib/api/base/dataWriter.type.ts	311	todo-class	todo-class	TODO
+apps/frontend/src/lib/api/base/dataWriter.type.ts	321	todo-class	todo-class	TODO
+apps/frontend/src/lib/api/adapters/supabase/utils/mapRow.ts	7	todo-class	todo-class	TODO
+apps/frontend/src/lib/api/adapters/supabase/utils/toDataObject.test.ts	76	not-a-comment-span	decision-id-bare	D-05
+apps/frontend/src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.ts	380	todo-class	todo-class	TODO
+apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts	1630	not-a-comment-span	phase-ref	Phase 64
+apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts	409	attributive-reference	phase-ref	Phase 64
+apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.type.ts	5	milestone-version	milestone-ver	v2.6
+apps/frontend/src/lib/api/adapters/supabase/adminWriter/supabaseAdminWriter.ts	15	todo-class	todo-class	TODO
+apps/frontend/src/lib/admin/components/jobs/FeatureJobs.svelte	103	todo-class	todo-class	TODO
+apps/frontend/src/lib/admin/components/jobs/JobDetails.svelte	83	todo-class	todo-class	TODO
+apps/frontend/src/lib/admin/components/jobs/WithPolling.svelte	5	todo-class	todo-class	TODO
+apps/frontend/src/lib/_guards/eslint-store-guard.test.ts	12	attributive-reference	phase-ref	Phase 115
+apps/frontend/src/lib/_guards/eslint-store-guard.test.ts	39	not-a-comment-span	task-id	RUNES-03
+apps/frontend/scripts/flatten-current-codemod.mjs	5	ambiguous-reference	spike-ref	spike-009
+apps/frontend/scripts/flatten-current-codemod.mjs	72	attributive-reference	spike-ref	spike-009
+apps/frontend/scripts/flatten-current-codemod.mjs	73	attributive-reference	phase-ref	Phase 113
+apps/frontend/scripts/flatten-current-codemod.mjs	200	not-a-comment-span	phase-ref	PHASE 113
+apps/frontend/scripts/store-to-state-codemod.mjs	5	attributive-reference	phase-ref	Phase 106
+apps/frontend/scripts/store-to-state-codemod.mjs	162	not-a-comment-span	phase-ref	PHASE 114
+apps/frontend/ios/App/App/Base.lproj/Main.storyboard	2	not-a-comment-span	task-id	BYZ-38
+apps/frontend/ios/App/App/Base.lproj/Main.storyboard	14	not-a-comment-span	task-id	BYZ-38
+apps/docs/src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/entityList/EntityListControls/+page.md	5	markdown-file	todo-class	TODO
+apps/docs/src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/entityCard/EntityCardAction/+page.md	5	markdown-file	todo-class	TODO
+apps/docs/src/routes/(content)/developers-guide/frontend/components/generated/components/tabs/Tabs/+page.md	18	markdown-file	todo-class	TODO
+apps/docs/src/routes/(content)/developers-guide/contributing/contribute/+page.md	15	markdown-file	milestone-ver	v1.0
+apps/docs/src/routes/(content)/about/project/+page.md	37	markdown-file	milestone-ver	v1.0
+apps/docs/src/routes/(content)/about/project/+page.md	41	markdown-file	milestone-ver	v1.0
+apps/docs/src/routes/(content)/about/project/+page.md	45	markdown-file	milestone-ver	v1.0
+apps/docs/src/routes/(content)/about/project/+page.md	49	markdown-file	milestone-ver	v1.0

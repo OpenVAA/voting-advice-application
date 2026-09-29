@@ -1,0 +1,2 @@
+NEW FAILURES (Plan 2 may have introduced): 0
+NEW PASSES (Plan 2 may have fixed by side-effect): 0

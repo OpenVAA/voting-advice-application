@@ -1,0 +1,20 @@
+=== shipped
+db:reset exit 0
+test:db exit 0
+Files=28, Tests=1086,  2 wallclock secs ( 0.06 usr  0.03 sys +  0.12 cusr  0.08 csys =  0.29 CPU)
+Result: PASS
+=== A_public_first
+db:reset exit 0
+A_public_first
+applied A_public_first, quals md5 ea7c63b821006235fa06e1d214b04448
+test:db exit 0
+Files=28, Tests=1086,  3 wallclock secs ( 0.07 usr  0.04 sys +  0.12 cusr  0.08 csys =  0.31 CPU)
+Result: PASS
+=== B_project_public_entity
+db:reset exit 0
+B_project_public_entity
+applied B_project_public_entity, quals md5 b096e3bbcc51a0f572477e2b68bd3461
+test:db exit 0
+Files=28, Tests=1086,  3 wallclock secs ( 0.06 usr  0.03 sys +  0.14 cusr  0.06 csys =  0.29 CPU)
+Result: PASS
+final db:reset exit 0

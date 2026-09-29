@@ -1,0 +1,87 @@
+[dotenv@17.3.1] injecting env (25) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+Listing tests:
+  [data-teardown-perm-disable-allow-open] › setup/perm-disable-allow-open.teardown.ts:24:1 › delete perm-disable-allow-open dataset
+  [data-teardown-perm-hide-category-tags] › setup/perm-hide-category-tags.teardown.ts:14:1 › delete perm-hide-category-tags dataset
+  [data-teardown-perm-hide-election-tags] › setup/perm-hide-election-tags.teardown.ts:14:1 › delete perm-hide-election-tags dataset
+  [data-teardown-perm-hide-if-missing-answers] › setup/perm-hide-if-missing-answers.teardown.ts:14:1 › delete perm-hide-if-missing-answers dataset
+  [data-teardown-perm-hide-all-nominations] › setup/perm-hide-all-nominations.teardown.ts:14:1 › delete perm-hide-all-nominations dataset
+  [data-teardown-perm-header-show-help] › setup/perm-header-show-help.teardown.ts:14:1 › delete perm-header-show-help dataset
+  [data-teardown-perm-header-show-feedback] › setup/perm-header-show-feedback.teardown.ts:14:1 › delete perm-header-show-feedback dataset
+  [data-teardown-perm-hide-hero] › setup/perm-hide-hero.teardown.ts:22:1 › delete perm-hide-hero dataset
+  [data-teardown-perm-answers-locked] › setup/perm-answers-locked.teardown.ts:24:1 › delete perm-answers-locked dataset
+  [data-teardown-perm-localisation-positive] › setup/perm-localisation-positive.teardown.ts:29:1 › delete perm-localisation-positive dataset
+  [data-teardown-perm-missing-nominations] › setup/perm-missing-nominations.teardown.ts:14:1 › delete perm-missing-nominations dataset
+  [data-teardown-perm-per-app-notifications] › setup/perm-per-app-notifications.teardown.ts:14:1 › delete perm-per-app-notifications dataset
+  [data-teardown-perm-disable-candidate-app] › setup/perm-disable-candidate-app.teardown.ts:14:1 › delete perm-disable-candidate-app dataset
+  [data-teardown-perm-disable-voter-app] › setup/perm-disable-voter-app.teardown.ts:14:1 › delete perm-disable-voter-app dataset
+  [data-teardown-candidate-mega] › setup/candidate-mega.teardown.ts:18:1 › unregister candidate-mega auth user
+  [data-setup-candidate-mega] › setup/candidate-mega.setup.ts:30:1 › prepare candidate-mega auth state (unregister, idempotent)
+  [candidate-mega-journey] › specs/candidate/candidate-mega-journey.spec.ts:250:3 › candidate mega-journey › full candidate journey end-to-end
+  [data-setup-perm-disable-voter-app] › setup/perm-disable-voter-app.setup.ts:15:1 › import perm-disable-voter-app dataset
+  [perm-disable-voter-app] › specs/perm/perm-disable-voter-app.spec.ts:20:3 › perm-disable-voter-app › voterApp disabled: / + /elections show maintenance; /candidate available
+  [data-setup-perm-disable-candidate-app] › setup/perm-disable-candidate-app.setup.ts:15:1 › import perm-disable-candidate-app dataset
+  [perm-disable-candidate-app] › specs/perm/perm-disable-candidate-app.spec.ts:20:3 › perm-disable-candidate-app › candidateApp disabled: /candidate shows maintenance; / + /elections available
+  [data-setup-perm-per-app-notifications] › setup/perm-per-app-notifications.setup.ts:15:1 › import perm-per-app-notifications dataset
+  [perm-per-app-notifications] › specs/perm/perm-per-app-notifications.spec.ts:34:3 › perm-per-app-notifications › voter route shows voter notification only
+  [perm-per-app-notifications] › specs/perm/perm-per-app-notifications.spec.ts:46:3 › perm-per-app-notifications › candidate route shows candidate notification only
+  [data-setup-perm-missing-nominations] › setup/perm-missing-nominations.setup.ts:15:1 › import perm-missing-nominations dataset
+  [perm-missing-nominations] › specs/perm/perm-missing-nominations.spec.ts:29:3 › perm-missing-nominations › voter selects both elections → missing-nominations modal shows el-2 as not-available
+  [data-setup-perm-localisation-positive] › setup/perm-localisation-positive.setup.ts:15:1 › import perm-localisation-positive dataset
+  [perm-localisation-positive] › specs/perm/perm-localisation-positive.spec.ts:102:3 › perm-localisation-positive › locales=[en,fi,sv]: full TIR5:52-95 walk including voter-side cross-check
+  [data-setup-perm-answers-locked] › setup/perm-answers-locked.setup.ts:59:1 › import perm-answers-locked dataset + mint candidate session
+  [perm-answers-locked] › specs/perm/perm-answers-locked.spec.ts:35:3 › perm-answers-locked (surface 1 — unauthenticated) › login: answersLocked surfaces login-answers-locked-info on /en/candidate
+  [perm-answers-locked] › specs/perm/perm-answers-locked.spec.ts:44:3 › perm-answers-locked (surfaces 2 + 3 — authenticated) › profile: candidate-answers-locked-warning visible + every visible input disabled
+  [perm-answers-locked] › specs/perm/perm-answers-locked.spec.ts:67:3 › perm-answers-locked (surfaces 2 + 3 — authenticated) › opinion question: answersLockedWarning visible + every question-choices radio disabled
+  [data-setup-perm-hide-hero] › setup/perm-hide-hero.setup.ts:49:1 › import perm-hide-hero dataset + mint candidate session
+  [perm-hide-hero] › specs/perm/perm-hide-hero.spec.ts:43:3 › perm-hide-hero › hideHero=true: candidate-questions-hero figure has no img/span children
+  [data-setup-perm-header-show-feedback] › setup/perm-header-show-feedback.setup.ts:15:1 › import perm-header-show-feedback dataset
+  [perm-header-show-feedback] › specs/perm/perm-header-show-feedback.spec.ts:19:3 › perm-header-show-feedback › header-feedback visible on voter intro; click opens feedback-form
+  [data-setup-perm-header-show-help] › setup/perm-header-show-help.setup.ts:12:1 › import perm-header-show-help dataset
+  [perm-header-show-help] › specs/perm/perm-header-show-help.spec.ts:23:3 › perm-header-show-help › header-help visible on voter intro; click navigates to About
+  [data-setup-perm-hide-all-nominations] › setup/perm-hide-all-nominations.setup.ts:12:1 › import perm-hide-all-nominations dataset
+  [perm-hide-all-nominations] › specs/perm/perm-hide-all-nominations.spec.ts:20:3 › perm-hide-all-nominations › showAllNominations=false: nominations 307-redirects to Home
+  [data-setup-perm-hide-if-missing-answers] › setup/perm-hide-if-missing-answers.setup.ts:12:1 › import perm-hide-if-missing-answers dataset
+  [perm-hide-if-missing-answers] › specs/perm/perm-hide-if-missing-answers.spec.ts:39:3 › perm-hide-if-missing-answers › hideIfMissingAnswers.candidate=true: cand-1 visible, cand-2 hidden on /results
+  [data-setup-perm-hide-election-tags] › setup/perm-hide-election-tags.setup.ts:12:1 › import perm-hide-election-tags dataset
+  [perm-hide-election-tags] › specs/perm/perm-hide-election-tags.spec.ts:19:3 › perm-hide-election-tags › showElectionTags=false: election-tag absent on /questions
+  [data-setup-perm-hide-category-tags] › setup/perm-hide-category-tags.setup.ts:12:1 › import perm-hide-category-tags dataset
+  [perm-hide-category-tags] › specs/perm/perm-hide-category-tags.spec.ts:18:3 › perm-hide-category-tags › showCategoryTags=false: category-tag absent on /questions
+  [data-setup-perm-disable-allow-open] › setup/perm-disable-allow-open.setup.ts:46:1 › import perm-disable-allow-open dataset + mint candidate session
+  [data-teardown-baseV1] › setup/baseV1.teardown.ts:25:1 › delete baseV1 dataset
+  [data-teardown-perm-not-located-2e2cg] › setup/perm-not-located-2e2cg.teardown.ts:13:1 › delete perm-not-located-2e2cg dataset
+  [data-teardown-perm-disable-election-2co] › setup/perm-disable-election-2co.teardown.ts:13:1 › delete perm-disable-election-2co dataset
+  [data-teardown-perm-disable-election-1co] › setup/perm-disable-election-1co.teardown.ts:13:1 › delete perm-disable-election-1co dataset
+  [data-teardown-perm-disjoint-1co] › setup/perm-disjoint-1co.teardown.ts:13:1 › delete perm-disjoint-1co dataset
+  [data-teardown-perm-startfromcg] › setup/perm-startfromcg.teardown.ts:13:1 › delete perm-startfromcg dataset
+  [data-teardown-perm-2e-asymmetric] › setup/perm-2e-asymmetric.teardown.ts:13:1 › delete perm-2e-asymmetric dataset
+  [data-teardown-perm-2e-shared] › setup/perm-2e-shared.teardown.ts:13:1 › delete perm-2e-shared dataset
+  [data-teardown-perm-1e1cg1co] › setup/perm-1e1cg1co.teardown.ts:18:1 › delete perm-1e1cg1co dataset
+  [data-setup-perm-1e1cg1co] › setup/perm-1e1cg1co.setup.ts:15:1 › import perm-1e1cg1co dataset
+  [perm-1e1cg1co] › specs/perm/perm-1e1cg1co.spec.ts:24:3 › perm-1e1cg1co › no election or constituency selector; lands on questions directly
+  [data-setup-perm-2e-shared] › setup/perm-2e-shared.setup.ts:11:1 › import perm-2e-shared dataset
+  [perm-2e-shared] › specs/perm/perm-2e-shared.spec.ts:18:3 › perm-2e-shared › user selects EL1 only: no constituency selection, lands on questions
+  [perm-2e-shared] › specs/perm/perm-2e-shared.spec.ts:27:3 › perm-2e-shared › user selects both elections: no constituency selection, lands on questions
+  [data-setup-perm-2e-asymmetric] › setup/perm-2e-asymmetric.setup.ts:11:1 › import perm-2e-asymmetric dataset
+  [perm-2e-asymmetric] › specs/perm/perm-2e-asymmetric.spec.ts:21:3 › perm-2e-asymmetric › user selects both elections: constituency selector shows active CG-2 picker (CG-1 auto-implied)
+  [data-setup-perm-startfromcg] › setup/perm-startfromcg.setup.ts:15:1 › import perm-startfromcg dataset
+  [perm-startfromcg] › specs/perm/perm-startfromcg.spec.ts:64:3 › perm-startfromcg › selecting CO-1A1 (CG-2 leaf with parent CO-1A): election selector SHOWN
+  [perm-startfromcg] › specs/perm/perm-startfromcg.spec.ts:77:3 › perm-startfromcg › selecting CO-1C (CG-2 orphan, no parent): election selector shows EL2 only (auto-implied + disabled), continue advances to questions
+  [data-setup-perm-disjoint-1co] › setup/perm-disjoint-1co.setup.ts:11:1 › import perm-disjoint-1co dataset
+  [perm-disjoint-1co] › specs/perm/perm-disjoint-1co.spec.ts:22:3 › perm-disjoint-1co › user selects only EL-1: constituency selector shows only CG-1
+  [perm-disjoint-1co] › specs/perm/perm-disjoint-1co.spec.ts:30:3 › perm-disjoint-1co › user selects both elections: two pickers, continue disabled until both filled
+  [data-setup-perm-disable-election-1co] › setup/perm-disable-election-1co.setup.ts:11:1 › import perm-disable-election-1co dataset
+  [perm-disable-election-1co] › specs/perm/perm-disable-election-1co.spec.ts:15:3 › perm-disable-election-1co › disallowSelection + 1 shared CO: no election OR constituency selector
+  [data-setup-perm-disable-election-2co] › setup/perm-disable-election-2co.setup.ts:11:1 › import perm-disable-election-2co dataset
+  [perm-disable-election-2co] › specs/perm/perm-disable-election-2co.spec.ts:20:3 › perm-disable-election-2co › disallowSelection + 2 COs: no election selector, constituency selector shown
+  [data-setup-perm-not-located-2e2cg] › setup/perm-not-located-2e2cg.setup.ts:11:1 › import perm-not-located-2e2cg dataset
+  [perm-not-located-2e2cg] › specs/perm/perm-not-located-2e2cg.spec.ts:59:3 › perm-not-located-2e2cg › direct /results with no election picked bounces twice and resumes /results
+  [perm-not-located-2e2cg] › specs/perm/perm-not-located-2e2cg.spec.ts:83:3 › perm-not-located-2e2cg › multi-bounce preserves arbitrary query params (foo=bar)
+  [perm-not-located-2e2cg] › specs/perm/perm-not-located-2e2cg.spec.ts:100:3 › perm-not-located-2e2cg › election pre-selected via URL bounces only to constituency selector
+  [perm-not-located-2e2cg] › specs/perm/perm-not-located-2e2cg.spec.ts:119:3 › perm-not-located-2e2cg › refresh after localStorage clear mid-session resumes deferred target
+  [perm-not-located-2e2cg] › specs/perm/perm-not-located-2e2cg.spec.ts:145:3 › perm-not-located-2e2cg › open-redirect attempt to external URL is rejected by whitelist (defense-in-depth)
+  [data-setup-baseV1] › setup/baseV1.setup.ts:19:1 › import baseV1 dataset
+  [voter-mega-journey] › specs/voter/voter-mega-journey.spec.ts:307:3 › voter mega-journey › full voter journey end-to-end
+  [perm-disable-allow-open] › specs/perm/perm-disable-allow-open.spec.ts:64:3 › perm-disable-allow-open (candidate side — authenticated) › Q1 allowOpen=true: candidate-questions-comment visible
+  [perm-disable-allow-open] › specs/perm/perm-disable-allow-open.spec.ts:71:3 › perm-disable-allow-open (candidate side — authenticated) › Q2 allowOpen=false: candidate-questions-comment absent
+  [perm-disable-allow-open] › specs/perm/perm-disable-allow-open.spec.ts:80:3 › perm-disable-allow-open (voter side — unauthenticated) › voter detail drawer: Q1 info visible (entity-opinion-open-answer) AND Q2 info hidden
+Total: 84 tests in 72 files

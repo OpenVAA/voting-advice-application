@@ -1,0 +1,22 @@
+# QuestionArguments
+
+Display the pros and cons arguments related to a question.
+
+### Properties
+
+- `info`: The info content to show as a plain or HTML string.
+- `onCollapse`: A callback triggered when the info content is collapsed. Mostly used for tracking.
+- `onExpand`: A callback triggered when the info content is expanded. Mostly used for tracking.
+- Any valid properties of an `<Expander>` component
+
+### Usage
+
+```tsx
+<QuestionBasicInfo {info}/>
+```
+
+## Source
+
+[apps/frontend/src/lib/components/questions/QuestionArguments.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionArguments.svelte)
+
+[apps/frontend/src/lib/components/questions/QuestionArguments.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionArguments.type.ts)

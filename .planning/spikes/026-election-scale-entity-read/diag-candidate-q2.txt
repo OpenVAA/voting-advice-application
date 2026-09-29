@@ -1,0 +1,18 @@
+Aggregate (actual time=8397.403..8397.429 rows=1 loops=1)
+  ->  Sort (actual time=8175.161..8180.434 rows=38986 loops=1)
+        ->  Hash Left Join (actual time=5326.188..8140.661 rows=38986 loops=1)
+              ->  Hash Left Join (actual time=5326.141..8130.680 rows=38986 loops=1)
+                    ->  Hash Left Join (actual time=5326.121..8124.473 rows=38986 loops=1)
+                          ->  Hash Right Join (actual time=5324.761..8117.305 rows=38986 loops=1)
+                                ->  Index Scan using idx_candidates_project_id on candidates c (actual time=0.187..2757.840 rows=36056 loops=1)
+                                ->  Hash (actual time=5324.294..5324.299 rows=38986 loops=1)
+                                      ->  Index Scan using idx_nominations_project_id on nominations n (actual time=5.331..5301.091 rows=38986 loops=1)
+                          ->  Hash (actual time=1.357..1.361 rows=10 loops=1)
+                                ->  Bitmap Heap Scan on organizations o (actual time=0.248..1.352 rows=10 loops=1)
+                                      ->  Bitmap Index Scan on idx_organizations_project_id (actual time=0.011..0.011 rows=10 loops=1)
+                    ->  Hash (actual time=0.012..0.020 rows=0 loops=1)
+                          ->  Seq Scan on factions f (actual time=0.012..0.018 rows=0 loops=1)
+              ->  Hash (actual time=0.037..0.039 rows=0 loops=1)
+                    ->  Seq Scan on alliances a (actual time=0.037..0.039 rows=0 loops=1)
+                          Rows Removed by Filter: 2
+Execution Time: 8407.128 ms

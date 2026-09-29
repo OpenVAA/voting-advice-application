@@ -1,0 +1,11 @@
+apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts	c3fbcca8bd16148bcef0e344234b204d08278106	165-15
+apps/frontend/src/lib/contexts/utils/sameRefs.ts	4f68153ce6e64f4120ee0a14b722858ed0069d52	165-15
+apps/frontend/src/lib/contexts/utils/sameRefs.test.ts	bd2a3199a245897acb5f24eb20daa45430b2ec0e	165-15
+apps/frontend/src/lib/utils/focusNavigationTarget.ts	85063cc766b5921dee383177ff76da739b285c5e	165-15
+apps/frontend/src/lib/utils/focusNavigationTarget.test.ts	cdcefdc85f543eca7a9d9a166d14f7daf50eb505	165-15
+apps/frontend/src/lib/utils/components.ts	7e90b0b42728c9e139488cc11bcbd2ee3fc73a43	165-15
+apps/frontend/src/lib/utils/components.test.ts	654ed6b215891a9c2f2433e5f448781de969eaf9	165-15
+apps/frontend/src/lib/utils/logLevel.ts	9a2701e380f681d1fc5eb221abf823a22d1b9b2a	165-15
+apps/frontend/src/lib/utils/logLevel.test.ts	936d9f55c13aa41c6ce625695c41cf0cff956194	165-15
+apps/frontend/src/lib/contexts/utils/prepareDataWriter.ts	117de9ca18c807a65d9d60cb78ba80204caea71f	165-15
+apps/frontend/src/lib/api/dataWriter.ts	77da2e34e4d96b133ff2356d6797eb00ef8c8008	165-15

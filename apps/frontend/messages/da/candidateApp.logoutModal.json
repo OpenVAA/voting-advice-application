@@ -1,0 +1,37 @@
+{
+  "candidateApp.logoutModal": {
+    "continue": "Fortsæt med at indtaste data",
+    "ingress": "Er du sikker på, at du vil logge ud? Du bliver automatisk logget ud om {timeLeft} sekunder.",
+    "itemsLeft": [
+      {
+        "declarations": [
+          "input infoQuestionsLeft",
+          "local infoQuestionsLeftPlural = infoQuestionsLeft: plural",
+          "input opinionQuestionsLeft",
+          "local opinionQuestionsLeftPlural = opinionQuestionsLeft: plural"
+        ],
+        "selectors": ["infoQuestionsLeftPlural", "opinionQuestionsLeftPlural"],
+        "match": {
+          "infoQuestionsLeftPlural=one opinionQuestionsLeftPlural=one": "Der mangler stadig én oplysning og én holdning at besvare.",
+          "infoQuestionsLeftPlural=one opinionQuestionsLeftPlural=other": "Der mangler stadig én oplysning og {opinionQuestionsLeft} holdninger at besvare.",
+          "infoQuestionsLeftPlural=other opinionQuestionsLeftPlural=one": "Der mangler stadig {infoQuestionsLeft} oplysninger og én holdning at besvare.",
+          "infoQuestionsLeftPlural=other opinionQuestionsLeftPlural=other": "Der mangler stadig {infoQuestionsLeft} oplysninger og {opinionQuestionsLeft} holdninger at besvare."
+        }
+      }
+    ],
+    "questionsLeft": [
+      {
+        "declarations": [
+          "input opinionQuestionsLeft",
+          "local opinionQuestionsLeftPlural = opinionQuestionsLeft: plural"
+        ],
+        "selectors": ["opinionQuestionsLeftPlural"],
+        "match": {
+          "opinionQuestionsLeftPlural=one": "Der mangler stadig én holdning at besvare.",
+          "opinionQuestionsLeftPlural=other": "Der mangler stadig {opinionQuestionsLeft} holdninger at besvare."
+        }
+      }
+    ],
+    "title": "Noget data mangler stadig"
+  }
+}

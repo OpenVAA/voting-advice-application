@@ -6,7 +6,7 @@ Fixes [Issue link]
 
 ## Check off each of the following tasks as they are completed
 
-- [ ] I have reviewed the changes myself in this PR. Please check the [self-review document](https://github.com/OpenVAA/voting-advice-application/blob/main/docs/contributing/self-review.md)
+- [ ] I have reviewed the changes myself in this PR. Please check the [self-review checklist](https://openvaa.org/developers-guide/contributing/pull-request#self-review)
 - [ ] I have added or edited unit tests.
 - [ ] I have run the unit tests successfully.
 - [ ] I have run the e2e tests successfully.
@@ -16,4 +16,4 @@ Fixes [Issue link]
 - [ ] I have tested my changes using keyboard navigation and screen-reading
 - [ ] I have added documentation where necessary.
 - [ ] Is there an existing issue linked to this PR?
-- [ ] I have cleaned up the commit history and checked the commits follow [the guidelines](https://github.com/OpenVAA/voting-advice-application/blob/main/docs/contributing/CONTRIBUTING.md#commit-your-update)
+- [ ] I have cleaned up the commit history and checked the commits follow [the guidelines](https://openvaa.org/developers-guide/contributing/contribute#commit-your-update)

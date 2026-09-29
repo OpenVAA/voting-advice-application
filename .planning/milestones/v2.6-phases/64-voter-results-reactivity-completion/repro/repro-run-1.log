@@ -1,0 +1,18 @@
+[dotenv@17.3.1] injecting env (25) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+Running 6 tests using 1 worker
+
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+
+[1A[2K[1/6] [data-setup] › tests/tests/setup/data.setup.ts:30:1 › import test dataset
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[2/6] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:150:3 › voter results › filter toggle narrows list without effect_update_depth_exceeded (RESULTS-01 + RESULTS-02) @voter
+[1A[2K[3/6] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:199:3 › voter results › filter state resets on plural tab switch (D-14) @voter
+[1A[2K[4/6] [voter-app] › tests/tests/specs/voter/voter-results.spec.ts:230:3 › voter results › filter state survives drawer open/close (D-15) @voter
+[1A[2K[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+
+[1A[2K[5/6] [data-teardown] › tests/tests/setup/data.teardown.ts:17:1 › delete test dataset
+[1A[2K[6/6] [data-teardown] › tests/tests/setup/variant-data.teardown.ts:12:1 › delete variant test dataset
+[1A[2K  3 skipped
+  3 passed (59.7s)

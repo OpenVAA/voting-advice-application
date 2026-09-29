@@ -1,0 +1,116 @@
+1e × Nc — election selection bypassed; constituency selector shown with 3 options|null
+A11Y-01 image-size rejection surfaces oversizeFile error|null
+A11Y-01 image-type rejection surfaces invalidFile error|null
+A11Y-01 name-too-long caps input value at maxlength=50 on display-name|null
+A11Y-02 should persist bio after page reload|null
+A11Y-02 should persist display name after page reload|null
+A11Y-02 should persist social link after page reload|null
+about page renders correctly|failed
+boolean opinion question renders, voter answers, persists across goBack, mirrors on entity-detail|timedOut
+Browser Back steps through tab+drawer changes (D-13)|timedOut
+browser-back preserves answer state across navigation|skipped
+canonical URL: /results redirects to /results/candidates (RESEARCH A3)|timedOut
+case (a) — both answered: voter row and entity row rendered|timedOut
+case (b) — voter answered, entity missing: voter row only|timedOut
+case (c) — voter missing, entity answered: entity row only|timedOut
+case (d) — both missing: "Neither has answered" message rendered|timedOut
+categorical opinion question (single-choice) renders, voter answers, persists across goBack, mirrors on entity-detail|timedOut
+counter updates reactively on category toggle|timedOut
+coupling-rule redirect: singular without id → list view (D-11)|timedOut
+deeplink edge case: organizations list + candidate drawer (D-08 shape 4)|timedOut
+deeplink list+drawer URL renders both (RESULTS-03, D-08 shape 3)|timedOut
+directional-metric SubMatch row exists for a candidate who answered the categorical question|timedOut
+drawer paints before list on cold deeplink (D-10 source-order + content-visibility)|timedOut
+feedback text persists across dismiss and resets after send|timedOut
+filter state resets on plural tab switch (D-14)|timedOut
+filter state survives drawer open/close (D-15)|timedOut
+filter toggle narrows list without effect_update_depth_exceeded (RESULTS-01 + RESULTS-02)|timedOut
+fresh session defaults to all opinion categories checked + counter non-zero on first paint|timedOut
+info page renders correctly|failed
+invalid plural matcher returns 404 (D-11)|timedOut
+locale switches via LanguageSelection widget (when present)|failed
+locale switches via route prefix|failed
+multilocale candidate authors a translation and the value persists across reload|null
+Ne × 1c — election selector shown; constituency auto-implied (single)|null
+Ne × Nc — both selectors shown; constituency dropdown filters by selected election (no cross-bleed)|null
+per-category SubMatch grid renders Manhattan + directional metric path categories|timedOut
+popup appears on full page load to /results (LAYOUT-03 hydration path)|failed
+privacy page renders correctly|failed
+results-CTA toggles per minimumAnswers threshold|timedOut
+should allow constituency selection and proceed to questions|null
+should answer a Likert opinion question and save (CAND-04)|null
+should answer all Likert questions with navigation|skipped
+should answer questions and reach results|null
+should auto-imply election and constituency|skipped
+should bypass election selection when disallowSelection is true|null
+should change password and login with new password|null
+should complete forgot-password and reset flow via Inbucket email|null
+should complete journey through questions to results|null
+should complete registration via email link|null
+should confirm category intros were not shown during journey (VOTE-05 partial negative coverage)|skipped
+should confirm results accessible after all questions answered (VOTE-07 partial above-threshold coverage)|skipped
+should display candidate answers correctly in info and opinions tabs|timedOut
+should display candidate info and opinions tabs|timedOut
+should display candidates in correct match ranking order|timedOut
+should display candidates section with result cards|timedOut
+should display constituency-filtered results|null
+should display election-specific questions|null
+should display entered profile and opinion data on preview page (CAND-06)|null
+should display entity type tabs for switching between candidates and organizations|timedOut
+should display notification popup when enabled|null
+should display question cards organized by category (CAND-05)|null
+should display questions and reach results|null
+should edit a previously answered question (CAND-05)|null
+should enforce minimum answers before results available|skipped
+should filter questions to selected categories|skipped
+should handle orphan municipality without error|null
+should hide hero when hideHero is enabled|null
+should hide results link when showResultsLink is false|skipped
+should load home page and display start button|failed
+should login with valid credentials|null
+should logout and return to login page|null
+should navigate between categories (CAND-05)|null
+should not show any popup when disabled|null
+should NOT show hidden candidate (no termsOfUseAccepted)|skipped
+should open candidate detail drawer when clicking a result card|timedOut
+should open party detail drawer with info, candidates, and opinions tabs|timedOut
+should persist comment text on a question after page reload (CAND-12)|null
+should persist profile image after page reload (CAND-12)|null
+should persist question answers after page reload (CAND-12)|null
+should register the fresh candidate via email link|null
+should remember dismissal after page reload|null
+should render help page correctly|null
+should render privacy page correctly|null
+should send registration email and extract link|null
+should show both sections with tabs when sections is ["candidate", "organization"]|null
+should show category checkboxes when allowCategorySelection enabled|timedOut
+should show category intro page before each category|skipped
+should show constituency selection first (reversed flow)|null
+should show constituency selection page after election selection|null
+should show editable info fields on profile page (CAND-03)|null
+should show election accordion and results after selecting election|null
+should show election accordion in multi-election results|null
+should show election selection after constituency selection|null
+should show election selection page with 2 elections|null
+should show error on invalid credentials|null
+should show feedback popup after delay on results page|null
+should show hero when hideHero is disabled|null
+should show maintenance page when candidateApp is disabled|null
+should show maintenance page when underMaintenance is true|null
+should show missing nominations warning for partial-coverage constituency|null
+should show only candidates when sections is ["candidate"]|null
+should show only organizations when sections is ["organization"]|null
+should show partial-answer candidate in results with valid score|skipped
+should show perfect match candidate as top result|skipped
+should show question intro page when questionsIntro.show enabled|skipped
+should show questions intro page with start button|skipped
+should show read-only warning when answers are locked|null
+should show specific candidate data (name or answered question) in preview (CAND-06)|null
+should show survey popup after delay on results page|null
+should show worst match candidate as last result|skipped
+should skip category when skip button clicked|skipped
+should switch to organizations/parties section and back|timedOut
+should upload a profile image (CAND-03)|null
+startFromConstituency — constituency selector shown first; elections list hidden; constituency URL segment present|null
+voter completes location, skips opinions, browses entity list without match scores|null
+voter completes location, skips opinions, browses entity list without match scores|timedOut

@@ -79,8 +79,7 @@ export async function handleOrdinalQuestion({
 }): Promise<Array<CondensationRunResult>> {
   const results: Array<CondensationRunResult> = [];
 
-  // Condense comments into pros and cons using comments that have been chosen by their answer value
-  // E.g. for likert-5: use low-scale (1-2) for cons, high-scale (4-5) for pros
+  // Condense comments into pros and cons using comments that have been chosen by their answer value E.g. for likert-5: use low-scale (1-2) for cons, high-scale (4-5) for pros
   for (const group of commentGroups) {
     if (group.type === 'pro') {
       const prosResult = await runSingleCondensation({
