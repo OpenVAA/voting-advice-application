@@ -20,7 +20,7 @@
  *
  * Surface bound to:
  *  - QuestionExtendedInfoButton.svelte popup info button (`testIds.voter.questions.popupInfoButton`).
- *  - QuestionExtendedInfo.svelte modal body (`testIds.voter.questions.popupInfoModal`) + per-section markers (`testIds.voter.questions.infoSection`).
+ *  - QuestionExtendedInfo.svelte modal body (`testIds.voter.questions.popupInfoModal`) + per-section markers (`testIds.voter.questions.infoSection`). That body is rendered by the voter app's drawer host (`$lib/components/modal/drawerHost`); the testid deliberately sits on the body rather than on the host's `<dialog>`, so both branches below keep meaning what they mean.
  *  - QuestionBasicInfo.svelte expander info button (`testIds.voter.questions.infoButton`).
  *  - QuestionArguments.svelte per-group markers (`testIds.voter.questions.argumentGroup`, categorical keyed by choiceId).
  */
@@ -88,6 +88,7 @@ export function createQuestionInfo(page: Page): QuestionInfoFixture {
       } else {
         await nthOrFirst(expanderButton, question).click();
         // Expander reveals the inline body — assert NO modal appears. The popup modal is never mounted in expander mode (count=0); `toBeHidden()` passes for both the not-attached and hidden states and is the lint-preferred form (playwright/no-useless-not).
+        // The count is 0 while the popup body is served by the drawer host: the testid sits on the info BODY inside the host's payload, not on the host's persistent `<dialog>`, so in expander mode nothing carrying this testid is ever mounted. Had the testid moved onto the dialog, this assertion would measure a dialog that exists but is closed — a different claim wearing the same code.
         await expect(popupModal).toBeHidden();
       }
     },

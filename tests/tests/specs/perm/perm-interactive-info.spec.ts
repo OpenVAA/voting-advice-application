@@ -16,14 +16,21 @@ import { expect, test } from '../../fixtures/voter/views';
 import { walkUntilQuestionsIntro } from '../../fixtures/voter/voter-journey.fixture';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 /**
- * Dismiss the open popup-info modal (Drawer) so it stops intercepting pointer events on the page-level controls (the `question-next` button sits behind the modal scrim while it is open). Escape closes the Drawer; the assertion settles on the modal body being hidden.
+ * Dismiss the open popup-info overlay so it stops intercepting pointer events on the page-level controls (the `question-next` button sits behind the modal scrim while it is open). The overlay is the voter app's drawer host (`$lib/components/modal/drawerHost`): Escape is caught by the host's document-level key handler, which runs the payload's dismissal and then holds the payload mounted for the length of the out-animation before `dialog.close()`. The generous waiting timeout below is what absorbs that animation — a one-shot visibility read here would race it, and this project treats an intermittent failure as a real defect rather than as flakiness.
  */
 async function dismissInfoModal(page: Page): Promise<void> {
   await page.keyboard.press('Escape');
   await expect(page.getByTestId(testIds.voter.questions.popupInfoModal)).toBeHidden({ timeout: 15_000 });
+}
+
+/**
+ * Every element the page currently exposes in the open-dialog state. Playwright's role engine only matches elements present in the accessibility tree, and the drawer host's `<dialog>` is `display: none` while closed — so this locator counts OPEN dialogs, which is what the through-the-host assertions below need. `getByRole` for the modal dialog is the one exemption the file's testid-only rigidity contract grants.
+ */
+function openDialogs(page: Page): Locator {
+  return page.getByRole('dialog');
 }
 
 /**
@@ -77,6 +84,40 @@ test.describe('perm-interactive-info (EPERM-07)', () => {
     await questionInfo.expectInfoMode(undefined, 'popup');
     await questionInfo.expectArguments(undefined, 'categorical');
     await dismissInfoModal(page);
+  });
+
+  // THROUGH THE HOST. The three assertions below are what turn "the question-info path works" into "the question-info path is served by the app's ONE drawer host". Containment is the load-bearing half: asserting only that the info body is visible somewhere on the page cannot tell the host apart from any other overlay that might render it.
+  test('the info overlay opens inside the drawer host, closes on dismissal, and closes on a question → question navigation', async ({
+    page,
+    questionInfo
+  }) => {
+    await walkUntilQuestionsIntro(page);
+    await expect(page.getByTestId(testIds.voter.questions.answerOption).first()).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId(testIds.voter.questions.heading)).toHaveText(HEADINGS.popup, { timeout: 15_000 });
+
+    const dialogs = openDialogs(page);
+    const infoBody = page.getByTestId(testIds.voter.questions.popupInfoModal);
+
+    // OPENED THROUGH THE HOST: exactly one element is in the open-dialog state, and the info body is INSIDE it. The host is mounted once in the voter app's root layout, so a second open dialog here would mean a second overlay implementation is still live.
+    await questionInfo.expectInfoMode(undefined, 'popup');
+    await expect(dialogs).toHaveCount(1, { timeout: 15_000 });
+    await expect(dialogs.getByTestId(testIds.voter.questions.popupInfoModal)).toBeVisible({ timeout: 15_000 });
+
+    // CLOSED THROUGH THE HOST: after dismissal nothing remains in the open-dialog state. `toHaveCount` is auto-retrying, which is what absorbs the host's out-animation; the host deliberately keeps the payload mounted until it finishes.
+    await dismissInfoModal(page);
+    await expect(dialogs).toHaveCount(0, { timeout: 15_000 });
+
+    // QUESTION → QUESTION WHILE OPEN: the teardown path QuestionExtendedInfoButton's close-by-key effect exists for, and the path spike 034 found could hang the dialog. The navigation is a browser Back over the `goto` the question-next button performed — a real, user-reachable client-side question → question navigation that does not have to click through the modal scrim.
+    await advanceToQuestion(page, HEADINGS.default);
+    await questionInfo.expectInfoMode(undefined, 'popup');
+    await expect(dialogs).toHaveCount(1, { timeout: 15_000 });
+    await expect(dialogs.getByTestId(testIds.voter.questions.popupInfoModal)).toBeVisible({ timeout: 15_000 });
+
+    await page.goBack();
+    await expect(page.getByTestId(testIds.voter.questions.heading)).toHaveText(HEADINGS.popup, { timeout: 15_000 });
+    await expect(dialogs).toHaveCount(0, { timeout: 15_000 });
+    // Belt and braces: the previous question's body must not be left on screen either, which is the user-visible form of the same failure.
+    await expect(infoBody).toBeHidden({ timeout: 15_000 });
   });
 
   test.describe('expander mode (interactiveInfo.enabled=false re-seed)', () => {
