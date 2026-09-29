@@ -3,13 +3,14 @@ Show a tab title bar that can be used to switch between different tabs.
 
 ### Properties
 
-- `tabs`: The titles of the tabs.
-- `activeIndex`: The index of the active tab. Bind to this to change or read the active tab. @default 0
+- `tabs`: The tabs, each `{ label, id? }`.
+- `activeTab`: The `id ?? label` of the active tab. Bind to this to change or read the active tab. When it is unset or matches no tab, the first tab is active. @default the first tab
+- `transitionOnChange`: Cross-fade a local tab switch in a View Transition. @default false
 - Any valid attributes of a `<ul>` element
 
 ### Callbacks
 
-- `onChange`: Callback for when the active tab changes. The event `details` contains the active tab as `tab` as well as its `index`. Note, it's preferable to just bind to the `activeTab` property instead.
+- `onChange`: Callback for when the user activates a tab, called with that tab. Note, it's preferable to just bind to the `activeTab` property instead.
 
 ### Accessibility
 
@@ -19,33 +20,39 @@ Show a tab title bar that can be used to switch between different tabs.
 ### Usage
 
 ```tsx
-<Tabs bind:activeIndex tabs={['Basic Info', 'Opinions']}/>
+<Tabs bind:activeTab tabs={[{ id: 'info', label: 'Basic Info' }, { id: 'opinions', label: 'Opinions' }]}/>
 ```
 -->
 
-<script lang="ts">
+<script lang="ts" generics="TTab extends Tab = Tab">
   import { concatClass } from '$lib/utils/components';
   import { shouldAnimate, startViewTransition } from '$lib/utils/viewTransition';
-  import type { TabsProps } from './Tabs.type';
+  import { tabKey } from './tabKey';
+  import type { Tab, TabsProps } from './Tabs.type';
 
   let {
     tabs = [],
-    activeIndex = $bindable(0),
+    activeTab = $bindable(),
     onChange,
     transitionOnChange = false,
     ...restProps
-  }: TabsProps = $props();
+  }: TabsProps<TTab> = $props();
 
-  function activate(index: number): void {
-    // For LOCAL-state tab switches (not navigation-driven), optionally cross-fade the activeIndex mutation. Pass `undefined` as the destination URL — there is no navigation target for a local tab switch, so the `?notr=1` check is naturally skipped while the SSR / feature-detect / reduced-motion gates still apply. Falls through to a plain assignment when animation is disabled or unsupported (graceful degradation lives in viewTransition.ts).
+  const activeKey = $derived(
+    tabs.some((tab) => tabKey(tab) === activeTab) ? activeTab : tabs[0] ? tabKey(tabs[0]) : undefined
+  );
+
+  function activate(tab: TTab): void {
+    const key = tabKey(tab);
+    // A local tab switch has no navigation target, so `shouldAnimate` gets no URL: its SSR, feature-detect and reduced-motion gates still apply.
     if (transitionOnChange && shouldAnimate(undefined)) {
       startViewTransition(() => {
-        activeIndex = index;
+        activeTab = key;
       });
     } else {
-      activeIndex = index;
+      activeTab = key;
     }
-    onChange?.({ index, tab: tabs[index] });
+    onChange?.(tab);
   }
 </script>
 
@@ -54,15 +61,16 @@ Show a tab title bar that can be used to switch between different tabs.
      aria-required-parent and list rules both flag this list. -->
 <ul role="tablist" {...concatClass(restProps, 'flex items-center justify-start bg-base-300 px-0 py-8 overflow-auto')}>
   {#each tabs as tab, index}
+    {@const active = tabKey(tab) === activeKey}
     <li
       class="btn btn-outline text-md hover:bg-base-100 hover:text-primary focus:bg-base-100 focus:text-primary m-0 h-[2.2rem] min-h-[2.2rem] w-auto flex-grow
        truncate rounded-sm px-12 font-bold"
-      class:text-primary={index !== activeIndex}
-      class:bg-base-100={index === activeIndex}
+      class:text-primary={!active}
+      class:bg-base-100={active}
       tabindex="0"
       role="tab"
       data-testid="tab-{index}"
-      onclick={() => activate(index)}
+      onclick={() => activate(tab)}
       onkeydown={(e) => {
         if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
           // Prevent scrolling
@@ -72,7 +80,7 @@ Show a tab title bar that can be used to switch between different tabs.
       onkeyup={(e) => {
         if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
           e.preventDefault();
-          activate(index);
+          activate(tab);
         }
       }}>
       <span class="uc-first">{tab.label}</span>
