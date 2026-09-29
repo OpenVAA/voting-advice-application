@@ -4,6 +4,11 @@ import type { AdapterConfig } from '$lib/api/base/universalAdapter.type';
 import type { tableBuilder } from './supabaseAdapter';
 
 /**
+ * The database schema type the Supabase clients are parameterised with, re-exported so that code outside the adapter does not import the generated types directly.
+ */
+export type SupabaseDatabase = Database;
+
+/**
  * The tables carrying a `project_id` foreign key to `public.projects`, and therefore the tables every read and write must name a project for.
  *
  * A table joins this union when it gains that foreign key. The declared list in `scripts/assert-project-scoped-queries.mjs` mirrors it, and the guard is what keeps a bare, unscoped access to any of them out of the adapter.

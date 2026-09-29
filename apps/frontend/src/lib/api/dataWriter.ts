@@ -3,11 +3,11 @@ import { resolveAdapterConfig } from './dataProvider';
 import type { AdapterSource } from './dataProvider';
 
 /**
- * Obtain a `DataWriter` for ONE request.
+ * Obtain a `DataWriter` for one request. Every call returns a fresh writer over the client `source` names: the request's own client on the server, or the tab's memoised client in the browser.
  *
- * Every call returns a FRESH instance. The writer carries a second shared field the provider does not — the request-scoped `fetch` — and it is live for a reason worth stating: `SupabaseDataWriter` inherits `clearIdToken`, `logout` and `exchangeCodeForIdToken` from `UniversalDataWriter` un-overridden, and those reach SAME-ORIGIN app routes, where the forwarded cookie really is the request's own session. The older justification — that the request-scoped fetch forwards cookies to Supabase — is false: Supabase is cross-origin and PostgREST authenticates on `Authorization`. Do not restore it.
+ * The writer also carries the request-scoped `fetch`, which `clearIdToken`, `logout` and `exchangeCodeForIdToken`, inherited from `UniversalDataWriter`, use to reach same-origin app routes with the request's own session cookie.
  * @param source - Where this request's client comes from.
- * @returns A writer nothing else holds a reference to.
+ * @returns A new writer.
  */
 export function createDataWriter(source: AdapterSource): SupabaseDataWriter {
   return new SupabaseDataWriter(resolveAdapterConfig(source));

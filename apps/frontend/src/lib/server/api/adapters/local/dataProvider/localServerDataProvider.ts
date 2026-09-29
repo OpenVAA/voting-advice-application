@@ -13,6 +13,7 @@ import type {
   QuestionCategoryData
 } from '@openvaa/data';
 import type { DataProvider } from '$lib/api/base/dataProvider.type';
+import type { FilterValue } from '$lib/api/base/getDataFilters.type';
 import type {
   GetAppCustomizationOptions,
   GetConstituenciesOptions,
@@ -75,7 +76,8 @@ export class LocalServerDataProvider extends LocalServerAdapter implements DataP
 
   async getNominationData(options: GetNominationsOptions = {}): Promise<Response> {
     warnIfUnsupported(options);
-    const { constituencyId, electionId, locale = this.defaulLocale } = options;
+    const { constituencyId, electionId, electionRound, locale = this.defaulLocale } = options;
+    assertNonEmpty({ constituencyId, electionId });
     // Because nominations and entities are stored in separate files, we cannot use this.readAndFilter
     let [nominations, entities] = await Promise.all([this.read('nominations'), this.read('entities')]).then((data) =>
       data.map((d) => JSON.parse(d))
@@ -84,6 +86,11 @@ export class LocalServerDataProvider extends LocalServerAdapter implements DataP
     entities = translate({ value: entities, locale });
     if (constituencyId || electionId)
       nominations = filterData({ data: nominations, filters: { constituencyId, electionId } });
+    // A nomination with no round is in round 1, the data model's default. This differs from `get_nominations` for one row shape: `nominations.election_round` defaults to 1 but is nullable, and the RPC's equality drops a row that stores an explicit NULL.
+    if (electionRound != null)
+      nominations = nominations.filter(
+        (nomination: { electionRound?: number | null }) => (nomination.electionRound ?? 1) === electionRound
+      );
     entities = filterEntitiesByNomination({ entities, nominations });
     return json({ entities, nominations });
   }
@@ -99,27 +106,33 @@ export class LocalServerDataProvider extends LocalServerAdapter implements DataP
     return this.readAndFilter('entities', { filter, locale });
   }
 
-  getQuestionData(options: GetQuestionsOptions = {}): Promise<Response> {
+  async getQuestionData(options: GetQuestionsOptions = {}): Promise<Response> {
     warnIfUnsupported(options);
-    const { electionId, locale } = options;
-    const filter = electionId
-      ? ({
-          categories,
-          questions
-        }: {
-          categories: Array<QuestionCategoryData>;
-          questions: Array<AnyQuestionVariantData>;
-        }) => {
-          // The possible `electionId` filter is applied such that any categories with the specified `electionId` or none at all are returned
-          categories = filterData({
-            data: categories,
-            filters: { electionId: { value: electionId, includeMissing: true } }
-          });
-          const categoryId = categories.map((c) => c.id);
-          questions = filterData({ data: questions, filters: { categoryId } });
-          return { categories, questions };
-        }
-      : undefined;
+    const { constituencyId, electionId, electionRound, locale } = options;
+    assertNonEmpty({ constituencyId, electionId });
+    const filter =
+      electionId || constituencyId || electionRound != null
+        ? ({
+            categories,
+            questions
+          }: {
+            categories: Array<QuestionCategoryData>;
+            questions: Array<AnyQuestionVariantData>;
+          }) => {
+            // Categories and questions are filtered independently, as `get_questions` does, and a question is also dropped with its category.
+            function inScope(row: QuestionCategoryData | AnyQuestionVariantData): boolean {
+              return (
+                appliesTo(row.electionIds, electionId) &&
+                appliesTo(row.constituencyIds, constituencyId) &&
+                appliesTo(row.electionRounds, electionRound)
+              );
+            }
+            categories = categories.filter(inScope);
+            const categoryId = categories.map((c) => c.id);
+            questions = filterData({ data: questions.filter(inScope), filters: { categoryId } });
+            return { categories, questions };
+          }
+        : undefined;
     return this.readAndFilter('questions', { filter, locale });
   }
 
@@ -148,8 +161,37 @@ export class LocalServerDataProvider extends LocalServerAdapter implements DataP
 }
 
 /**
+ * Whether a question or category whose filter list is `listed` applies to `wanted`, with the semantics of the `get_questions` RPC: without a `wanted` value, or when `listed` is missing or empty, the row applies to all; otherwise `listed` must contain one of the wanted values.
+ *
+ * `filterData` is not used because an empty target list matches nothing there. Values are compared strictly, so election rounds compare as numbers.
+ * @param listed - The row's `electionIds`, `constituencyIds` or `electionRounds`.
+ * @param wanted - The requested value or values.
+ * @returns Whether the row is kept.
+ */
+function appliesTo(listed: unknown, wanted: FilterValue<string | number> | undefined): boolean {
+  if (wanted == null) return true;
+  const values: Array<unknown> = listed == null ? [] : [listed].flat();
+  if (values.length === 0) return true;
+  const wantedValues: Array<unknown> = [wanted].flat();
+  return values.some((value) => wantedValues.includes(value));
+}
+
+/**
+ * Reject an empty id filter, as the Supabase adapter does: an empty array requests nothing, so answering it would return a partial or empty result with no error.
+ * @param filters - The id filters, by option name.
+ */
+function assertNonEmpty(filters: Record<string, FilterValue<string> | undefined>): void {
+  for (const [name, value] of Object.entries(filters)) {
+    if (Array.isArray(value) && value.length === 0)
+      throw new Error(
+        `LocalServerDataProvider: an empty ${name} array requests nothing and cannot be answered; pass \`undefined\` to omit the filter instead.`
+      );
+  }
+}
+
+/**
  * Temporary utility for warning when unsupported options are used.
- * TODO: Remove when locale and includeUnconfirmed are supported.
+ * TODO: Remove when includeUnconfirmed is supported.
  */
 function warnIfUnsupported(options?: GetDataOptionsBase): void {
   if (!options) return;

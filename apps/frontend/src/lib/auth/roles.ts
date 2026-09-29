@@ -1,15 +1,13 @@
-import type { Enums } from '@openvaa/supabase-types';
+import type { EntityType } from '@openvaa/data';
 
 /**
  * Whether any of the claimed grants has one of the shapes that open an entry point.
  *
- * A pure set-membership test over PAIRS: it performs no I/O, reads no module-level state and mutates neither argument, so the caller may hold the allowed set as a shared constant. An empty claims list is `false`, which is what makes the gate deny by default.
+ * A pure set-membership test over `(scope, role)` pairs: it performs no I/O and mutates neither argument. An empty claims list is `false`, so the gate denies by default. A shape that names a `target_type` also requires the claim's entity type to match it; a shape without one matches any.
  *
- * A shape may also name a `target_type`, and then the claim's entity type must match it too; a shape without one matches any.
- *
- * The pair is what carries the meaning, and matching on the role alone would be wrong in both directions. A grant of scope `entity` with role `admin` is a shape the database's CHECK constraints admit and the user-type mapping does not produce; the permission matrix gives it the empty set, so it must open nothing — yet its role is `admin`. And a project-scope `editor` holds seventeen permissions including every app-settings and question right, so it belongs inside the Admin App and not the Candidate App — yet its role is `editor`. The scope is not decoration here; it is what distinguishes the two populations.
+ * Matching on the pair rather than the role alone is what separates the populations: an entity-scope `admin` grant holds no permissions and must open nothing, and a project-scope `editor` belongs in the Admin App, not the Candidate App.
  * @param claims - The grant claims read out of an access token.
- * @param allowed - The `(scope, role)` shapes that open the entry point being gated.
+ * @param allowed - The shapes that open the entry point being gated.
  * @returns `true` when at least one claimed grant matches an allowed shape.
  */
 export function hasAnyGrant(claims: ReadonlyArray<GrantClaim>, allowed: ReadonlyArray<GrantShape>): boolean {
@@ -26,11 +24,9 @@ export function hasAnyGrant(claims: ReadonlyArray<GrantClaim>, allowed: Readonly
 /**
  * Read the grant claims out of an access token's payload.
  *
- * FAILS CLOSED, ALWAYS. A token that is not a JWT, a payload that does not decode, a payload that is not JSON, a payload with no grants key and a grants key that is not an array all yield the empty list rather than an exception — and the empty list fails every gate. Individual entries that are not objects carrying both a `scope` string and a `role` string are dropped for the same reason. The payload is unvalidated, attacker-shaped JSON and nothing here narrows it beyond that shape; the annotation below is an assertion, not a check.
+ * Fails closed: a token that is not a JWT, a payload that does not decode or is not JSON, and a missing or non-array `grants` key all yield the empty list, which fails every gate. Entries that are not objects carrying both a `scope` string and a `role` string are dropped. The payload is unvalidated JSON, and the return type is an assertion about its shape, not a check of its values.
  *
- * A token carrying the claim key this module used to read — one minted before the access-token hook changed, and not yet refreshed — yields the empty list here and is denied. There is deliberately no fallback to it: a claim outliving its table is a second authority model with no expiry date, and the database stopped honouring that one in the same commit that changed the hook.
- *
- * The decode is deliberately signature-blind, and that is safe only in the position this helper is called from: the token comes from a session that has already been through the verifying round-trip in `safeGetSession`, and every subsequent query is re-checked server side. Do not call this on a token straight off a request.
+ * The decode does not verify the signature. That is safe only because the token comes from a session `safeGetSession` has already verified, and every query is re-checked server side. Do not call this on a token taken straight off a request.
  * @param accessToken - The access token whose claims to read.
  * @returns The well-formed grant claims, or an empty list.
  */
@@ -42,13 +38,11 @@ export function readGrants(accessToken: string): Array<GrantClaim> {
 }
 
 /**
- * The grant shapes that open the Admin App's front door.
+ * The grant shapes that open the Admin App.
  *
- * THE DATABASE IS THE AUTHORITATIVE BOUNDARY, NOT THIS ARRAY. Every admin read and write is re-checked server side by row-level security policies, and those policies decide what an admin may actually touch. This set is an app-entry gate: it stops a principal with no admin grant from landing inside the admin shell at all. Widening it grants no data access on its own, and narrowing it hides the app from someone the database would still serve — so a change here is a change to who sees the door, never to who holds the key.
+ * This is an app-entry gate, not the authorisation boundary: row-level security decides what an admin may read or write. Widening the set grants no data access, and narrowing it hides the app from someone the database would still serve.
  *
- * Declared exactly once. A second copy is a copy that will drift, and a drifted copy of an authorisation set fails silently in the permissive direction.
- *
- * The three members are the three admin rows of the user-type-to-grant mapping, split at the line the permission matrix already draws: an `admin` grant at global, account or project scope carries a non-empty permission set, and an `admin` grant at entity scope carries none. That fourth shape therefore opens nothing here, by construction rather than by a comment.
+ * An `admin` grant at global, account or project scope carries permissions. An `admin` grant at entity scope carries none, so it is not listed and opens nothing.
  */
 export const ADMIN_GRANTS = [
   { scope: 'global', role: 'admin' },
@@ -57,13 +51,9 @@ export const ADMIN_GRANTS = [
 ] as const satisfies ReadonlyArray<GrantShape>;
 
 /**
- * The grant shapes that open the Candidate App's front door.
+ * The grant shapes that open the Candidate App.
  *
- * The same boundary note applies verbatim: the database's policies are authoritative and this set is the app-entry gate.
- *
- * One member: the CANDIDATE entity editor, and only it (162-REVIEW IN-05). The mapping gives a candidate, an organization editor, a faction editor and an alliance editor the same `(entity, editor)` shape and separates them by `target_type` -- and the Candidate App loads its user through `get_candidate_user_data('candidate')`, which answers nothing for the other three. Admitting them produced a generic "Failed to load candidate data" error after login instead of a clear refusal at the door. When the organization, faction and alliance apps exist, their doors are shapes of their own.
- *
- * The scope and role names are read from the database's own `grant_scope_type` and `grant_role_type` enums rather than transcribed from a plan, because a rename lands in the generated types first. `satisfies` below is what makes a stale spelling a compile error instead of a gate that silently admits nobody.
+ * An app-entry gate like `ADMIN_GRANTS`; the database's policies are authoritative. Only the candidate entity editor is admitted. Organization, faction and alliance editors hold the same `(entity, editor)` pair with a different `target_type`, and the Candidate App cannot load their user data.
  */
 export const CANDIDATE_GRANTS = [
   { scope: 'entity', role: 'editor', target_type: 'candidate' }
@@ -72,7 +62,7 @@ export const CANDIDATE_GRANTS = [
 /**
  * One grant assignment, as it appears in an access token's `grants` claim.
  *
- * The four keys are the column names of the database's `grants` table, minus the ones a claim has no use for. The gates read two of them; `target_type` and `target_id` say which object the grant reaches and are answered server side, never here.
+ * The keys are columns of the database's `grants` table. The gates match `scope`, `role` and `target_type`; `target_id` is answered server side.
  */
 export type GrantClaim = {
   scope: GrantScope;
@@ -82,28 +72,38 @@ export type GrantClaim = {
 };
 
 /**
- * A `(scope, role)` pair, which is what an app-entry gate matches on -- optionally narrowed to one entity `target_type`.
+ * A `(scope, role)` pair an app-entry gate matches on, optionally narrowed to one entity type.
  */
-export type GrantShape = { scope: GrantScope; role: GrantRole; target_type?: Enums<'entity_type'> };
+export type GrantShape = { scope: GrantScope; role: GrantRole; target_type?: EntityType };
 
 /**
- * A grant scope, as the database declares it.
+ * The grant scopes.
  *
- * Derived from the generated enum rather than restated as a literal union, so adding or renaming a scope in a migration is a compile error here rather than a gate that quietly stops matching.
+ * The database's `grant_scope_type` enum is the source of truth. The frontend keeps its own copy so that it does not depend on the generated database types, and `supabaseTypes.parity.test.ts`, next to the Supabase adapter, fails when the two disagree. The same holds for `GRANT_ROLES` and the entity types.
  */
-export type GrantScope = Enums<'grant_scope_type'>;
+export const GRANT_SCOPES = ['global', 'account', 'project', 'entity'] as const;
 
 /**
- * A grant role level, as the database declares it. There are two, and the same note applies.
+ * A grant scope.
  */
-export type GrantRole = Enums<'grant_role_type'>;
+export type GrantScope = (typeof GRANT_SCOPES)[number];
+
+/**
+ * The grant role levels, mirroring the database's `grant_role_type` enum.
+ */
+export const GRANT_ROLES = ['admin', 'editor'] as const;
+
+/**
+ * A grant role level.
+ */
+export type GrantRole = (typeof GRANT_ROLES)[number];
 
 /**
  * Decode a JWT's payload segment without verifying anything about it.
  *
- * Handles the base64url alphabet the token actually uses: `atob` rejects `-` and `_`, and JWT segments carry no padding, so both are normalised before decoding. Returns `undefined` for anything that does not yield a JSON object.
+ * JWT segments use the base64url alphabet and carry no padding, and `atob` accepts neither, so both are normalised before decoding.
  * @param token - The raw token.
- * @returns The payload object, or `undefined`.
+ * @returns The payload object, or `undefined` for anything that does not yield a JSON object.
  */
 function decodeTokenPayload(token: string): Record<string, unknown> | undefined {
   const segment = token.split('.')[1];
@@ -120,7 +120,7 @@ function decodeTokenPayload(token: string): Record<string, unknown> | undefined 
 /**
  * Whether one entry of a decoded `grants` claim has the shape this module reads.
  *
- * The value is attacker-shaped, so `null`, a bare string, an object with no `scope` and an object with no `role` are all rejected here rather than thrown on later. Whether the names are ones the database knows is not decided here; `hasAnyGrant` decides that against an explicit allowed set of pairs.
+ * The value is untrusted, so anything but an object with a `scope` string and a `role` string is rejected here rather than thrown on later. Whether the names are known ones is decided by `hasAnyGrant` against an explicit set of shapes.
  * @param value - One entry of the decoded claim.
  * @returns `true` when the entry carries both a `scope` string and a `role` string.
  */

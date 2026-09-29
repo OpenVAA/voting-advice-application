@@ -12,21 +12,21 @@ import type { ParseSource } from '../utils/parseOutcome.type';
 /**
  * The event name a malformed or absent `send-email` result is reported under.
  *
- * A CONSTANT, never an interpolation: a downstream sink keys events on a stable message and every varying value belongs in the attribute bag instead (decision **C4** NOTE 1). It covers both non-`ok` outcomes because they are the same event from the operator's side — the function was invoked and did not report a usable outcome.
+ * A constant, never an interpolation: a downstream sink keys events on a stable message, and every varying value belongs in the attribute bag instead. It covers both non-`ok` outcomes because they are the same event from the operator's side: the function was invoked and did not report a usable outcome.
  */
 const SEND_EMAIL_PARSE_FAILURE_MESSAGE = 'A send-email result did not match its schema.';
 
 /**
  * Where the `send-email` result came from, for the failure record.
  *
- * {@link ParseSource} names a `table.column` because every other site in this adapter reads a JSONB column. This value is an Edge Function RESPONSE, so the locator carries the function name instead — deliberately the same field, so one attribute bag shape serves every parse failure the phase emits and a sink does not need a second schema for this one.
+ * {@link ParseSource} names a `table.column` because every other site in this adapter reads a JSONB column. This value is an Edge Function response, so the locator carries the function name in the same field, and one attribute bag shape serves every parse failure.
  */
 const SEND_EMAIL_SOURCE: ParseSource = { column: 'send-email' };
 
 /**
  * What {@link SupabaseAdminWriter.sendEmail} resolves to.
  *
- * The failure arm speaks the `type` discriminant of {@link DataApiActionResult}, which this class's other write methods already return, rather than inventing a second vocabulary for the same idea. It is a union rather than a widened success shape on purpose: the branch this replaced returned a fully-populated success object reporting no outcomes, which is not an empty literal and is therefore invisible to any ban written in terms of one — only a caller forced to read `type` can tell the two apart.
+ * The failure arm speaks the `type` discriminant of {@link DataApiActionResult}, which this class's other write methods already return. It is a union rather than a success shape with zeroed counts, so a caller has to read `type` before it can reach an outcome that was never verified.
  */
 export type SendEmailOutcome =
   | { type: 'success'; sent: number; failed: number; results: SendEmailResult['results'] }
@@ -35,7 +35,7 @@ export type SendEmailOutcome =
 /**
  * Supabase implementation of admin-specific write operations.
  *
- * This class extracts admin methods that were erroneously placed in DataWriter on the parallel branch. It provides the primary access point for:
+ * It provides the access point for:
  * - Question custom data operations (merge_question_custom_data RPC)
  * - Admin job result storage (admin_jobs table)
  * - Email sending (send-email Edge Function)
@@ -53,7 +53,7 @@ export class SupabaseAdminWriter extends supabaseAdapterMixin(UniversalAdapter) 
   }
 
   /**
-   * Whether the CALLER holds `permission` on this adapter's configured project, as the database's `user_can` answers it (162-REVIEW WR-03).
+   * Whether the caller holds `permission` on this adapter's configured project, as the database's `user_can` answers it.
    *
    * Asked through this adapter's own client, so the answer is about the request's verified session and its `grants` claim -- the same claim every RLS policy reads -- and the matrix is never re-derived in TypeScript. The project is the adapter's configured one, never a caller-supplied id.
    *
@@ -112,16 +112,11 @@ export class SupabaseAdminWriter extends supabaseAdapterMixin(UniversalAdapter) 
   /**
    * Send emails via the send-email Edge Function.
    *
-   * The invoke payload is validated through `parseWithPartialPreserve` before `sent`, `failed` and `results` are read, so the per-recipient outcomes arrive typed rather than as an opaque array (T-157-05).
-   * `sent` and `failed` are absent from the function's dry-run branch, which sends nothing, so both default to zero here and the declared counts stay numbers.
+   * Each template is `{ subject, body }`, the shape the function validates; it renders `body` as both the plain-text and the HTML part, escaping substituted values in the HTML one.
    *
-   * ## A result that was not verified is not reported as a success (T-157.1-13)
+   * The response is validated before `sent`, `failed` and `results` are read. `sent` and `failed` are absent from the dry-run branch, which sends nothing, so both default to zero.
    *
-   * This method used to answer a payload it could not validate with a fully-populated success object reporting no sends, no failures and no results — a write path claiming an outcome it never verified, and a shape no ban written in terms of empty literals can see. It now returns the failure arm of {@link SendEmailOutcome}, so a caller has to read the discriminant to get at the counts.
-   *
-   * `absent` — the invocation answered with no body at all — takes the same branch. On a READ column absence is not a failure and emits no record, because an operator simply stored nothing; on an INVOCATION response it is the same unverified outcome as a malformed one, so the record is emitted here rather than left to the shared helper, which is correctly silent for it.
-   *
-   * A transport error still THROWS rather than returning the failure arm, because that is the caller's signal that nothing was attempted (T-157-06). Decision **D-DISC-4** records why the malformed case does not join it: a throw lands in a caller's `catch` and is logged as a free-form interpolated string, which decision **C4** NOTE 1 forbids for records this phase touches, whereas a typed failure keeps the structured record here, where the function name and the issue paths are in scope.
+   * A response that fails validation, or an invocation that answers with no body at all, returns the failure arm of {@link SendEmailOutcome} and emits one structured record. A transport error throws instead, because it signals that nothing was attempted.
    */
   async sendEmail({
     templates,
@@ -129,7 +124,7 @@ export class SupabaseAdminWriter extends supabaseAdapterMixin(UniversalAdapter) 
     from,
     dryRun
   }: {
-    templates: Record<string, { subject: string; text: string; html: string }>;
+    templates: Record<string, { subject: string; body: string }>;
     recipientUserIds: Array<string>;
     from?: string;
     dryRun?: boolean;
@@ -138,7 +133,7 @@ export class SupabaseAdminWriter extends supabaseAdapterMixin(UniversalAdapter) 
       body: {
         templates,
         recipient_user_ids: recipientUserIds,
-        // The project this adapter instance resolved, spelled in the payload's own snake_case convention. The Edge Function compares it with the project its deployment serves and refuses an invocation naming a different one, and forwards it to `resolve_email_variables`, whose entity lookups it bounds — so the names rendered into these messages can only come from this project.
+        // The Edge Function refuses an invocation naming a project other than the one its deployment serves, so the names rendered into these messages can only come from this project.
         project_id: this.projectId,
         from,
         dry_run: dryRun
@@ -155,10 +150,10 @@ export class SupabaseAdminWriter extends supabaseAdapterMixin(UniversalAdapter) 
     );
 
     if (outcome.status !== 'ok') {
-      // The helper reports a `malformed` outcome itself and stays silent for an `absent` one, which is right for a column and wrong for an invocation — so the second record is emitted here, with no issues to carry because there was no value to find any in. Either way exactly one record is emitted, at `error` (decision **C5(b)**), carrying the function name, the zod issue PATHS and the refused KEY NAMES; the payload holds recipient addresses and rendered message bodies, and neither those nor the refused keys' VALUES ever reach the record (T-157.1-15, T-157-17).
+      // The helper reports a `malformed` outcome itself and stays silent for an `absent` one, which is right for a column and wrong for an invocation, so the `absent` record is emitted here. Either way exactly one record is emitted, carrying the function name, the issue paths and the refused key names, never the recipient addresses or message bodies the payload holds.
       if (outcome.status === 'absent')
         reportParseFailure(SEND_EMAIL_PARSE_FAILURE_MESSAGE, SEND_EMAIL_SOURCE, [], false);
-      // A partially-preserved survivor is deliberately NOT reported as a success: the counts on it were produced by a function whose answer this method could not validate as a whole, and reporting them would be the same unverified claim in a smaller form.
+      // A partially preserved survivor is not reported as a success: its counts come from a response that did not validate as a whole.
       return { type: 'failure' as const };
     }
 
