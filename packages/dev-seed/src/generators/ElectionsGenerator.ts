@@ -1,10 +1,9 @@
 /**
  * ElectionsGenerator — foundation generator for the `elections` table.
  *
- * class with `constructor(private ctx: Ctx)` capturing context at construction; `generate(fragment)` returns typed `TablesInsert<'elections'>[]` rows; `defaults(ctx)` returns the fallback fragment used when a template does not supply one.
+ * `constructor(private ctx: Ctx)` captures the context; `generate(fragment)` returns typed `TablesInsert<'elections'>[]` rows; `defaults(ctx)` returns the fallback fragment used when a template does not supply one.
  *
- * every emitted row carries `external_id = `${externalIdPrefix}${suffix}`.
- * `fixed ` pass-through re-prefixes the user-supplied external_id and defaults `project_id` to `ctx.projectId`; all other user fields pass through.
+ * Every emitted row carries `external_id = ${externalIdPrefix}${suffix}`. The `fixed` pass-through re-prefixes the user-supplied external_id and defaults `project_id` to `ctx.projectId`; all other user fields pass through.
  *
  * Sentinel policy: this generator does NOT emit the constituency-groups join sentinel — that sentinel is populated by the pipeline's post-topo pass after every generator has run, so the full `ctx.refs.constituency_groups` is known. Keeping generator output sentinel-free also means unit tests can assert raw `TablesInsert` shape without filtering sentinels.
  *
@@ -44,10 +43,9 @@ export class ElectionsGenerator {
         project_id: projectId,
         name: { en: faker.lorem.words({ min: 2, max: 4 }) },
         short_name: { en: `E${i + 1}` },
-        // Derived from the nominations these synthetic elections pair with, not assumed: NominationsGenerator's `count` branch emits one candidate-type nomination per candidate with NO parent_nomination and NO organization ref (its own comments state both), which is the candidate-only shape. Kept explicit rather than dropped, because this file already restates two other database defaults and dropping this one alone would break its own convention.
+        // NominationsGenerator's `count` branch emits one candidate-type nomination per candidate with no parent_nomination and no organization ref, which is the candidate-only shape.
         election_type: 'candidate_only',
         election_date: faker.date.future({ years: 1, refDate }).toISOString().slice(0, 10),
-        is_generated: true,
         sort_order: i,
         multiple_rounds: false,
         current_round: 1

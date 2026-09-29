@@ -14,8 +14,7 @@
  *
  * Prefix discipline: `externalIdPrefix: 'e2e-perm-startfromcg-'`. Row external_ids bare; refs prefixed.
  *
- * Settings: MINIMAL_BASE_APP_SETTINGS verbatim — `elections.
- * startFromConstituencyGroup` is OMITTED entirely; the CG UUID is post-seed-resolved by the spec's beforeAll.
+ * Settings: MINIMAL_BASE_APP_SETTINGS verbatim — `elections.startFromConstituencyGroup` is OMITTED entirely; the CG UUID is post-seed-resolved by the spec's beforeAll.
  */
 
 import {
@@ -46,7 +45,6 @@ export const permStartfromcgTemplate: Template = {
         election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 0,
-        is_generated: false,
         multiple_rounds: false,
         current_round: 1,
         constituency_groups: [{ external_id: `${P}cg-1` }]
@@ -58,7 +56,6 @@ export const permStartfromcgTemplate: Template = {
         election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 1,
-        is_generated: false,
         multiple_rounds: false,
         current_round: 1,
         constituency_groups: [{ external_id: `${P}cg-2` }]
@@ -73,14 +70,12 @@ export const permStartfromcgTemplate: Template = {
         external_id: 'cg-1',
         name: { en: '[CG1] Parent regions' },
         sort_order: 0,
-        is_generated: false,
         constituencies: [{ external_id: `${P}co-1a` }, { external_id: `${P}co-1b` }]
       },
       {
         external_id: 'cg-2',
         name: { en: '[CG2] Leaf municipalities' },
         sort_order: 1,
-        is_generated: false,
         constituencies: [
           { external_id: `${P}co-1a1` },
           { external_id: `${P}co-1a2` },
@@ -95,41 +90,36 @@ export const permStartfromcgTemplate: Template = {
   constituencies: {
     count: 0,
     fixed: [
-      { external_id: 'co-1a', name: { en: '[CO1A] Region A' }, sort_order: 0, is_generated: false },
-      { external_id: 'co-1b', name: { en: '[CO1B] Region B' }, sort_order: 1, is_generated: false },
+      { external_id: 'co-1a', name: { en: '[CO1A] Region A' }, sort_order: 0 },
+      { external_id: 'co-1b', name: { en: '[CO1B] Region B' }, sort_order: 1 },
       {
         external_id: 'co-1a1',
         name: { en: '[CO1A1] Municipality A1' },
         sort_order: 2,
-        is_generated: false,
         parent: { external_id: `${P}co-1a` }
       },
       {
         external_id: 'co-1a2',
         name: { en: '[CO1A2] Municipality A2' },
         sort_order: 3,
-        is_generated: false,
         parent: { external_id: `${P}co-1a` }
       },
       {
         external_id: 'co-1b1',
         name: { en: '[CO1B1] Municipality B1' },
         sort_order: 4,
-        is_generated: false,
         parent: { external_id: `${P}co-1b` }
       },
       {
         external_id: 'co-1b2',
         name: { en: '[CO1B2] Municipality B2' },
         sort_order: 5,
-        is_generated: false,
         parent: { external_id: `${P}co-1b` }
       },
       {
         external_id: 'co-1c',
         name: { en: '[CO1C] Orphan municipality' },
-        sort_order: 6,
-        is_generated: false
+        sort_order: 6
         // no parent — orphan
       }
     ]

@@ -13,11 +13,11 @@
  *
  * ## It runs BEFORE the two silent-strip rules, not instead of them
  *
- * `bulkImport`'s `_`-prefix rule and its `NON_COLUMN_FIELDS` strip stay exactly where they are. Because Pass 0 runs first, nothing reaches them unrecognised — the strips keep discarding keys the pipeline genuinely handles, and stop being the place an author's typo disappears.
+ * `bulkImport`'s `_`-prefix rule and its `NON_COLUMN_FIELDS` strip still run. Because Pass 0 runs first, nothing reaches them unrecognised: the strips discard only keys the pipeline handles, and a mistyped key fails here, by name, instead of being stripped or failing later in the database write.
  *
- * ## First offence, not an aggregate — CHOSEN, not defaulted into
+ * ## First offence, not an aggregate
  *
- * `bulkImport`'s and `linkJoinTables`' existing failures are all first-failure, and an aggregate over the 1,481 rows a built-in run emits would bury the signal under its own volume. Stated here so a later reader knows this was a decision rather than an omission, recorded in the guard's own spec.
+ * `bulkImport`'s and `linkJoinTables`' failures are all first-failure, and an aggregate over the rows a built-in run emits would bury the signal under its own volume. The guard's spec pins this.
  *
  * ## The `external_id` it does NOT require
  *
@@ -50,10 +50,13 @@ function unknownPropertyMessage(
   return (
     `assertKnownRowProps: unknown property '${key}' on collection '${collection}' ` +
     `(${rowLabel}; resolved table '${table}'). ` +
-    'The seed pipeline never reads it, so it would be silently dropped rather than failing. ' +
+    'It is not a declared column, relationship ref, link sentinel or non-column field, so it would be ' +
+    'forwarded to the database write (`_bulk_upsert_record` for the bulk-import tables) and fail there ' +
+    'as an unknown column. ' +
     `Permitted keys for '${table}': ${[...permitted].sort().join(', ')}. ` +
-    'If the pipeline is meant to read it, declare it in LINK_SENTINELS or COLLECTION_NON_COLUMNS in ' +
-    `${DECLARATION_MODULE}.`
+    `To make the key legal, declare it in ${DECLARATION_MODULE}: TABLE_COLUMNS for a new database column, ` +
+    'RELATIONSHIP_REFS for a foreign-key reference, or LINK_SENTINELS or COLLECTION_NON_COLUMNS for a key ' +
+    'the pipeline consumes before the write.'
   );
 }
 
@@ -68,11 +71,8 @@ function deniedPropertyMessage(key: string, collection: string, table: string, r
 /**
  * Assert that every property of every row is one the pipeline actually reads.
  *
- * @param data collection → rows, as `runPipeline` emits it. ⚠ `Writer.write()`
- *   passes its **pre-deletion** `data` parameter, not `bulkData`: by the time Pass 1 runs, `accounts`, `projects`, `feedback` and `app_settings` have been removed from `bulkData`, and `app_settings` is a first-class template-authorable fragment that every single built-in emits a row of.
- * @throws on the FIRST offending property — an unknown key, a key that is a real
- *   column the RPC discards, or a collection this module does not model at all.
- *   An unrecognised collection is loud even when it carries zero rows: returning quietly would let a keying confusion permit every key on every row.
+ * @param data collection → rows, as `runPipeline` emits it. `Writer.write()` passes its **pre-deletion** `data` parameter, not `bulkData`: by the time Pass 1 runs, `accounts`, `projects`, `feedback` and `app_settings` have been removed from `bulkData`, and `app_settings` is a template-authorable fragment that every built-in emits a row of.
+ * @throws on the FIRST offending property: an unknown key, a key that is a real column the RPC discards, or a collection this module does not model. An unrecognised collection is loud even when it carries zero rows, because returning quietly would let a keying confusion permit every key on every row.
  */
 export function assertKnownRowProps(data: Record<string, Array<Record<string, unknown>>>): void {
   for (const [collection, rows] of Object.entries(data)) {

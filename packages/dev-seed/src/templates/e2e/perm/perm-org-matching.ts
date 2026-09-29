@@ -22,7 +22,7 @@
  *
  * Org own answers are stitched by the Writer's `importAnswers` pass (which — despite its name — generalises over candidates AND organizations); the org carries `answersByExternalId` keyed by FULL prefixed question external_ids.
  *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-orgmatch-'`. Row external_ids bare; nested refs prefixed. Additive — own namespaced dataset, does NOT touch `e2e/base`.
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-orgmatch-'`. Row external_ids bare; nested refs prefixed. Its own namespaced dataset; does NOT touch `e2e/base`.
  */
 
 import { buildCandidate, buildElectionConstituencyNoms, LIKERT_5_EN, MINIMAL_BASE_APP_SETTINGS } from './shared';
@@ -67,7 +67,6 @@ export const permOrgMatchingTemplate: Template = {
         election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 0,
-        is_generated: false,
         multiple_rounds: false,
         current_round: 1,
         constituency_groups: [{ external_id: `${P}cg-1` }]
@@ -82,7 +81,6 @@ export const permOrgMatchingTemplate: Template = {
         external_id: 'cg-1',
         name: { en: '[CG1] Only group' },
         sort_order: 0,
-        is_generated: false,
         constituencies: [{ external_id: `${P}co-1a` }]
       }
     ]
@@ -94,8 +92,7 @@ export const permOrgMatchingTemplate: Template = {
       {
         external_id: 'co-1a',
         name: { en: '[CO1A] Only constituency' },
-        sort_order: 0,
-        is_generated: false
+        sort_order: 0
       }
     ]
   },
@@ -110,7 +107,6 @@ export const permOrgMatchingTemplate: Template = {
         short_name: { en: 'OR1' },
         color: { normal: '#1f4ea0', dark: '#7aa3d6' },
         sort_order: 0,
-        is_generated: false,
         answersByExternalId: ORG1_OWN_ANSWERS
       },
       {
@@ -118,8 +114,7 @@ export const permOrgMatchingTemplate: Template = {
         name: { en: '[OR2] Party Two' },
         short_name: { en: 'OR2' },
         color: { normal: '#a82525', dark: '#d67070' },
-        sort_order: 1,
-        is_generated: false
+        sort_order: 1
       }
     ]
   },
@@ -131,8 +126,7 @@ export const permOrgMatchingTemplate: Template = {
         external_id: 'qc-opin',
         name: { en: '[QC-OPIN] Org-matching opinion questions' },
         category_type: 'opinion',
-        sort_order: 0,
-        is_generated: false
+        sort_order: 0
       }
     ]
   },
@@ -148,8 +142,7 @@ export const permOrgMatchingTemplate: Template = {
         category: { external_id: `${P}qc-opin` },
         allow_open: false,
         required: true,
-        sort_order: 0,
-        is_generated: false
+        sort_order: 0
       },
       {
         external_id: 'qu-opin-2',
@@ -159,8 +152,7 @@ export const permOrgMatchingTemplate: Template = {
         category: { external_id: `${P}qc-opin` },
         allow_open: false,
         required: true,
-        sort_order: 1,
-        is_generated: false
+        sort_order: 1
       },
       {
         external_id: 'qu-opin-3',
@@ -170,8 +162,7 @@ export const permOrgMatchingTemplate: Template = {
         category: { external_id: `${P}qc-opin` },
         allow_open: false,
         required: true,
-        sort_order: 2,
-        is_generated: false
+        sort_order: 2
       },
       {
         external_id: 'qu-opin-4',
@@ -181,8 +172,7 @@ export const permOrgMatchingTemplate: Template = {
         category: { external_id: `${P}qc-opin` },
         allow_open: false,
         required: true,
-        sort_order: 3,
-        is_generated: false
+        sort_order: 3
       }
     ]
   },

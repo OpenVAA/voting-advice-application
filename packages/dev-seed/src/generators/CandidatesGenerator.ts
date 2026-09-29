@@ -1,13 +1,13 @@
 /**
  * CandidatesGenerator — content generator for the `candidates` table.
  *
- * Schema: `project_id`, `first_name`, `last_name` are required; `answers` JSONB defaults to '{}'. There is NO organization column: 162-07b removed it, and the candidate-to-organization association is stated once, on the `nominations.parent_nomination_id` edge.
+ * Schema: `project_id`, `first_name`, `last_name` are required; `answers` JSONB defaults to '{}'. There is no organization column: the candidate-to-organization association is stated once, on the `nominations.parent_nomination_id` edge.
  *
- * Ref shape: `organization: { external_id }` — **EMITTER-ONLY since 162-07b, and this is the thing to read before deleting it.** It used to be a `RELATIONSHIP_REFS` entry that `_bulk_upsert_record` resolved to a FK column; that column is gone, so the key is now on `COLLECTION_NON_COLUMN_LIST.candidates` beside `email` — permitted on the row and STRIPPED before the write. It survives because it has a second reader that never touches the database: `pipeline.ts` installs `latentAnswerEmitter` for every template, and that emitter resolves its party cluster through `findOrganizationIndex`, reading this reference in memory. An unresolved index does not throw; it falls back to random emission SILENTLY, for every synthetic candidate. Deleting this key would therefore degrade every seeded dataset's matching data with no gate reporting it.
+ * Ref shape: `organization: { external_id }` — **EMITTER-ONLY; read this before deleting it.** The key is on `COLLECTION_NON_COLUMN_LIST.candidates` beside `email`: permitted on the row and STRIPPED before the write. Its reader never touches the database: `pipeline.ts` installs `latentAnswerEmitter` for every template, and that emitter resolves its party cluster through `findOrganizationIndex`, reading this reference in memory. An unresolved index does not throw; it falls back to random emission SILENTLY, for every synthetic candidate. Deleting this key would therefore degrade every seeded dataset's matching data with no gate reporting it.
  *
  * Sentinel: `answersByExternalId: { [questionExtId]: { value, info? } }` — stripped by bulk_import (unknown fields are ignored) and later consumed by the `importAnswers` helper, which resolves question ext_id → UUID and stitches the `candidate.answers` JSONB post-insert. The generator only populates the sentinel; the writer owns the round-trip in a post-topo pass.
  *
- * seam (critical): `const emit = ctx.answerEmitter ?? defaultRandomValidEmit` is the SINGLE hook point the latent-factor emitter overrides. The default is the random-valid-per-question-type stub in emitters/answers.ts. This file does NOT change between emitter generations — only `ctx.answerEmitter` gets populated.
+ * Emitter seam (critical): `const emit = ctx.answerEmitter ?? defaultRandomValidEmit` is the SINGLE hook point the latent-factor emitter overrides. The default is the random-valid-per-question-type stub in emitters/answers.ts. Swapping emitters populates `ctx.answerEmitter` and leaves this file unchanged.
  *
  * The default emitter produces shape-valid random answers per question type, and shape-valid ONLY. Subdimension / MISSING_VALUE projection stays in `@openvaa/matching`; correlated / clustered answers are the latent emitter's concern, never this file's. ctx is captured at construction; `defaults(ctx)` is per-call.
  *
@@ -30,7 +30,7 @@ export type CandidatesFragment = Fragment<TablesInsert<'candidates'>>;
 
 /**
  * CandidateRow carries two sentinel / ref fields not on TablesInsert<'candidates'>:
- *   - `organization: { external_id }` — read by the latent answer emitter, then stripped by bulk_import. It resolves to NO column: see this file's header for why it outlived the one it used to resolve to.
+ *   - `organization: { external_id }` — read by the latent answer emitter, then stripped by bulk_import. It resolves to NO column: see this file's header for why it is kept.
  *   - `answersByExternalId` — stripped by bulk_import; read by importAnswers
  */
 type CandidateRow = TablesInsert<'candidates'> & {
@@ -61,7 +61,7 @@ export class CandidatesGenerator {
       } as CandidateRow);
     }
 
-    // seam: resolve the answer emitter ONCE per run. An override drops in here via `ctx.answerEmitter = latentEmitter`, with zero changes to this generator.
+    // Emitter seam: resolve the answer emitter ONCE per run. An override drops in here via `ctx.answerEmitter = latentEmitter`, with zero changes to this generator.
     const emit = this.ctx.answerEmitter ?? defaultRandomValidEmit;
 
     // Pipeline contract: ctx.refs.questions carries the FULL question rows (not just { external_id } stubs) after QuestionsGenerator runs, so the answer emitter can read question.type + choices. The cast reflects that enrichment — given stubs only, the emitter fails at runtime with a clear missing-field error.
@@ -78,12 +78,11 @@ export class CandidatesGenerator {
         project_id: projectId,
         first_name: faker.person.firstName(),
         last_name: faker.person.lastName(),
-        sort_order: i,
-        is_generated: true
+        sort_order: i
       };
 
       // Organization ref — only attach if the upstream ref was populated.
-      // Missing org → the latent emitter's findOrganizationIndex returns a negative index and defaultRandomValidEmit is substituted for this candidate, so its answers carry no party cluster. Nothing is written to the database either way: since 162-07b this key names no column and is stripped before the write.
+      // Missing org → the latent emitter's findOrganizationIndex returns a negative index and defaultRandomValidEmit is substituted for this candidate, so its answers carry no party cluster. Nothing is written to the database either way: this key names no column and is stripped before the write.
       if (organization) {
         row.organization = { external_id: organization.external_id };
       }

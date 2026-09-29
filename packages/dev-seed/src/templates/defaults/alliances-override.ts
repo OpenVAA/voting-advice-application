@@ -2,7 +2,7 @@
  * Default-template alliances override.
  *
  * Hand-authored 2 alliances grouping 6 of 8 organizations into ideological blocs.
- * Standalone organizations (org_people, org_coast) exercise the no-alliance UI path. Exercises the supabase-adapter reverse-fill of `organizationNominationIds` on Alliance parents (supabaseDataProvider.ts:391-405).
+ * Standalone organizations (org_people, org_coast) exercise the no-alliance UI path. Exercises the supabase-adapter reverse-fill of `organizationNominationIds` on Alliance parents (the reverse fill in `SupabaseDataProvider._getNominationData`).
  *
  * Scope split: this override emits the 2 ALLIANCE ENTITY rows only (output.alliances → bulk_import → alliances table). The 10 AllianceNomination rows live in `nominations-override.ts` so they land in output.nominations → the nominations table. Without this split, bulk_import routes all rows under the override key to the same table and the polymorphic `alliance: { ... }` ref on nomination rows is misinterpreted as a column on the alliances table.
  *
@@ -39,7 +39,7 @@ export function findAllianceForOrganization(organizationExtId: string): 'L' | 'R
 }
 
 /**
- * Hand-authored alliance entity literals. Mirrors the 8-organization shape in `default.ts:88-152`. Names are invented + neutral — no real Finnish coalition names. Colors are dark/neutral hues distinct from member-organization hues so the alliance entity is visually distinguishable.
+ * Hand-authored alliance entity literals. Mirrors the shape of the 8 hand-authored organizations in `default.ts`. Names are invented + neutral — no real Finnish coalition names. Colors are dark/neutral hues distinct from member-organization hues so the alliance entity is visually distinguishable.
  */
 const ALLIANCE_ENTITY_ROWS: ReadonlyArray<{
   external_id: 'alliance_L' | 'alliance_R';
@@ -72,7 +72,7 @@ const ALLIANCE_ENTITY_ROWS: ReadonlyArray<{
 export const ALLIANCE_KEYS: ReadonlyArray<'L' | 'R'> = ['L', 'R'];
 
 /**
- * Build the prefixed external_id for an alliance entity. Mirrors the organization-entity prefix pattern at `default.ts:90` (`seed_org_blue`).
+ * Build the prefixed external_id for an alliance entity. Mirrors the organization-entity prefix pattern in `default.ts` (`seed_org_blue`).
  */
 export function allianceExtId(key: 'L' | 'R', externalIdPrefix: string): string {
   return `${externalIdPrefix}alliance_${key}`;
@@ -80,7 +80,7 @@ export function allianceExtId(key: 'L' | 'R', externalIdPrefix: string): string 
 
 /**
  * Build the constituency-specific external_id for an alliance nomination.
- * Mirrors the org-nom external_id pattern at `nominations-override.ts:147` (`seed_nom_org_<organization>_<constituency>`).
+ * Mirrors the org-nom external_id pattern in `nominations-override.ts` (`seed_nom_org_<organization>_<constituency>`).
  *
  * ⚠ Constituency-specificity is critical: an org-nom in con_03 must point at the alliance nom in con_03, not the alliance nom in con_01.
  */
@@ -94,7 +94,7 @@ export function alliancesOverride(_fragment: unknown, ctx: Ctx): Array<Record<st
   const rows: Array<AllianceEntityRow> = [];
 
   // Emit 2 Alliance entity rows — these populate the `alliances` table.
-  // External_ids must include externalIdPrefix manually (overrides bypass the per-table generator's prefixing logic in AlliancesGenerator.ts:35).
+  // External_ids must include externalIdPrefix manually (overrides bypass the per-table generator's prefixing in `AlliancesGenerator`).
   // Alliance NOMINATION rows live in `nominations-override.ts` (they go to the `nominations` table, not the `alliances` table — bulk_import routes by override key, so dual-emitting from this file mis-routes).
   for (const ent of ALLIANCE_ENTITY_ROWS) {
     rows.push({
@@ -103,8 +103,7 @@ export function alliancesOverride(_fragment: unknown, ctx: Ctx): Array<Record<st
       name: ent.name,
       short_name: ent.short_name,
       color: ent.color,
-      sort_order: ent.sort_order,
-      is_generated: false
+      sort_order: ent.sort_order
     } satisfies AllianceEntityRow as AllianceEntityRow);
   }
 

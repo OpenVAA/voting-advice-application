@@ -10,7 +10,7 @@
  *
  * THROWS if `ctx.refs.organizations.length !== 8` — the weights are tuned for 8 organizations. If a future edit adds or drops an organization in defaultTemplate without updating this override, runtime fails loudly here rather than silently mis-distributing candidates. Ship a new override (or generalize this one) if a template legitimately needs different weights.
  *
- * Answer emission: the override calls `ctx.answerEmitter ?? defaultRandomValidEmit` exactly as the CandidatesGenerator does (CandidatesGenerator.ts:93). The latent emitter is auto-installed by pipeline.ts:177 (`ctx.answerEmitter ??= latentAnswerEmitter(template)`) before this override runs, so candidates get clustered answers "for free".
+ * Answer emission: the override calls `ctx.answerEmitter ?? defaultRandomValidEmit` exactly as the CandidatesGenerator does. The latent emitter is auto-installed by `pipeline.ts` (`ctx.answerEmitter ??= latentAnswerEmitter(template)`) before this override runs, so candidates get clustered answers "for free".
  */
 
 import { en, Faker, fi, sv } from '@faker-js/faker';
@@ -87,7 +87,7 @@ export function candidatesOverride(_fragment: unknown, ctx: Ctx): Array<Record<s
     sv: buildLocaleFaker('sv')
   };
 
-  // Emitter seam — mirrors CandidatesGenerator.ts:93. The latent emitter is auto-installed by pipeline.ts:177 (`ctx.answerEmitter ??= latentAnswerEmitter(template)`), so by the time this override runs the field is populated when the template has a latent block (or non-empty organizations).
+  // Emitter seam — mirrors CandidatesGenerator's. The latent emitter is auto-installed by `pipeline.ts` (`ctx.answerEmitter ??= latentAnswerEmitter(template)`), so by the time this override runs the field is populated when the template has a latent block (or non-empty organizations).
   const emit = ctx.answerEmitter ?? defaultRandomValidEmit;
 
   // Pipeline contract: ctx.refs.questions carries the FULL question rows after QuestionsGenerator runs, so the emitter can read q.type + q.choices. The cast matches CandidatesGenerator's pattern.
@@ -105,21 +105,17 @@ export function candidatesOverride(_fragment: unknown, ctx: Ctx): Array<Record<s
       first_name: faker.person.firstName(),
       last_name: faker.person.lastName(),
       sort_order: i,
-      is_generated: true,
       organization: organizationByIndex[i],
       // Required by `anon_select_candidates`, whose terms_of_use clause is the one no default supplies:
       //   terms_of_use_accepted IS NOT NULL AND terms_of_use_accepted < now(), AND the row's project is open for voters, AND the row is confirmed and reached by a confirmed nomination (`apps/supabase/supabase/schema/302-rls.sql`)
       //
-      // 1. WHY THE KEY EXISTS AT ALL. `bulkImport`'s confirmation auto-default
-      //    (`src/supabaseAdminClient.ts`) supplies the confirmation term and `ensureProject` supplies the project one; NEITHER supplies this one, and nothing else in the pipeline does. Without this key the seeded candidates are confirmed, nominated, in an open project — and still invisible to the voter app's anon client, so the Candidates tab never renders. That is the defect this key repairs. Every other check in this repository reads as service_role, which bypasses RLS entirely, which is why it survived a green suite.
-      // 2. WHY A LITERAL RATHER THAN A COMPUTED TIMESTAMP. It matches `e2e/base`
-      //    byte-for-byte so the two templates diff cleanly, and the default template pins its seed — a clock-derived value (a fresh Date, an epoch read, or a faker date call) would break the byte-identical determinism `default.test.ts` Test 9 asserts across two successive calls. Do not "modernise" this literal into a computed timestamp.
-      // 3. WHY HERE RATHER THAN IN THE AUTO-DEFAULT. Stamping the column globally on
-      //    the publishable tables would backdate acceptance for `e2e/base` too, reaching its `ca-aa-hidden` / `ca-aa-unregistered` rows — two deliberate in-repo negative controls — and destroying them.
+      // 1. WHY THE KEY EXISTS AT ALL. `bulkImport`'s confirmation auto-default (`src/supabaseAdminClient.ts`) supplies the confirmation term and `ensureProject` supplies the project one; NEITHER supplies this one, and nothing else in the pipeline does. Without this key the seeded candidates are confirmed, nominated, in an open project — and still invisible to the voter app's anon client, so the Candidates tab never renders. Every other check in this repository reads as service_role, which bypasses RLS entirely, so only the anon client sees the difference.
+      // 2. WHY A LITERAL RATHER THAN A COMPUTED TIMESTAMP. It matches `e2e/base` byte-for-byte so the two templates diff cleanly, and the default template pins its seed — a clock-derived value (a fresh Date, an epoch read, or a faker date call) would break the byte-identical determinism `default.test.ts` Test 9 asserts across two successive calls. Do not "modernise" this literal into a computed timestamp.
+      // 3. WHY HERE RATHER THAN IN THE AUTO-DEFAULT. Stamping the column globally on the publishable tables would backdate acceptance for `e2e/base` too, reaching its `ca-aa-hidden` / `ca-aa-unregistered` rows — two deliberate in-repo negative controls — and destroying them.
       terms_of_use_accepted: '2025-01-01T00:00:00.000Z'
     };
 
-    // Answer emission via the emitter seam (mirrors CandidatesGenerator.ts:141-149).
+    // Answer emission via the emitter seam (mirrors CandidatesGenerator).
     // Skipped when no questions exist — nothing to stitch.
     if (questionRows.length > 0) {
       const candidateForEmit: TablesInsert<'candidates'> = {

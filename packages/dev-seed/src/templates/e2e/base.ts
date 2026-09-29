@@ -16,18 +16,18 @@
  *     - Elections:           test-e2e-base-el-reg, test-e2e-base-el-mun
  *     - Constituency groups: test-e2e-base-cg-reg, test-e2e-base-cg-mun
  *     - Constituencies:      test-e2e-base-co-reg-n, test-e2e-base-co-reg-s, test-e2e-base-co-mun-ne, test-e2e-base-co-mun-nw, test-e2e-base-co-mun-se, test-e2e-base-co-mun-sw
- *     - Question categories: test-e2e-base-qg-info, test-e2e-base-qg-opin-base, test-e2e-base-qg-opin-opt-a (was: -base-b), test-e2e-base-qg-opin-opt-b (was: -base-c), test-e2e-base-qg-opin-el-reg, test-e2e-base-qg-opin-co-mun-se-sw, test-e2e-base-qg-opin-filt-a, test-e2e-base-qg-opin-filt-b
- *     - Questions:           test-e2e-base-qu-info-{type}, test-e2e-base-qu-opin-base-{i}-{type}, test-e2e-base-qu-opin-opt-a-1 (was: -base-b-1), test-e2e-base-qu-opin-opt-b-1 (was: -base-c-1), test-e2e-base-qu-opin-el-reg-1, test-e2e-base-qu-opin-co-mun-se-sw-1, test-e2e-base-qu-open-filt-mun-ne, test-e2e-base-qu-open-filt-mun-se
+ *     - Question categories: test-e2e-base-qg-info, test-e2e-base-qg-opin-base, test-e2e-base-qg-opin-opt-a, test-e2e-base-qg-opin-opt-b, test-e2e-base-qg-opin-el-reg, test-e2e-base-qg-opin-co-mun-se-sw, test-e2e-base-qg-opin-filt-a, test-e2e-base-qg-opin-filt-b
+ *     - Questions:           test-e2e-base-qu-info-{type}, test-e2e-base-qu-opin-base-{i}-{type}, test-e2e-base-qu-opin-opt-a-1, test-e2e-base-qu-opin-opt-b-1, test-e2e-base-qu-opin-el-reg-1, test-e2e-base-qu-opin-co-mun-se-sw-1, test-e2e-base-qu-open-filt-mun-ne, test-e2e-base-qu-open-filt-mun-se
  *     - Alliances:           test-e2e-base-al-a, test-e2e-base-al-b
  *     - Organisations:       test-e2e-base-or-aa, test-e2e-base-or-ab, test-e2e-base-or-ba, test-e2e-base-or-bb, test-e2e-base-or-c
  *     - Candidates:          test-e2e-base-ca-{org}-{name} or test-e2e-base-ca-{org}-{n}-gen
  *     - Nominations:         test-e2e-base-nom-{constituency-stub}-{entity-type}-{entity-name}
- * - `generateTranslationsForAllLocales: false` (single-locale e2e per).
+ * - `generateTranslationsForAllLocales: false` (single-locale E2E).
  * - `seed: 42` for deterministic generation.
  *
  * ## Hierarchy
  *
- * Per-constituency parent_id: each CO-Mun-* has parent_id pointing at the matching CO-Reg-* (the Reg constituency). This is implemented via `parent: { external_id }` on each CO-Mun row — the ConstituenciesGenerator passes the sentinel to bulk_import which resolves it server-side (see ConstituenciesGenerator.ts:34-39).
+ * Per-constituency parent_id: each CO-Mun-* has parent_id pointing at the matching CO-Reg-* (the Reg constituency). This is implemented via `parent: { external_id }` on each CO-Mun row — the ConstituenciesGenerator passes the sentinel to bulk_import which resolves it server-side (see `ConstituenciesGenerator`).
  *   - CO-Mun-NE → parent CO-Reg-N
  *   - CO-Mun-NW → parent CO-Reg-N
  *   - CO-Mun-SE → parent CO-Reg-S
@@ -39,16 +39,16 @@
  * - QG-Opin-EL-Reg carries `_elections: { external_id: ['test-e2e-base-el-reg'] }`
  *   so linkJoinTables (supabaseAdminClient.ts) resolves to `election_ids: [uuid(test-e2e-base-el-reg)]` on the question_categories row.
  * - QG-Opin-CO-Mun-SE-SW carries `_constituencies: { external_id: [...] }`
- *   resolved by linkJoinTables to `constituency_ids: [uuid(...)]` JSONB on the question_categories row (column at migration line 597).
+ *   resolved by linkJoinTables to `constituency_ids: [uuid(...)]` JSONB on the question_categories row.
  * - Per-question constituency scoping (QU-Open-Filt-Mun-NE under QG-Opin-Filt-A
- *   and QU-Open-Filt-Mun-SE under QG-Opin-Filt-B) carries the same `_constituencies: { external_id: [...] }` sentinel on the question row; resolved to `questions.constituency_ids` JSONB (column at migration line 625).
+ *   and QU-Open-Filt-Mun-SE under QG-Opin-Filt-B) carries the same `_constituencies: { external_id: [...] }` sentinel on the question row; resolved to `questions.constituency_ids` JSONB.
  *
  * ## Partial-answer candidate arrangement
  *
  * The voter journey skips QU-Opin-Opt-A-1 and QU-Opin-EL-Reg-1; skips QU-Open-Filt-Mun-NE; and never sees QG-Opin-Opt-B (unchecked) nor QG-Opin-CO-Mun-SE-SW (filtered out for CO-Mun-NE). CA-AA-Special's answer arrangement — one of two partial-answer roles — exercises this 4-case matrix:
  *   - (a) base-1, base-3, base-4, base-5: both answered
  *   - (b) base-2: voter answered, entity missing
- *   - (c) B-1 + EL-Reg-1: voter missing (skipped), entity answered
+ *   - (c) Opt-A-1 + EL-Reg-1: voter missing (skipped), entity answered
  *   - (d) Filt-Mun-NE: both missing (voter skipped + entity missing)
  *
  * ## Settings
@@ -185,7 +185,7 @@ export const BASE_APP_SETTINGS = {
     },
     showFeedbackPopup: 180,
     showSurveyPopup: 500,
-    // 'alliance' MUST be strictly LAST — the Org-first imputation cascade invariant (matchState.svelte.ts:104-110) requires 'organization' to precede 'alliance' or orgProxiesById is empty and alliance scores silently degrade. Adding 'alliance' here is the single switch that turns on BOTH alliance matching and the results tab.
+    // 'alliance' MUST be strictly LAST — the Org-first imputation cascade invariant in `matchState.svelte.ts` requires 'organization' to precede 'alliance' or orgProxiesById is empty and alliance scores silently degrade. Adding 'alliance' here is the single switch that turns on BOTH alliance matching and the results tab.
     sections: ['candidate', 'organization', 'alliance']
   },
   elections: {
@@ -238,7 +238,7 @@ function withInfoAnswers(extra: Record<string, { value: unknown }>): Record<stri
   return { ...DEFAULT_INFO_ANSWERS, ...extra };
 }
 
-// Opinion-answer templates. Every non-special candidate uses ONE of these three templates verbatim (260525-tea); CA-AA-Special retains its asymmetric partial-answer arrangement (see the top-of-file docstring, "Partial-answer candidate arrangement").
+// Opinion-answer templates. Every non-special candidate uses ONE of these three templates verbatim; CA-AA-Special retains its asymmetric partial-answer arrangement (see the top-of-file docstring, "Partial-answer candidate arrangement").
 //
 // Coverage: all 14 opinion questions across all categories — base 1-8 (likert5/likert4/likert7/categorical/boolean/number/multi-choice 2..3/multi-choice exact-1), opt-a/opt-b (singleChoiceOrdinal likert5), el-reg-1 (singleChoiceOrdinal), co-mun-se-sw-1 (singleChoiceOrdinal), open-filt-mun-ne/se (singleChoiceOrdinal).
 // Candidates outside a given scope still carry the answer; the matching algorithm picks only in-scope questions per voter, so the extra answers are inert (they cost ~nothing on import).
@@ -253,7 +253,7 @@ const POLAR_MAX: Record<string, { value: unknown }> = {
   'test-e2e-base-qu-opin-base-7-multichoice': { value: ['a', 'b'] },
   // Base-8 (exact-one multi-choice) is DELIBERATELY MATCHING-NEUTRAL: every answer template below gives it the SAME value (['a']), and every automated walk selects checkboxes from index 0 upward, so the voter also lands on 'a' in BOTH answerMode='min' and 'max'. Every candidate therefore sits at distance 0 on this dimension.
   //
-  // Why that is safe rather than lazy: a categorical question's subdimensions are re-weighted to one dimension's worth of total weight (metric.ts:225-231), so base-8 adds exactly 1 unit to the maximum possible distance and 0 to every candidate's actual distance. Scores become 1 - D/(Dmax+1) with D unchanged — a strictly monotone transform, so the existing ranking assertions (POLAR_MAX first at 100%, POLAR_MIN last, the min-walk ordering) are preserved EXACTLY rather than merely "probably".
+  // Why that is safe rather than lazy: a categorical question's subdimensions are re-weighted to one dimension's worth of total weight (the subdimension weighting in `@openvaa/matching`'s `metric.ts`), so base-8 adds exactly 1 unit to the maximum possible distance and 0 to every candidate's actual distance. Scores become 1 - D/(Dmax+1) with D unchanged — a strictly monotone transform, so the existing ranking assertions (POLAR_MAX first at 100%, POLAR_MIN last, the min-walk ordering) are preserved EXACTLY rather than merely "probably".
   //
   // Base-7 above remains the multi-choice MATCHING-coverage question (its POLAR_MAX/POLAR_MIN values are disjoint on purpose); base-8's job is the `selectExact` helper-text render guard, not matching discrimination.
   'test-e2e-base-qu-opin-base-8-multichoice-exact': { value: ['a'] },
@@ -304,7 +304,8 @@ const POLAR_MIN: Record<string, { value: unknown }> = {
 // Middle values with tiebreak-to-min:
 //   likert5 (1-5):   middle = '3'
 //   likert4 (1-4):   middle = 2.5 → tiebreak-to-min → '2'
-//   likert7 (1-7):   middle = '4' categorical a/b/c: middle = 'b'
+//   likert7 (1-7):   middle = '4'
+//   categorical:     middle = 'b' (choices a/b/c)
 //   boolean:         no middle → tiebreak-to-min → false
 const GENERIC: Record<string, { value: unknown }> = {
   'test-e2e-base-qu-opin-base-1-likert5': { value: '3' },
@@ -345,7 +346,6 @@ export const baseTemplate: Template = {
         election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 0,
-        is_generated: false,
         multiple_rounds: false,
         current_round: 1,
         constituency_groups: [{ external_id: 'test-e2e-base-cg-reg' }]
@@ -357,7 +357,6 @@ export const baseTemplate: Template = {
         election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 1,
-        is_generated: false,
         multiple_rounds: false,
         current_round: 1,
         constituency_groups: [{ external_id: 'test-e2e-base-cg-mun' }]
@@ -373,14 +372,12 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-cg-reg',
         name: { en: '[cg-reg] Regions' },
         sort_order: 0,
-        is_generated: false,
         constituencies: [{ external_id: 'test-e2e-base-co-reg-n' }, { external_id: 'test-e2e-base-co-reg-s' }]
       },
       {
         external_id: 'test-e2e-base-cg-mun',
         name: { en: '[cg-mun] Municipalities' },
         sort_order: 1,
-        is_generated: false,
         constituencies: [
           { external_id: 'test-e2e-base-co-mun-ne' },
           { external_id: 'test-e2e-base-co-mun-nw' },
@@ -391,48 +388,44 @@ export const baseTemplate: Template = {
     ]
   },
 
-  // ------------------------------------------------------------------- constituencies CO-Mun-* rows carry `parent: { external_id }` → resolves to parent_id on the constituencies table via bulk_import (ConstituenciesGenerator.ts:34-39).
+  // ------------------------------------------------------------------- constituencies
+
+  // CO-Mun-* rows carry `parent: { external_id }` → resolves to parent_id on the constituencies table via bulk_import (see `ConstituenciesGenerator`).
   constituencies: {
     count: 0,
     fixed: [
       {
         external_id: 'test-e2e-base-co-reg-n',
         name: { en: '[co-reg-n] Region North' },
-        sort_order: 0,
-        is_generated: false
+        sort_order: 0
       },
       {
         external_id: 'test-e2e-base-co-reg-s',
         name: { en: '[co-reg-s] Region South' },
-        sort_order: 1,
-        is_generated: false
+        sort_order: 1
       },
       {
         external_id: 'test-e2e-base-co-mun-ne',
         name: { en: '[co-mun-ne] Municipality North-East' },
         sort_order: 2,
-        is_generated: false,
         parent: { external_id: 'test-e2e-base-co-reg-n' }
       },
       {
         external_id: 'test-e2e-base-co-mun-nw',
         name: { en: '[co-mun-nw] Municipality North-West' },
         sort_order: 3,
-        is_generated: false,
         parent: { external_id: 'test-e2e-base-co-reg-n' }
       },
       {
         external_id: 'test-e2e-base-co-mun-se',
         name: { en: '[co-mun-se] Municipality South-East' },
         sort_order: 4,
-        is_generated: false,
         parent: { external_id: 'test-e2e-base-co-reg-s' }
       },
       {
         external_id: 'test-e2e-base-co-mun-sw',
         name: { en: '[co-mun-sw] Municipality South-West' },
         sort_order: 5,
-        is_generated: false,
         parent: { external_id: 'test-e2e-base-co-reg-s' }
       }
     ]
@@ -447,40 +440,35 @@ export const baseTemplate: Template = {
         name: { en: '[or-aa] Party AA' },
         short_name: { en: 'AA' },
         color: { normal: '#1f4ea0', dark: '#7aa3d6' },
-        sort_order: 0,
-        is_generated: false
+        sort_order: 0
       },
       {
         external_id: 'test-e2e-base-or-ab',
         name: { en: '[or-ab] Party AB' },
         short_name: { en: 'AB' },
         color: { normal: '#3a72c2', dark: '#8db5dc' },
-        sort_order: 1,
-        is_generated: false
+        sort_order: 1
       },
       {
         external_id: 'test-e2e-base-or-ba',
         name: { en: '[or-ba] Party BA' },
         short_name: { en: 'BA' },
         color: { normal: '#a82525', dark: '#d67070' },
-        sort_order: 2,
-        is_generated: false
+        sort_order: 2
       },
       {
         external_id: 'test-e2e-base-or-bb',
         name: { en: '[or-bb] Party BB - Best-Regional-Party' },
         short_name: { en: 'BB' },
         color: { normal: '#c24545', dark: '#dc8d8d' },
-        sort_order: 3,
-        is_generated: false
+        sort_order: 3
       },
       {
         external_id: 'test-e2e-base-or-c',
         name: { en: '[or-c] Party C' },
         short_name: { en: 'C' },
         color: { normal: '#1f8b3c', dark: '#6bdc88' },
-        sort_order: 4,
-        is_generated: false
+        sort_order: 4
       }
     ]
   },
@@ -494,21 +482,21 @@ export const baseTemplate: Template = {
         name: { en: '[al-a] Alliance A' },
         short_name: { en: 'AL-A' },
         color: { normal: '#1f4ea0', dark: '#7aa3d6' },
-        sort_order: 0,
-        is_generated: false
+        sort_order: 0
       },
       {
         external_id: 'test-e2e-base-al-b',
         name: { en: '[al-b] Alliance B' },
         short_name: { en: 'AL-B' },
         color: { normal: '#a82525', dark: '#d67070' },
-        sort_order: 1,
-        is_generated: false
+        sort_order: 1
       }
     ]
   },
 
-  // -------------------------------------------------------------- question_categories 8 categories total: 1 info + 7 opinion (Base + Opt-A (was Base-B) + Opt-B (was Base-C) + EL-Reg scoped + CO-Mun-SE-SW scoped + Filt-A + Filt-B).
+  // -------------------------------------------------------------- question_categories
+
+  // 8 categories total: 1 info + 7 opinion (Base + Opt-A + Opt-B + EL-Reg scoped + CO-Mun-SE-SW scoped + Filt-A + Filt-B).
   // Scoping refs (resolved by linkJoinTables from `_<sentinel>` shape):
   //   - QG-Opin-EL-Reg → `_elections` sentinel → election_ids JSONB column.
   //   - QG-Opin-CO-Mun-SE-SW → `_constituencies` sentinel → constituency_ids
@@ -520,37 +508,32 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-qg-info',
         name: { en: '[qg-info] Info Questions' },
         category_type: 'info',
-        sort_order: 0,
-        is_generated: false
+        sort_order: 0
       },
       {
         external_id: 'test-e2e-base-qg-opin-base',
         name: { en: '[qg-opin-base] Base Opinion Questions' },
         category_type: 'opinion',
         custom_data: { hero: { url: '/images/e2e-test-image-1.jpg', type: 'image' } },
-        sort_order: 1,
-        is_generated: false
+        sort_order: 1
       },
       {
         external_id: 'test-e2e-base-qg-opin-opt-a',
         name: { en: '[qg-opin-opt-a-NotSelected] Optional Opinion Questions A' },
         category_type: 'opinion',
-        sort_order: 2,
-        is_generated: false
+        sort_order: 2
       },
       {
         external_id: 'test-e2e-base-qg-opin-opt-b',
         name: { en: '[qg-opin-opt-b-Skipped] Optional Opinion Questions B' },
         category_type: 'opinion',
-        sort_order: 3,
-        is_generated: false
+        sort_order: 3
       },
       {
         external_id: 'test-e2e-base-qg-opin-el-reg',
         name: { en: '[qg-opin-el-reg] Opinion Questions for Regional Elections Only' },
         category_type: 'opinion',
         sort_order: 4,
-        is_generated: false,
         _elections: { external_id: ['test-e2e-base-el-reg'] }
       },
       {
@@ -558,27 +541,26 @@ export const baseTemplate: Template = {
         name: { en: '[qg-opin-co-mun-se-sw] Opinion Questions for Municipalities SE and SW Only' },
         category_type: 'opinion',
         sort_order: 5,
-        is_generated: false,
         _constituencies: { external_id: ['test-e2e-base-co-mun-se', 'test-e2e-base-co-mun-sw'] }
       },
       {
         external_id: 'test-e2e-base-qg-opin-filt-a',
         name: { en: '[qg-opin-filt-a] Opinion Questions Filtered per Question NE' },
         category_type: 'opinion',
-        sort_order: 6,
-        is_generated: false
+        sort_order: 6
       },
       {
         external_id: 'test-e2e-base-qg-opin-filt-b',
         name: { en: '[qg-opin-filt-b] Opinion Questions Filtered per Question SE' },
         category_type: 'opinion',
-        sort_order: 7,
-        is_generated: false
+        sort_order: 7
       }
     ]
   },
 
-  // ------------------------------------------------------------------- questions 26 questions = 12 info + 14 opinion.
+  // ------------------------------------------------------------------- questions
+
+  // 26 questions = 12 info + 14 opinion.
   //   info    (12): 9 general (multipleChoiceCategorical, singleChoiceCategorical, text, text-longText, text-link, number, boolean, date, multipleText) + 3 constituency-filtered (filt-mun-only, filt-co-reg-n, filt-co-reg-s).
   //   opinion (14): 8 in QG-Opin-Base + Opt-A-1 + Opt-B-1 + EL-Reg-1 + CO-Mun-SE-SW-1 + Filt-Mun-NE + Filt-Mun-SE.
   // The enumeration above is derived from the `fixed` array below and is the authoritative count — do not trust any figure stated elsewhere.
@@ -595,8 +577,7 @@ export const baseTemplate: Template = {
         custom_data: { filterable: true },
         allow_open: false,
         required: false,
-        sort_order: 0,
-        is_generated: false
+        sort_order: 0
       },
       {
         external_id: 'test-e2e-base-qu-info-singleChoiceCategorical',
@@ -607,8 +588,7 @@ export const baseTemplate: Template = {
         // filterable:false — this question is deliberately NOT filterable
         allow_open: false,
         required: false,
-        sort_order: 1,
-        is_generated: false
+        sort_order: 1
       },
       {
         external_id: 'test-e2e-base-qu-info-text',
@@ -617,8 +597,7 @@ export const baseTemplate: Template = {
         category: { external_id: 'test-e2e-base-qg-info' },
         allow_open: false,
         required: true,
-        sort_order: 2,
-        is_generated: false
+        sort_order: 2
       },
       {
         external_id: 'test-e2e-base-qu-info-text-longText',
@@ -628,8 +607,7 @@ export const baseTemplate: Template = {
         custom_data: { longText: true },
         allow_open: false,
         required: false,
-        sort_order: 3,
-        is_generated: false
+        sort_order: 3
       },
       {
         external_id: 'test-e2e-base-qu-info-text-link',
@@ -640,8 +618,7 @@ export const baseTemplate: Template = {
         settings: { type: 'link' },
         allow_open: false,
         required: false,
-        sort_order: 4,
-        is_generated: false
+        sort_order: 4
       },
       {
         external_id: 'test-e2e-base-qu-info-number',
@@ -651,8 +628,7 @@ export const baseTemplate: Template = {
         custom_data: { filterable: true, min: 0, max: 80 },
         allow_open: false,
         required: false,
-        sort_order: 5,
-        is_generated: false
+        sort_order: 5
       },
       {
         external_id: 'test-e2e-base-qu-info-boolean',
@@ -662,8 +638,7 @@ export const baseTemplate: Template = {
         custom_data: { filterable: false },
         allow_open: false,
         required: false,
-        sort_order: 6,
-        is_generated: false
+        sort_order: 6
       },
       {
         external_id: 'test-e2e-base-qu-info-date',
@@ -672,8 +647,7 @@ export const baseTemplate: Template = {
         category: { external_id: 'test-e2e-base-qg-info' },
         allow_open: false,
         required: false,
-        sort_order: 7,
-        is_generated: false
+        sort_order: 7
       },
       // multipleText info question; the frontend MultipleTextInput renders it. Its DEFAULT_INFO_ANSWERS entry seeds two keyword strings the voter-journey asserts render on the entity-detail info tab (the round-trip read-path proof).
       {
@@ -683,8 +657,7 @@ export const baseTemplate: Template = {
         category: { external_id: 'test-e2e-base-qg-info' },
         allow_open: false,
         required: false,
-        sort_order: 8,
-        is_generated: false
+        sort_order: 8
       },
 
       // 3 filtered info questions scoped to municipal-only / north-only / south-only constituencies/elections.
@@ -697,8 +670,7 @@ export const baseTemplate: Template = {
         _elections: { external_id: ['test-e2e-base-el-mun'] },
         allow_open: false,
         required: false,
-        sort_order: 9,
-        is_generated: false
+        sort_order: 9
       },
       {
         external_id: 'test-e2e-base-qu-info-filt-co-reg-n',
@@ -708,8 +680,7 @@ export const baseTemplate: Template = {
         _constituencies: { external_id: ['test-e2e-base-co-reg-n'] },
         allow_open: false,
         required: false,
-        sort_order: 10,
-        is_generated: false
+        sort_order: 10
       },
       {
         external_id: 'test-e2e-base-qu-info-filt-co-reg-s',
@@ -719,8 +690,7 @@ export const baseTemplate: Template = {
         _constituencies: { external_id: ['test-e2e-base-co-reg-s'] },
         allow_open: false,
         required: false,
-        sort_order: 11,
-        is_generated: false
+        sort_order: 11
       },
 
       // QG-Opin-Base — 8 opinion questions covering the ordinal / categorical / boolean / number-scale / multi-choice (range AND exact-one) variants
@@ -733,8 +703,7 @@ export const baseTemplate: Template = {
         category: { external_id: 'test-e2e-base-qg-opin-base' },
         custom_data: { hero: { emoji: '🗳️' } },
         allow_open: true,
-        sort_order: 100,
-        is_generated: false
+        sort_order: 100
       },
       {
         external_id: 'test-e2e-base-qu-opin-base-2-likert4',
@@ -744,8 +713,7 @@ export const baseTemplate: Template = {
         category: { external_id: 'test-e2e-base-qg-opin-base' },
         custom_data: { hero: { url: '/images/e2e-test-image-1.jpg', type: 'image' } },
         allow_open: true,
-        sort_order: 101,
-        is_generated: false
+        sort_order: 101
       },
       {
         external_id: 'test-e2e-base-qu-opin-base-3-likert7',
@@ -753,7 +721,7 @@ export const baseTemplate: Template = {
         name: { en: '[qu-opin-base-3-likert7] Base opinion 3 — Likert 7.' },
         choices: LIKERT_7_EN,
         category: { external_id: 'test-e2e-base-qg-opin-base' },
-        // NOTE: additive customData.terms so the voter-journey can assert the in-text term-trigger affordance + definition popup. The trigger 'Likert' appears verbatim in this question's title text above, so the in-text term affordance renders. customData (not a new row) — additive, alters no rigid base count.
+        // customData.terms lets the voter-journey assert the in-text term-trigger affordance + definition popup. The trigger 'Likert' appears verbatim in this question's title text above, so the in-text term affordance renders.
         custom_data: {
           terms: [
             {
@@ -764,8 +732,7 @@ export const baseTemplate: Template = {
           ]
         },
         allow_open: true,
-        sort_order: 102,
-        is_generated: false
+        sort_order: 102
       },
       {
         external_id: 'test-e2e-base-qu-opin-base-4-categorical',
@@ -774,8 +741,7 @@ export const baseTemplate: Template = {
         choices: OPIN_CATEGORICAL_EN,
         category: { external_id: 'test-e2e-base-qg-opin-base' },
         allow_open: true,
-        sort_order: 103,
-        is_generated: false
+        sort_order: 103
       },
       {
         external_id: 'test-e2e-base-qu-opin-base-5-boolean',
@@ -783,8 +749,7 @@ export const baseTemplate: Template = {
         name: { en: '[qu-opin-base-5-boolean] Base opinion 5 — Boolean.' },
         category: { external_id: 'test-e2e-base-qg-opin-base' },
         allow_open: true,
-        sort_order: 104,
-        is_generated: false
+        sort_order: 104
       },
       // Number-scale opinion question in the MAIN category. custom_data.min/max makes it matchable via the NumberQuestion bridge; surfaces the NumberScaleInput slider in the voter question flow.
       {
@@ -794,8 +759,7 @@ export const baseTemplate: Template = {
         category: { external_id: 'test-e2e-base-qg-opin-base' },
         custom_data: { min: 0, max: 10 },
         allow_open: true,
-        sort_order: 105,
-        is_generated: false
+        sort_order: 105
       },
       // multipleChoiceCategorical opinion question in the MAIN category. 4 choices + minSelections 2 / maxSelections 3 (constraint edge-coverage); surfaces the checkbox multi-select input.
       {
@@ -806,13 +770,11 @@ export const baseTemplate: Template = {
         category: { external_id: 'test-e2e-base-qg-opin-base' },
         custom_data: { minSelections: 2, maxSelections: 3 },
         allow_open: true,
-        sort_order: 106,
-        is_generated: false
+        sort_order: 106
       },
-      // A SECOND multipleChoiceCategorical opinion question in the MAIN category, carrying an EQUAL selection window (min === max === 1). The equality is the whole point: QuestionChoices .svelte renders `questions.multiChoice.selectExact` when `effectiveMin === effectiveMax` and `selectRange` otherwise (QuestionChoices.svelte:420-425), so without an equal-window question the running app can NEVER reach the `selectExact` branch and its message key has no runtime coverage. Exact-ONE (not exact-two) is deliberate: it renders the MF2 `countPlural=one` branch — the branch carrying the constructed non-English singulars, i.e. the one most worth guarding.
+      // A SECOND multipleChoiceCategorical opinion question in the MAIN category, carrying an EQUAL selection window (min === max === 1). The equality is the whole point: QuestionChoices.svelte renders `questions.multiChoice.selectExact` when `effectiveMin === effectiveMax` and `selectRange` otherwise, so without an equal-window question the running app can NEVER reach the `selectExact` branch and its message key has no runtime coverage. Exact-ONE (not exact-two) is deliberate: it renders the MF2 `countPlural=one` branch — the branch carrying the constructed non-English singulars, i.e. the one most worth guarding.
       //
-      // Base-7 above KEEPS its 2..3 window for range edge-coverage.
-      // This question is an ADDITION, never a repurposing of that one.
+      // Base-7 above keeps its 2..3 window for range edge-coverage; the two questions cover different branches.
       {
         external_id: 'test-e2e-base-qu-opin-base-8-multichoice-exact',
         type: 'multipleChoiceCategorical',
@@ -821,11 +783,10 @@ export const baseTemplate: Template = {
         category: { external_id: 'test-e2e-base-qg-opin-base' },
         custom_data: { minSelections: 1, maxSelections: 1 },
         allow_open: true,
-        sort_order: 107,
-        is_generated: false
+        sort_order: 107
       },
 
-      // QG-Opin-Opt-A (formerly Base-B; used for testing category intros and selection)
+      // QG-Opin-Opt-A (used for testing category intros and selection)
       {
         external_id: 'test-e2e-base-qu-opin-opt-a-1',
         type: 'singleChoiceOrdinal',
@@ -833,11 +794,10 @@ export const baseTemplate: Template = {
         choices: LIKERT_5_EN,
         category: { external_id: 'test-e2e-base-qg-opin-opt-a' },
         allow_open: true,
-        sort_order: 110,
-        is_generated: false
+        sort_order: 110
       },
 
-      // QG-Opin-Opt-B (formerly Base-C; used for filtering out)
+      // QG-Opin-Opt-B (used for filtering out)
       {
         external_id: 'test-e2e-base-qu-opin-opt-b-1',
         type: 'singleChoiceOrdinal',
@@ -845,8 +805,7 @@ export const baseTemplate: Template = {
         choices: LIKERT_5_EN,
         category: { external_id: 'test-e2e-base-qg-opin-opt-b' },
         allow_open: true,
-        sort_order: 120,
-        is_generated: false
+        sort_order: 120
       },
 
       // QG-Opin-EL-Reg — Regional-only scoped category; question carries election_ids
@@ -858,8 +817,7 @@ export const baseTemplate: Template = {
         category: { external_id: 'test-e2e-base-qg-opin-el-reg' },
         // The category itself carries election_ids via _elections (above); the question inherits scoping via its category.
         allow_open: true,
-        sort_order: 130,
-        is_generated: false
+        sort_order: 130
       },
 
       // QG-Opin-CO-Mun-SE-SW
@@ -871,8 +829,7 @@ export const baseTemplate: Template = {
         category: { external_id: 'test-e2e-base-qg-opin-co-mun-se-sw' },
         _constituencies: { external_id: ['test-e2e-base-co-mun-se', 'test-e2e-base-co-mun-sw'] },
         allow_open: true,
-        sort_order: 140,
-        is_generated: false
+        sort_order: 140
       },
 
       // QG-Opin-Filt-A — per-question constituency_ids (CO-Mun-NE)
@@ -884,8 +841,7 @@ export const baseTemplate: Template = {
         category: { external_id: 'test-e2e-base-qg-opin-filt-a' },
         _constituencies: { external_id: ['test-e2e-base-co-mun-ne'] },
         allow_open: true,
-        sort_order: 150,
-        is_generated: false
+        sort_order: 150
       },
 
       // QG-Opin-Filt-B — per-question constituency_ids (CO-Mun-SE)
@@ -897,13 +853,14 @@ export const baseTemplate: Template = {
         category: { external_id: 'test-e2e-base-qg-opin-filt-b' },
         _constituencies: { external_id: ['test-e2e-base-co-mun-se'] },
         allow_open: true,
-        sort_order: 160,
-        is_generated: false
+        sort_order: 160
       }
     ]
   },
 
-  // ------------------------------------------------------------------- candidates terms_of_use_accepted is set on all except CA-AA-Hidden. Every candidate answers every info question by default; opinion answers vary to support the matching invariants.
+  // ------------------------------------------------------------------- candidates
+
+  // terms_of_use_accepted is set on all except CA-AA-Hidden. Every candidate answers every info question by default; opinion answers vary to support the matching invariants.
   //
   // Perfect-match candidate: CA-AA-Special (also exercises 4-case matrix below).
   // Worst-match candidate: CA-BA-1 (CO-Reg-N) — all base opinions at polar min.
@@ -912,20 +869,20 @@ export const baseTemplate: Template = {
   candidates: {
     count: 0,
     fixed: [
-      // ---- CO-Reg-N — 13 candidates (the bulk of them) ---- The partial-answer arrangement supports the
-      // 9.6.5-8 voter-detail matrix given the voter SKIPS qu-opin-base-b-1 and qu-opin-el-reg-1 (and filt-mun-ne). CA-AA-Special is the partial-answer candidate; its answer set is asymmetric across the 4 cases (see top-of-file docstring).
+      // ---- CO-Reg-N — 13 candidates (the bulk of them) ----
+
+      // The partial-answer arrangement supports the voter-detail matrix given the voter SKIPS qu-opin-opt-a-1 and qu-opin-el-reg-1 (and filt-mun-ne). CA-AA-Special is the partial-answer candidate; its answer set is asymmetric across the 4 cases (see top-of-file docstring).
       {
         external_id: 'test-e2e-base-ca-aa-special',
         first_name: 'Special',
         last_name: 'Candidate AA',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 0,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-aa' },
         // Partial-answer arrangement (top-of-file docstring, "Partial-answer candidate arrangement"):
         //   (a) both answered: base-1, base-3, base-4, base-5
         //   (b) voter answered, entity missing: base-2 (omitted)
-        //   (c) voter missing (skipped), entity answered: B-1, EL-Reg-1
+        //   (c) voter missing (skipped), entity answered: Opt-A-1, EL-Reg-1
         //   (d) both missing: Filt-Mun-NE (entity also skipped)
         answersByExternalId: withInfoAnswers({
           'test-e2e-base-qu-opin-base-1-likert5': { value: '5' },
@@ -933,7 +890,7 @@ export const baseTemplate: Template = {
           'test-e2e-base-qu-opin-base-3-likert7': { value: '7' },
           'test-e2e-base-qu-opin-base-4-categorical': { value: 'c' },
           'test-e2e-base-qu-opin-base-5-boolean': { value: true },
-          // base-6/base-7 (new base questions) — case (a) both answered; max values so CA-AA-Special stays a perfect match for the answerMode='max' voter (number 10, multi-choice ['a','b']).
+          // base-6/base-7 — case (a) both answered; max values so CA-AA-Special stays a perfect match for the answerMode='max' voter (number 10, multi-choice ['a','b']).
           'test-e2e-base-qu-opin-base-6-number': { value: 10 },
           'test-e2e-base-qu-opin-base-7-multichoice': { value: ['a', 'b'] },
           // base-8 — case (a) both answered. Matching-neutral value, identical across every template (see POLAR_MAX).
@@ -941,7 +898,8 @@ export const baseTemplate: Template = {
           // case (c) — voter skips these, entity has answers
           'test-e2e-base-qu-opin-opt-a-1': { value: '5' },
           'test-e2e-base-qu-opin-el-reg-1': { value: '5' },
-          // test-e2e-base-qu-open-filt-mun-ne INTENTIONALLY missing — case (d) info answers for filtering
+          // test-e2e-base-qu-open-filt-mun-ne INTENTIONALLY missing — case (d).
+          // Info answers for filtering.
           'test-e2e-base-qu-info-multipleChoiceCategorical': { value: ['c'] },
           'test-e2e-base-qu-info-number': { value: 99 }
         })
@@ -952,7 +910,6 @@ export const baseTemplate: Template = {
         last_name: 'Candidate AA',
         // terms_of_use_accepted DELIBERATELY absent
         sort_order: 1,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-aa' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -963,7 +920,6 @@ export const baseTemplate: Template = {
         last_name: 'AA One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 2,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-aa' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -973,7 +929,6 @@ export const baseTemplate: Template = {
         last_name: 'AA Two',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 3,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-aa' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -983,7 +938,6 @@ export const baseTemplate: Template = {
         last_name: 'AA Three',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 4,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-aa' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -993,7 +947,6 @@ export const baseTemplate: Template = {
         last_name: 'AA Four',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 5,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-aa' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -1004,7 +957,6 @@ export const baseTemplate: Template = {
         last_name: 'AB One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 6,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-ab' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -1015,7 +967,6 @@ export const baseTemplate: Template = {
         last_name: 'BA One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 7,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-ba' },
         answersByExternalId: withInfoAnswers(POLAR_MIN)
       },
@@ -1025,7 +976,6 @@ export const baseTemplate: Template = {
         last_name: 'BA Two',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 8,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-ba' },
         answersByExternalId: withInfoAnswers(NEAR_MAX)
       },
@@ -1036,7 +986,6 @@ export const baseTemplate: Template = {
         last_name: 'BB One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 9,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-bb' },
         answersByExternalId: withInfoAnswers(POLAR_MAX)
       },
@@ -1046,7 +995,6 @@ export const baseTemplate: Template = {
         last_name: 'BB Two',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 10,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-bb' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -1057,7 +1005,6 @@ export const baseTemplate: Template = {
         last_name: 'C One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 11,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-c' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -1067,7 +1014,6 @@ export const baseTemplate: Template = {
         last_name: 'C Two',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 12,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-c' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -1080,7 +1026,6 @@ export const baseTemplate: Template = {
         last_name: 'Candidate AA',
         // terms_of_use_accepted DELIBERATELY absent — registration must trigger the ToU gate
         sort_order: 14,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-aa' }
         // answersByExternalId DELIBERATELY absent (unregistered → no answers)
       },
@@ -1091,19 +1036,19 @@ export const baseTemplate: Template = {
         last_name: 'Independent',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 13,
-        is_generated: false,
         // No organization — independent
         answersByExternalId: withInfoAnswers(GENERIC)
       },
 
-      // ---- CO-Reg-S — 4 candidates ("not always allied" foil) ---- OR-AA + OR-AB are present BUT NOT under AL-A here: CO-Reg-S has OR-AA + OR-AB UNGROUPED, plus AL-B with OR-BA + OR-BB.
+      // ---- CO-Reg-S — 4 candidates ("not always allied" foil) ----
+
+      // OR-AA + OR-AB are present BUT NOT under AL-A here: CO-Reg-S has OR-AA + OR-AB UNGROUPED, plus AL-B with OR-BA + OR-BB.
       {
         external_id: 'test-e2e-base-ca-reg-s-aa-1',
         first_name: 'South',
         last_name: 'AA One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 20,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-aa' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -1113,7 +1058,6 @@ export const baseTemplate: Template = {
         last_name: 'AB One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 21,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-ab' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -1123,7 +1067,6 @@ export const baseTemplate: Template = {
         last_name: 'BA One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 22,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-ba' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -1133,19 +1076,19 @@ export const baseTemplate: Template = {
         last_name: 'BB One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 23,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-bb' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
 
-      // ---- CO-Mun-NE — 6 candidates (CA-AA-Special re-nominated + 1 AA-gen + 1 per other party) ---- CA-AA-Special is re-nominated (same candidate row, additional nomination triangle below).
+      // ---- CO-Mun-NE — 6 candidates (CA-AA-Special re-nominated + 1 AA-gen + 1 per other party) ----
+
+      // CA-AA-Special is re-nominated (same candidate row, additional nomination triangle below).
       {
         external_id: 'test-e2e-base-ca-mun-ne-aa-1',
         first_name: 'NE',
         last_name: 'AA One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 30,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-aa' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -1155,7 +1098,6 @@ export const baseTemplate: Template = {
         last_name: 'AB One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 31,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-ab' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -1165,7 +1107,6 @@ export const baseTemplate: Template = {
         last_name: 'BA One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 32,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-ba' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -1175,7 +1116,6 @@ export const baseTemplate: Template = {
         last_name: 'BB One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 33,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-bb' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -1185,7 +1125,6 @@ export const baseTemplate: Template = {
         last_name: 'C One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 34,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-c' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -1197,7 +1136,6 @@ export const baseTemplate: Template = {
         last_name: 'AA One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 40,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-aa' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -1207,7 +1145,6 @@ export const baseTemplate: Template = {
         last_name: 'AB One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 41,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-ab' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -1217,7 +1154,6 @@ export const baseTemplate: Template = {
         last_name: 'BA One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 42,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-ba' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -1227,7 +1163,6 @@ export const baseTemplate: Template = {
         last_name: 'BB One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 43,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-bb' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -1239,7 +1174,6 @@ export const baseTemplate: Template = {
         last_name: 'AA One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 50,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-aa' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
@@ -1249,14 +1183,15 @@ export const baseTemplate: Template = {
         last_name: 'BA One',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 51,
-        is_generated: false,
         organization: { external_id: 'test-e2e-base-or-ba' },
         answersByExternalId: withInfoAnswers(GENERIC)
       }
     ]
   },
 
-  // ------------------------------------------------------------------- nominations Each constituency / election triangle:
+  // ------------------------------------------------------------------- nominations
+
+  // Each constituency / election triangle:
   //   1. Alliance-type nomination (declared first; parent for the OR-* nominations under it)
   //   2. Organization-type nominations (parent for the candidate nominations under each)
   //   3. Candidate-type nominations (each links candidate ID + parent_nomination → its OR)
@@ -1266,7 +1201,9 @@ export const baseTemplate: Template = {
   nominations: {
     count: 0,
     fixed: [
-      // ================== EL-Reg / CO-Reg-N ================== Alliances
+      // ================== EL-Reg / CO-Reg-N ==================
+
+      // Alliances
       {
         external_id: 'test-e2e-base-nom-reg-n-al-a',
         alliance: { external_id: 'test-e2e-base-al-a' },
@@ -1460,7 +1397,9 @@ export const baseTemplate: Template = {
         election_round: 1
       },
 
-      // ================== EL-Reg / CO-Reg-S ================== OR-AA + OR-AB UNGROUPED (no AL-A), plus AL-B with OR-BA + OR-BB.
+      // ================== EL-Reg / CO-Reg-S ==================
+
+      // OR-AA + OR-AB UNGROUPED (no AL-A), plus AL-B with OR-BA + OR-BB.
       {
         external_id: 'test-e2e-base-nom-reg-s-al-b',
         alliance: { external_id: 'test-e2e-base-al-b' },
@@ -1538,7 +1477,9 @@ export const baseTemplate: Template = {
         election_round: 1
       },
 
-      // ================== EL-Mun / CO-Mun-NE ================== Alliances + orgs at the municipal constituency
+      // ================== EL-Mun / CO-Mun-NE ==================
+
+      // Alliances + orgs at the municipal constituency
       {
         external_id: 'test-e2e-base-nom-mun-ne-al-a',
         alliance: { external_id: 'test-e2e-base-al-a' },
@@ -1592,7 +1533,7 @@ export const baseTemplate: Template = {
         constituency: { external_id: 'test-e2e-base-co-mun-ne' },
         election_round: 1
       },
-      // Candidates (CO-Mun-NE) CA-AA-Special is re-nominated here
+      // Candidates (CO-Mun-NE). CA-AA-Special is re-nominated here.
       {
         external_id: 'test-e2e-base-nom-mun-ne-ca-aa-special',
         candidate: { external_id: 'test-e2e-base-ca-aa-special' },
@@ -1647,7 +1588,9 @@ export const baseTemplate: Template = {
         election_round: 1
       },
 
-      // ================== EL-Mun / CO-Mun-NW ================== Only CA-Independent
+      // ================== EL-Mun / CO-Mun-NW ==================
+
+      // Only CA-Independent
       {
         external_id: 'test-e2e-base-nom-mun-nw-ca-independent',
         election_symbol: '24',
@@ -1657,7 +1600,9 @@ export const baseTemplate: Template = {
         election_round: 1
       },
 
-      // ================== EL-Mun / CO-Mun-SE ================== OR-AA..BB each with 1 candidate
+      // ================== EL-Mun / CO-Mun-SE ==================
+
+      // OR-AA..BB each with 1 candidate
       {
         external_id: 'test-e2e-base-nom-mun-se-al-a',
         alliance: { external_id: 'test-e2e-base-al-a' },
@@ -1741,7 +1686,9 @@ export const baseTemplate: Template = {
         election_round: 1
       },
 
-      // ================== EL-Mun / CO-Mun-SW ================== OR-AA + OR-BA each with 1 candidate
+      // ================== EL-Mun / CO-Mun-SW ==================
+
+      // OR-AA + OR-BA each with 1 candidate
       {
         external_id: 'test-e2e-base-nom-mun-sw-al-a',
         alliance: { external_id: 'test-e2e-base-al-a' },

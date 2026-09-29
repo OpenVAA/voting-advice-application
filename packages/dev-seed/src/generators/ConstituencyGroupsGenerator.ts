@@ -3,7 +3,7 @@
  *
  * Standard DataObject scaffolding: `project_id` is the only required column; no content FKs to other generated rows. The constituencies join sentinel is populated by the pipeline's post-topo pass once every generator has run (same two-pass pattern as ElectionsGenerator).
  *
- * apply — see ElectionsGenerator.ts for the canonical-pattern rationale.
+ * Follows the generator pattern described in ElectionsGenerator.ts.
  */
 
 import type { TablesInsert } from '@openvaa/supabase-types';
@@ -38,8 +38,7 @@ export class ConstituencyGroupsGenerator {
         external_id: `${externalIdPrefix}cg_${String(i).padStart(2, '0')}`,
         project_id: projectId,
         name: { en: `${faker.location.country()} Constituency Group ${i + 1}` },
-        sort_order: i,
-        is_generated: true
+        sort_order: i
       });
     }
 

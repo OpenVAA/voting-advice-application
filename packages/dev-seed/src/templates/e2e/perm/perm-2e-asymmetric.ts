@@ -40,7 +40,6 @@ export const perm2eAsymmetricTemplate: Template = {
         election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 0,
-        is_generated: false,
         multiple_rounds: false,
         current_round: 1,
         constituency_groups: [{ external_id: `${P}cg-1` }]
@@ -52,7 +51,6 @@ export const perm2eAsymmetricTemplate: Template = {
         election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 1,
-        is_generated: false,
         multiple_rounds: false,
         current_round: 1,
         constituency_groups: [{ external_id: `${P}cg-1` }, { external_id: `${P}cg-2` }]
@@ -67,14 +65,12 @@ export const perm2eAsymmetricTemplate: Template = {
         external_id: 'cg-1',
         name: { en: '[CG1] Region' },
         sort_order: 0,
-        is_generated: false,
         constituencies: [{ external_id: `${P}co-1a` }]
       },
       {
         external_id: 'cg-2',
         name: { en: '[CG2] Municipal' },
         sort_order: 1,
-        is_generated: false,
         constituencies: [{ external_id: `${P}co-2a` }, { external_id: `${P}co-2b` }]
       }
     ]
@@ -83,9 +79,9 @@ export const perm2eAsymmetricTemplate: Template = {
   constituencies: {
     count: 0,
     fixed: [
-      { external_id: 'co-1a', name: { en: '[CO1A] North' }, sort_order: 0, is_generated: false },
-      { external_id: 'co-2a', name: { en: '[CO2A] Municipal East' }, sort_order: 1, is_generated: false },
-      { external_id: 'co-2b', name: { en: '[CO2B] Municipal West' }, sort_order: 2, is_generated: false }
+      { external_id: 'co-1a', name: { en: '[CO1A] North' }, sort_order: 0 },
+      { external_id: 'co-2a', name: { en: '[CO2A] Municipal East' }, sort_order: 1 },
+      { external_id: 'co-2b', name: { en: '[CO2B] Municipal West' }, sort_order: 2 }
     ]
   },
 

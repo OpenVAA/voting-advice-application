@@ -18,14 +18,14 @@
  *
  * ## external_id idiom
  *
- * Every `external_id` in this file is `<typecode>_<discriminator>` in snake_case, where the typecode is the one emitted by the generator that owns that collection (`ConstituenciesGenerator` → `con`, `OrganizationsGenerator` → `org`, and so on) and the discriminator is semantic for hand-authored rows and zero-padded for generated ones. The constituency and organization collections were reconciled with their generators' typecodes; the five other hand-authored collections already conformed. Derived identifiers — the organization- and alliance-nomination ids in `defaults/nominations-override.ts` — are interpolated from these values and follow the idiom without being written out.
+ * Every `external_id` in this file is `<typecode>_<discriminator>` in snake_case, where the typecode is the one emitted by the generator that owns that collection (`ConstituenciesGenerator` → `con`, `OrganizationsGenerator` → `org`, and so on) and the discriminator is semantic for hand-authored rows and zero-padded for generated ones. Derived identifiers — the organization- and alliance-nomination ids in `defaults/nominations-override.ts` — are interpolated from these values and follow the idiom without being written out.
  *
  * This idiom deliberately diverges from the `e2e/base` fixture in four ways.
  * Each is a choice, not an oversight:
  *   1. snake_case rather than the fixture's kebab-case, because this template's own pipeline-generated identifiers are snake_case and matching the fixture would create a fresh divergence INSIDE the template.
  *   2. No fixture namespace prefix. Namespacing is right for a test fixture and wrong for the demo dataset a developer meets first; `externalIdPrefix` already scopes these rows so `db:seed:teardown` can reach them.
  *   3. Generator typecodes rather than the fixture's two-letter codes, for the same reason as (1) — two-letter codes would put this file at odds with every identifier its own pipeline generates.
- *   4. The alliance discriminators keep their uppercase form. It is cosmetic, it conforms on typecode, and lowercasing it would widen the change into two helper functions and every derived nomination identifier for no measured benefit.
+ *   4. The alliance discriminators keep their uppercase form. It is cosmetic, it conforms on typecode, and lowercasing it would touch two helper functions and every derived nomination identifier for no measured benefit.
  */
 
 import { alliancesOverride } from './defaults/alliances-override';
@@ -50,7 +50,6 @@ export const defaultTemplate: Template = {
         election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 0,
-        is_generated: false,
         multiple_rounds: false,
         current_round: 1
       }
@@ -63,8 +62,7 @@ export const defaultTemplate: Template = {
       {
         external_id: 'cg_default',
         name: { en: 'Parliamentary Districts' },
-        sort_order: 0,
-        is_generated: false
+        sort_order: 0
       }
     ]
   },
@@ -74,11 +72,11 @@ export const defaultTemplate: Template = {
   constituencies: {
     count: 0,
     fixed: [
-      { external_id: 'con_01', name: { en: 'Uudenmaa North' }, sort_order: 0, is_generated: false },
-      { external_id: 'con_02', name: { en: 'Uudenmaa South' }, sort_order: 1, is_generated: false },
-      { external_id: 'con_03', name: { en: 'Varsinais-Suomi' }, sort_order: 2, is_generated: false },
-      { external_id: 'con_04', name: { en: 'Satakunta East' }, sort_order: 3, is_generated: false },
-      { external_id: 'con_05', name: { en: 'Pirkanmaa' }, sort_order: 4, is_generated: false }
+      { external_id: 'con_01', name: { en: 'Uudenmaa North' }, sort_order: 0 },
+      { external_id: 'con_02', name: { en: 'Uudenmaa South' }, sort_order: 1 },
+      { external_id: 'con_03', name: { en: 'Varsinais-Suomi' }, sort_order: 2 },
+      { external_id: 'con_04', name: { en: 'Satakunta East' }, sort_order: 3 },
+      { external_id: 'con_05', name: { en: 'Pirkanmaa' }, sort_order: 4 }
     ]
   },
 
@@ -91,64 +89,56 @@ export const defaultTemplate: Template = {
         name: { en: 'Blue Coalition' },
         short_name: { en: 'BC' },
         color: { normal: '#2546a8', dark: '#6b8dd6' },
-        sort_order: 0,
-        is_generated: false
+        sort_order: 0
       },
       {
         external_id: 'org_green',
         name: { en: 'Green Wing' },
         short_name: { en: 'GW' },
         color: { normal: '#0a716b', dark: '#4db3ad' },
-        sort_order: 1,
-        is_generated: false
+        sort_order: 1
       },
       {
         external_id: 'org_social',
         name: { en: 'Social Democrats Union' },
         short_name: { en: 'SDU' },
         color: { normal: '#b42121', dark: '#e06b6b' },
-        sort_order: 2,
-        is_generated: false
+        sort_order: 2
       },
       {
         external_id: 'org_rural',
         name: { en: 'Rural Alliance' },
         short_name: { en: 'RA' },
         color: { normal: '#3f8f3f', dark: '#7dc77d' },
-        sort_order: 3,
-        is_generated: false
+        sort_order: 3
       },
       {
         external_id: 'org_people',
         name: { en: "People's Movement" },
         short_name: { en: 'PM' },
         color: { normal: '#d88b1e', dark: '#f0b96b' },
-        sort_order: 4,
-        is_generated: false
+        sort_order: 4
       },
       {
         external_id: 'org_red',
         name: { en: 'Red Front' },
         short_name: { en: 'RF' },
         color: { normal: '#8b0000', dark: '#cc4a4a' },
-        sort_order: 5,
-        is_generated: false
+        sort_order: 5
       },
       {
         external_id: 'org_coast',
         name: { en: 'Coastal Party' },
         short_name: { en: 'CP' },
         color: { normal: '#1f8bc2', dark: '#6bb8dc' },
-        sort_order: 6,
-        is_generated: false
+        sort_order: 6
       },
       {
         external_id: 'org_values',
         name: { en: 'Values Coalition' },
         short_name: { en: 'VC' },
         color: { normal: '#5b3f8a', dark: '#9b83c4' },
-        sort_order: 7,
-        is_generated: false
+        sort_order: 7
       }
     ]
   },
@@ -161,29 +151,25 @@ export const defaultTemplate: Template = {
         external_id: 'cat_economy',
         name: { en: 'Economy & Taxation' },
         category_type: 'opinion',
-        sort_order: 0,
-        is_generated: false
+        sort_order: 0
       },
       {
         external_id: 'cat_social',
         name: { en: 'Social & Welfare' },
         category_type: 'opinion',
-        sort_order: 1,
-        is_generated: false
+        sort_order: 1
       },
       {
         external_id: 'cat_environment',
         name: { en: 'Environment & Energy' },
         category_type: 'opinion',
-        sort_order: 2,
-        is_generated: false
+        sort_order: 2
       },
       {
         external_id: 'cat_foreign',
         name: { en: 'Foreign & Defence' },
         category_type: 'opinion',
-        sort_order: 3,
-        is_generated: false
+        sort_order: 3
       }
     ]
   },
@@ -219,7 +205,7 @@ export const defaultTemplate: Template = {
             hideIfMissingAnswers: { candidate: false }
           },
           // Surface the Alliance entity tab in voter results.
-          // The frontend's `mergeAppSettings` (apps/frontend/src/lib/utils/settings.ts) shallow-merges by root key, so a value written here REPLACES the whole `results` object from the TS defaults — we MUST mirror the full default shape (cardContents for every entity type listed in `sections`, the popup delays) and only diff `sections` to add 'alliance'. Mirrors `packages/app-shared/src/settings/dynamicSettings.ts:59-67`.
+          // The frontend's `mergeAppSettings` (apps/frontend/src/lib/utils/settings.ts) shallow-merges by root key, so a value written here REPLACES the whole `results` object from the TS defaults — we MUST mirror the full default shape (cardContents for every entity type listed in `sections`, the popup delays) and only diff `sections` to add 'alliance'. Mirrors the `results` block of `packages/app-shared/src/settings/dynamicSettings.ts`.
           results: {
             cardContents: {
               candidate: ['submatches'],

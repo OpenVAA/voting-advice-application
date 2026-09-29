@@ -37,7 +37,6 @@ export const perm2eSharedTemplate: Template = {
         election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 0,
-        is_generated: false,
         multiple_rounds: false,
         current_round: 1,
         constituency_groups: [{ external_id: `${P}cg-1` }]
@@ -49,7 +48,6 @@ export const perm2eSharedTemplate: Template = {
         election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 1,
-        is_generated: false,
         multiple_rounds: false,
         current_round: 1,
         constituency_groups: [{ external_id: `${P}cg-1` }]
@@ -64,7 +62,6 @@ export const perm2eSharedTemplate: Template = {
         external_id: 'cg-1',
         name: { en: '[CG1] Shared group' },
         sort_order: 0,
-        is_generated: false,
         constituencies: [{ external_id: `${P}co-1a` }]
       }
     ]
@@ -76,8 +73,7 @@ export const perm2eSharedTemplate: Template = {
       {
         external_id: 'co-1a',
         name: { en: '[CO1A] Only constituency' },
-        sort_order: 0,
-        is_generated: false
+        sort_order: 0
       }
     ]
   },

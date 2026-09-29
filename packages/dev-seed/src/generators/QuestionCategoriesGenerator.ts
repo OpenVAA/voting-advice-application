@@ -5,7 +5,7 @@
  *
  * Sentinel policy: this generator does NOT emit the `_elections` join sentinel (the same deferred-enrichment pattern ElectionsGenerator uses). The pipeline's post-topo pass attaches `_elections: { externalId: string[] }` after every generator has run, so the full `ctx.refs.elections` is known. Keeping generator output sentinel-free also means unit tests can assert raw `TablesInsert` shape without filtering sentinels.
  *
- * apply — see ElectionsGenerator.ts for the canonical-pattern rationale.
+ * Follows the generator pattern described in ElectionsGenerator.ts.
  *
  * Default count = 2: enough category diversity for the plumbing (e.g. "Economy", "Environment") so QuestionsGenerator's rotation assigns questions across more than one category. Templates can override it.
  */
@@ -43,8 +43,7 @@ export class QuestionCategoriesGenerator {
         project_id: projectId,
         name: { en: `${faker.word.adjective()} Category ${i + 1}` },
         category_type: 'opinion' satisfies Enums<'category_type'>,
-        sort_order: i,
-        is_generated: true
+        sort_order: i
         // _elections sentinel added by the pipeline's post-topo pass.
       });
     }

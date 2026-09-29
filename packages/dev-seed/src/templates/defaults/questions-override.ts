@@ -1,23 +1,24 @@
 /**
- * Default-template questions override — enforces the type mix: majority Likert
- * (ordinal), some categorical, exactly 1 boolean, plus one number-scale and one multipleChoiceCategorical opinion question so the demo exercises those question inputs. NO text/date/image/multipleText.
+ * Default-template questions override — enforces the type mix: majority Likert (ordinal), some categorical, exactly 1 boolean, plus one number-scale and one multipleChoiceCategorical opinion question so the demo exercises those question inputs. NO text/date/image/multipleText.
  *
  * Split:
  *   - 18 singleChoiceOrdinal (5-point Likert)
  *   - 5  singleChoiceCategorical (3-5 choices each)
  *   - 1  boolean
  *   - 1  number (custom_data min/max, matchable)
- *   - 1  multipleChoiceCategorical (4 choices, minSelections 2 / maxSelections 3) Total: 26
+ *   - 1  multipleChoiceCategorical (4 choices, minSelections 2 / maxSelections 3)
+ *
+ * Total: 26
  *
  * 1/5 of the questions (indices 0, 5, 10, 15, 20, 25) additionally carry a `customData.terms` definition whose trigger is a word from the question's own name, so the in-text term popup (Term.svelte) renders in the demo data.
  *
- * The latent emitter (emitters/latent/project.ts) supports number (via the defaultRandomValidEmit fallback) and multipleChoiceCategorical (mapMultiCategorical), so candidate answers for both new types are emitted.
+ * The latent emitter (emitters/latent/project.ts) supports number (via the defaultRandomValidEmit fallback) and multipleChoiceCategorical (mapMultiCategorical), so candidate answers for both types are emitted.
  *
  * ⚠ They are NOT emitted validly "for free". A fallback that draws every number answer from a hardcoded 0-100, irrespective of the range the question declares below, gives the { min: 0, max: 10 } number question 294 out-of-range answers out of 327 — measured — which normalizeCoordinate (@openvaa/core) throws on. The fallback reads custom_data.min/max, and tests/emitters/answers.test.ts holds it there.
  *
  * Questions are distributed across the 4 categories from `ctx.refs.question_categories` in round-robin so every category receives questions.
  *
- * The latent emitter (installed in pipeline.ts:177) exercises the latent model for ordinal + categorical types. Boolean falls back to `defaultRandomValidEmit` — same behavior as the default generator.
+ * The latent emitter (installed by `pipeline.ts`) exercises the latent model for ordinal + categorical types. Boolean falls back to `defaultRandomValidEmit` — same behavior as the default generator.
  *
  * `TYPE_PLAN` contains ordinal / categorical / boolean / number / multipleChoiceCategorical enum values; no `text/date/image/multipleText` path is possible.
  */
@@ -50,7 +51,7 @@ const TYPE_PLAN: ReadonlyArray<QuestionType> = [
 ];
 
 /**
- * Standard 5-point Likert choices. Mirrors QuestionsGenerator.LIKERT_5 exactly (including `normalizableValue` on every entry) so the latent emitter's ordinal dispatch (project.ts:10-13 COORDINATE inverse-normalize) works without special-casing.
+ * Standard 5-point Likert choices. Mirrors QuestionsGenerator.LIKERT_5 exactly (including `normalizableValue` on every entry) so the latent emitter's ordinal dispatch (the `COORDINATE` inverse-normalize in `emitters/latent/project.ts`) works without special-casing.
  */
 const LIKERT_5 = [
   { id: '1', label: { en: 'Strongly disagree' }, normalizableValue: 1 },
@@ -93,12 +94,12 @@ function pickTermTrigger(name: string): string | undefined {
 }
 
 /**
- * Every TERM_EVERY-th question gets a `customData.terms` definition (1/5 of the 24 questions → indices 0, 5, 10, 15, 20) so the in-text term popup (`Term.svelte` toggletip) is exercised by the default demo dataset.
+ * Every TERM_EVERY-th question gets a `customData.terms` definition (1/5 of the 26 questions → indices 0, 5, 10, 15, 20, 25) so the in-text term popup (`Term.svelte` toggletip) is exercised by the default demo dataset.
  */
 const TERM_EVERY = 5;
 
 /**
- * Questions override. Replaces QuestionsGenerator's type rotation with the fixed split. Row shape matches QuestionsGenerator output (external_id, project_id, type, name, choices[?], category ref, is_generated, sort_order, required, allow_open) so bulk_import + the writer's localization fan-out process these rows identically to generator output.
+ * Questions override. Replaces QuestionsGenerator's type rotation with the fixed split. Row shape matches QuestionsGenerator output (external_id, project_id, type, name, choices[?], category ref, sort_order, required, allow_open) so bulk_import + the writer's localization fan-out process these rows identically to generator output.
  */
 export function questionsOverride(_fragment: unknown, ctx: Ctx): Array<Record<string, unknown>> {
   const { faker, projectId, externalIdPrefix } = ctx;
@@ -122,7 +123,6 @@ export function questionsOverride(_fragment: unknown, ctx: Ctx): Array<Record<st
       allow_open: true,
       required: true,
       sort_order: i,
-      is_generated: true,
       category: { external_id: category.external_id }
     };
 

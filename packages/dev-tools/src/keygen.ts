@@ -4,9 +4,16 @@
  * No PEM files are written to disk, which matches the security guidance in docs/key-generation.md ("Delete the .pem files after converting to JWK").
  *
  * Usage:
- *   yarn workspace @openvaa/dev-tools keygen \
- *     --type <signing|encryption> \
- *     --kid <id> \ [--alg <name>] \ [--size <bits>]   Default: 2048 (Traficom 213/2023 minimum).
+ *
+ * ```sh
+ * yarn workspace @openvaa/dev-tools keygen \
+ *   --type <signing|encryption> \
+ *   --kid <id> \
+ *   [--alg <name>] \
+ *   [--size <bits>]
+ * ```
+ *
+ * `--size` defaults to 2048 bits, the Traficom 213/2023 minimum.
  *
  * Output — two JSON blocks on stdout:
  *   1. Private JWK, wrapped in a `[ ... ]` array, ready to paste into IDURA_SIGNING_JWKS or IDENTITY_PROVIDER_DECRYPTION_JWKS.

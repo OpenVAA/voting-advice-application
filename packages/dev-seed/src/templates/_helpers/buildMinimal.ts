@@ -18,7 +18,7 @@
  * Override per-candidate via `answersByCandidate[<id>] = 'none'` for a clean candidate, OR an explicit map for specific overrides. Global override via `candidateAnswersDefault: 'none'`.
  *
  * Per-perm `externalIdPrefix` invariant is preserved: the value passed via {@link BuildMinimalOptions.externalIdPrefix} is the EXACT `template.externalIdPrefix` returned (no mutation, no normalisation).
- * The writer prepends this prefix to every bare external_id at write time (`setupFromTemplate.ts:131-137`).
+ * Every generator prepends this prefix to each bare row external_id when it emits the row.
  *
  * JSONB-undefined safety: the deep-merge utility strips `undefined` values before merging. JSONB drops `undefined` keys at write time and the post-seed `toMatchObject` assertion in `setupFromTemplate` fails if an undefined key leaks into the merged settings tree.
  */
@@ -53,8 +53,7 @@ type AnswerEntry = { value: unknown; info?: { en: string } };
  * Per-candidate answer-override directive.
  *
  *   - `'none'` → empty answer map (clean candidate, ignore the default).
- *   - `Record<string, AnswerEntry>` → explicit map (overrides the default
- *     fill); the helper does NOT merge with the default — the explicit map is the entire answer set for the candidate.
+ *   - `Record<string, AnswerEntry>` → explicit map (overrides the default fill); the helper does NOT merge with the default — the explicit map is the entire answer set for the candidate.
  *
  * Keys are BARE question external_ids (e.g. `'qu-opin-l5-1'`); the helper normalises them to FULL prefixed external_ids before passing to `buildCandidate`.
  */
@@ -147,7 +146,7 @@ export function defaultAnswerForQuestion(question: Record<string, unknown>, full
     return { value: true };
   }
   if (type === 'number') {
-    // the backend validate_answer_value 'number' branch requires a JSON number. Return the midpoint of the question's min/max (read from custom_data, falling back to top-level min/max), else 0. Never a string.
+    // The backend validate_answer_value 'number' branch requires a JSON number. Return the midpoint of the question's min/max (read from custom_data, falling back to top-level min/max), else 0. Never a string.
     const cd = (question.custom_data ?? {}) as Record<string, unknown>;
     const min =
       typeof cd.min === 'number' ? cd.min : typeof question.min === 'number' ? (question.min as number) : undefined;
@@ -159,7 +158,7 @@ export function defaultAnswerForQuestion(question: Record<string, unknown>, full
     return { value: 0 };
   }
   if (type === 'multipleChoiceCategorical') {
-    // the validate_answer_value 'multipleChoiceCategorical' branch requires an array of valid choice ids — a scalar choice id is invalid. Return the first max(minSelections ?? 1, 1) choice ids.
+    // The validate_answer_value 'multipleChoiceCategorical' branch requires an array of valid choice ids — a scalar choice id is invalid. Return the first max(minSelections ?? 1, 1) choice ids.
     const mcChoices = question.choices as Array<{ id: string }> | undefined;
     if (Array.isArray(mcChoices) && mcChoices.length > 0) {
       const cd = (question.custom_data ?? {}) as Record<string, unknown>;
@@ -206,7 +205,6 @@ export function buildMinimal(opts: BuildMinimalOptions): Template {
       election_type: 'organization_list',
       election_date: '2026-06-15',
       sort_order: i,
-      is_generated: false,
       multiple_rounds: false,
       current_round: 1,
       constituency_groups: [{ external_id: `${P}cg-1` }]
@@ -219,7 +217,6 @@ export function buildMinimal(opts: BuildMinimalOptions): Template {
       external_id: 'cg-1',
       name: { en: '[CG1] Only group' },
       sort_order: 0,
-      is_generated: false,
       constituencies: [{ external_id: `${P}co-1a` }]
     }
   ];
@@ -227,8 +224,7 @@ export function buildMinimal(opts: BuildMinimalOptions): Template {
     {
       external_id: 'co-1a',
       name: { en: '[CO1A] Only constituency' },
-      sort_order: 0,
-      is_generated: false
+      sort_order: 0
     }
   ];
 
@@ -239,7 +235,9 @@ export function buildMinimal(opts: BuildMinimalOptions): Template {
   // --- Question categories -----------------------------------------------
   const question_categories = buildQuestionCategories();
 
-  // --- Questions --------------------------------------------------------- Build the M+K = opinionQuestions + infoQuestions question list. Each question's external_id is BARE; the writer prepends `P`. customData overlays are matched by BARE external_id.
+  // --- Questions ---------------------------------------------------------
+
+  // Build the M+K = opinionQuestions + infoQuestions question list. Each question's external_id is BARE; the writer prepends `P`. customData overlays are matched by BARE external_id.
   const questions: Array<QuestionsFixedRow> = [];
   for (let i = 0; i < opinCount; i++) {
     const idx = i + 1;
@@ -252,8 +250,7 @@ export function buildMinimal(opts: BuildMinimalOptions): Template {
       category: { external_id: `${P}qc-opin` },
       allow_open: false,
       required: idx === 1,
-      sort_order: 100 + i,
-      is_generated: false
+      sort_order: 100 + i
     };
     if (customDataByQuestion[extId] !== undefined) {
       q.custom_data = customDataByQuestion[extId];
@@ -270,8 +267,7 @@ export function buildMinimal(opts: BuildMinimalOptions): Template {
       category: { external_id: `${P}qc-info` },
       allow_open: false,
       required: false,
-      sort_order: i,
-      is_generated: false
+      sort_order: i
     };
     if (customDataByQuestion[extId] !== undefined) {
       q.custom_data = customDataByQuestion[extId];
@@ -279,7 +275,9 @@ export function buildMinimal(opts: BuildMinimalOptions): Template {
     questions.push(q);
   }
 
-  // --- Candidates -------------------------------------------------------- Compute the per-candidate answer map then call buildCandidate.
+  // --- Candidates --------------------------------------------------------
+
+  // Compute the per-candidate answer map then call buildCandidate.
   const candidatesArr: Array<CandidatesFixedRow> = [];
   for (let i = 0; i < candCount; i++) {
     const candIdx = i + 1;
@@ -331,7 +329,7 @@ export function buildMinimal(opts: BuildMinimalOptions): Template {
   for (const elIdx of electionsWithNoms) {
     const electionIdSuffix = `el-${elIdx + 1}`;
     if (orgCount === 1) {
-      // Single-org variant — mirrors `buildElectionConstituencyNomsSingleOrg` from perm-localisation-positive.ts; emits only the or-1 parent row + candidate child rows (no or-2 parent — that row would orphan-FK since or-2 was not seeded for this perm).
+      // Single-org variant: emits only the or-1 parent row + candidate child rows (no or-2 parent — that row would orphan-FK since or-2 was not seeded for this perm).
       nominations.push(
         ...buildSingleOrgNoms({
           prefix: P,
@@ -381,7 +379,7 @@ export function buildMinimal(opts: BuildMinimalOptions): Template {
 }
 
 /**
- * Single-org variant of {@link buildElectionConstituencyNoms} — emits ONLY the or-1 parent nomination + candidate child nominations (no or-2 parent row, since the single-org perm has not seeded or-2). Mirror of the file-local helper in `perm-localisation-positive.ts` — kept here so `buildMinimal({ organizations: 1 })` can produce a coherent nomination set without orphan-FK references to a missing or-2 organisation row.
+ * Single-org variant of {@link buildElectionConstituencyNoms} — emits ONLY the or-1 parent nomination + candidate child nominations (no or-2 parent row, since the single-org perm has not seeded or-2). It lets `buildMinimal({ organizations: 1 })` produce a coherent nomination set without orphan-FK references to a missing or-2 organisation row.
  */
 function buildSingleOrgNoms(opts: {
   prefix: string;

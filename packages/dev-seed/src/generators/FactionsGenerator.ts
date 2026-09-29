@@ -1,7 +1,7 @@
 /**
  * FactionsGenerator — foundation generator for the `factions` table.
  *
- * Schema: `project_id` and `organization_id` are both required; standard DataObject scaffolding otherwise. 162-07b added the organization foreign key as `NOT NULL ... ON DELETE CASCADE`, because a faction with no organization is not a meaningful row. The relationship between a faction and its CANDIDATES is still expressed through `nominations` (`parent_nomination` + `entity_type='faction'`) and not here; this column is the faction's own parent organization, which 162-12 reads when it tightens `validate_nomination()`.
+ * Schema: `project_id` and `organization_id` are both required; standard DataObject scaffolding otherwise. The organization foreign key is `NOT NULL ... ON DELETE CASCADE`, because a faction with no organization is not a meaningful row. The relationship between a faction and its CANDIDATES is expressed through `nominations` (`parent_nomination` + `entity_type='faction'`), not here; this column is the faction's own parent organization, which `validate_nomination()` checks against the parent nomination's organization.
  *
  * Ref shape: `organization: { external_id }` → `_bulk_upsert_record` resolves it to `factions.organization_id` at write time, via the `WHEN 'factions'` arm of its `CASE p_table_name` block. That arm and `RELATIONSHIP_REFS` in `../template/permittedKeys` are held together by a two-directional parity test.
  *
@@ -10,7 +10,7 @@
  *
  * ⚠ **An empty organization ref list is a THROW here, not an omission**, and that is the one place this generator deliberately differs from `CandidatesGenerator`. On candidates the reference is optional and a missing one costs a party cluster; here the column is `NOT NULL`, so a row without it cannot be written at all. Omitting it would surface as a bare not-null violation from inside `bulk_import`, in Postgres's vocabulary, with no indication of which template fragment caused it. Raising here names the fragment instead.
  *
- * apply — see ElectionsGenerator.ts.
+ * Follows the generator pattern described in ElectionsGenerator.ts.
  *
  * Default count = 0: factions are uncommon in VAA datasets and templates enable them explicitly via `factions: { count: N }`. Keeping the default off prevents surprise rows during smoke-tests of the `{}` template.
  */
@@ -66,8 +66,7 @@ export class FactionsGenerator {
         project_id: projectId,
         organization: { external_id: organization.external_id },
         name: { en: `${faker.word.adjective()} Faction` },
-        sort_order: i,
-        is_generated: true
+        sort_order: i
       });
     }
 
