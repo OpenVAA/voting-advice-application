@@ -13,7 +13,7 @@ import { DataRoot } from '@openvaa/data';
 import { redirect } from '@sveltejs/kit';
 import { createDataProvider, createSupabaseUniversalClient } from '$lib/api/dataProvider';
 import { getLocale } from '$lib/paraglide/runtime';
-import { buildRoute, getImpliedConstituencyIds, getImpliedElectionIds, parseParams } from '$lib/routes';
+import { buildRoute, getImpliedConstituencyIds, getImpliedElectionIds, isVoterAppPath, parseParams } from '$lib/routes';
 import { mergeAppSettings } from '$lib/utils/settings';
 import type { Id } from '@openvaa/core';
 
@@ -37,9 +37,10 @@ export async function load({ data, fetch, parent, untrack, url }) {
   // We need to be careful to not rerun the load function unnecessarily
   untrack(() => ({ electionId, constituencyId } = parseParams({ url })));
 
-  // reason: voter-app routes allowlist for ?next= deferred target — prevents open-redirect attacks. The whitelist accepts either a locale-prefixed path (`/en/...`) or one of the bare voter-app route roots (`/results`, `/questions`, `/nominations`). Cross-origin values (`https://...`, `//evil.com`) fail the regex and are dropped — the redirect proceeds to the selector without a `?next=` parameter.
-  const isVoterRoute = /^\/[a-z]{2}\/.*|^\/(results|questions|nominations)\b/.test(url.pathname);
-  const nextKv = isVoterRoute ? `next=${encodeURIComponent(url.pathname + url.search)}` : '';
+  // The `next=` redirect target is allowlisted to same-origin Voter App paths to prevent open redirects; anything else is dropped and the redirect goes to the selector without it.
+  // The path + search are read untracked too: they only feed the `next=` target. Read tracked, they defeat the `untrack` above — every results tab / drawer navigation reruns this load, re-streams the question + nomination data and blanks the whole subtree via `+layout.svelte`'s `ready` flag (see spike 031). Guarded by `layout.tracking.test.ts`.
+  const { pathname, search } = untrack(() => ({ pathname: url.pathname, search: url.search }));
+  const nextKv = isVoterAppPath(pathname) ? `next=${encodeURIComponent(pathname + search)}` : '';
   /**
    * Append `next=…` to a redirect target with the correct separator. `buildRoute` may emit a base URL that already carries `?electionId=…` (Constituencies branch below), in which case the next-param must join with `&`, not `?`. Concatenating a leading-`?` next directly produced `…?electionId=…?next=…` — a malformed URL that SvelteKit's URL parser 500s on (test 3 reproducer).
    */

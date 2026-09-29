@@ -1,6 +1,6 @@
 /**
  * The root of all api routes.
- * Note that this is imported by `hooks.server.ts` to handle api routes differently.
+ * `isApiRoute` in `$lib/routes` reads it, so the request hook can skip API endpoints.
  */
 export const API_ROOT = '/api';
 

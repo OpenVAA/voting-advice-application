@@ -20,8 +20,8 @@ See `+page.ts` for possible redirects.
   import { ConstituencySelector } from '$lib/components/constituencySelector';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
+  import { isVoterAppPath, parseParams } from '$lib/routes';
   import { filterPersistent } from '$lib/routes/filterPersistent';
-  import { parseParams } from '$lib/routes/parseParams';
   import type { Id } from '@openvaa/core';
 
   ////////////////////////////////////////////////////////////////////
@@ -87,15 +87,11 @@ See `+page.ts` for possible redirects.
     if (!canSubmit) return;
     // Dedupe: when two elections share a constituency group and the selector linked their picks (ConstituencySelector cross-section propagation), `selected` carries the same id under multiple election keys. The URL contract is a set, not a per-election map, so collapse.
     const constituencyId = Array.from(new Set(Object.values(selected).filter((id) => id)));
-    // Deferred-target handling: if a `?next=` target is set, decode + re-validate against the voter-app URL whitelist regex and navigate to the original destination. Whitelist re-check is a defense-in-depth pass — the (located)/+layout.ts entry-point check already filtered open-redirect targets, but a fresh page load of `/constituencies?next=...` bypasses that gate, so this layer must re-validate before calling goto().
-    //
-    // reason: voter-app whitelist re-check — prevents open-redirect at selector-consumption layer (defense in depth vs
-    // (located)/+layout.ts entry-point check).
-    const VOTER_ROUTE_WHITELIST = /^\/[a-z]{2}\/.*|^\/(results|questions|nominations)\b/;
+    // Deferred-target handling: if a `?next=` target is set, decode it, re-validate it against the Voter App path allowlist and navigate to it. The `(located)/+layout.ts` entry point already filtered it, but a fresh load of `/constituencies?next=...` bypasses that gate, so this layer re-validates before calling goto() to prevent an open redirect.
     const next = page.url.searchParams.get('next');
     if (next) {
       const decoded = decodeURIComponent(next);
-      if (VOTER_ROUTE_WHITELIST.test(decoded)) {
+      if (isVoterAppPath(decoded)) {
         // Append the just-picked electionId + constituencyId to the deferred target before goto. Without this, `goto(decoded)` lands on a raw `/results` URL with neither id present; (located)/+layout.ts then sees no electionId in URL OR voter-context state (the constituency page never writes back to voterCtx — the URL is the only persistence) and bounces the voter back through /elections, looping test 1. Preserve any query params the original deferred target already carried (e.g., `?entityType=candidates` in test 2 — the test asserts that param survives the round-trip).
         const target = new URL(decoded, page.url.origin);
         const persistent = filterPersistent(parseParams({ url: page.url }));
