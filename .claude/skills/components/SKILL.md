@@ -30,8 +30,8 @@ The split is a dependency rule, not a filing convention: a base component that r
    destructuring of `$props()` typed by a co-located type file (`Button.type.ts` beside
    `Button.svelte`); children and named regions are `Snippet` props rendered with `{@render …}`.
    Measured on the three target directories
-   2026-09-13: `export let` 0 files, `$$Props` 0 files, `<slot` 0 files, against 103 files calling
-   `$props()` and 103 co-located `*.type.ts` files. The tree has no pre-runes component left, so a
+   2026-09-27: `export let` 0 files, `$$Props` 0 files, `<slot` 0 files, against 101 files calling
+   `$props()` and 101 co-located `*.type.ts` files. The tree has no pre-runes component left, so a
    new one written in the old dialect is a lone regression rather than a local convention.
 
 2. **The prop type lives beside the component, not inline.** `Button.svelte` imports

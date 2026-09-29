@@ -142,12 +142,22 @@
       "number": "165",
       "name": "Review-Stack Comment Remediation",
       "status": "complete"
+    },
+    {
+      "number": "165.1",
+      "name": "Results Navigation Redraw",
+      "status": "complete"
+    },
+    {
+      "number": "166",
+      "name": "Retire `auth_user_id` — Entity Identity from Grants",
+      "status": "pending"
     }
   ],
   "next": {
-    "command": "/gsd:progress",
-    "label": "Show progress",
-    "reason": "Unsure of state — showing progress"
+    "command": "/gsd:plan-phase 166",
+    "label": "Plan phase 166",
+    "reason": "Phase 166 of 32 — needs a plan"
   },
-  "updated_at": "2026-09-29T07:49:12.774Z"
+  "updated_at": "2026-09-29T19:12:32.000Z"
 }

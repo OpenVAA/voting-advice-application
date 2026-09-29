@@ -42,6 +42,10 @@ This documentation is automatically generated from the `@component` docstrings i
 
   `import { Drawer } from '$lib/components/modal/drawer';`
 
+- [DrawerHost](/developers-guide/frontend/components/generated/components/modal/drawerHost/DrawerHost)
+
+  `import { DrawerHost } from '$lib/components/modal/drawerHost';`
+
 - [ElectionSelector](/developers-guide/frontend/components/generated/components/electionSelector/ElectionSelector)
 
   `import { ElectionSelector } from '$lib/components/electionSelector';`
@@ -206,10 +210,6 @@ This documentation is automatically generated from the `@component` docstrings i
 
   `import { QuestionExtendedInfoButton } from '$lib/components/questions';`
 
-- [QuestionExtendedInfoDrawer](/developers-guide/frontend/components/generated/components/questions/QuestionExtendedInfoDrawer)
-
-  `import { QuestionExtendedInfoDrawer } from '$lib/components/questions';`
-
 - [QuestionInput](/developers-guide/frontend/components/generated/components/input/QuestionInput)
 
   `import { QuestionInput } from '$lib/components/input';`
@@ -311,10 +311,6 @@ This documentation is automatically generated from the `@component` docstrings i
 - [EntityDetails](/developers-guide/frontend/components/generated/dynamic-components/entityDetails/EntityDetails)
 
   `import { EntityDetails } from '$lib/dynamic-components/entityDetails';`
-
-- [EntityDetailsDrawer](/developers-guide/frontend/components/generated/dynamic-components/entityDetails/EntityDetailsDrawer)
-
-  `import { EntityDetailsDrawer } from '$lib/dynamic-components/entityDetails';`
 
 - [EntityInfo](/developers-guide/frontend/components/generated/dynamic-components/entityDetails/EntityInfo)
 
@@ -428,4 +424,4 @@ This documentation is automatically generated from the `@component` docstrings i
 
 ---
 
-Total: 104 components
+Total: 103 components

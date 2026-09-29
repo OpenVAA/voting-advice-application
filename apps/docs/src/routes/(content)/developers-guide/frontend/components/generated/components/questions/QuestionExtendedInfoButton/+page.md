@@ -1,6 +1,8 @@
 # QuestionExtendedInfoButton
 
-A button that will display the question's extended information content in a `Drawer`.
+A button that opens the question's extended information content in the app's drawer host.
+
+The dialog itself is the app's `DrawerHost` (`$lib/components/modal/drawerHost`), so this component hands the host a payload rather than rendering an overlay of its own: the content component with its props, and the accessible name. The questions route subtree is a different subtree from the results tree that also opens the host, which is why the host is mounted in the app's root layout rather than in either route.
 
 ### Properties
 

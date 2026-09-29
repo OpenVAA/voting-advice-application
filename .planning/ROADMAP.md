@@ -12,7 +12,7 @@
 - ⊘ **v2.12 Runes-Native Cleanup** — Phases 102-105 (SUPERSEDED 2026-06-12 by v2.13)
 - ✅ **v2.13 Context-as-Class Migration** — Phases 106-117 (shipped 2026-06-13)
 - ✅ **v2.14 E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero** — Phases 118-136 (shipped 2026-08-12)
-- 🚧 **v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage** — Phases 137-151 (in progress)
+- 🚧 **v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage** — Phases 137-166 (in progress; 165.1 and 166 added 2026-09-22 and 2026-09-24)
 
 See `.planning/MILESTONES.md` for cumulative history and `.planning/milestones/` for archived roadmaps + requirements.
 
@@ -204,7 +204,7 @@ Full details: `.planning/milestones/v2.14-ROADMAP.md`
 
 </details>
 
-### 🚧 v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage (Phases 137-164) — IN PROGRESS
+### 🚧 v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage (Phases 137-166) — IN PROGRESS
 
 **Milestone goal:** Make every automated check in the repo one that can be developed against — closing
 the coverage holes, blind assertions, untrustworthy test data, and missing CI gates that v2.14
@@ -295,6 +295,8 @@ delivery-origin swap whose visual consequence is re-proven by the baselines them
 - [x] **Phase 163: CI Gates — SQL Lint/Format + Secrets & Vulnerability Scanning** - Invoke the `db:lint:sql` script that nothing runs, put SQL in the standard format gate, add secrets + vuln scanning (CIGATE-01/02/03) — **moved from 149** so the gates land on the post-remediation tree.
 - [x] **Phase 164: `RETURNS TABLE` Nullability — Audit + Single Override Mechanism** - Enumerate every RPC's semantically-nullable columns and fix the lie with one mechanism, not scattered casts (CIGATE-04/05) — **moved from 150** for the same reason.
 - [x] **Phase 165: Review-Stack Comment Remediation** - Collect every reviewer and GitHub Copilot comment on the twelve stacked ship PRs (#876-#887), triage each as a real defect, an artifact of reviewing one slice of the 12-way split in isolation, or already resolved, and fix every actionable one on `ship/v2.15-13-review-fixes`, stacked on `ship/v2.15-12-planning`, with the repo comment-hygiene rules applied to every changed file (completed 2026-09-29)
+- [x] **Phase 165.1: Results Navigation Redraw** - Stop the voter results page from remounting and flickering on tab / entity / drawer navigation; reshape its routes to follow the layout and hoist the drawer(s) to one app-wide host. Grounded in spikes 031-034 (`spike/results-redraw`). (completed 2026-09-24)
+- [ ] **Phase 166: Retire `auth_user_id` — Entity Identity from Grants** - Drop `candidates.auth_user_id` / `organizations.auth_user_id`; the "which entity am I" lookups read the entity-scope grant instead, so the two Edge Functions write one link, not two, and published rows stop exposing auth user ids.
 
 ## Phase Details
 
@@ -1875,9 +1877,84 @@ Plans:
 - The targeted pgTAP run (`00-helpers` plus the three files) reports `Result: PASS` with the same `Tests=` total as before the rewrite.
 - Every changed file is hygiene-clean.
 
+### Phase 165.1: Results Navigation Redraw
+
+**Added 2026-09-22** (as Phase 165 on `feat/165-results-navigation-redraw`, PR #888; renumbered 165.1 on 2026-09-29 because Phase 165 on PR #889 already held the number) from spikes 031-034 (`.planning/spikes/031-*` … `034-*`, branch `spike/results-redraw`, worktree `../voting-advice-application-spike`). The spike branch carries a working prototype of every item behind a `lib/spike/` "redraw lab" toggle panel; this phase replaces it with production code and deletes the lab.
+
+**Goal**: Navigating within the voter results — switching entity tabs, opening an entity, switching tabs inside it, closing it — never remounts or repaints what did not change, never moves the scroll position, and never paints the page above an open overlay.
+**Depends on**: Nothing in v2.15 (frontend-only; touches no schema, adapter or CI surface). Must be merged onto `integration/ship-12-squash` after the session debugging that branch is done.
+**Requirements**: RNAV-01, RNAV-02, RNAV-03, RNAV-04, RNAV-05, RNAV-06 — mapped one-to-one onto the six success criteria below and **registered by this phase** in `.planning/REQUIREMENTS.md` under decision D-22 (plan 165.1-08), together with the milestone-counter correction D-22 couples to it.
+**Success Criteria** (what must be TRUE):
+
+  1. **No results navigation remounts the results subtree.** Root cause (spike 031): `(located)/+layout.ts` untracks its params but reads `url.pathname` / `url.search` tracked for the `next=` redirect target, so the load reruns on every path change, re-streams question + nomination data, `(located)/+layout.svelte` sets `ready = false` and `<Loading/>` replaces the subtree. A unit test drives the load with a read-recording `url` and fails on any tracked read, with a positive control proving it catches the old read.
+  2. **Scroll is preserved** on entity open, entity close and entity-tab switch (from a scrolled position, not only from the top), observed in the browser.
+  3. **No document View Transition paints above an open modal.** Overlay open/close navigations run no document VT; any VT that runs while a modal dialog is open runs with every `view-transition-name` stripped. The header is covered by the backdrop from the first frame; a drawer-tab switch never shows the results page in front of the drawer.
+  4. **Results routes follow the layout**: an `[electionTab]` level rendering that election's entity-type tabs, an `[entityTab]` level rendering the list + filters, and an `[entity]/[id]` nomination page that opens the overlay. Existing URLs keep working (or redirect), and the implied-default-tab case does not remount the list.
+  5. **One app-wide drawer host** in the root layout serves the entity-details overlay AND the extended-question-info drawer: entity → entity navigation swaps content without reopening, closing animates out, and hosted content is safe against its opener unmounting (spike 034 found a close that hung the dialog). The mechanism (payload + context bridge vs. global shell + portal) is decided at discuss-phase.
+  6. **The spike scaffolding is gone**: no `lib/spike/`, no `// SPIKE` call sites, no `/results-layered` tree; E2E voter results specs pass.
+
+**Plans**: 9/9 plans executed
+
+Plans:
+
+- [x] 165.1-05.1-PLAN.md
+
+**Wave 1**
+
+- [x] 165.1-01-PLAN.md — Branch off `integration/ship-12-squash`, transport the phase documents and spike records, open the evidence doc, and take both baseline measurements (the cold-`/results` hazard, the D-09 emitter derivation) (wave 1)
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [x] 165.1-02-PLAN.md — **TRACER**: one entity opens and closes end-to-end through the new app-wide drawer host, with the four validated fixes in production form, the two unit guards, and NC-1 (wave 2)
+
+**Wave 3** *(blocked on Wave 2)*
+
+- [x] 165.1-03-PLAN.md — The committed navigation-behaviour spec: scroll survival from a scrolled start, the two View-Transition invariants, node identity, plus its fixture and its own Playwright project (wave 3)
+
+**Wave 4** *(blocked on Wave 3)*
+
+- [x] 165.1-04-PLAN.md — Route split per D-08: statistics re-homed (D-25), the shared route builder, the entity-tab level, the innermost page, and the leaf guards pinned (wave 4)
+
+**Wave 5** *(blocked on Wave 4)*
+
+- [x] 165.1-05-PLAN.md — The extended question info served by the same host (D-13), exercised through it, and the two callerless per-route drawers deleted (wave 5)
+
+**Wave 6** *(blocked on Wave 5)*
+
+- [x] 165.1-06-PLAN.md — The standing scaffolding guard (D-20) and the remaining negative controls NC-2..NC-6, closing the evidence document (wave 6)
+
+**Wave 7** *(blocked on Wave 6)*
+
+- [x] 165.1-07-PLAN.md — Phase gate: every static gate forced at one head, the full E2E suite under the cardinal rule, the accessibility scan, and the visual run in the pinned container with its human judgement (wave 7)
+
+**Wave 8** *(blocked on Wave 7)*
+
+- [x] 165.1-08-PLAN.md — Register RNAV-01..06 with recounted counters (D-22), add the `results-redraw` skill domain (D-23), state the two invariants in `CLAUDE.md` (D-24), close the folded todo and record every residue (wave 8)
+
+### Phase 166: Retire `auth_user_id` — Entity Identity from Grants
+
+**Added 2026-09-24.** Phase 162 moved all authorisation onto `public.grants` and kept `auth_user_id` only as an identity link (discussion point B7(a), chosen for scope, not substance). No RLS policy, storage policy or token claim reads it any more; two readers and two writers remain.
+
+**Goal**: The grant is the only link between an auth user and an entity. "Which entity am I" is answered from the entity-scope grant, the invite and identity-callback flows write one link instead of two, and no public row exposes an auth user id.
+**Depends on**: PR #888 (Phase 165.1) merged onto the v2.15 review stack. Touches files in #877's slice (the supabase schema, Edge Functions and pgTAP), which Phase 165 (Review-Stack Comment Remediation, PR #889) also edited, so plan it against the stack tip after #889.
+**Requirements**: TBD — registered at planning.
+**Success Criteria** (draft, to be firmed at planning):
+
+  1. **`get_candidate_user_data` resolves the caller's own entity from an `(entity, <type>, editor)` grant** held by `auth.uid()`, joined to the entity table and filtered by project — **not** through `user_can`, which is also true for project and account admins and would hand an admin an arbitrary candidate. `grants` is revoked from `authenticated`, so the lookup reads the table as `SECURITY DEFINER` (preferred: no dependence on token freshness) or parses the `grants` claim. More than one match in a project is an error, not `LIMIT 1`.
+  2. **`identity-callback`'s `findExistingCandidate` looks up by grant**, and `createCandidate` no longer writes the column.
+  3. **`invite-candidate` writes the grant only**; its step 7 and the rollback branch that exists because of it (162-REVIEW WR-07) are removed.
+  4. **A decision on how many users one entity may have**, made explicitly: a partial unique index keeping one user per candidate (matches the 162 user-rights model, where Candidate is the only candidate-scope user type), or none (allows a future delegated editor, who would then be indistinguishable from the candidate). Organizations gain multi-editor support either way, which the single column could not represent.
+  5. **The column is gone** from `candidates` and `organizations`, with its two indexes, its column-grant entries, `seed.sql`, the dev-seed allowed keys, the regenerated types, the pgTAP fixtures and negative checks (05, 09, 21 and others) and the E2E admin client (`forceRegister`, `sendEmail`, `unregisterCandidate`).
+  6. **`anon` can no longer read any auth user id** — asserted by pgTAP, observed failing against today's tree first.
+  7. **Every comment the phase touches passes the hygiene rules** — each comment it adds or changes is judged against [`CLAUDE.md` § Comment Hygiene](/CLAUDE.md#comment-hygiene): **no historical narrative** (what the code used to do, how a defect was found, which run or spike diagnosed it — the git history carries that), no planning reference beyond the bare `see phase N` / `see spike N` form, no explanation addressed to the reviewer, concise, and present only where the code cannot explain itself. In particular, no comment narrates the retirement of `auth_user_id`; the code reads as if the grant had always been the link.
+  8. Gates: pgTAP, unit, the candidate and bank-auth E2E specs (bank-auth under its 3× determinism gate), then the full E2E suite under the cardinal rule.
+
+**Plans**: 0 plans
+
 ## Progress
 
-**Active milestone: v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage** — Phases 137-165 (30 phases incl. 142.1, 157.1 and 157.2; 148 absorbed into 147), 39/39 original requirements mapped plus the review-remediation set added 2026-08-28. Plan counts are set per phase by `/gsd-plan-phase`.
+**Active milestone: v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage** — Phases 137-166 (32 phases incl. 142.1, 157.1, 157.2, 162.1 and 165.1; 148 absorbed into 147): 31 complete and 1 pending (166). Phase 165 — Review-Stack Comment Remediation maps no requirement; Phase 165.1 — Results Navigation Redraw is an addendum that registered RNAV-01..06. **110/110 requirements mapped** — the 39 original, the review-remediation set added 2026-08-28, PERMFU-01..10 and RNAV-01..06. Plan counts are set per phase by `/gsd-plan-phase`.
+_(**Recounted 2026-09-29** when the two planning records were merged: the phase count is `ls .planning/phases | grep -v '^999' | wc -l` → 32, of which 31 hold a SUMMARY.md for every PLAN.md and Phase 166 holds no plan yet; the requirement count is the scoped awk over REQUIREMENTS.md's § Traceability recorded in its own coverage note → 110. Phase 165.1 was numbered 165 on its own branch (`feat/165-results-navigation-redraw`, PR #888) and renumbered when it was rebased onto `ship/v2.15-13-review-fixes` (PR #889), which had already used 165. The Phases 167-171 placeholders PR #888 had added — per-PR review fixes for #876-#887 — were dropped as superseded by Phase 165.)_
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -1909,6 +1986,8 @@ Plans:
 | 163. CI Gates — SQL Lint/Format + Secrets & Vulnerability Scanning _(was 149)_ | 9/9 | Complete    | 2026-09-04 |
 | 164. `RETURNS TABLE` Nullability — Audit + Single Override Mechanism _(was 150)_ | 5/5 | Complete    | 2026-09-03 |
 | 165. Review-Stack Comment Remediation | 36/36 | Complete    | 2026-09-29 |
+| 165.1. Results Navigation Redraw | 9/9 | Complete    | 2026-09-24 |
+| 166. Retire `auth_user_id` — Entity Identity from Grants | 0/0 | Not started |  |
 
 **Shipped milestones:**
 

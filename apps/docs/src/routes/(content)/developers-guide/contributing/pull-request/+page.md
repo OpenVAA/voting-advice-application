@@ -37,4 +37,8 @@ You should always review your own PR first before asking someone to review it. B
 - [ ] The changes pass the [WCAG A and AA requirements for accessibility](https://usability.yale.edu/web-accessibility/articles/wcag2-checklist).
 - [ ] Test the changes using keyboard navigation and screen-reading.
 - [ ] Documentation is added wherever necessary. This includes updating the possibly affected entries in the Developers’ and Publishers’ Guides.
+- [ ] Every comment the PR adds or changes follows the [comment guidelines](/developers-guide/contributing/code-style-guide/#comments): no history of the code, no planning references beyond a bare `see phase N`, and no notes addressed to the reviewer.
 - [ ] The commit history is clean and linear, and the commits follow the [commit guidelines](/developers-guide/contributing/contribute/#commit-your-update)
+- [ ] The PR does not contain fixes of itself: commits touching the same files or feature are squashed, so the history shows only the final outcome.
+- [ ] Purely formatting changes are, as far as possible, in their own commit.
+- [ ] Every commit containing migrations or other database changes carries a `[db]` tag, e.g. `fix[db]: foo table`.
