@@ -17,12 +17,14 @@ Displays information about the application.
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
+  import { resolveOrganizationMatching } from '$lib/utils/organizationMatching';
   import { sanitizeHtml } from '$lib/utils/sanitize';
 
   const ctx = getAppContext();
   const { getRoute, t } = ctx;
   // appSettings is a reactive accessor — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
+  const organizationMatching = $derived(resolveOrganizationMatching(appSettings.matching?.organizationMatching));
 
   const { topBarSettings } = getLayoutContext();
   topBarSettings.use({
@@ -51,12 +53,10 @@ Displays information about the application.
     {@html sanitizeHtml(t('about.content'))}
   </div>
 
-  {#if appSettings.matching.organizationMatching !== 'none'}
+  {#if organizationMatching !== 'none'}
     <h2 class="mb-md mt-xl">{t('about.organizationMatching.title')}</h2>
     <div data-testid="voter-about-organization-matching">
-      {@html sanitizeHtml(
-        t('about.organizationMatching.content', { partyMatchingMethod: appSettings.matching.organizationMatching })
-      )}
+      {@html sanitizeHtml(t('about.organizationMatching.content', { partyMatchingMethod: organizationMatching }))}
     </div>
   {/if}
 

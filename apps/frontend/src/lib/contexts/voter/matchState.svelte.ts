@@ -24,7 +24,7 @@ import type { SelectionTree } from './selectionTree.type';
  * @param algorithm - The matching algorithm
  * @param minAnswers - A getter returning the minimum number of answers required to perform matching, default `1`
  * @param calcSubmatches - A getter returning the `entityType`s for which to calculate submatches, default `[]`
- * @param parentMatchingMethod - A getter returning the parent matching method. This is used to preimpute answers for `Nomination`s with children.
+ * @param parentMatchingMethod - A getter returning the parent matching method. `'impute'` preimputes answers for `Nomination`s with children, `'answersOnly'` matches parents on their own answers, and `'none'` leaves organizations, factions and alliances unmatched: they are returned as plain nominations, without a score.
  * @returns A reactive match tree value.
  */
 type MatchStateDeps = {
@@ -66,6 +66,17 @@ class MatchStateImpl {
           continue;
         }
 
+        // `none` means no party matching: parent entities are listed without a score, like any entity type before the voter has answered enough questions.
+        if (
+          parentMethod === 'none' &&
+          (entityType === ENTITY_TYPE.Organization ||
+            entityType === ENTITY_TYPE.Faction ||
+            entityType === ENTITY_TYPE.Alliance)
+        ) {
+          electionMatches[entityType as EntityType] = nominations;
+          continue;
+        }
+
         // If there are no nominations, return an empty array
         if (!nominations.length) {
           electionMatches[entityType as EntityType] = [];
@@ -93,7 +104,6 @@ class MatchStateImpl {
               }
               break;
             case 'answersOnly':
-            case 'none':
               break;
             default:
               throw new Error(`Unsupported parent matching method: ${parentMethod}`);
@@ -110,7 +120,6 @@ class MatchStateImpl {
               });
               break;
             case 'answersOnly':
-            case 'none':
               break;
             default:
               throw new Error(`Unsupported parent matching method: ${parentMethod}`);
