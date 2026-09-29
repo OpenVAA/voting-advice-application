@@ -8,7 +8,12 @@
     "preserveSymlinks": true,
     "types": ["vitest/globals"]
   },
-  "files": ["vite.projectIdEnv.ts", "vite.projectIdEnv.test.ts"],
+  "files": [
+    "vite.projectIdEnv.ts",
+    "vite.projectIdEnv.test.ts",
+    "paraglide.options.ts",
+    "scripts/compile-paraglide.ts"
+  ],
   "references": [
     { "path": "../../packages/app-shared/tsconfig.json" },
     { "path": "../../packages/argument-condensation/tsconfig.json" },

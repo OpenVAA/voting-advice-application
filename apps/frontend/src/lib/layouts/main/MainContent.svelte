@@ -72,7 +72,7 @@ The layout varies slightly based on the presence of a video player.
     </div>
   {/if}
 
-  <div class="flex w-full flex-grow flex-col items-stretch justify-center sm:items-center">
+  <div class="flex w-full grow flex-col items-stretch justify-center sm:items-center">
     <!-- Hero image -->
     {#if !video.hasContent}
       {#if hero}
