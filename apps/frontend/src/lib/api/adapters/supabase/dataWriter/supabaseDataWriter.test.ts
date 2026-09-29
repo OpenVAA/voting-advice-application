@@ -104,7 +104,7 @@ function eqCallsFor(client: MockClient, table: string): Array<[string, unknown]>
 /**
  * Every table name `from` was called with, in call order.
  *
- * The assertions below count these rather than only checking membership: a deleted derivation round-trip is only observable as a table that is no longer reached at all.
+ * The assertions below count these rather than only checking membership: an extra round-trip is observable only as an extra table reached.
  * @param client - The mock client under test.
  * @returns The table names.
  */
@@ -119,7 +119,7 @@ function asSupabaseMock(m: MockClient): SupabaseClient<Database> {
 }
 
 /**
- * Stub a session that PASSES verification: `getUser()` returns the user — the round-trip `_getBasicUserData` now makes FIRST — and `getSession()` returns the access token whose grant claim the coarse role is then derived from.
+ * Stub a session that PASSES verification: `getUser()` returns the user — the round-trip `_getBasicUserData` makes FIRST — and `getSession()` returns the access token whose grant claim the coarse role is then derived from.
  *
  * Both halves are required, and that is the point. A stub supplying only `getSession` describes a token no auth server ever confirmed, which is exactly the forged-cookie shape the rejection case below asserts against.
  * @param client - The mock client to stub.
@@ -137,7 +137,7 @@ function mockVerifiedSession(
 
 /**
  * Run `write` with the structured logger capturing into an array, then restore the silent default.
- * The logger's configuration is module-scoped and starts at `'silent'`, so a parse-failure record is invisible until the level is raised. The restore runs in a `finally` so one failing expectation cannot leave the level raised for the rest of the file. Same shape as the helper in `supabaseDataProvider.test.ts`; the `'warn'` threshold still admits the `error`-level records decision C5(b) promoted these sites to.
+ * The logger's configuration is module-scoped and starts at `'silent'`, so a parse-failure record is invisible until the level is raised. The restore runs in a `finally` so one failing expectation cannot leave the level raised for the rest of the file. Same shape as the helper in `supabaseDataProvider.test.ts`; the `'warn'` threshold admits the `error`-level records these sites emit.
  * @param write - The writer call under test.
  * @returns The call's result and every record emitted while it ran.
  */
@@ -248,7 +248,7 @@ describe('SupabaseDataWriter', () => {
 
     it('does not derive the endpoint from window.location.pathname (regression guard for the /candidate-prefix bug)', async () => {
       mockSupabase.auth.signOut.mockResolvedValue({ error: null });
-      // Simulate an unprefixed candidate route URL. The implementation this guard was written against read the first path segment and produced "/candidate/candidate/auth/logout" from exactly this input.
+      // Simulate an unprefixed candidate route URL. Reading the locale from the first path segment would produce "/candidate/candidate/auth/logout" from exactly this input.
       Object.defineProperty(window, 'location', {
         configurable: true,
         value: { pathname: '/candidate/auth/logout', origin: 'http://localhost' }
@@ -266,7 +266,7 @@ describe('SupabaseDataWriter', () => {
 
       const result = await writer.requestForgotPasswordEmail({ email: 'test@example.com' });
 
-      // The path is asserted in full rather than by substring: the old path also contained "candidate/auth/callback", so a substring assertion would have passed against it and this move would have gone unnoticed here.
+      // The whole route path is asserted, not a fragment of it: a redirect to the page route also contains "candidate/auth/callback", so a fragment would match it.
       expect(mockSupabase.auth.resetPasswordForEmail).toHaveBeenCalledWith('test@example.com', {
         redirectTo: expect.stringContaining(ROUTE.CandAppAuthCallback)
       });
@@ -337,6 +337,7 @@ describe('SupabaseDataWriter', () => {
       });
 
       expect(mockSupabase.rpc).toHaveBeenCalledWith('upsert_answers', {
+        p_entity_type: 'candidate',
         p_entity_id: 'entity-1',
         p_answers: mockAnswers,
         p_overwrite: false
@@ -356,6 +357,7 @@ describe('SupabaseDataWriter', () => {
       });
 
       expect(mockSupabase.rpc).toHaveBeenCalledWith('upsert_answers', {
+        p_entity_type: 'candidate',
         p_entity_id: 'entity-1',
         p_answers: mockAnswers,
         p_overwrite: true
@@ -401,13 +403,14 @@ describe('SupabaseDataWriter', () => {
 
       // Verify RPC was called with path object instead of File
       expect(mockSupabase.rpc).toHaveBeenCalledWith('upsert_answers', {
+        p_entity_type: 'candidate',
         p_entity_id: 'entity-1',
         p_answers: expectedAnswers,
         p_overwrite: false
       });
     });
 
-    // WR-06. `file.name` is fully controlled by the uploading candidate. The old path took `name.split('.').pop()` verbatim, so `a.b/c/d` produced the extension `"/d"` and a path of `…/<uuid>./d` — an uploader-chosen sub-path inside the prefix, copied on into the stored `{ path }` and from there into a public URL. Each case below is a shape the derived form admitted and the whitelist does not.
+    // `file.name` is fully controlled by the uploading candidate. Taking `name.split('.').pop()` verbatim would turn `a.b/c/d` into the extension `"/d"` and a path of `…/<uuid>./d` — an uploader-chosen sub-path inside the prefix, copied on into the stored `{ path }` and from there into a public URL. Each case below is a shape that derivation admits and the whitelist does not.
     it.each([
       ['a slash-bearing name that placed objects at a chosen sub-path', 'evil.png/../../elsewhere/x'],
       ['a name whose suffix is not an image extension at all', 'payload.svg'],
@@ -475,11 +478,11 @@ describe('SupabaseDataWriter', () => {
   });
 
   /**
-   * The post-upsert read-back, which decision **B3** gives a status BRANCH rather than a collapse.
+   * The post-upsert read-back, which is a status BRANCH rather than a collapse.
    *
-   * The write itself is never in doubt in any of these cases — the RPC resolves without an error. What is under test is what the adapter REPORTS about a write whose result it could not validate. Before this phase the branch read `parseAnswersColumn(...).value ?? {}`, so a malformed read-back became a truthy empty answers map that the candidate store then treated as a verified save (fact 5, ledger row 4).
+   * The write itself is never in doubt in any of these cases — the RPC resolves without an error. What is under test is what the adapter REPORTS about a write whose result it could not validate. A collapse to `parseAnswersColumn(...).value ?? {}` would turn a malformed read-back into a truthy empty answers map that the candidate store would treat as a verified save.
    */
-  describe('_setAnswers read-back (decision B3)', () => {
+  describe('_setAnswers read-back', () => {
     const target = { type: 'candidate', id: 'entity-1' } as const;
     const answers = { q1: { value: 3 } };
 
@@ -494,12 +497,12 @@ describe('SupabaseDataWriter', () => {
     });
 
     it('returns the unverified signal when the read-back is malformed, and reports it exactly once', async () => {
-      // Every entry is malformed, so partial preserve keeps nothing — the case that previously produced the truthy `{}`.
+      // Every entry is malformed, so partial preserve keeps nothing — the case a collapse would report as a truthy `{}`.
       mockSupabase.rpc.mockResolvedValue({ data: { q1: 'not-an-answer-object' }, error: null });
 
       const { result, records } = await withCapturedLogs(() => writer.updateAnswers({ target, answers }));
 
-      // NOT `{}`: an unverified write and an entity with no answers are different facts and must not be the same value (requirement D8).
+      // NOT `{}`: an unverified write and an entity with no answers are different facts and must not be the same value.
       expect(result).toBe(UNVERIFIED_ANSWERS);
       expect(result).not.toEqual({});
       expect(records).toHaveLength(1);
@@ -519,7 +522,7 @@ describe('SupabaseDataWriter', () => {
       expect(records).toHaveLength(0);
     });
 
-    it('never carries any part of the answers payload into the record (T-157-17)', async () => {
+    it('never carries any part of the answers payload into the record', async () => {
       // A candidate's answer text is author-supplied content that may carry personal data. The refused KEY name is disclosed; what was stored under and beside it is not.
       const secret = 'MY_SECRET_ANSWER_TEXT';
       mockSupabase.rpc.mockResolvedValue({
@@ -613,7 +616,7 @@ describe('SupabaseDataWriter', () => {
       expect(result.role).toBeNull();
     });
 
-    // A session minted before the access-token hook changed still carries the retired claim key until its token refreshes. It confers nothing here, exactly as it confers nothing in the database.
+    // A token carrying only the retired claim key and no `grants` claim confers nothing here, exactly as it confers nothing in the database.
     it('returns a null role for a token carrying only the retired claim shape', async () => {
       const retiredToken = `header.${btoa(JSON.stringify({ user_roles: [{ role: 'super_admin', scope_type: 'global', scope_id: null }] }))}.signature`;
       mockSupabase.auth.getUser.mockResolvedValue({
@@ -804,7 +807,7 @@ describe('SupabaseDataWriter', () => {
         }
       });
 
-      // The elections round-trip that used to answer "which project is this?" is gone: the id comes from configuration, so the invite is issued without reaching any table at all.
+      // The project id comes from configuration, so the invite is issued without reaching any table at all.
       expect(tablesReached(mockSupabase)).toEqual([]);
       expect(mockSupabase.functions.invoke).toHaveBeenCalledWith('invite-candidate', {
         body: {
@@ -872,7 +875,7 @@ describe('SupabaseDataWriter', () => {
       ).rejects.toThrow('updateEntityProperties: Row not found');
     });
 
-    // IN-01. When there is nothing to write, this used to return `{ termsOfUseAccepted: undefined }` through a double cast. The caller SPREADS the result into the stored candidate, so the no-op path wrote `undefined` over the acceptance it had just read. Reading the row back instead makes the merge a no-op too, which is what "nothing was updated" should mean.
+    // When there is nothing to write, the adapter reads the stored properties back. The caller SPREADS the result into the stored candidate, so a fabricated `{ termsOfUseAccepted: undefined }` would write `undefined` over the acceptance it had just read. Reading the row back makes the merge a no-op too, which is what "nothing was updated" should mean.
     it('reads the stored properties back instead of fabricating a return value when nothing changed', async () => {
       const timestamp = '2024-01-15T10:00:00.000Z';
       mockSupabase._mockResponses['candidates'] = {
@@ -897,7 +900,7 @@ describe('SupabaseDataWriter', () => {
   /**
    * The project this writer works in comes from configuration, once, and every table access names it.
    *
-   * Each case here has two halves, and both matter. The POSITIVE half asserts the project filter or the project id actually reached the call. The NEGATIVE half counts the tables reached, because a deleted derivation round-trip is only observable as a table that is no longer touched at all — an assertion that merely checked the filter would still pass with the extra query in place.
+   * Each case here has two halves, and both matter. The POSITIVE half asserts the project filter or the project id actually reached the call. The NEGATIVE half counts the tables reached, because an extra round-trip is observable only as an extra table reached — an assertion that merely checked the filter would still pass with an extra query in place.
    */
   describe('project scoping', () => {
     /** A verified candidate session, which the candidate-facing reads below all require. */
@@ -1012,7 +1015,7 @@ describe('SupabaseDataWriter', () => {
       });
 
       expect(uploadMock.mock.calls[0][0]).toMatch(new RegExp(`^${PROJECT_ID}/candidates/entity-1/`));
-      // The lazily-issued `candidates` lookup that used to answer the same question is gone.
+      // No `candidates` lookup is issued to answer the same question.
       expect(tablesReached(mockSupabase)).toEqual([]);
     });
 
@@ -1028,7 +1031,7 @@ describe('SupabaseDataWriter', () => {
       });
 
       expect(uploadMock.mock.calls[0][0]).toMatch(new RegExp(`^${PROJECT_ID}/candidates/entity-1/`));
-      // One table access, not two: the write itself. The `candidates` lookup that resolved the path prefix is gone.
+      // One table access, not two: the write itself. The path prefix comes from configuration, not from a `candidates` lookup.
       expect(tablesReached(mockSupabase)).toEqual(['candidates']);
     });
 

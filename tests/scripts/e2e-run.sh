@@ -4,12 +4,15 @@
 #               complete, machine-readable evidence directory.
 #
 # Usage:
-#   tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/run-01 tests/scripts/e2e-run.sh --run-dir /abs/path/run-01 --project eperm07-term-trigger FRONTEND_PORT=5273 tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/run-01
+#   - tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/run-01
+#   - tests/scripts/e2e-run.sh --run-dir /abs/path/run-01 --project eperm07-term-trigger
+#   - FRONTEND_PORT=5273 tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/run-01
 #
 #   --run-dir <path>   REQUIRED. Where every artifact for this run lands. A relative path is resolved against the REPO ROOT, never against $PWD, so the script behaves identically from any working directory.
 #   --project <name>   OPTIONAL. Restrict the run to one Playwright project. With no
 #                      --project the run is the full gate suite, invoked exactly as the root `test:e2e` script does (including --grep-invert @probe).
 #   --no-db-reset      OPTIONAL. Skip the database reset; Supabase is still started (via `yarn db:start`) so the readiness poll below has something to poll. Use it to run against a database a previous run left behind -- the suite creates and owns its own project, so a reset is not a precondition of a correct run.
+#   --no-watch         OPTIONAL. Start only the frontend dev server (`yarn dev:clean && yarn workspace @openvaa/frontend dev`), not root `yarn dev`, which adds the shared-package watcher under `concurrently --kill-others-on-fail`. The Vite process is the same one `yarn dev` starts, so the preflight and the project scoping are unchanged. The packages must already be built (`yarn build`); CI passes it because its build step does that and nothing changes them during the run.
 #
 # Prerequisites:
 #   - `yarn install` has run and Playwright browsers are installed (`yarn playwright install`)
@@ -27,21 +30,29 @@
 #   8. Tears the dev server down FROM A TRAP and asserts the port has no listener
 #   9. Records the UTC end timestamp
 #
-# NEW CONVENTION: no shell script orchestrates E2E anywhere else in this repo -- the E2E entry points are npm scripts only (package.json "test:e2e"). Style follows apps/supabase/benchmarks/scripts/run-benchmarks.sh (shebang form, header block, `set -euo pipefail`, script-location-relative paths, "${VAR:-default}" env defaults).
+# Style follows apps/supabase/benchmarks/scripts/run-benchmarks.sh (shebang form, header block, `set -euo pipefail`, script-location-relative paths, "${VAR:-default}" env defaults).
 #
-# Plan 05's determinism batch LOOPS this script; it is deliberately a separate, independently testable unit that performs exactly one run.
+# `tests/scripts/determinism-batch.sh` LOOPS this script; it is deliberately a separate, independently testable unit that performs exactly one run.
 #
 # Exit codes -- the caller must be able to branch on the status alone:
-#   0  the run completed and Playwright reported success 1  Playwright reported failures 2  usage error 3  database preparation failed -- `yarn db:reset`, or `yarn db:start` under --no-db-reset 4  the readiness poll timed out (or the service-role key it needs is unavailable) 5  the dev server never started listening, or the port was already occupied before the spawn (this wrapper SPAWNS AND OWNS its server; adopting a foreign one is not evidence) 6  the run produced one or more preflight failures, or produced no preflight SUCCESS line at all (an unconfirmed run is not evidence either way) 7  the wrapper's preflight literals no longer match tests/tests/support/preflight.ts, so its preflight verdict cannot be trusted 130  the run was INTERRUPTED (SIGINT/SIGTERM). Never 0: criterion 3 counts 16 CONSECUTIVE runs, so an abort must be recorded as an abort by the caller, not silently counted as a green.
+#   0    the run completed and Playwright reported success.
+#   1    Playwright reported failures.
+#   2    usage error.
+#   3    database preparation failed -- `yarn db:reset`, or `yarn db:start` under --no-db-reset.
+#   4    the readiness poll timed out (or the service-role key it needs is unavailable).
+#   5    the dev server never started listening, or the port was already occupied before the spawn (this wrapper SPAWNS AND OWNS its server; adopting a foreign one is not evidence).
+#   6    the run produced one or more preflight failures, or produced no preflight SUCCESS line at all (an unconfirmed run is not evidence either way).
+#   7    the wrapper's preflight literals do not match tests/tests/support/preflight.ts, so its preflight verdict cannot be trusted.
+#   130  the run was INTERRUPTED (SIGINT/SIGTERM). Never 0: a caller counting consecutive green runs must record an abort as an abort, not as a green.
 
 set -euo pipefail
 
-# Auto-detect paths from script location -- cwd-independence is not optional here: the Playwright config already had a spawn-cwd incident (playwright.config.ts:1135-1147).
+# Auto-detect paths from script location -- cwd-independence is not optional here: the Playwright config documents the same spawn-cwd hazard at its `webServer` entry.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TESTS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 REPO_ROOT="$(cd "$TESTS_DIR/.." && pwd)"
 
-# FRONTEND_PORT defaults to 5273, NOT 5173: on this host port 5173 is held by a Docker sibling's IPv6 wildcard bind, which is why the served-application gate ran on 5273. The port is passed as a shell PREFIX to both the dev server and the Playwright invocation -- never written into .env.
+# FRONTEND_PORT defaults to 5273, NOT 5173: on the development host port 5173 is held by a Docker sibling's IPv6 wildcard bind. The port is passed as a shell PREFIX to both the dev server and the Playwright invocation -- never written into .env.
 FRONTEND_PORT="${FRONTEND_PORT:-5273}"
 SUPABASE_URL="${SUPABASE_URL:-http://127.0.0.1:54321}"
 READINESS_TIMEOUT_S="${READINESS_TIMEOUT_S:-120}"
@@ -49,13 +60,14 @@ DEVSERVER_TIMEOUT_S="${DEVSERVER_TIMEOUT_S:-180}"
 
 # The preflight's headlines are deliberately FIXED so they can be grepped, and both are EXPORTED CONSTANTS in tests/tests/support/preflight.ts so this wrapper can assert it is still grepping for strings that exist (see the drift guard below). Do not parse anything else out of human output.
 #
-# The SUCCESS headline is what makes the verdict a POSITIVE assertion. A pure absence check (`failures == 0`) cannot distinguish "the preflight passed" from "the preflight never ran" from "the literal was renamed" -- and the determinism ledger's evidentiary claim rests on this verdict.
+# The SUCCESS headline is what makes the verdict a POSITIVE assertion. A pure absence check (`failures == 0`) cannot distinguish "the preflight passed" from "the preflight never ran" from "the literal was renamed" -- and a run counts as evidence only on a positive verdict.
 PREFLIGHT_HEADLINE='E2E PREFLIGHT FAILED'
 PREFLIGHT_OK_HEADLINE='E2E PREFLIGHT OK'
 
 RUN_DIR=""
 PROJECT=""
 DB_RESET=true
+WATCH=true
 DEV_PID=""
 INTERRUPTED=0
 
@@ -63,7 +75,7 @@ INTERRUPTED=0
 E2E_PROJECT_ID_DEFAULT="00000000-0000-0000-0000-0000000000e2"
 
 usage() {
-  # Delimit the header block rather than hardcoding a line range: the previous `sed -n '2,Np'` truncated the exit-code table the header tells the caller to branch on, and drifted further every time the header grew.
+  # Delimit the header block rather than hardcoding a line range: a fixed `sed -n '2,Np'` truncates the exit-code table the header tells the caller to branch on as soon as the header grows.
   sed -n '2,/^set -euo pipefail/p' "${BASH_SOURCE[0]}" | sed '$d'
 }
 
@@ -95,6 +107,10 @@ while [ $# -gt 0 ]; do
     --no-db-reset)
       # Boolean: no require_value call, one shift.
       DB_RESET=false
+      shift
+      ;;
+    --no-watch)
+      WATCH=false
       shift
       ;;
     -h | --help)
@@ -141,7 +157,7 @@ done
 cleanup() {
   local status=$?
   set +e
-  # An interrupted run must NEVER report success. `$?` at trap entry is whatever the last command returned, which is routinely 0 mid-run -- so a caller looping this script would count an aborted run as a green, and criterion 3's "16 CONSECUTIVE runs" would be silently wrong. Force the conventional 128+SIGINT status instead.
+  # An interrupted run must NEVER report success. `$?` at trap entry is whatever the last command returned, which is routinely 0 mid-run -- so a caller looping this script would count an aborted run as a green, and a count of consecutive green runs would be silently wrong. Force the conventional 128+SIGINT status instead.
   if [ "$INTERRUPTED" = "1" ] && [ "$status" = "0" ]; then
     status=130
   fi
@@ -187,9 +203,9 @@ trap cleanup EXIT
 
 # --- 1. neutralise the environment, and record that it was neutralised --------------
 
-# The forcing knobs must never leak into a run used as evidence (RESEARCH Pitfall 2).
+# The forcing knobs must never leak into a run used as evidence.
 unset EPERM07_FORCE_BUDGET_MS EPERM07_FORCE_CPU_RATE EPERM07_NO_VT || true
-# CI matters TWICE over: with it set the config buys `retries: 3` and collapses to a single worker (playwright.config.ts:115,117), changing both the retry posture and the contention environment the failure actually lives in. A green produced that way proves nothing, and would itself be the "retried-until-green" the cardinal rule forbids.
+# CI matters TWICE over: with it set the config buys `retries: 3` and collapses to a single worker (`retries` and `workers` in playwright.config.ts), changing both the retry posture and the contention environment the failure actually lives in. A green produced that way proves nothing, and would itself be the "retried-until-green" the cardinal rule forbids.
 unset CI || true
 
 {
@@ -200,10 +216,11 @@ unset CI || true
   echo "eperm07_knobs=unset"
   echo "frontend_port=$FRONTEND_PORT"
   echo "db_reset=$DB_RESET"
+  echo "package_watcher=$WATCH"
   echo "expected_retries=0"
   echo "expected_workers=6"
-  # Machine capacity at run start. Recorded, never enforced: a run is not refused for a busy machine, but an outlier afterwards can be attributed instead of argued about. Phase 162 needed this -- one run took 1069s against a 14-run baseline of 627-651s (a 4% spread) and timed out one spec at 770s against a 90s budget, with identical code, identical worker count and identical dev-server log signatures. Diagnosing it meant reconstructing load after the fact from outside the run directory.
-  # Separators first, decimals second (162-REVIEW IN-04): Linux prints `load average: 1.20, 1.30, 1.40`, so the `, ` separators become spaces before any remaining comma -- a decimal comma under a comma-decimal locale, as macOS prints `1,20 1,30 1,40` -- is turned into a point. Translating every comma blindly left Linux values with trailing dots.
+  # Machine capacity at run start. Recorded, never enforced: a run is not refused for a busy machine, but an outlier can then be attributed from the run directory instead of reconstructed from outside it. A run with identical code, worker count and dev-server log signatures can still take 1069s against a 627-651s baseline when the machine is loaded.
+  # Separators first, decimals second: Linux prints `load average: 1.20, 1.30, 1.40`, so the `, ` separators become spaces before any remaining comma -- a decimal comma under a comma-decimal locale, as macOS prints `1,20 1,30 1,40` -- is turned into a point. Translating every comma blindly left Linux values with trailing dots.
   echo "load_at_start=$(uptime | sed 's/.*load averages*:[[:space:]]*//' | sed -E 's/,[[:space:]]+/ /g' | tr -s ' ' | tr ',' '.' | awk '{print $1"/"$2"/"$3}')"
   echo "cpu_count=$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo unknown)"
   echo "containers_running=$(docker ps -q 2>/dev/null | wc -l | tr -d ' ')"
@@ -213,7 +230,7 @@ unset CI || true
 
 date -u +%FT%TZ > "$RUN_DIR/started"
 git -C "$REPO_ROOT" rev-parse HEAD > "$RUN_DIR/head"
-# A dirty tree is RECORDED, not rejected -- this wrapper is used mid-phase.
+# A dirty tree is RECORDED, not rejected -- this wrapper is also run on work in progress.
 git -C "$REPO_ROOT" status --porcelain > "$RUN_DIR/worktree-status.txt"
 {
   echo "dirty_files=$(wc -l < "$RUN_DIR/worktree-status.txt" | tr -d ' ')"
@@ -304,7 +321,15 @@ echo "e2e_project_id=$E2E_PROJECT_ID_RESOLVED" >> "$RUN_DIR/env-posture.txt"
 
 echo "e2e-run.sh: starting dev server on port $FRONTEND_PORT (project $E2E_PROJECT_ID_RESOLVED) -> $RUN_DIR/devserver.log"
 set -m # job control: the background job gets its own process group, so the trap can kill the tree
-(cd "$REPO_ROOT" && FRONTEND_PORT="$FRONTEND_PORT" PUBLIC_PROJECT_ID="$E2E_PROJECT_ID_RESOLVED" yarn dev) > "$RUN_DIR/devserver.log" 2>&1 &
+(
+  cd "$REPO_ROOT"
+  export FRONTEND_PORT PUBLIC_PROJECT_ID="$E2E_PROJECT_ID_RESOLVED"
+  if [ "$WATCH" = true ]; then
+    yarn dev
+  else
+    yarn dev:clean && yarn workspace @openvaa/frontend dev
+  fi
+) > "$RUN_DIR/devserver.log" 2>&1 &
 DEV_PID=$!
 set +m
 

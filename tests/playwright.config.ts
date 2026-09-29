@@ -25,9 +25,9 @@ export { ADMIN_STORAGE_STATE };
 const PROBE_TEST_MATCH = /(defaultTemplateResults)\.probe\.spec\.ts$/;
 
 /**
- * ORPHAN-PROBE GUARD (fake-guard sweep finding F4).
+ * ORPHAN-PROBE GUARD.
  *
- * `_probes` is the one project whose `testMatch` enumerates its files by name rather than globbing the directory — deliberately, because each probe must be invocable one-at-a-time. The cost of enumeration is that ADDING a probe file without adding it to the pattern silently produces a test that matches no project and runs from no command, while still sitting in `specs/` looking like coverage. That is precisely what happened to four probe files added as scaffolding at different times: 6 tests, unreachable for a long stretch of this suite's history, noticed only by an audit.
+ * `_probes` is the one project whose `testMatch` enumerates its files by name rather than globbing the directory — deliberately, because each probe must be invocable one-at-a-time. The cost of enumeration is that ADDING a probe file without adding it to the pattern silently produces a test that matches no project and runs from no command, while still sitting in `specs/` looking like coverage.
  *
  * A comment asking future authors to keep the list in sync would be the same kind of non-guard this check exists to replace, so the invariant is CHECKED.
  * Throwing here fails every `playwright test` / `--list` invocation immediately and by name, which is the earliest point at which the mistake is visible.
@@ -43,7 +43,7 @@ if (fs.existsSync(probesDir)) {
       `Orphaned probe spec(s) in tests/specs/_probes — they match NO Playwright project and run ` +
         `from NO command: ${orphans.join(', ')}. Add each to the \`_probes\` project's testMatch ` +
         `(PROBE_TEST_MATCH in this file), or delete the file. Leaving it in place implies coverage ` +
-        `that does not exist (fake-guard sweep 2026-08-11, finding F4).`
+        `that does not exist.`
     );
   }
 }
@@ -52,19 +52,18 @@ if (fs.existsSync(probesDir)) {
  * Declared soft-assertion budget per spec file, keyed by path relative to `TESTS_DIR`.
  * Hoisted so the budget guard below — and every reader — has ONE place to look for the number, which is why the spec's own header names this symbol instead of restating it.
  *
- * Scoped deliberately to a single file: its scope is `voter-journey.spec.ts`.
- * The three sibling `Rigidity contract` drift files found alongside it are a recorded follow-up, not a licence to widen this table quietly.
+ * Scoped deliberately to a single file, `voter-journey.spec.ts`. Adding a file here is a deliberate budget decision for that file, not a quiet widening of this table.
  */
 const SOFT_ASSERTION_BUDGETS: Record<string, number> = {
   'specs/voter/voter-journey.spec.ts': 136
 };
 
 /**
- * SOFT-ASSERTION BUDGET GUARD (fake-guard sweep finding F10).
+ * SOFT-ASSERTION BUDGET GUARD.
  *
  * Soft assertions are budgeted because they do not fail fast. In a long serial walk a growing population silently degrades failure legibility: one genuinely broken card reports alongside — and is buried by — a hundred-odd other checks, so the run stops telling you which failure mattered. A budget is the statement that every soft slot was a deliberate choice rather than a default reached for under time pressure.
  *
- * `voter-journey.spec.ts` carried a header claiming a 3-slot budget while the file held 136 such calls. It drifted there one honest addition at a time, and every one of those additions ran green, because a prose claim cannot fail. A comment asking future authors to keep the number in sync would be the same kind of non-guard this check exists to replace, so the invariant is CHECKED — the identical argument this file already makes for its sibling above.
+ * A budget stated only in prose drifts one honest addition at a time, and every one of those additions runs green, because a prose claim cannot fail. A comment asking future authors to keep the number in sync would be the same kind of non-guard this check exists to replace, so the invariant is CHECKED — the identical argument this file already makes for its sibling above.
  *
  * The comparison is EQUALITY, not a ceiling: REMOVING a soft assertion without updating the budget throws too, so the declared posture stays honest in both directions and a promotion to a hard `expect()` is recorded rather than absorbed. Counting is by OCCURRENCE — a global regex match over the file contents — not by line, so a line carrying two calls counts as two; `grep -c` semantics would silently undercount it.
  *
@@ -74,9 +73,9 @@ for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
   const specPath = path.join(TESTS_DIR, rel);
   if (!fs.existsSync(specPath)) {
     throw new Error(
-      `Soft-assertion budget names a spec that no longer exists: ${rel}. Either restore the ` +
+      `Soft-assertion budget names a spec that does not exist: ${rel}. Either restore the ` +
         `file, or drop its entry from SOFT_ASSERTION_BUDGETS in this file. A budget pointing at ` +
-        `nothing is a guard that can never fire (fake-guard sweep 2026-08-11, finding F10).`
+        `nothing is a guard that can never fire.`
     );
   }
   // Strip comments before counting. A naive whole-file regex match counts every textual occurrence including inside comments and string literals — so the remediation instruction below ("state the reason in that spec's header") could itself contain the literal `expect.soft(` token and re-trip this very guard by inflating the count with a comment, not code.
@@ -88,16 +87,16 @@ for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
   if (actual !== budget) {
     throw new Error(
       `Soft-assertion budget diverged in ${rel} — the declared budget is ${budget} but the file ` +
-        // The count is taken outside comments; string literals are NOT excluded (a naive claim otherwise would itself be the F10 failure mode).
+        // The count is taken outside comments; string literals are NOT excluded (a claim that they were would itself be an unchecked prose claim).
         `carries ${actual} (counted outside comments; string literals are NOT excluded). Convert the ` +
         `new assertion to a hard \`expect()\`, or change the budget in SOFT_ASSERTION_BUDGETS in this ` +
         `file AND record the reason in that spec's header (prose only — do not restate the number; the ` +
         `header deliberately does not). A budget edited to match whatever the file happens to contain ` +
-        `is not a budget (fake-guard sweep 2026-08-11, finding F10).`
+        `is not a budget.`
     );
   }
   // Under-count hole: the count above matches only the literal `expect.soft(` token, so an aliased/destructured soft assertion — e.g.
-  // `const soft = expect.soft; soft(x).toBe(y)` — is invisible to it and the budget would silently over-report headroom, the direction that produced F10 in the first place. Reject any bare `expect.soft` reference that is not immediately called, so an alias must be introduced deliberately with a budget-guard-aware follow-up rather than slipping past unseen.
+  // `const soft = expect.soft; soft(x).toBe(y)` — is invisible to it and the budget would silently over-report headroom, the direction in which an unchecked budget drifts. Reject any bare `expect.soft` reference that is not immediately called, so an alias must be introduced deliberately with a budget-guard-aware follow-up rather than slipping past unseen.
   if (/\bexpect\s*\.\s*soft\b(?!\s*\()/.test(source)) {
     throw new Error(
       `${rel} references \`expect.soft\` without calling it directly (an alias or a destructure). ` +
@@ -108,24 +107,22 @@ for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
 }
 
 /**
- * TEARDOWN-PREFIX-UNIQUENESS GUARD (review finding CR-01).
+ * TEARDOWN-PREFIX-UNIQUENESS GUARD.
  *
  * `runTeardownAsserted` (`tests/tests/setup/shared/assertTeardown.ts`) turned the before/after row-count accounting into a HARD assertion. That assertion is only valid if each `*.teardown.ts` project owns an `external_id` prefix that no other project can touch concurrently — two data-teardown projects sharing (or substring-overlapping) a prefix race on the same before/after counts, and Playwright does not order data-teardown projects relative to each other unless an explicit `dependencies` edge forces it (most don't — see the perm family's `extraTeardownPrefix`-based cross-chain isolation instead of hard ordering).
  *
- * `bank-auth-journey.teardown.ts` and `perm-not-located-2e2cg.teardown.ts` shipped with the IDENTICAL prefix `e2e-perm-notloc-` (CR-01) — invisible until this guard existed, because the old `toBeGreaterThanOrEqual(0)` matcher could not fail on the race.
- * The fix here is scanning every `*.teardown.ts` file's `const PREFIX = '...'`
- * declaration and throwing at config-load time if any two are equal OR one is a string-prefix of another (a `LIKE '<prefix>%'` scoping bug the review flagged separately, WR-06) — a comment asking future authors to pick a distinct prefix would be the same non-guard this file's other two checks exist to remove.
+ * The guard scans every `*.teardown.ts` file's `const PREFIX = '...'` declaration and throws at config-load time if any two are equal OR one is a string-prefix of another, because a `LIKE '<prefix>%'` scan of the shorter prefix also matches the longer one's rows. A shared prefix is otherwise invisible: the two counts race rather than failing on a fixed value. A comment asking future authors to pick a distinct prefix would be the same non-guard this file's other two checks exist to remove.
  *
- * Deliberately excludes files with no `const PREFIX = '...'` declaration AND no `runTeardownAsserted(` call (e.g. `candidate-journey.teardown.ts`, which performs no prefix-scoped delete — see `assertTeardown.ts`'s corrected docblock claim, CR-02). A file that DOES call `runTeardownAsserted(` but whose `const PREFIX` this guard fails to parse is a completeness failure, not a legitimate exclusion — see the `unparsed` check below (an enumeration guard with no completeness check is the same failure mode as fake-guard finding F4 above).
+ * Deliberately excludes files with no `const PREFIX = '...'` declaration AND no `runTeardownAsserted(` call (e.g. `candidate-journey.teardown.ts`, which performs no prefix-scoped delete — see `assertTeardown.ts`'s docblock). A file that DOES call `runTeardownAsserted(` but whose `const PREFIX` this guard fails to parse is a completeness failure, not a legitimate exclusion — see the `unparsed` check below (an enumeration guard with no completeness check fails the same way the orphan-probe guard above prevents).
  *
- * ENUMERATION SCOPE (review finding IN-02). Scans all of `TESTS_DIR`, not `TESTS_DIR/setup`, even though all 28 `*.teardown.ts` files live under `setup/` today. The teardown projects' `testMatch` patterns are unanchored regexes (e.g. `/base\.teardown\.ts/`) evaluated against the inherited `testDir` — which is `TESTS_DIR` — so a `*.teardown.ts` added anywhere under it would be PICKED UP AND RUN by Playwright. Scoping the scan to `setup/` left exactly that file invisible to the uniqueness check: the same enumeration-drift shape as fake-guard finding F4, one level up from where WR-03 fixed it. Matching the scan to the runner's own scope keeps the two from drifting apart again, which a convention ("put teardowns in setup/") would not.
+ * ENUMERATION SCOPE. Scans all of `TESTS_DIR`, not `TESTS_DIR/setup`, even though all 28 `*.teardown.ts` files live under `setup/` today. The teardown projects' `testMatch` patterns are unanchored regexes (e.g. `/base\.teardown\.ts/`) evaluated against the inherited `testDir` — which is `TESTS_DIR` — so a `*.teardown.ts` added anywhere under it would be PICKED UP AND RUN by Playwright. Scoping the scan to `setup/` would leave exactly that file invisible to the uniqueness check: the same enumeration drift the orphan-probe guard above prevents. Matching the scan to the runner's own scope keeps the two from drifting apart, which a convention ("put teardowns in setup/") would not.
  */
 const teardownDir = TESTS_DIR;
 // Named precondition, mirroring the ORPHAN-PROBE guard's `fs.existsSync` check above. Without it, a missing/renamed tests directory would die on a raw `readdirSync` ENOENT — the opposite of the "fails immediately and by name" property this guard claims for itself.
 if (!fs.existsSync(teardownDir)) {
   throw new Error(
     `Teardown prefix guard: expected directory '${teardownDir}' does not exist. The ` +
-      'teardown-prefix-uniqueness guard (review CR-01) cannot enumerate *.teardown.ts ' +
+      'teardown-prefix-uniqueness guard cannot enumerate *.teardown.ts ' +
       'files without it.'
   );
 }
@@ -149,7 +146,7 @@ if (unparsedTeardownPrefixFiles.length > 0) {
     "Teardown prefix guard could not parse a `const PREFIX = '...'` declaration in " +
       `${unparsedTeardownPrefixFiles.join(', ')}, but the file calls runTeardownAsserted — so its ` +
       'prefix is NOT covered by the uniqueness/overlap check below and a collision could reappear ' +
-      'silently (review WR-03; same enumeration-drift shape as fake-guard finding F4). Make ' +
+      'silently. Make ' +
       "the declaration match `const PREFIX = '...'` (a plain top-level string literal), or widen the " +
       'regex above to cover the new shape.'
   );
@@ -162,8 +159,8 @@ for (let i = 0; i < teardownPrefixDeclarations.length; i++) {
       throw new Error(
         `Teardown prefix collision: '${a.file}' and '${b.file}' both declare PREFIX = '${a.prefix}'. ` +
           `The two data-teardown projects are not guaranteed to be ordered relative to each other, so ` +
-          `their runTeardownAsserted before/after row counts can race nondeterministically (` +
-          `review CR-01). Give one of them its own dedicated prefix — and, if it reuses a shared dev-seed ` +
+          `their runTeardownAsserted before/after row counts can race nondeterministically. ` +
+          `Give one of them its own dedicated prefix — and, if it reuses a shared dev-seed ` +
           `template, its own dedicated template registration too (see ` +
           `packages/dev-seed/src/templates/e2e/perm/perm-bankauth-notloc.ts for the pattern).`
       );
@@ -174,7 +171,7 @@ for (let i = 0; i < teardownPrefixDeclarations.length; i++) {
         `Teardown prefix overlap: '${shorter.file}' declares PREFIX = '${shorter.prefix}', which is a ` +
           `string-prefix of '${longer.file}'s PREFIX = '${longer.prefix}'. Both are matched by the SAME ` +
           `\`external_id LIKE '${shorter.prefix}%'\` scan, so the shorter prefix's teardown/count also ` +
-          `touches the longer prefix's rows (review CR-01 + WR-06). Choose non-overlapping prefixes.`
+          `touches the longer prefix's rows. Choose non-overlapping prefixes.`
       );
     }
   }
@@ -189,7 +186,7 @@ const BASE_PROJECTS: Array<Project> = [
   // === Shared base auth setup (DEFAULT-ON) ===
   //
   // The specialized projects below depend on `data-setup-base` for their seed.
-  // performance / a11y-smoke / candidate-a11y-scan run by default (opt-OUT via PLAYWRIGHT_NO_*); visual-regression (PLAYWRIGHT_VISUAL) and bank-auth (PLAYWRIGHT_BANK_AUTH) are opt-IN and are excluded from the default run -- see the OPT-IN list in the docblock above and the gate expressions on each project below. `auth-setup` (candidate storageState) also depends on `data-setup-base`, and is now declared UNCONDITIONALLY, so the default `yarn test:e2e` DOES run the candidate-login storageState step.
+  // performance / a11y-smoke / candidate-a11y-scan run by default (opt-OUT via PLAYWRIGHT_NO_*); visual-regression (PLAYWRIGHT_VISUAL) and bank-auth (PLAYWRIGHT_BANK_AUTH) are opt-IN and are excluded from the default run -- see the OPT-IN list in the docblock above and the gate expressions on each project below. `auth-setup` (candidate storageState) also depends on `data-setup-base`, and is declared UNCONDITIONALLY, so the default `yarn test:e2e` DOES run the candidate-login storageState step.
   //
   // SOURCE OF TRUTH: the `...(process.env.X ? [...] : [])` gate expression on each project below decides whether it runs, not any prose in this file.
   // If a comment and a gate disagree, the gate is right and the comment is a bug.
@@ -199,23 +196,23 @@ const BASE_PROJECTS: Array<Project> = [
   // visual-regression stays opt-in for a snapshot-portability reason, NOT a blocker: its PNG baselines are Linux/x86_64 captures and only reproduce on the CI runner image (re-baseline procedure in the visual spec's docblock).
   // The CI job that runs it is blocking.
   //
-  // TWO projects consume the candidate storageState: `visual-regression` (opt-in) and `candidate-a11y-scan` (default-on). The second is why `auth-setup` is no longer gated behind PLAYWRIGHT_VISUAL. `performance`, `a11y-smoke` and `bank-auth` still depend on `data-setup-base` directly, not on auth-setup.
+  // TWO projects consume the candidate storageState: `visual-regression` (opt-in) and `candidate-a11y-scan` (default-on). The second is why `auth-setup` is not gated behind PLAYWRIGHT_VISUAL. `performance`, `a11y-smoke` and `bank-auth` still depend on `data-setup-base` directly, not on auth-setup.
   //
-  // WHY THIS WIRING AND NOT THE TWO THIS FILE ALREADY WARNS ABOUT. Reaching the candidate `(protected)` routes forces a dependency-graph change, and the comment at the `data-setup-bank-auth-journey` project below records this same graph being reasoned about wrongly twice. So the choice was MEASURED rather than re-argued: six candidate wirings were scored against an instrument transcribed from Playwright's own phase assignment and validated at 0 mismatches over 89 projects against a real run. The two rejected shapes are named there:
-  //   · adding `auth-setup` to `a11y-smoke.dependencies` (W1) would make the 16 voter a11y tests depend on a candidate login and cost `a11y-smoke` its 1-setup isolation; · appending the scan to the tail of the perm serial chain (W5) would enter as the 55th scheduling phase, after 25 `test-` pre-clears, with the last `app_settings` REPLACE being a perm setup rather than `data-setup-base`.
-  // The wiring below (W3) puts the scan in the third scheduling phase alongside `candidate-journey` alone — measured, not predicted: 0 mismatches over 91 scheduled projects.
+  // WHY THIS WIRING AND NOT THE TWO THIS FILE ALREADY WARNS ABOUT. Reaching the candidate `(protected)` routes forces a dependency-graph change, and the comment at the `data-setup-bank-auth-journey` project below shows how easily this graph is reasoned about wrongly. So the choice is MEASURED: six candidate wirings were scored against an instrument transcribed from Playwright's own phase assignment and validated at 0 mismatches over 89 projects against a real run. The two rejected shapes:
+  //   · adding `auth-setup` to `a11y-smoke.dependencies` would make the 16 voter a11y tests depend on a candidate login and cost `a11y-smoke` its 1-setup isolation; · appending the scan to the tail of the perm serial chain would enter as the 55th scheduling phase, after 25 `test-` pre-clears, with the last `app_settings` REPLACE being a perm setup rather than `data-setup-base`.
+  // The wiring below puts the scan in the third scheduling phase alongside `candidate-journey` alone — measured, not predicted: 0 mismatches over 91 scheduled projects.
   //
   // Auth setup - logs in as candidate, saves storageState (depends on the merged base dataset being seeded). Declared UNCONDITIONALLY: the default-on `candidate-a11y-scan` project below consumes the stored session.
   {
     name: 'auth-setup',
-    // ANCHORED, and it has to be. `testMatch` is an unanchored regex tested against the whole path, so the previous `/auth\.setup\.ts/` also matched `setup/admin/admin-auth.setup.ts` — MEASURED, not hypothesised: `--list` collected the admin setup under BOTH this project and `data-setup-admin-auth`, which would have written the admin stored session twice, from two projects, at two different points in the schedule (once here, before the perm chain, and once at the chain's tail). Two projects writing one session file is the race this config's own comments warn about, and it has no symptom until it produces a confident wrong answer. The `[\\/]` prefix is what makes `-auth.setup.ts` stop matching while `shared/auth.setup.ts` still does.
+    // ANCHORED, and it has to be. `testMatch` is an unanchored regex tested against the whole path, so an unanchored `/auth\.setup\.ts/` also matches `setup/admin/admin-auth.setup.ts` — MEASURED, not hypothesised: `--list` then collects the admin setup under BOTH this project and `data-setup-admin-auth`, which would write the admin stored session twice, from two projects, at two different points in the schedule (once here, before the perm chain, and once at the chain's tail). Two projects writing one session file is the race this config's own comments warn about, and it has no symptom until it produces a confident wrong answer. The `[\\/]` prefix is what makes `-auth.setup.ts` stop matching while `shared/auth.setup.ts` still does.
     testMatch: /[\\/]auth\.setup\.ts$/,
     dependencies: ['data-setup-base']
   },
 
-  // === Specialized Projects === performance / a11y-smoke run BY DEFAULT in `yarn test:e2e`.
-  // Opt OUT of either with the matching PLAYWRIGHT_NO_* env, e.g.:
-  //   PLAYWRIGHT_NO_PERF=1 yarn test:e2e PLAYWRIGHT_NO_A11Y=1 yarn test:e2e visual-regression and bank-auth stay OPT-IN (see the notes above): PLAYWRIGHT_VISUAL=1 npx playwright test -c tests/playwright.config.ts --project=visual-regression PLAYWRIGHT_BANK_AUTH=1 npx playwright test -c tests/playwright.config.ts --project=bank-auth
+  // === Specialized Projects ===
+  //
+  // performance / a11y-smoke run BY DEFAULT in `yarn test:e2e`; opt OUT of either with the matching PLAYWRIGHT_NO_* env: `PLAYWRIGHT_NO_PERF=1 yarn test:e2e`, `PLAYWRIGHT_NO_A11Y=1 yarn test:e2e`. visual-regression and bank-auth stay OPT-IN (see the notes above): `PLAYWRIGHT_VISUAL=1 npx playwright test -c tests/playwright.config.ts --project=visual-regression`, `PLAYWRIGHT_BANK_AUTH=1 npx playwright test -c tests/playwright.config.ts --project=bank-auth`.
 
   // Visual regression: screenshot comparison for key pages (OPT-IN — see the snapshot-portability note above; the CI job itself is blocking).
   ...(process.env.PLAYWRIGHT_VISUAL
@@ -279,15 +276,15 @@ const BASE_PROJECTS: Array<Project> = [
       ]
     : []),
 
-  // Bank-auth full-browser journey (EFLOW-10b) — the Option-B mock-OIDC-issuer round-trip: /candidate/preregister → mock IdP 302 → server exchange+decrypt → authenticated → election/constituency → email+ToU → preregister() → registration-key → set password → logged-in.
+  // Bank-auth full-browser journey — the mock-OIDC-issuer round-trip: /candidate/preregister → mock IdP 302 → server exchange+decrypt → authenticated → election/constituency → email+ToU → preregister() → registration-key → set password → logged-in.
   //
-  // OPT-IN (PLAYWRIGHT_BANK_AUTH). It JOINS THE TAIL OF THE PERM SERIAL CHAIN (see `dependencies` below). An earlier design had it stand alone; that was superseded by explicit operator decision, because standing alone bought a fast isolated gate at the cost of `app_settings` singleton safety, and the singleton wins. The isolated `--project=bank-auth-journey` gate therefore now pulls the whole chain transitively and takes full-suite time rather than seconds — accepted, because there is no requirement that this journey be runnable quickly in isolation.
+  // OPT-IN (PLAYWRIGHT_BANK_AUTH). It JOINS THE TAIL OF THE PERM SERIAL CHAIN (see `dependencies` below), by explicit operator decision: standing alone would buy a fast isolated gate at the cost of `app_settings` singleton safety, and the singleton wins. An isolated `--project=bank-auth-journey` run therefore pulls the whole chain transitively and takes full-suite time rather than seconds — accepted, because there is no requirement that this journey be runnable quickly in isolation.
   //
-  // Review finding CR-01 is FIXED (commit `10ca954ac`): `submitElection()` / `submitConstituency()` in `candidatePreregisterPage.fixture.ts` select by LABEL, not by position, so a foreign dataset in the DB fails the walk loudly instead of being silently preregistered into. Proven by trace — `check` fires on the `[EL1]` option.
+  // `submitElection()` / `submitConstituency()` in `candidatePreregisterPage.fixture.ts` select by LABEL, not by position, so a foreign dataset in the DB fails the walk loudly instead of being silently preregistered into. Proven by trace — `check` fires on the `[EL1]` option.
   //
   // The setup/teardown FILES these entries point at, and the journey SPEC matched by the `bank-auth-journey` project, all live in this tree.
   //
-  // The mock OIDC issuer is spawned via the `webServer` entry below (also PLAYWRIGHT_BANK_AUTH-gated). It binds 127.0.0.1-only and serves over HTTPS with a committed self-signed localhost cert — never reachable in the default suite (threat T-122-08).
+  // The mock OIDC issuer is spawned via the `webServer` entry below (also PLAYWRIGHT_BANK_AUTH-gated). It binds 127.0.0.1-only and serves over HTTPS with a committed self-signed localhost cert — never reachable in the default suite.
   ...(process.env.PLAYWRIGHT_BANK_AUTH
     ? [
         {
@@ -296,19 +293,19 @@ const BASE_PROJECTS: Array<Project> = [
           teardown: 'data-teardown-bank-auth-journey',
           // APPEND TO THE TAIL OF THE PERM SERIAL CHAIN.
           //
-          // `voter-prefs-tracking` is the chain's last leaf, so this setup's authoritative `app_settings` REPLACE cannot overlap any other project's. Ordering edges express ORDER, not MUTUAL EXCLUSION, and the `app_settings` JSONB singleton needs the latter — which in this config is spelled "be in the serial chain". The two cheaper-looking alternatives were both measured unsound:
-          //   · `['data-setup-base']` (the iteration-2 wiring) put this project in the SAME phase as `voter-journey` / `performance` /
+          // `voter-prefs-tracking` is the chain's last leaf, so this setup's authoritative `app_settings` REPLACE cannot overlap any other project's. Ordering edges express ORDER, not MUTUAL EXCLUSION, and the `app_settings` JSONB singleton needs the latter — which in this config is spelled "be in the serial chain". The two cheaper-looking alternatives are both measured unsound:
+          //   · `['data-setup-base']` puts this project in the SAME phase as `voter-journey` / `performance` /
           //     `a11y-smoke` (identical dependency set → identical phase, see
-          //     playwright/lib/runner/tasks.js createPhasesTask), so the REPLACE landed mid-spec under `PLAYWRIGHT_BANK_AUTH=1 yarn test:e2e`.
-          //   · `['voter-journey', 'candidate-journey']` (the review's own suggestion) merely RELOCATES the race: it lands this project in the same phase as `data-setup-perm-1e1cg1co`, the perm chain HEAD, which does the same REPLACE. Do not "fix" it that way.
+          //     playwright/lib/runner/tasks.js createPhasesTask), so the REPLACE lands mid-spec under `PLAYWRIGHT_BANK_AUTH=1 yarn test:e2e`.
+          //   · `['voter-journey', 'candidate-journey']` merely RELOCATES the race: it lands this project in the same phase as `data-setup-perm-1e1cg1co`, the perm chain HEAD, which does the same REPLACE. Do not "fix" it that way.
           //
-          // `data-setup-base` is still ordered before this project transitively (chain head → `voter-journey` → `data-setup-base`), so `base.setup`'s `extraTeardownPrefix` sweep of an orphaned `e2e-bankauth-` dataset from an aborted prior run still runs first — the property the base edge was added for is preserved.
+          // `data-setup-base` is still ordered before this project transitively (chain head → `voter-journey` → `data-setup-base`), so `base.setup`'s `extraTeardownPrefix` sweep of an orphaned `e2e-bankauth-` dataset from an aborted prior run still runs first.
           dependencies: ['voter-prefs-tracking']
         },
         {
           name: 'data-teardown-bank-auth-journey',
           testMatch: /bank-auth-journey\.teardown\.ts/,
-          // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+          // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
           retries: 0
         },
         {
@@ -344,7 +341,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-base',
     testMatch: /base\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   // `video: 'retain-on-failure'`. This project owns the term-trigger step, whose failure is a LATENCY signal, not an absence signal: the recorded occurrence's own page snapshot showed the trigger present. A trace records what the test asserted; only a video records what the page was DOING across the Base-2 → Base-3 hop while the budget expired. Bounded by construction — this project runs ONE test, and a green run produces zero video bytes.
@@ -368,7 +365,7 @@ const BASE_PROJECTS: Array<Project> = [
 
   // cold-entry-dataroot — LEAF. Read-only cold/direct-URL entry regression for the dataRoot #version-bridge alias-indirection staleness. Reads the base dataset read-only (no teardown of its own). `testMatch` is scoped to the cold-entry spec; `voter-journey`'s `testMatch` (/voter-journey\.spec\.ts/) excludes this file, so neither project picks up the other's specs.
   //
-  // The spec is split across TWO projects on the `@cand-session` tag (phase 159). Its voter cases must run UNAUTHENTICATED — that is what makes them a public-route cold entry — while the candidate case cannot reach `/candidate/questions` at all without a stored session. One project cannot be both, and a `test.use({ storageState })` inside the spec would have to spell the session path a third time, which `STORAGE_STATE`'s own declaration comment above rules out. This is the same split, for the same reason, that the a11y family already makes between `a11y-smoke` and `candidate-a11y-scan`. `grep`/`grepInvert` are complementary over the one tag, so every test in the file belongs to exactly one project and none can be silently orphaned.
+  // The spec is split across TWO projects on the `@cand-session` tag. Its voter cases must run UNAUTHENTICATED — that is what makes them a public-route cold entry — while the candidate case cannot reach `/candidate/questions` at all without a stored session. One project cannot be both, and a `test.use({ storageState })` inside the spec would have to spell the session path a third time, which `STORAGE_STATE`'s own declaration comment above rules out. This is the same split, for the same reason, that the a11y family already makes between `a11y-smoke` and `candidate-a11y-scan`. `grep`/`grepInvert` are complementary over the one tag, so every test in the file belongs to exactly one project and none can be silently orphaned.
   {
     name: 'cold-entry-dataroot',
     testDir: './tests/specs/voter',
@@ -431,13 +428,13 @@ const BASE_PROJECTS: Array<Project> = [
 
   // === _probes (fixtures-first isolation probes) — LEAF, no data-setup ===
   //
-  // The 4 deferred perm-seeded probes (video, questionInfo, popupNotice, orgMatching) live under ./tests/specs/_probes. They are DELIBERATELY OUTSIDE the perm serial-DAG chain: each clobbers the shared `app_settings` JSONB singleton, so they MUST run ONE-AT-A-TIME in true isolation, seeded OUT-OF-BAND per the probe header (`yarn db:seed --template <perm>`) and invoked as a single-file run (`npx playwright test <probe> --project=_probes`). There is intentionally NO data-setup dependency — folding the perm seeds into the shared serial chain would clobber app_settings between probes. The isolation contract lives in the RUN discipline, not in a setup project.
+  // Probe specs live under ./tests/specs/_probes. The one there, `defaultTemplateResults`, measures the `default` template, which no gate project seeds. A probe is DELIBERATELY OUTSIDE the gate suite: it runs ONE-AT-A-TIME, seeded OUT-OF-BAND per its header, as a single-file run (`npx playwright test <probe> --project=_probes`). There is intentionally NO data-setup dependency: the isolation contract lives in the RUN discipline, not in a setup project.
   //
-  // Because they need out-of-band per-probe seeding, these probes are EXCLUDED from the default green-suite / CI gate: the root `test:e2e` script runs `--grep-invert @probe`. Run them via `yarn test:e2e:probes <probe-file>` (one at a time, after `yarn db:seed --template <perm>`). Every probe test is tagged `@probe` for this filter.
+  // Because they need out-of-band per-probe seeding, these probes are EXCLUDED from the default green-suite / CI gate: the root `test:e2e` script runs `--grep-invert @probe`. Run them via `yarn test:e2e:probes <probe-file>` (one at a time, after the seed each probe's header names). Every probe test is tagged `@probe` for this filter.
   //
   // `testMatch` lists the probe files EXPLICITLY, and every `*.probe.spec.ts` in this directory must appear in it. That is the invariant: a probe file not named here matches NO project and is reachable from NO command.
   //
-  // It has been violated before. Four base/read-only probes (entityFilters/navMenu/theme/trackingIntercept), added as fixture-development scaffolding, were left out of this pattern — so their 6 tests ran from nowhere, including from `yarn test:e2e:probes`, while still sitting in `specs/` implying coverage (fake-guard sweep 2026-08-11, finding F4). They were DELETED rather than wired up, because every fixture method they smoke-tested is now exercised by a spec that runs in the blocking default suite, in each case at least as strongly: selectAll/selectNone by voter-journey.spec.ts (exact 13/0/13 counts plus the toggle-absent negative case), openMobileNav/items/expectNavMenuItems by candidate-journey.spec.ts (exact ordered 10-item list, logged-out and logged-in) and voter-journey-mobile.spec.ts, setColorScheme/expectTheme by voter-dark-mode.spec.ts (the probe's steps verbatim plus an extra reload), and getTrackCalls by voter-prefs-tracking.spec.ts (emit driven through the REAL in-app consent path, which the probe documented itself as unable to arm).
+  // The ORPHAN-PROBE GUARD at the top of this file enforces it at config load.
   {
     name: '_probes',
     testDir: './tests/specs/_probes',
@@ -446,7 +443,7 @@ const BASE_PROJECTS: Array<Project> = [
     use: { ...devices['Desktop Chrome'] }
   },
 
-  // storage-cleanup — LEAF. Proves in COMMITTED state that the storage cleanup triggers actually delete: an old object must stop being served once its row stops referencing it (162.1 D-14). It owns a dedicated scratch project (`SCRATCH_PROJECT_ID` in the spec), creates and removes only its own rows and objects there, and so cannot touch the E2E project's rows; that is why it has no data-setup dependency and no teardown project. It drives no browser (API-only, hence no `use` block). It POLLS rather than waiting a fixed time, because pg_net sends a trigger's request only after the writing transaction commits, and the worker's delay is not a constant.
+  // storage-cleanup — LEAF. Proves in COMMITTED state that the storage cleanup triggers actually delete: an old object must stop being served once its row stops referencing it. It owns a dedicated scratch project (`SCRATCH_PROJECT_ID` in the spec), creates and removes only its own rows and objects there, and so cannot touch the E2E project's rows; that is why it has no data-setup dependency and no teardown project. It drives no browser (API-only, hence no `use` block). It POLLS rather than waiting a fixed time, because pg_net sends a trigger's request only after the writing transaction commits, and the worker's delay is not a constant.
   {
     name: 'storage-cleanup',
     testDir: './tests/specs/storage',
@@ -467,7 +464,7 @@ const BASE_PROJECTS: Array<Project> = [
   //
   // Depends on the journey LEAF specs so the entire perm family runs strictly AFTER base + both journeys have completed. base + perm share the `app_settings` JSONB singleton AND have mutually-destructive preclears (this setup's `extraTeardownPrefix: 'test-'` deletes base `test-e2e-base-%` rows; base setup's `e2e-perm-` preclear deletes perm rows), so without this serialization edge they would interleave and leak elections across datasets. The perm→journey direction (NOT base→perm) keeps opt-in `--project` runs (visual/perf/a11y/bank-auth) pulling only `data-setup-base` (+ auth-setup), never the perm family — base still seeds standalone.
   //
-  // `eperm07-term-trigger` is in the anchor too. Several other base leaves sit OUTSIDE it and are fine there because they do not hard-assert settings-dependent UI; this one does, twice — the category-intro page it walks through exists only while `questions.categoryIntros.show` is true, and `voterQuestionsPage.clickStart()` only while `questionsIntro.show` is. A perm setup clobbering the `app_settings` singleton mid-walk would therefore surface inside this suite's permanent regression guard for the shared navigation settle, where it would read as a settle regression rather than as the contamination flake this suite has a recorded history of.
+  // `eperm07-term-trigger` is in the anchor too. Several other base leaves sit OUTSIDE it and are fine there because they do not hard-assert settings-dependent UI; this one does, twice — the category-intro page it walks through exists only while `questions.categoryIntros.show` is true, and `voterQuestionsPage.clickStart()` only while `questionsIntro.show` is. A perm setup clobbering the `app_settings` singleton mid-walk would therefore surface inside this suite's permanent regression guard for the shared navigation settle, where it would read as a settle regression rather than as `app_settings` contamination.
   //
   // `candidate-a11y-scan` is in the anchor too. It scans authenticated candidate surfaces against the `app_settings` singleton as `data-setup-base` left it, so it must finish before the first perm setup REPLACEs that singleton. Without the edge it would still precede the perm family — but only INCIDENTALLY, because the anchor happens to name `candidate-journey`, which happens to share the scan's phase. Naming the scan directly means a later edit that moves `candidate-journey` cannot silently move the perm family ahead of it.
   //
@@ -486,7 +483,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-1e1cg1co',
     testMatch: /perm-1e1cg1co\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -498,18 +495,18 @@ const BASE_PROJECTS: Array<Project> = [
     dependencies: ['data-setup-perm-1e1cg1co']
   },
 
-  // Variant 2: perm-2e-shared (2 tests) — sequential after perm-1e1cg1co (HIGH-2)
+  // Variant 2: perm-2e-shared (2 tests) — sequential after perm-1e1cg1co
   {
     name: 'data-setup-perm-2e-shared',
     testMatch: /perm-2e-shared\.setup\.ts/,
     teardown: 'data-teardown-perm-2e-shared',
-    // Depends on the previous chain's SPEC project (not its setup), so the previous chain's spec finishes before this setup seeds. Playwright forbids setups depending on teardown projects directly, so this is the strictest ordering we can declare. Cross-chain row isolation is enforced inside `setupFromTemplate` via `extraTeardownPrefix: 'test-perm-'` (clears the whole family before seeding this template), so we don't depend on the previous chain's teardown actually finishing before this setup runs. Confirmed via Gate A 2026-05-26.
+    // Depends on the previous chain's SPEC project (not its setup), so the previous chain's spec finishes before this setup seeds. Playwright forbids setups depending on teardown projects directly, so this is the strictest ordering we can declare. Cross-chain row isolation is enforced inside `setupFromTemplate` via `extraTeardownPrefix: 'test-perm-'` (clears the whole family before seeding this template), so we don't depend on the previous chain's teardown actually finishing before this setup runs.
     dependencies: ['perm-1e1cg1co']
   },
   {
     name: 'data-teardown-perm-2e-shared',
     testMatch: /perm-2e-shared\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -532,7 +529,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-2e-asymmetric',
     testMatch: /perm-2e-asymmetric\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -555,7 +552,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-startfromcg',
     testMatch: /perm-startfromcg\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -578,7 +575,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-disjoint-1co',
     testMatch: /perm-disjoint-1co\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -601,7 +598,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-disable-election-1co',
     testMatch: /perm-disable-election-1co\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -624,7 +621,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-disable-election-2co',
     testMatch: /perm-disable-election-2co\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -647,7 +644,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-not-located-2e2cg',
     testMatch: /perm-not-located-2e2cg\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -675,7 +672,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-candidate-journey',
     testMatch: /candidate-journey\.teardown\.ts/,
-    // reason: candidate-journey.teardown.ts performs no prefix delete (it only calls unregisterCandidate — CR-02), so there is no runTeardownAsserted accounting to mask here. Set to 0 anyway for consistency with every other data-teardown-* project, so a future edit that adds a delete + runTeardownAsserted call to this file inherits the non-retrying posture by default rather than needing a new opt-in.
+    // reason: candidate-journey.teardown.ts performs no prefix delete (it only calls unregisterCandidate), so there is no runTeardownAsserted accounting to mask here. Set to 0 anyway for consistency with every other data-teardown-* project, so a future edit that adds a delete + runTeardownAsserted call to this file inherits the non-retrying posture by default rather than needing a new opt-in.
     retries: 0
   },
   {
@@ -692,11 +689,11 @@ const BASE_PROJECTS: Array<Project> = [
 
   // === settings-permutation chains ===
   //
-  // Chained sequentially among themselves (perm-access-disable → perm-per-app-notifications) per the perm-* family precedent. The former per-app maintenance pair (voter-app + candidate-app disable) was CONSOLIDATED into the single perm-access-disable node, which re-seeds the app_settings singleton per access mode in-spec.
+  // Chained sequentially among themselves (perm-access-disable → perm-per-app-notifications) per the perm-* family precedent. The single perm-access-disable node covers the voter-app, candidate-app and maintenance modes, re-seeding the app_settings singleton per access mode in-spec.
   //
   // Parallel-safety: each perm template uses a distinct externalIdPrefix ('e2e-perm-access-disable-', 'e2e-perm-notif-'), and each setup passes `extraTeardownPrefix: ['test-', 'e2e-perm-']` to pre-clear any residual rows from prior chains still mid-teardown.
 
-  // perm-access-disable (3 tests: voterApp / candidateApp / underMaintenance) — anchored on perm-not-located-2e2cg so the whole perm family is one linear sequence running strictly after the journeys. Single linear ordering eliminates all cross-chain coexistence on the shared single DB + app_settings singleton. (Takes the chain position the former voter-app-disable node occupied.)
+  // perm-access-disable (3 tests: voterApp / candidateApp / underMaintenance) — anchored on perm-not-located-2e2cg so the whole perm family is one linear sequence running strictly after the journeys. Single linear ordering eliminates all cross-chain coexistence on the shared single DB + app_settings singleton.
   {
     name: 'data-setup-perm-access-disable',
     testMatch: /perm-access-disable\.setup\.ts/,
@@ -706,7 +703,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-access-disable',
     testMatch: /perm-access-disable\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -735,7 +732,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-per-app-notifications',
     testMatch: /perm-per-app-notifications\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -757,7 +754,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-missing-nominations',
     testMatch: /perm-missing-nominations\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -779,7 +776,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-localisation-positive',
     testMatch: /perm-localisation-positive\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -792,7 +789,7 @@ const BASE_PROJECTS: Array<Project> = [
   },
 
   // ===================================================================
-  // 9 settings-permutation chains anchored on perm-localisation-positive.
+  // Settings-permutation chains anchored on perm-localisation-positive.
   // app_settings JSONB singleton clobbering forces a sequential chain — no parallel execution within the perm-* family.
   //
   // Chain order:
@@ -800,10 +797,12 @@ const BASE_PROJECTS: Array<Project> = [
   //     → perm-show-feedback-survey → perm-header-show-help
   //     → perm-hide-all-nominations → perm-hide-if-missing-answers
   //     → perm-hide-election-tags → perm-hide-category-tags
-  //     → perm-disable-allow-open (END)
+  //     → perm-disable-allow-open → perm-question-video
+  //     → perm-interactive-info → perm-org-matching
+  //     → voter-prefs-tracking (the tail; admin-access follows it)
   // ===================================================================
 
-  // A1 — perm-answers-locked. Full 3-surface coverage. Setup mints a per-perm storage state via real forceRegister + UI login, consumed by the authenticated sub-tests in perm-answers-locked.spec.ts.
+  // perm-answers-locked. Full 3-surface coverage. Setup mints a per-perm storage state via real forceRegister + UI login, consumed by the authenticated sub-tests in perm-answers-locked.spec.ts.
   {
     name: 'data-setup-perm-answers-locked',
     testMatch: /perm-answers-locked\.setup\.ts/,
@@ -813,7 +812,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-answers-locked',
     testMatch: /perm-answers-locked\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -825,7 +824,7 @@ const BASE_PROJECTS: Array<Project> = [
     dependencies: ['data-setup-perm-answers-locked']
   },
 
-  // A2 — perm-hide-hero. Authenticated candidate via real forceRegister + UI login.
+  // perm-hide-hero. Authenticated candidate via real forceRegister + UI login.
   {
     name: 'data-setup-perm-hide-hero',
     testMatch: /perm-hide-hero\.setup\.ts/,
@@ -835,7 +834,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-hide-hero',
     testMatch: /perm-hide-hero\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -847,7 +846,7 @@ const BASE_PROJECTS: Array<Project> = [
     dependencies: ['data-setup-perm-hide-hero']
   },
 
-  // A3 — perm-show-feedback-survey. Unauthenticated voter intro + Banner header-feedback assertion + feedback-form open, EXTENDED with the results-view feedback/survey popup-coordination assertions (placement, timing/once, no-double-pop, dismiss-persistence) + the survey.showIn[] per-surface audit. Renamed in place from the former header-show-feedback node — KEEPS its position after perm-hide-hero.
+  // perm-show-feedback-survey. Unauthenticated voter intro + Banner header-feedback assertion + feedback-form open, EXTENDED with the results-view feedback/survey popup-coordination assertions (placement, timing/once, no-double-pop, dismiss-persistence) + the survey.showIn[] per-surface audit. Sequential after perm-hide-hero.
   {
     name: 'data-setup-perm-show-feedback-survey',
     testMatch: /perm-show-feedback-survey\.setup\.ts/,
@@ -857,7 +856,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-show-feedback-survey',
     testMatch: /perm-show-feedback-survey\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -869,7 +868,7 @@ const BASE_PROJECTS: Array<Project> = [
     dependencies: ['data-setup-perm-show-feedback-survey']
   },
 
-  // A4 — perm-header-show-help. Unauthenticated voter intro + Banner header-help button + /en/about URL assertion.
+  // perm-header-show-help. Unauthenticated voter intro + Banner header-help button + /en/about URL assertion.
   {
     name: 'data-setup-perm-header-show-help',
     testMatch: /perm-header-show-help\.setup\.ts/,
@@ -879,7 +878,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-header-show-help',
     testMatch: /perm-header-show-help\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -891,7 +890,7 @@ const BASE_PROJECTS: Array<Project> = [
     dependencies: ['data-setup-perm-header-show-help']
   },
 
-  // A5 — perm-hide-all-nominations. Unauthenticated; spec asserts on the 307 redirect from /en/nominations to /en.
+  // perm-hide-all-nominations. Unauthenticated; spec asserts on the 307 redirect from /en/nominations to /en.
   {
     name: 'data-setup-perm-hide-all-nominations',
     testMatch: /perm-hide-all-nominations\.setup\.ts/,
@@ -901,7 +900,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-hide-all-nominations',
     testMatch: /perm-hide-all-nominations\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -913,7 +912,7 @@ const BASE_PROJECTS: Array<Project> = [
     dependencies: ['data-setup-perm-hide-all-nominations']
   },
 
-  // A6 — perm-hide-if-missing-answers. Voter walk asserts ONLY on candidate visibility (no org count assertion).
+  // perm-hide-if-missing-answers. Voter walk asserts ONLY on candidate visibility (no org count assertion).
   {
     name: 'data-setup-perm-hide-if-missing-answers',
     testMatch: /perm-hide-if-missing-answers\.setup\.ts/,
@@ -923,7 +922,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-hide-if-missing-answers',
     testMatch: /perm-hide-if-missing-answers\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -935,7 +934,7 @@ const BASE_PROJECTS: Array<Project> = [
     dependencies: ['data-setup-perm-hide-if-missing-answers']
   },
 
-  // A7 — perm-hide-election-tags. Voter walk → /questions asserts absence of the election-tag testid.
+  // perm-hide-election-tags. Voter walk → /questions asserts absence of the election-tag testid.
   {
     name: 'data-setup-perm-hide-election-tags',
     testMatch: /perm-hide-election-tags\.setup\.ts/,
@@ -945,7 +944,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-hide-election-tags',
     testMatch: /perm-hide-election-tags\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -957,7 +956,7 @@ const BASE_PROJECTS: Array<Project> = [
     dependencies: ['data-setup-perm-hide-election-tags']
   },
 
-  // A8 — perm-hide-category-tags. Voter walk → /questions asserts absence of the category-tag testid.
+  // perm-hide-category-tags. Voter walk → /questions asserts absence of the category-tag testid.
   {
     name: 'data-setup-perm-hide-category-tags',
     testMatch: /perm-hide-category-tags\.setup\.ts/,
@@ -967,7 +966,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-hide-category-tags',
     testMatch: /perm-hide-category-tags\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -979,7 +978,7 @@ const BASE_PROJECTS: Array<Project> = [
     dependencies: ['data-setup-perm-hide-category-tags']
   },
 
-  // A9 — perm-disable-allow-open. Two describe blocks: candidate-side authenticated (via storage state minted in setup) + voter-side unauthenticated /results walk.
+  // perm-disable-allow-open. Two describe blocks: candidate-side authenticated (via storage state minted in setup) + voter-side unauthenticated /results walk.
   {
     name: 'data-setup-perm-disable-allow-open',
     testMatch: /perm-disable-allow-open\.setup\.ts/,
@@ -989,7 +988,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-disable-allow-open',
     testMatch: /perm-disable-allow-open\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -1001,7 +1000,7 @@ const BASE_PROJECTS: Array<Project> = [
     dependencies: ['data-setup-perm-disable-allow-open']
   },
 
-  // A10 — perm-question-video. Voter visibility matrix (video on q1/q3/q5 only, none on q2/q4 or any category intro) + candidate hideVideo slice (authenticated via a storage state minted in setup). Appended to the perm tail after perm-disable-allow-open.
+  // perm-question-video. Voter visibility matrix (video on q1/q3/q5 only, none on q2/q4 or any category intro) + candidate hideVideo slice (authenticated via a storage state minted in setup). Sequential after perm-disable-allow-open.
   {
     name: 'data-setup-perm-question-video',
     testMatch: /perm-question-video\.setup\.ts/,
@@ -1011,7 +1010,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-question-video',
     testMatch: /perm-question-video\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -1023,7 +1022,7 @@ const BASE_PROJECTS: Array<Project> = [
     dependencies: ['data-setup-perm-question-video']
   },
 
-  // A11 — perm-interactive-info. Voter questions-flow info matrix: popup-modal mode (interactiveInfo.enabled=true, shipped default) vs the static-expander mode (per-question re-seed), plus customData.infoSections and per-type arguments (Likert/Boolean/Categorical). Unauthenticated voter slice → no storage state. Appended to the perm tail after perm-question-video.
+  // perm-interactive-info. Voter questions-flow info matrix: popup-modal mode (interactiveInfo.enabled=true, shipped default) vs the static-expander mode (per-question re-seed), plus customData.infoSections and per-type arguments (Likert/Boolean/Categorical). Unauthenticated voter slice → no storage state. Sequential after perm-question-video.
   {
     name: 'data-setup-perm-interactive-info',
     testMatch: /perm-interactive-info\.setup\.ts/,
@@ -1033,7 +1032,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-interactive-info',
     testMatch: /perm-interactive-info\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -1045,7 +1044,7 @@ const BASE_PROJECTS: Array<Project> = [
     dependencies: ['data-setup-perm-interactive-info']
   },
 
-  // A12 — perm-org-matching. Voter results-flow organization-match matrix: matching.organizationMatching none / answersOnly / impute, re-seeded per mode. PRIMARY: exact per-mode org match scores (none → no score; answersOnly → org's own answers only, blanks penalised polar-opposite; impute → member-imputed, differs from answersOnly). SECONDARY: About-page org-matching disclosure per mode. Unauthenticated voter slice → no storage state (the results path answers in-test). Appended to the perm tail after perm-interactive-info.
+  // perm-org-matching. Voter results-flow organization-match matrix: matching.organizationMatching none / answersOnly / impute, re-seeded per mode. PRIMARY: exact per-mode org match scores (none → no score; answersOnly → org's own answers only, blanks penalised polar-opposite; impute → member-imputed, differs from answersOnly). SECONDARY: About-page org-matching disclosure per mode. Unauthenticated voter slice → no storage state (the results path answers in-test). Sequential after perm-interactive-info.
   {
     name: 'data-setup-perm-org-matching',
     testMatch: /perm-org-matching\.setup\.ts/,
@@ -1055,7 +1054,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-org-matching',
     testMatch: /perm-org-matching\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -1067,7 +1066,7 @@ const BASE_PROJECTS: Array<Project> = [
     dependencies: ['data-setup-perm-org-matching']
   },
 
-  // perm-analytics-tracking. Voter analytics-tracking emission matrix: the analytics overlay (analytics.platform.name='umami', trackEvents=true) is a singleton-clobbering app_settings node, so the tracking-payload spec (voter-prefs-tracking) is hosted HERE under its own armed singleton rather than as a base leaf. Setup depends on the previous perm SPEC (perm-org-matching, the verified tail) to preserve the strict serial chain over the shared app_settings singleton. Unauthenticated voter slice → no minted storage state. Appended to the perm tail after perm-org-matching.
+  // perm-analytics-tracking. Voter analytics-tracking emission matrix: the analytics overlay (analytics.platform.name='umami', trackEvents=true) is a singleton-clobbering app_settings node, so the tracking-payload spec (voter-prefs-tracking) is hosted HERE under its own armed singleton rather than as a base leaf. Setup depends on the previous perm SPEC (perm-org-matching, the verified tail) to preserve the strict serial chain over the shared app_settings singleton. Unauthenticated voter slice → no minted storage state. Sequential after perm-org-matching.
   {
     name: 'data-setup-perm-analytics-tracking',
     testMatch: /perm-analytics-tracking\.setup\.ts/,
@@ -1077,7 +1076,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-perm-analytics-tracking',
     testMatch: /perm-analytics-tracking\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -1090,9 +1089,9 @@ const BASE_PROJECTS: Array<Project> = [
   },
 
   // =========================================================================
-  // ADMIN APP — the first end-to-end coverage this application has ever had.
+  // ADMIN APP.
   //
-  // WHY IT JOINS THE TAIL OF THE PERM SERIAL CHAIN. `data-setup-admin-auth` takes the SAME dependency edge `data-setup-bank-auth-journey` takes — `['voter-prefs-tracking']`, the chain's last project — for the same reason recorded there by explicit operator decision: standing alone buys a fast isolated gate at the cost of `app_settings` singleton safety, and the singleton wins. The concrete hazard for THIS spec is `perm-access-disable`, which re-seeds the singleton per sub-test through `access.underMaintenance: true` — under which `routes/admin/+layout.svelte` renders `MaintenancePage` instead of the admin shell and every assertion below would be about a maintenance page. The accepted cost is that an isolated `--project=admin-access` run now pulls the whole chain and takes full-suite time rather than seconds. The measurement behind this is the phase record `158-ADMIN-E2E-SCHEDULING.md`.
+  // WHY IT JOINS THE TAIL OF THE PERM SERIAL CHAIN. `data-setup-admin-auth` takes the SAME dependency edge `data-setup-bank-auth-journey` takes — `['voter-prefs-tracking']`, the chain's last project — for the same reason recorded there by explicit operator decision: standing alone buys a fast isolated gate at the cost of `app_settings` singleton safety, and the singleton wins. The concrete hazard for THIS spec is `perm-access-disable`, which re-seeds the singleton per sub-test through `access.underMaintenance: true` — under which `routes/admin/+layout.svelte` renders `MaintenancePage` instead of the admin shell and every assertion below would be about a maintenance page. The accepted cost is that an isolated `--project=admin-access` run pulls the whole chain and takes full-suite time rather than seconds. The measurement behind this is in the planning record (see phase 158).
   //
   // THE EXPLICIT `testMatch` IS NOT BOOKKEEPING — it is the same invariant spelled out on `a11y-smoke` above. `admin-access` declares `testDir: './tests/specs/admin'` and would otherwise collect any sibling spec added to that directory later and run it under the ADMIN storageState; and, symmetrically, a project without the stored session would run the admin spec unauthenticated, every admin route would 307 to the login form, and the run would report a confident clean nothing about a login page. That is the one direction in which this wiring can be silently wrong AND green.
   // =========================================================================
@@ -1140,15 +1139,15 @@ const baseLeafNames = BASE_PROJECTS.map((p) => p.name).filter(
 const CLOSED_PROJECT_DEPENDENCIES = baseLeafNames.filter((n) => !(n in CLOSED_PROJECT_EXCLUDED_LEAVES));
 
 /**
- * TERMINAL-NODE ORDERING GUARD (162.1 D-21, threat T-162.1-31).
+ * TERMINAL-NODE ORDERING GUARD.
  *
- * Closing the one project the dev server serves blanks every voter spec that reads it, so the closed-project node must start only after every other spec has finished. The dependency list above is derived, which keeps a leaf added later ordered before the node automatically; this guard catches the two ways the derivation itself could go wrong. An empty list would schedule the node FIRST, concurrently with everything. A list without `admin-access` means the derivation no longer sees the perm chain's tail (the admin stored session this node's preview test reads also depends on it). An exclusion naming something that is no longer a leaf is a stale disposition that would silently stop meaning anything.
+ * Closing the one project the dev server serves blanks every voter spec that reads it, so the closed-project node must start only after every other spec has finished. The dependency list above is derived, which keeps a leaf added later ordered before the node automatically; this guard catches the two ways the derivation itself could go wrong. An empty list would schedule the node FIRST, concurrently with everything. A list without `admin-access` means the derivation has lost the perm chain's tail (the admin stored session this node's preview test reads also depends on it). An exclusion naming something that is not a leaf is a stale disposition that would silently stop meaning anything.
  */
 if (CLOSED_PROJECT_DEPENDENCIES.length === 0 || !CLOSED_PROJECT_DEPENDENCIES.includes('admin-access')) {
   throw new Error(
     'Terminal closed-project node: the derived leaf dependency list is ' +
       `[${CLOSED_PROJECT_DEPENDENCIES.join(', ')}], which is empty or lacks 'admin-access'. The node closes ` +
-      'the served E2E project and must run after every other leaf (162.1 D-21); fix the derivation in ' +
+      'the served E2E project and must run after every other leaf; fix the derivation in ' +
       'this file rather than hand-typing the list.'
   );
 }
@@ -1158,13 +1157,13 @@ const staleClosedProjectExclusions = Object.keys(CLOSED_PROJECT_EXCLUDED_LEAVES)
 if (staleClosedProjectExclusions.length > 0) {
   throw new Error(
     `Terminal closed-project node: CLOSED_PROJECT_EXCLUDED_LEAVES names ${staleClosedProjectExclusions.join(', ')}, ` +
-      'which is no longer a leaf. Drop the exclusion or restate its reason.'
+      'which is not a leaf. Drop the exclusion or restate its reason.'
   );
 }
 
 // perm-closed-project — TERMINAL NODE.
 //
-// It seeds `perm-closed-project`, whose `openForVoters: false` closes the E2E project, and then drives the application as anon, as a candidate and as an admin grant holder (162.1 D-05, D-16, D-17). Closing the one project the dev server serves blanks every concurrent voter spec, which is far more destructive than the `app_settings` singleton the perm chain serializes, so the node runs after EVERY leaf of the suite: its setup's dependencies are `CLOSED_PROJECT_DEPENDENCIES`, derived above rather than listed.
+// It seeds `perm-closed-project`, whose `openForVoters: false` closes the E2E project, and then drives the application as anon, as a candidate and as an admin grant holder. Closing the one project the dev server serves blanks every concurrent voter spec, which is far more destructive than the `app_settings` singleton the perm chain serializes, so the node runs after EVERY leaf of the suite: its setup's dependencies are `CLOSED_PROJECT_DEPENDENCIES`, derived above rather than listed.
 //
 // The project is reopened in three layers: the spec's `afterAll`, this node's teardown (`ensureProject()`), and the next run's global setup (`ensureProject()` again), so a crashed run cannot leave the next one closed.
 const CLOSED_PROJECT_TRIO: Array<Project> = [
@@ -1177,7 +1176,7 @@ const CLOSED_PROJECT_TRIO: Array<Project> = [
   {
     name: 'data-teardown-perm-closed-project',
     testMatch: /perm-closed-project\.teardown\.ts/,
-    // reason: the F3 accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
   {
@@ -1202,8 +1201,7 @@ const CLOSED_PROJECT_TRIO: Array<Project> = [
  *   - OPT-IN projects (excluded from the default run): · visual-regression (PLAYWRIGHT_VISUAL) — opt-in because its PNG baselines are Linux/x86_64 captures that only reproduce on the CI runner image, not because it is broken: it is a BLOCKING job in .github/workflows/main.yaml.
  *       · bank-auth (PLAYWRIGHT_BANK_AUTH) — the spec throws at module load without SUPABASE_SERVICE_ROLE_KEY/ANON_KEY and needs the identity-callback Edge Function served.
  *
- * `auth-setup` runs IN THE DEFAULT RUN (the second scheduling phase, measured
- * 5.0 s), because the default-on `candidate-a11y-scan` project consumes the candidate session it stores. It was formerly declared only under PLAYWRIGHT_VISUAL and dormant by default. The wiring's derivation is recorded at the `candidate-a11y-scan` project below.
+ * `auth-setup` runs IN THE DEFAULT RUN (the second scheduling phase, measured 5.0 s), because the default-on `candidate-a11y-scan` project consumes the candidate session it stores. The wiring's derivation is recorded at the `candidate-a11y-scan` project below.
  *
  * See https://playwright.dev/docs/test-global-setup-teardown
  */
@@ -1222,15 +1220,16 @@ export default defineConfig({
   /* Screenshot baselines stored alongside specs in a git-trackable directory */
   snapshotPathTemplate: '{testDir}/__screenshots__/{testFileName}/{arg}{ext}',
 
-  /* Per-test timeout — 90s ceiling required for full-suite render-pressured fixtures.
+  /* Per-test timeout — 90s locally and 180s on GitHub Actions, required for full-suite render-pressured fixtures.
    * Under --workers=1 full-suite contention the answer-loop + post-loop waitForURL can exceed lower budgets, so the per-test wrapper timeout is the binding constraint.
-   * Single source of the 90s ceiling: TIMEOUTS.testMax (tests/tests/helpers/timeouts.ts). */
+   * Single source of the ceiling: TIMEOUTS.testMax (tests/tests/helpers/timeouts.ts). */
   timeout: TIMEOUTS.testMax,
 
   /* Run tests in files in parallel */
   fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
+  /* Fail the build on CI if you accidentally left test.only in the source code.
+   * Also keyed on GITHUB_ACTIONS, because `tests/scripts/e2e-run.sh` unsets `CI` and the CI E2E jobs run through it. */
+  forbidOnly: !!process.env.CI || process.env.GITHUB_ACTIONS === 'true',
   /* Retry tests on CI */
   retries: process.env.CI ? 3 : 0,
   /* Opt out of parallel tests on CI. */
@@ -1241,8 +1240,8 @@ export default defineConfig({
 
   /* Visual-diff budget — the ABSOLUTE cap is the primary knob; the ratio is a small-baseline floor.
    * `maxDiffPixels: 200` is the operative budget on all four baselines this suite has today.
-   * `maxDiffPixelRatio` is RETAINED but is no longer "the budget".
-   * playwright-core's comparators.js:88-96 computes `maxDiffPixels2 = width × height × maxDiffPixelRatio` and then takes `Math.min(maxDiffPixels, maxDiffPixels2)`, so adding an absolute cap is monotonically strictness-INCREASING — it can never loosen a baseline — and `min(cap, 0.01 × area)` is bounded by `cap` however tall a fullPage capture grows. That bound is the point: before the cap, a page that grew longer silently bought itself more tolerance (1280×3684 → a 47,155 px budget), which is how ~19,500 px of visible damage once passed at 41 % of budget (0.41 % of the image).
+   * `maxDiffPixelRatio` is RETAINED, but it is not the budget.
+   * playwright-core's screenshot comparator (`comparators.js`) computes `maxDiffPixels2 = width × height × maxDiffPixelRatio` and then takes `Math.min(maxDiffPixels, maxDiffPixels2)`, so adding an absolute cap is monotonically strictness-INCREASING — it can never loosen a baseline — and `min(cap, 0.01 × area)` is bounded by `cap` however tall a fullPage capture grows. That bound is the point: under the ratio alone, a page that grows longer silently buys itself more tolerance (1280×3684 → a 47,155 px budget), enough for ~19,500 px of visible damage to pass at 41 % of budget (0.41 % of the image).
    * Derivation of the 200: `cap = max(observed per-baseline run-to-run noise) × 10`, floored at 200, rounded up, and required to stay strictly < 5,000 so it stays ~4× below that ~19,500 px regression. Read the arithmetic honestly: the measured noise was 0 px in all 40 cells (4 baselines × 10 in-container runs at zero tolerance), so `0 × 10 = 0` and THE FLOOR — a constant fixed in advance, not a quantity these runs produced — set this value. What the measurements contribute is the licence to take the floor: a noise floor of exactly 0 gives any positive cap complete headroom, and 200 sits ~83× below the ~16,650 px the same injected regression measures in this suite today.
    * Where the ratio would bind: only on a capture whose `0.01 × area` falls below the cap, i.e.
    * under ~20,000 px² of area (~140×140). The smallest baseline here, candidate-preview-mobile at 390×924, has a 3,603.6 px ratio budget — still 18× above the cap — so the ratio is DORMANT on all four baselines today and is kept only as a floor for hypothetical very small captures.
@@ -1263,7 +1262,7 @@ export default defineConfig({
      * `retain-on-failure` records exactly what `'on'` records — same instrumentation, same runtime cost — and then discards the trace when the test passes. What it buys is disk: a full-suite run under `'on'` deposits 260-340 MB of trace zips that nobody opens, because the run was green.
      * Under `retain-on-failure` a green run deposits ~0 bytes and a red one still hands you the trace for the test that actually failed (local `retries: 0` does not weaken this — the retain fires on the final failed attempt either way).
      *
-     * When a passing test's trace IS the evidence — e.g. a past sweep that grepped console messages out of 11 GREEN trace zips — flip this to `'on'` for that investigation and flip it back. That is the rare case; paying 300 MB a run for it is not worth it. Note that browser-side forensics (console / pageerror / requestfailed) are captured independently of this setting by the `forensicCapture` fixture, which
+     * When a passing test's trace IS the evidence — e.g. grepping console messages out of GREEN trace zips — flip this to `'on'` for that investigation and flip it back. That is the rare case; paying 300 MB a run for it is not worth it. Note that browser-side forensics (console / pageerror / requestfailed) are captured independently of this setting by the `forensicCapture` fixture, which
      * attaches its transcripts to the result whether the test passed or not. */
     trace: 'retain-on-failure',
 
@@ -1272,12 +1271,11 @@ export default defineConfig({
 
   projects: [...BASE_PROJECTS, ...CLOSED_PROJECT_TRIO],
 
-  // Mock OIDC issuer for the bank-auth-journey (EFLOW-10b). PLAYWRIGHT_BANK_AUTH-gated so it NEVER spawns in the default suite. Playwright manages its lifecycle (start → wait-for-port → teardown). The readiness probe hits the issuer's HTTPS JWKS endpoint; `ignoreHTTPSErrors: true` is required because the issuer's cert is self-signed (CN=127.0.0.1). The issuer is self-contained (needs no app env), so spawning it from the Playwright worker is clean — the SvelteKit frontend server's IdP-pointing env is a SEPARATE operator responsibility (documented in IDURA-TEST-RUNBOOK.md, EFLOW-10b). `reuseExistingServer` outside CI lets a hand-started issuer be reused during local iteration.
+  // Mock OIDC issuer for the bank-auth-journey. PLAYWRIGHT_BANK_AUTH-gated so it NEVER spawns in the default suite. Playwright manages its lifecycle (start → wait-for-port → teardown). The readiness probe hits the issuer's HTTPS JWKS endpoint; `ignoreHTTPSErrors: true` is required because the issuer's cert is self-signed (CN=127.0.0.1). The issuer is self-contained (needs no app env), so spawning it from the Playwright worker is clean — the SvelteKit frontend server's IdP-pointing env is a SEPARATE operator responsibility (documented in IDURA-TEST-RUNBOOK.md). `reuseExistingServer` outside CI lets a hand-started issuer be reused during local iteration.
   ...(process.env.PLAYWRIGHT_BANK_AUTH
     ? {
         webServer: {
-          // Absolute path derived from TESTS_DIR (the `tests/tests` dir). The Playwright `webServer.command` is resolved relative to the config file's directory (`tests/`), so a bare `tests/tests/support/...`
-          // relative path doubled into `tests/tests/tests/...` and failed to resolve (ERR_MODULE_NOT_FOUND). Using the absolute entry path makes the spawn cwd-independent.
+          // Absolute path derived from TESTS_DIR (the `tests/tests` dir). The Playwright `webServer.command` is resolved relative to the config file's directory (`tests/`), so a bare `tests/tests/support/...` relative path would double into `tests/tests/tests/...` and fail to resolve (ERR_MODULE_NOT_FOUND). The absolute entry path makes the spawn cwd-independent.
           command: `npx tsx ${path.join(TESTS_DIR, 'support/mockOidcIssuerEntry.ts')}`,
           url: 'https://127.0.0.1:9443/.well-known/openid-configuration/jwks',
           ignoreHTTPSErrors: true,

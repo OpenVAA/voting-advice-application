@@ -12,7 +12,7 @@ import { generateQuestionInfo } from '../src/api';
 import type { AnyQuestionVariant } from '@openvaa/data';
 import type { QuestionInfoOptions } from '../src';
 
-// Mock LLM provider (new API)
+// Mock LLM provider
 const mockLLMProvider = {
   generateObjectParallel: vi.fn()
 } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -20,18 +20,18 @@ const mockLLMProvider = {
 // Mock LLM model
 const mockLLMModel = 'gpt-4o';
 
-/** The single argument shape `generateObjectParallel` is called with (measured, not guessed). */
+/** The single argument `generateObjectParallel` is called with. */
 interface CapturedProviderCall {
   requests: Array<{ messages: Array<{ role: string; content: string }> }>;
 }
 
 /**
- * The composed prompts the mocked provider actually received, in question order.
+ * The composed prompts the mocked provider received, in question order.
  *
- * This is the only way these tests can observe what the PRODUCT computed rather than what the test itself handed the mock. Everything asserted through it is output; everything asserted about `results[i].data` alone is the canned payload coming back unchanged.
+ * Assertions on these check what the product composed. Assertions on `results[i].data` alone only see the canned payload the test handed the mock.
  */
 function capturedPrompts(): Array<string> {
-  // Ordered FIRST and kept HARD on purpose. Without this guard a zero-call regression fails as a TypeError while dereferencing the provider's recorded call — a red on the wrong axis, which is no evidence at all that a prompt was composed. Do not soften this to `expect.soft` and do not simplify it away: reaching the line below is precisely what it certifies.
+  // Assert the call first: without it, a regression that makes no call fails as a TypeError on the line below instead of as a missing call.
   expect(mockLLMProvider.generateObjectParallel).toHaveBeenCalledTimes(1);
   const [arg] = mockLLMProvider.generateObjectParallel.mock.calls[0] as [CapturedProviderCall];
   return arg.requests.map((request) => request.messages[0].content);
@@ -101,7 +101,7 @@ describe('Question Type Configurations', () => {
       expect(results[0].data.questionId).toBe('boolean-1');
       expect(results[0].data.infoSections).toBeDefined();
 
-      // The question text must reach the composed prompt. Every assertion above passes even when the prompt carries no question at all — measured by injecting `question: ''` at infoGeneration.ts:76, which leaves all seven of them green. This is the assertion that injection exists to break. Do not weaken it back to a shape that cannot see an empty prompt.
+      // The question text must reach the composed prompt: the assertions above also pass when the prompt carries no question.
       expect(capturedPrompts()[0]).toContain('Do you support universal healthcare?');
     });
 
@@ -219,13 +219,13 @@ describe('Question Type Configurations', () => {
       expect(results[0].data.questionId).toBe('ordinal-1');
       expect(results[0].data.infoSections).toBeDefined();
 
-      // W-1 — the three assertions above read only the payload this test handed the mock, so they hold no matter what the product composed. Measured, not asserted: both stayed green with the type emptied at infoGeneration.ts:104 AND with the choices emptied at :105 (`F15-A-W1-OLD-Q-1.log`, `F15-A-W1-OLD-C-1.log`, both exit 0). Paired — not replaced — with two assertions on output the PRODUCT built.
+      // The assertions above read only the canned payload. These check what the product composed.
       const prompt = capturedPrompts()[0];
 
-      // The question's structural type must reach the prompt. Read from the constant, never re-typed as a literal, so a rename of the discriminant cannot leave a stale copy asserting the old value.
+      // The question's type must reach the prompt. It is read from the constant, so renaming the discriminant cannot leave a stale literal here.
       expect(prompt).toContain(QUESTION_TYPE.SingleChoiceOrdinal);
 
-      // The load-bearing one for THIS block. A 5-point and a 7-point ordinal are both `singleChoiceOrdinal`, so the type string ALONE cannot tell Configuration 2's two tests apart — only the choice labels can, which makes this the assertion that gives the collision its guard. Asserted as the product's own joined string rather than label-by-label, so a regression in the `', '` join or in the label ORDER reds too.
+      // A 5-point and a 7-point ordinal share the type string, so only the choice labels tell them apart. Asserting the joined string also checks the `', '` join and the label order.
       expect(prompt).toContain('Very dissatisfied, Dissatisfied, Neutral, Satisfied, Very satisfied');
     });
 
@@ -293,7 +293,7 @@ describe('Question Type Configurations', () => {
       expect(results[0].data.terms).toBeDefined();
       expect(results[0].data.terms).toHaveLength(2);
 
-      // W-1, second half — same reasoning as the 5-point sibling above, and this is the assertion that makes the two ordinal tests differ OBSERVABLY from one another rather than only in the payload they handed the mock: seven labels here against the sibling's five, through the same `singleChoiceOrdinal` type string. Note this block runs the `generateTerms` prompt, so it also pins that `{{choices}}` is populated on that template and not only on `generateInfoSections`.
+      // Seven labels here against the 5-point sibling's five. This test runs the `generateTerms` template, so it also checks that `{{choices}}` is filled there.
       expect(capturedPrompts()[0]).toContain(
         'Strongly disagree, Disagree, Somewhat disagree, Neither agree nor disagree, Somewhat agree, Agree, Strongly agree'
       );
@@ -422,7 +422,7 @@ describe('Question Type Configurations', () => {
       expect(results[0].data.terms).toBeDefined();
       expect(results[0].data.terms).toHaveLength(3);
 
-      // The three assertions above read only the payload this test handed the mock, so they hold no matter what the product composed. Paired (not replaced) with an assertion about output the PRODUCT built: this question's own choice labels reaching the prompt.
+      // The assertions above read only the canned payload. This checks that the question's own choice labels reach the prompt.
       const prompt = capturedPrompts()[0];
       expect(prompt).toContain('Morning person');
       expect(prompt).toContain('Night person');
@@ -571,16 +571,28 @@ describe('Question Type Configurations', () => {
       // All results should have both infoSections and terms
       expect(results.every((r) => r.data.infoSections && r.data.terms)).toBe(true);
 
-      // These deliberately do NOT pin the exact strings this test handed the mock — mock in, mock out asserts nothing about the product, and exact equality on it is already maximal, so it cannot be strengthened in place. They point instead at the only product logic on this path that no other assertion in the file covers — responseTransformer.ts:38-46, which is NOT an identity transform. It RENAMES three provider fields on the way out.
-      //
-      // NOTE for a later reader: `processingTimeMs` here is NOT a wall-clock measurement, and this is not a `> 0`-on-a-mock decoration. The transformer copies the provider's `latencyMs` verbatim into it, so pinning its exact value asserts a RENAME — product logic. Do not "modernise" this into a `toBeGreaterThan(0)`.
+      // Both operations select the `generateBoth` template, whose `questionType` and `choices` placeholders must be filled per question
+      const [booleanPrompt, ordinalPrompt, categoricalPrompt] = capturedPrompts();
+      expect(booleanPrompt).toContain('Task 2: Term Definition Generation');
+      expect(booleanPrompt).toContain(QUESTION_TYPE.Boolean);
+      expect(ordinalPrompt).toContain(QUESTION_TYPE.SingleChoiceOrdinal);
+      expect(ordinalPrompt).toContain(
+        'Not important, Somewhat important, Important, Very important, Extremely important'
+      );
+      expect(categoricalPrompt).toContain(QUESTION_TYPE.SingleChoiceCategorical);
+      expect(categoricalPrompt).toContain(
+        'Progressive taxation, Education and training, Regulation and oversight, Other approaches'
+      );
+
+      // The response transformer renames three provider fields; these check the renames.
+      // `processingTimeMs` is the provider's `latencyMs` copied verbatim, not a wall-clock measurement, so its exact value checks the rename.
       expect(results[0].llmMetrics.processingTimeMs).toBe(10); // ← llmResponse.latencyMs
       expect(results[0].llmMetrics.nLlmCalls).toBe(1); // ← llmResponse.attempts
       expect(results[0].metadata.modelsUsed).toEqual([mockLLMModel]); // ← llmResponse.response.modelId
     });
 
     test('composes different prompts for two questions that share a name and differ only in type', async () => {
-      // ⚠ This fixture is deliberately NEW, and it is deliberately NOT a pairwise comparison of the three "Configuration" blocks above. Those use three DIFFERENTLY-NAMED questions and the question name is interpolated into the prompt, so comparing their prompts for inequality passes for the wrong reason — it would be a fake guard, which is exactly what this fixture exists to avoid. Holding the question text CONSTANT and varying only `type` is what isolates the property actually under test. Do not "simplify" this back to the existing fixtures.
+      // The Configuration fixtures above use differently named questions, and the name is part of the prompt, so comparing their prompts would pass for the wrong reason. Holding the question text constant and varying only `type` isolates the property under test.
       const sharedText = {
         name: 'Should the voting age be lowered?',
         categoryId: 'franchise-category',
@@ -633,21 +645,20 @@ describe('Question Type Configurations', () => {
 
       const [booleanPrompt, categoricalPrompt] = capturedPrompts();
 
-      // The question type must change the prompt. This is what a type-blind composition breaks: if the code reads `question.name` and nothing else, the two prompts are byte-identical.
+      // The question type must change the prompt: a composition that reads only `question.name` makes the two prompts identical.
       expect(booleanPrompt).not.toBe(categoricalPrompt);
 
-      // The answering choices must reach the prompt — the second thing a type-blind composition breaks.
+      // The answering choices must reach the prompt.
       expect(categoricalPrompt).toContain('Yes, lower it to 16');
 
-      // Supporting, not a primary target: the choices are per-question, so a boolean sibling in the SAME call must not pick up its neighbour's labels. A composition carrying no choices at all would satisfy this one too, which is why the two assertions above carry the weight.
+      // Choices are per question, so the boolean sibling in the same call must not pick up its neighbour's labels. A composition with no choices at all also passes this one, so the two assertions above carry the weight.
       expect(booleanPrompt).not.toContain('Yes, lower it to 16');
     });
   });
 
   describe('Prompt composition boundary', () => {
     test('rejects a question that arrives without a type, naming the question', async () => {
-      // The boundary guard. `throwIfVarsMissing` CANNOT catch this case: the `questionType` variable is PRESENT, just useless, so the required-param check passes and the prompt renders the literal text `undefined` (measured before the guard was added).
-      // A silent degradation wearing the costume of a loud guard is exactly what must not stand here, so the failure is asserted here rather than assumed from the `required` declaration.
+      // `throwIfVarsMissing` cannot catch this case: the `questionType` variable is present but undefined, so the required-param check passes and the prompt would render the literal text `undefined`.
       const untypedQuestion = {
         id: 'no-type-1',
         name: 'A question that never received a type'
@@ -663,12 +674,12 @@ describe('Question Type Configurations', () => {
         controller: noOpController
       } as QuestionInfoOptions;
 
-      // Anchored on purpose. The guard sits OUTSIDE `generateInfo`'s catch, which re-wraps everything it sees as `Error generating question info: ...`; anchoring at `^` is what proves the message arrives intact rather than double-prefixed. It also pins that the failing question is NAMED, so the error is actionable rather than merely loud.
+      // Anchored at `^`: the guard sits outside `generateInfo`'s catch, which would prefix the message with `Error generating question info: `. The message also names the failing question.
       await expect(generateQuestionInfo({ questions: [untypedQuestion], options })).rejects.toThrow(
         /^\[question-info\] Question 'no-type-1' \("A question that never received a type"\) has no `type`\./
       );
 
-      // And it fails BEFORE reaching the provider — the point of a boundary guard.
+      // It fails before reaching the provider.
       expect(mockLLMProvider.generateObjectParallel).not.toHaveBeenCalled();
     });
   });

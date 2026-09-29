@@ -1,19 +1,18 @@
 -- 07-rpc-security.test.sql: RPC function security tests
 --
 -- Verifies security properties of bulk_import, bulk_delete, and resolve_email_variables:
---   - bulk_import/bulk_delete are SECURITY INVOKER (RLS applies to caller)
---   - Candidate cannot insert/delete project data (RLS blocks)
---   - resolve_email_variables is SECURITY DEFINER (can read auth.users)
---   - resolve_email_variables is executable by service_role only (anon and authenticated refused, CR-01)
---   - resolve_email_variables resolves entity variables only for the project it was asked for, and refuses the call outright when the project is omitted
---   - get_nominations partitions its result by the required p_project_id rather than merely filtering it, including when two projects share an external_id, and refuses the call outright when the project is omitted
---   - get_questions does the same on both halves of its jsonb payload, categories and questions alike
+-- - bulk_import/bulk_delete are SECURITY INVOKER (RLS applies to caller)
+-- - Candidate cannot insert/delete project data (RLS blocks)
+-- - resolve_email_variables is SECURITY DEFINER (can read auth.users)
+-- - resolve_email_variables is executable by service_role only (anon and authenticated refused)
+-- - resolve_email_variables resolves entity variables only for the project it was asked for, and refuses the call outright when the project is omitted
+-- - the SECURITY DEFINER functions in `public` that anon and authenticated can execute are pinned by census
+-- - get_nominations partitions its result by the required p_project_id rather than merely filtering it, including when two projects share an external_id, and refuses the call outright when the project is omitted
+-- - get_questions does the same on both halves of its jsonb payload, categories and questions alike
 --
--- Note: bulk_import has a pre-existing ON CONFLICT issue with partial unique indexes.
--- The RPC security tests verify the SECURITY INVOKER/DEFINER model and RLS enforcement by testing the underlying operations that the RPC functions invoke.
+-- The bulk_import and bulk_delete sections assert the SECURITY INVOKER model by running the underlying operations those functions issue, not by calling the functions.
 --
--- Depends on: 00-helpers.test.sql (set_test_user, create_test_data, test_id, etc.)
---             016-bulk-operations.sql (bulk_import, bulk_delete) 017-email-helpers.sql (resolve_email_variables)
+-- Depends on: 00-helpers.test.sql (set_test_user, create_test_data, test_id, etc.), 501-bulk-operations.sql (bulk_import, bulk_delete) and 502-email-helpers.sql (resolve_email_variables).
 BEGIN;
 
 SET
@@ -63,7 +62,9 @@ SELECT
   );
 
 -- =====================================================================
--- Section 3: Candidate cannot INSERT elections (SECURITY INVOKER means RLS applies) This tests the core security model: even though bulk_import calls INSERT, the authenticated candidate's RLS policies block the operation.
+-- Section 3: Candidate cannot INSERT elections (SECURITY INVOKER means RLS applies)
+--
+-- This tests the core security model: even though bulk_import calls INSERT, the authenticated candidate's RLS policies block the operation.
 -- =====================================================================
 SELECT
   set_test_user (
@@ -177,7 +178,7 @@ SELECT
 -- =====================================================================
 -- Section 7: resolve_email_variables is callable by service_role and by nothing else
 --
--- 162-REVIEW CR-01: the function reads auth.users under owner rights and carries no authority check of its own, so EXECUTE for anon or authenticated let either read any user's email address. Its only caller is the send-email Edge Function's service-role client. The two denials are asserted against an admin -- the caller most plausibly still entitled -- and against anon; the positive assertions below then run as service_role, which is the role that must keep working.
+-- The function reads auth.users under owner rights and has no authority check of its own, so EXECUTE for anon or authenticated would let either read any user's email address. Its only caller is the send-email Edge Function's service-role client, so the denials are asserted against a project admin, the caller most plausibly entitled, and against anon, and the positive assertion runs as service_role, the role that must keep working.
 -- =====================================================================
 SELECT
   set_test_user (
@@ -191,7 +192,7 @@ SELECT
     $$SELECT count(*) FROM resolve_email_variables('00000000-0000-0000-0000-000000000001'::uuid, ARRAY['00000000-0000-0000-0000-000000000010'::uuid])$$,
     '42501',
     NULL,
-    'resolve_email_variables is NOT executable by an authenticated caller, even a project admin (CR-01)'
+    'resolve_email_variables is NOT executable by an authenticated caller, even a project admin'
   );
 
 SELECT
@@ -202,7 +203,7 @@ SELECT
     $$SELECT count(*) FROM resolve_email_variables('00000000-0000-0000-0000-000000000001'::uuid, ARRAY['00000000-0000-0000-0000-000000000010'::uuid])$$,
     '42501',
     NULL,
-    'resolve_email_variables is NOT executable by anon (CR-01)'
+    'resolve_email_variables is NOT executable by anon'
   );
 
 SELECT
@@ -230,7 +231,7 @@ SELECT
 --
 -- This function is SECURITY DEFINER and reads three project-scoped tables (candidates, organizations, nominations) for a caller-supplied list of user ids, so its own predicates are the only scoping there is: row-level security does not run for it and the only caller reaches it through a service-role client that bypasses RLS anyway.
 -- Positive control first, in section 9's shape, and for the same reason: an empty variables object for the other project would hold identically with and without a project predicate, so the assertion that the SAME user resolves its candidate name for its OWN project is what makes the zero below a measurement rather than an artefact of a fixture that resolves nothing at all.
--- Since 162-REVIEW WR-02 the recipient itself is project-bounded as well: a user is returned only when they hold a grant resolving to the requested project, so the cross-project call returns no row rather than a recipient with an empty variables object.
+-- The recipient set is project-bounded as well: a user is returned only when they hold a grant resolving to the requested project, so a cross-project call returns no row rather than a recipient with an empty variables object.
 -- =====================================================================
 SELECT
   ok (
@@ -246,7 +247,7 @@ SELECT
     'resolve_email_variables asked for project A resolves the candidate variables of project A''s own candidate (control for the project B zero below)'
   );
 
--- 162-REVIEW WR-02: the RECIPIENT set is bounded to the project too. candidate_a holds no grant that resolves to project B, so asked for project B the function returns no row for them at all -- the email address is no longer readable across tenants through send-email's dry run.
+-- candidate_a holds no grant that resolves to project B, so asked for project B the function returns no row for them, and send-email's dry run cannot read their email address across tenants.
 SELECT
   is (
     (
@@ -259,7 +260,7 @@ SELECT
         )
     )::integer,
     0,
-    'resolve_email_variables asked for project B returns NO row for a user whose only grant is in project A (WR-02)'
+    'resolve_email_variables asked for project B returns NO row for a user whose only grant is in project A'
   );
 
 -- The same bound for an admin of the OTHER tenant: admin_b administers project B and is not a recipient of project A.
@@ -271,11 +272,14 @@ SELECT
       FROM
         resolve_email_variables (
           test_id ('project_a'),
-          ARRAY[test_user_id ('admin_b'), test_user_id ('candidate_a')]
+          ARRAY[
+            test_user_id ('admin_b'),
+            test_user_id ('candidate_a')
+          ]
         )
     )::integer,
     1,
-    'resolve_email_variables asked for project A returns project A''s candidate and NOT project B''s admin (WR-02)'
+    'resolve_email_variables asked for project A returns project A''s candidate and NOT project B''s admin'
   );
 
 SELECT
@@ -308,11 +312,11 @@ SELECT
   );
 
 -- =====================================================================
--- Section 8b: the two branches sections 6-8 never enter
+-- Section 8b: the organization and no-entity-grant branches of the entity-context lookup
 --
--- 162-15 re-pointed this function's entity-context lookup from the retired role table at public.grants. The five assertions above exercise exactly ONE path through it -- a candidate-scoped identity, asked for its own project and for the other one -- so the organization arm and the no-entity-authority arm were both unexercised and a rewrite that broke either would have shipped green. Both are asserted here rather than left to the before/after output capture, because that capture lives in a plan's temp directory and these live in the estate.
+-- Sections 7 and 8 exercise only a candidate-scoped identity, so the organization arm and the arm for an identity with no entity-scope grant are asserted here.
 --
--- The organization assertion is the one with a control, and NOT the control 162-15's plan text prescribed. That text called for a variant whose candidate-before-organization preference order is reversed; measured, that reversal reddens NOTHING, because no identity in the seed or in the fixture holds both a candidate-kind and an organization-kind entity grant, so the order arbitrates an empty population. The control actually run is the failure the rewrite could really produce: the entity-kind filter narrowed from ('candidate','organization') to ('candidate'). Under it this assertion is the ONE assertion in the file that reddens -- 32 ok, 1 not ok -- so it discriminates on the population it is about.
+-- The organization assertion discriminates on its population: narrowing the entity-kind filter from ('candidate','organization') to ('candidate') fails it. A reversed candidate-before-organization preference order would not, because no identity in the fixture holds both a candidate-kind and an organization-kind entity grant.
 -- =====================================================================
 SELECT
   ok (
@@ -345,15 +349,20 @@ SELECT
   );
 
 -- =====================================================================
--- Section 8c: the SECURITY DEFINER surface PostgREST publishes (162-REVIEW WR-01)
+-- Section 8c: the SECURITY DEFINER surface PostgREST publishes
 --
--- Every SECURITY DEFINER function in `public` that an API role can EXECUTE is an `/rest/v1/rpc/<name>` endpoint that runs with owner rights. WR-01 found ten policy-only hierarchy and visibility hops there, each a cross-tenant oracle; they now live in `private`, which PostgREST does not expose. These censuses pin what is left, so a new definer function in `public` reddens here and has to be added on purpose. Trigger functions are excluded (they cannot be called as RPCs) and so are the `test_*` fixtures 00-helpers.test.sql installs.
+-- Every SECURITY DEFINER function in `public` that an API role can EXECUTE is an `/rest/v1/rpc/<name>` endpoint that runs with owner rights, so a policy-only hierarchy or visibility helper there would be a cross-tenant oracle; those helpers live in `private`, which PostgREST does not expose. These censuses pin the public surface, so a new definer function in `public` fails here and has to be added on purpose. Trigger functions are excluded (they cannot be called as RPCs), as are the `test_*` fixtures 00-helpers.test.sql installs.
 -- =====================================================================
 SELECT
   is (
     (
       SELECT
-        string_agg(p.proname, ',' ORDER BY p.proname)
+        string_agg(
+          p.proname,
+          ','
+          ORDER BY
+            p.proname
+        )
       FROM
         pg_proc p
         JOIN pg_namespace n ON n.oid = p.pronamespace
@@ -365,14 +374,19 @@ SELECT
         AND has_function_privilege('anon', p.oid, 'EXECUTE')
     ),
     'project_open_for_voters,storage_path_can,storage_path_is_public,user_can,user_has_account_grant',
-    'WR-01 census: the SECURITY DEFINER functions in public that anon can execute are exactly the five allow-listed ones'
+    'census: the SECURITY DEFINER functions in public that anon can execute are exactly the five allow-listed ones'
   );
 
 SELECT
   is (
     (
       SELECT
-        string_agg(p.proname, ',' ORDER BY p.proname)
+        string_agg(
+          p.proname,
+          ','
+          ORDER BY
+            p.proname
+        )
       FROM
         pg_proc p
         JOIN pg_namespace n ON n.oid = p.pronamespace
@@ -384,15 +398,21 @@ SELECT
         AND has_function_privilege('authenticated', p.oid, 'EXECUTE')
     ),
     'get_entity_basic_data,project_open_for_voters,storage_path_can,storage_path_is_public,user_can,user_has_account_grant',
-    'WR-01 census: the SECURITY DEFINER functions in public that authenticated can execute are the same five plus get_entity_basic_data'
+    'census: the SECURITY DEFINER functions in public that authenticated can execute are the same five plus get_entity_basic_data'
   );
 
--- The ten helpers moved, and moved to the schema policies can still reach: present in `private`, absent from `public`, and executable by both API roles (a policy runs as its caller).
+-- The ten policy-only helpers live where policies can still reach them: present in `private`, absent from `public`, and executable by both API roles (a policy runs as its caller).
 SELECT
   is (
     (
       SELECT
-        count(*) FILTER (WHERE n.nspname = 'private') || '/' || count(*) FILTER (WHERE n.nspname = 'public') || '/' || count(*) FILTER (
+        count(*) FILTER (
+          WHERE
+            n.nspname = 'private'
+        ) || '/' || count(*) FILTER (
+          WHERE
+            n.nspname = 'public'
+        ) || '/' || count(*) FILTER (
           WHERE
             n.nspname = 'private'
             AND has_function_privilege('anon', p.oid, 'EXECUTE')
@@ -416,7 +436,7 @@ SELECT
         )
     ),
     '10/0/10',
-    'WR-01: the ten policy-only helpers live in private (not public) and stay executable by anon and authenticated for policy evaluation'
+    'the ten policy-only helpers live in private (not public) and stay executable by anon and authenticated for policy evaluation'
   );
 
 -- =====================================================================
@@ -424,7 +444,6 @@ SELECT
 --
 -- The fixture ships project B CLOSED to voters and every entity it owns unconfirmed, so an anon caller cannot see any of it. Asserting a zero for project B in that state would be a zero from an empty instrument: it would hold with or without a project predicate in the function. Project B is therefore OPENED and all four of its entity tables CONFIRMED first, which leaves the project predicate as the ONLY thing separating the two projects, and the two "returns at least one row" assertions below are the positive control that says so.
 --
--- The mechanism changed at 162-08 and the intent did not. Until then this section made project B public with three `UPDATE ... SET published = true` statements against a column 162-16 has since deleted; that term is no longer read by any anon policy -- visibility moved onto `projects.open_for_voters` and the entity `confirmed` flags -- so the statements would have conferred nothing, project B would have gone dark, and five assertions here would have become zeroes from an empty instrument while still exiting zero. The assertions and their description strings are unchanged; only the statements that put the database into the state they measure.
 -- One nomination in each project is given the SAME external_id. The unique index on nominations is (project_id, external_id), so an identifier that collides across projects is a legal state that a real import produces; the adjacency assertion is that the collision neither merges the two rows nor leaks the other project's.
 -- =====================================================================
 SELECT
@@ -461,7 +480,7 @@ SET
 WHERE
   project_id = test_id ('project_b');
 
--- The nominations too, as of 162-12. This section opens project B and confirms all four of its ENTITY tables so the anon path is exercised on both projects; it used to get the NOMINATION half for free, because the column was `unconfirmed boolean DEFAULT false` and the shared fixture named no value. D-11c flips it to `confirmed boolean NOT NULL DEFAULT false` and the shared fixture now states the A-true / B-false polarity explicitly, so this flip has to be stated here too. The assertions below and their description strings are unchanged: what changed is that the fixture says what it always meant.
+-- The nominations too: the shared fixture leaves project B's nominations unconfirmed, so they are confirmed here along with the four entity tables.
 UPDATE nominations
 SET
   confirmed = true
@@ -571,8 +590,8 @@ SELECT
 
 -- Partition rather than mere filtering: the two project-scoped results add up to every confirmed nomination this fixture owns and the anon caller can see, with none dropped and none counted twice.
 --
--- The right-hand side is restricted to the fixture's own two projects. It was written by 161-02 as an unrestricted count over `nominations`, which made the assertion depend on what the database happened to hold: `create_test_data()` runs inside this file's transaction and contributes a fixed number of rows, but any dev-seed or E2E data already committed outside it was counted too. 161-03 measured the result on a database carrying 377 previously seeded nominations — `have: 4, want: 381` — a red half that says nothing about get_nominations. The clean-database precondition was never stated anywhere, so the failure presented as an intermittent mystery rather than as the test-authoring bug it is, and plan 161-07 has to prove `yarn test:e2e` green twice with no `yarn db:reset` between the runs, which an assertion coupled to pristine state cannot survive.
--- Scoping the count is not a weakening. The claim under test is that the two project-scoped calls PARTITION the fixture's nominations — each row appearing exactly once across the two results — and every way that claim can break still fails here: dropping the project predicate makes each call return both projects and the sum overshoot, dropping a row makes it undershoot, and double-counting overshoots. Both directions were probed on the live database before this was committed.
+-- The right-hand side is restricted to the fixture's own two projects, so the assertion does not depend on dev-seed or E2E data committed outside this transaction; the suite must pass on a seeded database without a reset.
+-- Scoping the count is not a weakening. The claim under test is that the two project-scoped calls PARTITION the fixture's nominations — each row appearing exactly once across the two results — and every way that claim can break still fails here: dropping the project predicate makes each call return both projects and the sum overshoot, dropping a row makes it undershoot, and double-counting overshoots.
 SELECT
   is (
     (
@@ -820,7 +839,7 @@ SELECT
     'get_questions for project B returns neither the category nor the question belonging to project A'
   );
 
--- Partition rather than mere filtering: the two project-scoped payloads add up to every question category and question these two projects own that the anon caller can see, with none dropped and none counted twice. Both table counts are restricted to the fixture's own projects, so the assertion does not depend on what dev-seed or E2E data the database happens to be carrying — the state coupling that made the get_nominations partition assertion above read `have: 4, want: 381` on a seeded database.
+-- Partition rather than mere filtering: the two project-scoped payloads add up to every question category and question these two projects own that the anon caller can see, with none dropped and none counted twice. Both table counts are restricted to the fixture's own projects, so the assertion does not depend on what dev-seed or E2E data the database happens to be carrying.
 SELECT
   is (
     jsonb_array_length(

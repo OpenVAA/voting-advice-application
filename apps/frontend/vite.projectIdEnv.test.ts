@@ -1,10 +1,10 @@
 // @vitest-environment node
 
-// The node environment is mandatory here, not a preference. This file imports `vite`, which loads esbuild, and esbuild asserts that `new TextEncoder().encode('') instanceof Uint8Array`. Under the project-wide jsdom environment that encoder comes from a different realm and the assertion is false, so esbuild refuses to load and the whole suite fails to collect.
+// The node environment is required: this file imports `vite`, which loads esbuild, and esbuild asserts `new TextEncoder().encode('') instanceof Uint8Array`. Under jsdom the encoder comes from another realm, the assertion fails and the suite does not collect.
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { resolveProjectIdEnv } from './vite.projectIdEnv';
 
 /**
@@ -14,6 +14,8 @@ import { resolveProjectIdEnv } from './vite.projectIdEnv';
  */
 describe('resolveProjectIdEnv', () => {
   const roots: Array<string> = [];
+  const shellKeys = ['PUBLIC_PROJECT_ID', 'E2E_PROJECT_ID'] as const;
+  const shellBefore = Object.fromEntries(shellKeys.map((key) => [key, process.env[key]]));
 
   function makeRoot(contents: string | null): string {
     const root = mkdtempSync(join(tmpdir(), 'openvaa-project-id-env-'));
@@ -22,8 +24,68 @@ describe('resolveProjectIdEnv', () => {
     return root;
   }
 
+  beforeEach(() => {
+    for (const key of shellKeys) delete process.env[key];
+  });
+
   afterEach(() => {
     while (roots.length) rmSync(roots.pop() as string, { recursive: true, force: true });
+    for (const key of shellKeys) {
+      if (shellBefore[key] === undefined) delete process.env[key];
+      else process.env[key] = shellBefore[key];
+    }
+  });
+
+  it('uses the env-file values when the shell sets both keys to the empty string', () => {
+    const repoRoot = makeRoot(
+      'PUBLIC_PROJECT_ID=00000000-0000-0000-0000-000000000001\nE2E_PROJECT_ID=00000000-0000-0000-0000-0000000000e2\n'
+    );
+    process.env.PUBLIC_PROJECT_ID = '';
+    process.env.E2E_PROJECT_ID = '';
+    const target: Record<string, string | undefined> = {};
+
+    const loaded = resolveProjectIdEnv({ mode: 'development', repoRoot, target });
+
+    expect(loaded.PUBLIC_PROJECT_ID).toBe('00000000-0000-0000-0000-000000000001');
+    expect(loaded.E2E_PROJECT_ID).toBe('00000000-0000-0000-0000-0000000000e2');
+    expect(target.PUBLIC_PROJECT_ID).toBe('00000000-0000-0000-0000-000000000001');
+    expect(target.E2E_PROJECT_ID).toBe('00000000-0000-0000-0000-0000000000e2');
+  });
+
+  it('leaves an empty shell value in process.env as it found it', () => {
+    const repoRoot = makeRoot(
+      'PUBLIC_PROJECT_ID=00000000-0000-0000-0000-000000000001\nE2E_PROJECT_ID=00000000-0000-0000-0000-0000000000e2\n'
+    );
+    process.env.PUBLIC_PROJECT_ID = '';
+    process.env.E2E_PROJECT_ID = '';
+
+    resolveProjectIdEnv({ mode: 'development', repoRoot, target: {} });
+
+    expect(process.env.PUBLIC_PROJECT_ID).toBe('');
+    expect(process.env.E2E_PROJECT_ID).toBe('');
+  });
+
+  it('treats a whitespace-only shell value as empty, and leaves it in process.env as it found it', () => {
+    const repoRoot = makeRoot('PUBLIC_PROJECT_ID=00000000-0000-0000-0000-000000000001\n');
+    process.env.PUBLIC_PROJECT_ID = ' ';
+    const target: Record<string, string | undefined> = {};
+
+    const loaded = resolveProjectIdEnv({ mode: 'development', repoRoot, target });
+
+    expect(loaded.PUBLIC_PROJECT_ID).toBe('00000000-0000-0000-0000-000000000001');
+    expect(target.PUBLIC_PROJECT_ID).toBe('00000000-0000-0000-0000-000000000001');
+    expect(process.env.PUBLIC_PROJECT_ID).toBe(' ');
+  });
+
+  it('lets a non-empty shell value win over the env file', () => {
+    const repoRoot = makeRoot('PUBLIC_PROJECT_ID=00000000-0000-0000-0000-000000000001\n');
+    process.env.PUBLIC_PROJECT_ID = '00000000-0000-0000-0000-0000000000e2';
+    const target: Record<string, string | undefined> = {};
+
+    const loaded = resolveProjectIdEnv({ mode: 'development', repoRoot, target });
+
+    expect(loaded.PUBLIC_PROJECT_ID).toBe('00000000-0000-0000-0000-0000000000e2');
+    expect(target.PUBLIC_PROJECT_ID).toBe('00000000-0000-0000-0000-0000000000e2');
   });
 
   it('copies both project-id keys out of the repo-root env file into an empty target', () => {
@@ -52,6 +114,15 @@ describe('resolveProjectIdEnv', () => {
   it('overwrites an empty-string value in the target, which carries no information', () => {
     const repoRoot = makeRoot('PUBLIC_PROJECT_ID=00000000-0000-0000-0000-000000000001\n');
     const target: Record<string, string | undefined> = { PUBLIC_PROJECT_ID: '' };
+
+    resolveProjectIdEnv({ mode: 'development', repoRoot, target });
+
+    expect(target.PUBLIC_PROJECT_ID).toBe('00000000-0000-0000-0000-000000000001');
+  });
+
+  it('overwrites a whitespace-only value in the target', () => {
+    const repoRoot = makeRoot('PUBLIC_PROJECT_ID=00000000-0000-0000-0000-000000000001\n');
+    const target: Record<string, string | undefined> = { PUBLIC_PROJECT_ID: '  ' };
 
     resolveProjectIdEnv({ mode: 'development', repoRoot, target });
 

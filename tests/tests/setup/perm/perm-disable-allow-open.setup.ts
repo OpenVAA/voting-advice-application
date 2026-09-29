@@ -9,6 +9,7 @@
 import { expect, test as setup } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
+import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials';
@@ -21,7 +22,7 @@ const PREFIX = 'e2e-perm-no-allowopen-';
 export const STORAGE_STATE_PATH = path.join(TESTS_DIR, '../playwright/.auth/perm-disable-allow-open.json');
 
 /**
- * Wait for the candidate-app login form to be visible, reloading up to `maxAttempts - 1` times if the backend is cold-starting. Mirrors the canonical helper in `auth.setup.ts:23-57`.
+ * Wait for the candidate-app login form to be visible, reloading up to `maxAttempts - 1` times if the backend is cold-starting. Mirrors `waitForLoginForm` in `auth.setup.ts`.
  */
 async function waitForLoginForm(page: Page, loginRoute: string, emailTestId: string, maxAttempts = 3): Promise<void> {
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -38,7 +39,7 @@ async function waitForLoginForm(page: Page, loginRoute: string, emailTestId: str
 }
 
 setup('import perm-disable-allow-open dataset + mint candidate session', async ({ page }) => {
-  setup.setTimeout(90000);
+  setup.setTimeout(TIMEOUTS.testMax);
 
   await setupFromTemplate('perm-disable-allow-open', {
     extraTeardownPrefix: ['test-', 'e2e-perm-']

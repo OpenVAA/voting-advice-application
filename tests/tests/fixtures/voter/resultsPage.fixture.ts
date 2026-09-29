@@ -175,7 +175,7 @@ export function createResultsPage(page: Page) {
     /**
      * Org-match-score readout. Asserts the match-score callout for the organization/party card matching `target` is visible, and returns its value as an integer percentage so the spec can assert the EXACT per-mode score (the org-matching mode produces a distinguishable score per mode — the spec re-seeds the singleton per mode and compares the read-out value).
      *
-     * Reads the RESULTS-LIST card callout (`testIds.voter.results.matchScore`, rendered by MatchScore.svelte as the "<n>%" header readout) scoped to the matched card — NOT the `score-gauge` testid, which only renders inside the entity-details SubMatches drawer (trace-confirmed).
+     * Reads the RESULTS-LIST card callout (`testIds.voter.results.matchScore`, rendered by MatchScore.svelte as the "<n>%" header readout) scoped to the matched card — NOT the `score-gauge` testid, which only renders inside the entity-details SubMatches drawer.
      * The target card scopes the callout; no org-scoped disambiguation id is needed.
      */
     async expectOrgMatchScore(target: Target): Promise<number> {
@@ -186,6 +186,26 @@ export function createResultsPage(page: Page) {
       const match = text.match(/(\d+)\s*%/);
       expect(match, `match-score callout "${text}" did not contain an <n>% readout`).not.toBeNull();
       return Number((match as RegExpMatchArray)[1]);
+    },
+
+    /**
+     * Assert the organization/party card matching `target` renders WITHOUT its own match-score callout, so neither a score nor a placeholder 0% is shown. This is the `organizationMatching: 'none'` contract, under which parties are listed but not matched. The card's member-candidate subcards keep their own scores, so the count excludes the callouts inside `entity-card-subcard`.
+     *
+     * A single count cannot prove an absence on its own, because it could run before the callout mounts. So the check first waits for a member subcard's score: once that has rendered, matching has run for the card, and the count is taken after it. The card must therefore list at least one member with a score, as it does under `cardContents.organization: ['children']`.
+     */
+    async expectNoOrgMatchScore(target: Target): Promise<void> {
+      const card = await this.getEntityCard(target);
+      await expect(card).toBeVisible();
+      const subcardScores = card
+        .getByTestId(testIds.voter.results.cardSubcard)
+        .getByTestId(testIds.voter.results.matchScore);
+      await expect(
+        subcardScores.first(),
+        'a member subcard shows its match score, so matching has rendered for this card'
+      ).toBeVisible();
+      const all = await card.getByTestId(testIds.voter.results.matchScore).count();
+      const inSubcards = await subcardScores.count();
+      expect(all - inSubcards, 'the organization card must carry no match-score callout of its own').toBe(0);
     },
 
     /**

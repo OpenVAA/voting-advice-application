@@ -15,6 +15,11 @@ describe('getLocalized', () => {
     expect(getLocalized({ en: 'Hello', fi: 'Hei' }, 'sv', 'en')).toBe('Hello');
   });
 
+  it('prefers the default locale over the first key (tier 2)', () => {
+    expect(getLocalized({ fi: 'a', en: 'b' }, 'sv', 'en')).toBe('b');
+    expect(getLocalized({ fi: 'a', en: 'b' }, 'fi', 'en')).toBe('a');
+  });
+
   it('falls back to first available key when neither requested nor default found (tier 3)', () => {
     expect(getLocalized({ fi: 'Hei', sv: 'Hej' }, 'de', 'en')).toBe('Hei');
   });
@@ -40,11 +45,7 @@ describe('getLocalized', () => {
   });
 
   /**
-   * The declared parameter type is an ASSERTION at the only call site that matters.
-   *
-   * `localizeRow` hands over a raw `jsonb` column behind a `as Record<string, string> | null | undefined` cast, and no column it localizes carries a constraint: `name` / `short_name` / `info` are declared as bare `jsonb` in `102-entities.sql` and `103-questions.sql`, and `is_localized_string` — the function that would enforce the shape — is defined but referenced by ZERO constraints, its only caller being `validate_answer_value`. So `UPDATE candidates SET name = '"Ada"'::jsonb` is accepted by the database today, and `bulk_import` builds its column list from the JSON keys it is handed.
-   *
-   * The consequence of throwing here is not a dropped field: `localizeRow` runs from `toDataObject` over EVERY row of the provider's entity, question and constituency reads, so one malformed row would throw out of the read that contains it and fail the page load — against this phase's own stated posture (`parseJsonbColumn.ts:42`, `:69`: one malformed row must not fail the read that contains it, T-157-06).
+   * The declared parameter type is not enforced by the database: the localized columns are bare `jsonb`, so a row can hold a scalar, an array, or an object whose values are not strings. `localizeRow` runs over every row of a read, so each of these must degrade to `null` rather than throw.
    */
   describe('is total for any JSONB value the database can hold', () => {
     it('returns null for a scalar, which no constraint prevents a localized column from holding', () => {
@@ -55,13 +56,25 @@ describe('getLocalized', () => {
     });
 
     it('returns null for an array rather than its first element', () => {
-      // Arrays pass an `in` test because they are objects, so the tier-3 branch used to return `'a'` for this — a value the SQL counterpart raises on.
+      // Arrays are objects, so without the guard the first-key tier would return `'a'`.
       expect(getLocalized(['a', 'b'] as never, 'en')).toBeNull();
       expect(getLocalized([] as never, 'en')).toBeNull();
     });
 
+    it('returns null when the matching tier holds a non-string', () => {
+      expect(getLocalized({ en: 42 } as never, 'en')).toBeNull();
+      expect(getLocalized({ en: null } as never, 'en')).toBeNull();
+      expect(getLocalized({ en: { nested: 'x' } } as never, 'en')).toBeNull();
+    });
+
+    it('skips a non-string tier and falls through to the next one', () => {
+      expect(getLocalized({ fi: 42, en: 'Hello' } as never, 'fi', 'en')).toBe('Hello');
+      expect(getLocalized({ en: null, fi: 'x' } as never, 'en', 'en')).toBe('x');
+      expect(getLocalized({ sv: 1, de: null, fi: 'Hei' } as never, 'en', 'en')).toBe('Hei');
+    });
+
     it('does not throw for any of them', () => {
-      for (const value of [JSON.parse('"plain name"'), 42, true, ['a'], []]) {
+      for (const value of [JSON.parse('"plain name"'), 42, true, ['a'], [], { en: 42 }, { en: null }]) {
         expect(() => getLocalized(value as never, 'en')).not.toThrow();
       }
     });

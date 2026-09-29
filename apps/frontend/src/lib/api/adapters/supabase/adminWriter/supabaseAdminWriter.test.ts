@@ -57,7 +57,7 @@ function createMockSupabaseClient() {
 /**
  * Every table name `from` was called with, in call order.
  *
- * Counted rather than checked for membership: a deleted derivation round-trip is only observable as a table that is no longer reached at all.
+ * Counted rather than checked for membership, so an extra table access fails the assertion.
  * @param client - The mock client under test.
  * @returns The table names.
  */
@@ -104,7 +104,7 @@ async function withCapturedLogs<TResult>(
 
 /**
  * Narrow a `sendEmail` result to its success arm, failing the test when it is not one.
- * `sendEmail` returns a discriminated union since the malformed branch stopped reporting an unverified success, and `expect(...).toBe('success')` does not narrow a type. This does, so the reads below stay direct property accesses rather than casts.
+ * `sendEmail` returns a discriminated union, and `expect(...).toBe('success')` does not narrow a type. This does, so the reads below stay direct property accesses rather than casts.
  * @param result - The value `sendEmail` resolved to.
  * @returns The same value, narrowed to the success arm.
  */
@@ -128,8 +128,8 @@ describe('SupabaseAdminWriter', () => {
     writer = new SupabaseAdminWriter(config);
   });
 
-  describe('callerMayOnProject (162-REVIEW WR-03)', () => {
-    it('asks user_can about the adapter\'s own project and answers true only for a literal true', async () => {
+  describe('callerMayOnProject', () => {
+    it("asks user_can about the adapter's own project and answers true only for a literal true", async () => {
       mockSupabase.rpc.mockResolvedValue({ data: true, error: null });
       await expect(writer.callerMayOnProject('project.edit_questions')).resolves.toBe(true);
       expect(mockSupabase.rpc).toHaveBeenCalledWith('user_can', {
@@ -197,7 +197,7 @@ describe('SupabaseAdminWriter', () => {
       const result = await writer.insertJobResult({
         data: {
           jobId: 'j1',
-          // reason: legacy fixture string predates AdminFeature union; cast keeps test green without widening prod types
+          // reason: the fixture's job type is outside the AdminFeature union; the cast avoids widening the production type
           jobType: 'generateArguments' as unknown as AdminFeature,
           electionId: 'e1',
           author: 'admin@test.com',
@@ -206,7 +206,7 @@ describe('SupabaseAdminWriter', () => {
       });
 
       expect(result).toEqual({ type: 'success' });
-      // The elections round-trip that used to answer "which project is this job in?" is gone: one table access, not two.
+      // The project comes from the adapter's configuration, so the insert is the only table access.
       expect(tablesReached(mockSupabase)).toEqual(['admin_jobs']);
       const [payload] = insertPayloadsFor(mockSupabase, 'admin_jobs');
       expect(payload.project_id).toBe(PROJECT_ID);
@@ -236,7 +236,7 @@ describe('SupabaseAdminWriter', () => {
         writer.insertJobResult({
           data: {
             jobId: 'j2',
-            // reason: legacy fixture string predates AdminFeature union; cast keeps test green without widening prod types
+            // reason: the fixture's job type is outside the AdminFeature union; the cast avoids widening the production type
             jobType: 'generateArguments' as unknown as AdminFeature,
             electionId: 'e1',
             author: 'a',
@@ -250,18 +250,18 @@ describe('SupabaseAdminWriter', () => {
   describe('sendEmail', () => {
     it('invokes send-email Edge Function and returns result', async () => {
       mockSupabase.functions.invoke.mockResolvedValue({
-        data: { sent: 5, failed: 0, results: [] },
+        data: { success: true, sent: 5, failed: 0, dry_run: false, results: [] },
         error: null
       });
 
       const result = await writer.sendEmail({
-        templates: { default: { subject: 's', text: 't', html: 'h' } },
+        templates: { default: { subject: 's', body: 'b' } },
         recipientUserIds: ['u1', 'u2']
       });
 
       expect(mockSupabase.functions.invoke).toHaveBeenCalledWith('send-email', {
         body: {
-          templates: { default: { subject: 's', text: 't', html: 'h' } },
+          templates: { default: { subject: 's', body: 'b' } },
           recipient_user_ids: ['u1', 'u2'],
           project_id: PROJECT_ID,
           from: undefined,
@@ -273,7 +273,7 @@ describe('SupabaseAdminWriter', () => {
 
     it('passes from and dryRun options', async () => {
       mockSupabase.functions.invoke.mockResolvedValue({
-        data: { sent: 0, failed: 0, results: [] },
+        data: { success: true, dry_run: true, results: [] },
         error: null
       });
 
@@ -360,7 +360,7 @@ describe('SupabaseAdminWriter', () => {
 
     it('surfaces a malformed payload as a typed failure and reports it once, rather than claiming an unverified success', async () => {
       mockSupabase.functions.invoke.mockResolvedValue({
-        data: { sent: 2, failed: 0, results: [{ status: 'sent' }] },
+        data: { success: true, sent: 2, failed: 0, dry_run: false, results: [{ status: 'sent' }] },
         error: null
       });
 
@@ -368,11 +368,30 @@ describe('SupabaseAdminWriter', () => {
         writer.sendEmail({ templates: {}, recipientUserIds: ['u1'] })
       );
 
-      // The branch this replaced returned a fully-populated success object reporting no outcomes, which is a write path reporting a result it never verified (T-157.1-13). The caller now gets the failure discriminant it already speaks.
       expect(result).toEqual({ type: 'failure' });
       expect(records).toHaveLength(1);
       expect(records[0].severityText).toBe('ERROR');
       expect(records[0].attributes?.issues).toEqual(['results.0.user_id', 'results.0.email']);
+    });
+
+    it('reports a payload with no `success` as a failure, even when its counts and results are well formed', async () => {
+      mockSupabase.functions.invoke.mockResolvedValue({
+        data: {
+          sent: 1,
+          failed: 0,
+          dry_run: false,
+          results: [{ user_id: 'u1', email: 'a@example.com', status: 'sent' }]
+        },
+        error: null
+      });
+
+      const { result, records } = await withCapturedLogs(() =>
+        writer.sendEmail({ templates: {}, recipientUserIds: ['u1'] })
+      );
+
+      expect(result).toEqual({ type: 'failure' });
+      expect(records).toHaveLength(1);
+      expect(records[0].attributes?.issues).toEqual(['success']);
     });
 
     it('reports an invocation that answers with no body at all as a failure', async () => {
@@ -389,11 +408,13 @@ describe('SupabaseAdminWriter', () => {
     });
 
     it('keeps every part of the payload out of the failure record', async () => {
-      // The payload carries recipient addresses and rendered message bodies, so a sentinel is planted in each and the whole serialised record is asserted clean (T-157.1-15 / T-157-17). The refused KEY names are disclosed by design and are not values.
+      // The payload carries recipient addresses and rendered message bodies, so a sentinel is planted in each and the whole serialised record is asserted clean. The refused key names are disclosed by design and are not values.
       mockSupabase.functions.invoke.mockResolvedValue({
         data: {
+          success: true,
           sent: 1,
           failed: 0,
+          dry_run: false,
           results: [{ user_id: 'u1', email: 'sentinel-recipient@example.com', body: 'sentinel-message-body' }],
           sentinelTopLevelKey: 'sentinel-top-level-value'
         },

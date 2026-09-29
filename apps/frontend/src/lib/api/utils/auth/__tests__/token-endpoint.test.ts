@@ -1,11 +1,11 @@
 /**
  * OIDC Token exchange endpoint tests.
  *
- * Tests the POST handler that exchanges an authorization code for an id_token via the active identity provider (from).
+ * Tests the POST handler that exchanges an authorization code for an id_token via the active identity provider.
  *
  * For Idura: verifies that private_key_jwt client assertion is sent with correct structure (iss, sub, aud, exp, jti).
  *
- * For Signicat: verifies that client_secret is sent (backward compat) and no client_assertion is present.
+ * For Signicat: verifies that client_secret is sent and no client_assertion is present.
  *
  * Strategy: Mock global fetch to intercept token endpoint calls and inspect the request body.
  *
@@ -37,7 +37,7 @@ const { mockServerConstants, mockPublicConstants } = vi.hoisted(() => ({
   },
   mockPublicConstants: {
     PUBLIC_IDENTITY_PROVIDER_CLIENT_ID: 'test-idura-client',
-    PUBLIC_IDENTITY_PROVIDER_TYPE: 'idura',
+    PUBLIC_IDENTITY_PROVIDER_TYPE: 'idura-ftn',
     PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT: '',
     PUBLIC_BROWSER_BACKEND_URL: '',
     PUBLIC_SERVER_BACKEND_URL: '',
@@ -69,7 +69,7 @@ vi.mock('$lib/utils/constants', () => ({
 /**
  * The rejection every Idura test below asserts against.
  *
- * `POST` wraps its whole body in `try/catch` and re-raises every failure as `error(401, { message: 'Unauthorized' })`, so the value it rejects with is a SvelteKit `HttpError` — `{ status, body }`, NOT an `Error`, and with NO `message` property. That rules out the obvious strengthening of a bare `.rejects.toThrow()`: a message matcher (`.rejects.toThrow(/claims|jwt/i)`) cannot pass here, because there is no message to match. Do not "fix" this back to a message regex — measured against the running test: `ctor=HttpError, isError=false, message=undefined, keys=['status','body']`.
+ * `POST` wraps its whole body in `try/catch` and re-raises every failure as `error(401, { message: 'Unauthorized' })`, so the value it rejects with is a SvelteKit `HttpError` — `{ status, body }`, NOT an `Error`, and with NO `message` property. That rules out the obvious strengthening of a bare `.rejects.toThrow()`: a message matcher (`.rejects.toThrow(/claims|jwt/i)`) cannot pass here, because there is no message to match. Do not change this to a message regex: the rejected value measures as `ctor=HttpError, isError=false, message=undefined, keys=['status','body']`.
  *
  * What the shape assertion buys over a bare `toThrow()`: the bare form is satisfied by ANY throw, including one raised while constructing the request — i.e. before `fetch` is ever called — while the test's own name claims the handler got as far as exchanging the code. Pairing this matcher with the `expect(capturedFetchBody).not.toBeNull()` guard that follows every call site pins BOTH halves: the token request was actually issued, and the handler then failed the documented way (`getIdTokenClaims` on the mock token) rather than some other way that happens to also throw.
  */
@@ -114,7 +114,7 @@ describe('POST /api/oidc/token (Idura - private_key_jwt)', () => {
 
   beforeEach(() => {
     capturedFetchBody = null;
-    mockPublicConstants.PUBLIC_IDENTITY_PROVIDER_TYPE = 'idura';
+    mockPublicConstants.PUBLIC_IDENTITY_PROVIDER_TYPE = 'idura-ftn';
 
     // Mock global fetch to intercept the token endpoint POST
     vi.spyOn(globalThis, 'fetch').mockImplementation(async (_input, init) => {
@@ -268,16 +268,13 @@ describe('POST /api/oidc/token (Idura - private_key_jwt)', () => {
   });
 });
 
-// ── Signicat test suite (backward compatibility) ──
+// ── Signicat test suite ──
 
-// DELIBERATELY OUT OF SCOPE, not an oversight.
+// DELIBERATELY WEAKER than the Idura suite above, not an oversight.
 //
-// The four `try { await POST(event) } catch {}` blocks below are structurally identical to the six in the Idura describe above, which DO assert `await expect(POST(event)).rejects.toMatchObject(EXPECTED_REJECTION)`.
-// These four do not, and that asymmetry is a scoping decision recorded here so the file does not read as half-migrated:
+// The four `try { await POST(event) } catch {}` blocks below are structurally identical to the six in the Idura describe above, which assert `await expect(POST(event)).rejects.toMatchObject(EXPECTED_REJECTION)`. The stronger form covers the Idura (private_key_jwt) bank-auth path; Signicat (client_secret) has no gate of its own that would catch a mistake in converting these.
 //
-//   The strengthening covered the Idura (private_key_jwt) bank-auth path. Signicat (client_secret) is a separate provider with no coverage work of its own yet; converting its assertions here would change what this describe proves without any Signicat-side gate to catch a regression in the conversion.
-//
-// The gap is real and unchanged: each block discards every rejection from the call under test, so it cannot distinguish "the handler threw at getIdTokenClaims as intended" from "the handler threw during argument construction before fetch was reached". Do NOT copy this pattern into new tests — the converted Idura blocks above are the convention. Apply the same `.rejects.toMatchObject(EXPECTED_REJECTION)` conversion, plus the reached-`fetch` guard, when Signicat coverage is next touched.
+// Each block discards every rejection from the call under test, so it cannot tell "the handler threw at getIdTokenClaims as intended" from "the handler threw during argument construction before fetch was reached". Do not copy this pattern into new tests: the Idura blocks above are the convention, and converting these means applying the same `.rejects.toMatchObject(EXPECTED_REJECTION)` plus the reached-`fetch` guard.
 describe('POST /api/oidc/token (Signicat - client_secret)', () => {
   let capturedFetchBody: URLSearchParams | null = null;
 
@@ -285,7 +282,7 @@ describe('POST /api/oidc/token (Signicat - client_secret)', () => {
     capturedFetchBody = null;
 
     // Switch to Signicat provider for these tests
-    mockPublicConstants.PUBLIC_IDENTITY_PROVIDER_TYPE = 'signicat';
+    mockPublicConstants.PUBLIC_IDENTITY_PROVIDER_TYPE = 'signicat-ftn';
     mockServerConstants.IDENTITY_PROVIDER_CLIENT_SECRET = 'test-signicat-secret';
     mockServerConstants.IDENTITY_PROVIDER_TOKEN_ENDPOINT = 'https://signicat.example/token';
 
@@ -303,7 +300,7 @@ describe('POST /api/oidc/token (Signicat - client_secret)', () => {
 
   afterEach(() => {
     // Restore to Idura defaults for other test suites
-    mockPublicConstants.PUBLIC_IDENTITY_PROVIDER_TYPE = 'idura';
+    mockPublicConstants.PUBLIC_IDENTITY_PROVIDER_TYPE = 'idura-ftn';
     mockServerConstants.IDENTITY_PROVIDER_CLIENT_SECRET = '';
     mockServerConstants.IDENTITY_PROVIDER_TOKEN_ENDPOINT = 'https://test.idura.broker/oauth2/token';
     vi.restoreAllMocks();

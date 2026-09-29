@@ -37,14 +37,12 @@ describe('mapRow', () => {
   it('maps all common column names correctly', () => {
     const row = {
       custom_data: { foo: 'bar' },
-      is_generated: false,
       organization_id: 'org-1',
       category_id: 'cat-1'
     };
     const result = mapRow(row);
     expect(result).toEqual({
       customData: { foo: 'bar' },
-      isGenerated: false,
       organizationId: 'org-1',
       categoryId: 'cat-1'
     });

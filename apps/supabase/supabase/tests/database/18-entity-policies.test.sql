@@ -1,10 +1,10 @@
 -- 18-entity-policies.test.sql: the four entity tables answer "may this caller touch this row" in one place
 --
--- The grid 162-10 is built around. Everywhere else in the estate a policy asks about a PROJECT; these four tables are where a policy asks whether a row belongs to the caller. Folding that question into `user_can ('entity', id, ...)` has one dangerous failure mode and it is SILENT: fold it too loosely and a candidate edits ANOTHER candidate's record with every pre-existing assertion still green, because a read test cannot tell "correctly permitted" from "should have been denied".
+-- Elsewhere a policy asks about a project; on these four tables a policy also asks whether a row belongs to the caller, through `user_can ('entity', id, ...)`. That question fails silently when folded too loosely: a candidate could edit another candidate's record while every read test stayed green, because a read test cannot tell "correctly permitted" from "should have been denied".
 --
--- So the evidence here is not that a candidate can edit their own row. It is a grid in which every table has a caller who MAY and a caller who MAY NOT, differing in exactly one term, with the deny half observed RED against a deliberately over-permissive predicate and the allow half against an over-strict one before the real predicate was accepted. The reddened counts are recorded in 162-10-SUMMARY.md.
+-- So the file asserts a grid in which every table has a caller who may and a caller who may not, the two differing in exactly one term, rather than only that a candidate can edit their own row.
 --
--- THE DENIAL THAT MATTERS IS THE ONE NOTHING ELSE ASSERTS. 01-tenant-isolation.test.sql proves a caller of project A cannot reach project B's entities. It does NOT prove that an entity grantee of candidate A cannot reach candidate A2 -- the same type, in the same project -- and that is precisely what a predicate mistakenly written at `project` scope would permit while every existing assertion stayed green.
+-- The denial that matters most is the one nothing else asserts. 01-tenant-isolation.test.sql proves that a caller of project A cannot reach project B's entities; this file proves that an entity grantee of candidate A cannot reach candidate A2, the same type in the same project, which a predicate mistakenly written at `project` scope would permit.
 --
 -- Depends on: 00-helpers.test.sql (set_test_user, reset_role, create_test_data, test_id, test_user_id).
 BEGIN;
@@ -17,7 +17,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (59);
+  plan (60);
 
 SELECT
   create_test_data ();
@@ -28,7 +28,7 @@ SELECT
 -- `SECURITY INVOKER`, so the caller's own row-level security decides, and `GET DIAGNOSTICS`, so the answer is the number of rows the statement actually touched rather than a value read back through a second policy.
 -- A denial under RLS is SILENT -- zero rows, no error -- so a test that only re-read the row would be asking the SELECT policy a question it means to ask the UPDATE policy.
 --
--- It updates `subtype`, which is the one column `303-column-grants.sql` grants to `authenticated` on every one of the four entity tables, so the same instrument serves all four and the table is an ARGUMENT rather than four near-identical helpers (D-21).
+-- It updates `subtype`, which is the one column `303-column-grants.sql` grants to `authenticated` on every one of the four entity tables, so the same instrument serves all four and the table is an ARGUMENT rather than four near-identical helpers.
 CREATE OR REPLACE FUNCTION entity_update_rowcount (p_table text, p_id uuid, p_value text) RETURNS integer LANGUAGE plpgsql SECURITY INVOKER AS $$
 DECLARE
   n integer;
@@ -42,7 +42,7 @@ $$;
 -- =====================================================================
 -- Extra fixture, local to this transaction
 -- =====================================================================
--- A candidate in project A that is NOT publicly visible. Every candidate the shared fixture puts in project A is `confirmed = true` and reached by a confirmed nomination, so a SELECT denial asserted against one of them would pass through the public-visibility terms and measure nothing about the entity predicate. This is the row that discriminates. (162-07b measured exactly this trap in 05-organization-admin.test.sql section 5.)
+-- A candidate in project A that is NOT publicly visible. Every candidate the shared fixture puts in project A is `confirmed = true` and reached by a confirmed nomination, so a SELECT denial asserted against one of them would pass through the public-visibility terms and measure nothing about the entity predicate. This is the row that discriminates.
 INSERT INTO
   candidates (id, project_id, first_name, last_name, confirmed)
 VALUES
@@ -99,7 +99,7 @@ VALUES
 -- =====================================================================
 -- Section 1: the candidate self-access rule, both directions (1-6)
 -- =====================================================================
--- `candidate_a` holds one grant: (entity, candidate, candidate_a, editor), written from the fixture's authority map in `test_user_grants`. Section 3.3 gives that grant `entity.edit_answers` as `own`, and for an entity grant reach is equality with the granted entity -- so `own` needs no column comparison and no second mechanism.
+-- `candidate_a` holds one grant: (entity, candidate, candidate_a, editor), written from the fixture's authority map in `test_user_grants`. The matrix gives that grant `entity.edit_answers` as `own`, and for an entity grant reach is equality with the granted entity -- so `own` needs no column comparison and no second mechanism.
 SELECT
   set_test_user (
     'authenticated',
@@ -118,7 +118,7 @@ SELECT
     'an entity grantee may update their own candidate row'
   );
 
--- THE SAME TYPE, IN THE SAME PROJECT. This is the pair that 01-tenant-isolation.test.sql does not cover and that a predicate written `user_can ('project', project_id, ...)` would permit while every pre-existing assertion stayed green.
+-- THE SAME TYPE, IN THE SAME PROJECT: the pair 01-tenant-isolation.test.sql does not cover, and that a predicate written `user_can ('project', project_id, ...)` would permit.
 SELECT
   is (
     entity_update_rowcount (
@@ -195,9 +195,9 @@ SELECT
 -- =====================================================================
 -- Section 2: the positive that makes the denial specific rather than blanket (7)
 -- =====================================================================
--- Without this, a predicate that denied EVERY update would satisfy section 1 entirely. The project-scope actor reaches the same row through the admin policy, which this plan's tracer does not touch.
+-- Without this, a predicate that denied EVERY update would satisfy section 1 entirely. The project-scope actor reaches the same row through the admin update policy.
 --
--- A project ADMIN rather than a project EDITOR, deliberately: at the commit this assertion was written `admin_update_candidates` was still gated on the project-access shim, which translated to `project.edit_project_settings` -- a permission D-09 denies to ProjEditor. The editor half of this pair lands with that policy's conversion, not here, because an assertion written now would be asserting a policy this task is forbidden to convert.
+-- The actor is a project admin; section 8 asserts the project-editor half of the boundary.
 SELECT
   set_test_user (
     'authenticated',
@@ -257,7 +257,7 @@ SELECT
 -- =====================================================================
 -- Section 4: the structural absences, read from the catalogue (10)
 -- =====================================================================
--- Read from pg_policies rather than from the file: the file carries column-listing comments that legitimately still name a column 162-16 has not deleted, so a grep of the file cannot express this and a clean grep result would be a pass from the wrong instrument. `pg_get_expr` renders predicates UNQUALIFIED, which is why every pattern below is matched against the unqualified spelling.
+-- Read from pg_policies rather than from the schema files, because the catalogue is what runs and a grep of the files would also match their comments. `pg_get_expr` renders predicates UNQUALIFIED, which is why every pattern below is matched against the unqualified spelling.
 SELECT
   reset_role ();
 
@@ -352,7 +352,7 @@ VALUES
     test_id ('project_b'),
     'admin'
   ),
-  -- A project EDITOR in project A. Section 3.3 gives it project.edit_entities and withholds project.edit_project_settings (D-09's split), which is what section 6 below asserts as a pair.
+  -- A project EDITOR in project A. The matrix gives it project.edit_entities and withholds project.edit_project_settings, which section 8 below asserts as a pair.
   (
     'cccccccc-1010-0000-0000-000000000003'::uuid,
     'project',
@@ -360,7 +360,7 @@ VALUES
     test_id ('project_a'),
     'editor'
   ),
-  -- One entity grantee per table, each on that table's own grid row. FactionEditor and AllianceEditor are grant shapes D-07 maps and that NO policy consulted before P-3(a) added the two self-update policies.
+  -- One entity grantee per table, each on that table's own grid row.
   (
     'cccccccc-1010-0000-0000-000000000004'::uuid,
     'entity',
@@ -390,7 +390,7 @@ VALUES
     'editor'
   );
 
--- The grid rows. Per table: one in project A, one in project B, one delete target in project A, and a SIBLING in project A -- the same type, the same project as the grantee's own row, which is the case no pre-existing assertion in this estate covers.
+-- The grid rows. Per table: one in project A, one in project B, one delete target in project A, and a SIBLING in project A -- the same type, the same project as the grantee's own row, which is the case 01-tenant-isolation.test.sql does not cover.
 INSERT INTO
   candidates (id, project_id, first_name, last_name)
 VALUES
@@ -769,9 +769,9 @@ SELECT
 -- =====================================================================
 -- Section 6: the entity grantee -- own row against its same-type same-project sibling (27-34)
 -- =====================================================================
--- THE ASSERTION THIS WHOLE FILE EXISTS FOR, now asked of all four types. `01-tenant-isolation.test.sql` proves a caller of project A cannot reach project B; nothing in the estate proved that an entity grantee of row A cannot reach row A2 of the SAME TYPE in the SAME PROJECT -- which is exactly what a predicate written `user_can ('project', project_id, ...)` would permit while every other assertion stayed green.
+-- The file's central assertion, asked of all four types: an entity grantee of row A cannot reach row A2 of the SAME TYPE in the SAME PROJECT, which a predicate written `user_can ('project', project_id, ...)` would permit.
 --
--- The second assertion of each pair is section 3.3's two `—` cells stated as behaviour: an entity grantee holds NEITHER project.read_entities NOR project.edit_entities, so its reach ends at its own row. Without it a predicate that added a project disjunct to the entity policies would satisfy the first assertion.
+-- The second assertion of each pair is the matrix's two withheld project cells stated as behaviour: an entity grantee holds NEITHER project.read_entities NOR project.edit_entities, so its reach ends at its own row. Without it a predicate that added a project disjunct to the entity policies would satisfy the first assertion.
 SELECT
   set_test_user (
     'authenticated',
@@ -842,7 +842,7 @@ SELECT
     'organizations: an entity grantee updates its own row and NOT its same-type same-project sibling'
   );
 
--- The two grant shapes that had NO policy to consult before P-3(a). Their beneficiary population in the real system is still zero, so these are the only assertions anywhere that exercise the write path at all.
+-- FactionEditor and AllianceEditor: these assertions exercise the faction and alliance self-update policies.
 SELECT
   set_test_user (
     'authenticated',
@@ -875,7 +875,7 @@ SELECT
       'sibling'
     ),
     '1/0',
-    'factions: an entity grantee updates its own row and NOT its same-type same-project sibling -- the cell P-3(a) made exercisable'
+    'factions: an entity grantee updates its own row and NOT its same-type same-project sibling'
   );
 
 SELECT
@@ -910,18 +910,17 @@ SELECT
       'sibling'
     ),
     '1/0',
-    'alliances: an entity grantee updates its own row and NOT its same-type same-project sibling -- the cell P-3(a) made exercisable'
+    'alliances: an entity grantee updates its own row and NOT its same-type same-project sibling'
   );
 
 -- =====================================================================
 -- Section 6b: the UPDATE denial asked against a row the caller CAN SEE (35-38)
 -- =====================================================================
--- ⚠ THIS SECTION EXISTS BECAUSE THE NEGATIVE CONTROL CAUGHT THE SECTION ABOVE NOT MEASURING WHAT IT CLAIMED.
--- PostgreSQL applies the SELECT policies as well as the UPDATE policy to an `UPDATE ... WHERE id = $1`, because the WHERE clause READS a column. The sibling rows in section 6 are unpublished and unnominated, so they are invisible to their caller -- and the zero those assertions report is produced by the SELECT policy whether or not the UPDATE predicate is sound. Measured: against a deliberately row-unbound `USING (true)` on all four self-update policies, section 6's four UPDATE denials stayed GREEN.
+-- PostgreSQL applies the SELECT policies as well as the UPDATE policy to an `UPDATE ... WHERE id = $1`, because the WHERE clause READS a column. The sibling rows in section 6 are unpublished and unnominated, so they are invisible to their caller, and the zero those UPDATE denials report comes from the SELECT policy whether or not the UPDATE predicate is sound.
 --
--- So the deny half is re-asked here against rows the caller demonstrably CAN see -- the shared fixture's project-A entities, each confirmed, nominated and therefore anon-visible, which section 9 below independently confirms. Now the SELECT policy admits the row and the UPDATE predicate is the only thing that can refuse it, which is the question these assertions are supposed to ask. Against the same `USING (true)` variant all four redden.
+-- So the deny half is asked again here against rows the caller demonstrably CAN see: the shared fixture's project-A entities, each confirmed, nominated and therefore anon-visible, which section 9 below confirms independently. The SELECT policy admits the row, and the UPDATE predicate is the only thing that can refuse it.
 --
--- Keep BOTH sections. Section 6 states that an entity grantee cannot reach its sibling AT ALL; this one states that the UPDATE predicate by itself refuses a visible sibling. Defence in depth is only defence if each layer is measured on its own.
+-- Both sections are kept: section 6 states that an entity grantee cannot reach its sibling AT ALL, and this one that the UPDATE predicate by itself refuses a visible sibling.
 SELECT
   set_test_user (
     'authenticated',
@@ -995,7 +994,7 @@ SELECT
   );
 
 -- =====================================================================
--- Section 7: the column bound on the two new write paths (39-40)
+-- Section 7: the column bound on the faction and alliance self-update paths (39-40)
 -- =====================================================================
 -- A row predicate cannot withhold a column, so the only thing standing between a faction editor and `project_id` is 303-column-grants.sql. Asked here as BEHAVIOUR, on the same caller whose allow half passed two assertions ago, rather than only as a catalogue count in 15-visibility-flags.test.sql.
 SELECT
@@ -1018,13 +1017,13 @@ SELECT
     $$UPDATE factions SET project_id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb' WHERE id = '10100003-0000-0000-0000-00000000000a'$$,
     '42501',
     NULL,
-    'factions: an entity editor that MAY update its own row still may not name project_id -- so the new write path cannot move a row between tenants'
+    'factions: an entity editor that MAY update its own row still may not name project_id -- so the self-update path cannot move a row between tenants'
   );
 
 -- =====================================================================
--- Section 8: the project-editor boundary (37-38)
+-- Section 8: the project-editor boundary (41-42)
 -- =====================================================================
--- D-07 and section 3.3: a ProjectEditor holds `project.edit_entities` -- which is why `admin_*` is now a misnomer -- and does NOT hold `project.edit_project_settings`, D-09's split. Both asked of the same caller, so the pair differs in exactly the permission under test rather than in the identity.
+-- A ProjectEditor holds `project.edit_entities`, which the `admin_*` entity policies ask, and does NOT hold `project.edit_project_settings`. Both are asked of the same caller, so the pair differs in exactly the permission under test rather than in the identity.
 SELECT
   set_test_user (
     'authenticated',
@@ -1040,7 +1039,7 @@ SELECT
       'editor'
     ),
     1,
-    'a project EDITOR may update an entity in their project -- it holds project.edit_entities, which is why admin_* is now a misnomer'
+    'a project EDITOR may update an entity in their project -- it holds project.edit_entities, which the admin_* entity policies ask'
   );
 
 SELECT
@@ -1061,13 +1060,13 @@ SELECT
         )
     )::text,
     'false/true',
-    'the same project EDITOR is denied project.edit_project_settings and allowed project.edit_entities -- D-09''s split, asked of one caller so the pair differs in exactly the permission'
+    'the same project EDITOR is denied project.edit_project_settings and allowed project.edit_entities, asked of one caller so the pair differs in exactly the permission'
   );
 
 -- =====================================================================
--- Section 9: authenticated is a SUPERSET of anon, per table (39-43)
+-- Section 9: authenticated is a SUPERSET of anon, per table (43-47)
 -- =====================================================================
--- Section 3.4 is silent on what an authenticated user with NO grant in the project may read, and the answer has always been "whatever anon may read". Since 162-10 that is literally the same expression on both halves -- one `entity_is_anon_visible` call until D-36, and since D-36 the same assembly of the same two helper calls -- so this states the relation as an equality of ID SETS rather than of counts. Two policies returning the same NUMBER of different rows is the failure a count cannot see.
+-- An authenticated user with NO grant in the project may read exactly what anon may read, and both halves carry the same assembly of the same two helper calls. The relation is stated as an equality of ID SETS rather than of counts. Two policies returning the same NUMBER of different rows is the failure a count cannot see.
 SELECT
   set_test_user ('anon');
 
@@ -1128,9 +1127,9 @@ SELECT
   );
 
 -- =====================================================================
--- Section 10: the structural properties, guarded by the estate rather than by one plan's shell (44-51)
+-- Section 10: the structural properties, read from the catalogue (48-58)
 -- =====================================================================
--- Task 4 proved each of these once, in a shell. A shell check runs when that plan runs and never again.
+-- Each property is read from the applied database, so it is checked on every run against what actually runs.
 SELECT
   reset_role ();
 
@@ -1153,7 +1152,7 @@ SELECT
         AND COALESCE(qual, '') || COALESCE(with_check, '') LIKE '%user_can%'
     ),
     20,
-    'all twenty TO authenticated policies on the four entity tables delegate to user_can -- the count is pinned, so a policy dropped rather than converted reddens here too'
+    'all twenty TO authenticated policies on the four entity tables delegate to user_can -- the count is pinned, so a dropped policy reddens here too'
   );
 
 SELECT
@@ -1181,7 +1180,7 @@ SELECT
         )
     ),
     0,
-    'no converted entity policy re-derives a rule answered elsewhere: not the two shims, not the retired self-ownership predicate, not an auth.uid() comparison, not the publication column'
+    'no authenticated entity policy re-derives a rule answered elsewhere: not can_access_project or has_role, not is_candidate_self, not an auth.uid() comparison, not the publication column'
   );
 
 SELECT
@@ -1202,12 +1201,12 @@ SELECT
         AND 'anon' = ANY (roles)
     ),
     4,
-    'the four anon entity policies are still four -- V-6(A) re-expressed them, it did not create or drop one'
+    'the four entity tables carry exactly four anon policies'
   );
 
--- ⚠ RE-POINTED BY D-36 (2026-09-17) FROM THE COMPOSITION TO THE TWO SUB-RULES IT COMPOSED. 162-10 asserted this of `entity_is_anon_visible`; that function is gone, because a SECURITY DEFINER composition calling two SECURITY DEFINER helpers pays a depth-2 per-row call and cost 271.9 ms anon against 39.4 for the direct calls. The property being asserted did not move -- SECURITY DEFINER with a pinned search_path is the escalation primitive, and D-21's "the entity type is an ARGUMENT" is the naming rule -- only the functions it is asserted OF. Both clauses now read the two helpers that survive, and `entity_has_confirmed_nomination` is the one that takes the entity type, still first.
+-- The two public-visibility helpers are SECURITY DEFINER with a pinned search_path, because a mutable search_path on a definer function is an escalation primitive, and `entity_has_confirmed_nomination` takes the entity type as its first argument rather than existing once per type.
 --
--- THE THIRD CLAUSE IS NEW AND IS THE POINT OF RE-POINTING RATHER THAN DELETING: `entity_is_anon_visible` must not EXIST. Without it the composition could be reintroduced by any later plan and nothing in the estate would say so, and D-36's whole basis is that it is not there.
+-- The third clause asserts that no composing `entity_is_anon_visible` exists: a definer function calling the two definer helpers would add a nested per-row call to every policy that used it.
 SELECT
   is (
     (
@@ -1252,10 +1251,10 @@ SELECT
         AND p.proname = 'entity_is_anon_visible'
     ),
     '2/1/0',
-    'both public-visibility sub-rules are SECURITY DEFINER with a pinned search_path and the one that discriminates on entity type takes it as its FIRST ARGUMENT (D-21, and the escalation primitive a mutable search_path would be); and the composition D-36 withdrew does not exist, so it cannot come back unremarked'
+    'both public-visibility sub-rules are SECURITY DEFINER with a pinned search_path and the one that discriminates on entity type takes it as its FIRST ARGUMENT; and no composing entity_is_anon_visible exists, so it cannot come back unremarked'
   );
 
--- The invariant the SECURITY DEFINER bypass rests on, and it now carries two plans' weight: 162-08's helpers read other tables from a policy, and 162-10 added a helper that reads the table its own policy filters. A later `ALTER TABLE ... FORCE ROW LEVEL SECURITY` on any of these six turns the recursion back on, and it would surface as a query-time error in twenty policies rather than as a schema diff.
+-- The invariant the SECURITY DEFINER bypass rests on: the helpers the policies call read these tables with owner rights, including the table the calling policy filters. An `ALTER TABLE ... FORCE ROW LEVEL SECURITY` on any of these six turns the recursion back on, and it would surface as a query-time error in twenty policies rather than as a schema diff.
 SELECT
   is (
     (
@@ -1296,11 +1295,11 @@ SELECT
     'six tables examined and none carries FORCE ROW LEVEL SECURITY -- the examined count is asserted too, so a clean answer cannot come from a query that reached nothing'
   );
 
--- D-21 MADE STRUCTURAL. For each verb family the four policy expressions, with the table name and the entity-type literal replaced by placeholders, must be ONE string. This is what makes "no predicate names a single entity type where it could take one as an argument" a checkable property of the applied database rather than a sentence in a plan -- and it is the shape 162-14 inherits for the storage policies.
+-- For each verb family the four policy expressions, with the table name and the table's own entity-type literal replaced by placeholders, must be ONE string. That makes "no predicate names a single entity type where it could take one as an argument" a checkable property of the applied database.
 --
--- ⚠ THE SELECT FAMILY IS THE ONE EXCEPTION, AND IT IS AN ACCEPTED COST OF D-36 (2026-09-17) RATHER THAN A DEFECT TO REPAIR. Under V-6(A) all eight entity SELECT policies delegated the public-visibility rule to one `entity_is_anon_visible (entity_type, id)` call, and that is what made the SELECT family collapse to one string. D-36 removed the composition -- the nesting cost 271.9 ms anon against 39.4 for the two helpers called directly -- so the rule is now ASSEMBLED in each qual, and `candidates` alone carries the two terms-of-use conjuncts, which are a property of that table and of no other. The normaliser therefore strips those two conjuncts as well, the message says so, and the assertion immediately after it pins the stripped term to exactly two of the eight policies so the strip cannot be vacuous. The stronger claim is not preserved by re-deriving it somewhere else; it is WITHDRAWN, and 162-17 owes in its place a guard holding the eight assemblies identical.
+-- The SELECT family also strips the two terms-of-use conjuncts, because `candidates` alone carries them and they are a property of that table. The assertion after it pins the stripped term to exactly two of the eight entity SELECT policies, so the strip cannot be vacuous, and 25-matrix-conformance.test.sql holds the eight public-visibility assemblies identical.
 --
--- The other four families are untouched by D-36 and still collapse to one string with no strip at all.
+-- The other four families collapse to one string with no strip at all.
 SELECT
   is (
     (
@@ -1312,35 +1311,15 @@ SELECT
             replace(
               replace(
                 replace(
-                  replace(
-                    replace(
-                      replace(
-                        replace(
-                          replace(
-                            COALESCE(qual, '-') || '~' || COALESCE(with_check, '-'),
-                            ' AND (terms_of_use_accepted IS NOT NULL) AND (terms_of_use_accepted < now())',
-                            ''
-                          ),
-                          tablename || '.',
-                          'TBL.'
-                        ),
-                        '''candidate''',
-                        'ENT'
-                      ),
-                      '''organization''',
-                      'ENT'
-                    ),
-                    '''faction''',
-                    'ENT'
-                  ),
-                  '''alliance''',
-                  'ENT'
+                  COALESCE(qual, '-') || '~' || COALESCE(with_check, '-'),
+                  ' AND (terms_of_use_accepted IS NOT NULL) AND (terms_of_use_accepted < now())',
+                  ''
                 ),
-                'candidates',
-                'TBL'
+                tablename || '.',
+                'TBL.'
               ),
-              'organizations',
-              'TBL'
+              '''' || left(tablename, -1) || '''::entity_type',
+              '''OWN_TYPE''::entity_type'
             ) AS normalised
           FROM
             pg_policies
@@ -1357,7 +1336,45 @@ SELECT
         ) f
     ),
     1,
-    'D-21 structural, SELECT family: the four entity tables'' SELECT predicates are ONE expression modulo the table name, the entity-type literal and the two terms-of-use conjuncts candidates alone carries -- narrowed by D-36 from the claim V-6(A) supported'
+    'SELECT family: the four entity tables'' SELECT predicates are ONE expression modulo the table name, the table''s own entity-type literal and the two terms-of-use conjuncts candidates alone carries'
+  );
+
+-- The SELECT-family normaliser replaces only the table's own type, so a foreign type literal would already split it into two expressions. This assertion names the property on all eight entity SELECT policies, anon ones included: each passes its own type, and none passes another table's.
+SELECT
+  is (
+    (
+      SELECT
+        count(*)::text || '/' || count(*) FILTER (
+          WHERE
+            expr LIKE '%''' || left(tablename, -1) || '''::entity_type%'
+        )::text || '/' || count(*) FILTER (
+          WHERE
+            replace(
+              expr,
+              '''' || left(tablename, -1) || '''::entity_type',
+              ''
+            ) ~ '''(candidate|organization|faction|alliance)''::entity_type'
+        )::text
+      FROM
+        (
+          SELECT
+            tablename,
+            COALESCE(qual, '-') || '~' || COALESCE(with_check, '-') AS expr
+          FROM
+            pg_policies
+          WHERE
+            schemaname = 'public'
+            AND tablename IN (
+              'organizations',
+              'candidates',
+              'factions',
+              'alliances'
+            )
+            AND cmd = 'SELECT'
+        ) p
+    ),
+    '8/8/0',
+    'all EIGHT entity SELECT policies pass their own table''s entity type, and none passes another table''s'
   );
 
 SELECT
@@ -1409,7 +1426,7 @@ SELECT
         AND 'authenticated' = ANY (roles)
     ),
     1,
-    'D-21 structural, INSERT family: one expression across the four tables'
+    'INSERT family: one expression across the four tables'
   );
 
 SELECT
@@ -1433,7 +1450,7 @@ SELECT
         AND 'authenticated' = ANY (roles)
     ),
     1,
-    'D-21 structural, DELETE family: one expression across the four tables'
+    'DELETE family: one expression across the four tables'
   );
 
 SELECT
@@ -1462,19 +1479,23 @@ SELECT
         AND 'authenticated' = ANY (roles)
     ),
     1,
-    'D-21 structural, admin UPDATE family: one expression across the four tables'
+    'admin UPDATE family: one expression across the four tables'
   );
 
--- The fifth family exists ONLY because P-3(a) added the two missing policies. Under P-3(b) the four tables would have carried two shapes and this assertion could not have been written at all.
+-- The fifth family: every entity table carries a self-update policy, and the four are one expression modulo the table name and the table's OWN entity-type literal. Only the literal `left(tablename, -1)` is normalised, so a policy that passes another table's type stays a distinct expression.
 SELECT
   is (
     (
       SELECT
         count(*)::integer || '/' || count(
           DISTINCT replace(
-            COALESCE(qual, '-') || '~' || COALESCE(with_check, '-'),
-            tablename || '.',
-            'TBL.'
+            replace(
+              COALESCE(qual, '-') || '~' || COALESCE(with_check, '-'),
+              tablename || '.',
+              'TBL.'
+            ),
+            '''' || left(tablename, -1) || '''::entity_type',
+            '''OWN_TYPE''::entity_type'
           )
         )::integer
       FROM
@@ -1492,13 +1513,13 @@ SELECT
         AND 'authenticated' = ANY (roles)
     ),
     '4/1',
-    'D-21 structural, self-update family: all FOUR tables carry one, and it is one expression -- the fifth family exists only because P-3(a) added the two that were missing'
+    'self-update family: all FOUR tables carry one, and it is one expression'
   );
 
 -- =====================================================================
--- Section 11: every privileged function in the schema, not just this plan's (58)
+-- Section 11: every privileged function in the schema pins its search_path (59)
 -- =====================================================================
--- 16-anon-visibility.test.sql pins this for 162-08's three helpers by name. 162-10 adds a fourth that a policy calls PER ROW, and the phase now has eleven -- so the claim is made over the whole schema instead of a name list, because a name list only ever covers the functions someone remembered to add to it.
+-- 16-anon-visibility.test.sql pins this for the three visibility helpers by name. Here the claim is made over the whole schema instead of a name list, because a name list only covers the functions someone remembered to add to it.
 --
 -- A mutable search_path on a SECURITY DEFINER function that reads tables the caller cannot read is a privilege-escalation primitive, not a style preference: the caller controls search_path, so it chooses which `projects` or `nominations` the owner-rights body resolves. Read from pg_proc.proconfig, because the catalogue is what runs and the file is not. The examined count is floored so `NONE` cannot come from a query that reached nothing.
 SELECT

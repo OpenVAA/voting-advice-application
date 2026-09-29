@@ -10,13 +10,13 @@
  *   - Pre-existing locale keys preserved.
  *   - LOCALES constant is hardcoded in ['en', 'fi', 'sv'] order.
  *
- * contract: pure I/O. No Supabase imports.
+ * Pure I/O: no Supabase imports.
  */
 
 import { describe, expect, it } from 'vitest';
 import { fanOutLocales, LOCALES } from '../src/locales';
 
-describe('fanOutLocales (TMPL-07)', () => {
+describe('fanOutLocales', () => {
   it('LOCALES is the hardcoded array ["en", "fi", "sv"] in exact order', () => {
     expect(LOCALES).toEqual(['en', 'fi', 'sv']);
   });
@@ -66,14 +66,14 @@ describe('fanOutLocales (TMPL-07)', () => {
     expect(typeof short.fi).toBe('string');
   });
 
-  it('does not touch non-localized fields (color, is_generated, etc.)', () => {
+  it('does not touch non-localized fields (color, sort_order, etc.)', () => {
     const rows = {
-      organizations: [{ name: { en: 'Blue' }, color: '#1a4d8f', is_generated: true }]
+      organizations: [{ name: { en: 'Blue' }, color: '#1a4d8f', sort_order: 3 }]
     };
     const result = fanOutLocales(rows, { generateTranslationsForAllLocales: true }, 42);
     const org = result.organizations[0];
     expect(org.color).toBe('#1a4d8f');
-    expect(org.is_generated).toBe(true);
+    expect(org.sort_order).toBe(3);
   });
 
   it('skips tables not in the localized-field inventory (feedback, app_settings)', () => {

@@ -23,7 +23,7 @@ import type { TestKeySet } from './providers/__fixtures__/keys';
 const { localJwksState, mockConstants, mockPublicConstants } = vi.hoisted(() => ({
   localJwksState: {
     getKey: null as unknown as ReturnType<typeof JoseType.createLocalJWKSet>,
-    // Records what production code passed to `createRemoteJWKSet`, so the `[jose.customFetch]` WIRING can be asserted and not merely the wrapper's own behaviour. Without this the option could be deleted with every test still green, and the diagnostic hole it closes would reopen silently -- which is the shape of the defect this whole change exists to fix.
+    // Records what production code passed to `createRemoteJWKSet`, so the `[jose.customFetch]` WIRING can be asserted and not merely the wrapper's own behaviour. Without this the option could be deleted with every test still green, and the diagnostic hole it closes would reopen silently.
     lastUrl: null as URL | null,
     lastOptions: null as Parameters<typeof JoseType.createRemoteJWKSet>[1] | null
   },
@@ -51,7 +51,7 @@ const { localJwksState, mockConstants, mockPublicConstants } = vi.hoisted(() => 
     PUBLIC_SERVER_FRONTEND_URL: '',
     PUBLIC_IDENTITY_PROVIDER_CLIENT_ID: 'test-client',
     PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT: '',
-    PUBLIC_IDENTITY_PROVIDER_TYPE: 'signicat',
+    PUBLIC_IDENTITY_PROVIDER_TYPE: 'signicat-ftn',
     PUBLIC_DEBUG: false,
     PUBLIC_CACHE_ENABLED: false,
     PUBLIC_SUPABASE_URL: 'http://localhost:54321',
@@ -137,7 +137,7 @@ describe('decryptAndVerifyIdToken', () => {
     rsaOaep256EncPriv = oaep256.privateKey;
     rsaOaep256EncPrivJwk = { ...(await jose.exportJWK(oaep256.privateKey)), kid: 'idura-enc-key', alg: 'RSA-OAEP-256' };
 
-    // `TestKeySet` types its JWKs as `Record<string, unknown>` (keys.ts:19,25), and `jose.JWK` is an interface, so it carries no implicit index signature -- hence the widening casts. The inverse cast has in-tree precedent at fixtures.test.ts:56,79.
+    // `TestKeySet` types its JWKs as `Record<string, unknown>` (see `keys.ts`), and `jose.JWK` is an interface, so it carries no implicit index signature -- hence the widening casts. The inverse cast has in-tree precedent in `fixtures.test.ts`.
     rsaOaepKeys = {
       signingPrivateKey,
       signingPublicKey,
@@ -233,7 +233,7 @@ describe('decryptAndVerifyIdToken', () => {
       );
 
       // Assert the CAUSE, not just that it rejected. A bare rejection is satisfied by any failure whatsoever -- a bad signature, a wrong audience, or a function that has stopped succeeding altogether -- so it cannot distinguish this test from its sibling below, whose title names a different cause.
-      // Do not weaken this back to a bare `toThrow` rejection matcher: `toThrow` matches the MESSAGE, and these messages are the leak-safe strings nothing is allowed to depend on, so pinning one makes the leak-safety comment's own advice unfollowable. Match the `code` property instead.
+      // Do not weaken this to a bare `toThrow` rejection matcher: `toThrow` matches the MESSAGE, and these messages are the leak-safe strings nothing is allowed to depend on, so pinning one makes the leak-safety comment's own advice unfollowable. Match the `code` property instead.
       await expect(
         decryptAndVerifyIdToken(jwe, {
           // Pass an empty JWK set so the empty-set branch fires
@@ -252,7 +252,7 @@ describe('decryptAndVerifyIdToken', () => {
         { encAlg: 'RSA-OAEP', issuer: 'test-issuer', audience: 'test-client' }
       );
 
-      // A DIFFERENT code from the sibling above: that fixture is a misconfiguration (no JWKs configured at all), this one is a key-rotation miss (a JWK set that does not carry the token's kid). The two codes are what make the two titles differ observably. Do not weaken this back to a bare `toThrow` rejection matcher: `toThrow` matches the MESSAGE, and this message carries the incoming kid, which the sibling below asserts must stay present -- two matchers pinning the same string is how a leak-safety rule stops being changeable.
+      // A DIFFERENT code from the sibling above: that fixture is a misconfiguration (no JWKs configured at all), this one is a key-rotation miss (a JWK set that does not carry the token's kid). The two codes are what make the two titles differ observably. Do not weaken this to a bare `toThrow` rejection matcher: `toThrow` matches the MESSAGE, and this message carries the incoming kid, which the sibling below asserts must stay present -- two matchers pinning the same string is how a leak-safety rule stops being changeable.
       await expect(
         decryptAndVerifyIdToken(jwe, {
           // Wrong key set: the Idura key won't match the Signicat kid
@@ -282,9 +282,9 @@ describe('decryptAndVerifyIdToken', () => {
   });
 
   /**
-   * The claim-binding half of verification, which had NO coverage before this block existed -- which is why the misconfiguration below survived three copies of this code.
+   * The claim-binding half of verification.
    *
-   * The first two cases prove the binding works when it is configured. The last two prove what happens when it is NOT, and they are the ones that matter: `PUBLIC_IDENTITY_PROVIDER_CLIENT_ID` and `IDENTITY_PROVIDER_ISSUER` are `?? ''`-defaulted, and jose SKIPS the value comparison for a falsy option while still passing the presence check -- so an unset variable used to mean "accept a token minted for anyone, by anyone with a key in the JWKS". Each of those two tests therefore feeds a token that an unbound verifier ACCEPTS (a foreign `aud`, a foreign `iss`) and asserts it is a coded failure here. Do not relax them into "rejects for some reason": the distinguishing property is that the token no longer gets through.
+   * The first two cases prove the binding works when it is configured. The last two prove what happens when it is NOT, and they are the ones that matter: `PUBLIC_IDENTITY_PROVIDER_CLIENT_ID` and `IDENTITY_PROVIDER_ISSUER` are `?? ''`-defaulted, and jose SKIPS the value comparison for a falsy option while still passing the presence check -- so without the guard an unset variable means "accept a token minted for anyone, by anyone with a key in the JWKS". Each of those two tests therefore feeds a token that an unbound verifier ACCEPTS (a foreign `aud`, a foreign `iss`) and asserts it is a coded failure here. Do not relax them into "rejects for some reason": the distinguishing property is that the token does not get through.
    */
   describe('claim binding', () => {
     const claimPayload = { given_name: 'Test', family_name: 'User', birthdate: '2000-01-01' };
@@ -323,9 +323,9 @@ describe('decryptAndVerifyIdToken', () => {
       ).rejects.toMatchObject({ code: 'ERR_ISSUER_UNCONFIGURED' });
     });
 
-    // The signature key set URI gets the same call-path guard as its two siblings above, and for a reason worth stating: the line that reads it used to be `constants.IDENTITY_PROVIDER_JWKS_URI!`, and that non-null assertion was FALSE -- `$lib/server/constants` flattens the value with `?? ''`, so an unset variable is an empty string and the `!` suppressed the one check that would have caught it.
+    // The signature key set URI gets the same call-path guard as its two siblings above. `$lib/server/constants` flattens the value with `?? ''`, so an unset variable is an empty string, and a `!` non-null assertion would hide exactly that case.
     //
-    // The consequence was not a bypass but an ILLEGIBLE failure. A blank value reaches `new URL('')`, which throws Node's `TypeError` with `code: 'ERR_INVALID_URL'` -- a code naming neither this variable nor the fact that it is a configuration fault, and indistinguishable at the callback's log from any other malformed url in the process. Delete the guard and these go green while a misconfigured deployment reports `ERR_INVALID_URL` instead of `ERR_JWKS_URI_UNCONFIGURED`.
+    // The consequence would not be a bypass but an ILLEGIBLE failure. A blank value reaches `new URL('')`, which throws Node's `TypeError` with `code: 'ERR_INVALID_URL'` -- a code naming neither this variable nor the fact that it is a configuration fault, and indistinguishable at the callback's log from any other malformed url in the process. Delete the guard and these go green while a misconfigured deployment reports `ERR_INVALID_URL` instead of `ERR_JWKS_URI_UNCONFIGURED`.
     //
     // Boundary neighbours of "unset": empty, a single space, tabs. Whitespace counts as unset, matching `requireConfigured` -- `IDENTITY_PROVIDER_JWKS_URI= ` in an env file is a mistake, not a value.
     it.each([
@@ -350,7 +350,7 @@ describe('decryptAndVerifyIdToken', () => {
       );
 
       expect(caught).toMatchObject({ code: 'ERR_JWKS_URI_UNCONFIGURED' });
-      // Asserting the code is NOT `ERR_INVALID_URL` is what pins the regression rather than merely the new behaviour: that is the code the un-guarded path produced.
+      // `ERR_INVALID_URL` is the code an unguarded blank value produces, so its absence is what tells the guard apart from any other throw.
       expect((caught as { code: string }).code).not.toBe('ERR_INVALID_URL');
       // Names the VARIABLE, so the log line is self-diagnosing; carries no value, so it stays safe to log.
       expect((caught as Error).message).toContain('IDENTITY_PROVIDER_JWKS_URI');

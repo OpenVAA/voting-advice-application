@@ -8,10 +8,16 @@
  *   - click:    action-ack budget — the click registered, a dropdown opened, a modal dismissed.
  *   - page:     URL-change / route-transition wait (a single navigation).
  *   - slowPage: multi-network-roundtrip + render boundary; cold-start friendly (cold deeplink, accordion re-render, /results landing after a long walk). Use sparingly.
- *   - testMax:  per-test TOTAL ceiling. This MATCHES the playwright.config global `timeout` ceiling (90s). A per-test budget ABOVE this value is a NO-OP unless the spec calls `test.setTimeout(...)`, and any value above 90s must stay inline at the call site as a named `// reason:` exception (see perm-localisation-positive 180s and voter-journey 120s). Do NOT raise this default.
+ *   - testMax:  per-test TOTAL ceiling, used as the playwright.config global `timeout`: 90s locally, 180s on GitHub Actions (see ON_GITHUB_ACTIONS). A per-test budget ABOVE this value is a NO-OP unless the spec calls `test.setTimeout(...)`, and any value above it must stay inline at the call site as a named `// reason:` exception (see voter-journey 240s; perm-localisation-positive's 180s is above the local value and equal to the GitHub Actions one). A `test.setTimeout(...)` at or below the ceiling is written in terms of `TIMEOUTS.testMax`, as in `TIMEOUTS.testMax / 2`, so that the GitHub Actions value reaches it. Raise either default only with a measured reason, recorded beside it.
  *
- * @see tests/playwright.config.ts (global `timeout: 90000` — same ceiling as testMax)
+ * @see tests/playwright.config.ts (global `timeout: TIMEOUTS.testMax`)
  */
+
+/**
+ * True on a GitHub Actions runner. GitHub sets `GITHUB_ACTIONS=true` on every job, and it reaches Playwright even when the suite runs through `tests/scripts/e2e-run.sh`, which unsets `CI`. It is unset on a developer machine.
+ */
+const ON_GITHUB_ACTIONS = process.env.GITHUB_ACTIONS === 'true';
+
 export const TIMEOUTS = {
   /** Per-element visibility/enabled budget (no URL change). */
   element: 2_000,
@@ -22,8 +28,9 @@ export const TIMEOUTS = {
   /** Multi-network-roundtrip + render boundary; cold-start friendly. Use sparingly. */
   slowPage: 10_000,
   /**
-   * Per-test total ceiling. Matches the playwright.config global timeout (90s).
-   * Values above this require an inline `test.setTimeout(...)` + `// reason:` exception.
+   * Per-test total ceiling, and the playwright.config global timeout. Values above this require an inline `test.setTimeout(...)` + `// reason:` exception.
+   *
+   * reason: 180s on GitHub Actions, 90s locally. The 4-CPU Actions runner runs the suite 4-5x slower than a developer machine: in CI run 36463977144 `voter-alliance` took 95s (21s locally) and seven other answered-walk tests took 78-89s (16-21s locally).
    */
-  testMax: 90_000
+  testMax: ON_GITHUB_ACTIONS ? 180_000 : 90_000
 } as const;

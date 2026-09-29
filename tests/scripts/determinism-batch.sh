@@ -1,16 +1,20 @@
 #!/usr/bin/env bash
 #
 # determinism-batch.sh -- Run N SERIAL, preflight-confirmed, validity-enforced full-suite
-#                         E2E runs on ONE pinned git HEAD and emit a mechanically derived ledger (criterion 3).
+#                         E2E runs on ONE pinned git HEAD and emit a mechanically derived ledger.
 #
 # Usage:
-#   tests/scripts/determinism-batch.sh                                   # the gate: 16 full-suite runs tests/scripts/determinism-batch.sh --runs 16 --ledger-file <path> tests/scripts/determinism-batch.sh --runs 2 --project eperm07-term-trigger \
+#   ```sh
+#   tests/scripts/determinism-batch.sh                                   # the gate: 16 full-suite runs
+#   tests/scripts/determinism-batch.sh --runs 16 --ledger-file <path>
+#   tests/scripts/determinism-batch.sh --runs 2 --project eperm07-term-trigger \
 #       --ledger-dir tests/e2e-runs/selftest-batch                       # fast scoped self-check
+#   ```
 #
-#   --runs <N>          How many runs. Default 16 (2x the observed 1-in-8 rate).
+#   --runs <N>          How many runs. Default 16.
 #                       STRICTLY validated: a non-integer or a value below 1 exits 2 with usage. A value below 16 is accepted, but the emitted ledger says in its header that it does NOT satisfy the acceptance threshold.
 #   --project <name>    Restrict every run to one Playwright project. FOR SELF-CHECKING ONLY: the emitted ledger is stamped as a scoped check in its header so it can never be mistaken for gate evidence.
-#   --ledger-dir <path> Where run-NN directories are created. Relative paths resolve against the REPO ROOT. Default: tests/e2e-runs/determinism-batch (git-ignored, per plan 01).
+#   --ledger-dir <path> Where run-NN directories are created. Relative paths resolve against the REPO ROOT. Default: tests/e2e-runs/determinism-batch (git-ignored).
 #   --ledger-file <path> Where the markdown ledger is written. Default: a markdown file inside <ledger-dir>; the literal name is set by LEDGER_FILE below.
 #   --carry-discards <path> A TSV of already-formatted abort rows from a PREVIOUS, discarded attempt. They are carried into this batch's "Aborts and discards" section so a restart cannot erase the record of what it restarted from. Carried rows are historical: they precede run 01 of THIS batch and so do not break its consecutive count, but they are never dropped -- silence about a discarded attempt is exactly what makes a green arguable.
 #
@@ -18,11 +22,11 @@
 #   - The working tree is COMMITTED. The batch pins one HEAD and aborts if it changes mid-batch: "16 consecutive runs" means 16 runs of one tree.
 #   - Docker is running (the single-run wrapper starts Supabase itself).
 #   - NOTHING is listening on $FRONTEND_PORT. Each run spawns and owns its own dev server.
-#   - Free disk for the projected artifact volume. Run 1 is MEASURED and projected before the batch commits to the remaining runs (RESEARCH Pitfall 6).
-#   - UNATTENDED: ~11.5 min per full suite plus per-run preconditions is 3.2-3.8 h for 16 runs (RESEARCH SR5.1). Do not interleave other work on this host -- that changes the contention environment the runs are measuring.
+#   - Free disk for the projected artifact volume. Run 1 is MEASURED and projected before the batch commits to the remaining runs.
+#   - UNATTENDED: ~11.5 min per full suite plus per-run preconditions is 3.2-3.8 h for 16 runs. Do not interleave other work on this host -- that changes the contention environment the runs are measuring.
 #
 # The script automatically:
-#   1. Refuses to start with CI present -- it would buy `retries: 3` and collapse to a single worker (playwright.config.ts:115,117), changing BOTH the retry posture and the contention environment the failure lives in
+#   1. Refuses to start with CI present -- it would buy `retries: 3` and collapse to a single worker (the `retries` and `workers` of tests/playwright.config.ts), changing BOTH the retry posture and the contention environment the failure lives in
 #   2. Unsets the three EPERM07_ forcing knobs and records that it did
 #   3. Pins git HEAD once, and ABORTS any iteration that observes a different HEAD
 #   4. Loops SERIALLY -- one run at a time, never two suites concurrently -- delegating every per-run step (database reset, readiness poll, dev-server spawn and teardown, Playwright invocation, preflight capture) to tests/scripts/e2e-run.sh
@@ -32,10 +36,15 @@
 #   8. Regenerates the markdown ledger after every iteration, so an interrupted batch still leaves a complete, honest record on disk
 #   9. Stamps the ledger from an EXIT trap if the batch dies unexpectedly, so an INCOMPLETE ledger can never read as "No run in this batch was aborted"
 #
-# NEW CONVENTION (as with e2e-run.sh in plan 01): nothing else in tests/ is orchestrated by a shell script; per-iteration exit-code capture and a machine-readable ledger have no in-repo precedent at all. Style follows apps/supabase/benchmarks/scripts/run-benchmarks.sh (shebang form, header block, `set -euo pipefail`, script-location-relative paths, "${VAR:-default}" env defaults).
+# Like e2e-run.sh, this is one of the few shell scripts that orchestrate E2E runs. Style follows apps/supabase/benchmarks/scripts/run-benchmarks.sh (shebang form, header block, `set -euo pipefail`, script-location-relative paths, "${VAR:-default}" env defaults).
 #
 # Exit codes:
-#   0  every requested run was VALID 2  usage error (bad --runs, unknown argument) 3  CI is present in the environment 4  git HEAD changed mid-batch, or the projected artifact volume does not fit on disk 5  a run was INVALID (the batch stopped at that run; the ledger names it) 130  the batch was interrupted (recorded as a discard, never as a pass)
+#   0:  every requested run was VALID
+#   2:  usage error (bad --runs, unknown argument)
+#   3:  CI is present in the environment
+#   4:  git HEAD changed mid-batch, or the projected artifact volume does not fit on disk
+#   5:  a run was INVALID (the batch stopped at that run; the ledger names it)
+#   130:  the batch was interrupted (recorded as a discard, never as a pass)
 
 set -euo pipefail
 
@@ -45,11 +54,11 @@ TESTS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 REPO_ROOT="$(cd "$TESTS_DIR/.." && pwd)"
 RUNNER="$SCRIPT_DIR/e2e-run.sh"
 
-# The full gate suite's expected executed count. It was 134 before the eperm07-term-trigger hunt spec shipped PERMANENTLY as a LEAF regression guard, which moved it to 135. Every later run reconciles against 135.
-EXPECTED_EXECUTED=135
+# The full gate suite's expected executed count: every test of the default `--grep-invert @probe` suite, the eperm07-term-trigger regression guard included. Every run reconciles against it.
+EXPECTED_EXECUTED=165
 
-# The step whose outcome criterion 3 is actually about (tests/tests/specs/voter/voter-journey.spec.ts:866).
-EPERM07_STEP_PREFIX='EPERM-07 customData.terms'
+# The step whose outcome the batch is about: the in-text term trigger step of the voter journey (tests/tests/specs/voter/voter-journey.spec.ts).
+EPERM07_STEP_PREFIX='customData.terms: in-text affordance'
 
 RUNS=16
 PROJECT=""
@@ -70,7 +79,7 @@ ABORT_RECORDED=0
 BATCH_COMPLETE=0
 
 usage() {
-  # Delimit the header block rather than hardcoding a line range: the previous `sed -n '2,Np'` truncated the exit-code table the header tells the caller to branch on, and drifted further every time the header grew.
+  # Delimit the header block rather than hardcoding a line range: a `sed -n '2,Np'` form truncates the exit-code table the header tells the caller to branch on, and drifts further every time the header grows.
   sed -n '2,/^set -euo pipefail/p' "${BASH_SOURCE[0]}" | sed '$d'
 }
 
@@ -139,17 +148,17 @@ fi
 
 # --- environment posture, asserted once and loudly, BEFORE anything is created ---------
 
-# CI matters TWICE over, which is why this is a refusal and not a warning: `retries: 3` would make the batch itself the "retried-until-green" outcome the cardinal rule forbids, and `workers: 1` would run it in a quieter posture than the one the 1-in-8 was observed in -- weaker evidence dressed up as stronger.
+# CI matters TWICE over, which is why this is a refusal and not a warning: `retries: 3` would make the batch itself the "retried-until-green" outcome the cardinal rule forbids, and `workers: 1` would run it in a quieter posture than a local full run -- weaker evidence dressed up as stronger.
 if [ -n "${CI:-}" ]; then
   echo "determinism-batch.sh: FATAL -- CI is set in the environment." >&2
   echo "  With CI present the config buys retries: 3 per test and collapses to a single" >&2
-  echo "  worker (tests/playwright.config.ts:115,117). That changes the retry posture AND" >&2
+  echo "  worker (tests/playwright.config.ts). That changes the retry posture AND" >&2
   echo "  the contention environment the failure lives in; a green produced that way would" >&2
   echo "  itself be the retried-until-green closure the cardinal rule forbids." >&2
   exit 3
 fi
 
-# The forcing harness must never leak into a gate run (RESEARCH Pitfall 2). The wrapper unsets these too; doing it here as well means the batch's own record is self-contained.
+# The forcing harness must never leak into a gate run. The wrapper unsets these too; doing it here as well means the batch's own record is self-contained.
 unset EPERM07_FORCE_BUDGET_MS EPERM07_FORCE_CPU_RATE EPERM07_NO_VT || true
 
 if [ ! -x "$RUNNER" ]; then
@@ -164,7 +173,7 @@ case "$LEDGER_DIR" in
 esac
 mkdir -p "$LEDGER_DIR"
 
-LEDGER_FILE="${LEDGER_FILE:-$LEDGER_DIR/138-DETERMINISM-LEDGER.md}"
+LEDGER_FILE="${LEDGER_FILE:-$LEDGER_DIR/DETERMINISM-LEDGER.md}"
 case "$LEDGER_FILE" in
   /*) : ;;
   *) LEDGER_FILE="$REPO_ROOT/$LEDGER_FILE" ;;
@@ -203,7 +212,7 @@ DIRTY_LIST="$(git -C "$REPO_ROOT" status --porcelain | awk '{print $2}' | paste 
 # The ledger is REGENERATED after every iteration rather than appended to, so an interrupted batch still leaves a complete file with its abort recorded.
 emit_ledger() {
   {
-    echo "# Determinism batch ledger (criterion 3, INTEG-02)"
+    echo "# Determinism batch ledger"
     echo
     if [ "$SCOPED" = "1" ]; then
       echo "> **SELF-TEST -- not gate evidence.** This batch was scoped to the Playwright"
@@ -213,7 +222,7 @@ emit_ledger() {
     fi
     if [ "$RUNS" -lt 16 ]; then
       echo "> **This ledger does NOT satisfy the acceptance threshold.** $RUNS run(s) were"
-      echo "> requested; criterion 3 requires at least 16 consecutive full-suite runs."
+      echo "> requested; the threshold is at least 16 consecutive full-suite runs."
       echo
     fi
     echo "## Header"
@@ -234,9 +243,8 @@ emit_ledger() {
     echo "| Working tree at batch start | $DIRTY_FILES file(s) modified: ${DIRTY_LIST:-none} |"
     echo "| Ledger directory | \`${LEDGER_DIR#"$REPO_ROOT"/}\` (git-ignored) |"
     echo
-    echo "**Expected executed count.** It was **134** through the previous phase. Plan 01 of this phase"
-    echo "ships the \`eperm07-term-trigger\` hunt spec permanently in the default suite, which moved"
-    echo "the baseline to **135**. This is a decision, not drift; see \`## Executed-count baseline\`."
+    echo "**Expected executed count.** **$EXPECTED_EXECUTED**: every test of the default suite, the"
+    echo "\`eperm07-term-trigger\` regression guard included."
     echo
     echo "**Observed posture** is read back out of each run's \`results.json\` (\`config.workers\`,"
     echo "\`config.projects[].retries\`) rather than restated from the config file, so the claim is"
@@ -249,16 +257,13 @@ emit_ledger() {
     echo "\`preflight-failures\`, \`worktree-status.txt\`) -- by deleting its HTML report directory,"
     echo "which is where the traces and videos live. A run that is NOT valid keeps everything."
     echo
-    echo "**Fix state being proved.** See \`138-NEGATIVE-CONTROL.md\` for the criterion-2 pair"
-    echo "(pre-fix FAILS / post-fix PASSES under the forcing harness) that this batch runs on top of."
-    echo
     echo "## Per-run ledger"
     echo
     echo "One row per run, in execution order. Start and end are the wrapper's own UTC stamps, so"
     echo "run N+1's start being at or after run N's end is itself the proof the batch was serial."
     echo "Wall clock is informational only and is never an input to a pass/fail decision."
     echo
-    echo "| Run | Start (UTC) | End (UTC) | Wall | HEAD | Exit | Preflight fails | Preflight OKs | Executed | Passed | Failed | Flaky | Did-not-run | EPERM-07 step | Verdict | Artifacts |"
+    echo "| Run | Start (UTC) | End (UTC) | Wall | HEAD | Exit | Preflight fails | Preflight OKs | Executed | Passed | Failed | Flaky | Did-not-run | Term-trigger step | Verdict | Artifacts |"
     echo "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"
     if [ -s "$ROWS_FILE" ]; then
       cat "$ROWS_FILE"
@@ -277,7 +282,7 @@ emit_ledger() {
       cat "$ABORTS_FILE"
       echo
       echo "An abort RESETS the consecutive count. The batch does not continue past one, and the"
-      echo "slot is never quietly re-used: criterion 3 measures consecutive runs, and silence about"
+      echo "slot is never quietly re-used: the batch measures consecutive runs, and silence about"
       echo "aborts is exactly what makes a green arguable."
       if [ "$CARRIED_COUNT" -gt 0 ]; then
         echo
@@ -471,7 +476,7 @@ while [ "$i" -le "$RUNS" ]; do
     REASON="flaky=$FLAKY -- there is no acceptable flaky test in this project (CLAUDE.md E2E Hard Rule)"
   elif [ "$SCOPED" = "0" ] && [ "$EPERM" != "passed" ]; then
     VERDICT="INVALID"
-    REASON="the EPERM-07 step outcome is '$EPERM', not 'passed' -- this is the step criterion 3 is about"
+    REASON="the in-text term-trigger step outcome is '$EPERM', not 'passed' -- this is the step the batch is about"
   fi
 
   printf '| %s | %s | %s | %s | `%s` | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | `%s` |\n' \
@@ -480,7 +485,7 @@ while [ "$i" -le "$RUNS" ]; do
     "$EPERM" "$VERDICT" "${RUN_DIR#"$REPO_ROOT"/}" >> "$ROWS_FILE"
 
   if [ "$VERDICT" != "VALID" ]; then
-    # Everything is retained for a run that is not valid: the video, the console and failed-request transcripts, the dev-server log and the trace all exist for exactly this moment, which is what plan 01 was for.
+    # Everything is retained for a run that is not valid: the video, the console and failed-request transcripts, the dev-server log and the trace all exist for exactly this moment.
     record_abort "$RUN_LABEL" "$REASON (full artifact set retained at \`${RUN_DIR#"$REPO_ROOT"/}\`)"
     exit 5
   fi

@@ -51,9 +51,8 @@ export const testIds = {
       intro: 'candidate-questions-intro'
     },
     settings: {
-      // NB. the former settings-scoped current-password entry was removed with the field itself (157-10 branch (a)): the field was never verified — GoTrue returns HTTP 200 for a wrong current password with the gate off, and no `config.toml` key turns that gate on at the pinned CLI. The a11y `cand-settings` anchor moved to `newPassword` below.
       newPassword: 'settings-new-password',
-      // NB. the password confirmation input's live id is the component-hardcoded `candidate.passwordSetter.confirm` (PasswordSetter.svelte:80) — the former settings-scoped `confirmPassword` entry was dead (its prop fell into <form> restProps and never rendered a usable id) and was removed.
+      // The password confirmation input's id is `candidate.passwordSetter.confirm`, which PasswordSetter.svelte sets itself.
       updateButton: 'settings-update-password'
     },
     preview: {
@@ -73,14 +72,14 @@ export const testIds = {
     register: {
       submit: 'register-submit'
     },
-    // The candidate /preregister bank-auth walk: entry button + the post-auth election -> constituency -> email/ToU selection steps. Raw strings verified in apps/frontend/src/routes/candidate/preregister/(+page.svelte:140,163,167; (authenticated)/{elections,constituencies,email}/+page.svelte).
-    // Driven by the EFLOW-10b candidate-preregister page-object.
+    // The candidate /preregister bank-auth walk: entry button + the post-auth election -> constituency -> email/ToU selection steps. The raw strings are in apps/frontend/src/routes/candidate/preregister/ (+page.svelte and (authenticated)/{elections,constituencies,email}/+page.svelte).
+    // Driven by the candidate-preregister page object.
     preregister: {
       start: 'preregister-start',
       continue: 'preregister-continue',
       return: 'preregister-return',
       electionsList: 'preregister-elections-list',
-      // Ids owned by the SHARED ElectionSelector component (`lib/components/electionSelector/ElectionSelector.svelte`), which the preregister election step renders — the voter elections page renders the same component, hence the route-agnostic names. `electionLabel` is the <label> wrapping both the checkbox and the election name, so filtering it by text and descending to `electionOption` selects an election by IDENTITY rather than position (review finding CR-01).
+      // Ids owned by the SHARED ElectionSelector component (`lib/components/electionSelector/ElectionSelector.svelte`), which the preregister election step renders — the voter elections page renders the same component, hence the route-agnostic names. `electionLabel` is the <label> wrapping both the checkbox and the election name, so filtering it by text and descending to `electionOption` selects an election by identity rather than position.
       electionLabel: 'election-selector-option-label',
       electionOption: 'election-selector-option',
       electionsSubmit: 'preregister-elections-submit',
@@ -147,14 +146,17 @@ export const testIds = {
       heading: 'voter-questions-heading',
       nextButton: 'question-next',
       previousButton: 'question-previous',
-      // Question-input locators. These support the EQTYP fixtures (answerNumberScale / answerMultiChoice + the MultipleText round-trip) and the voter-journey answer-walk extension. Values byte-match the component-side data-testid strings:
+      // Question-input locators, used by the answerNumberScale / answerMultiChoice fixtures, the MultipleText round-trip and the voter-journey answer walk. Values match the component-side data-testid strings:
       //  - numberSlider / numberValue: NumberScaleInput.svelte native range + live value label.
       //  - multipleText*: parts/MultipleTextPart.svelte row-list add/remove/reorder controls, candidate info-question input. One row field renders per displayed locale, so the row count still equals the row-list length while translations are hidden.
       //  - choiceHelper: QuestionChoices.svelte multi-select helper text (select-range / select-exact) rendered outside the choice grid.
       numberSlider: 'question-number-slider',
       numberValue: 'question-number-value',
-      // NumberScaleInput.svelte root <div> (both answer + display modes). Scopes the dual-marker display-mode readout inside an entity-detail opinion block. Byte-matches the existing component data-testid — NOT a new product testid.
+      // NumberScaleInput.svelte root <div> (both answer + display modes). Scopes the dual-marker display-mode readout inside an entity-detail opinion block.
       numberScaleInput: 'number-scale-input',
+      // NumberScaleInput.svelte display-mode answer markers, each encoding its value in a `left: {pct}%` inline style. The voter marker is also the single combined marker rendered when both answers are equal.
+      numberScaleVoterMarker: 'number-scale-voter-marker',
+      numberScaleEntityMarker: 'number-scale-entity-marker',
       multipleTextRow: 'multiple-text-row',
       multipleTextAdd: 'multiple-text-add',
       multipleTextRemove: 'multiple-text-remove',
@@ -205,7 +207,7 @@ export const testIds = {
       filterButton: 'entity-list-filter',
       entityDetails: 'entity-details',
       infoItem: 'info-item',
-      // MatchScore.svelte list-card callout (the "<n>%" readout in the card header). Distinct from `scoreGauge` (`score-gauge`), which only renders inside the entity-details SubMatches drawer. reads this scoped to a single org card to assert the exact per-mode organization score.
+      // MatchScore.svelte list-card callout (the "<n>%" readout in the card header). Distinct from `scoreGauge` (`score-gauge`), which only renders inside the entity-details SubMatches drawer. Read scoped to a single org card to assert the exact per-mode organization score.
       matchScore: 'match-score',
       scoreGauge: 'score-gauge',
       subMatches: 'sub-matches',
@@ -219,7 +221,7 @@ export const testIds = {
       filterDialogApply: 'entity-filter-dialog-apply',
       cardSubcard: 'entity-card-subcard',
       // The single select-all/none toggle button on EnumeratedEntityFilter.svelte.
-      // Renders only `{#if values.length > 3}` (threshold > 3 confirmed) and its label flips selectAll/unselectAll via `allSelected` — it is ONE toggle, not two buttons. The entityFilters fixture (Plan 07) clicks it to select-all when not-all-selected and to select-none when all-selected.
+      // Renders only `{#if values.length > 3}` and its label flips selectAll/unselectAll via `allSelected` — it is ONE toggle, not two buttons. The entityFilters fixture clicks it to select-all when not-all-selected and to select-none when all-selected.
       filterSelectAllToggle: 'entity-filter-select-all-toggle'
     },
     entityDetail: {
@@ -228,10 +230,10 @@ export const testIds = {
       opinionsTab: 'voter-entity-detail-opinions',
       childrenTab: 'voter-entity-detail-children',
       // Wraps a single opinion-question display block inside EntityOpinions.svelte (heading + optional missing-answer message + optional OpinionQuestionInput).
-      // Consumed by voter-journey.spec.ts → expectQuestionDisplayToHave.
+      // Consumed by the entityDetails fixture's expectQuestionDisplay.
       opinionQuestion: 'entity-opinion-question',
       // sr-only sibling marker on QuestionChoices.svelte's radio whose `otherSelected == id` (i.e. the entity's chosen answer in display mode).
-      // Used by the voter-journey classifyVoterEntityRows helper instead of a raw `.entitySelected` locator.
+      // Used by the voter-journey classifyVoterEntityRows helper.
       entitySelectedAnswer: 'entity-selected-answer',
       // testid on the QuestionOpenAnswer wrapper rendered inside EntityOpinions.svelte when the candidate has authored info AND customData.allowOpen is not false. Used by the perm-disable-allow-open voter-side assertion to verify Q1 info visible / Q2 info hidden.
       opinionOpenAnswer: 'entity-opinion-open-answer'
@@ -243,7 +245,7 @@ export const testIds = {
       content: 'voter-about-content',
       returnButton: 'voter-about-return',
       // Dedicated testid on the about.organizationMatching disclosure block on the About page (rendered only when matching.organizationMatching !== 'none').
-      // Tighter than the coarse voter-about-content anchor so can assert the org-matching disclosure specifically.
+      // Tighter than the coarse voter-about-content anchor, so a spec can assert the org-matching disclosure specifically.
       organizationMatching: 'voter-about-organization-matching'
     },
     info: {
@@ -278,7 +280,7 @@ export const testIds = {
       menuToggle: 'nav-menu-toggle'
     },
     // testids supporting the langSelectorFixture + multilingualTextFieldFixture function-fixtures.
-    //  - langSelector: on the LanguageSelection.svelte NavGroup, gates on `locales.length > 1`. Absent when single-locale (the negative-perm assertion target).
+    //  - langSelector: on the LanguageSelection.svelte NavGroup, gates on `locales.current.length > 1`. Absent when single-locale.
     //  - multilingualToggle: on the Input.svelte translation-toggle Button, gates on `multilingual && locales.length > 1`. Absent when `customData.disableMultilingual=true` OR single-locale.
     langSelector: 'lang-selector',
     multilingualToggle: 'multilingual-toggle',

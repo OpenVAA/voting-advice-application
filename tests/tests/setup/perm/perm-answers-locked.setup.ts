@@ -13,6 +13,7 @@
 import { expect, test as setup } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
+import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials';
@@ -25,7 +26,7 @@ const PREFIX = 'e2e-perm-answers-locked-';
 export const STORAGE_STATE_PATH = path.join(TESTS_DIR, '../playwright/.auth/perm-answers-locked.json');
 
 /**
- * Wait for the candidate-app login form to be visible, reloading up to `maxAttempts - 1` times if the backend is cold-starting. Mirrors the canonical helper in `auth.setup.ts:23-57` (hoisted module-level so the setup callback stays free of conditional control flow).
+ * Wait for the candidate-app login form to be visible, reloading up to `maxAttempts - 1` times if the backend is cold-starting. Mirrors `waitForLoginForm` in `auth.setup.ts` (hoisted module-level so the setup callback stays free of conditional control flow).
  */
 async function waitForLoginForm(page: Page, loginRoute: string, emailTestId: string, maxAttempts = 3): Promise<void> {
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -44,7 +45,7 @@ async function waitForLoginForm(page: Page, loginRoute: string, emailTestId: str
 
 setup('import perm-answers-locked dataset + mint candidate session', async ({ page }) => {
   // Candidate app data loading can be slow; mirror auth.setup.ts ceiling.
-  setup.setTimeout(90000);
+  setup.setTimeout(TIMEOUTS.testMax);
 
   // 1. Seed the dataset.
   await setupFromTemplate('perm-answers-locked', {
@@ -60,7 +61,7 @@ setup('import perm-answers-locked dataset + mint candidate session', async ({ pa
   await client.forceRegister(fullExternalId, candidateEmail, TEST_CANDIDATE_PASSWORD);
 
   // 3. Perform a real UI login through the candidate-app login form and
-  //    save the resulting cookie-based Supabase session as Playwright storage state. Mirrors auth.setup.ts:66-98.
+  //    save the resulting cookie-based Supabase session as Playwright storage state. Mirrors the login in auth.setup.ts.
   fs.mkdirSync(path.dirname(STORAGE_STATE_PATH), { recursive: true });
   const candidateHome = buildRoute({ route: 'CandAppHome', locale: 'en' });
   await waitForLoginForm(page, candidateHome, testIds.candidate.login.email);

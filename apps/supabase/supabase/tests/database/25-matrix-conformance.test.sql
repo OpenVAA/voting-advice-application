@@ -1,16 +1,14 @@
--- 25-matrix-conformance.test.sql: section 3.3's matrix as the estate enforces it, and the eight-assembly guard
+-- 25-matrix-conformance.test.sql: the role x permission matrix as the policies enforce it, and the eight-assembly guard
 --
--- WHAT NO SIBLING ASSERTS. 162-04 asserts the eight answer vectors of `user_can` itself, at the arguments that plan chose; every wave-4 plan asserts its own tables. Neither can see the two holes this file exists to close. The first is a permission the whole estate never reads: a cell of the matrix that grants nothing, invisible to every per-table plan because each of them asserts only inside its own scope, and a member nobody enforces is precisely the one nobody's scope contained. The second is the eight entity SELECT assemblies, which D-36 accepted as duplicated ONLY on the condition that divergence be mechanical.
+-- WHAT NO SIBLING ASSERTS. 12-user-can.test.sql asserts the answer vectors of `user_can` itself, and each per-table suite asserts its own tables. Neither can see the two holes this file closes. The first is a permission no policy reads: a cell of the matrix that grants nothing, invisible to every per-table suite because each asserts only inside its own scope. The second is the eight entity SELECT assemblies, which repeat one conjunction pattern and so need a mechanical guard against divergence.
 --
--- THE ORDINAL. D-28's registry assigns 12..23 and its next free value is 24, but 24 is OCCUPIED: 162-15 created `24-legacy-removal.test.sql` under its own "lowest free two-digit prefix" rule, in the same plan that deleted `13-shim-parity.test.sql`. The registry's rule and 162-15's disagreed exactly as 162-17's flagged assumption predicted. This plan therefore took the four lowest free prefixes ABOVE the registry's maximum -- 25, 26, 27, 28 -- and did not take the free 13, because reusing a deleted file's ordinal is the collision the registry was created to stop.
+-- WHY THE GRID RUNS AGAINST A CLOSED PROJECT. The structure and entity read policies are disjunctions of an authority term and an open-for-voters term. Against an OPEN project a read cell passes for a caller holding no authority whatsoever, and this file would become a second, weaker copy of 16-anon-visibility.test.sql. Section 0 therefore closes the project and ASSERTS it closed, as a fact read back off the row rather than as a property of the fixture.
 --
--- WHY THE GRID RUNS AGAINST A CLOSED PROJECT. 162-09 and 162-11 wrote the structure read policies as two-term disjunctions: the authority term, or the open-for-voters term. Measured against an OPEN project a read cell passes for a caller holding no authority whatsoever, and this file would become a second, weaker copy of 16-anon-visibility.test.sql. Section 0 therefore closes the project and ASSERTS it closed, as a fact read back off the row rather than as a property of the fixture.
---
--- WHY THE VECTORS ARE MEASURED AT THE ARGUMENTS THE POLICIES PASS, and what that is not. Three properties of this estate, each measured rather than assumed, make "one representative operation per member, run as nine identities" unable to express section 3.3:
+-- WHY THE VECTORS ARE MEASURED AT THE ARGUMENTS THE POLICIES PASS, and what that is not. Three properties of the policies make "one representative operation per member, run as nine identities" unable to express the matrix:
 --   - (1) PERMISSIVE POLICIES ARE OR-ED. `nominations` carries both `admin_insert_nominations` and `entity_insert_nominations` on INSERT, so a real insert measures the disjunction of every policy on that command, never the one policy a derivation named.
---   - (2) MOST POLICIES NAME SEVERAL MEMBERS. `authenticated_select_alliances` names `project.read_entities` AND `entity.read_answers` (a third, `nomination.read`, until 162-REVIEW CR-02); one outcome cannot answer for rows whose section 3.3 cells differ.
+--   - (2) MOST POLICIES NAME SEVERAL MEMBERS. `authenticated_select_alliances` names `project.read_entities` AND `entity.read_answers`; one outcome cannot answer for rows whose matrix cells differ.
 --   - (3) SOME POLICIES CONJOIN ROW STATE. `entity_insert_parent_nominations` adds six conjuncts beyond the permission, so its outcome is a statement about the conjunction.
--- So the vector is measured as `user_can` answers, THROUGH EACH IDENTITY'S REAL SESSION CLAIM, at exactly the (scope, target) arguments the representative policy passes -- and the claim that the policy passes those arguments is asserted STRUCTURALLY from `pg_policies` in section 3. The composition is what carries the criterion: the matrix answers this way for these arguments (behavioural, section 2) AND the policies ask the matrix exactly these arguments (structural, section 3). Neither half alone would do, and neither half is a call comparing a function with itself.
+-- So the vector is measured as `user_can` answers, THROUGH EACH IDENTITY'S REAL SESSION CLAIM, at exactly the (scope, target) arguments the representative policy passes -- and the claim that the policy passes those arguments is asserted STRUCTURALLY from `pg_policies` in section 3. The composition is what carries the claim: the matrix answers this way for these arguments (behavioural, section 2) AND the policies ask the matrix exactly these arguments (structural, section 3). Neither half alone would do, and neither half is a call comparing a function with itself.
 --
 -- Depends on: 00-helpers.test.sql (set_test_user, create_test_data, test_id, test_user_id,
 --             test_seed_fixture_grants)
@@ -36,7 +34,7 @@ SELECT
 -- =====================================================================
 -- Section 0: the grid's own precondition -- the project is CLOSED
 -- =====================================================================
--- Without this every policy's public disjunct is true and a read cell passes for a caller with no authority at all. Control M3 opens the project and records how many assertions flip, which is the measurement that proves this section load-bearing rather than decorative.
+-- Without this every policy's public disjunct is true and a read cell passes for a caller with no authority at all.
 UPDATE projects
 SET
   open_for_voters = false
@@ -60,7 +58,7 @@ SELECT
 -- =====================================================================
 -- Extra identities, local to this transaction
 -- =====================================================================
--- create_test_data() is NOT widened. 162-06 asserts the fixture produces exactly eight grant rows and a second backfill call inserts zero, and 162-15 asserts the rewritten fixture's grant set equals its pre-rewrite image, so a ninth identity there would redden both against a correct implementation. The identities below are created here and roll back with this transaction, exactly as 162-04's tracer and 162-09's project editor were.
+-- The identities below are created here, inside this transaction, rather than in create_test_data(), so the shared fixture's eight grant-bearing identities stay unchanged for every other suite.
 INSERT INTO
   auth.users (
     id,
@@ -142,7 +140,7 @@ VALUES
     now()
   );
 
--- The three grant shapes section 3.1 names that the shared fixture has no room for, plus the UNMAPPED shape: an entity-scope grant carrying the admin role. The table's CHECK constraints admit it, the user-type mapping never produces it, and the matrix gives it the EMPTY set -- so it must open nothing.
+-- The three grant shapes the shared fixture lacks (project editor, faction editor, alliance editor), plus the UNMAPPED shape: an entity-scope grant carrying the admin role. The table's CHECK constraints admit it, the user-type mapping never produces it, and the matrix gives it the EMPTY set -- so it must open nothing.
 -- `m17_no_grant` deliberately receives no row at all.
 INSERT INTO
   public.grants (user_id, scope, target_type, target_id, role)
@@ -179,12 +177,12 @@ VALUES
 -- =====================================================================
 -- Section 1: the enforcement census, as a STANDING two-directional assertion
 -- =====================================================================
--- Derived in this file rather than read from a record, which is what makes it a standing assertion instead of a one-time observation: a later change that leaves a member unread reddens here, and so does one that quietly starts enforcing a member the ratified list says nothing enforces.
+-- Derived at run time, so a change that leaves a member unread reddens here, and so does one that starts enforcing a member the list below says no policy enforces.
 --
--- The ratified unenforced list and the reason for each entry (162-17 Task 2, Q2 list 2):
+-- The unenforced list, with the reason no policy reads each member:
 --   - account.manage_admins: grant administration; public.grants carries no user-facing policy at all.
 --   - project.manage_editors: the same.
---   - entity.invite_children: the same, at entity scope (000-enums.sql:28 names it as the equivalent).
+--   - entity.invite_children: the same, at entity scope (000-enums.sql names it as project.manage_editors' entity-scope equivalent).
 --   - entity.edit_immutable: enforced by the trigger enforce_entity_immutability (OLD vs NEW).
 --   - entity.confirm: the same trigger, plus 303-column-grants.sql.
 --   - nomination.confirm: enforced by the trigger enforce_nomination_confirmation.
@@ -225,21 +223,21 @@ WHERE
 SELECT
   is_empty (
     $$SELECT m FROM m17_unenforced_derived EXCEPT SELECT m FROM m17_unenforced_ratified$$,
-    'enforcement census: no permission member has quietly stopped being enforced by any policy'
+    'enforcement census: every permission member off the unenforced list is read by at least one policy'
   );
 
 SELECT
   is_empty (
     $$SELECT m FROM m17_unenforced_ratified EXCEPT SELECT m FROM m17_unenforced_derived$$,
-    'enforcement census: no permission member on the ratified unenforced list has quietly started being enforced'
+    'enforcement census: no permission member on the unenforced list is read by any policy'
   );
 
 -- =====================================================================
 -- Section 2: the twenty-three outcome vectors
 -- =====================================================================
--- Nine grant-bearing positions plus the unmapped shape, in section 3.1's order, measured through each identity's real session claim:
+-- Nine positions plus the unmapped shape, measured through each identity's real session claim:
 --   - 1 RootAdmin, 2 AccountAdmin, 3 ProjectAdmin, 4 ProjectEditor, 5 Candidate, 6 OrganizationEditor, 7 FactionEditor, 8 AllianceEditor, 9 an authenticated caller holding no grant, X the unmapped shape.
--- `own`-qualified cells of section 3.3 are read as TRUE for the identity whose grant names the probe target and FALSE for the others; the no-grant element is always false.
+-- Matrix cells that hold only on the caller's own entity are read as TRUE for the identity whose grant names the probe target and FALSE for the others; the no-grant element is always false.
 CREATE TEMP TABLE m17_grid (member text, ident text, val boolean) ON
 COMMIT
 DROP;
@@ -258,31 +256,31 @@ DECLARE
     ARRAY['8', 'cccccccc-cccc-cccc-cccc-0000000000a3'],
     ARRAY['9', 'cccccccc-cccc-cccc-cccc-0000000000a4'],
     ARRAY['X', 'cccccccc-cccc-cccc-cccc-0000000000a5']];
-  -- member, scope argument, probe target. The first fourteen are the arguments the representative policy passes and section 3 asserts that structurally; the last nine have no discriminating policy and take the natural scope of their group, which section 1 has already accounted for.
+  -- member, scope argument, probe target, and the probe target's entity type at entity scope (empty at every other scope, passed as NULL). Fourteen of these are the arguments the representative policy passes, which section 3 asserts structurally; the other nine have no discriminating policy and take the natural scope of their group. An entity-scope policy passes its row's own type, so each entity-scope probe names its target's type.
   ops text[][] := ARRAY[
-    ARRAY['feedback.read', 'project', 'project_a'],
-    ARRAY['feedback.manage', 'project', 'project_a'],
-    ARRAY['account.edit_settings', 'account', 'account_a'],
-    ARRAY['account.manage_projects', 'account', 'account_a'],
-    ARRAY['account.manage_admins', 'account', 'account_a'],
-    ARRAY['project.manage_editors', 'project', 'project_a'],
-    ARRAY['project.edit_project_settings', 'project', 'project_a'],
-    ARRAY['project.edit_app_settings', 'project', 'project_a'],
-    ARRAY['project.edit_structure', 'project', 'project_a'],
-    ARRAY['project.edit_questions', 'project', 'project_a'],
-    ARRAY['project.read_structure', 'project', 'project_a'],
-    ARRAY['project.edit_entities', 'project', 'project_a'],
-    ARRAY['project.edit_nominations', 'project', 'project_a'],
-    ARRAY['project.read_entities', 'project', 'project_a'],
-    ARRAY['entity.edit_answers', 'entity', 'alliance_a'],
-    ARRAY['entity.read_answers', 'entity', 'alliance_a'],
-    ARRAY['entity.edit_immutable', 'entity', 'candidate_a'],
-    ARRAY['entity.invite_children', 'entity', 'org_a'],
-    ARRAY['entity.confirm', 'entity', 'candidate_a'],
-    ARRAY['nomination.edit', 'entity', 'alliance_a'],
-    ARRAY['nomination.read', 'entity', 'alliance_a'],
-    ARRAY['nomination.confirm', 'entity', 'candidate_a'],
-    ARRAY['nomination.create_parent', 'entity', 'alliance_a']];
+    ARRAY['feedback.read', 'project', 'project_a', ''],
+    ARRAY['feedback.manage', 'project', 'project_a', ''],
+    ARRAY['account.edit_settings', 'account', 'account_a', ''],
+    ARRAY['account.manage_projects', 'account', 'account_a', ''],
+    ARRAY['account.manage_admins', 'account', 'account_a', ''],
+    ARRAY['project.manage_editors', 'project', 'project_a', ''],
+    ARRAY['project.edit_project_settings', 'project', 'project_a', ''],
+    ARRAY['project.edit_app_settings', 'project', 'project_a', ''],
+    ARRAY['project.edit_structure', 'project', 'project_a', ''],
+    ARRAY['project.edit_questions', 'project', 'project_a', ''],
+    ARRAY['project.read_structure', 'project', 'project_a', ''],
+    ARRAY['project.edit_entities', 'project', 'project_a', ''],
+    ARRAY['project.edit_nominations', 'project', 'project_a', ''],
+    ARRAY['project.read_entities', 'project', 'project_a', ''],
+    ARRAY['entity.edit_answers', 'entity', 'alliance_a', 'alliance'],
+    ARRAY['entity.read_answers', 'entity', 'alliance_a', 'alliance'],
+    ARRAY['entity.edit_immutable', 'entity', 'candidate_a', 'candidate'],
+    ARRAY['entity.invite_children', 'entity', 'org_a', 'organization'],
+    ARRAY['entity.confirm', 'entity', 'candidate_a', 'candidate'],
+    ARRAY['nomination.edit', 'entity', 'alliance_a', 'alliance'],
+    ARRAY['nomination.read', 'entity', 'alliance_a', 'alliance'],
+    ARRAY['nomination.confirm', 'entity', 'candidate_a', 'candidate'],
+    ARRAY['nomination.create_parent', 'entity', 'alliance_a', 'alliance']];
   i int; j int;
 BEGIN
   FOR i IN 1..array_length(idents, 1) LOOP
@@ -293,8 +291,8 @@ BEGIN
       v_scope := ops[j][2];
       v_target := test_id(ops[j][3]);
       EXECUTE format(
-        'SELECT public.user_can(%L::public.grant_scope_type, %L::uuid, %L::public.grant_permission)',
-        v_scope, v_target, v_member
+        'SELECT public.user_can(%L::public.grant_scope_type, %L::uuid, %L::public.grant_permission, %L::public.entity_type)',
+        v_scope, v_target, v_member, NULLIF(ops[j][4], '')
       ) INTO v_res;
       PERFORM set_config('role', 'postgres', true);
       INSERT INTO m17_grid VALUES (v_member, idents[i][1], v_res);
@@ -878,7 +876,7 @@ SELECT
 -- =====================================================================
 -- Section 4: the behavioural half -- the disjunctive read policies
 -- =====================================================================
--- The two members that occur ONLY inside the four `authenticated_select_<entity>` disjunctions -- project.read_entities and entity.read_answers -- have no discriminating policy, so no single operation can answer for one of them. (`nomination.read` was a third until 162-REVIEW CR-02 removed it from these policies: a row policy discloses the whole row, and the child-nominee reach is basic data only, now served by get_entity_basic_data.) What IS measurable, and is the strongest policy-level statement available for them, is that the real SELECT outcome equals the OR of those cells for every identity. Against a CLOSED project the public disjunct is false, so the observed outcome is the authority decision alone; control M3 opens the project and records how many of these flip.
+-- The two members that occur ONLY inside the four `authenticated_select_<entity>` disjunctions -- project.read_entities and entity.read_answers -- have no discriminating policy, so no single operation can answer for one of them. (`nomination.read` is not among them: a row policy discloses the whole row, and the child-nominee reach is basic data only, served by get_entity_basic_data.) What IS measurable, and is the strongest policy-level statement available for them, is that the real SELECT outcome equals the OR of those cells for every identity. Against a CLOSED project the public disjunct is false, so the observed outcome is the authority decision alone.
 CREATE TEMP TABLE m17_visible (tbl text, ident text, val boolean) ON
 COMMIT
 DROP;
@@ -938,7 +936,7 @@ SELECT
         tbl = 'candidates'
     ),
     'TTTTTfffff',
-    'disjunctive read: candidates visibility equals the authority disjunction on a closed project (position 6, the organization editor, does NOT get its child nominee''s ROW -- that reach is basic data only, served by get_entity_basic_data, 162-REVIEW CR-02)'
+    'disjunctive read: candidates visibility equals the authority disjunction on a closed project (position 6, the organization editor, does NOT get its child nominee''s ROW -- that reach is basic data only, served by get_entity_basic_data)'
   );
 
 SELECT
@@ -982,7 +980,7 @@ SELECT
         tbl = 'factions'
     ),
     'TTTTffTfff',
-    'disjunctive read: factions visibility equals the authority disjunction on a closed project (position 6, the organization editor, does NOT get its child nominee''s row since CR-02; position 7 is the faction editor reaching its own)'
+    'disjunctive read: factions visibility equals the authority disjunction on a closed project (position 6, the organization editor, does NOT get its child nominee''s row; position 7 is the faction editor reaching its own)'
   );
 
 SELECT
@@ -1008,17 +1006,11 @@ SELECT
   );
 
 -- =====================================================================
--- Section 5: D-36's EIGHT-ASSEMBLY GUARD
+-- Section 5: THE EIGHT-ASSEMBLY GUARD
 -- =====================================================================
--- D-36 reverted 162-10's composition to the pre-162-10 shape, because the cause of the 6.37x/7.31x read regression was DEPTH: two SECURITY DEFINER helpers at depth 1 cost 39.4 ms anon / 30.0 ms auth, while one composition calling those same two at depth 2 cost 271.9 / 351.9. `project_open_for_voters` and `entity_has_confirmed_nomination` remain the single definition of each sub-rule and are now called DIRECTLY from each of the eight entity SELECT policies. What repeats is the ASSEMBLY -- the conjunction pattern -- and D-36 accepted that duplication ONLY on the condition that divergence be made mechanical.
--- These assertions are that condition. Without them the eight assemblies ship unguarded and D-36's basis does not hold.
+-- `project_open_for_voters` and `entity_has_confirmed_nomination` are the single definition of each sub-rule, and each of the eight entity SELECT policies calls them DIRECTLY, because calling them through one composing helper, a SECURITY DEFINER call one level deeper, makes entity reads several times slower. What repeats is the ASSEMBLY, the conjunction pattern, and this section is the mechanical guard against the eight diverging.
 --
--- THE HOLE THIS SECTION CLOSES, measured 2026-09-17 by the D-36 revert and not predicted:
---   - dropping `open_for_voters` from ONE policy (anon_select_factions) left the estate at exit 1 -- but 162-10's older assertion 46 would have MISSED it, naming only anon_select_candidates and anon_select_nominations.
---   - dropping `confirmed` from ALL FOUR authenticated assemblies at once left the estate PASSING, exit 0, all 923 assertions green, while the authenticated no-grant visible set DOUBLED on every entity table.
--- The second is the live gap. A guard that compares the eight only TO EACH OTHER reproduces it exactly: the surviving D-21 assertions detect divergence and never a shared defect. So this section is deliberately BOTH halves -- RELATIVE (the eight agree) and ABSOLUTE (each contains the required conjuncts by name).
---
--- D-21's normalised-identity assertion no longer covers the SELECT family under D-36. That is an accepted cost of the ruling, recorded here rather than silently re-derived.
+-- A guard that compares the eight only TO EACH OTHER detects divergence and never a shared defect: dropping `confirmed` from all eight at once leaves them agreeing with each other while unconfirmed entities become visible. So this section is deliberately BOTH halves -- RELATIVE (the eight agree) and ABSOLUTE (each contains the required conjuncts by name).
 CREATE TEMP VIEW m17_assembly AS
 SELECT
   tablename,
@@ -1107,7 +1099,7 @@ SELECT
     'eight-assembly guard, RELATIVE: each authenticated assembly carries its own table''s anon assembly verbatim as its public disjunct'
   );
 
--- The ABSOLUTE half. A uniform change to all eight is invisible to every assertion above, which is exactly the perturbation the estate passed before this file existed.
+-- The ABSOLUTE half. A uniform change to all eight is invisible to every assertion above.
 SELECT
   is (
     (
@@ -1180,7 +1172,7 @@ SELECT
         AND raw NOT LIKE '%''nomination.read''%'
     ),
     4,
-    'eight-assembly guard, ABSOLUTE: all four authenticated assemblies name the two authority members by permission literal, and none carries the nomination.read row reach (162-REVIEW CR-02)'
+    'eight-assembly guard, ABSOLUTE: all four authenticated assemblies name the two authority members by permission literal, and none carries the nomination.read row reach'
   );
 
 SELECT

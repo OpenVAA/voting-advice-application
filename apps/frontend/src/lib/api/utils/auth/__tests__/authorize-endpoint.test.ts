@@ -1,7 +1,7 @@
 /**
  * OIDC Authorize endpoint tests.
  *
- * Tests the POST handler that constructs an authorization URL via the active identity provider and manages state/nonce cookies for CSRF and replay protection (from).
+ * Tests the POST handler that constructs an authorization URL via the active identity provider and manages state/nonce cookies for CSRF and replay protection.
  *
  * For Idura: verifies the JAR (JWT Authorization Request) is correctly signed with RS256, contains the required payload fields, and is verifiable with the signing public key.
  *
@@ -34,7 +34,7 @@ const { mockServerConstants, mockPublicConstants } = vi.hoisted(() => ({
   },
   mockPublicConstants: {
     PUBLIC_IDENTITY_PROVIDER_CLIENT_ID: 'test-client-id',
-    PUBLIC_IDENTITY_PROVIDER_TYPE: 'idura',
+    PUBLIC_IDENTITY_PROVIDER_TYPE: 'idura-ftn',
     PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT: '',
     PUBLIC_BROWSER_BACKEND_URL: '',
     PUBLIC_SERVER_BACKEND_URL: '',
@@ -223,10 +223,10 @@ describe('POST /api/oidc/authorize', () => {
   it('returns 400 when redirectUri is missing', async () => {
     const event = createMockRequestEvent({});
 
-    // Assert the STATUS, not merely that something was thrown: the title promises a 400, and a bare rejection matcher is satisfied by the 500 this endpoint used to return (its own catch arm swallowed the 400 until the re-throw landed).
+    // Assert the STATUS, not merely that something was thrown: the title promises a 400, and a bare rejection matcher is also satisfied by the 500 the endpoint's own catch arm would return if it swallowed the 400 instead of re-throwing it.
     //
     // `toMatchObject` rather than `toThrow(expect.objectContaining(...))`: kit's HttpError is NOT an Error subclass -- it is a plain class carrying its own `status` and `body` -- so a throw-shape matcher will not match it.
-    // Do not weaken this back to a bare `rejects` matcher.
+    // Do not weaken this to a bare `rejects` matcher.
     await expect(POST(event)).rejects.toMatchObject({ status: 400 });
   });
 });

@@ -1,7 +1,7 @@
 /**
  * Idura provider interface compliance tests.
  *
- * Verifies that the Idura provider module implements the IdentityProvider interface correctly and that getAuthorizeUrl produces a JAR-based authorization URL with the expected structure (from).
+ * Verifies that the Idura provider module implements the IdentityProvider interface correctly and that getAuthorizeUrl produces a JAR-based authorization URL with the expected structure.
  *
  * @vitest-environment node
  */
@@ -42,7 +42,7 @@ const { mockConstants, localJwksState } = vi.hoisted(() => ({
 vi.mock('$env/dynamic/public', () => ({
   env: {
     PUBLIC_IDENTITY_PROVIDER_CLIENT_ID: 'test-idura-client',
-    PUBLIC_IDENTITY_PROVIDER_TYPE: 'idura',
+    PUBLIC_IDENTITY_PROVIDER_TYPE: 'idura-ftn',
     PUBLIC_SUPABASE_URL: 'http://localhost:54321',
     PUBLIC_SUPABASE_ANON_KEY: 'test-anon-key'
   }
@@ -127,7 +127,7 @@ describe('Idura provider', () => {
 
   describe('interface compliance', () => {
     it('has type property set to idura', () => {
-      expect(iduraProvider.type).toBe('idura');
+      expect(iduraProvider.type).toBe('idura-ftn');
     });
 
     it('has authConfig with Idura claim mappings', () => {
@@ -233,7 +233,7 @@ describe('Idura provider', () => {
     it('returns the configured claim mapping for a valid Idura ID token', async () => {
       const result = await iduraProvider.getIdTokenClaims(jwe);
 
-      // Deep equality on the WHOLE result object, never toContain / toHaveProperty: a superset, a dropped claim, or an `identifier` that stopped coming from `authConfig.identityMatchProp` must all red. `identifier` is the SUB here, NOT the birthdate, because IDURA_AUTH_CONFIG.identityMatchProp is 'sub' -- which is the whole point of keeping the mapping per-provider.
+      // Deep equality on the WHOLE result object, never toContain / toHaveProperty: a superset, a dropped claim, or an `identifier` that stopped coming from `authConfig.identityMatchProp` must all red. `identifier` is the SUB here, NOT the birthdate, because IDURA_FTN_AUTH_CONFIG.identityMatchProp is 'sub' -- which is the whole point of keeping the mapping per-provider.
       // Do not weaken this to a per-field subset check: a subset cannot see a claim that silently disappeared from extractedClaims.
       expect(result).toEqual({
         success: true,
@@ -254,7 +254,7 @@ describe('Idura provider', () => {
       mockConstants.IDENTITY_PROVIDER_DECRYPTION_JWKS = configured;
 
       // Assert the CAUSE, not merely that it failed. `success: false` alone is satisfied by any rejection whatsoever, so it cannot distinguish this test from its two siblings below, whose titles name different causes.
-      // Do not weaken this back to a bare `success` check.
+      // Do not weaken this to a bare `success` check.
       expect(result).toMatchObject({ success: false, error: { code: 'ERR_JWKS_EMPTY' } });
     });
 
@@ -275,7 +275,7 @@ describe('Idura provider', () => {
       mockConstants.IDENTITY_PROVIDER_DECRYPTION_JWKS = configured;
 
       // This assertion is the ONLY thing in the repo that can see the lazy env parse.
-      // If `defaultOptions.privateEncryptionJWKSet` is ever simplified from a getter back to a plain property, the parse moves to module-evaluation time, this test starts observing a frozen snapshot instead, and in production the malformed value throws an UNCATCHABLE import-time SyntaxError that no code can ever carry.
+      // If `defaultOptions.privateEncryptionJWKSet` is ever turned from a getter into a plain property, the parse moves to module-evaluation time, this test starts observing a frozen snapshot instead, and in production the malformed value throws an UNCATCHABLE import-time SyntaxError that no code can ever carry.
       // Do not weaken this to `success: false`, and do not weaken it to `error: { code: expect.any(String) }`: both are satisfied by ERR_JWKS_EMPTY, which is exactly what the regression produces.
       expect(result).toMatchObject({ success: false, error: { code: 'ERR_JWKS_MALFORMED' } });
     });

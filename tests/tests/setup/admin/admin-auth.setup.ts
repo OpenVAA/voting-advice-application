@@ -1,6 +1,7 @@
 import { expect, test as setup } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
+import { TIMEOUTS } from '../../helpers';
 import { ADMIN_STORAGE_STATE, TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD } from '../../utils/adminCredentials';
 import { buildRoute } from '../../utils/buildRoute';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
@@ -19,7 +20,7 @@ import { testIds } from '../../utils/testIds';
  */
 setup('mint + authenticate as project admin', async ({ page }) => {
   // The admin app loads through the root layout's data promises; allow the same headroom the candidate analog does.
-  setup.setTimeout(90000);
+  setup.setTimeout(TIMEOUTS.testMax);
 
   // `recursive: true` is idempotent — it does not throw when the directory exists.
   fs.mkdirSync(path.dirname(ADMIN_STORAGE_STATE), { recursive: true });

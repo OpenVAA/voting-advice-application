@@ -1,16 +1,14 @@
--- 29-authenticated-disjunct-order.test.sql: the five authenticated entity/nomination SELECT policies evaluate their disjuncts in the measured order
+-- 29-authenticated-disjunct-order.test.sql: the five authenticated entity/nomination SELECT policies evaluate their disjuncts in a fixed order
 --
--- THIS FILE HOLDS AN EVALUATION ORDER, NOT A BOOLEAN. PostgreSQL evaluates the arguments of an OR left to right and stops at the first TRUE, so two quals that admit exactly the same rows can cost very different amounts. `authenticated_select_candidates`, `_organizations`, `_factions`, `_alliances` and `_nominations` each OR together project authority, the table's public assembly and entity authority, and this file asserts that the applied quals read them in that order and in no other.
+-- This file asserts an evaluation order, not a boolean. PostgreSQL evaluates the arguments of an OR left to right and stops at the first TRUE, so two quals that admit the same rows can cost very different amounts. `authenticated_select_candidates`, `_organizations`, `_factions`, `_alliances` and `_nominations` each OR together project authority, the table's public assembly and entity authority, and the applied quals must read them in that order.
 --
--- THE RULE IS 162.1 D-01, VARIANT B: project authority first, then the public assembly, then entity authority. Project authority first so an admin exits on the first call; the public assembly second so a publicly visible row never pays the SECURITY DEFINER entity `user_can` calls; entity authority last. Spike 028 measured it at municipal scale (36,056 candidates): a signed-in candidate's whole-municipal read went from 7.15 s to 4.65 s against the 8 s authenticated statement timeout, an admin's stayed at 1.30 s, and a caller with no grant went from 4.3-4.8 s to 3.8 s. The same spike proved the reorder row-identical (visible sets EXCEPT ALL in both directions and a 2,120-probe truth grid, 0 differences each).
+-- Project authority comes first so an admin exits on the first call, and the public assembly second so a publicly visible row never pays for the SECURITY DEFINER entity `user_can` calls. Entity authority comes last.
 --
--- WHY THIS MONITOR IS STRUCTURAL AND NOT A TIMING CELL. A timing assertion would need spike 026's 36k-candidate fixture and a host gated on load average, and a test that can go red because the machine is busy is a flaky test, which this project does not accept. So the order is asserted from `pg_policies.qual` on the applied database, and spike 028's measured numbers remain the recorded timing evidence. It was observed RED on the shipped order and on variant A (public first) before the reorder landed, and is GREEN only on variant B.
+-- The order is asserted from `pg_policies.qual` on the applied database rather than by timing. A timing assertion would need a municipal-scale fixture and an idle host, and a test that fails because the machine is busy is a flaky test.
 --
--- WHY THIS IS A NEW FILE. 162-17's guard perturbations G8A and G8B have recorded reds in 16-anon-visibility.test.sql and 25-matrix-conformance.test.sql that are identified by assertion NUMBER, so an assertion inserted into either file would move them. A new file moves nothing.
+-- The population is derived, never named: every authenticated SELECT policy in `public` whose qual carries all three tokens `user_can('project'`, `project_open_for_voters(` and `user_can('entity'`. A sixth policy of the same shape is checked automatically, and the census pins the population to exactly the five tables, so a policy that drops out of the shape fails the census instead of silently leaving the check.
 --
--- THE POPULATION IS DERIVED, NEVER NAMED. It is every authenticated SELECT policy in `public` whose qual carries all three tokens `user_can('project'`, `project_open_for_voters(` and `user_can('entity'`, so a sixth policy of the same shape is order-checked automatically, and the census pins that population to exactly the five tables so a policy that drops out of the shape reddens it instead of silently leaving the check.
---
--- Depends on: nothing beyond pgTAP -- it reads only the `pg_policies` catalogue, so it calls no create_test_data ().
+-- Depends on: nothing beyond pgTAP. It reads only the `pg_policies` catalogue and calls no create_test_data ().
 BEGIN;
 
 SET
@@ -76,7 +74,7 @@ SELECT
         d01_disjunct_order
     ),
     '5/5',
-    'every authenticated entity/nomination SELECT policy evaluates project authority, then the public assembly, then entity authority (162.1 D-01, variant B)'
+    'every authenticated entity/nomination SELECT policy evaluates project authority, then the public assembly, then entity authority'
   );
 
 -- 3-7. One line per table, so a red names the policy that moved.

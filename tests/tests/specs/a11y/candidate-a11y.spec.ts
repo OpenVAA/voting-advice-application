@@ -7,7 +7,7 @@
  *
  * ## The reach proof
  *
- * The requirement is explicit that the auth fixture reporting success is NOT the evidence. So every scan takes its own: `assertCandidateReach` reads the SETTLED URL, asserts it is inside the candidate application and is not the login route, and asserts a per-entry marker that only the authenticated surface renders. It attaches both to the test's own output, so the evidence lives in the run rather than in a summary.
+ * The auth fixture reporting success is not evidence of reach, so every scan takes its own: `assertCandidateReach` reads the SETTLED URL, asserts it is inside the candidate application and is not the login route, and asserts a per-entry marker that only the authenticated surface renders. It attaches both to the test's own output, so the evidence lives in the run rather than in a summary.
  *
  * It runs inside every entry's `settle`, i.e. BEFORE the scan — a silently-redirected scan therefore fails by name instead of reporting a confident zero about a login page. `toScanEntry` composes it onto every entry at the runner, so an entry physically cannot be added without it.
  *
@@ -43,7 +43,7 @@
  * 4. **`cand-nav-menu` opens the drawer through `navMenu.fixture`, never a
  *    click.** MEASURED: a bare `nav-menu-toggle` click is a no-op at 1280×720 AND 390×844, on the candidate app AND the voter app — `aria-expanded` stays `"false"` and `nav-menu` stays `display: none`, sampled at 0/30/80/150/400/1200 ms. It is the documented SSR→hydration gap; the fixture owns the retry.
  * 5. **axe's `incomplete` ("needs review") results are outside the gate.** This
- *    is a SHARED posture rather than a divergence — the voter gate asserts only on `violations` too — but it is recorded because the scout measured **72** such nodes across these 14 scans, all `color-contrast`, all on `<span class="uc-first">` inside a `vaa-button-label` or on a `!bg-transparent` `<select>`. The already-green voter surfaces produce the same class (voter-home 3, voter-elections 1). A reader who finds the 72 deserves to know they were seen and left out deliberately, and that gating them on this half alone would be the actual parity break.
+ *    is a SHARED posture rather than a divergence — the voter gate asserts only on `violations` too — but it is recorded because a measurement of these 14 scans found **72** such nodes, all `color-contrast`, all on `<span class="uc-first">` inside a button label or on a `!bg-transparent` `<select>`. The already-green voter surfaces produce the same class (voter-home 3, voter-elections 1). A reader who finds the 72 deserves to know they were seen and left out deliberately, and that gating them on this half alone would be the actual parity break.
  *
  * ## Known gaps — recorded as unknowns, never as zeros
  *
@@ -63,14 +63,14 @@
  *
  * ### Candidate routes OUTSIDE the `(protected)` family — also unscanned
  *
- * Eleven of them, none needing authentication: `login`, `help`, `privacy`, `forgot-password`, `password-reset`, `register`, `register/password`, `preregister` and its `elections` / `constituencies` / `email` / `status` steps. They are outside the criterion's wording ("candidate `(protected)` routes") but they are the same coverage hole, and their a11y state is unknown for the same reason: nothing scans them.
+ * Eleven of them, none needing authentication: `login`, `help`, `privacy`, `forgot-password`, `password-reset`, `register`, `register/password`, `preregister` and its `elections` / `constituencies` / `email` / `status` steps. They are outside this file's `(protected)` scope but they are the same coverage hole, and their a11y state is unknown for the same reason: nothing scans them.
  *
  * ### The four stated limits of the zero itself
  *
  * 1. **One operating system.** Measured on macOS against local Chromium. CI runs
  *    an ubuntu runner. Colour values are computed rather than rendered so contrast should transfer; layout-dependent rules were not re-observed there.
- * 2. **One contention profile.** The scout's measurement was `--workers=1` in a
- *    standalone config. It was re-taken inside the real suite, which closes this one for the recorded run but not for every future scheduling shape — scan-timing pressure is exactly what produced phantom `color-contrast` failures on the voter side (see `awaitAnimationsSettled`).
+ * 2. **One contention profile.** The measurement was taken inside the real
+ *    suite, which covers the recorded run but not every future scheduling shape — scan-timing pressure is exactly what produced phantom `color-contrast` failures on the voter side (see `awaitAnimationsSettled`).
  * 3. **One identity on one dataset.** CA-AA-1 on `e2e/base`. Every state in the
  *    table above is unmeasured.
  * 4. **One viewport.** 1280×720 (`devices['Desktop Chrome']`), matching the voter
@@ -223,7 +223,7 @@ const CANDIDATE_AXE_ROUTES: ReadonlyArray<CandidateAxeRoute> = [
   },
   {
     // Anchor on the new-password field: the settings form's inputs mount with the candidate's own settings data, while the "Settings" heading is a static i18n title that renders before it.
-    // RE-ANCHORED from `settings.currentPassword` by 157-10 branch (a), which deleted that field. `newPassword` is rendered by the SAME form template, in the same section, on the same load — so it satisfies the identical mounts-with-data property the paragraph above relies on. The anchor is load-bearing, not a passing mention: dropping it outright would let the scan run against the static heading.
+    // `newPassword` is rendered by the same form template, in the same section, on the same load, so it has the mounts-with-data property the line above relies on. The anchor is load-bearing: without it the scan would run against the static heading.
     // Marker: the update-password submit, which only the authenticated form has.
     name: 'cand-settings',
     fixture: 'raw',
@@ -233,7 +233,7 @@ const CANDIDATE_AXE_ROUTES: ReadonlyArray<CandidateAxeRoute> = [
   },
   {
     // The nav drawer, opened over the candidate home route THROUGH THE FIXTURE.
-    // A bare `getByTestId('nav-menu-toggle').click()` is a measured NO-OP at both 1280×720 and 390×844, on both halves of the app: the toggle is server-rendered before its `onclick` is hydrated, so a click inside that gap does nothing and `nav-menu` stays hidden (sampled at 0/30/80/150/400/1200 ms — it never opens). The fixture wraps click-and-assert in a retrying block and owns that race; it is also what two existing journeys already use, so this entry adds no new hydration knowledge to the suite. Anchor on a nav menu item, which exists only once the drawer is actually open.
+    // A bare `getByTestId('nav-menu-toggle').click()` is a measured NO-OP at both 1280×720 and 390×844, on both halves of the app: the toggle is server-rendered before its `onclick` is hydrated, so a click inside that gap does nothing and `nav-menu` stays hidden (sampled at 0/30/80/150/400/1200 ms — it never opens). The fixture wraps click-and-assert in a retrying block and owns that race, as it does for two journeys. Anchor on a nav menu item, which exists only once the drawer is actually open.
     // Marker: the candidate settings nav item, rendered by CandidateNav — the authenticated app's own navigation, not the public header.
     name: 'cand-nav-menu',
     fixture: 'raw',

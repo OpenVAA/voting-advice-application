@@ -141,7 +141,7 @@ export function createEntityDetails(page: Page) {
       }
       if (options?.infoText !== undefined) {
         // reason: infoText asserts the localized missing-answer marker message (e.g. "hasn't answered") rendered inside the question display block.
-        // The marker element carries no stable data-testid today, so this stays a text-content assertion scoped to the already-resolved `block` locator.
+        // The message element carries no data-testid, so this stays a text-content assertion scoped to the already-resolved `block` locator.
         // eslint-disable-next-line playwright/no-restricted-locators
         await expect(block.getByText(options.infoText)).toBeVisible();
       }
@@ -158,7 +158,7 @@ export function createEntityDetails(page: Page) {
     /**
      * Assert the number-scale dual-marker read-only display inside the question block matching `target`. Derived from NumberScaleInput.svelte's display-mode markup:
      *   - the disabled `question-number-slider` carries `value = voter ?? entity ?? midpoint` (voter wins) — asserted as the authoritative numeric.
-     *   - marker `<div class="marker …" style="left: {pct}%">` positions encode each value; when voter === entity a SINGLE combined marker renders (bothEqual), otherwise one marker per present value.
+     *   - the voter and entity markers encode each value in a `left: {pct}%` inline style; when voter === entity a SINGLE combined voter marker renders (bothEqual), otherwise one marker per present value.
      *
      * `min`/`max` default to the base number question's 0/10 range (used only to compute the expected marker offset).
      */
@@ -184,9 +184,8 @@ export function createEntityDetails(page: Page) {
 
       const pct = (v: number): number =>
         max === min ? 0 : Math.min(100, Math.max(0, ((v - min) / (max - min)) * 100));
-      // reason: the display-mode value markers carry the class `marker` (set in NumberScaleInput.svelte) but no data-testid — the numeric value is encoded in the `left: {pct}%` inline style. No getByTestId/getByRole form expresses a class-scoped marker read.
-      // eslint-disable-next-line playwright/no-restricted-locators, playwright/no-raw-locators
-      const markers = container.locator('.marker');
+      const voterMarker = container.getByTestId(testIds.voter.questions.numberScaleVoterMarker);
+      const markers = voterMarker.or(container.getByTestId(testIds.voter.questions.numberScaleEntityMarker));
 
       if (voterValue != null && entityValue != null && voterValue === entityValue) {
         // bothEqual → a single combined marker at the shared position.
@@ -196,10 +195,7 @@ export function createEntityDetails(page: Page) {
         const expectedCount = (voterValue != null ? 1 : 0) + (entityValue != null ? 1 : 0);
         await expect(markers).toHaveCount(expectedCount);
         if (voterValue != null) {
-          await expect(
-            // eslint-disable-next-line playwright/no-restricted-locators, playwright/no-raw-locators
-            container.locator('.marker.text-primary')
-          ).toHaveAttribute('style', new RegExp(`left:\\s*${pct(voterValue)}%`));
+          await expect(voterMarker).toHaveAttribute('style', new RegExp(`left:\\s*${pct(voterValue)}%`));
         }
       }
     },

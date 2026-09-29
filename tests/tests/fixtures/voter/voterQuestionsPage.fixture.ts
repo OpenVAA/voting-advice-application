@@ -16,6 +16,7 @@
 import { expect } from '@playwright/test';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
+import { resolveVoterStage } from '../../utils/voterNavigation';
 import type { Page } from '@playwright/test';
 
 export function createVoterQuestionsPage(page: Page) {
@@ -41,17 +42,12 @@ export function createVoterQuestionsPage(page: Page) {
     /**
      * Click the questions-intro start button (advances to the first question).
      *
-     * BYPASS-TOLERANT: when `questions.questionsIntro.show === false` (the minimal perm seeds) the intro page auto-redirects past itself on mount, so the `voter-questions-start` button never paints and the page is ALREADY on the first question (`question-choice` visible). In that case there is nothing to click — return early. When the intro IS shown (`e2e/base`), the start button paints and is clicked.
+     * BYPASS-TOLERANT: when `questions.questionsIntro.show === false` (the minimal perm seeds) the intro page auto-redirects past itself on mount, so the `voter-questions-start` button never paints and the page is ALREADY past the intro. The page that is showing is resolved first, however late it renders: on the questions intro the start button is clicked, and on a category intro or a question there is nothing to click.
      */
     async clickStart(): Promise<void> {
-      const start = page.getByTestId(testIds.voter.questions.startButton);
-      const alreadyAdvanced = await page
-        .getByTestId(testIds.voter.questions.answerOption)
-        .first()
-        .isVisible()
-        .catch(() => false);
-      if (alreadyAdvanced) return;
-      await start.click();
+      const stage = await resolveVoterStage(page, ['questions-intro', 'category-intro', 'question']);
+      if (stage !== 'questions-intro') return;
+      await page.getByTestId(testIds.voter.questions.startButton).click();
     }
   };
 }

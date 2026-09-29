@@ -12,13 +12,16 @@
  */
 
 import { expect, test } from '@playwright/test';
-import { expectLandedOn, iterateSelectOptions, settleNetworkIdle } from '../../helpers';
+import { expectLandedOn, iterateSelectOptions, settleNetworkIdle, TIMEOUTS } from '../../helpers';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
 // Ensure unauthenticated voter context — no carryover from other chains.
 test.use({ storageState: { cookies: [], origins: [] } });
+
+/** Per-test budget for the bounce tests: half the per-test ceiling, so 45 s locally and 90 s on GitHub Actions. */
+const BOUNCE_TEST_MAX = TIMEOUTS.testMax / 2;
 
 /**
  * Pick the first option in every constituency `<Select>` rendered on the /constituencies page. ConstituencySelector renders one combobox per applicable-elections group (NOT a radiogroup) — iterate the combobox locator. Hoisted to module scope for playwright/no-conditional-in-test.
@@ -47,7 +50,7 @@ test.describe('perm-not-located-2e2cg', () => {
   });
 
   test('direct /results with no election picked bounces twice and resumes /results', async ({ page }) => {
-    test.setTimeout(45000);
+    test.setTimeout(BOUNCE_TEST_MAX);
 
     // reason: locale-less redirect-bounce probe — deliberately tests the deferred-target routing (asserts a bounce to /elections then /constituencies, NOT a clean /results load). A goToPage that asserts results visibility would defeat the bounce assertion; kept as a raw goto.
     await page.goto('/results');
@@ -68,7 +71,7 @@ test.describe('perm-not-located-2e2cg', () => {
   });
 
   test('multi-bounce preserves arbitrary query params (foo=bar)', async ({ page }) => {
-    test.setTimeout(45000);
+    test.setTimeout(BOUNCE_TEST_MAX);
 
     const deferredTarget = '/results?foo=bar';
     // reason: dynamic deferred-target redirect-bounce probe (freeform URL, asserts query-param preservation through the bounce) — not a named-ROUTE navigation; kept as a raw goto.
@@ -83,7 +86,7 @@ test.describe('perm-not-located-2e2cg', () => {
   });
 
   test('election pre-selected via URL bounces only to constituency selector', async ({ page }) => {
-    test.setTimeout(45000);
+    test.setTimeout(BOUNCE_TEST_MAX);
 
     expect(electionUuid, 'electionUuid must be discovered in beforeAll').toBeTruthy();
     const deferredTarget = `/results?electionId=${electionUuid}`;
@@ -100,7 +103,7 @@ test.describe('perm-not-located-2e2cg', () => {
   });
 
   test('refresh after localStorage clear mid-session resumes deferred target', async ({ page }) => {
-    test.setTimeout(45000);
+    test.setTimeout(BOUNCE_TEST_MAX);
 
     // Step 1: complete the selector chain.
     // reason: locale-less redirect-bounce probe (asserts bounce through /elections + /constituencies, then deferred-target resume after a mid-session storage clear) — not a clean named-page load; kept as a raw goto.
@@ -122,7 +125,7 @@ test.describe('perm-not-located-2e2cg', () => {
   });
 
   test('open-redirect attempt to external URL is rejected by whitelist (defense-in-depth)', async ({ page }) => {
-    test.setTimeout(45000);
+    test.setTimeout(BOUNCE_TEST_MAX);
 
     const evilTarget = 'https://evil.example/phish';
     const encoded = encodeURIComponent(evilTarget);

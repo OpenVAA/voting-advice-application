@@ -156,8 +156,8 @@ const STEP_13_INFO_FILL_ENTRIES: ReadonlyArray<readonly [string, string]> = Obje
  *
  * The loop ceiling (`MAX_STEPS`) is a defensive guard against an infinite walk if the dispatch logic regresses; base currently exposes ~10 applicable opinion questions to the unregistered candidate (Base ×7 — incl. the number + multi-choice questions — + Opt-A ×1 + Opt-B ×1 + EL-Reg ×1), so 20 is a loose ceiling.
  *
- * Per-question answering is TYPE-AWARE: a number-scale question is answered via the native slider (focus + End); a multi-choice checkbox question via the first 2 choices (min 2 / max 3); every other
- * (radio) question via the first choice. Without per-type driving the number question has no choice to click and the multi-choice needs ≥2 selections, so Save would stay disabled and the walk would stall.
+ * Per-question answering is TYPE-AWARE: a number-scale question is answered via the native slider (focus + End); a multi-choice checkbox question via the smallest valid selection; every other
+ * (radio) question via the first choice. Without per-type driving the number question has no choice to click and the multi-choice needs a selection inside its window, so Save would stay disabled and the walk would stall.
  *
  * Hoisted to module scope (mirrors voter-journey precedent) to satisfy `playwright/no-conditional-in-test` — the `if` inside is the walk's loop-exit condition, not a race mask.
  */
@@ -266,7 +266,7 @@ function scopedChoicesByType(page: Page, questionId: string, inputType: 'checkbo
   return page.locator(`[data-testid="question-choice"][name="questionChoices-${questionId}"][type="${inputType}"]`);
 }
 
-// Start every test in this file UNAUTHENTICATED per R13.
+// Start every test in this file UNAUTHENTICATED.
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test.describe('candidate journey', { tag: ['@candidate'] }, () => {
@@ -322,7 +322,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
     // candidate nav-menu logged-out vs logged-in.
     // Logged-out item set: the menu (still unauthenticated on the public /candidate/privacy page) renders the EXACT ordered list below. All ten are anchored on the `nav-menu-item` testid the navMenu fixture reads.
     // Labels derived at build by reading the rendered drawer on the e2e/base dataset (4 locales → 3 extra language items beyond the active `en`).
-    await test.step('2.5. EFLOW-09: candidate nav-menu logged-out item set', async () => {
+    await test.step('2.5. candidate nav-menu logged-out item set', async () => {
       await page.goto('/en/candidate/privacy');
       const navMenu = createNavMenu(page);
       await navMenu.openMobileNav();
@@ -345,7 +345,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
         content: 'Click here to register: {LINK}'
       });
 
-      // Poll Mailpit for the registration email (loose subject regex per R14).
+      // Poll Mailpit for the registration email (loose subject regex).
       await emailBucket.expectEmail(REGISTRATION_EMAIL_SUBJECT_REGEX);
       const links = await emailBucket.getLinksInEmail(REGISTRATION_EMAIL_SUBJECT_REGEX);
       expect(links.length, 'registration email should contain at least one link').toBeGreaterThan(0);
@@ -543,21 +543,25 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await expect(page).toHaveURL(/\/candidate\/profile/, { timeout: TIMEOUTS.slowPage });
       // Fill the link question with a clearly invalid URL.
       await candidateProfilePage.fillQuestion(/\[qu-info-text-link\]/, 'not-a-url');
+      // Scoped to the link question: another field's error, such as a still-empty required question's, must not satisfy or confuse the waits below.
+      const linkFieldError = candidateProfilePage
+        .getQuestion(/\[qu-info-text-link\]/)
+        .first()
+        .getByTestId(testIds.shared.inputError);
       // Trigger validation by blurring the field (Input.svelte's checkUrl runs on input change; tab off to force evaluation in headless mode).
       await page.keyboard.press('Tab');
       // Assert the inline ErrorMessage's input-error testid surfaces the invalidUrl error. The element renders the *translated value* (not the key), so the regex matches the actual en + fi strings for components.input.error.invalidUrl: en "The URL is not valid.", fi "Verkko-osoite ei ole kelvollinen."
-      await expect
-        .soft(page.getByTestId(testIds.shared.inputError))
-        .toContainText(/not valid|ei ole kelvollinen/i, { timeout: TIMEOUTS.element });
+      await expect.soft(linkFieldError).toContainText(/not valid|ei ole kelvollinen/i, { timeout: TIMEOUTS.element });
       // Clear the field so step 14 isn't blocked by validation when it re-submits the form with the required field filled.
       await candidateProfilePage.fillQuestion(/\[qu-info-text-link\]/, '');
+      // Commit the cleared value before clicking Save: the field validates on blur, and the blur also removes the invalid-URL error above it. Blurring by the Save click itself would let that removal shift the button between mousedown and mouseup, and the click would be lost. So blur first and wait for the error to go.
+      await page.keyboard.press('Tab');
+      await expect(linkFieldError).toBeHidden({ timeout: TIMEOUTS.slowPage });
       // Return to home so step 14's clickTask('profile') re-navigates cleanly.
       await page.getByTestId(testIds.candidate.profile.submit).click();
-      // Positively settle on the candidate-home route BEFORE asserting the home status message. The field-cleared submit takes the not-canSubmit branch of profile/+page.svelte, which navigates to getRoute.current('CandAppHome') → '/candidate'. Asserting that exact destination (rather than "anything that isn't /profile") makes a misroute — to login, an error page, or any other candidate sub-route — fail fast here and name the true destination, instead of passing and deferring the failure to the downstream status-message check.
+      // Positively settle on the candidate-home route BEFORE asserting the home status message. With the required field still empty, profile/+page.svelte's `submitRouting` sends the save to getRoute.current('CandAppHome') → '/candidate'. Asserting that exact destination makes a misroute (to login, an error page or another candidate sub-route) fail here and name the true destination.
       // The regex matches '/candidate', '/candidate/', '/candidate?…' and '/candidate#…' (tolerating an optional locale prefix), but not '/candidate/profile' or any other sub-route.
-      //
-      // The settle stays split from the element-visibility wait: under the full-perm-DAG concurrent gate the save()+goto()+home-remount chain can exceed TIMEOUTS.slowPage when the visibility check races it directly (candidate-journey:661 cold-start load-contention flake, surfaced by a with-deps gate run and hardened after it). Splitting the URL-settle (generous slowPage budget) from the element-visibility wait composes the two additively, so the status check runs against an already-navigated, interactive home route rather than a mid-transition DOM.
-      // Mirrors the navigateToFirstQuestion waitForURL-then-settle idiom (voterNavigation.ts).
+      // The URL settle stays split from the element-visibility wait, so the status check runs against an already-navigated home route rather than a mid-transition DOM.
       await page.waitForURL(/\/candidate\/?(?:\?|#|$)/, { timeout: TIMEOUTS.slowPage });
       await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
         timeout: TIMEOUTS.slowPage
@@ -572,7 +576,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       // Fill the required test-qu-info-text field this time.
       await candidateProfilePage.fillQuestion(/\[qu-info-text\]/, INFO_QUESTION_ANSWERS['test-qu-info-text']);
       await candidateProfilePage.submit();
-      // Post-submit when required-empty gate is satisfied: navigation to the questions overview per profile/+page.svelte:104-116 canSubmit branch.
+      // Post-submit when required-empty gate is satisfied: navigation to the questions overview per the `submitRouting` of profile/+page.svelte.
       await expect(page).toHaveURL(/\/candidate\/questions/, { timeout: TIMEOUTS.slowPage });
     });
 
@@ -649,7 +653,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
     // candidate leg: the walk answers the multi-choice question generically; nothing asserts its type-specific input contract.
     // Assert here that the multi-choice opinion question renders CHECKBOX inputs (not radios), the min/max helper text, and Save gating on BOTH sides of the
     // 2..3 selection window (incl. the over-max 4th). Entry point is step 18's overview state; this pre-answers qu-opin-base-7-multichoice, which is compatible with the step-19 walk (it covers only REMAINING unanswered questions).
-    await test.step('18.5. EQTYP-01: multi-choice opinion — type-specific input contract (checkboxes + helper + save gating)', async () => {
+    await test.step('18.5. multi-choice opinion — type-specific input contract (checkboxes + helper + save gating)', async () => {
       // Navigate from the overview to the multi-choice question editor via its card action (goToQuestion expands every category then clicks the card's Answer/Edit affordance and awaits navigation off the overview).
       await candidateQuestionsOverviewPage.goToQuestion(/\[qu-opin-base-7-multichoice\]/);
       await expect(page).toHaveURL(/\/candidate\/questions\/[^/]+/, { timeout: TIMEOUTS.slowPage });
@@ -666,7 +670,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await expect(helper).toBeVisible();
       await expect(helper).toHaveText(/2.*3/);
 
-      // save gating across the 2..3 window. QuestionChoices.svelte never disables unchecked boxes ("we never disable unchecked boxes here" — QuestionChoices.svelte:170-178 handleToggle); over/under-selection surfaces on the caller's Save button via isMultiChoiceCountValid (valid iff the count is within [effectiveMin=2, effectiveMax=3] — multiChoiceValidity.ts:30).
+      // save gating across the 2..3 window. QuestionChoices.svelte never disables unchecked boxes (its `handleToggle`); over/under-selection surfaces on the caller's Save button via `isMultiChoiceCountValid` in multiChoiceValidity.ts (valid iff the count is within [effectiveMin=2, effectiveMax=3]).
       const boxes = scopedChoices(page, qid);
       // 1 selected → below min → Save DISABLED.
       await boxes.nth(0).click();
@@ -680,7 +684,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await boxes.nth(2).click();
       await expect(boxes.nth(2)).toBeChecked();
       await candidateQuestionPage.expectContinueEnabled();
-      // 4 selected → over max → the 4th box still CHECKS (unchecked boxes are never disabled — QuestionChoices.svelte:170-178), but Save DISABLES (over-max is invalid: isMultiChoiceCountValid count<=effectiveMax — multiChoiceValidity.ts:30).
+      // 4 selected → over max → the 4th box still CHECKS (unchecked boxes are never disabled), but Save DISABLES (over-max is invalid: `isMultiChoiceCountValid` requires count <= effectiveMax).
       await boxes.nth(3).click();
       await expect(boxes.nth(3)).toBeChecked();
       await candidateQuestionPage.expectContinueDisabled();
@@ -700,7 +704,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
 
     // ============== Step 18.6: categorical + boolean type-specific ===
 
-    // tighten the existing categorical + boolean opinion coverage from generic choice-select to type-specific input contracts, in the SAME spec region as 18.5 (no general journey-spec refactor — steps 16-18's likert choreography and the step-19 walk are untouched). Radio input `type` + exact choice count is the discriminant vs the multi-choice checkboxes above.
+    // Type-specific input contracts for the categorical and boolean opinion questions, beside 18.5. Radio input `type` + exact choice count is the discriminant vs the multi-choice checkboxes above.
     await test.step('18.6. categorical + boolean opinion — type-specific input contracts', async () => {
       // Categorical (qu-opin-base-4): singleChoiceCategorical → 3 RADIO choices.
       await candidateQuestionsOverviewPage.goToQuestion(/\[qu-opin-base-4-categorical\]/);
@@ -723,7 +727,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       const boolId = currentQuestionId(page);
       await expect(scopedChoicesByType(page, boolId, 'radio')).toHaveCount(2);
       await expect(scopedChoicesByType(page, boolId, 'checkbox')).toHaveCount(0);
-      // lock. OpinionQuestionInput synthesizes boolean choices as ['no'→false, 'yes'→true], so index 0 saves the FALSY value deliberately — the exact value the overview's old truthiness guard discarded. On an unfixed build the card below renders no display markup and its action reads "Answer this question", so all three assertions fail.
+      // OpinionQuestionInput synthesizes boolean choices as ['no'→false, 'yes'→true], so index 0 saves the FALSY value deliberately: the overview must still show a falsy answer as answered. If it did not, the card below would render no display markup and its action would read "Answer this question", so all three assertions would fail.
       await candidateQuestionPage.selectChoice(0);
       await candidateQuestionPage.expectContinueEnabled();
       await candidateQuestionPage.clickContinue();
@@ -757,11 +761,11 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
 
     // candidate nav-menu logged-in item set, asserted to DIFFER from the logged-out set.
     //
-    // Fixture-visibility note (build finding): the authenticated candidate nav group (Start / Basic Information / Your Opinions / Preview / Settings) carries its OWN `candidate-nav-*` testids — `NavItem.svelte` spreads the caller's `data-testid` over its default `nav-menu-item`, so those items are NOT visible to the navMenu fixture's `items()` (`nav-menu-item`) reader. So the logged-in assertion has two halves:
+    // Fixture-visibility note: the authenticated candidate nav group (Start / Basic Information / Your Opinions / Preview / Settings) carries its OWN `candidate-nav-*` testids — `NavItem.svelte` spreads the caller's `data-testid` over its default `nav-menu-item`, so those items are NOT visible to the navMenu fixture's `items()` (`nav-menu-item`) reader. So the logged-in assertion has two halves:
     //   (a) the `nav-menu-item`-anchored set the fixture sees (the auth group has DROPPED login/register/forgot-password vs logged-out), and
     //   (b) the authenticated group is PRESENT via its `candidate-nav-*` ids.
     // login/register being gone (a) AND the candidate-nav-* group appearing (b) is the auth-state difference.
-    await test.step('19.5. EFLOW-09: candidate nav-menu logged-in item set (differs from logged-out)', async () => {
+    await test.step('19.5. candidate nav-menu logged-in item set (differs from logged-out)', async () => {
       const navMenu = createNavMenu(page);
       await navMenu.openMobileNav();
       // (a) The `nav-menu-item` set: login / register / forgot-password GONE.

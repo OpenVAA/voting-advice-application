@@ -1,11 +1,18 @@
 -- 10-schema-migrations.test.sql: schema migration tests
 --
--- Verifies the schema-migration and admin-tooling additions:
---   customization JSONB column on app_settings feedback table with CHECK constraint, RLS, and rate limiting terms_of_use_accepted timestamptz column on candidates upsert_answers RPC (merge/overwrite modes, null stripping, RLS) merge_question_custom_data RPC for question custom_data JSONB merge admin_jobs table with admin-only RLS
+-- Asserts:
+-- - the customization JSONB column on app_settings
+-- - the feedback table with its CHECK constraint, RLS and rate limiting
+-- - the terms_of_use_accepted timestamptz column on candidates
+-- - the upsert_answers RPC (merge/overwrite modes, null stripping, RLS), for candidates and organizations
+-- - the admin_jobs table with admin-only RLS
+-- - the merge_question_custom_data RPC for question custom_data JSONB merge
+-- - the entity display-name columns, the entity_type labels and the absence of the role vocabulary and its predicates
+-- - the nominations.election_round lower bound and the app_settings project cascade
 --
 -- Depends on: 00-helpers.test.sql (set_test_user, create_test_data, test_id, etc.)
 --
--- Assertions are NOT hand-numbered here. They were, and the numbering drifted twice - an insertion renumbered its neighbours above and below while leaving a span comment in the middle untouched. pgTAP numbers its own output, the other ten files in this suite carry no numbering, and a hand-maintained parallel index earns nothing it does not eventually get wrong. Describe what an assertion proves; do not number it.
+-- Assertions are not hand-numbered: pgTAP numbers its own output, and a hand-maintained index drifts whenever an assertion is inserted. Describe what an assertion proves; do not number it.
 BEGIN;
 
 SET
@@ -320,7 +327,8 @@ SELECT
     'admin_a can DELETE feedback for project_a'
   );
 
--- Rate limiting: 6th insert from same IP raises exception Reset to postgres to clear rate limit counter, then switch to anon
+-- Rate limiting: a 6th insert from the same IP raises an exception.
+-- Reset to postgres to clear the rate limit counter, then switch to anon.
 SELECT
   reset_role ();
 
@@ -487,8 +495,8 @@ SELECT
   has_function (
     'public',
     'upsert_answers',
-    ARRAY['uuid', 'jsonb', 'boolean'],
-    'upsert_answers(uuid, jsonb, boolean) function exists'
+    ARRAY['entity_type', 'uuid', 'jsonb', 'boolean'],
+    'upsert_answers(entity_type, uuid, jsonb, boolean) function exists'
   );
 
 -- SECURITY INVOKER (not DEFINER)
@@ -517,7 +525,12 @@ SELECT
   is (
     (
       SELECT
-        upsert_answers (test_id ('candidate_a'), '{}'::jsonb, true)
+        upsert_answers (
+          'candidate',
+          test_id ('candidate_a'),
+          '{}'::jsonb,
+          true
+        )
     ),
     '{}'::jsonb,
     'upsert_answers with overwrite=true and empty answers returns {}'
@@ -528,7 +541,12 @@ SELECT
   is (
     (
       SELECT
-        upsert_answers (test_id ('candidate_a'), '{}'::jsonb, false)
+        upsert_answers (
+          'candidate',
+          test_id ('candidate_a'),
+          '{}'::jsonb,
+          false
+        )
     ),
     '{}'::jsonb,
     'upsert_answers with overwrite=false and empty answers returns {}'
@@ -538,7 +556,7 @@ SELECT
 SELECT
   throws_ok (
     format(
-      $$SELECT upsert_answers('%s', '{}'::jsonb, false)$$,
+      $$SELECT upsert_answers('candidate', '%s', '{}'::jsonb, false)$$,
       test_id ('candidate_b')
     ),
     NULL,
@@ -550,7 +568,7 @@ SELECT
 SELECT
   reset_role ();
 
--- Set up a valid answer on candidate_a for merge testing question_a is singleChoiceOrdinal in project_a
+-- Set up a valid answer on candidate_a for merge testing (question_a is singleChoiceOrdinal in project_a)
 UPDATE candidates
 SET
   answers = jsonb_build_object(
@@ -568,7 +586,7 @@ SELECT
     test_user_grants ('candidate_a')
   );
 
--- Merge mode: overwrite=false merges new answers with existing Add a text question for a simpler merge test
+-- Merge mode: overwrite=false merges new answers with existing ones. A text question keeps the merge test simple.
 SELECT
   reset_role ();
 
@@ -595,6 +613,7 @@ SELECT
     (
       SELECT
         upsert_answers (
+          'candidate',
           test_id ('candidate_a'),
           jsonb_build_object(
             'eeeeeeee-eeee-eeee-eeee-000000000301',
@@ -612,6 +631,7 @@ SELECT
     (
       SELECT
         upsert_answers (
+          'candidate',
           test_id ('candidate_a'),
           jsonb_build_object(
             'eeeeeeee-eeee-eeee-eeee-000000000301',
@@ -631,6 +651,7 @@ SELECT
       (
         SELECT
           upsert_answers (
+            'candidate',
             test_id ('candidate_a'),
             jsonb_build_object(
               'eeeeeeee-eeee-eeee-eeee-000000000301',
@@ -646,7 +667,7 @@ SELECT
 -- =====================================================================
 -- upsert_answers covers every entity carrying an answers column
 -- =====================================================================
--- The widening: candidates and organizations are the only two tables carrying an answers column, the two id spaces are distinct, and the organizations attempt runs only when the candidate update matched no row.
+-- upsert_answers writes the one table its entity type names: candidates or organizations, the only two tables carrying an answers column.
 SELECT
   set_test_user (
     'authenticated',
@@ -654,9 +675,10 @@ SELECT
     test_user_grants ('organization_a')
   );
 
--- The capability that did not exist before: an organization admin writes its own organization's answers through the same RPC a candidate uses.
+-- An organization admin writes its own organization's answers through the same RPC a candidate uses.
 SELECT
   upsert_answers (
+    'organization',
     test_id ('org_a'),
     jsonb_build_object(
       test_id ('question_a')::text,
@@ -698,7 +720,12 @@ SELECT
   is (
     (
       SELECT
-        upsert_answers (test_id ('org_a'), '{}'::jsonb, false)
+        upsert_answers (
+          'organization',
+          test_id ('org_a'),
+          '{}'::jsonb,
+          false
+        )
     ),
     jsonb_build_object(
       test_id ('question_a')::text,
@@ -707,7 +734,7 @@ SELECT
     'upsert_answers with merge semantics and an empty answers object leaves the stored organization answers unchanged and returns them'
   );
 
--- The pre-existing candidate path is unregressed by the widening
+-- The candidate path stores answers on the candidate row
 SELECT
   set_test_user (
     'authenticated',
@@ -717,6 +744,7 @@ SELECT
 
 SELECT
   upsert_answers (
+    'candidate',
     test_id ('candidate_a'),
     jsonb_build_object(
       'eeeeeeee-eeee-eeee-eeee-000000000301',
@@ -742,10 +770,10 @@ SELECT
       'eeeeeeee-eeee-eeee-eeee-000000000301',
       '{"value": "still a candidate write"}'::jsonb
     ),
-    'a candidate call still stores answers on the candidate row after the widening'
+    'a candidate call stores answers on the candidate row'
   );
 
--- An id in neither table raises the unchanged not-found exception, so the fall-through ends where it always did
+-- An id matching no row of the named table raises the not-found exception
 SELECT
   set_test_user (
     'authenticated',
@@ -755,13 +783,13 @@ SELECT
 
 SELECT
   throws_ok (
-    $$SELECT upsert_answers('eeeeeeee-eeee-eeee-eeee-000000000399'::uuid, '{"x": 1}'::jsonb, false)$$,
+    $$SELECT upsert_answers('organization', 'eeeeeeee-eeee-eeee-eeee-000000000399'::uuid, '{"x": 1}'::jsonb, false)$$,
     'P0001',
     'Entity not found or access denied: eeeeeeee-eeee-eeee-eeee-000000000399',
-    'an id matching neither candidates nor organizations raises the existing not-found exception'
+    'an id matching no organization raises the not-found exception'
   );
 
--- The widened branch is RLS-gated, not merely id-gated. The candidate branch has carried this negative since the RPC existed (candidate_a cannot write candidate_b, above); the organization branch is the newly-reachable authorization surface and had only positive-path coverage. org_b sits in project_b with a NULL auth_user_id, so neither disjunct of organizations' self-edit policy holds for organization_a: the UPDATE matches no row and the function ends at the same not-found RAISE as an id in neither table.
+-- The organization write is gated by that table's RLS, not merely by the id existing; the candidate write's negative is candidate_a cannot write candidate_b, above. org_b sits in project_b and organization_a holds no grant that reaches it, so organizations' update policies admit no row: the UPDATE matches nothing and the function ends at the same not-found RAISE as an unknown id.
 SELECT
   set_test_user (
     'authenticated',
@@ -772,12 +800,12 @@ SELECT
 SELECT
   throws_ok (
     format(
-      $$SELECT upsert_answers('%s', '{"x": 1}'::jsonb, false)$$,
+      $$SELECT upsert_answers('organization', '%s', '{"x": 1}'::jsonb, false)$$,
       test_id ('org_b')
     ),
     'P0001',
     NULL,
-    'organization_a cannot call upsert_answers for org_b (the widened organization branch is gated by that table''s RLS, not merely by the id not matching a candidate)'
+    'organization_a cannot call upsert_answers for org_b (the organization write is gated by that table''s RLS, not merely by the id existing)'
   );
 
 SELECT
@@ -1136,7 +1164,7 @@ SELECT
     'merge_question_custom_data handles NULL custom_data via COALESCE'
   );
 
--- No definition survives under the pre-rename name. A rename that left a stale definition behind in the catalogue is invisible to every source-tree grep, because the source only ever carries the name it was renamed to.
+-- No function is defined under the name merge_custom_data. A stale definition left in the catalogue is invisible to a source-tree grep, so only the catalogue can show it is absent.
 SELECT
   reset_role ();
 
@@ -1144,7 +1172,7 @@ SELECT
   hasnt_function (
     'public',
     'merge_custom_data',
-    'no function named merge_custom_data survives in public (the pre-rename name of merge_question_custom_data)'
+    'no function named merge_custom_data exists in public, so merge_question_custom_data is the only definition of the merge'
   );
 
 -- =====================================================================
@@ -1162,7 +1190,7 @@ SELECT
     'candidates has no name column (a candidate display name is derived from first_name/last_name)'
   );
 
--- organizations still carries one
+-- organizations carries one
 SELECT
   has_column (
     'public',
@@ -1171,7 +1199,7 @@ SELECT
     'organizations has a name column (an organization has no first/last name to derive one from)'
   );
 
--- the initials override survives on candidates
+-- candidates carries the initials override
 SELECT
   has_column (
     'public',
@@ -1186,15 +1214,15 @@ SELECT
 SELECT
   reset_role ();
 
--- the role vocabulary, RE-EXPRESSED AS ITS INVERSE BY 162-15. It used to assert that user_role_type carried exactly five labels in order, for the stated reason that a role literal is compared inside RLS predicates where a stale one denies silently instead of erroring. That type is gone: no predicate compares a role literal any more, because the grant map's own vocabulary replaced it. The measured claim is kept and its subject inverted -- the type is ABSENT from the catalogue, which the source tree cannot satisfy or invalidate, and which a resurrection would redden.
+-- user_role_type is ABSENT from the catalogue: no predicate compares a role literal, because permissions come from the grant map (grant_role_permissions). The source tree can neither satisfy nor invalidate a catalogue read.
 SELECT
   hasnt_type (
     'public',
     'user_role_type',
-    'user_role_type does not exist (162-15 retired the role vocabulary; a type reappearing here is a second authority vocabulary returning)'
+    'user_role_type does not exist (a role type here would be a second authority vocabulary beside the grant map)'
   );
 
--- the entity vocabulary the retired one was kept in step with, unchanged
+-- the entity vocabulary
 SELECT
   enum_has_labels (
     'public',
@@ -1205,15 +1233,15 @@ SELECT
       'faction',
       'alliance'
     ]::name[],
-    'entity_type carries exactly the four entity labels, in order (the role vocabulary above uses the same term for the same thing)'
+    'entity_type carries exactly the four entity labels, in order'
   );
 
 -- =====================================================================
--- the retired role-scope vocabulary and the predicate that read it
+-- the absent role-scope vocabulary and the predicates that read it
 --
--- Four assertions RE-EXPRESSED AS THEIR INVERSES BY 162-15, each keeping its measured claim and gaining the opposite one. They used to assert that role_scope_type carried exactly five labels in order, that user_roles.scope_type was of that type rather than text, that has_role existed with its exact three-argument enum signature, and that no text-typed overload of it survived. All four subjects are gone, and every replacement reads the catalogue, so a source comment naming any of them can neither satisfy nor invalidate one.
+-- role_scope_type, user_roles, has_role and can_access_project are absent from the catalogue. Every assertion here reads the catalogue, so a source comment naming any of them can neither satisfy nor invalidate one.
 --
--- The fourth is STRENGTHENED rather than merely inverted: it used to exclude ONE overload shape, (text, text, uuid), chosen because an unknown literal binds to text in preference to a user-defined enum. It now excludes the name at ANY signature, which is the same guard without the assumption that a resurrection would come back in that particular spelling.
+-- The two function checks exclude the name at ANY signature, so a reappearance is caught whatever its argument types.
 -- =====================================================================
 SELECT
   reset_role ();
@@ -1222,14 +1250,14 @@ SELECT
   hasnt_type (
     'public',
     'role_scope_type',
-    'role_scope_type does not exist (the scope vocabulary the retired role table used; public.grants.scope carries grant_scope_type instead)'
+    'role_scope_type does not exist (public.grants.scope carries grant_scope_type)'
   );
 
 SELECT
   hasnt_table (
     'public',
     'user_roles',
-    'public.user_roles does not exist (the second authority table K1 opened a shim window over; the column-type assertion this replaces had it as its subject)'
+    'public.user_roles does not exist (public.grants is the only authority table)'
   );
 
 SELECT
@@ -1245,7 +1273,7 @@ SELECT
         AND p.proname = 'has_role'
     ),
     0,
-    'no public.has_role survives at ANY signature (strengthened from the single text-typed overload the pre-162-15 assertion excluded: a resurrection need not come back in the spelling that was anticipated)'
+    'no public.has_role exists at ANY signature (permissions are asked through user_can)'
   );
 
 SELECT
@@ -1261,7 +1289,7 @@ SELECT
         AND p.proname = 'can_access_project'
     ),
     0,
-    'and no public.can_access_project survives at ANY signature either — the shim 76 policy call sites once delegated to'
+    'and no public.can_access_project exists at ANY signature either (policies ask user_can)'
   );
 
 -- =====================================================================
@@ -1283,10 +1311,10 @@ SELECT
     ),
     '23514',
     NULL,
-    'nominations rejects election_round = 0 with a check violation (the column carries DEFAULT 1, so before the constraint a zeroth round inserted cleanly)'
+    'nominations rejects election_round = 0 with a check violation (the column carries DEFAULT 1, and without the constraint a zeroth round would insert cleanly)'
   );
 
--- The constraint carries the name the schema declares. 104-nominations.sql names it explicitly and 156-DISPOSITIONS.md Record B cites that name; without this the name is only a comment, and a rename would go unnoticed until a throws_ok matching on it failed somewhere else.
+-- The constraint carries the name 104-nominations.sql declares; without this assertion the name is only a comment, and a rename would go unnoticed until a throws_ok matching on it failed somewhere else.
 SELECT
   is (
     (
@@ -1366,7 +1394,7 @@ SELECT
         AND confrelid = 'public.projects'::regclass
     ),
     'c',
-    'the app_settings project foreign key deletes with CASCADE (it was the only one of the thirteen references to projects carrying no referential action, so a project delete raised a foreign-key violation)'
+    'the app_settings project foreign key deletes with CASCADE (with no referential action, a project delete would raise a foreign-key violation)'
   );
 
 -- the behavioural form. Three statements, because "no foreign-key violation was raised" and "the child row was removed" are different claims and only the second is the cascade. The pre-state assertion is what stops the post-state one being vacuous: 0 after proves nothing unless it was not 0 before.

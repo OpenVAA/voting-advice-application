@@ -1,23 +1,22 @@
 /**
- * The located voter layout's election/constituency guard.
+ * The located voter layout's election and constituency guard.
  *
- * REGRESSION (157 review, Lot B CR-05). A degenerate URL — `?electionId=`, which `parseParams` reduces to `[]` because it filters empty values out of an array param — reached the data reads as a PRESENT selection, because `[]` is truthy and the guard tested truthiness. Nothing redirected, the adapter fanned out over zero ids, and the voter got a blank app with no error and no log line. The same hole exists one level down: `getImpliedConstituencyIds` returns `[]` (not `undefined`) when it is handed no elections to imply from, so the implication branch could satisfy its own guard with an empty selection too.
+ * An empty selection redirects to the selector instead of reading data. `parseParams` reduces a degenerate `?electionId=` to `[]`, and `getImpliedConstituencyIds` returns `[]` when it has no elections to imply from; neither counts as a selection.
  *
- * These tests drive `load` directly rather than through a browser, so they pin the guard itself: the assertion is that the load REDIRECTS to the selector instead of resolving with data.
+ * The tests drive `load` directly. Each case first asserts that neither data read was issued and then that the load redirected, so a change that lets a selection through the guard fails on the read spies.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const getQuestionData = vi.fn(async () => ({ questions: [] }));
 const getNominationData = vi.fn(async () => ({ nominations: [] }));
-const init = vi.fn();
 
 vi.mock('$lib/api/dataProvider', () => ({
-  dataProvider: Promise.resolve({
-    init,
+  createDataProvider: () => ({
     getQuestionData: (...args: Array<unknown>) => getQuestionData(...(args as [])),
     getNominationData: (...args: Array<unknown>) => getNominationData(...(args as []))
-  })
+  }),
+  createSupabaseUniversalClient: vi.fn()
 }));
 
 const { load } = await import('./+layout');
@@ -25,10 +24,11 @@ const { load } = await import('./+layout');
 /**
  * Call `load` with the minimum SvelteKit surface it touches.
  *
- * The parent data is deliberately EMPTY: with no elections in the temporary `DataRoot`, neither id can be implied, so a correct guard has nowhere to go but the selector. That isolates the guard from the implication logic.
+ * The parent data is empty: with no elections in the temporary `DataRoot`, neither id can be implied, so a correct guard has nowhere to go but the selector. That isolates the guard from the implication logic.
  */
 function runLoad(search: string) {
   return load({
+    data: { supabaseCookies: [] },
     fetch: (async () => new Response()) as typeof fetch,
     parent: async () => ({
       appSettingsData: Promise.resolve({}),
@@ -41,9 +41,11 @@ function runLoad(search: string) {
 }
 
 /**
+ * Settle `load`, returning the redirect it threw, or `undefined` when it resolved with data.
+ *
  * `redirect()` throws a `Redirect`; `isRedirect` is not exported from the test surface, so match on the shape SvelteKit gives it.
  */
-async function captureRedirect(promise: Promise<unknown>): Promise<{ status: number; location: string }> {
+async function redirectOf(promise: Promise<unknown>): Promise<{ status: number; location: string } | undefined> {
   try {
     await promise;
   } catch (thrown) {
@@ -53,7 +55,7 @@ async function captureRedirect(promise: Promise<unknown>): Promise<{ status: num
     }
     throw thrown;
   }
-  throw new Error('load resolved with data instead of redirecting to the selector');
+  return undefined;
 }
 
 describe('(voters)/(located)/+layout.ts — an empty id array is not a selection', () => {
@@ -62,29 +64,31 @@ describe('(voters)/(located)/+layout.ts — an empty id array is not a selection
   });
 
   it('redirects a `?electionId=` URL to the election selector instead of reading with zero ids', async () => {
-    const { status, location } = await captureRedirect(runLoad('?electionId='));
-    expect(status).toBe(307);
-    expect(location).toMatch(/elections/i);
-    // The reads must not have happened at all: the point of the guard is that no request is issued for a selection the voter never made.
+    const redirected = await redirectOf(runLoad('?electionId='));
     expect(getQuestionData).not.toHaveBeenCalled();
     expect(getNominationData).not.toHaveBeenCalled();
+    expect(redirected?.status).toBe(307);
+    expect(redirected?.location).toMatch(/elections/i);
   });
 
   it('redirects a `?constituencyId=` URL the same way', async () => {
-    const { status } = await captureRedirect(runLoad('?constituencyId='));
-    expect(status).toBe(307);
+    const redirected = await redirectOf(runLoad('?constituencyId='));
+    expect(getQuestionData).not.toHaveBeenCalled();
     expect(getNominationData).not.toHaveBeenCalled();
+    expect(redirected?.status).toBe(307);
   });
 
   it('redirects when both params are present but empty', async () => {
-    const { status } = await captureRedirect(runLoad('?electionId=&constituencyId='));
-    expect(status).toBe(307);
+    const redirected = await redirectOf(runLoad('?electionId=&constituencyId='));
+    expect(getQuestionData).not.toHaveBeenCalled();
     expect(getNominationData).not.toHaveBeenCalled();
+    expect(redirected?.status).toBe(307);
   });
 
-  it('still redirects when neither param is present at all, the pre-existing behaviour', async () => {
-    // Guards the shape of the fix: treating `[]` as absent must not change what an absent param does.
-    const { status } = await captureRedirect(runLoad(''));
-    expect(status).toBe(307);
+  it('redirects when neither param is present', async () => {
+    const redirected = await redirectOf(runLoad(''));
+    expect(getQuestionData).not.toHaveBeenCalled();
+    expect(getNominationData).not.toHaveBeenCalled();
+    expect(redirected?.status).toBe(307);
   });
 });

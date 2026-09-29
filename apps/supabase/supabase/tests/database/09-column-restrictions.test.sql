@@ -1,17 +1,17 @@
 -- 09-column-restrictions.test.sql: Column-level REVOKE/GRANT tests
 --
 -- Verifies that the column-level REVOKE UPDATE / GRANT UPDATE mechanism prevents authenticated users from modifying protected columns:
---   - candidates: external_id, project_id, auth_user_id, is_generated, sort_order, created_at, updated_at
---   - organizations: external_id, project_id, auth_user_id, is_generated, sort_order, created_at, updated_at
+-- - candidates: external_id, project_id, auth_user_id, id, sort_order, created_at, updated_at
+-- - organizations: external_id, project_id, auth_user_id, id, sort_order, created_at, updated_at
+-- - projects: account_id
 --
--- While postgres/service_role can update all columns (bypass grants).
+-- postgres and service_role bypass the column grants and can update every column.
 --
--- ⚠ THE CONFIRMATION COLUMN IS NO LONGER ONE OF THE PROTECTED ONES IN THIS FILE'S SENSE, AND THE PROTECTION WAS NOT DROPPED -- IT MOVED. As of 162-13 it is ALLOWED BY GRANT on all four entity tables and REFUSED BY TRIGGER: `enforce_entity_immutability()`'s rule 1 refuses any change to it, in either direction, by an authenticated caller who does not hold `entity.confirm` on the row. The grant had to give way because a single global REVOKE/GRANT pair against one role cannot distinguish two callers of that role, so the bar it provided also refused the project administrator the phase declares may confirm -- measured as a live 42501 while `user_can` answered true for that same caller. The two confirmation assertions below therefore observe a named trigger refusal rather than a 42501, and each is paired with an assertion on the SQLSTATE so that the statement is shown to REACH the trigger.
+-- The confirmation column is granted on all four entity tables and guarded by a trigger instead: rule 1 of `enforce_entity_immutability()` refuses any change to it by an authenticated caller who does not hold `entity.confirm` on the row. A column grant cannot tell a candidate from a project administrator of the same role, so the check lives in the trigger, and each confirmation assertion is paired with an SQLSTATE assertion showing that the statement reached it.
 --
--- ⚠ THE NAME COLUMNS ARE STILL GRANTED, and their conditional freeze is likewise the trigger's. Section 2 below unconfirms and re-confirms its own row so that its two grant assertions keep measuring the grant.
+-- The name columns are granted too, and their freeze once confirmed is the trigger's rule 2. Section 2 unconfirms and re-confirms its own row so that its two grant assertions measure the grant.
 --
--- Depends on: 00-helpers.test.sql (set_test_user, create_test_data, test_id, etc.)
---             303-column-grants.sql (column-level REVOKE/GRANT) 011-validation-functions.sql (enforce_entity_immutability)
+-- Depends on: 00-helpers.test.sql (set_test_user, create_test_data, test_id, etc.), 303-column-grants.sql (column-level REVOKE/GRANT) and 011-validation-functions.sql (enforce_entity_immutability).
 BEGIN;
 
 SET
@@ -38,6 +38,7 @@ SELECT
     test_user_grants ('candidate_a')
   );
 
+-- `external_id` is the per-project idempotency key `bulk_import` upserts on, so an entity user able to rewrite it could take over another row's import identity.
 SELECT
   throws_ok (
     format(
@@ -49,12 +50,11 @@ SELECT
     'Candidate cannot update external_id on own record'
   );
 
--- ⚠ RE-POINTED BY 162-16, AND THE MECHANISM UNDER TEST IS UNCHANGED. This assertion's subject used to be the per-row publication column, which 162-16 deletes from the schema entirely; an assertion naming a column that does not exist raises 42703 undefined-column rather than the 42501 insufficient-privilege it asserts, so it would fail for a reason that has nothing to do with the protection it was written to prove. The subject is DERIVED rather than guessed: `external_id` is in the un-granted authenticated-UPDATE set on this table and on `organizations`, it is NOT the confirmation column (162-13 moved that one INTO the allow-list, so an assertion re-pointed at it would observe a success where its description says a refusal), and it is the only member of the un-granted set this file did not already assert. It is also a real tamper vector: `external_id` is the per-project idempotency key `bulk_import` upserts on, so an entity user able to rewrite it could take over another row's import identity. The allow-list mechanism keeps a negative control on both covered tables, which is the property this assertion exists for.
--- An entity user cannot confirm themselves. 162-08 makes the column a term of public read, so a self-settable one would let an identity publish itself without an identity check.
+-- An entity user cannot confirm themselves. Confirmation is a condition of public visibility, so a self-settable flag would let an identity publish itself without an identity check.
 --
--- ⚠ RE-EXPRESSED BY 162-13, AND THE MEASURED CLAIM IS UNCHANGED WHILE THE MECHANISM BEHIND IT MOVED. This assertion observed a 42501 that followed from the confirmation column sitting OUTSIDE the allow-list. 162-13 puts it INTO the allow-list on all four entity tables, because a single global grant pair against one role cannot say "a candidate may not but an administrator may" -- and the bar it retires also refused the project administrator who holds `entity.confirm`, MEASURED as a live 42501 while `user_can` answered true for the same caller. The protection now lives in `enforce_entity_immutability()`'s rule 1. The description string is unchanged because the claim is unchanged; what changed is that the refusal is now named rather than anonymous, and the pair below asserts BOTH halves of it: the message identifies the rule, and the SQLSTATE proves the statement reached the trigger instead of dying at the privilege layer.
+-- The refusal is rule 1 of `enforce_entity_immutability()`, so the pair below asserts both the rule's message and its SQLSTATE, which proves the statement reached the trigger instead of failing at the privilege layer.
 --
--- THE VALUE WRITTEN IS THE OPPOSITE OF THE ROW'S, and it has to be. Rule 1 compares old to new with `IS DISTINCT FROM`, so writing `true` to a row that is already confirmed is a no-op the trigger correctly permits -- MEASURED: this assertion reported "no exception thrown" while the protection was working exactly as specified. The fixture confirms `candidate_a`, so the change that is really a change is the one that turns the flag OFF; that is also the dangerous direction, since an entity user who can unconfirm can unfreeze their own name.
+-- The value written is the opposite of the row's. Rule 1 compares old to new with `IS DISTINCT FROM`, so writing `true` to the confirmed fixture row is a permitted no-op; turning the flag off is also the dangerous direction, since an entity user who can unconfirm can unfreeze their own name.
 SELECT
   throws_like (
     format(
@@ -98,16 +98,15 @@ SELECT
     'Candidate cannot update auth_user_id on own record'
   );
 
--- RETIRED by 162-07b, and this note is the retirement reason rather than a placeholder. The assertion that stood here asserted that a candidate cannot UPDATE its own `organization_id`. That column no longer exists on `public.candidates`, so the statement it ran is now a 42703 undefined-column error rather than the 42501 insufficient-privilege error it asserted -- it would fail for a reason that has nothing to do with the protection it was written to prove. This is NOT a weakened assertion: it is an assertion whose SUBJECT was removed. The protection itself did not lapse, because the column-grant model here is an allow-list and a column that does not exist is outside every grant by construction. The candidate-to-organization association now lives on `nominations.parent_nomination_id`, whose write protection is 162-12's to assert.
 SELECT
   throws_ok (
     format(
-      $$UPDATE candidates SET is_generated = true WHERE id = '%s'$$,
+      $$UPDATE candidates SET id = 'dddddddd-dddd-dddd-dddd-000000000099'::uuid WHERE id = '%s'$$,
       test_id ('candidate_a')
     ),
     '42501',
     NULL,
-    'Candidate cannot update is_generated on own record'
+    'Candidate cannot update id on own record'
   );
 
 -- The presentation-order column and the two audit timestamps are not self-editable either: ordering is admin-controlled, and a record owner who can rewrite when their row was created or last touched can repudiate their own edit history.
@@ -154,9 +153,9 @@ SELECT
     test_user_grants ('candidate_a')
   );
 
--- ⚠ THE TWO NAME COLUMNS ARE STILL IN THE GRANT, AND THAT IS THE POINT 162-13 HAD TO PRESERVE. Removing them would freeze a name on an UNCONFIRMED entity and make the sign-up flow impossible, which section 11.2 forbids -- so the column grant still permits them and the CONDITION lives in `enforce_entity_immutability()`'s rule 2 instead.
+-- The two name columns stay in the grant, because freezing a name on an unconfirmed entity would make sign-up impossible; the freeze once confirmed is rule 2 of `enforce_entity_immutability()`.
 --
--- The fixture's `candidate_a` is confirmed, so the grant alone is no longer enough to make these two statements succeed. The row is unconfirmed as the owner for the length of this section, which is what leaves these two assertions measuring the thing they were written to measure -- the COLUMN GRANT -- rather than the trigger's condition; the third assertion below then restores the confirmation and observes that the very same statement is refused, which is strictly more than the two alone ever said.
+-- The fixture's `candidate_a` is confirmed, so the section unconfirms it as postgres first and the two assertions measure the column grant rather than the trigger. The third assertion restores the confirmation and observes that the same statement is refused.
 SELECT
   reset_role ();
 
@@ -249,7 +248,7 @@ SELECT
 
 -- The confirmation column's twin on this table: the tamper vector is identical, so proving it only on candidates would leave an equally open surface next door.
 --
--- ⚠ RE-EXPRESSED BY 162-13 EXACTLY AS ITS CANDIDATES TWIN ABOVE, and for the same reason: the column entered this table's UPDATE allow-list too, so the refusal is now `enforce_entity_immutability()`'s rule 1 rather than a privilege error. The value written is `false` -- the opposite of this row's -- because rule 1 compares old to new with `IS DISTINCT FROM` and a write of the value already stored is a no-op the trigger correctly permits. That is also the dangerous direction: an entity user who can unconfirm can unfreeze their own name.
+-- As on candidates, the refusal is rule 1 of `enforce_entity_immutability()`. The value written is `false`, the opposite of the row's, because a write of the stored value is a no-op the trigger permits.
 SELECT
   throws_like (
     format(
@@ -296,12 +295,12 @@ SELECT
 SELECT
   throws_ok (
     format(
-      $$UPDATE organizations SET is_generated = true WHERE id = '%s'$$,
+      $$UPDATE organizations SET id = 'dddddddd-dddd-dddd-dddd-000000000099'::uuid WHERE id = '%s'$$,
       test_id ('org_a')
     ),
     '42501',
     NULL,
-    'Organization admin cannot update is_generated on own organization'
+    'Organization admin cannot update id on own organization'
   );
 
 -- The same three columns are closed on this table too: the tamper vector is identical, so proving it only on candidates would leave an equally open surface next door.
@@ -367,7 +366,9 @@ SELECT
   );
 
 -- =====================================================================
--- Section 5: Postgres (admin-equivalent) CAN update protected columns The column-level REVOKE only affects authenticated role. Postgres and service_role bypass it, confirming admin operations work.
+-- Section 5: Postgres (admin-equivalent) CAN update protected columns
+--
+-- The column-level REVOKE only affects the authenticated role. Postgres and service_role bypass it, so admin operations still work.
 -- =====================================================================
 SELECT
   reset_role ();
@@ -382,7 +383,9 @@ SELECT
   );
 
 -- =====================================================================
--- Section 6: A permitted self-edit still works, and the audit timestamp still advances Column privileges are checked against the columns named in the statement, not against what a BEFORE UPDATE trigger assigns, so revoking updated_at does not break self-edit.
+-- Section 6: A permitted self-edit still works, and the audit timestamp still advances
+--
+-- Column privileges are checked against the columns named in the statement, not against what a BEFORE UPDATE trigger assigns, so revoking updated_at does not break self-edit.
 -- =====================================================================
 -- now() is frozen for the whole transaction, so the fixture row's updated_at already equals what the trigger would write. Backdating it as postgres first is what makes the trigger's write observable rather than a coincidence.
 --
@@ -448,7 +451,9 @@ SELECT
   );
 
 -- =====================================================================
--- Section 7: The surviving authenticated UPDATE privilege set, read from the catalogue A count catches both failure directions at once: a column silently left granted, and a column accidentally revoked alongside the intended ones. Membership lists do not, because they also churn on harmless reordering.
+-- Section 7: The authenticated UPDATE privilege set, read from the catalogue
+--
+-- A count catches both failure directions at once: a column silently left granted, and a column accidentally revoked alongside the intended ones. Both counts include `confirmed`, which is granted and guarded by `enforce_entity_immutability()`.
 -- =====================================================================
 SELECT
   reset_role ();
@@ -467,7 +472,7 @@ SELECT
         AND table_name = 'candidates'
     ),
     11,
-    'authenticated holds UPDATE on exactly 10 columns of candidates (14 originally, less name, less sort_order, created_at and updated_at), plus the confirmation column 162-13 moved into the allow-list and handed to enforce_entity_immutability -- 11'
+    'authenticated holds UPDATE on exactly 11 columns of candidates'
   );
 
 SELECT
@@ -484,13 +489,13 @@ SELECT
         AND table_name = 'organizations'
     ),
     9,
-    'authenticated holds UPDATE on exactly 8 columns of organizations (11 originally, less sort_order, created_at and updated_at), plus the confirmation column 162-13 moved into the allow-list and handed to enforce_entity_immutability -- 9'
+    'authenticated holds UPDATE on exactly 9 columns of organizations'
   );
 
 -- =====================================================================
--- CR-04: projects.account_id is not writable by any authenticated caller
+-- Section 8: projects.account_id is not writable by any authenticated caller
 --
--- 162-REVIEW CR-04 reproduced a project admin running `UPDATE projects SET account_id = <other account>` and succeeding: the UPDATE policy asks `project.edit_project_settings` of the row's id, which the rewrite leaves unchanged. The control shows the same caller still writes a settings column, so the refusals are the column grant and not a closed policy.
+-- The projects UPDATE policy asks `project.edit_project_settings` of the row's id, which a rewrite of `account_id` leaves unchanged, so only the column grant stops a project admin from moving its project into another account. The control shows the same caller still writes a settings column, so the refusals come from the column grant and not from a closed policy.
 -- =====================================================================
 SELECT
   set_test_user (
@@ -505,7 +510,7 @@ SELECT
       $$UPDATE projects SET lock_nominations = true WHERE id = '%s'$$,
       test_id ('project_a')
     ),
-    'CR-04 control: a project admin can still update a settings column of its own project'
+    'control: a project admin can still update a settings column of its own project'
   );
 
 SELECT
@@ -517,7 +522,7 @@ SELECT
     ),
     '42501',
     NULL,
-    'CR-04: a project admin cannot move its project into another account'
+    'a project admin cannot move its project into another account'
   );
 
 SELECT
@@ -536,7 +541,7 @@ SELECT
     ),
     '42501',
     NULL,
-    'CR-04: an account admin cannot move one of its projects into another account either'
+    'an account admin cannot move one of its projects into another account either'
   );
 
 SELECT
@@ -553,7 +558,7 @@ SELECT
         id = test_id ('project_a')
     ),
     test_id ('account_a'),
-    'CR-04: project A still belongs to account A after both attempts'
+    'project A still belongs to account A after both attempts'
   );
 
 -- =====================================================================

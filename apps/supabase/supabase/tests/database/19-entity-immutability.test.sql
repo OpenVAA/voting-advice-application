@@ -1,20 +1,22 @@
--- 19-entity-immutability.test.sql: the conditional identity freeze and the confirmation gate (162-13)
+-- 19-entity-immutability.test.sql: the conditional identity freeze and the confirmation gate
 --
--- THE ORDINAL IS DERIVED, NOT REGISTRY-ASSIGNED. The phase registry assigns `19-entity-policies` to 162-10 and `18-entity-immutability` here, but 162-10 actually shipped `18-entity-policies.test.sql`, so the assigned prefix would COLLIDE. The on-disk ordinals were 00-18, 21, 22 and 23 when this file was written; 19 is the lowest free two-digit prefix and that is what governs.
---
--- WHAT THIS FILE IS FOR, AND THE FAILURE IT IS SHAPED AGAINST. `enforce_entity_immutability()` refuses two things and permits a third, and the characteristic failure of a rule like it is SILENCE: a trigger attached to the wrong verb, or carrying an `UPDATE OF` list that omits the column it was written to protect, does not error -- it permits, and permitting is what the tree did before. A file full of refusals would pass just as well against a trigger that refused EVERYTHING. So every deny here has a paired allow and every allow has a paired deny, and the grid is THREE-CELLED rather than two:
+-- `enforce_entity_immutability()` refuses two things and permits a third, and a rule like it fails SILENTLY: a trigger attached to the wrong verb, or carrying an `UPDATE OF` list that omits the column it protects, does not error, it permits. A file of refusals alone would pass just as well against a trigger that refused everything. So every deny has a paired allow and every allow a paired deny, in a three-cell grid:
 --
 --   cell 1  entity grantee, CONFIRMED row               -> refused, naming the column
 --   cell 2  entity grantee, UNCONFIRMED row             -> ALLOWED, and the new value is read back
 --   cell 3  entity.edit_immutable holder, CONFIRMED row -> allowed, and the new value is read back
 --
--- Cell 1 alone is satisfied by a rule that simply denies the entity user, which is section 8.7(c) -- the option the operator did not take. Cell 3 alone is satisfied by a rule that denies nobody. CELL 2 IS THE ONLY ONE THAT OBSERVES CONDITIONALITY, and it is the cell a file in a hurry drops. It carries its own negative control: a variant of the trigger body with the OLD-flag guard removed -- an absolute freeze -- is run against this whole file and the count of reddened assertions is recorded in 162-13's SUMMARY.
+-- Cell 1 alone is satisfied by a rule that simply denies the entity user, and cell 3 alone by a rule that denies nobody. Cell 2 is the only cell that observes the conditionality: an absolute freeze, the trigger body with its OLD-flag guard removed, fails it on every table.
 --
--- THE FIXTURE GIVES ONLY ONE POLARITY, so this file makes the other one, per table, inside its own transaction. `create_test_data ()` confirms every project A entity, so the middle cell has no unconfirmed row to stand on. Each grid section therefore runs cells 1 and 3 on the confirmed row, then unconfirms that same row AS THE OWNER, runs cell 2, and re-confirms. The polarity guard in section 0 asserts the pre-state is real, because a middle cell run against a row that was confirmed all along would be asserting cell 1 twice under two names.
+-- The fixture gives only one polarity, so this file makes the other one, per table, inside its own transaction. `create_test_data ()` confirms every project A entity, so the middle cell has no unconfirmed row to stand on. Each grid section therefore runs cells 1 and 3 on the confirmed row, then unconfirms that same row as the owner, runs cell 2, and re-confirms. The polarity guard in section 0 asserts the pre-state, because a middle cell run against a row that was confirmed all along would assert cell 1 twice under two names.
 --
--- THE FACTION AND ALLIANCE GRANTEES ARE BUILT HERE. `create_test_data ()` gives entity grants to a candidate and an organization only, so this file inserts two auth users and two entity-scope grant rows directly, following 162-04's precedent, and lets `set_test_user` project them into the session claims through `test_grants_claim`. `set_test_user` is NOT given a fourth parameter (162-04's M6): a `CREATE OR REPLACE` cannot change an argument list, and a fourth would overload the 66 three-argument call sites across this estate.
+-- The faction and alliance grantees are built here. `create_test_data ()` gives entity grants to a candidate and an organization only, so this file inserts two auth users and two entity-scope grant rows directly and lets `set_test_user` project them into the session claims through `test_grants_claim`.
 --
--- Depends on: 00-helpers.test.sql (set_test_user, create_test_data, test_id, test_user_id, test_user_grants, reset_role) 011-validation-functions.sql (enforce_entity_immutability) 102-entities.sql (the four registrations) 303-column-grants.sql (the four UPDATE allow-lists)
+-- Depends on:
+-- - 00-helpers.test.sql (set_test_user, create_test_data, test_id, test_user_id, test_user_grants, reset_role)
+-- - 011-validation-functions.sql (enforce_entity_immutability)
+-- - 102-entities.sql (the four registrations)
+-- - 303-column-grants.sql (the four UPDATE allow-lists)
 BEGIN;
 
 SET
@@ -171,7 +173,12 @@ SELECT
     (
       SELECT
         NOT bool_or(
-          public.user_can ('entity', t.id, 'entity.edit_immutable')
+          public.user_can (
+            'entity',
+            t.id,
+            'entity.edit_immutable',
+            'candidate'
+          )
         )
       FROM
         (
@@ -451,7 +458,7 @@ SELECT
       test_id ('faction_a')
     ),
     'Entity name is immutable once confirmed:%',
-    'factions cell 1: an entity grantee renaming a CONFIRMED entity is refused -- on a table that had no non-admin write path at all before 162-10'
+    'factions cell 1: an entity grantee renaming a CONFIRMED entity is refused'
   );
 
 SELECT
@@ -635,7 +642,7 @@ WHERE
 -- =====================================================================
 -- The direction that looks harmless is the load-bearing one. An entity user who can turn the flag OFF can unfreeze their own name and every assertion above becomes decorative, so false-to-true and true-to-false are BOTH refused and both are asserted -- four times over, because a registration that never fired on one table would otherwise hide behind three that did.
 --
--- THE VALUE WRITTEN IS ALWAYS THE OPPOSITE OF THE ROW'S. Rule 1 compares old to new with `IS DISTINCT FROM`, so writing `true` to an already-confirmed row is a no-op the trigger correctly permits -- MEASURED while writing this file, as a refusal that did not come.
+-- The value written is always the opposite of the row's. Rule 1 compares old to new with `IS DISTINCT FROM`, so writing `true` to an already-confirmed row is a no-op the trigger correctly permits.
 SELECT
   set_test_user (
     'authenticated',
@@ -661,7 +668,7 @@ SELECT
     ),
     'P0001',
     NULL,
-    'candidates: the confirmation refusal is a raised trigger exception (P0001) and no longer a privilege error (42501), so the column really did enter the allow-list'
+    'candidates: the confirmation refusal is a raised trigger exception (P0001), not a privilege error (42501), so the confirmation column is inside the UPDATE allow-list'
   );
 
 SELECT
@@ -677,7 +684,7 @@ SELECT
       $$UPDATE candidates SET confirmed = false WHERE id = '%s'$$,
       test_id ('candidate_a')
     ),
-    'candidates: a holder of entity.confirm may turn the flag off -- the permission the retired privilege bar made unexercisable through this role'
+    'candidates: a holder of entity.confirm may turn the flag off'
   );
 
 SELECT
@@ -931,9 +938,9 @@ SELECT
 -- =====================================================================
 -- Section 6: the rule ORDER, and the OLD flag rule 2 reads
 -- =====================================================================
--- ⚠ THE PLAN'S PRESCRIBED CASE FOR THIS SECTION IS UNREACHABLE, AND THE SUBSTITUTE BELOW IS WHY. 162-13's plan asks for a caller holding `entity.confirm` and NOT `entity.edit_immutable`, "reachable only from a hand-built claim". MEASURED: it is reachable from no claim at all. `user_can` does not read a permission list out of the token -- it reads a SCOPE, a ROLE and a TARGET and asks `grant_role_permissions` for the verbs -- and in that matrix the two permissions appear in exactly the same four rows (global admin, account admin, project admin, project editor). No claim, hand-built or otherwise, can separate them.
+-- No caller holds `entity.confirm` without `entity.edit_immutable`, so the two rules cannot be separated by caller. `user_can` does not read a permission list out of the token: it reads a scope, a role and a target and asks `grant_role_permissions` for the verbs, and in that matrix the two permissions appear in exactly the same four rows (global admin, account admin, project admin, project editor).
 --
--- What IS observable is the ORDER of the two rules, and it is observable exactly where it matters: a caller who tries to unfreeze AND rename in ONE statement. Rule 1 runs first, so that caller is stopped at the confirmation gate and the refusal carries the CONFIRMATION prefix. Were the freeze evaluated first, the same statement would be refused with the IMMUTABILITY prefix instead. Both possibilities are asserted -- one positively, one negatively -- so the assertion distinguishes them rather than merely passing.
+-- What is observable is the ORDER of the two rules, exactly where it matters: a caller who tries to unfreeze AND rename in one statement. Rule 1 runs first, so that caller is stopped at the confirmation gate and the refusal carries the CONFIRMATION prefix. Were the freeze evaluated first, the same statement would be refused with the IMMUTABILITY prefix instead. Both are asserted, one positively and one negatively, so the pair distinguishes the two orders.
 --
 -- The OLD-versus-NEW reading is then pinned structurally, on `pg_proc.prosrc`, because that substitution has no behavioural consequence the matrix can expose. A rewrite of the guard to `NEW.confirmed` reddens the last assertion in this section.
 SELECT
@@ -953,7 +960,7 @@ SELECT
     'rule order: a caller trying to unfreeze AND rename in one statement is stopped at the CONFIRMATION gate, so rule 1 runs before rule 2'
   );
 
--- pgTAP on this tree carries `throws_like` but NO `throws_unlike` -- MEASURED, as a `function throws_unlike(text, unknown, unknown) does not exist` that ABORTED the transaction and produced no `not ok` line at all, which is exactly the instrument failure D-37 describes. The negative half is therefore expressed as `unalike` over a captured message. The helper is created in the session-temporary schema and dies with this transaction; it is SECURITY INVOKER by default, so the statement runs as whichever caller the session currently is.
+-- pgTAP has no `throws_unlike`, and calling it aborts the transaction without a `not ok` line, so the negative half is `unalike` over the message `pg_temp.capture_refusal` returns. The helper is SECURITY INVOKER, so the statement runs as the current session caller.
 SELECT
   unalike (
     pg_temp.capture_refusal (
@@ -982,7 +989,7 @@ SELECT
         AND p.proname = 'enforce_entity_immutability'
     ),
     'IF OLD\.confirmed THEN',
-    'rule 2 is guarded on the OLD row''s flag, read from pg_proc.prosrc -- a rewrite to NEW.confirmed would make the freeze absolute for any statement that confirms and renames at once, and section 3.3 produces no caller that can tell the two apart behaviourally'
+    'rule 2 is guarded on the OLD row''s flag, read from pg_proc.prosrc -- a rewrite to NEW.confirmed would make the freeze absolute for any statement that confirms and renames at once, and the role x permission matrix produces no caller that can tell the two apart behaviourally'
   );
 
 -- =====================================================================
@@ -1158,7 +1165,7 @@ SELECT
         AND p.prosrc ~ x.pat
     )::integer,
     0,
-    'D-21: the function body names NO entity type, with the label list derived from pg_enum at run time over the population asserted non-empty above'
+    'the function body names NO entity type, with the label list derived from pg_enum at run time over the population asserted non-empty above'
   );
 
 SELECT
@@ -1184,7 +1191,7 @@ SELECT
         AND (t.tgtype & 1) <> 0
     )::integer,
     20,
-    'the row-level BEFORE UPDATE trigger population on the four entity tables is 20 -- the 14 measured before 162-13, plus one registration per table, plus the two 162.1-03 cleanup_answer_files_on_update registrations on candidates and organizations, which read answers and assign no column. A future BEFORE trigger that modified a protected column without the statement naming it would escape the column restriction, so the population is bounded here rather than left unwatched'
+    'the row-level BEFORE UPDATE trigger population on the four entity tables is 20: on each table the entity-immutability, external-id immutability, updated_at and image-cleanup registrations, plus answer validation and answer-file cleanup on candidates and organizations. A future BEFORE trigger that modified a protected column without the statement naming it would escape the column restriction, so the population is bounded here'
   );
 
 -- =====================================================================
@@ -1231,7 +1238,7 @@ SELECT
         )
     )::integer,
     0,
-    'no entity table grants TABLE-WIDE UPDATE to authenticated: all four are covered by a bounded column list, which is the asymmetry 162-07 recorded and 162-10 and 162-13 closed'
+    'no entity table grants TABLE-WIDE UPDATE to authenticated: all four are covered by a bounded column list'
   );
 
 SELECT
@@ -1254,7 +1261,7 @@ SELECT
         AND column_name = 'confirmed'
     )::integer,
     4,
-    'the confirmation column is inside the UPDATE allow-list on every one of the four entity tables -- the privilege bar 162-13 retired, asserted as retired rather than assumed'
+    'the confirmation column is inside the UPDATE allow-list on every one of the four entity tables -- the confirmation gate is the trigger''s rule 1, not a missing privilege'
   );
 
 SELECT
@@ -1277,7 +1284,7 @@ SELECT
         AND column_name IN ('name', 'first_name', 'last_name')
     )::integer,
     5,
-    'every one of the five protected name columns is STILL inside its table''s allow-list -- removing them would freeze a name on an unconfirmed entity and make sign-up impossible, and this is the assertion that would catch it'
+    'every one of the five protected name columns is inside its table''s allow-list -- removing them would freeze a name on an unconfirmed entity and make sign-up impossible, and this is the assertion that would catch it'
   );
 
 SELECT
@@ -1339,7 +1346,7 @@ SELECT
         AND column_name IN ('project_id', 'id', 'external_id')
     )::integer,
     0,
-    'the tenancy, identity and import-identity columns are outside every entity allow-list, so an entity editor still cannot move its own row into another project'
+    'the tenancy, identity and import-identity columns are outside every entity allow-list, so an entity editor cannot move its own row into another project'
   );
 
 -- =====================================================================
@@ -1401,7 +1408,7 @@ SELECT
 -- =====================================================================
 -- Section 10: the role scope, in the direction that keeps the seeder working
 -- =====================================================================
--- MEASURED before this rule was written: an UNSCOPED variant refused a service-role caller, because `user_can` reads the grant set from the JWT and a service-role token carries none -- so every re-seed, bulk import and fixture write that moved a name or a flag would have been refused. The scope is the effective database role, and this is the assertion that pins it in the permissive direction, beside its authenticated opposite on the same row in the same transaction. Accepted and recorded cost: a service-role path can rename a confirmed entity, the same latitude that role already has against row-level security and against the column grants, neither of which names it.
+-- Both rules bind only the effective `authenticated` role. `user_can` reads the grant set from the JWT and a service-role token carries none, so an unscoped rule would refuse every re-seed, bulk import and fixture write that moves a name or a flag. This section pins the permissive direction beside its authenticated opposite, on the same row in the same transaction. Accepted cost: a service-role path can rename a confirmed entity, the same latitude that role already has against row-level security and the column grants.
 SELECT
   set_test_user (
     'authenticated',

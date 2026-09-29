@@ -1,5 +1,5 @@
 /**
- * Candidate bank authentication E2E tests — (Idura-only Edge-Function seam).
+ * Candidate bank authentication E2E tests (Idura-only Edge-Function seam).
  *
  * Tests the identity-callback Edge Function integration by:
  * 1. Building a synthetic JWE-encrypted Idura id_token (fixed test keys, kid test-enc-1/test-sig-1)
@@ -7,18 +7,18 @@
  * 3. Verifying a candidate is created with the Idura `sub`-based identity match + claim flow-through
  * 4. Verifying a magic-link session (action_link) is returned
  *
- * This spec is Idura-only (the previous generic/legacy-provider assertions were dropped). It asserts the Idura claim model: `identity_provider='idura'`, `identity_match_prop='sub'`, `identity_match_value=<sub>`, and the IDURA_AUTH_CONFIG.extractClaims flow-through (`birthdate`, `hetu` — see apps/supabase/.../identity-callback/claimConfig.ts).
+ * This spec is Idura-only. It asserts the Idura claim model: `identity_provider='idura-ftn'`, `identity_match_prop='sub'`, `identity_match_value=<sub>`, and the flow-through of the Edge Function's `PROVIDER_CONFIGS['idura-ftn'].extractClaims` (`birthdate`, `hetu` — see apps/supabase/.../identity-callback/claimConfig.ts).
  *
  * DETERMINISTIC-GREEN GATE: the keys-configured create path runs on EVERY run (never skipped). This requires the served Edge Function to read the FIXED test decryption JWK (`IDENTITY_PROVIDER_DECRYPTION_JWKS` = `decryptionJwks` from tests/tests/utils/testKeys.ts). A "did not run" counts as a CARDINAL failure.
  *
- * Run (see tests/IDURA-TEST-RUNBOOK.md → " deterministic E2E run"):
+ * Run (see tests/IDURA-TEST-RUNBOOK.md → "Deterministic E2E run"):
  *   # Terminal A — serve the Edge Function with the TEST decryption JWKS env file:
  *   cd apps/supabase/supabase && npx supabase functions serve identity-callback \
- *     --no-verify-jwt --env-file <tests/.eflow10.env from the runbook>
+ *     --no-verify-jwt --env-file /tmp/bank-auth-edge.env   # written by the runbook, Step E-1
  *   # Terminal B — run the bank-auth project:
  *   PLAYWRIGHT_BANK_AUTH=1 FRONTEND_PORT=5174 npx playwright test --project=bank-auth -c tests/playwright.config.ts
  *
- * NOTE: These tests call the Edge Function directly — they do NOT redirect to a real identity provider. They verify the backend integration, not the full OIDC redirect flow (the full-browser journey is EFLOW-10b, candidate-bank-auth-journey.spec.ts).
+ * NOTE: These tests call the Edge Function directly — they do NOT redirect to a real identity provider. They verify the backend integration, not the full OIDC redirect flow (the full-browser journey is candidate-bank-auth-journey.spec.ts).
  */
 
 import { expect, test } from '@playwright/test';
@@ -54,9 +54,9 @@ const TEST_IDENTITY = {
 test.use({ storageState: { cookies: [], origins: [] } });
 
 /**
- * The token builder + fixed test key pair are now shared utils:
+ * The token builder and the fixed test key pair are shared utils:
  *   - `buildTestIdToken` — tests/tests/utils/buildTestIdToken.ts
- *   - `getTestKeys`      — tests/tests/utils/testKeys.ts (fixed committed pair) The retarget + deterministic-green gate lands; this plan only de-duplicates so the spec compiles against the shared util.
+ *   - `getTestKeys`      — tests/tests/utils/testKeys.ts (fixed committed pair)
  */
 
 /**
@@ -138,7 +138,7 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     // Instead of skipping (a silent "did not run" = cardinal failure), assert LOUDLY that the served Edge Function had the fixed test decryption JWK wired. If this fails, the run procedure in tests/IDURA-TEST-RUNBOOK.md was not followed.
     expect(
       probe,
-      'EFLOW-10 keys-configured path did not run — the served identity-callback Edge Function ' +
+      'The keys-configured path did not run — the served identity-callback Edge Function ' +
         'is missing IDENTITY_PROVIDER_DECRYPTION_JWKS. See tests/IDURA-TEST-RUNBOOK.md.'
     ).not.toBeNull();
     expect(
@@ -164,20 +164,20 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     expect(candidate?.first_name).toBe(TEST_IDENTITY.given_name);
     expect(candidate?.last_name).toBe(TEST_IDENTITY.family_name);
 
-    // Verify app_metadata carries the Idura sub-based identity model (Idura-only retarget).
+    // Verify app_metadata carries the Idura sub-based identity model.
     const {
       data: { user }
     } = await adminClient.auth.admin.getUserById(captured.body.user_id as string);
-    expect(user?.app_metadata?.identity_provider).toBe('idura');
+    expect(user?.app_metadata?.identity_provider).toBe('idura-ftn');
     expect(user?.app_metadata?.identity_match_prop).toBe('sub');
     expect(user?.app_metadata?.identity_match_value).toBe(TEST_IDENTITY.sub);
-    // Idura extra-claim flow-through. The Edge Function's IDURA config extracts ['birthdate', 'hetu'] (apps/supabase/.../identity-callback/claimConfig.ts:40-45) — assert exactly those. `country` is NOT in the production extractClaims set, so it is intentionally not asserted.
+    // Idura extra-claim flow-through. The Edge Function's `PROVIDER_CONFIGS['idura-ftn']` (apps/supabase/.../identity-callback/claimConfig.ts) extracts ['birthdate', 'hetu'] — assert exactly those. `country` is NOT in the production extractClaims set, so it is intentionally not asserted.
     expect(user?.app_metadata?.hetu).toBe(TEST_IDENTITY.hetu);
     expect(user?.app_metadata?.birthdate).toBe(TEST_IDENTITY.birthdate);
   });
 
   test('should reject an id_token encrypted with a mismatched (wrong) decryption key', async () => {
-    // the inverse "keys-NOT-configured" skip is replaced by a NEGATIVE-PATH test that RUNS every run. With the fixed test keys wired, the create path is always reachable — so instead we prove the reject path by encrypting under a DELIBERATELY wrong enc key (kid the served function has no private half for) → the function returns a structured decryption-failure 401.
+    // The keys-NOT-configured case is a NEGATIVE-PATH test that RUNS every run. With the fixed test keys wired, the create path is always reachable — so this proves the reject path by encrypting under a DELIBERATELY wrong enc key (kid the served function has no private half for) → the function returns a structured decryption-failure 401.
     expect(probe, 'probe must have run (beforeAll)').not.toBeNull();
 
     // Build a JWE under a fresh, unrelated RSA-OAEP-256 key the served function cannot decrypt.

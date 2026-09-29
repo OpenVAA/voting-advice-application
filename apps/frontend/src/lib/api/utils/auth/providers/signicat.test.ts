@@ -48,7 +48,7 @@ vi.mock('$env/dynamic/public', () => ({
   env: {
     PUBLIC_IDENTITY_PROVIDER_CLIENT_ID: 'test-signicat-client',
     PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT: 'https://signicat.example/authorize',
-    PUBLIC_IDENTITY_PROVIDER_TYPE: 'signicat',
+    PUBLIC_IDENTITY_PROVIDER_TYPE: 'signicat-ftn',
     PUBLIC_SUPABASE_URL: 'http://localhost:54321',
     PUBLIC_SUPABASE_ANON_KEY: 'test-anon-key'
   }
@@ -125,7 +125,7 @@ describe('Signicat provider', () => {
 
   describe('interface compliance', () => {
     it('has type property set to signicat', () => {
-      expect(signicatProvider.type).toBe('signicat');
+      expect(signicatProvider.type).toBe('signicat-ftn');
     });
 
     it('has authConfig with Signicat claim mappings', () => {
@@ -211,7 +211,7 @@ describe('Signicat provider', () => {
     it('returns the configured claim mapping for a valid Signicat ID token', async () => {
       const result = await signicatProvider.getIdTokenClaims(jwe);
 
-      // Deep equality on the WHOLE result object, never toContain / toHaveProperty: a superset, a dropped claim, or an `identifier` that stopped coming from `authConfig.identityMatchProp` must all red. `identifier` is the SUBJECT here because SIGNICAT_AUTH_CONFIG.identityMatchProp is 'sub' -- keying it on 'birthdate' would not be an identifier; the birthdate is still present, as an extracted claim. The payload carries both, so this assertion can see a regression back to birthdate keying rather than merely a missing field.
+      // Deep equality on the WHOLE result object, never toContain / toHaveProperty: a superset, a dropped claim, or an `identifier` that stopped coming from `authConfig.identityMatchProp` must all red. `identifier` is the SUBJECT here because SIGNICAT_FTN_AUTH_CONFIG.identityMatchProp is 'sub' -- keying it on 'birthdate' would not be an identifier; the birthdate is still present, as an extracted claim. The payload carries both, so this assertion can see a switch to birthdate keying rather than merely a missing field.
       // Do not weaken this to a per-field subset check: a subset cannot see a claim that silently disappeared from extractedClaims.
       expect(result).toEqual({
         success: true,
@@ -232,7 +232,7 @@ describe('Signicat provider', () => {
       mockConstants.IDENTITY_PROVIDER_DECRYPTION_JWKS = configured;
 
       // Assert the CAUSE, not merely that it failed. `success: false` alone is satisfied by any rejection whatsoever, so it cannot distinguish this test from its two siblings below, whose titles name different causes.
-      // Do not weaken this back to a bare `success` check.
+      // Do not weaken this to a bare `success` check.
       expect(result).toMatchObject({ success: false, error: { code: 'ERR_JWKS_EMPTY' } });
     });
 
@@ -253,7 +253,7 @@ describe('Signicat provider', () => {
       mockConstants.IDENTITY_PROVIDER_DECRYPTION_JWKS = configured;
 
       // This assertion is the ONLY thing in the repo that can see the lazy env parse.
-      // If `defaultOptions.privateEncryptionJWKSet` is ever simplified from a getter back to a plain property, the parse moves to module-evaluation time, this test starts observing a frozen snapshot instead, and in production the malformed value throws an UNCATCHABLE import-time SyntaxError that no code can ever carry.
+      // If `defaultOptions.privateEncryptionJWKSet` is ever turned from a getter into a plain property, the parse moves to module-evaluation time, this test starts observing a frozen snapshot instead, and in production the malformed value throws an UNCATCHABLE import-time SyntaxError that no code can ever carry.
       // Do not weaken this to `success: false`, and do not weaken it to `error: { code: expect.any(String) }`: both are satisfied by ERR_JWKS_EMPTY, which is exactly what the regression produces.
       expect(result).toMatchObject({ success: false, error: { code: 'ERR_JWKS_MALFORMED' } });
     });
@@ -314,7 +314,7 @@ describe('Signicat provider', () => {
   });
 
   /**
-   * The frontend half of the identity-key uniqueness guarantee. `identifier` is derived from `SIGNICAT_AUTH_CONFIG.identityMatchProp`, and the Edge Function's twin of that config turns the same claim into the Supabase account key -- so a claim that is not unique per person merges two candidates into one auth user. Asserting DISTINCTNESS across two real tokens is what a single-token assertion cannot do: a config keyed on `birthdate` satisfies "identifier is 1985-06-15" for both of these people at once.
+   * The frontend half of the identity-key uniqueness guarantee. `identifier` is derived from `SIGNICAT_FTN_AUTH_CONFIG.identityMatchProp`, and the Edge Function's twin of that config turns the same claim into the Supabase account key -- so a claim that is not unique per person merges two candidates into one auth user. Asserting DISTINCTNESS across two real tokens is what a single-token assertion cannot do: a config keyed on `birthdate` satisfies "identifier is 1985-06-15" for both of these people at once.
    */
   describe('identity key uniqueness', () => {
     it('gives two candidates sharing a birthdate different identifiers', async () => {

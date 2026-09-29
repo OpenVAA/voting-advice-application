@@ -1,7 +1,7 @@
 /**
  * QuestionCategoriesGenerator unit tests.
  *
- * acceptance (a)–(e) + default `category_type: 'opinion'` spot-check The `_elections` join sentinel is populated by the pipeline's post-topo pass; generator output here is sentinel-free.
+ * Covers count, the external_id prefix on generated and fixed rows, fixed[] pass-through, determinism, and the default `category_type: 'opinion'` spot-check. The `_elections` join sentinel is populated by the pipeline's post-topo pass; generator output here is sentinel-free.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -14,13 +14,13 @@ describe('QuestionCategoriesGenerator', () => {
     expect(gen.generate({ count: 3 })).toHaveLength(3);
   });
 
-  it('applies externalIdPrefix to generated rows (GEN-04)', () => {
+  it('applies externalIdPrefix to generated rows', () => {
     const gen = new QuestionCategoriesGenerator(makeCtx());
     const rows = gen.generate({ count: 2 });
     rows.forEach((r) => expect(r.external_id).toMatch(/^seed_cat_/));
   });
 
-  it('applies externalIdPrefix to fixed[] rows (GEN-04)', () => {
+  it('applies externalIdPrefix to fixed[] rows', () => {
     const gen = new QuestionCategoriesGenerator(makeCtx());
     const rows = gen.generate({
       count: 0,

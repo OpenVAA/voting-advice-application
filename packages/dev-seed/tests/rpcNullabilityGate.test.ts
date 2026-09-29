@@ -9,7 +9,7 @@
  *
  * Both halves are silently deletable. Remove the CI job and nothing goes red — the tree still contains the override file, the merge, the script and the enumeration, and every local command still passes. Unhook `assert:rpc-nullability` from `lint:check` and the script survives on disk, runnable, running nowhere. A guard reports its own absence as a pass, which is the worst failure shape available to a gate: the enforcement, not the artefact, is what makes the mechanism durable, and the artefacts all outlive the enforcement.
  *
- * The `paths-filter` assertion below is the same argument one level down. The job carries no filter ON PURPOSE: `supabase/setup-cli@v1` is pinned to `version: latest`, so a CLI update can change the generator's output with NO repo path changing at all, and a path filter would skip the job in exactly that case. That absence is a mitigation, and an unasserted absence is one PR away from being narrowed back.
+ * The `paths-filter` assertion below is the same argument one level down. The job carries no filter ON PURPOSE: a bump of the pinned `supabase/setup-cli@v1` version in the workflow can change the generator's output with no `apps/supabase/**` or `packages/supabase-types/**` path changing, and a path filter would skip the job in exactly that case. That absence is a mitigation, and an unasserted absence is one PR away from being narrowed back.
  *
  * ## Why it lives in packages/dev-seed
  *
@@ -73,7 +73,7 @@ describe('the supabase-types regeneration-drift gate is wired so it can actually
   });
 
   it('carries NO path filter, so a generator change with no repo path changing still reddens', () => {
-    // The mitigation, asserted as an absence. `supabase/setup-cli@v1` is pinned to `version: latest`; a CLI update changes the generated file with no path in this repo changing at all, and a filter would skip the job precisely then. Compare `supabase-tests`, every step of which is filtered.
+    // The mitigation, asserted as an absence. A bump of the pinned `supabase/setup-cli@v1` version changes the generated file with no filtered path changing, and a filter would skip the job precisely then. Compare `supabase-tests`, every step of which is filtered.
     expect(withoutComments(jobBlock(DRIFT_JOB))).not.toContain('paths-filter');
   });
 
@@ -85,7 +85,7 @@ describe('the supabase-types regeneration-drift gate is wired so it can actually
   it('regenerates the types and diffs them PATH-SCOPED', () => {
     const block = withoutComments(jobBlock(DRIFT_JOB));
     expect(block).toContain('run: yarn db:types');
-    // The scoping is load-bearing, not tidiness: it is what keeps the only possible cause of a red step "the generated types drifted", and it names the one file the reader has to commit. An unscoped diff also reddens on any unrelated working-tree change the runner leaves behind, and a gate that cries wolf gets muted. (Measured 2026-09-03, correcting the reason earlier phase notes gave: `packages/supabase-types/tsconfig.tsbuildinfo` is NOT tracked and IS ignored by the `*.tsbuildinfo` rule in the root `.gitignore`, so `git diff` never reports it. The scoping is right; that justification for it was not.)
+    // The scoping is load-bearing, not tidiness: it is what keeps the only possible cause of a red step "the generated types drifted", and it names the one file the reader has to commit. An unscoped diff also reddens on any unrelated working-tree change the runner leaves behind, and a gate that cries wolf gets muted. (`packages/supabase-types/tsconfig.tsbuildinfo` is not a reason: it is untracked and ignored by the `*.tsbuildinfo` rule in the root `.gitignore`, so `git diff` never reports it.)
     expect(block).toContain(`git diff --exit-code -- ${GENERATED_TYPES}`);
     expect(block).not.toMatch(/git diff --exit-code[ \t]*$/m);
   });
@@ -108,12 +108,41 @@ describe('the supabase-types regeneration-drift gate is wired so it can actually
   it('keeps `yarn assert:rpc-nullability` a blocking link of lint:check', () => {
     // The local-DX half, and the half a CI-only gate cannot supply: this is what makes the enumeration guard blocking for a developer running `yarn lint:check`.
     //
-    // The invariant is MEMBERSHIP of the `&&` chain, never terminal position: every link after it is equally aborted by a failure, so guards may be appended freely. An assertion that this link comes LAST breaks the moment anything new is appended to the chain, which is a correct change that an over-specified assertion has no business rejecting. The sibling spec `ciTypecheckGate.test.ts` records the same lesson from the phase that lived it.
+    // The invariant is MEMBERSHIP of the `&&` chain, never terminal position: every link after it is equally aborted by a failure, so guards may be appended freely. An assertion that this link comes LAST breaks the moment anything new is appended to the chain, which is a correct change that an over-specified assertion has no business rejecting. The sibling spec `ciTypecheckGate.test.ts` states the same rule.
     expect(links(ROOT_PACKAGE_JSON.scripts['lint:check'])).toContain('yarn assert:rpc-nullability');
     expect(ROOT_PACKAGE_JSON.scripts['assert:rpc-nullability']).toBe('node scripts/assert-rpc-return-nullability.mjs');
     // Wired-but-deleted is the third failure mode: a missing script file makes the chain die with a bare `node: cannot find module`, which names no invariant and sends the reader nowhere.
     expect(readFileSync(resolve(REPO_ROOT, 'scripts/assert-rpc-return-nullability.mjs'), 'utf8')).toContain(
       'RPC RETURN-NULLABILITY GUARD'
     );
+  });
+});
+
+describe('the Supabase CLI that CI pins is the one the workspace resolves', () => {
+  // A catalog bump moves local runs and `yarn db:types` onto a new CLI while CI's `supabase/setup-cli` pins stay behind, so `supabase-types-drift` would compare the output of two CLIs.
+  const lock = readFileSync(resolve(REPO_ROOT, 'yarn.lock'), 'utf8');
+  const resolved = /^"supabase@npm:[^"\n]+":\n {2}version: (\S+)$/m.exec(lock)?.[1];
+  const lines = WORKFLOW.split('\n');
+  /** The `version:` of each setup-cli step, read from that step's own lines only. */
+  const pins = lines.flatMap((line, index) => {
+    if (!/^\s*- uses: supabase\/setup-cli@/.test(line)) return [];
+    const stepIndent = line.indexOf('-');
+    const body: Array<string> = [];
+    for (const next of lines.slice(index + 1)) {
+      const indent = next.search(/\S/);
+      if (indent !== -1 && indent <= stepIndent) break;
+      body.push(next);
+    }
+    const versions = body.flatMap((bodyLine) => /^\s*version: (\S+)$/.exec(bodyLine)?.[1] ?? []);
+    return [{ line: index + 1, versions }];
+  });
+
+  it('finds the resolved version in yarn.lock and at least one setup-cli step', () => {
+    expect(resolved).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(pins.length).toBeGreaterThan(0);
+  });
+
+  it('pins every setup-cli step to exactly that version', () => {
+    expect(pins).toEqual(pins.map(({ line }) => ({ line, versions: [resolved] })));
   });
 });

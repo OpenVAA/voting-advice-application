@@ -1,16 +1,16 @@
 -- 22-content-policies.test.sql: the authority grid for the content, configuration, feedback and job tables
 --
--- 162-11 routes the seventeen convertible policies on `questions`, `question_categories`, `app_settings`, `feedback` and `admin_jobs` onto `user_can`. Two of those five tables are reached by NO E2E spec under row-level security at all -- the suite's only `admin_jobs` caller is a SERVICE-ROLE teardown client, which bypasses row-level security entirely, and nothing in the suite reads or deletes `feedback` -- so for those two tables the assertions in this file are the whole evidence. Every converted policy therefore carries a PAIR: one caller who may and one who may not, differing in exactly the permission under test.
+-- This file asserts the seventeen `user_can` policies on `questions`, `question_categories`, `app_settings`, `feedback` and `admin_jobs`, and the two ungated `feedback` INSERT policies. No E2E spec reaches `admin_jobs` or `feedback` under row-level security (the only `admin_jobs` caller is a service-role teardown client, and nothing reads or deletes `feedback`), so for those two tables this file is the whole evidence. Every `user_can` policy carries a pair: one caller who may and one who may not, differing in exactly the permission under test.
 --
--- SECTION 11.1 IS WHY THE FILE EXISTS. D-09 splits one settings permission in two along the line "does a policy read this value": `project.edit_project_settings` governs `projects` and is admin-only, `project.edit_app_settings` governs `app_settings` and a project EDITOR holds it too. The two are granted to the same people in every column of section 3.3 except `ProjectEditor`, so a test run as an admin passes whichever literal is written and a test run as a candidate fails whichever literal is written. The split is observable only against an identity holding one and not the other, and `create_test_data ()` has none -- its eight identities are two project admins, three candidates, one organization, one account admin and one super admin, and under D-07 every admin-shaped one of them maps to `role = 'admin'`.
+-- The settings permission is split along the line "does a policy read this value": `project.edit_project_settings` governs `projects` and is admin-only, `project.edit_app_settings` governs `app_settings` and a project EDITOR holds it too. The two are granted to the same roles everywhere except the project editor, so the split is observable only against an identity holding one and not the other. None of the eight identities of `create_test_data ()` does: they are two project admins, three candidates, one organization, one account admin and one super admin.
 --
--- THE SEPARATING IDENTITY IS MINTED HERE AND NOWHERE ELSE. 162-06's `14-grants-migration.test.sql` asserts reverse completeness -- every `public.grants` row accounted for by a `user_roles` row or an entity `auth_user_id` link -- and `user_role_type` has no project-editor member, so a project-editor grant in `create_test_data ()` would be authority nobody granted. The identity is an `auth.users` row plus one `grants` row inserted as `postgres` inside this transaction, rolled back with it. `00-helpers.test.sql` is not edited. 162-09 minted the same identity in `17-project-structure-authority.test.sql` for the same reason; 162-17 owns consolidating them.
+-- That separating identity is an `auth.users` row plus one `grants` row, inserted as `postgres` inside this transaction and rolled back with it, so `create_test_data ()` and every other suite's fixture stay unchanged. `17-project-structure-authority.test.sql` creates the same kind of identity for the same reason.
 --
--- ONE PAIR CANNOT BE SEPARATED BY ANY IDENTITY, AND THAT IS STATED RATHER THAN HIDDEN. Section 3.3 grants `feedback.read` and `feedback.manage` to exactly the same four roles, so no behavioural assertion in this estate distinguishes the SELECT policy's literal from the DELETE policy's. The separation is asserted STRUCTURALLY, from `pg_policies` on the applied database, and the limit of the behavioural instrument is measured rather than assumed: exchanging the two literals was observed to redden zero behavioural assertions and the structural map alone.
+-- One pair cannot be separated by any identity: `feedback.read` and `feedback.manage` are granted to exactly the same four roles, so no behavioural assertion distinguishes the SELECT policy's literal from the DELETE policy's. That separation is asserted structurally, from `pg_policies` on the applied database (section 13).
 --
--- Synthetic rows use an `efefefef-`-prefixed id range that no fixture, seed or sibling test file uses, following `11-question-rpcs.test.sql`'s stated precedent: an assertion that deletes must never remove a row a later assertion reads.
+-- Synthetic rows use an `efefefef-`-prefixed id range that no fixture, seed or sibling test file uses, following `11-question-rpcs.test.sql`: an assertion that deletes must never remove a row a later assertion reads.
 --
--- FEEDBACK INSERTS SET `request.headers` FIRST, deliberately. `check_feedback_rate_limit` counts five submissions per five-minute window per forwarded client IP, and every insert in one pgTAP transaction shares the same window. A distinct IP per insert site keeps this file's assertions measuring authority rather than the rate limiter.
+-- Feedback inserts set `request.headers` first. `check_feedback_rate_limit` allows five submissions per five-minute window per forwarded client IP, and every insert in one pgTAP transaction shares the same window, so a distinct IP per insert site keeps these assertions measuring authority rather than the rate limiter.
 --
 -- Depends on: 00-helpers.test.sql (set_test_user, reset_role, create_test_data, test_id, test_user_id, test_user_grants).
 BEGIN;
@@ -29,13 +29,11 @@ SELECT
   create_test_data ();
 
 -- =====================================================================
--- Section 0: `feedback.project_id` survives its project (the operator's P-4 NOTE)
+-- Section 0: a feedback row survives the deletion of its project
 --
--- `107-feedback.sql` declared `project_id uuid NOT NULL REFERENCES public.projects (id) ON DELETE CASCADE`, so deleting a project destroyed its feedback. The note asks for `ON DELETE SET NULL`, which cannot fire into a `NOT NULL` column -- the delete would raise rather than orphan the row -- so the nullability is dropped in the same regeneration.
+-- `feedback.project_id` is nullable with `ON DELETE SET NULL`, so deleting a project keeps its feedback. The two go together: a SET NULL action cannot write into a `NOT NULL` column, and the project delete would raise instead.
 --
--- The first assertion is the non-vacuity floor: a retention assertion whose row never existed passes from an empty instrument. Assertions 2 and 3 were observed RED against the pre-change cascade before the schema was touched.
---
--- The orphan's REACHABILITY -- that a row with a null project id stays readable and deletable by the global-scope admin and by nobody else -- is asserted in section 5, beside the two `feedback` predicates that carry the null disjunct. It cannot be asserted here: until those predicates are written, both surviving policies on this table gate on `project_id` alone and an orphaned row is reachable by nobody.
+-- The first assertion is the non-vacuity floor: a retention assertion whose row never existed passes from an empty instrument. The orphan's reachability (readable and deletable by the global-scope admin and by nobody else) is asserted in section 12.
 -- =====================================================================
 SELECT
   reset_role ();
@@ -113,13 +111,13 @@ SELECT
   );
 
 -- =====================================================================
--- Section 1: the separating identity, minted here because it exists nowhere in the tree
+-- Section 1: the separating identity, created in this transaction
 --
 -- One `auth.users` row at a uuid outside the `cccccccc-cccc-cccc-cccc-00000000000N` series `test_user_id ()` returns, and one `public.grants` row with project scope, a NULL target type, project A as the target and the EDITOR role. Both roll back with this transaction.
 --
 -- `t22_affected` exists because an UPDATE or DELETE refused by a USING clause affects zero rows SILENTLY rather than raising, so the may-not half cannot be written as `throws_ok`. It is SECURITY INVOKER (the default), so the dynamic statement runs as the caller and row-level security applies.
 --
--- The `set_test_user` call for `admin_a` fires the grant backfill for all eight fixture identities; one call is enough. The editor is then impersonated with an EMPTY role array, because that third parameter is a tripwire for a non-empty role array against an identity holding no grant rows -- and this identity holds one, inserted directly.
+-- The `set_test_user` call for `admin_a` writes the grants of all eight fixture identities; one call is enough. The editor is impersonated with an EMPTY grant array, which skips that write and the fixture-agreement check: its one grant row is inserted directly in this section, and the session claim is projected from it.
 -- =====================================================================
 SELECT
   reset_role ();
@@ -182,9 +180,9 @@ SELECT
   );
 
 -- =====================================================================
--- Section 2: section 11.1 at the function level -- the two permissions, one identity
+-- Section 2: the settings split at the function level -- two permissions, one identity
 --
--- Asked of the authority predicate directly, so the pair states the matrix fact the policies below are written against, independently of any policy. `grant_role_permissions('project','editor',NULL)` carries `project.edit_app_settings` and NOT `project.edit_project_settings`; that is the whole of D-09's split, and this is the only identity in the estate that can see it.
+-- Asked of the authority predicate directly, so the pair states the matrix fact the policies below are written against, independently of any policy. `grant_role_permissions('project','editor',NULL)` carries `project.edit_app_settings` and NOT `project.edit_project_settings`; that is the whole of the split, and in this file only this identity can observe it.
 -- =====================================================================
 SELECT
   set_test_user (
@@ -216,13 +214,13 @@ SELECT
           'project.edit_project_settings'
         )
     ),
-    'and the SAME caller does NOT hold project.edit_project_settings on it -- section 11.1'
+    'and the SAME caller does NOT hold project.edit_project_settings on it'
   );
 
 -- =====================================================================
--- Section 3: section 11.1 behaviourally -- four cells across two tables, plus the entity grantee
+-- Section 3: the settings split behaviourally -- four cells across two tables, plus the entity grantee
 --
--- Cell 5 (the editor denied the `projects` row) means "the permission" only because cell 7 shows the SAME row is writable by an admin. Without that control it would equally well mean "a table nobody can write".
+-- The editor's denied `projects` update means "the permission" only because the admin's update of the SAME row succeeds. Without that control it would equally well mean "a table nobody can write".
 -- =====================================================================
 SELECT
   is (
@@ -257,7 +255,7 @@ SELECT
       )
     ),
     0,
-    'a project editor CANNOT update its own project''s projects row -- section 11.1 across two tables'
+    'a project editor CANNOT update its own project''s projects row -- the settings split across two tables'
   );
 
 SELECT
@@ -311,11 +309,11 @@ SELECT
   );
 
 -- =====================================================================
--- Section 4: section 11.1 structurally, across the two plans that own the two halves
+-- Section 4: the settings split structurally, across the two tables
 --
 -- Read from `pg_policies` on the applied database, whose expressions carry no comments, so neither assertion can be satisfied or defeated by prose. `strpos` rather than LIKE: `_` is a single-character wildcard in LIKE and every permission literal in this enum is full of them.
 --
--- 162-09 owns the `projects` half and 162-11 owns the `app_settings` half, so NEITHER plan can assert the split alone. This pair is where two literals become a split.
+-- Each policy alone names one literal; only the pair shows that the editor's permission reaches `app_settings` and not `projects`.
 -- =====================================================================
 SELECT
   reset_role ();
@@ -385,13 +383,13 @@ SELECT
 -- =====================================================================
 -- Section 5: the read grid -- two axes, three tables, fifteen cells
 --
--- The axes are DOES THE CALLER HOLD A GRANT IN THE PROJECT and IS THE PROJECT OPEN FOR VOTERS, and the predicate under test is a two-term disjunction of two DIFFERENT questions: `user_can ('project', project_id, 'project.read_structure')` answers the matrix one, 162-08's `project_open_for_voters (project_id)` answers the row-state one.
+-- The axes are DOES THE CALLER HOLD A GRANT IN THE PROJECT and IS THE PROJECT OPEN FOR VOTERS, and the predicate under test is a two-term disjunction of two DIFFERENT questions: `user_can ('project', project_id, 'project.read_structure')` answers the matrix one, `project_open_for_voters (project_id)` answers the row-state one.
 --
--- CELL 4 IS ROADMAP CRITERION 5's SECOND CLAUSE and it is the direction a project-open-only predicate fails: a project that is NOT open for voters is still fully readable to its own grantees. Cell 3 is the direction an authority-only predicate fails: an authenticated caller holding no grant in an OPEN project must see it, or a logged-in caller sees strictly less than a logged-out one and `_getAppSettings` -- which reads this table with `.single()` -- THROWS rather than rendering empty.
+-- Cell 4 is the direction a project-open-only predicate fails: a project that is NOT open for voters is still fully readable to its own grantees. Cell 3 is the direction an authority-only predicate fails: an authenticated caller holding no grant in an OPEN project must see it, or a logged-in caller sees strictly less than a logged-out one and `_getAppSettings` -- which reads this table with `.single()` -- THROWS rather than rendering empty.
 --
--- Both arms were observed independently load-bearing before the real predicate was accepted: with the disjunct removed, cell 3 reddened on all three tables; with the authority call removed, cell 4 reddened on all three. A disjunct whose two arms are not independently load-bearing is a disjunct with one arm.
+-- Each arm is load-bearing on its own: without the project-open term cell 3 fails on all three tables, and without the authority call cell 4 does.
 --
--- Cell 2 is `candidate_a`, an ENTITY grantee, and it passes through 162-04's project-read branch -- an entity grant answers yes to `project.read_structure` at PROJECT scope for its own project -- rather than through any per-row flag. The retired publication term was gone from these predicates rather than pending removal (D-11b), so 162-16 found nothing left to strip here.
+-- Cell 2 is `candidate_a`, an ENTITY grantee, which passes through `user_can`'s project-read branch -- an entity grant answers yes to `project.read_structure` at PROJECT scope for its own project -- rather than through any per-row flag.
 -- =====================================================================
 SELECT
   set_test_user (
@@ -593,7 +591,7 @@ SELECT
         project_id = test_id ('project_b')
     )::integer,
     1,
-    'cell 4 / questions: that SAME caller sees CLOSED project B''s question, because it holds a grant there -- criterion 5''s second clause'
+    'cell 4 / questions: that SAME caller sees CLOSED project B''s question, because it holds a grant there'
   );
 
 SELECT
@@ -607,7 +605,7 @@ SELECT
         project_id = test_id ('project_b')
     )::integer,
     1,
-    'cell 4 / question_categories: that SAME caller sees CLOSED project B''s category, because it holds a grant there -- criterion 5''s second clause'
+    'cell 4 / question_categories: that SAME caller sees CLOSED project B''s category, because it holds a grant there'
   );
 
 SELECT
@@ -621,13 +619,13 @@ SELECT
         project_id = test_id ('project_b')
     )::integer,
     1,
-    'cell 4 / app_settings: that SAME caller sees CLOSED project B''s settings row, because it holds a grant there -- criterion 5''s second clause'
+    'cell 4 / app_settings: that SAME caller sees CLOSED project B''s settings row, because it holds a grant there'
   );
 
 -- =====================================================================
 -- Section 6: the three read predicates structurally
 --
--- Read from `pg_policies` on the applied database, whose expressions carry no comments, so the negative half cannot be satisfied or defeated by prose. Each names BOTH arms and none of the four things a converted predicate must no longer contain: the legacy project predicate, a role predicate, a bare uid call, or the retired per-row visibility column.
+-- Read from `pg_policies` on the applied database, whose expressions carry no comments, so the negative half cannot be satisfied or defeated by prose. Each names BOTH arms and none of four terms that would re-derive what `user_can` answers: a project-access helper, a role predicate, a bare uid call, or a per-row publication column.
 -- =====================================================================
 SELECT
   reset_role ();
@@ -671,7 +669,7 @@ SELECT
         AND qual ~ '(can_access_project|has_role|uid\(\)|published)'
     )::integer,
     0,
-    'and none of the three still re-derives a rule the authority predicate answers, nor reads the retired per-row column'
+    'and none of the three re-derives a rule the authority predicate answers, nor reads a per-row publication column'
   );
 
 SELECT
@@ -693,17 +691,17 @@ SELECT
         AND COALESCE(qual, with_check) ~ 'FROM public\.projects'
     )::integer,
     0,
-    'D-15 / K3: no policy on these five tables re-derives the project-open flag with an inline sub-select over public.projects'
+    'no policy on these five tables re-derives the project-open flag with an inline sub-select over public.projects'
   );
 
 -- =====================================================================
 -- Fixture: one unreferenced row per DENY-SIDE delete assertion
 --
--- Every delete assertion, allow half AND deny half, gets its own synthetic row. Two reasons, both measured rather than anticipated.
+-- Every delete assertion, allow half AND deny half, gets its own synthetic row, for two reasons.
 --
--- ORDERING: a delete assertion must never remove a row a later assertion reads -- `11-question-rpcs.test.sql`'s stated precedent, and the estate's rule.
+-- Ordering: a delete assertion must never remove a row a later assertion reads, as in `11-question-rpcs.test.sql`.
 --
--- AND THE DENY HALF MUST BE REFUSED BY THE POLICY AND BY NOTHING ELSE. Pointed at `question_category_a`, candidate_a's delete was observed -- against a planted always-true predicate -- to reach `questions_category_id_fkey` and RAISE, aborting the whole transaction: the assertion passed under the real predicate for the right reason and would have passed under a WIDE-OPEN one for the wrong reason, which is exactly the failure the planted variant exists to expose. `question_category_deny` is referenced by no question, so only the policy can refuse it.
+-- The deny half must be refused by the policy and by nothing else. A delete aimed at a referenced category such as `question_category_a` would, under a wide-open predicate, reach `questions_category_id_fkey` and raise, aborting the transaction, so the assertion would pass for the wrong reason. The deny-side category inserted below is referenced by no question, so only the policy can refuse it.
 -- =====================================================================
 SELECT
   reset_role ();
@@ -778,7 +776,7 @@ VALUES
 --
 -- THE DENY IDENTITY IS `candidate_a` AND THE CHOICE IS THE WHOLE POINT. It is an ENTITY grantee of the SAME project as the allow identity, so it holds `project.read_structure` and none of the write verbs: the two callers of each pair differ in the permission and in NOTHING ELSE -- not in the project, not in whether they are authenticated, not in whether they hold a grant at all. A pair whose two callers differ in more than one thing measures the wrong difference.
 --
--- INSERT denials RAISE (42501, the WITH CHECK refusing the new row); UPDATE and DELETE denials affect ZERO ROWS SILENTLY, which is why they go through `t22_affected` rather than `throws_ok`. Both forms are the estate's existing ones; a third would be a new convention.
+-- INSERT denials RAISE (42501, the WITH CHECK refusing the new row); UPDATE and DELETE denials affect ZERO ROWS SILENTLY, which is why they go through `t22_affected` rather than `throws_ok`.
 --
 -- The `app_settings` pair is INTERLEAVED rather than grouped, because `app_settings.project_id` is UNIQUE: the deny-side INSERT has to be attempted while project A's row is absent, or a unique violation would answer in place of the policy and the assertion would pass on the wrong mechanism.
 -- =====================================================================
@@ -1013,9 +1011,9 @@ SELECT
   );
 
 -- =====================================================================
--- Section 8: `feedback` -- two policies, two pairs, and no E2E spec anywhere behind them
+-- Section 8: `feedback` -- two policies, two pairs
 --
--- NOTHING IN THE E2E SUITE READS OR DELETES THIS TABLE, so these four assertions are the whole evidence for both converted policies. `feedback.read` and `feedback.manage` are two DIFFERENT members of section 3.2, granted to exactly the same four roles, so no identity in the matrix separates them; the structural map in section 13 is what makes the distinction real, and exchanging the two literals was measured to redden ZERO of the assertions below.
+-- Nothing in the E2E suite reads or deletes this table, so these four assertions are the whole behavioural evidence for both policies. `feedback.read` and `feedback.manage` are two DIFFERENT permissions granted to exactly the same four roles, so exchanging the two literals reddens none of the assertions below; the structural map in section 13 is what separates them.
 -- =====================================================================
 SELECT
   reset_role ();
@@ -1112,9 +1110,9 @@ SELECT
 --
 -- This table holds the initiating operator's address in `author` and the LLM job's prompt, response and progress in `input`, `output` and `messages`. Nothing in the E2E suite reaches it under row-level security -- the suite's only caller is a SERVICE-ROLE teardown client -- so a widened policy here is invisible everywhere except in these six assertions.
 --
--- Q1 = (a), ratified by the operator on 2026-09-16 (162-CHECKPOINT-DECISIONS.md section 1 item S-4, the one box ticked): all three policies take `project.edit_questions`. The jobs exist to edit questions and both features terminate in `merge_question_custom_data`, so whoever may write a question's custom data may record and read the job that wrote it. Holder set Root / Account / ProjAdmin / ProjEditor and ✗ in all four entity columns -- one project editor wider than today, and NO entity user gains read of the address or the prompt. Option (b) -- `project.read_structure` on the SELECT -- was named as the disclosing one and rejected: that verb is ✓ in all four entity columns.
+-- All three policies take `project.edit_questions`. The jobs exist to edit questions and both features end in `merge_question_custom_data`, so whoever may write a question's custom data may record and read the job that wrote it. That admits the root, account and project admins and the project editor, and no entity user, so no entity user reads the author address or the prompt. `project.read_structure` would not do for the SELECT: every entity user holds it.
 --
--- READ AND WRITE ARE DELIBERATELY NOT SPLIT ON THIS TABLE, against the pattern the phase installs everywhere else, because the enum's only read-shaped member is the one that discloses. That is recorded here rather than left to look like an oversight; 162-17's matrix-conformance work inherits the mapping.
+-- Read and write are deliberately not split on this table, unlike the other content tables, because the only project-scope read permission is the one that discloses.
 -- =====================================================================
 SELECT
   set_test_user (
@@ -1207,7 +1205,7 @@ SELECT
 --
 -- `admin_b` is a project ADMIN and holds every verb below -- in project B. Each assertion is therefore a pure reach failure: the permission is held and the target is out of range.
 --
--- The `app_settings` cell uses UPDATE where its four neighbours use INSERT or DELETE, and the reason was measured rather than chosen: a DELETE there was observed to pass from an EMPTY TABLE under a planted always-true predicate, because the preceding deny assertion had already removed the row it was aiming at. `app_settings.project_id` is UNIQUE, so an INSERT would be answered by the constraint instead of the policy. UPDATE is the one write path on this table that is both non-destructive and unambiguous.
+-- The `app_settings` cell uses UPDATE where its four neighbours use INSERT or DELETE. A DELETE there could pass on an empty table, because under a wide-open predicate the preceding deny assertion would already have removed the row it aims at. `app_settings.project_id` is UNIQUE, so an INSERT would be answered by the constraint instead of the policy. UPDATE is the one write path on this table that is both non-destructive and unambiguous.
 -- =====================================================================
 SELECT
   set_test_user (
@@ -1278,11 +1276,11 @@ SELECT
   );
 
 -- =====================================================================
--- Section 11: the two ungated INSERT policies, asserted as the RULING they are
+-- Section 11: the two ungated feedback INSERT policies
 --
--- Q2 = (a), ratified by the operator on 2026-09-16 (162-CHECKPOINT-DECISIONS.md section 5 item P-4): `anon_insert_feedback` and `authenticated_insert_feedback` stay exactly as they are, `WITH CHECK (true)`. Submitting feedback is not a member of section 3.2 and section 3.2 is canonical, so gating either policy would mean inventing an enum member or borrowing an unrelated one. What bounds a submission is 107-feedback.sql's rating-or-description CHECK and its per-IP rate-limit trigger, neither of which is a policy.
+-- `anon_insert_feedback` and `authenticated_insert_feedback` are `WITH CHECK (true)`: anon and authenticated callers may insert feedback unconditionally at the policy level, because anonymous voters submit feedback and no permission models a submission. What bounds a submission is the table's rating-or-description CHECK and its per-IP rate-limit trigger, neither of which is a policy. The requirement that a row names its project is enforced at insert time by the `enforce_feedback_project` trigger and asserted in `34-feedback-project-guard.test.sql`.
 --
--- The unbounded project id both policies admit is ACCEPTED AND RECORDED (threat register T-162-11-09), not silently inherited: content is never publicly readable because the read policy is gated, and the third assertion below is that read/write separation stated directly -- a caller may submit and may not read back.
+-- Any project id is admitted. Content is never publicly readable, because the read policy is gated, and the third assertion below states that separation directly: a caller may submit and may not read back.
 -- =====================================================================
 SELECT
   set_test_user ('anon');
@@ -1343,9 +1341,9 @@ SELECT
 -- =====================================================================
 -- Section 12: the orphaned feedback row is reachable by EXACTLY ONE identity
 --
--- The row section 0 orphaned still carries `project_id IS NULL`. Both surviving policies on this table gate on `project_id`, so without a second disjunct that row would be readable and deletable by NOBODY -- retention that produces invisible, undeletable ballast. Each predicate therefore admits the GLOBAL-SCOPE admin when the project id is null.
+-- The row section 0 orphaned carries `project_id IS NULL`. The `feedback` SELECT and DELETE policies gate on `project_id`, so without a second disjunct that row would be readable and deletable by NOBODY. Each predicate therefore admits the GLOBAL-SCOPE admin when the project id is null.
 --
--- THIS IS AN ASSUMPTION, NOT A RULING. The operator's P-4 note asks for retention and does not settle who may then read it; the global-scope admin is the narrowest disposition that keeps the row reachable, introduces no enum member and is one disjunct in each of two predicates. It is recorded under that word in 162-11-SUMMARY.md so it can be overruled in one edit. The pair below is what distinguishes "reachable by exactly one identity" from "reachable by nobody"; a single positive assertion cannot.
+-- The global-scope admin is the narrowest identity that keeps the row reachable without a new permission, at the cost of one disjunct in each of the two predicates. The pair below distinguishes "reachable by exactly one identity" from "reachable by nobody", which a single positive assertion cannot.
 -- =====================================================================
 SELECT
   set_test_user (
@@ -1390,11 +1388,11 @@ SELECT
   );
 
 -- =====================================================================
--- Section 13: the structural policy-to-permission map over all seventeen converted policies
+-- Section 13: the structural policy-to-permission map over all seventeen `user_can` policies
 --
--- The instrument for the distinction no behavioural assertion in this estate can make. `feedback.read` and `feedback.manage` are coextensive across all eight user types of section 3.3, so exchanging them between the two `feedback` policies leaves every assertion above green; it reddens this one, and that asymmetry -- measured, not argued -- is what makes the map an instrument rather than a decoration.
+-- The instrument for the distinction no behavioural assertion in this estate can make. `feedback.read` and `feedback.manage` are coextensive across all eight user types of the role x permission matrix (`grant_role_permissions`), so exchanging them between the two `feedback` policies leaves every assertion above green and reddens only this one.
 --
--- Derived from `pg_policies` on the applied database and compared element for element against the map 162-11 declares, so a single wrong mapping reddens and the diff names the policy.
+-- Derived from `pg_policies` on the applied database and compared element for element against the declared map, so a single wrong mapping reddens and the diff names the policy.
 -- =====================================================================
 SELECT
   reset_role ();
@@ -1449,7 +1447,7 @@ SELECT
       'authenticated_select_question_categories=project.read_structure',
       'authenticated_select_questions=project.read_structure'
     ),
-    'the derived policy-to-permission map equals the declared one, element for element, over all seventeen converted policies'
+    'the derived policy-to-permission map equals the declared one, element for element, over all seventeen user_can policies'
   );
 
 SELECT
