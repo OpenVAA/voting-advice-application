@@ -40,7 +40,6 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import { EntityChildren, EntityInfo, EntityOpinions } from './';
   import type { CustomData, EntityDetailsContent, ParentEntityDetailsContent } from '@openvaa/app-shared';
   import type { AnyQuestionVariant } from '@openvaa/data';
-  import type { Tab } from '$lib/components/tabs';
   import type { AnswerState } from '$lib/contexts/voter';
   import type { VoterContext } from '$lib/contexts/voter/voterContext.type';
   import type { EntityDetailsProps } from './EntityDetails.type';
@@ -60,9 +59,9 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     answers = voterContext.answers;
   }
 
-  type ContentTab = { content: EntityDetailsContent | ParentEntityDetailsContent; label: string };
+  type ContentTab = { id: EntityDetailsContent | ParentEntityDetailsContent; label: string };
 
-  let activeIndex = $state(0);
+  let activeTab = $state<string>();
 
   let contentTabs: Array<ContentTab> = $derived.by(() => {
     const { entity: nakedEntity } = unwrapEntity(entity);
@@ -77,12 +76,15 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
           : nakedEntity.type === 'organization'
             ? ['info', 'opinions', 'children']
             : ['info', 'opinions'];
-    return tabs.map((tab) => ({ content: tab, label: t(`entityDetails.tabs.${tab}`) }));
+    return tabs.map((tab) => ({ id: tab, label: t(`entityDetails.tabs.${tab}`) }));
   });
+
+  // `Tabs` shows the first tab when `activeTab` matches none, e.g. after the drawer swaps to an entity without that tab.
+  const activeContent = $derived(contentTabs.find((tab) => tab.id === activeTab)?.id ?? contentTabs[0]?.id);
 
   let children: Array<MaybeWrappedEntityVariant> = $derived.by(() => {
     const { nomination } = unwrapEntity(entity);
-    const tabs = contentTabs.map((ct) => ct.content);
+    const tabs = contentTabs.map((ct) => ct.id);
     if (tabs.includes('children')) {
       if (isObjectType(nomination, OBJECT_TYPE.OrganizationNomination))
         return findCandidateNominations({ matches: voterContext?.matches, nomination });
@@ -103,7 +105,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
   let infoQuestions: Array<AnyQuestionVariant> = $derived.by(() => {
     const { entity: nakedEntity, nomination } = unwrapEntity(entity);
-    const tabs = contentTabs.map((ct) => ct.content);
+    const tabs = contentTabs.map((ct) => ct.id);
     if (tabs.includes('info') || tabs.includes('opinions')) {
       let questions = nomination ? nomination.applicableQuestions : nakedEntity.answeredQuestions;
       questions = questions.filter((q) => !(q.customData as CustomData['Question'])?.hidden);
@@ -114,7 +116,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
   let opinionQuestions: Array<AnyQuestionVariant> = $derived.by(() => {
     const { entity: nakedEntity, nomination } = unwrapEntity(entity);
-    const tabs = contentTabs.map((ct) => ct.content);
+    const tabs = contentTabs.map((ct) => ct.id);
     if (tabs.includes('info') || tabs.includes('opinions')) {
       let questions = nomination ? nomination.applicableQuestions : nakedEntity.answeredQuestions;
       questions = questions.filter((q) => !(q.customData as CustomData['Question'])?.hidden);
@@ -123,8 +125,8 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     return [];
   });
 
-  function handleContentTabChange({ tab }: { tab: Tab }): void {
-    startEvent('entityDetails_changeTab', { section: (tab as ContentTab).content });
+  function handleContentTabChange(tab: ContentTab): void {
+    startEvent('entityDetails_changeTab', { section: tab.id });
   }
 </script>
 
@@ -145,23 +147,23 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     {/if}
   </header>
   {#if contentTabs.length > 1}
-    <!-- bind: keep — Tabs.activeIndex is $bindable(0) -->
+    <!-- bind: keep — Tabs.activeTab is $bindable -->
     <!-- transitionOnChange: the drawer tabs switch by local state, not by navigation, so the root layout's onNavigate view-transition hook never fires for them; the local startViewTransition wrapper cross-fades the tab content under the same shouldAnimate gate. -->
     <Tabs
       tabs={contentTabs}
-      bind:activeIndex
+      bind:activeTab
       onChange={handleContentTabChange}
       transitionOnChange
       class="px-10"
       style="view-transition-name: entity-detail-tabs" />
   {/if}
-  {#if contentTabs[activeIndex]?.content === 'info'}
+  {#if activeContent === 'info'}
     <div data-testid="voter-entity-detail-info"><EntityInfo {entity} questions={infoQuestions} /></div>
-  {:else if contentTabs[activeIndex]?.content === 'opinions'}
+  {:else if activeContent === 'opinions'}
     <div data-testid="voter-entity-detail-opinions">
       <EntityOpinions {entity} questions={opinionQuestions} {answers} />
     </div>
-  {:else if contentTabs[activeIndex]?.content === 'children'}
+  {:else if activeContent === 'children'}
     <div data-testid="voter-entity-detail-children">
       <EntityChildren
         entities={children}
