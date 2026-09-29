@@ -62,7 +62,7 @@ Displays information about the privacy policy of the app as well as the possible
       {@html sanitizeHtml(t('dynamic.privacy.content'))}
     </div>
     {#if appSettings.analytics?.platform}
-      <h2>{t('privacy.analytics.title')}</h2>
+      <h2 class="mt-lg mb-md">{t('privacy.analytics.title')}</h2>
       <div>
         {@html sanitizeHtml(
           t(assertTranslationKey(`privacy.analytics.content.${appSettings.analytics.platform.name}`), {
@@ -71,12 +71,12 @@ Displays information about the privacy policy of the app as well as the possible
         )}
       </div>
     {/if}
-    <h2>{t('privacy.cookies.title')}</h2>
+    <h2 class="mt-lg mb-md">{t('privacy.cookies.title')}</h2>
     <div>
       {@html sanitizeHtml(t('privacy.cookies.content'))}
     </div>
     {#if appSettings.analytics.trackEvents}
-      <h2>{t('common.privacy.dataCollection.title')}</h2>
+      <h2 class="mt-lg mb-md">{t('common.privacy.dataCollection.title')}</h2>
       <DataConsent description="inline" class="bg-base-300 p-lg rounded-lg" />
     {/if}
   </div>
@@ -89,10 +89,3 @@ Displays information about the privacy policy of the app as well as the possible
       data-testid="voter-privacy-return" />
   {/snippet}
 </MainContent>
-
-<style lang="postcss">
-  @reference "../../../tailwind-theme.css";
-  h2 {
-    @apply mb-md mt-lg;
-  }
-</style>

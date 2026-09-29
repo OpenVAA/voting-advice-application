@@ -27,7 +27,7 @@ Accesses `AppContext` and optionally `VoterContext`.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // `appType` / `getRoute` / `openFeedbackModal` are stable rune handles from AppContext; read `.current` directly (no store bridge). `getRoute` was already rune-native — `getRoute.current(...)` is unchanged.
+  // `appType`, `getRoute` and `openFeedbackModal` are stable rune handles from AppContext; read `.current` directly.
   const { appType, getRoute, openFeedbackModal, t } = getAppContext();
   const voterCtx = appType.current === 'voter' ? getVoterContext() : undefined;
   const { topBarSettings, video } = getLayoutContext();
@@ -101,14 +101,12 @@ Accesses `AppContext` and optionally `VoterContext`.
   {/if}
 </div>
 
-<style lang="postcss">
-  @reference "../../../tailwind-theme.css";
-  /* `<a>` uses aria-disabled (non-standard `disabled` removed for WCAG / Playwright compat); `<button>` keeps native `disabled`. */
+<style>
+  /* Colours the enabled links and buttons that other components render into the actions container; a disabled link carries `aria-disabled`, a disabled button `disabled`. */
   :global(.vaa-basicPage-actions > a:not([aria-disabled='true'])),
   :global(.vaa-basicPage-actions > * > a:not([aria-disabled='true'])),
   :global(.vaa-basicPage-actions > button:not([disabled])),
   :global(.vaa-basicPage-actions > * > button:not([disabled])) {
-    /* !text is valid class prefix */
-    @apply text-[var(--headerIcon-color)];
+    color: var(--headerIcon-color);
   }
 </style>

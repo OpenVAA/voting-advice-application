@@ -51,7 +51,7 @@ text="Add to list">
 <script lang="ts">
   import { Icon } from '$lib/components/icon';
   import { getComponentContext } from '$lib/contexts/component';
-  import { concatClass } from '$lib/utils/components';
+  import { cn, concatClass } from '$lib/utils/components';
   import { Loading } from '../loading';
   import type { ButtonProps } from './Button.type';
 
@@ -96,7 +96,7 @@ text="Add to list">
   // Build classes reactively so that we can incorporate any changes to `icon` and `color` properties
   let classes = $derived.by(() => {
     // 1. Base classes
-    let c = 'btn relative flex flex-nowrap min-h-touch min-w-touch h-auto items-center gap-y-6 gap-x-6';
+    let c = 'btn group relative flex flex-nowrap min-h-touch min-w-touch h-auto items-center gap-y-6 gap-x-6';
 
     // 2. Variant-defined classes
     switch (variant) {
@@ -149,7 +149,10 @@ text="Add to list">
   const isDisabled = $derived(disabled || loading);
 
   let labelClass = $derived.by(() => {
-    let lc = 'vaa-button-label first-letter:uppercase';
+    let lc = cn(
+      'first-letter:uppercase',
+      'group-disabled:text-neutral/20 group-aria-disabled:text-neutral/20 group-[.disabled]:text-neutral/20'
+    );
 
     // 7. Finally, define the class for the text label
     switch (variant) {
@@ -220,12 +223,3 @@ text="Add to list">
     </div>
   {/if}
 </svelte:element>
-
-<style lang="postcss">
-  @reference "../../../tailwind-theme.css";
-  [disabled] .vaa-button-label,
-  [aria-disabled='true'] .vaa-button-label,
-  .disabled .vaa-button-label {
-    @apply text-neutral/20;
-  }
-</style>

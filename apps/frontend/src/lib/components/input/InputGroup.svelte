@@ -1,5 +1,5 @@
 <!--
-@component A componend used to group `Input`-components together.
+@component A component used to group `Input`-components together.
 
 NB. Only single-row `Input`s are joined and they should not have the `info` property set.
 
@@ -8,9 +8,9 @@ NB. Only single-row `Input`s are joined and they should not have the `info` prop
 - `title`: Optional title for the group.
 - `info`: Optional info text for the group.
 
-### Slots
+### Snippet Props
 
-- default: The `Input` components to group.
+- `children`: The `Input` components to group.
 
 ### Usage
 
@@ -24,15 +24,11 @@ NB. Only single-row `Input`s are joined and they should not have the `info` prop
 -->
 
 <script lang="ts">
-  import { concatClass } from '$lib/utils/components';
+  import { cn, concatClass } from '$lib/utils/components';
   import { infoClass, joinGap, outsideLabelClass } from './shared';
   import type { InputGroupProps } from './InputGroup.type';
 
   let { title, info, children, ...restProps }: InputGroupProps = $props();
-
-  ////////////////////////////////////////////////////////////////////
-  // Styling
-  ////////////////////////////////////////////////////////////////////
 </script>
 
 <fieldset {...concatClass(restProps, '')}>
@@ -41,7 +37,13 @@ NB. Only single-row `Input`s are joined and they should not have the `info` prop
       {title}
     </legend>
   {/if}
-  <div class="flex flex-col items-stretch {joinGap} vaa-input-container">
+  <div
+    class={cn(
+      'flex flex-col items-stretch',
+      joinGap,
+      '[&>:not(:first-child)_.vaa-group-join-item]:rounded-t-none',
+      '[&>:not(:last-child)_.vaa-group-join-item]:rounded-b-none'
+    )}>
     {@render children?.()}
   </div>
   {#if info}
@@ -50,13 +52,3 @@ NB. Only single-row `Input`s are joined and they should not have the `info` prop
     </div>
   {/if}
 </fieldset>
-
-<style lang="postcss">
-  @reference "../../../tailwind-theme.css";
-  :global(.vaa-input-container > :not(:first-child) .vaa-group-join-item) {
-    @apply rounded-t-none;
-  }
-  :global(.vaa-input-container > :not(:last-child) .vaa-group-join-item) {
-    @apply rounded-b-none;
-  }
-</style>

@@ -49,18 +49,22 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
   let nakedEntity: AnyEntityVariant = $derived(unwrapped.entity);
   let nomination: AnyNominationVariant | undefined = $derived(unwrapped.nomination);
   let entityType: EntityType = $derived(nakedEntity.type);
+
+  /** A group of info items, separated from the group before it by a rule. */
+  const INFO_GROUP =
+    'mt-16 flex flex-col gap-md border-t-md border-t-[var(--line-color)] pt-16 first:mt-0 first:border-t-0 first:pt-0';
 </script>
 
 <div class="p-lg pb-safelgb grid">
   {#if nakedEntity.info}
-    <div class="infoGroup" role="group">
+    <div class={INFO_GROUP} role="group">
       <div>{@html sanitizeHtml(nakedEntity.info)}</div>
     </div>
   {/if}
 
   {#if nomination}
     {@const { election, electionSymbol, constituency, parentNomination } = nomination}
-    <div class="infoGroup" role="group">
+    <div class={INFO_GROUP} role="group">
       {#if ctx.dataRoot.elections.length > 1}
         <InfoItem label={t('common.election')}>{election.name}</InfoItem>
       {/if}
@@ -97,7 +101,7 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
   {#if questions?.length}
     {@const nonLinkQuestions = questions.filter((q) => q.subtype !== 'link')}
     {@const linkQuestions = questions.filter((q) => q.subtype === 'link')}
-    <div class="infoGroup" role="group">
+    <div class={INFO_GROUP} role="group">
       {#if nonLinkQuestions.length}
         {#each nonLinkQuestions as question}
           {@const answer = nakedEntity.getAnswer(question)}
@@ -122,10 +126,3 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
     <SurveyBanner class="mt-lg" />
   {/if}
 </div>
-
-<style lang="postcss">
-  @reference "../../../tailwind-theme.css";
-  .infoGroup {
-    @apply gap-md border-t-md mt-16 flex flex-col border-t-[var(--line-color)] pt-16 first:mt-0 first:border-t-0 first:pt-0;
-  }
-</style>

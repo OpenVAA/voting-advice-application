@@ -48,7 +48,7 @@ If not provided, the `video` element will be hidden until these properties are p
 - `toggleSound`: Toggle sound
 - `toggleCaptions`: Show or hide captions.
 - `toggleTranscript`:  Toggle transcript visibility.
-- `jump`: Skip the video a number of steps based on text track cues or `skipAmount` if cues are not available. If the video is in the end, a `steps` of `-1` will be skip to the beginning of the last cue. If `steps` would result in a negative index or one greater than the number of cues, the video will be scrolled to the beginning or the end.
+- `jump`: Skip the video a number of steps based on text track cues or `skipAmount` if cues are not available. If the video is at the end, a `steps` of `-1` skips to the beginning of the last cue. If `steps` would result in a negative index or one greater than the number of cues, the video will be scrolled to the beginning or the end.
 - `gotoAndPlay`: Scroll the video to the given time and play.
 - `load`: Change the video contents, i.e. sources, captions, poster and transcript, and optionally other properties.
 
@@ -56,7 +56,7 @@ If not provided, the `video` element will be hidden until these properties are p
 
 - `video`: The video player creates an analytics event for each video viewed which combines a number of properties. See the `VideoTrackingEventData` in `Video.type.ts` for a complete description. The event is started and submitted when:
   - the component is created/destroyed
-  - when the video shown is changed with `reload`
+  - when the video shown is changed with `load`
   - when the page's visibility changes to `hidden`.
 
 ### Usage
@@ -104,7 +104,7 @@ If not provided, the `video` element will be hidden until these properties are p
    */
   const ERROR_CHECK_INTERVAL = 1005;
   /**
-   * A small eps in seconds used to determine whether we treat the video is being at the end
+   * A small margin in seconds within which the video is treated as being at the end
    */
   const END_EPS = 0.05;
 
@@ -138,7 +138,7 @@ If not provided, the `video` element will be hidden until these properties are p
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // `locale` here is the i18n plain-string locale from ComponentContext (NOT the flattened AppContext rune handle); read off `ctx` to keep the audit grep clean.
+  // `locale` is the plain-string locale from the component context, not the app context's reactive accessor.
   const ctx = getComponentContext();
   const { t } = ctx;
   const locale = ctx.locale;
@@ -208,7 +208,7 @@ If not provided, the `video` element will be hidden until these properties are p
    */
   let shouldPlay = $state(false);
   /**
-   * The last known time and video `currentTime` when the video was playing or the time the component was mounted. We need both to double-check that the video is actually playing, because even our compex `playing` detector fails in some configurations, uh
+   * The last known time and video `currentTime` when the video was playing or the time the component was mounted. We need both to double-check that the video is actually playing, because even the `playing` detector fails in some configurations
    */
   let lastPlaying = {
     time: -1,
@@ -393,7 +393,7 @@ If not provided, the `video` element will be hidden until these properties are p
   }
 
   /**
-   * Fired when the invisible jump areas of the screen are pressed. We treat this clicks as jumps only if the video is not paused.
+   * Fired when the invisible jump areas of the screen are pressed. These clicks are treated as jumps only if the video is not paused.
    * @param steps - Passed to `jump`
    */
   function screenJump(steps: number): void {
@@ -471,7 +471,7 @@ If not provided, the `video` element will be hidden until these properties are p
   let seekTarget = $state<number | undefined>(undefined);
 
   /**
-   * Skip the video a number of steps based on text track cues or `skipAmount` if cues are not available. If the video is in the end, a `steps` of `-1` will be skip to the beginning of the last cue. If `steps` would result in a negative index or one greater than the number of cues, the video will be scrolled to the beginning or the end.
+   * Skip the video a number of steps based on text track cues or `skipAmount` if cues are not available. If the video is at the end, a `steps` of `-1` skips to the beginning of the last cue. If `steps` would result in a negative index or one greater than the number of cues, the video will be scrolled to the beginning or the end.
    * @param steps - A positive or negative number of steps to skip. If zero, the current cue will be rewound.
    */
   export function jump(steps: number): void {
@@ -494,7 +494,7 @@ If not provided, the `video` element will be hidden until these properties are p
    */
   export function gotoAndPlay(timepoint: number): void {
     if (!video || !hasContent) return;
-    // On Safari, there's a strange bug if the timepoint is passed is not precise enough, which sometimes causes the player to freeze. Therefore, we add a tiny fraction to the value.
+    // On Safari, a timepoint that is not precise enough sometimes freezes the player. Therefore, we add a tiny fraction to the value.
     // We also need to deduct a small margin from duration, bc otherwise the video will start again
     video.currentTime = Math.max(0, Math.min(timepoint, duration - END_EPS)) + 1e-10;
     setPaused(false);
@@ -590,7 +590,7 @@ If not provided, the `video` element will be hidden until these properties are p
     const track = getTrack();
     if (!track?.cues) return;
     const blocks: Array<string> = [];
-    // Sometimes the cues continue from the previous cue, so we need may need to concatenate them
+    // A cue sometimes continues the previous one, so they may need to be concatenated
     let combined = '';
     for (const cue of [...track.cues].filter((cue) => 'text' in cue && typeof cue.text === 'string')) {
       let continued = false;
@@ -649,7 +649,7 @@ If not provided, the `video` element will be hidden until these properties are p
   }
 </script>
 
-<!-- NB. We need select-none and touch-manipulation to avoid distracting functions touch devices -->
+<!-- select-none and touch-manipulation avoid distracting text selection and gestures on touch devices -->
 <div
   data-testid="video"
   {...concatClass(
@@ -722,7 +722,7 @@ If not provided, the `video` element will be hidden until these properties are p
       </div>
     </video>
 
-    <!-- All controls. Note that we do not want these two overlap -->
+    <!-- All controls. These must not overlap. -->
     <div class="absolute top-0 right-0 bottom-0 left-0 flex flex-col">
       <!-- Invisible overlay areas -->
       <div class="flex grow flex-row justify-stretch">
@@ -864,20 +864,23 @@ If not provided, the `video` element will be hidden until these properties are p
 
 <style lang="postcss">
   @reference "../../../tailwind-theme.css";
+
+  /* Caption text: `::cue` is a browser-generated pseudo-element, which takes no class. */
   :global(video::cue) {
-    /* sm: is a valid class prefix even though it's flagged by the linter */
     @apply font-base sm:text-md text-[0.85rem];
   }
 
+  /* Padding and corners of WebKit's generated caption box. */
   :global(video::-webkit-media-text-track-display) {
     @apply p-md box-border rounded-lg;
   }
 
+  /* Lifts WebKit's generated caption container above the controls; `translate` works in both Chrome and Safari, where `bottom` has no effect in Safari. */
   :global(video::-webkit-media-text-track-container) {
-    /* The caption positioning support between Chrome and Safari is very confusing, and the latter treats captions with 1-2 or 3 lines of text in a strangely different way. Here the `bottom` directive has no effect on Safari while `translate` effects both Chrome and Safari.  */
     @apply relative translate-y-[-2.5rem];
   }
 
+  /* The transcript is injected HTML, which takes no class, so its images, figures and headings are styled here. */
   :global(.video-transcript img) {
     @apply my-lg mx-auto max-h-[100vw] rounded-sm;
   }

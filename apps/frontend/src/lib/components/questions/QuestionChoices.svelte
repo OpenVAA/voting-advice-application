@@ -3,7 +3,7 @@
 
 The buttons are rendered as `<input type="radio">` elements contained inside a `<fieldset>`. Consider passing an `aria-labelledby` pointing to the question or an `aria-label`.
 
-The buttons for ordinal questions are by default displayed horizontally and with a line connecting them, while categorical ones are displayed vertically using a larger text size and without a line. These can be overriden by setting the relevant properties. The vertical layout should always be used for choices with long labels.
+The buttons for ordinal questions are by default displayed horizontally and with a line connecting them, while categorical ones are displayed vertically using a larger text size and without a line. These can be overridden by setting the relevant properties. The vertical layout should always be used for choices with long labels.
 
 The radio buttons' behaviour is as follows when using a pointer or touch device:
 
@@ -23,12 +23,14 @@ The same component can also be used to display the answers of the voter and anot
 
 ### Properties
 
-- `name`: The `name` of the radio group. Usually the question's id
-- `choices`: The `key`-`label` pairs of the radio buttons
+- `question`: The question to answer or display. A `MultipleChoiceCategoricalQuestion` uses checkboxes, any other question radio buttons.
+- `choices`: The choices to show, in place of the question's own. Required for a `BooleanQuestion`.
 - `disabled`: Whether to disable all the buttons. @default `false`
 - `mode`: The same component can be used both for answering the questions and displaying answers. @default `'answer'`
 - `selectedId`: The initially selected key of the radio group.
+- `selectedIds`: The initially selected keys in checkbox mode.
 - `otherSelected`: The answer key of the entity in display mode.
+- `otherSelectedIds`: The answer keys of the entity in display mode, in checkbox mode.
 - `otherLabel`: The label for the entity's answer. Be sure to supply this if `otherSelected` is supplied.
 - `showLine`:  Whether to show a line connecting the choices. @default `true` for ordinal questions, and `false` for categorical questions
 - `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default `false`
@@ -63,7 +65,7 @@ The same component can also be used to display the answers of the voter and anot
   import { isMultipleChoiceQuestion, isObjectType, OBJECT_TYPE } from '@openvaa/data';
   import { untrack } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
-  import { cn } from '$lib/utils/components';
+  import { cn, concatClass } from '$lib/utils/components';
   import { getEffectiveSelectionBounds } from '$lib/utils/multiChoiceValidity';
   import { onKeyboardFocusOut } from '$lib/utils/onKeyboardFocusOut';
   import type { Id } from '@openvaa/core';
@@ -92,20 +94,22 @@ The same component can also be used to display the answers of the voter and anot
   ////////////////////////////////////////////////////////////////////
 
   /**
-   * How a choice is drawn in `display` mode when NEITHER the voter NOR the entity picked it: a small dot sitting on the connecting line, rather than a full-size ring.
-   *
-   * This used to be a pair of stacked pseudo-class rules in the scoped style block below, matching inputs that were disabled, unchecked and not entity-selected. Naming the class set and applying it from a visible predicate puts the condition next to the markup it governs. It is applied ON TOP OF an input's base class string, and `cn` resolves the overlap — the base sizes and outline width lose to these — so the two need not be partitioned by hand.
+   * How a radio option that neither the voter nor the entity picked is drawn in `display` mode: a small dot on the connecting line. It is applied on top of the input's base classes, and `cn` lets these sizes and outline width replace the base ones.
    */
-  const UNPICKED_DOT = 'm-8 h-16 w-16 border-none bg-(--line-bg) outline-2';
+  const UNPICKED_RADIO = 'm-8 h-16 w-16 border-none bg-(--line-bg) outline-2';
 
-  /** The checkbox form of {@link UNPICKED_DOT}: the same dot, keeping the checkbox's squared corners. */
-  const UNPICKED_DOT_CHECKBOX = `${UNPICKED_DOT} rounded-sm`;
+  /** How a checkbox option that neither the voter nor the entity picked is drawn in `display` mode: the same dot, with square corners. */
+  const UNPICKED_CHECKBOX = cn(UNPICKED_RADIO, 'rounded-sm');
+
+  /** How the entity's answer is drawn in `display` mode when the voter did not pick it: a filled dot inside a ring. */
+  const ENTITY_PICKED =
+    'disabled:not-checked:border-neutral disabled:not-checked:bg-neutral disabled:not-checked:shadow-[inset_0_0_0_4px_var(--color-base-100)]';
 
   ////////////////////////////////////////////////////////////////////
   // Multi-select (checkbox) mode
   ////////////////////////////////////////////////////////////////////
 
-  // Checkbox multi-select mode is activated for `MultipleChoiceCategoricalQuestion` . Radio and boolean modes are untouched below.
+  // Checkbox multi-select mode is used for a `MultipleChoiceCategoricalQuestion`, and radio buttons for every other question.
   let multiMode = $derived(isMultipleChoiceQuestion(question));
 
   // For convenience. `explicitChoices` wins when provided (required for `BooleanQuestion`, which has no native `.choices`; caller synthesizes them).
@@ -122,7 +126,7 @@ The same component can also be used to display the answers of the voter and anot
   // Layout variants
   ////////////////////////////////////////////////////////////////////
 
-  // The is to show the line for ordinal and boolean questions and not for categorical ones.
+  // The default is to show the line for ordinal and boolean questions and not for categorical ones.
   let doShowLine = $derived.by(() => {
     if (showLine !== undefined) return showLine;
     return (
@@ -139,6 +143,28 @@ The same component can also be used to display the answers of the voter and anot
       !!getCustomData(question).vertical
     );
   });
+
+  // Vertical: the display labels in column 1 and the choices in column 2, one row each. Horizontal: the display labels in row 1 and the choices in row 2, one column each.
+  let fieldsetClass = $derived(
+    cn(
+      'relative grid w-full grid-flow-row',
+      vertical ? 'gap-md auto-rows-fr' : 'auto-cols-fr grid-rows-[auto_max-content] gap-0'
+    )
+  );
+  let labelClass = $derived(
+    cn(
+      'gap-md grid',
+      vertical
+        ? 'col-start-2 min-w-[8rem] auto-cols-fr grid-flow-col grid-cols-[auto] items-center justify-items-start'
+        : 'row-start-2 auto-rows-max grid-flow-row justify-items-center'
+    )
+  );
+  let displayLabelClass = $derived(
+    cn(
+      'text-secondary text-xs font-normal uppercase',
+      vertical ? 'col-start-1 self-center pe-6 text-end' : 'row-start-1 self-end pb-6 text-center'
+    )
+  );
 
   ////////////////////////////////////////////////////////////////////
   // Selecting choices
@@ -189,20 +215,26 @@ The same component can also be used to display the answers of the voter and anot
     return getEffectiveSelectionBounds({ minSelections, maxSelections, choiceCount: choices?.length ?? 0 });
   });
 
-  // In order to achieve the correct behaviour with both mouse/touch and keyboard users and on different browsers, we have to listen a number of events. The radio inputs' events are fired in this order:
+  // To behave correctly for mouse, touch and keyboard users on different browsers, we listen to several events. The radio inputs' events are fired in this order:
   //
-  // 1. `keydown`: keyboard only `pointerdown`: mouse/touch only (Chrome also fires this when `disabled`) 2. `pointerup`: mouse/touch only (Chrome also fires this when `disabled`) 3. `click`:  both mouse/touch and keyboard users, but Safari does not fire this if the `<label>` is clicked even though that selects the radio button 4. `change`: the group value is only updated at this point 5. `keyup`: keyboard only
+  // 1. `keydown` (keyboard only) or `pointerdown` (mouse/touch only; Chrome also fires this when `disabled`)
+  // 2. `pointerup`: mouse/touch only (Chrome also fires this when `disabled`)
+  // 3. `click`: both mouse/touch and keyboard users, but Safari does not fire this if the `<label>` is clicked even though that selects the radio button
+  // 4. `change`: the group value is only updated at this point
+  // 5. `keyup`: keyboard only
   //
   // In addition, a custom `onFocusOut` event is fired when the user leaves the radio group.
   //
-  // With these complications, the behaviour is here implemented as follows:
+  // The behaviour is therefore implemented as follows:
   //
   // 1. Listen to `click` events of the `<label>`
   //    - If the source is keyboard, do nothing
-  //    - If the source is mouse/touch, dispatch an event and using the value passed as a parameter to the event handler, because the radio group's value is not yet updated 2. Listen to `onFocusOut` of the `<div>` containing the radio group
+  //    - If the source is mouse/touch, dispatch an event using the value passed to the event handler, because the radio group's value is not yet updated
+  // 2. Listen to `onFocusOut` of the `<fieldset>` containing the radio group
   //    - Dispatch the `change`/`reselect` event using the value of the radio group
-  //    - This event should only fired when the user defocuses the radio group using the keyboard because if it received focus due to a pointer click we would already have dealt it with the click handler 3. Listen to `keyup` events of the `<input>` elements
-  //    - For a nicer keyboard UX, also listen to `space` and `enter` keys and and submit the answer if they are pressed inside the radio group
+  //    - This only fires when the user leaves the radio group using the keyboard, because a pointer click has already been handled by the click handler
+  // 3. Listen to `keyup` events of the `<input>` elements
+  //    - For a nicer keyboard UX, also listen to the `space` and `enter` keys and submit the answer if they are pressed inside the radio group
 
   /**
    * Used to check for changes to the radio buttons or clicks on them. These include keyboard interactions using the arrow keys as well.
@@ -272,9 +304,8 @@ The same component can also be used to display the answers of the voter and anot
   style:--radio-bg={onShadedBg ? 'var(--color-base-200)' : 'var(--color-base-100)'}
   style:--line-bg={onShadedBg ? 'var(--color-base-100)' : 'var(--color-base-200)'}
   style:--num-choices={choices?.length ?? 0}
-  class:vertical
   data-testid="question-choices"
-  {...restProps}>
+  {...concatClass(restProps, fieldsetClass)}>
   <!-- Add a label for screen readers -->
   <legend class="sr-only">{text}</legend>
 
@@ -311,27 +342,27 @@ The same component can also be used to display the answers of the voter and anot
       {#if mode === 'display'}
         {@const style = `grid-${vertical ? 'row' : 'column'}: ${i + 1};`}
         {#if voterSelected && entitySelected}
-          <div class="display-label text-primary" {style}>
+          <div class={displayLabelClass} {style}>
             {t('questions.answers.yourAnswer')} & {otherLabel}
           </div>
         {:else if voterSelected}
-          <div class="display-label text-primary" {style}>{t('questions.answers.yourAnswer')}</div>
+          <div class={displayLabelClass} {style}>{t('questions.answers.yourAnswer')}</div>
         {:else if entitySelected}
-          <div class="display-label" {style}>{otherLabel}</div>
+          <div class={displayLabelClass} {style}>{otherLabel}</div>
         {/if}
       {/if}
 
       <!-- The checkbox. The `<label>` widens the click target; a checkbox's
            native change event handles both pointer and keyboard toggles, so no
            custom keydown/focusout plumbing is needed (unlike the radio group). -->
-      <label>
+      <label class={labelClass}>
         <input
           type="checkbox"
           class={cn(
             'checkbox-primary checkbox border-lg relative h-32 w-32 outline-4 outline-(--radio-bg) disabled:opacity-100',
-            unpicked && UNPICKED_DOT_CHECKBOX
+            unpicked && UNPICKED_CHECKBOX,
+            entitySelected && ENTITY_PICKED
           )}
-          class:entitySelected
           name="questionChoices-{question.id}"
           disabled={mode !== 'answer'}
           value={id}
@@ -339,8 +370,7 @@ The same component can also be used to display the answers of the voter and anot
           checked={selectedMulti.includes(id)}
           onchange={() => handleToggle(id)} />
 
-        <!-- Stable testId marker for the entity's selected answer in display
-             mode (mirrors the radio branch). -->
+        <!-- A test id marker for the entity's answer in display mode. -->
         {#if entitySelected}
           <span data-testid="entity-selected-answer" class="sr-only">entity-selected</span>
         {/if}
@@ -361,13 +391,13 @@ The same component can also be used to display the answers of the voter and anot
       {#if mode === 'display'}
         {@const style = `grid-${vertical ? 'row' : 'column'}: ${i + 1};`}
         {#if selectedId == id && otherSelected == id}
-          <div class="display-label text-primary" {style}>
+          <div class={displayLabelClass} {style}>
             {t('questions.answers.yourAnswer')} & {otherLabel}
           </div>
         {:else if selectedId == id}
-          <div class="display-label text-primary" {style}>{t('questions.answers.yourAnswer')}</div>
+          <div class={displayLabelClass} {style}>{t('questions.answers.yourAnswer')}</div>
         {:else if otherSelected == id}
-          <div class="display-label" {style}>{otherLabel}</div>
+          <div class={displayLabelClass} {style}>{otherLabel}</div>
         {/if}
       {/if}
 
@@ -376,15 +406,15 @@ The same component can also be used to display the answers of the voter and anot
            to widen the click/key target to the entire label region.
            Both pointer and keyboard interactions are handled. -->
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-      <label onclick={(e) => handleClick(e, id)} onkeyup={(e) => handleKeyUp(e, id)}>
+      <label class={labelClass} onclick={(e) => handleClick(e, id)} onkeyup={(e) => handleKeyUp(e, id)}>
         <!-- bind: keep — $state target for bind:this; inputs is $state({}) per the declaration above; two-way DOM radio group bind:group={selected}, selected is $state. Directive order is immaterial for these shapes under Svelte 5 semantics. -->
         <input
           type="radio"
           class={cn(
             'radio-primary radio border-lg bg-base-100 relative h-32 w-32 outline-4 outline-(--radio-bg) disabled:opacity-100',
-            unpicked && UNPICKED_DOT
+            unpicked && UNPICKED_RADIO,
+            otherSelected == id && ENTITY_PICKED
           )}
-          class:entitySelected={otherSelected == id}
           name="questionChoices-{question.id}"
           disabled={mode !== 'answer'}
           value={id}
@@ -394,9 +424,7 @@ The same component can also be used to display the answers of the voter and anot
           onkeyup={(e) => handleKeyUp(e, id)} />
 
         <!--
-          260524-l1t D6: stable testId marker for the entity's selected answer in display mode. Rendered as a sr-only sibling of the radio so that the existing `data-testid="question-choice"` on the input is preserved (Playwright's getByTestId matches data-testid only and multiple data-testid attributes on one element are invalid HTML).
-          Consumed by tests/tests/utils/testIds.ts → voter.entityDetail.
-          entitySelectedAnswer (voter-mega-journey + voter-detail specs).
+          A test id marker for the entity's answer in display mode. It is a separate sr-only element because the input already carries `data-testid="question-choice"` and an element can have only one `data-testid`.
         -->
         {#if otherSelected == id}
           <span data-testid="entity-selected-answer" class="sr-only">entity-selected</span>
@@ -425,59 +453,3 @@ The same component can also be used to display the answers of the voter and anot
         })}
   </p>
 {/if}
-
-<style lang="postcss">
-  @reference "../../../tailwind-theme.css";
-  fieldset {
-    @apply relative grid w-full gap-0;
-  }
-
-  fieldset.vertical {
-    @apply gap-md grid-flow-row auto-rows-fr;
-    grid-template-columns: fr fr auto;
-  }
-
-  fieldset:not(.vertical) {
-    @apply auto-cols-fr grid-flow-row;
-    grid-template-rows: auto max-content;
-  }
-
-  label {
-    @apply gap-md grid;
-  }
-
-  fieldset.vertical label {
-    @apply gap-md min-w-[8rem] auto-cols-fr grid-flow-col items-center justify-items-start;
-    grid-column: 2;
-    grid-template-columns: auto;
-  }
-
-  fieldset:not(.vertical) label {
-    @apply grid-flow-row auto-rows-max justify-items-center;
-    grid-row: 2;
-  }
-
-  .display-label {
-    @apply text-secondary text-xs font-normal uppercase;
-  }
-
-  fieldset.vertical .display-label {
-    @apply text-secondary self-center pe-6 text-end text-xs font-normal uppercase;
-    grid-column: 1;
-  }
-
-  fieldset:not(.vertical) .display-label {
-    @apply text-secondary self-end pb-6 text-center text-xs font-normal uppercase;
-    grid-row: 1;
-  }
-
-  /* NB. the styling of an option nobody picked is no longer here — it is the `UNPICKED_DOT` const in
-     the script block, applied from a visible predicate. The rule below stays: it needs
-     `.entitySelected` as a selector hook, and its `box-shadow` has no utility equivalent. */
-  input.entitySelected:disabled:not(:checked) {
-    @apply border-neutral bg-neutral;
-    box-shadow:
-      0 0 0 4px var(--color-base-100) inset,
-      0 0 0 4px var(--color-base-100) inset;
-  }
-</style>

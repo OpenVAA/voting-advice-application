@@ -16,6 +16,10 @@ Native `<input type="range">` is chosen deliberately so keyboard-arrow exact-val
 - `onShadedBg`: Set to `true` on a dark (`base-300`) background. @default `false`
 - Any valid attributes of a `<div>` element.
 
+### Callbacks
+
+- `onChange`: Triggered when the voter releases the slider or steps it with the keyboard, never per drag pixel.
+
 ### Usage
 
 ```tsx
@@ -50,6 +54,12 @@ Native `<input type="range">` is chosen deliberately so keyboard-arrow exact-val
   const { t } = getComponentContext();
 
   const labelId = getUUID();
+
+  // The 2.75rem height gives the range thumb a touch target of at least 44px (WCAG 2.1 AA) without shrinking the track.
+  const RANGE_CLASS = 'range range-primary h-[2.75rem] w-full cursor-pointer disabled:cursor-default';
+
+  /** A display-mode answer label, positioned along the track. */
+  const MARKER_CLASS = 'text-secondary absolute top-0 -translate-x-1/2 text-xs font-normal whitespace-nowrap uppercase';
 
   ////////////////////////////////////////////////////////////////////
   // Range bounds
@@ -103,7 +113,7 @@ Native `<input type="range">` is chosen deliberately so keyboard-arrow exact-val
 
   const voterPct = $derived(value != null ? percent(value) : null);
   const otherPct = $derived(otherValue != null ? percent(otherValue) : null);
-  // When both values are equal we render a single combined marker so neither label hides the other (backstop: equal-marker overlap).
+  // When both values are equal we render a single combined marker so neither label hides the other.
   const bothEqual = $derived(value != null && otherValue != null && value === otherValue);
 </script>
 
@@ -116,22 +126,24 @@ Native `<input type="range">` is chosen deliberately so keyboard-arrow exact-val
     <div class="relative pt-24">
       <!-- Markers positioned proportionally above the track -->
       {#if bothEqual && voterPct != null}
-        <div class="marker text-primary" style="left: {voterPct}%">
+        <div class={MARKER_CLASS} style="left: {voterPct}%" data-testid="number-scale-voter-marker">
           {t('questions.answers.yourAnswer')} & {otherLabel}
         </div>
       {:else}
         {#if voterPct != null}
-          <div class="marker text-primary" style="left: {voterPct}%">
+          <div class={MARKER_CLASS} style="left: {voterPct}%" data-testid="number-scale-voter-marker">
             {t('questions.answers.yourAnswer')}
           </div>
         {/if}
         {#if otherPct != null}
-          <div class="marker" style="left: {otherPct}%">{otherLabel}</div>
+          <div class={MARKER_CLASS} style="left: {otherPct}%" data-testid="number-scale-entity-marker">
+            {otherLabel}
+          </div>
         {/if}
       {/if}
       <input
         type="range"
-        class="range range-primary w-full"
+        class={RANGE_CLASS}
         {min}
         {max}
         step="1"
@@ -161,7 +173,7 @@ Native `<input type="range">` is chosen deliberately so keyboard-arrow exact-val
     </div>
     <input
       type="range"
-      class="range range-primary w-full"
+      class={RANGE_CLASS}
       {min}
       {max}
       step="1"
@@ -173,23 +185,3 @@ Native `<input type="range">` is chosen deliberately so keyboard-arrow exact-val
       data-testid="question-number-slider" />
   {/if}
 </div>
-
-<style lang="postcss">
-  @reference "../../../tailwind-theme.css";
-
-  /* Native range thumb touch target ≥ 44px (WCAG 2.1 AA). DaisyUI's default
-     range thumb is smaller; enlarge the hit area without shrinking the track. */
-  input[type='range'] {
-    @apply h-[2.75rem] cursor-pointer;
-  }
-
-  input[type='range']:disabled {
-    @apply cursor-default;
-  }
-
-  /* Display-mode markers, mirroring the QuestionChoices `.display-label`
-     convention (uppercase, xs, secondary) but positioned along the track. */
-  .marker {
-    @apply text-secondary absolute top-0 -translate-x-1/2 text-xs font-normal whitespace-nowrap uppercase;
-  }
-</style>

@@ -1,9 +1,9 @@
 <!--
 @component Used to show an entity's details, possibly including their answers to `info` questions, `opinion` questions and their child nominations. You can supply either a naked entity or a ranking containing an entity.
 
-If the provided entity is a (possibly matched) nomination, the questions to include will be those applicable to the election and constiuency of the nomination.
+If the provided entity is a (possibly matched) nomination, the questions to include will be those applicable to the election and constituency of the nomination.
 
-If `AppContext.$appType` is `voter`, the voter's possible answers will included in the `opinions` tab.
+If `AppContext.appType` is `voter`, the voter's possible answers are included in the `opinions` tab.
 
 ### Dynamic component
 
@@ -22,7 +22,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
 ```tsx
 <EntityDetails entity={matchedCandidate}/>
-<EntityDetails entity={matchedOrganization} tabs={appSettings.entityDetails.contents.organization}/>
+<EntityDetails entity={matchedOrganization}/>
 ```
 -->
 
@@ -32,7 +32,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import { getAppContext } from '$lib/contexts/app';
   import { getVoterContext } from '$lib/contexts/voter';
   import { EntityCard } from '$lib/dynamic-components/entityCard';
-  import { concatClass } from '$lib/utils/components';
+  import { cn, concatClass } from '$lib/utils/components';
   import { unwrapEntity } from '$lib/utils/entities';
   import { getAllianceSummary } from '$lib/utils/getAllianceSummary';
   import { findCandidateNominations, findOrganizationNominations } from '$lib/utils/matches';
@@ -129,7 +129,11 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 </script>
 
 <article data-testid="entity-details" {...concatClass(restProps, 'flex flex-col grow')}>
-  <header class:bottomBorder={contentTabs.length === 1}>
+  <header
+    class={cn(
+      contentTabs.length === 1 &&
+        "after:right-lg after:left-lg after:border-b-md relative after:absolute after:bottom-0 after:border-b-[var(--line-color)] after:content-['']"
+    )}>
     <EntityCard {entity} variant="details" class="!p-lg" />
     {#if allianceSummary}
       <p class="text-secondary mx-md mt-sm text-sm">
@@ -141,10 +145,8 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     {/if}
   </header>
   {#if contentTabs.length > 1}
-    <!-- bind: keep — Pattern 2: Tabs.activeIndex is $bindable(0) -->
-    <!-- transitionOnChange (O-1): the drawer tabs switch via LOCAL state (not a
-         navigation), so the global root-layout onNavigate VT hook never fires for them. Opt into the minimal local startViewTransition wrapper so the tab
-         content cross-fades (same shouldAnimate gate, no bespoke choreography). -->
+    <!-- bind: keep — Tabs.activeIndex is $bindable(0) -->
+    <!-- transitionOnChange: the drawer tabs switch by local state, not by navigation, so the root layout's onNavigate view-transition hook never fires for them; the local startViewTransition wrapper cross-fades the tab content under the same shouldAnimate gate. -->
     <Tabs
       tabs={contentTabs}
       bind:activeIndex
@@ -169,10 +171,3 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     </div>
   {/if}
 </article>
-
-<style lang="postcss">
-  @reference "../../../tailwind-theme.css";
-  .bottomBorder {
-    @apply after:left-lg after:right-lg after:border-b-md relative after:absolute after:bottom-0 after:border-b-[var(--line-color)] after:content-[''];
-  }
-</style>

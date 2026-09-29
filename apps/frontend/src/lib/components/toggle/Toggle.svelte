@@ -67,7 +67,7 @@
   )}>
   <legend class="sr-only">{label}</legend>
   {#each options as option}
-    <label class="small-label rounded-full px-8 py-4">
+    <label class="small-label has-checked:bg-neutral has-checked:text-primary-content rounded-full px-8 py-4">
       <!-- bind: keep — two-way DOM radio group bind:group={selected}; selected is $bindable() -->
       <input tabindex="0" type="radio" name="toggle-options" value={option.key} bind:group={selected} class="sr-only" />
       {#if option.icon}
@@ -77,10 +77,3 @@
     </label>
   {/each}
 </fieldset>
-
-<style lang="postcss">
-  @reference "../../../tailwind-theme.css";
-  label:has(input:checked) {
-    @apply bg-neutral text-primary-content;
-  }
-</style>

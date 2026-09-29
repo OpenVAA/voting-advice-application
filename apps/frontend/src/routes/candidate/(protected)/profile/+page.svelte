@@ -126,7 +126,7 @@ Shows the candidate's basic information, some of which is editable.
       return;
     }
     status = 'loading';
-    // Request email to be sent in the backend
+    // Save the image and answers the candidate has changed
     const result = await userData.save().catch((e) => {
       log.error(`[Candidate app question page] Error saving userData: ${e?.message}`);
       return undefined;
@@ -188,7 +188,7 @@ Shows the candidate's basic information, some of which is editable.
 
   <!-- Immutable personal data -->
 
-  <section>
+  <section class="mt-lg self-stretch">
     <h2 class={subheadingClass}>{t('dynamic.candidateAppBasicInfo.immutableData.title')}</h2>
     <p class="mx-md">{t('dynamic.candidateAppBasicInfo.immutableData.ingress')}</p>
     <InputGroup class="mt-lg">
@@ -223,7 +223,7 @@ Shows the candidate's basic information, some of which is editable.
 
   <!-- Immutable nominations -->
 
-  <section data-testid="candidate-profile-nominations">
+  <section class="mt-lg self-stretch" data-testid="candidate-profile-nominations">
     <h2 class={subheadingClass}>{t('candidateApp.basicInfo.nominations.title')}</h2>
     <p class="mx-md">{t('candidateApp.basicInfo.nominations.description')}</p>
 
@@ -265,7 +265,7 @@ Shows the candidate's basic information, some of which is editable.
 
   <!-- Editable data -->
 
-  <section>
+  <section class="mt-lg self-stretch">
     <h2 class={subheadingClass}>{t('candidateApp.basicInfo.editableInfos.title')}</h2>
 
     <div class="gap-md flex flex-col">
@@ -341,10 +341,3 @@ Shows the candidate's basic information, some of which is editable.
     </div>
   {/snippet}
 </MainContent>
-
-<style lang="postcss">
-  @reference "../../../../tailwind-theme.css";
-  section {
-    @apply mt-lg self-stretch;
-  }
-</style>

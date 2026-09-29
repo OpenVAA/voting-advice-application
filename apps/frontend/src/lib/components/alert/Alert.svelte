@@ -1,12 +1,12 @@
 <!--
-@component Show a non-model alert or dialog that appears at the bottom of the screen.
+@component Show a non-modal alert or dialog that appears at the bottom of the screen.
 
 ### Properties
 
 - `title`: The title of the alert.
 - `icon`: Possible icon of the alert.
 - `autoOpen`: Whether to open the alert automatically. Default: `true`
-- `isOpen`: Bind to this to get the alert's open state.
+- `isOpen`: Bind to this to get the alert's open state. A closed alert is `inert`: it is hidden from assistive technology and its buttons are out of the tab order.
 - `onClose`: The callback triggered when the alert is closed.
 - `onOpen`: The callback triggered when the alert is opened.
 - Any valid attributes of a `<dialog>` element
@@ -48,7 +48,7 @@
   import { Button } from '$lib/components/button';
   import { Icon } from '$lib/components/icon';
   import { getComponentContext } from '$lib/contexts/component';
-  import { concatClass, getUUID } from '$lib/utils/components';
+  import { cn, concatClass, getUUID } from '$lib/utils/components';
   import type { AlertProps } from './Alert.type';
 
   let {
@@ -92,14 +92,17 @@
   aria-modal="false"
   aria-label={title}
   aria-describedby={contentId}
+  inert={!isOpen}
   {...concatClass(
     restProps,
-    'alert fixed z-30 w-full sm:w-auto max-w-2xl justify-items-stretch shadow-xl transition-all sm:!pr-[2rem] ' +
-      (icon ? '' : 'sm:grid-cols-[minmax(auto,1fr)_auto] ') +
-      'bottom-0 mx-auto pb-safelgb pl-safelgl rounded-b-none ' +
-      'sm:bottom-safelgb sm:left-safelgl sm:right-safelgr sm:p-lg sm:rounded-b-[var(--radius-box,1rem)]'
-  )}
-  class:vaa-alert-hidden={!isOpen}>
+    cn(
+      'alert fixed z-30 w-full sm:w-auto max-w-2xl justify-items-stretch shadow-xl transition-all sm:!pr-[2rem]',
+      !icon && 'sm:grid-cols-[minmax(auto,1fr)_auto]',
+      'bottom-0 mx-auto pb-safelgb pl-safelgl rounded-b-none',
+      'sm:bottom-safelgb sm:left-safelgl sm:right-safelgr sm:p-lg sm:rounded-b-[var(--radius-box,1rem)]',
+      !isOpen && 'translate-y-full opacity-0'
+    )
+  )}>
   {#if icon}
     <Icon name={icon} class="justify-self-center" />
   {/if}
@@ -113,16 +116,9 @@
       <Button onclick={closeAlert} color="warning" text={t('common.close')} class="-mt-16 sm:mt-0" />
     {/if}
   </div>
-  <!-- spacing: keep top-2/right-2. It is already a project @theme token (--spacing-2 = 0.125rem = 2px), not an arbitrary value; the review's suggested top-sm/right-sm is --spacing-sm = 0.5rem = 8px, four times the current offset, and the nearest named token (xs = 0.25rem = 4px) still doubles it, so every named alternative changes the rendering that D-H6 requires to stay identical. The same class string is the four-site close-button house idiom, shared verbatim with Video.svelte:856, Modal.svelte:99 and Drawer.svelte:89. -->
+  <!-- top-2 / right-2 is the 2px spacing token; the close buttons of Video, Modal and Drawer use the same class string. -->
   <button onclick={closeAlert} class="btn btn-circle btn-ghost btn-sm absolute top-2 right-2">
     <span aria-hidden="true">✕</span>
     <span class="sr-only">{t('common.close')}</span>
   </button>
 </div>
-
-<style lang="postcss">
-  @reference "../../../tailwind-theme.css";
-  .vaa-alert-hidden {
-    @apply translate-y-[100%] opacity-0;
-  }
-</style>

@@ -12,7 +12,7 @@
 </script>
 
 <div class="col-start-1 col-end-3 grid-cols-subgrid md:grid">
-  <aside class="toc-sidebar col-start-2 row-span-full hidden p-lg ps-0 md:p-xl lg:block">
+  <aside class="relative col-start-2 row-span-full hidden p-lg ps-0 md:p-xl lg:block">
     <TableOfContents contentId="prose-content" maxLevel={3} />
   </aside>
   <article
@@ -24,9 +24,3 @@
     <PeerNavigation />
   </div>
 </div>
-
-<style>
-  .toc-sidebar {
-    position: relative;
-  }
-</style>

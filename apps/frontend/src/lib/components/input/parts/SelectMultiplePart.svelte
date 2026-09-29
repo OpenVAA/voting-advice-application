@@ -72,13 +72,13 @@ See `SelectMultiplePart.type.ts`.
         <ErrorMessage inline message={t('error.general')} />
       {/if}
       {#if showRequired}
-        <div class="required-badge">
-          <Icon name="required" class={iconBadgeClass} /><span>{t('common.required')}</span>
+        <div class="text-warning">
+          <Icon name="required" class={iconBadgeClass} /><span class="sr-only">{t('common.required')}</span>
         </div>
       {/if}
       {#if locked}
-        <div class="locked-badge">
-          <Icon name="locked" class={iconBadgeClass} /><span>{t('common.locked')}</span>
+        <div class="text-secondary">
+          <Icon name="locked" class={iconBadgeClass} /><span class="sr-only">{t('common.locked')}</span>
         </div>
       {/if}
     </div>
@@ -100,17 +100,3 @@ See `SelectMultiplePart.type.ts`.
     </div>
   {/each}
 </div>
-
-<style lang="postcss">
-  @reference "../../../../tailwind-theme.css";
-  .locked-badge {
-    @apply text-secondary;
-  }
-  .required-badge {
-    @apply text-warning;
-  }
-  .locked-badge > span,
-  .required-badge > span {
-    @apply sr-only;
-  }
-</style>
