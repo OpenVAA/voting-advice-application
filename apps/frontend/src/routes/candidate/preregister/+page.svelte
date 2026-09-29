@@ -15,12 +15,14 @@
   import { MainContent } from '$layouts/main';
   import { generateChallenge } from '$lib/api/utils/auth/generateChallenge';
   import { Button } from '$lib/components/button';
+  import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { COOKIE } from '$lib/cookies';
   import { constants } from '$lib/utils/constants';
   import { sanitizeHtml } from '$lib/utils/sanitize';
+  import type { ProviderType } from '$lib/api/utils/auth/providers/types';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -36,9 +38,9 @@
   // Popup management
   ////////////////////////////////////////////////////////////////////
 
-  // ONE-SHOT, AND THE PUSH IS UNTRACKED. Both halves are load-bearing; without either, dismissing the notification did not dismiss it.
+  // ONE-SHOT, AND THE PUSH IS UNTRACKED. Both halves are load-bearing; without either, dismissing the notification does not dismiss it.
   //
-  // `PopupState.push` is `this.#queue = [...this.#queue, item]` -- it READS `#queue` before writing it. Called bare inside this `$effect`, that read makes the effect depend on the queue, and the root layout dismisses a popup by calling `popupQueue.shift()`, which reassigns `#queue`. So closing the alert re-ran this effect, whose condition was still true, which pushed the notification straight back: the ✕ worked and the popup reappeared in the same frame. `untrack` keeps the write out of this effect's dependency set -- the write-after-read invariant recorded in the runes spike findings.
+  // `PopupState.push` is `this.#queue = [...this.#queue, item]` -- it READS `#queue` before writing it. Called bare inside this `$effect`, that read makes the effect depend on the queue, and the root layout dismisses a popup by calling `popupQueue.shift()`, which reassigns `#queue`. So closing the alert would re-run this effect, whose condition is still true, and push the notification straight back: the ✕ works and the popup reappears in the same frame. `untrack` keeps the write out of this effect's dependency set -- the write-after-read invariant recorded in the runes spike findings.
   //
   // `notified` then makes it a one-shot. `untrack` alone stops the self-retrigger, but `isPreregistered` and `idTokenClaims` are both live accessors, so any later change to either would re-push a notification the user has already dismissed. The flag is a plain `let`, deliberately not `$state`: nothing renders it, and making it reactive would hand this effect another dependency for no gain.
   let notified = false;
@@ -74,48 +76,58 @@
         : 'CandAppPreregisterEmail'
   );
 
+  // The failure detail `ErrorMessage` logs; the user sees the generic error text. `undefined` while there is no failure.
+  let providerError = $state<string | undefined>(undefined);
+
+  /**
+   * Ask the server for the identity provider's authorization URL.
+   * @param body - The callback URI, plus the PKCE challenge when the client generates one.
+   * @returns The URL, or `undefined` after recording the failure.
+   */
+  async function fetchAuthorizeUrl(body: { redirectUri: string; codeChallenge?: string }): Promise<string | undefined> {
+    const response = await fetch('/api/oidc/authorize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!response.ok) {
+      providerError = `Failed to get authorization URL: HTTP ${response.status}`;
+      return undefined;
+    }
+    const { authorizeUrl } = await response.json();
+    return authorizeUrl;
+  }
+
   async function redirectToIdentityProvider() {
     if (!browser) return;
+    providerError = undefined;
 
+    const providerType = constants.PUBLIC_IDENTITY_PROVIDER_TYPE as ProviderType;
     const redirectUri = `${window.location.origin}${getRoute.current('CandAppPreregisterIdentityProviderCallback')}`;
 
-    if (constants.PUBLIC_IDENTITY_PROVIDER_TYPE === 'idura') {
-      // Idura: call server-side authorize endpoint for JAR construction
-      const response = await fetch('/api/oidc/authorize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ redirectUri })
-      });
-
-      if (!response.ok) {
-        console.error('Failed to get authorization URL');
-        return;
+    try {
+      switch (providerType) {
+        case 'idura-ftn': {
+          // Idura: the server builds the signed authorization request.
+          const authorizeUrl = await fetchAuthorizeUrl({ redirectUri });
+          if (authorizeUrl) window.location.href = authorizeUrl;
+          return;
+        }
+        case 'signicat-ftn': {
+          // Signicat: the client generates the PKCE pair and the server builds the URL from the challenge.
+          const { codeVerifier, codeChallenge } = await generateChallenge(window.crypto);
+          const authorizeUrl = await fetchAuthorizeUrl({ redirectUri, codeChallenge });
+          if (!authorizeUrl) return;
+          // Store code_verifier in a cookie so the callback server route can access it (localStorage is client-only and not available in server routes)
+          document.cookie = `${COOKIE.oidcCodeVerifier}=${codeVerifier}; path=/; max-age=600; secure; samesite=lax`;
+          window.location.href = authorizeUrl;
+          return;
+        }
+        default:
+          providerError = `Unknown identity provider type: ${constants.PUBLIC_IDENTITY_PROVIDER_TYPE}`;
       }
-
-      const { authorizeUrl } = await response.json();
-      window.location.href = authorizeUrl;
-    } else {
-      // Signicat: client-side PKCE redirect via provider abstraction
-      const { codeVerifier, codeChallenge } = await generateChallenge(window.crypto);
-
-      // Call the authorize endpoint to get the provider-constructed URL and store state cookies server-side if the provider returns them
-      const response = await fetch('/api/oidc/authorize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ redirectUri, codeChallenge })
-      });
-
-      if (!response.ok) {
-        console.error('Failed to get authorization URL');
-        return;
-      }
-
-      const { authorizeUrl } = await response.json();
-
-      // Store code_verifier in a cookie so the callback server route can access it (localStorage is client-only and not available in server routes)
-      document.cookie = `${COOKIE.oidcCodeVerifier}=${codeVerifier}; path=/; max-age=600; secure; samesite=lax`;
-
-      window.location.href = authorizeUrl;
+    } catch (e) {
+      providerError = `Failed to start identification: ${e instanceof Error ? e.message : String(e)}`;
     }
   }
 
@@ -161,6 +173,14 @@
       {/each}
     </ol>
     {#snippet primaryActions()}
+      {#if providerError}
+        <ErrorMessage
+          inline
+          logMessage={providerError}
+          role="alert"
+          class="mb-md"
+          data-testid="preregister-errorMessage" />
+      {/if}
       <Button
         text={t('candidateApp.preregister.identification.identifyYourselfButton')}
         variant="main"

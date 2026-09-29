@@ -13,7 +13,7 @@
  * POST /functions/v1/identity-callback Body: { id_token: string, project_id?: string }
  *
  * Environment variables (set via Supabase secrets):
- * - IDENTITY_PROVIDER_TYPE: Provider type; required, and one of 'signicat' or 'idura' (there is no default -- an unset value throws)
+ * - IDENTITY_PROVIDER_TYPE: Provider type; required, and one of 'signicat-ftn' or 'idura-ftn' (there is no default -- an unset value throws)
  * - IDENTITY_PROVIDER_DECRYPTION_JWKS: JSON string array of private JWK objects for JWE decryption (required; an unset value throws)
  * - IDENTITY_PROVIDER_JWKS_URI: URL to the provider's public JWKS endpoint for JWT signature verification (required; an unset value throws)
  * - IDENTITY_PROVIDER_CLIENT_ID: Expected audience in the JWT (required; verification throws when unset)
@@ -28,7 +28,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import * as jose from 'https://deno.land/x/jose@v5.9.6/index.ts';
 import { createCandidate, findExistingCandidate } from './candidateRecord.ts';
 import { writeEntityGrant } from './entityGrant.ts';
-import { PROVIDER_CONFIGS, extractIdentityClaims } from './claimConfig.ts';
+import { extractIdentityClaims, resolveProviderConfig } from './claimConfig.ts';
 import { requireEnv } from './envConfig.ts';
 import { requireVerifyClaimBinding } from './verifyConfig.ts';
 
@@ -51,7 +51,7 @@ function isJweToken(token: string): boolean {
  * Returns the inner JWT string (compact serialization).
  */
 async function decryptJweToken(jweToken: string): Promise<string> {
-  // Read through requireEnv rather than a non-null assertion so an unset value throws ERR_ENV_UNCONFIGURED naming the variable, the way the other required reads in this function do. Left unchecked, `JSON.parse(undefined)` threw a bare SyntaxError ('unexpected token u') that named neither the variable nor the fact that configuration was the cause.
+  // Read through requireEnv rather than a non-null assertion so an unset value throws ERR_ENV_UNCONFIGURED naming the variable, the way the other required reads in this function do. Unchecked, `JSON.parse(undefined)` would throw a bare SyntaxError ('unexpected token u') that names neither the variable nor configuration as the cause.
   const privateJWKSet: jose.JWK[] = JSON.parse(
     requireEnv('IDENTITY_PROVIDER_DECRYPTION_JWKS', Deno.env.get('IDENTITY_PROVIDER_DECRYPTION_JWKS')?.trim())
   );
@@ -72,10 +72,10 @@ async function decryptJweToken(jweToken: string): Promise<string> {
  * Verify a signed JWT against the provider's public JWKS and return the payload.
  */
 async function verifyJwt(jwt: string): Promise<jose.JWTPayload> {
-  // Same reason as the decryption JWKS above: unchecked, an unset value reached `new URL(undefined)` and threw a TypeError about an invalid URL rather than naming the missing variable.
+  // Same reason as the decryption JWKS above: unchecked, an unset value would reach `new URL(undefined)` and throw a TypeError about an invalid URL rather than naming the missing variable.
   const jwksUri = requireEnv('IDENTITY_PROVIDER_JWKS_URI', Deno.env.get('IDENTITY_PROVIDER_JWKS_URI')?.trim());
 
-  // Both claims are bound on every verification, never conditionally. The audience and the issuer are what tie a signature-valid token to THIS relying party and THIS provider; without them the check reduces to "signed by some key in the configured JWK set", which a token minted elsewhere for someone else also satisfies. A deployment that has not configured either variable now fails loudly here instead of verifying for anybody. Both variables are documented in `.env.example` and in `tests/IDURA-TEST-RUNBOOK.md`.
+  // Both claims are bound on every verification, never conditionally. The audience and the issuer are what tie a signature-valid token to THIS relying party and THIS provider; without them the check reduces to "signed by some key in the configured JWK set", which a token minted elsewhere for someone else also satisfies. A deployment that has not configured either variable fails loudly here rather than verifying for anybody. Both variables are documented in `.env.example` and in `tests/IDURA-TEST-RUNBOOK.md`.
   // The guard sits on the path to `jose.jwtVerify` rather than beside a single environment read, so the binding is structural rather than positional -- every caller gets it, whatever route reaches this function.
   const { audience, issuer } = requireVerifyClaimBinding(
     Deno.env.get('IDENTITY_PROVIDER_CLIENT_ID'),
@@ -87,7 +87,7 @@ async function verifyJwt(jwt: string): Promise<jose.JWTPayload> {
   return payload;
 }
 
-// extractIdentityClaims is imported from claimConfig.ts (pure function, no Deno deps)
+// extractIdentityClaims and resolveProviderConfig are imported from claimConfig.ts (pure functions, no Deno deps)
 
 /**
  * Find an existing auth user by identity_match_value in app_metadata.
@@ -153,11 +153,12 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    // Resolve provider configuration. Unset and unrecognised are ONE story told in two places, and the split is deliberate. An unset variable is a configuration error: the deployment never chose which provider to trust, and the choice decides which provider's claim map is applied to a verified token, so it throws here naming IDENTITY_PROVIDER_TYPE rather than being handed a provider silently. A value that is set but not in PROVIDER_CONFIGS is an operator typo the operator can act on, so it keeps falling through to the existing 500 below, which names the value it was given. The throw's message names the variable and nothing else, and it is caught by the outer handler, which logs the real error and answers with a fixed opaque string -- so neither the variable name nor its value leaves this function by that route.
+    // Resolve provider configuration. Unset and unrecognised are ONE story told in two places, and the split is deliberate. An unset variable is a configuration error: the deployment never chose which provider to trust, and the choice decides which provider's claim map is applied to a verified token, so it throws here naming IDENTITY_PROVIDER_TYPE rather than being handed a provider silently. A value that is set but unknown to `resolveProviderConfig` -- a typo, or a keyword without its `-ftn` suffix -- is something the operator can act on, so the 500 below logs the value it was given and answers with a fixed message, because this endpoint is served --no-verify-jwt. The throw's message names the variable and nothing else, and it is caught by the outer handler, which logs the real error and answers with a fixed opaque string -- so neither the variable name nor its value leaves this function by that route.
     const providerType = requireEnv('IDENTITY_PROVIDER_TYPE', Deno.env.get('IDENTITY_PROVIDER_TYPE'));
-    const config = PROVIDER_CONFIGS[providerType];
+    const config = resolveProviderConfig(providerType);
     if (!config) {
-      return new Response(JSON.stringify({ error: `Unknown identity provider type: ${providerType}` }), {
+      console.error(`identity-callback: unknown identity provider type: ${providerType}`);
+      return new Response(JSON.stringify({ error: 'Identity provider is not configured' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -185,7 +186,7 @@ Deno.serve(async (req: Request) => {
     // The project this function serves comes from configuration ONLY, and is never defaulted: a deployment that has not chosen a project refuses to run rather than writing self-registered candidates into a project nobody picked. A request body project_id is therefore not a selection but a claim, and is honoured only when it names that same project, because this endpoint is served --no-verify-jwt and is reachable with the publishable key -- an unvalidated body field would let an unauthenticated caller direct a self-registration into any project uuid it knows. Both failure answers are fixed strings for the reason the token arms below are: a response that varied with the submitted value, with the configured value, or with the name of an unset variable would confirm project ids and deployment configuration to whoever asked.
     const projectId = requireEnv('PUBLIC_PROJECT_ID', Deno.env.get('PUBLIC_PROJECT_ID')?.trim());
 
-    // Absent, null and empty are not claims about the project, and keep their existing meaning: the configured project is used. Every other value is a claim, and is compared case-insensitively after trimming so that a caller echoing back the configured id in a different case is not refused for a difference that does not exist.
+    // Absent, null and empty are not claims about the project: the configured project is used. Every other value is a claim, and is compared case-insensitively after trimming so that a caller echoing back the configured id in a different case is not refused for a difference that does not exist.
     const claimsAProject = project_id !== undefined && project_id !== null && project_id !== '';
     if (
       claimsAProject &&
@@ -205,7 +206,7 @@ Deno.serve(async (req: Request) => {
       try {
         innerJwt = await decryptJweToken(id_token);
       } catch (e) {
-        // Logged, NEVER returned. This endpoint is served --no-verify-jwt and is reachable with the public anon key, so echoing the caught message back turns it into a step-by-step verification oracle: jose's own wording tells an unauthenticated caller whether the kid matched, whether decryption succeeded, whether the signature verified and whether iss/aud bound. The outer `error` string stays fixed and opaque, so the HTTP contract is unchanged.
+        // Logged, NEVER returned. This endpoint is served --no-verify-jwt and is reachable with the public anon key, so echoing the caught message back turns it into a step-by-step verification oracle: jose's own wording tells an unauthenticated caller whether the kid matched, whether decryption succeeded, whether the signature verified and whether iss/aud bound. The outer `error` string stays fixed and opaque.
         console.error('[identity-callback] token decryption failed:', e);
         return new Response(JSON.stringify({ error: 'Token decryption failed' }), {
           status: 401,
@@ -224,9 +225,9 @@ Deno.serve(async (req: Request) => {
     } catch (e) {
       // Logged, never returned -- see the decryption arm above. jose's claim-validation messages name the offending claim ("unexpected \"iss\" claim value"), which is exactly the discrimination the oracle needs.
       //
-      // FIELDS, NOT THE ERROR OBJECT. `console.error(..., e)` used to pass the whole error, and Deno serialises its own enumerable properties -- which for `JWTClaimValidationFailed` includes `payload`, the ENTIRE DECODED ID TOKEN. On a Finnish bank-auth deployment that put `hetu` (a national identity number), the holder's full name and their date of birth into the container log in plaintext, on a path that fires for any `aud`/`iss` misconfiguration, so an ordinary config error produced a durable record of a real person's identity claims. Observed 2026-09-21 while debugging exactly such a misconfiguration.
+      // FIELDS, NOT THE ERROR OBJECT. Deno serialises an error's own enumerable properties, and for `JWTClaimValidationFailed` those include `payload`, the ENTIRE DECODED ID TOKEN. Passing `e` to `console.error` would put `hetu` (a national identity number), the holder's full name and their date of birth into the container log in plaintext, on a path that fires for any `aud`/`iss` misconfiguration, so an ordinary config error would leave a durable record of a real person's identity claims.
       //
-      // The three fields below carry every bit of diagnostic value that log ever had: `claim` and `reason` are what jose's own message interpolates, and `code` is the failure class. None of them is derived from the token's subject. `payload` is deliberately absent and must stay absent -- if a future change needs to know something about the claims, log the KEYS (`Object.keys(payload)`), never a value.
+      // The three fields below carry all of the error's diagnostic value: `claim` and `reason` are what jose's own message interpolates, and `code` is the failure class. None of them is derived from the token's subject. `payload` is deliberately absent and must stay absent -- if a future change needs to know something about the claims, log the KEYS (`Object.keys(payload)`), never a value.
       const claimFailure = e as { code?: unknown; claim?: unknown; reason?: unknown };
       console.error(
         `[identity-callback] token verification failed: code=${String(claimFailure.code ?? 'none')} claim=${String(claimFailure.claim ?? 'none')} reason=${String(claimFailure.reason ?? 'none')}`
@@ -294,7 +295,7 @@ Deno.serve(async (req: Request) => {
       isNewUser = true;
     }
 
-    // 7. Find or create candidate record The lookup names the project this deployment serves because the candidates table carries a project foreign key and an auth user id is not unique across projects: one identity may hold a candidates row in several projects, and this admin client bypasses row-level security, so the project filter is the only thing keeping a row from another project from being adopted here. A failed lookup throws rather than answering null, because a null answer is indistinguishable from "no candidate in this project" and would send the branch below into its insert arm, creating a second candidate row and a second role assignment for an identity that already has both.
+    // 7. Find or create candidate record. The lookup names the project this deployment serves because the candidates table carries a project foreign key and an auth user id is not unique across projects: one identity may hold a candidates row in several projects, and this admin client bypasses row-level security, so the project filter is the only thing keeping a row from another project from being adopted here. A failed lookup throws rather than answering null, because a null answer is indistinguishable from "no candidate in this project" and would send the branch below into its insert arm, creating a second candidate row and a second role assignment for an identity that already has both.
     const existingCandidate = await findExistingCandidate(supabaseAdmin, { projectId, authUserId: userId });
 
     let candidateId: string;
@@ -302,7 +303,7 @@ Deno.serve(async (req: Request) => {
     if (existingCandidate) {
       candidateId = existingCandidate.id;
     } else {
-      // Create new candidate record. The insert lives in `candidateRecord.ts` beside the lookup above, in the shape that module established: no remote specifier, no environment read, the client and the scope as parameters. That is what makes the row it writes ASSERTABLE -- `index.ts` resolves remote Deno specifiers and cannot be imported by vitest, so an inline insert here could only ever be checked against source text. The row is written CONFIRMED, which is D-10's one automatic confirmation path; the reason is in that function's docblock.
+      // Create new candidate record. The insert lives in `candidateRecord.ts` beside the lookup above, in the shape that module established: no remote specifier, no environment read, the client and the scope as parameters. That is what makes the row it writes ASSERTABLE -- `index.ts` resolves remote Deno specifiers and cannot be imported by vitest, so an inline insert here could only ever be checked against source text. The row is written CONFIRMED, the one automatic confirmation path; the reason is in that function's docblock.
       const candidate = await createCandidate(supabaseAdmin, {
         projectId,
         authUserId: userId,
@@ -313,19 +314,19 @@ Deno.serve(async (req: Request) => {
       candidateId = candidate.id;
     }
 
-    // Write the grant that makes the identity able to act on its own record -- on BOTH branches (162-REVIEW WR-06). The candidate insert and the grant insert are two writes, so a request whose grant write failed after its candidate write left a candidate row with no grant; every later login then found the row, skipped the grant in the old create-only placement, and the identity stayed grant-less -- denied everything -- for good. The write is idempotent (an existing grant is success), so running it on every login repairs that state and costs one no-op insert otherwise. The hard throw is kept: under the grant model an identity holding no grant row can do nothing at all, so a swallowed failure here would hand the candidate a session into an application that refuses them everything.
+    // Write the grant that makes the identity able to act on its own record -- on BOTH branches. The candidate insert and the grant insert are two writes, so a request whose grant write fails after its candidate write leaves a candidate row with no grant; a grant written only on the create branch would then be skipped on every later login, and the identity would stay grant-less -- denied everything -- for good. The write is idempotent (an existing grant is success), so running it on every login repairs that state and costs one no-op insert otherwise. The hard throw is kept: under the grant model an identity holding no grant row can do nothing at all, so a swallowed failure here would hand the candidate a session into an application that refuses them everything.
     //
-    // The entity type is named HERE and nowhere else in this function. Entity-type SELECTION at the identity entry point, and the creation paths for the other three entity tables, are the sign-up phase's scope by name; only the grant write is generalised, so adding a second entity kind later is a second call site.
+    // The entity type is named HERE and nowhere else in this function. This entry point creates candidates only; the grant write takes the entity type as a parameter, so a second entity kind needs only a second call site.
     await writeEntityGrant(supabaseAdmin, {
       userId,
       entityType: 'candidate',
       entityId: candidateId
     });
 
-    // 8. Generate session for immediate login Use generateLink with magiclink type to create a login URL, addressed to the same identity-derived placeholder email the user record was created with above so the admin generateLink API resolves to the existing user.
+    // 8. Generate session for immediate login. Use generateLink with magiclink type to create a login URL, addressed to the same identity-derived placeholder email the user record was created with above so the admin generateLink API resolves to the existing user.
     const siteUrl = Deno.env.get('SUPABASE_URL')!.replace(/\/+$/, '');
 
-    // A DIFFERENT value from `siteUrl` on the line above, which holds the trimmed Supabase API origin; this one is the browser-facing site origin the candidate lands on after the magic link is consumed. The two names are kept distinct on purpose, because the removed fallback was a hard-coded loopback origin with a hard-coded dev-server port: a production deployment that never set SITE_URL addressed its own login redirect to a developer's machine.
+    // A DIFFERENT value from `siteUrl` on the line above, which holds the trimmed Supabase API origin; this one is the browser-facing site origin the candidate lands on after the magic link is consumed. The two names are kept distinct on purpose, and SITE_URL has no fallback: a hard-coded loopback origin with a dev-server port would address a production deployment's login redirect to a developer's machine.
     const redirectSiteUrl = requireEnv('SITE_URL', Deno.env.get('SITE_URL'));
 
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({

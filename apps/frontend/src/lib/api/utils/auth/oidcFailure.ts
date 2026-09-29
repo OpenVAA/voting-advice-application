@@ -1,17 +1,15 @@
 /**
  * The closed set of ID-token failure classes, and the leak-safe description of each.
  *
- * WHY THIS MODULE EXISTS. `/api/oidc/callback` and `/api/oidc/token` both log the failure class returned by `IdentityProvider.getIdTokenClaims`, and both used to assert in a comment that "the set is exactly ERR_JWKS_MALFORMED, ERR_JWKS_EMPTY, ERR_JWK_KID_MISMATCH, ERR_AUDIENCE_UNCONFIGURED and ERR_ISSUER_UNCONFIGURED". That claim was FALSE, and its own dependency said so: `decryptAndVerifyIdToken`'s `@throws` tag lists those five and then adds "jose's own coded errors flow through unchanged", and both provider catch arms forward `e.code` verbatim for any `Error` carrying one. The set was therefore open, unpinned by any test, and a reader debugging the callback was actively misled about which codes were possible.
+ * `/api/oidc/callback` and `/api/oidc/token` both log the failure class returned by `IdentityProvider.getIdTokenClaims`, and the codes that can reach those logs form an open set: `decryptAndVerifyIdToken` throws the project's own codes, and both provider catch arms forward jose's `e.code` verbatim for any `Error` carrying one. An unmapped code in a log line -- jose's base `ERR_JOSE_GENERIC`, say -- does not tell the reader which stage failed.
  *
- * It cost a debug session. A live Idura round trip logged `code= ERR_JOSE_GENERIC` -- jose's base `JOSEError` code, a member of neither the documented five nor the `'none'` placeholder -- and the log line said nothing more, so the failing stage had to be recovered by reading jose's source rather than the log. See `.planning/debug/resolved/idura-bank-auth-empty-client.md`, finding 2.
- *
- * So this module does three things the comment could not:
+ * So this module does three things:
  *
  * 1. Declares the project's own codes ONCE ({@link OIDC_FAILURE}), so the thrower and the logger cannot drift.
  * 2. Maps every code -- ours and jose's -- to the STAGE it failed at and a static operator hint naming the environment variable behind it ({@link describeOidcFailure}), so a log line is actionable without a source dive.
  * 3. Stays honest about the open tail: an unrecognised code is reported as such rather than silently mis-attributed.
  *
- * LEAK SAFETY. Every hint in this module is a FIXED string. Nothing here interpolates a value, a URL, a host, a `kid`, a token, a claim or any key material, which is what makes the output of {@link formatOidcFailure} safe to write to a server log. That is a property of the data in this file, not of its callers, so keep it: a hint that interpolates is a hint that can leak. The separate and stricter rule -- that only the opaque failure CLASS crosses the redirect boundary to the browser, never a message -- continues to live at the two route call sites.
+ * LEAK SAFETY. Every hint in this module is a FIXED string. Nothing here interpolates a value, a URL, a host, a `kid`, a token, a claim or any key material, which is what makes the output of {@link formatOidcFailure} safe to write to a server log. That is a property of the data in this file, not of its callers, so keep it: a hint that interpolates is a hint that can leak. The separate and stricter rule -- that only the opaque failure CLASS crosses the redirect boundary to the browser, never a message -- lives at the two route call sites.
  *
  * This module is intentionally free of imports. It reads no environment and no secret, so it is safe to import from anywhere, including a client bundle, and needs no `$lib/server` guard.
  */
@@ -19,7 +17,7 @@
 /**
  * The failure classes this application defines and throws itself.
  *
- * The first five predate this module and their spellings are a LOGGED CONTRACT -- they have appeared in operator-facing server logs and in the bank-authentication runbook, so renaming one is a documentation change, not a refactor. The four `JWKS_URI` members were added when finding 2 showed that the one stage jose leaves uncoded (fetching the remote signature key set) was exactly the stage that failed.
+ * The spellings are a LOGGED CONTRACT: they appear in operator-facing server logs and in the bank-authentication runbook, so renaming one is a documentation change, not a refactor. The four `JWKS_URI` members cover the one stage jose leaves uncoded, fetching the remote signature key set.
  *
  * Typed as a `Record` over the key union so that omitting a member is a compile error rather than a silently missing case -- the same shape, and for the same reason, as `OIDC_ERROR` in `$candidate/utils/oidcError`.
  */
@@ -124,7 +122,7 @@ const OWN_FAILURES: Record<string, OidcFailureDescription> = {
 /**
  * Static hints for jose's own codes, which reach the log UNCHANGED.
  *
- * This table is the honest half of the contract the old comment denied. jose 6.2.1 defines fifteen codes; every one that this pipeline can produce is mapped here, because a code without a stage is the exact condition that made finding 2 expensive.
+ * jose 6.2.1 defines fifteen codes; every one that this pipeline can produce is mapped here, because a code without a stage leaves the failing stage to be recovered from jose's source rather than from the log.
  *
  * `ERR_JOSE_GENERIC` earns its unusually specific hint. It is the code of jose's BASE error class, and in jose 6.2.1 a bare `JOSEError` is constructed at exactly two sites in the entire library -- both inside `fetchJwks` in `jwks/remote.js`, on a non-200 status and on a body that will not parse as JSON. So observing it means the remote key-set fetch failed AND `fetchJwksLeakSafe` did not get to classify it first, which is either a bypassed wrapper or a jose upgrade that added a third site. Either is worth knowing from the log rather than from a bisect.
  */
@@ -246,7 +244,7 @@ export function describeOidcFailure(code: string | undefined): OidcFailureDescri
  * SAFE TO LOG. Every component is either a code, a stage, a provider type or a fixed hint from this module. This function has no parameter through which a value, URL, host, `kid` or token could enter.
  *
  * @param code - The failure class from `IdTokenClaimsResult.error.code`.
- * @param providerType - The active provider (`'idura'` / `'signicat'`). Included because selecting the WRONG provider was the entire content of finding 1 of the bank-auth debug session, and a log line that names it makes that class of fault self-evident instead of invisible.
+ * @param providerType - The active provider (`'idura-ftn'` / `'signicat-ftn'`). Included because selecting the wrong provider is a real misconfiguration, and a log line that names it makes that fault self-evident.
  * @returns A single line, no trailing newline.
  */
 export function formatOidcFailure(code: string | undefined, providerType: string): string {
