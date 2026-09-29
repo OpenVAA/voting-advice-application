@@ -21,11 +21,10 @@ export interface PasswordValidation {
 }
 
 /**
- * Checks if the given password contains any repeated characters.
- * The number of repeated characters is defined in the `repetitionLimit` variable.
+ * Checks if the given password repeats one character `repetitionLimit` times in a row.
  *
- * @param {string} - password - The password to check.
- * @returns {boolean} `true` if the password contains repeated characters, `false` otherwise.
+ * @param password - The password to check.
+ * @returns `true` if the password contains such a repetition, `false` otherwise.
  */
 function checkRepetition(password: string): boolean {
   for (let i = 0; i <= password.length - repetitionLimit; i++) {
@@ -45,9 +44,9 @@ function isLetter(character: string): boolean {
 /**
  * Checks if the given password contains a character that satisfies the given condition.
  *
- * @param {string} - password - The password to check.
- * @param {(char: - string) => boolean} condition - The condition to check for each character.
- * @returns {boolean} `true` if the password contains a character that satisfies the condition, `false` otherwise.
+ * @param password - The password to check.
+ * @param condition - The condition to check for each character.
+ * @returns `true` if the password contains a character that satisfies the condition, `false` otherwise.
  */
 function containsCharacter(password: string, condition: (char: string) => boolean): boolean {
   return password.split('').some(condition);
@@ -56,9 +55,9 @@ function containsCharacter(password: string, condition: (char: string) => boolea
 /**
  * Validates the given password and username according to the defined rules.
  *
- * @param {string} - password - The password to validate.
- * @param {string} - username - The username used to check that the password does not contain the username.
- * @returns {Record<string, ValidationDetail>} An object containing the validation details for each rule.
+ * @param password - The password to validate.
+ * @param username - The username the password must not contain.
+ * @returns The validation details for each rule.
  */
 function passwordValidation(password: string, username: string): Record<string, ValidationDetail> {
   // Construct the validation object with all requirements
@@ -102,8 +101,8 @@ function passwordValidation(password: string, username: string): Record<string, 
 /**
  * Checks if all enforced requirements are met in the given validation object.
  *
- * @param {Record<string, - ValidationDetail>} validation - The validation object to check.
- * @returns {boolean} `true` if all enforced requirements are met, `false` otherwise.
+ * @param validation - The validation object to check.
+ * @returns `true` if all enforced requirements are met, `false` otherwise.
  */
 function isValid(validation: Record<string, ValidationDetail>): boolean {
   const enforcedRequirements = Object.values(validation).filter(
@@ -113,23 +112,14 @@ function isValid(validation: Record<string, ValidationDetail>): boolean {
 }
 
 /**
- * Validates the given password and returns whether the password is valid.
- *
- * @param {string} - password - The password to validate.
- * @param {string} - [username=''] - The username used to check that the password does not contain the username
- * @returns {boolean} `true` if the password is valid, `false` otherwise.
- */
-export function validatePassword(password: string, username = ''): boolean {
-  return isValid(passwordValidation(password, username));
-}
-
-/**
  * Validates the given password and username and returns a PasswordValidation object.
  * The PasswordValidation object contains the validation status and details for each requirement.
  *
- * @param {string} - password - The password to validate.
- * @param {string} - [username=''] - The username used to check that the password does not contain the username
- * @returns {PasswordValidation} An object containing the validation status and details.
+ * These rules run only in the browser. The server-side enforcement is Supabase Auth's own password policy (`minimum_password_length` and `password_requirements` under `[auth]` in `apps/supabase/supabase/config.toml`, or the hosted project's Auth settings).
+ *
+ * @param password - The password to validate.
+ * @param username - The username the password must not contain. Default: `''`
+ * @returns The validation status and the details for each requirement.
  */
 export function validatePasswordDetails(password: string, username = ''): PasswordValidation {
   const validation = passwordValidation(password, username);

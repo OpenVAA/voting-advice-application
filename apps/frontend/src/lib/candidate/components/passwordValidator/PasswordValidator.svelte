@@ -3,7 +3,7 @@
 Password is validated against rules defined in `passwordValidation.ts`.
 
 A progress bar is shown that indicates the number of completed rules.
-The progress bar is colored based on the validation state:
+The progress bar is colored based on the validation state.
 
 There are two types of rules:
 - Positive rules: These are basic requirements that must be met for the password to be valid.
@@ -17,7 +17,7 @@ Therefore, the validity should be also checked on form submit as well and on the
 
 ### Dynamic component
 
-Accesses validation functions from `@openvaa/app-shared`.
+Accesses validation functions from `$lib/utils/password-validation/passwordValidation`.
 
 ### Properties
 
@@ -37,13 +37,13 @@ When using this component, the `validPassword` property should be bound to a boo
 -->
 
 <script lang="ts">
-  import { minPasswordLength, validatePasswordDetails } from '@openvaa/app-shared';
   import { onDestroy } from 'svelte';
   import { cubicOut } from 'svelte/easing';
   import { tweened } from 'svelte/motion';
   import { getComponentContext } from '$lib/contexts/component';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
-  import type { ValidationDetail } from '@openvaa/app-shared';
+  import { minPasswordLength, validatePasswordDetails } from '$lib/utils/password-validation/passwordValidation';
+  import type { ValidationDetail } from '$lib/utils/password-validation/passwordValidation';
   import type { PasswordValidatorProps } from './PasswordValidator.type';
 
   let {

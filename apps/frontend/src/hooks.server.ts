@@ -6,14 +6,14 @@ import { API_ROOT } from '$lib/api/base/universalApiRoutes';
 import { getLocale } from '$lib/paraglide/runtime';
 import { paraglideMiddleware } from '$lib/paraglide/server';
 import { buildRoute, isProtectedRoute, resolveAppGate, ROUTE } from '$lib/routes';
+import { createSafeGetSession } from '$lib/supabase/safeGetSession';
 import { createSupabaseServerClient } from '$lib/supabase/server';
 import { constants } from '$lib/utils/constants';
 import { resolveLogLevel } from '$lib/utils/logLevel';
 import type { Handle, HandleServerError } from '@sveltejs/kit';
 
-// Configure the shared logger for the SSR module graph, at module scope so it runs once at server start, before any handler in the `sequence` below and therefore before `supabaseHandle`.
-// The logger's enablement is module-scope state and SvelteKit runs the client and the server as separate module graphs, so this call configures only the SSR half; `hooks.client.ts` makes the matching call for the browser.
-// THE ORDER OF THE THREE STATEMENTS BELOW IS LOAD-BEARING (decision C3's NOTE, pitfall P3): resolve, then configure, and only then emit. `emit` early-returns while the threshold is still `'silent'` (`packages/app-shared/src/logging/logger.ts:67`), so a record emitted before `configureLogger` would be dropped and the message about silence would itself be silent. The three statements are byte-identical in the other entry point because decision C2 requires the browser and the server to run at the same level.
+// Configure the shared logger for the SSR module graph, once at server start and before any handler runs. `hooks.client.ts` makes the same call for the browser module graph, so both run at the same level.
+// Resolve, configure, then emit, in that order: the logger drops records while its threshold is still `'silent'`, so a problem reported before `configureLogger` would be lost.
 const { level: logLevel, problem: logLevelProblem } = resolveLogLevel(
   constants.PUBLIC_LOG_LEVEL,
   import.meta.env.DEV,
@@ -21,7 +21,7 @@ const { level: logLevel, problem: logLevelProblem } = resolveLogLevel(
 );
 configureLogger({ level: logLevel });
 if (logLevelProblem) {
-  // ⚠ THE SEVERITY IS SPLIT BY REASON, and the split is what keeps the new `error` channel worth reading. An absent optional variable with a documented default is an `info`-level FACT; a value that was set and is out of vocabulary is an `error`. Reporting both at `error` meant every existing deployment and every developer with a pre-existing `.env` emitted an error-severity record naming a default that is working as designed — once per process start on the server, but once per FULL PAGE LOAD PER VISITOR in the browser entry point, since that file runs in the browser module graph. A constant, non-actionable record at the top of a production error stream is the noise floor that trains people to ignore the channel, which is the opposite of what ruling D9 raised the level for.
+  // An unset variable falls back to its documented default and is reported at `info`; a value outside the vocabulary is a misconfiguration and is reported at `error`.
   const emit = logLevelProblem.reason === 'invalid' ? log.error : log.info;
   emit('PUBLIC_LOG_LEVEL is unusable; the logger fell back to a default level.', {
     ...logLevelProblem,
@@ -31,49 +31,38 @@ if (logLevelProblem) {
 
 const NORMALIZED_API_ROOT = API_ROOT.replace(/^\/*/, '/');
 
-// The project id this server queries, published on the HTML root so a caller can OBSERVE it instead of inferring it from an empty page.
-//
-// Three things about this line, each of which is a way it could be got wrong:
-//
-// 1. **It discloses nothing.** The name carries SvelteKit's `PUBLIC_` prefix, which is precisely the prefix that means "shipped to the browser", and the value is already in the client bundle because the Supabase adapter constructs a browser client with it. Publishing it on the document moves a public value from one public place to another. No other environment variable may join it here, and it must never be read off the raw process environment — `constants` is the one resolved surface, and reading around it is how a private value would arrive by accident.
-// 2. **It is the value the adapter resolves, not a parallel one.** `constants.PUBLIC_PROJECT_ID` is the same single source the adapter's project resolver reads for the no-override case, and `.trim().toLowerCase()` is that resolver's whole normalisation, so the published id equals the id every query is scoped by.
-// 3. **It deliberately does NOT call the adapter's resolver.** That function THROWS on an unset or non-canonical value, and its throw belongs where the adapter is constructed — a throw here would convert a misconfiguration into a 500 on every page render, including pages that touch no data at all. An unusable value therefore reaches the document as the empty string, which reads as a mismatch to any consumer rather than as agreement, while the adapter still fails loudly at its own boundary.
+// The project id this server queries, published on the HTML root so a caller can observe it.
+// The value is already public: it carries the `PUBLIC_` prefix and ships in the client bundle. Publish no other variable here, and read this one only through `constants`.
+// `.trim().toLowerCase()` is the adapter's whole normalisation, so this equals the id every query is scoped by. The adapter's resolver is not called because it throws on an unusable value, which would turn every page render into a 500; such a value reaches the document as the empty string, which reads as a mismatch.
 const SERVED_PROJECT_ID = constants.PUBLIC_PROJECT_ID.trim().toLowerCase();
 
 /**
  * Supabase session handler.
- * Creates a per-request server client and attaches it (plus safeGetSession) to event.locals.
- * Runs FIRST so all subsequent handlers can use event.locals.supabase.
+ * Creates a per-request server client and attaches it, with `safeGetSession`, to `event.locals`. `safeGetSession` verifies each access token once per request, so the gate below and the route loaders can all call it. Its memo is dropped once the response is resolved, so a caller that holds `locals` longer verifies afresh.
+ * Runs first so every later handler can use `event.locals.supabase`.
  */
 const supabaseHandle: Handle = async ({ event, resolve }) => {
   const supabase = createSupabaseServerClient(event);
 
+  const { safeGetSession, endRequest } = createSafeGetSession(supabase);
   event.locals.supabase = supabase;
-  event.locals.safeGetSession = async () => {
-    const {
-      data: { session }
-    } = await supabase.auth.getSession();
-    if (!session) return { session: null, user: null };
-    const {
-      data: { user },
-      error
-    } = await supabase.auth.getUser();
-    if (error) return { session: null, user: null };
-    return { session, user };
-  };
+  event.locals.safeGetSession = safeGetSession;
 
-  return resolve(event, {
-    filterSerializedResponseHeaders(name) {
-      return name === 'content-range' || name === 'x-supabase-api-version';
-    }
-  });
+  try {
+    return await resolve(event, {
+      filterSerializedResponseHeaders(name) {
+        return name === 'content-range' || name === 'x-supabase-api-version';
+      }
+    });
+  } finally {
+    endRequest();
+  }
 };
 
 /**
  * Paraglide i18n middleware handler.
- * Sets currentLocale on event.locals and replaces %lang% and %projectId% in HTML.
- *
- * The project-id substitution is CHAINED onto the locale one rather than given a `transformPageChunk` of its own. SvelteKit hands each handler in a `sequence` its own transform and applies them in order, so a second one would work — but it would also be a second place a template placeholder is answered, and the two would then have to be kept in agreement about which chunk they run on. `app.html` declares both placeholders above `%sveltekit.body%`, so both arrive in the same chunk and one transform answers both.
+ * Sets `currentLocale` on `event.locals` and replaces `%lang%` and `%projectId%` in the HTML.
+ * `app.html` declares both placeholders above `%sveltekit.body%`, so they arrive in the same chunk and one transform answers both.
  */
 const paraglideHandle: Handle = ({ event, resolve }) =>
   paraglideMiddleware(event.request, ({ request: localizedRequest, locale }) => {
@@ -85,30 +74,27 @@ const paraglideHandle: Handle = ({ event, resolve }) =>
   });
 
 /**
- * Application session-gate handler (Supabase session).
+ * Application session-gate handler.
  *
- * Redirects a signed-in caller away from a gated application's login page, and a caller with no session away from a gated application's `(protected)` routes. Both applications the app gates — the Candidate App and the Admin App — are rows of ONE table, `APP_GATES` in `$lib/routes`, and this handler is a loop over it with no application named in a conditional. Two hand-written auth arms in the same function would be two copies of one decision, and a copy that has quietly stopped gating still answers 200.
+ * Redirects a signed-in caller away from a gated application's login page, and a caller with no session away from its `(protected)` routes. The gated applications, the Candidate App and the Admin App, are the rows of `APP_GATES` in `$lib/routes`; this handler loops over that table and names no application itself.
  *
- * Four properties of this handler, each of which is a way it can go wrong without any test noticing:
- *
- * 1. **The API-root early return is a `startsWith` on the pathname, deliberately.** It guards a served URL prefix rather than a route id, which is what makes an anchored prefix test the correct instrument there. It is the only pathname MEMBERSHIP test in the function; the gate decision below reads route ids only.
- * 2. **The session is fetched once, and only after a row has matched.** Fetching it before the lookup would add a session round trip to every public voter page load — a regression no test would catch, because everything would still be correct, only slower.
- * 3. **This is a SESSION gate, not a ROLE gate.** It decides authenticated-versus-not. Whether the signed-in user may act in the application is decided by that application's protected layout and by its form actions; a role read here would add a user-data round trip to every gated request and put a second copy of a decision that already has a home.
- * 4. **Both redirect targets are built by `buildRoute` from a route KEY carried in the row**, never interpolated, so a route that moves stays reachable from here without a second edit. The locale prefix is Paraglide's to add, which means the base locale gets the unprefixed canonical URL instead of a redundant prefix; both protected layouts build their login redirects the same way, so the hook and the layouts agree.
+ * - The session is read only after a row has matched, so public voter pages make no session round trip.
+ * - This is a session gate, not a role gate. Whether the signed-in user may act in the application is decided by that application's protected layout and form actions.
+ * - Both redirect targets are built by `buildRoute` from a route key in the row, and Paraglide adds the locale prefix, as in the protected layouts' own login redirects.
  */
 const appGateHandle: Handle = async ({ event, resolve }) => {
   const { url, route } = event;
   const locale = getLocale();
   const pathname = url.pathname;
 
-  // Skip non-route and API requests. The API test stays a `startsWith` on the pathname on purpose: it guards a served URL prefix rather than a route id, so it is correct as written and is not an instance of the defect fixed below.
+  // Skip non-route and API requests. The API test is a prefix test on the pathname because it guards a served URL prefix, not a route id; every gate decision below reads the route id.
   if (route?.id == null || pathname.startsWith(NORMALIZED_API_ROOT)) {
     return resolve(event);
   }
-  // Bind once, immediately after the guard, so the compiler sees a `string` here and no non-null assertion is needed below.
+  // Bound after the guard, so it narrows to `string`.
   const routeId = route.id;
 
-  // Which application this request belongs to is decided by the gate table, from the ROUTE ID. A route id carries no base path and no locale prefix and its dynamic segments are placeholders rather than values, so serving the app from a subpath, or a voter route whose params contain an application's name, cannot make a gate misfire. No row matching means the route belongs to no gated application — the public voter surface — and the handler stops here, before any session round trip.
+  // The gate is matched on the route id, which carries no base path, no locale prefix and no param values, so a subpath deployment or a param containing an application's name cannot misfire it. No match means a public voter route.
   const gate = resolveAppGate(routeId);
   if (!gate) return resolve(event);
 
@@ -120,7 +106,7 @@ const appGateHandle: Handle = async ({ event, resolve }) => {
   }
   if (!session && isProtectedRoute(routeId)) {
     const { status, route: target, params } = gate.whenUnauthenticatedInProtectedGroup;
-    // The path the visitor asked for, which the candidate row carries back as `redirectTo` and the admin row ignores. It is read off the pathname because a route id has placeholders where this needs values; it is a value being carried, not a membership test. `redirectTo` is not a declared route param, so `buildRoute` emits it on the search side percent-encoded, and the login page decodes it off `url.searchParams` before `safeRedirectTarget` sees it.
+    // The requested path, which the candidate row carries back as `redirectTo` and the admin row ignores. It is read off the pathname because the route id has placeholders instead of values. `redirectTo` is not a route param, so `buildRoute` puts it in the query string, percent-encoded.
     const cleanPath = pathname.replace(new RegExp(`^/${locale}`), '');
     redirect(status, buildRoute({ route: target, locale, ...params({ redirectTo: cleanPath.substring(1) }) }));
   }
