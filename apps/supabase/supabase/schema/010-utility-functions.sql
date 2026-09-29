@@ -1,7 +1,8 @@
 -- Utility functions
 --
 -- Functions:
---   update_updated_at()  - trigger for automatic updated_at timestamps get_localized()      - extract locale string from JSONB (email helpers only)
+-- - update_updated_at() - trigger for automatic updated_at timestamps
+-- - get_localized() - extract a locale string from JSONB (email helpers only)
 --------------------------------------------------------------------------------
 -- update_updated_at
 --------------------------------------------------------------------------------

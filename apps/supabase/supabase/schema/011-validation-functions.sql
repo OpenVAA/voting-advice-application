@@ -1,12 +1,23 @@
 -- Validation functions
 --
 -- Functions:
---   is_localized_string()    - check if JSONB is a localized string object is_valid_choice_id()     - check if a value is a valid choice ID is_image()               - check if JSONB is a well-formed StoredImage object validate_image()         - raise a specific error if JSONB is not a well-formed StoredImage object validate_answer_value()  - validate an answer value against question type validate_nomination()    - enforce nomination hierarchy rules enforce_entity_immutability() - gate the entity confirmation flag and freeze a confirmed entity's name enforce_nomination_entity_columns() - bound the nomination columns a non-admin may write
+-- - is_localized_string(jsonb) - whether a JSONB value is a localized string object
+-- - is_valid_choice_id(jsonb, jsonb) - whether a value is the id of one of the given choices
+-- - is_image(jsonb) - whether a JSONB value is a well-formed StoredImage object
+-- - validate_image(jsonb) - raise a rule-specific error if a JSONB value is not a well-formed StoredImage object
+-- - validate_answer_value(jsonb, question_type, jsonb) - validate an answer value against its question type
+-- - validate_nomination() - enforce nomination tenancy, hierarchy and parent consistency
+-- - enforce_nomination_confirmation() - refuse or clear a nomination's confirmation the caller may not set
+-- - enforce_nomination_entity_columns() - bound the nomination columns a non-admin may write
+-- - enforce_entity_immutability() - gate the entity confirmation flag and freeze a confirmed entity's name
 --------------------------------------------------------------------------------
 -- is_localized_string: check if a JSONB value is a localized string object
 --
--- A localized string is a JSONB object where all values are strings.
--- Examples: {"en": "Hello", "fi": "Hei"}, {"en": "text"} Returns false for: null, "plain string", 42, [], {"key": 42}
+-- A localized string is a non-empty JSONB object whose values are all strings.
+--
+-- Examples: {"en": "Hello", "fi": "Hei"} and {"en": "text"}.
+--
+-- Returns false for null, "plain string", 42, [], {} and {"key": 42}.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.is_localized_string (p_val JSONB) RETURNS BOOLEAN LANGUAGE plpgsql IMMUTABLE AS $$
 DECLARE
@@ -36,8 +47,9 @@ $$;
 --------------------------------------------------------------------------------
 -- is_valid_choice_id: check if a value is present in a choices array
 --
--- Choices format: [{"id": "1", ...}, {"id": "2", ...}] Returns true if p_value matches any choice id.
--- Returns true if p_valid_choices is NULL (no choices to validate against).
+-- Choices format: [{"id": "1", ...}, {"id": "2", ...}].
+--
+-- Returns true if p_value matches any choice id, and also when p_valid_choices is NULL or carries no ids (nothing to validate against).
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.is_valid_choice_id (p_value JSONB, p_valid_choices JSONB) RETURNS BOOLEAN LANGUAGE plpgsql IMMUTABLE AS $$
 DECLARE
@@ -61,16 +73,16 @@ $$;
 --------------------------------------------------------------------------------
 -- is_image: check if a JSONB value is a well-formed StoredImage object
 --
--- Reports the verdict only. A caller that needs to know WHICH rule failed calls validate_image, which raises a distinct message for each rule.
+-- Reports the verdict only. A caller that needs to know which rule failed calls validate_image, which raises a distinct message for each rule.
 --
--- No caller today: this is the predicate half of the image-shape rule, extracted alongside validate_image so the rule is callable on its own rather than only reachable through an answer write. Its intended consumers are a CHECK constraint on an image column and an admin-side pre-flight on bulk_import payloads; until one of those lands it is exercised only by 08-triggers.test.sql. EXECUTE defaults to PUBLIC, and the function reads nothing, so this exposes no data.
+-- The predicate form of the image-shape rule, callable without an answer write (for example from a CHECK constraint or a bulk_import pre-flight); no schema object calls it, and 08-triggers.test.sql covers it. EXECUTE defaults to PUBLIC, and the function reads no table, so it exposes no data.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.is_image (p_val JSONB) RETURNS BOOLEAN LANGUAGE plpgsql IMMUTABLE AS $$
 BEGIN
   PERFORM public.validate_image(p_val);
   RETURN TRUE;
 EXCEPTION
-  -- Only a shape violation raised by validate_image is a FALSE verdict. validate_image signals every rule with a bare RAISE EXCEPTION, which is SQLSTATE P0001 / raise_exception, so that is the whole set of verdicts this function is entitled to convert. Anything else - undefined_function if validate_image is dropped or renamed, insufficient_privilege if EXECUTE on it is ever narrowed, stack depth, out of memory, a future bug inside it - must propagate. Under WHEN others a broken validator silently reported every value in the database as "not an image", which is precisely the distinction this function exists to make.
+  -- Only a shape violation is a FALSE verdict. validate_image signals every rule with a bare RAISE EXCEPTION (SQLSTATE P0001, raise_exception), so that is the only error converted. Anything else, such as undefined_function, insufficient_privilege or out of memory, propagates: catching it would report a broken validator as "not an image" for every value.
   WHEN raise_exception THEN
     RETURN FALSE;
 END;
@@ -79,7 +91,9 @@ $$;
 --------------------------------------------------------------------------------
 -- validate_image: raise if a JSONB value is not a well-formed StoredImage object
 --
--- StoredImage shape: {path, pathDark?, alt?, width?, height?, focalPoint?} Every rule raises its own message, so a caller is told which part of the value to fix.
+-- StoredImage shape: {path, pathDark?, alt?, width?, height?, focalPoint?}.
+--
+-- Every rule raises its own message, so a caller is told which part of the value to fix.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.validate_image (p_val JSONB) RETURNS VOID LANGUAGE plpgsql IMMUTABLE AS $$
 BEGIN
@@ -125,7 +139,7 @@ $$;
 --------------------------------------------------------------------------------
 -- validate_answer_value: validate an answer against its question type
 --
--- Answer format: {"value": ..., "info": ...} The "info" field is optional and can be a plain string or localized string.
+-- Answer format: {"value": ..., "info": ...}. The "info" field is optional and can be a plain string or localized string. A NULL or JSON null value passes without further checks.
 --
 -- Text answers: value can be a plain string or a localized string object.
 -- MultipleText answers: value must be an array of strings or localized strings.
@@ -221,12 +235,13 @@ $$;
 --   candidate   -> parent must be organization or faction (or none for standalone)
 --
 -- Consistency rules:
+--   The nomination's election and constituency must belong to the nomination's own project.
 --   If parent_nomination_id is set, election_id, constituency_id, and election_round must match the parent nomination.
---   A faction's parent must be the nomination of that faction's OWN organization (section 11.8, 162-12), not merely of some organization. The exception names BOTH organization ids (D-23).
+--   A faction's parent must be the nomination of that faction's own organization, not merely of some organization. The exception names both organization ids.
 --
--- ⚠ HARDENED TO `SECURITY DEFINER SET search_path = ''` BY 162-12, AND IT IS A CONSEQUENCE OF THE CAPABILITY THAT PLAN ADDS RATHER THAN A PRE-EXISTING DEFECT. This function reads `public.nominations` and now `public.factions`. While the only callers who could insert were ADMINS, who can read the whole project, invoker rights were harmless. From the moment an ENTITY USER may insert -- new in 162-12 -- both lookups would run under that user's own row-level security, and a parent that EXISTS but is unreadable would be reported by the `NOT FOUND` branch below as a parent that DOES NOT EXIST. MEASURED in a rolled-back transaction before this was written: an entity-user session selecting the parent nomination it is about to point at returns ZERO ROWS. 23-nominations-write.test.sql asserts the fix by having an entity user successfully insert a child under a parent that user cannot read.
+-- SECURITY DEFINER with an empty search_path, because an entity user may insert nominations and cannot read every parent it may point at. Under invoker rights the parent lookup would run under that user's row-level security, and the `NOT FOUND` branch would report an unreadable parent as a missing one. 23-nominations-write.test.sql has an entity user insert a child under a parent that user cannot read.
 --
--- The information the hardening exposes -- that a supplied identifier names a nomination, and of what type -- is disposed of as an ACCEPTED finding in 162-12's threat register (T-162-12-14) rather than inherited silently: the identifiers are unguessable, so the oracle requires knowledge that already implies access, and a generic message would retire D-23's error discipline across every seed log in the project.
+-- The messages disclose whether a supplied identifier names a nomination, and of what type. That is accepted: the identifiers are unguessable UUIDs, so the disclosure needs knowledge that already implies access, and specific messages keep seed and import failures diagnosable.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.validate_nomination () RETURNS TRIGGER SECURITY DEFINER
 SET
@@ -248,7 +263,7 @@ BEGIN
     WHEN NEW.alliance_id IS NOT NULL THEN 'alliance'::public.entity_type
   END;
 
-  -- Tenancy (162-REVIEW CR-03): the nomination's election and constituency must belong to the nomination's own project. Nothing else ties them together -- the foreign keys name the rows, not their project -- so without this an entity grantee of project A could write, or move, a nomination into project B's contest. Checked for every writer, admins and service_role included, because a cross-project nomination is corrupt data whoever wrote it. The entity's own project is checked by the entity write policies in 302-rls.sql rather than here, because 07-rpc-security.test.sql deliberately builds a cross-project entity row as a negative control.
+  -- Tenancy: the nomination's election and constituency must belong to the nomination's own project. The foreign keys name the rows, not their project, so without this an entity grantee of project A could write or move a nomination into project B's contest. Checked for every writer, admins and service_role included, because a cross-project nomination is corrupt data whoever wrote it. The entity's own project is checked by the entity write policies in 302-rls.sql, not here, because 07-rpc-security.test.sql builds a cross-project entity row as a negative control.
   IF NOT EXISTS (
     SELECT 1 FROM public.elections e WHERE e.id = NEW.election_id AND e.project_id = NEW.project_id
   ) THEN
@@ -302,9 +317,9 @@ BEGIN
       IF p_parent_type != 'organization' THEN
         RAISE EXCEPTION 'Faction nomination parent must be an organization nomination, got %', p_parent_type;
       END IF;
-      -- Section 11.8 tightens *an* organization to *THE* organization: a faction's parent must be the nomination of that faction's OWN organization. 162-07b shipped `factions.organization_id NOT NULL` and explicitly left this rule here, after the column exists. The lookup is one more column on the SELECT ... INTO above plus one read of the faction's own organization, not a new round trip.
+      -- The parent must be the nomination of the faction's own organization, not of any organization. The parent's organization comes from the SELECT ... INTO above; this reads the faction's.
       --
-      -- The message names BOTH organizations, per D-23. In a seed log a message naming one is indistinguishable from the parent-type error directly above it, and the two failures need different fixes.
+      -- The message names both organizations, so a seed log tells this failure apart from the parent-type error above; the two need different fixes.
       SELECT f.organization_id INTO p_faction_organization_id
       FROM public.factions f
       WHERE f.id = NEW.faction_id;
@@ -341,19 +356,21 @@ END;
 $$ LANGUAGE plpgsql;
 
 --------------------------------------------------------------------------------
--- enforce_nomination_confirmation: the confirmation transition (162-12)
+-- enforce_nomination_confirmation: the confirmation transition
 --
--- 162-USER-RIGHTS.md: "when editing, turn confirmed false". The SYSTEM sets the flag, so this is a trigger and not a policy -- a policy can refuse a row, it cannot rewrite one. Three rules, in order:
+-- Editing a nomination turns its confirmation off. The system sets the flag, so this is a trigger rather than a policy: a policy can refuse a row but cannot rewrite one. Three rules, in order:
 --
---   1. ON EITHER VERB, a row being confirmed while its custom data carries the requested-parent key is REFUSED (D-12a). 162-IMPLEMENTATION-BRIEF.md section 11.5's third and fourth branches are BYTE-IDENTICAL in every column -- both are a candidate nomination with a NULL parent -- and the only thing distinguishing "I am independent" from "my party is not in the system yet" is the presence of `requestedParentOrganization` in custom_data. Confirming such a row publishes as an INDEPENDENT a candidate who asked for a party, which section 11.5 names as the one place this feature touches the public read path.
---   2. ON UPDATE, when the caller's effective database role is `authenticated` and the caller does not hold the confirm permission on the row's project: an attempt to turn the flag ON is REFUSED with a named exception, and anything else has the flag FORCED OFF. The refusal and the forcing are different failures and are asserted separately -- silently ignoring an explicit request is how a client comes to believe it succeeded.
---   3. OTHERWISE the supplied value stands. That is what makes an admin's edit-and-confirm a single statement, and what keeps a service-role re-seed from unconfirming everything it touches.
+--   1. On either verb, a row being confirmed while its custom_data carries `requestedParentOrganization` is refused. A candidate nomination with a NULL parent is either independent or waiting for a party that is not in the system yet, and that key is the only difference. Confirming such a row would publish as an independent a candidate who asked for a party.
+--   2. On UPDATE, when the caller's effective database role is `authenticated` and the caller does not hold `nomination.confirm` on the row's project, an attempt to turn the flag on is refused by name, and any other edit has the flag forced off. The refusal is explicit so a client never believes an ignored request succeeded.
+--   3. Otherwise the supplied value stands. That makes an admin's edit-and-confirm a single statement, and keeps a service-role re-seed from unconfirming every row it touches.
 --
--- ⚠ RULE 2'S SCOPE IS THE EFFECTIVE DATABASE ROLE, and it is the choice in this file most likely to be got wrong. Scoping it to "the caller has a token" would catch the SERVICE-ROLE caller too, because PostgREST sets claims for that role as well, and a second `yarn db:seed` would then unconfirm every row it upserted. MEASURED across three caller classes before this expression was fixed: `authenticated`, `service_role` and `anon` present three distinct strings. The role test does not read claim contents at all, and 23-nominations-write.test.sql pins the BEHAVIOUR (two seed runs, zero unconfirmed rows) rather than the expression, so a future change of expression that breaks the property reddens.
+-- Rule 2 is scoped to the effective database role, not to "the caller has a token": PostgREST sets claims for the service role too, so a token test would make a second `yarn db:seed` unconfirm every row it upserted. 23-nominations-write.test.sql pins that behaviour (two seed runs, zero unconfirmed rows).
 --
--- ⚠ A PROJECT EDITOR'S EDIT ALSO TURNS CONFIRMATION OFF. Section 3.3 gives that role `nomination.edit` and withholds `nomination.confirm`, so rule 2 applies to it and only an admin can restore the flag. That is the review gate working rather than a defect, but nobody wrote it down before, so it is written here.
+-- A project editor holds `nomination.edit` but not `nomination.confirm`, so its edits also turn confirmation off and only an admin can restore the flag. That is the review gate.
 --
--- SECURITY INVOKER, deliberately and unlike this file's hierarchy validator: it MUST see its caller's effective role, which owner rights would replace. It reads NO table directly; the only authority question it asks is one `user_can` call, which is itself hardened.
+-- On INSERT it also repeats the policy cap on originated unconfirmed parent nominations, so the caller is told the limit.
+--
+-- SECURITY INVOKER, unlike validate_nomination: the role test must see the caller's effective role, which owner rights would replace. It reads no table directly; its authority questions go through `user_can` and the private cap-count helper.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.enforce_nomination_confirmation () RETURNS TRIGGER LANGUAGE plpgsql SECURITY INVOKER AS $$
 BEGIN
@@ -377,11 +394,11 @@ BEGIN
     NEW.confirmed := false;
   END IF;
 
-  -- The CAP on originated unconfirmed parent nominations (section 8.9, task 2 Q1 = A, value 10).
+  -- The cap on originated unconfirmed parent nominations, at 10.
   --
-  -- ⚠ IT IS HERE AS WELL AS IN THE POLICY, AND THE REASON IS THE MESSAGE. `entity_insert_parent_nominations` carries the cap as a conjunct, which is where the enforcement belongs; but a row-level-security refusal reads "new row violates row-level security policy ... for table nominations", naming the POLICY and never the number. Section 8.9 wants a caller to be told what they hit. A BEFORE INSERT trigger runs ahead of the row-level check clause, so this message is the one that surfaces.
+  -- The `entity_insert_parent_nominations` policy enforces the cap, but a row-level security refusal names the policy and never the limit. A BEFORE INSERT trigger runs ahead of the policy's check, so this message, which names the limit, is the one the caller sees.
   --
-  -- Scoped exactly to the population the cap is about: an `authenticated` caller inserting an UNCONFIRMED ORGANIZATION nomination who does NOT hold `project.edit_nominations`. An admin creating placeholder parents is not what section 8.9 is worried about, and the service-role and owner paths present a different role entirely.
+  -- Scoped to the population the cap is about: an `authenticated` caller without `project.edit_nominations` inserting an unconfirmed organization nomination. Admins may create placeholder parents, and the service-role and owner paths run as other roles.
   IF TG_OP = 'INSERT'
      AND current_user = 'authenticated'
      AND NOT NEW.confirmed
@@ -398,18 +415,18 @@ END;
 $$;
 
 --------------------------------------------------------------------------------
--- enforce_nomination_entity_columns: the column bound for callers who are NOT project nomination editors (162-REVIEW WR-05)
+-- enforce_nomination_entity_columns: the column bound for callers who are not project nomination editors
 --
--- 303-column-grants.sql used to bound an entity user's nomination writes with a global REVOKE/GRANT pair against `authenticated` -- and a grant against one role cannot tell an entity user from a project admin, so it refused the admin too: a project admin holding `project.edit_nominations` could not insert a nomination carrying `election_symbol` or a name, and `bulk_import` could not import nominations through an authenticated admin session. The grant is now wide enough for the admin, and the entity-user bound lives here, where the caller can be told apart -- the same arrangement `enforce_nomination_confirmation` and `enforce_entity_immutability` already use.
+-- A column grant against `authenticated` cannot tell an entity user from a project admin, so the nominations grant in 303-column-grants.sql admits what an admin needs (including bulk_import through an authenticated admin session), and the entity-user bound lives here, where the caller can be told apart. `enforce_nomination_confirmation` and `enforce_entity_immutability` use the same arrangement.
 --
--- Binds exactly one population: an `authenticated` caller who does NOT hold `project.edit_nominations` on the row's project. For that caller:
+-- Binds exactly one population: an `authenticated` caller who does not hold `project.edit_nominations` on the row's project. For that caller:
 --   INSERT - the nine presentation and bookkeeping columns (name, short_name, info, color, image, sort_order, subtype, election_symbol, external_id) must be left unset.
 --   UPDATE - those nine and the four entity foreign keys must be unchanged.
 -- The owner and service-role paths are untouched (current_user is not `authenticated` there), and an admin passes through.
 --
--- Raises insufficient_privilege (42501), the code the column grant raised for the same attempt, so a caller -- and every assertion written against the old grant -- sees the same refusal.
+-- Raises insufficient_privilege (42501), the code a column-grant refusal raises, so the caller sees the same error class either way.
 --
--- SECURITY INVOKER for the reason its two siblings give: a SECURITY DEFINER body reports the owner as current_user, and the role test would never match.
+-- SECURITY INVOKER: a SECURITY DEFINER body reports the owner as current_user, and the role test would never match.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.enforce_nomination_entity_columns () RETURNS TRIGGER LANGUAGE plpgsql SECURITY INVOKER AS $$
 BEGIN
@@ -450,41 +467,43 @@ END;
 $$;
 
 --------------------------------------------------------------------------------
--- enforce_entity_immutability: the confirmation gate and the conditional identity freeze (162-13)
+-- enforce_entity_immutability: the confirmation gate and the conditional identity freeze
 --
--- 162-IMPLEMENTATION-BRIEF.md section 11.2 freezes an entity's name once the row is confirmed; section 8.7(a) makes that freeze conditional on WHO is asking -- frozen for the entity user, still correctable by a holder of `entity.edit_immutable`. That is a rule about the TRANSITION from one row state to another, and fact 27 measured that neither mechanism already in this tree can express it. A column grant is a single global REVOKE/GRANT pair against one role: it cannot tell two callers of that role apart and it knows nothing about the row. A policy's `USING` is evaluated against the OLD row and its `WITH CHECK` against the NEW one, with no expression in either able to reference the other, so `OLD.confirmed` is not addressable from any policy on these tables. A BEFORE UPDATE row trigger sees both in one scope, which is why this is one.
+-- A confirmed entity's name is frozen for the entity user and stays correctable by a holder of `entity.edit_immutable`. That is a rule about the transition between two row states, which neither a column grant (one global pair per role, blind to the row) nor a policy (`USING` sees only OLD, `WITH CHECK` only NEW) can express. A BEFORE UPDATE row trigger sees both rows in one scope. It follows the shape of `enforce_external_id_immutability` in 500-external-id.sql: an OLD-row condition, an `IS DISTINCT FROM` comparison, a named exception carrying both values, and one body registered on several tables.
 --
--- THE IN-TREE ANALOG IS `enforce_external_id_immutability()` IN 500-external-id.sql, and 162-PATTERNS.md section "No Analog Found" is wrong to say there is none. That function gates on an OLD-row condition, compares old to new with `IS DISTINCT FROM`, raises a named exception interpolating BOTH values, and is registered on eleven tables from one body. This function copies its shape, its error discipline and its one-body-many-tables registration form rather than inventing a second idiom for the same job.
+-- Two rules, in a fixed order:
 --
--- TWO RULES, IN A FIXED ORDER, AND THE ORDER IS OBSERVABLE:
+--   1. The confirmation gate. A change to the confirmation flag, in either direction, by an `authenticated` caller who does not hold `entity.confirm` on the row is refused by name. Turning the flag off is refused too, because an entity user who could unconfirm could then rename.
+--   2. The conditional freeze, read from the OLD row's flag. When the row was already confirmed before the statement, a change to any column named in TG_ARGV by an `authenticated` caller who does not hold `entity.edit_immutable` on the row is refused by name. Reading the OLD flag means a caller cannot unconfirm and rename in one statement, and because rule 1 runs first, such a statement is refused with the confirmation message.
 --
---   1. THE CONFIRMATION GATE. A change to the confirmation flag -- in EITHER direction -- by an `authenticated` caller who does not hold `entity.confirm` on the row is refused by name. The direction that looks harmless is the load-bearing one: an entity user who can turn the flag OFF can unfreeze their own name and rule 2 becomes decorative, so false-to-true and true-to-false are both refused.
---   2. THE CONDITIONAL FREEZE, read from `OLD.confirmed` rather than `NEW.confirmed`. While the row was already confirmed when the statement began, a change to any column named in TG_ARGV by an `authenticated` caller who does not hold `entity.edit_immutable` on the row is refused by name. Reading the OLD flag is what makes a caller unable to unfreeze and rename in one statement; rule 1 runs first, so such a caller is stopped at the gate and the refusal carries the confirmation prefix rather than the immutability one.
+-- The freeze is not absolute: on an unconfirmed row the entity user may still set their own name, which the sign-up flow needs. 19-entity-immutability.test.sql asserts that outcome per protected column per table and pins the OLD-row guard on the function source.
 --
--- WHY RULE 2 IS NOT AN ABSOLUTE FREEZE, and the failure that reading would cause: on an UNCONFIRMED row the entity user may still set their own name, because that is the sign-up flow. A rule written without the OLD-flag guard would make a newly created entity unnameable and section 11.2's own precondition unreachable. That middle outcome is asserted per protected column per table in 19-entity-immutability.test.sql, and a variant of this body with the guard removed is run against that file as a negative control.
+-- Both rules bind only the effective `authenticated` role, as rule 2 of `enforce_nomination_confirmation` does. `user_can` reads the grant set from the JWT and a service-role token carries none, so an unscoped rule would refuse every re-seed, bulk import and pgTAP fixture write that changes a name or a confirmation flag. The cost is that the service role can rename a confirmed entity, the same latitude it has against row-level security and the column grants.
 --
--- THE ROLE SCOPE IS THE EFFECTIVE DATABASE ROLE, exactly as `enforce_nomination_confirmation()` above scopes its own rule 2, and for the same measured reason. `user_can` reads the caller's grant set from the JWT; a service-role token carries none, so an UNSCOPED rule answers false for the seeder and refuses every re-seed, bulk import and pgTAP fixture write that moves a name or a confirmation flag. That failure was REPRODUCED against an unscoped variant before this expression was written. Accepted and recorded cost: a service-role path can rename a confirmed entity -- the same latitude that role already has against row-level security and against the column grants, neither of which names it.
+-- SECURITY INVOKER is required: a SECURITY DEFINER body reports the owner as `current_user`, so the role guard would never match and neither rule would bind.
 --
--- SECURITY INVOKER is not optional. MEASURED: a `SECURITY DEFINER` body reports `postgres` as `current_user` for an authenticated caller, so the role guard below would never match and both rules would never bind.
+-- The body names no entity type and no protected column. The protected columns arrive per registration in TG_ARGV and are compared through a JSONB projection of both rows, and the entity type is derived from TG_TABLE_NAME, so one body serves all four entity tables. The confirmation column is not a parameter: it has the same name on every entity table and is the subject of rule 1.
 --
--- D-21: THE BODY NAMES NO ENTITY TYPE AND NO PROTECTED COLUMN. The protected set arrives per registration in TG_ARGV and is compared through a generic JSONB projection of the two records, so one body serves all four entity tables: three pass one column name, one passes two. The confirmation column is NOT a parameter -- it carries the same name on all four tables and is the subject of the other rule.
---
--- D-23: BOTH REFUSALS CARRY A STABLE LEADING PREFIX so `throws_like` has a handle and a seed log can tell them apart, and both interpolate the table, the row and BOTH values; the immutability refusal additionally names the column.
+-- Each refusal starts with a stable prefix, so `throws_like` can match it and a seed log can tell the two apart. Both name the table, the row and both values; the immutability refusal also names the column.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.enforce_entity_immutability () RETURNS TRIGGER LANGUAGE plpgsql SECURITY INVOKER AS $$
 DECLARE
   v_col text;
   v_old_row jsonb;
   v_new_row jsonb;
+  v_entity_type public.entity_type;
 BEGIN
   -- The role guard. Everything below binds the effective `authenticated` role and nothing else.
   IF current_user <> 'authenticated' THEN
     RETURN NEW;
   END IF;
 
+  -- The row's entity type, which every entity-scope authority question names together with the id. It is the table's name without its plural s, the naming the four entity tables share; a table outside that naming fails the cast, so the update raises rather than being decided without a type.
+  v_entity_type := left(TG_TABLE_NAME, -1)::public.entity_type;
+
   -- Rule 1: the confirmation gate, in both directions.
   IF NEW.confirmed IS DISTINCT FROM OLD.confirmed
-     AND NOT public.user_can('entity', NEW.id, 'entity.confirm') THEN
+     AND NOT public.user_can('entity', NEW.id, 'entity.confirm', v_entity_type) THEN
     RAISE EXCEPTION 'Entity confirmation requires the entity.confirm permission: %.% row % cannot change its confirmation flag (current: %, attempted: %)',
       TG_TABLE_SCHEMA, TG_TABLE_NAME, NEW.id, OLD.confirmed, NEW.confirmed;
   END IF;
@@ -496,7 +515,7 @@ BEGIN
     FOR i IN 0 .. TG_NARGS - 1 LOOP
       v_col := TG_ARGV[i];
       IF (v_old_row ->> v_col) IS DISTINCT FROM (v_new_row ->> v_col)
-         AND NOT public.user_can('entity', NEW.id, 'entity.edit_immutable') THEN
+         AND NOT public.user_can('entity', NEW.id, 'entity.edit_immutable', v_entity_type) THEN
         RAISE EXCEPTION 'Entity name is immutable once confirmed: column %.%.% on row % cannot be changed (current: %, attempted: %); changing it requires the entity.edit_immutable permission',
           TG_TABLE_SCHEMA, TG_TABLE_NAME, v_col, NEW.id,
           COALESCE(v_old_row ->> v_col, '(none)'), COALESCE(v_new_row ->> v_col, '(none)');

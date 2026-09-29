@@ -1,11 +1,11 @@
 /**
  * The Edge Functions' authority gate: ask the DATABASE whether the caller may do a thing, never re-derive the answer here.
  *
- * `public.user_can(scope, target_id, permission)` is the single place the role x permission matrix is encoded (SPEC section 5), and SPEC section 9 forbids a second copy of it. The two gates this replaced -- one in `invite-candidate`, one in `send-email` -- each hand-coded a subset of the matrix from the raw JWT `grants` claim, and they had already diverged from the matrix and from each other: both admitted an account admin of ANY account, because resolving which account owns the project is a reach rule only the database holds, and one refused a ProjectEditor that the matrix grants `project.edit_entities` (162-REVIEW CR-05, WR-09).
+ * `public.user_can(scope, target_id, permission, target_type)` is the single place the role x permission matrix is encoded, and no second copy of it may exist. The two gates this replaced -- one in `invite-candidate`, one in `send-email` -- each hand-coded a subset of the matrix from the raw JWT `grants` claim, and they had already diverged from the matrix and from each other: both admitted an account admin of ANY account, because resolving which account owns the project is a reach rule only the database holds, and one refused a ProjectEditor that the matrix grants `project.edit_entities`.
  *
  * The call goes through the CALLER'S OWN client, so `user_can` reads the caller's own `grants` claim from their token -- the same claim every RLS policy reads. A service-role client must never be passed here: its token carries no grants claim, and the answer would describe the service role rather than the caller.
  *
- * Fails CLOSED: an RPC error, a non-boolean answer, or an absent/blank project id is a denial.
+ * Fails CLOSED: an RPC error, a non-boolean answer, or an absent/blank target id is a denial.
  *
  * ⚠ BYTE-IDENTICAL COPIES live in `invite-candidate/` and `send-email/`, because Supabase deploys each top-level function directory as its own unit and this repository has no shared module directory for Edge Functions (the `envConfig.ts` precedent). `scripts/assert-edge-env-defaults.mjs` (a `yarn lint:check` link) fails when the two copies differ. Edit both or neither.
  *
@@ -16,6 +16,11 @@
 export interface RpcClient {
   rpc: (fn: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: unknown }>;
 }
+
+/** The members of `public.entity_type`. */
+export type EntityType = 'candidate' | 'organization' | 'faction' | 'alliance';
+
+const ENTITY_TYPES: ReadonlyArray<string> = ['candidate', 'organization', 'faction', 'alliance'];
 
 /**
  * Does the caller hold `permission` on project `projectId`, per `public.user_can`?
@@ -30,12 +35,39 @@ export async function callerMayOnProject(
   permission: string
 ): Promise<boolean> {
   if (typeof projectId !== 'string' || projectId.trim() === '') return false;
+  return askUserCan(callerClient, { p_scope: 'project', p_target_id: projectId.trim(), p_permission: permission });
+}
+
+/**
+ * Does the caller hold `permission` on the entity of type `entityType` with id `entityId`, per `public.user_can`?
+ *
+ * Ask every entity-scope question through this helper. `user_can`'s `p_target_type` is optional so that project-scope callers can pass three arguments, which lets an entity-scope call without a type compile; the database then denies it, and nothing says why. Here the type is a required parameter.
+ *
+ * @param callerClient - A client carrying the CALLER'S bearer token, never a service-role client.
+ * @param entityType - The entity's table type. A value outside `public.entity_type` denies without a round trip.
+ * @param entityId - The entity's id. Blank or absent denies without a round trip.
+ * @param permission - A member of `public.grant_permission`, for example `entity.edit_answers`.
+ */
+export async function callerMayOnEntity(
+  callerClient: RpcClient,
+  entityType: EntityType,
+  entityId: unknown,
+  permission: string
+): Promise<boolean> {
+  if (!ENTITY_TYPES.includes(entityType)) return false;
+  if (typeof entityId !== 'string' || entityId.trim() === '') return false;
+  return askUserCan(callerClient, {
+    p_scope: 'entity',
+    p_target_id: entityId.trim(),
+    p_permission: permission,
+    p_target_type: entityType
+  });
+}
+
+/** Puts one question to `public.user_can`; anything but a literal `true` is a denial. */
+async function askUserCan(callerClient: RpcClient, args: Record<string, unknown>): Promise<boolean> {
   try {
-    const { data, error } = await callerClient.rpc('user_can', {
-      p_scope: 'project',
-      p_target_id: projectId.trim(),
-      p_permission: permission
-    });
+    const { data, error } = await callerClient.rpc('user_can', args);
     return !error && data === true;
   } catch {
     return false;

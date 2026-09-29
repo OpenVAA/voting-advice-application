@@ -128,7 +128,6 @@ export type Database = {
           id: string;
           image: Json | null;
           info: Json | null;
-          is_generated: boolean | null;
           name: Json | null;
           project_id: string;
           short_name: Json | null;
@@ -145,7 +144,6 @@ export type Database = {
           id?: string;
           image?: Json | null;
           info?: Json | null;
-          is_generated?: boolean | null;
           name?: Json | null;
           project_id: string;
           short_name?: Json | null;
@@ -162,7 +160,6 @@ export type Database = {
           id?: string;
           image?: Json | null;
           info?: Json | null;
-          is_generated?: boolean | null;
           name?: Json | null;
           project_id?: string;
           short_name?: Json | null;
@@ -231,7 +228,6 @@ export type Database = {
           id: string;
           image: Json | null;
           info: Json | null;
-          is_generated: boolean | null;
           last_name: string;
           project_id: string;
           short_name: Json | null;
@@ -252,7 +248,6 @@ export type Database = {
           id?: string;
           image?: Json | null;
           info?: Json | null;
-          is_generated?: boolean | null;
           last_name: string;
           project_id: string;
           short_name?: Json | null;
@@ -273,7 +268,6 @@ export type Database = {
           id?: string;
           image?: Json | null;
           info?: Json | null;
-          is_generated?: boolean | null;
           last_name?: string;
           project_id?: string;
           short_name?: Json | null;
@@ -301,7 +295,6 @@ export type Database = {
           id: string;
           image: Json | null;
           info: Json | null;
-          is_generated: boolean | null;
           keywords: Json | null;
           name: Json | null;
           parent_id: string | null;
@@ -319,7 +312,6 @@ export type Database = {
           id?: string;
           image?: Json | null;
           info?: Json | null;
-          is_generated?: boolean | null;
           keywords?: Json | null;
           name?: Json | null;
           parent_id?: string | null;
@@ -337,7 +329,6 @@ export type Database = {
           id?: string;
           image?: Json | null;
           info?: Json | null;
-          is_generated?: boolean | null;
           keywords?: Json | null;
           name?: Json | null;
           parent_id?: string | null;
@@ -403,7 +394,6 @@ export type Database = {
           id: string;
           image: Json | null;
           info: Json | null;
-          is_generated: boolean | null;
           name: Json | null;
           project_id: string;
           short_name: Json | null;
@@ -419,7 +409,6 @@ export type Database = {
           id?: string;
           image?: Json | null;
           info?: Json | null;
-          is_generated?: boolean | null;
           name?: Json | null;
           project_id: string;
           short_name?: Json | null;
@@ -435,7 +424,6 @@ export type Database = {
           id?: string;
           image?: Json | null;
           info?: Json | null;
-          is_generated?: boolean | null;
           name?: Json | null;
           project_id?: string;
           short_name?: Json | null;
@@ -496,7 +484,6 @@ export type Database = {
           id: string;
           image: Json | null;
           info: Json | null;
-          is_generated: boolean | null;
           multiple_rounds: boolean | null;
           name: Json | null;
           project_id: string;
@@ -517,7 +504,6 @@ export type Database = {
           id?: string;
           image?: Json | null;
           info?: Json | null;
-          is_generated?: boolean | null;
           multiple_rounds?: boolean | null;
           name?: Json | null;
           project_id: string;
@@ -538,7 +524,6 @@ export type Database = {
           id?: string;
           image?: Json | null;
           info?: Json | null;
-          is_generated?: boolean | null;
           multiple_rounds?: boolean | null;
           name?: Json | null;
           project_id?: string;
@@ -567,7 +552,6 @@ export type Database = {
           id: string;
           image: Json | null;
           info: Json | null;
-          is_generated: boolean | null;
           name: Json | null;
           organization_id: string;
           project_id: string;
@@ -585,7 +569,6 @@ export type Database = {
           id?: string;
           image?: Json | null;
           info?: Json | null;
-          is_generated?: boolean | null;
           name?: Json | null;
           organization_id: string;
           project_id: string;
@@ -603,7 +586,6 @@ export type Database = {
           id?: string;
           image?: Json | null;
           info?: Json | null;
-          is_generated?: boolean | null;
           name?: Json | null;
           organization_id?: string;
           project_id?: string;
@@ -719,7 +701,6 @@ export type Database = {
           id: string;
           image: Json | null;
           info: Json | null;
-          is_generated: boolean | null;
           name: Json | null;
           organization_id: string | null;
           parent_nomination_id: string | null;
@@ -747,7 +728,6 @@ export type Database = {
           id?: string;
           image?: Json | null;
           info?: Json | null;
-          is_generated?: boolean | null;
           name?: Json | null;
           organization_id?: string | null;
           parent_nomination_id?: string | null;
@@ -775,7 +755,6 @@ export type Database = {
           id?: string;
           image?: Json | null;
           info?: Json | null;
-          is_generated?: boolean | null;
           name?: Json | null;
           organization_id?: string | null;
           parent_nomination_id?: string | null;
@@ -856,7 +835,6 @@ export type Database = {
           id: string;
           image: Json | null;
           info: Json | null;
-          is_generated: boolean | null;
           name: Json | null;
           project_id: string;
           short_name: Json | null;
@@ -875,7 +853,6 @@ export type Database = {
           id?: string;
           image?: Json | null;
           info?: Json | null;
-          is_generated?: boolean | null;
           name?: Json | null;
           project_id: string;
           short_name?: Json | null;
@@ -894,7 +871,6 @@ export type Database = {
           id?: string;
           image?: Json | null;
           info?: Json | null;
-          is_generated?: boolean | null;
           name?: Json | null;
           project_id?: string;
           short_name?: Json | null;
@@ -967,7 +943,6 @@ export type Database = {
           id: string;
           image: Json | null;
           info: Json | null;
-          is_generated: boolean | null;
           name: Json | null;
           project_id: string;
           short_name: Json | null;
@@ -988,7 +963,6 @@ export type Database = {
           id?: string;
           image?: Json | null;
           info?: Json | null;
-          is_generated?: boolean | null;
           name?: Json | null;
           project_id: string;
           short_name?: Json | null;
@@ -1009,7 +983,6 @@ export type Database = {
           id?: string;
           image?: Json | null;
           info?: Json | null;
-          is_generated?: boolean | null;
           name?: Json | null;
           project_id?: string;
           short_name?: Json | null;
@@ -1043,7 +1016,6 @@ export type Database = {
           id: string;
           image: Json | null;
           info: Json | null;
-          is_generated: boolean | null;
           name: Json | null;
           project_id: string;
           required: boolean | null;
@@ -1069,7 +1041,6 @@ export type Database = {
           id?: string;
           image?: Json | null;
           info?: Json | null;
-          is_generated?: boolean | null;
           name?: Json | null;
           project_id: string;
           required?: boolean | null;
@@ -1095,7 +1066,6 @@ export type Database = {
           id?: string;
           image?: Json | null;
           info?: Json | null;
-          is_generated?: boolean | null;
           name?: Json | null;
           project_id?: string;
           required?: boolean | null;
@@ -1176,7 +1146,13 @@ export type Database = {
           terms_of_use_accepted: string;
         }[];
       };
-      get_entity_basic_data: { Args: { p_entity_id: string }; Returns: Json };
+      get_entity_basic_data: {
+        Args: {
+          p_entity_id: string;
+          p_entity_type: Database['public']['Enums']['entity_type'];
+        };
+        Returns: Json;
+      };
       get_localized: {
         Args: { p_default_locale?: string; p_locale: string; p_val: Json };
         Returns: string;
@@ -1301,7 +1277,12 @@ export type Database = {
         Returns: boolean;
       };
       upsert_answers: {
-        Args: { p_answers: Json; p_entity_id: string; p_overwrite?: boolean };
+        Args: {
+          p_answers: Json;
+          p_entity_id: string;
+          p_entity_type: Database['public']['Enums']['entity_type'];
+          p_overwrite?: boolean;
+        };
         Returns: Json;
       };
       user_can: {
@@ -1309,6 +1290,7 @@ export type Database = {
           p_permission: Database['public']['Enums']['grant_permission'];
           p_scope: Database['public']['Enums']['grant_scope_type'];
           p_target_id: string;
+          p_target_type?: Database['public']['Enums']['entity_type'];
         };
         Returns: boolean;
       };

@@ -32,9 +32,12 @@ $$;
 -- merge_jsonb_column: generic deep-merge into any table's JSONB column
 --
 -- Parameters:
---   p_table_name   - name of the target table p_column_name  - name of the JSONB column to merge into p_row_id       - UUID primary key of the row to update p_partial_data - JSONB object to deep-merge into the existing value
+-- - p_table_name - name of the target table
+-- - p_column_name - name of the JSONB column to merge into
+-- - p_row_id - UUID primary key of the row to update
+-- - p_partial_data - JSONB object to deep-merge into the existing value
 --
--- SECURITY INVOKER: the caller's RLS policies apply to the UPDATE
+-- SECURITY INVOKER: the caller's RLS policies apply to the UPDATE.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.merge_jsonb_column (
   p_table_name text,
