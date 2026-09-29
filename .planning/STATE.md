@@ -2,20 +2,20 @@
 gsd_state_version: "1.0"
 milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
-current_phase: "162"
-current_phase_name: Permissions & Auth Model Refactor
+current_phase: 165
+current_phase_name: Review-Stack Comment Remediation
 current_plan: Not started
-status: planning
-stopped_at: Phase 162 complete — milestone v2.15 is 100% complete (all 29 phases), ready for /gsd-complete-milestone v2.15
-last_updated: "2026-09-20T15:12:59.192Z"
-last_activity: 2026-09-20
-last_activity_desc: Phase 162 complete (UAT + validation + security + re-verification); milestone v2.15 closed out
-state_head: b9863f97e3c84a8d45595a22fe6c78e8b495bb4c
+status: completed
+stopped_at: "Phase 165 complete (verification passed 5/5; PR #889 open, CI run 36535849705 green 11/11) — milestone v2.15 ready for /gsd-complete-milestone"
+last_updated: "2026-09-29T07:49:12.738Z"
+last_activity: 2026-09-29
+last_activity_desc: Phase 165 complete
+state_head: c0ffbd854568f384f3fe76a19fb39c37bbf62c34
 progress:
-  total_phases: 29
-  completed_phases: 29
-  total_plans: 270
-  completed_plans: 270
+  total_phases: 30
+  completed_phases: 30
+  total_plans: 306
+  completed_plans: 306
   percent: 100
 ---
 
@@ -26,15 +26,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-20 — v2.15 complete)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Closing milestone v2.15 — every phase is complete
+**Current focus:** Phase 165 — Review-Stack Comment Remediation
 
 ## Current Position
 
-Milestone: v2.15 (Phases 137-164 + 142.1 + 157.1 + 157.2, 29 phases; 148 absorbed into 147) — **100% complete, 270/270 plans**
-Phase: none in flight — 162 was the last to close (2026-09-20). Phase 162.1, 163 and 164 completed earlier (2026-09-19), so the roadmap carries no unchecked phase.
+Milestone: v2.15 (Phases 137-165 + 142.1 + 157.1 + 157.2, 30 phases; 148 absorbed into 147) — **100% complete, 306/306 plans**
+Phase: 165 (Review-Stack Comment Remediation) — COMPLETE 2026-09-29 (verification passed)
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
 Current Plan: Not started
-Total Plans in Phase: 21
+Total Plans in Phase: 36
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
 they collapse.** `public.grants` keyed `user_id x scope x target_type x target_id x role`; a **23-member**
@@ -304,7 +304,7 @@ run. WHAT REMAINS: push `ci-evidence/163-crit2-red` and `…-green`, assert the 
 granularity (`frontend-and-shared-module-validation` → `Run Prettier check globally`, log naming the
 file), fill rows 9/10, delete both branches. `CIGATE-02` was NOT marked complete
 (`requirements.ready-ids` → 0/1 ready).
-Status: Ready to plan
+Status: All phases complete
 PUSHED.** `prettier-plugin-sql@0.20.0` is declared once in `packages/shared-config` with
 `overrides: [{ files: '*.sql', options: { language: 'postgresql' } }]`, and reaches every workspace
 through the `?? []` spreads the leaf configs already carried (both leaf configs byte-unchanged).
@@ -402,7 +402,7 @@ exists or can exist here. All seven gates above are LOCAL. Carried as `164-03` c
 The milestone counters below are derived by gsd-tools from a milestone-wide scan, not read, so they
 must not be hand-tuned.
 
-**Progress:** [███████░░░] 67%
+**Progress:** [███████░░░] 68%
 
 > **Ordering note for the phases still queued.** 164 runs before 163 because both edit
 > `.github/workflows/main.yaml` and ROADMAP § 164 explicitly forbids them sharing an execution wave.
@@ -588,7 +588,7 @@ install no Node at all when `engines.node` is absent — it WARNS, it does not f
 its negative control independently of the ruling. Full amendment:
 `.planning/todos/pending/2026-08-29-153-03-scope-amendment-after-d-b5-reversal.md`.
 **153-09 depends on 01, 02 AND 03**, so 03 blocks the phase close and nothing else in the phase.
-Last activity: 2026-09-20 — Phase 162 complete, transitioned to Phase 162.1
+Last activity: 2026-09-29 — Phase 165 complete
 
 **Phase 155 (Edge Function Hardening) is COMPLETE and verified — 6/6 plans.** Its completion line was
 overwritten in this single position slot by 153-01's `record-session` (STATE.md holds one position, and
@@ -817,8 +817,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-09-20
-Stopped at: Phase 162 verified and marked complete — UAT 1/1 (WR-04 ruled by the operator), `162-VALIDATION.md` written (validated-partial: 17 plans automated, 4 behaviours manual-only), `162-SECURITY.md` written (SECURED, `threats_open: 0`, 249/250 closed), `162-VERIFICATION.md` re-derived at HEAD and upgraded `human_needed` → `passed` (7/7). Milestone v2.15 is 100% complete (29/29 phases, 270/270 plans) and ready for `/gsd-complete-milestone v2.15`.
+Last session: 2026-09-28T20:24:41.999Z
+Stopped at: Phase 165 complete — all phases complete
 Resume file: None
 
 ## Deferred Items
@@ -1081,6 +1081,42 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 162.1 P08 | 32 min | 2 tasks | 12 files |
 | Phase 162 P18 | 11min | 3 tasks | 6 files |
 | Phase 162 P19 | 15min | 2 tasks | 7 files |
+| Phase 165 P01 | 16 min | 3 tasks | 21 files |
+| Phase 165 P02 | 22 min | 3 tasks | 3 files |
+| Phase 165 P03 | 12 min | 3 tasks | 3 files |
+| Phase 165 P04 | 8 min | 3 tasks | 6 files |
+| Phase 165 P05 | 19 min | 3 tasks | 19 files |
+| Phase 165 P06 | 12 min | 3 tasks | 13 files |
+| Phase 165 P07 | 13 min | 3 tasks | 3 files |
+| Phase 165 P22 | 20min | 3 tasks | 7 files |
+| Phase 165 P08 | 11 min | 3 tasks | 4 files |
+| Phase 165 P09 | 9min | 3 tasks | 4 files |
+| Phase 165 P10 | 8 min | 3 tasks | 6 files |
+| Phase 165 P11 | 10min | 3 tasks | 11 files |
+| Phase 165 P20 | 5min | 3 tasks | 6 files |
+| Phase 165 P12 | 10min | 3 tasks | 4 files |
+| Phase 165 P13 | 8min | 3 tasks | 4 files |
+| Phase 165 P14 | 11 min | 3 tasks | 7 files |
+| Phase 165 P15 | 15min | 3 tasks | 13 files |
+| Phase 165 P16 | 11min | 3 tasks | 12 files |
+| Phase 165 P17 | 9min | 3 tasks | 4 files |
+| Phase 165 P18 | 15min | 3 tasks | 35 files |
+| Phase 165 P19 | 12min | 3 tasks | 6 files |
+| Phase 165 P21 | 15min | 3 tasks | 15 files |
+| Phase 165 P23 | 12 min | 3 tasks | 10 files |
+| Phase 165 P24 | 40 min | 3 tasks | 14 files |
+| Phase 165 P25 | 38min | 3 tasks | 20 files |
+| Phase 165 P26 | 31min | 3 tasks | 9 files |
+| Phase 165 P27 | 25min | 3 tasks | 16 files |
+| Phase 165 P28 | 16 min | 3 tasks | 5 files |
+| Phase 165 P29 | 34min | 3 tasks | 13 files |
+| Phase 165 P30 | 3h 45m | 4 tasks | 27 files |
+| Phase 165 P31 | 25min | 3 tasks | 11 files |
+| Phase 165 P32 | 50min | 3 tasks | 10 files |
+| Phase 165 P33 | 40 min | 3 tasks | 14 files |
+| Phase 165 P34 | 35min | 3 tasks | 42 files |
+| Phase 165 P35 | 262min | 3 tasks | 1 files |
+| Phase 165 P36 | 26 min | 3 tasks | 3 files |
 
 ## Deferred Items
 
@@ -1930,6 +1966,74 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 162.1]: 162.1-08: get_nominations closed-project zero is over-determined (nominations policy conjunct, nomination_entities_confirmed entity-open check, entity policies via LEFT JOIN); file 30 #9 guards the RPC keeping SECURITY INVOKER, 16 #8 pins the single conjunct
 - [Phase 162]: 162-18: FLOW-CONFORMANCE re-derived against the user_can gate; account reach CLOSED as F-4 (WINDOWS 263 fixed); every table walks all seven § 5 columns (F-5)
 - [Phase 162]: 162-19: level 1 (ProjectEditor) pinned through both confirmation triggers by 32-level1-confirmation-flow.test.sql; N1/N2 controls redden it; confirmation flow conforms, document stays at 5 findings
+- [Phase 165]: Hygiene gate layers 2-4 use git grep --no-index -P (BSD grep has no -P); the codemod runs dry-run only and its parsed hits are reconciled with its JSON summary
+- [Phase 165]: hygiene-changed-files.sh --base includes untracked files and the maintainer-owned uncommitted MainContent.svelte; --base --check-reads stays red on that file until 165-24/165-36 record a read or exclude it
+- [Phase 165]: ledger-skeleton.mjs refuses (exit 3) to overwrite a 165-LEDGER.md whose cells were filled; --force only to discard them
+- [Phase 165]: 165-02: exclude test files from assert-absent.sh with ':(exclude)<dir>/*.test.ts'; the short ':!*.test.ts' form makes git ls-files 2.50.1 list no file next to a positive pathspec (assert-absent exits 2)
+- [Phase 165]: 165-02: tip proofs search the whole Supabase adapter directory and require every RPC call to pass p_project_id, because 165-11 moves provider helpers into sibling files
+- [Phase 165]: 165-02: C-4080520062 wont-fix proof re-derives D-07 — origin/main holds the Strapi backend and no apps/supabase, seed.sql states no database has been published, no provider keys on birthdate
+- [Phase 165]: 165-03: 302-rls.sql comment layer rewritten comment-only (code-identity 0 changed); the entity eight-assembly note now cites 25-matrix-conformance.test.sql as the drift guard
+- [Phase 165]: 165-04: pgTAP suites 05/07/09/29 rewritten comment-and-description-only (19 literals, code-identity --blank-sql-literals 0, Tests=111 unchanged); three comments corrected to tip facts
+- [Phase 165]: 165-04: four SQL files (07, 21, 24 test suites and schema/300-auth-tables.sql) fail prettier --check at the phase base; logged in deferred-items.md for the phase-wide format:check owner
+- [Phase 165]: 165-05: Condenser.run() flattens the last step output once (flat() is a no-op on flat lists), so data.arguments is a flat Array<Argument> on every pipeline with no cast
+- [Phase 165]: 165-05: JSDoc @example bodies go in a ts fence and track the tip API; all 24 in argument-condensation and llm typecheck against the package sources
+- [Phase 165]: GrantShape.target_type uses EntityType from @openvaa/data; supabaseTypes.parity.test.ts checks ENTITY_TYPE/EntityType against the entity_type enum
+- [Phase 165]: Frontend code outside lib/api/adapters/supabase types Supabase clients through SupabaseDatabase from supabaseAdapter.type.ts; a census test in the adapter fails on any direct @openvaa/supabase-types import
+- [Phase 165]: 165-07: a planning reference inside a code string literal is rewritten in its own fix commit (code-identity --report shows only that literal), never allowlisted; the guard's comments are otherwise code-identical to the phase base
+- [Phase 165]: Docs-site TableOfContents keeps only its webkit scrollbar rules as CSS (browser pseudo-elements); every other docs component rule is a Tailwind class
+- [Phase 165]: apps/docs formatting is checked from inside apps/docs: the root .prettierignore bare 'docs' entry makes root-level prettier --check skip those paths
+- [Phase 165]: 165-08: the nominations Protected-on-INSERT list in 303-column-grants.sql names only the five columns absent from the INSERT grant; the nine admin columns are admitted by the grant and guarded by enforce_nomination_entity_columns()
+- [Phase 165]: 165-08: body comments of public functions (user_can, grant_role_permissions) must never contain a public function name directly followed by an opening parenthesis, because 28-storage-table-parity.test.sql derives a call graph from prosrc
+- [Phase 165]: 165-09: brief section numbers (3.1/3.3/3.4) in pgTAP comments are planning references even when the gate misses them; restate as the role x permission matrix (grant_role_permissions)
+- [Phase 165]: 165-09: SQL data literals carrying planning-era tokens (m17_* identifiers, m17s_* emails, tracer-* values) are code and stay
+- [Phase 165]: 165-10: the unknown-property message says an unknown key reaches the database write (_bulk_upsert_record for bulk-import tables) and fails as an unknown column, and names TABLE_COLUMNS, RELATIONSHIP_REFS, LINK_SENTINELS and COLLECTION_NON_COLUMNS
+- [Phase 165]: 165-10: a code-string hygiene edit goes in its own Hygiene: D-04 commit so the Review-Comment commit stays comment-only, proven by code-identity against that intermediate commit
+- [Phase 165]: 165-11: a helper leaving an adapter file lands in supabase/utils/ with a colocated test and a GUARDED_SOURCES entry in the same commit; parseOutcome.ts was comment-cleaned because its provider line references pointed at moved code
+- [Phase 165]: 165-20: 163-VALIDATION.md is backfilled from recorded evidence (status: backfilled, nyquist_compliant: false); the root-env todo is resolved by svelte.config.js env: { dir: repoRoot }, with the placeholder-key residue owned by 165-14
+- [Phase 165]: 165-12: the 011 header Functions list names all nine functions, adding the missing enforce_nomination_confirmation
+- [Phase 165]: 165-12: storage_path_can's docblock states why it is SECURITY DEFINER (type/id lookup reads the table; authority still from user_can)
+- [Phase 165]: 165-12: cleanup-function body comments left unchanged so suite-31 prosrc checks read identical text
+- [Phase 165]: 165-13: 22-content-policies' feedback INSERT comment states only the policy fact (WITH CHECK (true), anonymous voters submit feedback); it names no project-enforcing trigger until 165-28 lands
+- [Phase 165]: 165-14: the CI E2E key step ends with a count check (three key lines, none a placeholder), so a renamed .env.example line fails the step by name
+- [Phase 165]: 165-14: layer-3 hygiene hits on error-message strings are allowlisted with reasons, not rewritten, so comment-only commits stay code-identical
+- [Phase 165]: 165-15: the post-navigation focus wait is cancelled by the user's first pointerdown (capture, passive, once); FOCUS_TARGET_WAIT_MS stays 10 000 ms
+- [Phase 165]: 165-15: components.ts word lists stay (tailwind-merge spacing is ['px', isNumber]); a components.test.ts drift test against app.css replaces the manual obligation (D-09)
+- [Phase 165]: 165-15: no data-writer cache exists or is added; every createDataWriter/prepareDataWriter call is fresh over the memoised tab client
+- [Phase 165]: 165-16: bulk_import's input example uses a factions row for the organization reference; candidates have no relationship arm in _bulk_upsert_record
+- [Phase 165]: 165-16: collapsed JSON examples in SQL docblocks become '-- - ' bullets, since the layer-5 forced-line-break rule rejects multi-line JSON in '--' comments
+- [Phase 165]: 165-17: pgTAP suites 19/20/25 comment-hygiene rewrite states tip facts only (matrix rows, trigger population, storage mapping); 20's in-comment test numbers corrected to the assertion order
+- [Phase 165]: 165-18: dev-seed stops supplying is_generated everywhere; permittedKeys.ts keeps its 10 entries until the 165-27 schema drop
+- [Phase 165]: 165-19: safeGetSession memoises getUser() per access token per request and keeps the no-argument getUser() call (auth-js lock, warning suppression, revoked-session cleanup)
+- [Phase 165]: Phase 165-21: column documentation is one inline -- line directly above each column, and each JSONB comment names its shape (localized string, Colors, StoredImage, StoredAnswers, LocalizedChoice, StoredSettings, StoredCustomization)
+- [Phase 165]: Phase 165-21: storage_config key and value are documented in the block comment above its one-line CREATE TABLE, because splitting the line would be a code change under code-identity.mjs
+- [Phase 165]: 165-23: the local adapter's category/question filters use get_questions semantics (a missing or EMPTY list applies to all), so an empty electionIds list is now kept where filterData dropped it
+- [Phase 165]: 165-23: a local nomination with no electionRound counts as round 1 (data model and column default); getLocalized is stricter than SQL get_localized, returning only string tiers
+- [Phase 165]: 165-25: entity-scope authority resolves (entity_type, id) together; user_can(p_scope, p_target_id, p_permission, p_target_type DEFAULT NULL) denies an entity-scope call without a type, and every entity-scope call site passes it (21/21 in the applied database)
+- [Phase 165]: 165-25: enforce_entity_immutability derives its type as left(TG_TABLE_NAME, -1)::entity_type so its body names no entity-type label (19 #56 unchanged)
+- [Phase 165]: 165-26: upsert_answers takes p_entity_type and writes only the table the type names; there is no three-argument form, so a caller omitting the type gets a missing-function error rather than a fall-through write
+- [Phase 165]: 165-26: census of all 32 schema functions that take or derive an entity id finds 0 untyped (10 typed, 6 by column, 5 by trigger binding, 5 by table name, 6 resolve no entity id)
+- [Phase 165]: 165-27: is_generated removed from all ten tables and everything naming it (no reader that external_id cannot recover); candidates declares its columns in the organizations order, factions and alliances already did; pgTAP 09's is_generated assertions replaced by uncovered id assertions, plan (34) unchanged
+- [Phase 165]: 165-28: the feedback project requirement is a BEFORE INSERT trigger (enforce_feedback_project, 23502), not a WITH CHECK policy; it also binds service_role and the INSERT policies keep WITH CHECK (true)
+- [Phase 165]: C-4106561819: password validation is frontend-only (sole consumer PasswordValidator.svelte) and now lives in apps/frontend/src/lib/utils/password-validation/; @openvaa/app-shared no longer exports it
+- [Phase 165]: The candidate LogoutButton navigates only through the context's logout(); its second goto(login) raced typing on the login page and caused an intermittent candidate-journey step 9 failure (stayOnPage removed as dead)
+- [Phase 165]: 165-30: provider keywords are idura-ftn / signicat-ftn; FTN claim configs are IDURA_FTN_AUTH_CONFIG / SIGNICAT_FTN_AUTH_CONFIG; providers stay generic; unsuffixed keywords fail closed on both runtimes
+- [Phase 165]: 165-30: identity-callback resolves PROVIDER_CONFIGS through resolveProviderConfig() (Object.hasOwn), never a plain index
+- [Phase 165]: 165-30: hygiene gate treats a vN.M version string in code (codemod milestone-version rule) as a note, not a layer-1 failure
+- [Phase 165]: 165-31: no CSS rule kept in the input family, Alert, Button, Toggle, InputGroup or Expander — InputGroup's :global join-item rules and Expander's checked-content padding compile as arbitrary / peer-checked variants
+- [Phase 165]: 165-31: tailwind-classes-present.mjs is the compiled-CSS proof for inlined classes; classes built in plain string variables are passed to it explicitly beside --from-diff
+- [Phase 165]: 165-32: display labels and number markers keep text-secondary (the scoped rule always overrode their text-primary); restoring a primary voter label is a maintainer design call
+- [Phase 165]: 165-32: a style hook read by a test becomes a data-testid registered in testIds.ts, never a kept class (number-scale-voter-marker / -entity-marker)
+- [Phase 165]: 165-32: ScoreGauge keeps only the two vendor progress pseudo-elements and the DaisyUI radial-progress:before override; Video keeps its :global caption and injected-transcript rules
+- [Phase 165]: 165-33: Header and the remaining frontend style blocks are Tailwind classes; 5 component style blocks remain repo-wide, each with a reason (C-4106826598 census)
+- [Phase 165]: 165-33: NavItem disabled items keep rendered parity (neutral, pointer-events none); the scoped !text-secondary never won over the layered !text-neutral, and restoring secondary is left to the maintainer
+- [Phase 165]: 165-34: line-number anchors in changed files are hygiene defects under the content-anchor convention; all 48 on the branch replaced with symbol anchors
+- [Phase 165]: 165-34: the base-mode hygiene verify runs in a detached HEAD worktree so the maintainer's uncommitted MainContent.svelte is never measured or read-recorded
+- [Phase 165]: 165-35: final gate green on gated commit e51a48b28 (build/lint/format/unit, maintainer-run db:reset, no db:types drift, db:lint:sql, pgTAP 1254, E2E 165-close 165/0/0/0, hygiene CLEAN); later commits touch .planning/ only
+- [Phase 165]: 165-36: CI evidence for PR #889 uses the PR head's full tree committed onto origin/main and pushed to a new ci-evidence/** branch; run 36429830379 is not green (5 red jobs, none caused by phase 165)
+- [Phase 165]: 165-36 D-13: js-yaml lockfile refresh, trace zips deleted plus one exact-path scan exclusion, Paraglide compile in dev-seed CI, both CI E2E jobs on e2e-run.sh; run 36442680412 has 9/11 jobs green
+- [Phase 165]: 165-36 D-14: state-driven voter walks (resolveVoterStage/walkVoterStages) cleared every CI walk failure; CI run 36457265423 is 10/11 green; the first-question alias skip was a latent test defect, now fixed
+- [Phase 165]: 165-36 D-15: JOURNEY_TEST_MAX 240 s (voter-journey passes in CI, 183.5 s); organizationMatching 'none' now leaves organizations/factions/alliances unmatched (product fix, unit + E2E tests)
+- [Phase 165]: 165-36 D-16: TIMEOUTS.testMax 180 s on GitHub Actions (90 s locally), cold-entry waits to the test budget, supabase/setup-cli pinned 2.83.0; CI run 36476589852 green, all 11 jobs
 
 ### Quick Tasks Completed
 

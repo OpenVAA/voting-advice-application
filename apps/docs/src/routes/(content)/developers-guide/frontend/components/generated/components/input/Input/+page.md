@@ -4,12 +4,12 @@ Display any data input, its associated label and possible info. The HTML element
 
 The input itself is wrapped in multiple container elements, the outermost of which can be passed the `containerProps` prop.
 
-Multilingual features are only available if the `locales` store contains more than one locale.Button
+Multilingual features are only available if the `locales` store contains more than one locale.
 
 ### Properties
 
 - `type`: The type of input element to use. This also defines the type of the `value` prop, which of the other properties are allowed or required, and the HTML element rendered.
-  - `boolean`: A boolean toggle.render
+  - `boolean`: A boolean toggle.
   - `date`: A date input.
   - `image`: An image file input.
   - `multiple-text`: A row list of plain text inputs, one per value.

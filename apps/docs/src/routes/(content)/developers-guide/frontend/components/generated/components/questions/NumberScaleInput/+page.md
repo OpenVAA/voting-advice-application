@@ -17,6 +17,10 @@ Native `<input type="range">` is chosen deliberately so keyboard-arrow exact-val
 - `onShadedBg`: Set to `true` on a dark (`base-300`) background. @default `false`
 - Any valid attributes of a `<div>` element.
 
+### Callbacks
+
+- `onChange`: Triggered when the voter releases the slider or steps it with the keyboard, never per drag pixel.
+
 ### Usage
 
 ```tsx

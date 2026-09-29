@@ -2,9 +2,9 @@
 
 Used to show an entity's details, possibly including their answers to `info` questions, `opinion` questions and their child nominations. You can supply either a naked entity or a ranking containing an entity.
 
-If the provided entity is a (possibly matched) nomination, the questions to include will be those applicable to the election and constiuency of the nomination.
+If the provided entity is a (possibly matched) nomination, the questions to include will be those applicable to the election and constituency of the nomination.
 
-If `AppContext.$appType` is `voter`, the voter's possible answers will included in the `opinions` tab.
+If `AppContext.appType` is `voter`, the voter's possible answers are included in the `opinions` tab.
 
 ### Dynamic component
 
@@ -23,7 +23,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
 ```tsx
 <EntityDetails entity={matchedCandidate}/>
-<EntityDetails entity={matchedOrganization} tabs={appSettings.entityDetails.contents.organization}/>
+<EntityDetails entity={matchedOrganization}/>
 ```
 
 ## Source

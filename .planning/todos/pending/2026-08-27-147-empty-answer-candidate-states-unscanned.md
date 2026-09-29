@@ -19,17 +19,17 @@ together:
 
 | state | marker | why the scan never reached it |
 |---|---|---|
-| `/candidate/questions` empty-state intro | `candidate-questions-intro` | every `e2e/base` candidate carries answers — measured: `grep 'answersByExternalId: {}'` over the template returns **0 hits across 31 candidate declarations** |
+| `/candidate/questions` empty-state intro | `candidate-questions-intro` | no candidate the scan can log in as is answerless. Of the **30** candidate declarations in `packages/dev-seed/src/templates/e2e/base.ts`, **29** carry `answersByExternalId`. The one that does not, `test-e2e-base-ca-aa-unregistered`, has no auth user (its declaration comment: "NO auth_user_id"; the candidate-journey invite flow creates it at runtime), so it cannot drive the logged-in `/candidate/questions` scan (corrected 2026-09-27; the earlier "every candidate carries answers" was wrong) |
 | logout confirmation modal | — | `tests/tests/fixtures/candidate/candidateLogoutButton.fixture.ts:52-59`: the modal appears **only when answers are INCOMPLETE**; the scan identity `CA-AA-1` is complete |
 
 Both are unknowns, not zeros.
 
 ## The single lever
 
-**A candidate with no (or incomplete) answers.** Today no such candidate exists in `e2e/base`, so
-this needs either:
+**A registered candidate with no (or incomplete) answers.** Today no such candidate exists in
+`e2e/base` (the one answerless candidate is unregistered, above), so this needs either:
 
-1. a template change — an `e2e/base` candidate declared with `answersByExternalId: {}`, which is
+1. a template change — a registered `e2e/base` candidate declared with no answers, which is
    additive and would make both states reachable by identity choice alone; or
 2. a runtime answer wipe before the scan, which keeps the template untouched but adds a
    setup step the scan family does not currently have.

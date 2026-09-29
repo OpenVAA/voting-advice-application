@@ -54,7 +54,7 @@ Both **public** JWKs get registered with Idura (Step 4).
 ## Step 2 — Configure the root `.env`
 
 ```bash
-PUBLIC_IDENTITY_PROVIDER_TYPE=idura
+PUBLIC_IDENTITY_PROVIDER_TYPE=idura-ftn
 PUBLIC_IDENTITY_PROVIDER_CLIENT_ID=urn:my:application:identifier:<NNN>   # your Idura application URN
 
 # Idura-specific
@@ -69,12 +69,11 @@ IDENTITY_PROVIDER_ISSUER=https://<your-subdomain>.idura.broker
 ```
 
 > **The JWKS path is `/.well-known/jwks`, not `/.well-known/openid-configuration/jwks`.**
-> This document said the latter until 2026-09-21, when a live tenant's own
-> `.well-known/openid-configuration` was read and its `jwks_uri` measured: Idura serves
+> A live tenant's own `.well-known/openid-configuration` names `jwks_uri` as
 > `https://{IDURA_DOMAIN}/.well-known/jwks`. The wrong path costs a 404 at the signature-verify
 > step, surfacing as `ERR_JWKS_URI_HTTP_STATUS` / `stage=jwks-fetch`. Still take the value from
 > **your** tenant's live discovery document rather than from this line — and note that the local
-> mock issuer (Step E-2 below) serves the OLD shape, so a green E2E run does not confirm this path.
+> mock issuer (Step E-2 below) serves the other shape, so a green E2E run does not confirm this path.
 
 > You do **not** set `PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT`,
 > `IDENTITY_PROVIDER_TOKEN_ENDPOINT`, or `IDENTITY_PROVIDER_CLIENT_SECRET` for
@@ -91,17 +90,13 @@ them is required** — the function throws when any is unset:
 There is **no `functions/.env`** in the repo, so the local edge runtime won't see
 your root `.env` automatically. Choose one of the two options below.
 
-> **The project variable is now `PUBLIC_PROJECT_ID`** -- one name, shared with the
-> frontend, rather than a second spelling for the same value. A deployment already
-> configured under the earlier `DEFAULT_PROJECT_ID` must rename that secret: the
-> function throws when `PUBLIC_PROJECT_ID` is unset and no longer reads the old name.
+> **The project variable is `PUBLIC_PROJECT_ID`** -- one name, shared with the
+> frontend, rather than a second spelling for the same value.
 
-> **Changed in Phase 155** (REVIEW-EDGE-02 / REVIEW-EDGE-05). The project variable
-> and `SITE_URL` used to fall back silently, and `IDENTITY_PROVIDER_CLIENT_ID` /
-> `IDENTITY_PROVIDER_ISSUER` used to be verified only when supplied — which meant a
-> deployment that configured neither accepted a token minted by any issuer for any
-> relying party. Both claims are now bound unconditionally, and every silent default
-> is now a throw. All seven are documented in `.env.example`.
+> Nothing falls back: `PUBLIC_PROJECT_ID` and `SITE_URL` throw when unset, and
+> `IDENTITY_PROVIDER_CLIENT_ID` / `IDENTITY_PROVIDER_ISSUER` are bound on every
+> verification — a deployment that configured neither would otherwise accept a token
+> minted by any issuer for any relying party. All seven are documented in `.env.example`.
 
 > The Edge Function only needs the decryption/verify vars + type — **not** the
 > signing key (signing happens in the SvelteKit server routes, not the function).
@@ -112,7 +107,7 @@ Add the un-prefixed type var to `.env`:
 
 ```bash
 # in .env
-IDENTITY_PROVIDER_TYPE=idura
+IDENTITY_PROVIDER_TYPE=idura-ftn
 ```
 
 Then serve the function explicitly (second terminal), pointing it at the root
@@ -130,7 +125,7 @@ up automatically (no separate serve command needed):
 
 ```bash
 # apps/supabase/supabase/functions/.env
-IDENTITY_PROVIDER_TYPE=idura
+IDENTITY_PROVIDER_TYPE=idura-ftn
 IDENTITY_PROVIDER_DECRYPTION_JWKS=<private encryption JWK array from Step 1>
 IDENTITY_PROVIDER_JWKS_URI=https://<your-subdomain>.idura.broker/.well-known/jwks
 IDENTITY_PROVIDER_CLIENT_ID=urn:my:application:identifier:<NNN>
@@ -141,8 +136,7 @@ SITE_URL=http://127.0.0.1:5173
 
 > All seven lines are required; none of them falls back. `SITE_URL` above matches
 > `apps/supabase/supabase/config.toml` `[auth].site_url`, and `PUBLIC_PROJECT_ID`
-> is the seed project id — the two values the function used to substitute silently,
-> now written out so the behaviour is the same and visible.
+> is the seed project id.
 
 ## Step 4 — Register in the Idura dashboard
 
@@ -211,7 +205,7 @@ kid: …`).
 
 ---
 
-## EFLOW-10 — deterministic E2E run (synthetic JWE → Edge Function, no live IdP)
+## Deterministic E2E run (synthetic JWE → Edge Function, no live IdP)
 
 This section is the **automated, deterministic** counterpart to the manual full-flow run
 above. It drives `tests/tests/specs/candidate/candidate-bank-auth.spec.ts` (the `bank-auth`
@@ -230,7 +224,7 @@ provider** — only the Edge-Function decrypt → verify → match → create pa
 > **TEST-ONLY keys — never replace the production secret.** The env file written below
 > contains the committed _test_ private decryption JWK. It is for the opt-in `bank-auth`
 > run **only**; it MUST NOT be placed in the root `.env`, in `functions/.env`, or in any
-> non-test environment (threat T-122-01 / T-122-04). Write it to a gitignored scratch path
+> non-test environment. Write it to a gitignored scratch path
 > (e.g. `/tmp`) and pass it via `--env-file`.
 
 ### Step E-1 — Generate the test env file + the test JWKS from `testKeys.ts`
@@ -243,12 +237,12 @@ Run from the repo root. This derives both artifacts from `tests/tests/utils/test
 #     IDENTITY_PROVIDER_JWKS_URI points at the static test-JWKS server started in Step E-2.
 #     The audience and issuer are read from buildTestIdToken's own defaults rather than retyped:
 #     they MUST match the token the spec mints, or the Edge Function rejects it by design
-#     (Phase 155 / REVIEW-EDGE-05 made both claims unconditionally bound).
+#     (both claims are bound unconditionally).
 npx tsx -e '
 import { decryptionJwks } from "./tests/tests/utils/testKeys";
 import { DEFAULT_TOKEN_OPTS } from "./tests/tests/utils/buildTestIdToken";
 const lines = [
-  "IDENTITY_PROVIDER_TYPE=idura",
+  "IDENTITY_PROVIDER_TYPE=idura-ftn",
   "IDENTITY_PROVIDER_DECRYPTION_JWKS=" + JSON.stringify(decryptionJwks),
   "IDENTITY_PROVIDER_JWKS_URI=http://host.docker.internal:8777/jwks",
   "IDENTITY_PROVIDER_CLIENT_ID=" + DEFAULT_TOKEN_OPTS.audience,
@@ -256,23 +250,23 @@ const lines = [
   "PUBLIC_PROJECT_ID=00000000-0000-0000-0000-0000000000e2",   // the project the E2E suite seeds, not the default one
   "SITE_URL=http://127.0.0.1:5173",
 ].join("\n") + "\n";
-require("node:fs").writeFileSync("/tmp/eflow10.env", lines);
-console.log("wrote /tmp/eflow10.env");
+require("node:fs").writeFileSync("/tmp/bank-auth-edge.env", lines);
+console.log("wrote /tmp/bank-auth-edge.env");
 '
 
 # (b) The static JWKS document serving the TEST signing public key (kid test-sig-1).
 npx tsx -e '
 import { sigPubJwk } from "./tests/tests/utils/testKeys";
-require("node:fs").mkdirSync("/tmp/eflow10-jwks", { recursive: true });
-require("node:fs").writeFileSync("/tmp/eflow10-jwks/jwks", JSON.stringify({ keys: [sigPubJwk] }));
-console.log("wrote /tmp/eflow10-jwks/jwks");
+require("node:fs").mkdirSync("/tmp/bank-auth-jwks", { recursive: true });
+require("node:fs").writeFileSync("/tmp/bank-auth-jwks/jwks", JSON.stringify({ keys: [sigPubJwk] }));
+console.log("wrote /tmp/bank-auth-jwks/jwks");
 '
 ```
 
 > **JWKS URI host note.** The local Supabase Edge runtime runs inside Docker, so a JWKS
 > server bound to the host is reached as `host.docker.internal` (not `localhost`) from
 > inside the function. If your Edge runtime runs natively, use `http://localhost:8777/jwks`
-> in `/tmp/eflow10.env` instead. `IDENTITY_PROVIDER_CLIENT_ID` and `IDENTITY_PROVIDER_ISSUER`
+> in `/tmp/bank-auth-edge.env` instead. `IDENTITY_PROVIDER_CLIENT_ID` and `IDENTITY_PROVIDER_ISSUER`
 > are written from `DEFAULT_TOKEN_OPTS` in `tests/tests/utils/buildTestIdToken.ts`, so they
 > always match the synthetic token's `aud` and `iss`. Do not hand-edit them apart: the Edge
 > Function binds both claims unconditionally and rejects a mismatch by design.
@@ -284,15 +278,15 @@ RS256 signature. Serve the JWKS document from Step E-1 with any zero-dependency 
 server on port `8777`:
 
 ```bash
-cd /tmp/eflow10-jwks
-python3 -m http.server 8777          # serves /tmp/eflow10-jwks/jwks at http://<host>:8777/jwks
+cd /tmp/bank-auth-jwks
+python3 -m http.server 8777          # serves /tmp/bank-auth-jwks/jwks at http://<host>:8777/jwks
 ```
 
 ### Step E-3 — Serve the Edge Function with the test env file (Terminal B)
 
 ```bash
 cd apps/supabase/supabase
-npx supabase functions serve identity-callback --no-verify-jwt --env-file /tmp/eflow10.env
+npx supabase functions serve identity-callback --no-verify-jwt --env-file /tmp/bank-auth-edge.env
 ```
 
 `--no-verify-jwt` is required when serving standalone (the spec passes the anon key, but
@@ -316,27 +310,26 @@ PLAYWRIGHT_BANK_AUTH=1 FRONTEND_PORT=5174 \
 > The port can also come from a `FRONTEND_PORT=5174` line in the root `.env`, which moves both the dev server and Playwright. The project cannot: the root `.env` deliberately carries the DEFAULT project so an ordinary development session shows locally seeded data, while this suite creates and reads its own — so the value belongs on the command that starts the server for the run. Both halves are asserted before the first spec, and a mismatch on either aborts the run naming what it observed; see [`tests/README.md`](./README.md), "Run", for the two clauses and how to read a failure message field by field.
 
 **Expected:** all `bank-auth` tests pass with the keys-configured create path **TAKEN**
-(no skipped / did-not-run). The spec asserts `identity_provider='idura'`,
+(no skipped / did-not-run). The spec asserts `identity_provider='idura-ftn'`,
 `identity_match_prop='sub'`, `identity_match_value=<sub>`, the `hetu`/`birthdate` claim
 flow-through, and a magic-link `action_link` containing `token=`. If the keys-configured
 path did not run, the spec FAILS loudly (it points back here) rather than skipping.
 
-> The **EFLOW-10b** full-browser journey (via the mock OIDC issuer) has its own
+> The full-browser journey (via the mock OIDC issuer) has its own
 > section below this one — do not merge the two.
 
 ---
 
-## EFLOW-10b — full-browser journey (mock OIDC issuer, no live IdP)
+## Full-browser journey (mock OIDC issuer, no live IdP)
 
 This is the **automated, deterministic** full-browser counterpart to the manual full-flow
-run at the top of this runbook. It drives the `bank-auth-journey` Playwright project (the
-NEW journey spec), walking the REAL
+run at the top of this runbook. It drives the `bank-auth-journey` Playwright project
+(`tests/tests/specs/candidate/candidate-bank-auth-journey.spec.ts`), walking the REAL
 `/candidate/preregister → /api/oidc/authorize → (mock IdP) 302 → /api/oidc/callback
 (server-side exchange + decrypt) → authenticated → election/constituency → email + ToU →
-preregister() → registration-key → set password → logged-in` chain. The **only** thing faked
+preregister() → magic-link session → success status page` chain. The **only** thing faked
 is the IdP at the env-pointed network seam — the real authorize→callback→exchange→decrypt→
-claims chain runs **UNMODIFIED** (Option B; Option C — a test-only branch in production
-auth code — was rejected + operator-LOCKED).
+claims chain runs **UNMODIFIED**, with no test-only branch in production auth code.
 
 ### The mock OIDC issuer
 
@@ -351,10 +344,9 @@ Node `https` server serving exactly three routes:
   (`tests/tests/utils/testKeys.ts`), with `iss`/`aud` aligned to the server's verify (below).
 - `GET  /.well-known/openid-configuration/jwks` — returns `{ keys: [sigPubJwk] }`
   (kid `test-sig-1`) so the server's `createRemoteJWKSet` verifies the inner JWT signature.
-  **This path deliberately does NOT match real Idura's `/.well-known/jwks`** (measured 2026-09-21).
-  The mock serves whatever path the env var names, so the suite stays green either way — which is
-  precisely why a green E2E run did not catch that Step 2's documented real-tenant path was wrong.
-  Treat this endpoint as testing the _mechanism_, never the provider's URL shape. Aligning it with
+  **This path deliberately does NOT match real Idura's `/.well-known/jwks`.**
+  The mock serves whatever path the env var names, so the suite stays green either way, and a
+  green E2E run says nothing about the real tenant's path. Treat this endpoint as testing the _mechanism_, never the provider's URL shape. Aligning it with
   Idura's real path would need this line, `IDENTITY_PROVIDER_JWKS_URI` in Step E-2 and the
   `webServer` readiness url in `tests/playwright.config.ts` changed together, or the harness hangs
   waiting on a 404.
@@ -364,12 +356,12 @@ It is spawned **automatically** by the Playwright `webServer` entry in
 start it by hand. It binds **`127.0.0.1` only**, on **port 9443**, over **HTTPS** with a
 committed self-signed localhost cert (`tests/tests/support/mock-oidc-cert.pem`, CN=127.0.0.1).
 
-> **HTTPS is mandatory (A3 / Pitfall 2).** `idura.ts` hard-codes the `https://` prefix for
+> **HTTPS is mandatory.** `idura.ts` hard-codes the `https://` prefix for
 > BOTH the browser authorize leg AND the server `fetch` token/JWKS leg. A plain-HTTP mock is
 > therefore unreachable; the issuer serves HTTPS, and because the cert is self-signed, the
 > SvelteKit-server process must run with `NODE_TLS_REJECT_UNAUTHORIZED=0` (Step B-2 below).
 
-### Step B-1 — IDP env the SvelteKit server must be started with (Pitfall 1)
+### Step B-1 — IDP env the SvelteKit server must be started with
 
 There is **NO frontend Playwright `webServer` and NO `globalSetup`** — the SvelteKit Node
 server reads the IdP env at **ITS OWN process startup**, in a SEPARATE process from the
@@ -382,18 +374,18 @@ Derive the JWK-bearing values from `tests/tests/utils/testKeys.ts` (single sourc
 no hand-copied keys → no drift). The mock issuer at `127.0.0.1:9443` is the host all the
 `https://${IDURA_DOMAIN}/...` URLs resolve to:
 
-| Env var                              | EFLOW-10b value                                                | Read by                                               | Note                                                                                                     |
-| ------------------------------------ | -------------------------------------------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ------ |
-| `PUBLIC_IDENTITY_PROVIDER_TYPE`      | `idura`                                                        | `+page.svelte`                                        | selects the Idura server-JAR branch (NOT the Signicat client-PKCE path)                                  |
-| `IDURA_DOMAIN`                       | `127.0.0.1:9443`                                               | `idura.ts`                                            | the server builds `https://127.0.0.1:9443/oauth2/authorize                                               | token` |
-| `IDURA_SIGNING_JWKS`                 | `<JSON array containing sigPrivJwk from testKeys.ts>`          | `idura.ts` `getSigningKey()`                          | the mock does NOT validate it, but `getSigningKey()` THROWS if the kid is absent/mismatched              |
-| `IDURA_SIGNING_KEY_KID`              | `test-sig-1`                                                   | `idura.ts` `getSigningKey()`                          | must equal the `kid` in `IDURA_SIGNING_JWKS`                                                             |
-| `IDENTITY_PROVIDER_DECRYPTION_JWKS`  | `<decryptionJwks ([encPrivJwk]) from testKeys.ts>`             | `decryptAndVerifyIdToken.ts`                          | the private enc JWK the server JWE-decrypts the id_token with                                            |
-| `IDENTITY_PROVIDER_JWKS_URI`         | `https://127.0.0.1:9443/.well-known/openid-configuration/jwks` | `decryptAndVerifyIdToken.ts`                          | the mock's JWKS endpoint (serves `sigPubJwk`)                                                            |
-| `IDENTITY_PROVIDER_ISSUER`           | `https://127.0.0.1:9443`                                       | `decryptAndVerifyIdToken.ts` `jwtVerify`              | MUST equal the synthetic token's `iss` — the mock reads this same env when minting the token (Pitfall 4) |
-| `PUBLIC_IDENTITY_PROVIDER_CLIENT_ID` | `test-client-id`                                               | `idura.ts` + `decryptAndVerifyIdToken.ts` `jwtVerify` | MUST equal the synthetic token's `aud` — the mock reads this same env when minting the token (Pitfall 4) |
+| Env var                              | Journey value                                                  | Read by                                               | Note                                                                                         |
+| ------------------------------------ | -------------------------------------------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `PUBLIC_IDENTITY_PROVIDER_TYPE`      | `idura-ftn`                                                    | `+page.svelte`                                        | selects the Idura server-JAR branch (NOT the Signicat client-PKCE path)                      |
+| `IDURA_DOMAIN`                       | `127.0.0.1:9443`                                               | `idura.ts`                                            | the server builds `https://127.0.0.1:9443/oauth2/authorize` and `/oauth2/token`              |
+| `IDURA_SIGNING_JWKS`                 | `<JSON array containing sigPrivJwk from testKeys.ts>`          | `idura.ts` `getSigningKey()`                          | the mock does NOT validate it, but `getSigningKey()` THROWS if the kid is absent/mismatched  |
+| `IDURA_SIGNING_KEY_KID`              | `test-sig-1`                                                   | `idura.ts` `getSigningKey()`                          | must equal the `kid` in `IDURA_SIGNING_JWKS`                                                 |
+| `IDENTITY_PROVIDER_DECRYPTION_JWKS`  | `<decryptionJwks ([encPrivJwk]) from testKeys.ts>`             | `decryptAndVerifyIdToken.ts`                          | the private enc JWK the server JWE-decrypts the id_token with                                |
+| `IDENTITY_PROVIDER_JWKS_URI`         | `https://127.0.0.1:9443/.well-known/openid-configuration/jwks` | `decryptAndVerifyIdToken.ts`                          | the mock's JWKS endpoint (serves `sigPubJwk`)                                                |
+| `IDENTITY_PROVIDER_ISSUER`           | `https://127.0.0.1:9443`                                       | `decryptAndVerifyIdToken.ts` `jwtVerify`              | MUST equal the synthetic token's `iss` — the mock reads this same env when minting the token |
+| `PUBLIC_IDENTITY_PROVIDER_CLIENT_ID` | `test-client-id`                                               | `idura.ts` + `decryptAndVerifyIdToken.ts` `jwtVerify` | MUST equal the synthetic token's `aud` — the mock reads this same env when minting the token |
 
-> **iss/aud alignment (Pitfall 4):** the mock issuer's token endpoint reads
+> **iss/aud alignment:** the mock issuer's token endpoint reads
 > `IDENTITY_PROVIDER_ISSUER` / `PUBLIC_IDENTITY_PROVIDER_CLIENT_ID` from its OWN process env
 > and stamps them onto the synthetic id_token. Because the `webServer` spawns the issuer from
 > the same shell that runs Playwright, set those two vars in **both** the frontend-server env
@@ -405,7 +397,7 @@ Concrete derive-and-export helper (run from the repo root; writes a sourceable e
 npx tsx -e '
 import { sigPrivJwk, decryptionJwks } from "./tests/tests/utils/testKeys";
 const lines = [
-  "export PUBLIC_IDENTITY_PROVIDER_TYPE=idura",
+  "export PUBLIC_IDENTITY_PROVIDER_TYPE=idura-ftn",
   "export IDURA_DOMAIN=127.0.0.1:9443",
   "export IDURA_SIGNING_JWKS=" + JSON.stringify(JSON.stringify([sigPrivJwk])),
   "export IDURA_SIGNING_KEY_KID=test-sig-1",
@@ -415,18 +407,18 @@ const lines = [
   "export PUBLIC_IDENTITY_PROVIDER_CLIENT_ID=test-client-id",
   "export NODE_TLS_REJECT_UNAUTHORIZED=0",
 ].join("\n") + "\n";
-require("node:fs").writeFileSync("/tmp/eflow10b.env", lines);
-console.log("wrote /tmp/eflow10b.env");
+require("node:fs").writeFileSync("/tmp/bank-auth-journey.env", lines);
+console.log("wrote /tmp/bank-auth-journey.env");
 '
 ```
 
-### Step B-2 — the scoped TLS bypass (Pitfall 2 — TEST-ONLY, never leak to prod)
+### Step B-2 — the scoped TLS bypass (TEST-ONLY, never leak to prod)
 
 The mock issuer's cert is self-signed, so the SvelteKit server's token/JWKS `fetch` legs would
 otherwise fail Node's cert check. Set `NODE_TLS_REJECT_UNAUTHORIZED=0` **only** in the
-frontend-server process for this opt-in run (it is included in `/tmp/eflow10b.env` above).
+frontend-server process for this opt-in run (it is included in `/tmp/bank-auth-journey.env` above).
 
-> **TEST-ONLY — never leak to a default run / prod / CI (threat T-122-07).** This entire env
+> **TEST-ONLY — never leak to a default run / prod / CI.** This entire env
 > set — the test JWKs, the `127.0.0.1:9443` domain, and especially `NODE_TLS_REJECT_UNAUTHORIZED=0`
 > — is for the opt-in `bank-auth-journey` run **only**. It MUST NOT be placed in the root
 > `.env`, in `functions/.env`, or in any non-test environment, and MUST NOT leak into a default
@@ -451,16 +443,16 @@ without the value; restart it (`yarn db:stop && yarn db:start`) after exporting.
 
 ```bash
 export PUBLIC_PROJECT_ID=00000000-0000-0000-0000-0000000000e2   # the project the E2E suite seeds; the edge runtime reads the process env, not the root .env
-source /tmp/eflow10b.env                   # the EFLOW-10b IdP env + scoped TLS bypass (Step B-1/B-2)
+source /tmp/bank-auth-journey.env          # the journey's IdP env + scoped TLS bypass (Step B-1/B-2)
 yarn dev                                   # SvelteKit on :5173 inherits the IdP env from this shell
 # (also serve the identity-callback Edge Function with the test decryption JWKS — reuse the
-#  EFLOW-10 Step E-1/E-2/E-3 procedure above; the journey's preregister() invokes it.)
+#  Step E-1/E-2/E-3 procedure above; the journey's preregister() invokes it.)
 ```
 
 **Terminal 2 — the Playwright bank-auth-journey run (the mock issuer auto-spawns via webServer):**
 
 ```bash
-source /tmp/eflow10b.env                   # so the webServer-spawned mock issuer mints iss/aud-aligned tokens
+source /tmp/bank-auth-journey.env          # so the webServer-spawned mock issuer mints iss/aud-aligned tokens
 PLAYWRIGHT_BANK_AUTH=1 \
   npx playwright test --project=bank-auth-journey -c tests/playwright.config.ts
 ```
@@ -469,21 +461,19 @@ Playwright starts the mock OIDC issuer (`webServer` entry → `tsx mockOidcIssue
 waits for `https://127.0.0.1:9443/.well-known/openid-configuration/jwks` (with
 `ignoreHTTPSErrors`), then runs the journey, then tears the issuer down.
 
-> **This gate is NO LONGER FAST (see phase 140 WR-03).** `data-setup-bank-auth-journey`
+> **This gate is not fast.** `data-setup-bank-auth-journey`
 > depends on `voter-prefs-tracking`, the tail of the perm serial chain, so
 > `--project=bank-auth-journey` pulls the ENTIRE chain transitively — expect full-suite
 > wall-clock (~11 min per run, so ~35 min for the 3× gate), not seconds. This is deliberate:
 > the setup does an authoritative `app_settings` REPLACE, the singleton needs mutual
 > exclusion rather than mere ordering, and being in the serial chain is how this config
-> spells that. RESEARCH A4 ("stands alone") is explicitly superseded — there is no
-> requirement that this journey be runnable quickly in isolation.
+> spells that. There is no requirement that this journey be runnable quickly in isolation.
 >
 > Consequently many datasets (base, every perm dataset) are live in the DB while the journey
-> walks. That is SAFE because selection is identity-based (see phase 140 CR-01):
-> `submitElection('[EL1]')` / `submitConstituency('[CO1')` assert on the dataset's own labels,
+> walks. That is SAFE because selection is identity-based:
+> `submitElection('[BA-EL1]')` / `submitConstituency('[BA-CO1')` assert on the dataset's own labels,
 > so a foreign dataset fails the walk loudly instead of being silently preregistered into.
-> Verified by trace — see `140-GATES.md` Gate 3.
 
 > **Cardinal rule (CLAUDE.md):** the journey must pass — a "did not run" counts as a failure.
-> Run the gate **3×** on a fresh dev server + clean DB, and confirm the DEFAULT suite
+> Run the gate **3×** on a fresh dev server, and confirm the DEFAULT suite
 > (`yarn test:e2e`) stays green afterwards (the opt-in project must not perturb it).

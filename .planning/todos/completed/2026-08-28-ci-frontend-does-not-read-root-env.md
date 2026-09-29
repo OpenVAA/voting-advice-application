@@ -7,6 +7,8 @@ files:
   - .github/workflows/main.yaml
   - apps/frontend/vite.config.ts
   - .env.example
+  - apps/frontend/svelte.config.js
+resolved: '2026-09-27'
 ---
 
 ## Problem
@@ -43,3 +45,19 @@ TBD — candidates, in increasing order of blast radius:
 2. Set `kit.env.dir` (or vite `envDir`) to the repo root, which is the sibling todo and carries a
    secret-exposure consequence that must be settled first.
 3. Extend the explicit named-key plumbing to the other keys that need it.
+
+## Resolution
+
+Resolved 2026-09-27; the premise no longer holds at the tip. `apps/frontend/svelte.config.js` sets
+`kit.env.dir` to the repo root (`env: { dir: repoRoot }`, with
+`repoRoot = fileURLToPath(new URL('../../', import.meta.url))`), so the frontend reads the root
+`.env` whatever its cwd. That is candidate 2 above; the secret-exposure concern is settled by
+SvelteKit exposing only `PUBLIC_`-prefixed keys through `$env/*/public`. The CI `e2e-tests` and
+`e2e-visual` jobs' `cp .env.example .env` therefore reaches the frontend.
+
+The "triggers only on `main`" statement above was also wrong: `.github/workflows/main.yaml` runs on
+pushes to `main` and to `ci-evidence/**`, and on pull requests.
+
+The residual CI concern is the placeholder anon and service-role keys that `.env.example` carries.
+Plan 165-14 owns that fix in `main.yaml`'s two E2E jobs: it takes the local stack's keys from
+`supabase status -o env` and writes them over the placeholders.

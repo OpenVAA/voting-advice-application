@@ -4,7 +4,7 @@ Component for real-time password validation UI.
 Password is validated against rules defined in `passwordValidation.ts`.
 
 A progress bar is shown that indicates the number of completed rules.
-The progress bar is colored based on the validation state:
+The progress bar is colored based on the validation state.
 
 There are two types of rules:
 
@@ -19,7 +19,7 @@ Therefore, the validity should be also checked on form submit as well and on the
 
 ### Dynamic component
 
-Accesses validation functions from `@openvaa/app-shared`.
+Accesses validation functions from `$lib/utils/password-validation/passwordValidation`.
 
 ### Properties
 

@@ -14,9 +14,9 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
 ### Properties
 
-- `action`: Custom action to take when the card is clicked, defaults to a link to the entity's `ResultEntity` route. If the card has subentites, the action will only be triggered by clicking the content above them.
+- `action`: Custom action to take when the card is clicked, defaults to a link to the entity's `ResultEntity` route. If the card has subentities, the action will only be triggered by clicking the content above them.
 - `entity`: A possibly ranked entity, e.g. candidate or a party.
-- `variant`: The context-dependend layout variant. Usually set automatically. Default: `'list'`
+- `variant`: The context-dependent layout variant. Usually set automatically. Default: `'list'`
   - `'list'`: In a list of entities.
   - `'details'`: As part of the header of `EntityDetails`.
   - `'subcard'`: In a list of nested entity cards, e.g., the candidates for a party.

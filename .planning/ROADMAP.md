@@ -294,6 +294,7 @@ delivery-origin swap whose visual consequence is re-proven by the baselines them
 - [x] **Phase 162.1: Permissions Follow-Up — Read-Cost Investigation & Closed-Project Voter Coverage** - Two residuals Phase 162 recorded openly: the authenticated entity-read at **4.47x** and the anon storage-bucket read at **6.4x**, both measured and neither shown to matter at real election scale — investigate, then fix/accept/monitor on evidence; and the one user-visible consequence of the new visibility gate, a project not open for voters returning the anon caller **zero** `app_settings` rows, which `.single()` turns into a **throw** and which **no seed or spec can currently reach** because every seeded project is open (completed 2026-09-19)
 - [x] **Phase 163: CI Gates — SQL Lint/Format + Secrets & Vulnerability Scanning** - Invoke the `db:lint:sql` script that nothing runs, put SQL in the standard format gate, add secrets + vuln scanning (CIGATE-01/02/03) — **moved from 149** so the gates land on the post-remediation tree.
 - [x] **Phase 164: `RETURNS TABLE` Nullability — Audit + Single Override Mechanism** - Enumerate every RPC's semantically-nullable columns and fix the lie with one mechanism, not scattered casts (CIGATE-04/05) — **moved from 150** for the same reason.
+- [x] **Phase 165: Review-Stack Comment Remediation** - Collect every reviewer and GitHub Copilot comment on the twelve stacked ship PRs (#876-#887), triage each as a real defect, an artifact of reviewing one slice of the 12-way split in isolation, or already resolved, and fix every actionable one on `ship/v2.15-13-review-fixes`, stacked on `ship/v2.15-12-planning`, with the repo comment-hygiene rules applied to every changed file (completed 2026-09-29)
 
 ## Phase Details
 
@@ -1778,9 +1779,105 @@ Plans:
 - [x] 164-04-PLAN.md
 - [x] 164-05-PLAN.md
 
+### Phase 165: Review-Stack Comment Remediation
+
+**Goal**: Every comment left on the v2.15 review stack (PRs #876-#887) — the maintainer's inline comments and GitHub Copilot's — has a recorded disposition, and every actionable one is fixed on one branch stacked on the top of the stack, so the stack can merge with no open review thread.
+**Depends on**: Phase 151's stack (PRs #876-#887) as published; Phases 152-164 (their fixes are already in the stack tip).
+**Branch**: `ship/v2.15-13-review-fixes`, cut from `ship/v2.15-12-planning` (tree byte-identical to `integration/ship-12-squash` at cut time).
+**Requirements**: none mapped (review-remediation phase, like 152-160)
+**Success Criteria** (what must be TRUE):
+
+  1. A disposition ledger lists **every** inline comment and every non-empty review body on #876-#887, each classified as `fix`, `split-artifact` (the defect exists only in an intermediate slice and the stack tip is already correct — verified at the tip, not assumed), `already-fixed` (cite the commit), or `deferred` (only where the maintainer said so, e.g. the adapter-selection entrypoint work on #880), with evidence per row.
+  2. Every `fix` row is implemented at the stack tip, and each maintainer comment is addressed as written (renames, moves, inlined styles, removed prose, column documentation, schema cleanups).
+  3. The comment-hygiene rules (the `ship-review-stack` codemod + `hygiene-grep-report.sh --assert-clean`, the maintainer's no-historical-narrative / no-excess-prose rule, and the code-review checklist) hold for **every file changed** on the branch.
+  4. `yarn build`, `yarn lint:check`, `yarn format:check`, `yarn test:unit`, pgTAP and the full E2E suite all pass on the branch — zero failed, zero did-not-run.
+  5. Each addressed thread on GitHub can be answered with a one-line reply pointing at the fixing commit, or at the ledger row for a split-artifact or deferred item.
+
+**Plans**: 36/36 plans complete
+
+Plans:
+**Wave 1**
+- [x] 165-01-PLAN.md — Phase instruments: per-changed-file hygiene gate, code-identity proof, fail-closed negative grep, E2E verdict, 78-row ledger skeleton + completeness check (wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 165-02-PLAN.md — No-code dispositions: 25 split-artifact, 1 already-fixed, 1 wont-fix proven at the tip; deferred adapter-selection todo (wave 2)
+- [x] 165-03-PLAN.md — Schema hygiene: `302-rls.sql` (comment-only, code-identical) (wave 2)
+- [x] 165-04-PLAN.md — pgTAP hygiene: 05, 07, 09, 29 (wave 2)
+- [x] 165-05-PLAN.md — Experimental packages: flat condenser result, restored JSDoc examples, generateBoth coverage (wave 2)
+- [x] 165-06-PLAN.md — Frontend-local grant types, supabase-types parity + boundary test, client-type alias (wave 2)
+- [x] 165-07-PLAN.md — Hygiene pre-clean: `scripts/assert-project-scoped-queries.mjs` (wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 165-08-PLAN.md — Schema hygiene: `301-auth-functions.sql`, `303-column-grants.sql` (wave 3)
+- [x] 165-09-PLAN.md — pgTAP hygiene: 12, 18, 28 (wave 3)
+- [x] 165-10-PLAN.md — dev-seed message and comment fixes; perm teardown reopens the project in `finally` (wave 3)
+- [x] 165-11-PLAN.md — `supabaseDataProvider` helpers moved to `supabase/utils` and the type file, guard registration (wave 3)
+- [x] 165-20-PLAN.md — Planning-record corrections (163-VALIDATION, three todos) (wave 3)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 165-12-PLAN.md — Schema hygiene: `400-storage.sql`, `011-validation-functions.sql` (wave 4)
+- [x] 165-13-PLAN.md — pgTAP hygiene: 10, 17, 22 (wave 4)
+- [x] 165-14-PLAN.md — Root tooling: edge-env guard family, keygen usage, CI E2E keys (wave 4)
+- [x] 165-15-PLAN.md — Contexts/utils: `sameRefs` move, pointer-cancel focus, spacing drift test, `logLevel` prose, writer-caching verdict (wave 4)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [x] 165-16-PLAN.md — Schema hygiene: remaining function/utility files (wave 5)
+- [x] 165-17-PLAN.md — pgTAP hygiene: 19, 20, 25 (wave 5)
+- [x] 165-18-PLAN.md — dev-seed stops producing `is_generated` (wave 5)
+- [x] 165-19-PLAN.md — App shell: per-token `safeGetSession` memo, `loadEnv` empty-shell fix, located-layout test mock (wave 5)
+- [x] 165-22-PLAN.md — Docs: routing page `getRoute.current`; docs-site style blocks inlined (wave 5)
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [x] 165-21-PLAN.md — Table-file hygiene + column documentation for every table; migration clean end to end (wave 6)
+- [x] 165-23-PLAN.md — send-email contract, string-only `getLocalized`, local-adapter filter parity (wave 6)
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [x] 165-24-PLAN.md — Interim cardinal gate over waves 2-6 (alone; full pgTAP + E2E) (wave 7)
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [x] 165-25-PLAN.md — Type-aware entity authorization (`user_can`, `entity_project_id`, `is_child_nominee`, `get_entity_basic_data`) + collision negative control (wave 8)
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [x] 165-26-PLAN.md — Typed `upsert_answers` + census of every id-taking function (wave 9)
+
+**Wave 10** *(blocked on Wave 9 completion)*
+- [x] 165-27-PLAN.md — `is_generated` removed everywhere; entity tables in `organizations`' column order (wave 10)
+
+**Wave 11** *(blocked on Wave 10 completion)*
+- [x] 165-28-PLAN.md — Feedback insert guard (`enforce_feedback_project`) + negative control (wave 11)
+
+**Wave 12** *(blocked on Wave 11 completion)*
+- [x] 165-29-PLAN.md — Password validation moved from app-shared to `lib/utils/password-validation` (wave 12)
+
+**Wave 13** *(blocked on Wave 12 completion)*
+- [x] 165-30-PLAN.md — `*-ftn` provider keyword rename + FTN config names; maintainer `.env` checkpoint (wave 13)
+
+**Wave 14** *(blocked on Wave 13 completion)*
+- [x] 165-31-PLAN.md — Style inlining A: `ImagePart` and input family, base components; compiled-class checker (wave 14)
+
+**Wave 15** *(blocked on Wave 14 completion)*
+- [x] 165-32-PLAN.md — `QuestionChoices` constants/cn/narrative; style inlining B: questions, ScoreGauge, Video (wave 15)
+
+**Wave 16** *(blocked on Wave 15 completion)*
+- [x] 165-33-PLAN.md — Style inlining C: Header, Banner, dynamic components, route pages; repo-wide style census (wave 16)
+
+**Wave 17** *(blocked on Wave 16 completion)*
+- [x] 165-34-PLAN.md — Branch-wide hygiene sweep: read coverage, allowlist review, second read, checklist (wave 17)
+
+**Wave 18** *(blocked on Wave 17 completion)*
+- [x] 165-35-PLAN.md — Final cardinal gate on the gated commit (wave 18)
+
+**Wave 19** *(blocked on Wave 18 completion)*
+- [x] 165-36-PLAN.md — Ledger completion, push, PR 13/13 and CI to green (no thread replies) (wave 19)
+
+**Cross-cutting constraints:**
+- Only comments and single-quoted literals changed: `code-identity.mjs --blank-sql-literals ship/v2.15-12-planning WORKTREE <file>` exits 0 for each file, and every changed literal is an assertion description.
+- The targeted pgTAP run (`00-helpers` plus the three files) reports `Result: PASS` with the same `Tests=` total as before the rewrite.
+- Every changed file is hygiene-clean.
+
 ## Progress
 
-**Active milestone: v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage** — Phases 137-164 (29 phases incl. 142.1, 157.1 and 157.2; 148 absorbed into 147), 39/39 original requirements mapped plus the review-remediation set added 2026-08-28. Plan counts are set per phase by `/gsd-plan-phase`.
+**Active milestone: v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage** — Phases 137-165 (30 phases incl. 142.1, 157.1 and 157.2; 148 absorbed into 147), 39/39 original requirements mapped plus the review-remediation set added 2026-08-28. Plan counts are set per phase by `/gsd-plan-phase`.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -1811,6 +1908,7 @@ Plans:
 | 162. Permissions & Auth Model Refactor | 21/21 | Complete    | 2026-09-20 |
 | 163. CI Gates — SQL Lint/Format + Secrets & Vulnerability Scanning _(was 149)_ | 9/9 | Complete    | 2026-09-04 |
 | 164. `RETURNS TABLE` Nullability — Audit + Single Override Mechanism _(was 150)_ | 5/5 | Complete    | 2026-09-03 |
+| 165. Review-Stack Comment Remediation | 36/36 | Complete    | 2026-09-29 |
 
 **Shipped milestones:**
 

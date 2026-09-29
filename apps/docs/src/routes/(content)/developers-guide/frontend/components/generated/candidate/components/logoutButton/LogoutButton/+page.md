@@ -9,7 +9,6 @@ Accesses `CandidateContext`.
 ### Properties
 
 - `logoutModalTimer`: The duration in seconds a logout modal will wait before automatically logging the user out. Default: `30`
-- `stayOnPage`: Whether pressing the button takes the user to the login page or not. Default: `false`
 - Any valid properties of a `Button` component
 
 ### Settings

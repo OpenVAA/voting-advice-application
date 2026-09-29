@@ -1,0 +1,11 @@
+apps/frontend/src/lib/utils/password-validation/passwordValidation.ts	1c18a16f49cd47178460ddeb405b6824d12559e8	165-29
+apps/frontend/src/lib/utils/password-validation/passwordValidation.test.ts	5d1ceaa5897cfa5e8df0d911c955bac8ab782c8a	165-29
+apps/frontend/src/lib/candidate/components/passwordValidator/PasswordValidator.svelte	92ba8d12d3db62511ceb68c9fb0c7de54bbebb5c	165-29
+packages/app-shared/src/index.ts	14910c1800e5038a2811c1f7fc6bdb2db2a74b89	165-29
+packages/app-shared/README.md	ce152b623292fa675ddb909a263058a6bc981ed1	165-29
+apps/docs/src/routes/(content)/developers-guide/candidate-user-management/password-validation/+page.md	18775267fcdf2bad177661dfc44f5720eafbcb4f	165-29
+apps/docs/src/routes/(content)/developers-guide/frontend/components/generated/candidate/components/passwordValidator/PasswordValidator/+page.md	5948286a1e560c17f2d1069fe273e1b321c68852	165-29
+apps/frontend/src/lib/candidate/components/logoutButton/LogoutButton.svelte	39da87e09fa616fa35edacebec4c0ead1c7f6110	165-29
+apps/frontend/src/lib/candidate/components/logoutButton/LogoutButton.type.ts	3c6030739a4546ba423b3c21e3c3179ff2db91e3	165-29
+apps/docs/src/routes/(content)/developers-guide/frontend/components/generated/candidate/components/logoutButton/LogoutButton/+page.md	446ffe3b8167c1d5c6c3045844c4c5c2077b9cd3	165-29
+apps/frontend/src/lib/candidate/components/logoutButton/LogoutButton.svelte	794b3809505bd446928f46090624e31ddc7df4db	165-29

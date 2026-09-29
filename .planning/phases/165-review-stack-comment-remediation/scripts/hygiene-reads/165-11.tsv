@@ -1,0 +1,9 @@
+apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts	ce5595bd8e0f9daa48081e63057dfacb3406c13a	165-11
+apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.type.ts	b3babd3d91ea3bc716b8ce3cb85396dea8669531	165-11
+apps/frontend/src/lib/api/adapters/supabase/utils/bySortOrderThenId.ts	ab6cb4647bd5ffd3aef3535e2c55cb2a74ae44ee	165-11
+apps/frontend/src/lib/api/adapters/supabase/utils/bySortOrderThenId.test.ts	9d9839205719f5623a2e379e25c9720500b3e70b	165-11
+apps/frontend/src/lib/api/adapters/supabase/utils/parseStoredCustomization.ts	967f8b6710df0dcf2be422920be9a8f6b1a7a7e5	165-11
+apps/frontend/src/lib/api/adapters/supabase/utils/parseStoredCustomization.test.ts	7fba304ca6095cff52f4619c39e2e8d61884bba2	165-11
+apps/frontend/src/lib/api/adapters/supabase/utils/parseFailureMessages.ts	f19cccf3d018c78e4edcc0be9e2a1c83d7258f3b	165-11
+apps/frontend/src/lib/api/adapters/supabase/utils/parseOutcome.ts	a423a1d03f618b237070ba878798b3aa60ddb08a	165-11
+scripts/assert-project-scoped-queries.mjs	aba32bfc888a78e5a1b404144a6ec8dcf9540b10	165-11

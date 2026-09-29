@@ -1,0 +1,6 @@
+apps/frontend/src/routes/(voters)/(located)/layout.load.test.ts	5eb0669a633fa9353c5557942ea096c2de11fe3e	165-19
+apps/frontend/src/lib/supabase/safeGetSession.ts	67a51e53e5918800a7cbb53b984ecfaeeb62bea9	165-19
+apps/frontend/src/lib/supabase/safeGetSession.test.ts	eb93818fa59812db9340537b84b2d14efec18c0b	165-19
+apps/frontend/src/hooks.server.ts	020f93f6a5da637846e59edf11cf08a4373e5713	165-19
+apps/frontend/vite.projectIdEnv.ts	a37196a753d9592cfa4841f36c96ed855aa97b36	165-19
+apps/frontend/vite.projectIdEnv.test.ts	1d551a9a76b563e00d8701da002784ca1ab6fb63	165-19

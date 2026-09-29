@@ -49,7 +49,6 @@ the generated `00001` and removed in phase 162; git history retains them. Full t
    - `sort_order` (integer)
    - `subtype` (text)
    - `custom_data` (jsonb)
-   - `is_generated` (boolean DEFAULT false)
    - `created_at`, `updated_at` (timestamptz, auto-managed by `set_updated_at` trigger)
    - `external_id` (text, nullable, composite unique with project_id)
 
@@ -156,10 +155,19 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
    `authenticated` / `anon` are REVOKEd. This prevents circular RLS: the hook reads the table to BUILD
    the claim, and the claim is what the policies read. Source: `300-auth-tables.sql`.
 
-4. **One authority function.** `public.user_can(scope, target_id, permission)` is the single place the
+4. **One authority function.** `public.user_can(scope, target_id, permission, target_type)` is the single place the
    role x permission matrix is encoded, delegating to `public.grant_role_permissions`. It resolves
    DOWNWARD: `global` answers for every account, `account` for every project it owns, `project` for every
    entity in it, and `entity` for that entity and -- through `is_child_nominee` -- its child nominees.
+   - **At entity scope the entity is named by its type and id together**, because the four entity tables
+     have independent primary keys and a project admin chooses an inserted entity's `id`: one uuid can name
+     a candidate in one project and an organization in another. A NULL `target_type` denies at entity
+     scope, an entity grant reaches only the entity of its own `target_type`, and every hop resolves the
+     pair (`private.entity_project_id(entity_type, uuid)`, `private.is_child_nominee(parent_type,
+     parent_id, child_type, child_id)`). Every entity-scope call passes the type; at every other scope
+     `target_type` defaults to NULL, so project-scope RPC callers pass three arguments.
+     `33-entity-type-collision.test.sql` is the negative control. `get_entity_basic_data(entity_type,
+     uuid)` probes only the named table.
    Named `SECURITY DEFINER` helpers a policy may reach INSTEAD of `user_can`, each the single definition
    of one question:
    - `user_has_account_grant(account_id)`: grant EXISTENCE, which `user_can` cannot express because
@@ -200,7 +208,7 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
    - `projects`: SELECT asks `project.read_structure` at project scope; UPDATE asks
      `project.edit_project_settings`; INSERT/DELETE ask `account.manage_projects` at account scope.
    - The four entity tables add an `entity_update_own_{table}` policy asking
-     `user_can('entity', id, 'entity.edit_answers')`.
+     `user_can('entity', id, 'entity.edit_answers', '<the table's entity type>'::public.entity_type)`.
    - `nominations` carries three INSERT policies: `admin_insert_nominations`, `entity_insert_nominations`
      and `entity_insert_parent_nominations` (the placeholder-parent path, with its six guards).
    - `feedback`: anon and authenticated INSERT WITH CHECK (true) -- submission is open by design; the
@@ -223,10 +231,10 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
 
 8. **Column-level restrictions**: REVOKE table-level UPDATE from authenticated, then GRANT
    UPDATE only on allowed columns. Applies to:
-   - `candidates`: protected columns are project_id, auth_user_id, external_id, id, is_generated,
-     sort_order, created_at, updated_at.
-   - `organizations`: protected columns are project_id, auth_user_id, external_id, id,
-     is_generated, sort_order, created_at, updated_at.
+   - `candidates`: protected columns are project_id, auth_user_id, external_id, id, sort_order,
+     created_at, updated_at.
+   - `organizations`: protected columns are project_id, auth_user_id, external_id, id, sort_order,
+     created_at, updated_at.
    - Admin operations needing protected columns use `service_role` via Edge Functions, which
      bypasses column-level grants.
    - Source: `apps/supabase/supabase/schema/303-column-grants.sql`.
@@ -238,7 +246,10 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
    `invite-candidate` and `send-email` ask `public.user_can` through the caller's OWN token, via
    the byte-identical `callerAuthority.ts` (`callerMayOnProject(callerClient, projectId,
    'project.edit_entities')`, which fails closed on anything but a literal `true`), and refuse
-   with 403 BEFORE the `service_role` client is created. Only after that gate does a function use
+   with 403 BEFORE the `service_role` client is created. An entity-scope question goes through the same
+   file's `callerMayOnEntity(callerClient, entityType, entityId, permission)`, which makes the type
+   mandatory: `user_can`'s `p_target_type` is optional, so an untyped entity-scope call compiles and is
+   silently denied. Only after that gate does a function use
    `createClient()` with `service_role` for privileged operations (creating records, inviting
    users, reading auth.users).
    - `invite-candidate`: gated as above; creates the candidate and the auth user, then writes an
