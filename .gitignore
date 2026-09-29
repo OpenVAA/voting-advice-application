@@ -44,6 +44,9 @@ playwright-results/
 raw.json
 tests/.planning/
 
+# GSD per-session milestone lock (pid + session id, rewritten on every run — machine-local)
+.planning/milestone.lock
+
 # Phase 138 per-run E2E evidence dirs (tests/scripts/e2e-run.sh). Raw dev-server logs,
 # per-run HTML reports and traces live here and are NEVER committed; only the derived,
 # reviewed per-run table under .planning/ is.
