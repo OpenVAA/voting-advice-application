@@ -233,6 +233,27 @@ BACKEND_API_TOKEN
      - Target: the Render frontend URL
 3. Go back to Render and verify the domain.
 
+## Feedback Rate Limit and Cloudflare
+
+Voter feedback is limited to five submissions per five minutes per client. A Postgres trigger on the `feedback` table picks the client's rate-limit bucket from the request headers. Which header it trusts is a database setting, `private.deployment_settings.behind_cloudflare`, and not an environment variable: the feedback insert goes straight from the browser to PostgREST, so no process that reads `.env` is on that path.
+
+- When the setting is `true`, the bucket is keyed on `cf-connecting-ip`, which Cloudflare sets to the connecting client.
+- When it is `false`, a client-sent `cf-connecting-ip` is ignored and the bucket is keyed on the last `x-forwarded-for` hop, which the gateway appends from the connection's peer.
+
+The migration ships the setting as `false`. Set it once in the Supabase SQL editor:
+
+```sql
+UPDATE private.deployment_settings
+SET
+  behind_cloudflare = true;
+```
+
+**Precondition:** every request reaches the API through Cloudflare. Hosted Supabase does. A self-hosted gateway qualifies only when its origin accepts connections from Cloudflare alone; otherwise a client can send its own `cf-connecting-ip` and choose its own bucket.
+
+**Hosted Supabase must set it.** On hosted Supabase the last `x-forwarded-for` hop can be a platform-internal address shared by many voters, so with the setting left `false` those voters share one bucket and the sixth submission among them in five minutes is refused.
+
+The local development stack turns the setting on in `apps/supabase/supabase/seed.sql`, so that the E2E suite can give each feedback submission its own bucket. Never apply that seed to a deployment that is not behind Cloudflare.
+
 ## Manually Creating a Production Build
 
 You can also create production builds of the frontend and backend, but directly using the Docker containers is the recommended approach.

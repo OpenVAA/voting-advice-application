@@ -19,3 +19,5 @@ In addition to basic configuration, some application functions are controlled by
 - Debugging
 
 For a full list of all the variables and their explanations see [.env.example](https://github.com/OpenVAA/voting-advice-application/blob/main/.env.example).
+
+- The feedback rate limit's Cloudflare trust, `private.deployment_settings.behind_cloudflare`, is a database setting and not an environment variable. See [Feedback Rate Limit and Cloudflare](/developers-guide/deployment/#feedback-rate-limit-and-cloudflare).

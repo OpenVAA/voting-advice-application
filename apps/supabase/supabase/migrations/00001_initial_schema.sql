@@ -1415,13 +1415,95 @@ EXECUTE FUNCTION public.update_updated_at ();
 CREATE SCHEMA IF NOT EXISTS private;
 
 CREATE TABLE IF NOT EXISTS private.feedback_rate_limits (
-  -- The first address in the request's x-forwarded-for header, or `unknown`.
+  -- The key `private.feedback_client_ip` derives from the request headers, or `unknown`.
   ip_address text PRIMARY KEY,
   -- Requests from the address in the current window.
   count integer NOT NULL DEFAULT 1,
   -- When the current window began; check_feedback_rate_limit starts a new one after five minutes.
   window_start timestamptz NOT NULL DEFAULT now()
 );
+
+--------------------------------------------------------------------------------
+-- Per-deployment settings that migrations cannot know
+--
+-- A single row: the `singleton` key admits only `true`. `behind_cloudflare` states that every request reaches the API through Cloudflare, which sets `cf-connecting-ip` itself to the connecting client. Its only reader is `check_feedback_rate_limit`, which trusts `cf-connecting-ip` only when it is true.
+--
+-- The migration ships it false. Hosted Supabase is behind Cloudflare, so a hosted deployment sets it once in the SQL editor with `UPDATE private.deployment_settings SET behind_cloudflare = true;`. A self-hosted gateway qualifies only when its origin accepts connections from Cloudflare alone; otherwise a client can send its own `cf-connecting-ip`. The local stack sets it in seed.sql.
+--
+-- Only the owner reads or writes it: the SECURITY DEFINER trigger, the seed and an operator. RLS is enabled with no policy and every API role's privileges are revoked.
+--------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS private.deployment_settings (
+  -- The primary key, which only `true` passes, so the table holds at most one row.
+  singleton boolean PRIMARY KEY DEFAULT true CHECK (singleton),
+  -- True when every request reaches the API through Cloudflare.
+  behind_cloudflare boolean NOT NULL DEFAULT false
+);
+
+INSERT INTO
+  private.deployment_settings
+DEFAULT VALUES
+ON CONFLICT DO NOTHING;
+
+ALTER TABLE private.deployment_settings ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON TABLE private.deployment_settings
+FROM
+  PUBLIC,
+  anon,
+  authenticated,
+  service_role;
+
+--------------------------------------------------------------------------------
+-- The client address the feedback rate limit is keyed on
+--
+-- With `p_trust_cf_connecting_ip` true, the key is `cf-connecting-ip` when it parses as an address, otherwise the last `x-forwarded-for` entry when that parses, otherwise `unknown`. With it false, `cf-connecting-ip` is not read and the key is the last `x-forwarded-for` entry or `unknown`. The value is normalised with `host()`. The flag has no default, so every caller decides.
+--
+-- `check_feedback_rate_limit` passes `private.deployment_settings.behind_cloudflare`. Behind Cloudflare, `cf-connecting-ip` is the connecting client and a client cannot choose it. Without Cloudflare in front, as on the local CLI stack or most self-hosted gateways, Kong forwards a client-sent `cf-connecting-ip` unchanged, so an untrusted deployment keys on the gateway-appended hop instead.
+--
+-- The gateway appends the last `x-forwarded-for` entry from the connection's peer; the earlier entries are written by the client and are never read, not even when the last entry is malformed. On hosted Supabase the last entry can be a platform-internal address shared by many voters, so a hosted deployment that leaves `behind_cloudflare` false collapses those voters into one bucket. That is why hosted deployments must set it.
+--
+-- Only the SECURITY DEFINER trigger `check_feedback_rate_limit` calls this function, so EXECUTE is revoked from PUBLIC here, and from the API roles after the blanket `private` grant in 301-auth-functions.sql.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.feedback_client_ip (p_headers json, p_trust_cf_connecting_ip boolean) RETURNS text LANGUAGE plpgsql IMMUTABLE SECURITY INVOKER
+SET
+  search_path = '' AS $$
+DECLARE
+  p_candidate text;
+BEGIN
+  IF p_headers IS NULL THEN
+    RETURN 'unknown';
+  END IF;
+
+  IF p_trust_cf_connecting_ip THEN
+    p_candidate := NULLIF(btrim(p_headers ->> 'cf-connecting-ip'), '');
+    IF p_candidate IS NOT NULL THEN
+      BEGIN
+        RETURN host(p_candidate::inet);
+      EXCEPTION
+        WHEN invalid_text_representation THEN
+          NULL;
+      END;
+    END IF;
+  END IF;
+
+  p_candidate := NULLIF(btrim(split_part(p_headers ->> 'x-forwarded-for', ',', -1)), '');
+  IF p_candidate IS NOT NULL THEN
+    BEGIN
+      RETURN host(p_candidate::inet);
+    EXCEPTION
+      WHEN invalid_text_representation THEN
+        NULL;
+    END;
+  END IF;
+
+  RETURN 'unknown';
+END;
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.feedback_client_ip (json, boolean)
+FROM
+  PUBLIC;
 
 --------------------------------------------------------------------------------
 -- Feedback table
@@ -1452,20 +1534,15 @@ CREATE OR REPLACE FUNCTION public.check_feedback_rate_limit () RETURNS TRIGGER L
 SET
   search_path = '' AS $$
 DECLARE
-  p_client_ip     text;
-  p_current_count integer;
-  p_window_secs   interval := interval '5 minutes';
-  p_max_requests  integer  := 5;
+  p_client_ip         text;
+  p_behind_cloudflare boolean;
+  p_current_count     integer;
+  p_window_secs       interval := interval '5 minutes';
+  p_max_requests      integer  := 5;
 BEGIN
-  -- Extract first IP from x-forwarded-for header (handles proxy chains)
-  p_client_ip := SPLIT_PART(
-    COALESCE(
-      (current_setting('request.headers', true)::json ->> 'x-forwarded-for'),
-      'unknown'
-    ) || ',',
-    ',', 1
-  );
-  p_client_ip := TRIM(p_client_ip);
+  -- A missing settings row reads as false, so cf-connecting-ip is then not trusted.
+  p_behind_cloudflare := COALESCE((SELECT behind_cloudflare FROM private.deployment_settings), false);
+  p_client_ip := private.feedback_client_ip(current_setting('request.headers', true)::json, p_behind_cloudflare);
 
   -- Advisory lock to serialize concurrent inserts from the same IP
   PERFORM pg_advisory_xact_lock(hashtext('feedback_rate:' || p_client_ip));
@@ -2441,6 +2518,14 @@ GRANT
 EXECUTE ON ALL FUNCTIONS IN SCHEMA private TO anon,
 authenticated,
 service_role;
+
+-- The grant above also reaches `private.feedback_client_ip` (107-feedback.sql). No policy calls it; only the SECURITY DEFINER trigger `check_feedback_rate_limit` does, so the API roles get no EXECUTE on it.
+REVOKE
+EXECUTE ON FUNCTION private.feedback_client_ip (json, boolean)
+FROM
+  anon,
+  authenticated,
+  service_role;
 -- Row Level Security: per-operation access policies for every public table.
 --
 -- Helper functions, defined in 301-auth-functions.sql:

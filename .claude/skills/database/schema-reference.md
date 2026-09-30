@@ -206,6 +206,13 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 - value: text NOT NULL
 - RLS enabled; REVOKE ALL from anon, authenticated, public; GRANT SELECT to service_role
 
+**deployment_settings** (107-feedback.sql)
+
+- Schema `private` (not exposed via PostgREST); a single row
+- singleton: boolean PK DEFAULT true CHECK (singleton)
+- behind_cloudflare: boolean NOT NULL DEFAULT false -- `check_feedback_rate_limit` trusts `cf-connecting-ip` only when true; a missing row reads as false. Operator statement: `UPDATE private.deployment_settings SET behind_cloudflare = true;` (only when every request reaches the API through Cloudflare; hosted Supabase does). seed.sql sets it true for the local stack
+- RLS enabled; REVOKE ALL from public, anon, authenticated, service_role; only the owner reads it
+
 ## Triggers
 
 | Trigger Name                                | Table(s)                                | Event                | Function                                   | Source |
