@@ -7,8 +7,8 @@
     "yourAnswer": "Sinä"
   },
   "arguments": {
-    "con": "Puolesta",
-    "pro": "Vastaan",
+    "con": "Vastaan",
+    "pro": "Puolesta",
     "proCategory": "Puolesta: {option}",
     "title": "Perustelut"
   },
