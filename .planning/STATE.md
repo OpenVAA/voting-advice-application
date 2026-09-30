@@ -7,10 +7,10 @@ current_phase_name: Retire auth_user_id — Entity Identity from Grants
 current_plan: Not started
 status: ready
 stopped_at: "Phase 165 (Review-Stack Comment Remediation, PR #889) and Phase 165.1 (Results Navigation Redraw, PR #888) complete — next: /gsd-plan-phase 166"
-last_updated: "2026-09-29T19:12:32.000Z"
+last_updated: "2026-09-30T13:08:42.246Z"
 last_activity: 2026-09-29
-last_activity_desc: Planning records of PR #888 and PR #889 merged; Results Navigation Redraw renumbered to Phase 165.1
-state_head: c0ffbd854568f384f3fe76a19fb39c37bbf62c34
+last_activity_desc: Planning records of PR
+state_head: 60a7cfbad6f28aec66ebaeb6a82f4c4d6a709647
 progress:
   total_phases: 32
   completed_phases: 31
@@ -404,7 +404,7 @@ exists or can exist here. All seven gates above are LOCAL. Carried as `164-03` c
 The milestone counters below are derived by gsd-tools from a milestone-wide scan, not read, so they
 must not be hand-tuned.
 
-**Progress:** [███████░░░] 68%
+**Progress:** [█████████░] 97%
 
 > **Ordering note for the phases still queued.** 164 runs before 163 because both edit
 > `.github/workflows/main.yaml` and ROADMAP § 164 explicitly forbids them sharing an execution wave.
@@ -590,7 +590,7 @@ install no Node at all when `engines.node` is absent — it WARNS, it does not f
 its negative control independently of the ruling. Full amendment:
 `.planning/todos/pending/2026-08-29-153-03-scope-amendment-after-d-b5-reversal.md`.
 **153-09 depends on 01, 02 AND 03**, so 03 blocks the phase close and nothing else in the phase.
-Last activity: 2026-09-29 — Phase 165 complete; planning records of PR #888 and PR #889 merged, Results Navigation Redraw renumbered to Phase 165.1
+Last activity: 2026-09-30 - Completed quick task 260930-kxi: PR 888 follow-ups (Docker CI build, dev-seed teardown env, bank-auth guard, cf-connecting-ip trust); E2E 171/0, bank-auth 8/0, journey 131/0
 
 **Phase 155 (Edge Function Hardening) is COMPLETE and verified — 6/6 plans.** Its completion line was
 overwritten in this single position slot by 153-01's `record-session` (STATE.md holds one position, and
@@ -2108,6 +2108,15 @@ Key cross-milestone reference points carried forward into v2.10:
 | 260922-dd8 | cn over clsx + tailwind-merge; concatClass over cn; QuestionChoices dimming as a named const | 2026-09-22 | 884df28de | — | .planning/quick/260922-dd8-refactor-condition-classes-in-questionchoic |
 | 260926-j71 | Adopt spike 035b: `DrawerHost` mounted per app (voter app now; candidate app = one mount), `ContextBridge` deleted; fix the `Image.svelte` `darkMode` destructure trap. Folded into the PR #888 commit stack. Unit 1856/1856, full E2E 171/171 on the squashed tree | 2026-09-26 | PR #888 stack | complete | [260926-j71-adopt-spike-035b-drawer-host-in-voter-la](./quick/260926-j71-adopt-spike-035b-drawer-host-in-voter-la/) |
 | 260927-kjb | Replace `EntityDrawerOpener` with the `useEntityDrawer` `.svelte.ts` hook; the drawer payload becomes a component plus a props getter (`QuestionExtendedInfoButton` moved too). Folded into the PR #888 commit stack. Unit 3332/3332, full E2E 171/171 | 2026-09-27 | PR #888 stack | complete | [260927-kjb-replace-entitydraweropener-component-wit](./quick/260927-kjb-replace-entitydraweropener-component-wit/) |
+| 260930-gjv | Revalidate then fix CLAUDE.md "Comment Hygiene" violations in code comments added by the Phase 165 results-redraw work under apps/ and tests/ (historical narrative like "Until v2.16 Phase 165…"/"Measured: 6 red of 16 runs", .planning/ paths, D-NN / T-165-NN ids, 165-NEGATIVE-CONTROL.md anchors) e.g. AccordionSelect.svelte, (voters)/(located)/+layout.ts, lib/routes route.ts Statistics comment, results layouts, DrawerHost.svelte, QuestionExtendedInfoButton.svelte, useEntityDrawer, viewTransition.ts; rewrite each to describe the code as it is now (bare "see phase N"/"see spike N" allowed); comment-only, no behaviour change; run .claude hygiene-grep-report.sh --assert-clean if present | 2026-09-30 | a9ad4ba05 | — | .planning/quick/260930-gjv-revalidate-then-fix-claude-md-comment-hygiene-violations-in |
+| 260930-gjw | Revalidate then fix: root package.json "preinstall": "node scripts/assert-node-engine.mjs" breaks apps/frontend/Dockerfile because the Dockerfile copies only package.json yarn.lock .yarnrc.yml turbo.json .yarn apps packages before `yarn install --immutable` and never copies scripts/; make the Docker build install succeed (e.g. COPY the script before install) without weakening the engine guard elsewhere | 2026-09-30 | 6798df661 | — | .planning/quick/260930-gjw-revalidate-then-fix-root-package-json-preinstall-node-script |
+| 260930-gjx | Revalidate then forward-port origin/main commit 66d3ee33d (pro/con argument fix) which this branch predates: QuestionArguments.svelte TITLE_KEYS inverted (*Cons→pro, *Pros→con) and sort order; QuestionExtendedInfo.svelte arguments expander nested inside the infoSections block and `{#if args}` should be `args?.length`; apps/frontend/src/routes/(voters)/(located)/questions/+layout.svelte interactiveInfo condition missing `\|\| customData.arguments?.length`; and the fi con/pro translation values in whichever catalogue t() resolves (Paraglide apps/frontend/messages/*), keeping all locales consistent; add/adjust unit tests | 2026-09-30 | f8769eb97 | — | .planning/quick/260930-gjx-revalidate-then-forward-port-origin-main-commit-66d3ee33d-pr |
+| 260930-gjy | Revalidate then fix: apps/frontend/src/routes/api/oidc/callback/+server.ts verifies `state` only when the oidc_state cookie exists, so a missing cookie accepts any ?code= (login CSRF); check each configured provider (idura, signicat) for state/PKCE usage and make the callback fail closed when the flow is expected to carry state; add a unit test | 2026-09-30 | d88096c06 | — | .planning/quick/260930-gjy-revalidate-then-fix-apps-frontend-src-routes-api-oidc-callba |
+| 260930-gjz | Revalidate then fix: turbo.json build task inputs (src/**, tsconfig*, tsup.config.ts, package.json) omit apps/frontend build inputs (messages/**, static/**, svelte.config.js, vite.config.ts, project.inlang/**) so remote-cache (TURBO_TOKEN in CI) can replay a stale frontend build and skip Paraglide generation; fix with a package-level apps/frontend/turbo.json (or equivalent) and also check apps/docs | 2026-09-30 | 539ae3a28 | — | .planning/quick/260930-gjz-revalidate-then-fix-turbo-json-build-task-inputs-src-tsconfi |
+| 260930-gk0 | Revalidate then fix apps/frontend/src/lib/components/modal/drawerHost/DrawerHost.svelte: close animation gated on shouldAnimate(undefined) which is false when document.startViewTransition is missing, so browsers without View Transitions skip the CSS close animation though only reduced motion should; and the focus-entry setTimeout (DELAY.sm) is never cancelled when the drawer closes quickly, pushing focus into a closing dialog; add unit tests | 2026-09-30 | 0ff348c57 | — | .planning/quick/260930-gk0-revalidate-then-fix-apps-frontend-src-lib-components-modal-d |
+| 260930-gk1 | Revalidate then fix apps/supabase/supabase/schema/107-feedback.sql check_feedback_rate_limit which keys the rate limit on the first x-forwarded-for entry (client-spoofable); determine what the Supabase API gateway forwards and key on the trustworthy hop (update the migration/schema consistently and the pgTAP tests) | 2026-09-30 | 37975cf64 | — | .planning/quick/260930-gk1-revalidate-then-fix-apps-supabase-supabase-schema-107-feedba |
+| 260930-gk2 | Revalidate then fix packages/dev-seed seed and teardown CLIs (cli/seed.ts, cli/teardown.ts, supabaseAdminClient.ts) which use the service_role key against whatever SUPABASE_URL is configured with no check it is local; add a guard allowing only local hosts (localhost, 127.0.0.1, ::1, host.docker.internal, kong/supabase docker hostnames as used by the tests) with an explicit opt-out env/flag, and unit tests; make sure E2E/CI invocations still pass the guard | 2026-09-30 | 77e429e9c | — | .planning/quick/260930-gk2-revalidate-then-fix-packages-dev-seed-seed-and-teardown-clis |
+| 260930-kxi | PR 888 follow-ups: Docker CI build, dev-seed teardown env, bank-auth guard, cf-connecting-ip trust + full E2E | 2026-09-30 | 60a7cfbad | — | [260930-kxi-pr-888-follow-ups-docker-ci-build-dev-se](./quick/260930-kxi-pr-888-follow-ups-docker-ci-build-dev-se/) |
 
 **Follow-up to 260607-cd0 (executed 2026-06-07, user-approved):** Deprecation run on the report's proposal. Removed dead code — `utils/{answerQuestion,translations,paths}.ts` (`6edeb9fa2`) + `helpers/{db-precondition,voter-iteration}.helper.ts` & the dead `gotoAndSettle` export (`fc08e10f3`). Renamed the 3 surviving helpers `*.helper.ts`→`*.ts` (navigation/select/settle) + retired the `<concern>.helper.ts` convention (barrel + README updated; only the barrel imported them by path so consumers unaffected). Kept + tracked `tests/IDURA-TEST-RUNBOOK.md` in place (`1d90db68c`). **Item 6 (emailHelper→emailBucket) — DONE + verified green 2026-06-07** (`2764a79a9`): the fixture never actually imported emailHelper (docstring was wrong); whole file was dead except `toCallbackUrl`, which moved into `emailBucket.fixture.ts`; both spec imports repointed; `emailHelper.ts` deleted. User confirmed all tests pass on a live stack; todo moved to `.planning/todos/completed/`. **The entire 260607-cd0 cleanup follow-up is now closed** (dead-code sweep + `.helper` rename + IDURA + emailHelper consolidation).
 

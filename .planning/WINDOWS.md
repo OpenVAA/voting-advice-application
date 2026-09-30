@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 248
+open_count: 249
 waived_count: 1
 fixed_count: 35
-total_count: 284
-last_updated: 2026-09-28T20:22:19.029Z
+total_count: 285
+last_updated: 2026-09-30T13:06:27.363Z
 ---
 
 # Broken Windows Ledger
@@ -299,6 +299,7 @@ last_updated: 2026-09-28T20:22:19.029Z
 | 282 | 165.1 | unmet-truth | tests/tests/specs/visual/visual-regression.spec.ts |  | No visual baseline captures an OPEN drawer, so phase 165.1's headline change (the app-wide DrawerHost replacing the per-route drawer) is visually unmeasured. G-9 (165.1-07 task 3) ran green in the pinned container with 4/4 baselines matched, but all four screenshot a page with no overlay showing. G-8's axe scans of voter-detail-drawer cover CONFORMANCE in both themes at 0 violations; they do not cover appearance. See deferred-items.md D-165.1-07-01 for the follow-up shape. | open |  | 2026-09-23T18:47:42.790Z |  |
 | 283 | 165.1 | deviation | apps/supabase/supabase/schema/300-auth-tables.sql |  | 165.1-07's gate run found yarn format:check ALREADY RED at the phase base 4d023c587: 13 unformatted files, of which 11 were untouched by phase 165.1 (v2.15 integration-branch debt, none present on main). All 13 were fixed here because CI runs format:check globally. Fixing the schema file's GRANT reflow then desynced the generated 00001_initial_schema.sql and tripped the schema-migration parity guard, remedied via yarn schema:regenerate per D-17. RESOLVED - recorded so the next phase knows the branch's format gate was unattended for multiple phases before 165 surfaced it. | fixed |  | 2026-09-23T18:47:51.660Z | 2026-09-23T18:48:20.205Z |
 | 284 | 165.1 | deviation | CLAUDE.md |  | 165.1-08 task 3: D-24 and 165.1-PATTERNS E3 both place the new Results Navigation Invariants subsection 'under CLAUDE.md § Frontend (SvelteKit)', but the two analog invariant subsections they name (§ Context Destructuring Rule, § Svelte Warning-Accepted Format) actually live under § Important Implementation Notes. Resolved per the plan's own done-clause ('beside the two invariant subsections it belongs with'): the subsection landed beside them, and § Frontend (SvelteKit) gained a pointer line naming both invariants so D-24's stated location still reaches the rule. RESOLVED - recorded so the next editor of either section knows the placement was a decision, not drift. | fixed |  | 2026-09-23T19:10:09.449Z | 2026-09-23T19:10:16.213Z |
+| 285 | quick-260930-kxi | unrun-verify | apps/frontend/Dockerfile |  | Local git-archive production image build (Task 2a verify) could not run: Docker Desktop registry proxy times out fetching node:22-alpine metadata (3 attempts, DeadlineExceeded) | open |  | 2026-09-30T13:06:27.363Z |  |
 
 ````json
 [
@@ -3719,6 +3720,19 @@ last_updated: 2026-09-28T20:22:19.029Z
     "reason": "",
     "recorded_at": "2026-09-23T19:10:09.449Z",
     "resolved_at": "2026-09-23T19:10:16.213Z",
+    "milestone": "v2.15"
+  },
+  {
+    "id": 285,
+    "kind": "unrun-verify",
+    "phase": "quick-260930-kxi",
+    "file": "apps/frontend/Dockerfile",
+    "line": null,
+    "description": "Local git-archive production image build (Task 2a verify) could not run: Docker Desktop registry proxy times out fetching node:22-alpine metadata (3 attempts, DeadlineExceeded)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-30T13:06:27.363Z",
+    "resolved_at": null,
     "milestone": "v2.15"
   }
 ]
