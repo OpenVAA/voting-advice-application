@@ -16,6 +16,8 @@ COPY .yarn ./.yarn
 # To be able to use --immutable, we need to copy all the packages in the workspace
 COPY apps apps
 COPY packages packages
+# Root lifecycle scripts (the preinstall Node engine guard) run from scripts/ during install
+COPY scripts scripts
 RUN yarn install --immutable
 
 FROM base AS shared
