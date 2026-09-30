@@ -41,7 +41,7 @@ class DrawerHostState {
   newKey = (prefix: string): string => `${prefix}-${++nextKey}`;
 
   open = <TProps extends object>(payload: DrawerPayload<TProps>): void => {
-    // The doc-comment above states the client-only invariant; this guard ENFORCES it, so a future server-side caller cannot leak one request's payload into another request that shares this module scope (threat T-165-04).
+    // The doc-comment above states the client-only invariant; this guard ENFORCES it, so a future server-side caller cannot leak one request's payload into another request that shares this module scope.
     if (!browser) return;
     if (this.#hosts === 0)
       log.warn(

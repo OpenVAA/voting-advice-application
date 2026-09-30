@@ -2,15 +2,15 @@
 
 # Results entity-tab layout
 
-The middle of the three results route levels (phase 165, D-07 / D-08). It owns the entity-type tab strip, the resolution of the ACTIVE entity type, and the tab-change handler. The election-tab layout above it owns the page chrome and the election picker; the innermost page below it owns the list and the drawer opener.
+The middle of the three results route levels. It owns the entity-type tab strip, the resolution of the ACTIVE entity type, and the tab-change handler. The election-tab layout above it owns the page chrome and the election picker; the innermost page below it owns the list and the drawer opener.
 
 ## Why the param is optional, and why there is no `+page.svelte` beside this file
 
-`entityTab` is optional and matcher-gated (`etPl`), like the three params around it. Keeping it optional is what lets a bare `/results/{election}` URL — with no plural segment at all — render this layout and everything below it, with the active tab IMPLIED from the voter context rather than forced into the URL. Forcing it into the URL is the force-fill the Post-88-02 loop fix removed, and `buildListRoute` still refuses to do it.
+`entityTab` is optional and matcher-gated (`etPl`), like the three params around it. Keeping it optional is what lets a bare `/results/{election}` URL — with no plural segment at all — render this layout and everything below it, with the active tab IMPLIED from the voter context rather than forced into the URL. An implied tab is never written into the URL: a force-filled plural makes the leaf's load guards and `buildListRoute` bounce navigation between the implied and the explicit shape, so `buildListRoute` never defaults it.
 
-There is deliberately NO `+page.svelte` at this level. The list lives on the single innermost page node, so every URL shape resolves to the SAME page component instance and a tab switch updates it rather than remounting it. Spike 033 measured the alternative directly: a layered tree with a page file at each level remounted the list on the first switch away from the implied tab, because the implied shape and the explicit shape were served by different component instances in different route files. Adding a page file here would reintroduce exactly that.
+There is deliberately NO `+page.svelte` at this level. The list lives on the single innermost page node, so every URL shape resolves to the SAME page component instance and a tab switch updates it rather than remounting it. A page file at this level would serve the implied shape and the explicit shape through different component instances in different route files, so the first switch away from the implied tab would remount the list (see spike 033).
 
-## D-08's "cannot be implied, so show the chooser" at this level
+## Chooser instead of children at this level
 
 When the active entity type cannot be resolved — no nominations for the active election — this layout renders the no-nominations warning INSTEAD of `{@render children()}`, which is the same shape the election-tab layout uses when no election can be implied.
 -->
@@ -43,7 +43,7 @@ When the active entity type cannot be resolved — no nominations for the active
   // URL-derived state
   ////////////////////////////////////////////////////////////////////
   //
-  // Each level RE-DERIVES what it needs from the route params and the context rather than receiving it as a prop from the level above. That is what keeps "the URL is the single source of truth" true across three files instead of one: a prop-drilled `activeElectionId` would make this layout's correctness depend on its parent's derivation staying in step with the URL, which is the coupling the split exists to remove.
+  // Each level RE-DERIVES what it needs from the route params and the context rather than receiving it as a prop from the level above. That is what keeps "the URL is the single source of truth" true across three files instead of one: a prop-drilled `activeElectionId` would make this layout's correctness depend on its parent's derivation staying in step with the URL.
 
   const _urlElectionTab = $derived(page.params.electionTab);
 
@@ -66,7 +66,7 @@ When the active entity type cannot be resolved — no nominations for the active
   // Plural → singular mapping uses American spelling. The implied entity type lives on voterContext via `currentResultsEntityType`: URL-first with default-pick fallback to the first available tab for the active election. Reading through `voterCtx.X` per the CLAUDE.md Context Destructuring Rule preserves reactivity (must not destructure).
   const activeEntityType = $derived(voterCtx.currentResultsEntityType);
 
-  // An open drawer is an OVERLAY keyed on `entity` + `id`, not a part of the list hierarchy, and it must mount even when the active entity type cannot be resolved. Before the phase-165 split the drawer was rendered ABOVE this gate, so an entity URL whose type could not be resolved still opened the drawer over an empty list; nesting the opener under the gate without this carve-out silently turned a working deeplink into a blank page. The reachable case is a bare `/results` whose card links carry no election segment: SvelteKit then slots the PLURAL into the freeform `[[electionTab]]`, no election resolves, and the type goes undefined — measured against `perm-localisation-positive`, which is red without this and green with it.
+  // An open drawer is an OVERLAY keyed on `entity` + `id`, not a part of the list hierarchy, and it must mount even when the active entity type cannot be resolved. This carve-out guarantees that an entity URL whose type cannot be resolved still mounts the drawer, over an empty list, rather than a blank page. The reachable case is a bare `/results` whose card links carry no election segment: SvelteKit then slots the PLURAL into the freeform `[[electionTab]]`, no election resolves, and the type goes undefined. `perm-localisation-positive` opens a drawer from exactly that page.
   const drawerVisible = $derived<boolean>(!!(page.params.entity && page.params.id));
 
   ////////////////////////////////////////////////////////////////////
@@ -93,7 +93,7 @@ When the active entity type cannot be resolved — no nominations for the active
   {/if}
 
   <!--
-    D-08's "cannot be implied, so show the chooser" at this level, with the overlay carve-out the `drawerVisible` derivation above explains: children render when there is something for them to render — a resolvable list, OR a drawer. The innermost page carries its own narrowing gate on the same value, so in the drawer-only case it mounts the opener and no list.
+    Chooser instead of children at this level, with the overlay carve-out the `drawerVisible` derivation above explains: children render when there is something for them to render — a resolvable list, OR a drawer. The innermost page carries its own narrowing gate on the same value, so in the drawer-only case it mounts the opener and no list.
   -->
   {#if activeEntityType || drawerVisible}
     {@render children()}

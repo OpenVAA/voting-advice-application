@@ -5,7 +5,7 @@ import type { NavigationEnd } from './viewTransition';
 /**
  * Specification for the overlay exemption that keeps document View Transitions off the results entity drawer.
  *
- * The case that matters is the pair at the top of the table: a navigation with the overlay params on ONE end only. That is what opening and closing the drawer look like, and it is the whole reason the predicate ORs its two ends rather than comparing them — a document VT run across either edge paints every named group above the top-layer dialog, so the page under the drawer is drawn on top of it for the duration (spike 031: the header flashes over the backdrop).
+ * The case that matters is the pair at the top of the table: a navigation with the overlay params on ONE end only. That is what opening and closing the drawer look like, and it is the whole reason the predicate ORs its two ends rather than comparing them — a document VT run across either edge paints every named group above the top-layer dialog, so the page under the drawer is drawn on top of it for the duration and the header flashes over the backdrop (see spike 031).
  *
  * The two `false` rows below are not padding. `entity` without `id` is the shape the leaf `+page.ts` redirects on (307), and `id` without `entity` is the matcher-fallthrough shape; both are ordinary list navigations that SHOULD animate, and a predicate keyed on "either param present" would wrongly suppress the transition on both.
  *

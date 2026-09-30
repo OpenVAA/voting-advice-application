@@ -2,14 +2,14 @@
 
 # Results election-tab layout
 
-The outermost of the three results route levels (phase 165, D-07 / D-08). It owns the page chrome — the hero, the ingress and the whole-page empty state — plus the election picker, the page-entry analytics event and both popup countdowns. The entity-tab layout below it owns the type tabs; the innermost page below that owns the list and the drawer opener.
+The outermost of the three results route levels. It owns the page chrome — the hero, the ingress and the whole-page empty state — plus the election picker, the page-entry analytics event and both popup countdowns. The entity-tab layout below it owns the type tabs; the innermost page below that owns the list and the drawer opener.
 
 ## Architecture
 
 - URL is the single source of truth. The active election is `$derived` over `page.params.electionTab` (name-disjoint from the search-side `?electionId=…` AVAILABLE-array surface, which keeps its `voterContext.selectedElections` semantics — that array drives nomination + question filtering and is set by the voter at `/elections`). No local `$state` twins for URL-derivable state; no `$effect`-based sync.
 - This level is the one that SURVIVES every in-results navigation: a tab switch, a drawer open and a drawer close all change params below it, so the page-entry event and the popup countdowns belong here and nowhere lower. Only an election change or a fresh entry re-runs them.
-- `{@render children()}` is rendered INSIDE the `fullWidth` snippet, where the tabs-and-list markup used to sit, so the descendant-owned list stays inside `MainContent`'s full-width region. Rendering it outside that snippet would take the list out of its container.
-- D-08's "picker instead of children": when no election can be implied, this layout renders the select-an-election prompt INSTEAD of its children. The entity-tab layout below applies the same rule to its own param.
+- `{@render children()}` is rendered INSIDE the `fullWidth` snippet, so the descendant-owned list stays inside `MainContent`'s full-width region. Rendering it outside that snippet would take the list out of its container.
+- Chooser instead of children: when no election can be implied, this layout renders the select-an-election prompt INSTEAD of its children. The entity-tab layout below applies the same rule to its own param.
 
 Sibling tracking concerns:
 - `startFeedbackPopupCountdown` via `appSettings.results.showFeedbackPopup`
@@ -167,7 +167,7 @@ Sibling tracking concerns:
 
     {#snippet fullWidth()}
       <!--
-        LIST CONTAINER — `content-visibility: auto` defers layout/paint until scrolled into view (Open Question 4 RESOLVED). The former "renders after the drawer block so the drawer wins the cold-deeplink paint race" clause is gone with the per-route drawer: the drawer is now a top-layer dialog in the root layout, so nothing in this file's source order can lose that race.
+        LIST CONTAINER — `content-visibility: auto` defers layout/paint until scrolled into view. The drawer is a top-layer dialog in the root layout, so nothing in this file's source order decides whether the drawer or the list paints first on a cold deeplink.
       -->
       <div
         class="bg-base-300 flex min-h-[120vh] flex-col items-center [content-visibility:auto]"

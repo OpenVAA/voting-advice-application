@@ -6,16 +6,16 @@ Owns the matching results list and opens the entity drawer through `openEntityDr
 
 ## Why this file matches every URL shape, and why that is the point
 
-All four route params are optional (phase 165, D-08), so this ONE page node serves every shape `/results` emits:
+All four route params are optional, so this ONE page node serves every shape `/results` emits:
 
   1. `/results?electionId=X`                                            — picker; the election-tab layout renders the prompt instead of these children
   2. `/results/[electionTab]?electionId=X`                              — list, active tab IMPLIED from the voter context
   3. `/results/[electionTab]/[entityTab]?electionId=X`                  — list, explicit plural tab
   4. `/results/[electionTab]/[entityTab]/[entity]/[id]?electionId=X`    — list + drawer (matching types)
 
-Because every one of those resolves to the same page node, SvelteKit reuses the SAME component instance across them, and a navigation between two shapes updates this component rather than remounting it. That single-instance guarantee is the whole mechanism: **a second page node anywhere above this file would break it**, which is why the entity-tab layout deliberately has no `+page.svelte` beside it. Spike 033 measured exactly that failure on a tree with a page file at each level — the first switch away from the implied tab remounted the list, because the implied shape and the explicit shape were served by different component instances in different route files.
+Because every one of those resolves to the same page node, SvelteKit reuses the SAME component instance across them, and a navigation between two shapes updates this component rather than remounting it. That single-instance guarantee is the whole mechanism: **a second page node anywhere above this file would break it**, which is why the entity-tab layout deliberately has no `+page.svelte` beside it. With a page file at each level, the implied shape and the explicit shape are served by different component instances in different route files, and the first switch away from the implied tab remounts the list (see spike 033).
 
-The cross-type shape `/results/[electionTab]/organizations/candidate/[id]` stays ROUTABLE — the params are optional and D-09 forbids canonicalisation and redirects — but no current emitter produces it, so it is not in the tested set. See `165-NEGATIVE-CONTROL.md` § 6 for the derivation.
+The cross-type shape `/results/[electionTab]/organizations/candidate/[id]` stays ROUTABLE — the params are optional, and nothing redirects or canonicalises it — but no current emitter produces it, so it is not in the tested set.
 
 Route params:
 - `electionTab`   (optional, freeform)              — SELECTED election id for the active results tab
@@ -79,7 +79,7 @@ The sibling `+page.ts` guards the two impossible shapes: a matcher fallthrough (
 
   // `compareMaybeWrappedEntities` re-sorts what the matcher already ordered, and the primary key is the same one: it compares match score DESC, which is exactly `MatchingAlgorithm`'s ascending distance. What it adds is a TIE-BREAK — election symbol asc, then name asc — for entities the matcher scores identically.
   //
-  // Why this is needed (debug session `tied-match-order-churn`): `matchingAlgorithm.ts:122` sorts on distance alone, and `Array.prototype.sort` is stable, so distance-tied entities keep their ARRIVAL order. That order is the `get_nominations` row order, which falls back to the `gen_random_uuid()` primary key for any nomination lacking `sort_order` — so tied candidates permuted between page loads. The seed-side half is fixed in `dev-seed`'s pipeline, but an imported dataset without `sort_order` would still churn; this makes `/results` stable regardless of what the data layer hands us.
+  // Why this is needed: `matchingAlgorithm.ts:122` sorts on distance alone, and `Array.prototype.sort` is stable, so distance-tied entities keep their ARRIVAL order. That order is the `get_nominations` row order, which falls back to the `gen_random_uuid()` primary key for any nomination lacking `sort_order`, so without a tie-break tied candidates permute between page loads. `dev-seed`'s pipeline writes `sort_order`, but an imported dataset without it would still churn; this makes `/results` stable regardless of what the data layer hands us.
   //
   // `toSorted`, NOT `sort`: `voterCtx.matches[...]` is reactive context state and must not be mutated in place.
   const activeMatches = $derived<Array<MaybeWrappedEntityVariant> | undefined>(
@@ -109,7 +109,7 @@ The sibling `+page.ts` guards the two impossible shapes: a matcher fallthrough (
       });
       return entity;
     } catch (e) {
-      // Silent degradation — UI-SPEC Empty State Inventory "Deeplink to entity not found"
+      // Silent degradation: a deeplink to an entity that cannot be found opens no drawer.
       log.error(
         `Could not get entity details for ${entityType} ${entityId}. Error: ${e instanceof Error ? e.message : '-'}`
       );
@@ -124,7 +124,7 @@ The sibling `+page.ts` guards the two impossible shapes: a matcher fallthrough (
   // Track events
   ////////////////////////////////////////////////////////////////////
 
-  // Drawer-view tracking — fires on drawer open transitions (covers both matched and unmatched entity pools per the legacy `results_ranked_*` / `results_browse_*` event pair).
+  // Drawer-view tracking — fires on drawer open transitions (covers both matched and unmatched entity pools through the `results_ranked_*` / `results_browse_*` event pair).
   $effect(() => {
     if (!drawerVisible || !drawerEntity) return;
     const entityType = page.params.entity as EntityType;
