@@ -3,12 +3,13 @@
  *
  * Split out of tests/tests/utils/supabaseAdminClient.ts. The tests/ file is a thin subclass that adds auth/email + legacy E2E query helpers on top of this base.
  *
- * Env-var handling: the module-level fallbacks below preserve backward-compat for tests/ E2E. Env enforcement — failing loudly when env is missing — is the Writer's responsibility (packages/dev-seed/src/writer.ts), NOT this file — pure generators consuming this client must stay env-free so `yarn test:unit` doesn't require env fixture.
+ * Env-var handling: the module-level fallbacks below let the tests/ E2E harness construct a client with no arguments. The Writer (packages/dev-seed/src/writer.ts) enforces that `SUPABASE_URL` and the service-role key are present; `createServiceRoleClient`, which this constructor calls, enforces that the URL it hands to `createClient` is local (see `./localSupabaseUrl`). Pure generators never construct this client, so `yarn test:unit` needs no env fixture.
  *
  * Bulk-import routing note: `bulk_import` RPC's `processing_order` accepts exactly 11 of 16 non-system tables. `accounts`, `projects`, `feedback`, `constituency_group_constituencies`, `election_constituency_groups` are NOT in that list. Callers must route those elsewhere (writer strips accounts/projects, feedback via direct upsert, joins via linkJoinTables). This file does not enforce the routing — it is a thin RPC wrapper.
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { assertLocalSupabaseUrl } from './localSupabaseUrl';
 import { planLinks } from './template/linkSentinels';
 import {
   ANSWERS_BY_EXTERNAL_ID_KEY,
@@ -18,6 +19,7 @@ import {
   resolveCollectionName
 } from './template/permittedKeys';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { LocalityGuardOptions } from './localSupabaseUrl';
 import type { LinkPlanEntry, LinkTarget } from './template/linkSentinels';
 
 /**
@@ -140,6 +142,30 @@ const LINK_LOOKUP_ERRORS: Record<
 };
 
 /**
+ * Build a supabase-js client with the service-role key, behind the locality guard.
+ *
+ * The URL goes through {@link assertLocalSupabaseUrl} before `createClient` runs, so a non-local host is refused and nothing is created, unless `options.allowRemote` is set or `DEV_SEED_ALLOW_REMOTE=1` is in the environment. The client neither refreshes nor persists a session.
+ *
+ * Every service-role client in `packages/dev-seed/src` and `tests/` comes from here: the {@link SupabaseAdminClient} constructor and the E2E specs that need a raw client both call it. `tests/serviceRoleClientCallSites.test.ts` fails when a second supabase-js client construction appears in either tree.
+ *
+ * @param url - the Supabase URL.
+ * @param serviceRoleKey - the service-role key.
+ * @param options - locality guard options.
+ * @returns the supabase-js client.
+ * @throws Error when the URL is not local and neither opt-out is set.
+ */
+export function createServiceRoleClient(
+  url: string,
+  serviceRoleKey: string,
+  options: LocalityGuardOptions = {}
+): SupabaseClient {
+  assertLocalSupabaseUrl(url, options);
+  return createClient(url, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false }
+  });
+}
+
+/**
  * Admin-client base for the dev-seed package.
  *
  * Narrow bulk-write surface: bulkImport, bulkDelete, importAnswers, linkJoinTables, updateAppSettings. Auth / email / legacy E2E query helpers live in the tests/ subclass.
@@ -150,10 +176,17 @@ export class SupabaseAdminClient {
   protected client: SupabaseClient;
   protected projectId: string;
 
-  constructor(url?: string, serviceRoleKey?: string, projectId?: string) {
-    this.client = createClient(url ?? SUPABASE_URL, serviceRoleKey ?? SUPABASE_SERVICE_ROLE_KEY, {
-      auth: { autoRefreshToken: false, persistSession: false }
-    });
+  /**
+   * Create the service-role client.
+   *
+   * @param url - Supabase URL; defaults to `SUPABASE_URL` as read when this module loaded, else `http://localhost:54321`.
+   * @param serviceRoleKey - service-role key; defaults to `SUPABASE_SERVICE_ROLE_KEY`, else the local demo key.
+   * @param projectId - project every scoped query targets; defaults to {@link TEST_PROJECT_ID}.
+   * @param options - locality guard options. The resolved URL must be local unless `allowRemote` is set or `DEV_SEED_ALLOW_REMOTE=1` is in the environment.
+   * @throws Error when the resolved URL is not local and neither opt-out is set. Nothing is created in that case.
+   */
+  constructor(url?: string, serviceRoleKey?: string, projectId?: string, options: LocalityGuardOptions = {}) {
+    this.client = createServiceRoleClient(url ?? SUPABASE_URL, serviceRoleKey ?? SUPABASE_SERVICE_ROLE_KEY, options);
     this.projectId = projectId ?? TEST_PROJECT_ID;
   }
 

@@ -45,6 +45,7 @@ never have to type `yarn workspace @openvaa/dev-seed ...` for common operations.
 | `-t`, `--template <name-or-path>` | string | `default`     | Built-in name (`default`, `e2e/base`, `perm-*`) OR filesystem path (`./my.ts`, `/abs.json`) |
 | `--seed <integer>`                | number | from template | Faker RNG seed override (determinism)                                                       |
 | `--external-id-prefix <str>`      | string | `seed_`       | Override for the `external_id` prefix on every row (teardown filter contract)               |
+| `--allow-remote`                  | flag   | off           | Permit a non-local Supabase host for this invocation (see Security Notes)                   |
 | `-h`, `--help`                    | flag   | —             | Show help and exit                                                                          |
 
 Template argument resolution (name-first, path-fallback):
@@ -59,6 +60,7 @@ Template argument resolution (name-first, path-fallback):
 | Flag             | Type   | Default | Purpose                                           |
 | ---------------- | ------ | ------- | ------------------------------------------------- |
 | `--prefix <str>` | string | `seed_` | `external_id` prefix to match. Must be ≥ 2 chars. |
+| `--allow-remote` | flag   | off     | Permit a non-local Supabase host (Security Notes) |
 | `-h`, `--help`   | flag   | —       | Show help and exit                                |
 
 Teardown is permissive by design: it trusts the `external_id` prefix
@@ -302,6 +304,13 @@ Requires:
 - `SUPABASE_SERVICE_ROLE_KEY` — set automatically by `supabase start`;
   readable via `yarn db:status`.
 
+Optional:
+
+- `DEV_SEED_ALLOW_REMOTE` — `1` or `true` lets the service-role client accept a
+  non-local `SUPABASE_URL`, like `--allow-remote`. Any other value, including an
+  empty one, leaves the locality guard on. Set it per invocation, never in the
+  repo-root `.env`.
+
 Missing env → `seed` exits 1 with an actionable message: the `Writer`
 constructor enforces both at construction time (NF-02), before any client is
 built. **`seed:teardown` does not go through the `Writer`** — it constructs
@@ -324,26 +333,45 @@ executes any top-level code in the file. This is the SAME trust model as
 JSON templates (`.json` extension) parse as pure data and cannot execute code
 (T-58-05-02).
 
-**These commands act on whatever `SUPABASE_URL` names, and nothing checks that it
-is local.** Both CLIs auto-load the repo-root `.env` and, when `SUPABASE_URL` is
-unset, fall back to `PUBLIC_SUPABASE_URL` — the _deployed frontend's_ variable.
-A repo-root `.env` pointing at a staging or production Supabase therefore
-silently retargets both `db:seed` and `db:seed:teardown` at it, using a
-service-role client that bypasses RLS. `db:seed:teardown` is the one that hurts:
-it deletes every row whose `external_id` matches the prefix across 10 content
-tables.
+**The service-role client only talks to a local Supabase.** The key bypasses
+RLS, `db:seed` writes in bulk, and `db:seed:teardown` deletes every row whose
+`external_id` matches the prefix across 10 content tables. So every service-role
+client dev-seed builds — both CLIs, the `Writer`, and the E2E harness through its
+`SupabaseAdminClient` subclass — refuses a host outside this allowlist before it
+connects:
 
-The guards that do exist, so you know what you are relying on:
+- `localhost`, any `127.0.0.0/8` address and `[::1]`
+- `host.docker.internal` (the Docker host, as the dev compose stack reaches it)
+- `kong` and `supabase_kong_<project>` (the local gateway inside the Docker network)
 
+The host is matched exactly after URL normalisation, so look-alikes such as
+`localhost.example.com`, `127.0.0.1.nip.io` or a hosted `*.supabase.co` project
+are refused. The guard checks whichever URL the client is actually constructed
+with. Both CLIs auto-load the repo-root `.env` and, when `SUPABASE_URL` is unset,
+fall back to `PUBLIC_SUPABASE_URL` (the _deployed frontend's_ variable), so a
+`.env` pointing at a hosted instance stops with a refusal instead of acting on
+it.
+
+To target a non-local instance on purpose, opt out for that one invocation:
+pass `--allow-remote` to `seed` or `seed:teardown`, or set
+`DEV_SEED_ALLOW_REMOTE=1` in the environment of the command (the only option for
+library and E2E-harness callers). Do not put `DEV_SEED_ALLOW_REMOTE` in the
+repo-root `.env`: both CLIs auto-load it, which would turn the guard off for
+every run.
+
+The guards, so you know what you are relying on:
+
+- The locality guard above: no service-role client reaches a non-local host
+  without an explicit opt-out.
 - The `external_id` prefix scopes teardown; nothing outside it is touched.
 - `assertTeardownPrefix` refuses a prefix shorter than 2 characters, which is
   what stops a `LIKE '%'`-adjacent mass delete (T-58-07-02).
 - `accounts`, `projects`, `feedback` and `app_settings` are not in the teardown
   set at all, so bootstrap rows survive.
 
-There is **no locality check** among them. Before running either command, confirm
-what `SUPABASE_URL` resolves to — `yarn db:status` prints the local one. This is
-a local-development and CI tool; it is not intended to run against production.
+`yarn db:status` prints the local `SUPABASE_URL`. This is a local-development
+and CI tool; it is not intended to run against production, and opting out of the
+locality guard is the operator's explicit decision.
 
 **Custom templates run with that same service-role client.** The two facts
 compose: a template is developer-authored code, and it executes against whatever
@@ -356,6 +384,13 @@ Run `yarn db:start` first.
 
 **`Error: Cannot reach Supabase at http://127.0.0.1:54321. Is 'supabase start' running?`**
 Check `yarn db:status`. If services are down, run `yarn db:start`.
+
+**`Error: Refusing to use the service-role key against non-local Supabase host '<host>'. ...`**
+`SUPABASE_URL` (or `PUBLIC_SUPABASE_URL`, when `SUPABASE_URL` is unset) names a
+host outside the local allowlist — often a repo-root `.env` or an exported shell
+variable pointing at a hosted instance. Point it back at the local stack
+(`yarn db:status` prints the URL). If the non-local target is intended, re-run
+with `--allow-remote`, or with `DEV_SEED_ALLOW_REMOTE=1` set for that command.
 
 **`Unknown template: 'foo'. Built-in templates: default, e2e/base, perm-1e1cg1co, ...`**
 Either use a known built-in name — the message lists all 30 — or pass a
