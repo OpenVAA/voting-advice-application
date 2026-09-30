@@ -21,8 +21,8 @@
  * NOTE: These tests call the Edge Function directly — they do NOT redirect to a real identity provider. They verify the backend integration, not the full OIDC redirect flow (the full-browser journey is candidate-bank-auth-journey.spec.ts).
  */
 
+import { createServiceRoleClient } from '@openvaa/dev-seed';
 import { expect, test } from '@playwright/test';
-import { createClient } from '@supabase/supabase-js';
 import * as jose from 'jose';
 import { buildTestIdToken } from '../../utils/buildTestIdToken';
 import { getTestKeys } from '../../utils/testKeys';
@@ -78,7 +78,8 @@ type EdgeFunctionProbe = {
 test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
-  const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  // Built through dev-seed's guarded factory, which refuses a non-local SUPABASE_URL before any service-role request is sent.
+  const adminClient = createServiceRoleClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
   let testKeys: Awaited<ReturnType<typeof getTestKeys>>;
   let probe: EdgeFunctionProbe | null = null;
 

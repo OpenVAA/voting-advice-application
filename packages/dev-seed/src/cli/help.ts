@@ -21,6 +21,11 @@ Options:
                                     under it later, pass the SAME value to
                                     seed:teardown, whose flag is --prefix
                                     (--external-id-prefix is accepted too).
+      --allow-remote                Permit a non-local Supabase host for this
+                                    invocation. Without it the service-role
+                                    client only accepts localhost, 127.0.0.0/8,
+                                    [::1], host.docker.internal, kong and
+                                    supabase_kong_<project>.
   -h, --help                        Show this help and exit.
 
 Built-in templates:
@@ -40,6 +45,9 @@ Environment:
                                     Falls back to PUBLIC_SUPABASE_URL when unset.
   SUPABASE_SERVICE_ROLE_KEY         Service-role key for bypassing RLS
                                     (from \`yarn db:status\`, never committed).
+  DEV_SEED_ALLOW_REMOTE             Set to 1 (or true) to permit a non-local host,
+                                    like --allow-remote. Set it per invocation,
+                                    never in the repo-root \`.env\`.
   The repo-root \`.env\` file is auto-loaded at startup, so variables defined there
   (PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY) take effect without \`export\`.
 `;

@@ -6,7 +6,7 @@
  *   1. Parse `--prefix` (alias `--external-id-prefix`, the spelling `seed` uses) / `--help` via `parseArgs` (node:util; keygen.ts precedent; NOT commander/yargs).
  *   2. `--help` short-circuit => print TEARDOWN_USAGE => exit 0.
  *   3. Prefix length guard — `--prefix ''` or a single char would `LIKE %` against effectively every external_id; refuse.
- *   4. Construct `SupabaseAdminClient` (module-level env fallbacks per supabaseAdminClient.ts:34-42 — Writer's env enforcement is not replayed here since bulk_delete works against the local demo key fallback too).
+ *   4. Construct the client with {@link createTeardownClient}, which reads `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` when it is called, after the repo-root `.env` load and the `PUBLIC_SUPABASE_URL` fallback above. An unset variable falls through to the local defaults in supabaseAdminClient.ts; Writer's env enforcement is not replayed here since bulk_delete works against the local demo key too. The client refuses a non-local host unless `--allow-remote` or `DEV_SEED_ALLOW_REMOTE=1` opts out.
  *   5. `bulkDelete({ nominations, candidates, ... 10 tables }, { prefix })`.
  *      RPC enforces reverse-dependency order server-side.
  *   6. Storage Path 2 cleanup: list + remove portraits (authoritative — the pg_net trigger, Path 1, is async-racy).
@@ -25,6 +25,7 @@
 import { parseArgs } from 'node:util';
 import { TEARDOWN_USAGE } from './teardown-help';
 import { SupabaseAdminClient } from '../supabaseAdminClient';
+import type { LocalityGuardOptions } from '../localSupabaseUrl';
 
 // Load repo-root .env if present (Node 22+ built-in). Silent no-op if missing.
 try {
@@ -35,6 +36,18 @@ try {
 // Fall back to PUBLIC_SUPABASE_URL when SUPABASE_URL is absent (URL is not sensitive; only the service_role key is). Dev ergonomics: root .env shared with the frontend works for teardown too.
 if (!process.env.SUPABASE_URL && process.env.PUBLIC_SUPABASE_URL) {
   process.env.SUPABASE_URL = process.env.PUBLIC_SUPABASE_URL;
+}
+
+/**
+ * Build the teardown CLI's service-role client from the environment as it is when this is called.
+ *
+ * ESM evaluates `supabaseAdminClient.ts` before this module's body, so that module's own `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` fallbacks are captured before the repo-root `.env` above is loaded. Passing the values explicitly here is what lets a URL or key that only the `.env` sets reach the client. An unset variable passes `undefined`, which falls through to those local defaults.
+ *
+ * @param options - locality guard options, passed to the {@link SupabaseAdminClient} constructor.
+ * @throws Error when the resolved URL is not local and neither opt-out is set.
+ */
+export function createTeardownClient(options: LocalityGuardOptions = {}): SupabaseAdminClient {
+  return new SupabaseAdminClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, undefined, options);
 }
 
 /**
@@ -174,6 +187,7 @@ if (isDirectInvocation) {
       prefix: { type: 'string' },
       // `seed` spells this same concept `--external-id-prefix`, and its help says teardown filters on it. Under `strict: true` the natural carry-over of that spelling was ERR_PARSE_ARGS_UNKNOWN_OPTION — a hard error whose text names no alternative, which reads as "teardown cannot target this prefix" rather than "teardown spells the flag differently". Accepting both removes the trap; `--prefix` remains the documented primary.
       'external-id-prefix': { type: 'string' },
+      'allow-remote': { type: 'boolean' },
       help: { type: 'boolean', short: 'h' }
     },
     strict: true,
@@ -201,7 +215,7 @@ if (isDirectInvocation) {
   const prefix = values.prefix ?? values['external-id-prefix'] ?? 'seed_';
 
   try {
-    const client = new SupabaseAdminClient();
+    const client = createTeardownClient({ allowRemote: values['allow-remote'] === true });
     // The CLI reopens the project it targets (162.1 D-19), which undoes a `perm-closed-project` seed.
     const { rowsDeleted, storageRemoved } = await runTeardown(prefix, client, { reopenProject: true });
     process.stdout.write(
