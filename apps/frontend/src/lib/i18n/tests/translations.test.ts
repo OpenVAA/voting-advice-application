@@ -154,6 +154,32 @@ describe.each(translationLocales)('catalog key-set parity — %s', (locale) => {
   });
 });
 
+/**
+ * The labels that tell a voter which way an argument group points.
+ *
+ * `QuestionArguments` heads pro groups with `questions.arguments.pro`, con groups with `questions.arguments.con` and categorical groups with `questions.arguments.proCategory`, which names a choice the arguments are for. A catalogue whose `pro` and `con` values are swapped labels every group with the wrong direction, so each locale must keep `proCategory` built from its `pro` label.
+ */
+describe.each(translationLocales)('argument labels — %s', (locale) => {
+  const runtimeArguments = JSON.parse(fs.readFileSync(path.join(messagesDir, locale, 'questions.json'), 'utf8'))
+    .questions.arguments as Record<string, string>;
+  const typeGenArguments = JSON.parse(fs.readFileSync(path.join(translationsDir, locale, 'questions.json'), 'utf8'))
+    .arguments as Record<string, string>;
+
+  test('the pro label differs from the con label and proCategory carries the pro label, not the con label', () => {
+    const { pro, con, proCategory } = runtimeArguments;
+    expect(pro.toLowerCase()).not.toBe(con.toLowerCase());
+    const categoryLabel = proCategory.replace('{option}', '').toLowerCase();
+    expect(categoryLabel, `[${locale}] proCategory should contain the pro label '${pro}'`).toContain(pro.toLowerCase());
+    expect(categoryLabel, `[${locale}] proCategory should not contain the con label '${con}'`).not.toContain(
+      con.toLowerCase()
+    );
+  });
+
+  test('the type-gen catalogue holds the same argument labels as the runtime catalogue', () => {
+    expect(typeGenArguments).toEqual(runtimeArguments);
+  });
+});
+
 test('inlang variant syntax is used for plural messages (not ICU inline)', () => {
   const resultsContent = fs.readFileSync(path.join(messagesDir, 'en', 'results.json'), 'utf8');
   const results = JSON.parse(resultsContent);
