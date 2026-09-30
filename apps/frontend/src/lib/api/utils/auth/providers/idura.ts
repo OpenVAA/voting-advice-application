@@ -62,6 +62,8 @@ export const iduraProvider: IdentityProvider = {
 
   authConfig: IDURA_FTN_AUTH_CONFIG,
 
+  callbackBinding: 'state',
+
   async getAuthorizeUrl({ redirectUri }: AuthorizeParams): Promise<AuthorizeResult> {
     const clientId = publicConstants.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID;
 

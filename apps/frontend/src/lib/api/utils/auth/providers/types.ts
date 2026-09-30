@@ -20,6 +20,16 @@
 export type ProviderType = 'signicat-ftn' | 'idura-ftn';
 
 /**
+ * The browser-bound proof that ties an OIDC callback to the browser that started the flow.
+ *
+ * The callback endpoint demands this proof before it redeems an authorization code, and rejects the callback without it. Without such a binding, an attacker could stop their own login at the redirect and hand the code to a victim, whose browser would then be signed in as the attacker (login CSRF).
+ *
+ * - `'state'` - the authorization request carries a server-generated `state` that the authorize endpoint stores in the `oidc_state` cookie. The callback requires that cookie and an equal `?state=` query parameter.
+ * - `'pkce'` - the authorization request carries a PKCE `code_challenge`. The matching verifier is kept in the `oidc_code_verifier` cookie, and the callback requires it.
+ */
+export type CallbackBinding = 'state' | 'pkce';
+
+/**
  * Configuration for identity claim extraction from the id_token.
  *
  * Each provider specifies which JWT claims map to which application concepts.
@@ -171,6 +181,13 @@ export interface IdentityProvider {
 
   /** Claim mapping configuration for this provider. */
   readonly authConfig: AuthConfig;
+
+  /**
+   * Which browser-bound proof the callback requires for this provider's flow. See `CallbackBinding`.
+   *
+   * Required, so that a provider which leaves it out does not compile: the callback cannot otherwise know how to bind that provider's flow to the browser that started it.
+   */
+  readonly callbackBinding: CallbackBinding;
 
   /**
    * Build the authorization URL to redirect the user to.
