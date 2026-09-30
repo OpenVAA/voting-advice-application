@@ -1,5 +1,5 @@
 /**
- * `DrawerHost.svelte` timing: focus enters the dialog only while it still shows the payload it opened with, and the close waits out the CSS animation unless the user prefers reduced motion — regardless of View Transitions support.
+ * `DrawerHost.svelte` timing: focus enters the dialog only while it still shows the payload it opened with, the close waits out the CSS animation unless the user prefers reduced motion — regardless of View Transitions support — and a drawer closed within its first two frames keeps its closed-state styles, so its next open slides up again. User dismissal calls the payload's `onDismiss` once per open: Escape, the backdrop and the close button do nothing while the drawer is closing.
  */
 
 import { flushSync, mount, unmount } from 'svelte';
@@ -116,4 +116,87 @@ describe('DrawerHost', () => {
     flushSync();
     expect(dialog.open).toBe(false);
   });
+
+  it('stays in the closed-state styles when closed within its first two frames', () => {
+    const dialog = mountHost();
+    openPayload();
+    drawerHost.close();
+    flushSync();
+    advanceTwoFrames();
+    const panel = dialog.querySelector('.transition-transform')!;
+    expect(panel.classList.contains('translate-y-full')).toBe(true);
+    expect(panel.classList.contains('translate-y-0')).toBe(false);
+    expect(dialog.classList.contains('backdrop:opacity-0')).toBe(true);
+    vi.advanceTimersByTime(DELAY.xs);
+    expect(dialog.open).toBe(false);
+  });
+
+  it('starts a reopen from the closed-state styles after a close within its first two frames', () => {
+    const dialog = mountHost();
+    openPayload();
+    drawerHost.close();
+    flushSync();
+    advanceTwoFrames();
+    vi.advanceTimersByTime(DELAY.xs);
+    openPayload();
+    const panel = dialog.querySelector('.transition-transform')!;
+    expect(panel.classList.contains('translate-y-full')).toBe(true);
+    advanceTwoFrames();
+    expect(panel.classList.contains('translate-y-0')).toBe(true);
+    expect(dialog.classList.contains('backdrop:opacity-60')).toBe(true);
+  });
+
+  it('calls onDismiss once, not again while the drawer is closing', () => {
+    const dialog = mountHost();
+    const onDismiss = openRoutedPayload();
+    dismissWhileClosing(dialog, onDismiss);
+  });
+
+  it('is dismissable again after a reopen that reuses the key', () => {
+    const dialog = mountHost();
+    const onDismiss = openRoutedPayload();
+    dismissWhileClosing(dialog, onDismiss);
+    openRoutedPayload(onDismiss);
+    pressEscape();
+    expect(onDismiss).toHaveBeenCalledTimes(2);
+  });
 });
+
+function advanceTwoFrames(): void {
+  vi.advanceTimersToNextFrame();
+  vi.advanceTimersToNextFrame();
+  flushSync();
+}
+
+/** Opens a payload shaped like a routed opener's: its dismissal closes the host, as the opener's unmount would. */
+function openRoutedPayload(onDismiss = vi.fn(() => drawerHost.close('routed'))): typeof onDismiss {
+  drawerHost.open({
+    key: 'routed',
+    title: () => 'Routed drawer',
+    component: Button,
+    props: () => ({ text: 'Inside' }),
+    onDismiss
+  });
+  flushSync();
+  return onDismiss;
+}
+
+function pressEscape(): void {
+  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  flushSync();
+}
+
+/** Dismisses once, then tries every user dismissal path again during the close animation, and lets the close complete. */
+function dismissWhileClosing(dialog: HTMLDialogElement, onDismiss: ReturnType<typeof vi.fn>): void {
+  pressEscape();
+  expect(onDismiss).toHaveBeenCalledTimes(1);
+  expect(dialog.open).toBe(true);
+  pressEscape();
+  dialog.querySelector<HTMLButtonElement>('button[tabindex="-1"]')!.click();
+  const buttons = dialog.querySelectorAll('button');
+  buttons[buttons.length - 1].click();
+  flushSync();
+  expect(onDismiss).toHaveBeenCalledTimes(1);
+  vi.advanceTimersByTime(DELAY.xs);
+  expect(dialog.open).toBe(false);
+}
