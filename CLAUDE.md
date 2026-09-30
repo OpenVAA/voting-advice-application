@@ -164,7 +164,7 @@ When adding interdependencies:
 
 ### Build System
 
-[Turborepo](https://turbo.build) orchestrates builds from `turbo.json` at the repo root: topological ordering, local caching, parallel execution. The `.turbo/` cache directory must not be committed.
+[Turborepo](https://turbo.build) orchestrates builds from `turbo.json` at the repo root: topological ordering, local caching, parallel execution. The `.turbo/` cache directory must not be committed. `apps/frontend/turbo.json` and `apps/docs/turbo.json` extend the root configuration so that each Vite app's build hashes every git-tracked file of the app (`$TURBO_DEFAULT$`), and the frontend declares its generated `src/lib/paraglide/**` as a build output while excluding it from the inputs. `packages/dev-seed/tests/turboBuildInputsGate.test.ts` asserts both through a turbo dry run.
 
 ### Key Architectural Patterns
 
