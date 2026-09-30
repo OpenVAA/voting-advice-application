@@ -1,14 +1,14 @@
 /**
  * The results leaf's two load guards, pinned as pure functions of the params and the URL.
  *
- * Phase 165 D-10 KEEPS both guards through the route split. The discussion document's starred option was to delete them and let SvelteKit's own 404 answer, but that rested on the params becoming REQUIRED — and D-08 keeps all four optional, so both malformed shapes stay routable and both guards keep their reason to exist. Deleting them would also remove the second layer of the phase's only V5 input-validation control (threat T-165-02): the `etPl` / `etSg` matchers are the first layer, and the matcher-fallthrough 404 below is what catches the segment that slips past them.
+ * Both guards exist because all four params are optional: both malformed shapes stay routable, so SvelteKit's own 404 never answers them. The guards are also the second layer of input validation over the route params: the `etPl` / `etSg` matchers are the first layer, and the matcher-fallthrough 404 below is what catches the segment that slips past them. The 307 drops the drawer segments and nothing else, because a redirect that force-filled the plural would be a navigation loop (invariant 2).
  *
  * The guards read nothing but `params` and `url`, so driving `load` directly is the cheapest instrument that actually exercises them — no browser, no data layer, no context.
  *
  * ## Correctness invariants — the distinct ways this file could hand back a false pass
  *
  * 1. **A guard that never throws looks identical to a guard that was never called.** Both produce "no error observed". So every positive case asserts the THROWN STATUS CODE — 404, or 307 with its target — and never merely that something was thrown. A bare `expect(...).toThrow()` here would pass against a `load` that threw for an unrelated reason, and against one whose guard had been deleted if the harness itself threw first.
- * 2. **A redirect target that force-fills the plural is a navigation loop, not a fix.** `/results/{e}` → `/results/{e}/candidates` is exactly the force-fill the Post-88-02 loop fix removed, and the guard's own doc-comment records it. So the 307 rows assert the target's SHAPE — that it carries no plural the incoming URL did not carry — rather than asserting only the status code. A guard that redirected to a force-filled URL would satisfy a status-only assertion.
+ * 2. **A redirect target that force-fills the plural is a navigation loop, not a fix.** `/results/{e}` → `/results/{e}/candidates` emits a URL that the tab-implication logic then navigates away from, and back; the guard's own comment states the rule. So the 307 rows assert the target's SHAPE — that it carries no plural the incoming URL did not carry — rather than asserting only the status code. A guard that redirected to a force-filled URL would satisfy a status-only assertion.
  * 3. **The negative row is what keeps the positive rows from being vacuous.** A `load` that threw unconditionally would satisfy every positive row in this file. The well-formed full-entity shape is therefore asserted to RESOLVE, which is the only row that can fail if the guards become indiscriminate.
  * 4. **`redirect()` and `error()` both throw, and a thrown redirect is not an error.** `isRedirect` / `isHttpError` are not on the test surface here, so the two are told apart by shape — a redirect carries `status` + `location`, an error carries `status` + `body`. Matching on shape rather than on `instanceof` also keeps the file from passing because SvelteKit changed a class name.
  * 5. **The search string must survive both guards.** A guard that dropped `?electionId=…` would strand the voter's AVAILABLE-array selection, and the resulting URL would then be bounced again by the election-tab loader's GUARD 1. Asserted on the redirect rows.
@@ -91,9 +91,9 @@ const ROWS = [
   }
 ] as const;
 
-describe('results leaf +page.ts — the two guards D-10 keeps (T-165-02, T-165-03)', () => {
+describe('results leaf +page.ts — the entity-type and id guards', () => {
   it('the row table covers all four shapes, so no case is silently missing', () => {
-    // Non-vacuity: a truncated table would make the describe below pass by running fewer rows than the guards have branches. Four is the measured truth — one 404 branch, two 307 branches, one fall-through.
+    // Non-vacuity: a truncated table would make the describe below pass by running fewer rows than the guards have branches. Four is one row per guard branch — one 404 branch, two 307 branches, one fall-through.
     expect(ROWS).toHaveLength(4);
     expect(ROWS.filter((row) => row.outcome === 'redirect-307')).toHaveLength(2);
     expect(ROWS.filter((row) => row.outcome === 'resolves')).toHaveLength(1);
@@ -129,7 +129,7 @@ describe('results leaf +page.ts — the two guards D-10 keeps (T-165-02, T-165-0
   );
 
   it('an entity-without-id URL with NO plural in it redirects without inventing one', async () => {
-    // Invariant 2 at its sharpest. This is the exact shape the Post-88-02 loop fix is about: with no `entityTab` on the way in, a guard that appended `/candidates` would emit a URL that the tab-implication logic then navigates away from, and back.
+    // Invariant 2 at its sharpest. This is the exact shape the no-force-fill rule is about: with no `entityTab` on the way in, a guard that appended `/candidates` would emit a URL that the tab-implication logic then navigates away from, and back.
     const thrown = await capture({ electionTab: 'el-1', entityTab: undefined, entity: 'candidate', id: undefined });
     const { status, location } = asRedirect(thrown);
     expect(status).toBe(307);
@@ -148,7 +148,7 @@ describe('results leaf +page.ts — the two guards D-10 keeps (T-165-02, T-165-0
   });
 
   it('the bare list shapes pass both guards untouched', async () => {
-    // D-08 keeps all four params optional, so these are real render shapes rather than malformed URLs, and a guard that rejected them would break the picker and the implied-tab case.
+    // All four params are optional, so these are real render shapes rather than malformed URLs, and a guard that rejected them would break the picker and the implied-tab case.
     expect(
       await capture({ electionTab: undefined, entityTab: undefined, entity: undefined, id: undefined })
     ).toBeNull();
@@ -158,8 +158,8 @@ describe('results leaf +page.ts — the two guards D-10 keeps (T-165-02, T-165-0
     ).toBeNull();
   });
 
-  it('the cross-type shape stays routable, because D-09 forbids canonicalisation', async () => {
-    // No current emitter produces `organizations/candidate/{id}` (derived in `165-NEGATIVE-CONTROL.md` § 6), so it is not in the E2E enumeration — but D-09 forbids redirecting it and D-10 keeps the params optional, so it must still LOAD. This row is what stops "nothing emits it" from drifting into "so we may as well reject it".
+  it('the cross-type shape stays routable, with no redirect or canonicalisation', async () => {
+    // No current emitter produces `organizations/candidate/{id}`, so it is not in the E2E enumeration — but nothing redirects or canonicalises it and the params are optional, so it must still LOAD. This row is what stops "nothing emits it" from drifting into "so we may as well reject it".
     expect(
       await capture({ electionTab: 'el-1', entityTab: 'organizations', entity: 'candidate', id: 'cand-1' })
     ).toBeNull();

@@ -107,7 +107,7 @@ test.describe('perm-interactive-info (EPERM-07)', () => {
     await dismissInfoModal(page);
     await expect(dialogs).toHaveCount(0, { timeout: 15_000 });
 
-    // QUESTION → QUESTION WHILE OPEN: the teardown path QuestionExtendedInfoButton's close-by-key effect exists for, and the path spike 034 found could hang the dialog. The navigation is a browser Back over the `goto` the question-next button performed — a real, user-reachable client-side question → question navigation that does not have to click through the modal scrim.
+    // QUESTION → QUESTION WHILE OPEN: the teardown path QuestionExtendedInfoButton's close-by-key effect exists for, where a throw inside the host's render flush can leave the dialog hung (see spike 034). The navigation is a browser Back over the `goto` the question-next button performed — a real, user-reachable client-side question → question navigation that does not have to click through the modal scrim.
     await advanceToQuestion(page, HEADINGS.default);
     await questionInfo.expectInfoMode(undefined, 'popup');
     await expect(dialogs).toHaveCount(1, { timeout: 15_000 });

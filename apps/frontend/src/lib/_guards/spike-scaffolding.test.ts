@@ -4,28 +4,28 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Standing assertion that the results-redraw spike scaffolding stays deleted (phase 165 criterion 6, RNAV-06, decision D-20).
+ * Standing assertion that no results-redraw spike scaffolding exists in the frontend source.
  *
- * Phase 165 shipped the results-navigation fixes that `spike/results-redraw` prototyped, and deleted the lab the spike built to prototype them with: a `lib/spike` module, a parallel `results-layered` route tree, and the `SPIKE` marker comments that tagged every call site into it. Deletion alone closes nothing. On this branch the scaffolding never existed, so criterion 6 is true today by construction; what was missing is anything that KEEPS it true. Nothing stops a future spike branch being merged with its lab intact, which is the exact shape criterion 6 exists to close, and this repository's habit is a guard per closed hole (D-20).
+ * The `spike/results-redraw` branch prototyped the results-navigation behaviour in a lab: a `lib/spike` module, a parallel `results-layered` route tree, and `SPIKE` marker comments tagging every call site into it. None of that is application code. This file asserts, over every source file under `apps/frontend/src`, that no file imports the lab module path, no line carries the upper-case marker, and no directory carries the parallel route tree's name. The check has to be a standing one: nothing else stops a spike branch from being merged with its lab intact, which would reintroduce all three.
  *
  * The four sibling files in this directory are all ESLint-driven. This is the directory's first filesystem-walking guard, so its mechanism comes from `lib/routes/routeConsistency.test.ts` instead: a recursive walk from a root resolved relative to THIS file rather than to the working directory, a pruned-directory set, and a dedicated non-vacuity block that asserts the walk found something before asserting it found nothing bad.
  *
  * ## Correctness invariants, each one a distinct way this file could hand back a false pass
  *
  * 1. **The scan must reach real source.** A walk of an empty or a mis-rooted directory satisfies every zero-count assertion below it while measuring nothing at all. The floor below is asserted FIRST, in its own block, and its failure message says what a small population would mean rather than merely reporting a number.
- * 2. **Imports are not the whole surface.** Criterion 6 forbids the `SPIKE` marker comments in terms, and several marker lines in the spike tree carry no accompanying import — one call site, the `Tabs.svelte` label argument, leaves no import at all. A guard that checked only for imports of the scaffolding module would pass with every marker comment still in the tree, which is why the marker text is scanned for in its own right.
- * 3. **The floor is derived, not copied.** It was measured on this tree at write time with the command recorded beside `NON_VACUITY_FLOOR` below, not lifted out of a planning document. A floor copied from prose measures the prose.
+ * 2. **Imports are not the whole surface.** The `SPIKE` marker comments are forbidden in their own right, and several marker lines in the spike tree carry no accompanying import — one call site, the `Tabs.svelte` label argument, leaves no import at all. A guard that checked only for imports of the scaffolding module would pass with every marker comment still in the tree, which is why the marker text is scanned for in its own right.
+ * 3. **The floor is derived, not copied.** It comes from a measurement of this tree, re-derivable with the command recorded beside `NON_VACUITY_FLOOR` below, not from a figure lifted out of a planning document. A floor copied from prose measures the prose.
  * 4. **The self-exclusion must not widen.** This file necessarily CONTAINS the three forbidden literals — they are its subject — so it excludes itself from the scanned set. A self-exclusion that silently grew to cover a second file would hide the next reintroduction, so the excluded set is asserted to hold exactly this one file rather than being trusted to stay small.
- * 5. **Nothing here anchors to a line number.** Every check binds to a path, a directory name or a marker literal. Phase 165 recorded seven consecutive plans whose line anchors had gone stale; names do not go stale.
+ * 5. **Nothing here anchors to a line number.** Every check binds to a path, a directory name or a marker literal. Line anchors go stale as the tree changes; names do not.
  *
  * ## What this file deliberately does not do
  *
- * It does not scan `.planning/`, where the spike's own records, probes and forensics scripts live on purpose (D-21) — criterion 6 scopes to `apps/frontend/src` and those files are spike records rather than application code. It does not scan `tests/`, which never carried the lab. It does not assert that the fixes the spike prototyped are still correct: that is the `voter-results-redraw` Playwright project's job, and this file would pass on a tree where every one of them had been reverted.
+ * It scans nothing outside `apps/frontend/src`: the spike's own records, probes and forensics scripts are records rather than application code, and `tests/` is not application source. It does not assert that the fixes the spike prototyped are still correct: that is the `voter-results-redraw` Playwright project's job, and this file would pass on a tree where every one of them had been reverted.
  */
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
-/** The frontend source tree criterion 6 scopes to, resolved from this file's own location so a run from any working directory measures the same set. */
+/** The frontend source tree this guard scans, resolved from this file's own location so a run from any working directory measures the same set. */
 const SOURCE_ROOT = path.resolve(HERE, '..', '..');
 
 /** This file, excluded from the scanned set by invariant 4: it names all three forbidden literals because they are its subject. */
@@ -38,9 +38,9 @@ const PRUNED_DIRECTORIES = new Set(['node_modules', '.svelte-kit', 'paraglide'])
 const SOURCE_EXTENSIONS = new Set(['.ts', '.svelte', '.js', '.mjs', '.cjs']);
 
 /**
- * The floor the scan must clear, derived at write time (invariant 3) and NOT copied from a planning document.
+ * The floor the scan must clear, derived from a measurement of this tree (invariant 3) and NOT copied from a planning document.
  *
- * Measured 2026-09-23 on this tree at `7621fbce0` — 823 files:
+ * Re-derive the measured count with:
  *
  * ```
  * find apps/frontend/src -type d \( -name node_modules -o -name .svelte-kit -o -name paraglide \) -prune \
@@ -54,10 +54,10 @@ const NON_VACUITY_FLOOR = 700;
 /** The scaffolding module path, in every import form it can be written in: `$lib/spike/...`, `src/lib/spike/...` and a deep relative `../lib/spike/...` all carry this segment pair. */
 const SCAFFOLDING_MODULE = /\blib\/spike\b/;
 
-/** The marker comment the spike tagged its call sites with. Upper case and word-bounded: the tree carries ordinary lower-case prose references to "spike 034" and similar, which are records rather than scaffolding and must not redden this guard. */
+/** The marker comment the spike tagged its call sites with. Upper case and word-bounded: the tree carries ordinary lower-case prose references such as "see spike 034", which are records rather than scaffolding and must not redden this guard. */
 const SCAFFOLDING_MARKER = /\bSPIKE\b/;
 
-/** The parallel results implementation the spike built beside the real one. Criterion 6 forbids it by name, and keeping it behind a dev-only route guard was excluded in terms (D-20). */
+/** The parallel results implementation the spike built beside the real one. It is forbidden by name, including behind a dev-only route guard. */
 const LAYERED_ROUTE_DIRECTORY = 'results-layered';
 
 /**
@@ -121,7 +121,7 @@ const LAYERED_ROUTE_DIRECTORIES = WALKED.directories
   .filter((directory) => path.basename(directory) === LAYERED_ROUTE_DIRECTORY)
   .map(toSourcePath);
 
-describe('the scan is not vacuous (D-20, invariant 1)', () => {
+describe('the scan is not vacuous (invariant 1)', () => {
   it('reaches real source under the frontend source root', () => {
     expect(
       SCANNED_FILES.length,
@@ -137,25 +137,25 @@ describe('the scan is not vacuous (D-20, invariant 1)', () => {
   });
 });
 
-describe('no results-redraw spike scaffolding survives in the frontend source (RNAV-06, criterion 6)', () => {
+describe('no results-redraw spike scaffolding survives in the frontend source', () => {
   it('no source file imports the scaffolding module', () => {
     expect(
       FILES_IMPORTING_SCAFFOLDING,
-      `These files import the deleted results-redraw scaffolding module: ${FILES_IMPORTING_SCAFFOLDING.join(', ')}. Phase 165 shipped the fixes the lab prototyped and deleted the lab; an import of it means a spike branch has been merged with its scaffolding intact, which is what criterion 6 exists to close.`
+      `These files import the results-redraw scaffolding module: ${FILES_IMPORTING_SCAFFOLDING.join(', ')}. The module is spike scaffolding, not application code; an import of it means a spike branch has been merged with its scaffolding intact.`
     ).toEqual([]);
   });
 
   it('no scaffolding marker comment survives', () => {
     expect(
       MARKER_LINES,
-      `These lines still carry the scaffolding marker comment:\n${MARKER_LINES.join('\n')}\nCriterion 6 forbids the markers in terms, and several of them never carried an import at all — which is why an import-only guard would pass on exactly this tree (invariant 2).`
+      `These lines still carry the scaffolding marker comment:\n${MARKER_LINES.join('\n')}\nThe markers are forbidden in their own right, and several of them carry no import at all — which is why an import-only guard would pass on exactly this tree (invariant 2).`
     ).toEqual([]);
   });
 
   it('no parallel layered-results route tree exists', () => {
     expect(
       LAYERED_ROUTE_DIRECTORIES,
-      `A parallel results implementation is present at: ${LAYERED_ROUTE_DIRECTORIES.join(', ')}. D-20 excluded keeping one behind a dev-only route guard in terms: a second results implementation rots within one phase, and criterion 6 forbids the directory by name.`
+      `A parallel results implementation is present at: ${LAYERED_ROUTE_DIRECTORIES.join(', ')}. The directory is forbidden by name, including behind a dev-only route guard: a second results implementation drifts out of step with the real one.`
     ).toEqual([]);
   });
 });
