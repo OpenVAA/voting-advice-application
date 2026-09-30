@@ -20,6 +20,21 @@ ON CONFLICT (key) DO UPDATE
 SET
   value = EXCLUDED.value;
 
+--------------------------------------------------------------------------------
+-- Feedback rate-limit trust for the local stack
+--
+-- The local CLI stack has no Cloudflare in front. `behind_cloudflare` is set true here so that the E2E `isolateFeedbackRateLimit` fixture, which sends its own `cf-connecting-ip` on each feedback POST, gives every POST its own rate-limit bucket.
+--
+-- The migration default is false. Never apply this seed to a deployment that is not behind Cloudflare: with the value true there, a client picks its own bucket by sending `cf-connecting-ip`.
+--------------------------------------------------------------------------------
+INSERT INTO
+  private.deployment_settings (singleton, behind_cloudflare)
+VALUES
+  (true, true)
+ON CONFLICT (singleton) DO UPDATE
+SET
+  behind_cloudflare = EXCLUDED.behind_cloudflare;
+
 -- Default account for single-tenant deployment
 INSERT INTO
   accounts (id, name)
