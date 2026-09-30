@@ -4,12 +4,11 @@
  * The identity provider redirects the browser here after authentication with an authorization code in the query string. This handler:
  *
  * 1. Validates the authorization code is present
- * 2. Verifies the `state` parameter against the `oidc_state` cookie (CSRF protection)
- * 3. Reads the `oidc_code_verifier` cookie (for Signicat PKCE flow)
- * 4. Exchanges the code for an id_token via the active provider
- * 5. Verifies the id_token by extracting claims
- * 6. Sets the `id_token` as an httpOnly cookie
- * 7. Redirects the browser to the preregister page
+ * 2. Demands the browser-bound proof the active provider declares in `callbackBinding`: a `state` equal to the `oidc_state` cookie (Idura), or the `oidc_code_verifier` cookie (Signicat PKCE). A callback without that proof is rejected with `invalid_state` before any token request (login CSRF protection)
+ * 3. Exchanges the code for an id_token via the active provider
+ * 4. Verifies the id_token by extracting claims
+ * 5. Sets the `id_token` as an httpOnly cookie
+ * 6. Redirects the browser to the preregister page
  *
  * This is an API-style server route (GET handler) -- no client-side JavaScript involved.
  * Both Idura (JAR + private_key_jwt) and Signicat (PKCE + client_secret) flows converge here.
@@ -21,7 +20,7 @@ import { formatOidcFailure } from '$lib/api/utils/auth/oidcFailure';
 import { getActiveProvider } from '$lib/api/utils/auth/providers';
 import { COOKIE } from '$lib/cookies';
 import { buildRoute } from '$lib/routes';
-import type { RequestEvent } from '@sveltejs/kit';
+import type { Cookies, RequestEvent } from '@sveltejs/kit';
 
 export async function GET({ url, cookies, locals }: RequestEvent): Promise<never> {
   const code = url.searchParams.get('code');
@@ -41,29 +40,40 @@ export async function GET({ url, cookies, locals }: RequestEvent): Promise<never
     throw redirect(303, buildRoute({ route: 'CandAppPreregister', locale, error: OIDC_ERROR.missingCode }));
   }
 
-  // Verify state parameter (CSRF protection).
-  // The state cookie is set by the /api/oidc/authorize endpoint for providers that return a state value (Idura). If no stored state exists, skip verification (backward compat with Signicat PKCE which may not store state server-side).
-  const storedState = cookies.get(COOKIE.oidcState);
-  if (storedState) {
-    if (!returnedState || returnedState !== storedState) {
-      cookies.delete(COOKIE.oidcState, { path: '/' });
-      cookies.delete(COOKIE.oidcNonce, { path: '/' });
-      throw redirect(303, buildRoute({ route: 'CandAppPreregister', locale, error: OIDC_ERROR.invalidState }));
-    }
-    // Clean up state cookie after successful verification
-    cookies.delete(COOKIE.oidcState, { path: '/' });
-  }
-
-  // Read the code_verifier from cookie (for Signicat PKCE flow).
-  // The preregister page stores this in a cookie so the server-side callback can access it (localStorage is client-only and not accessible from server routes).
-  const codeVerifier = cookies.get(COOKIE.oidcCodeVerifier);
-  if (codeVerifier) {
-    cookies.delete(COOKIE.oidcCodeVerifier, { path: '/' });
-  }
-
   try {
     const provider = getActiveProvider();
     const redirectUri = url.origin + url.pathname;
+
+    // Bind this callback to the browser that started the flow, using the proof the provider declares. Neither binding has a legitimate case for a missing proof: the authorize step always leaves it behind in this browser, so its absence means the code was started elsewhere -- the login-CSRF shape, where an attacker hands their own code to a victim -- or the flow cookie expired. Either way the code is not redeemed.
+    let codeVerifier: string | undefined;
+    switch (provider.callbackBinding) {
+      case 'state': {
+        const storedState = cookies.get(COOKIE.oidcState);
+        if (!storedState || !returnedState || returnedState !== storedState) {
+          clearFlowCookies(cookies);
+          throw redirect(303, buildRoute({ route: 'CandAppPreregister', locale, error: OIDC_ERROR.invalidState }));
+        }
+        cookies.delete(COOKIE.oidcState, { path: '/' });
+        break;
+      }
+      case 'pkce': {
+        // The preregister page stores the verifier in a cookie so this server route can read it (localStorage is client-only). The provider issues no `state`, so none is required here.
+        codeVerifier = cookies.get(COOKIE.oidcCodeVerifier);
+        if (!codeVerifier) {
+          clearFlowCookies(cookies);
+          throw redirect(303, buildRoute({ route: 'CandAppPreregister', locale, error: OIDC_ERROR.invalidState }));
+        }
+        cookies.delete(COOKIE.oidcCodeVerifier, { path: '/' });
+        break;
+      }
+      default: {
+        // Unreachable while every `CallbackBinding` has a case above: the `never` assignment stops compiling when a binding is added without one. A provider whose binding this route cannot check is refused rather than trusted.
+        const unhandled: never = provider.callbackBinding;
+        console.error('[oidc/callback] Unrecognised callback binding:', unhandled);
+        clearFlowCookies(cookies);
+        throw redirect(303, buildRoute({ route: 'CandAppPreregister', locale, error: OIDC_ERROR.invalidState }));
+      }
+    }
 
     // Exchange the authorization code for an id_token
     const { idToken } = await provider.exchangeCodeForToken({
@@ -111,4 +121,13 @@ export async function GET({ url, cookies, locals }: RequestEvent): Promise<never
     console.error('Callback token exchange failed:', e);
     throw redirect(303, buildRoute({ route: 'CandAppPreregister', locale, error: OIDC_ERROR.tokenExchangeFailed }));
   }
+}
+
+/**
+ * Clear every cookie an authorization flow leaves behind, so a rejected callback cannot be retried against the same flow state.
+ */
+function clearFlowCookies(cookies: Cookies): void {
+  cookies.delete(COOKIE.oidcState, { path: '/' });
+  cookies.delete(COOKIE.oidcNonce, { path: '/' });
+  cookies.delete(COOKIE.oidcCodeVerifier, { path: '/' });
 }

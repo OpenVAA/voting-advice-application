@@ -47,6 +47,8 @@ export const signicatProvider: IdentityProvider = {
 
   authConfig: SIGNICAT_FTN_AUTH_CONFIG,
 
+  callbackBinding: 'pkce',
+
   async getAuthorizeUrl({ redirectUri, codeChallenge }: AuthorizeParams): Promise<AuthorizeResult> {
     const { PUBLIC_IDENTITY_PROVIDER_CLIENT_ID, PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT } = publicConstants;
 
