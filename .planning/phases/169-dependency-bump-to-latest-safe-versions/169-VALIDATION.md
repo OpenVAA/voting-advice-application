@@ -40,7 +40,7 @@ created: "2026-10-01"
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 169-01-01 | 01 | 1 | DEPS-01 | T-169-01 | A version younger than 7 days is refused at resolution | config + probe + gates | `yarn config get npmMinimalAgeGate` (= 10080); `169-gates.sh 169-01-baseline` (all 0 but `10-audit` = 1) | ❌ W0 (runners and probe created here) | ⬜ pending |
+| 169-01-01 | 01 | 1 | DEPS-01 | T-169-01, T-169-SC | Operator approvals A and B confirmed before any change; a version younger than 7 days is refused at resolution | approvals check + config + probe + gates | box check (`LEGITIMACY_APPROVAL_MISSING` on miss); `yarn config get npmMinimalAgeGate` (= 10080); `169-gates.sh 169-01-baseline` (all 0 but `10-audit` = 1) | ❌ W0 (runners and probe created here) | ⬜ pending |
 | 169-01-02 | 01 | 1 | DEPS-15 | T-169-02, T-169-03 | A failed audit is exit 2, never a pass, in gate and `--update-baseline` | unit + negative control | `yarn workspace @openvaa/dev-seed vitest run tests/auditBaselineShape.test.ts`; blocked-registry run → exit 2 | ❌ W0 (`scripts/lib/audit-run.mjs` created here) | ⬜ pending |
 | 169-01-03 | 01 | 1 | DEPS-02 | T-169-01 | Refresh obeys the age gate; no `resolutions` added | gates + E2E | `169-gates.sh 169-01-group0`; `169-e2e.sh 169-01-group0` | ✅ | ⬜ pending |
 | 169-02-01 | 02 | 2 | DEPS-03 | T-169-06 | Yarn release fetched only at ≥ 7 days; sha recorded | install + gate tests + image build | `yarn install --immutable` + three dev-seed gate tests; `docker build … --target production` | ✅ | ⬜ pending |
@@ -101,7 +101,7 @@ Created inside the plans' first tasks rather than a separate wave (the phase run
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
 | Land or hold SvelteKit 3 | DEPS-14 | D-32 makes it an operator checkpoint | 169-12 Task 2 `checkpoint:decision`; reply `land-with-sv`, `land-by-hand` or `hold` |
-| Package legitimacy of new direct names (`eslint-plugin-import-x`, Supabase CLI platform packages, `sv`) | DEPS-04, DEPS-07, DEPS-14 | The legitimacy gate requires a human; collected once in a checkbox doc | Tick boxes A/B/C in `169-LEGITIMACY-APPROVALS.md`; an unticked box halts the install task as a blocking human checkpoint |
+| Package legitimacy of new direct names (`eslint-plugin-import-x`, Supabase CLI platform packages, `sv`) | DEPS-04, DEPS-07, DEPS-14 | The legitimacy gate requires a human; collected once in a checkbox doc | Tick boxes A and B in `169-LEGITIMACY-APPROVALS.md` before execution; 169-01 Task 1 checks them first and stops with `LEGITIMACY_APPROVAL_MISSING: box A\|B` before any change. 169-03 and 169-06 re-confirm through preconditions. Box C is optional (169-12 asks at its checkpoint) |
 | Production Node 24 on Render; hosted Postgres 17; `release.yml` / `docs.yml` first `main` runs | DEPS-03, DEPS-08, DEPS-13 | Outside the repository and unobservable before merge | Pending todos filed by 169-13; operator follow-ups listed in the 169-02, 169-06, 169-11 and 169-13 summaries |
 
 ---

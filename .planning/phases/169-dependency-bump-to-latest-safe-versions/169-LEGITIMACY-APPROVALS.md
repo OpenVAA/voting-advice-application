@@ -5,9 +5,12 @@ new to the repository before an agent installs it. D-32 and the orchestrator's r
 plan except the Kit 3 plan autonomous, so the confirmation is collected **here, once, before
 execution**, in the same one-pass checkbox form the operator used for the 166–169 discussion.
 
-**How the plans use it.** The install task in each named plan carries a `<precondition>` that reads
-this file. A ticked box (`[x]`) lets the plan proceed. An unticked box makes the executor stop with a
-blocking human checkpoint (an unmet precondition is never auto-approved). Packages that already sit
+**How the plans use it.** **Boxes A and B must be ticked before execution starts.** 169-01 Task 1
+checks them first, before any file in the repository changes. If either is unticked, it stops with
+`LEGITIMACY_APPROVAL_MISSING: box A|B` and asks the operator once, at phase start. The install tasks
+in 169-03 (box A) and 169-06 (box B) keep a `<precondition>` that re-reads this file as defence in
+depth. They cannot stop mid-run unless a box is unticked after the phase starts (an unmet
+precondition is never auto-approved). Box C is optional here; 169-12 asks at its own checkpoint. Packages that already sit
 in `yarn.lock` are not listed: their only research flag was "too new", which the 7-day age gate
 removes by construction, and each plan re-runs the legitimacy check at execution and halts on any
 other signal.
