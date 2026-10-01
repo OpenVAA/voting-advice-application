@@ -94,3 +94,128 @@ Other gates: `yarn assert:schema-migration-parity` exit 0, `yarn assert:rpc-null
 E2E tracer: `tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/166-01-tracer --project candidate-a11y-scan`
 **exit 0** — `17 passed (16.7s)`, `preflight failures 0, successes 1`, HEAD `cb276b0d2` plus the
 uncommitted Task 1 change. Every protected candidate page in the scan loads through the rewritten RPC.
+
+---
+
+## NC-2 — one editor per candidate, by the index's name (166-01 Task 2, pgTAP)
+
+- **Check:** the "One editor per candidate" section of `36-entity-identity.test.sql` (tests 14-18):
+  a second user's candidate-editor grant refused naming `idx_grants_one_candidate_editor`; an exact
+  duplicate refused naming `grants_user_scope_target_role_key`; a third organization editor and an
+  `admin`-role grant on an edited candidate admitted; the index exists, unique and partial.
+- **Regression state:** the OLD schema — `4413b8ac7` (Task 1 committed), no partial index in
+  `300-auth-tables.sql`; only the new pgTAP section added.
+- **Command:** `yarn db:reset && yarn workspace @openvaa/supabase test:db`
+
+### RED
+
+`yarn db:reset` exit 0; `test:db` **exit 1**.
+
+```
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/36-entity-identity.test.sql ...............
+# Failed test 14: "a second user's editor grant on a candidate is refused by idx_grants_one_candidate_editor"
+#       caught: no exception
+#       wanted: 23505
+# Failed test 18: "idx_grants_one_candidate_editor is a unique partial index on grants"
+# Looks like you failed 2 tests of 18
+Failed 2/18 subtests
+
+Test Summary Report
+-------------------
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/36-entity-identity.test.sql             (Wstat: 0 Tests: 18 Failed: 2)
+  Failed tests:  14, 18
+Files=36, Tests=1335,  3 wallclock secs ( 0.08 usr  0.04 sys +  0.16 cusr  0.09 csys =  0.37 CPU)
+Result: FAIL
+```
+
+Tests 15-17 pass on the old schema by design: they pin what the index must NOT break (the exact
+duplicate still names the table key, so identity-callback's idempotent re-write stays a success;
+organizations stay multi-editor; an `admin`-role entity grant stays outside the rule).
+
+**Fixture control (the 12-user-can retarget is required).** With the index in place and
+`12-user-can.test.sql` restored to its HEAD content (`git show HEAD:<file> > <file>`), `test:db`
+**exit 1**:
+
+```
+psql:/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/12-user-can.test.sql:245: ERROR:  duplicate key value violates unique constraint "idx_grants_one_candidate_editor"
+DETAIL:  Key (target_id)=(dddddddd-dddd-dddd-dddd-000000000005) already exists.
+Dubious, test returned 3 (wstat 768, 0x300)
+Failed 45/45 subtests
+  Parse errors: Bad plan.  You planned 45 tests but ran 0.
+Result: FAIL
+```
+
+The retargeted file was copied back from a scratch copy and `cmp` confirmed it byte-identical.
+
+### GREEN
+
+After the index (300), the 12-user-can retarget (union caller's entity grant on `candidate_a2`),
+`yarn schema:regenerate`, `yarn db:reset` (exit 0) and `yarn db:types` (exit 0, `database.ts`
+byte-identical — `git diff --exit-code` exit 0), `test:db` **exit 0**:
+
+```
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/12-user-can.test.sql ...................... ok
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/36-entity-identity.test.sql ............... ok
+Files=36, Tests=1335,  3 wallclock secs ( 0.08 usr  0.03 sys +  0.18 cusr  0.07 csys =  0.36 CPU)
+Result: PASS
+```
+
+`yarn assert:schema-migration-parity` exit 0.
+
+---
+
+## NC-3 — the grant write treats only the table key as success (166-01 Task 2, vitest + hygiene)
+
+- **Check:** `entityGrant.test.ts` case "throws when a unique violation names a key other than the
+  grant key" (a fake insert answering `code: '23505'` with a message naming
+  `idx_grants_one_candidate_editor` must reject with `ERR_GRANT_WRITE_FAILED`), plus the scoped
+  hygiene scan over both `entityGrant.ts` copies.
+- **Regression state:** the OLD `writeEntityGrant` (`if (error && error.code !== UNIQUE_VIOLATION)`,
+  every 23505 read as success); only the new test case added to `identity-callback/entityGrant.test.ts`.
+- **Command:** `yarn workspace @openvaa/supabase test:unit`
+
+### RED
+
+`test:unit` **exit 1**.
+
+```
+   × writeEntityGrant > throws when a unique violation names a key other than the grant key 3ms
+     → promise resolved "undefined" instead of rejecting
+
+ FAIL  supabase/functions/identity-callback/entityGrant.test.ts > writeEntityGrant > throws when a unique violation names a key other than the grant key
+AssertionError: promise resolved "undefined" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+undefined
+
+ Test Files  1 failed | 14 passed (15)
+      Tests  1 failed | 195 passed (196)
+```
+
+Hygiene scan over both `entityGrant.ts` copies, **exit 1**:
+
+```
+apps/supabase/supabase/functions/identity-callback/entityGrant.ts:8: * ENTITY-TYPE PARAMETERISED, which is D-21's instruction applied as far as wave 2 reaches. ...
+apps/supabase/supabase/functions/identity-callback/entityGrant.ts:78:  // IDEMPOTENT (162-REVIEW WR-06). A unique violation on `grants_user_scope_target_role_key` means this exact grant already exists, ...
+apps/supabase/supabase/functions/invite-candidate/entityGrant.ts:8: * ENTITY-TYPE PARAMETERISED, which is D-21's instruction applied as far as wave 2 reaches. ...
+apps/supabase/supabase/functions/invite-candidate/entityGrant.ts:78:  // IDEMPOTENT (162-REVIEW WR-06). A unique violation on `grants_user_scope_target_role_key` means this exact grant already exists, ...
+FAIL: 4 hit line(s)
+```
+
+### GREEN
+
+`IDEMPOTENT_GRANT_KEY = 'grants_user_scope_target_role_key'`; the check throws unless
+`error.code === UNIQUE_VIOLATION && error.message.includes(IDEMPOTENT_GRANT_KEY)`; both copies of the
+module and of the test byte-identical (`cmp` exit 0). `test:unit` **exit 0**:
+
+```
+ Test Files  15 passed (15)
+      Tests  197 passed (197)
+```
+
+Hygiene scan over the seven Task 2 files: `CLEAN: no planning-reference form in 7 file(s)`, exit 0.

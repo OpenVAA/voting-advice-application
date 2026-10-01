@@ -1705,7 +1705,7 @@ CREATE INDEX IF NOT EXISTS idx_admin_jobs_project_id ON public.admin_jobs (proje
 CREATE INDEX IF NOT EXISTS idx_admin_jobs_election_id ON public.admin_jobs (election_id);
 
 CREATE INDEX IF NOT EXISTS idx_admin_jobs_job_type ON public.admin_jobs (job_type);
--- The grant model: `public.grants`, its constraints, its index, its RLS and the access-token hook's schema access.
+-- The grant model: `public.grants`, its constraints, its indexes, its RLS and the access-token hook's schema access.
 --
 -- Depends on:
 -- - 100-tenancy.sql (accounts, projects)
@@ -1736,6 +1736,13 @@ CREATE TABLE public.grants (
 
 -- The reverse lookup, who holds a grant on this target, which editor administration needs and the UNIQUE cannot serve because it leads with user_id. No index on user_id alone: the UNIQUE leads with it, which covers the foreign key for lint-schema.mjs's unindexed-foreign-key advisor, and a second index would cost every write.
 CREATE INDEX idx_grants_scope_target ON public.grants (scope, target_type, target_id);
+
+-- A candidate has at most one editor, because a candidate-scope user is the candidate. Organizations admit several editors, and an `admin`-role entity grant is outside the index. Nothing at write time stops one user editing two candidates in one project; get_candidate_user_data raises on that when it is read. A second user's editor grant on a candidate is refused naming this index, while an exact duplicate grant is refused naming grants_user_scope_target_role_key, which is checked first.
+CREATE UNIQUE INDEX idx_grants_one_candidate_editor ON public.grants (target_id)
+WHERE
+  scope = 'entity'
+  AND target_type = 'candidate'
+  AND role = 'editor';
 
 --------------------------------------------------------------------------------
 -- RLS on grants — critical to prevent circular RLS with the auth hook

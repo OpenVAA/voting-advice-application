@@ -1,6 +1,6 @@
 -- 36-entity-identity.test.sql: the caller's own entity is read from the grant table
 --
--- `get_candidate_user_data` answers "which entity am I" from the caller's own `(entity, <type>, <id>, editor)` rows in `public.grants`, in the one project the caller names. This file pins that answer for zero, one and two such grants, across two projects, for a project admin and an entity-admin grant holder (both resolve to nothing), for anon, and in both the candidate and the organization arm. Two editor grants of the asked type in one project raise P0001 with the hint ERR_ENTITY_IDENTITY_AMBIGUOUS, and the answer comes from the table rather than the caller's token. The catalog section pins where the lookup lives: a SECURITY DEFINER helper in `private` with an empty search_path, called by an INVOKER RPC.
+-- `get_candidate_user_data` answers "which entity am I" from the caller's own `(entity, <type>, <id>, editor)` rows in `public.grants`, in the one project the caller names. This file pins that answer for zero, one and two such grants, across two projects, for a project admin and an entity-admin grant holder (both resolve to nothing), for anon, and in both the candidate and the organization arm. Two editor grants of the asked type in one project raise P0001 with the hint ERR_ENTITY_IDENTITY_AMBIGUOUS, and the answer comes from the table rather than the caller's token. The catalog section pins where the lookup lives: a SECURITY DEFINER helper in `private` with an empty search_path, called by an INVOKER RPC. The last section pins the write-side rule: a candidate admits one editor, an organization several, and each refusal names its unique key.
 --
 -- Every impersonation passes an empty grant array, so each claim is projected from the rows this file writes and nothing else is seeded.
 --
@@ -15,7 +15,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (13);
+  plan (18);
 
 SELECT
   create_test_data ();
@@ -469,6 +469,60 @@ SELECT
         AND a.privilege_type = 'EXECUTE'
     ),
     'authenticated holds the private schema''s stated EXECUTE grant on private.caller_entity_ids'
+  );
+
+-- =====================================================================
+-- One editor per candidate
+-- =====================================================================
+-- As postgres. U1 already edits C1, so a second user's editor grant on C1 is refused by the partial index, while an exact duplicate of U1's grant is refused by the table's own key first.
+SELECT
+  throws_ok (
+    $$INSERT INTO grants (user_id, scope, target_type, target_id, role) VALUES ('cccccccc-cccc-cccc-cccc-0000000036a5', 'entity', 'candidate', '36363636-3636-3636-3636-0000000000c1', 'editor')$$,
+    '23505',
+    'duplicate key value violates unique constraint "idx_grants_one_candidate_editor"',
+    'a second user''s editor grant on a candidate is refused by idx_grants_one_candidate_editor'
+  );
+
+SELECT
+  throws_ok (
+    $$INSERT INTO grants (user_id, scope, target_type, target_id, role) VALUES ('cccccccc-cccc-cccc-cccc-0000000036a1', 'entity', 'candidate', '36363636-3636-3636-3636-0000000000c1', 'editor')$$,
+    '23505',
+    'duplicate key value violates unique constraint "grants_user_scope_target_role_key"',
+    'an exact duplicate of an existing grant is refused by grants_user_scope_target_role_key'
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$INSERT INTO grants (user_id, scope, target_type, target_id, role) VALUES ('cccccccc-cccc-cccc-cccc-0000000036a5', 'entity', 'organization', %L, 'editor')$$,
+      test_id ('org_a')
+    ),
+    'an organization admits a third editor'
+  );
+
+SELECT
+  lives_ok (
+    $$INSERT INTO grants (user_id, scope, target_type, target_id, role) VALUES ('cccccccc-cccc-cccc-cccc-0000000036a5', 'entity', 'candidate', '36363636-3636-3636-3636-0000000000c1', 'admin')$$,
+    'an admin-role entity grant on an edited candidate is outside the one-editor rule'
+  );
+
+SELECT
+  ok (
+    COALESCE(
+      (
+        SELECT
+          i.indisunique
+          AND i.indpred IS NOT NULL
+        FROM
+          pg_index i
+          JOIN pg_class c ON c.oid = i.indexrelid
+        WHERE
+          c.relname = 'idx_grants_one_candidate_editor'
+          AND i.indrelid = 'public.grants'::regclass
+      ),
+      false
+    ),
+    'idx_grants_one_candidate_editor is a unique partial index on grants'
   );
 
 SELECT

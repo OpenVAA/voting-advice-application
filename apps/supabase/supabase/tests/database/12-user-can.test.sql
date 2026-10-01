@@ -228,12 +228,12 @@ VALUES
     test_id ('candidate_a'),
     'admin'
   ),
-  -- The union caller: an entity grant AND a project-editor grant, same project
+  -- The union caller: an entity grant AND a project-editor grant, same project. The entity grant names candidate_a2, which no other identity in this file edits, because a candidate admits one editor.
   (
     'cccccccc-cccc-cccc-cccc-0000000000f4',
     'entity',
     'candidate',
-    test_id ('candidate_a'),
+    test_id ('candidate_a2'),
     'editor'
   ),
   (

@@ -1,11 +1,11 @@
 /**
  * The entity grant write, for the Edge Functions that mint an identity.
  *
- * Extracted from the Edge Function entry points for testability, in the shape `identity-callback/candidateRecord.ts` established. This module reaches the Deno runtime global nowhere and imports from a remote origin nowhere -- no environment read, no server registration, no URL import -- so it can be imported by both the Edge Function and vitest. The client is a parameter for that reason: the caller reads the environment and builds the service-role client, and this module holds only the row shape and the failure behaviour, which are the halves worth asserting.
+ * Kept apart from the Edge Function entry points so it can be tested, in the shape of `identity-callback/candidateRecord.ts`. This module reaches the Deno runtime global nowhere and imports from a remote origin nowhere -- no environment read, no server registration, no URL import -- so it can be imported by both the Edge Function and vitest. The client is a parameter for that reason: the caller reads the environment and builds the service-role client, and this module holds only the row shape and the failure behaviour, which are the halves worth asserting.
  *
- * DUPLICATED ON PURPOSE. Byte-identical copies of this file live in `apps/supabase/supabase/functions/invite-candidate/` and `apps/supabase/supabase/functions/identity-callback/` -- this file is one of the two -- because Supabase treats each top-level function directory as its own deployment unit and this repository has no shared-module directory for Edge Functions. `jwtSegment.ts` already exists as two copies for exactly the same reason, so a reader who finds two identical files is looking at a choice rather than at an oversight.
+ * DUPLICATED ON PURPOSE. Byte-identical copies of this file live in `apps/supabase/supabase/functions/invite-candidate/` and `apps/supabase/supabase/functions/identity-callback/` -- this file is one of the two -- because Supabase treats each top-level function directory as its own deployment unit and this repository has no shared-module directory for Edge Functions. `jwtSegment.ts` exists as two copies for the same reason, so a reader who finds two identical files is looking at a choice rather than at an oversight.
  *
- * ENTITY-TYPE PARAMETERISED, which is D-21's instruction applied as far as wave 2 reaches. All four entity types are accepted and all four are exercised by this module's own test; only one is passed by a caller today, because entity-type SELECTION at the identity entry point and the creation paths for the other three entity tables are deferred to the sign-up phase by name. The literal naming the entity type therefore appears ONCE per Edge Function -- at the call site that says which entity was just created -- and nowhere in the authorisation check, nowhere in the insert, and nowhere in this file. Adding organizations later is a second call site rather than a control-flow change.
+ * ENTITY-TYPE PARAMETERISED. All four entity types are accepted, and this module's own test exercises all four. The caller names the type at its call site, the one place that knows which entity was just created; the authorisation check and the insert take it as a parameter, so no entity-type literal appears in this file.
  *
  * WHY THE VOCABULARY IS ONE STRING RATHER THAN AN ARRAY OF LITERALS. The closed set of entity types has to be spelled somewhere for the runtime check below to exist at all, and spelling it as four quoted literals would put the candidate literal in this file -- the one place the whole point of the parameterisation is that it does not appear. A single whitespace-separated declaration names the vocabulary once, as a vocabulary, without any one member standing alone as a literal this module could accidentally come to depend on.
  *
@@ -21,6 +21,9 @@ const ENTITY_GRANT_VOCABULARY = 'candidate organization faction alliance';
 
 /** PostgreSQL's SQLSTATE for a unique violation, which PostgREST passes through as the error `code`. */
 const UNIQUE_VIOLATION = '23505';
+
+/** The grants table's own unique key: a violation of it means this exact grant already exists. */
+const IDEMPOTENT_GRANT_KEY = 'grants_user_scope_target_role_key';
 
 /** The same vocabulary as a list, for the runtime membership check. */
 const ENTITY_GRANT_TYPES: Array<string> = ENTITY_GRANT_VOCABULARY.split(' ');
@@ -75,8 +78,8 @@ export async function writeEntityGrant(
     role: 'editor'
   });
 
-  // IDEMPOTENT (162-REVIEW WR-06). A unique violation on `grants_user_scope_target_role_key` means this exact grant already exists, which is the state the caller wanted -- so it is success, not failure. That is what lets a caller write the grant on EVERY pass rather than only when it has just created the entity: a request that created the entity and then failed to write the grant is repaired by the next one, instead of leaving the identity grant-less, and therefore denied everything, for good.
-  if (error && error.code !== UNIQUE_VIOLATION) {
+  // IDEMPOTENT on the grant's own key only. A violation of `IDEMPOTENT_GRANT_KEY` means this exact grant already exists, which is the state the caller asked for, so it is success. A unique violation on any other key is a refusal -- another identity already holds an editor grant that the schema admits only once -- and must not read as success, or the caller would report an identity that holds no grant.
+  if (error && !(error.code === UNIQUE_VIOLATION && error.message.includes(IDEMPOTENT_GRANT_KEY))) {
     throw Object.assign(new Error(`Grant write failed: ${error.message}`), {
       code: 'ERR_GRANT_WRITE_FAILED'
     });

@@ -5,7 +5,7 @@
  *
  * ALL FOUR ENTITY TYPES ARE EXERCISED, although only candidates have a caller: organizations, factions and alliances have no creation path that writes a grant. Three of the module's four branches are therefore exercised by this file and by nothing else until a second call site exists.
  *
- * The client is a hand-built fake rather than a mocking library, in the shape `candidateRecord.test.ts` established: it records the table it was asked for and the row it was handed, and answers `insert()` with a value each case controls.
+ * The client is a hand-built fake rather than a mocking library: it records the table it was asked for and the row it was handed, and answers `insert()` with a value each case controls.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -85,8 +85,8 @@ describe('writeEntityGrant', () => {
     ).rejects.toThrow('duplicate key value violates unique constraint');
   });
 
-  // IDEMPOTENT: the grant already existing is the state the caller wanted, so the unique violation on the grants key is success. That is what lets identity-callback write the grant on every login and repair an identity whose first grant write failed.
-  it('treats a unique violation (the grant already exists) as success', async () => {
+  // IDEMPOTENT: the grant already existing is the state the caller wanted, so a unique violation naming the grants table's own key is success. That is what lets a caller write the grant without first asking whether it exists.
+  it('treats a unique violation on the grant key (the grant already exists) as success', async () => {
     const { client, recorded } = recordingClient({
       error: {
         message: 'duplicate key value violates unique constraint "grants_user_scope_target_role_key"',
@@ -98,6 +98,20 @@ describe('writeEntityGrant', () => {
       writeEntityGrant(client, { userId: USER_ID, entityType: 'candidate', entityId: ENTITY_ID })
     ).resolves.toBeUndefined();
     expect(recorded.rows).toHaveLength(1);
+  });
+
+  // A unique violation on any key other than the grant's own is a refusal: another identity already holds the one editor grant that key admits, so reading it as success would report an identity that was never granted anything.
+  it('throws when a unique violation names a key other than the grant key', async () => {
+    const { client } = recordingClient({
+      error: {
+        message: 'duplicate key value violates unique constraint "idx_grants_one_candidate_editor"',
+        code: '23505'
+      }
+    });
+
+    await expect(
+      writeEntityGrant(client, { userId: USER_ID, entityType: 'candidate', entityId: ENTITY_ID })
+    ).rejects.toMatchObject({ code: 'ERR_GRANT_WRITE_FAILED' });
   });
 
   it('still throws for any other coded failure, such as a foreign-key violation', async () => {
