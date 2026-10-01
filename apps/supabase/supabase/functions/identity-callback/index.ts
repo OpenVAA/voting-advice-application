@@ -7,7 +7,7 @@
  * 3. Verifying the inner JWT signature against the provider's public JWKS
  * 4. Extracting identity claims based on provider configuration
  * 5. Finding or creating a Supabase auth user matched by identity claim value
- * 6. Creating a candidate record and its entity grant for new users
+ * 6. Finding the identity's candidate through its editor grant, or creating the candidate and that grant for a new identity
  * 7. Returning a session for immediate login
  *
  * POST /functions/v1/identity-callback Body: { id_token: string, project_id?: string }
@@ -26,7 +26,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import * as jose from 'https://deno.land/x/jose@v5.9.6/index.ts';
-import { createCandidate, findExistingCandidate } from './candidateRecord.ts';
+import { createCandidate, deleteCandidate, findExistingCandidate } from './candidateRecord.ts';
 import { writeEntityGrant } from './entityGrant.ts';
 import { extractIdentityClaims, resolveProviderConfig } from './claimConfig.ts';
 import { requireEnv } from './envConfig.ts';
@@ -295,7 +295,7 @@ Deno.serve(async (req: Request) => {
       isNewUser = true;
     }
 
-    // 7. Find or create candidate record. The lookup names the project this deployment serves because the candidates table carries a project foreign key and an auth user id is not unique across projects: one identity may hold a candidates row in several projects, and this admin client bypasses row-level security, so the project filter is the only thing keeping a row from another project from being adopted here. A failed lookup throws rather than answering null, because a null answer is indistinguishable from "no candidate in this project" and would send the branch below into its insert arm, creating a second candidate row and a second role assignment for an identity that already has both.
+    // 7. Find or create the candidate record. The lookup goes through the identity's candidate-editor grant and names the project this deployment serves: grants carry no project, one identity may hold candidates in several projects, and this admin client bypasses row-level security, so the project filter inside the lookup is the only thing keeping a candidate from another project from being adopted here. A failed lookup throws rather than answering null, because a null answer is indistinguishable from "no candidate in this project" and would send the branch below into its insert arm, creating a second candidate for an identity that already has one.
     const existingCandidate = await findExistingCandidate(supabaseAdmin, { projectId, authUserId: userId });
 
     let candidateId: string;
@@ -306,7 +306,6 @@ Deno.serve(async (req: Request) => {
       // Create new candidate record. The insert lives in `candidateRecord.ts` beside the lookup above, in the shape that module established: no remote specifier, no environment read, the client and the scope as parameters. That is what makes the row it writes ASSERTABLE -- `index.ts` resolves remote Deno specifiers and cannot be imported by vitest, so an inline insert here could only ever be checked against source text. The row is written CONFIRMED, the one automatic confirmation path; the reason is in that function's docblock.
       const candidate = await createCandidate(supabaseAdmin, {
         projectId,
-        authUserId: userId,
         firstName,
         lastName
       });
@@ -314,14 +313,23 @@ Deno.serve(async (req: Request) => {
       candidateId = candidate.id;
     }
 
-    // Write the grant that makes the identity able to act on its own record -- on BOTH branches. The candidate insert and the grant insert are two writes, so a request whose grant write fails after its candidate write leaves a candidate row with no grant; a grant written only on the create branch would then be skipped on every later login, and the identity would stay grant-less -- denied everything -- for good. The write is idempotent (an existing grant is success), so running it on every login repairs that state and costs one no-op insert otherwise. The hard throw is kept: under the grant model an identity holding no grant row can do nothing at all, so a swallowed failure here would hand the candidate a session into an application that refuses them everything.
+    // Write the grant that links the identity to its candidate, once, after both branches. On the existing branch the candidate was found through this same grant, so the write is an idempotent no-op; on the create branch it is the only link to the new row. A failed write on the create branch deletes that row, because a candidate no grant names can never be found again and the next login would create a second one; a failed delete is logged and is the one case that can still leave such a row. The failure itself is still thrown: an identity holding no grant row can do nothing at all, so a swallowed failure would hand the candidate a session into an application that refuses them everything.
     //
     // The entity type is named HERE and nowhere else in this function. This entry point creates candidates only; the grant write takes the entity type as a parameter, so a second entity kind needs only a second call site.
-    await writeEntityGrant(supabaseAdmin, {
-      userId,
-      entityType: 'candidate',
-      entityId: candidateId
-    });
+    try {
+      await writeEntityGrant(supabaseAdmin, {
+        userId,
+        entityType: 'candidate',
+        entityId: candidateId
+      });
+    } catch (grantError) {
+      if (!existingCandidate) {
+        await deleteCandidate(supabaseAdmin, { projectId, candidateId }).catch((deleteError: unknown) => {
+          console.error('identity-callback: the candidate whose grant write failed could not be deleted:', deleteError);
+        });
+      }
+      throw grantError;
+    }
 
     // 8. Generate session for immediate login. Use generateLink with magiclink type to create a login URL, addressed to the same identity-derived placeholder email the user record was created with above so the admin generateLink API resolves to the existing user.
     const siteUrl = Deno.env.get('SUPABASE_URL')!.replace(/\/+$/, '');

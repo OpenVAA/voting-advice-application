@@ -277,3 +277,65 @@ Result: PASS
 
 166-03 removes the wrapper; the same two assertions must then pass un-wrapped (that run is NC-4's
 real GREEN and belongs to 166-03's record).
+
+---
+
+## NC-5 — identity-callback finds the candidate through its grant and undoes a failed create (166-02 Task 1, vitest)
+
+- **Check:** the rewritten `findExistingCandidate` cases, the four-key `createCandidate` row case, the
+  three `deleteCandidate` cases and the entry-point import case in
+  `apps/supabase/supabase/functions/identity-callback/candidateRecord.test.ts`, plus the order case
+  "writes the grant once, after both candidate branches, and deletes a just-created candidate when that
+  write fails" in `identity-callback/flowConformance.test.ts`.
+- **Regression state:** the OLD code at HEAD `18b25f305` — `findExistingCandidate` filters `candidates`
+  on the per-row auth link column, `createCandidate` writes that column, `deleteCandidate` does not
+  exist, and `index.ts` writes the grant with no try/catch. Only the two test files were changed.
+- **Command:** `yarn workspace @openvaa/supabase test:unit`
+
+### RED
+
+`test:unit` **exit 1** (`Test Files  2 failed | 13 passed (15)`, `Tests  13 failed | 192 passed (205)`).
+Every failure is a planned assertion or the missing export, none a load or parse error:
+
+```
+ FAIL  candidateRecord.test.ts > findExistingCandidate > reads the target ids of the user’s candidate-editor grants
+AssertionError: expected [ [ 'candidates', 'id' ] ] to deeply equal ArrayContaining{…}
+ FAIL  candidateRecord.test.ts > findExistingCandidate > reads the granted candidate in the served project only, as at most one row
+AssertionError: expected [ 'candidates' ] to deeply equal [ 'grants', 'candidates' ]
+ FAIL  candidateRecord.test.ts > findExistingCandidate > carries every granted id and the project id it was given rather than one of its own
+AssertionError: expected [ { table: 'candidates', …(3) }, …(1) ] to deeply equal ArrayContaining{…}
+ FAIL  candidateRecord.test.ts > findExistingCandidate > returns null without reading candidates when the user holds no candidate-editor grant, the ordinary first-registration case
+AssertionError: expected [ 'candidates' ] to deeply equal [ 'grants' ]
+ FAIL  candidateRecord.test.ts > findExistingCandidate > treats a null grants answer like an empty one
+AssertionError: expected [ 'candidates' ] to deeply equal [ 'grants' ]
+ FAIL  candidateRecord.test.ts > findExistingCandidate > rejects, without reading candidates, when the grants query reported an error
+AssertionError: promise resolved "null" instead of rejecting
+ FAIL  candidateRecord.test.ts > findExistingCandidate > names the client-reported failure of the grants query and nothing about the deployment in the thrown message
+AssertionError: expected null to be an instance of Error
+ FAIL  candidateRecord.test.ts > the identity-callback entry point reaches the candidates table only through the helper > calls findExistingCandidate, createCandidate and deleteCandidate, all imported from the helper module
+AssertionError: expected '/**\n * Provider-Agnostic Identity Ca…' to contain 'deleteCandidate('
+ FAIL  candidateRecord.test.ts > createCandidate > writes exactly the name parts, the project and the confirmation flag
+AssertionError: expected [ 'auth_user_id', 'confirmed', …(3) ] to deeply equal [ 'confirmed', 'first_name', …(2) ]
+ FAIL  candidateRecord.test.ts > deleteCandidate > deletes the candidate by its id within the served project
+TypeError: (0 , deleteCandidate) is not a function
+ FAIL  candidateRecord.test.ts > deleteCandidate > carries the project id it was given rather than one of its own
+TypeError: (0 , deleteCandidate) is not a function
+ FAIL  candidateRecord.test.ts > deleteCandidate > rejects with the client-reported text only when the delete fails
+TypeError: (0 , deleteCandidate) is not a function
+ FAIL  flowConformance.test.ts > identity-callback flow conformance > writes the grant once, after both candidate branches, and deletes a just-created candidate when that write fails
+AssertionError: expected 14286 to be greater than 18710
+```
+
+The flow case fails on its "grant call sits inside a `try` that opens after the create branch" step: the
+nearest `try {` before the grant call is the handler's outer one.
+
+### GREEN
+
+Two-query lookup through `grants`, the four-key insert, `deleteCandidate` filtered by id and project,
+and the grant write in a `try` whose catch deletes the new candidate on the create branch before
+rethrowing. `test:unit` **exit 0**:
+
+```
+ Test Files  15 passed (15)
+      Tests  205 passed (205)
+```
