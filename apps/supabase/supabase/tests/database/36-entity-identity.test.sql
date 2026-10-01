@@ -2,6 +2,8 @@
 --
 -- `get_candidate_user_data` answers "which entity am I" from the caller's own `(entity, <type>, <id>, editor)` rows in `public.grants`, in the one project the caller names. This file pins that answer for zero, one and two such grants, across two projects, for a project admin and an entity-admin grant holder (both resolve to nothing), for anon, and in both the candidate and the organization arm. Two editor grants of the asked type in one project raise P0001 with the hint ERR_ENTITY_IDENTITY_AMBIGUOUS, and the answer comes from the table rather than the caller's token. The catalog section pins where the lookup lives: a SECURITY DEFINER helper in `private` with an empty search_path, called by an INVOKER RPC. The last section pins the write-side rule: a candidate admits one editor, an organization several, and each refusal names its unique key.
 --
+-- The first section pins what anon can read: no column holding an auth user id on any table anon can select, with nominations.created_by the one named exemption.
+--
 -- Every impersonation passes an empty grant array, so each claim is projected from the rows this file writes and nothing else is seeded.
 --
 -- Depends on: 00-helpers.test.sql (set_test_user, reset_role, create_test_data, test_id, test_user_id, test_seed_identity_grants).
@@ -15,10 +17,75 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (18);
+  plan (20);
 
 SELECT
   create_test_data ();
+
+-- =====================================================================
+-- What anon can read
+-- =====================================================================
+SELECT
+  todo_start (
+    'the entity tables still expose an auth user id to anon'
+  );
+
+-- Every column of a foreign key to auth.users, on a table where anon holds SELECT on that column and either row-level security is off or a SELECT policy names anon or PUBLIC.
+SELECT
+  is (
+    ARRAY(
+      SELECT
+        format('%s.%s.%s', n.nspname, cl.relname, a.attname)
+      FROM
+        pg_constraint c
+        JOIN pg_class cl ON cl.oid = c.conrelid
+        JOIN pg_namespace n ON n.oid = cl.relnamespace
+        CROSS JOIN LATERAL unnest(c.conkey) AS k (attnum)
+        JOIN pg_attribute a ON a.attrelid = c.conrelid
+        AND a.attnum = k.attnum
+      WHERE
+        c.contype = 'f'
+        AND c.confrelid = 'auth.users'::regclass
+        AND has_column_privilege('anon', c.conrelid, a.attnum, 'SELECT')
+        AND (
+          NOT cl.relrowsecurity
+          OR EXISTS (
+            SELECT
+              1
+            FROM
+              pg_policy p
+            WHERE
+              p.polrelid = c.conrelid
+              AND p.polcmd IN ('r', '*')
+              AND (
+                'anon'::regrole::oid = ANY (p.polroles)
+                OR 0::oid = ANY (p.polroles)
+              )
+          )
+        )
+      ORDER BY
+        1
+    ),
+    ARRAY['public.nominations.created_by'],
+    'anon can read no auth user id column except nominations.created_by'
+  );
+
+SELECT
+  set_test_user ('anon');
+
+SELECT
+  throws_ok (
+    $$SELECT auth_user_id FROM public.candidates$$,
+    '42703',
+    NULL,
+    'anon cannot select an auth user id column from candidates'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  todo_end ();
 
 -- =====================================================================
 -- Fixture, local to this transaction

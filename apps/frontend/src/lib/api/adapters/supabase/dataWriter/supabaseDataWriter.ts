@@ -207,7 +207,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       .single();
     if (error || !entityRow) throw new Error(`Failed to load candidate data: ${error?.message ?? 'no data'}`);
 
-    // The rpc is scoped by the caller's IDENTITY — it reads `auth.uid()` — AND by this adapter's project, which it takes as a required `p_project_id`. Without the project term an identity holding candidate rows in several projects would get whichever row `LIMIT 1` returned. The returned row's own `project_id` is still compared here, as defence in depth: a mismatch stops the read rather than rendering another project's candidate.
+    // The rpc resolves the caller's IDENTITY from their editor grant in this adapter's project, which it takes as a required `p_project_id`, and raises when the caller holds more than one such grant in that project; that error surfaces here as a thrown load error. The returned row's own `project_id` is still compared here, as defence in depth: a mismatch stops the read rather than rendering another project's candidate.
     //
     // Neither uuid is interpolated. The message names the condition, which is what an operator needs to act on; the pair of ids is exactly what a deployment in this state should not be putting into logs and error reporters.
     if (entityRow.project_id !== this.projectId)

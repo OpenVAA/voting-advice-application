@@ -219,3 +219,61 @@ module and of the test byte-identical (`cmp` exit 0). `test:unit` **exit 0**:
 ```
 
 Hygiene scan over the seven Task 2 files: `CLEAN: no planning-reference form in 7 file(s)`, exit 0.
+
+---
+
+## NC-4 — anon can read no auth user id (166-01 Task 3, pgTAP census + behavioural check)
+
+- **Check:** the "What anon can read" section of `36-entity-identity.test.sql` (tests 1-2): the census
+  of every column of a foreign key to `auth.users` on a table where anon holds column SELECT and either
+  RLS is off or a SELECT/ALL policy names anon or PUBLIC, expected to be exactly
+  `{public.nominations.created_by}` (the single exemption); and, as anon,
+  `SELECT auth_user_id FROM public.candidates` must raise `42703`.
+- **Regression state:** the CURRENT tree with the link column present — `cc4a599b9` (Tasks 1-2
+  committed); the column is dropped only in 166-03. This is the red run required before the drop lands.
+- **Command:** `yarn db:reset && yarn workspace @openvaa/supabase test:db`
+
+### RED (un-wrapped)
+
+`yarn db:reset` exit 0; `test:db` **exit 1**.
+
+```
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/36-entity-identity.test.sql ...............
+# Failed test 1: "anon can read no auth user id column except nominations.created_by"
+#         have: {public.candidates.auth_user_id,public.nominations.created_by,public.organizations.auth_user_id}
+#         want: {public.nominations.created_by}
+# Failed test 2: "anon cannot select an auth user id column from candidates"
+#       caught: no exception
+#       wanted: 42703
+# Looks like you failed 2 tests of 20
+Failed 2/20 subtests
+
+Test Summary Report
+-------------------
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/36-entity-identity.test.sql             (Wstat: 0 Tests: 20 Failed: 2)
+  Failed tests:  1-2
+Files=36, Tests=1337,  3 wallclock secs ( 0.08 usr  0.03 sys +  0.17 cusr  0.08 csys =  0.36 CPU)
+Result: FAIL
+```
+
+### GREEN-with-TODO (held until the column is dropped)
+
+The same two assertions wrapped in `SELECT todo_start ('the entity tables still expose an auth user id to anon');`
+... `SELECT todo_end ();`. `yarn db:reset` exit 0; `test:db` **exit 0**:
+
+```
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/36-entity-identity.test.sql ...............
+# Failed (TODO) test 1: "anon can read no auth user id column except nominations.created_by"
+#         have: {public.candidates.auth_user_id,public.nominations.created_by,public.organizations.auth_user_id}
+#         want: {public.nominations.created_by}
+# Failed (TODO) test 2: "anon cannot select an auth user id column from candidates"
+#       caught: no exception
+#       wanted: 42703
+ok
+All tests successful.
+Files=36, Tests=1337,  3 wallclock secs ( 0.07 usr  0.04 sys +  0.16 cusr  0.08 csys =  0.35 CPU)
+Result: PASS
+```
+
+166-03 removes the wrapper; the same two assertions must then pass un-wrapped (that run is NC-4's
+real GREEN and belongs to 166-03's record).
