@@ -3,11 +3,17 @@
 # visual-container.sh -- Perform exactly ONE in-container visual run and leave behind a
 #                        complete, machine-readable evidence directory.
 #
-# This is the executable form of the recipe that until now existed only as prose in the docblock of tests/tests/specs/visual/visual-regression.spec.ts and as a comment in .github/workflows/main.yaml -- with its port-forwarding step documented nowhere, and with a mount path that has aborted every run since the served-app preflight landed.
-# A visual-noise campaign runs this recipe roughly twenty times; encoding it once is the difference between twenty reproducible runs and twenty transcriptions.
+# This is the executable form of the in-container visual recipe, including the port-forwarding step and the mount path the served-app preflight needs.
+# Encoding it once makes a series of runs reproducible rather than transcribed.
 #
 # Usage:
-#   tests/scripts/visual-container.sh --run-dir tests/e2e-runs/visual-observe tests/scripts/visual-container.sh --run-dir tests/e2e-runs/visual-egress-ctl --block-egress tests/scripts/visual-container.sh --run-dir tests/e2e-runs/visual-rebaseline --update-snapshots-all tests/scripts/visual-container.sh --run-dir tests/e2e-runs/visual-det-ci --ci-literal FRONTEND_PORT=5273 tests/scripts/visual-container.sh --run-dir tests/e2e-runs/visual-noise-run01
+#   ```sh
+#   tests/scripts/visual-container.sh --run-dir tests/e2e-runs/visual-observe
+#   tests/scripts/visual-container.sh --run-dir tests/e2e-runs/visual-egress-ctl --block-egress
+#   tests/scripts/visual-container.sh --run-dir tests/e2e-runs/visual-rebaseline --update-snapshots-all
+#   tests/scripts/visual-container.sh --run-dir tests/e2e-runs/visual-det-ci --ci-literal
+#   FRONTEND_PORT=5273 tests/scripts/visual-container.sh --run-dir tests/e2e-runs/visual-noise-run01
+#   ```
 #
 #   --run-dir <path>        REQUIRED. Where every artifact for this run lands. A relative path is resolved against the REPO ROOT, never against $PWD, so the script behaves identically from any working directory. It MUST resolve inside the repo root, because that is the only thing mounted into the container -- a run dir outside it would be discarded when the --rm container exits, taking the run's entire evidence with it.
 #   --config <path>         OPTIONAL. Playwright config to run. Default: tests/playwright.config.ts, the SHIPPED configuration, which is what every verdict-bearing run must use.
@@ -20,11 +26,10 @@
 #   --grep <pattern>        OPTIONAL. Select by title tag instead of by project.
 #                           Mutually exclusive with --project and with --ci-literal.
 #   --update-snapshots-all  OPTIONAL. Appends the literal --update-snapshots=all. There is deliberately NO flag that produces the bare form: bare
-#                           --update-snapshots is mode `changed`, which SKIPS images that are within tolerance (research N-4). A re-baseline whose whole purpose is to re-capture every image against new rendering must not silently leave the within-tolerance ones carrying old pixels.
+#                           --update-snapshots is mode `changed`, which SKIPS images that are within tolerance. A re-baseline whose whole purpose is to re-capture every image against new rendering must not silently leave the within-tolerance ones carrying old pixels.
 #   --block-egress          OPTIONAL. Blackhole fonts.googleapis.com and fonts.gstatic.com at the container's own resolver, and run a curl control FIRST that MUST fail. A green suite behind an unproven block proves nothing, so the control runs BEFORE Playwright, not after.
 #   --egress-control-only   OPTIONAL, and only meaningful with --block-egress (a usage error without it). Take the controls and STOP: run the step-2 curl control, then drive Chromium at the same URL, and exit WITHOUT starting the forwarder or Playwright. The block must be proven live BEFORE any suite runs behind it, and a control run that also runs the suite cannot be that proof -- it would already be the thing it is supposed to license. Writes curl-control.log and chromium-control.log beside provenance.txt in the run dir. Exit 0 means BOTH controls failed to connect, which is the passing outcome here; exit 6 means one of them reached Google.
-#   --ci-literal            OPTIONAL. Reproduce CI's invocation exactly: CI=true and
-#                           --grep "@visual" with no --project and no --workers/--retries override. Such a run yields SEVEN tests, not four, because dependency projects are exempt from --grep (research N-11).
+#   --ci-literal            OPTIONAL. Reproduce CI's invocation exactly: CI runs tests/scripts/e2e-run.sh with --project visual-regression, and the wrapper unsets CI, so this mode passes that project with no --workers/--retries override and leaves the config's unset-CI defaults (workers: 6, retries: 0). It also sets GITHUB_ACTIONS=true in the container, as every CI job has, so the per-test ceiling is CI's 180 s and forbidOnly is on. Playwright also runs the setup projects visual-regression depends on.
 #   -h, --help              Print this header and exit 0.
 #
 # Prerequisites -- HOST side. This script ASSERTS them; it never performs them. It runs INSIDE a container against a dev server on the HOST that it cannot own, so unlike tests/scripts/e2e-run.sh it neither spawns nor adopts a server, and it does not reset the database. Run these three, in this order, before invoking it:
@@ -33,24 +38,31 @@
 #   2. yarn db:reset && yarn db:seed --template e2e/base
 #   3. yarn workspace @openvaa/frontend dev --host 0.0.0.0
 #
-#   Step 1 is NOT optional. @openvaa/app-shared is ESM-only and the frontend resolves it to its built dist/, so editing staticSettings.ts without rebuilding changes nothing at runtime -- and a stale dist/ would re-baseline against Google-served Inter and pass every gate for the wrong reason (research N-7).
+#   Step 1 is NOT optional. @openvaa/app-shared is ESM-only and the frontend resolves it to its built dist/, so editing staticSettings.ts without rebuilding changes nothing at runtime -- and a stale dist/ would re-baseline against Google-served Inter and pass every gate for the wrong reason.
 #
-#   Step 3 must be the workspace script. `yarn dev --host 0.0.0.0` does NOT work: the root dev script chains through concurrently, so the appended argument lands on concurrently instead of on the bundler, which then binds 127.0.0.1 and is unreachable from the container (research N-10).
+#   Step 3 must be the workspace script. `yarn dev --host 0.0.0.0` does NOT work: the root dev script chains through concurrently, so the appended argument lands on concurrently instead of on the bundler, which then binds 127.0.0.1 and is unreachable from the container.
 #
 #   Also required: Docker is running, and the pinned image is ALREADY PRESENT locally.
 #   This script refuses to pull -- see exit code 4.
 #
 # Exit codes -- the caller must be able to branch on the status alone:
-#   0  Playwright reported success 1  Playwright reported failures 2  usage error 3  docker is unavailable (the daemon did not answer) 4  the pinned image digest is NOT present locally; this script REFUSES to pull 5  the TCP forwarder failed to bind inside the container 6  an egress control did NOT fail under --block-egress, so the block is unproven and the suite must not run behind it. Raised by the step-2 curl control on every
+#   0:  Playwright reported success
+#   1:  Playwright reported failures
+#   2:  usage error
+#   3:  docker is unavailable (the daemon did not answer)
+#   4:  the pinned image digest is NOT present locally; this script REFUSES to pull
+#   5:  the TCP forwarder failed to bind inside the container
+#   6:  an egress control did NOT fail under --block-egress, so the block is unproven and the suite must not run behind it. Raised by the step-2 curl control on every
 #      --block-egress run, and additionally by the Chromium control under
 #      --egress-control-only: curl proves the RESOLVER is blackholed, Chromium proves the browser that actually takes the screenshots is subject to the same blackhole rather than resolving around /etc/hosts. Two claims, one code -- either one succeeding means the block is not applied.
-#   7  the host dev server was not reachable through the forwarder 130  the run was INTERRUPTED (SIGINT/SIGTERM). Never 0: the determinism gate counts CONSECUTIVE runs, so an abort must be recorded as an abort by the caller, not silently counted as a green.
+#   7:  the host dev server was not reachable through the forwarder
+#   130:  the run was INTERRUPTED (SIGINT/SIGTERM). Never 0: the determinism gate counts CONSECUTIVE runs, so an abort must be recorded as an abort by the caller, not silently counted as a green.
 #
 # Codes 0/1/2/130 keep the meanings tests/scripts/e2e-run.sh assigns them. Codes 2 and 5 are shared with tests/scripts/tcp-forward.mjs's own table and must stay in agreement with it.
 
 set -euo pipefail
 
-# Auto-detect paths from script location -- cwd-independence is not optional here: the Playwright config already had a spawn-cwd incident (playwright.config.ts:1135-1147).
+# Auto-detect paths from the script's location, so the script behaves identically from any working directory.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TESTS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 REPO_ROOT="$(cd "$TESTS_DIR/.." && pwd)"
@@ -59,8 +71,8 @@ REPO_ROOT="$(cd "$TESTS_DIR/.." && pwd)"
 FRONTEND_PORT="${FRONTEND_PORT:-5173}"
 
 # Pinned BY DIGEST, never by tag. Two reasons, both load-bearing:
-#   (a) A tag reference can resolve to a different image later, and the whole comparability argument -- re-running the original injection to re-observe the same 19,484 px miss -- rests on "same image, same digest".
-#   (b) On this machine Docker's `desktop` credential helper has previously wedged, so a pull triggered by a mistyped reference stalls before any network activity in a way that looks like a network problem. The digest guard below refuses to pull.
+#   (a) A tag reference can resolve to a different image later, and comparing one run with another rests on "same image, same digest".
+#   (b) On this machine Docker's `desktop` credential helper can wedge, so a pull triggered by a mistyped reference stalls before any network activity in a way that looks like a network problem. The digest guard below refuses to pull.
 PW_IMAGE="${PW_IMAGE:-mcr.microsoft.com/playwright@sha256:6446946a1d9fd62d9ae501312a2d76a43ee688542b21622056a372959b65d63d}"
 
 RUN_DIR=""
@@ -222,7 +234,7 @@ if [ -n "$CONFIG_PATH" ]; then
   CONFIG_PATH="${CONFIG_PATH#"$REPO_ROOT"/}"
 fi
 
-# `install -d` rather than `mkdir` with a parents flag: this script must contain no standalone short flag that a reader (or a grep) could mistake for a docker port publication, which threat T-146-03's mitigation forbids outright.
+# `install -d` rather than `mkdir` with a parents flag: this script must contain no standalone short flag that a reader (or a grep) could mistake for a docker port publication, which this script's no-port-publication rule forbids outright.
 install -d "$RUN_DIR"
 
 trap 'INTERRUPTED=1' INT TERM
@@ -240,7 +252,7 @@ if ! docker image inspect "$PW_IMAGE" > "$RUN_DIR/image-inspect.json" 2> "$RUN_D
   echo "visual-container.sh: the pinned image is not present locally:" >&2
   echo "visual-container.sh:   $PW_IMAGE" >&2
   echo "visual-container.sh: this script REFUSES to pull. On this host Docker's credential" >&2
-  echo "visual-container.sh: helper has previously wedged, and a pull triggered by a mistyped" >&2
+  echo "visual-container.sh: helper can wedge, and a pull triggered by a mistyped" >&2
   echo "visual-container.sh: reference stalls before any network activity in a way that reads" >&2
   echo "visual-container.sh: as a network problem. Fetch the image deliberately, then retry." >&2
   fatal "pinned image digest not present locally" 4
@@ -258,9 +270,8 @@ PW_ARGS_FILE="$RUN_DIR/pw-args.txt"
   echo "-c"
   echo "${CONFIG_PATH:-tests/playwright.config.ts}"
   if [ "$CI_LITERAL" = "1" ]; then
-    # CI selects by grep and passes no --project and no worker/retry override; CI=true alone gives workers: 1, retries: 3 (playwright.config.ts). Reproducing that literally is the point of this mode -- do not "improve" it toward the strict runs.
-    echo "--grep"
-    echo "@visual"
+    # CI selects the project and passes no worker/retry override, with CI unset by the wrapper. Reproducing that literally is the point of this mode -- do not "improve" it toward the strict runs.
+    echo "--project=visual-regression"
   elif [ -n "$GREP_PATTERN" ]; then
     echo "--grep"
     echo "$GREP_PATTERN"
@@ -300,7 +311,9 @@ SELF="visual-container.sh(in-container)"
 echo "$SELF: provenance -> $VC_RUN_DIR/provenance.txt"
 cat "$VC_RUN_DIR/provenance.txt"
 
-# --- 2. egress control, BEFORE Playwright ---------------------------------------------- A green suite behind an unproven block proves nothing, so the control that shows the block is live runs first and aborts the whole run if it succeeds.
+# --- 2. egress control, BEFORE Playwright ----------------------------------------------
+
+# A green suite behind an unproven block proves nothing, so the control that shows the block is live runs first and aborts the whole run if it succeeds.
 if [ "${VC_BLOCK_EGRESS:-0}" = "1" ]; then
   # The blackhole lines themselves, recorded next to the control they explain: a reader re-deriving this needs to see the two /etc/hosts entries that ARE the mechanism.
   {
@@ -317,7 +330,7 @@ if [ "${VC_BLOCK_EGRESS:-0}" = "1" ]; then
   echo "$SELF: egress control curl exit $CURL_STATUS"
   cat "$VC_RUN_DIR/egress-curl.err" || true
 
-  # A single transcript carrying the command, the status and the verbatim error, so the ledger's E1-CURL row can cite ONE log file rather than three fragments that a reader has to reassemble in the right order.
+  # A single transcript carrying the command, the status and the verbatim error, so the control's evidence is ONE log file rather than three fragments that a reader has to reassemble in the right order.
   {
     echo "--- command ---"
     echo 'curl -sS --max-time 8 "https://fonts.googleapis.com/css2?family=Inter"'
@@ -337,7 +350,9 @@ if [ "${VC_BLOCK_EGRESS:-0}" = "1" ]; then
   fi
 fi
 
-# --- 2b. the BROWSER-level control, and the stop -------------------------------------- curl proves the RESOLVER is blackholed. It does not prove the browser is: Chromium has its own resolver path and could in principle route around /etc/hosts, in which case every claim about a font-egress-blocked capture would be vacuous. That is a different claim, so it is measured separately -- and it is measured with the image's own bundled Playwright rather than through a spec file, because a committed spec would make a one-off control part of the permanent suite.
+# --- 2b. the BROWSER-level control, and the stop --------------------------------------
+
+# curl proves the RESOLVER is blackholed. It does not prove the browser is: Chromium has its own resolver path and could in principle route around /etc/hosts, in which case every claim about a font-egress-blocked capture would be vacuous. That is a different claim, so it is measured separately -- and it is measured with the image's own bundled Playwright rather than through a spec file, because a committed spec would make a one-off control part of the permanent suite.
 if [ "${VC_CONTROLS_ONLY:-0}" = "1" ]; then
   set +e
   node -e '
@@ -373,7 +388,7 @@ if [ "${VC_CONTROLS_ONLY:-0}" = "1" ]; then
   set -e
   echo "exit=$CHROMIUM_STATUS" >> "$VC_RUN_DIR/chromium-control.log"
   cat "$VC_RUN_DIR/chromium-control.log"
-  # NOT `exit`: that filename means "Playwright's status" everywhere else in this phase, and a controls-only run never reaches Playwright. Overloading it would let a later reader mistake a control for a suite result.
+  # NOT `exit`: in every other run directory that filename holds Playwright's status, and a controls-only run never reaches Playwright, so reusing it would present a control as a suite result.
   echo "$CHROMIUM_STATUS" > "$VC_RUN_DIR/controls-exit"
 
   if [ "$CHROMIUM_STATUS" != "0" ]; then
@@ -381,12 +396,14 @@ if [ "${VC_CONTROLS_ONLY:-0}" = "1" ]; then
     exit "$CHROMIUM_STATUS"
   fi
   echo "$SELF: both egress controls failed to connect, which is the passing outcome. Stopping"
-  echo "$SELF: before the forwarder and before Playwright: D-11 requires the block to be proven"
+  echo "$SELF: before the forwarder and before Playwright: the block must be proven"
   echo "$SELF: BEFORE a suite runs behind it, so this run must not be that suite."
   exit 0
 fi
 
-# --- 3. the TCP relay ------------------------------------------------------------------ The suite's endpoint literals hardcode `localhost` (baseURL and SUPABASE_URL alike) and the candidate storageState cookie is minted for that origin, so the host's services must appear on the container's OWN loopback under the same names and ports.
+# --- 3. the TCP relay ------------------------------------------------------------------
+
+# The suite's endpoint literals hardcode `localhost` (baseURL and SUPABASE_URL alike) and the candidate storageState cookie is minted for that origin, so the host's services must appear on the container's OWN loopback under the same names and ports.
 node tests/scripts/tcp-forward.mjs \
   "$FRONTEND_PORT:host.docker.internal:$FRONTEND_PORT" \
   "54321:host.docker.internal:54321" \
@@ -460,23 +477,23 @@ ENTRYPOINT
 
 DOCKER_ARGS=(run --rm --platform linux/amd64)
 
-# The forwarder's upstream. Present in the original recipe; on macOS Docker Desktop `--network host` maps to the Linux VM rather than to the macOS host, so the gateway alias plus a relay is the reliable shape.
+# The forwarder's upstream. On macOS Docker Desktop `--network host` maps to the Linux VM rather than to the macOS host, so the gateway alias plus a relay is the reliable shape.
 DOCKER_ARGS+=(--add-host host.docker.internal:host-gateway)
 
 if [ "$BLOCK_EGRESS" = "1" ]; then
   # The block is NAME-SCOPED on purpose, and exactly two names. Hardening it to `--network none` or to a broad DNS sink would sever the host stack the suite needs and would surface as a Playwright failure rather than as a configuration mistake.
-  # Verified at both curl and Chromium level in the pinned image (research N-8).
+  # Verified at both curl and Chromium level in the pinned image.
   DOCKER_ARGS+=(--add-host fonts.googleapis.com:127.0.0.1 --add-host fonts.gstatic.com:127.0.0.1)
 fi
 
-# LOAD-BEARING, and the single reason an in-container run is possible at all: `-v "$PWD":"$PWD" -w "$PWD"` makes the container's pwd EQUAL the host's pwd, so tests/global-setup.ts derives the same repoRoot and tests/tests/support/preflight.ts's strict absolute-path equality against what the host dev server echoes back holds. The older `-v "$PWD":/work -w /work` form aborts EVERY run with exit 1 before any spec body, reporting a DIFFERENT checkout -- which reads like a wrong-server problem rather than a mount problem. The mount moves; not one byte of the preflight does.
+# LOAD-BEARING, and the single reason an in-container run is possible at all: `-v "$PWD":"$PWD" -w "$PWD"` makes the container's pwd EQUAL the host's pwd, so tests/global-setup.ts derives the same repoRoot and tests/tests/support/preflight.ts's strict absolute-path equality against what the host dev server echoes back holds. A `-v "$PWD":/work -w /work` mount aborts EVERY run with exit 1 before any spec body, reporting a DIFFERENT checkout -- which reads like a wrong-server problem rather than a mount problem.
 DOCKER_ARGS+=(-v "$PWD":"$PWD" -w "$PWD")
 DOCKER_ARGS+=(-e FRONTEND_PORT -e PLAYWRIGHT_VISUAL=1)
 DOCKER_ARGS+=(-e "VC_RUN_DIR=$RUN_DIR" -e "VC_BLOCK_EGRESS=$BLOCK_EGRESS")
 DOCKER_ARGS+=(-e "VC_CONTROLS_ONLY=$CONTROLS_ONLY")
-
 if [ "$CI_LITERAL" = "1" ]; then
-  DOCKER_ARGS+=(-e CI=true)
+  # GitHub sets GITHUB_ACTIONS=true on every CI job, and the Playwright config keys the 180 s per-test ceiling and forbidOnly on it. Without it the container would run with the local 90 s ceiling.
+  DOCKER_ARGS+=(-e GITHUB_ACTIONS=true)
 fi
 
 DOCKER_ARGS+=("$PW_IMAGE" bash "$ENTRYPOINT_FILE")
@@ -506,7 +523,7 @@ echo "visual-container.sh: container exit $RUN_STATUS"
 
 # --- read-back, not restatement ---------------------------------------------------------
 
-# Append the OBSERVED posture, read back out of the machine-readable report rather than restated from the invocation -- so the ledger's worker/retry claim can be audited, not taken on trust. Mirrors tests/scripts/e2e-run.sh's own read-back and its stated reason.
+# Append the OBSERVED posture, read back out of the machine-readable report rather than restated from the invocation -- so the worker/retry posture can be audited, not taken on trust. Mirrors tests/scripts/e2e-run.sh's own read-back and its stated reason.
 if [ -s "$RUN_DIR/results.json" ]; then
   node -e '
     const fs = require("fs");

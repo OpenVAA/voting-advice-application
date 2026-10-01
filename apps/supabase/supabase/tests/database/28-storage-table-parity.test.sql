@@ -1,14 +1,14 @@
--- 28-storage-table-parity.test.sql: criterion 6 -- the two-mechanism partition, and the pairing WIDENED
+-- 28-storage-table-parity.test.sql: every storage policy decides through exactly one of two mechanisms, and storage agrees with the entity tables per identity, verb and entity type
 --
--- 162-14 LANDS THE PER-VERB GRID for the policies it converts and control-runs it three ways. This file WIDENS it across section 3.3's matrix -- every one of section 3.1's eight grant-bearing identities, both verbs, all four entity types -- which is the boundary that plan's SUMMARY states in those words.
+-- Section 1 asserts the partition: each policy on storage.objects reaches either the authority mechanism (`user_can`) or the visibility mechanism (`storage_path_is_public`), with both counts asserted, the visibility-only member named and the count reaching neither zero. Section 2 asserts that for eight grant-bearing identities, both verbs and all four entity types, the storage layer allows exactly what the entity tables allow. Section 3 asserts that read and write are decided separately, at entity and at project scope.
 --
--- THE PARTITION IS D-27's, NOT A4(a)'s LITERAL WORDING. A4(a) as ticked reads "all 15 storage policies route through `user_can`". D-27 measured that one of them cannot: `anon_select_public_assets` serves a caller carrying no `grants` claim, which `user_can` denies BY CONSTRUCTION as one of 162-04's named deny classes, so routing the public-read policy through it would make every public asset unfetchable. The assertion is therefore that every storage policy routes through EXACTLY ONE of the two mechanisms, with both counts asserted, the membership sets NAMED, and the reaches-neither count zero.
+-- The anonymous public read is the one policy that cannot route through `user_can`: an anonymous caller carries no `grants` claim, which `user_can` denies, so an authority-routed public read would make every public asset unfetchable.
 --
--- ⚠ REACH IS TRANSITIVE, AND THAT IS A MEASURED CORRECTION. **No storage policy names `user_can` in its own `pg_policies` expression.** All fourteen authority policies call `public.storage_path_can(grant_scope_type, text, text, text, storage_verb)`, which calls `user_can` internally; `anon_select_public_assets` calls `public.storage_path_is_public`, which calls `project_open_for_voters` and `entity_has_confirmed_nomination`. A DIRECT text match on the policy expression therefore returns 0 authority policies and 15 reaching neither -- against a CORRECT implementation. The reach below is computed as a recursive closure over `pg_proc.prosrc`, and the derived partition (14 / 1 / 0) then AGREES with D-27 and with 162-14's corrected truth line.
+-- Reach is transitive: no storage policy names `user_can` in its own `pg_policies` expression. The fourteen authority policies call `public.storage_path_can(grant_scope_type, text, text, text, storage_verb)`, which calls `user_can`, and `anon_select_public_assets` calls `public.storage_path_is_public`, so reach is computed as a recursive closure over `pg_proc.prosrc` rather than as a text match on the policy expression.
 --
--- NEITHER HALF OF ANY PAIR IS AN AUTHORITY-PREDICATE CALL. 162-14's prohibition, inherited verbatim: a pair whose two halves both call one function asserts that the function equals itself and cannot detect storage and tables disagreeing, which is the only thing criterion 6 asks for. Both halves here are REAL operations whose row counts or affected-row counts are read. Control S3 builds the tautological form on purpose and records it staying GREEN under the divergence S1 reddens.
+-- Neither half of any pair is an authority-predicate call. A pair whose two halves call the same function asserts that the function equals itself and cannot detect storage and tables disagreeing, so both halves are real operations whose row counts or affected-row counts are read.
 --
--- WHY THE GRID RUNS AGAINST A CLOSED PROJECT AND THE SEPARABILITY SECTION AGAINST AN OPEN ONE. The authenticated entity SELECT policies carry a public disjunct; with the project open, every authenticated caller sees every confirmed, nominated entity and the table half of every pair is true for reasons that have nothing to do with authority. The grid therefore closes the project. The entity-scope separability identity, by contrast, reads another entity's asset THROUGH the visibility path -- that is exactly the point of it: it reads what it may not write -- so the project is reopened for that section, with this note, rather than left ambiguous.
+-- The grid runs against a closed project because the authenticated entity SELECT policies carry a public disjunct: with the project open, the table half of a pair would be true for every confirmed, nominated entity whatever the caller's authority. Section 3 reopens the project, because its entity-scope identity reads another entity's asset through the visibility path.
 --
 -- Depends on: 00-helpers.test.sql (create_test_data, test_id, test_user_id, set_test_user,
 --             test_seed_fixture_grants, reset_role)
@@ -118,7 +118,7 @@ SELECT
         m17_storage_reach
     ),
     15,
-    'storage partition: the estate carries exactly 15 storage policies -- the figure ROADMAP criterion 6, 162-SPEC.md, the outline and 162-14 all cite'
+    'storage partition: the estate carries exactly 15 storage policies'
   );
 
 SELECT
@@ -147,7 +147,7 @@ SELECT
         AND NOT reaches_authority
     ),
     1,
-    'storage partition: exactly 1 policy reaches a VISIBILITY helper and not the authority mechanism -- D-27''s named exception'
+    'storage partition: exactly 1 policy reaches a VISIBILITY helper and not the authority mechanism'
   );
 
 SELECT
@@ -182,7 +182,7 @@ SELECT
         AND NOT reaches_visibility
     ),
     0,
-    'storage partition: NO storage policy makes its decision through neither mechanism -- the parallel implementation criterion 6 forbids'
+    'storage partition: NO storage policy makes its decision through neither mechanism, so none carries a parallel authority rule of its own'
   );
 
 SELECT
@@ -312,9 +312,9 @@ VALUES
     now()
   );
 
--- FOUR FRESH, UN-NOMINATED ENTITIES, one per type, and their four entity editors.
+-- Four fresh, un-nominated entities, one per type, and their four entity editors.
 --
--- THE FIXTURE'S OWN ENTITIES CANNOT SERVE THE PAIRING, and the reason is measured rather than assumed: `create_test_data()` nominates candidate_a and faction_a UNDER org_a's nomination, so the organization editor reaches both through `is_child_nominee`. The authenticated entity SELECT policy is a disjunction over THREE members -- `project.read_entities` OR `entity.read_answers` OR `nomination.read` -- while the storage policy asks exactly ONE of them (`entity.read_answers` at entity scope). With a hierarchy present the two layers therefore disagree for a reason that is correct on both sides and has nothing to do with criterion 6: the organization editor may read a child nominee's basic nomination data and may not read that entity's assets. Un-nominated entities remove the third disjunct from both sides, so the pair measures the thing it exists to measure. (Since 162-REVIEW CR-02 the table policy no longer carries the `nomination.read` disjunct, so the disagreement described here is gone; the un-nominated entities are kept because they remain a correct, hierarchy-free pairing.)
+-- The fixture's own candidate_a and faction_a are nominated under org_a, so a nomination hierarchy relates them to the organization editor. These entities have no nomination, so each pair measures the entity grants alone.
 INSERT INTO
   public.candidates (id, project_id, first_name, last_name, confirmed)
 VALUES
@@ -864,9 +864,9 @@ SELECT
 -- =====================================================================
 -- Section 3: the two read-but-not-write identities, at two different scopes
 -- =====================================================================
--- A policy that accepts the verb argument and then DISCARDS it passes any grid that exercises only one verb, and passes the eight assertions above too whenever read and write happen to agree. These four are the assertions that fail when the verb is discarded. Each names the section 3.3 cell it is read from.
+-- A policy that accepts the verb argument and then discards it passes any grid that exercises only one verb, and passes the eight assertions above whenever read and write happen to agree. These four assertions fail when the verb is discarded; each names the role and the permission it exercises.
 --
--- The project is reopened here, deliberately and with its reason: the entity-scope identity reads ANOTHER entity's PUBLICLY VISIBLE asset -- through the visibility path -- and is refused a write to it, which no permission admits. That is the separation being measured.
+-- The project is reopened here because the entity-scope identity reads another entity's publicly visible asset through the visibility path and is refused a write to it, which no permission admits.
 SELECT
   reset_role ();
 
@@ -911,7 +911,7 @@ SELECT
         AND name = public.test_id ('project_a')::text || '/organizations/' || public.test_id ('org_a')::text || '/sep.png'
     ),
     1,
-    'SEPARABILITY entity scope (3.3 Candidate / entity.read_answers = own): the grantee READS another entity''s publicly visible asset'
+    'SEPARABILITY entity scope (Candidate, entity.read_answers = own): the grantee READS another entity''s publicly visible asset'
   );
 
 SELECT
@@ -921,7 +921,7 @@ SELECT
               public.test_id('project_a')::text || '/organizations/' || public.test_id('org_a')::text || '/sep2.png')$$,
     '42501',
     NULL,
-    'SEPARABILITY entity scope (3.3 Candidate / entity.edit_answers = own): and is REFUSED a write to that SAME object, in the SAME transaction'
+    'SEPARABILITY entity scope (Candidate, entity.edit_answers = own): and is REFUSED a write to that SAME object, in the SAME transaction'
   );
 
 SELECT
@@ -936,7 +936,7 @@ SELECT
         AND name = public.test_id ('project_a')::text || '/elections/' || public.test_id ('election_a')::text || '/sep.png'
     ),
     1,
-    'SEPARABILITY project scope (3.3 Candidate / project.read_structure = granted): the entity grantee READS an election asset'
+    'SEPARABILITY project scope (Candidate, project.read_structure = granted): the entity grantee READS an election asset'
   );
 
 SELECT
@@ -946,7 +946,7 @@ SELECT
               public.test_id('project_a')::text || '/elections/' || public.test_id('election_a')::text || '/sep2.png')$$,
     '42501',
     NULL,
-    'SEPARABILITY project scope (3.3 Candidate / project.edit_structure withheld): and is REFUSED a write to that SAME object, in the SAME transaction'
+    'SEPARABILITY project scope (Candidate, project.edit_structure withheld): and is REFUSED a write to that SAME object, in the SAME transaction'
   );
 
 SELECT

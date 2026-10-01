@@ -3,9 +3,9 @@
  *
  * The thing under test is a promise about DOCUMENTATION, so the assertions are about coverage and honesty rather than about behaviour:
  *
- * - every code this application throws is mapped, and mapped to a real stage (so adding a code without a hint reds here, which is the mechanism that stops this table rotting into the false closed-set comment it replaced);
+ * - every code this application throws is mapped, and mapped to a real stage (so adding a code without a hint reds here, which is what stops this table rotting into a false closed set);
  * - every jose 6.x code this pipeline can produce is mapped, enumerated against jose's own error classes rather than against a list retyped by hand;
- * - `ERR_JOSE_GENERIC` specifically resolves to the jwks-fetch stage, because that is the only thing it can mean in jose 6.x and mis-attributing it is what cost the debug session;
+ * - `ERR_JOSE_GENERIC` specifically resolves to the jwks-fetch stage, because that is the only thing it can mean in jose 6.x and mis-attributing it sends the reader to the wrong stage;
  * - the describer is TOTAL -- an unknown code is admitted as unknown, never mapped to a plausible-looking stage;
  * - no hint interpolates anything, which is what makes `formatOidcFailure` safe to log.
  *
@@ -33,7 +33,7 @@ const OWN_KEYS: Array<OidcFailureKey> = [
 /**
  * jose's own codes, read off jose's exported error CLASSES rather than retyped.
  *
- * This is the load-bearing detail of the file: a jose upgrade that adds an error class makes this list grow by itself, so the coverage test below reds on the upgrade instead of on the next production incident.
+ * This is the load-bearing detail of the file: a jose upgrade that adds an error class makes this list grow by itself, so the coverage test below reds on the upgrade instead of in production.
  */
 const JOSE_CODES: Array<string> = Object.values(jose.errors)
   .map((cls) => (cls as unknown as { code?: unknown }).code)
@@ -62,7 +62,7 @@ describe('OIDC_FAILURE', () => {
 });
 
 describe('describeOidcFailure', () => {
-  // The rot-guard. Add a member to `OIDC_FAILURE` without a hint and this reds -- which is exactly the failure mode the false closed-set comment had and could not detect.
+  // The rot-guard: a member added to `OIDC_FAILURE` without a hint reds here, so the table cannot silently become a false closed set.
   it('maps every code this application throws to a known stage and a non-empty hint', () => {
     for (const key of OWN_KEYS) {
       const code = OIDC_FAILURE[key];
@@ -188,22 +188,22 @@ describe('describeOidcFailure', () => {
 
 describe('formatOidcFailure', () => {
   it('renders one greppable line carrying the code, stage, provider and hint', () => {
-    const line = formatOidcFailure(OIDC_FAILURE.jwksUriHttpStatus, 'idura');
+    const line = formatOidcFailure(OIDC_FAILURE.jwksUriHttpStatus, 'idura-ftn');
 
     expect(line).toContain(`code=${OIDC_FAILURE.jwksUriHttpStatus}`);
     expect(line).toContain('stage=jwks-fetch');
-    expect(line).toContain('provider=idura');
+    expect(line).toContain('provider=idura-ftn');
     expect(line).toContain('IDENTITY_PROVIDER_JWKS_URI');
     expect(line).not.toContain('\n');
   });
 
-  // Naming the active provider is what makes "the wrong provider was selected" -- finding 1 of the bank-auth session, where an unset type silently defaulted to signicat -- visible in the log instead of invisible.
+  // Naming the active provider is what makes "the wrong provider was selected" -- for example an unset type silently defaulting to signicat-ftn -- visible in the log instead of invisible.
   it('names the active provider so a wrong-provider selection is visible', () => {
-    expect(formatOidcFailure('ERR_JOSE_GENERIC', 'signicat')).toContain('provider=signicat');
-    expect(formatOidcFailure('ERR_JOSE_GENERIC', 'idura')).toContain('provider=idura');
+    expect(formatOidcFailure('ERR_JOSE_GENERIC', 'signicat-ftn')).toContain('provider=signicat-ftn');
+    expect(formatOidcFailure('ERR_JOSE_GENERIC', 'idura-ftn')).toContain('provider=idura-ftn');
   });
 
   it('renders the none placeholder for a failure with no code', () => {
-    expect(formatOidcFailure(undefined, 'idura')).toContain(`code=${OIDC_FAILURE_NONE}`);
+    expect(formatOidcFailure(undefined, 'idura-ftn')).toContain(`code=${OIDC_FAILURE_NONE}`);
   });
 });

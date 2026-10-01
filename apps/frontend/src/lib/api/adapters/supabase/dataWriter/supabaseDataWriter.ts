@@ -27,7 +27,7 @@ import type { SupabaseAdapterConfig } from '../supabaseAdapter.type';
  *
  * ## Why a whitelist rather than the uploader's own suffix
  *
- * The path used to be built as `` `${projectId}/candidates/${id}/${crypto.randomUUID()}.${file.name.split('.').pop() ?? 'jpg'}` ``, and `file.name` is fully controlled by the uploading candidate. `split('.').pop()` cannot yield a `..` segment — the result contains no dot by construction — so classic traversal was blocked, but it CAN contain a `/`: a file named `a.b/c/d` yields `"/d"` and a path of `…/<uuid>./d`, letting the uploader place objects at chosen sub-paths inside the prefix. It can also be arbitrarily long, or carry control characters, `%`, `?`, `#` or non-ASCII, any of which can confuse a Storage RLS policy or a later parser written against the expected `<project>/candidates/<id>/<uuid>.<ext>` shape. The extension is additionally copied verbatim into the stored `{ path }`, which `parseImageColumn`/`storageUrl` later turn into a public URL.
+ * `file.name` is fully controlled by the uploading candidate. Its suffix, `file.name.split('.').pop()`, cannot yield a `..` segment, because it contains no dot by construction, but it CAN contain a `/`: a file named `a.b/c/d` yields `"/d"` and a path of `…/<uuid>./d`, which would let the uploader place objects at chosen sub-paths inside the prefix. It can also be arbitrarily long, or carry control characters, `%`, `?`, `#` or non-ASCII, any of which can confuse a Storage RLS policy or a later parser written against the expected `<project>/candidates/<id>/<uuid>.<ext>` shape. The extension is also copied verbatim into the stored `{ path }`, which `parseImageColumn`/`storageUrl` later turn into a public URL.
  *
  * Deriving the extension from a fixed set makes the produced path a member of a small, known language regardless of what was uploaded.
  */
@@ -65,7 +65,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     // In the browser, call the server-side logout endpoint to clear httpOnly cookies.
     // Client-side signOut alone cannot remove httpOnly cookies set by createServerClient.
     if (typeof window !== 'undefined') {
-      // reason: the endpoint is named by route key, never assembled from the current URL. The earlier implementation read the locale off `window.location.pathname`, which returns 'candidate' for an unprefixed candidate route and produced a doubled path; a constant cannot go wrong that way. The endpoint clears cookies and returns json, so it carries no locale prefix.
+      // reason: the endpoint is named by route key, never assembled from the current URL. Reading the locale off `window.location.pathname` returns 'candidate' for an unprefixed candidate route and yields a doubled path; a constant cannot go wrong that way. The endpoint clears cookies and returns json, so it carries no locale prefix.
       await fetch(ROUTE.CandAppAuthLogout, { method: 'POST' });
     }
     const { error } = await this.supabase.auth.signOut({ scope: 'local' });
@@ -83,7 +83,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
 
   protected async _requestForgotPasswordEmail({ email }: { email: string }) {
     const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
-      // The mail link has to come back to THIS origin, and it has to carry the reader's locale so the page they land on speaks the language they asked in. The builder names the endpoint by route key and hands the result to Paraglide, which prefixes every non-base locale and leaves the base one unprefixed; the auth service's redirect allowlist admits both forms. Sending an unprefixed URL, as this did before, sent every non-base-locale reader to a base-locale page.
+      // The mail link has to come back to THIS origin, and it has to carry the reader's locale so the page they land on speaks the language they asked in. The builder names the endpoint by route key and hands the result to Paraglide, which prefixes every non-base locale and leaves the base one unprefixed; the auth service's redirect allowlist admits both forms. An unprefixed URL would send every non-base-locale reader to a base-locale page.
       redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}${buildRoute('CandAppAuthCallback')}`
     });
     if (error) throw new Error(error.message);
@@ -101,11 +101,8 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
   protected async _setPassword({ password }: { password: string }) {
     const { error } = await this.supabase.auth.updateUser({ password });
     if (error) throw new Error(error.message);
-    // Future-reference note. `auth.updateUser({ password })` rotates the access token. The browser-side `createBrowserClient` instance is expected to adopt the new token via its internal storage listener, but under some Playwright timings the next PostgREST call from `SupabaseDataWriter` was observed to send a stale/empty JWT, producing `auth.uid() = NULL` and a 406 "Cannot coerce" on the subsequent ToU UPDATE (RLS denies, 0 rows returned).
-    // A targeted `await this.supabase.auth.refreshSession()` here would force the in-memory client to re-read the freshly-issued session before the caller proceeds, which should harmlessly close that race. It is deliberately NOT added, for two measured reasons:
-    //  (a) the live failure did not reproduce under 20× repeat-each once the user-visible error surface was in place — only Inbucket polling flake remained;
-    //  (b) `refreshSession()` issues an extra network round-trip on every password set/reset, and rare edge cases (e.g. expired refresh token, network partition) could turn a working setPassword into a thrown error.
-    // If the 406 reappears, add `await this.supabase.auth.refreshSession()` here (and mirror in `_resetPassword` / `_register` above) and re-verify.
+    // `auth.updateUser({ password })` rotates the access token, and the browser-side `createBrowserClient` instance adopts the new token through its storage listener. If the next PostgREST call sends a stale JWT, `auth.uid()` is NULL, RLS returns no row and the terms-of-use UPDATE that follows fails with a 406 "Cannot coerce".
+    // The remedy is `await this.supabase.auth.refreshSession()` here, mirrored in `_resetPassword` and `_register`. It is not added by default: it costs a network round-trip on every password set or reset, and an expired refresh token would turn a working password set into a thrown error.
     return { type: 'success' as const };
   }
 
@@ -159,7 +156,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
   protected async _getBasicUserData(): DWReturnType<BasicUserData> {
     // THE VERIFYING ROUND-TRIP, AND IT COMES FIRST. `getSession()` alone reads the session straight out of the configured storage — the request's `sb-*` cookies — and checks only its SELF-REPORTED `expires_at`; `@supabase/auth-js` wraps the `user` it returns in an insecure-use proxy for exactly that reason. Nothing on that path checks a signature, so the authority claim decoded below is attacker-suppliable unless the token it is decoded from has been verified first. `getUser()` is that check: it sends the stored access token to Supabase Auth, which validates it, so a session that survives this call is one whose access token is genuine.
     //
-    // The ORDER — verify, then read — is the same one `hooks.server.ts`'s `safeGetSession` uses, and it is what lets `requireVerifiedAdmin` gate the six `/api/admin/jobs/**` endpoints on a role rather than on a claim. `user` is taken from HERE rather than from `session.user` so the returned identity is the verified one and never the proxy.
+    // The ORDER — verify, then read — is the same one `hooks.server.ts`'s `safeGetSession` uses, and it is what lets `requireVerifiedAdmin` gate the `/api/admin/jobs/**` endpoints on a role rather than on a claim. `user` is taken from HERE rather than from `session.user` so the returned identity is the verified one and never the proxy.
     const {
       data: { user },
       error: userError
@@ -172,12 +169,12 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     } = await this.supabase.auth.getSession();
     if (error || !session) throw new Error('No active session');
 
-    // Read the VERIFIED access token's grant claim through the SHARED reader rather than decoding it here. This module used to carry its own inline decode beside the one in `$lib/auth/roles.ts`, which made the claim's shape a thing two modules each had an opinion about; the reader is now the single place a token's authority claim is parsed, and it fails closed on every malformed shape.
+    // Read the VERIFIED access token's grant claim through the shared reader rather than decoding it here: `readGrants` is the single place a token's authority claim is parsed, and it fails closed on every malformed shape.
     const grants = readGrants(session.access_token);
 
-    // Determine the coarse role from the grant shapes, against the ONE declaration of each entry-point set. Both sets used to be inlined here as a third copy of the arrays the two login gates carried, which is how a shape added to one gate silently fails to reach the other.
+    // Determine the coarse role from the grant shapes, against the one declaration of each entry-point set that the two login gates also read, so a shape added to a set reaches every reader.
     //
-    // The candidate arm is tested first, and the order is the one this method has always had: an identity holding both an entity grant and an admin grant is an administrator who also maintains an entity, and the two apps are reached by different routes anyway.
+    // The candidate arm is tested first: an identity holding both an entity grant and an admin grant is an administrator who also maintains an entity, and the two apps are reached by different routes anyway.
     let role: 'candidate' | 'admin' | null = null;
     if (hasAnyGrant(grants, CANDIDATE_GRANTS)) {
       role = 'candidate';
@@ -210,7 +207,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       .single();
     if (error || !entityRow) throw new Error(`Failed to load candidate data: ${error?.message ?? 'no data'}`);
 
-    // The rpc is scoped by the caller's IDENTITY — it reads `auth.uid()` — AND by this adapter's project, which it takes as a required `p_project_id` (162-REVIEW WR-08). Without the project term an identity holding candidate rows in several projects got whichever row `LIMIT 1` happened to return, and the check below then failed at random. The returned row's own `project_id` is still compared here, as defence in depth: a mismatch stops the read rather than rendering another project's candidate.
+    // The rpc is scoped by the caller's IDENTITY — it reads `auth.uid()` — AND by this adapter's project, which it takes as a required `p_project_id`. Without the project term an identity holding candidate rows in several projects would get whichever row `LIMIT 1` returned. The returned row's own `project_id` is still compared here, as defence in depth: a mismatch stops the read rather than rendering another project's candidate.
     //
     // Neither uuid is interpolated. The message names the condition, which is what an operator needs to act on; the pair of ids is exactly what a deployment in this state should not be putting into logs and error reporters.
     if (entityRow.project_id !== this.projectId)
@@ -227,7 +224,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       ...mapped,
       type: ENTITY_TYPE.Candidate,
       id: entityRow.id,
-      // 157.1-04 D-DISC-3: the candidate reading their OWN stored answers collapses malformed to empty here, deliberately. Research flagged this as the same severity class as the post-RPC read-back below and instructed the planner to name the choice rather than silently widen scope: it is a CALL site, not one of the six PARSE sites the phase scoped, and branching it on `.status` would be a UI decision with no ruling behind it. What made the collapse acceptable is that partial preserve (A2) now keeps the good question ids instead of wiping the blob over one bad answer, and the degradation is reported at `error` (C5(b)) rather than `warn`.
+      // The candidate reading their OWN stored answers collapses malformed to empty here, deliberately, unlike the post-RPC read-back below: branching on `.status` here would be a UI decision. The collapse loses little, because partial preserve keeps the valid question ids and drops only the offending ones, and `parseAnswersColumn` reports the degradation at `error`.
       answers:
         answersOf(parseAnswersColumn(entityRow.answers, { column: 'candidates.answers', id: entityRow.id })) ?? {},
       termsOfUseAccepted: entityRow.terms_of_use_accepted ?? null,
@@ -277,7 +274,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
   /**
    * Upload one candidate-supplied file to the `public-assets` bucket and return the object path it was stored at.
    *
-   * ONE helper for BOTH upload sites. `_setAnswers` and `_updateEntityProperties` carried this block byte for byte, which is precisely how a path sanitizer applied to one copy would silently have left the other unsanitized. The extension is chosen from {@link ALLOWED_IMAGE_EXTENSIONS} rather than taken from the upload, so the returned path is always `<project>/candidates/<id>/<uuid>.<known-ext>` no matter what the candidate named their file.
+   * ONE helper for BOTH upload sites, `_setAnswers` and `_updateEntityProperties`, so the path sanitizing cannot drift between them. The extension is chosen from {@link ALLOWED_IMAGE_EXTENSIONS} rather than taken from the upload, so the returned path is always `<project>/candidates/<id>/<uuid>.<known-ext>` no matter what the candidate named their file.
    * @param options.projectId - The project the object is written under, which is this adapter's configured project.
    * @param options.id - The candidate's id.
    * @param options.file - The uploaded file. Its `name` is attacker-controlled and is used only to CHOOSE from the whitelist.
@@ -323,8 +320,9 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       }
     }
 
-    // Call upsert_answers RPC
+    // The RPC writes only the table the entity type names.
     const { data, error } = await this.supabase.rpc('upsert_answers', {
+      p_entity_type: type,
       p_entity_id: id,
       // reason: processedAnswers is jsonb-safe at runtime (File values already replaced with { path } in the loop above); LocalizedAnswer.value's static AnswerValue/File union can't be expressed as Json without a runtime transform.
       p_answers: processedAnswers as Json,
@@ -333,11 +331,11 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     if (error) throw new Error(`setAnswers: ${error.message}`);
     // The RPC hands back the whole answers blob it just wrote, which is the same unvalidated jsonb shape a read returns, so it is validated on the way back in rather than asserted.
     //
-    // A status BRANCH, not a collapse (decision **B3**, requirement **D8**). The previous form coalesced the outcome's value to an empty object, turning a malformed read-back into an empty answers map — TRUTHY, and therefore indistinguishable from an entity that legitimately has no answers. Downstream that empty map passed the store's nullish guard, was merged, and then the candidate's edit buffer was cleared on the strength of it: the write had succeeded, but the state being reported as the entity's new answers was never verified (fact 5). Ledger row 4.
+    // A status BRANCH, not a collapse. Coalescing the outcome's value to an empty object would turn a malformed read-back into an empty answers map — TRUTHY, and therefore indistinguishable from an entity that legitimately has no answers. That map would pass the store's nullish guard and be merged, and the candidate's edit buffer would be cleared on the strength of a state that was never verified.
     //
-    // `absent` joins `malformed` deliberately. From the caller's point of view they are the same fact — the adapter cannot confirm what was stored — and only `ok` licenses a caller to treat the write as verified. `answersOf` is NOT used here for that reason: this is one of the three sites that acts on `.status` rather than collapsing it.
+    // `absent` joins `malformed` deliberately. From the caller's point of view they are the same fact — the adapter cannot confirm what was stored — and only `ok` licenses a caller to treat the write as verified. `answersOf` is NOT used here for that reason: this site acts on `.status` rather than collapsing it.
     //
-    // The `error` record naming the column, the row id and the issue paths is emitted inside `parseAnswersColumn`, so nothing is logged here; adding a second record would double-report one failure, and an interpolated one would break decision C4's NOTE 1.
+    // The `error` record naming the column, the row id and the issue paths is emitted inside `parseAnswersColumn`, so nothing is logged here; a second record would double-report one failure.
     const readBack = parseAnswersColumn(data, { column: 'upsert_answers.result', id });
     if (readBack.status === 'ok') return readBack.value;
     return UNVERIFIED_ANSWERS;
@@ -359,7 +357,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       } else {
         const imageWithFile = image as ImageWithFile;
         if (imageWithFile.file && typeof File !== 'undefined' && imageWithFile.file instanceof File) {
-          // Upload image file to Storage. The same helper `_setAnswers` uses: the block was byte-for-byte duplicated between the two methods, which is how a sanitizer applied to one copy would have missed the other.
+          // Upload the image file to Storage through the same helper `_setAnswers` uses.
           updateFields.image = {
             path: await this.#uploadCandidateFile({ projectId: this.projectId, id, file: imageWithFile.file })
           };
@@ -370,14 +368,14 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       }
     }
 
-    // NOTHING TO WRITE: READ THE STORED PROPERTIES BACK rather than fabricating a return value. This used to be `return { termsOfUseAccepted: undefined } as unknown as LocalizedCandidateData` — an object that is not a `LocalizedCandidateData` at all (no `id`, no `type`), laundered through a double cast. The caller SPREADS the result into the stored candidate (`candidateUserDataState.svelte.ts`, "merge them into the existing candidate so `id` and the other static fields survive"), so the no-op path wrote `termsOfUseAccepted: undefined` over the acceptance it had just read. Returning the row as stored means the merge is a no-op too, which is what "nothing was updated" should mean, and it costs one `select` on a path that does no work anyway.
+    // NOTHING TO WRITE: READ THE STORED PROPERTIES BACK rather than fabricating a return value. The caller SPREADS the result into the stored candidate (`candidateUserDataState.svelte.ts`, "merge them into the existing candidate so `id` and the other static fields survive"), so a fabricated `{ termsOfUseAccepted: undefined }` would write `undefined` over the acceptance it had just read. Returning the row as stored makes the merge a no-op too, which is what "nothing was updated" should mean, and it costs one `select` on a path that does no work anyway.
     const columns = 'terms_of_use_accepted, image';
     const { data, error } =
       Object.keys(updateFields).length === 0
         ? await this.scopedFrom('candidates').select(columns).eq('id', id).single()
         : await this.scopedFrom('candidates').update(updateFields).eq('id', id).select(columns).single();
     if (error) throw new Error(`updateEntityProperties: ${error.message}`);
-    // reason: class 4 — the declared return type is wrong for BOTH branches and has been since before this phase. The method returns only the two properties it owns, which the caller documents and relies on ("the property setter returns ONLY the changed properties — NOT the whole candidate"), while `LocalizedCandidateData` also requires `id` and the static fields. Aligning the declared type is an app-wide change to a published contract; the cast is bridged here and named rather than hidden.
+    // reason: the declared return type is wrong for BOTH branches. The method returns only the two properties it owns, which the caller documents and relies on ("the property setter returns ONLY the changed properties — NOT the whole candidate"), while `LocalizedCandidateData` also requires `id` and the static fields. Aligning the declared type is an app-wide change to a published contract; the cast is bridged here and named rather than hidden.
     return {
       termsOfUseAccepted: data.terms_of_use_accepted ?? null,
       image: imageOf(parseImageColumn(data.image, constants.PUBLIC_SUPABASE_URL, { column: 'candidates.image', id }))

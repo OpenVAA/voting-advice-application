@@ -5,18 +5,18 @@
  *
  * ## Why this measures what it measures
  *
- * This spec previously asserted `domContentLoaded < 8000` / `loadEventEnd < 15000` off Navigation Timing. Both assertions were **structurally incapable** of seeing the page they were named after. Measured on this machine (2026-08-11, 8 runs — 5 on an idle dev server, 3 under 3-project contention):
+ * Navigation Timing's `domContentLoaded` and `loadEventEnd` are **structurally incapable** of seeing the page this spec is named after, so neither is asserted on. Measured on this machine (2026-08-11, 8 runs — 5 on an idle dev server, 3 under 3-project contention):
  *
  * ```
  * domContentLoaded 43–183 ms   loadEventEnd 45–185 ms   ttfb 30–173 ms
  * ```
  *
- * `ttfb` is ~95% of `domContentLoaded` and `loadEventEnd` lands 1–2 ms after it, i.e. the Navigation Timing window closes at the **SSR response** — before hydration, before the 11 client-side Supabase requests, before matching, and before a single entity card exists. A 10× regression in the matching algorithm, or an N+1 in the results fetch, moves neither number. The old thresholds also carried 44–186× headroom over the measured values.
+ * `ttfb` is ~95% of `domContentLoaded` and `loadEventEnd` lands 1–2 ms after it, i.e. the Navigation Timing window closes at the **SSR response** — before hydration, before the 11 client-side Supabase requests, before matching, and before a single entity card exists. A 10× regression in the matching algorithm, or an N+1 in the results fetch, moves neither number. Thresholds of 8000 ms and 15000 ms on them would carry 44–186× headroom over the measured values.
  *
  * The two assertions below span the actual work instead:
  *
  * 1. **Time to matches rendered** (wall clock) — `reload()` → the first
- *    `match-score` visible. This is the thing a voter waits for, and it covers every stage the old metric excluded.
+ *    `match-score` visible. This is the thing a voter waits for, and it covers every stage Navigation Timing excludes.
  * 2. **Results-fetch operation budget** (load-independent) — the number of
  *    `/rest/v1/` requests the results route issues. This is the guard that catches an N+1 or a duplicated fetch chain *regardless* of how fast the machine is, so it cannot be silently absorbed by faster hardware.
  *
@@ -35,7 +35,7 @@
  *
  * ## Why a warm-up reload
  *
- * The full-suite gate failed once here at `timeToMatches 7536` against this same 5000 ms budget. Diagnosed rather than waived, and the spec's own two diagnostics decided it:
+ * Without it, a full-suite run measured `timeToMatches 7536` against this same 5000 ms budget. The spec's own two diagnostics locate the cost:
  *
  * ```
  * in-suite (failing):  timeToMatches 7536  ttfb 5718  resultsFetches 11
@@ -46,7 +46,7 @@
  *
  * `ttfb` was **76% of the measured window** (server-side), and the load-independent `resultsFetches` guard was **invariant at 11 across all four runs** — so the fetch shape was unchanged and no application regression existed. The cause was Vite's one-time on-demand SSR transform of this route, paid on the first server-rendered request to it: the calibration above assumed `ttfb 428 ms` on a just-started server, and a genuinely cold *route* under full-suite worker contention measured 5718 ms, 13x that allowance.
  *
- * The fix is to take that one-time cost OUTSIDE the measured window with an unmeasured warm-up reload. **The budget is deliberately NOT raised** — the 5000 ms threshold and its calibration data stand exactly as measured, and no retry, extended timeout or flaky annotation was added. Raising the threshold would have hidden the very regressions this spec exists to catch; per the rule three paragraphs above, never raise a budget to make a red test green.
+ * An unmeasured warm-up reload takes that one-time cost OUTSIDE the measured window. **The budget is deliberately NOT raised** — the 5000 ms threshold and its calibration data stand exactly as measured, with no retry, extended timeout or flaky annotation. Raising the threshold would hide the very regressions this spec exists to catch; per "How to update the budgets" below, never raise a budget to make a red test green.
  *
  * `RESULTS_FETCH_BUDGET = 13`: the route issued exactly **11** `/rest/v1/` requests in 8/8 runs, invariantly across both idle and contended runs AND across result sets of 6 and 13 cards (so the count is genuinely load-independent, not incidentally stable). +2 slack for a benign reactive re-fetch. An N+1 in the results fetch fails this as `expected 40 to be ≤ 13`.
  *
@@ -68,6 +68,7 @@
 /* eslint-disable playwright/no-standalone-expect -- voterTest extends @playwright/test; expect is inside test body */
 import { expect } from '@playwright/test';
 import { voterJourneyTest as voterTest } from '../../fixtures/voter/voter-journey.fixture';
+import { TIMEOUTS } from '../../helpers';
 import { testIds } from '../../utils/testIds';
 
 /** Wall-clock budget: reload → first match score visible. See calibration above. */
@@ -83,7 +84,7 @@ const RENDER_WAIT_CEILING_MS = 20_000;
 
 voterTest.describe('Performance budgets', { tag: ['@perf'] }, () => {
   // Fixture walk (~15-27s) + reload + measurement, with headroom for the over-budget case (RENDER_WAIT_CEILING_MS) so the assertion — not the test timeout — reports the failure.
-  voterTest.setTimeout(90000);
+  voterTest.setTimeout(TIMEOUTS.testMax);
 
   voterTest('voter results page renders matches within budget', async ({ answeredVoterPage: page }) => {
     // Count the results route's own data fetches. Portrait/storage requests are excluded: those scale with the number of nominated candidates, which is a property of the dataset, not of the fetch shape under test.
@@ -99,7 +100,7 @@ voterTest.describe('Performance budgets', { tag: ['@perf'] }, () => {
 
     // The fixture landed on /results via client-side routing. Reload so the measurement spans a full cold client load of the route: SSR response → hydration → Supabase round-trips → matching → list render.
     //
-    // `waitUntil: 'commit'` (not 'load') deliberately: the load event fires ~1ms after the SSR response and long before the list exists, so waiting for it would put the very blind spot this spec was rewritten to close back into the measured window.
+    // `waitUntil: 'commit'` (not 'load') deliberately: the load event fires ~1ms after the SSR response and long before the list exists, so waiting for it would put the very blind spot this spec exists to close back into the measured window.
     // WARM-UP RELOAD — not measured. See "Why a warm-up reload" in the docblock.
     //
     // The fixture reached /results by CLIENT-SIDE routing, so this route has never been server-rendered in this dev server's lifetime. The first SSR request to it pays Vite's one-time on-demand transform of the whole route tree, which is dev-server cost, not application performance — and it lands inside the measured window if the measured reload is also the first one.

@@ -15,6 +15,7 @@
  */
 
 import { expect } from '@playwright/test';
+import { TIMEOUTS } from '../../helpers';
 import { testIds } from '../../utils/testIds';
 import type { Locator, Page } from '@playwright/test';
 
@@ -53,7 +54,7 @@ export function createCandidatePreviewPage(page: Page) {
       // Assert the nth choice is the selected-answer.
       const choice = choices.nth(aNthChecked);
       await expect(choice).toBeVisible();
-      // reason: the marker is a sr-only SIBLING of the choice's `<input data-testid="question-choice">` inside their shared `<label>` (an <input> cannot have children — see QuestionChoices.svelte:284). The only way to reach the sibling from the input locator is an xpath parent-axis traversal; the parent <label> carries no stable testId, so there is no getByTestId/getByRole path to the parent. The chained getByTestId stays.
+      // reason: the marker is a sr-only SIBLING of the choice's `<input data-testid="question-choice">` inside their shared `<label>` (an <input> cannot have children — see the choice `<label>` in QuestionChoices.svelte). The only way to reach the sibling from the input locator is an xpath parent-axis traversal; the parent <label> carries no stable testId, so there is no getByTestId/getByRole path to the parent. The chained getByTestId stays.
       // eslint-disable-next-line playwright/no-restricted-locators, playwright/no-raw-locators
       const choiceLabel = choice.locator('xpath=..');
       await expect(choiceLabel.getByTestId(testIds.voter.entityDetail.entitySelectedAnswer)).toHaveCount(1);
@@ -61,9 +62,14 @@ export function createCandidatePreviewPage(page: Page) {
 
     /**
      * Assert the candidate portrait image is rendered.
+     *
+     * The preview shows a loading indicator, including in the server-rendered page, until its candidate-data reload settles after hydration. The wait is for that state to resolve, however long it takes, and only then is the portrait asserted with the default budget.
      */
     async expectPortraitVisible(): Promise<void> {
-      await expect(container().getByRole('img').first()).toBeVisible();
+      const c = container();
+      await expect(c).toBeVisible({ timeout: TIMEOUTS.testMax });
+      await expect(c.getByTestId(testIds.shared.loading)).toHaveCount(0, { timeout: TIMEOUTS.testMax });
+      await expect(c.getByRole('img').first()).toBeVisible();
     },
 
     /**

@@ -24,16 +24,30 @@ that omits one.
 
 A **grant** is a row of `public.grants`: `(user_id, scope, target_type, target_id, role)`. The Access Token
 Hook projects a caller's grants into the `grants` claim of their access token. Every authority question in
-the database is asked of exactly one function, `public.user_can(scope, target_id, permission)`, which
-resolves the claim against the 23-member `grant_permission` enum and reaches **downward** — a grant at
+the database is asked of exactly one function, `public.user_can(scope, target_id, permission, target_type)`,
+which resolves the claim against the 23-member `grant_permission` enum and reaches **downward** — a grant at
 `global` answers for every account, a grant at `account` for every project it owns, a grant at `project`
 for every entity in it, and a grant at `entity` for that entity and, through `is_child_nominee`, for its
 child nominees.
 
+**An entity is named by its type and id together.** The four entity tables have independent primary keys,
+and a project admin chooses the `id` of an entity it inserts, so one uuid can name a candidate in one
+project and an organization in another. At `entity` scope `user_can` therefore takes the entity type as its
+fourth argument: a NULL type denies, an entity grant reaches only the entity of its own `target_type`, and
+every hop resolves the pair — `private.entity_project_id(entity_type, uuid)` reads the one table the type
+names, and `private.is_child_nominee(parent_type, parent_id, child_type, child_id)` matches both sides by
+type. The entity policies pass their table's literal (`'candidate'::public.entity_type`, …), the
+nomination policies and `caller_nominated_in_contest` the row's generated `entity_type`,
+`enforce_entity_immutability` the type derived from `TG_TABLE_NAME`, and `storage_path_can` the type its
+path segment names. At every other scope `target_type` defaults to NULL and is ignored, so project- and
+account-scope callers, the Edge Functions' `callerMayOnProject` included, pass three arguments.
+`33-entity-type-collision.test.sql` asserts a shared id across two tables and two projects.
+
 The child-nominee reach (`nomination.read`) is **basic data only** (SPEC § 7). A row policy cannot express
 "basic data" — it returns every column, `answers` included — so the four entity SELECT policies do **not**
 carry a `nomination.read` disjunct. The parent's reach to a child entity is the SECURITY DEFINER RPC
-`get_entity_basic_data(p_entity_id)` (`503-entity-rpcs.sql`), gated on that same `user_can` call and returning an
+`get_entity_basic_data(p_entity_type, p_entity_id)` (`503-entity-rpcs.sql`), gated on that same `user_can` call,
+probing only the table the type names, and returning an
 allow-listed column projection (162-REVIEW CR-02). The `nominations` SELECT policy keeps its
 `nomination.read` disjunct, because a nomination row carries no answers.
 
@@ -169,7 +183,7 @@ uniform change to all eight is invisible to any relative check.
 The five authenticated entity/nomination SELECT policies (`authenticated_select_candidates`,
 `_organizations`, `_factions`, `_alliances`, `_nominations`) also hold an **evaluation order**: project
 authority (`user_can ('project', …, 'project.read_entities')`) first, then the public assembly, then entity
-authority (the `user_can ('entity', …)` disjuncts). PostgreSQL stops an OR at the first TRUE, so the order
+authority (the `user_can ('entity', …, <type>)` disjuncts). PostgreSQL stops an OR at the first TRUE, so the order
 changes cost and never the answer: an admin exits on the first call, and a publicly visible row never pays the
 entity `user_can` calls (162.1 D-01, spike 028: a signed-in candidate's whole-municipal read 7.15 s → 4.65 s,
 admins unchanged at 1.30 s, proved row-identical). `29-authenticated-disjunct-order.test.sql` guards it: it
@@ -230,16 +244,16 @@ table policy asks:
 
 | Function | Answers |
 |---|---|
-| `user_can(grant_scope_type, uuid, grant_permission)` | the whole authority question; § 3.3's matrix, encoded once |
+| `user_can(grant_scope_type, uuid, grant_permission, entity_type DEFAULT NULL)` | the whole authority question; § 3.3's matrix, encoded once. The entity type is required at entity scope and ignored elsewhere |
 | `user_has_account_grant(uuid)` | "does this caller hold ANY grant on this account or on a project it owns?" — grant EXISTENCE, which `user_can` cannot express because `user_can` takes a permission |
-| `is_child_nominee(entity_type, uuid, uuid)` | the one-hop parent→child nomination reach, the single mechanism for it |
+| `is_child_nominee(entity_type, uuid, entity_type, uuid)` | the one-hop parent→child nomination reach, the single mechanism for it; parent and child each matched by type and id |
 | `project_open_for_voters(uuid)` | the project-level anon visibility sub-rule |
 | `entity_has_confirmed_nomination(entity_type, uuid, uuid)` | the nomination-level anon visibility sub-rule |
 | `nomination_entities_confirmed(uuid)` | both sub-rules asked of a nomination row |
 | `storage_path_can(grant_scope_type, text, text, text, storage_verb)` | the storage authority question, over the eleven-segment mapping |
 | `storage_path_is_public(text, text, text)` | § 3.4's public-read question asked of a path |
 | `project_nominations_locked(uuid)` · `nomination_exists_in_contest(...)` · `caller_nominated_in_contest(...)` · `caller_unconfirmed_originated_count()` | the nomination write guards |
-| `entity_project_id(uuid)` · `election_project_id(uuid)` · `constituency_group_project_id(uuid)` | the project a row belongs to, for policies whose table carries no `project_id` |
+| `entity_project_id(entity_type, uuid)` · `election_project_id(uuid)` · `constituency_group_project_id(uuid)` | the project a row belongs to, for policies whose table carries no `project_id` |
 
 ---
 

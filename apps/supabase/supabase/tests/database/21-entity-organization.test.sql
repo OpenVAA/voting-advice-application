@@ -1,20 +1,18 @@
 -- 21-entity-organization.test.sql: the entity-to-organization relationship, stated once
 --
--- The candidate-to-organization association was stated TWICE in this system: once as `candidates.organization_id`, once as the `parent_nomination_id` edge that `validate_nomination()` already enforces. 162-07b removes the first, and section 11.8 moves a REQUIRED organization onto `public.factions` in the same edit, because a faction with no organization is not a meaningful row. This file is the evidence for both halves.
+-- The candidate-to-organization association is stated ONCE, as the `parent_nomination_id` edge that `validate_nomination()` enforces: `public.candidates` carries no organization column. A faction, by contrast, carries a REQUIRED organization on `public.factions`, because a faction with no organization is not a meaningful row. This file is the evidence for both.
 --
 -- EVERY PROPERTY HERE IS READ FROM THE CATALOGUE, NEVER FROM THE TEXT OF A SCHEMA FILE. A comment can claim `ON DELETE CASCADE`; only `pg_constraint.confdeltype` can prove it, and only `information_schema.columns` can prove that a declaration reached PostgreSQL rather than only reaching a file. The same rule governs the two RPC return shapes below, which are read from `pg_get_function_result` on the applied database.
 --
--- THE ADJACENCY IS THE SHARPEST EDGE IN THIS FILE, AND SECTION 5 IS WHERE IT IS DISPOSED OF. Two different tables carry a column spelled `organization_id` -- `nominations` and, until this plan, `candidates` -- and BOTH appear in `get_nominations`'s return shape, the first as `organization_id` and the second as `entity_organization_id`. Dropping the wrong one satisfies every count assertion in this file while silently breaking the nomination mapper in the Supabase data provider. Assertion 14 is therefore a MUST-NOT-FIRE companion: it asserts the nominations key SURVIVES, and it is green both before and after the change by construction. Do not "fix" it into a red-before assertion; an assertion that is green in both states is exactly what a must-not-fire companion is.
+-- THE ADJACENCY IS THE SHARPEST EDGE IN THIS FILE, AND SECTION 5 IS WHERE IT IS DISPOSED OF. `get_nominations` returns the nominations foreign key as `organization_id`, and a candidates projection of a column with the same spelling would be aliased `entity_organization_id`. Removing the wrong one would satisfy every count assertion in this file while silently breaking the nomination mapper in the Supabase data provider. Assertion 14 is therefore a MUST-NOT-FIRE companion: it asserts that the nominations key is returned.
 --
--- SECTIONS 1 TO 6 ARE SELF-CONTAINED AND DELIBERATELY SO. They build their own account, project and two organizations rather than calling `create_test_data()`, because the fixture they need is four rows and because `create_test_data()` writes the candidates column this plan removes -- so depending on it would have coupled the schema-shape instrument to the very edit it was measuring, and the red run that proved this file is an instrument had to happen BEFORE that helper was corrected. Section 7 is the exception and says so where it stands: the email-variable pair needs the multi-tenant fixture, calls `create_test_data()` inside this same transaction, and is rolled back with everything else.
+-- SECTIONS 1 TO 6 ARE SELF-CONTAINED. They build their own account, project and two organizations rather than calling `create_test_data()`, because the fixture they need is four rows and a schema-shape assertion should not depend on the shared helper. Sections 7 and 8 are the exception and say so where they stand: they need the multi-tenant fixture, call `create_test_data()` inside this same transaction, and are rolled back with everything else.
 --
--- pgTAP SHIPS ITS OWN has_role(). It is a role-existence assertion returning text, and under this estate's `search_path = public, extensions` it SHADOWS ours, so an unqualified one-argument call fails with `function ok(text, unknown) does not exist` rather than as a clean failed assertion. This file calls no permission predicate, but the rule stands for anything added to it: qualify every call `public.has_role(...)`. 13-shim-parity.test.sql is the reference.
---
--- NO ASSERTION HERE MAY NAME `factions.organization_id` IN AN EAGERLY PARSED EXPRESSION. `is()` evaluates its arguments before it is called, so a direct read of a column that does not yet exist is a hard ERROR that aborts the whole file rather than a counted failure -- and a file that aborts cannot be observed red assertion by assertion. Column-dependent writes therefore go through `lives_ok`/`throws_ok`, whose subtransaction catches the error, and column-dependent reads are expressed as counts over `id` instead.
+-- NO ASSERTION HERE NAMES `factions.organization_id` IN AN EAGERLY PARSED EXPRESSION. `is()` evaluates its arguments before it is called, so if the column were missing a direct read would be a hard ERROR that aborts the whole file rather than a counted failure. Column-dependent writes therefore go through `lives_ok`/`throws_ok`, whose subtransaction catches the error, and column-dependent reads are expressed as counts over `id` instead.
 --
 -- The declared assertion count below is explicit and deliberately so: a pgTAP file that asserts nothing exits 0 under no_plan, which is exactly the vacuous pass a schema-shape test must not be able to produce.
 --
--- Depends on: 00-helpers.test.sql for the pgTAP extension it installs, and -- in section 7 ONLY -- for `create_test_data()`, `test_id()` and `test_user_id()`. Sections 1 to 6 call nothing from it.
+-- Depends on: 00-helpers.test.sql for the pgTAP extension it installs, and -- in sections 7 and 8 ONLY -- for `create_test_data()`, `set_test_user()`, `reset_role()`, `test_id()`, `test_user_id()` and `test_user_grants()`. Sections 1 to 6 call nothing from it.
 BEGIN;
 
 SET
@@ -28,7 +26,7 @@ SELECT
   plan (21);
 
 -- =====================================================================
--- Fixtures: four rows, none of which names the column under test, so this block is safe to run against the schema both before and after the change.
+-- Fixtures: four rows, none of which names the column under test.
 -- =====================================================================
 INSERT INTO
   public.accounts (id, name)
@@ -62,7 +60,7 @@ VALUES
   );
 
 -- =====================================================================
--- Section 1: the four catalogue properties of the new faction column
+-- Section 1: the catalogue properties of the faction organization column
 -- =====================================================================
 SELECT
   has_column (
@@ -134,7 +132,7 @@ SELECT
   );
 
 -- =====================================================================
--- Section 2: the candidates column is gone from the applied database
+-- Section 2: candidates carry no organization column in the applied database
 -- =====================================================================
 SELECT
   hasnt_column (
@@ -192,7 +190,7 @@ SELECT
   );
 
 -- =====================================================================
--- Section 5: the two return shapes, and the must-not-fire companion for the identically-named column that SURVIVES
+-- Section 5: the two return shapes, and the must-not-fire companion for the identically-named column that is returned
 -- =====================================================================
 SELECT
   is (
@@ -210,7 +208,7 @@ SELECT
         AND p.proname = 'get_nominations'
     ),
     31,
-    'get_nominations declares 31 output columns -- exactly one fewer than the 32 recorded as the baseline'
+    'get_nominations declares 31 output columns'
   );
 
 SELECT
@@ -244,7 +242,7 @@ SELECT
         AND p.proname = 'get_candidate_user_data'
     ),
     14,
-    'get_candidate_user_data declares 14 output columns -- exactly one fewer than the 15 recorded as the baseline'
+    'get_candidate_user_data declares 14 output columns'
   );
 
 SELECT
@@ -262,7 +260,7 @@ SELECT
     'get_candidate_user_data returns no organization output column'
   );
 
--- MUST-NOT-FIRE COMPANION. `get_nominations` projects TWO columns whose base column is spelled `organization_id`: the nominations foreign key, which stays, and the candidates projection aliased `entity_organization_id`, which goes. Dropping the wrong one would satisfy assertions 10 to 13 above while breaking every nomination the data provider maps. This assertion is green before the change and green after it, and that is the point of it.
+-- MUST-NOT-FIRE COMPANION. `get_nominations` returns the nominations foreign key as `organization_id`; a candidates projection would be aliased `entity_organization_id`. Removing the wrong one would satisfy assertions 10 to 13 above while breaking every nomination the data provider maps.
 SELECT
   ok (
     (
@@ -275,11 +273,11 @@ SELECT
         n.nspname = 'public'
         AND p.proname = 'get_nominations'
     ),
-    'get_nominations STILL returns the nominations organization foreign key -- the correct one of the two identically-named columns survived'
+    'get_nominations returns the nominations organization foreign key'
   );
 
 -- =====================================================================
--- Section 6: the index moved with the column rather than being dropped on one table and forgotten on the other
+-- Section 6: the organization foreign-key index is on factions and not on candidates
 -- =====================================================================
 SELECT
   is (
@@ -303,20 +301,20 @@ SELECT
         AND indexname = 'idx_candidates_organization_id'
     )::text,
     '1/0',
-    'the foreign-key index is on factions and no longer on candidates -- read as one composite so a run that dropped both would not satisfy the second half alone'
+    'the foreign-key index is on factions and not on candidates -- read as one composite so a run that dropped both would not satisfy the second half alone'
   );
 
 -- =====================================================================
--- Section 7: the email helper's organization name, re-sourced through the nomination hierarchy
+-- Section 7: the email helper resolves the organization name through the nomination hierarchy
 -- =====================================================================
--- TEST C. `resolve_email_variables` used to read the candidate's organization off the dropped column; it now reaches it through the parent nomination, on the `nominations` walk that branch already ran for the constituency and election names. The PAIR is what distinguishes "resolved through the hierarchy" from "hardcoded to always emit": candidate_a is nominated under an organization nomination and must still get the name, candidate_a2 is a member with NO nomination at all and must get none. Observed RED against the base SHA on the negative half with candidate_a2 emitting 'Org A' off the column; the positive half is green in both states, because its VALUE does not change even though its SOURCE does.
+-- TEST C. `resolve_email_variables` reaches the candidate's organization through the parent nomination, on the `nominations` walk that branch runs for the constituency and election names. The PAIR is what distinguishes "resolved through the hierarchy" from "hardcoded to always emit": candidate_a is nominated under an organization nomination and must get the name, candidate_a2 is a member with NO nomination at all and must get none.
 --
 -- This section needs the multi-tenant fixture the rest of this file deliberately avoids, so it builds it here rather than at the top: `create_test_data()` is called inside this transaction and rolled back with everything else. The four fixture rows above are untouched by it, because they live in their own account and project.
 SELECT
   create_test_data ();
 
--- 162-15 RE-POINTED THIS FUNCTION'S ENTITY-CONTEXT LOOKUP AT public.grants, AND THIS SECTION IS THE ONE PLACE IN THE ESTATE THAT REACHES IT WITHOUT set_test_user.
--- Every other caller of resolve_email_variables impersonates first, and set_test_user is where the fixture's authority rows are written; this section calls create_test_data() and then the function directly, so without the two lines below candidate_a would hold no grant row and both halves of TEST C would read an unauthorised identity. The impersonation is performed and immediately undone, purely for its write: what this section measures is the function's output as postgres, not any caller's view.
+-- THIS SECTION CALLS resolve_email_variables WITHOUT IMPERSONATING A CALLER, and the function's entity-context lookup reads public.grants.
+-- set_test_user is where the fixture's authority rows are written; this section calls create_test_data() and then the function directly, so without the two lines below candidate_a would hold no grant row and both halves of TEST C would read an unauthorised identity. The impersonation is performed and immediately undone, purely for its write: what this section measures is the function's output as postgres, not any caller's view.
 SELECT
   set_test_user (
     'authenticated',
@@ -341,7 +339,7 @@ SELECT
         )
     ),
     'Org A',
-    'TEST C positive: a candidate nominated under an organization nomination still resolves its organization name, now off the parent edge'
+    'TEST C positive: a candidate nominated under an organization nomination resolves its organization name off the parent edge'
   );
 
 SELECT
@@ -360,7 +358,7 @@ SELECT
     'TEST C negative: a candidate with no nomination resolves NO organization name -- the paired negative without which the positive would pass against a helper hardcoded to always emit'
   );
 
--- The email helper's RETURNS TABLE shape did NOT move, and this asserts it rather than assuming it: if it had, Phase 164's three artifacts would need an entry this plan did not budget for.
+-- The email helper's RETURNS TABLE shape is asserted rather than assumed: the RPC return-nullability guard (`scripts/assert-rpc-return-nullability.mjs`) and `database.overrides.ts` are keyed to it.
 SELECT
   is (
     (
@@ -377,13 +375,13 @@ SELECT
         AND p.proname = 'resolve_email_variables'
     ),
     4,
-    'resolve_email_variables still declares 4 output columns -- its return shape was re-sourced, not reshaped'
+    'resolve_email_variables declares 4 output columns'
   );
 
 -- =====================================================================
--- WR-08: get_candidate_user_data answers for ONE project, named by the caller
+-- Section 8: get_candidate_user_data answers for ONE project, named by the caller
 --
--- 162-REVIEW WR-08: an identity may hold candidate rows in several projects, and the function used to end `LIMIT 1` with no project term and no ORDER BY, so such a user got an arbitrary row. candidate_a is given a second candidate row in project B, with a grant on it, so BOTH rows are visible to them through RLS -- the project argument is then the only thing that can pick one.
+-- An identity may hold candidate rows in several projects. candidate_a is given a second candidate row in project B, with a grant on it, so BOTH rows are visible to them through RLS -- the project argument is then the only thing that can pick one.
 -- =====================================================================
 SELECT
   set_test_user (
@@ -396,7 +394,13 @@ SELECT
   reset_role ();
 
 INSERT INTO
-  candidates (id, project_id, first_name, last_name, auth_user_id)
+  candidates (
+    id,
+    project_id,
+    first_name,
+    last_name,
+    auth_user_id
+  )
 VALUES
   (
     '21212121-2121-2121-2121-0000000000b1'::uuid,
@@ -433,7 +437,7 @@ SELECT
         get_candidate_user_data (test_id ('project_a'))
     ),
     test_id ('candidate_a')::text,
-    'WR-08: asked for project A, a two-project identity gets exactly its project A row'
+    'asked for project A, a two-project identity gets exactly its project A row'
   );
 
 SELECT
@@ -445,7 +449,7 @@ SELECT
         get_candidate_user_data (test_id ('project_b'))
     ),
     '21212121-2121-2121-2121-0000000000b1',
-    'WR-08: asked for project B, the same identity gets exactly its project B row'
+    'asked for project B, the same identity gets exactly its project B row'
   );
 
 SELECT
@@ -453,7 +457,7 @@ SELECT
     $$SELECT count(*) FROM get_candidate_user_data('candidate'::public.entity_type)$$,
     '42883',
     NULL,
-    'WR-08: get_candidate_user_data without a project raises undefined_function, so p_project_id carries no DEFAULT'
+    'get_candidate_user_data without a project raises undefined_function, so p_project_id carries no DEFAULT'
   );
 
 SELECT

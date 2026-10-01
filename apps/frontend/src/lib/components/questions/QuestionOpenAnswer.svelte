@@ -3,7 +3,8 @@
 
 ### Properties
 
-- Any valid properties of an `<Expander>` component
+- `content`: The open answer text.
+- Any valid attributes of a `<div>` element
 
 ### Usage
 
@@ -15,7 +16,7 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
-  import { concatClass, getUUID } from '$lib/utils/components';
+  import { cn, concatClass, getUUID } from '$lib/utils/components';
   import type { QuestionOpenAnswerProps } from './QuestionOpenAnswer.type';
 
   let { content, ...restProps }: QuestionOpenAnswerProps = $props();
@@ -45,10 +46,18 @@
     bind:this={el}
     {id}
     aria-expanded={collapsible ? expanded : undefined}
-    class:collapsible
-    class:expanded
     style:--full-height={fullHeight}
-    {...concatClass(restProps, 'relative grid max-h-[8rem] overflow-hidden rounded-md bg-base-200 text-center')}>
+    {...concatClass(
+      restProps,
+      cn(
+        'relative grid max-h-[8rem] overflow-hidden rounded-md bg-base-200 text-center',
+        collapsible && 'transition-all',
+        collapsible &&
+          (expanded
+            ? 'max-h-(--full-height) before:h-0'
+            : "before:absolute before:right-0 before:bottom-0 before:left-0 before:h-lg before:bg-gradient-to-t before:from-base-200 before:content-['']")
+      )
+    )}>
     {#if collapsible}
       <button
         onclick={() => {
@@ -64,17 +73,3 @@
     </span>
   </div>
 {/if}
-
-<style lang="postcss">
-  @reference "../../../tailwind-theme.css";
-  .collapsible {
-    @apply transition-all;
-  }
-  /* NB. before: is a valid pseudoclass even though the linter flags it */
-  .collapsible:not(.expanded) {
-    @apply before:h-lg before:from-base-200 before:absolute before:right-0 before:bottom-0 before:left-0 before:bg-gradient-to-t before:content-[''];
-  }
-  .collapsible.expanded {
-    @apply max-h-[var(--full-height)] before:h-0;
-  }
-</style>

@@ -6,17 +6,15 @@ Show a radial or a linear score gauge for a sub-match.
 - `score`: The score of the gauge in the range from 0 to `max`, usually 100.
 - `max`: The maximum value of the gauge. @default 100
 - `label`: The text label for the gauge, e.g. the name of the category.
-- `variant`: The format of the gauge. @default 'linear'
+- `variant`: The format of the gauge. @default 'radial'
 - `showScore`: Whether to also show the score as numbers. @default true
 - `unit`: The string to add to the score if it's shown, e.g. '%'. @default ''
-- `colors`: The colors of the gauge. @default 'var(--color-neutral)' i.e. the `neutral` color.
+- `color`: The color of the gauge, optionally with a separate dark-mode color. @default 'var(--color-neutral)' i.e. the `neutral` color.
 - Any valid attributes of a `<div>` element
 
 ```tsx
-<ScoreGauge score={23} label={category.name} 
-  color={category.color} colorDark={category.colorDark}
-  variant="radial"/>
-<ScoreGauge score={23} label={category.name}/>
+<ScoreGauge score={23} label={category.name} color={category.color} />
+<ScoreGauge score={23} label={category.name} variant="linear" />
 ```
 -->
 
@@ -42,7 +40,7 @@ Show a radial or a linear score gauge for a sub-match.
   let gaugeStyles = $derived.by(() => {
     const { normal, dark } = parseColors(color, 'var(--color-neutral)');
 
-    let classes = 'vaa-score-gauge grid gap-4';
+    let classes = 'grid gap-4 [--progress-color:var(--meter-color)] dark:[--progress-color:var(--meter-color-dark)]';
     switch (variant) {
       case 'linear':
         classes += ' grid-rows-[fit-content(100%)_minmax(0,_1fr)] justify-items-start';
@@ -64,7 +62,7 @@ Show a radial or a linear score gauge for a sub-match.
     <progress
       role="meter"
       aria-labelledby={labelId}
-      class="progress-color progress"
+      class="progress text-(--progress-color)"
       aria-valuemax={max}
       aria-valuenow={score}
       value={score}
@@ -75,7 +73,7 @@ Show a radial or a linear score gauge for a sub-match.
       aria-valuemax={max}
       aria-valuenow={score}
       aria-labelledby={labelId}
-      class="radial-progress flex-shrink-0 self-center"
+      class="radial-progress flex-shrink-0 self-center text-(--progress-color) [--size:var(--radial-size)] [--thickness:calc(var(--radial-size)*0.12)] lg:[--size:var(--radial-size-lg)] lg:[--thickness:calc(var(--radial-size-lg)*0.12)]"
       style="--value:{(score / (max ?? 100)) * 100};">
       {#if showScore}
         <span class="small-info" aria-hidden="true">{score}{unit}</span>
@@ -94,52 +92,22 @@ Show a radial or a linear score gauge for a sub-match.
   </div>
 </div>
 
-<style lang="postcss">
-  @reference "../../../tailwind-theme.css";
-  /* We need a media query to selectively set the --progress-color value we want to use. */
-  .vaa-score-gauge {
-    --progress-color: var(--meter-color);
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .vaa-score-gauge {
-      --progress-color: var(--meter-color-dark);
-    }
-  }
-
-  /* For Firefox */
+<style>
+  /* Firefox's progress-bar fill, a vendor pseudo-element with no utility form. */
   progress::-moz-progress-bar {
     background: var(--progress-color);
   }
 
-  /* For Chrome or Safari */
+  /* Chrome's and Safari's progress-bar fill, a vendor pseudo-element with no utility form. */
   progress::-webkit-progress-value {
     background: var(--progress-color);
   }
 
-  /* For IE10 */
-  progress {
-    color: var(--progress-color);
-  }
-
-  .radial-progress {
-    color: var(--progress-color);
-    --size: var(--radial-size);
-    --thickness: calc(var(--radial-size) * 0.12);
-  }
-
-  /* This is the css rule copied from DaisyUI with the last line (var(--color-base-300)) added to create the full circle background */
+  /* DaisyUI's radial-progress gradient with a base-300 layer added, which draws the full circle behind the value. */
   .radial-progress:before {
     background:
       radial-gradient(farthest-side, currentColor 98%, #0000) top/var(--thickness) var(--thickness) no-repeat,
       conic-gradient(currentColor calc(var(--value) * 1%), #0000 0),
       var(--color-base-300);
-  }
-
-  @media (min-width: 1024px) {
-    .radial-progress {
-      --size: var(--radial-size-lg);
-      --thickness: calc(var(--radial-size-lg) * 0.12);
-    }
   }
 </style>

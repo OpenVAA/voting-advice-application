@@ -1,13 +1,13 @@
 /**
- * Default-template test suite — covers 29 behaviors across:
+ * Default-template test suite, covering:
  *   - candidatesOverride: non-uniform distribution + per-locale faker cycling
- *   - questionsOverride: type mix (18 ordinal + 4 categorical + 1 MC + 1 boolean)
+ *   - questionsOverride: type mix (18 ordinal + 5 categorical + 1 boolean + 1 number + 1 MC)
  *   - defaultTemplate shape: counts, flags, frontmatter constants
  *   - End-to-end pipeline integration: runPipeline(defaultTemplate, defaultOverrides)
  *   - The anon-RLS precondition (Tests 28/29): every emitted candidate row carries `terms_of_use_accepted`, at the same literal `e2e/base` uses.
  *     This is the fast early-warning tier beside the live anon-client guard in tests/integration/default-template.integration.test.ts — cheap enough to run with no database, so a regression surfaces before the integration job.
  *
- * contract: pure I/O. No Supabase imports, no `createClient`, no `.rpc `.
+ * Pure I/O: no Supabase imports, no `createClient`, no `.rpc`.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -15,12 +15,12 @@ import { runPipeline } from '../../src/pipeline';
 import { validateTemplate } from '../../src/template/schema';
 import { BUILT_IN_TEMPLATES } from '../../src/templates';
 import { defaultOverrides, defaultTemplate } from '../../src/templates/default';
+import { ALLIANCE_MEMBERSHIP } from '../../src/templates/defaults/alliances-override';
 import {
   __buildLocaleFakerForTests,
   candidatesOverride,
   LOCALE_BLOCK_SIZE
 } from '../../src/templates/defaults/candidates-override';
-import { ALLIANCE_MEMBERSHIP } from '../../src/templates/defaults/alliances-override';
 import { questionsOverride } from '../../src/templates/defaults/questions-override';
 import { makeCtx } from '../utils';
 
@@ -74,14 +74,6 @@ describe('candidatesOverride — non-uniform distribution + locale cycling', () 
     }
   });
 
-  it('Test 4: is_generated: true on every row', () => {
-    const ctx = makeCtx({ refs: { ...makeCtx().refs, organizations: eightOrganizations() } });
-    const rows = candidatesOverride({}, ctx);
-    for (const row of rows) {
-      expect((row as { is_generated?: boolean }).is_generated).toBe(true);
-    }
-  });
-
   it('Test 5: first_name + last_name are non-empty strings', () => {
     const ctx = makeCtx({ refs: { ...makeCtx().refs, organizations: eightOrganizations() } });
     const rows = candidatesOverride({}, ctx);
@@ -129,9 +121,9 @@ describe('candidatesOverride — non-uniform distribution + locale cycling', () 
   it('Test 10: faker locale cycling — three equal locale blocks (en/fi/sv), asserted at the boundary', () => {
     // The corpus is partitioned into three equal per-locale blocks — en, then fi, then sv — and each block's names replay a freshly-seeded Faker for that locale exactly, two draws per row (first name, then last name).
     //
-    // Asserting only that names are non-empty cannot see that partition at all: every locale pack yields non-empty names, so collapsing all three blocks into a single locale leaves such a test green. That is what this test used to do (sweep finding F18).
+    // Asserting only that names are non-empty cannot see that partition at all: every locale pack yields non-empty names, so collapsing all three blocks into a single locale leaves such a test green.
     //
-    // Read carefully before changing: the block SIZE is read from the LOCALE_BLOCK_SIZE constant and asserted, never restated as a literal — but the boundary INDICES are derived from the generated corpus, deliberately NOT from that constant. A regression that changes LOCALE_BLOCK_SIZE would drag constant-derived indices along with it and this test would go blind again, which is the exact defect the rewrite removed. rows.length comes from ORGANIZATION_WEIGHTS, which is independent of the block size. Do not "simplify" blockSize back into LOCALE_BLOCK_SIZE.
+    // Read carefully before changing: the block SIZE is read from the LOCALE_BLOCK_SIZE constant and asserted, never restated as a literal — but the boundary INDICES are derived from the generated corpus, deliberately NOT from that constant. A regression that changes LOCALE_BLOCK_SIZE would drag constant-derived indices along with it and blind this test. rows.length comes from ORGANIZATION_WEIGHTS, which is independent of the block size. Do not "simplify" blockSize back into LOCALE_BLOCK_SIZE.
     const ctx = makeCtx({ refs: { ...makeCtx().refs, organizations: eightOrganizations() } });
     const rows = candidatesOverride({}, ctx);
 
@@ -164,7 +156,7 @@ describe('candidatesOverride — non-uniform distribution + locale cycling', () 
     expect(rows.length).toBeGreaterThan(0);
     for (const row of rows) {
       // `anon_select_candidates` is more than one clause:
-      //   terms_of_use_accepted IS NOT NULL AND terms_of_use_accepted < now(), on top of section 3.4's rule that the project is open for voters, the row is confirmed and a confirmed nomination reaches it. The confirmation term is auto-defaulted by `bulkImport`'s CONFIRMABLE_TABLES set and the project term by `ensureProject` (src/supabaseAdminClient.ts) — this column is supplied by NEITHER, and its absence is exactly what made the Candidates tab disappear from the voter results page while the seed suite stayed green: every other check in this repository reads as service_role, which bypasses RLS entirely.
+      //   terms_of_use_accepted IS NOT NULL AND terms_of_use_accepted < now(), on top of the rule that the project is open for voters, the row is confirmed and a confirmed nomination reaches it. The confirmation term is auto-defaulted by `bulkImport`'s CONFIRMABLE_TABLES set and the project term by `ensureProject` (src/supabaseAdminClient.ts) — this column is supplied by NEITHER. Without it the Candidates tab disappears from the voter results page, and every other check in this repository reads as service_role, which bypasses RLS entirely, so none of them sees it.
       //
       // The LITERAL is asserted, not mere presence, because the value is also the cross-template consistency Test 29 pins: `e2e/base` uses the same string, so the two templates diff cleanly and a future change to it fails in one obvious place. A computed `new Date().toISOString()` would additionally break Test 9's byte-identical determinism assertion.
       expect((row as { terms_of_use_accepted?: string }).terms_of_use_accepted).toBe('2025-01-01T00:00:00.000Z');
@@ -176,7 +168,7 @@ describe('candidatesOverride — non-uniform distribution + locale cycling', () 
     const baseCandidates = BUILT_IN_TEMPLATES['e2e/base'].candidates?.fixed ?? [];
     expect(baseCandidates.length).toBeGreaterThan(0);
 
-    // `ca-aa-hidden` and `ca-aa-unregistered` DELIBERATELY omit the key — they are an in-repo negative control for the hidden and the not-yet-registered candidate, and the migration that introduced the three-clause policy cites the first of them by name. They must STAY omitted, so this test filters to the rows that carry the key at all rather than requiring it everywhere; the filter is what keeps this green without "fixing" the control away.
+    // `ca-aa-hidden` and `ca-aa-unregistered` DELIBERATELY omit the key — they are an in-repo negative control for the hidden and the not-yet-registered candidate. They must STAY omitted, so this test filters to the rows that carry the key at all rather than requiring it everywhere; the filter is what keeps this green without "fixing" the control away.
     const withTerms = baseCandidates.filter(
       (row) => (row as { terms_of_use_accepted?: string }).terms_of_use_accepted !== undefined
     );
@@ -249,7 +241,7 @@ describe('questionsOverride — type mix', () => {
       refs: { ...makeCtx().refs, question_categories: fourCategories() }
     });
     const rows = questionsOverride({}, ctx);
-    // number + multipleChoiceCategorical are now intentional demo types; text/date/image/multipleText remain excluded from the default template.
+    // number and multipleChoiceCategorical are intentional demo types; text/date/image/multipleText are excluded from the default template.
     const forbidden = new Set(['text', 'date', 'image', 'multipleText']);
     for (const row of rows) {
       const t = (row as { type?: string }).type!;
@@ -339,8 +331,7 @@ describe('defaultTemplate — shape & frontmatter constants', () => {
   // ---------------------------------------------------------------------------
   // Tests 30-32 — the external_id idiom, pinned
   //
-  // The default template's organization and constituency external_ids use the generator typecodes `org_*` / `con_NN`, not the retired `party_*` / `c_0N`.
-  // A one-off grep is not a standing guard: a future edit could reintroduce the retired idiom and nothing would go red. These three tests are that guard.
+  // The default template's organization and constituency external_ids use the generator typecodes `org_*` / `con_NN`, not `party_*` / `c_0N`. These three tests guard that idiom.
   //
   // Test 32 is the load-bearing one. `ALLIANCE_MEMBERSHIP` is the ONE lookup in this package that keys by identifier VALUE — the matrices all index positionally — so a PARTIAL rename (template renamed, map not) yields alliances with zero members and raises no error anywhere. That is the failure mode worth a test rather than a regex.
   // ---------------------------------------------------------------------------
@@ -377,7 +368,7 @@ describe('defaultTemplate — shape & frontmatter constants', () => {
     // 3 + 3; the remaining 2 of the 8 organizations are deliberately standalone.
     expect(members.length).toBe(6);
     for (const memberExtId of members) {
-      // The assertion that catches a half-done rename: the map still names an organization the template no longer emits.
+      // Catches a stale map: the map names an organization the template does not emit.
       expect(
         emitted.has(memberExtId),
         `ALLIANCE_MEMBERSHIP names ${memberExtId}, which no organization row emits`

@@ -3,6 +3,7 @@
 -- All content tables reference projects via project_id FK with ON DELETE CASCADE.
 CREATE TABLE public.accounts (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  -- Plain text, not a localized string.
   name text NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
@@ -15,11 +16,13 @@ EXECUTE FUNCTION public.update_updated_at ();
 CREATE TABLE public.projects (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid NOT NULL REFERENCES public.accounts (id) ON DELETE CASCADE,
+  -- Plain text, not a localized string.
   name text NOT NULL,
+  -- The locale code a localized string falls back to when it has no entry for the requested locale.
   default_locale text NOT NULL DEFAULT 'en',
-  -- Read by 162-08, which makes it the PROJECT-LEVEL term of section 3.4's public-read rule: an anonymous reader sees a row only when this is true, its nomination is confirmed and every entity that nomination links is confirmed. Defaults to the closed direction because a project created this minute is not world-readable; the creation paths (seed.sql, SupabaseAdminClient.ensureProject) set it true, which is today's behaviour rather than a new one.
+  -- Whether voters can read the project: an anonymous reader sees a row only when this is true, its nomination is confirmed and every entity that nomination links is confirmed. Defaults to false so a new project is not public; seed.sql and SupabaseAdminClient.ensureProject set it to true.
   open_for_voters boolean NOT NULL DEFAULT false,
-  -- Read by 162-12 and by NOTHING TODAY. It ships inert: no policy consults it, no seed sets it, and no assertion in the estate claims anything for it beyond existence, type, NOT NULL and default. Its default false IS today's behaviour rather than a new permissive setting -- section 3.3 grants admins `nomination.edit` unconditionally, and the `own, unless locked` cells this flag gates belong to the entity-user nomination write policies 162-12 creates. Do not read this column as an enforced setting until that plan wires it.
+  -- When true, entity users cannot insert or update their own nominations; the admin nomination policies ignore it.
   lock_nominations boolean NOT NULL DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()

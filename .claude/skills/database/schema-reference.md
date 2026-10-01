@@ -30,7 +30,6 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 - project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
 - name: jsonb, short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
 - sort_order: integer, subtype: text, custom_data: jsonb
-- is_generated: boolean DEFAULT false
 - created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
 - election_date: date, election_start_date: date
 - election_type: public.nomination_shape NOT NULL DEFAULT 'organization_list' — REPURPOSED in 162-07 (D-16). The column keeps its name and now carries which of the three nomination flows an election runs: organization_only / candidate_only / organization_list. Its previous meaning is deleted and its previous values are not members of the type, so a row carrying one is rejected by PostgreSQL. `subtype` on the same table is a DIFFERENT axis and is not this.
@@ -43,7 +42,6 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 - project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
 - name: jsonb, short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
 - sort_order: integer, subtype: text, custom_data: jsonb
-- is_generated: boolean DEFAULT false
 - created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
 - external_id: text (015)
 
@@ -53,7 +51,6 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 - project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
 - name: jsonb, short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
 - sort_order: integer, subtype: text, custom_data: jsonb
-- is_generated: boolean DEFAULT false
 - created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
 - keywords: jsonb
 - parent_id: uuid FK constituencies(id) ON DELETE SET NULL
@@ -73,20 +70,6 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 
 ### Entities
 
-**candidates** (102-entities.sql)
-
-- id: uuid PK DEFAULT gen_random_uuid()
-- project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
-- short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
-- sort_order: integer, subtype: text, custom_data: jsonb
-- is_generated: boolean DEFAULT false
-- created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
-- first_name: text NOT NULL, last_name: text NOT NULL
-- organization_id: uuid FK organizations(id) ON DELETE SET NULL
-- auth_user_id: uuid FK auth.users(id) ON DELETE SET NULL
-- answers: jsonb DEFAULT '{}'::jsonb (006)
-- external_id: text (015)
-
 **organizations** (102-entities.sql)
 
 - id: uuid PK DEFAULT gen_random_uuid()
@@ -94,20 +77,35 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 - auth_user_id: uuid FK auth.users(id) ON DELETE SET NULL
 - name: jsonb, short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
 - sort_order: integer, subtype: text, custom_data: jsonb
-- is_generated: boolean DEFAULT false
+- confirmed: boolean NOT NULL DEFAULT false
 - created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
-- answers: jsonb DEFAULT '{}'::jsonb (006)
-- external_id: text (015)
+- answers: jsonb DEFAULT '{}'::jsonb
+- external_id: text
+
+**candidates** (102-entities.sql)
+
+- id: uuid PK DEFAULT gen_random_uuid()
+- project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
+- auth_user_id: uuid FK auth.users(id) ON DELETE SET NULL
+- first_name: text NOT NULL, last_name: text NOT NULL
+- short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
+- sort_order: integer, subtype: text, custom_data: jsonb
+- confirmed: boolean NOT NULL DEFAULT false
+- terms_of_use_accepted: timestamptz
+- created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
+- answers: jsonb DEFAULT '{}'::jsonb
+- external_id: text
 
 **factions** (102-entities.sql)
 
 - id: uuid PK DEFAULT gen_random_uuid()
 - project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
+- organization_id: uuid NOT NULL FK organizations(id) ON DELETE CASCADE
 - name: jsonb, short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
 - sort_order: integer, subtype: text, custom_data: jsonb
-- is_generated: boolean DEFAULT false
+- confirmed: boolean NOT NULL DEFAULT false
 - created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
-- external_id: text (015)
+- external_id: text
 
 **alliances** (102-entities.sql)
 
@@ -115,9 +113,9 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 - project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
 - name: jsonb, short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
 - sort_order: integer, subtype: text, custom_data: jsonb
-- is_generated: boolean DEFAULT false
+- confirmed: boolean NOT NULL DEFAULT false
 - created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
-- external_id: text (015)
+- external_id: text
 
 ### Questions
 
@@ -127,7 +125,6 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 - project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
 - name: jsonb, short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
 - sort_order: integer, subtype: text, custom_data: jsonb
-- is_generated: boolean DEFAULT false
 - created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
 - category_type: category_type DEFAULT 'opinion'
 - election_ids: jsonb, election_rounds: jsonb, constituency_ids: jsonb, entity_type: jsonb
@@ -139,7 +136,6 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 - project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
 - name: jsonb, short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
 - sort_order: integer, subtype: text, custom_data: jsonb
-- is_generated: boolean DEFAULT false
 - created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
 - type: question_type NOT NULL
 - category_id: uuid NOT NULL FK question_categories(id)
@@ -156,7 +152,6 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 - project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
 - name: jsonb, short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
 - sort_order: integer, subtype: text, custom_data: jsonb
-- is_generated: boolean DEFAULT false
 - created_at: timestamptz NOT NULL DEFAULT now(), updated_at: timestamptz NOT NULL DEFAULT now()
 - candidate_id: uuid FK candidates(id) ON DELETE CASCADE
 - organization_id: uuid FK organizations(id) ON DELETE CASCADE
@@ -238,32 +233,36 @@ Storage cleanup tables: candidates, organizations, factions, alliances, election
 
 ## Utility Functions
 
-| Function                                           | File | Security         | Purpose                                                  |
-| -------------------------------------------------- | ---- | ---------------- | -------------------------------------------------------- |
-| update_updated_at()                                | 000  | -                | Trigger: sets updated_at to NOW()                        |
-| get_localized(jsonb, text, text)                   | 000  | IMMUTABLE        | 3-tier locale fallback (email helpers only)              |
-| validate_answer_value(jsonb, question_type, jsonb) | 000  | -                | Validates answer value against question type             |
-| validate_nomination()                              | 000  | -                | Trigger: enforces nomination hierarchy rules             |
-| validate_answers_jsonb()                           | 006  | -                | Trigger: smart validation of JSONB answers               |
-| cascade_question_delete_to_jsonb_answers()         | 006  | -                | Trigger: removes orphaned answer keys on question delete |
-| validate_question_type_change()                    | 006  | -                | Trigger: prevents type changes invalidating answers      |
-| custom_access_token_hook(jsonb)                    | 012  | STABLE           | Projects public.grants into the JWT `grants` claim       |
-| grant_role_permissions(grant_role_type, grant_scope_type) | 012 | IMMUTABLE | The role x permission matrix, encoded ONCE               |
-| user_can(grant_scope_type, uuid, grant_permission) | 012  | SECURITY DEFINER | THE authority question; resolves the claim downward      |
-| user_has_account_grant(uuid)                       | 012  | SECURITY DEFINER | Grant EXISTENCE on an account or a project it owns       |
-| is_child_nominee(entity_type, uuid, uuid)          | 012  | SECURITY DEFINER | The one-hop parent -> child nomination reach             |
-| project_open_for_voters(uuid)                      | 012  | SECURITY DEFINER | The project-level anon visibility sub-rule               |
-| entity_has_confirmed_nomination(entity_type, uuid, uuid) | 012 | SECURITY DEFINER | The nomination-level anon visibility sub-rule      |
-| storage_path_can(grant_scope_type, text, text, text, storage_verb) | 014 | SECURITY DEFINER | The storage authority question, asked of a PATH |
-| storage_path_is_public(text, text, text)           | 014  | SECURITY DEFINER | The storage visibility question, asked of a PATH          |
-| delete_storage_object(text, text)                  | 014  | SECURITY DEFINER | Deletes storage file via pg_net HTTP                     |
-| cleanup_entity_storage_files()                     | 014  | SECURITY DEFINER | Trigger: deletes storage files on entity DELETE          |
-| cleanup_old_image_file()                           | 014  | SECURITY DEFINER | Trigger: deletes old image file on UPDATE                |
-| enforce_external_id_immutability()                 | 015  | -                | Trigger: prevents external_id changes once set           |
-| resolve_external_ref(jsonb, text, uuid)            | 016  | -                | Resolves external_id reference to UUID                   |
-| bulk_import(jsonb)                                 | 016  | SECURITY INVOKER | Bulk upsert via external_id                              |
-| bulk_delete(jsonb)                                 | 016  | SECURITY INVOKER | Bulk delete by prefix/ids/external_ids                   |
-| resolve_email_variables(uuid[], text, text)        | 017  | SECURITY DEFINER | Resolves per-recipient email template variables          |
+| Function                                                                     | File | Security         | Purpose                                                                                                            |
+| ---------------------------------------------------------------------------- | ---- | ---------------- | ------------------------------------------------------------------------------------------------------------------ |
+| update_updated_at()                                                          | 010  | -                | Trigger: sets updated_at to NOW()                                                                                  |
+| get_localized(jsonb, text, text)                                             | 010  | IMMUTABLE        | 3-tier locale fallback (email helpers only)                                                                        |
+| validate_answer_value(jsonb, question_type, jsonb)                           | 011  | -                | Validates answer value against question type                                                                       |
+| validate_nomination()                                                        | 011  | SECURITY DEFINER | Trigger: enforces nomination hierarchy rules                                                                       |
+| validate_answers_jsonb()                                                     | 105  | -                | Trigger: smart validation of JSONB answers                                                                         |
+| cascade_question_delete_to_jsonb_answers()                                   | 105  | -                | Trigger: removes orphaned answer keys on question delete                                                           |
+| validate_question_type_change()                                              | 105  | -                | Trigger: prevents type changes invalidating answers                                                                |
+| custom_access_token_hook(jsonb)                                              | 301  | STABLE           | Projects public.grants into the JWT `grants` claim                                                                 |
+| grant_role_permissions(grant_scope_type, grant_role_type, entity_type)       | 301  | IMMUTABLE        | The role x permission matrix, encoded ONCE                                                                         |
+| user_can(grant_scope_type, uuid, grant_permission, entity_type DEFAULT NULL) | 301  | SECURITY DEFINER | THE authority question; resolves the claim downward; the entity type is required at entity scope                   |
+| user_has_account_grant(uuid)                                                 | 301  | SECURITY DEFINER | Grant EXISTENCE on an account or a project it owns                                                                 |
+| private.is_child_nominee(entity_type, uuid, entity_type, uuid)               | 301  | SECURITY DEFINER | The one-hop parent -> child nomination reach, typed on both sides                                                  |
+| project_open_for_voters(uuid)                                                | 301  | SECURITY DEFINER | The project-level anon visibility sub-rule                                                                         |
+| private.entity_has_confirmed_nomination(entity_type, uuid, uuid)             | 301  | SECURITY DEFINER | The nomination-level anon visibility sub-rule                                                                      |
+| storage_path_can(grant_scope_type, text, text, text, storage_verb)           | 400  | SECURITY DEFINER | The storage authority question, asked of a PATH                                                                    |
+| storage_path_is_public(text, text, text)                                     | 400  | SECURITY DEFINER | The storage visibility question, asked of a PATH                                                                   |
+| delete_storage_object(text, text)                                            | 400  | SECURITY DEFINER | Deletes storage file via pg_net HTTP                                                                               |
+| cleanup_entity_storage_files()                                               | 400  | SECURITY DEFINER | Trigger: deletes storage files on entity DELETE                                                                    |
+| cleanup_old_image_file()                                                     | 400  | SECURITY DEFINER | Trigger: deletes old image file on UPDATE                                                                          |
+| enforce_external_id_immutability()                                           | 500  | -                | Trigger: prevents external_id changes once set                                                                     |
+| resolve_external_ref(jsonb, text, uuid)                                      | 501  | -                | Resolves external_id reference to UUID                                                                             |
+| bulk_import(jsonb)                                                           | 501  | SECURITY INVOKER | Bulk upsert via external_id                                                                                        |
+| bulk_delete(jsonb)                                                           | 501  | SECURITY INVOKER | Bulk delete by prefix/ids/external_ids                                                                             |
+| resolve_email_variables(uuid, uuid[], text, text)                            | 502  | SECURITY DEFINER | Resolves per-recipient email template variables in the given project                                               |
+| get_nominations(uuid, uuid, uuid, boolean, integer)                          | 503  | SECURITY INVOKER | Nominations with entity data; `p_project_id` required                                                              |
+| get_entity_basic_data(entity_type, uuid)                                     | 503  | SECURITY DEFINER | Basic data of an entity the caller holds nomination.read on; probes only the named table                           |
+| get_candidate_user_data(uuid, entity_type)                                   | 503  | SECURITY INVOKER | The caller's own entity row in the given project                                                                   |
+| upsert_answers(entity_type, uuid, jsonb, boolean)                            | 503  | SECURITY INVOKER | Atomic answer write; the type selects the one table written (`candidate` or `organization`), any other type raises |
 
 ## COLUMN_MAP / PROPERTY_MAP Bridge
 
@@ -276,7 +275,7 @@ The type bridge in `packages/supabase-types/src/` connects DB column names to Ty
 
 Key mappings from COLUMN_MAP:
 
-- sort_order -> order, short_name -> shortName, custom_data -> customData, is_generated -> isGenerated
+- sort_order -> order, short_name -> shortName, custom_data -> customData
 - first_name -> firstName, last_name -> lastName, organization_id -> organizationId
 - category_id -> categoryId, election_ids -> electionIds, election_rounds -> electionRounds
 - constituency_ids -> constituencyIds, entity_type -> entityType, allow_open -> allowOpen

@@ -6,9 +6,14 @@ import type { LanguageModelUsage as TokenUsage } from 'ai';
  * Can be used to track the metrics of a single LLM call or multiple LLM calls.
  *
  * @example
- *
+ * ```ts
  * const metrics: LLMPipelineMetrics = {
- *   processingTimeMs: 420, nLlmCalls: 66, costs: { input: 0.5, output: 0.5, total: 1 }, tokens: { inputTokens: 6700, outputTokens: 6800, totalTokens: 13500 } };
+ *   processingTimeMs: 420,
+ *   nLlmCalls: 66,
+ *   costs: { input: 0.5, output: 0.5, total: 1 },
+ *   tokens: { inputTokens: 6700, outputTokens: 6800, totalTokens: 13500 }
+ * };
+ * ```
  */
 export interface LLMPipelineMetrics extends PipelineMetrics {
   nLlmCalls: number;

@@ -1,7 +1,7 @@
 /**
- * EFLOW-10b — candidate bank-auth (Idura OIDC) full-browser self-registration journey.
+ * Candidate bank-auth (Idura OIDC) full-browser self-registration journey.
  *
- * This is the full-browser counterpart to the Edge-Function seam spec (`candidate-bank-auth.spec.ts`). It walks the REAL OIDC redirect chain end to end, faking ONLY the IdP at the env-pointed network seam (the mock OIDC issuer auto-spawned by the Playwright `webServer` entry). The authorize → callback → server-side exchange → JWE decrypt → claims → preregister chain runs UNMODIFIED (Option B; no production-code change, no test-only branch).
+ * This is the full-browser counterpart to the Edge-Function seam spec (`candidate-bank-auth.spec.ts`). It walks the REAL OIDC redirect chain end to end, faking ONLY the IdP at the env-pointed network seam (the mock OIDC issuer auto-spawned by the Playwright `webServer` entry). The authorize → callback → server-side exchange → JWE decrypt → claims → preregister chain runs UNMODIFIED (no production-code change, no test-only branch).
  *
  * Structure: ONE serial-describe → ONE long `test('full bank-auth ...')` → named `test.step` segments. The walk covers:
  *   1. goto /candidate/preregister (UNAUTHENTICATED) → click preregister-start
@@ -15,28 +15,28 @@
  *   4. email + ToU → fillEmailAndAcceptToU(recipientEmail) → triggers
  *      preregister() → POST /api/candidate/preregister → identity-callback Edge
  *      Function (JWE-decrypt → verify → extract claims → create auth user +
- *      candidate + role → generate magic link) → the server route verifyOtp's
+ *      candidate + grant → generate magic link) → the server route verifyOtp's
  *      the magic link to ESTABLISH THE SESSION INLINE, then redirects to /candidate/preregister/status?code=success.
- *   5. Assert the success status page (`preregister-status-return`). For the Supabase bank-auth adapter this IS the authenticated end state: the candidate's `auth.users` + `candidates` + `grants` cascade was created server-side by the Edge Function and the session was established by the route's verifyOtp — there is NO confirmation-email / registration-key / set-password leg (that is the legacy adapter's flow; the Supabase id_token-callback path creates the user under an identity-derived placeholder email and logs in immediately).
- *   6. End-to-end DB proof: assert via SupabaseAdminClient that the bank-auth identity now resolves to a real `auth.users` row carrying the expected `identity_provider='idura'` + `identity_match_value=<sub>` app_metadata AND a linked `candidates` row + candidate entity `grants` row — the only way these exist is if the REAL authorize→callback→exchange→decrypt→ claims→create chain ran end to end (unmodified production auth code).
+ *   5. Assert the success status page (`preregister-status-return`). For the Supabase bank-auth adapter this IS the authenticated end state: the candidate's `auth.users` + `candidates` + `grants` cascade was created server-side by the Edge Function and the session was established by the route's verifyOtp — there is NO confirmation-email / registration-key / set-password leg (the Supabase id_token-callback path creates the user under an identity-derived placeholder email and logs in immediately).
+ *   6. End-to-end DB proof: assert via SupabaseAdminClient that the bank-auth identity now resolves to a real `auth.users` row carrying the expected `identity_provider='idura-ftn'` + `identity_match_value=<sub>` app_metadata AND a linked `candidates` row + candidate entity `grants` row — the only way these exist is if the REAL authorize→callback→exchange→decrypt→ claims→create chain ran end to end (unmodified production auth code).
  *
  * Rigidity contract: no soft assertions, no try/catch wrapping assertions, and no swallowed-rejection fallbacks on assertion-bearing locator interactions — every assertion is hard and every locator interaction propagates rejection.
  *
  * Starts UNAUTHENTICATED (test.use storageState empty-cookies) — the bank-auth flow mints its own session. Runs on the /en locale-prefixed routes; asserts on testIds, never localized strings (CLAUDE.md localization rule).
  *
  * ---------------------------------------------------------------------------
- * Running (see tests/IDURA-TEST-RUNBOOK.md, "EFLOW-10b", for the full procedure):
+ * Running (see tests/IDURA-TEST-RUNBOOK.md, "Full-browser journey", for the full procedure):
  *
  *   # Terminal 1 — SvelteKit server WITH the IdP env in its OWN process:
- *   yarn db:reset
- *   source /tmp/eflow10b.env          # IDURA_DOMAIN=127.0.0.1:9443, test JWKS,
- *                                     # IDENTITY_PROVIDER_ISSUER/_CLIENT_ID,
- *                                     # NODE_TLS_REJECT_UNAUTHORIZED=0 (test-only)
- *   yarn dev                          # :5173 inherits the IdP env
+ *   export PUBLIC_PROJECT_ID=00000000-0000-0000-0000-0000000000e2   # the project the suite seeds
+ *   source /tmp/bank-auth-journey.env   # IDURA_DOMAIN=127.0.0.1:9443, test JWKS,
+ *                                       # IDENTITY_PROVIDER_ISSUER/_CLIENT_ID,
+ *                                       # NODE_TLS_REJECT_UNAUTHORIZED=0 (test-only)
+ *   yarn dev                            # :5173 inherits the IdP env
  *   #   + serve identity-callback with the test decryption JWKS (E-1..E-3)
  *
  *   # Terminal 2 — the journey run (the mock issuer auto-spawns via webServer):
- *   source /tmp/eflow10b.env
+ *   source /tmp/bank-auth-journey.env
  *   PLAYWRIGHT_BANK_AUTH=1 npx playwright test --project=bank-auth-journey -c tests/playwright.config.ts
  * ---------------------------------------------------------------------------
  */
@@ -106,10 +106,10 @@ test.describe('candidate bank-auth journey', { tag: ['@bank-auth'] }, () => {
       await expect(electionsList).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
-      // review WR-09 → iteration-3 CR-01: select the perm-bankauth-notloc election BY IDENTITY. The earlier `toContainText('[EL1]')` presence check could not catch the real defect — it asserted the dataset was in the list, not that the fixture then checked it — so the positional `.first()` pick silently preregistered into a foreign election.
+      // Select the perm-bankauth-notloc election BY IDENTITY, never by position: a positional `.first()` pick can silently preregister into a foreign election, and a presence check on the label only proves the dataset is in the list, not that the fixture checked it.
       // submitElection's `toHaveCount(1)` subsumes the presence assertion.
       //
-      // `BA-` (WR-03): `[EL1]` alone is a perm-family shape convention emitted by twelve templates, so once this project moved to the chain tail it matched 2 elections. `[BA-EL1]` is this dataset's own label namespace — see `perm-bankauth-notloc.ts`.
+      // `BA-`: `[EL1]` alone is a perm-family shape convention emitted by twelve templates, so it matches more than one election while the perm datasets are live. `[BA-EL1]` is this dataset's own label namespace — see `perm-bankauth-notloc.ts`.
       await candidatePreregisterPage.submitElection('[BA-EL1]');
     });
 
@@ -135,7 +135,7 @@ test.describe('candidate bank-auth journey', { tag: ['@bank-auth'] }, () => {
     // ============== Step 5: preregister() success status page ==============
 
     await test.step('5. preregister() establishes session → success status page', async () => {
-      // The Supabase bank-auth flow: preregister() POSTs /api/candidate/preregister, which invokes the identity-callback Edge Function (decrypt → verify → claims → create auth user + candidate + role → magic link), then the route verifyOtp's the magic link to ESTABLISH THE SESSION INLINE and redirects to /candidate/preregister/status?code=success. There is NO confirmation-email / registration-key / set-password leg in this adapter.
+      // The Supabase bank-auth flow: preregister() POSTs /api/candidate/preregister, which invokes the identity-callback Edge Function (decrypt → verify → claims → create auth user + candidate + grant → magic link), then the route verifyOtp's the magic link to ESTABLISH THE SESSION INLINE and redirects to /candidate/preregister/status?code=success. There is NO confirmation-email / registration-key / set-password leg in this adapter.
       await page.waitForURL(/\/candidate\/preregister\/status/, { timeout: TIMEOUTS.slowPage });
       // The success status page renders the Return CTA ONLY for code=success — its visibility proves the full chain ran end to end (any failure code renders the retry/help variant instead).
       await expect(page.getByTestId(testIds.candidate.preregister.statusReturn)).toBeVisible({
@@ -146,7 +146,7 @@ test.describe('candidate bank-auth journey', { tag: ['@bank-auth'] }, () => {
     // ============== Step 6: end-to-end DB proof of the created identity =====
 
     await test.step('6. assert the bank-auth identity + candidate + role were created', async () => {
-      // The ONLY way these rows exist is if the REAL authorize→callback→ exchange→decrypt→claims→create chain ran UNMODIFIED end to end: the Edge Function created the auth user under the identity-derived placeholder email, stamped the idura identity claims into app_metadata, and created the linked candidate + role.
+      // The ONLY way these rows exist is if the REAL authorize→callback→ exchange→decrypt→claims→create chain ran UNMODIFIED end to end: the Edge Function created the auth user under the identity-derived placeholder email, stamped the idura identity claims into app_metadata, and created the linked candidate + grant.
       const client = new SupabaseAdminClient();
 
       // 6a. The auth user exists under the placeholder email with the expected
@@ -156,25 +156,25 @@ test.describe('candidate bank-auth journey', { tag: ['@bank-auth'] }, () => {
       );
       expect(authUser, `bank-auth auth user (${BANK_AUTH_JOURNEY_PLACEHOLDER_EMAIL}) should exist`).toBeTruthy();
       const authUserId = authUserIdOrThrow(authUser);
-      expect(authUser!.app_metadata?.identity_provider, 'identity_provider claim').toBe('idura');
+      expect(authUser!.app_metadata?.identity_provider, 'identity_provider claim').toBe('idura-ftn');
       expect(authUser!.app_metadata?.identity_match_value, 'identity_match_value claim').toBe(BANK_AUTH_JOURNEY_SUB);
 
       // 6b. The linked candidate row exists (public.candidates via PostgREST).
       const candidateResult = await client.findData('candidates', { auth_user_id: authUserId });
       expect(candidateResult.type, 'candidate lookup should succeed').toBe('success');
-      // reason: discriminated-union data-extraction narrowing (not a branch on test outcome); the line above already asserts `.type === 'success'`. The downstream expect(candidateRows.length, ...) assertion is unchanged.
+      // reason: discriminated-union data-extraction narrowing (not a branch on test outcome); the line above already asserts `.type === 'success'`. The downstream expect(candidateRows.length, ...) assertion does the checking.
       // eslint-disable-next-line playwright/no-conditional-in-test
       const candidateRows = (candidateResult.type === 'success' ? candidateResult.data : undefined) ?? [];
       expect(candidateRows.length, 'a candidate row should be linked to the bank-auth user').toBe(1);
 
-      // 6c. The candidate authority row exists (public.grants via PostgREST). 162-15 RETIRED public.user_roles; this step used to query that table, which the identity-callback function had already STOPPED writing at 162-06 -- it writes public.grants through `entityGrant.ts`. The assertion was therefore stale before the table was deleted, and unobserved because this journey runs only under tests/IDURA-TEST-RUNBOOK.md rather than in the standard suite.
+      // 6c. The candidate authority row exists (public.grants via PostgREST); the identity-callback function writes it through `entityGrant.ts`.
       const roleResult = await client.findData('grants', {
         user_id: authUserId,
         scope: 'entity',
         target_type: 'candidate'
       });
       expect(roleResult.type, 'grants lookup should succeed').toBe('success');
-      // reason: discriminated-union data-extraction narrowing (not a branch on test outcome); the line above already asserts `.type === 'success'`. The downstream expect(roleRows.length, ...) assertion is unchanged.
+      // reason: discriminated-union data-extraction narrowing (not a branch on test outcome); the line above already asserts `.type === 'success'`. The downstream expect(roleRows.length, ...) assertion does the checking.
       // eslint-disable-next-line playwright/no-conditional-in-test
       const roleRows = (roleResult.type === 'success' ? roleResult.data : undefined) ?? [];
       expect(roleRows.length, 'a candidate entity grant should be held by the bank-auth user').toBeGreaterThan(0);

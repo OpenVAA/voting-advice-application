@@ -5,7 +5,7 @@
  *
  * Soft-assertion posture: this is ONE long serial walk, so a hard failure anywhere truncates the traversal and hides every check after it. Visibility assertions therefore use the soft modifier deliberately — one broken card reports and the walk continues, so a single run surfaces every defect rather than only the first. Load-bearing preconditions (navigation anchors, gates, data state) stay hard, because walking past those produces noise rather than information.
  *
- * The count is deliberately NOT restated here. It lives in SOFT_ASSERTION_BUDGETS in tests/playwright.config.ts, which counts this file at config load and throws on any divergence, in either direction. A number in a comment is precisely what went stale and produced fake-guard sweep finding F10; a number the harness checks cannot.
+ * The count is deliberately NOT restated here. It lives in SOFT_ASSERTION_BUDGETS in tests/playwright.config.ts, which counts this file at config load and throws on any divergence, in either direction. A number in a comment goes stale; a number the harness checks cannot.
  *
  * Lint posture: all defensive `if (count > 0) { expect(...) }` patterns are hoisted into module-scope helper functions (below). The `playwright/no-conditional-in-test` rule fires only inside `test()` bodies, so helpers below are the canonical home for any dataset-conditional walk logic.
  *
@@ -34,12 +34,12 @@ import type { CaptureNavigationBaseline } from '../../helpers';
 //
 // Element/click/page/slowPage timeout buckets are imported from the central helpers/timeouts.ts.
 //
-// reason: JOURNEY_TEST_MAX (120s) exceeds TIMEOUTS.testMax (90s) and stays inline as a documented exception. The journey includes the filters:dialog 7-stage choreography which opens/closes the modal 7+ times; the full walk runs in ~75-90s, so this ceiling absorbs the per-step costs (Expander auto-expand interactions + modal transitions). APPLIED via test.setTimeout below — it MUST keep passing this value, NOT TIMEOUTS.testMax (90s), or the test would start timing out at 90s.
+// reason: JOURNEY_TEST_MAX (240s) exceeds TIMEOUTS.testMax (90s locally, 180s in CI) and stays inline as a documented exception. The journey is one serial test of 30+ steps, including the filters:dialog 7-stage choreography which opens/closes the modal 7+ times. Measured cost: 42-45s locally; on the 4-CPU CI runner every step runs about 4.3x slower, ~185s in total. 240s covers the CI cost with headroom. APPLIED via test.setTimeout below — it MUST keep passing this value, NOT TIMEOUTS.testMax, or the test would start timing out at that lower ceiling.
 //
 // TEXT_RE consolidates regex literals used 2+ times in the spec body so the `playwright/no-raw-locators` audit + intent-locality both improve.
 // ====================================================================
 
-const JOURNEY_TEST_MAX = 120_000;
+const JOURNEY_TEST_MAX = 240_000;
 
 const TEXT_RE = {
   // tab labels
@@ -161,11 +161,11 @@ async function toggleCategoryListItem({
 /**
  * Expect a client-side navigation after performing the given action, and settle on the DESTINATION DOM rather than on the URL.
  *
- * reason: this helper used to end in `page.waitForURL(...).catch(() => null)` — a URL-only wait that swallowed its own timeout. Under the ordering named as the root cause, SvelteKit commits the URL (`client.js:1759-1760`) before it swaps the DOM (`:1824`), so that settle released while the PREVIOUS question was still rendered, and any trailing assertion raced a swap that had not happened. The recorded failure is exactly that race: `element(s) not found` on the Base-3 term trigger, because the question still rendered was Base-2, which carries no `custom_data.terms`.
+ * reason: a URL-only settle is not enough here. SvelteKit commits the URL before it swaps the DOM, so a URL wait can release while the PREVIOUS question is still rendered, and a trailing assertion then races a swap that has not happened (for example `element(s) not found` on the Base-3 term trigger while Base-2, which carries no `custom_data.terms`, is still showing).
  *
- * The settle now lives in `helpers/navigation.ts` so this walk and the `eperm07-term-trigger` instrument share ONE implementation and cannot drift — the instrument would otherwise keep its own copy of the defect and stop witnessing this file. A negative control was recorded before the fix landed.
+ * The settle now lives in `helpers/navigation.ts` so this walk and the `eperm07-term-trigger` instrument share ONE implementation and cannot drift.
  *
- * The baseline is captured BY THE ACTION, via the `capture` callback it receives, immediately before the navigating click — never here at wrapper entry (review WR-01). Every action below gates on the heading of the page it is leaving, and that gate targets the SAME element the baseline read targets, so a baseline taken before the gate can be one page stale and would make the settle's stage-2 text comparison true on arrival. The mechanism is spelled out on `expectClientNavigation`.
+ * The baseline is captured BY THE ACTION, via the `capture` callback it receives, immediately before the navigating click — never here at wrapper entry. Every action below gates on the heading of the page it is leaving, and that gate targets the SAME element the baseline read targets, so a baseline taken before the gate can be one page stale and would make the settle's stage-2 text comparison true on arrival. The mechanism is spelled out on `expectClientNavigation`.
  */
 async function expectUrlChange(
   page: Page,
@@ -230,7 +230,7 @@ async function expectQuestionAndAdvance({
     await expect(questionHeading).toHaveText(text, { timeout: TIMEOUTS.element });
 
     // Scope the answer options to the CURRENT question id. On a Q→Q nav the page reuses questions/[questionId]/+page.svelte and the variant remounts via `{#key question.type}`, so the OUTGOING question's [data-testid=question-choice] options can linger in the DOM for a frame AFTER the heading has already updated.
-    // A bare page-wide `getByTestId('question-choice').count()` then captures the stale/combined set, making `optionIndex(n) = nth(n-1)` resolve to a NON-last option for some questions — which silently corrupted the polar-MAX voter profile so Polar-Min out-ranked the partial-answer Special candidate (results ranking flip). Anchor to `questionChoices-<id>` (the option `name`, QuestionChoices.svelte:267; mirrors voter-journey.fixture) so count()/nth() only ever see THIS question's options.
+    // A bare page-wide `getByTestId('question-choice').count()` then captures the stale/combined set, making `optionIndex(n) = nth(n-1)` resolve to a NON-last option for some questions, which would corrupt the polar-MAX voter profile and flip the results ranking. Anchor to `questionChoices-<id>` (the option `name` QuestionChoices.svelte gives each choice; mirrors voter-journey.fixture) so count()/nth() only ever see THIS question's options.
     const questionId = new URL(page.url()).pathname.replace(/\/+$/, '').split('/').filter(Boolean).pop() ?? '';
     // eslint-disable-next-line playwright/no-restricted-locators -- testid+name conjunction not expressible via getByTestId/getByRole
     const answerOptions = page.locator(`[data-testid="question-choice"][name="questionChoices-${questionId}"]`);
@@ -301,7 +301,7 @@ async function expectMultiChoiceQuestionAndAdvance({
 }
 
 /**
- * The resolved English render of `questions.multiChoice.selectExact` at `count = 1` — the MF2 `countPlural=one` branch (apps/frontend/messages/en/questions.json:72).
+ * The resolved English render of `questions.multiChoice.selectExact` at `count = 1` — the MF2 `countPlural=one` branch of that key in apps/frontend/messages/en/questions.json.
  *
  * Asserted as an EXACT string, deliberately. A loose regex (e.g. /1/ or /select/i) would also be satisfied by the raw dotted key path `questions.multiChoice.selectExact` that an unresolved catalog lookup emits, which is precisely the regression this guard exists to catch — so a loose matcher would be a guard that cannot fail. It also pins the singular noun ("option", not "options"), locking the plural branch itself rather than just the key's presence.
  */
@@ -310,9 +310,9 @@ const SELECT_EXACT_ONE_EN = 'Select 1 option.';
 /**
  * Answer the EXACT-ONE multi-choice opinion question and advance, asserting the `selectExact` helper text on the way.
  *
- * This is the standing regression guard for `questions.multiChoice.selectExact`. The key exists in all 7 locales and was proved to render by importing the compiled Paraglide output at build time, but no seeded question had an equal min/max window, so the RUNNING app always took the `selectRange` branch and a break in the string would have shipped silently with no standing guard.
+ * This is the standing regression guard for `questions.multiChoice.selectExact`, the branch the running app takes only for a question with an equal min/max window.
  *
- * `qu-opin-base-8-multichoice-exact` closes that: min === max === 1 makes QuestionChoices render `selectExact` with `count = 1` (QuestionChoices.svelte:420-421). Exactly ONE checkbox is a valid answer here — clicking two would be over-max, so the answer would never persist.
+ * `qu-opin-base-8-multichoice-exact` is that question: min === max === 1 makes QuestionChoices render `selectExact` with `count = 1`. Exactly ONE checkbox is a valid answer here — clicking two would be over-max, so the answer would never persist.
  *
  * Shape precedent: the `selectRange` lock at candidate-journey step 18.5. This one asserts the RESOLVED text rather than a digit pattern, per the reasoning on SELECT_EXACT_ONE_EN above.
  */
@@ -363,12 +363,12 @@ async function settleAndAdvance({ page, text }: { page: Page; text: RegExp | str
 /**
  * Expect the election accordion to be visible, then click the option with the given text and expect the results list to be visible.
  *
- * The AccordionSelect component (apps/frontend/src/lib/components/accordionSelect/AccordionSelect.svelte) exposes its picks as ARIA `option` roles, not `button`s. After a selection is made it auto-collapses (after DELAY.lg), so subsequent calls observe only the currently-selected option in the DOM. To switch to a different option we first re-expand the accordion by clicking the visible (active) option — clicking the active option toggles `expanded` back on (AccordionSelect.svelte:62-64).
+ * The AccordionSelect component (apps/frontend/src/lib/components/accordionSelect/AccordionSelect.svelte) exposes its picks as ARIA `option` roles, not `button`s. After a selection is made it auto-collapses (after DELAY.lg), so subsequent calls observe only the currently-selected option in the DOM. To switch to a different option we first re-expand the accordion by clicking the visible (active) option — clicking the active option toggles `expanded` back on (AccordionSelect's option click handler).
  */
 async function expectElectionOptionAndSelect({ page, text }: { page: Page; text: RegExp | string }): Promise<void> {
   const electionAccordion = page.getByTestId(testIds.voter.results.electionAccordion);
   await expect(electionAccordion).toBeVisible({ timeout: TIMEOUTS.element });
-  // lock for `components.accordionSelect.listboxAriaLabel` — the one newly-translated key that is a genuine WCAG 2.1 AA defect: without it the listbox announces the raw dotted key path where a control name belongs.
+  // lock for `components.accordionSelect.listboxAriaLabel`, a WCAG 2.1 AA requirement: without it the listbox announces the raw dotted key path where a control name belongs.
   // AccordionSelect spreads restProps (incl. data-testid) onto the `role=listbox` element itself, so intersect the testid locator with the role rather than searching for a descendant listbox; scoping to the accordion also keeps other routes' listboxes from satisfying the assertion.
   const electionListbox = electionAccordion.and(page.getByRole('listbox'));
   await expect(electionListbox).toHaveAccessibleName('Select an option');
@@ -452,8 +452,7 @@ async function goToLocatedQuestionsViaMenu(page: Page): Promise<void> {
 }
 
 /**
- * Return to the located results list via the in-app nav menu "Results" link (CLIENT-SIDE, preserving the in-memory scope), then select the first election if the multi-election picker renders (mirrors answerAndAdvanceToResults step
- * 7) and wait for the results list.
+ * Return to the located results list via the in-app nav menu "Results" link (CLIENT-SIDE, preserving the in-memory scope), then select the first election if the multi-election picker renders (mirrors answerAndAdvanceToResults step 7) and wait for the results list.
  */
 async function returnToLocatedResultsViaMenu(page: Page): Promise<void> {
   const nav = createNavMenu(page);
@@ -471,7 +470,7 @@ test.describe('voter journey', () => {
   test.describe.configure({ mode: 'serial' });
 
   test('full voter journey end-to-end', async ({ page, resultsPage, entityFilters, entityDetails, voterHomePage }) => {
-    test.setTimeout(JOURNEY_TEST_MAX); // reason: 120s inline exception — see JOURNEY_TEST_MAX rationale above (full walk ~75-90s; exceeds the 90s global ceiling).
+    test.setTimeout(JOURNEY_TEST_MAX); // reason: 240s inline exception — see JOURNEY_TEST_MAX rationale above (measured ~185s on the CI runner; exceeds the global ceiling).
 
     // ====================================================================
     // STATIC PAGES
@@ -572,7 +571,7 @@ test.describe('voter journey', () => {
       // base has 2 CGs: CG-Reg (CO-Reg-N / CO-Reg-S) and CG-Mun (CO-Mun-NE/NW/SE/SW). The hierarchical CG flattens to municipality leaves only — the user should see CO-Mun-* options and never the CO-Reg-* parent options. Inspect each combobox in the constituencies list and assert the listbox options match Mun names only.
       const listbox = await getOnlyConstituencyListbox(page);
       const optionTexts = await listbox.getByRole('option').allTextContents();
-      // Mun option names per e2e/base.ts:366-392.
+      // Mun option names per the CO-Mun-* constituencies in e2e/base.ts.
       const hasMunNames = optionTexts.some((t) => TEXT_RE.munLeafNames.test(t));
       expect
         .soft(hasMunNames, `combobox options should contain Mun names; got ${JSON.stringify(optionTexts)}`)
@@ -592,7 +591,7 @@ test.describe('voter journey', () => {
 
     await test.step('hierarchical constituency selection continues with valid nominations', async () => {
       // Pick CO-Mun-NE specifically by name — it has nominations for BOTH EL-Reg (via parent CO-Reg-N) AND EL-Mun (direct), so the voter-missing-nominations modal should NOT appear after continue.
-      // e2e/base.ts:366-371.
+      // See the CO-Mun-NE constituency in e2e/base.ts.
       const listbox = await getOnlyConstituencyListbox(page);
       const neOption = listbox.getByRole('option', { name: TEXT_RE.northEast }).first();
       await neOption.click();
@@ -600,7 +599,7 @@ test.describe('voter journey', () => {
       await expect(constituenciesContinue).toBeEnabled({ timeout: TIMEOUTS.page });
       await constituenciesContinue.click();
       // Wait for the layout's nomination-availability check to settle by observing the missing-nominations modal contract directly.
-      // toBeHidden waits up to its timeout for the element to be absent or detached, replacing the prior page.waitForTimeout(1_500).
+      // toBeHidden waits up to its timeout for the element to be absent or detached.
       await expect(page.getByTestId(testIds.voter.missingNominationsModal)).toBeHidden({ timeout: TIMEOUTS.slowPage });
     });
 
@@ -698,8 +697,8 @@ test.describe('voter journey', () => {
       await expect.soft(infoButtonQ2).toHaveCount(0, { timeout: TIMEOUTS.element });
     });
 
-    // customData.terms extension (additive, against e2e/base; the `terms` block was seeded on Base-3 / qu-opin-base-3-likert7, base.ts:782-790). The trigger 'Likert' appears verbatim in the Base-3 title ("Base opinion 3 — Likert 7"), so QuestionHeading renders it as an in-text <Term> affordance; hovering/focusing the trigger reveals the definition popup. We are on Base-2 here (Base-1 answered above) — advance to Base-3 WITHOUT answering, assert the term affordance + popup, then resume the polar-MAX answer walk from Base-3.
-    await test.step('EPERM-07 customData.terms: in-text affordance + definition popup on Base-3', async () => {
+    // customData.terms extension (additive, against e2e/base; the `terms` block is seeded on Base-3 / qu-opin-base-3-likert7 in base.ts). The trigger 'Likert' appears verbatim in the Base-3 title ("Base opinion 3 — Likert 7"), so QuestionHeading renders it as an in-text <Term> affordance; hovering/focusing the trigger reveals the definition popup. We are on Base-2 here (Base-1 answered above) — advance to Base-3 WITHOUT answering, assert the term affordance + popup, then resume the polar-MAX answer walk from Base-3.
+    await test.step('customData.terms: in-text affordance + definition popup on Base-3', async () => {
       // Advance Base-2 → Base-3 (answer Base-2 at polar-MAX as the walk requires).
       await expectQuestionAndAdvance({
         page,
@@ -727,7 +726,7 @@ test.describe('voter journey', () => {
     });
 
     // skip + delete/back nav + answer-count→results-CTA.
-    // This step (delete answer → results link re-disabled → re-answer → re-enabled, plus the previous-button back-nav) plus the Opt-A skip step below ARE the confirmed-covered behaviour — re-confirmed with NO behaviour change (scope fence: this is confirmed-covered behaviour; the comment keeps the decision-coverage evidence greppable).
+    // This step covers delete answer → results link re-disabled → re-answer → re-enabled, plus the previous-button back-nav; the Opt-A skip step below covers the category skip.
     await test.step('answer remaining base questions at polar-MAX, delete answer, results link gated on min answers', async () => {
       // Answer and advance through the rest of the category's questions. We are on Base-3 here (Base-1/Base-2 answered above; Base-3 reached for the terms assertion); the dataset is stable, so the remaining base questions are known in walk order: Base-3 → 4 → 5.
       for (const text of [TEXT_RE.baseOpinion3Likert7, TEXT_RE.baseOpinion4Categorical, TEXT_RE.baseOpinion5Boolean]) {
@@ -756,7 +755,7 @@ test.describe('voter journey', () => {
       await expect
         .soft(questionHeading)
         .toHaveText(TEXT_RE.baseOpinion8MultiChoiceExact, { timeout: TIMEOUTS.element });
-      // Min-answers gate (minimumAnswers: 5). Base-6, Base-7 and Base-8 are all seeded, so the voter now holds 8 base answers here — deleting ONE no longer crosses the 5-answer threshold. Delete FOUR (Base-8 → Base-7 → Base-6 → Base-5, 8→7→6→5→4) to cross below the gate, asserting the CTA stays enabled until the crossing delete, then re-answer forward to re-enable it.
+      // Min-answers gate (minimumAnswers: 5). Base-6, Base-7 and Base-8 are all seeded, so the voter holds 8 base answers here — deleting ONE does not cross the 5-answer threshold. Delete FOUR (Base-8 → Base-7 → Base-6 → Base-5, 8→7→6→5→4) to cross below the gate, asserting the CTA stays enabled until the crossing delete, then re-answer forward to re-enable it.
       const deleteButton = page.getByTestId(testIds.shared.questionDelete);
       await deleteButton.click(); // Base-8 deleted → 7 answers, still ≥ 5
       await expect.soft(resultsLink).toBeEnabled({ timeout: TIMEOUTS.element });
@@ -834,7 +833,7 @@ test.describe('voter journey', () => {
     // ====================================================================
 
     // skip + delete/back nav + answer-count→results-CTA.
-    // The categorySkip click below is the confirmed-covered category-skip slice (Opt-A skipped → its questions never appear; the de-selected Opt-B category also stays absent) — re-confirmed, NO behaviour change.
+    // The categorySkip click below covers the category skip (Opt-A skipped → its questions never appear; the de-selected Opt-B category also stays absent).
     await test.step('skip the Opt-A category, and the deselected Opt-B category never appears', async () => {
       // After answering QG-Opin-Base, we should hit the QG-Opin-Opt-A category intro (categoryStart visible). Click Skip instead of Start.
       await expectCategoryIntroAndAdvance({ page, text: TEXT_RE.optionalOpinionsA, skip: true });
@@ -884,7 +883,7 @@ test.describe('voter journey', () => {
       const firstCard = cards.filter({ hasText: TEXT_RE.polarMax }).first();
       await expect.soft(firstCard).toBeVisible({ timeout: TIMEOUTS.slowPage });
 
-      // e2e/base.ts:246 DEFAULT_INFO_ANSWERS — every candidate's test-qu-info-text value is "Default candidate biography text.". The seed-time resolver wires this answer onto the card via cardContents.candidate.
+      // e2e/base.ts DEFAULT_INFO_ANSWERS — every candidate's test-qu-info-text value is "Default candidate biography text.". The seed-time resolver wires this answer onto the card via cardContents.candidate.
       await expect.soft(firstCard).toContainText(/Default candidate biography text\./i);
 
       // Sub-matches block visible inside the card.
@@ -893,7 +892,7 @@ test.describe('voter journey', () => {
 
       // per-category subMatch CORRECT values for the pinned polar-MAX candidate test-ca-bb-1 (NOT count-only). The voter answered every reachable opinion question at polar-MAX; test-ca-bb-1 is itself polar-MAX, so the categories the voter ANSWERED (Base + Regional) score the full 100, while the two OPTIONAL categories the voter skipped/de-selected (Opt-A NotSelected, Opt-B Skipped) score the neutral 50 (no overlapping voter answer in those groups → the matching algorithm's no-information midpoint). Exactly FOUR gauges render — one per question group that is in scope for test-ca-bb-1's nominations (Base, Opt-A, Opt-B, Regional); the per-question-filtered Mun-NE group is NOT a gauge here (out of this candidate's scope).
       //
-      // Values DERIVED at build by reading the rendered aria-valuenow off each gauge's role=meter (ScoreGauge.svelte:64-79) — not guessed. The deterministic 'max' walk + name-pinned candidate make these exact.
+      // Values are the rendered aria-valuenow of each gauge's role=meter (ScoreGauge.svelte) — measured, not guessed. The deterministic 'max' walk + name-pinned candidate make these exact.
       const gauges = subMatches.getByTestId(testIds.voter.results.scoreGauge);
       await expect.soft(gauges).toHaveCount(4);
 
@@ -987,8 +986,8 @@ test.describe('voter journey', () => {
       await entityTabs.getByRole('tab', { name: TEXT_RE.candidateTab }).click();
 
       // RANKING CONTRACT:
-      //   CA-AA-Special has missing answers (base-2 case b + Filt-Mun-NE case d per e2e/base.ts:817-832), so its match score is reduced.
-      //   The perfect-match candidates are the POLAR_MAX candidates (e2e/base.ts:265-271 + CA-AA-1 at :851-861 + CA-AA-Hidden at :836-849 with full polar-MAX answers). Both "Generic AA One" and "Hidden Candidate AA" rank at "100% match", with one of them appearing first in DOM order.
+      //   CA-AA-Special has missing answers (base-2 case b + Filt-Mun-NE case d, per its answers in e2e/base.ts), so its match score is reduced.
+      //   The perfect-match candidates are the POLAR_MAX candidates (POLAR_MAX in e2e/base.ts, plus CA-AA-1 and CA-AA-Hidden with full polar-MAX answers). Both "Generic AA One" and "Hidden Candidate AA" rank at "100% match", with one of them appearing first in DOM order.
       //
       const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
       await expect.soft(candidateSection).toBeVisible({ timeout: TIMEOUTS.slowPage });
@@ -1008,7 +1007,7 @@ test.describe('voter journey', () => {
         .filter({ hasText: TEXT_RE.hiddenCandidate });
       await expect.soft(hiddenCandidates).toHaveCount(0, { timeout: TIMEOUTS.element });
 
-      // matching-incorporation proof (max side). The max-walk voter's answers equal POLAR_MAX on EVERY dimension INCLUDING the two new opinion types: number (10, slider End) and multi-choice (['a','b'] — the walk's first-2 checkbox click matches POLAR_MAX's seeded pair, base.ts:305-306). The first card is a perfect-match POLAR_MAX candidate, so its results-list match-score reads 100% — a reading only reachable if BOTH new types incorporate into matching with ZERO distance. A broken number or multi-choice dispatch would drag the score below 100. This is HARD (stronger than the soft ordering neighbours above).
+      // matching-incorporation proof (max side). The max-walk voter's answers equal POLAR_MAX on EVERY dimension INCLUDING the two new opinion types: number (10, slider End) and multi-choice (['a','b'] — the walk's first-2 checkbox click matches POLAR_MAX's seeded pair in base.ts). The first card is a perfect-match POLAR_MAX candidate, so its results-list match-score reads 100% — a reading only reachable if BOTH new types incorporate into matching with ZERO distance. A broken number or multi-choice dispatch would drag the score below 100. This is HARD (stronger than the soft ordering neighbours above).
       await expect(cards.first().getByTestId(testIds.voter.results.matchScore).first()).toContainText(/100\s*%/, {
         timeout: TIMEOUTS.element
       });
@@ -1032,12 +1031,12 @@ test.describe('voter journey', () => {
       const dialog = page.getByRole('dialog');
       await expect.soft(dialog).toBeVisible({ timeout: TIMEOUTS.page });
 
-      // Special candidate carries the DEFAULT_INFO_ANSWERS set (e2e/base.ts:243) for every info question + its own asymmetric opinion arrangement, and its 2 candidate nominations omit `election_symbol` → the Election number row renders as "—" (showMissingElectionSymbol: candidate=true gates the row's existence). 14 info-items total: 4 nomination meta + 8 non-link info questions + 1 Links group + 1 north-only filtered info question (test-qu-info-filt-co-reg-n, visible only because CA-AA-Special's primary nomination is in CO-Reg-N). The mun-only + south-only variants are out-of-scope and asserted absent below.
+      // Special candidate carries the DEFAULT_INFO_ANSWERS set (e2e/base.ts) for every info question + its own asymmetric opinion arrangement, and its 2 candidate nominations omit `election_symbol` → the Election number row renders as "—" (showMissingElectionSymbol: candidate=true gates the row's existence). 14 info-items total: 4 nomination meta + 8 non-link info questions + 1 Links group + 1 north-only filtered info question (test-qu-info-filt-co-reg-n, visible only because CA-AA-Special's primary nomination is in CO-Reg-N). The mun-only + south-only variants are out-of-scope and asserted absent below.
       // `6/15/1980` is the en-US `toLocaleDateString` format for the seeded `1980-06-15` date answer.
       const infoTab = dialog.getByTestId(testIds.voter.entityDetail.infoTab);
       await expect.soft(infoTab).toBeVisible({ timeout: TIMEOUTS.page });
 
-      // candidate tab control. `entityDetails.contents.candidate` is ['info','opinions'] (e2e/base.ts:147), so the candidate drawer must expose EXACTLY [info, opinions] tabs — and CRUCIALLY the org-only 'children'/Members tab must be ABSENT (tab control is per-type, not a fixed set). `expectTabs` hard-asserts both the exact count+order and the accessible-name of each tab; the explicit Members-absent check below makes the per-type contract unmistakable. HARD assertions (no soft).
+      // candidate tab control. `entityDetails.contents.candidate` is ['info','opinions'] (e2e/base.ts app settings), so the candidate drawer must expose EXACTLY [info, opinions] tabs — and CRUCIALLY the org-only 'children'/Members tab must be ABSENT (tab control is per-type, not a fixed set). `expectTabs` hard-asserts both the exact count+order and the accessible-name of each tab; the explicit Members-absent check below makes the per-type contract unmistakable. HARD assertions (no soft).
       await entityDetails.expectTabs(['info', 'opinions']);
       await expect(dialog.getByRole('tab', { name: TEXT_RE.membersTab })).toHaveCount(0);
 
@@ -1071,8 +1070,8 @@ test.describe('voter journey', () => {
       // (8) number
       await expect.soft(infoItems.nth(8)).toContainText(/Info: years of experience\./i);
       await expect.soft(infoItems.nth(8)).toContainText(/99/);
-      // (9) boolean — the only standing check in the suite on the boolean-answer render path (`dataContext.svelte.ts:113` formats it through `t(value ? 'common.answer.yes' : 'common.answer.no')`), so it asserts the RESOLVED string on the VALUE node rather than a regex over the whole item.
-      // The previous `toContainText(/Yes/i)` was blind twice over: it matched the raw key `common.answer.yes` that a catalog miss renders (sweep F2), and it matched the label's own "…-yes-no?" text, so it passed even when no value rendered at all.
+      // (9) boolean — the only standing check in the suite on the boolean-answer render path (`dataContext.svelte.ts` formats it through `t(value ? 'common.answer.yes' : 'common.answer.no')`), so it asserts the RESOLVED string on the VALUE node rather than a regex over the whole item.
+      // A `toContainText(/Yes/i)` over the whole item would be blind twice over: it matches the raw key `common.answer.yes` that a catalog miss renders, and the label's own "…-yes-no?" text, so it would pass even when no value rendered at all.
       await expect.soft(infoItems.nth(9)).toContainText(/Info: would-you-run-again-yes-no\?/i);
       // reason: InfoItem.svelte renders label + value as its two direct children and gives a hook (`.test-label`) only to the label; the value node carries no testid, so excluding the label class is the only way to isolate the resolved answer. Structural and locale-stable — it names no user-facing string.
       // eslint-disable-next-line playwright/no-restricted-locators, playwright/no-raw-locators
@@ -1106,9 +1105,7 @@ test.describe('voter journey', () => {
         .waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
 
       // 4-case voter-vs-entity comparison (agree/disagree/voter-missing/entity-missing).
-      // The four expectQuestionDisplay calls below ARE the confirmed-covered matrix — re-confirmed here with NO behaviour change (scope fence: this is confirmed-covered behaviour, and this comment makes the evidence greppable for the decision-coverage + verification gates).
-      //
-      // Voter-vs-entity matrix arrangement (e2e/base.ts CA-AA-Special answers lines 869-879, cross-referenced with the voter's answering flow above):
+      // Voter-vs-entity matrix arrangement (e2e/base.ts CA-AA-Special answers, cross-referenced with the voter's answering flow above):
       //   (a) both answered    → Base opinion 1  (voter+entity at polar max)
       //   (b) voter only       → Base opinion 2  (entity skipped)
       //   (c) entity only      → Opt-A opinion 1 (voter skipped Opt-A category)
@@ -1130,7 +1127,7 @@ test.describe('voter journey', () => {
         infoText: TEXT_RE.neitherAnswered
       });
 
-      // new-type drawer displays. CA-AA-Special answered base-6 number=10 and base-7 multi-choice=['a','b'] (case (a), both answered, base.ts:999-1000); the max-walk voter answered number 10 (slider End) and multi-choice a,b (first-2 checkboxes). So:
+      // Number and multi-choice drawer displays. CA-AA-Special answered base-6 number=10 and base-7 multi-choice=['a','b'] (case (a), both answered, per base.ts); the max-walk voter answered number 10 (slider End) and multi-choice a,b (first-2 checkboxes). So:
       //   - multi-choice: voter 2 checked + entity 2 markers (mutual agreement).
       //   - number: voter 10 === entity 10 → a SINGLE combined dual-marker.
       // Consumes the entity-details fixture extensions: expectQuestionDisplay checkbox counting + expectNumberQuestionDisplay number dual-marker. HARD (no soft).
@@ -1157,7 +1154,7 @@ test.describe('voter journey', () => {
       await resultsPage.selectEntityTab('orgs');
       await resultsPage.openEntityDetailsForCard(/\[or-aa\] Party AA/i);
 
-      // organization tab control. `entityDetails.contents.organization` is ['info','children','opinions'] (e2e/base.ts:148), so the org drawer exposes EXACTLY [info, children, opinions] — and CRUCIALLY it INCLUDES the 'children'/Members tab that the candidate drawer (above) does NOT.
+      // organization tab control. `entityDetails.contents.organization` is ['info','children','opinions'] (e2e/base.ts app settings), so the org drawer exposes EXACTLY [info, children, opinions] — and CRUCIALLY it INCLUDES the 'children'/Members tab that the candidate drawer (above) does NOT.
       // This per-type contrast (candidate=[info,opinions] vs org=[info,children, opinions]) is the organization slice. `expectTabs` hard-asserts exact count+order+accessible-name; the explicit Members-PRESENT check pins the contrast with the candidate Members-ABSENT assertion above.
       const orgDialog = page.getByRole('dialog');
       await entityDetails.expectTabs(['info', 'children', 'opinions']);
@@ -1169,7 +1166,7 @@ test.describe('voter journey', () => {
       await entityDetails.expectInfoItem(/Constituency/i, /\[co-reg-n\]/i);
       await entityDetails.expectInfoItem(/Alliance/i, /Alliance A/i);
 
-      // (org slice) — `showMissingElectionSymbol.organization` is FALSE (e2e/base.ts:153) and the org nominations carry NO election_symbol (e2e/base.ts:1287-1325). Per EntityInfo.svelte:95 the election-symbol row renders ONLY when `electionSymbol || showMissingElectionSymbol[type]` — so for an org with neither, the "Election Number" row is ABSENT.
+      // (org slice) — `showMissingElectionSymbol.organization` is FALSE (e2e/base.ts app settings) and the org nominations carry NO election_symbol. Per EntityInfo.svelte the election-symbol row renders ONLY when `electionSymbol || showMissingElectionSymbol[type]` — so for an org with neither, the "Election Number" row is ABSENT.
       // Asserting the row's ABSENCE (rather than a "—" placeholder) is the ADDITIVE/assert-only reading of the org-typed `showMissingElectionSymbol` contract under the base settings (zero seed change). HARD assertion.
       await expect(entityDetails.getInfoItems().filter({ hasText: /Election Number|Election Symbol/i })).toHaveCount(0);
 
@@ -1177,10 +1174,10 @@ test.describe('voter journey', () => {
       await entityDetails.selectTab('children');
       await expect.soft(entityDetails.getMemberCards()).toHaveCount(5, { timeout: TIMEOUTS.page });
 
-      // (org slice, opinions) — `showMissingAnswers.organization` is TRUE (e2e/base.ts:157) and Party AA (like every org in base) has NO opinion answers, so EVERY opinion question on the org opinions tab renders an org-typed missing-answer marker (EntityOpinions.svelte:62-72):
+      // (org slice, opinions) — `showMissingAnswers.organization` is TRUE (e2e/base.ts app settings) and Party AA (like every org in base) has NO opinion answers, so EVERY opinion question on the org opinions tab renders an org-typed missing-answer marker (EntityOpinions.svelte):
       //   - voter ANSWERED + org missing  → "AA hasn't answered" (numSelected:1)
       //   - voter SKIPPED  + org missing  → "Neither has answered" (numSelected:0)
-      // The voter (max walk above) ANSWERED Base opinion 1 and SKIPPED Opt-A opinion 1 (Opt-A category skipped at line ~666). HARD assertions via the entityDetails fixture (no soft).
+      // The voter (max walk above) ANSWERED Base opinion 1 and SKIPPED Opt-A opinion 1 (Opt-A category skipped in the category-skip step). HARD assertions via the entityDetails fixture (no soft).
       await entityDetails.selectTab('opinions');
       await orgDialog
         .getByTestId('opinion-question-input')
@@ -1247,7 +1244,7 @@ test.describe('voter journey', () => {
       await expect.soft(entityFilters.getFilterButtonBadge()).toContainText(/1/);
 
       // STAGE 4 — reopen, reset → 13 cards + badge empty.
-      // (reset() at EntityListControls.svelte:96-100 closes the dialog as a side-effect; no separate close() call needed.)
+      // (reset() in EntityListControls.svelte closes the dialog as a side-effect; no separate close() call needed.)
       const d2 = await entityFilters.openFilterDialog();
       await d2.reset();
       await expect.soft(resultsPage.getEntityCards()).toHaveCount(13, { timeout: TIMEOUTS.page });
@@ -1291,14 +1288,14 @@ test.describe('voter journey', () => {
     // ====================================================================
     // categorical select-all/none + text×filter intersection + reset
     //
-    // Three net-new cells on TOP of the existing per-filter coverage above.
-    // Derived facts (e2e/base, confirmed at build by reading the rendered dialog):
+    // Three cells on TOP of the per-filter coverage above.
+    // Facts about e2e/base, read off the rendered dialog:
     //   - Party filter has 6 options (AA, AB, BA, BB, C, "No answer") → > 3 →
-    //     the single select-all/none flip-toggle RENDERS on it (EnumeratedEntityFilter `{#if values.length > 3}`, entityFilters.fixture.ts:108-116). The pick-multiple filter has only
+    //     the single select-all/none flip-toggle RENDERS on it (EnumeratedEntityFilter `{#if values.length > 3}`; see the toggle helpers in entityFilters.fixture.ts). The pick-multiple filter has only
     //     3 options → the toggle is ABSENT there.
-    //   - Text 'polar' narrows the candidate list to exactly 2 (Polar-Max BB One in Party BB, Polar-Min BA One in Party BA). Intersecting with Party=BB leaves exactly 1 (Polar-Max) — strictly narrower than either constraint alone (text=2, BB-party=2). [base.ts:1004-1033]
+    //   - Text 'polar' narrows the candidate list to exactly 2 (Polar-Max BB One in Party BB, Polar-Min BA One in Party BA). Intersecting with Party=BB leaves exactly 1 (Polar-Max) — strictly narrower than either constraint alone (text=2, BB-party=2).
     // ====================================================================
-    await test.step('EFLOW-01: select-all/none control, text×filter intersection, reset restores full list', async () => {
+    await test.step('select-all/none control, text×filter intersection, reset restores full list', async () => {
       // (1) SELECT-ALL / SELECT-NONE on the >3-option Party filter.
       const dSel = await entityFilters.openFilterDialog();
       const partySel = await dSel.getFilter(/Party/i);
@@ -1350,9 +1347,9 @@ test.describe('voter journey', () => {
       // Isolate this page's feedback POSTs into their own rate-limit bucket so the two genuine submits below can't be rejected by the 5/5min/IP budget shared across every feedback-submitting spec + retries (see isolateFeedbackRateLimit).
       await isolateFeedbackRateLimit(page);
 
-      // The voter nav drawer must be opened explicitly. The openMenu button lives on Header.svelte:82-93. The open-menu toggle carries a locale-independent `nav-menu-toggle` testid (testIds.shared.navigation.menuToggle), used instead of the EN-only `/open menu/i` accessible-name regex.
+      // The voter nav drawer must be opened explicitly. The openMenu button lives in Header.svelte. The open-menu toggle carries a locale-independent `nav-menu-toggle` testid (testIds.shared.navigation.menuToggle), used instead of the EN-only `/open menu/i` accessible-name regex.
       //
-      // feedbackNavItem is scoped to the open menuDrawer (page-rooted lookup raced against the cycle-close vs. cycle-open transition). A drawer open-state waitFor is inserted before each menu-item click. menuDrawer is anchored on the `<nav data-testid="nav-menu">` element rendered by Navigation.svelte:56-62 (the daisyUI drawer reveals it via CSS when the drawer-toggle checkbox flips to checked).
+      // feedbackNavItem is scoped to the open menuDrawer (page-rooted lookup raced against the cycle-close vs. cycle-open transition). A drawer open-state waitFor is inserted before each menu-item click. menuDrawer is anchored on the `<nav data-testid="nav-menu">` element rendered by Navigation.svelte (the daisyUI drawer reveals it via CSS when the drawer-toggle checkbox flips to checked).
       const menuToggle = page.getByTestId(testIds.shared.navigation.menuToggle);
       const menuDrawer = page.getByTestId(testIds.shared.navigation.menu);
       const feedbackNavItem = menuDrawer
@@ -1401,7 +1398,7 @@ test.describe('voter journey', () => {
       await feedbackDialog.expectHidden();
     });
 
-    // Voter nominations coverage was moved OUT of this journey test. The former commented-out nominations step (SKIPPED for the since-fixed 2026-05-31 fetch-all-questions bug) is superseded by the dedicated tests/tests/specs/voter/voter-nominations.spec.ts.
+    // Voter nominations are covered by tests/tests/specs/voter/voter-nominations.spec.ts, not by this journey.
   });
 });
 
@@ -1411,12 +1408,12 @@ test.describe('voter journey', () => {
 // Runs under the SAME voter-journey Playwright project (its exact testMatch /voter-journey\.spec\.ts/ picks this file up). fullyParallel is false, so this describe runs SERIALLY AFTER the journey test — no serial-mode coupling with the journey describe is needed. Proves the number dimension incorporates into matching at the MIN extreme and at a MID value, asserted against the POLAR seed candidates (boundary + precision backstop).
 // ====================================================================
 
-test.describe('EQTYP-02: number-scale boundary matching', () => {
+test.describe('number-scale boundary matching', () => {
   test('all-min ranks POLAR_MIN above POLAR_MAX; a mid number answer shifts both scores monotonically without flipping the ordering', async ({
     page,
     resultsPage
   }) => {
-    test.setTimeout(JOURNEY_TEST_MAX); // reason: reuses the full located walk — same 120s ceiling as the journey test.
+    test.setTimeout(JOURNEY_TEST_MAX); // reason: reuses the full located walk — same ceiling as the journey test.
 
     let minScoreBefore = 0;
     let maxScoreBefore = 0;
@@ -1429,7 +1426,7 @@ test.describe('EQTYP-02: number-scale boundary matching', () => {
       await resultsPage.selectEntityTab('cands');
       const cards = resultsPage.getEntityCards();
       await expect(cards.first()).toBeVisible({ timeout: TIMEOUTS.slowPage });
-      // ORDERING assertion (NOT a first-position or 100% claim). The walk's multi-choice answer is ['a','b'] in BOTH modes (it always clicks the first 2 checkboxes), so the "all-min" voter actually AGREES with POLAR_MAX and DISAGREES with POLAR_MIN (['c','d'], base.ts:338) on the multi-choice dimension. POLAR_MIN is therefore penalized on multi-choice and is NOT first — a candidate whose multi-choice overlaps ['a','b'] can out-rank it. But POLAR_MIN still matches the voter on every ORDINAL dimension (likert/categorical/boolean/number all at min) while POLAR_MAX is maximally distant on all of them, so score(POLAR_MIN) > score(POLAR_MAX) holds. That ordering — and its monotonic shift under the number re-answer below — is the boundary proof.
+      // ORDERING assertion (NOT a first-position or 100% claim). The walk's multi-choice answer is ['a','b'] in BOTH modes (it always clicks the first 2 checkboxes), so the "all-min" voter actually AGREES with POLAR_MAX and DISAGREES with POLAR_MIN (['c','d'] in base.ts) on the multi-choice dimension. POLAR_MIN is therefore penalized on multi-choice and is NOT first — a candidate whose multi-choice overlaps ['a','b'] can out-rank it. But POLAR_MIN still matches the voter on every ORDINAL dimension (likert/categorical/boolean/number all at min) while POLAR_MAX is maximally distant on all of them, so score(POLAR_MIN) > score(POLAR_MAX) holds. That ordering — and its monotonic shift under the number re-answer below — is the boundary proof.
       const polarMinCard = cards.filter({ hasText: TEXT_RE.polarMin }).first();
       const polarMaxCard = cards.filter({ hasText: TEXT_RE.polarMax }).first();
       minScoreBefore = await readCardMatchScore(polarMinCard);

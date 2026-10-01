@@ -5,17 +5,22 @@
 -- RLS policies are in 302-rls.sql.
 -- Rate limiting trigger prevents spam (5 requests per 5 minutes per IP).
 --
--- `project_id` IS NULLABLE AND ITS FOREIGN KEY IS `ON DELETE SET NULL`, per the operator's NOTE under 162-CHECKPOINT-DECISIONS.md section 5 item P-4 (2026-09-16): feedback outlives the project it was submitted about. The nullability is not cosmetic and cannot be separated from the action -- `ON DELETE SET NULL` writing into a `NOT NULL` column makes the PROJECT delete raise rather than orphaning the row, so the two travel together.
+-- `project_id` is nullable and its foreign key is ON DELETE SET NULL, so feedback outlives the project it is about. The two go together: SET NULL into a NOT NULL column would make the project delete fail.
 --
--- THE CONSEQUENCE THE POLICIES OWN. Both surviving policies on this table (`admin_select_feedback`, `admin_delete_feedback` in 302-rls.sql) gate on `project_id`, and a NULL project id makes those predicates NULL, which is not `true`. An orphaned row would therefore be readable and deletable by NOBODY -- invisible, undeletable ballast -- which is not what retaining it is for. Each of those two predicates carries a second disjunct admitting the GLOBAL-SCOPE admin when `project_id IS NULL`, so an orphan stays reachable by exactly one identity. That disposition is 162-11's stated ASSUMPTION, recorded as such in 162-11-SUMMARY.md, not a ruling: the note asks for retention and does not settle who may then read it.
+-- The `enforce_feedback_project` trigger requires `project_id` at insert time. The API roles have no feedback UPDATE policy, so for them a NULL project arises only through ON DELETE SET NULL; the service role and the owner can still write one by UPDATE.
+--
+-- A null project_id makes the project-scoped predicates of `admin_select_feedback` and `admin_delete_feedback` (302-rls.sql) null, so each carries a second disjunct that admits a global-scope grant holder when `project_id IS NULL`. Only such a holder can read or delete an orphaned row.
 --------------------------------------------------------------------------------
 -- Private schema for rate limiting (not exposed via PostgREST)
 --------------------------------------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS private;
 
 CREATE TABLE IF NOT EXISTS private.feedback_rate_limits (
+  -- The first address in the request's x-forwarded-for header, or `unknown`.
   ip_address text PRIMARY KEY,
+  -- Requests from the address in the current window.
   count integer NOT NULL DEFAULT 1,
+  -- When the current window began; check_feedback_rate_limit starts a new one after five minutes.
   window_start timestamptz NOT NULL DEFAULT now()
 );
 
@@ -25,10 +30,14 @@ CREATE TABLE IF NOT EXISTS private.feedback_rate_limits (
 CREATE TABLE public.feedback (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id uuid REFERENCES public.projects (id) ON DELETE SET NULL,
+  -- 1 to 5 in the feedback components; the database does not check the range.
   rating integer,
   description text,
+  -- When the voter sent the feedback, as the client reports it; `created_at` is when the row was stored.
   date timestamptz NOT NULL DEFAULT now(),
+  -- The page the feedback was sent from.
   url text,
+  -- The client's user-agent string.
   user_agent text,
   created_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT feedback_rating_or_description CHECK (
@@ -93,3 +102,26 @@ $$;
 CREATE TRIGGER check_feedback_rate_limit
 BEFORE INSERT ON public.feedback FOR EACH ROW
 EXECUTE FUNCTION public.check_feedback_rate_limit ();
+
+--------------------------------------------------------------------------------
+-- A feedback row must name its project when inserted
+--
+-- The INSERT policies are `WITH CHECK (true)`, so this trigger is what refuses a NULL `project_id`, for every caller. It is INSERT-only because the foreign key's ON DELETE SET NULL is itself an UPDATE, which an UPDATE guard would refuse. A NULL project therefore still arises through ON DELETE SET NULL, and through an UPDATE by the service role or the owner; the API roles have no feedback UPDATE policy.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.enforce_feedback_project () RETURNS TRIGGER LANGUAGE plpgsql SECURITY INVOKER AS $$
+BEGIN
+  IF NEW.project_id IS NULL THEN
+    RAISE EXCEPTION 'feedback.project_id must name a project'
+      USING ERRCODE = 'not_null_violation',
+            SCHEMA = 'public',
+            TABLE = 'feedback',
+            COLUMN = 'project_id';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER enforce_feedback_project
+BEFORE INSERT ON public.feedback FOR EACH ROW
+EXECUTE FUNCTION public.enforce_feedback_project ();

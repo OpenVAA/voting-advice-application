@@ -26,7 +26,10 @@
           {@const firstChild = getFirstChild(section)}
           {#if firstChild}
             <li>
-              <a href={firstChild} class="btn text-lg btn-ghost" data-active={isActive || undefined}>
+              <a
+                href={firstChild}
+                class="btn text-lg btn-ghost data-active:font-bold data-active:text-primary"
+                data-active={isActive || undefined}>
                 {section.title}
               </a>
             </li>
@@ -49,10 +52,3 @@
     </div>
   </div>
 </header>
-
-<style>
-  [data-active] {
-    color: var(--color-primary);
-    font-weight: 700;
-  }
-</style>

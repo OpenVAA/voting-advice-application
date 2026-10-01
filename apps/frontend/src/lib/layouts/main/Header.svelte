@@ -18,6 +18,7 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { AppLogo } from '$lib/dynamic-components/appLogo';
+  import { cn } from '$lib/utils/components';
   import Banner from './Banner.svelte';
 
   let {
@@ -64,21 +65,25 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
 
 <!-- {hasVideo ? '!absolute w-full bg-transparent z-10' : ''} -->
 <header
-  class="pt-safet relative flex max-h-fit"
-  class:prominent-top-bar-with-background={topBarSettings.current.imageSrc}
-  class:top-bar={!topBarSettings.current.imageSrc}
+  class={cn(
+    'pt-safet relative flex max-h-fit min-h-0 transition-[min-height] duration-250 ease-out',
+    topBarSettings.current.imageSrc &&
+      'min-h-[40vh] items-start bg-(image:--image) bg-(size:--background-size) bg-(position:--background-position) bg-no-repeat ease-in'
+  )}
   style:view-transition-name="persistent-header"
   style:--image={topBarSettings.current.imageSrc && `url(${topBarSettings.current.imageSrc})`}
   style:--background-size={topBarSettings.current.imageSrc && appSettings.headerStyle.imgSize}
   style:--background-position={topBarSettings.current.imageSrc && appSettings.headerStyle.imgPosition}>
   {#if topBarSettings.current.progress === 'show'}
     <progress
-      class="progress progress-primary absolute top-0 left-0 h-2"
+      class="progress progress-primary absolute top-0 left-0 h-2 rounded-none [&::-moz-progress-bar]:rounded-none [&::-webkit-progress-bar]:rounded-none [&::-webkit-progress-value]:rounded-none"
       value={progress.current.current}
       max={progress.max}
       title={t('common.progress')}></progress>
   {/if}
-  <div class="inner-actions-bar flex w-full items-center justify-between pr-6" style:--background-color={bgColor}>
+  <div
+    class="flex w-full items-center justify-between bg-(--background-color) pr-6 transition-colors duration-500"
+    style:--background-color={bgColor}>
     <!-- invertLogo ? 'text-primary-content' : 'text-neutral' -->
     <button
       data-testid="nav-menu-toggle"
@@ -96,43 +101,3 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
     <Banner />
   </div>
 </header>
-
-<style lang="postcss">
-  @reference "../../../tailwind-theme.css";
-  progress {
-    border-radius: 0;
-  }
-
-  progress::-webkit-progress-bar {
-    border-radius: 0;
-  }
-
-  progress::-moz-progress-bar {
-    border-radius: 0;
-  }
-
-  progress::-webkit-progress-value {
-    border-radius: 0;
-  }
-
-  .top-bar {
-    @apply min-h-0;
-    transition: min-height 0.25s ease-out;
-  }
-
-  .prominent-top-bar-with-background {
-    @apply min-h-[40vh];
-    transition: min-height 0.25s ease-in;
-    align-items: start;
-    background-image: var(--image);
-    background-size: var(--background-size);
-    background-position: var(--background-position);
-    background-repeat: no-repeat;
-  }
-
-  .inner-actions-bar {
-    @apply bg-base-300;
-    background-color: var(--background-color);
-    transition: background-color 0.5s ease;
-  }
-</style>

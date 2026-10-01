@@ -114,13 +114,7 @@ describe('countDistinctAnswers: multi-value filters', () => {
 
   test('A differing answer set counts as a second distinct value and the filter is retained', () => {
     const filter = multiChoiceFilter();
-    const targets = asTargets(
-      population([
-        ['a', 'b'],
-        ['a', 'b'],
-        ['c']
-      ])
-    );
+    const targets = asTargets(population([['a', 'b'], ['a', 'b'], ['c']]));
     expect(countDistinctAnswers({ filter, targets })).toBe(2);
     expect(retainRelevantFilters({ filters: [filter], targets })).toEqual([filter]);
   });

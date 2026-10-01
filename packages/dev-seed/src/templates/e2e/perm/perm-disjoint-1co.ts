@@ -7,7 +7,7 @@
  *
  * Note on the `-1co` suffix: a single-CO CG auto-implies (no picker rendered), which makes the "show constituency picker for CG-1" contract unobservable.
  * To exercise the picker contract while still minimal, each CG has TWO COs.
- * The slug stays `perm-disjoint-1co` to preserve external_id prefix continuity; this doc-comment is authoritative on the actual shape.
+ * The `-1co` slug does not describe the shape; this doc-comment is authoritative on the actual shape.
  *
  * Election selector shown. When only EL-1 selected, constituency-selection step shows only CG-1 picker (2 options). When both selected, both pickers shown and continue is disabled until both are filled.
  *
@@ -44,7 +44,6 @@ export const permDisjoint1coTemplate: Template = {
         election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 0,
-        is_generated: false,
         multiple_rounds: false,
         current_round: 1,
         constituency_groups: [{ external_id: `${P}cg-1` }]
@@ -56,7 +55,6 @@ export const permDisjoint1coTemplate: Template = {
         election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 1,
-        is_generated: false,
         multiple_rounds: false,
         current_round: 1,
         constituency_groups: [{ external_id: `${P}cg-2` }]
@@ -71,14 +69,12 @@ export const permDisjoint1coTemplate: Template = {
         external_id: 'cg-1',
         name: { en: '[CG1] Region' },
         sort_order: 0,
-        is_generated: false,
         constituencies: [{ external_id: `${P}co-1a` }, { external_id: `${P}co-1b` }]
       },
       {
         external_id: 'cg-2',
         name: { en: '[CG2] Municipal' },
         sort_order: 1,
-        is_generated: false,
         constituencies: [{ external_id: `${P}co-2a` }, { external_id: `${P}co-2b` }]
       }
     ]
@@ -87,10 +83,10 @@ export const permDisjoint1coTemplate: Template = {
   constituencies: {
     count: 0,
     fixed: [
-      { external_id: 'co-1a', name: { en: '[CO1A] Region North' }, sort_order: 0, is_generated: false },
-      { external_id: 'co-1b', name: { en: '[CO1B] Region South' }, sort_order: 1, is_generated: false },
-      { external_id: 'co-2a', name: { en: '[CO2A] Municipal East' }, sort_order: 2, is_generated: false },
-      { external_id: 'co-2b', name: { en: '[CO2B] Municipal West' }, sort_order: 3, is_generated: false }
+      { external_id: 'co-1a', name: { en: '[CO1A] Region North' }, sort_order: 0 },
+      { external_id: 'co-1b', name: { en: '[CO1B] Region South' }, sort_order: 1 },
+      { external_id: 'co-2a', name: { en: '[CO2A] Municipal East' }, sort_order: 2 },
+      { external_id: 'co-2b', name: { en: '[CO2B] Municipal West' }, sort_order: 3 }
     ]
   },
 

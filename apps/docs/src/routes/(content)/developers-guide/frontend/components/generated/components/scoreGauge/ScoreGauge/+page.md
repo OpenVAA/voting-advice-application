@@ -7,17 +7,15 @@ Show a radial or a linear score gauge for a sub-match.
 - `score`: The score of the gauge in the range from 0 to `max`, usually 100.
 - `max`: The maximum value of the gauge. @default 100
 - `label`: The text label for the gauge, e.g. the name of the category.
-- `variant`: The format of the gauge. @default 'linear'
+- `variant`: The format of the gauge. @default 'radial'
 - `showScore`: Whether to also show the score as numbers. @default true
 - `unit`: The string to add to the score if it's shown, e.g. '%'. @default ''
-- `colors`: The colors of the gauge. @default 'var(--color-neutral)' i.e. the `neutral` color.
+- `color`: The color of the gauge, optionally with a separate dark-mode color. @default 'var(--color-neutral)' i.e. the `neutral` color.
 - Any valid attributes of a `<div>` element
 
 ```tsx
-<ScoreGauge score={23} label={category.name}
-  color={category.color} colorDark={category.colorDark}
-  variant="radial"/>
-<ScoreGauge score={23} label={category.name}/>
+<ScoreGauge score={23} label={category.name} color={category.color} />
+<ScoreGauge score={23} label={category.name} variant="linear" />
 ```
 
 ## Source

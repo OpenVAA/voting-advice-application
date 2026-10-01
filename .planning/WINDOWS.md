@@ -1,10 +1,10 @@
 ---
 schema_version: 1
 open_count: 243
-waived_count: 0
-fixed_count: 30
-total_count: 273
-last_updated: 2026-09-19T15:32:05.768Z
+waived_count: 1
+fixed_count: 31
+total_count: 275
+last_updated: 2026-09-28T20:22:19.029Z
 ---
 
 # Broken Windows Ledger
@@ -288,6 +288,8 @@ last_updated: 2026-09-19T15:32:05.768Z
 | 271 | 162 | unrun-verify | tests/e2e-runs/162-14-wave5 |  | E2E run 01 of 162-14 reported 2 failed / 35 did-not-run / 118 passed; both failures timeout-shaped (one 770s against a 90s test timeout), both pass in isolation and run 02 of the full suite is 155/0/0. CLAUDE.md forbids writing an intermittent failure off as flaky, so it is recorded open rather than closed by the green re-run. | fixed |  | 2026-09-17T15:34:43.470Z | 2026-09-17T15:43:06.396Z |
 | 272 | 162 | deviation | .planning/phases/162-permissions-auth-model-refactor/162-FLOW-CONFORMANCE.md |  | F-2: invite-candidate redirects to /candidate/complete-registration, a route absent from the frontend tree; live defect, no plan in phase 162 owns it | open |  | 2026-09-17T20:34:51.447Z |  |
 | 273 | 162 | deviation | .planning/ROADMAP.md |  | ROADMAP criterion 5 still names published/unpublished, the retired per-row publication vocabulary; criteria 1 and 2 name three roles and can_edit_project, neither of which shipped | fixed |  | 2026-09-17T20:34:51.627Z | 2026-09-17T20:52:27.092Z |
+| 274 | 165 | unmet-truth | .github/workflows/main.yaml |  | 165-36 Task 3: PR #889 CI not green. main.yaml does not run for a PR into ship/v2.15-12-planning; evidence run 36429830379 (tree = PR head) red on secret-scan, dependency-audit, dev-seed-integration, e2e-tests, e2e-visual, none caused by phase 165; options in 165 deferred-items.md 'From 165-36' | fixed |  | 2026-09-28T13:47:32.652Z | 2026-09-28T20:22:18.848Z |
+| 275 | 165 | unrun-verify | .github/workflows/main.yaml |  | 165-36 Task 3 verify 'gh pr checks ship/v2.15-13-review-fixes' cannot pass: no checks reported for a PR into ship/v2.15-12-planning | waived | main.yaml runs no pull_request check for a PR into ship/v2.15-12-planning; the evidence is the ci-evidence/** run 36476589852 on a tree identical to the PR head (all 11 jobs green) | 2026-09-28T13:47:32.829Z | 2026-09-28T20:22:19.029Z |
 
 ````json
 [
@@ -3566,6 +3568,32 @@ last_updated: 2026-09-19T15:32:05.768Z
     "reason": "",
     "recorded_at": "2026-09-17T20:34:51.627Z",
     "resolved_at": "2026-09-17T20:52:27.092Z"
+  },
+  {
+    "id": 274,
+    "kind": "unmet-truth",
+    "phase": "165",
+    "file": ".github/workflows/main.yaml",
+    "line": null,
+    "description": "165-36 Task 3: PR #889 CI not green. main.yaml does not run for a PR into ship/v2.15-12-planning; evidence run 36429830379 (tree = PR head) red on secret-scan, dependency-audit, dev-seed-integration, e2e-tests, e2e-visual, none caused by phase 165; options in 165 deferred-items.md 'From 165-36'",
+    "status": "fixed",
+    "reason": "",
+    "recorded_at": "2026-09-28T13:47:32.652Z",
+    "resolved_at": "2026-09-28T20:22:18.848Z",
+    "milestone": "v2.15"
+  },
+  {
+    "id": 275,
+    "kind": "unrun-verify",
+    "phase": "165",
+    "file": ".github/workflows/main.yaml",
+    "line": null,
+    "description": "165-36 Task 3 verify 'gh pr checks ship/v2.15-13-review-fixes' cannot pass: no checks reported for a PR into ship/v2.15-12-planning",
+    "status": "waived",
+    "reason": "main.yaml runs no pull_request check for a PR into ship/v2.15-12-planning; the evidence is the ci-evidence/** run 36476589852 on a tree identical to the PR head (all 11 jobs green)",
+    "recorded_at": "2026-09-28T13:47:32.829Z",
+    "resolved_at": "2026-09-28T20:22:19.029Z",
+    "milestone": "v2.15"
   }
 ]
 ````

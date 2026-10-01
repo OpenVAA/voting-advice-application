@@ -1,13 +1,13 @@
 # Alert
 
-Show a non-model alert or dialog that appears at the bottom of the screen.
+Show a non-modal alert or dialog that appears at the bottom of the screen.
 
 ### Properties
 
 - `title`: The title of the alert.
 - `icon`: Possible icon of the alert.
 - `autoOpen`: Whether to open the alert automatically. Default: `true`
-- `isOpen`: Bind to this to get the alert's open state.
+- `isOpen`: Bind to this to get the alert's open state. A closed alert is `inert`: it is hidden from assistive technology and its buttons are out of the tab order.
 - `onClose`: The callback triggered when the alert is closed.
 - `onOpen`: The callback triggered when the alert is opened.
 - Any valid attributes of a `<dialog>` element

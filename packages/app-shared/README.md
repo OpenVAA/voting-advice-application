@@ -4,7 +4,7 @@ A module shared between `@openvaa/frontend` and (potentially) backend consumers,
 
 - The [application settings](./src/settings/)
 - Definitions for data types extending those defined in the `@openvaa/core` and `@openvaa/data` modules, such as [`CustomData`](./src/data/customData.type.ts) and [`Localized`](./src/data/extendedData.type.ts) types
-- Utilities for [password validation](./src/utils/passwordValidation.ts) and [deep merge of settings](./src/utils/mergeSettings.ts)
+- A utility for [deep merge of settings](./src/utils/mergeSettings.ts)
 
 ## Development
 
@@ -22,6 +22,6 @@ yarn workspace @openvaa/app-shared build
 
 ## Build target
 
-ESM-only via `tsup`. All current in-repo consumers (`@openvaa/frontend`, `@openvaa/docs`, `@openvaa/dev-seed`, `@openvaa/argument-condensation`, `@openvaa/llm`) declare `"type": "module"`. No `require()` consumers exist in the workspace; Supabase Edge Functions do not import from this package. The historic dual ESM+CommonJS build was added to support the Strapi backend at `backend/vaa-strapi/`, which has been retired.
+ESM-only via `tsup`. All in-repo consumers (`@openvaa/frontend`, `@openvaa/docs`, `@openvaa/dev-seed`, `@openvaa/argument-condensation`, `@openvaa/llm`) declare `"type": "module"`. No `require()` consumers exist in the workspace, and Supabase Edge Functions do not import from this package.
 
-If a future consumer requires CommonJS, restore `format: ['esm', 'cjs']` in `tsup.config.ts` and the corresponding `main` / `exports.require` entries in `package.json`.
+A consumer that requires CommonJS needs `format: ['esm', 'cjs']` in `tsup.config.ts` and the matching `main` / `exports.require` entries in `package.json`.

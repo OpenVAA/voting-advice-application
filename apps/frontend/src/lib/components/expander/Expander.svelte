@@ -11,7 +11,7 @@
 
 ### Properties
 
-- `title`: Title is seen as the text in the expander's visible part, and it is mandatory. Title will also be used as a 'aria-label' for a checkbow on which the expander operates on.
+- `title`: Title is seen as the text in the expander's visible part, and it is mandatory. Title will also be used as the `aria-label` of the checkbox on which the expander operates on.
 - `iconColor`: The color of the next-icon that is used in the expander. Default: `'primary'`
 - `iconPos`: The position of the next-icon that is used in the expander. Default: `'text'`
 - `titleClass`: Variable with which to configure the expanders title if no variants are in use.
@@ -22,10 +22,10 @@
 
 You should not try to use a variant and customize at the same time.
 
-### Events
+### Callbacks
 
-- `expand`: Fired when the expander is expanded.
-- `collapse`: Fired when the expander is collapsed.
+- `onExpand`: Triggered when the expander is expanded.
+- `onCollapse`: Triggered when the expander is collapsed.
 
 ### Usage
 
@@ -44,7 +44,7 @@ You should not try to use a variant and customize at the same time.
 <script lang="ts">
   import { Icon } from '$lib/components/icon';
   import { getComponentContext } from '$lib/contexts/component';
-  import { concatClass } from '$lib/utils/components';
+  import { cn, concatClass } from '$lib/utils/components';
   import type { ExpanderProps } from './Expander.type';
 
   let {
@@ -88,15 +88,14 @@ You should not try to use a variant and customize at the same time.
   // Styling
   ////////////////////////////////////////////////////////////////////
 
-  // Build classes (Svelte 5: derive reactively from props instead of mutating top-level locals at init).
   // 1. Base classes for all collapse components
   const collapseClasses = 'collapse rounded-none min-h-touch min-w-touch h-auto w-full';
 
-  // 2. Variant + iconPos resolution. The original code mutated `iconPos` when variant === 'category'; we replicate that with an effective iconPos derived from variant.
+  // 2. The `category` variant always places the icon on the left.
   const effectiveIconPos = $derived(variant === 'category' ? 'left' : iconPos);
 
   const titleClasses = $derived.by(() => {
-    let cls = 'collapse-title text-center px-md';
+    let cls = 'collapse-title min-h-0 text-center px-md';
     switch (variant) {
       case 'read-more':
         cls += ' !px-0 text-primary';
@@ -126,9 +125,6 @@ You should not try to use a variant and customize at the same time.
       case 'read-more':
         cls += ' !px-0';
         break;
-      case 'category':
-        cls += ' pt-lg';
-        break;
       case 'question':
         cls += ' !px-0';
         break;
@@ -146,10 +142,20 @@ You should not try to use a variant and customize at the same time.
 </script>
 
 <div {...concatClass(restProps, collapseClasses)}>
-  <input type="checkbox" aria-label={t('common.expandOrCollapse')} onclick={toggleExpanded} checked={expanded} />
+  <input
+    type="checkbox"
+    class="min-h-0"
+    aria-label={t('common.expandOrCollapse')}
+    onclick={toggleExpanded}
+    checked={expanded} />
   <div class={titleClasses}>
     {title}
-    <div class="not-rotated-icon {expanded ? 'rotated-icon' : ''} ml-md {iconClass}">
+    <div
+      class={cn(
+        'ml-md transition-transform duration-200 ease-linear',
+        expanded ? 'rotate-270' : 'rotate-90',
+        iconClass
+      )}>
       <Icon name="next" size="sm" color={iconColor} />
     </div>
   </div>
@@ -159,29 +165,3 @@ You should not try to use a variant and customize at the same time.
     </div>
   {/if}
 </div>
-
-<style lang="postcss">
-  @reference "../../../tailwind-theme.css";
-  .not-rotated-icon {
-    --tw-rotate: 90deg;
-    transition: transform 0.2s linear;
-    transform: rotate(90deg);
-  }
-
-  .rotated-icon {
-    transform: rotate(270deg);
-  }
-
-  /* This is needed to add padding to collapse content only when collapse is open */
-  .collapse:not(.collapse-close) > input[type='checkbox']:checked ~ .collapse-content {
-    @apply py-md transition-[padding];
-  }
-
-  /* This is needed to remove the excisting
-  min-height definition from daisyui collapse class.
-  Only defining min-height in .collapse-title does not work.*/
-  .collapse-title,
-  :where(.collapse > input[type='checkbox']) {
-    min-height: 0rem;
-  }
-</style>

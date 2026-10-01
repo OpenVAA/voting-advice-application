@@ -1,7 +1,7 @@
 /**
- * Fail-closed guards on both providers' `getAuthorizeUrl`.
+ * Fail-closed guards on the provider keyword (`getActiveProvider`) and on both providers' `getAuthorizeUrl`.
  *
- * The defect these pin: with a configuration variable unset, `$lib/utils/constants.ts` hands the builder an empty string (it flattens everything with `?? ''` and deliberately never throws), the builder concatenated it, and `signicatProvider` returned `?client_id=&response_type=code&…`. That is a well-formed RELATIVE url. `window.location.href = authorizeUrl` in `routes/candidate/preregister/+page.svelte` therefore resolved it against the current document and navigated back to the page the user was already on, carrying the authorization request as a query string — endpoint 200, nothing thrown, no console error, no clue. See `.planning/debug/resolved/idura-bank-auth-empty-client.md`.
+ * The defect the `getAuthorizeUrl` cases pin: with a configuration variable unset, `$lib/utils/constants.ts` hands the builder an empty string (it flattens everything with `?? ''` and deliberately never throws). Concatenated, that makes `signicatProvider` return `?client_id=&response_type=code&…`, a well-formed RELATIVE url: `window.location.href = authorizeUrl` in `routes/candidate/preregister/+page.svelte` resolves it against the current document and navigates back to the same page, carrying the authorization request as a query string — endpoint 200, nothing thrown, no console error.
  *
  * So the property under test is NOT "rejects for some reason". It is that the url is never BUILT from a blank input, and that the error names the offending variable — that name is the entire difference between a five-second fix and a debugging session. Assertions therefore check the variable name appears in the message, and that no url is returned.
  *
@@ -14,6 +14,7 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { iduraProvider } from './idura';
+import { getActiveProvider } from './index';
 import { signicatProvider } from './signicat';
 
 // Mutable mocks. `constants.ts` and `server/constants.ts` are eager object literals evaluated once at import, so mutating an `$env` mock after import is invisible — the CONSTANTS modules are the only seam that can vary per test.
@@ -43,7 +44,7 @@ const { mockConstants, mockPublicConstants } = vi.hoisted(() => ({
     PUBLIC_SERVER_FRONTEND_URL: '',
     PUBLIC_IDENTITY_PROVIDER_CLIENT_ID: 'test-client',
     PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT: 'https://signicat.example/authorize',
-    PUBLIC_IDENTITY_PROVIDER_TYPE: 'signicat',
+    PUBLIC_IDENTITY_PROVIDER_TYPE: 'signicat-ftn',
     PUBLIC_DEBUG: false,
     PUBLIC_LOG_LEVEL: '',
     PUBLIC_CACHE_ENABLED: false,
@@ -77,6 +78,35 @@ const BLANKS: Array<[label: string, value: string | undefined]> = [
 beforeEach(() => {
   Object.assign(mockPublicConstants, GOOD_PUBLIC);
   Object.assign(mockConstants, GOOD_PRIVATE);
+});
+
+describe('getActiveProvider — fail-closed on the provider keyword', () => {
+  const PROVIDERS = [
+    ['signicat-ftn', signicatProvider],
+    ['idura-ftn', iduraProvider]
+  ] as const;
+
+  it.each(PROVIDERS)('selects the provider for %s', (keyword, provider) => {
+    mockPublicConstants.PUBLIC_IDENTITY_PROVIDER_TYPE = keyword;
+
+    expect(getActiveProvider()).toBe(provider);
+  });
+
+  // Derived from the valid keywords so each case is exactly a keyword with its `-ftn` suffix dropped: an env file that still carries the unsuffixed name must throw, never fall through to a provider.
+  it.each(PROVIDERS.map(([keyword]) => keyword.replace(/-ftn$/, '')))(
+    'throws for %s, a keyword without its -ftn suffix',
+    (keyword) => {
+      mockPublicConstants.PUBLIC_IDENTITY_PROVIDER_TYPE = keyword;
+
+      expect(() => getActiveProvider()).toThrow(`Unknown identity provider type: ${keyword}.`);
+    }
+  );
+
+  it.each(['', 'unknown', 'SIGNICAT-FTN'])('throws for %j', (keyword) => {
+    mockPublicConstants.PUBLIC_IDENTITY_PROVIDER_TYPE = keyword;
+
+    expect(() => getActiveProvider()).toThrow(/Unknown identity provider type/);
+  });
 });
 
 describe('signicatProvider.getAuthorizeUrl — fail-closed on blank configuration', () => {
@@ -113,7 +143,7 @@ describe('signicatProvider.getAuthorizeUrl — fail-closed on blank configuratio
   });
 
   it('names BOTH variables when both are blank, rather than only the first', async () => {
-    // The realistic shape of this incident: no env file was read at all, so everything was blank at once. Reporting one name at a time turns one fix into several round trips.
+    // The realistic shape: no env file was read at all, so everything is blank at once. Reporting one name at a time turns one fix into several round trips.
     mockPublicConstants.PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT = '';
     mockPublicConstants.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID = '';
 
@@ -131,7 +161,7 @@ describe('signicatProvider.getAuthorizeUrl — fail-closed on blank configuratio
   });
 
   it('never returns a relative url — the precise regression', async () => {
-    // Stated as the defect itself rather than as a message assertion, so this keeps biting even if the wording changes. Before the fix this call RESOLVED with '?client_id=&response_type=code&…'.
+    // Stated as the defect itself rather than as a message assertion, so this keeps biting even if the wording changes. Without the guard this call resolves with '?client_id=&response_type=code&…'.
     mockPublicConstants.PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT = '';
 
     let resolved: string | undefined;
@@ -200,7 +230,7 @@ describe('requireConfigured — the error message contract', () => {
 
     expect(error).toBeInstanceOf(Error);
     expect((error as Error).message).toContain('PUBLIC_IDENTITY_PROVIDER_CLIENT_ID');
-    // Points at the canonical file, which is the actual remedy and the thing this whole incident turned on.
+    // Points at the canonical env file, which is the actual remedy.
     expect((error as Error).message).toContain('.env');
   });
 });

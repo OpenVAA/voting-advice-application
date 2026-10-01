@@ -1,6 +1,6 @@
 # InputGroup
 
-A componend used to group `Input`-components together.
+A component used to group `Input`-components together.
 
 NB. Only single-row `Input`s are joined and they should not have the `info` property set.
 
@@ -9,9 +9,9 @@ NB. Only single-row `Input`s are joined and they should not have the `info` prop
 - `title`: Optional title for the group.
 - `info`: Optional info text for the group.
 
-### Slots
+### Snippet Props
 
-- default: The `Input` components to group.
+- `children`: The `Input` components to group.
 
 ### Usage
 

@@ -12,7 +12,9 @@
 --------------------------------------------------------------------------------
 -- JSONB answer validation trigger function (smart: validates only changed keys)
 --
--- On INSERT: validates all keys On UPDATE: validates only new or modified keys (skips unchanged) Short-circuits if answers column is unchanged or empty
+-- - On INSERT: validates every key.
+-- - On UPDATE: validates only new or modified keys.
+-- - Returns early when the answers column is unchanged or empty.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.validate_answers_jsonb () RETURNS trigger AS $$
 DECLARE

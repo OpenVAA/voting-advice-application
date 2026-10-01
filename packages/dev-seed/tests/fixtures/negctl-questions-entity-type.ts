@@ -5,15 +5,14 @@
  *
  * ⚠ The two halves must differ ONLY by the tree, so this file is BYTE-FROZEN at this exact path.
  *
- * The denied key: `entity_type` on a `questions` row. This one is different in kind from the other two fixtures, and that difference is exactly why the guard needs a deny-list beside the allow-list: `entity_type` IS a real `questions` column, so it survives ANY allow-list derived from `TablesInsert<'questions'>`. It is nonetheless discarded by the RPC, which lists it in `skip_columns` alongside `id` / `created_at` / `updated_at` / `project_id` (`apps/supabase/supabase/schema/501-bulk-operations.sql:109-111`). An allow-list alone is therefore structurally incapable of catching it — hence the deny-list.
+ * The denied key: `entity_type` on a `questions` row. This one is different in kind from the other two fixtures, and that difference is exactly why the guard needs a deny-list beside the allow-list: `entity_type` IS a real `questions` column, so it survives ANY allow-list derived from `TablesInsert<'questions'>`. It is nonetheless discarded by the RPC, which lists it in `skip_columns` alongside `id` / `created_at` / `updated_at` / `project_id` (`apps/supabase/supabase/schema/501-bulk-operations.sql`). An allow-list alone is therefore structurally incapable of catching it — hence the deny-list.
  *
  * ⚠ THE DEFAULT EXPORT MUST NOT CARRY A TYPE ANNOTATION — see `negctl-elections-sentinel.ts` for the two reasons.
  *
- * Loaded ONLY through `yarn db:seed --template <absolute path to this file>`. Nothing in `src/` imports it and no gate executes it.
+ * Loaded through `yarn db:seed --template <absolute path to this file>`, and imported by `tests/assertKnownRowProps.test.ts`, which feeds its `fixed[]` rows to Pass 0. Nothing in `src/` imports it.
  *
  * ⚠ `external_id` VALUES BELOW ARE WRITTEN WITHOUT THE PREFIX, DELIBERATELY.
- * `externalIdPrefix` is applied to hand-authored `fixed[]` rows too, not only to generator-emitted ones — every generator does `external_id: `${externalIdPrefix}${fx.external_id}`` (e.g.
- * `ElectionsGenerator.ts`). Writing the already-prefixed id here would land in the database as `negctl144-negctl144-el-1`. (`template/types.ts:23` says "prepended to every generator-emitted external_id", which is imprecise; `templates/e2e/base.ts:15` documents the same trap from the other direction by setting the prefix to `''`.)
+ * `externalIdPrefix` is applied to hand-authored `fixed[]` rows too, not only to generator-emitted ones — every generator does ``external_id: `${externalIdPrefix}${fx.external_id}` `` (e.g. `ElectionsGenerator.ts`). Writing the already-prefixed id here would land in the database as `negctl144-negctl144-el-1`. `templates/e2e/base.ts` documents the same trap from the other direction by setting the prefix to `''`.
  *
  * Sentinel and relationship REFERENCES, by contrast, name the FINAL prefixed value, because they are resolved against rows already written to the database.
  * `externalIdPrefix` is `negctl144-`, its own, so `yarn db:seed:teardown --prefix negctl144-` and the Playwright teardown prefixes cannot collide.
@@ -38,8 +37,7 @@ export default {
       {
         external_id: 'qc-1',
         name: { en: '[negctl144] Category for the entity_type deny control' },
-        category_type: 'opinion',
-        is_generated: false
+        category_type: 'opinion'
       }
     ]
   },
@@ -53,7 +51,6 @@ export default {
         type: 'text',
         name: { en: '[negctl144] Question carrying a denied entity_type key' },
         category: { external_id: 'negctl144-qc-1' },
-        is_generated: false,
         // ↓↓↓ THE DENIED KEY — a real column the RPC's skip_columns discards. ↓↓↓
         entity_type: 'candidate'
       }

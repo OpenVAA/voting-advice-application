@@ -4,34 +4,20 @@ on:
   push:
     branches:
       - main
-      # Evidence channel for CI gates that can only be proven by an OBSERVED run.
-      # Phase 163's CIGATE-01/02/03 each assert a property of a remote build --
-      # "a deliberate violation reddens the GitHub Actions build, and reverting
-      # greens it" -- and the roadmap says in its own words that a local
-      # simulation does not substitute for it. Before this glob existed there was
-      # no way to get a run at all from a non-`main` branch: the v0.2 ship stack
-      # PRs #864-#874 target each other rather than `main`, and `gh run list`
-      # showed runs for none of them.
+      # Evidence channel: a push to a `ci-evidence/**` branch runs this workflow without a PR against
+      # `main`. It exists for CI gates that can only be proven by an observed run, such as "a deliberate
+      # violation reddens the build, and reverting it greens it".
       #
-      # This works because for `push` events GitHub uses the workflow file FROM
-      # THE PUSHED COMMIT, not the one on the default branch. So this glob is
-      # live on the very first push of the branch that introduces it, and no PR
-      # against `main` is needed to make a gate reachable. `workflow_dispatch`
-      # cannot substitute: GitHub only offers it for workflows present on the
-      # DEFAULT branch, and `origin/main` still carries an older workflow file.
+      # For `push` events GitHub uses the workflow file from the pushed commit, so the glob is live on the
+      # first push of a branch that carries it. `workflow_dispatch` cannot substitute: GitHub offers it
+      # only for workflows present on the default branch.
       #
-      # LOAD-BEARING, and the reason this comment is long: `paths-ignore` below
-      # STILL APPLIES to this glob. An evidence commit that touches only markdown
-      # produces NO RUN AT ALL, and a missing run reads exactly like a passing
-      # one. Every evidence commit must touch at least one non-`.md` path, and
-      # every ledger row must carry a real run URL -- a row with no URL is the
-      # detection mechanism for this failure, not a formatting lapse.
+      # `paths-ignore` below still applies to this glob. A commit that touches only markdown produces no
+      # run at all, and a missing run reads like a passing one, so every evidence commit must touch at
+      # least one non-`.md` path.
       #
-      # Kept permanently on purpose (operator-authorised, Phase 163 plan 163-01
-      # Task 0). Phase 164's `supabase-types-drift` job below has never run and
-      # is carried as unverified debt; this glob is how it finally gets observed.
-      # Namespaced rather than `**` because any branch matching it executes that
-      # commit's workflow file, which is a genuine surface widening.
+      # Namespaced rather than `**`, because any branch matching the glob executes that commit's workflow
+      # file.
       - "ci-evidence/**"
     paths-ignore:
       - "**.md"
@@ -62,59 +48,37 @@ jobs:
       - name: "Check skill drift"
         run: .claude/scripts/audit-skill-drift.sh
 
-  # Scans the repository's git history for committed secrets and reddens the
-  # build when it finds one (REQUIREMENTS.md CIGATE-03, Phase 163).
+  # Scans the commits a push introduces for committed secrets, and reddens the build on a finding.
   #
-  # (i) THERE IS DELIBERATELY NO `paths-filter` HERE, and none may be added. The
-  # comment above `dev-seed-integration` below records this project's position on
-  # that pattern in its own words: a conditional guard is how a job goes green
-  # while never running (fake-guard sweep 2026-08-11, finding F5). It is sharper
-  # for this job than for that one. A secret appears in the tree when someone
-  # commits it, not when a particular directory changes, so a change-conditional
-  # guard on a secret scanner is blind BY CONSTRUCTION rather than merely
-  # over-narrow. The same reasoning forbids an `if:` on the job or on its steps.
+  # (i) No `paths-filter`, and no `if:` on the job or its steps. A secret enters the tree when
+  # someone commits it, not when a particular directory changes, so a change-conditional guard on a
+  # secret scanner is blind by construction.
   #
   # (ii) `fetch-depth: 0` is required. The Action resolves its scan range with
-  # `--since-commit <BASE>` against the LOCAL object store, and on a
-  # `pull_request` it passes `github.event.pull_request.base.sha`, which the
-  # default shallow checkout does not contain. Only `skill-drift-check` above
-  # uses a full checkout today; this is the second job that needs one.
+  # `--since-commit <BASE>` against the local object store, and on a `pull_request` it passes
+  # `github.event.pull_request.base.sha`, which a shallow checkout does not contain.
   #
-  # (iii) FINDINGS ARE BLOCKING WITH NO EXTRA FLAG. The Action's composite step
-  # always passes `--fail`, and trufflehog exits 183 when results were found
-  # (main.go:76 and main.go:719-723). Nothing here needs to inspect output to
-  # decide whether to fail; the exit code does it.
+  # (iii) Findings block with no extra flag. The Action always passes `--fail`, and trufflehog exits
+  # 183 when it finds results, so the exit code alone fails the step.
   #
-  # (iv) THE PRINTER MUST STAY `--github-actions`, which the Action always
-  # passes. Its output struct carries `DetectorType`, `Verified`, `StartLine` and
-  # `Filename` and has NO `Raw` and NO `Redacted` field, so the matched value is
-  # never written to stdout. That omission of the matched value is precisely what
-  # holds this file's own never-echo-a-credential rule (see the "never echoed to
-  # stdout" comment on the Supabase env step further down) -- job logs are
-  # readable by anyone who can read the repo. The default plain printer DOES
-  # print a `Raw` field, so switching the printer to plain or to `--json` would
-  # disclose the very secret this job exists to find. Do not do it.
+  # (iv) The printer must stay `--github-actions`, which the Action always passes. Its output carries
+  # `DetectorType`, `Verified`, `StartLine` and `Filename` but no `Raw` or `Redacted` field, so the
+  # matched value never reaches the job log, which anyone who can read the repository can read. The
+  # plain printer and `--json` both print `Raw`, so switching to either would disclose the secret
+  # this job exists to find.
   #
-  # (v) THE ANNOTATION IS `::warning` WHILE THE EXIT CODE IS WHAT REDDENS THE
-  # BUILD. A reader seeing a yellow marker on a red job is seeing the designed
-  # behaviour and must not "fix" it.
+  # (v) The annotation is `::warning` while the exit code reddens the build. A yellow marker on a red
+  # job is the designed behaviour.
   #
-  # ACCEPTED COST (D-L2, operator overrule of the recommended gitleaks option):
-  # trufflehog's BUILT-IN detectors verify their findings by calling live
-  # third-party credential endpoints, so THIS JOB IS NOT HERMETIC. The egress was
-  # accepted by operator decision rather than left implicit, and it is the reason
-  # trufflehog was chosen at all. The repo-private detector in
-  # `.github/trufflehog-openvaa.yml` carries no `verify:` endpoint, so Phase
-  # 163's own evidence plant triggers no outbound request.
+  # Not hermetic: trufflehog's built-in detectors verify findings by calling live third-party
+  # credential endpoints. The repo-private detector in
+  # `.github/trufflehog-openvaa.yml` has no `verify:` endpoint, so a finding from it makes no
+  # outbound request.
   #
-  # PINNING, MEASURED 2026-09-03 AND NOT SYMMETRIC. The Action ref and the image
-  # tag spell the SAME release differently: the git tag is `v3.97.2` (with the
-  # `v`) and the ghcr tag is `3.97.2` (WITHOUT it). `ghcr.io/trufflesecurity/trufflehog:v3.97.2`
-  # returns MANIFEST_UNKNOWN; `:3.97.2` returns 200. Copying the `v` across is
-  # therefore a `docker run` failure, not a no-op. Both are pinned rather than
-  # left at `@main` / `latest` because every other Action in this file is pinned
-  # (`actions/checkout@v4`, `supabase/setup-cli@v1`, `dorny/paths-filter@v3`) and
-  # because a recorded evidence run is only reproducible against a fixed version.
+  # Pinning: the Action ref and the image tag spell the same release differently. The git tag is
+  # `v3.97.2` and the ghcr tag is `3.97.2`; `ghcr.io/trufflesecurity/trufflehog:v3.97.2` returns
+  # MANIFEST_UNKNOWN, so copying the `v` across breaks `docker run`. Both are pinned, like every other
+  # Action in this file, so a recorded run is reproducible against a fixed version.
   secret-scan:
     runs-on: ubuntu-latest
     steps:
@@ -123,14 +87,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Resolve what range to scan. A full-history scan is NOT usable as a gate here: the
-      # first observed run (Actions 33751423659) reported 26 findings, ~21 of them in
-      # commits already on `main` and therefore unreachable without rewriting published
-      # history. A gate that is red before anything is wrong gates nothing, and it makes
-      # criterion 3's "removing the plant clears the job" impossible to observe. So scan
-      # only the commits the push introduced -- the question a gate should answer is "did
-      # THIS change add a secret?". `github.event.before` is the all-zero SHA on a branch's
-      # first push, so fall back to the merge-base with the default branch.
+      # Scan only the commits the push introduced: the question the gate answers is "did this change add
+      # a secret?". A full-history scan also reports findings in commits already on `main`, which cannot
+      # be removed without rewriting published history, so it would be red before anything is wrong.
+      # `github.event.before` is the all-zero SHA on a branch's first push, so the range then starts at
+      # the merge-base with the default branch.
       - name: "Resolve the scan range"
         id: range
         run: |
@@ -151,9 +112,9 @@ jobs:
           version: "3.97.2"
           base: ${{ steps.range.outputs.base }}
           head: ${{ github.sha }}
-          # No `--results`, no `--only-verified`: both drop unverified findings, which is
-          # the only class the repo-private detector can produce. `--exclude-paths` carries
-          # only MEASURED false positives; see that file for the per-detector evidence.
+          # No `--results`, no `--only-verified`: both drop unverified findings, which is the only class the
+          # repo-private detector can produce. `--exclude-paths` lists only measured false positives; that
+          # file carries the per-detector evidence.
           extra_args: --config=.github/trufflehog-openvaa.yml --exclude-paths=.github/trufflehog-exclude-paths.txt
 
   frontend-and-shared-module-validation:
@@ -186,28 +147,17 @@ jobs:
       - name: "Run Prettier check globally"
         run: yarn format:check
 
-      # ⚠ THIS STEP MUST STAY ABOVE `Run ESlint check on frontend`, and the ordering is
-      # the whole point of it. A named step is what makes the type-check gate legible in
-      # the Actions UI when it fails — the Phase-142.1 precedent, where the frontend
-      # `svelte-check` is its own named step even though `yarn build` runs in the same
-      # job. But `yarn lint:check` chains `yarn typecheck` as its last link, and GitHub
-      # Actions aborts a job at the first non-zero step: while this step sat BELOW the
-      # ESLint one, a type error always failed inside `yarn lint:check` and this step
-      # never executed. It could only ever run once typecheck had already passed — it was
-      # unreachable as a diagnostic signal, which is the exact outcome its own comment
-      # claimed it prevented (`144-REVIEW` WR-03). Above the ESLint step it is the step
-      # that reports, and the chained call below it is the cheap cached re-run.
+      # This step must stay above `Run ESlint check on frontend`. `yarn lint:check` chains
+      # `yarn typecheck`, and a job aborts at its first failing step, so only a type-check step that runs
+      # first can report a type error under its own name. After it, the chained call is a cheap cached
+      # re-run.
       #
-      # The chain link in `lint:check` is KEPT on purpose: it is what makes `turbo run
-      # typecheck` blocking for a developer running `yarn lint:check` locally, which is
-      # the whole of 144-06's local-DX half. It is redundant HERE and load-bearing there.
+      # The chain link in `lint:check` stays: it makes `turbo run typecheck` blocking for a developer
+      # running `yarn lint:check` locally.
       #
-      # UNFORCED on purpose (no TURBO_FORCE): caching here is a feature and CI cold-starts
-      # anyway. Every *evidence* run in Phase 144 forces; the shipped gate does not. See
-      # 144-NEGATIVE-CONTROL-LEDGER.md, rows `G-NEW` / `X-NEW`.
+      # Unforced (no TURBO_FORCE): caching is a feature here.
       #
-      # `tests/ciTypecheckGate.test.ts` asserts this ordering, so the two steps cannot be
-      # swapped back without a red suite.
+      # `packages/dev-seed/tests/ciTypecheckGate.test.ts` asserts this ordering.
       - name: "Type-check all packages (turbo run typecheck)"
         run: yarn typecheck
 
@@ -243,7 +193,7 @@ jobs:
       - uses: supabase/setup-cli@v1
         if: steps.changes.outputs.supabase == 'true'
         with:
-          version: latest
+          version: 2.83.0
 
       - name: "Start Supabase"
         if: steps.changes.outputs.supabase == 'true'
@@ -262,46 +212,30 @@ jobs:
 
   # `yarn db:lint:sql` is `yarn workspace @openvaa/supabase lint:all`, which is
   # `supabase db lint --schema public --fail-on warning && node scripts/lint-schema.mjs`.
-  # Nothing invoked it in CI before this job existed (REQUIREMENTS.md CIGATE-01).
   #
-  # WHY IT NEEDS A LIVE DATABASE, and cannot be a step in
-  # `frontend-and-shared-module-validation`. Neither half reads SQL files. `supabase db lint`
-  # runs plpgsql_check over the function bodies the SERVER already holds, and
-  # `apps/supabase/scripts/lint-schema.mjs:25` connects to
-  # postgresql://postgres:postgres@127.0.0.1:54322/postgres, shelling out to `psql` at `:99`
-  # and `process.exit(1)`-ing at `:128` when it cannot reach it. Added to a job with no
-  # Supabase, the script would fail on CONNECTION rather than on lint findings, and a red
-  # build for the wrong reason is a false gate, not a gate.
+  # It needs a live database, so it cannot be a step in `frontend-and-shared-module-validation`.
+  # Neither half reads SQL files: `supabase db lint` runs plpgsql_check over the function bodies the
+  # server holds, and `apps/supabase/scripts/lint-schema.mjs` connects to
+  # postgresql://postgres:postgres@127.0.0.1:54322/postgres through `psql`. Without Supabase the
+  # script would fail on the connection rather than on lint findings.
   #
-  # WHY THE START STEP IS WHAT MAKES THE GATE REAL. `supabase start` applies
-  # `apps/supabase/supabase/migrations/` and nothing else, because
-  # `apps/supabase/supabase/config.toml` sets `[db.migrations] schema_paths = []`. The CLI
-  # therefore NEVER reads `apps/supabase/supabase/schema/`, and a violation planted in that
-  # mirror is invisible to this job. The lint verdict below is a statement about the applied
-  # database, not about any file on disk.
+  # The verdict is about the applied database. `supabase start` applies
+  # `apps/supabase/supabase/migrations/` only, because `apps/supabase/supabase/config.toml` sets
+  # `[db.migrations] schema_paths = []`; the CLI never reads `apps/supabase/supabase/schema/`.
   #
-  # WHY THERE IS DELIBERATELY NO `paths-filter`, unlike `supabase-tests` directly above.
-  # `dev-seed-integration` records the reason in its own words further down: a conditional
-  # guard is how a job goes green while never running (fake-guard sweep 2026-08-11,
-  # finding F5). CIGATE-01 requires this gate to redden on a planted violation, and a filter
-  # that skips the job answers that requirement with silence.
+  # No `paths-filter`, unlike `supabase-tests`: a conditional guard lets a job go green without
+  # running, and this gate must redden on a planted violation.
   #
-  # WHY IT IS A SEPARATE JOB RATHER THAN A STEP IN `supabase-tests`. CIGATE-01 wants
-  # `db:lint:sql` legible in the Actions UI; a step inside another job puts the script name
-  # under a job called something else. `supabase-tests` is additionally `paths-filter`-
-  # conditional and has no Node or Yarn setup, so invoking the script there would mean adding
-  # the three toolchain steps below to it - a new job in all but name, with the filter
-  # inherited.
+  # A separate job rather than a step in `supabase-tests`, so the gate is legible under its own name
+  # in the Actions UI. `supabase-tests` is also filter-conditional and has no Node or Yarn setup.
   #
-  # THE `psql` PROVENANCE. It comes from the runner image, not from a workflow install step;
-  # RESEARCH §P2.7 recorded PostgreSQL 16.15 on ubuntu-24.04. The host `postgresql` SERVICE
-  # being disabled is irrelevant, because the connection targets Supabase's container on port
-  # 54322. The `command -v psql` guard below converts a future image change into a named
-  # failure instead of a connection error that reads like a database problem.
+  # `psql` comes from the runner image, not from an install step. The `command -v psql` guard turns a
+  # future image change into a named failure instead of a connection error that reads like a database
+  # problem. The host `postgresql` service being disabled does not matter: the connection targets
+  # Supabase's container on port 54322.
   #
-  # THE WALL CLOCK. This job runs in parallel with `e2e-tests`, which does strictly more work
-  # (the same install plus a Playwright browser install and the full E2E suite), so it does
-  # not extend the critical path; the cost is runner minutes.
+  # The job runs in parallel with `e2e-tests`, which does strictly more work, so it does not extend
+  # the critical path.
   sql-lint:
     runs-on: ubuntu-latest
     steps:
@@ -310,7 +244,7 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.83.0
 
       - name: Setup Yarn 4.13
         uses: threeal/setup-yarn-action@v2
@@ -341,57 +275,35 @@ jobs:
         working-directory: apps/supabase
         run: supabase stop
 
-  # Fails the build on a known-vulnerable dependency at `high` severity and above
-  # (REQUIREMENTS.md CIGATE-03, Phase 163). It is the dependency half of the same
-  # requirement whose secret half is `secret-scan` above; it sits here, next to
-  # `sql-lint`, because those two are the phase's unconditional gates.
+  # Fails the build on a known-vulnerable dependency at `high` severity and above; the dependency
+  # counterpart of `secret-scan`.
   #
-  # (i) THE THRESHOLD IS `high` AND ABOVE, BY LOCKED DECISION D-L3(a). Moderate
-  # and below are recorded by the audit and deliberately do NOT redden the build:
-  # the rationale on the record is that high+ is actionable, while a Yarn monorepo
-  # of this size always carries transitive-moderate noise that would either force a
-  # large exception list or get the gate switched off. The threshold is not spelled
-  # in this file as a flag, on purpose - it is read from `threshold` in
-  # `security/audit-baseline.json`, so the file that DOCUMENTS the gate and the
-  # value the gate RUNS AT cannot drift apart. It is named in the step name below
-  # so a reader sees it in the Actions UI without opening the JSON.
+  # (i) The threshold is `high` and above. Moderate and below are reported but do not redden the
+  # build: high and above is actionable, while a Yarn monorepo of this size always carries transitive
+  # moderate findings. The threshold is read from `threshold` in `security/audit-baseline.json`
+  # rather than spelled here as a flag, so the documented value and the value the gate runs at cannot
+  # drift apart. The step name states it for the Actions UI.
   #
-  # (ii) FINDINGS ACCEPTED AT `security/audit-baseline.json` ARE SUBTRACTED BY
-  # ADVISORY ID, and both sets are printed. There were 70 accepted findings when
-  # this job was written (64 high, 6 critical), so without the baseline the job
-  # would be red on its first run and every run after - the same shape that made a
-  # full-history secret scan unusable as a gate two jobs up, and a gate that is red
-  # before anything is wrong gates nothing. The subtraction is keyed on the
-  # advisory ID and never on the package name: silencing `tar` by name would also
-  # silence every future `tar` advisory, which is the class of finding this job
-  # exists to surface. A red here is therefore always a NEW advisory, and the
-  # `[ACCEPTED]` block in the log says which findings were already known, so the
-  # red is diagnosable from the Actions log alone.
+  # (ii) Findings accepted in `security/audit-baseline.json` are subtracted by advisory ID, and both
+  # sets are printed. Without the baseline the job would be red before anything is wrong. The
+  # subtraction is keyed on the advisory ID, never on the package name: silencing `tar` by name would
+  # also silence every future `tar` advisory. A red here is always a new advisory, and the
+  # `[ACCEPTED]` block in the log lists the findings already known.
   #
-  # (iii) THE BASELINE IS EXPECTED TO DRIFT, AND THE DRIFT IS THE POINT. Nine of
-  # its rows are `tar` advisories published against an ever-widening version range,
-  # and `brace-expansion` and `minimatch` behave the same way, so newly published
-  # advisories against packages ALREADY LISTED will redden this job periodically.
-  # That is the designed behaviour of a per-ID subtraction, not a regression, and
-  # the remedy is a reviewed `yarn audit:deps --update-baseline` with a written
-  # rationale - never a package-name silence and never a threshold change.
+  # (iii) New advisories against packages already listed will redden this job periodically: `tar`,
+  # `brace-expansion` and `minimatch` advisories are published against widening version ranges. That
+  # is the designed behaviour of a per-ID subtraction. The remedy is a reviewed
+  # `yarn audit:deps --update-baseline` with a written rationale, never a package-name silence or a
+  # threshold change.
   #
-  # (iv) THERE IS DELIBERATELY NO `paths-filter` HERE, and no `if:` on the job or
-  # on any step. The reasoning `dev-seed-integration` records below applies with
-  # more force here than anywhere else in this file: a dependency becomes
-  # vulnerable when the advisory registry publishes something, not when a file in
-  # this repository changes, so a change-conditional guard on this job would be
-  # blind BY CONSTRUCTION rather than merely over-narrow. A commit that changes
-  # nothing is exactly when a newly published critical needs to be caught.
+  # (iv) No `paths-filter`, and no `if:` on the job or any step. A dependency becomes vulnerable when
+  # an advisory is published, not when a file in this repository changes, so a change-conditional
+  # guard would be blind by construction.
   #
-  # (v) NO `TURBO_TOKEN` / `TURBO_TEAM`. This job runs no turbo task that would
-  # benefit from the remote cache, and handing a job credentials it has no use for
-  # widens its blast radius for nothing.
+  # (v) No `TURBO_TOKEN` / `TURBO_TEAM`: the job runs no turbo task, and credentials it does not use
+  # would only widen its blast radius.
   #
-  # (vi) WHY A GATE AT ALL, GIVEN DEPENDABOT IS ALREADY ENABLED HERE. Dependabot
-  # opens PRs and maintains an alert list; it has never failed a build and cannot.
-  # Criterion 4 asks for a job that runs on every build and FAILS above a chosen
-  # threshold, which is a different thing from an alert nobody has to act on.
+  # (vi) Dependabot opens PRs and keeps an alert list but never fails a build. This job does.
   dependency-audit:
     runs-on: ubuntu-latest
     steps:
@@ -415,29 +327,21 @@ jobs:
       - name: "Run yarn audit:deps (fails at high severity and above, outside the accepted baseline)"
         run: yarn audit:deps
 
-  # The @openvaa/dev-seed integration test carries the NF-01 OPERATION BUDGET —
-  # the deterministic batching / N+1 guard Phase 135 built to replace a
-  # load-sensitive wall-clock gate (REQUIREMENTS.md GUARD-03). It self-skips via
-  # `describe.skipIf(!process.env.SUPABASE_URL)`, and the
-  # `frontend-and-shared-module-validation` job above runs `yarn test:unit` with
-  # no Supabase and no repo-root `.env` — so before this job existed the budget
-  # ran on developer machines only and NEVER in CI, while the job went green
-  # (fake-guard sweep 2026-08-11, finding F5).
+  # Runs the @openvaa/dev-seed integration test, which carries the operation budget: a deterministic
+  # batching / N+1 guard. The test self-skips via `describe.skipIf(!process.env.SUPABASE_URL)`, and
+  # `frontend-and-shared-module-validation` runs `yarn test:unit` with no Supabase, so this job is
+  # where the budget runs in CI.
   #
-  # It is a SEPARATE job rather than a step in `e2e-tests` on purpose: this test
-  # writes ~327 `seed_` candidates from the `default` template, which would
-  # contaminate the `e2e/base` dataset the E2E suite asserts against. Running it
-  # after `yarn test:e2e` in that job would instead couple it to E2E going
-  # green — a red E2E run would mask a seed-path regression.
+  # A separate job rather than a step in `e2e-tests`: the test writes ~327 `seed_` candidates from
+  # the `default` template, which would contaminate the `e2e/base` dataset the E2E suite asserts
+  # against. Running it after the E2E suite would instead let a red E2E run mask a seed-path
+  # regression.
   #
-  # There is deliberately NO `paths-filter` here (unlike `supabase-tests`). The
-  # code this guards spans dev-seed, supabase-types, apps/supabase's schema, and
-  # the core/matching/app-shared chain the latent answer model uses, so an
-  # honest filter would cover most of the repo — and a conditional guard is how
-  # F5 happened in the first place. The job runs in parallel with `e2e-tests`,
-  # which does strictly more work (same install + build + `supabase start`, plus
-  # a Playwright install and the full E2E suite), so it does not extend the
-  # critical-path wall clock; the cost is runner minutes.
+  # No `paths-filter` (unlike `supabase-tests`). The code this guards spans dev-seed, supabase-types,
+  # the apps/supabase schema and the core/matching/app-shared chain the answer model uses, so an
+  # honest filter would cover most of the repository, and a conditional guard lets a job go green
+  # without running. The job runs in parallel with `e2e-tests`, which does strictly more work, so it
+  # does not extend the critical path.
   dev-seed-integration:
     runs-on: ubuntu-latest
     env:
@@ -455,7 +359,7 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.83.0
 
       - name: Setup Yarn 4.13
         uses: threeal/setup-yarn-action@v2
@@ -474,28 +378,28 @@ jobs:
       - name: "Build @openvaa/dev-seed and its dependencies"
         run: yarn build --filter=@openvaa/dev-seed
 
+      # `tests/projectScopingGate.test.ts` measures the generated Paraglide output under
+      # `apps/frontend/src/lib/paraglide/`, which only a frontend build creates. The script compiles it
+      # with the options the frontend's Vite plugin imports from `apps/frontend/paraglide.options.ts`.
+      - name: "Compile the frontend's Paraglide messages"
+        run: yarn workspace @openvaa/frontend paraglide:compile
+
       - name: "Start Supabase"
         working-directory: apps/supabase
         run: supabase start
 
-      # Read the connection details off the RUNNING instance rather than
-      # hard-coding the local demo keys, so a CLI change to the local key format
-      # cannot make this job authenticate as anon and fail confusingly.
+      # Read the connection details off the running instance rather than hard-coding the local demo
+      # keys, so a CLI change to the local key format cannot make this job authenticate as anon.
       #
-      # ANON_KEY is exported for the same reason, and its `test -n` guard is
-      # load-bearing rather than defensive boilerplate: `supabase/setup-cli@v1`
-      # above pins `version: latest`, and the CLI already emits a newer
-      # PUBLISHABLE_KEY / SECRET_KEY pair alongside ANON_KEY / SERVICE_ROLE_KEY.
-      # If a future CLI stops emitting ANON_KEY, an unguarded export yields an
-      # EMPTY variable, the anon guard in the dev-seed suite silently falls back
-      # to a hard-coded local demo key that will not authenticate against THIS
-      # runner's instance, PostgREST 401s, the nomination count is 0 and the
-      # build goes red as if the seed template had regressed. The guard converts
-      # that wiring loss into a named failure at this step instead.
+      # The `ANON_KEY` guard matters: the CLI version is pinned here, and the CLI already
+      # emits a newer PUBLISHABLE_KEY / SECRET_KEY pair beside ANON_KEY / SERVICE_ROLE_KEY. If a later
+      # pinned CLI stops emitting ANON_KEY, an unguarded export yields an empty variable, the dev-seed suite
+      # falls back to a local demo key that does not authenticate against this runner's instance, and
+      # the build goes red as if the seed template had regressed. The guard names the failure at this
+      # step instead.
       #
-      # The values are appended to $GITHUB_ENV only — never echoed to stdout,
-      # and `set -x` must not be added here, since either would print a
-      # credential into the job log.
+      # The keys are masked, as in the E2E jobs, and the values go to $GITHUB_ENV only, never to stdout.
+      # `set -x` must not be added: it would print a credential into the job log.
       - name: "Export Supabase connection env"
         working-directory: apps/supabase
         run: |
@@ -506,15 +410,16 @@ jobs:
           test -n "$API_URL" || { echo "::error::API_URL missing from supabase status"; exit 1; }
           test -n "$SERVICE_ROLE_KEY" || { echo "::error::SERVICE_ROLE_KEY missing from supabase status"; exit 1; }
           test -n "$ANON_KEY" || { echo "::error::ANON_KEY missing from supabase status"; exit 1; }
+          echo "::add-mask::$SERVICE_ROLE_KEY"
+          echo "::add-mask::$ANON_KEY"
           echo "SUPABASE_URL=$API_URL" >> "$GITHUB_ENV"
           echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY" >> "$GITHUB_ENV"
           echo "SUPABASE_ANON_KEY=$ANON_KEY" >> "$GITHUB_ENV"
 
       # With SUPABASE_URL set, `describe.skipIf(!hasSupabase)` in
-      # tests/integration/default-template.integration.test.ts is FALSE, so the
-      # NF-01 operation budget and the D-58-20 row-count / relational / portrait
-      # / TMPL-07 assertions all execute.
-      - name: "Run dev-seed tests (incl. the NF-01 operation budget)"
+      # tests/integration/default-template.integration.test.ts is false, so the operation budget and the
+      # row-count, relational and portrait assertions all execute.
+      - name: "Run dev-seed tests (incl. the operation budget)"
         run: yarn workspace @openvaa/dev-seed test:unit
 
       - name: "Stop Supabase"
@@ -523,39 +428,26 @@ jobs:
         run: supabase stop
 
   supabase-types-drift:
-    # Regenerates `packages/supabase-types/src/database.ts` against a live local Supabase and
-    # fails if the committed file differs. Silent reversion on the next schema change is the
-    # failure mode this job exists to prevent: the nullability the type generator throws away is
-    # restored by a hand-maintained override in `src/database.overrides.ts`, and a regeneration
-    # that renames or drops a column has to redden here rather than pass quietly.
+    # Regenerates `packages/supabase-types/src/database.ts` against a live local Supabase and fails if
+    # the committed file differs. The nullability the type generator drops is restored by a
+    # hand-maintained override in `src/database.overrides.ts`, so a regeneration that renames or drops
+    # a column must redden here rather than pass quietly.
     #
-    # WHY A NEW JOB RATHER THAN A STEP INSIDE `supabase-tests`, which already starts Supabase and
-    # therefore looks like the cheap host. Measured, it is not:
+    # A job of its own rather than a step in `supabase-tests`:
     #
-    #   1. `supabase-tests` has five steps in total, and among them no `actions/setup-node`, no
-    #      `threeal/setup-yarn-action` and no `yarn install`. `yarn db:types` is
-    #      `yarn workspace @openvaa/supabase-types generate`, which needs Yarn 4, Node, an install
-    #      and the `supabase` devDependency. Hosting this check there means adding three setup
-    #      steps and an install to a job that has none, which is to say making it a different job.
+    #   1. `supabase-tests` has no Node setup, no Yarn setup and no `yarn install`, and `yarn db:types`
+    #      (`yarn workspace @openvaa/supabase-types generate`) needs all three plus the `supabase`
+    #      devDependency.
     #
-    #   2. Every step in `supabase-tests` sits behind a `dorny/paths-filter`, so a drift check
-    #      placed there does not run when neither `apps/supabase/**` nor `packages/supabase-types/**`
-    #      changed. The comment above `dev-seed-integration` records this project's position on
-    #      exactly that pattern.
+    #   2. Every step in `supabase-tests` sits behind a `dorny/paths-filter`, so a drift check there
+    #      would not run when neither `apps/supabase/**` nor `packages/supabase-types/**` changed.
     #
-    #   3. That filter's path set is provably incomplete for this check. `supabase/setup-cli@v1` is
-    #      pinned to `version: latest`, so a CLI update can change the generator's output with no
-    #      repo path changing at all — precisely the silent-reversion class the requirement names,
-    #      and precisely what a filter would hide.
+    #   3. A bump of the pinned `supabase/setup-cli@v1` version, in this file, can change the
+    #      generator's output with no `apps/supabase/**` or `packages/supabase-types/**` path
+    #      changing, which is exactly what a filter would hide.
     #
-    # So: a new job modelled on `dev-seed-integration`, with deliberately NO paths-filter.
-    # `packages/dev-seed/tests/rpcNullabilityGate.test.ts` asserts that absence, so reintroducing a
-    # filter here is a red test rather than a quiet narrowing nobody notices.
-    #
-    # No runner-cost claim is made here, because this file supports none: it sets no
-    # `timeout-minutes` on any job and caches no Supabase Docker images, so there is no baseline to
-    # compare against. The cost is runner minutes, and the job runs in parallel with `e2e-tests`,
-    # which does strictly more work.
+    # So this job has no paths-filter, and `packages/dev-seed/tests/rpcNullabilityGate.test.ts` asserts
+    # that absence. It runs in parallel with `e2e-tests`, which does strictly more work.
     runs-on: ubuntu-latest
 
     steps:
@@ -564,7 +456,7 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.83.0
 
       - name: Setup Yarn 4.13
         uses: threeal/setup-yarn-action@v2
@@ -584,22 +476,14 @@ jobs:
         working-directory: apps/supabase
         run: supabase start
 
-      # `yarn db:types` does NOT start Supabase itself. Root `package.json` defines `db:reset` as
-      # `yarn db:start && ...` but `db:types` as a bare `yarn workspace @openvaa/supabase-types
-      # generate`, and the generator runs `supabase gen types typescript --local`, so it needs the
-      # stack started by the step above or it fails for the wrong reason.
+      # `yarn db:types` does not start Supabase: it runs `supabase gen types typescript --local` against
+      # the stack the previous step started.
       - name: "Regenerate the Supabase types"
         run: yarn db:types
 
-      # The diff is PATH-SCOPED deliberately, so the only thing that can redden this step is drift in
-      # the generated types, and the failure names the one file the reader has to commit. An unscoped
-      # `git diff --exit-code` would also go red on any unrelated working-tree change the runner
-      # happens to leave behind, which turns a precise signal into a noisy one that gets muted.
-      #
-      # ⚠ Measured 2026-09-03, correcting the reason earlier phase notes gave for this scoping:
-      # `packages/supabase-types/tsconfig.tsbuildinfo` is NOT tracked and IS ignored by the
-      # `*.tsbuildinfo` rule in the root `.gitignore`, so `git diff` never reports it and that
-      # particular hazard does not exist. The scoping is right; that justification for it was not.
+      # The diff is path-scoped, so only drift in the generated types can redden this step, and the
+      # failure names the one file to commit. An unscoped `git diff --exit-code` would also redden on any
+      # unrelated working-tree change the runner leaves behind.
       - name: "Assert the committed types match the regenerated ones"
         run: |
           if ! git diff --exit-code -- packages/supabase-types/src/database.ts; then
@@ -624,7 +508,7 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.83.0
 
       - name: Setup Yarn 4.13
         uses: threeal/setup-yarn-action@v2
@@ -650,18 +534,29 @@ jobs:
         working-directory: apps/supabase
         run: supabase start
 
-      - name: "Start frontend"
-        run: yarn workspace @openvaa/frontend dev &
+      # Reads the running stack's anon and service-role keys into `.env` and $GITHUB_ENV, masked;
+      # see the script's header.
+      - name: "Write the local Supabase keys into .env"
+        run: tests/scripts/ci-write-local-keys.sh
 
+      # The two guards `yarn test:e2e` runs before Playwright; the wrapper below runs Playwright only.
+      - name: "Run the E2E wiring guards"
+        run: yarn assert:i18n-catalog-namespaces && yarn assert:a11y-scan-wiring
+
+      # The same wrapper as a local run. It spawns and owns the dev server on the project the suite
+      # seeds, runs the preflight, and writes the dev-server log, the reports and the verdict into
+      # the run directory. `--no-db-reset` because the stack above was started fresh for this job.
+      # `--no-watch` starts only the frontend dev server: "Build all packages" has built them, and the
+      # package watcher would add CPU load and a second process whose failure kills the dev server.
       - name: "Run E2E tests"
-        run: yarn test:e2e
+        run: tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/ci --no-db-reset --no-watch
 
-      - name: "Upload playwright report"
+      - name: "Upload the E2E run directory"
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
-          path: tests/playwright-report/
+          name: e2e-run
+          path: tests/e2e-runs/ci/
           retention-days: 30
 
       - name: "Stop Supabase"
@@ -669,30 +564,20 @@ jobs:
         working-directory: apps/supabase
         run: supabase stop
 
-  # Visual regression is opt-in at the Playwright level (PLAYWRIGHT_VISUAL gates
-  # the auth-setup + visual-regression projects) but BLOCKING at the CI level: a
-  # screenshot regression fails the build. It runs in its own job only because it
-  # needs PLAYWRIGHT_VISUAL set for the whole run; performance + a11y-smoke run by
-  # default in the blocking `e2e-tests` job above (opt out with
-  # PLAYWRIGHT_NO_PERF / PLAYWRIGHT_NO_A11Y).
+  # Visual regression is opt-in at the Playwright level (PLAYWRIGHT_VISUAL gates the auth-setup and
+  # visual-regression projects) but blocking in CI: a screenshot regression fails the build. It has
+  # its own job because PLAYWRIGHT_VISUAL must be set for the whole run; performance and a11y-smoke
+  # run by default in `e2e-tests` (opt out with PLAYWRIGHT_NO_PERF / PLAYWRIGHT_NO_A11Y).
   #
-  # Baselines are Linux/x86_64 PNGs captured on this runner's image. After an
-  # INTENTIONAL UI change they must be regenerated in the container that matches
-  # this job (mcr.microsoft.com/playwright:v<version>-noble, --platform
-  # linux/amd64, --workers=1) — never on a developer Mac, whose font
-  # rasterisation differs enough to fail here permanently. The executable
-  # procedure is tests/scripts/visual-container.sh — the single source; do not
-  # restate it as prose anywhere else.
+  # Baselines are Linux/x86_64 PNGs captured on this runner's image. After an intentional UI change,
+  # regenerate them in the container that matches this job
+  # (mcr.microsoft.com/playwright:v<version>-noble, --platform linux/amd64, --workers=1), never on a
+  # developer Mac, whose font rasterisation differs. tests/scripts/visual-container.sh is the
+  # procedure.
   #
-  # The job needs NO third-party font egress. Since Phase 146 the app serves
-  # Inter from its own origin (apps/frontend/static/fonts/, default set in
-  # packages/app-shared/src/settings/staticSettings.ts). Measured, not assumed:
-  # the whole visual project ran green in-container with fonts.googleapis.com
-  # and fonts.gstatic.com blackholed at the runner, with the curl control
-  # failing first to prove the block was real — see rows EG1-CURL and EG2-SUITE
-  # in .planning/phases/146-*/146-NEGATIVE-CONTROL.md. The specs still assert
-  # the font
-  # resolved before capturing, which is why settleFonts exists.
+  # The job needs no third-party font egress: the app serves Inter from its own origin
+  # (apps/frontend/static/fonts/, default set in packages/app-shared/src/settings/staticSettings.ts).
+  # The specs still assert the font resolved before capturing, which is what settleFonts does.
   e2e-visual:
     runs-on: ubuntu-latest
 
@@ -705,7 +590,7 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.83.0
 
       - name: Setup Yarn 4.13
         uses: threeal/setup-yarn-action@v2
@@ -731,18 +616,22 @@ jobs:
         working-directory: apps/supabase
         run: supabase start
 
-      - name: "Start frontend"
-        run: yarn workspace @openvaa/frontend dev &
+      # Reads the running stack's anon and service-role keys into `.env` and $GITHUB_ENV, masked;
+      # see the script's header.
+      - name: "Write the local Supabase keys into .env"
+        run: tests/scripts/ci-write-local-keys.sh
 
+      # The same wrapper and flags as `e2e-tests`, restricted to the visual-regression project;
+      # Playwright runs the setup projects it depends on.
       - name: "Run visual regression tests (blocking)"
-        run: PLAYWRIGHT_VISUAL=1 npx playwright test -c ./tests/playwright.config.ts --grep "@visual"
+        run: PLAYWRIGHT_VISUAL=1 tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/ci-visual --no-db-reset --no-watch --project visual-regression
 
-      - name: "Upload playwright report"
+      - name: "Upload the visual run directory"
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report-visual
-          path: tests/playwright-report/
+          name: e2e-run-visual
+          path: tests/e2e-runs/ci-visual/
           retention-days: 30
 
       - name: "Stop Supabase"
@@ -750,38 +639,27 @@ jobs:
         working-directory: apps/supabase
         run: supabase stop
 
-  # A STANDING NEGATIVE CONTROL over the repository's own node-engine guard.
+  # A standing negative control over the node-engine guard.
   #
-  # scripts/assert-node-engine.mjs is what makes the root manifest's engines.node
-  # range bind: it runs from `preinstall` and as a link of `lint:check`. Its
-  # ACCEPTING half is exercised constantly — every install and every lint run on a
-  # supported Node passes through it. Its REJECTING half is exercised by nobody,
-  # because nobody develops on an unsupported Node. A half that nothing exercises
-  # is a half that can rot silently: break the comparator, or make the guard
-  # return early, and every green run stays green.
+  # scripts/assert-node-engine.mjs makes the root manifest's engines.node range bind: it runs from
+  # `preinstall` and as a link of `lint:check`. Its accepting half runs on every install and lint
+  # run; its rejecting half runs nowhere else, because nobody develops on an unsupported Node. This
+  # job runs the guard on two runtimes and asserts both directions.
   #
-  # So this job runs the guard on two runtimes and asserts BOTH directions.
-  # Green here means the constraint still binds.
+  # It asserts the guard's failure message, not only a non-zero exit: the guard exits 1 for four
+  # unrelated reasons (an unreadable manifest, a missing engines key, an empty engines.node, a range
+  # outside its accepted grammar), so an exit-code-only assertion would stay green if the guard
+  # stopped comparing versions.
   #
-  # It asserts the guard's failure MESSAGE, not merely a non-zero exit. The guard
-  # exits 1 for four unrelated reasons — an unreadable manifest, a missing
-  # engines key, an empty engines.node, a range outside its accepted grammar — so
-  # an exit-code-only assertion would report green while the guard had stopped
-  # comparing versions at all.
+  # It invokes the guard by path rather than reimplementing the comparison, so deleting the guard
+  # breaks this job.
   #
-  # It invokes the guard BY PATH rather than reimplementing the comparison, so
-  # deleting the guard breaks this job instead of quietly removing a check.
+  # No install, no Yarn, no cache: the guard imports only Node built-ins, which is what lets it run
+  # from `preinstall`.
   #
-  # No install, no Yarn, no cache. The guard imports nothing but Node built-ins —
-  # the property that lets it run from `preinstall`, before node_modules exists —
-  # so checkout plus two toolchains is the whole job.
-  #
-  # The out-of-range toolchain floats within its major on purpose: every 20.x is
-  # out of range for the declared ">=22", so pinning a patch would buy nothing and
-  # would break the day that patch left the runner's version manifest. If the
-  # declared range is ever widened to admit Node 20, the first assertion below
-  # goes red — deliberately. The control would have stopped being a control, and
-  # that should be a decision somebody makes rather than one they drift into.
+  # The out-of-range toolchain floats within its major: every 20.x is outside the declared ">=22",
+  # and a pinned patch would break when it left the runner's version manifest. If the declared range
+  # is ever widened to admit Node 20, the first assertion below goes red on purpose.
   node-engine-range-negative-control:
     runs-on: ubuntu-latest
 

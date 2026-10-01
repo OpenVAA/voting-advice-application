@@ -4,12 +4,11 @@
  * Every entity's `name` field uses the `[<SYMBOL>] <description>` display convention so specs can match inline via `/\[<SYMBOL>\]/i` regexes without a shared `TEXT_RE` bucket.
  *
  * Prefix discipline:
- *   - Templates declare a unique `externalIdPrefix` (e.g.
- *     `'test-perm-1e1cg1co-'`). The writer prepends this prefix to every row's top-level `external_id` AT WRITE TIME — row external_ids in `fixed[]` are AUTHORED BARE (e.g. `external_id: 'el-1'`) and become `test-perm-1e1cg1co-el-1` after the writer's prepend.
+ *   - Templates declare a unique `externalIdPrefix` (e.g. `'test-perm-1e1cg1co-'`). The writer prepends this prefix to every row's top-level `external_id` AT WRITE TIME — row external_ids in `fixed[]` are AUTHORED BARE (e.g. `external_id: 'el-1'`) and become `test-perm-1e1cg1co-el-1` after the writer's prepend.
  *   - Nested-ref `external_id` fields (e.g. `organization: { external_id: ... }`, `parent: { external_id: ... }`) are passed VERBATIM by the writer to bulk_import — so they MUST contain the FULL prefixed external_id (e.g. `organization: { external_id: 'test-perm-1e1cg1co-or-1' }`).
  *     The shared builder functions below take a `prefix` argument (named params) and emit refs with `${prefix}or-1` etc.
  *
- * This preserves the parallel-only contract: `setupFromTemplate.ts:131-137` derives the teardown prefix from `template.externalIdPrefix`, so each perm-* setup tears down ITS OWN unique prefix.
+ * This preserves the parallel-only contract: `setupFromTemplate` derives the teardown prefix from `template.externalIdPrefix`, so each perm-* setup tears down ITS OWN unique prefix.
  *
  * Named-params convention: every builder that takes more than one parameter where positional order can be confused accepts a single named-options object. Single-param builders stay parameterless.
  * `buildCandidate.answersByExternalId` is OPTIONAL — the leaf builder writes an empty map when omitted; the assembling layer (perm template OR `buildMinimal` helper) is responsible for populating the answer map when the candidate should carry answers.
@@ -109,7 +108,7 @@ export const MINIMAL_BASE_APP_SETTINGS = {
   notifications: { voterApp: { show: false }, candidateApp: { show: false } },
   analytics: { trackEvents: false }
   // `satisfies Json`, not `as const`: this object is written straight into the `app_settings.settings` JSONB column, whose type is the MUTABLE `Json`.
-  // `as const` made every nested array a readonly tuple, which `Json` rejects.
+  // `as const` would make every nested array a readonly tuple, which `Json` rejects.
 } satisfies Json;
 
 /**
@@ -125,15 +124,13 @@ export function buildQuestionCategories(): Array<QuestionCategoriesFixedRow> {
       external_id: 'qc-info',
       name: { en: '[QC-INFO] Info questions' },
       category_type: 'info',
-      sort_order: 0,
-      is_generated: false
+      sort_order: 0
     },
     {
       external_id: 'qc-opin',
       name: { en: '[QC-OPIN] Opinion questions' },
       category_type: 'opinion',
-      sort_order: 1,
-      is_generated: false
+      sort_order: 1
     }
   ];
 }
@@ -158,8 +155,7 @@ export function buildQuestions({ prefix }: BuildQuestionsOptions): Array<Questio
       category: { external_id: `${prefix}qc-info` },
       allow_open: false,
       required: false,
-      sort_order: 0,
-      is_generated: false
+      sort_order: 0
     },
     {
       external_id: 'qu-opin-l5',
@@ -169,8 +165,7 @@ export function buildQuestions({ prefix }: BuildQuestionsOptions): Array<Questio
       category: { external_id: `${prefix}qc-opin` },
       allow_open: false,
       required: true,
-      sort_order: 100,
-      is_generated: false
+      sort_order: 100
     }
   ];
 }
@@ -187,16 +182,14 @@ export function buildOrganizations(): Array<OrganizationsFixedRow> {
       name: { en: '[OR1] Party One' },
       short_name: { en: 'OR1' },
       color: { normal: '#1f4ea0', dark: '#7aa3d6' },
-      sort_order: 0,
-      is_generated: false
+      sort_order: 0
     },
     {
       external_id: 'or-2',
       name: { en: '[OR2] Party Two' },
       short_name: { en: 'OR2' },
       color: { normal: '#a82525', dark: '#d67070' },
-      sort_order: 1,
-      is_generated: false
+      sort_order: 1
     }
   ];
 }
@@ -210,7 +203,7 @@ export interface BuildStandardCandidateAnswersOptions {
 }
 
 /**
- * Build standard candidate answers (info text + Likert5 neutral) used by every perm-* candidate that wants the legacy "always-answered" behaviour.
+ * Build standard candidate answers (info text + Likert5 neutral) used by every perm-* candidate that wants the "always-answered" behaviour.
  * Keyed by FULL prefixed question external_ids (importAnswers resolves the question external_id verbatim against the DB).
  *
  * Callers pass the result explicitly via `buildCandidate({ ..., answersByExternalId: buildStandardCandidateAnswers({ prefix }) })`.
@@ -242,7 +235,7 @@ export interface BuildCandidateOptions {
   sortOrder: number;
   /**
    * Per-question answer map. Optional — defaults to `{}` (clean candidate at the leaf-builder level). Keys are FULL prefixed question external_ids.
-   * For the legacy "always-answered" behaviour, pass `buildStandardCandidateAnswers({ prefix })`.
+   * For the "always-answered" behaviour, pass `buildStandardCandidateAnswers({ prefix })`.
    */
   answersByExternalId?: Record<string, { value: unknown; info?: { en: string } }>;
 }
@@ -250,7 +243,6 @@ export interface BuildCandidateOptions {
 /**
  * Build a candidate row. Row external_id is BARE (writer prepends prefix).
  * The nested `organization` ref uses the FULL prefixed external_id.
- *
  */
 export function buildCandidate({
   prefix,
@@ -266,7 +258,6 @@ export function buildCandidate({
     last_name: `Candidate ${orgN === 1 ? 'One' : 'Two'} ${candLetter}`,
     terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
     sort_order: sortOrder,
-    is_generated: false,
     organization: { external_id: `${prefix}or-${orgN}` },
     answersByExternalId: answersByExternalId ?? {}
   };

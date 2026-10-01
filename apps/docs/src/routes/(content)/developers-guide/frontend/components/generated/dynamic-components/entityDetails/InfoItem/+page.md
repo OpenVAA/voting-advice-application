@@ -6,11 +6,8 @@ Used to show a label-content pair in a Candidate's basic information.
 
 - `label`: The label of the information.
 - `vertical`: Layout mode for the item. Default: `false`
+- `children`: The information contents.
 - Any valid attributes of a `<div>` element
-
-### Slots
-
-- default: the information contents.
 
 ### Usage
 

@@ -1,0 +1,1 @@
+.github/trufflehog-exclude-paths.txt	^\.planning/phases/163-ci-gates-sql-lint-format-secrets-vulnerability-scanning/163-RESEARCH\.md$	the exclude pattern itself: the secret-scan exclude list must name the one excluded file by its exact repo path (maintainer ruling D-13), and that file lives under .planning/

@@ -9,16 +9,20 @@
  *
  * Rigidity contract (project E2E Hard Rule): every assertion is HARD — no expect.soft, no try/catch around expect(), no .catch fallback.
  *
- * ## Phase 159 extension — the two routes plan 07 disturbs
+ * ## The two question-category rollup consumers
  *
- * Criterion 5 extracts the duplicated `questionCategories` rollup out of `voterContext.svelte.ts` and `candidateContext.svelte.ts` into one shared utility. Both rollups read the data root, so both are candidates for reintroducing the alias-skip above, and neither of the two original cases covers them. Two cases are added, one per rollup consumer.
+ * `voterContext.svelte.ts` and `candidateContext.svelte.ts` share one `questionCategories` rollup utility. Both rollups read the data root, so both could reintroduce the alias-skip above, and the two elections/info cases do not cover them. One case per rollup consumer covers them.
  *
  * Neither route is reachable by a BARE `page.goto`, and that is a property of the product's route guards rather than a gap in this control — measured, not assumed: `/en/results` and `/en/questions` both 307 to `/elections?next=…` on a cold hit, because the located routes carry their election and constituency selection in the URL and there is nothing to imply from on a multi-election dataset. The candidate app additionally requires a session. So each case reaches its cold entry differently, and each keeps the cold property intact:
  *
  *   - The RESULTS case discovers the located URL by walking once on `page`, then asserts in a BRAND-NEW browser context that shares nothing with that walk but the URL string. The walk is URL discovery, never the observation. The warm-walk masking this file warns about comes from data being present in the SAME document before the alias first computes; a fresh context performing a full document load has no such carry-over.
  *   - The CANDIDATE case is a genuinely bare hard navigation, carrying only a stored session cookie — the cold entry a returning candidate performs when they open a bookmark. It runs under its own Playwright project (`cold-entry-dataroot-candidate`) because it needs `storageState`, mirroring the split the a11y family already makes for exactly this reason. The `@cand-session` tag in its describe title is what routes it there.
  *
- * Rigidity is unchanged for the new cases: waiting `toBeVisible({ timeout })` assertions on `testIds` constants, no `isVisible()`, no soft assertion, no fallback catch.
+ * Rigidity is the same for every case: waiting `toBeVisible({ timeout })` assertions on `testIds` constants, no `isVisible()`, no soft assertion, no fallback catch.
+ *
+ * ## Budget of the first data-dependent wait
+ *
+ * A cold entry is a full document load, then hydration, then the data root's provide. Each case's FIRST data-dependent wait runs to the test's own budget (`TIMEOUTS.testMax`) rather than a fixed 10s window: it asserts the state renders, and how long a cold load takes is the runner's speed, not the contract. Measured in CI run 36463977144: cold `/en/elections` and `/en/info` 8.5s (1.1s locally), and the located `/en/results` election picker missed a 10s wait. A stale data root still fails, at the test budget, because the region never renders.
  */
 
 import { expect, test } from '@playwright/test';
@@ -33,7 +37,7 @@ test.describe('cold-entry-dataroot', () => {
     await page.goto('/en/elections');
 
     // The data-dependent list is gated behind `{#if elections.length}` and is EMPTY when `voterCtx.dataRoot.elections` is stale. WAITING assertion covers the post-hydration mount window.
-    await expect(page.getByTestId(testIds.voter.elections.list)).toBeVisible({ timeout: TIMEOUTS.slowPage });
+    await expect(page.getByTestId(testIds.voter.elections.list)).toBeVisible({ timeout: TIMEOUTS.testMax });
 
     // Stronger signal: at least one selectable election option present.
     await expect(page.getByTestId(testIds.voter.elections.option).first()).toBeVisible({ timeout: TIMEOUTS.element });
@@ -44,7 +48,7 @@ test.describe('cold-entry-dataroot', () => {
     await page.goto('/en/info');
 
     // Assert the `{#each ctx.dataRoot.elections}` region (NOT the static `voter-info-content` {@html} div) — this region is empty when `dataRoot.elections` is stale, so it proves the cold-path populate landed.
-    await expect(page.getByTestId(testIds.voter.info.electionList)).toBeVisible({ timeout: TIMEOUTS.slowPage });
+    await expect(page.getByTestId(testIds.voter.info.electionList)).toBeVisible({ timeout: TIMEOUTS.testMax });
   });
 
   test('cold direct-URL entry to the located /en/results renders the election-data region', async ({
@@ -63,7 +67,7 @@ test.describe('cold-entry-dataroot', () => {
 
     // The election accordion is gated behind a DIRECT `voterCtx.dataRoot.elections.length > 1` read in the results layout, so it is absent for exactly as long as the data root looks empty. WAITING assertion covers the post-hydration mount window.
     await expect(coldPage.getByTestId(testIds.voter.results.electionAccordion)).toBeVisible({
-      timeout: TIMEOUTS.slowPage
+      timeout: TIMEOUTS.testMax
     });
 
     // Second, independent data-dependent region on the same page: the ingress renders inside the nominations-gated main content, so it is present only once the located layout has resolved real nomination data.
@@ -78,7 +82,7 @@ test.describe('cold-entry-dataroot candidate @cand-session', () => {
     // COLD: bare hard navigation, carrying only the stored session. No login walk, no in-app navigation.
     await page.goto(buildRoute({ route: 'CandAppQuestions', locale: 'en' }));
 
-    // The overview list is built from `candCtx.opinionQuestionCategories` — the rollup criterion 5 extracts — so it is empty for exactly as long as the candidate context's view of the data root is stale.
-    await expect(page.getByTestId(testIds.candidate.questions.list)).toBeVisible({ timeout: TIMEOUTS.slowPage });
+    // The overview list is built from `candCtx.opinionQuestionCategories`, the shared rollup, so it is empty for exactly as long as the candidate context's view of the data root is stale.
+    await expect(page.getByTestId(testIds.candidate.questions.list)).toBeVisible({ timeout: TIMEOUTS.testMax });
   });
 });

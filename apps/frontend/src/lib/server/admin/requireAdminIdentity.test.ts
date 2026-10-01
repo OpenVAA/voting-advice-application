@@ -8,19 +8,19 @@ import { requireVerifiedAdmin } from './requireVerifiedAdmin';
 import type { GrantShape } from '$lib/auth/roles';
 
 /**
- * The ONE admin-identity decision and its two presentations, plus the two form actions that were the last admin entry points without a gate of their own (D10 criterion 9, OB-5 deliverable 1).
+ * The admin-identity decision and its two presentations, plus the two admin form actions, each of which carries a gate of its own.
  *
  * ## What this spec is a control for
  *
- * The two admin form actions verified a session and then tested nothing about it. An authenticated NON-admin's POST therefore entered the action body, constructed a privileged data writer, and issued `startJob` — and was stopped only one layer deeper, by the API route's own gate. `158-SWALLOWED-ERROR-MEASUREMENT.md` records what that looked like live: the refusal reached the caller as a `fail(500)` carrying an adapter-internal message that named an internal API route, not as an authorization status. The form-action cases below are that defect, expressed at the layer where it is observable, and each asserts the refusal AND that no privileged call was made — because a gate that refuses after doing the work is not a gate.
+ * An admin form action that verified a session and tested nothing about it would let an authenticated non-admin's POST construct a privileged data writer and issue `startJob`, stopped only one layer deeper by the API route's own gate. The refusal would then reach the caller as a `fail(500)` carrying an adapter-internal message that names an internal API route, not as an authorization status. The form-action cases below assert the refusal AND that no privileged call was made, because a gate that refuses after doing the work is not a gate.
  *
  * ## Why the fixtures name no role
  *
- * The token claims below are built from `ADMIN_GRANTS` and `CANDIDATE_GRANTS` imported from `$lib/auth/roles`, the phase's single declaration, rather than from grant-shape literals. A transcribed literal would keep passing after a rename in the migration that the declaration follows, which is the drift the declaration exists to prevent — and it would make this file a further copy of the very set criterion 9 counts.
+ * The token claims below are built from `ADMIN_GRANTS` and `CANDIDATE_GRANTS` in `$lib/auth/roles`, the single declaration of those grant shapes, rather than from grant-shape literals. A transcribed literal would keep passing after a rename in the schema the declaration follows.
  *
  * ## Why `safeGetSession` is transcribed rather than imported
  *
- * `hooks.server.ts` builds it inside a `Handle` that cannot be invoked from a unit test. It is transcribed here BYTE FOR BYTE, exactly as `routes/api/admin/jobs/adminJobsAuthorization.test.ts` transcribes it, so the forged-cookie case — a session `getSession()` accepts and `getUser()` rejects — is expressible at all.
+ * The adapter-boundary lint rule forbids importing `$lib/supabase/*` from here, so `locals.safeGetSession` below follows `createSafeGetSession` in `$lib/supabase/safeGetSession.ts` by hand: `getSession()` first, then the verifying `getUser()`, and both values discarded when it errors. It leaves out the per-token memo and the re-read that confirms `getUser()` verified the token just read, which no case here exercises. The forged-cookie case — a session `getSession()` accepts and `getUser()` rejects — is expressible only because the two calls are stubbed separately.
  */
 
 const featureMocks = vi.hoisted(() => ({
@@ -81,13 +81,13 @@ function localsWith({
           : { data: { user: null }, error: { message: 'invalid JWT: unable to parse or verify signature' } }
       )
     },
-    // What the database's `user_can` answers for this caller on the deployment's project (162-REVIEW WR-03). Defaults to `true` so the cases about the SESSION and the ROLE keep measuring those; the cases about the project set it explicitly.
+    // What the database's `user_can` answers for this caller on the deployment's project. Defaults to `true` so the cases about the SESSION and the ROLE keep measuring those; the cases about the project set it explicitly.
     rpc: rpc ?? vi.fn(async () => userCan)
   };
 
   return {
     supabase,
-    // Transcribed from `hooks.server.ts`: `getSession()` first, then the verifying `getUser()` round-trip, and BOTH values discarded when it errors.
+    // Follows `createSafeGetSession`: `getSession()` first, then the verifying `getUser()` round-trip, and BOTH values discarded when it errors.
     safeGetSession: async () => {
       const {
         data: { session: current }
@@ -215,7 +215,7 @@ describe('requireAdminIdentity — the one decision, in its three shapes', () =>
     expect(verdict).toEqual({ outcome: 'allowed' });
   });
 
-  it('yields the forbidden verdict for a verified admin of ANOTHER project -- user_can answers false for this deployment (162-REVIEW WR-03)', async () => {
+  it('yields the forbidden verdict for a verified admin of ANOTHER project -- user_can answers false for this deployment', async () => {
     const verdict = await requireAdminIdentity({
       fetch: globalThis.fetch,
       locals: verifiedLocals({ grants: [ADMIN_GRANTS[2]], userCan: { data: false, error: null } })
@@ -233,7 +233,7 @@ describe('requireAdminIdentity — the one decision, in its three shapes', () =>
     expect(verdict).toEqual({ outcome: 'forbidden' });
   });
 
-  it('asks user_can about THIS deployment\'s project, for the permission the admin job features act under', async () => {
+  it("asks user_can about THIS deployment's project, for the permission the admin job features act under", async () => {
     const rpc = vi.fn(async () => ({ data: true, error: null }));
     await requireAdminIdentity({ fetch: globalThis.fetch, locals: verifiedLocals({ grants: [ADMIN_GRANTS[0]], rpc }) });
 
@@ -322,7 +322,7 @@ describe('requireAdminAction — the form-action presentation, differing from it
 });
 
 /**
- * THE ROUND TRIP. These four cases are the RED half of this plan's negative control: run against the ungated actions they fail, because an authenticated non-admin's POST reached `startJob` and the action answered 500 with an adapter-internal message. The assertions are byte-identical before and after the gate landed.
+ * THE ROUND TRIP. Against an action without its own gate these four cases fail: an authenticated non-admin's POST reaches `startJob`, and the action answers 500 with an adapter-internal message.
  */
 describe('the two admin form actions refuse an authenticated non-admin THEMSELVES, before any privileged work', () => {
   /**
@@ -337,7 +337,7 @@ describe('the two admin form actions refuse an authenticated non-admin THEMSELVE
     locals: App.Locals,
     fields: Record<string, string>
   ): Promise<{ result: unknown; fetch: ReturnType<typeof vi.fn> }> {
-    // URL-encoded rather than `FormData`: jsdom's `Request` does not derive a `Content-Type` boundary header from a `FormData` body, so `request.formData()` rejects it before the action reaches its own first line — which would make the red half below a property of the harness instead of a property of the gate.
+    // URL-encoded rather than `FormData`: jsdom's `Request` does not derive a `Content-Type` boundary header from a `FormData` body, so `request.formData()` rejects it before the action reaches its own first line — which would make the refusal cases below a property of the harness instead of a property of the gate.
     // reason: serialised with `.toString()` because undici's `Request` validates `init.body` with `instanceof URLSearchParams` against its own realm, which vitest's global does not satisfy on node 22.22.1 (the version CI pins); the serialised form is byte-identical on the wire and the content-type is set explicitly just below, so nothing about this request changes.
     const body = new URLSearchParams(Object.entries(fields)).toString();
     const fetchSpy = jobStartFetchSpy();
@@ -408,9 +408,9 @@ describe('the two admin form actions refuse an authenticated non-admin THEMSELVE
 });
 
 /**
- * THE FAILURE-SHAPE HARMONISATION (the operator ruling's deliverable 3, measured by `158-12` Task 1 rather than carried in OB-5).
+ * THE FAILURE SHAPE.
  *
- * The gate above closes the AUTHORIZATION instance of the internal leak by construction: a non-admin no longer reaches the writer at all. It leaves the leak reachable for every OTHER upstream failure — a 409 from an already-running job, a 500, a network error — and it leaves the two siblings disagreeing about what to say. Measured live: `argument-condensation` returned `fail(500)` carrying `Error with UniversalAdapter.fetch when parsing response from '/api/admin/jobs/start': 403 • …`, naming an internal API route and an internal class, while `question-info` returned a generic `'Internal server error'`. One of the two leaked; neither reported anything a caller could act on.
+ * The gate above closes the authorization instance of the internal leak by construction: a non-admin never reaches the writer. Every other upstream failure — a 409 from an already-running job, a 500, a network error — still reaches the action, and both siblings must answer it with the same generic shape. An action that passes the adapter's error through returns `fail(500)` carrying `Error with UniversalAdapter.fetch when parsing response from '/api/admin/jobs/start': 403 • …`, which names an internal API route and an internal class and gives the caller nothing to act on.
  *
  * These cases run the SAME drive against both actions, as a verified ADMIN, so what is under test is the failure shape and not the gate.
  */
@@ -481,7 +481,7 @@ describe('the two admin form actions answer an upstream failure with ONE shape, 
 
     expect(condensation.status).toBe(500);
     expect(questionInfo.status).toBe(500);
-    // Not "both are 500" — the same status can carry two different bodies, which is exactly what was measured. The bodies themselves must agree.
+    // Not "both are 500" — the same status can carry two different bodies. The bodies themselves must agree.
     expect(condensation.data).toEqual(questionInfo.data);
     expect(condensation.data).toEqual({ type: 'error', error: 'Internal server error' });
   });

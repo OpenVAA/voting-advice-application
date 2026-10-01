@@ -1,7 +1,13 @@
 -- Email helper functions for transactional email template variable resolution
 --
--- Depends on: 102-entities.sql (candidates, organizations)
---             104-nominations.sql (nominations) 101-elections.sql (elections, constituencies) 300-auth-tables.sql (grants) 010-utility-functions.sql (get_localized)
+-- Depends on:
+-- - 010-utility-functions.sql (get_localized)
+-- - 100-tenancy.sql (projects)
+-- - 101-elections.sql (elections, constituencies)
+-- - 102-entities.sql (candidates, organizations)
+-- - 104-nominations.sql (nominations)
+-- - 300-auth-tables.sql (grants)
+-- - 301-auth-functions.sql (private.entity_project_id)
 --------------------------------------------------------------------------------
 -- resolve_email_variables: resolve template variables for a set of users
 --
@@ -9,9 +15,9 @@
 --
 -- Returns a row per user with their email, preferred_locale, and a flat JSONB object of resolved variables.
 --
--- p_project_id is required and carries no DEFAULT: every entity lookup below is qualified by it, so a caller that forgot it gets an undefined_function error rather than another project's candidate, organization, constituency and election names rendered into an email.
+-- p_project_id is required and carries no DEFAULT: every entity lookup below is qualified by it, so a caller that omits it gets an undefined_function error rather than another project's names rendered into an email.
 --
--- SECURITY DEFINER: needs to read auth.users which is not accessible to regular authenticated users.
+-- SECURITY DEFINER: it reads auth.users, which regular authenticated users cannot read.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.resolve_email_variables (
   p_project_id uuid,
@@ -42,12 +48,12 @@ DECLARE
   nom_constituency_name text;
   nom_election_name text;
 BEGIN
-  -- p_template_body and p_template_subject are read here and nowhere else, deliberately. They belong to this RPC's published four-argument signature: PostgREST resolves overloads by named argument, apps/supabase/supabase/functions/send-email/index.ts passes all four by name, and the two GRANT statements that follow name the four-argument form - so the parameters cannot be dropped without a coordinated change across the Edge Function, the generated types in packages/supabase-types and the pgTAP suite. They are deliberately NOT used to narrow the resolved variable set: the only caller passes an empty string for both, so filtering the output by template text would return an empty variables object for every recipient and silently break personalisation. Consuming them here keeps them read rather than dead for plpgsql_check without changing a single value this function returns.
+  -- p_template_body and p_template_subject are part of the published four-argument signature: PostgREST resolves overloads by named argument, the send-email Edge Function passes all four by name, and the grants below name the four-argument form. They do not narrow the resolved variables: the only caller passes empty strings, so filtering by template text would return no variables for any recipient. This PERFORM reads them so plpgsql_check does not report them unused.
   PERFORM p_template_body, p_template_subject;
 
   FOREACH uid IN ARRAY p_user_ids
   LOOP
-    -- Get user email and preferred locale from auth.users. auth.users carries no project column; the recipient set is bounded to the project by the grant test below rather than here.
+    -- The user's email and preferred locale. auth.users has no project column; the grant test below bounds recipients to the project.
     SELECT
       au.email,
       COALESCE(au.raw_user_meta_data->>'preferred_locale', 'en')
@@ -60,7 +66,7 @@ BEGIN
       CONTINUE;
     END IF;
 
-    -- RECIPIENTS ARE BOUNDED TO THE PROJECT (162-REVIEW WR-02). A user id is returned only when that user holds a grant whose target resolves to p_project_id: the project itself, the account that owns it, or an entity in it. Without this the send-email Edge Function -- whose caller supplies the id list -- could mail, or with `dry_run` simply read back, the address of ANY user in the instance, other tenants' admins included. A global grant targets no project and does not qualify. An id that fails the test is skipped exactly like an unknown id, so the answer does not distinguish the two.
+    -- Recipients are bounded to the project: a user id is returned only when that user holds a grant whose target resolves to p_project_id (the project itself, the account that owns it, or an entity in it). Without this, a send-email caller, who supplies the id list, could mail or, with `dry_run`, read back the address of any user in the instance. A global grant targets no project and does not qualify. An id that fails the test is skipped like an unknown id, so the result does not distinguish the two.
     IF NOT EXISTS (
       SELECT 1
       FROM public.grants g
@@ -68,7 +74,7 @@ BEGIN
         AND (
           (g.scope = 'project' AND g.target_id = p_project_id)
           OR (g.scope = 'account' AND g.target_id = (SELECT pr.account_id FROM public.projects pr WHERE pr.id = p_project_id))
-          OR (g.scope = 'entity' AND private.entity_project_id (g.target_id) = p_project_id)
+          OR (g.scope = 'entity' AND private.entity_project_id (g.target_type, g.target_id) = p_project_id)
         )
     ) THEN
       CONTINUE;
@@ -77,11 +83,11 @@ BEGIN
     -- Initialize empty variables
     vars := '{}'::jsonb;
 
-    -- Get the first relevant entity-scope grant (candidate or organization) for this user. public.grants has no project_id column, so this lookup carries no project predicate; the scoping happens on the entity rows target_id points at, which is where the project-scoped data actually lives.
+    -- The user's first candidate or organization entity grant. public.grants has no project_id column, so the project predicate is applied to the entity rows target_id points at.
     --
-    -- DELIBERATELY TWO ENTITY KINDS AND NOT FOUR (162-15 task 2 Q3, ratified `approved`). The grant map's discriminator admits `faction` and `alliance` as well, and this function ignores both -- exactly as its predecessor did, which had no vocabulary member for either and so could never resolve one. Widening the filter here would change what a live email renders inside a commit whose gate is a removal; 162-IMPLEMENTATION-BRIEF.md section 6.1 owns organization, faction and alliance onboarding and owns closing the gap.
+    -- Only candidate and organization grants are resolved. The grant map also admits faction and alliance grants; this function ignores them, so their holders get no entity variables.
     --
-    -- The preference order is candidate before organization, preserved verbatim from the lookup this replaced. MEASURED at 162-15: it decides nothing on any identity this repository creates -- zero identities in the seed and zero in the pgTAP fixture hold BOTH a candidate-kind and an organization-kind entity grant, so reversing the two arms is a no-op and reddens nothing. It is kept because the population it arbitrates is reachable (the grant map permits both rows for one user) and because changing it would be a behaviour change smuggled inside a removal, not because a test currently holds it in place.
+    -- A user holding both kinds gets the candidate's variables. The grant map permits both rows for one user, but neither the seed nor the pgTAP fixture creates such a user, so no test pins this order.
     SELECT g.target_type, g.target_id
     INTO u_entity_kind, u_scope_id
     FROM public.grants g
@@ -96,7 +102,7 @@ BEGIN
     LIMIT 1;
 
     IF u_entity_kind = 'candidate' AND u_scope_id IS NOT NULL THEN
-      -- Resolve candidate fields. The project predicate is an unconditional equality rather than an `IS NULL OR` shape, because there is no "every project" case: a caller without a project is a caller that should not be resolving anybody's name.
+      -- Candidate fields. The project predicate is an unconditional equality rather than an `IS NULL OR` shape: there is no every-project case.
       SELECT c.first_name, c.last_name
       INTO c_first_name, c_last_name
       FROM public.candidates c
@@ -110,9 +116,9 @@ BEGIN
         );
       END IF;
 
-      -- Resolve nomination context (constituency + election + nominating organization) for this candidate Takes the first nomination found for this candidate. The predicate is on the nomination rather than on the constituency and election it joins, because those two are reached THROUGH the nomination and a nomination belonging to this project cannot name another project's election without violating validate_nomination. Which nomination supplies the names is still whichever one LIMIT 1 happens to return, exactly as before: narrowing the candidate set by project does not make that pick deterministic, and making it deterministic is a product question about which nomination is "the" one.
+      -- The nomination context (constituency, election and nominating organization), from the first nomination found for this candidate. The project predicate is on the nomination: the constituency and election are reached through it, and validate_nomination keeps them in the nomination's project. Which nomination supplies the names is whichever one LIMIT 1 returns; the pick is not deterministic.
       --
-      -- 162-07b ADDED THE ORGANIZATION TO THIS WALK rather than giving it a second round trip. It used to be read off `candidates.organization_id`, a column that stated the candidate-to-organization association a second time; the authoritative statement is the `parent_nomination_id` edge, so the name is now one more column on a query this branch already ran. The two parent joins are LEFT joins on purpose: a candidate nomination with no parent is legal, and an inner join would silently drop the constituency and election names along with the organization. A candidate with no nomination at all emits no organization key, exactly as a candidate with no organization did before.
+      -- The organization is the one on the parent nomination. Both parent joins are LEFT joins: a candidate nomination with no parent is legal, and an inner join would drop the constituency and election names along with the organization. A candidate with no nomination emits no organization key.
       SELECT
         public.get_localized(con.name, u_locale),
         public.get_localized(el.name, u_locale),
@@ -163,7 +169,7 @@ BEGIN
 END;
 $$;
 
--- service_role ONLY. The function is SECURITY DEFINER, reads auth.users and carries no authority check of its own, so any role that can EXECUTE it can read the email address of any user id it names -- and user ids are harvestable from public columns (candidates.auth_user_id). Its one caller, the send-email Edge Function, reaches it through a service-role client after its own authority gate. Supabase's default privileges grant EXECUTE on every new public function to anon and authenticated, so the REVOKE has to name them as well as PUBLIC (162-REVIEW CR-01).
+-- service_role only. The function is SECURITY DEFINER, reads auth.users and checks nothing about its caller, so any role that can EXECUTE it can read the email address of any user id it names, and user ids are readable from public columns (candidates.auth_user_id). Its one caller, the send-email Edge Function, calls it through a service-role client after its own authority check. Supabase's default privileges grant EXECUTE on every new public function to anon and authenticated, so the REVOKE names them as well as PUBLIC.
 REVOKE
 EXECUTE ON FUNCTION public.resolve_email_variables (uuid, uuid[], text, text)
 FROM

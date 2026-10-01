@@ -3,12 +3,12 @@
 
 The input itself is wrapped in multiple container elements, the outermost of which can be passed the `containerProps` prop.
 
-Multilingual features are only available if the `locales` store contains more than one locale.Button
+Multilingual features are only available if the `locales` store contains more than one locale.
 
 ### Properties
 
 - `type`: The type of input element to use. This also defines the type of the `value` prop, which of the other properties are allowed or required, and the HTML element rendered.
-  - `boolean`: A boolean toggle.render
+  - `boolean`: A boolean toggle.
   - `date`: A date input.
   - `image`: An image file input.
   - `multiple-text`: A row list of plain text inputs, one per value.
@@ -117,7 +117,7 @@ Multilingual features are only available if the `locales` store contains more th
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // `locale` here is the i18n plain-string locale from ComponentContext (NOT the flattened AppContext rune handle); read off `ctx` to keep the audit grep clean.
+  // `locale` here is the plain-string locale of ComponentContext, not the AppContext rune handle.
   const ctx = getComponentContext();
   const { locales, t } = ctx;
   const currentLocale = ctx.locale;
@@ -204,7 +204,7 @@ Multilingual features are only available if the `locales` store contains more th
     if (type.startsWith('select') && options) {
       if (type === 'select-multiple') {
         if (!Array.isArray(value)) value = [];
-        // Narrowed by hand: `Array.isArray` no longer pins the element type now that the union carries a second array-valued kind, and this branch is reached only for `select-multiple`.
+        // Narrowed by hand: `Array.isArray` cannot tell the union's two array-valued kinds apart, and this branch is reached only for `select-multiple`.
         else value = (value as Array<Id>).filter((v) => options.some((o) => o.id === v));
       } else {
         if (!value || !options.some((o) => o.id === value)) value = undefined;
@@ -358,7 +358,7 @@ Multilingual features are only available if the `locales` store contains more th
   //   onMount(() => { saveInterval = setInterval(() => { // Handle value changes }, SAVE_INTERVAL_MS); }); onDestroy(() => clearInterval(saveInterval)); };
 </script>
 
-<!-- Add containarProps to the outer container and set styles for it -->
+<!-- Add containerProps to the outer container and set styles for it -->
 <!-- a11y note: every <label> in this file uses an `id` referenced by an
      `aria-labelledby` on the actual <input>/<textarea>/<select>. The a11y_label_has_associated_control rule fires because the label doesn't use `for=""`, but the WCAG association is still satisfied via aria-labelledby. The svelte-ignore comments below are
      intentional. -->
@@ -371,10 +371,10 @@ Multilingual features are only available if the `locales` store contains more th
       <!-- svelte-ignore a11y_label_has_associated_control -->
       <label id="{id}-label">{label}</label>
       {#if showRequired}
-        <div class="required-badge"><Icon name="required" /><span>{t('common.required')}</span></div>
+        <div class="text-warning"><Icon name="required" /><span class="sr-only">{t('common.required')}</span></div>
       {/if}
       {#if locked}
-        <div class="locked-badge"><Icon name="locked" /><span>{t('common.locked')}</span></div>
+        <div class="text-secondary"><Icon name="locked" /><span class="sr-only">{t('common.locked')}</span></div>
       {/if}
     </div>
   {/if}
@@ -446,7 +446,7 @@ Multilingual features are only available if the `locales` store contains more th
     <div class="{inputContainerClass} vaa-group-join-item">
       <label class={inputLabelClass} for={id}>{label}</label>
       <div class={inputAndIconContainerClass}>
-        <!-- 5.1 Boolean -->
+        <!-- 6.1 Boolean -->
         {#if type === 'boolean'}
           <input
             type="checkbox"
@@ -457,7 +457,7 @@ Multilingual features are only available if the `locales` store contains more th
             checked={!!value}
             onchange={handleChange} />
 
-          <!-- 5.2 Select -->
+          <!-- 6.2 Select -->
         {:else if type === 'select'}
           {#if options?.length}
             <select {id} disabled={isDisabled} {...concatClass(restProps, selectClass)} onchange={handleChange}>
@@ -472,7 +472,7 @@ Multilingual features are only available if the `locales` store contains more th
             <ErrorMessage message={t('error.general')} />
           {/if}
 
-          <!-- 5.3 All other inputs: date, number, text -->
+          <!-- 6.3 All other inputs: date, number, text -->
         {:else}
           <input
             {type}
@@ -485,13 +485,13 @@ Multilingual features are only available if the `locales` store contains more th
         {/if}
 
         {#if showRequired}
-          <div class="required-badge">
-            <Icon name="required" class={iconBadgeClass} /><span>{t('common.required')}</span>
+          <div class="text-warning">
+            <Icon name="required" class={iconBadgeClass} /><span class="sr-only">{t('common.required')}</span>
           </div>
         {/if}
         {#if locked}
-          <div class="locked-badge">
-            <Icon name="locked" class={iconBadgeClass} /><span>{t('common.locked')}</span>
+          <div class="text-secondary">
+            <Icon name="locked" class={iconBadgeClass} /><span class="sr-only">{t('common.locked')}</span>
           </div>
         {/if}
       </div>
@@ -524,17 +524,3 @@ Multilingual features are only available if the `locales` store contains more th
     </div>
   {/if}
 </div>
-
-<style lang="postcss">
-  @reference "../../../tailwind-theme.css";
-  .locked-badge {
-    @apply text-secondary;
-  }
-  .required-badge {
-    @apply text-warning;
-  }
-  .locked-badge > span,
-  .required-badge > span {
-    @apply sr-only;
-  }
-</style>

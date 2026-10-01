@@ -1,9 +1,9 @@
 /**
  * The single decrypt -> verify core for OIDC ID tokens.
  *
- * Both identity providers (`providers/idura.ts`, `providers/signicat.ts`) call this from their `getIdTokenClaims` method; the per-provider claim mapping stays in the providers, each of which declares its own (`SIGNICAT_AUTH_CONFIG` in `providers/signicat.ts`, `IDURA_AUTH_CONFIG` in `providers/idura.ts`). This module owns only the parts that are genuinely identical: the lazy env parse, the JWE decrypt, the JWT verify, and the discriminating coded failures -- which are declared once in `./oidcFailure.ts` and referenced from here as `OIDC_FAILURE.*` rather than spelled inline, so the thrower and the two routes that log them cannot drift.
+ * Both identity providers (`providers/idura.ts`, `providers/signicat.ts`) call this from their `getIdTokenClaims` method; the per-provider claim mapping stays in the providers, each of which declares its own (`SIGNICAT_FTN_AUTH_CONFIG` in `providers/signicat.ts`, `IDURA_FTN_AUTH_CONFIG` in `providers/idura.ts`). This module owns only the parts that are genuinely identical: the lazy env parse, the JWE decrypt, the JWT verify, and the discriminating coded failures -- which are declared once in `./oidcFailure.ts` and referenced from here as `OIDC_FAILURE.*` rather than spelled inline, so the thrower and the two routes that log them cannot drift.
  *
- * The failure classes are NOT a closed set, and it matters that this is said plainly: jose's own coded errors flow through these throw sites unchanged, because each provider's catch arm forwards `e.code` for any `Error` carrying one. `./oidcFailure.ts` maps both provenances -- ours and jose's -- to a stage and an operator hint. For a long time the two routes' comments claimed the set was exactly the five thrown here, and a live callback failing with jose's `ERR_JOSE_GENERIC` proved otherwise at the cost of a debug session.
+ * The failure classes are NOT a closed set, and it matters that this is said plainly: jose's own coded errors flow through these throw sites unchanged, because each provider's catch arm forwards `e.code` for any `Error` carrying one. `./oidcFailure.ts` maps both provenances -- ours and jose's -- to a stage and an operator hint.
  *
  * It THROWS rather than returning a result union: each provider's existing catch arm already maps a `code`-carrying `Error` to `{ success: false, error: { code } }`, so the collapse changes no public type.
  *
@@ -25,9 +25,9 @@ export interface DecryptAndVerifyOptions {
 
 export const defaultOptions: DecryptAndVerifyOptions = {
   /**
-   * Parsed lazily, ON READ, rather than at module-evaluation time. A malformed `IDENTITY_PROVIDER_DECRYPTION_JWKS` used to throw a bare `SyntaxError` at IMPORT time, outside any `try`, so it could never reach `getIdTokenClaims`'s catch and could never carry a `code`. Every read happens inside that `try`, so the misconfiguration now surfaces as a coded failure like the other two.
+   * Parsed lazily, ON READ, rather than at module-evaluation time. Parsed at IMPORT time, a malformed `IDENTITY_PROVIDER_DECRYPTION_JWKS` would throw a bare `SyntaxError` outside any `try`, so it could never reach `getIdTokenClaims`'s catch and could never carry a `code`. Every read happens inside that `try`, so the misconfiguration surfaces as a coded failure like the other two.
    *
-   * Do not simplify this back into a plain property: that reinstates an uncatchable import-time crash.
+   * Do not turn this into a plain property: that reinstates an uncatchable import-time crash.
    */
   get privateEncryptionJWKSet(): Array<jose.JWK> {
     try {
@@ -42,9 +42,9 @@ export const defaultOptions: DecryptAndVerifyOptions = {
   /**
    * A getter, not a plain property. The providers read this per call; a plain property would evaluate it once at module load.
    *
-   * Do not simplify this back into a plain property: that converts a per-call read into an import-time snapshot, and the misconfiguration then surfaces frozen rather than as read.
+   * Do not turn this into a plain property: that converts a per-call read into an import-time snapshot, and the misconfiguration then surfaces frozen rather than as read.
    *
-   * FAILS CLOSED when unset, like {@link audience} and {@link issuer} below, and for a related but distinct reason. This line used to read `constants.IDENTITY_PROVIDER_JWKS_URI!`, and that non-null assertion was simply FALSE: `$lib/server/constants` flattens the value with `?? ''`, so an unset variable is an empty string, not `undefined`, and the `!` silenced a check that would have caught it. The consequence was not a bypass but an illegible failure -- `new URL('')` throws Node's `TypeError` with `code: 'ERR_INVALID_URL'`, a code that names neither this variable nor the fact that it is a configuration fault, and which arrives at the callback's log indistinguishable from any other malformed url in the process.
+   * FAILS CLOSED when unset, like {@link audience} and {@link issuer} below, and for a related but distinct reason. `$lib/server/constants` flattens the value with `?? ''`, so an unset variable is an empty string, not `undefined`, and a `!` non-null assertion would hide exactly that case. The consequence would not be a bypass but an illegible failure -- `new URL('')` throws Node's `TypeError` with `code: 'ERR_INVALID_URL'`, a code that names neither this variable nor the fact that it is a configuration fault, and which arrives at the callback's log indistinguishable from any other malformed url in the process.
    *
    * Whitespace counts as unset, matching `requireConfigured`: `IDENTITY_PROVIDER_JWKS_URI= ` in an env file is a mistake, not a value.
    */
@@ -62,9 +62,9 @@ export const defaultOptions: DecryptAndVerifyOptions = {
   /**
    * FAILS CLOSED when unset, and that is the whole point of this getter.
    *
-   * `PUBLIC_IDENTITY_PROVIDER_CLIENT_ID` is `?? ''`-defaulted (`$lib/utils/constants`), so an unset env var yields `''`, NOT `undefined`. jose treats those two differently, and the difference is an authentication bypass: it pushes `aud` onto the presence check whenever the option is `!== undefined` (so `''` still REQUIRES the claim to exist), but it guards the VALUE comparison on truthiness (`if (audience && …)`), so `''` skips the comparison entirely. Measured: a token carrying `aud=some-other-clients-id` is ACCEPTED under `{ audience: '' }` and rejected once the audience is configured. A deployment that had not set the variable therefore accepted any token the IdP minted for any relying party, with no error, no warning and no log line.
+   * `PUBLIC_IDENTITY_PROVIDER_CLIENT_ID` is `?? ''`-defaulted (`$lib/utils/constants`), so an unset env var yields `''`, NOT `undefined`. jose treats those two differently, and the difference is an authentication bypass: it pushes `aud` onto the presence check whenever the option is `!== undefined` (so `''` still REQUIRES the claim to exist), but it guards the VALUE comparison on truthiness (`if (audience && …)`), so `''` skips the comparison entirely. Measured: a token carrying `aud=some-other-clients-id` is ACCEPTED under `{ audience: '' }` and rejected once the audience is configured. Without this guard, a deployment that has not set the variable accepts any token the IdP mints for any relying party, with no error, no warning and no log line.
    *
-   * Do not "simplify" this back into a bare return: handing jose a falsy audience is indistinguishable, at the call site, from checking one.
+   * Do not "simplify" this into a bare return: handing jose a falsy audience is indistinguishable, at the call site, from checking one.
    *
    * A getter rather than a plain property so the throw happens ON READ -- inside each provider's existing `try` -- and surfaces as a coded failure like the other four. A plain property would throw at module-evaluation time, outside any `try`, and could never carry a `code`. Same rationale as {@link privateEncryptionJWKSet}.
    */
@@ -79,7 +79,7 @@ export const defaultOptions: DecryptAndVerifyOptions = {
     return audience;
   },
   /**
-   * FAILS CLOSED when unset, for exactly the reason spelled out on {@link audience} above: `IDENTITY_PROVIDER_ISSUER` is `?? ''`-defaulted, and jose's `if (issuer && …)` value comparison is skipped for `''` while the presence check still passes. Without this, an unset issuer meant any signature-valid token bound to no provider at all.
+   * FAILS CLOSED when unset, for exactly the reason spelled out on {@link audience} above: `IDENTITY_PROVIDER_ISSUER` is `?? ''`-defaulted, and jose's `if (issuer && …)` value comparison is skipped for `''` while the presence check still passes. Without this, an unset issuer accepts any signature-valid token, bound to no provider at all.
    *
    * A getter for the same reason as {@link audience}: the throw must land on read, inside the provider's `try`, so it carries a `code`.
    */
@@ -107,7 +107,7 @@ export async function decryptAndVerifyIdToken(
   const { kid } = jose.decodeProtectedHeader(idToken);
 
   // Split from a single `!privateEncryptionJWK` branch so the two failure modes are distinguishable -- by an on-call engineer and by a test. An EMPTY set is a misconfiguration (the JWKs never parsed out of the environment); a kid MISS is a key-rotation incident. Both codes are opaque failure-class identifiers and must stay that way: no JWKS contents, no configured kids, no issuer and no audience may be added to either message. The kid-miss message carries only the incoming kid, which comes from the caller's own token and is an identifier, not a secret.
-  // Do not merge these back into one branch -- the two are then indistinguishable.
+  // Do not merge these into one branch -- the two are then indistinguishable.
   const privateEncryptionJWKSet = options.privateEncryptionJWKSet;
 
   if (privateEncryptionJWKSet.length === 0) {
@@ -158,7 +158,7 @@ export async function decryptAndVerifyIdToken(
   const { plaintext } = await jose.compactDecrypt(idToken, await jose.importJWK(privateEncryptionJWK));
   const { payload } = await jose.jwtVerify(
     new TextDecoder().decode(plaintext),
-    // `[jose.customFetch]` is NOT an optimisation and must not be dropped as one. jose retrieves the key set through this hook, and its own retrieval failures carry `ERR_JOSE_GENERIC` -- the code of its BASE error class, which names no stage, no variable and no remedy. `fetchJwksLeakSafe` classifies the response before jose's two throw sites can, turning the one uncoded stage in this pipeline into `ERR_JWKS_URI_HTTP_STATUS` / `ERR_JWKS_URI_NOT_JSON` / `ERR_JWKS_URI_UNREACHABLE`, each naming `IDENTITY_PROVIDER_JWKS_URI`. Remove it and a wrong JWKS URI becomes a log line that says nothing again; see `fetchJwksLeakSafe.ts` for the session that cost.
+    // `[jose.customFetch]` is NOT an optimisation and must not be dropped as one. jose retrieves the key set through this hook, and its own retrieval failures carry `ERR_JOSE_GENERIC` -- the code of its BASE error class, which names no stage, no variable and no remedy. `fetchJwksLeakSafe` classifies the response before jose's two throw sites can, turning the one uncoded stage in this pipeline into `ERR_JWKS_URI_HTTP_STATUS` / `ERR_JWKS_URI_NOT_JSON` / `ERR_JWKS_URI_UNREACHABLE`, each naming `IDENTITY_PROVIDER_JWKS_URI`. Without it, a wrong JWKS URI produces a log line that names nothing; see `fetchJwksLeakSafe.ts`.
     jose.createRemoteJWKSet(new URL(publicSignatureJWKSetUri), { [jose.customFetch]: fetchJwksLeakSafe }),
     { audience, issuer }
   );

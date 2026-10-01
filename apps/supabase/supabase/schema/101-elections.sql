@@ -2,25 +2,35 @@
 CREATE TABLE public.elections (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id uuid NOT NULL REFERENCES public.projects (id) ON DELETE CASCADE,
+  -- Localized string `{ "<locale>": string }`.
   name jsonb,
+  -- Localized string `{ "<locale>": string }`: the abbreviated name.
   short_name jsonb,
+  -- Localized string `{ "<locale>": string }`: a longer description.
   info jsonb,
+  -- `Colors` from @openvaa/data: `{ normal, dark? }`, colour strings for the default and dark themes.
   color jsonb,
+  -- `StoredImage` from @openvaa/app-shared: storage paths in the public-assets bucket, not URLs.
   image jsonb,
+  -- Ascending display order, nulls last.
   sort_order integer,
+  -- A free-text label that tells apart objects of the same kind.
   subtype text,
+  -- A free-form JSON object, read by the frontend as `customData`.
   custom_data jsonb,
-  is_generated boolean DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
+  -- The last day of voting, after which the election counts as past.
   election_date date,
+  -- The first day of voting.
   election_start_date date,
-  -- REPURPOSED, not added. The column keeps its name and takes a NEW MEANING per the operator's section 8.2 note and D-16: it now carries which of section 6.2's three nomination flows this election runs -- whether a candidate picks a party, whether a party nominates a list, and whether the free-text branch is reachable at all. The values it used to hold are deleted, and they are not members of the type, so a row carrying one is rejected by PostgreSQL rather than stored.
-  -- `subtype` above is a DIFFERENT AXIS and is not this. The two have always been separate columns on this table; before 162-07 the frontend adapter conflated them into one property, and that term is removed in the same commit as this retype so the property means one thing from one column.
-  -- The default is the operator's own reading of which shape most projects will run, not a planner's; NOT NULL with a default is also what lets every creation path stay ignorant of this column.
+  -- Which of the three nomination flows the election runs: whether a candidate picks a party, whether a party nominates a list, and whether the free-text branch is reachable. A separate axis from `subtype`.
   election_type public.nomination_shape NOT NULL DEFAULT 'organization_list',
+  -- Whether the election can have more than one round.
   multiple_rounds boolean DEFAULT false,
+  -- The round in progress, counted from 1.
   current_round integer DEFAULT 1,
+  -- The import key bulk_import matches rows by; unique per project and unchangeable once set (500-external-id.sql).
   external_id text
 );
 
@@ -31,17 +41,25 @@ EXECUTE FUNCTION public.update_updated_at ();
 CREATE TABLE public.constituency_groups (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id uuid NOT NULL REFERENCES public.projects (id) ON DELETE CASCADE,
+  -- Localized string `{ "<locale>": string }`.
   name jsonb,
+  -- Localized string `{ "<locale>": string }`: the abbreviated name.
   short_name jsonb,
+  -- Localized string `{ "<locale>": string }`: a longer description.
   info jsonb,
+  -- `Colors` from @openvaa/data: `{ normal, dark? }`, colour strings for the default and dark themes.
   color jsonb,
+  -- `StoredImage` from @openvaa/app-shared: storage paths in the public-assets bucket, not URLs.
   image jsonb,
+  -- Ascending display order, nulls last.
   sort_order integer,
+  -- A free-text label that tells apart objects of the same kind.
   subtype text,
+  -- A free-form JSON object, read by the frontend as `customData`.
   custom_data jsonb,
-  is_generated boolean DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
+  -- The import key bulk_import matches rows by; unique per project and unchangeable once set (500-external-id.sql).
   external_id text
 );
 
@@ -52,19 +70,29 @@ EXECUTE FUNCTION public.update_updated_at ();
 CREATE TABLE public.constituencies (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id uuid NOT NULL REFERENCES public.projects (id) ON DELETE CASCADE,
+  -- Localized string `{ "<locale>": string }`.
   name jsonb,
+  -- Localized string `{ "<locale>": string }`: the abbreviated name.
   short_name jsonb,
+  -- Localized string `{ "<locale>": string }`: a longer description.
   info jsonb,
+  -- `Colors` from @openvaa/data: `{ normal, dark? }`, colour strings for the default and dark themes.
   color jsonb,
+  -- `StoredImage` from @openvaa/app-shared: storage paths in the public-assets bucket, not URLs.
   image jsonb,
+  -- Ascending display order, nulls last.
   sort_order integer,
+  -- A free-text label that tells apart objects of the same kind.
   subtype text,
+  -- A free-form JSON object, read by the frontend as `customData`.
   custom_data jsonb,
-  is_generated boolean DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
+  -- Localized string `{ "<locale>": string }` of comma-separated keywords, such as the municipalities in a regional constituency; the Supabase data provider splits it into a list.
   keywords jsonb,
+  -- The constituency this one is nested in, when elections run on different regional levels; set to null when the parent is deleted.
   parent_id uuid REFERENCES public.constituencies (id) ON DELETE SET NULL,
+  -- The import key bulk_import matches rows by; unique per project and unchangeable once set (500-external-id.sql).
   external_id text
 );
 

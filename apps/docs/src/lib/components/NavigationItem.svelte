@@ -19,7 +19,7 @@
 {#if hasChildren(item)}
   <li>
     <details open={itemActive}>
-      <summary>
+      <summary class="cursor-pointer">
         {item.title}
       </summary>
       <ul>
@@ -31,18 +31,11 @@
   </li>
 {:else}
   <li>
-    <a href={item.route} class:menu-active={itemActive} class:secondary={item.isSecondary} onclick={onLinkClick}>
+    <a
+      href={item.route}
+      class={[itemActive && 'menu-active bg-base-300 text-neutral', item.isSecondary && 'secondary']}
+      onclick={onLinkClick}>
       {item.title}
     </a>
   </li>
 {/if}
-
-<style>
-  .menu-active {
-    background-color: var(--color-base-300);
-    color: var(--color-neutral);
-  }
-  details > summary {
-    cursor: pointer;
-  }
-</style>

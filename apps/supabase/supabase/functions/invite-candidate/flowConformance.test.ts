@@ -1,17 +1,17 @@
 /**
  * Source-level conformance gate over `invite-candidate`'s authority decisions.
  *
- * ROADMAP criterion 7 asks for the two flows to be CHECKED against the § 3 matrix rather than assumed compatible with it. `162-FLOW-CONFORMANCE.md` is the written half of that check; this file is the half that runs on every build, so a later change to the gate reddens rather than quietly diverging from a document nobody re-reads.
+ * The flow's gate is checked against the role x permission matrix on every build, so a later change to the gate reddens here rather than diverging from the matrix unnoticed.
  *
- * In the shape of `identity-callback/envReadSites.test.ts`, and for the same stated reason: `index.ts` cannot be imported by vitest because it resolves `https://esm.sh/@supabase/supabase-js@2`, a Deno-only remote specifier, so the properties below are asserted against the module's SOURCE TEXT — the way this repository already gates call shapes it cannot execute. The grant WRITE is different: 162-06 extracted it into `entityGrant.ts`, which reaches no remote origin, so that half is asserted by IMPORT rather than by text. A property that can be asserted by import is better asserted that way.
+ * In the shape of `identity-callback/envReadSites.test.ts`, and for the same reason: `index.ts` cannot be imported by vitest because it resolves `https://esm.sh/@supabase/supabase-js@2`, a Deno-only remote specifier, so the properties below are asserted against the module's SOURCE TEXT, the way this repository gates call shapes it cannot execute. The grant WRITE lives in `entityGrant.ts`, which reaches no remote origin, so that half is asserted by IMPORT rather than by text. A property that can be asserted by import is better asserted that way.
  *
- * THE PERMISSION VOCABULARY IS DERIVED, NEVER TRANSCRIBED — and so are § 3.1's four grant scopes and two role levels (162-REVIEW WR-03). All three are read out of the declarative enum source at `schema/000-enums.sql`. Deriving them keeps this file from becoming a second copy of § 3.2, which is the thing phase 162 exists to end — and reading them as TEXT rather than importing the generated types is why this gate adds no workspace dependency.
+ * THE PERMISSION VOCABULARY IS DERIVED, NEVER TRANSCRIBED, and so are the four grant scopes and the two role levels. All three are read out of the declarative enum source at `schema/000-enums.sql`. Deriving them keeps this file from becoming a second copy of the matrix vocabulary, and reading them as TEXT rather than importing the generated types is why this gate adds no workspace dependency.
  *
- * WHAT THE SIZE PINS ACTUALLY GUARD (162-REVIEW WR-05). This docblock used to claim the 23-pin existed "because a vocabulary that came back empty would make every `toContain`-style membership check below pass for everything." That is the OPPOSITE of what happens: with `PERMISSIONS === []`, `expect(outside).toEqual([])` fails (every named literal becomes "outside") and `expect(PERMISSIONS).toContain('project.edit_entities')` fails too. An empty derivation reddens loudly on its own. What the pins guard is a PARTIAL derivation — a regex that still matches but stops short, so a legitimate literal reads as a non-member and the file reports a confusing "permission outside the enum" rather than the parse failure that caused it. The pin turns that into one named red at the source.
+ * WHAT THE SIZE PINS GUARD. An empty derivation reddens loudly on its own: with `PERMISSIONS === []`, `expect(outside).toEqual([])` fails (every named literal becomes "outside") and `expect(PERMISSIONS).toContain('project.edit_entities')` fails too. What the pins guard is a PARTIAL derivation, a regex that still matches but stops short, so a legitimate literal reads as a non-member and the file reports a confusing "permission outside the enum" rather than the parse failure that caused it. The pin turns that into one named red at the source.
  *
- * AND "BEFORE" IS NOW TRUE. The pins used to sit in peer `it` blocks, which vitest runs alongside the assertions they claim to precede rather than as a precondition of them; a failed derivation did not stop the rest of the file executing. The `beforeAll` below throws, which aborts the whole describe — so every membership assertion in this file genuinely runs only on a vocabulary that parsed. The named `it` guards are kept for readability, and because a thrown `beforeAll` reports the abort rather than the invariant.
+ * The pins are enforced in `beforeAll`, which throws and so aborts the whole describe: every membership assertion in this file runs only on a vocabulary that parsed. The named `it` guards stay for readability, and because a thrown `beforeAll` reports the abort rather than the invariant.
  *
- * TIGHTENED BY 162-18. Until then this file asserted that the gate was PRESENT but nothing about its answer being USED: replacing the refusal condition with a constant false left every test here green. 162-18 added four assertions — the membership check is not vacuous, the gate is the shared module's and not a local shadow, the refusal is conditioned on the gate's answer and precedes the service-role client, and the RPC binds to the parameter names `user_can` declares — and recorded a planted control reddening each one in `evidence/162-18/flow-controls.txt`.
+ * Beyond the gate's presence, the file asserts that its answer is USED: the membership check is not vacuous, the gate is the shared module's and not a local shadow, the refusal is conditioned on the gate's answer and precedes the service-role client, and the RPC binds to the parameter names `user_can` declares.
  */
 
 import { readFileSync } from 'node:fs';
@@ -58,12 +58,19 @@ function deriveRoleVocabulary(sql: string): Array<string> {
  * PostgREST resolves an RPC by its NAMED arguments, so these names — not the argument order — are the contract `callerMayOnProject` has to meet.
  */
 function deriveUserCanParameters(sql: string): Array<string> {
+  return deriveUserCanDeclarations(sql).map((entry) => entry.match(/^([a-z_][a-z0-9_]*)/i)?.[1] ?? '');
+}
+
+/**
+ * Each parameter declaration of `public.user_can`, whitespace-normalised: the comma-separated entries between the function name and `) RETURNS`.
+ */
+function deriveUserCanDeclarations(sql: string): Array<string> {
   const block = sql.match(/CREATE OR REPLACE FUNCTION public\.user_can\s*\(([\s\S]*?)\)\s*RETURNS/);
   if (!block) return [];
   return block[1]
     .split(',')
-    .map((entry) => entry.trim().match(/^([a-z_][a-z0-9_]*)/i)?.[1])
-    .filter((name): name is string => typeof name === 'string');
+    .map((entry) => entry.trim().replace(/\s+/g, ' '))
+    .filter((entry) => entry.length > 0);
 }
 
 /** The shape of a permission literal wherever one appears in TypeScript source. */
@@ -72,27 +79,27 @@ const PERMISSION_SHAPED = /\b(?:feedback|account|project|entity|nomination)\.[a-
 /**
  * `index.ts` with its comments removed, for the assertions that must measure CODE.
  *
- * 162-REVIEW WR-02: `PERMISSION_SHAPED` applied to the raw file text matches PROSE as readily as source. Of the three `project.edit_entities` occurrences in `invite-candidate/index.ts`, two are in the comment block above the gate and only the third is executable, so the "not vacuous" guard below would have stayed green against a module that named no permission in code at all — and a guard satisfiable by a comment guards nothing.
+ * `PERMISSION_SHAPED` applied to the raw file text matches PROSE as readily as source. Of the three `project.edit_entities` occurrences in `invite-candidate/index.ts`, two are in the comment block above the gate and only the third is executable, so a "not vacuous" guard over the raw text would stay green against a module that named no permission in code at all, and a guard satisfiable by a comment guards nothing.
  *
  * The NEGATIVE check (`names no permission literal outside the derived enum`) keeps reading the raw text on purpose: a permission named only in prose, and not a member of the 23, is a documentation defect this file should still catch.
  */
 const CODE_ONLY = INDEX_SOURCE.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 
 /**
- * Claim keys the retired authority model used. A module reading any of these is reading a vocabulary the access-token hook no longer emits, which fails OPEN in the worst case: `payload.user_roles || []` evaluates to the empty list and the gate silently denies everyone, or worse, a fallback admits them.
+ * Claim keys outside the `grants` vocabulary the access-token hook emits. A module reading any of these reads a key no token carries, which fails OPEN in the worst case: `payload.user_roles || []` evaluates to the empty list and the gate silently denies everyone, or worse, a fallback admits them.
  */
 const RETIRED_CLAIM_KEYS = ['user_roles', 'user_role_type', 'role_scope_type'] as const;
 
 /**
- * § 3.1's grant vocabulary: the four scopes and the two role levels — DERIVED, like the permission vocabulary above, and for the same reason.
+ * The grant vocabulary: the four scopes and the two role levels, DERIVED like the permission vocabulary above and for the same reason.
  *
- * 162-REVIEW WR-03: these two were hand-transcribed (`['global', 'account', 'project', 'entity']`, `['admin', 'editor']`) in the file whose own headline invariant is THE PERMISSION VOCABULARY IS DERIVED, NEVER TRANSCRIBED. The grant-shape assertion below checked against the transcribed copy, so a change to `public.grant_scope_type` or `public.grant_role_type` could not redden it, and `deriveScopeVocabulary` — which already existed — was used only once, in an unrelated test. Both are now read out of `schema/000-enums.sql`, the one place either vocabulary is written down.
+ * Both are read out of `schema/000-enums.sql`, the one place either vocabulary is written down, so a change to `public.grant_scope_type` or `public.grant_role_type` reddens the grant-shape assertion below, which a transcribed copy could not.
  */
 const GRANT_SCOPES = deriveScopeVocabulary(ENUM_SOURCE);
 const GRANT_ROLES = deriveRoleVocabulary(ENUM_SOURCE);
 
 describe('invite-candidate flow conformance', () => {
-  // THE PRECONDITION, ENFORCED AS ONE (162-REVIEW WR-05). Throwing here aborts the describe, so no membership assertion below can run against a vocabulary that failed to parse -- which is what the docblock's "BEFORE any membership assertion uses it" has always claimed and what peer `it` guards could not deliver.
+  // THE PRECONDITION, ENFORCED AS ONE. Throwing here aborts the describe, so no membership assertion below can run against a vocabulary that failed to parse, which peer `it` guards cannot deliver.
   beforeAll(() => {
     if (PERMISSIONS.length !== 23) {
       throw new Error(
@@ -111,8 +118,8 @@ describe('invite-candidate flow conformance', () => {
     expect(PERMISSIONS).toContain('project.edit_entities');
   });
 
-  it('derived § 3.1’s grant vocabulary too — four scopes and two role levels, from the same enum source (162-REVIEW WR-03)', () => {
-    // SIZE only, exactly as `PERMISSIONS` is pinned at 23 above — deliberately NOT the member names, which would be the second transcription this file exists to end. The members come out of `000-enums.sql` at run time; these two lines are what proves the parse reached both declarations rather than returning the empty list its `if (!block) return []` arm produces on a miss, and the VALUES are bound where they are used, against the derived lists (`toContain('entity')` / `toContain('editor')` at the grant-shape assertion below).
+  it('derived the grant vocabulary too — four scopes and two role levels, from the same enum source', () => {
+    // SIZE only, exactly as `PERMISSIONS` is pinned at 23 above — deliberately NOT the member names, which would be a second transcription of the vocabulary. The members come out of `000-enums.sql` at run time; these two lines are what proves the parse reached both declarations rather than returning the empty list its `if (!block) return []` arm produces on a miss, and the VALUES are bound where they are used, against the derived lists (`toContain('entity')` / `toContain('editor')` at the grant-shape assertion below).
     expect(GRANT_SCOPES).toHaveLength(4);
     expect(GRANT_ROLES).toHaveLength(2);
   });
@@ -130,7 +137,7 @@ describe('invite-candidate flow conformance', () => {
   it('names at least one permission literal IN CODE, so the membership assertion below is not vacuous', () => {
     // Guards a membership check over an EMPTY match list, which passes for every source: without this, a gate that named no permission at all would satisfy the test below.
     //
-    // Measured over `CODE_ONLY` rather than the raw text (162-REVIEW WR-02): two of this module's three `project.edit_entities` occurrences are prose in the comment above the gate, so the raw form was satisfiable by a comment.
+    // Measured over `CODE_ONLY` rather than the raw text: two of this module's three `project.edit_entities` occurrences are prose in the comment above the gate, so the raw form is satisfiable by a comment.
     const named = Array.from(CODE_ONLY.matchAll(PERMISSION_SHAPED)).map((m) => m[0]);
     expect(named.length).toBeGreaterThan(0);
     expect(named).toContain('project.edit_entities');
@@ -143,14 +150,14 @@ describe('invite-candidate flow conformance', () => {
   });
 
   it.each(RETIRED_CLAIM_KEYS)('reads no retired claim key: %s', (key) => {
-    // THE KEY, NOT ONE ACCESS FORM OF IT (162-REVIEW WR-01). These three assertions used to be `not.toContain('payload.' + key)` and `not.toContain("['" + key + "']")`, and the token `payload` does not occur anywhere in this module -- the gate has read no claim at all since CR-05 -- so they could only redden if a future edit reintroduced that exact variable NAME as well as that exact access form. `const claims = decodeTokenPayload(jwt); claims.user_roles` slipped through untouched. Since the module contains none of the three key names in any form, binding the bare name costs nothing and is the assertion the test's own title makes.
+    // THE KEY, NOT ONE ACCESS FORM OF IT. An assertion on one access form (`'payload.' + key`, `"['" + key + "']"`) reddens only if a future edit reintroduces that exact variable NAME as well as that exact access form, so `const claims = decodeTokenPayload(jwt); claims.user_roles` would pass it. The module contains none of the three key names in any form, so binding the bare name costs nothing and is the assertion the test's own title makes.
     expect(INDEX_SOURCE).not.toContain(key);
   });
 
-  it('asks the database for the authority decision rather than re-deriving it (SPEC section 9, 162-REVIEW CR-05)', () => {
-    // The gate this replaced read `payload.grants` and matched (scope, role) pairs in TypeScript -- a second copy of the matrix that admitted an account admin of ANY account and refused a ProjectEditor the matrix grants project.edit_entities. The decision is now one `user_can` call through the caller's own client.
+  it('asks the database for the authority decision rather than re-deriving it', () => {
+    // A TypeScript gate that reads `payload.grants` and matches (scope, role) pairs is a second copy of the matrix that can drift from it: resolving which account owns the project, for one, is a reach rule only the database holds. The decision is one `user_can` call through the caller's own client, and the last three assertions refuse the copy.
     //
-    // AND THE GATE'S ANSWER IS THE SOLE INPUT TO THE REFUSAL (162-REVIEW CR-02). Asserting the call TEXT is present, and locating the assignment by its `const mayInvite = await callerMayOnProject(callerClient` PREFIX, constrains nothing about what else contributes to `mayInvite`: `const mayInvite = (await callerMayOnProject(...)) || body.debugBypass === true` satisfies both (`await X || Y` parses as `(await X) || Y`, so the prefix still matches), names no retired pattern, and leaves all 33 tests across both flow gates green while any authenticated caller posting `{"debugBypass": true}` creates candidates in any project. The WHOLE assignment statement is therefore bound, terminator included, and the number of assignments to the gate variable is pinned at one so a later re-assignment cannot widen it either.
+    // THE GATE'S ANSWER IS THE SOLE INPUT TO THE REFUSAL. Asserting the call TEXT is present, and locating the assignment by its `const mayInvite = await callerMayOnProject(callerClient` PREFIX, constrains nothing about what else contributes to `mayInvite`: `const mayInvite = (await callerMayOnProject(...)) || body.debugBypass === true` satisfies both (`await X || Y` parses as `(await X) || Y`, so the prefix still matches) while any authenticated caller posting `{"debugBypass": true}` creates candidates in any project. The WHOLE assignment statement is therefore bound, terminator included, and the number of assignments to the gate variable is pinned at one so a later re-assignment cannot widen it either.
     expect(INDEX_SOURCE).toContain("callerMayOnProject(callerClient, projectId, 'project.edit_entities')");
     expect(INDEX_SOURCE).toMatch(
       /\n\s*const mayInvite = await callerMayOnProject\(callerClient, projectId, 'project\.edit_entities'\);\n/
@@ -162,16 +169,16 @@ describe('invite-candidate flow conformance', () => {
   });
 
   it('takes its gate from the shared callerAuthority module and declares none of its own', () => {
-    // Guards a LOCAL SHADOW of the helper (162-REVIEW CR-05): a same-named function declared in index.ts would satisfy every call-shape assertion here while answering whatever it likes.
+    // Guards a LOCAL SHADOW of the helper: a same-named function declared in index.ts would satisfy every call-shape assertion here while answering whatever it likes.
     expect(INDEX_SOURCE).toContain("import { callerMayOnProject } from './callerAuthority.ts';");
     expect(INDEX_SOURCE).not.toMatch(/\bfunction\s*\*?\s*callerMayOnProject\b/);
     expect(INDEX_SOURCE).not.toMatch(/\b(?:const|let|var)\s+callerMayOnProject\b/);
   });
 
   it('refuses on the answer of the gate, with a 403 it RETURNS, before the service-role client exists', () => {
-    // Guards an IGNORED answer (162-REVIEW CR-05): before 162-18, a refusal condition replaced with a constant false left this whole file green, because nothing asserted the gate's result reached the refusal.
+    // Guards an IGNORED answer: a refusal condition replaced with a constant false would leave every call-shape assertion green, so the gate's result is asserted to reach the refusal.
     //
-    // AND A DISCARDED ONE (162-REVIEW CR-01). Until this assertion the refusal was pinned as five independent `indexOf` hits asserted to occur IN ORDER, which says nothing about the branch terminating the request: deleting the one word `return` in front of `new Response` -- the 403 constructed, thrown away, execution falling straight through to the service-role client below -- left all 17 tests here green while a caller holding no grant at all created a candidate, was issued an auth user and was written an entity grant. That is the likelier regression than the constant-false condition 162-18 already caught, and lexical ordering cannot see it. The refusal is therefore matched as ONE CONTIGUOUS BLOCK whose `new Response` is `return`ed, and the service-role client is required to come after the block ENDS rather than after it begins.
+    // AND A DISCARDED ONE. Independent `indexOf` hits asserted to occur IN ORDER say nothing about the branch terminating the request: deleting the one word `return` in front of `new Response` constructs the 403, throws it away and falls straight through to the service-role client below, so a caller holding no grant at all creates a candidate, is issued an auth user and is written an entity grant. Lexical ordering cannot see that. The refusal is therefore matched as ONE CONTIGUOUS BLOCK whose `new Response` is `return`ed, and the service-role client is required to come after the block ENDS rather than after it begins.
     const refusal = INDEX_SOURCE.match(/if \(!mayInvite\) \{\s*return new Response\(([\s\S]*?)\);\s*\}/);
     expect(refusal).not.toBeNull();
     expect(refusal![1]).toContain('status: 403');
@@ -192,7 +199,7 @@ describe('invite-candidate flow conformance', () => {
     expect(adminAt).toBeGreaterThan(gateAt);
   });
 
-  it('rolls back the invited auth user as well as the candidate, and treats a failed link as fatal (162-REVIEW WR-07)', () => {
+  it('rolls back the invited auth user as well as the candidate, and treats a failed link as fatal', () => {
     expect(INDEX_SOURCE).toContain('supabaseAdmin.auth.admin.deleteUser(userId)');
     // Both failure arms after the invite was sent use the full rollback.
     expect(INDEX_SOURCE.split('await rollbackInvite(supabaseAdmin').length - 1).toBe(2);
@@ -200,20 +207,20 @@ describe('invite-candidate flow conformance', () => {
     expect(INDEX_SOURCE).toContain('Failed to link the invited user to the candidate record');
   });
 
-  it('names the invited identity as a CANDIDATE entity at the one write site in the flow (D-20, D-21)', () => {
-    // THIS IS THE FLOW'S OWN CALL SITE, and until 162-REVIEW CR-03 nothing in this file reached it. The two tests below drive `writeEntityGrant` with arguments THIS FILE constructs, so they measure `entityGrant.ts` in isolation -- which `entityGrant.test.ts` already does, more completely -- and say nothing about what `index.ts` passes. Rewriting the call to `entityType: 'organization', entityId: projectId` left all 17 tests here green while every invited candidate was granted `(entity, organization, <projectId>)`: a grant row pointing at a target that is not an organization at all, and an invited principal unable to edit their own record. The sibling gate `identity-callback/flowConformance.test.ts` already carried this shape (`writes its grant through the extracted module rather than inline`); it was simply not applied here.
+  it('names the invited identity as a CANDIDATE entity at the one write site in the flow', () => {
+    // THE FLOW'S OWN CALL SITE. The two MODULE-LEVEL tests below drive `writeEntityGrant` with arguments THIS FILE constructs, so they measure `entityGrant.ts` in isolation, which `entityGrant.test.ts` does more completely, and say nothing about what `index.ts` passes. A call rewritten to `entityType: 'organization', entityId: projectId` would pass them while every invited candidate was granted `(entity, organization, <projectId>)`: a grant row pointing at a target that is not an organization at all, and an invited principal unable to edit their own record. The sibling gate `identity-callback/flowConformance.test.ts` carries the same shape (`writes its grant through the extracted module rather than inline`).
     //
-    // `162-FLOW-CONFORMANCE.md` invite row 13 cites THIS test for § 3.1 row 5 `(entity, candidate, id, editor)`.
+    // The grant shape is the candidate editor's, `(entity, candidate, id, editor)`.
     expect(INDEX_SOURCE).toMatch(
       /await writeEntityGrant\(supabaseAdmin, \{\s*userId: inviteData\.user\.id,\s*entityType: 'candidate',\s*entityId: candidate\.id\s*\}\)/
     );
-    // One write site, and one entity-type literal on the whole path -- D-20's "the entity type is named HERE and nowhere else in this function".
+    // One write site, and one entity-type literal on the whole path: the entity type is named at the call site that says which entity was created, and nowhere else in this function.
     expect(INDEX_SOURCE.split('await writeEntityGrant(').length - 1).toBe(1);
     expect(INDEX_SOURCE.split(/entityType:/).length - 1).toBe(1);
   });
 
-  it('MODULE-LEVEL, not flow-level: writeEntityGrant writes a grant shape that is one of § 3.1’s eight rows', async () => {
-    // Arguments below are constructed by THIS TEST, so what is measured is `entityGrant.ts` in isolation and NOT the invite flow -- see the call-site assertion above, which is what `162-FLOW-CONFORMANCE.md` row 13 rests on (162-REVIEW CR-03). Retained rather than deleted because the scope and role the module hard-codes are the half of § 3.1 row 5 the call site does not carry.
+  it('MODULE-LEVEL, not flow-level: writeEntityGrant writes a grant shape that is one of the eight user types’ grant rows', async () => {
+    // Arguments below are constructed by THIS TEST, so what is measured is `entityGrant.ts` in isolation and NOT the invite flow; the call-site assertion above covers the flow. This test stays because the scope and role the module hard-codes are the half of the candidate editor's grant shape the call site does not carry.
     const written: Array<Record<string, unknown>> = [];
     const client = {
       from: () => ({
@@ -229,17 +236,17 @@ describe('invite-candidate flow conformance', () => {
       entityId: '00000000-0000-0000-0000-0000000000bb'
     });
     expect(written).toHaveLength(1);
-    // The two halves are independent (162-REVIEW WR-03, IN-02): the first binds the SCHEMA -- `entity` and `editor` are still members of `public.grant_scope_type` and `public.grant_role_type` as `000-enums.sql` declares them -- and the second binds the MODULE to those exact values. `expect(GRANT_SCOPES).toContain(written[0].scope)` was strictly implied by the line below it and proved nothing.
+    // The two halves are independent: the first binds the SCHEMA (`entity` and `editor` are members of `public.grant_scope_type` and `public.grant_role_type` as `000-enums.sql` declares them) and the second binds the MODULE to those exact values. Asserting that `GRANT_SCOPES` contains `written[0].scope` would be implied by the line below it and prove nothing.
     expect(GRANT_SCOPES).toContain('entity');
     expect(GRANT_ROLES).toContain('editor');
     expect(written[0].scope).toBe('entity');
     expect(written[0].role).toBe('editor');
   });
 
-  it('MODULE-LEVEL, not flow-level: writeEntityGrant takes the entity type as a VALUE rather than as a literal (D-20, D-21)', async () => {
+  it('MODULE-LEVEL, not flow-level: writeEntityGrant takes the entity type as a VALUE rather than as a literal', async () => {
     // The same call with a different entity type must write a different discriminator. A write site carrying the literal would answer identically for both and the parameterisation would be decorative.
     //
-    // Arguments below are constructed by THIS TEST (162-REVIEW CR-03): this is the parameterisation half, and the flow's own use of it is pinned by the call-site assertion above.
+    // Arguments below are constructed by THIS TEST: this is the parameterisation half, and the flow's own use of it is pinned by the call-site assertion above.
     const written: Array<Record<string, unknown>> = [];
     const client = {
       from: () => ({
@@ -280,9 +287,17 @@ describe('invite-candidate flow conformance', () => {
   it('binds the gate RPC to the parameter names user_can declares in the schema', async () => {
     // Guards an OUTAGE rather than a widening: PostgREST resolves an RPC by argument NAME, so a parameter renamed in the schema without the helper would make every invite fail closed, and nothing else in this file would notice.
     //
-    // AND THE ARGUMENT VALUES, NOT JUST THEIR NAMES (162-REVIEW WR-04). Until then this test asserted the key SET matched the declaration and that `p_scope` was ANY of the four grant scopes -- satisfied by `'global'`, `'account'` or `'entity'` alike -- while `p_target_id` and `p_permission` were never asserted at all. A helper asking `user_can('global', <projectId>, …)` denies every caller and turns every invite into a silent outage, which is precisely the failure this test's own comment says it exists to catch. All three arguments are now asserted exactly, and `p_scope` is additionally required to be a member of the DERIVED scope vocabulary so a scope dropped from `public.grant_scope_type` reddens here too.
+    // AND THE ARGUMENT VALUES, NOT JUST THEIR NAMES. A key-set check with `p_scope` asserted to be ANY of the four grant scopes is satisfied by `'global'`, `'account'` or `'entity'` alike, and a helper asking `user_can('global', <projectId>, …)` denies every caller and turns every invite into a silent outage, which is precisely the failure this test exists to catch. All three arguments are therefore asserted exactly, and `p_scope` is additionally required to be a member of the DERIVED scope vocabulary so a scope dropped from `public.grant_scope_type` reddens here too.
+    //
+    // The fourth parameter, `p_target_type`, names the entity table at entity scope and defaults to NULL, so a project-scope caller omits it and PostgREST still resolves the call. The three names the gate sends are therefore the parameters declared WITHOUT a default, and the fourth is asserted to carry `DEFAULT NULL` so that omitting it stays legal.
+    const declarations = deriveUserCanDeclarations(AUTH_FUNCTIONS_SOURCE);
     const declared = deriveUserCanParameters(AUTH_FUNCTIONS_SOURCE);
-    expect(declared).toHaveLength(3);
+    expect(declared).toEqual(['p_scope', 'p_target_id', 'p_permission', 'p_target_type']);
+    expect(declarations[3]).toMatch(/^p_target_type public\.entity_type DEFAULT NULL$/i);
+    const required = declarations
+      .filter((entry) => !/\bDEFAULT\b/i.test(entry))
+      .map((entry) => entry.match(/^([a-z_][a-z0-9_]*)/i)?.[1]);
+    expect(required).toEqual(['p_scope', 'p_target_id', 'p_permission']);
     const calls: Array<{ fn: string; args: Record<string, unknown> }> = [];
     const client: RpcClient = {
       rpc: (fn, args) => {
@@ -298,7 +313,7 @@ describe('invite-candidate flow conformance', () => {
       p_target_id: '00000000-0000-0000-0000-0000000000cc',
       p_permission: 'project.edit_entities'
     });
-    expect(Object.keys(calls[0].args).sort()).toEqual([...declared].sort());
+    expect(Object.keys(calls[0].args).sort()).toEqual([...required].sort());
     expect(GRANT_SCOPES).toContain(calls[0].args.p_scope);
   });
 });

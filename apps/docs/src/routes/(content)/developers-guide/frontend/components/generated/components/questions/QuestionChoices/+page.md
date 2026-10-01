@@ -4,7 +4,7 @@ Display the buttons used for answering Likert and other single choice questions.
 
 The buttons are rendered as `<input type="radio">` elements contained inside a `<fieldset>`. Consider passing an `aria-labelledby` pointing to the question or an `aria-label`.
 
-The buttons for ordinal questions are by default displayed horizontally and with a line connecting them, while categorical ones are displayed vertically using a larger text size and without a line. These can be overriden by setting the relevant properties. The vertical layout should always be used for choices with long labels.
+The buttons for ordinal questions are by default displayed horizontally and with a line connecting them, while categorical ones are displayed vertically using a larger text size and without a line. These can be overridden by setting the relevant properties. The vertical layout should always be used for choices with long labels.
 
 The radio buttons' behaviour is as follows when using a pointer or touch device:
 
@@ -24,12 +24,14 @@ The same component can also be used to display the answers of the voter and anot
 
 ### Properties
 
-- `name`: The `name` of the radio group. Usually the question's id
-- `choices`: The `key`-`label` pairs of the radio buttons
+- `question`: The question to answer or display. A `MultipleChoiceCategoricalQuestion` uses checkboxes, any other question radio buttons.
+- `choices`: The choices to show, in place of the question's own. Required for a `BooleanQuestion`.
 - `disabled`: Whether to disable all the buttons. @default `false`
 - `mode`: The same component can be used both for answering the questions and displaying answers. @default `'answer'`
 - `selectedId`: The initially selected key of the radio group.
+- `selectedIds`: The initially selected keys in checkbox mode.
 - `otherSelected`: The answer key of the entity in display mode.
+- `otherSelectedIds`: The answer keys of the entity in display mode, in checkbox mode.
 - `otherLabel`: The label for the entity's answer. Be sure to supply this if `otherSelected` is supplied.
 - `showLine`: Whether to show a line connecting the choices. @default `true` for ordinal questions, and `false` for categorical questions
 - `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default `false`

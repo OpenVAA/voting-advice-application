@@ -1,9 +1,9 @@
 /**
  * Entity grant write tests.
  *
- * The grant row is the whole of a newly minted identity's authority: the access-token hook projects `public.grants` and nothing else, so an identity whose grant write failed can do nothing at all and the failure surfaces later as an unexplained wall of denials. These cases state the three properties that follow -- the row written, the table written to, and that a failure ABORTS rather than being logged -- and they state them as OBSERVED BEHAVIOUR of an importable module, which is the reason the write was extracted from the Edge Function entry point at all. `index.ts` resolves remote Deno specifiers and cannot be imported by vitest, so an inline insert there could only ever be asserted against source text.
+ * The grant row is the whole of a newly minted identity's authority: the access-token hook projects `public.grants` and nothing else, so an identity whose grant write failed can do nothing at all and the failure surfaces later as an unexplained wall of denials. These cases state the three properties that follow -- the row written, the table written to, and that a failure ABORTS rather than being logged -- and they state them as OBSERVED BEHAVIOUR of an importable module. `index.ts` resolves remote Deno specifiers and cannot be imported by vitest, so an insert written inline there could only be asserted against source text.
  *
- * ALL FOUR ENTITY TYPES ARE EXERCISED, and only one of them has a caller today. That gap is deliberate and accepted: parameterising the write is what wave 2 was asked for, and building the creation paths for organizations, factions and alliances is the sign-up phase's scope by name. The gap is bounded HERE -- three of the module's four branches are exercised by this file and by nothing else until a second call site exists.
+ * ALL FOUR ENTITY TYPES ARE EXERCISED, although only candidates have a caller: organizations, factions and alliances have no creation path that writes a grant. Three of the module's four branches are therefore exercised by this file and by nothing else until a second call site exists.
  *
  * The client is a hand-built fake rather than a mocking library, in the shape `candidateRecord.test.ts` established: it records the table it was asked for and the row it was handed, and answers `insert()` with a value each case controls.
  */
@@ -76,7 +76,7 @@ describe('writeEntityGrant', () => {
     expect(recorded.tables).toEqual(['grants']);
   });
 
-  // THE ABORT, observed rather than inferred from source text. The invite path used to log this failure and return success, with a comment saying the invite email had already been sent -- which is precisely why it matters: a candidate who receives an invite and holds no grant has no access at all.
+  // THE ABORT, observed rather than inferred from source text. A path that logged this failure and returned success would leave a candidate who received an invite holding no grant, and so no access at all.
   it('throws when the insert reports an error, carrying the client-reported text', async () => {
     const { client } = recordingClient({ error: { message: 'duplicate key value violates unique constraint' } });
 
@@ -85,10 +85,13 @@ describe('writeEntityGrant', () => {
     ).rejects.toThrow('duplicate key value violates unique constraint');
   });
 
-  // IDEMPOTENT (162-REVIEW WR-06): the grant already existing is the state the caller wanted, so the unique violation on the grants key is success. That is what lets identity-callback write the grant on every login and repair an identity whose first grant write failed.
+  // IDEMPOTENT: the grant already existing is the state the caller wanted, so the unique violation on the grants key is success. That is what lets identity-callback write the grant on every login and repair an identity whose first grant write failed.
   it('treats a unique violation (the grant already exists) as success', async () => {
     const { client, recorded } = recordingClient({
-      error: { message: 'duplicate key value violates unique constraint "grants_user_scope_target_role_key"', code: '23505' }
+      error: {
+        message: 'duplicate key value violates unique constraint "grants_user_scope_target_role_key"',
+        code: '23505'
+      }
     });
 
     await expect(

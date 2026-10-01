@@ -1,7 +1,7 @@
 /**
- * `SendEmailResultSchema` — the measured return shape of the `send-email` Edge Function.
+ * `SendEmailResultSchema` — the return shape of the `send-email` Edge Function.
  *
- * Covers all three branches the function can return (the 200 success, the 500 all-failed, and the dry run) plus one unknown-key rejection per nesting level.
+ * Covers the three branches the function can return (the 200 success, the 500 all-failed and the dry run), the two members every branch carries, and one unknown-key rejection per nesting level.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -36,7 +36,6 @@ describe('SendEmailResultSchema', () => {
   });
 
   it('accepts the DRY-RUN branch, which omits `sent` and `failed` entirely', () => {
-    // The dry-run return is `{ success, dry_run, results }` with no counts at all, which is why `sent` and `failed` are optional rather than required. A schema that required them would reject every dry run.
     const result = SendEmailResultSchema.safeParse({
       success: true,
       dry_run: true,
@@ -46,21 +45,44 @@ describe('SendEmailResultSchema', () => {
   });
 
   it('accepts an empty `results` array', () => {
-    expect(SendEmailResultSchema.safeParse({ sent: 0, failed: 0, results: [] }).success).toBe(true);
+    expect(
+      SendEmailResultSchema.safeParse({ success: true, sent: 0, failed: 0, dry_run: false, results: [] }).success
+    ).toBe(true);
+  });
+
+  it('rejects a payload with no `success` — every branch returns it', () => {
+    const result = SendEmailResultSchema.safeParse({ sent: 0, failed: 0, dry_run: false, results: [] });
+    expect(result.success).toBe(false);
+    expect(result.success === false && result.error.issues[0]?.path).toEqual(['success']);
+  });
+
+  it('rejects a payload with no `dry_run` — every branch returns it', () => {
+    const result = SendEmailResultSchema.safeParse({ success: true, sent: 0, failed: 0, results: [] });
+    expect(result.success).toBe(false);
+    expect(result.success === false && result.error.issues[0]?.path).toEqual(['dry_run']);
   });
 
   it('LEVEL 1: rejects an unknown key at the top level', () => {
-    const result = SendEmailResultSchema.safeParse({ sent: 1, failed: 0, results: [], bogusTopLevel: 1 });
+    const result = SendEmailResultSchema.safeParse({
+      success: true,
+      sent: 1,
+      failed: 0,
+      dry_run: false,
+      results: [],
+      bogusTopLevel: 1
+    });
     expect(result.success).toBe(false);
     expect(result.success === false && result.error.issues[0]?.message).toMatch(/Unrecognized key/);
     expect(result.success === false && JSON.stringify(result.error.issues)).toMatch(/bogusTopLevel/);
   });
 
   it('LEVEL 2: rejects an unknown key inside a `results` entry', () => {
-    // Top-level strictness alone does NOT reach into an array element: measured at zod 4.3.6, a top-level-only strict schema parses this input with SUCCESS and silently strips `bogusResultKey`.
+    // Top-level strictness alone does not reach into an array element: at zod 4.3.6 a top-level-only strict schema parses this input and silently strips `bogusResultKey`.
     const result = SendEmailResultSchema.safeParse({
+      success: true,
       sent: 1,
       failed: 0,
+      dry_run: false,
       results: [{ user_id: 'u1', email: 'a@example.test', status: 'sent', bogusResultKey: 1 }]
     });
     expect(result.success).toBe(false);
@@ -68,8 +90,10 @@ describe('SendEmailResultSchema', () => {
     expect(result.success === false && result.error.issues[0]?.path).toEqual(['results', 0]);
   });
 
-  it('rejects a `status` outside the measured `sent` / `failed` pair', () => {
+  it('rejects a `status` outside the `sent` / `failed` pair', () => {
     const result = SendEmailResultSchema.safeParse({
+      success: true,
+      dry_run: false,
       results: [{ user_id: 'u1', email: 'a@example.test', status: 'queued' }]
     });
     expect(result.success).toBe(false);
@@ -77,10 +101,18 @@ describe('SendEmailResultSchema', () => {
   });
 
   it('rejects a `results` entry with no `user_id` — every push site in the function sets one', () => {
-    expect(SendEmailResultSchema.safeParse({ results: [{ email: 'a@example.test' }] }).success).toBe(false);
+    const result = SendEmailResultSchema.safeParse({
+      success: true,
+      dry_run: false,
+      results: [{ email: 'a@example.test' }]
+    });
+    expect(result.success).toBe(false);
+    expect(result.success === false && result.error.issues[0]?.path).toEqual(['results', 0, 'user_id']);
   });
 
   it('rejects a missing `results` — all three branches return it', () => {
-    expect(SendEmailResultSchema.safeParse({ sent: 0, failed: 0 }).success).toBe(false);
+    const result = SendEmailResultSchema.safeParse({ success: true, sent: 0, failed: 0, dry_run: false });
+    expect(result.success).toBe(false);
+    expect(result.success === false && result.error.issues[0]?.path).toEqual(['results']);
   });
 });

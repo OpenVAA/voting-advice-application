@@ -1,11 +1,11 @@
 /**
  * ConstituenciesGenerator — foundation generator for `constituencies`.
  *
- * Schema: `project_id` is required; `keywords` (jsonb) and `parent_id` (self-FK, ON DELETE SET NULL) are optional. The self-FK is expressed as a ref object `parent: { external_id }` that `_bulk_upsert_record` resolves server side via the `constituencies` relationship (migration line 2640). The ref object is NOT a column on the table — it is a stripped-before-RPC sentinel shape (supabaseAdminClient.ts:184-185 / migration line 2625-2634).
+ * Schema: `project_id` is required; `keywords` (jsonb) and `parent_id` (self-FK, ON DELETE SET NULL) are optional. The self-FK is expressed as a ref object `parent: { external_id }` that `_bulk_upsert_record` resolves server side to `parent_id`, through the `WHEN 'constituencies'` arm of its relationship block. The ref object is NOT a column on the table: `bulkImport` passes it through unchanged and the RPC resolves it.
  *
  * The generator declares the return type as `TablesInsert<'constituencies'>[]` because that is the public contract consumers type against; internally we widen rows to include the `parent` sentinel and cast back at return. The cast is load-bearing: bulk_import DOES accept the `parent` ref object, but the generated `TablesInsert` type does not model it (the shape comes from Supabase's row-type introspection, which only sees columns).
  *
- * apply — see ElectionsGenerator.ts.
+ * Follows the generator pattern described in ElectionsGenerator.ts.
  *
  * Cycle-avoidance: each generated row may optionally receive a `parent` ref pointing at a row EARLIER in the same batch (`rows.length > 0` + backward-only index). The self-FK is not modeled on `fixed[]` rows — users who need a parent relationship on hand-authored rows can add `parent: { external_id }` directly; the writer's strip logic treats sentinel refs on fixed rows the same as on generated rows (they pass through to bulk_import unchanged).
  */
@@ -49,8 +49,7 @@ export class ConstituenciesGenerator {
         external_id: `${externalIdPrefix}con_${String(i).padStart(2, '0')}`,
         project_id: projectId,
         name: { en: faker.location.state() },
-        sort_order: i,
-        is_generated: true
+        sort_order: i
       };
 
       // Optional self-FK: ~30% of generated rows adopt a prior row as parent.
@@ -64,7 +63,7 @@ export class ConstituenciesGenerator {
       rows.push(row);
     }
 
-    // The `parent` sentinel is stripped by bulk_import (see supabaseAdminClient.ts line 184-185); consumers of this generator's output see it as well-typed `TablesInsert<'constituencies'>[]` with an extra pass-through field.
+    // The `parent` ref is resolved to `parent_id` by the bulk_import RPC; consumers of this generator's output see it as well-typed `TablesInsert<'constituencies'>[]` with an extra pass-through field.
     return rows as Array<TablesInsert<'constituencies'>>;
   }
 }

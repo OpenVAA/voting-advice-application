@@ -18,11 +18,22 @@ export type PromptConfig = {
  * Configuration options for the condensation API.
  * Note: llmModel and modelTPMLimit are configured via the LLMProvider instance.
  *
- * @example const llmProvider = new LLMProvider({
- *   provider: 'openai', apiKey: 'your-api-key', modelConfig: { primary: 'gpt-4o', tpmLimit: 30000 } });
+ * @example
+ * ```ts
+ * const llmProvider = new LLMProvider({
+ *   provider: 'openai',
+ *   apiKey: 'your-api-key',
+ *   modelConfig: { primary: 'gpt-4o', tpmLimit: 30000 }
+ * });
  *
  * const apiConfig: CondensationAPIOptions = {
- *   llmProvider, language: 'en', runId: '123', maxCommentsPerGroup: 1000, createVisualizationData: true };
+ *   llmProvider,
+ *   language: 'en',
+ *   runId: '123',
+ *   maxCommentsPerGroup: 1000,
+ *   createVisualizationData: true
+ * };
+ * ```
  */
 export type CondensationAPIOptions = CommonLLMParams & {
   maxCommentsPerGroup: number;

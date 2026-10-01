@@ -56,7 +56,7 @@ Shows the opinion questions for the candidate to answer.
    */
   function getSavedAnswer(question: AnyQuestionVariant): Answer | undefined {
     const localizedAnswer = userData.savedCandidateData?.answers?.[question.id];
-    // Use the canonical emptiness predicate, not a truthiness test (which discarded a saved `false`) nor a bare null check, so this stays consistent with candidateContext's completion gating. `isEmptyValue(undefined)` is `true`, so the first clause already covers a missing `localizedAnswer`; the second is unreachable at runtime and exists only to narrow the type, since the predicate returns a plain `boolean`.
+    // Use the canonical emptiness predicate, not a truthiness test (which would discard a saved `false`) nor a bare null check, so this stays consistent with candidateContext's completion gating. `isEmptyValue(undefined)` is `true`, so the first clause already covers a missing `localizedAnswer`; the second is unreachable at runtime and exists only to narrow the type, since the predicate returns a plain `boolean`.
     if (isEmptyValue(localizedAnswer?.value) || localizedAnswer == null) return undefined;
     const { value, info } = localizedAnswer;
     const answer = {
@@ -144,7 +144,9 @@ Shows the opinion questions for the candidate to answer.
               {@const elections = getElectionsToShow({ question, elections: candCtx.selectedElections })}
               {@const answer = getSavedAnswer(question)}
 
-              <div class="grid-line-x gap-lg grid" data-testid="candidate-questions-card">
+              <div
+                class="gap-lg before:border-md relative grid before:absolute before:top-[-1.8rem] before:right-0 before:left-0 before:content-[''] first:before:content-none"
+                data-testid="candidate-questions-card">
                 <HeadingGroup class="text-center">
                   {#if appSettings.elections.showElectionTags && elections.length}
                     <PreHeading>
@@ -194,14 +196,3 @@ Shows the opinion questions for the candidate to answer.
     </div>
   {/if}
 </MainContent>
-
-<style lang="postcss">
-  @reference "../../../../tailwind-theme.css";
-  /**
-   * Add a line between grid rows. Apply to grid cells.
-   * NB: before: is a valid Tailwind prefix.
-   */
-  .grid-line-x {
-    @apply before:border-md relative before:absolute before:top-[-1.8rem] before:right-0 before:left-0 before:content-[''] first:before:content-none;
-  }
-</style>

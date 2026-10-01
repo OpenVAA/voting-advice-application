@@ -2,6 +2,7 @@ import { expect, test as setup } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { TEST_CANDIDATE_EMAIL, TEST_CANDIDATE_EXTERNAL_ID, TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials';
@@ -50,9 +51,9 @@ async function waitForLoginForm(page: Page, loginRoute: string, emailTestId: str
  */
 setup('register + authenticate as base candidate', async ({ page }) => {
   // Candidate app data loading can be slow; increase timeout
-  setup.setTimeout(90000);
+  setup.setTimeout(TIMEOUTS.testMax);
 
-  // Ensure the auth directory exists. `recursive: true` is idempotent: it does NOT throw if the directory already exists (Node fs docs), so the prior `if (!existsSync) mkdirSync` conditional is redundant. Replacing with the unconditional mkdir clears playwright/no-conditional-in-test without changing semantics.
+  // Ensure the auth directory exists. `recursive: true` is idempotent: it does NOT throw if the directory already exists (Node fs docs), so no existence check is needed, which also keeps the setup body free of the conditional playwright/no-conditional-in-test forbids.
   const authDir = path.dirname(authFile);
   fs.mkdirSync(authDir, { recursive: true });
 

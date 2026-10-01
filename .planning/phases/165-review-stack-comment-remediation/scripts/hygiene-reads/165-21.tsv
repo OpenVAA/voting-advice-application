@@ -1,0 +1,12 @@
+apps/supabase/supabase/migrations/00001_initial_schema.sql	f2d91e951475636e4af050b540886d40de19ed6d	165-21
+apps/supabase/supabase/schema/100-tenancy.sql	9c68b76f1880e1232ba17ae6f08d13a712fac90b	165-21
+apps/supabase/supabase/schema/101-elections.sql	7837960c97687fd9d4a7cb7a2ff6e2c185b02cb2	165-21
+apps/supabase/supabase/schema/102-entities.sql	c2435f696725d1a1db543e138745288fe5d33699	165-21
+apps/supabase/supabase/schema/103-questions.sql	aeaa331b286a1aa86f67a6471e7988cb83a7000e	165-21
+apps/supabase/supabase/schema/104-nominations.sql	15796329d6082689aa1a59d11e6bd575f40a70f3	165-21
+apps/supabase/supabase/schema/105-answers.sql	b15731ea0335d81971218a045b7b3ec922c65187	165-21
+apps/supabase/supabase/schema/106-app-settings.sql	bb15c37485f1d61c052d43fff9b88d86f0134490	165-21
+apps/supabase/supabase/schema/107-feedback.sql	b6c9986a3eb438fd7baa9a220cced9474e7fb743	165-21
+apps/supabase/supabase/schema/108-admin-jobs.sql	316859a6933a9207c037b7fc574f3cbb402bb303	165-21
+apps/supabase/supabase/schema/300-auth-tables.sql	d2b706d0f50870367b3ae0f7f28aaabf0971904f	165-21
+apps/supabase/supabase/schema/400-storage.sql	ac5cae5e914a34c9583864a6531f8df918aba80b	165-21

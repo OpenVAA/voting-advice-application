@@ -12,7 +12,7 @@ A component for expanders that contain a title and some content. Use the `varian
 
 ### Properties
 
-- `title`: Title is seen as the text in the expander's visible part, and it is mandatory. Title will also be used as a 'aria-label' for a checkbow on which the expander operates on.
+- `title`: Title is seen as the text in the expander's visible part, and it is mandatory. Title will also be used as the `aria-label` of the checkbox on which the expander operates on.
 - `iconColor`: The color of the next-icon that is used in the expander. Default: `'primary'`
 - `iconPos`: The position of the next-icon that is used in the expander. Default: `'text'`
 - `titleClass`: Variable with which to configure the expanders title if no variants are in use.
@@ -23,10 +23,10 @@ A component for expanders that contain a title and some content. Use the `varian
 
 You should not try to use a variant and customize at the same time.
 
-### Events
+### Callbacks
 
-- `expand`: Fired when the expander is expanded.
-- `collapse`: Fired when the expander is collapsed.
+- `onExpand`: Triggered when the expander is expanded.
+- `onCollapse`: Triggered when the expander is collapsed.
 
 ### Usage
 

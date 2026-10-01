@@ -46,29 +46,61 @@ class DummyTreeBuilder {
  * Takes in an array of comments and a configuration object and orchestrates the condensation process using these inputs.
  * Outputs a list of arguments and generates operation tree visualization data for debugging and analysis.
  *
- * You can use the condenser either as a standalone class or simply by using the `handleQuestion` function defined in `main.ts`.
+ * You can use the condenser either as a standalone class or simply by using the `handleQuestion` function defined in `api.ts`.
  * A standalone run provides minimal but not trivial customization options. Namely, you can run a process for only finding cons, whereas `handleQuestion` automatically runs both pros and cons.
  *
  * The data needed for visualizing a run through the condenser will be saved to `data/operationTrees` if the flag `createVisualizationData` is set to `true`.
  *
  * You can choose the condensation run you want to visualize from the `data/operationTrees` folder in  the visualization UI.
  *
- * @example import { Condenser } from '@openvaa/argument-condensation'; import { SingleChoiceCategoricalQuestion, DataRoot, QUESTION_TYPE } from '@openvaa/data'; import { OpenAIProvider } from '@openvaa/llm'; import type { CondensationRunInput } from '@openvaa/argument-condensation';
+ * @example
+ * ```ts
+ * import { Condenser } from '@openvaa/argument-condensation';
+ * import { QUESTION_TYPE, SingleChoiceCategoricalQuestion } from '@openvaa/data';
+ * import { LLMProvider } from '@openvaa/llm';
  *
  * const question = new SingleChoiceCategoricalQuestion({
- *   data: { id: 'q2', type: QUESTION_TYPE.SingleChoiceCategorical, name: 'Public Transport Improvement', customData: {}, categoryId: 'cat1', choices: [ { id: 'choice1', customData: {} }, { id: 'choice2', customData: {} }
+ *   data: {
+ *     id: 'q2',
+ *     type: QUESTION_TYPE.SingleChoiceCategorical,
+ *     name: 'Public Transport Improvement',
+ *     customData: {},
+ *     categoryId: 'cat1',
+ *     choices: [
+ *       { id: 'choice1', label: 'Invest in new subway lines' },
+ *       { id: 'choice2', label: 'Increase bus frequency' }
  *     ]
- *   }, root: dataRoot // Your DataRoot instance });
+ *   },
+ *   root: dataRoot // Your DataRoot instance
+ * });
  *
  * const comments = [
- *   { id: 'c1', entityId: 'cand1', entityAnswer: 'choice1', text: 'New subways are essential.' }, { id: 'c2', entityId: 'cand2', entityAnswer: 'choice2', text: 'Buses are more flexible.' } ];
+ *   { id: 'c1', entityId: 'cand1', entityAnswer: 'choice1', text: 'New subways are essential.' },
+ *   { id: 'c2', entityId: 'cand2', entityAnswer: 'choice2', text: 'Buses are more flexible.' }
+ * ];
  *
  * const condenser = new Condenser({
- *   question, comments, options: { llmProvider: new OpenAIProvider({ apiKey: 'your-api-key' }), language: 'en', outputType: 'categoricalPros', processingSteps: [ { operation: 'map', params: { batchSize: 20 } }, { operation: 'reduce', params: { denominator: 5 } } ], llmModel: 'gpt-4o', modelTPMLimit: 30000, runId: 'my-run-id', createVisualizationData: true
+ *   question,
+ *   comments,
+ *   options: {
+ *     llmProvider: new LLMProvider({
+ *       provider: 'openai',
+ *       apiKey: 'your-api-key',
+ *       modelConfig: { primary: 'gpt-4o', tpmLimit: 30000 }
+ *     }),
+ *     language: 'en',
+ *     outputType: 'categoricalPros',
+ *     processingSteps: [
+ *       { operation: 'MAP', params: { condensationPromptId: 'map_categoricalPros_condensation_v1', batchSize: 20 } },
+ *       { operation: 'REDUCE', params: { coalescingPromptId: 'reduce_categoricalPros_coalescing_v1', denominator: 5 } }
+ *     ],
+ *     runId: 'my-run-id',
+ *     createVisualizationData: true
  *   }
  * });
  *
  * const result = await condenser.run();
+ * ```
  */
 export class Condenser {
   private runId: string;
@@ -133,6 +165,7 @@ export class Condenser {
 
     // Execute plan steps sequentially - each step transforms the data for the next
     let currentData: Array<VAAComment> | Array<Argument> | Array<Array<Argument>> = this.input.comments; // Init with comments
+    let lastStepArguments: CondensationStepResult['arguments'] = []; // `validatePlan` guarantees at least one step
     let previousNodeMapping: Array<Array<string>> = []; // Start with empty mapping - first step will create root nodes
 
     // Execute each step in the plan sequentially (although the steps themselves may contain parallel operations)
@@ -141,6 +174,7 @@ export class Condenser {
 
       // Update current data for next step: the output of the current step becomes the input for the next step
       currentData = stepResult.arguments;
+      lastStepArguments = stepResult.arguments;
       // The node IDs from the completed step become the potential parents for the next step.
       // Each node ID is wrapped in its own array to represent a distinct data source that the next step can group.
       previousNodeMapping = stepResult.nodeIds?.map((id) => [id]) ?? [];
@@ -160,8 +194,11 @@ export class Condenser {
       { inputTokens: 0, outputTokens: 0, totalTokens: 0 }
     );
 
+    // A pipeline ending in MAP or ITERATE_MAP leaves one argument list per batch, one level deep; `flat()` leaves a flat list as is
+    const finalArguments: Array<Argument> = lastStepArguments.flat();
+
     // Set final arguments in tree and save operation tree to JSON file
-    this.treeBuilder.setFinalArguments(currentData as Array<Argument>);
+    this.treeBuilder.setFinalArguments(finalArguments);
 
     // Works in both test and production environments
     const treeFilePath = path.join(process.cwd(), 'data/operationTrees', `${this.runId}.json`);
@@ -171,7 +208,7 @@ export class Condenser {
     return {
       runId: this.runId,
       condensationType: this.input.options.outputType,
-      data: { arguments: currentData as Array<Argument> },
+      data: { arguments: finalArguments },
       llmMetrics: {
         processingTimeMs: totalDuration,
         nLlmCalls: this.allPromptCalls.length,
@@ -342,7 +379,7 @@ export class Condenser {
       const callOperationId = `refine_${nodeId}`;
       this.latencyTracker.start(callOperationId);
 
-      // Make LLM call and process response using the new provider (object generation with schema)
+      // Make the LLM call and process the response (object generation with schema)
       const llmResult = await this.input.options.llmProvider.generateObject({
         schema: ResponseWithArgumentsSchema,
         messages,
@@ -595,7 +632,7 @@ export class Condenser {
     const parallelFactor = this.input.options.parallelBatches; // How many batches to process in parallel?
     const argumentLists = normalizeArgumentLists(argumentData);
 
-    // COMMENT ALLOCATION STRATEGY Ensure we have enough comment batches for all argument lists
+    // Comment allocation: ensure there are enough comment batches for all argument lists
     const availableComments = this.input.comments;
     const numArgumentLists = argumentLists.length;
     const availableCommentBatches = Math.floor(availableComments.length / params.batchSize);
@@ -669,7 +706,7 @@ export class Condenser {
       parallelBatches = MODEL_DEFAULTS.PARALLEL_BATCHES
     } = config;
 
-    // STAGE 1: CREATE TREE NODES Create a tree node for each item we'll process
+    // Stage 1: create a tree node for each item we'll process
     const nodeIds: Array<string> = [];
     for (let i = 0; i < items.length; i++) {
       const nodeId = this.treeBuilder.createNode(operation, stepIndex, i);
@@ -707,7 +744,7 @@ export class Condenser {
       this.treeBuilder.startNode(nodeId);
     }
 
-    // STAGE 2: PREPARE LLM INPUTS Transform each item into an LLM input using operation-specific logic
+    // Stage 2: transform each item into an LLM input using operation-specific logic
     const llmInputs = await Promise.all(
       items.map(async (item, i) => {
         const templateVariables = prepareTemplateVars(item, i);
@@ -724,7 +761,7 @@ export class Condenser {
       })
     );
 
-    // STAGE 3: EXECUTE PARALLEL LLM CALLS WITH VALIDATION The llmProvider handles all retry logic (for both network and validation errors) internally.
+    // Stage 3: execute the LLM calls in parallel. The llmProvider handles all retry logic (for both network and validation errors) internally.
     // We provide the inputs and a validation contract, and the provider returns fully parsed and validated objects.
     let results: Array<LLMObjectGenerationResult<ResponseWithArguments>>;
 
@@ -752,7 +789,7 @@ export class Condenser {
       );
     }
 
-    // STAGE 4: PROCESS RESULTS AND COLLECT METRICS All responses are valid because they have been validated against the contract by the provider.
+    // Stage 4: process the results and collect metrics. All responses are valid because the provider validated them against the contract.
     const finalArguments: Array<Array<Argument>> = new Array(items.length);
     const allPromptCalls: Array<PromptCall> = [];
 

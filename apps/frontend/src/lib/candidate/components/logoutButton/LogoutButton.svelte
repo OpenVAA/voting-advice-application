@@ -8,7 +8,6 @@ Accesses `CandidateContext`.
 ### Properties
 
 - `logoutModalTimer`: The duration in seconds a logout modal will wait before automatically logging the user out. Default: `30`
-- `stayOnPage`: Whether pressing the button takes the user to the login page or not. Default: `false`
 - Any valid properties of a `Button` component
 
 ### Settings
@@ -24,13 +23,12 @@ Accesses `CandidateContext`.
 
 <script lang="ts">
   import { log } from '@openvaa/app-shared';
-  import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
   import { TimedModal } from '$lib/components/modal/timed';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import type { LogoutButtonProps } from './LogoutButton.type';
 
-  let { stayOnPage = false, logoutModalTimer = 30, ...restProps }: LogoutButtonProps = $props();
+  let { logoutModalTimer = 30, ...restProps }: LogoutButtonProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -38,7 +36,7 @@ Accesses `CandidateContext`.
 
   // Read reactive context getters via candCtx.X so updates after data load propagate; destructuring one would capture the mount-time snapshot (CLAUDE.md Context Destructuring Rule).
   const candCtx = getCandidateContext();
-  const { getRoute, logout, t } = candCtx;
+  const { logout, t } = candCtx;
   // appSettings is a reactive accessor — read via candCtx.X, never destructure.
   const appSettings = $derived(candCtx.appSettings);
 
@@ -68,9 +66,6 @@ Accesses `CandidateContext`.
       log.error(`Error logging out: ${e?.message}`);
     });
     timedModalRef?.closeModal();
-    if (!stayOnPage) {
-      await goto(getRoute.current('CandAppLogin'), { invalidateAll: true });
-    }
   }
 </script>
 
@@ -89,7 +84,6 @@ Accesses `CandidateContext`.
   onTimeout={handleLogout}
   title={t('candidateApp.logoutModal.title')}
   timerDuration={logoutModalTimer}>
-  <!-- <div class="notification max-w-md text-center"> -->
   {#if candCtx.unansweredOpinionQuestions && candCtx.unansweredRequiredInfoQuestions?.length === 0}
     <p>
       {t('candidateApp.logoutModal.questionsLeft', {
@@ -110,7 +104,6 @@ Accesses `CandidateContext`.
   <p>
     {t('candidateApp.logoutModal.ingress', { timeLeft })}
   </p>
-  <!-- </div> -->
   {#snippet actions()}
     <div class="flex w-full flex-col items-center">
       <Button

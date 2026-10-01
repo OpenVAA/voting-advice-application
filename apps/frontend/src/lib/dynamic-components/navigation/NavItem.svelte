@@ -27,7 +27,7 @@ Accesses `LayoutContext`.
   import { getContext } from 'svelte';
   import { Icon } from '$lib/components/icon';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { concatClass } from '$lib/utils/components';
+  import { cn, concatClass } from '$lib/utils/components';
   import { NAV_GROUP_CONTEXT_KEY } from './navGroupContext';
   import type { NavItemProps } from './NavItem.type';
 
@@ -38,21 +38,19 @@ Accesses `LayoutContext`.
   // reason: Top-level getContext read — NOT inside an element attribute (Svelte issue #7549). Static structural detection: NavItem's containment in a NavGroup is fixed at component creation.
   const inNavGroup = getContext(NAV_GROUP_CONTEXT_KEY) === true;
 
-  // Create classes
-  const classes = $derived.by(() => {
-    let c =
-      'nav-item flex items-center gap-md px-10 py-md min-h-touch min-w-touch w-full !text-neutral hover:bg-base-200 active:bg-base-200';
-    if (!icon) {
-      // This corresponds to the width of an icon (24/16 rem) and the gap between the icon and the text (md = 10/16 rem)
-      c += ' pl-[2.75rem]';
-    }
-    return c;
-  });
+  const classes = $derived(
+    cn(
+      'flex items-center gap-md px-10 py-md min-h-touch min-w-touch w-full !text-neutral hover:bg-base-200 active:bg-base-200',
+      // The width of an icon (24/16 rem) plus the gap between the icon and the text (md = 10/16 rem)
+      !icon && 'pl-[2.75rem]',
+      disabled && '!text-secondary pointer-events-none hover:bg-transparent'
+    )
+  );
 </script>
 
 {#snippet content()}
   <!--
-    `disabled` is non-standard on `<a>`. On the `<a>` branch we set `aria-disabled="true"` and drop `href` so the link is observably disabled (WCAG 2.1 AA + Playwright `toBeDisabled()`-compatible). On the `<button>` branch we keep native `disabled`. CSS targets both via `[disabled]` and `[aria-disabled="true"]`.
+    `disabled` is non-standard on `<a>`. On the `<a>` branch we set `aria-disabled="true"` and drop `href` so the link is observably disabled (WCAG 2.1 AA + Playwright `toBeDisabled()`-compatible). On the `<button>` branch we keep native `disabled`.
   -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <svelte:element
@@ -82,14 +80,3 @@ Accesses `LayoutContext`.
 {:else}
   {@render content()}
 {/if}
-
-<style lang="postcss">
-  @reference "../../../tailwind-theme.css";
-  /* The class prefixes are valid even though linter flags them */
-  .nav-item[disabled],
-  .nav-item:disabled,
-  .nav-item[aria-disabled='true'],
-  .nav-item.disabled {
-    @apply !text-secondary pointer-events-none hover:bg-transparent;
-  }
-</style>

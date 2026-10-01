@@ -1,5 +1,5 @@
-import type { Database } from '@openvaa/supabase-types';
 import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
+import type { SupabaseDatabase } from '$lib/api/adapters/supabase/supabaseAdapter.type';
 import type { DPReturnType } from '$lib/api/base/dataProvider.type';
 import type { CandidateUserData } from '$lib/api/base/dataWriter.type';
 
@@ -7,7 +7,7 @@ import type { CandidateUserData } from '$lib/api/base/dataWriter.type';
 declare global {
   namespace App {
     interface Locals {
-      supabase: SupabaseClient<Database>;
+      supabase: SupabaseClient<SupabaseDatabase>;
       safeGetSession(): Promise<{
         session: Session | null;
         user: User | null;

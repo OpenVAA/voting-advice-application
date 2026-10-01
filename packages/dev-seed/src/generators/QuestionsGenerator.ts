@@ -1,14 +1,13 @@
 /**
  * QuestionsGenerator — content generator for the `questions` table.
  *
- * Schema: `project_id`, `type` (enum question_type), and `category_id` FK are required; `choices` JSONB is required for singleChoiceOrdinal / singleChoiceCategorical / multipleChoiceCategorical types (validate_question_choices trigger, migration lines 645–689).
+ * Schema: `project_id`, `type` (enum question_type), and `category_id` FK are required; `choices` JSONB is required for singleChoiceOrdinal / singleChoiceCategorical / multipleChoiceCategorical types (the validate_question_choices trigger in `103-questions.sql`).
  *
  * Ref shape: `category: { external_id }` → resolve_external_ref (bulk_import) converts to `category_id` at write time. Attached AFTER the base row fields — matches the canonical pattern (refs added inline but only if upstream refs are populated).
  *
- * Subdimensions: per "subdimension / MISSING_VALUE logic stays in
- * @openvaa/matching". This generator emits shape-valid JSONB choices only; it does NOT annotate subdimension loadings. The latent-factor model extends this with richer question type distributions; the generator itself just exercises the plumbing.
+ * Subdimensions: subdimension and MISSING_VALUE logic stays in @openvaa/matching. This generator emits shape-valid JSONB choices only; it does NOT annotate subdimension loadings. The latent-factor model extends this with richer question type distributions; the generator itself just exercises the plumbing.
  *
- * apply — see ElectionsGenerator.ts for the canonical-pattern rationale.
+ * Follows the generator pattern described in ElectionsGenerator.ts.
  *
  * Default count = 4: enough questions to exercise the answer emitter & matching across a few dimensions; `i % 4` rotation ensures coverage of the 4 representative question_type variants (`singleChoiceOrdinal`, `boolean`, `singleChoiceCategorical`, `text`).
  */
@@ -30,7 +29,7 @@ type QuestionRow = Omit<TablesInsert<'questions'>, 'category_id' | 'type'> & {
 };
 
 /**
- * Standard Likert choices (5-point scale). The DB trigger validate_question_choices requires ≥2 entries each with a string `id` key; see migration lines 645–689.
+ * Standard Likert choices (5-point scale). The DB trigger validate_question_choices (`103-questions.sql`) requires ≥2 entries each with a string `id` key.
  */
 const LIKERT_5: Array<{ id: string; label: { en: string }; normalizableValue: number }> = [
   { id: '1', label: { en: 'Strongly disagree' }, normalizableValue: 1 },
@@ -53,7 +52,7 @@ const CATEGORICAL_3: Array<{ id: string; label: { en: string } }> = [
 /**
  * A mix of question types, so the answer emitter exercises every branch. Rotate deterministically (via `i % types.length`) so seeded runs are reproducible. The chosen 4 variants cover: ordinal choice, boolean, categorical choice, and free-text — the main emitter code paths (see emitters/answers.ts).
  */
-const PHASE_56_TYPE_ROTATION = [
+const TYPE_ROTATION = [
   'singleChoiceOrdinal',
   'boolean',
   'singleChoiceCategorical',
@@ -86,24 +85,22 @@ export class QuestionsGenerator {
 
     const n = fragment.count ?? 0;
     for (let i = 0; i < n; i++) {
-      const type = PHASE_56_TYPE_ROTATION[i % PHASE_56_TYPE_ROTATION.length];
+      const type = TYPE_ROTATION[i % TYPE_ROTATION.length];
 
       const row: QuestionRow = {
         external_id: `${externalIdPrefix}q_${String(i).padStart(3, '0')}`,
         project_id: projectId,
         // `type` is NOT NULL on the Insert type; `category_id` is also NOT NULL on TablesInsert<'questions'>, but bulk_import resolves it from the `category` ref sentinel attached below — QuestionRow relaxes the type.
         type,
-        // `name` is the JSONB question-text column per the migration (lines 605–629); other DataObject tables use the same `name` localized-string convention.
+        // `name` is the JSONB question-text column (`103-questions.sql`); other DataObject tables use the same `name` localized-string convention.
         name: { en: faker.lorem.sentence({ min: 6, max: 12 }) + '?' },
         allow_open: true,
         required: true,
-        sort_order: i,
-        is_generated: true
+        sort_order: i
         // category_id injected by bulk_import from the `category` ref below.
       };
 
-      // Choices required for ordinal/categorical types. Narrow via a typed tuple so TS recognizes the categorical branch for all types in PHASE_56_TYPE_ROTATION plus any future additions (e.g.
-      // multipleChoiceCategorical when a template enables it).
+      // Choices required for ordinal/categorical types. Narrow via a typed tuple so TS recognizes the categorical branch for all types in TYPE_ROTATION plus any future additions (e.g. multipleChoiceCategorical when a template enables it).
       const CATEGORICAL_TYPES: ReadonlyArray<Enums<'question_type'>> = [
         'singleChoiceCategorical',
         'multipleChoiceCategorical'

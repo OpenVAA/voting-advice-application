@@ -1,14 +1,9 @@
 /**
  * `QuestionChoices` — the class set on each choice input, per branch.
  *
- * The display-mode dimming of an option that NEITHER the voter NOR the entity picked used to live in two stacked pseudo-class selectors in the component's scoped `<style>` block — the least readable place in the file, and the one place the rest of the component could not see. It now lives in a named const applied through `cn` next to the markup it governs.
+ * In `display` mode an option that neither the voter nor the entity picked is drawn as a small dot, and the entity's answer, when the voter did not pick it, as a filled dot inside a ring. Both are class sets applied through `cn`, so these cases assert the final class set of each input.
  *
- * These cases pin the observable outcome of that move: the final class set of each input. They were written against the UNMODIFIED component first, which split them cleanly in two —
- *
- *  - the FULL-SIZE assertions were GREEN before, because those tokens were already in the class attribute and the move does not touch them;
- *  - the DIMMED assertions were RED before, because those declarations came from a CSS rule and the tokens were simply absent from `classList`.
- *
- * Case 5 deserves its own note. `cn` merges, so the dimmed const OVERRIDES the base sizes rather than sitting alongside them. That is a property of the library, not of how the strings were partitioned, so it is asserted directly rather than assumed: a dimmed input must carry `h-16` and must NOT still carry `h-32`.
+ * `cn` merges, so the dot's classes replace the base sizes rather than sitting alongside them: a dimmed input carries `h-16` and not `h-32`.
  *
  * Assertions read `classList`, not the raw attribute, because the merge makes no promise about token order.
  */
@@ -33,11 +28,17 @@ const QuestionChoices = (await import('./QuestionChoices.svelte')).default;
 /**
  * The tokens the full-size (undimmed) branch must carry, and ONLY those that actually discriminate between the branches.
  *
- * `border-lg` is deliberately NOT in this list even though it is in both base class strings: it is a border WIDTH and the dimmed const's `border-none` is a border STYLE, so the two target different CSS properties and both correctly survive the merge. That is also what the scoped rule did before this move — `@apply border-none` set the style and left the width declaration standing. The coexistence is pinned by its own case below rather than smuggled in here as an absence.
+ * `border-lg` is not in this list although it is in both base class strings: it is a border width and the dot's `border-none` is a border style, so both survive the merge. A separate case below asserts that.
  */
 const FULL_SIZE = ['h-32', 'w-32', 'outline-4'] as const;
-/** The tokens the dimmed branch must carry — the class set the two removed scoped rules applied. */
+/** The tokens the dimmed branch must carry. */
 const DIMMED = ['m-8', 'h-16', 'w-16', 'border-none', 'bg-(--line-bg)', 'outline-2'] as const;
+/** The tokens the entity's answer must carry, which take effect only while the input is disabled and unchecked. */
+const ENTITY_PICKED = [
+  'disabled:not-checked:border-neutral',
+  'disabled:not-checked:bg-neutral',
+  'disabled:not-checked:shadow-[inset_0_0_0_4px_var(--color-base-100)]'
+] as const;
 
 /**
  * A question fixture.
@@ -102,13 +103,11 @@ describe('QuestionChoices — display mode, single choice', () => {
   it('case 1: dims only the option neither the voter nor the entity selected', () => {
     mountSubject({ mode: 'display', selectedId: 'A', otherSelected: 'B', otherLabel: 'Candidate' });
 
-    expectClasses(input('A'), { present: FULL_SIZE, absent: DIMMED });
+    expectClasses(input('A'), { present: FULL_SIZE, absent: [...DIMMED, ...ENTITY_PICKED] });
 
-    expectClasses(input('B'), { present: FULL_SIZE, absent: DIMMED });
-    // The retained `input.entitySelected:disabled:not(:checked)` CSS rule is that class's only consumer, so the directive has to stay on the input for the rule to keep working.
-    expect([...input('B').classList]).toContain('entitySelected');
+    expectClasses(input('B'), { present: [...FULL_SIZE, ...ENTITY_PICKED], absent: DIMMED });
 
-    expectClasses(input('C'), { present: DIMMED, absent: FULL_SIZE });
+    expectClasses(input('C'), { present: DIMMED, absent: [...FULL_SIZE, ...ENTITY_PICKED] });
   });
 
   it('case 3: dims EVERY option when nothing at all is selected', () => {
@@ -161,8 +160,8 @@ describe('QuestionChoices — display mode, multiple choice', () => {
       otherLabel: 'Candidate'
     });
 
-    expectClasses(input('A'), { present: FULL_SIZE, absent: DIMMED });
-    expectClasses(input('B'), { present: FULL_SIZE, absent: DIMMED });
+    expectClasses(input('A'), { present: FULL_SIZE, absent: [...DIMMED, ...ENTITY_PICKED] });
+    expectClasses(input('B'), { present: [...FULL_SIZE, ...ENTITY_PICKED], absent: DIMMED });
 
     expectClasses(input('C'), { present: [...DIMMED, 'rounded-sm'], absent: FULL_SIZE });
   });

@@ -9,7 +9,7 @@
 
 ### Settings
 
-- `access.underMaintanance`: If `true`, the app will display a maintenance page instead of any content.
+- `access.underMaintenance`: If `true`, the app will display a maintenance page instead of any content.
 - `analytics.platform`: Affects whether the analytics service is loaded.
 -->
 
@@ -62,10 +62,10 @@
 
   // TODO[Svelte 5]: See if this and others like it can be handled in a centralized manner in the DataContext. I.e. by subscribing to individual parts of $page.data.
   //
-  // Validation is a pure `$derived` over the already-resolved loader data (`+layout.ts` awaits every data field before returning — see the policy comment at `+layout.ts` lines 7-12). No `Promise.all`, no `.then()`, no microtask boundary between `$effect` and `$state` writes. This shape removes the Svelte 5 SSR+hydration reactivity race that stuck the previous `$effect` + promise-chain pattern at <Loading /> on full page loads.
-  // A project that is not open for voters returns anon zero elections and zero constituencies by design: the anon read policies are gated on `project_open_for_voters` (162-08 Q4).
+  // Validation is a pure `$derived` over the already-resolved loader data (`+layout.ts` awaits every data field before returning; see its policy comment). No `Promise.all`, no `.then()`, no microtask boundary between `$effect` and `$state` writes, so SSR and hydration cannot race and leave a full page load at <Loading />.
+  // A project that is not open for voters returns zero elections and zero constituencies to anonymous readers by design: the anon read policies are gated on `project_open_for_voters`.
   //
-  // The adapter maps that state to `access.voterApp = false`, and `(voters)/+layout.svelte` then renders MaintenancePage with `dynamic.voterAppNotAccessible`. Without allowing empty data here, validity rejected the empty collections first and EVERY route rendered ErrorMessage, including both login pages, so nobody could log in before a project opened (162.1 D-16).
+  // The adapter maps that state to `access.voterApp = false`, and `(voters)/+layout.svelte` then renders MaintenancePage with `dynamic.voterAppNotAccessible`. Empty data is therefore valid here: rejecting it would render ErrorMessage on every route, both login pages included, so nobody could log in before a project opens.
   //
   // Read through the `appSettings` alias above, never destructured (CLAUDE.md's Context Destructuring Rule). `validity` depends on the settings alias and on nothing derived from `validity`, so there is no cycle.
   const voterAppInaccessible = $derived(appSettings.access?.voterApp === false);
@@ -94,9 +94,9 @@
 
   const error = $derived('error' in validity ? validity.error : undefined);
   const ready = $derived(!('error' in validity));
-  // Read the MERGED settings (`appSettings`, aliased above), never the raw loader payload. `validity.appSettingsData` is the DB column alone, so a malformed column — which partial-preserve degrades to an empty object rather than to an `Error` (research C-2) — used to fall through an inline nullish-coalescing default and silently UN-maintenance a deployment whose build-time `dynamicSettings` had set `underMaintenance: true`. The merged read falls back to that build-time value instead, which is criterion 3's fail-safe direction; a column that explicitly carries `access` still overrides it.
+  // Read the MERGED settings (`appSettings`, aliased above), never the raw loader payload. `validity.appSettingsData` is the DB column alone, and a malformed column degrades to an empty object rather than to an `Error`, so reading it with an inline nullish-coalescing default would silently lift maintenance on a deployment whose build-time `dynamicSettings` set `underMaintenance: true`. The merged read falls back to that build-time value, the fail-safe direction; a column that explicitly carries `access` still overrides it.
   //
-  // The inline default is deliberately NOT reinstated: duplicating the shipped default from `packages/app-shared/src/settings/dynamicSettings.ts` here is the whole mechanism of the defect (decision B2, as corrected by research C-2). The trailing `=== true` is a boolean narrowing of an optional member, not a default — it cannot substitute a value the merge did not supply.
+  // There is deliberately no inline default: duplicating the shipped default from `packages/app-shared/src/settings/dynamicSettings.ts` here would bypass the merge. The trailing `=== true` is a boolean narrowing of an optional member, not a default — it cannot substitute a value the merge did not supply.
   //
   // `appSettings` is read through the existing `$derived` alias and is never destructured (CLAUDE.md's Context Destructuring Rule). The alias is safe for this member because `appSettings` is value-replacing — its reference is replaced on every re-merge — so the identity-stable `dataRoot` carve-out does not apply here.
   const underMaintenance = $derived(!('error' in validity) && appSettings.access?.underMaintenance === true);
@@ -109,10 +109,9 @@
   const documentTitle = $derived(`${t('dynamic.appName')}${underMaintenance ? ` – ${t('maintenance.title')}` : ''}`);
 
   // Side effect — applies resolved data to `dataRoot`. Reads `$derived` validity; NEVER calls `.then()` or `await`. Runs after the first `$derived` evaluation on mount and re-runs on any `data` prop change (client-side navigation).
-  // We don't do anything else with the data if it's valid, because the relevant stores will pick it up from `$page.data`.
+  // Valid data needs nothing else here: its consumers read it from `page.data`.
   //
-  // IMPORTANT: mutate the DataRoot via `setDataRoot(updater)` (the encapsulated non-reactive write path on the rune-native DataContext class) rather than the `dataRoot` reactive form. `dataRoot.update(() => provide*(...))`
-  // inside a `$effect` creates an infinite reactive loop in Svelte 5: reading `.current` takes a dependency on the dataContext `version` $state, and `DataRoot.update()` notifies subscribers (bumping `version`) — retriggering the effect. `setDataRoot` runs the mutation inside `untrack`, so this effect takes no dependency on the version counter.
+  // IMPORTANT: mutate the DataRoot via `setDataRoot(updater)` (the encapsulated non-reactive write path on the rune-native DataContext class) rather than the `dataRoot` reactive form. `dataRoot.update(() => provide*(...))` inside a `$effect` creates an infinite reactive loop in Svelte 5: reading `.current` takes a dependency on the dataContext `version` $state, and `DataRoot.update()` notifies subscribers (bumping `version`) — retriggering the effect. `setDataRoot` runs the mutation inside `untrack`, so this effect takes no dependency on the version counter.
   $effect(() => {
     if ('error' in validity) return;
     // Snapshot validity fields inside the effect's tracked scope (so the effect re-runs when they change); the write itself is untracked inside setDataRoot.
@@ -149,10 +148,10 @@
   beforeNavigate(({ willUnload, to }) => {
     if (updated.current && !willUnload && to?.url) location.href = to.url.href;
   });
-  // Analytics flush THEN View-Transitions coupling, in one merged hook: that guarantees flush ordering and avoids the two-promise ambiguity of two separate hooks.
+  // One hook flushes analytics and then starts the view transition, which fixes their order and avoids the two-promise ambiguity of two separate hooks.
   onNavigate((navigation) => {
-    submitAllEvents(); // preserve existing analytics flush
-    // LANDMINE: read `navigation.to?.url` — NOT `page.url`, which is the SOURCE url during onNavigate. `shouldAnimate` also gates reduced motion and ?notr=1.
+    submitAllEvents(); // flush pending analytics events
+    // Read `navigation.to?.url`, not `page.url`, which is the source URL during onNavigate. `shouldAnimate` also gates reduced motion and ?notr=1.
     if (!shouldAnimate(navigation.to?.url)) return;
     return new Promise<void>((resolve) => {
       startViewTransition(async () => {
@@ -162,11 +161,11 @@
     });
   });
   onDestroy(() => submitAllEvents());
-  // MERGE — analytics pageview THEN focus reset (NAVA11Y-02, global half).
+  // One hook records the analytics pageview and then resets focus.
   // The focus reset waits for a target that renders after the first frame (the voter question heading does, on a slow host) and is cancelled by the next navigation, so a stale wait never moves focus on a newer page. See `focusNavigationTarget`.
   let cancelPendingFocus: (() => void) | undefined;
   afterNavigate(({ from, to }) => {
-    startPageview(to?.url?.href ?? '', from?.url?.href); // preserve existing analytics pageview
+    startPageview(to?.url?.href ?? '', from?.url?.href); // record the analytics pageview
     if (typeof document === 'undefined') return;
     cancelPendingFocus?.();
     cancelPendingFocus = focusNavigationTarget();
@@ -210,10 +209,7 @@
   <link href={fontUrl} rel="stylesheet" />
 </svelte:head>
 
-<!-- Route announcer: always-present aria-live region, placed OUTSIDE the
-     error/loading/maintenance branches so screen readers reliably announce route changes.
-     Text is the active route's already-localized page title (the value fed to the document `<title>`, minus the constant app-name/maintenance suffix), surfaced via the layout-context `routeTitle` signal that MainContent / SingleCardContent register their localized `title` into
-     (no new i18n strings; the existing localized title is reused on ALL routes). -->
+<!-- Route announcer: an always-present aria-live region outside the error, loading and maintenance branches, so screen readers announce every route change. Its text is the active route's localized page title (the document `<title>` without the app-name and maintenance suffix), which MainContent and SingleCardContent register through the layout context's `routeTitle`. -->
 <div aria-live="polite" aria-atomic="true" class="sr-only" id="route-announcer">
   {routeTitle}
 </div>
@@ -253,9 +249,7 @@
 {/if}
 
 <style>
-  /* Reduced motion: null any escaping ::view-transition animation.
-     LANDMINE: the @media query WRAPS the :global selector — never the reverse form (the Svelte CSS parser rejects an at-rule nested inside :global with "Expected a valid CSS
-     identifier"). */
+  /* Stops every view-transition animation under reduced motion; the media query wraps the `:global` selectors because Svelte's CSS parser rejects an at-rule nested inside `:global`. */
   @media (prefers-reduced-motion: reduce) {
     :global(::view-transition-group(*)),
     :global(::view-transition-old(*)),

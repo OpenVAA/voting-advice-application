@@ -14,10 +14,20 @@
     level: number;
   }
 
+  /**
+   * Left padding for each heading level. Level 2 is the top level of the list, since level 1 is the page title.
+   */
+  const LEVEL_INDENT: Record<number, string> = {
+    2: 'pl-0',
+    3: 'pl-16',
+    4: 'pl-32',
+    5: 'pl-48',
+    6: 'pl-64'
+  };
+
   let headings = $state<TocItem[]>([]);
   let activeId = $state<string>('');
 
-  // Filter headings based on maxLevel
   const filteredHeadings = $derived(headings.filter((h) => h.level <= maxLevel));
 
   onMount(() => {
@@ -50,7 +60,6 @@
       }
     );
 
-    // Observe all headings
     filteredHeadings.forEach((heading) => {
       const element = document.getElementById(heading.id);
       if (element) {
@@ -74,15 +83,19 @@
 </script>
 
 {#if filteredHeadings.length > 0}
-  <nav class="toc top-xl" aria-label="Table of contents">
-    <h2 class="toc-title">On this page</h2>
-    <ul class="toc-list">
+  <nav
+    class="toc sticky top-xl max-h-[calc(100vh-8rem)] overflow-y-auto border-l-2 border-l-base-300 pl-16 text-(length:--text-sm)"
+    aria-label="Table of contents">
+    <h2 class="mt-0 mb-16 text-(length:--text-sm) font-semibold tracking-wider text-base-content uppercase">
+      On this page
+    </h2>
+    <ul class="not-prose">
       {#each filteredHeadings as heading (heading.id)}
-        <li class="toc-item toc-item-level-{heading.level}" class:active={activeId === heading.id}>
+        <li class={LEVEL_INDENT[heading.level]}>
           <button
             type="button"
             onclick={() => scrollToHeading(heading.id)}
-            class="toc-link"
+            class="block w-full cursor-pointer border-none bg-transparent py-6 text-left leading-[1.4] text-secondary no-underline transition-colors duration-200 hover:text-primary aria-[current=location]:font-medium aria-[current=location]:text-primary"
             aria-current={activeId === heading.id ? 'location' : undefined}>
             {heading.text}
           </button>
@@ -93,81 +106,7 @@
 {/if}
 
 <style>
-  .toc {
-    position: sticky;
-    max-height: calc(100vh - 8rem);
-    overflow-y: auto;
-    border-left: 2px solid var(--color-base-300);
-    font-size: 0.875rem;
-    padding-left: 1rem;
-  }
-
-  .toc-title {
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--color-base-content);
-    margin-top: 0rem;
-    margin-bottom: 1rem;
-  }
-
-  .toc-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .toc-item {
-    margin: 0;
-    padding: 0;
-  }
-
-  .toc-link {
-    display: block;
-    padding: 0.375rem 0;
-    color: var(--color-secondary);
-    text-decoration: none;
-    transition: color 0.2s;
-    text-align: left;
-    border: none;
-    background: none;
-    cursor: pointer;
-    width: 100%;
-    line-height: 1.4;
-  }
-
-  .toc-link:hover {
-    color: var(--color-primary);
-  }
-
-  .toc-item.active .toc-link {
-    color: var(--color-primary);
-    font-weight: 500;
-  }
-
-  /* Indentation for different heading levels */
-  .toc-item-level-2 {
-    padding-left: 0;
-  }
-
-  .toc-item-level-3 {
-    padding-left: 1rem;
-  }
-
-  .toc-item-level-4 {
-    padding-left: 2rem;
-  }
-
-  .toc-item-level-5 {
-    padding-left: 3rem;
-  }
-
-  .toc-item-level-6 {
-    padding-left: 4rem;
-  }
-
-  /* Scrollbar styling for webkit browsers */
+  /* The scrollbar is a browser-generated pseudo-element, which Tailwind has no utility for. */
   .toc::-webkit-scrollbar {
     width: 4px;
   }

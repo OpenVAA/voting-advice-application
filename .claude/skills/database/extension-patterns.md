@@ -16,7 +16,6 @@ Follow these steps in order. Each step names the file to create or modify.
      - name: jsonb, short_name: jsonb, info: jsonb
      - color: jsonb, image: jsonb
      - sort_order: integer, subtype: text, custom_data: jsonb
-     - is_generated: boolean DEFAULT false
      - created_at: timestamptz NOT NULL DEFAULT now()
      - updated_at: timestamptz NOT NULL DEFAULT now()
    - Add domain-specific columns after the common columns
@@ -106,7 +105,7 @@ Follow these steps for a new content table. Public visibility is section 3.4's a
    - A column grant cannot express an OLD-to-NEW transition rule. Where the rule is "this value may be set once and then never changed", or "only a holder of `<permission>` may turn this flag on", the enforcement belongs in a BEFORE UPDATE trigger beside the grant -- `enforce_external_id_immutability()`, `enforce_entity_immutability()` and `enforce_nomination_confirmation()` are the three house examples.
 
 8. **Add self-edit policy** (only if authenticated users should edit their own records):
-   - `CREATE POLICY entity_update_own_{table} ON {table} FOR UPDATE TO authenticated USING ((SELECT user_can('entity', id, 'entity.edit_answers'))) WITH CHECK ((SELECT user_can('entity', id, 'entity.edit_answers')));` -- the actor segment names the SCOPE the predicate asks at, and self-edit is a GRANT question, never an `auth_user_id` comparison
+   - `CREATE POLICY entity_update_own_{table} ON {table} FOR UPDATE TO authenticated USING ((SELECT user_can('entity', id, 'entity.edit_answers', '{entity type}'::public.entity_type))) WITH CHECK ((SELECT user_can('entity', id, 'entity.edit_answers', '{entity type}'::public.entity_type)));` -- an entity-scope call always names the table's entity type: the entity tables have independent primary keys, so an id alone can name two entities, and `user_can` denies an entity-scope call without a type; the actor segment names the SCOPE the predicate asks at, and self-edit is a GRANT question, never an `auth_user_id` comparison
 
 **Critical rules:**
 

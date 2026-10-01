@@ -115,7 +115,7 @@ Follow these steps in order.
    - A variant on an existing base usually needs no fixture change -- `createEntityFilters(page)` already drives every existing category via `openFilterDialog()`, `getFilter(target)`, `setSelection(values)`, `setNumberRange(min, max)`, `setTextFilter(text)` and `reset()`. Extend the fixture only if the variant renders a control none of those reach.
    - Assert it in the `full voter journey end-to-end` test in `tests/tests/specs/voter/voter-journey.spec.ts` when the question type appears in the voter results view, and in the owning surface's spec when it does not.
    - The variant's question type must exist in whichever dev-seed template the spec seeds, or the filter never renders and the assertion is vacuous: `packages/dev-seed/src/templates/e2e/base.ts`
-   - Pattern: follow existing `EFLOW-01: select-all/none control, text×filter intersection, reset restores full list` test step in `tests/tests/specs/voter/voter-journey.spec.ts`
+   - Pattern: follow existing `select-all/none control, text×filter intersection, reset restores full list` test step in `tests/tests/specs/voter/voter-journey.spec.ts`
 
 ## Verification After Extension
 

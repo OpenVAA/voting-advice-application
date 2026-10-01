@@ -12,9 +12,9 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
 ### Properties
 
-- `action`: Custom action to take when the card is clicked, defaults to a link to the entity's `ResultEntity` route. If the card has subentites, the action will only be triggered by clicking the content above them.
+- `action`: Custom action to take when the card is clicked, defaults to a link to the entity's `ResultEntity` route. If the card has subentities, the action will only be triggered by clicking the content above them.
 - `entity`: A possibly ranked entity, e.g. candidate or a party.
-- `variant`: The context-dependend layout variant. Usually set automatically. Default: `'list'`
+- `variant`: The context-dependent layout variant. Usually set automatically. Default: `'list'`
   - `'list'`: In a list of entities.
   - `'details'`: As part of the header of `EntityDetails`.
   - `'subcard'`: In a list of nested entity cards, e.g., the candidates for a party.
@@ -51,7 +51,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import { SubMatches } from '$lib/components/subMatches';
   import { getAppContext } from '$lib/contexts/app';
   import { getVoterContext } from '$lib/contexts/voter';
-  import { concatClass, getUUID } from '$lib/utils/components';
+  import { cn, concatClass, getUUID } from '$lib/utils/components';
   import { unwrapEntity } from '$lib/utils/entities';
   import { getCardQuestions } from '$lib/utils/entityCards';
   import { getAllianceSummary } from '$lib/utils/getAllianceSummary';
@@ -103,7 +103,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
     // The default action is a link to the entity's ResultEntity route.
     // ResultEntity resolves to the 4-segment shape `[[electionTab]]/[[entityTab]]/[[entity]]/[[id]]`.
-    // The `entity` (singular drawer entity-type matcher) is the entity's own `type` (candidate | organization | alliance); the `entityTab` (plural list-tab matcher) is the parent list — defaulting to the same-type plural preserves the list-plus-matching-drawer shape. The filterContext auto-scopes per (electionId, entityTab) so a candidate drawer under a candidates list continues to behave as before.
+    // The `entity` (singular drawer entity-type matcher) is the entity's own `type` (candidate | organization | alliance); the `entityTab` (plural list-tab matcher) is the parent list — defaulting to the same-type plural preserves the list-plus-matching-drawer shape. The filterContext scopes per (electionId, entityTab), so a candidate drawer under a candidates list keeps that list's filters.
     const effectiveAction =
       action ??
       getRoute.current({
@@ -198,6 +198,13 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   ////////////////////////////////////////////////////////////////////
 
   const gridClasses = 'grid gap-md';
+
+  /** A 1px rule drawn just above a subcard, separating it from the card or subcard before it. */
+  const OFFSET_BORDER =
+    "after:absolute after:top-[calc(-10rem/16)] after:right-0 after:left-0 after:border-t-md after:border-base-300 after:content-['']";
+
+  /** The hover shading of a clickable subcard or card header. */
+  const HOVER_SHADE = 'rounded-md hover:bg-base-content/20 hover:ring-4 hover:ring-base-content/20';
   const classes = $derived.by(() => {
     let c = `vaa-card relative ${gridClasses}`;
     if (variant !== 'subcard') {
@@ -209,7 +216,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 </script>
 
 <!--
-Possibly wraps `content` in a clickable action. This was a separate utility component until Svelte 5 snippets made one unnecessary; it is card-local by design and is not exported.
+Possibly wraps `content` in a clickable action. The snippet is card-local and is not exported.
 
 ### Parameters
 
@@ -235,18 +242,16 @@ Possibly wraps `content` in a clickable action. This was a separate utility comp
   {:else if typeof action === 'function'}
     <button
       onclick={action}
-      class:hover-shaded={shadeOnHover}
       data-testid="entity-card-action"
-      {...concatClass({ class: extraClass }, 'transition-all !text-neutral')}>
+      {...concatClass({ class: extraClass }, cn('transition-all !text-neutral', shadeOnHover && HOVER_SHADE))}>
       {@render content()}
     </button>
   {:else if typeof action === 'string'}
     <a
       href={action}
       data-sveltekit-noscroll
-      class:hover-shaded={shadeOnHover}
       data-testid="entity-card-action"
-      {...concatClass({ class: extraClass }, 'transition-all !text-neutral')}>
+      {...concatClass({ class: extraClass }, cn('transition-all !text-neutral', shadeOnHover && HOVER_SHADE))}>
       {@render content()}
     </a>
   {:else}
@@ -375,10 +380,10 @@ Possibly wraps `content` in a clickable action. This was a separate utility comp
     {#if parsed.subcards?.length}
       <div class="mt-md gap-lg grid empty:mt-0">
         {#each parsed.subcards.slice(0, showAllSubcards ? undefined : (parsed.subcardsMax ?? maxSubcards)) as ecProps}
-          <EntityCard variant="subcard" {...concatClass(ecProps, 'offset-border')} />
+          <EntityCard variant="subcard" {...concatClass(ecProps, OFFSET_BORDER)} />
         {/each}
         {#if parsed.subcards.length > (parsed.subcardsMax ?? maxSubcards)}
-          <div class="offset-border -my-md relative after:!top-0">
+          <div class={cn(OFFSET_BORDER, '-my-md relative after:!top-0')}>
             <Button
               onclick={handleSubcardsToggle}
               variant="secondary"
@@ -405,15 +410,3 @@ Possibly wraps `content` in a clickable action. This was a separate utility comp
   undefined,
   cardBody
 )}
-
-<style lang="postcss">
-  @reference "../../../tailwind-theme.css";
-  .offset-border {
-    /* after: is a valid prefix */
-    @apply after:border-t-md after:border-base-300 after:absolute after:top-[calc(-10rem/16)] after:right-0 after:left-0 after:content-[''];
-  }
-  /* Relocated here from the action-wrapper component's own style block (phase 159, D-H3). A snippet is a markup fragment and carries no style scope of its own, so the rule has to live in the component that renders the markup. */
-  .hover-shaded {
-    @apply hover:bg-base-content/20 hover:ring-base-content/20 rounded-md hover:ring-4;
-  }
-</style>

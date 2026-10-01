@@ -1,11 +1,15 @@
 -- External ID uniqueness and immutability
 --
--- The nullable external_id column itself is declared in the CREATE TABLE body of each content table that carries one: elections, constituency_groups and constituencies in 101-elections.sql; candidates, organizations, factions and alliances in 102-entities.sql; questions and question_categories in 103-questions.sql; nominations in 104-nominations.sql; app_settings in 106-app-settings.sql.
--- This file owns what enforces it: a composite unique index on (project_id, external_id) per table, giving uniqueness scoped per project, and an immutability trigger that prevents changing external_id once set (NULL -> value is allowed; value -> different value is blocked).
+-- The nullable external_id column is declared in the CREATE TABLE body of each content table that carries one. This file enforces it: a unique index on (project_id, external_id) per table, so uniqueness is scoped per project, and a trigger that refuses to change external_id once it is set.
 --
--- Used by bulk_import() for externalId-based upsert matching.
--- Depends on: 101-elections.sql, 102-entities.sql, 103-questions.sql,
---             104-nominations.sql, 106-app-settings.sql
+-- bulk_import matches existing rows by external_id when it upserts.
+--
+-- Depends on:
+-- - 101-elections.sql (elections, constituency_groups, constituencies)
+-- - 102-entities.sql (candidates, organizations, factions, alliances)
+-- - 103-questions.sql (questions, question_categories)
+-- - 104-nominations.sql (nominations)
+-- - 106-app-settings.sql (app_settings)
 --------------------------------------------------------------------------------
 -- Composite unique indexes on (project_id, external_id)
 --------------------------------------------------------------------------------
@@ -56,7 +60,10 @@ WHERE
 --------------------------------------------------------------------------------
 -- Immutability trigger: prevent changing external_id once set
 --
--- NULL -> value: allowed (first assignment) value -> same value: allowed (no-op) value -> different value: blocked (raises exception) value -> NULL: blocked (raises exception)
+-- - NULL -> value: allowed (first assignment)
+-- - value -> same value: allowed (no-op)
+-- - value -> different value: blocked (raises an exception)
+-- - value -> NULL: blocked (raises an exception)
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.enforce_external_id_immutability () RETURNS TRIGGER AS $$
 BEGIN

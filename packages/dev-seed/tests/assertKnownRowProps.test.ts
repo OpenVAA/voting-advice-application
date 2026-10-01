@@ -15,12 +15,12 @@
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
-import { assertKnownRowProps } from '../src/assertKnownRowProps';
-import { deniedKeys, DENIED_BY_TABLE, SKIP_COLUMNS_NOT_DENIED } from '../src/template/permittedKeys';
-import negctlEntityTypeCamel from './fixtures/negctl-questions-entity-type-camel';
-import negctlEntityTypeSnake from './fixtures/negctl-questions-entity-type';
 import { PROPERTY_MAP } from '@openvaa/supabase-types';
+import { describe, expect, it } from 'vitest';
+import negctlEntityTypeSnake from './fixtures/negctl-questions-entity-type';
+import negctlEntityTypeCamel from './fixtures/negctl-questions-entity-type-camel';
+import { assertKnownRowProps } from '../src/assertKnownRowProps';
+import { DENIED_BY_TABLE, deniedKeys, SKIP_COLUMNS_NOT_DENIED } from '../src/template/permittedKeys';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 /** `packages/dev-seed/tests` → repo root. */
@@ -42,7 +42,7 @@ function messageOf(fn: () => void): string {
 // The three-part message
 // -----------------------------------------------------------------------------
 
-describe('assertKnownRowProps — TMPL-02: the message names the key, the collection and the external_id', () => {
+describe('assertKnownRowProps — the message names the key, the collection and the external_id', () => {
   it('names all three in ONE message for an unknown key on a questions row', () => {
     const message = messageOf(() =>
       assertKnownRowProps({
@@ -61,16 +61,20 @@ describe('assertKnownRowProps — TMPL-02: the message names the key, the collec
     expect(message.startsWith('assertKnownRowProps: ')).toBe(true);
   });
 
-  it('states that the key would be SILENTLY DROPPED — the failure mode being replaced', () => {
+  it('states that the key would reach `_bulk_upsert_record` and fail there as an unknown column', () => {
     const message = messageOf(() => assertKnownRowProps({ elections: [{ external_id: 'el-1', bogus: 1 }] }));
-    expect(message).toMatch(/silently dropped/);
+    expect(message).toContain('_bulk_upsert_record');
+    expect(message).toMatch(/unknown column/);
+    expect(message).not.toMatch(/silently dropped/);
   });
 
-  it('lists the permitted keys for the collection and names the declaration file as the remediation', () => {
+  it('lists the permitted keys and names all four declarations and their file as the remediation', () => {
     const message = messageOf(() => assertKnownRowProps({ elections: [{ external_id: 'el-1', bogus: 1 }] }));
     expect(message).toContain('election_date');
     expect(message).toContain('packages/dev-seed/src/template/permittedKeys.ts');
-    expect(message).toMatch(/LINK_SENTINELS|COLLECTION_NON_COLUMNS/);
+    for (const declaration of ['TABLE_COLUMNS', 'RELATIONSHIP_REFS', 'LINK_SENTINELS', 'COLLECTION_NON_COLUMNS']) {
+      expect(message).toContain(declaration);
+    }
   });
 
   it('throws on the FIRST offence, not an aggregate — the second offending key is absent from the message', () => {
@@ -88,7 +92,7 @@ describe('assertKnownRowProps — TMPL-02: the message names the key, the collec
 
 describe('assertKnownRowProps — rows without an external_id', () => {
   it('never requires an external_id: feedback / accounts / projects / app_settings rows pass', () => {
-    // These are the shapes `writer.test.ts` has always passed. Requiring an external_id here would turn about twenty existing tests red for the wrong reason.
+    // `writer.test.ts` passes these shapes; requiring an external_id would fail those tests for the wrong reason.
     expect(() => assertKnownRowProps({ feedback: [{ rating: 5 }] })).not.toThrow();
     expect(() => assertKnownRowProps({ feedback: [{ rating: 5, description: 'test' }] })).not.toThrow();
     expect(() => assertKnownRowProps({ accounts: [{ id: 'x' }] })).not.toThrow();
@@ -119,10 +123,9 @@ describe('assertKnownRowProps — rows without an external_id', () => {
 
 describe('assertKnownRowProps — one canonical keying (the five camelCase / snake_case cases)', () => {
   /**
-   * ⚠ **Case 1 is the required REAL FAILING CASE, and this pair is INVERTED.**
+   * ⚠ **Case 1 is the real failing case, and this pair is inverted.**
    *
-   * Under an allow-list keyed by the RAW template collection key with no resolution step, `questionCategories` misses the map, the unknown-collection throw fires, and case 1 goes RED — measured. Under the SHIPPED resolved keying it is GREEN, and that green IS the success signal.
-   * A reader taking case 1's pass as "the control did not fire" has the pair backwards.
+   * Under an allow-list keyed by the RAW template collection key with no resolution step, `questionCategories` misses the map, the unknown-collection throw fires, and case 1 goes RED. Under the resolved keying it is GREEN, and that green is the success signal, not a sign that the control did not fire.
    *
    * Case 5 is its `COLLECTION_NON_COLUMNS` twin, exercising the `constituency_groups` entry through its camel alias — the one entry whose lookup key genuinely differs from its collection key today.
    */
@@ -244,7 +247,7 @@ describe('assertKnownRowProps — entity_type is denied, the other four skip_col
   });
 
   it('throws the DENY message for the CAMEL form entityType on each of the three declaring tables', () => {
-    // ⚠ CR-01. `COLUMN_MAP` maps `entity_type` → `entityType`, so source (1) admits the camel form on every table that declares the column, and a deny-list written as a snake-case literal never saw it. `bulkImport` then ran `resolveFieldName('entityType') === 'entity_type'` and handed the key to the RPC, whose `skip_columns` discarded it — exit 0, column unset.
+    // `COLUMN_MAP` maps `entity_type` → `entityType`, so source (1) admits the camel form on every table that declares the column. A deny-list holding only the snake form would let it through: `bulkImport` resolves `entityType` to `entity_type`, the RPC's `skip_columns` discards it, and the seed exits 0 with the column unset.
     // The camel form must produce the SAME deny message as the snake one.
     for (const [collection, externalId] of [
       ['questions', 'qu-1'],
@@ -260,7 +263,7 @@ describe('assertKnownRowProps — entity_type is denied, the other four skip_col
       expect(message).toMatch(/skip_columns/);
       expect(message).toMatch(/501-bulk-operations\.sql/);
       expect(message).toMatch(/[Rr]emove it/);
-      // The camel form must NOT fall through to the allow-list's message: that is the bug — the allow-list PERMITS it, so falling through means passing.
+      // The camel form must NOT fall through to the allow-list: the allow-list PERMITS it, so falling through means passing.
       expect(message).not.toMatch(/unknown property/);
     }
   });
@@ -280,10 +283,10 @@ describe('assertKnownRowProps — entity_type is denied, the other four skip_col
   });
 
   it('BOTH negative-control fixtures fire against the shipped guard, snake and camel alike', () => {
-    // The DENY control, run in CI rather than only through `yarn db:seed --template <abs path>` against a live database. A control that fires only on an operator's machine is a guard that cannot be relied on, and the camel arm is the one that could not fire at all until the deny-list covered it: `entityType` sat in the PERMITTED set and was absent from the DENIED one.
+    // The DENY control, run in CI rather than only through `yarn db:seed --template <abs path>` against a live database. The camel arm fires only because the deny-list covers `entityType`, which is also in the PERMITTED set.
     for (const [label, fixture] of [
-      ['snake (144-01, byte-frozen)', negctlEntityTypeSnake],
-      ['camel (the CR-01 arm)', negctlEntityTypeCamel]
+      ['snake', negctlEntityTypeSnake],
+      ['camel', negctlEntityTypeCamel]
     ] as const) {
       const rows = fixture.questions.fixed as Array<Record<string, unknown>>;
       // The fixture is a template, so guard the shape: an empty `fixed[]` would make this case pass without looking at anything.

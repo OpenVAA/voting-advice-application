@@ -3,17 +3,15 @@
  *
  * Scope: returns `[]` by default. Supports `fixed[]` for users who want specific feedback rows (uncommon — feedback has little test / demo value), so the pipeline class map treats every table uniformly.
  *
- * Table characteristics (migration lines 949–961):
- *   - Required: `project_id`, CHECK (`rating IS NOT NULL OR description IS NOT NULL`)
+ * Table characteristics (`apps/supabase/supabase/schema/107-feedback.sql`):
+ *   - CHECK (`rating IS NOT NULL OR description IS NOT NULL`)
+ *   - `project_id` is nullable (`ON DELETE SET NULL`); the generator always sets it
  *   - Optional: `rating` int, `description` text, `date`, `url`, `user_agent`
- *   - No `external_id` column → NOT idempotent via external_id. Re-runs
- *     APPEND rather than upsert.
- *   - No `is_generated` column — feedback is uniformly user-submitted in prod; dev-seeded rows are visually indistinguishable (acceptable trade-off per Claude's Discretion — fixing this is a schema change, out of scope).
+ *   - No `external_id` column → NOT idempotent via external_id. Re-runs APPEND rather than upsert.
  *
- * Writer routing: `feedback` is not in bulk_import's processing_order.
- * Direct `.upsert()` in the writer (if any rows are emitted). Because there is no external_id key, the "upsert" behaves as plain insert — previous runs' feedback rows accumulate in the DB. Teardown cannot target them via prefix because no `external_id` column — manual cleanup required. That limitation stands for as long as feedback seeding becomes useful.
+ * Writer routing: `feedback` is not in bulk_import's processing_order. The writer writes any emitted rows with a direct `.upsert()`. Because there is no external_id key, the "upsert" behaves as plain insert — previous runs' feedback rows accumulate in the DB. Teardown cannot target them via prefix because there is no `external_id` column, so cleanup is manual. That limitation remains until feedback seeding becomes useful.
  *
- * apply — see ElectionsGenerator.ts for the canonical-pattern rationale. (external_id prefix) does NOT apply because the table has no `external_id` column.
+ * The external_id prefix convention of `ElectionsGenerator.ts` does not apply, because the table has no `external_id` column.
  */
 
 import type { TablesInsert } from '@openvaa/supabase-types';

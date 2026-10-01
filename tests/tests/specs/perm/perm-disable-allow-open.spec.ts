@@ -1,14 +1,14 @@
 /**
  * customData.allowOpen toggle controls the open-answer surfaces on both the candidate and voter sides.
  *
- * Voter-side fixture: this perm uses the `buildMinimal` (1-election + 1-constituency) dataset, so the elections/constituencies pages auto-imply and the /questions intro page is skipped. The voter-side test therefore consumes `minimalVoterResultsPage` (robust race-based `navigateToFirstQuestion` traversal) rather than `answeredVoterPage` (which hard-waits for the skipped intro start button and would time out).
+ * Voter-side fixture: this perm uses the `buildMinimal` (1-election + 1-constituency) dataset, so the elections/constituencies pages auto-imply and the /questions intro page is skipped. The voter-side test consumes `minimalVoterResultsPage`, which walks from Home to the first question through whichever pages render, then answers through to /results.
  *
  * Both describe blocks consume `minimalVoterResultsTest as test` to unify the file under a single test runner — eliminates the `playwright/no-standalone-expect` lint failure that fires when the lint rule's test-block detector does not recognise a non-`test` runner inside an `expect()` call. The candidate-side tests do NOT consume the `minimalVoterResultsPage` fixture, so the voter walk does not run for those tests (Playwright fixtures are lazy — only created on consumption).
  *
  * cand-1 authors info text on BOTH Q1 + Q2 answers. customData.allowOpen=true on Q1 keeps the info surfaces visible (candidate-side comment input + voter-side QuestionOpenAnswer wrapper). customData.allowOpen=false on Q2 SUPPRESSES rendering on BOTH surfaces:
  *
- *   Candidate side: gate at +page.svelte:294 is `{#if customData.allowOpen}` → Q2's `false` skips the <Input data-testid="candidate-questions-comment" /> entirely (toHaveCount(0)).
- *   Voter side: gate at EntityOpinions.svelte:78 is
+ *   Candidate side: the candidate question page (`candidate/(protected)/questions/[questionId]/+page.svelte`) gates the comment input on `{#if customData.allowOpen}` → Q2's `false` skips the <Input data-testid="candidate-questions-comment" /> entirely (toHaveCount(0)).
+ *   Voter side: `EntityOpinions.svelte` gates on
  *     `{#if answer?.info && customData?.allowOpen !== false}` → Q2's
  *     `false` skips the QuestionOpenAnswer (no entity-opinion-open-answer for that question).
  *
@@ -27,7 +27,7 @@ const STORAGE_STATE_PATH = path.join(TESTS_DIR, '../playwright/.auth/perm-disabl
 test.describe('perm-disable-allow-open (candidate side — authenticated)', () => {
   test.use({ storageState: STORAGE_STATE_PATH });
 
-  // The per-question candidate URL is keyed on the INTERNAL question id, not the seed external_id, so `page.goto('/candidate/questions/<external_id>')` resolves to the "no questions for your constituency" empty state. Navigate via the questions-overview instead (label-matched), mirroring the canonical perm-answers-locked.spec.ts:67-76 pattern.
+  // The per-question candidate URL is keyed on the INTERNAL question id, not the seed external_id, so `page.goto('/candidate/questions/<external_id>')` resolves to the "no questions for your constituency" empty state. Navigate via the questions-overview instead (label-matched), mirroring perm-answers-locked.spec.ts.
   test('Q1 allowOpen=true: candidate-questions-comment visible', async ({ page }) => {
     const overview = createCandidateQuestionsOverviewPage(page);
     await overview.goToPage();
@@ -67,7 +67,7 @@ test.describe('perm-disable-allow-open (voter side — unauthenticated)', () => 
     await expect(openAnswers).toHaveCount(1);
     await expect(openAnswers.first()).toContainText(/\[Q1 info from cand-1\]/);
 
-    // Q2 info — verify the seeded `[Q2 info from cand-1]` marker is NOT present anywhere in the detail (the open-answer wrapper is suppressed by the EntityOpinions.svelte:78 `customData?.allowOpen !== false` gate).
+    // Q2 info — verify the seeded `[Q2 info from cand-1]` marker is NOT present anywhere in the detail (the open-answer wrapper is suppressed by `EntityOpinions.svelte`'s `customData?.allowOpen !== false` gate).
     await expect(
       detail.getByTestId(testIds.voter.entityDetail.opinionOpenAnswer).filter({
         hasText: /\[Q2 info from cand-1\]/

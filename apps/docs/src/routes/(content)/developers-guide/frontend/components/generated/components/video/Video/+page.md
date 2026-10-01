@@ -49,7 +49,7 @@ If not provided, the `video` element will be hidden until these properties are p
 - `toggleSound`: Toggle sound
 - `toggleCaptions`: Show or hide captions.
 - `toggleTranscript`: Toggle transcript visibility.
-- `jump`: Skip the video a number of steps based on text track cues or `skipAmount` if cues are not available. If the video is in the end, a `steps` of `-1` will be skip to the beginning of the last cue. If `steps` would result in a negative index or one greater than the number of cues, the video will be scrolled to the beginning or the end.
+- `jump`: Skip the video a number of steps based on text track cues or `skipAmount` if cues are not available. If the video is at the end, a `steps` of `-1` skips to the beginning of the last cue. If `steps` would result in a negative index or one greater than the number of cues, the video will be scrolled to the beginning or the end.
 - `gotoAndPlay`: Scroll the video to the given time and play.
 - `load`: Change the video contents, i.e. sources, captions, poster and transcript, and optionally other properties.
 
@@ -57,7 +57,7 @@ If not provided, the `video` element will be hidden until these properties are p
 
 - `video`: The video player creates an analytics event for each video viewed which combines a number of properties. See the `VideoTrackingEventData` in `Video.type.ts` for a complete description. The event is started and submitted when:
   - the component is created/destroyed
-  - when the video shown is changed with `reload`
+  - when the video shown is changed with `load`
   - when the page's visibility changes to `hidden`.
 
 ### Usage

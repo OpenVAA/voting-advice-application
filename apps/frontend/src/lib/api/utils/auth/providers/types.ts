@@ -12,10 +12,12 @@
 /**
  * Supported identity provider types.
  *
- * - `'signicat'` - Signicat OIDC with PKCE + client_secret authentication
- * - `'idura'` - Idura OIDC with JAR + private_key_jwt authentication
+ * - `'signicat-ftn'` - Signicat OIDC with PKCE + client_secret authentication, Finnish Trust Network claim mapping
+ * - `'idura-ftn'` - Idura OIDC with JAR + private_key_jwt authentication, Finnish Trust Network claim mapping
+ *
+ * The `-ftn` suffix names the claim mapping, not the provider: the provider implementations are generic, and the Finnish-specific part is each one's `*_FTN_AUTH_CONFIG`.
  */
-export type ProviderType = 'signicat' | 'idura';
+export type ProviderType = 'signicat-ftn' | 'idura-ftn';
 
 /**
  * Configuration for identity claim extraction from the id_token.
@@ -27,7 +29,7 @@ export interface AuthConfig {
   /**
    * Which id_token claim to use for user identity matching.
    *
-   * `'sub'` (the stable subject identifier per OIDC spec) for both providers. MUST name a claim that is unique per person: the value keys the Supabase auth account, so a claim shared between two people merges them into one. Keying Signicat on `'birthdate'` does exactly that -- see `SIGNICAT_AUTH_CONFIG` in `signicat.ts` for the full account of what it costs.
+   * `'sub'` (the stable subject identifier per OIDC spec) for both providers. MUST name a claim that is unique per person: the value keys the Supabase auth account, so a claim shared between two people merges them into one. Keying Signicat on `'birthdate'` does exactly that -- see `SIGNICAT_FTN_AUTH_CONFIG` in `signicat.ts` for the full account of what it costs.
    */
   identityMatchProp: string;
 

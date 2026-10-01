@@ -4,7 +4,8 @@ Display an `Entity`’s open answer to a question. If the content is empty, noth
 
 ### Properties
 
-- Any valid properties of an `<Expander>` component
+- `content`: The open answer text.
+- Any valid attributes of a `<div>` element
 
 ### Usage
 

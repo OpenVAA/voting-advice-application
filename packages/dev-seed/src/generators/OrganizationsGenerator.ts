@@ -3,7 +3,7 @@
  *
  * Schema: `project_id` is required; `auth_user_id` is nullable FK to auth.users and is left NULL — dev-seed writes no auth rows; `answers` defaults to '{}' at the DB level; standard DataObject scaffolding otherwise. No content FK refs on this table.
  *
- * apply — see ElectionsGenerator.ts for the canonical-pattern rationale.
+ * Follows the generator pattern described in ElectionsGenerator.ts.
  *
  * Default count = 4: enough organizations for matching/filtering sanity-checks (candidates' organization ref picks round-robin over the CandidatesGenerator sample) without bloating the <10s seed budget.
  */
@@ -42,8 +42,7 @@ export class OrganizationsGenerator {
         name: { en: `${faker.company.name()} Party` },
         short_name: { en: `P${i + 1}` },
         color: { normal: faker.color.rgb(), dark: faker.color.rgb() },
-        sort_order: i,
-        is_generated: true
+        sort_order: i
         // `auth_user_id` omitted — dev-seed writes no auth rows.
         // `answers` omitted — DB default '{}' applies.
       });

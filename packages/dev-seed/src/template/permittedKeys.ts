@@ -6,15 +6,15 @@
  *
  * ## The four sources
  *
- * **(1) DB columns.** `TablesInsert<T>` from `@openvaa/supabase-types`, plus every legal camelCase form, derived MECHANICALLY from {@link FIELD_MAP}: for a column `c` of table `T`, the legal keys are `c` itself plus every key `k` with `FIELD_MAP[k] === c`. Hand-writing camel aliases would be wrong three separate ways — see {@link FIELD_MAP}'s note. `TABLE_COLUMNS` is the value-level mirror of the generated types and is checked against them in BOTH directions at compile time, so a schema change that adds or removes a column is a type error here rather than silent drift.
+ * **(1) DB columns.** `TablesInsert<T>` from `@openvaa/supabase-types`, plus every legal camelCase form, derived MECHANICALLY from {@link FIELD_MAP}: for a column `c` of table `T`, the legal keys are `c` itself plus every key `k` with `FIELD_MAP[k] === c`. Hand-writing camel aliases would be wrong — see {@link FIELD_MAP}'s note. `TABLE_COLUMNS` is the value-level mirror of the generated types and is checked against them in BOTH directions at compile time, so a schema change that adds or removes a column is a type error here rather than silent drift.
  *
  * **(2) Sentinels.** From `LINK_SENTINELS` in `./linkSentinels`, which is also what the join-table resolver reads. Ten `(collection, key)` pairs.
  *
- * **(3) Non-column fields.** {@link NON_COLUMN_FIELDS} and {@link COLLECTION_NON_COLUMNS}, MOVED here out of `bulkImport` (they were declared inline inside the method) and imported back by it, so the stripping behaviour and the permission decision cannot drift apart.
+ * **(3) Non-column fields.** {@link NON_COLUMN_FIELDS} and {@link COLLECTION_NON_COLUMNS}, declared here and imported by `bulkImport`, so the stripping behaviour and the permission decision cannot drift apart.
  *
  * **(4) RPC relationship references.** {@link RELATIONSHIP_REFS}, transcribed from the `CASE p_table_name` block of `_bulk_upsert_record` in `apps/supabase/supabase/schema/501-bulk-operations.sql` (note the doubled `supabase/` segment — that is the real path).
  *
- * ⚠ **Source (4) is the one source that is NOT derived, and it is stated here rather than implied away.** Postgres cannot iterate a TypeScript const, so `RELATIONSHIP_REFS` is a transcription held honest by a PARITY TEST (`tests/template/permittedKeys.test.ts`) that reads the SQL from disk and fails in both directions when the two disagree. Omitting source (4) is not an option: it is present on 2,955 key occurrences across the built-in templates — every `nominations` row, plus `candidates.organization`, `questions.category` and `constituencies.parent` — so a three-source guard would fail every E2E setup project.
+ * ⚠ **Source (4) is the one source that is NOT derived.** Postgres cannot iterate a TypeScript const, so `RELATIONSHIP_REFS` is a transcription held honest by a PARITY TEST (`tests/template/permittedKeys.test.ts`) that reads the SQL from disk and fails in both directions when the two disagree. Omitting source (4) is not an option: it is present on 2,955 key occurrences across the built-in templates — every `nominations` row, plus `candidates.organization`, `questions.category` and `constituencies.parent` — so a three-source guard would fail every E2E setup project.
  *
  * ## Canonical keying
  *
@@ -37,7 +37,7 @@ import type { SentinelPayload } from './linkSentinels';
 /**
  * The twelve snake_case table names dev-seed authors rows for.
  *
- * `accounts` and `projects` are deliberately absent: they are bootstrapped by `seed.sql` and `Writer.write` deletes them from the payload before it reaches the admin client (`writer.ts:148-149`), so no authored row is ever written to them.
+ * `accounts` and `projects` are deliberately absent: they are bootstrapped by `seed.sql` and `Writer.write` deletes them from the payload before it reaches the admin client (the `delete bulkData.accounts` / `delete bulkData.projects` pair in `writer.ts`), so no authored row is ever written to them.
  */
 export type CollectionKey =
   | 'elections'
@@ -57,7 +57,7 @@ export type CollectionKey =
  * The two tables `Writer.write` strips from the payload before Pass 1 (`writer.ts`, the `delete bulkData.accounts` / `delete bulkData.projects` pair). They are NOT template-declarable — `TemplateSchema` has no slot for either and all 30 built-ins emit zero rows — but they ARE `TOPO_ORDER` entries, so `runPipeline` puts an (empty) array under each key, and `writer.test.ts` passes `accounts: [{ id: 'x' }]` and `projects: [{ id: 'y' }]` as pass-through fixtures.
  *
  * ⚠ **They are modelled here because Pass 0 reads the PRE-DELETION `data`.**
- * Measured: with these two unmodelled, the guard's `permittedKeys` lookup throws `unknown collection "accounts"` on the two `writer.test.ts` pass-through fixtures — offences on the non-pipeline fixture surface. Widening the allow-list with a stated reason is the sanctioned resolution; narrowing the survey is not. Kept OUT of {@link CollectionKey} so the twelve template-declarable slots, the twelve `FixedRow` aliases and `Template`'s key-set conformance assertion are untouched.
+ * Measured: with these two unmodelled, the guard's `permittedKeys` lookup throws `unknown collection "accounts"` on the two `writer.test.ts` pass-through fixtures — offences on the non-pipeline fixture surface. Widening the allow-list with a stated reason is the fix; excluding those fixtures from what the guard reads is not. Kept OUT of {@link CollectionKey}, so the twelve template-declarable slots, the twelve `FixedRow` aliases and `Template`'s key-set conformance assertion cover the twelve only.
  */
 export type PassThroughCollectionKey = 'accounts' | 'projects';
 
@@ -65,25 +65,25 @@ export type PassThroughCollectionKey = 'accounts' | 'projects';
 export type GuardedCollectionKey = CollectionKey | PassThroughCollectionKey;
 
 /**
- * `COLLECTION_MAP` and `resolveCollectionName` live in `./collectionNames`, a leaf module, and are re-exported here so every existing import path is unchanged. They live there because `linkSentinels.ts` needs the same primitive for `pickCollection`, and importing it from THIS module would close an ESM cycle whose entry through `linkSentinels.ts` throws a TDZ `ReferenceError` — see `./collectionNames`'s header. Still exactly one implementation; only its address differs.
+ * `COLLECTION_MAP` and `resolveCollectionName` live in `./collectionNames`, a leaf module, and are re-exported here. They live there because `linkSentinels.ts` needs the same primitive for `pickCollection`, and importing it from THIS module would close an ESM cycle whose entry through `linkSentinels.ts` throws a TDZ `ReferenceError` — see `./collectionNames`'s header.
  */
 export { COLLECTION_MAP, resolveCollectionName } from './collectionNames';
 
 /**
  * Maps camelCase field names to Supabase snake_case column names.
- * Extends `PROPERTY_MAP` with legacy / alias mappings.
+ * Extends `PROPERTY_MAP` with alias mappings.
  *
- * MOVED here from `supabaseAdminClient.ts`, which imports it back for `resolveFieldName`. This module needs it to derive source (1)'s camel forms, and a second copy would be free to drift from the one that does the actual renaming.
+ * `supabaseAdminClient.ts` imports it for `resolveFieldName`, and this module derives source (1)'s camel forms from it, so the renaming and the permission decision read one map.
  *
  * ⚠ **Two measured hazards make hand-writing a camel alias wrong.**
  *   - `sort_order`'s only legal camel form is `order`, never `sortOrder`.
- *   - An identity entry — a column whose camel form equals its snake form — is dropped by any "keys that differ" filter. The example that stood here was the per-row publication column 162-16 deleted; `auth_user_id` is NOT one (it differs), and `answers`, `color`, `image`, `info` and `subtype` are, so the hazard is live and unexampled by the deleted column rather than retired with it.
+ *   - An identity entry — a column whose camel form equals its snake form — is dropped by any "keys that differ" filter. `answers`, `color`, `image`, `info` and `subtype` are identity entries; `auth_user_id` is not (its camel form differs).
  *
- * **A third hazard stood here until 162-07b and is recorded as CLOSED rather than deleted, because a stale hazard note is worse than none — it is read as current.** `COLUMN_MAP` used to map BOTH `organization_id` and `organization_id_nom` to `organizationId`; reversal into `PROPERTY_MAP` is last-wins, so `FIELD_MAP.organizationId` resolved to the suffixed spelling — a column on no table at all — and the camel key was admitted NOWHERE. That was RES-7 / T-144-11, and its sole cause was two tables carrying a column of the same name. 162-07b removed `candidates.organization_id`, so one mapping is left and `organizationId` now resolves to a real column for the first time. **That WIDENS what this guard admits, on `nominations` and on `factions`** — the intended end state, since the guard admitted it nowhere only because the mapping was broken, but a behaviour change in a security-adjacent guard all the same, so it is asserted in both directions in `tests/template/permittedKeys.test.ts` rather than inherited.
+ * **No two `COLUMN_MAP` keys may map to one property.** Reversal into `PROPERTY_MAP` is last-wins, so the losing column's camel form would resolve to the other column and be admitted on the wrong tables. `organizationId` resolves to `organization_id`, which admits it on `nominations` and `factions`; `tests/template/permittedKeys.test.ts` asserts both that and the one-key-per-property rule.
  */
 export const FIELD_MAP: Record<string, string> = {
   ...PROPERTY_MAP,
-  // Legacy aliases
+  // Aliases with no column of their own
   documentId: 'id'
 };
 
@@ -109,7 +109,6 @@ const TABLE_COLUMNS = {
     'id',
     'image',
     'info',
-    'is_generated',
     'multiple_rounds',
     'name',
     'project_id',
@@ -126,7 +125,6 @@ const TABLE_COLUMNS = {
     'id',
     'image',
     'info',
-    'is_generated',
     'name',
     'project_id',
     'short_name',
@@ -142,7 +140,6 @@ const TABLE_COLUMNS = {
     'id',
     'image',
     'info',
-    'is_generated',
     'keywords',
     'name',
     'parent_id',
@@ -163,7 +160,6 @@ const TABLE_COLUMNS = {
     'id',
     'image',
     'info',
-    'is_generated',
     'name',
     'project_id',
     'short_name',
@@ -180,7 +176,6 @@ const TABLE_COLUMNS = {
     'id',
     'image',
     'info',
-    'is_generated',
     'name',
     'project_id',
     'short_name',
@@ -197,7 +192,6 @@ const TABLE_COLUMNS = {
     'id',
     'image',
     'info',
-    'is_generated',
     'name',
     'organization_id',
     'project_id',
@@ -218,7 +212,6 @@ const TABLE_COLUMNS = {
     'id',
     'image',
     'info',
-    'is_generated',
     'last_name',
     'project_id',
     'short_name',
@@ -240,7 +233,6 @@ const TABLE_COLUMNS = {
     'id',
     'image',
     'info',
-    'is_generated',
     'name',
     'project_id',
     'short_name',
@@ -263,7 +255,6 @@ const TABLE_COLUMNS = {
     'id',
     'image',
     'info',
-    'is_generated',
     'name',
     'project_id',
     'required',
@@ -292,7 +283,6 @@ const TABLE_COLUMNS = {
     'id',
     'image',
     'info',
-    'is_generated',
     'name',
     'organization_id',
     'parent_nomination_id',
@@ -361,7 +351,7 @@ const COLUMNS_BY_TABLE: Readonly<Record<GuardedCollectionKey, ReadonlyArray<stri
 };
 
 // -----------------------------------------------------------------------------
-// Source (3) — non-column fields, MOVED out of bulkImport
+// Source (3) — non-column fields
 // -----------------------------------------------------------------------------
 
 /**
@@ -375,7 +365,7 @@ const NON_COLUMN_FIELD_LIST = ['answersByExternalId'] as const;
 /**
  * ⚠ **Stripping scope and PERMISSION scope are different questions, and this map is the second one.**
  *
- * `bulkImport` strips {@link NON_COLUMN_FIELD_LIST} on *every* collection, and that behaviour is deliberately unchanged. But a field is only a LEGAL authoring key on the collections that actually read it, and `answersByExternalId` is read by `importAnswers` on exactly two: `candidates` and `organizations` (`supabaseAdminClient.ts`, the `importAnswers` body — it iterates those two tables and no others).
+ * `bulkImport` strips {@link NON_COLUMN_FIELD_LIST} on *every* collection. But a field is only a LEGAL authoring key on the collections that actually read it, and `answersByExternalId` is read by `importAnswers` on exactly two: `candidates` and `organizations` (`supabaseAdminClient.ts`, the `importAnswers` body — it iterates those two tables and no others).
  *
  * On a `questions` row the key is not a typo a spell-checker would catch; it is a plausible key on the wrong table, and it is silently stripped with nothing written from it. That is exactly what the class-(2) negative control at `tests/fixtures/negctl-questions-answers.ts` asserts. Admitting the key globally would make that control **structurally unable to fire** — a guard that cannot fail.
  *
@@ -388,7 +378,7 @@ const NON_COLUMN_FIELD_READERS = {
 /**
  * The key `importAnswers` reads a row's answer payload under — exported so the READ site and the PERMISSION site are the same string rather than two literals that can drift.
  *
- * Both call sites in `importAnswers` used to read `row.answersByExternalId ?? row.answers_by_external_id`. The snake spelling is on neither side of the permission split above, is not a column, and is absent from `COLUMN_MAP` / `PROPERTY_MAP` — so `bulkImport` forwarded it to the RPC as a nonexistent column, and Pass 0 rejects it outright. There is deliberately no such fallback; this const keeps the surviving spelling honest.
+ * The snake spelling `answers_by_external_id` is on neither side of the permission split above, is not a column, and is absent from `COLUMN_MAP` / `PROPERTY_MAP`, so `bulkImport` would forward it to the RPC as a nonexistent column; Pass 0 rejects it, and `importAnswers` reads this key only.
  *
  * The `satisfies` is the guard: if `answersByExternalId` ever leaves {@link NON_COLUMN_FIELD_LIST}, this line stops compiling rather than letting `importAnswers` read a key the guard rejects.
  */
@@ -399,11 +389,11 @@ export const ANSWERS_BY_EXTERNAL_ID_KEY = 'answersByExternalId' satisfies (typeo
  *
  * - `candidates.email` — a hand-off payload for candidate invitation, not a
  *   column on the table.
- * - `candidates.organization` — **RECLASSIFIED here by 162-07b, from source (4) to source (3), and the reason is that deleting it has no gate.** The key used to be a {@link RELATIONSHIP_REFS} entry that `_bulk_upsert_record` resolved to `candidates.organization_id`; that column is gone, so nothing may reach the database under this name any more. But the key has a SECOND reader that never touches the database: `pipeline.ts` installs `latentAnswerEmitter` for EVERY template unless a caller has already wired one, and the emitter resolves its party cluster through `findOrganizationIndex(candidate, organizations)`, reading this reference in memory BEFORE any write. An unresolved index does not throw — it falls back to random emission, silently, for every synthetic candidate. So deleting the key would turn every seeded dataset's matching data into noise with no gate in this repository reporting it. Permitted on the row and stripped before the write is exactly what `email` above already does, so this is a move between existing mechanisms rather than a new one.
+ * - `candidates.organization` — the candidate's party reference. No column holds it, so nothing may reach the database under this name, but it has a reader that never touches the database: `pipeline.ts` installs `latentAnswerEmitter` for EVERY template unless a caller has already wired one, and the emitter resolves its party cluster through `findOrganizationIndex(candidate, organizations)`, reading this reference in memory BEFORE any write. An unresolved index does not throw — it falls back to random emission, silently, for every synthetic candidate. So the key is permitted on the row and stripped before the write, as `email` above is.
  * - `elections.constituencyGroups` / `.constituency_groups` and
  *   `constituency_groups.constituencies` — M:N declarations consumed by `linkJoinTables` (writer Pass 3). There is no scalar column on the parent table, so leaving them in the payload makes `_bulk_upsert_record` reject the row with `column "x" of relation "y" does not exist`.
  *
- * ⚠ Those last three pairs are ALSO sentinel key forms under source (2). They stay here because `bulkImport`'s stripping behaviour must not change by one key — but `LINK_SENTINELS` is the authority for PERMISSION. Asserting them against the four-source union cannot detect a regression that empties them from `LINK_SENTINELS`, because this const supplies them independently (measured: 0 rejections instead of 76). The derivation spec therefore asserts them against `LINK_SENTINELS` specifically.
+ * ⚠ Those last three pairs are ALSO sentinel key forms under source (2). They are listed here because `bulkImport` strips them, but `LINK_SENTINELS` is the authority for PERMISSION. Asserting them against the four-source union cannot detect their removal from `LINK_SENTINELS`, because this const supplies them independently, so the derivation spec asserts them against `LINK_SENTINELS` specifically.
  */
 const COLLECTION_NON_COLUMN_LIST = {
   candidates: ['email', 'organization'],
@@ -412,12 +402,12 @@ const COLLECTION_NON_COLUMN_LIST = {
 } as const satisfies Partial<Record<CollectionKey, ReadonlyArray<string>>>;
 
 /**
- * Runtime form of {@link NON_COLUMN_FIELD_LIST}, consumed by `bulkImport`'s strip loop. Contents are byte-identical to the set it used to declare inline.
+ * Runtime form of {@link NON_COLUMN_FIELD_LIST}, consumed by `bulkImport`'s strip loop.
  */
 export const NON_COLUMN_FIELDS: ReadonlySet<string> = new Set<string>(NON_COLUMN_FIELD_LIST);
 
 /**
- * Runtime form of {@link COLLECTION_NON_COLUMN_LIST}, keyed by the RESOLVED table name — `bulkImport` looks it up with `resolveCollectionName(collection)` and has always done so. Contents are byte-identical to the record it used to declare inline.
+ * Runtime form of {@link COLLECTION_NON_COLUMN_LIST}, keyed by the RESOLVED table name — `bulkImport` looks it up with `resolveCollectionName(collection)`.
  */
 export const COLLECTION_NON_COLUMNS: Record<string, ReadonlySet<string>> = Object.fromEntries(
   Object.entries(COLLECTION_NON_COLUMN_LIST).map(([table, keys]) => [table, new Set<string>(keys)])
@@ -426,9 +416,9 @@ export const COLLECTION_NON_COLUMNS: Record<string, ReadonlySet<string>> = Objec
 /**
  * Authoring keys admitted on every collection irrespective of its columns.
  *
- * `Fragment<TRow>` (`src/types.ts:27-30`) re-requires `external_id` on every hand-authored row because the writer's upsert is keyed on it. That holds even for `feedback`, whose table genuinely has no `external_id` column (`107-feedback.sql`) and whose rows the writer skips entirely (`writer.ts:151`).
+ * `Fragment<TRow>` (`src/types.ts`) re-requires `external_id` on every hand-authored row because the writer's upsert is keyed on it. That holds even for `feedback`, whose table genuinely has no `external_id` column (`107-feedback.sql`) and whose rows `Writer.write` skips with a logged warning.
  *
- * ⚠ **`externalId` was here and is not any more** — see {@link CAMEL_FORMS_NOT_ADMITTED}, which is what actually removes it, since the camel derivation would otherwise re-admit it on every table that has the column.
+ * ⚠ **`externalId` is not admitted** — see {@link CAMEL_FORMS_NOT_ADMITTED}, which withholds it from the camel derivation that would otherwise admit it on every table that has the column.
  */
 const AUTHORING_KEYS = ['external_id'] as const;
 
@@ -445,9 +435,9 @@ const AUTHORING_KEYS = ['external_id'] as const;
  * | `assertFixedRowsCarryExternalId` (`schema.ts`) | rejected — reads `row.external_id` only |
  * | `assertKnownRowProps` | **permitted**, on every collection |
  *
- * All eleven generators emit ``external_id: `${externalIdPrefix}${fx.external_id}` `` and read `fx.external_id` ONLY, so a `fixed[]` row carrying the camel spelling emits `external_id: 'seed_undefined'` — and the surviving `externalId` key rides along on the `{...fx}` spread. Both keys were permitted, so the corrupted id reached the database.
+ * All eleven generators emit ``external_id: `${externalIdPrefix}${fx.external_id}` `` and read `fx.external_id` ONLY, so a `fixed[]` row carrying the camel spelling emits `external_id: 'seed_undefined'` — and the surviving `externalId` key rides along on the `{...fx}` spread. Permitting both keys would let the corrupted id reach the database.
  *
- * This matters most on the path with no zod layer: `setupFromTemplate` calls `runPipeline` → `writer.write` WITHOUT `validateTemplate`, so for the E2E templates the runtime guard is the only check — and it was the one layer that let this through.
+ * This matters most on the path with no zod layer: `setupFromTemplate` calls `runPipeline` → `writer.write` WITHOUT `validateTemplate`, so for the E2E templates the runtime guard is the only check.
  *
  * **Measured cost of the narrowing: zero.** Across all 30 built-ins — 1,481 rows and 11,125 key occurrences — `externalId` appears as a top-level row key exactly **0** times. (It appears often as a NESTED key, inside sentinel payloads and `ExternalRef` objects; Pass 0 inspects top-level row keys only, so those are untouched.)
  *
@@ -486,7 +476,7 @@ export const RELATIONSHIP_REFS = {
 /**
  * Keys read BY NAME alongside the RPC's relationship map, but absent from it.
  *
- * `nominations.candidateExternalId` is read by `bulkImport` when it decides whether a nomination is a candidate nomination (`supabaseAdminClient.ts:178`), so it is a legal authoring key even though nothing in-tree emits it and the SQL does not name it. Kept out of {@link RELATIONSHIP_REFS} so the parity test stays exact.
+ * `nominations.candidateExternalId` is read by `bulkImport` when it decides whether a nomination is a candidate nomination (the `hasCandidateRef` test in `supabaseAdminClient.ts`), so it is a legal authoring key even though nothing in-tree emits it and the SQL does not name it. Kept out of {@link RELATIONSHIP_REFS} so the parity test stays exact.
  */
 const RPC_ADJACENT_REFS = {
   nominations: ['candidateExternalId']
@@ -499,7 +489,7 @@ const RPC_ADJACENT_REFS = {
 /**
  * The file the `skip_columns` array is read from, declared once so callers can cite provenance without hard-coding the path a second time.
  *
- * Note the doubled `supabase/` segment — that is the real path. The shorter `apps/supabase/migrations/…` form, which appears in older notes, does not exist.
+ * Note the doubled `supabase/` segment — that is the real path.
  */
 export const SKIP_COLUMNS_SOURCE = 'apps/supabase/supabase/schema/501-bulk-operations.sql';
 
@@ -550,9 +540,9 @@ export const SKIP_COLUMNS_NOT_DENIED: Readonly<Record<string, string>> = {
  * ## ⚠ The members are held in a PRIVATE set, not in this instance's own
  * `[[SetData]]`, and that is what makes the guarantee true
  *
- * `Object.freeze` does not protect a `Set`'s internal `[[SetData]]` slot — only its own properties. So overriding `add` / `delete` / `clear` blocked the ordinary spelling and nothing else: `Set.prototype.add.call(permittedKeys( 'elections'), 'smuggled')` widened the memoized, process-wide allow-list, and a constructor populating itself through the ordinary `Set` API uses precisely that escape hatch, so the technique would sit three lines above the guarantee it defeats.
+ * `Object.freeze` does not protect a `Set`'s internal `[[SetData]]` slot — only its own properties. So overriding `add` / `delete` / `clear` alone blocks the ordinary spelling and nothing else: `Set.prototype.add.call(permittedKeys('elections'), 'smuggled')` would widen the memoized, process-wide allow-list.
  *
- * Every read is now answered from `#values`, which no `Set.prototype.*.call` can reach. The class still EXTENDS `Set`, so `instanceof Set` and the `ReadonlySet<string>` contract both hold and no call site moved; the superclass's own data is simply left empty and unread. A prototype-borrowed mutation therefore writes into a slot nothing consults — it cannot throw (the receiver is a genuine `Set`), but it cannot widen the guard either, which is the property that matters.
+ * Every read is answered from `#values`, which no `Set.prototype.*.call` can reach. The class EXTENDS `Set`, so `instanceof Set` and the `ReadonlySet<string>` contract both hold; the superclass's own data is left empty and unread. A prototype-borrowed mutation therefore writes into a slot nothing consults — it cannot throw (the receiver is a genuine `Set`), but it cannot widen the guard either, which is the property that matters.
  *
  * Held by `tests/template/permittedKeys.test.ts`, which performs the smuggle and asserts `has` still says no.
  */
@@ -610,7 +600,7 @@ class PermittedKeySet extends Set<string> {
 /**
  * Every camelCase key that `FIELD_MAP` resolves to `column`, minus the forms {@link CAMEL_FORMS_NOT_ADMITTED} withholds.
  *
- * The subtraction is applied HERE rather than at the one call site because the derivation has two consumers — the permitted set and (since CR-01) the denied set — and a form that is not a legal spelling of a column is not a legal spelling of it in either direction.
+ * The subtraction is applied HERE rather than at the one call site because the derivation has two consumers — the permitted set and the denied set — and a form that is not a legal spelling of a column is not a legal spelling of it in either direction.
  */
 function camelFormsFor(column: string): Array<string> {
   return Object.keys(FIELD_MAP).filter(
@@ -686,7 +676,7 @@ export function permittedKeys(collection: string): ReadonlySet<string> {
 /**
  * Derive one table's denied set the SAME mechanical way {@link derivePermittedKeys} derives its permitted set: the snake column, plus every camel form {@link FIELD_MAP} resolves onto that column.
  *
- * ⚠ **This symmetry is load-bearing, not tidiness.** `DENIED_BY_TABLE` is written in snake case because that is how the RPC's `skip_columns` array names its entries — but source (1) admits, for every column, *every camel form that resolves to it*, and `COLUMN_MAP` maps `entity_type` to `entityType`. A literal `new Set(['entity_type'])` therefore left `entityType` in the PERMITTED set and out of the DENIED one, so the allow-list waved it through; `bulkImport` then ran `resolveFieldName('entityType') === 'entity_type'` and shipped it to the RPC, whose `skip_columns` discarded it — exit 0 and a row missing what the author asked for, which is the exact failure mode {@link DENIED_BY_TABLE} exists to eliminate.
+ * ⚠ **This symmetry is load-bearing, not tidiness.** `DENIED_BY_TABLE` is written in snake case because that is how the RPC's `skip_columns` array names its entries — but source (1) admits, for every column, *every camel form that resolves to it*, and `COLUMN_MAP` maps `entity_type` to `entityType`. A literal `new Set(['entity_type'])` would leave `entityType` in the PERMITTED set and out of the DENIED one, so the allow-list would wave it through; `bulkImport` would run `resolveFieldName('entityType') === 'entity_type'` and ship it to the RPC, whose `skip_columns` discards it — exit 0 and a row missing what the author asked for, which is the exact failure mode {@link DENIED_BY_TABLE} exists to eliminate.
  *
  * The rule this encodes: **every spelling `resolveFieldName` collapses onto a denied column is itself denied.** Deriving it here rather than listing it is what makes that true for a column added to `DENIED_BY_TABLE` tomorrow.
  * `tests/assertKnownRowProps.test.ts` asserts it for both spellings on all three declaring tables, and holds the derived set to the declaration in both directions so neither can grow silently.
@@ -754,7 +744,7 @@ type SentinelKeysFor<TCollection extends CollectionKey> = KeysWhenRuleCovers<
 /**
  * Non-column keys admitted on `TCollection` — globally-stripped-but-reader-scoped, plus per-collection.
  *
- * ⚠ **The first arm is derived from {@link NON_COLUMN_FIELD_READERS}, not from {@link NON_COLUMN_FIELD_LIST}, and that is the whole point.** The runtime arm (`derivePermittedKeys`, source (3)) consults the readers map, so `answersByExternalId` is legal on `candidates` and `organizations` only. When this type unioned the flat LIST unconditionally, `QuestionsFixedRow` compiled a row carrying that key clean and the same row then hard-failed at seed time — this file's header claim of "one source of truth for TWO enforcement layers" was false for exactly this source. The mapped type below re-derives the arm per collection so the two layers cannot drift apart again; `tests/template/strictRowTypes.type-test.ts` holds a `@ts-expect-error` on the `questions` case, so a regression is a compile error rather than a seed-time surprise.
+ * ⚠ **The first arm is derived from {@link NON_COLUMN_FIELD_READERS}, not from {@link NON_COLUMN_FIELD_LIST}, and that is the whole point.** The runtime arm (`derivePermittedKeys`, source (3)) consults the readers map, so `answersByExternalId` is legal on `candidates` and `organizations` only. Unioning the flat LIST unconditionally would let `QuestionsFixedRow` compile a row carrying that key, and the same row would then fail at seed time. The mapped type below derives the arm per collection so the two layers cannot drift apart; `tests/template/strictRowTypes.type-test.ts` holds a `@ts-expect-error` on the `questions` case, so a regression is a compile error rather than a seed-time surprise.
  */
 type NonColumnKeysFor<TCollection extends CollectionKey> =
   | {

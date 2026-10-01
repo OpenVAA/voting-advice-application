@@ -1,14 +1,14 @@
 -- 12-user-can.test.sql: the user_can permission predicate
 --
--- user_can is the single place the role x permission matrix of 162-IMPLEMENTATION-BRIEF.md section 3.3 is written down, and 97 RLS policies are about to delegate their whole authority decision to it. Its failure mode is silent and one-directional: a predicate that answers true when it should answer false breaks nothing, reddens nothing, and ships. So every allow assertion in this file is paired with a deny assertion, and the deny half was observed RED against a deliberately over-permissive user_can before the real body was accepted. That observation is the evidence; the green run below is not.
+-- This file asserts the properties of user_can that the RLS policies rely on when they delegate their authority decision to it: the answer vector of each of the eight grant-bearing user types against the role x permission matrix (grant_role_permissions), reach per scope, the project-read and child-nominee branches, union over several grants, and deny on no grants, the wrong tenant, the wrong permission and malformed claims. Its failure mode is silent, because a predicate that answers true when it should answer false breaks nothing and reddens nothing, so every allow assertion is paired with a deny assertion.
 --
--- The declared assertion count below is explicit and deliberately so: a pgTAP file that asserts nothing exits 0 under no_plan, which is exactly the vacuous pass a permission test must not be able to produce. The declaration below is the only occurrence of that call in this file, deliberately: the gate that reads the declared count greps for the first occurrence, so a mention of it in prose above would shadow the real declaration and read as zero.
+-- The assertion count is declared explicitly, because under no_plan a file that asserts nothing exits 0. The declaration below is the only occurrence of that call in the file: a tool that reads the declared count takes the first occurrence, so prose above it must not name the call.
 --
--- Grant rows are inserted into public.grants inside this transaction, as postgres, and projected into the session JWT by test_grants_claim — the same shape 162-06's access-token hook must reproduce. Nothing outside the transaction is touched and the ROLLBACK at the end removes them.
+-- Grant rows are inserted into public.grants inside this transaction, as postgres, and projected into the session JWT by test_grants_claim in the shape the access-token hook emits. The ROLLBACK at the end removes them.
 --
--- The test users are chosen for their ids only. user_can reads no legacy user_roles claim in any branch, and every session below is given an EMPTY user_roles array, so a caller's authority here comes from public.grants and from nowhere else. That is why, for instance, candidate_b carries the AllianceEditor grant: which auth user holds which grant is arbitrary, and saying so here is cheaper than inventing a parallel fixture.
+-- The test users are chosen for their ids only. Every set_test_user call below passes an empty grant array, so nothing is written for the fixture identities and a caller's authority comes from the grant rows this file inserts. That is why candidate_b can carry the AllianceEditor grant: which auth user holds which grant is arbitrary.
 --
--- Five extra auth users and two extra nominations are created inside this transaction rather than in create_test_data(), so no other test file's fixture moves: the eight named users of 00-helpers.test.sql are exactly the eight user types of section 3.1, which leaves none spare for the unmapped grant shapes, the union caller and the grant-less caller.
+-- Five extra auth users and one extra nomination are created inside this transaction rather than in create_test_data (), so no other test file's fixture moves. The eight named users of 00-helpers.test.sql are the eight grant-bearing user types, which leaves none spare for the unmapped grant shapes, the union caller and the grant-less caller.
 --
 -- Depends on: 00-helpers.test.sql (set_test_user, set_test_grants,
 --             test_grants_claim, create_test_data, test_id, test_user_id)
@@ -112,9 +112,9 @@ VALUES
     now()
   );
 
--- The grandchild chain: org_a's nomination already exists and already parents candidate_a's. A faction nomination under it, and a candidate nomination under THAT, give is_child_nominee a genuine two-hop case to answer false to.
+-- The grandchild chain: org_a's nomination parents both candidate_a's and nomination_faction_a, and the candidate nomination below is parented by the faction's. That gives is_child_nominee a genuine two-hop case to answer false to.
 --
--- ⚠ THE FACTION LINK IS THE SHARED FIXTURE'S ROW, NOT A SECOND ONE. This block used to INSERT its own `faction_a` nomination under `nomination_org_a` at (election_a, constituency_a, round 1). 162-08 later added `nomination_faction_a` to `create_test_data ()` at exactly that contest, and the two have been duplicates ever since -- invisibly, because nothing forbade it. 162-12's `nominations_entity_parent_contest_key UNIQUE NULLS NOT DISTINCT` does forbid it, and MEASURED: installing that key turned this file red here. The chain is unchanged in shape and depth -- org_a's nomination parents the faction's, which parents candidate_a2's -- so every assertion below still has its genuine two-hop case, and no description string moves.
+-- The faction link is the shared fixture's row, not a second one: another faction_a nomination at the same contest would violate nominations_entity_parent_contest_key.
 INSERT INTO
   nominations (
     id,
@@ -137,7 +137,7 @@ VALUES
   );
 
 -- =====================================================================
--- Grant fixture: the eight user types of section 3.1, one row each
+-- Grant fixture: the eight grant-bearing user types, one row each
 -- =====================================================================
 INSERT INTO
   grants (user_id, scope, target_type, target_id, role)
@@ -206,7 +206,7 @@ VALUES
     test_id ('alliance_a'),
     'editor'
   ),
-  -- Three grant shapes the CHECK constraints admit and section 3.1 does not map
+  -- Three grant shapes the CHECK constraints admit and the matrix does not map
   (
     'cccccccc-cccc-cccc-cccc-0000000000f1',
     'global',
@@ -244,11 +244,15 @@ VALUES
     'editor'
   );
 
--- The answer vector, asked over the canonical 23 in enum order. Returning the permissions rather than 23 booleans is deliberate: a single wrong cell then reddens with the permission NAME in the pgTAP diagnostic, which is what makes a failure here readable against the brief's table.
-CREATE FUNCTION pg_temp.allowed (p_scope grant_scope_type, p_target_id uuid) RETURNS grant_permission[] LANGUAGE sql STABLE AS $$
+-- The answer vector, asked over the canonical 23 in enum order. Returning the permissions rather than 23 booleans is deliberate: a single wrong cell then reddens with the permission NAME in the pgTAP diagnostic, which is what makes a failure here readable against the matrix.
+CREATE FUNCTION pg_temp.allowed (
+  p_scope grant_scope_type,
+  p_target_id uuid,
+  p_target_type entity_type DEFAULT NULL
+) RETURNS grant_permission[] LANGUAGE sql STABLE AS $$
   SELECT COALESCE(array_agg(p.v ORDER BY p.n), ARRAY[]::public.grant_permission[])
   FROM unnest(enum_range(NULL::public.grant_permission)) WITH ORDINALITY AS p (v, n)
-  WHERE public.user_can(p_scope, p_target_id, p.v);
+  WHERE public.user_can(p_scope, p_target_id, p.v, p_target_type);
 $$;
 
 -- =====================================================================
@@ -284,7 +288,7 @@ SELECT
     'a project editor is denied project.read_structure on another project'
   );
 
--- The empty edge, resolved rather than surfaced: a caller holding no grant at all is denied. Until 162-06 emits the claim, every real JWT is in this case.
+-- The empty edge: a caller holding no grant at all is denied.
 SELECT
   reset_role ();
 
@@ -348,7 +352,7 @@ SELECT
   );
 
 -- =====================================================================
--- Section 2: the same authority read through the converted policy (6-9)
+-- Section 2: the same authority read through the projects policies (6-9)
 -- =====================================================================
 SELECT
   is (
@@ -401,7 +405,7 @@ SELECT
     'a caller with no grants sees zero project rows'
   );
 
--- Criterion 2, behaviourally. The project grantee may read the row through the converted SELECT policy and may not write it: at the commit this assertion was written admin_update_projects still gated on the project-access shim, which read a claim this session does not carry. The UPDATE below raises nothing and affects no row.
+-- Read does not imply write, behaviourally: the project grantee may read the row through authenticated_select_projects and may not update it. The UPDATE below raises nothing and affects no row.
 SELECT
   reset_role ();
 
@@ -439,7 +443,7 @@ SELECT
   );
 
 -- =====================================================================
--- Section 3: criterion 2, structurally (test 10)
+-- Section 3: read does not imply write, structurally (test 10)
 -- =====================================================================
 SELECT
   ok (
@@ -469,13 +473,13 @@ SELECT
         tablename = 'projects'
         AND policyname = 'authenticated_select_projects'
     ) NOT LIKE '%can_access_project%',
-    'the projects SELECT and UPDATE policies no longer share a predicate'
+    'the projects SELECT and UPDATE policies do not share a predicate'
   );
 
 -- =====================================================================
--- Section 4: the eight columns of section 3.3, one ordered vector each (11-18)
+-- Section 4: the eight columns of the role x permission matrix, one ordered vector each (11-18)
 --
--- Each vector is asked at the scope that user type's grant reaches, against a target that grant reaches. The expected array is transcribed from the brief's table cell by cell, in the canonical enum order of 000-enums.sql.
+-- Each vector is asked at the scope that user type's grant reaches, against a target that grant reaches. The expected array is transcribed from the matrix cell by cell, in the canonical enum order of 000-enums.sql.
 -- =====================================================================
 SELECT
   reset_role ();
@@ -659,7 +663,7 @@ SELECT
 
 SELECT
   is (
-    pg_temp.allowed ('entity', test_id ('candidate_a')),
+    pg_temp.allowed ('entity', test_id ('candidate_a'), 'candidate'),
     ARRAY[
       'project.read_structure',
       'entity.edit_answers',
@@ -686,7 +690,7 @@ SELECT
 
 SELECT
   is (
-    pg_temp.allowed ('entity', test_id ('org_a')),
+    pg_temp.allowed ('entity', test_id ('org_a'), 'organization'),
     ARRAY[
       'project.read_structure',
       'entity.edit_answers',
@@ -713,7 +717,7 @@ SELECT
 
 SELECT
   is (
-    pg_temp.allowed ('entity', test_id ('faction_a')),
+    pg_temp.allowed ('entity', test_id ('faction_a'), 'faction'),
     ARRAY[
       'project.read_structure',
       'entity.edit_answers',
@@ -740,7 +744,7 @@ SELECT
 
 SELECT
   is (
-    pg_temp.allowed ('entity', test_id ('alliance_a')),
+    pg_temp.allowed ('entity', test_id ('alliance_a'), 'alliance'),
     ARRAY[
       'project.read_structure',
       'entity.edit_answers',
@@ -755,7 +759,7 @@ SELECT
 -- =====================================================================
 -- Section 5: grant shapes outside the eight-row mapping (19-21)
 --
--- The CHECK constraints of 300-auth-tables.sql admit these three; section 3.1 does not describe them. Without the matrix function's fall-through arm they would inherit whichever CASE arm they happened to land in.
+-- The CHECK constraints of 300-auth-tables.sql admit these three; the matrix does not map them. Without the matrix function's fall-through arm they would inherit whichever CASE arm they happened to land in.
 -- =====================================================================
 SELECT
   reset_role ();
@@ -812,7 +816,7 @@ SELECT
 
 SELECT
   is (
-    pg_temp.allowed ('entity', test_id ('candidate_a')),
+    pg_temp.allowed ('entity', test_id ('candidate_a'), 'candidate'),
     ARRAY[]::grant_permission[],
     'a grant shape outside the eight-row mapping carries no permissions: entity+admin'
   );
@@ -843,7 +847,7 @@ SELECT
 
 SELECT
   is (
-    pg_temp.allowed ('entity', test_id ('candidate_a')),
+    pg_temp.allowed ('entity', test_id ('candidate_a'), 'candidate'),
     ARRAY[]::grant_permission[],
     'an empty grants array denies all 23 permissions at entity scope'
   );
@@ -884,7 +888,7 @@ SELECT
 
 SELECT
   is (
-    pg_temp.allowed ('entity', test_id ('candidate_b')),
+    pg_temp.allowed ('entity', test_id ('candidate_b'), 'candidate'),
     ARRAY[]::grant_permission[],
     'a project admin is denied every permission on an entity of another project'
   );
@@ -954,7 +958,12 @@ SELECT
 
 SELECT
   ok (
-    NOT user_can ('entity', NULL, 'entity.edit_answers'),
+    NOT user_can (
+      'entity',
+      NULL,
+      'entity.edit_answers',
+      'candidate'
+    ),
     'a NULL target id denies at entity scope'
   );
 
@@ -970,12 +979,13 @@ SELECT
     NOT user_can (
       'entity',
       '99999999-9999-9999-9999-999999999999',
-      'entity.edit_answers'
+      'entity.edit_answers',
+      'candidate'
     ),
     'a target id present in no entity table denies'
   );
 
--- A claim entry whose scope is not a declared literal. Compared as text and skipped rather than cast, because a cast would raise inside a policy predicate in 97 places.
+-- A claim entry whose scope is not a declared literal. Compared as text and skipped rather than cast, because a cast would raise inside every policy predicate that calls user_can.
 SELECT
   set_config(
     'request.jwt.claims',
@@ -1049,7 +1059,7 @@ SELECT
 -- =====================================================================
 -- Section 8: the adjacency edge, resolved as a union (33-34)
 --
--- Two grants bearing on one object combine by union: the first grant satisfying both verb and reach answers yes, and no grant can subtract. The alternative reading — that the more specific grant wins — is rejected explicitly, because section 3.3's `own` qualifiers restrict a grant's own reach, never another grant's.
+-- Two grants bearing on one object combine by union: the first grant satisfying both verb and reach answers yes, and no grant can subtract. The alternative reading — that the more specific grant wins — is rejected explicitly, because the matrix's `own` qualifiers restrict a grant's own reach, never another grant's.
 -- =====================================================================
 SELECT
   reset_role ();
@@ -1125,7 +1135,7 @@ SELECT
 -- =====================================================================
 -- Section 9: the project-read branch (35-38)
 --
--- Section 3.4 row 2, "any auth user can always read their project", written into user_can as one branch naming one permission literal — not as a general upward reach, which would also answer yes to entity.edit_answers asked at account scope.
+-- An entity grantee may always read the structure of its own project, written into user_can as one branch naming one permission literal — not as a general upward reach, which would also answer yes to entity.edit_answers asked at account scope.
 -- =====================================================================
 SELECT
   reset_role ();
@@ -1175,7 +1185,8 @@ SELECT
     NOT user_can (
       'entity',
       test_id ('candidate_a2'),
-      'entity.edit_answers'
+      'entity.edit_answers',
+      'candidate'
     ),
     'an entity grantee is denied entity.edit_answers on another entity in the same project'
   );
@@ -1183,7 +1194,7 @@ SELECT
 -- =====================================================================
 -- Section 10: is_child_nominee, one hop only (39-43)
 --
--- D4(a): the direct parent and nothing further. The grandchild assertion is what keeps a transitive version deferred — a recursive implementation would answer true to it, and 162-CONTEXT.md holds that as a separate decision.
+-- The direct parent and nothing further. The grandchild assertion fails if is_child_nominee becomes transitive, because a recursive implementation would answer true to it.
 -- =====================================================================
 SELECT
   reset_role ();
@@ -1193,6 +1204,7 @@ SELECT
     private.is_child_nominee (
       'organization',
       test_id ('org_a'),
+      'candidate',
       test_id ('candidate_a')
     ),
     'is_child_nominee is true for a candidate nominated under its organization nomination'
@@ -1203,6 +1215,7 @@ SELECT
     NOT private.is_child_nominee (
       'organization',
       test_id ('org_b'),
+      'candidate',
       test_id ('candidate_a')
     ),
     'is_child_nominee is false for a candidate nominated under a different organization'
@@ -1213,6 +1226,7 @@ SELECT
     NOT private.is_child_nominee (
       'organization',
       test_id ('org_a'),
+      'candidate',
       test_id ('candidate_a2')
     ),
     'is_child_nominee is false for a grandchild, asked against the organization'
@@ -1223,6 +1237,7 @@ SELECT
     private.is_child_nominee (
       'faction',
       test_id ('faction_a'),
+      'candidate',
       test_id ('candidate_a2')
     ),
     'is_child_nominee is true for that grandchild, asked against the intervening faction'
@@ -1233,15 +1248,16 @@ SELECT
     NOT private.is_child_nominee (
       'alliance',
       test_id ('alliance_a'),
+      'organization',
       test_id ('org_a')
     ),
     'is_child_nominee is false for a nomination with no parent'
   );
 
 -- =====================================================================
--- Section 11: the Q2 cell, in the direction the operator ratified (44-45)
+-- Section 11: the child-nominee branch grants nomination.read, not entity.read_answers (44-45)
 --
--- 162-CHECKPOINT-DECISIONS.md section 3 item A-2, answered 2026-09-16: option (D). is_child_nominee gates nomination.read, for any entity grant — NOT entity.read_answers. Section 3.4's third row and 162-USER-RIGHTS.md's Nomination group both say the child hop grants the parent the child's nomination and BASIC data, never the child's answers, so section 3.3's entity.read_answers cells stay literally `own`. These two assertions are the whole difference between the ratified reading and the permissive one.
+-- is_child_nominee gates nomination.read for any entity grant. The child hop grants the parent the child's nominations and basic data, never the child's answers, so the entity.read_answers cells of the matrix stay `own`. These two assertions are the whole difference between that reading and a permissive one.
 -- =====================================================================
 SELECT
   set_test_user (
@@ -1258,9 +1274,10 @@ SELECT
     user_can (
       'entity',
       test_id ('candidate_a'),
-      'nomination.read'
+      'nomination.read',
+      'candidate'
     ),
-    'Q2(D): an organization grantee is allowed nomination.read on its child nominee'
+    'an organization grantee is allowed nomination.read on its child nominee'
   );
 
 SELECT
@@ -1268,9 +1285,10 @@ SELECT
     NOT user_can (
       'entity',
       test_id ('candidate_a'),
-      'entity.read_answers'
+      'entity.read_answers',
+      'candidate'
     ),
-    'Q2(D) paired opposite: that grantee is denied entity.read_answers on the same child'
+    'paired opposite: that grantee is denied entity.read_answers on the same child'
   );
 
 SELECT

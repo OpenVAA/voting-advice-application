@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { focusNavigationTarget } from './focusNavigationTarget';
 
 /**
- * Specification for the post-navigation focus reset. The case that matters is the third: a focus target that renders AFTER the first frame. The one-shot form this replaced focused nothing in that case and left focus on `<body>`, which is how `a11y-smoke`'s "focus lands on heading after Q→Q nav" went red on a loaded host.
+ * Specification for the post-navigation focus reset: a focus target that renders after the first frame is still focused, and the wait yields to a focus move, a pointer press, a newer navigation and the timeout.
  *
  * The first lookup's scheduler is injected, so "the frame ran before the heading rendered" is a controlled ordering here rather than a race.
  */
@@ -26,6 +26,13 @@ function manualFrame(): { schedule: (callback: () => void) => void; runFrame: ()
 async function flushMutations(): Promise<void> {
   await Promise.resolve();
   await Promise.resolve();
+}
+
+/** Dispatches a bubbling, cancelable `pointerdown` on `target` and returns the event. */
+function pointerDown(target: EventTarget): Event {
+  const event = new Event('pointerdown', { bubbles: true, cancelable: true });
+  target.dispatchEvent(event);
+  return event;
 }
 
 function appendHeading(attributes: Record<string, string> = {}): HTMLElement {
@@ -67,7 +74,7 @@ describe('focusNavigationTarget', () => {
     expect(document.activeElement).toBe(h1);
   });
 
-  it('focuses a target that renders AFTER the first frame -- the one-shot form left focus on <body> here', async () => {
+  it('focuses a target that renders AFTER the first frame', async () => {
     const frame = manualFrame();
     focusNavigationTarget({ schedule: frame.schedule });
     frame.runFrame();
@@ -104,6 +111,53 @@ describe('focusNavigationTarget', () => {
     appendHeading({ 'data-focus-on-nav': '' });
     await flushMutations();
     expect(document.activeElement).toBe(document.body);
+  });
+
+  it('does not focus a target rendered after the user pressed a pointer while it was pending', async () => {
+    const frame = manualFrame();
+    focusNavigationTarget({ schedule: frame.schedule });
+    frame.runFrame();
+    pointerDown(document.body);
+    appendHeading({ 'data-focus-on-nav': '' });
+    await flushMutations();
+    expect(document.activeElement).toBe(document.body);
+  });
+
+  it('leaves the pointer press to every other listener: it still arrives and its default is not prevented', () => {
+    const received: Array<Event> = [];
+    function sibling(event: Event): void {
+      received.push(event);
+    }
+    document.body.addEventListener('pointerdown', sibling);
+    const frame = manualFrame();
+    focusNavigationTarget({ schedule: frame.schedule });
+    frame.runFrame();
+    const event = pointerDown(document.body);
+    document.body.removeEventListener('pointerdown', sibling);
+    expect(received).toEqual([event]);
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('ignores a pointer press after the target was focused, and removes its pointer listener on cancel', () => {
+    const addSpy = vi.spyOn(document, 'addEventListener');
+    const removeSpy = vi.spyOn(document, 'removeEventListener');
+    const frame = manualFrame();
+    const cancel = focusNavigationTarget({ schedule: frame.schedule });
+    frame.runFrame();
+    const added = addSpy.mock.calls.find(([type]) => type === 'pointerdown');
+    expect(added?.[2]).toMatchObject({ capture: true, passive: true });
+
+    const target = appendHeading({ 'data-focus-on-nav': '' });
+    target.focus();
+    cancel();
+    const removed = removeSpy.mock.calls.find(([type]) => type === 'pointerdown');
+    expect(removed?.[1]).toBe(added?.[1]);
+    expect(removed?.[2]).toMatchObject({ capture: true });
+
+    expect(() => pointerDown(document.body)).not.toThrow();
+    expect(document.activeElement).toBe(target);
+    addSpy.mockRestore();
+    removeSpy.mockRestore();
   });
 
   it('stops waiting after the timeout', async () => {

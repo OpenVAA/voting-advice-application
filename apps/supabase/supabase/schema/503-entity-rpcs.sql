@@ -1,11 +1,14 @@
 -- Entity RPC functions
 --
 -- Functions:
---   get_nominations()         - return nominations with entity data get_entity_basic_data() - basic-data projection of an entity the caller holds nomination.read on get_candidate_user_data() - return entity row for authenticated user upsert_answers()          - atomic answer write for a single entity
+-- - get_nominations() - return nominations with entity data
+-- - get_entity_basic_data() - basic-data projection of an entity the caller holds nomination.read on
+-- - get_candidate_user_data() - return the entity row for the authenticated user
+-- - upsert_answers() - atomic answer write for a single entity
 --------------------------------------------------------------------------------
 -- get_nominations RPC: returns nominations with entity data in a single round trip
 --
--- p_project_id is REQUIRED and carries no DEFAULT. Every other filter defaults NULL, and NULL means "no filter", so a defaulted project would let a caller that forgets the argument read every project's nominations without anything saying so. It comes first because PostgreSQL forbids a parameter without a default from following one that has a default.
+-- p_project_id is REQUIRED and carries no DEFAULT. Every other filter defaults to NULL, meaning no filter, so a defaulted project would let a caller that omits the argument read every project's nominations. It comes first because PostgreSQL forbids a parameter without a default from following one that has a default.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.get_nominations (
   p_project_id uuid,
@@ -66,12 +69,12 @@ CREATE OR REPLACE FUNCTION public.get_nominations (
     c.first_name AS entity_first_name,
     c.last_name AS entity_last_name
   FROM public.nominations n
-  -- The project term belongs in the JOIN condition and not in the WHERE clause. These are LEFT joins: a WHERE predicate on the right-hand table would discard every nomination whose entity is of a different type (three of the four aliases are NULL on any given row), turning the whole result set empty. In the ON clause a non-matching entity simply resolves to NULL, which is what the trailing COALESCE filter is already written to handle.
+  -- The project term belongs in the JOIN condition, not the WHERE clause. These are LEFT joins and three of the four aliases are NULL on any row, so a WHERE predicate on a right-hand table would discard every nomination whose entity is of another type. In the ON clause a non-matching entity resolves to NULL, which the trailing COALESCE filter handles.
   LEFT JOIN public.candidates c ON n.candidate_id = c.id AND c.project_id = p_project_id
   LEFT JOIN public.organizations o ON n.organization_id = o.id AND o.project_id = p_project_id
   LEFT JOIN public.factions f ON n.faction_id = f.id AND f.project_id = p_project_id
   LEFT JOIN public.alliances a ON n.alliance_id = a.id AND a.project_id = p_project_id
-  -- The project predicate is an unconditional equality rather than the `IS NULL OR` shape the other filters use, because there is no "every project" case: a caller without a project is a caller that should not be reading nominations at all.
+  -- The project predicate is an unconditional equality rather than the `IS NULL OR` shape the other filters use: there is no every-project case.
   WHERE n.project_id = p_project_id
     AND (p_election_id IS NULL OR n.election_id = p_election_id)
     AND (p_constituency_id IS NULL OR n.constituency_id = p_constituency_id)
@@ -80,7 +83,7 @@ CREATE OR REPLACE FUNCTION public.get_nominations (
     AND (p_election_round IS NULL OR n.election_round = p_election_round)
     -- SECURITY INVOKER means the LEFT JOINs run with the caller's permissions, so RLS-hidden entity rows return NULL on the entity-side columns. Drop rows where every entity-side join resolved to NULL. With the join predicates above, this filter also drops a nomination whose entity belongs to another project.
     --
-    -- ⚠ NARROWER SINCE 162-08, AND KEPT AS DEFENCE IN DEPTH RATHER THAN REMOVED. This filter was written when the nomination row carried no gate of its own beyond its own policy: an entity hidden by `anon_select_candidates`' terms-of-use clause would still have left its nomination visible, and this line is what stopped the leak. Since 162-08 `anon_select_nominations` carries the transitive conjunct itself -- every entity a nomination links must be confirmed -- so the class of row this filter still catches is smaller than the class it was written for. 162-08 recorded the narrowing as a note for 162-16 rather than as an action, and 162-16 records it again and CHANGES NOTHING: the remaining class is not empty (the terms-of-use clause is a candidates-policy term that no nominations predicate restates), and deleting a defence-in-depth filter inside a comment sweep is the silent change this phase exists to prevent.
+    -- This filter is defence in depth. `anon_select_nominations` already requires every entity a nomination links to be confirmed, but the terms-of-use clause of `anon_select_candidates` is a candidates-policy term that no nominations predicate restates, so a nomination whose candidate that clause hides is dropped only here.
     AND COALESCE(c.id, o.id, f.id, a.id) IS NOT NULL
   ORDER BY n.sort_order NULLS LAST, n.id;
 $$;
@@ -90,77 +93,82 @@ EXECUTE ON FUNCTION public.get_nominations (uuid, uuid, uuid, boolean, integer) 
 authenticated;
 
 --------------------------------------------------------------------------------
--- get_entity_basic_data: an entity's BASIC data for a caller holding nomination.read on it (162-REVIEW CR-02)
+-- get_entity_basic_data: an entity's BASIC data for a caller holding nomination.read on it
 --
--- SPEC section 7 row 3: an entity grantee reads, via is_child_nominee, a related entity's basic data only -- not its answers unless public. Row-level security cannot express that, because a SELECT policy that admits a row returns every column of it; the four entity SELECT policies therefore no longer carry a `nomination.read` disjunct (302-rls.sql), and this function is where the parent's reach lives instead.
+-- An entity grantee reads a related entity's basic data through is_child_nominee, but not its answers unless they are public. Row-level security cannot express that, because a SELECT policy that admits a row returns every column of it, so the entity SELECT policies carry no `nomination.read` disjunct (302-rls.sql) and the parent's reach is granted here instead.
 --
--- The gate is ONE `user_can ('entity', p_entity_id, 'nomination.read')` call, so the matrix is asked rather than re-derived: the child-nominee hop is user_can's named branch 2, and every project-scope role holding nomination.read passes through the ordinary reach rules.
+-- The gate is ONE `user_can ('entity', p_entity_id, 'nomination.read', p_entity_type)` call, so the matrix is asked rather than re-derived: the child-nominee hop is user_can's named branch 2, and every project-scope role holding nomination.read passes through the ordinary reach rules.
 --
--- The projection is an ALLOW-LIST, not `to_jsonb(row) - <deny-list>`: a column added to an entity table later is withheld until someone decides it is basic data. Withheld today: answers, auth_user_id, terms_of_use_accepted, custom_data, is_generated, external_id and the two timestamps.
+-- The entity is named by its type and id together, because the four entity tables have independent primary keys and one uuid can name two entities in two projects. The type selects the one table probed, and the gate asks about that same entity.
 --
--- Returns NULL -- never raises -- when the caller lacks the permission or the id is in no entity table, so the answer does not distinguish "does not exist" from "not yours".
+-- The projection is an ALLOW-LIST, not `to_jsonb(row) - <deny-list>`: a column added to an entity table later is withheld until someone decides it is basic data. Withheld today: answers, auth_user_id, terms_of_use_accepted, custom_data, external_id and the two timestamps.
+--
+-- Returns NULL -- never raises -- when the caller lacks the permission, when the type is NULL, or when the named table holds no row with that id, so the answer does not distinguish "does not exist" from "not yours".
 --
 -- SECURITY DEFINER because the whole point is to return a row the caller's own SELECT policy refuses; search_path is pinned as on every definer function in this schema. EXECUTE is authenticated only: anon carries no grants claim, so user_can would deny it on every call anyway.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.get_entity_basic_data (p_entity_id uuid) RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER
+CREATE OR REPLACE FUNCTION public.get_entity_basic_data (
+  p_entity_type public.entity_type,
+  p_entity_id uuid
+) RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER
 SET
   search_path = '' AS $$
 DECLARE
   result jsonb;
 BEGIN
-  IF p_entity_id IS NULL OR NOT public.user_can('entity', p_entity_id, 'nomination.read') THEN
+  IF p_entity_id IS NULL OR NOT public.user_can('entity', p_entity_id, 'nomination.read', p_entity_type) THEN
     RETURN NULL;
   END IF;
 
-  SELECT jsonb_build_object(
-      'entity_type', 'candidate', 'id', c.id, 'project_id', c.project_id,
-      'first_name', c.first_name, 'last_name', c.last_name,
-      'short_name', c.short_name, 'info', c.info, 'color', c.color, 'image', c.image,
-      'sort_order', c.sort_order, 'subtype', c.subtype, 'confirmed', c.confirmed)
-    INTO result
-    FROM public.candidates c WHERE c.id = p_entity_id;
-  IF result IS NOT NULL THEN RETURN result; END IF;
-
-  SELECT jsonb_build_object(
-      'entity_type', 'organization', 'id', o.id, 'project_id', o.project_id,
-      'name', o.name, 'short_name', o.short_name, 'info', o.info, 'color', o.color, 'image', o.image,
-      'sort_order', o.sort_order, 'subtype', o.subtype, 'confirmed', o.confirmed)
-    INTO result
-    FROM public.organizations o WHERE o.id = p_entity_id;
-  IF result IS NOT NULL THEN RETURN result; END IF;
-
-  SELECT jsonb_build_object(
-      'entity_type', 'faction', 'id', f.id, 'project_id', f.project_id,
-      'organization_id', f.organization_id,
-      'name', f.name, 'short_name', f.short_name, 'info', f.info, 'color', f.color, 'image', f.image,
-      'sort_order', f.sort_order, 'subtype', f.subtype, 'confirmed', f.confirmed)
-    INTO result
-    FROM public.factions f WHERE f.id = p_entity_id;
-  IF result IS NOT NULL THEN RETURN result; END IF;
-
-  SELECT jsonb_build_object(
-      'entity_type', 'alliance', 'id', a.id, 'project_id', a.project_id,
-      'name', a.name, 'short_name', a.short_name, 'info', a.info, 'color', a.color, 'image', a.image,
-      'sort_order', a.sort_order, 'subtype', a.subtype, 'confirmed', a.confirmed)
-    INTO result
-    FROM public.alliances a WHERE a.id = p_entity_id;
+  CASE p_entity_type
+    WHEN 'candidate' THEN
+      SELECT jsonb_build_object(
+          'entity_type', 'candidate', 'id', c.id, 'project_id', c.project_id,
+          'first_name', c.first_name, 'last_name', c.last_name,
+          'short_name', c.short_name, 'info', c.info, 'color', c.color, 'image', c.image,
+          'sort_order', c.sort_order, 'subtype', c.subtype, 'confirmed', c.confirmed)
+        INTO result
+        FROM public.candidates c WHERE c.id = p_entity_id;
+    WHEN 'organization' THEN
+      SELECT jsonb_build_object(
+          'entity_type', 'organization', 'id', o.id, 'project_id', o.project_id,
+          'name', o.name, 'short_name', o.short_name, 'info', o.info, 'color', o.color, 'image', o.image,
+          'sort_order', o.sort_order, 'subtype', o.subtype, 'confirmed', o.confirmed)
+        INTO result
+        FROM public.organizations o WHERE o.id = p_entity_id;
+    WHEN 'faction' THEN
+      SELECT jsonb_build_object(
+          'entity_type', 'faction', 'id', f.id, 'project_id', f.project_id,
+          'organization_id', f.organization_id,
+          'name', f.name, 'short_name', f.short_name, 'info', f.info, 'color', f.color, 'image', f.image,
+          'sort_order', f.sort_order, 'subtype', f.subtype, 'confirmed', f.confirmed)
+        INTO result
+        FROM public.factions f WHERE f.id = p_entity_id;
+    WHEN 'alliance' THEN
+      SELECT jsonb_build_object(
+          'entity_type', 'alliance', 'id', a.id, 'project_id', a.project_id,
+          'name', a.name, 'short_name', a.short_name, 'info', a.info, 'color', a.color, 'image', a.image,
+          'sort_order', a.sort_order, 'subtype', a.subtype, 'confirmed', a.confirmed)
+        INTO result
+        FROM public.alliances a WHERE a.id = p_entity_id;
+  END CASE;
   RETURN result;
 END;
 $$;
 
 REVOKE
-EXECUTE ON FUNCTION public.get_entity_basic_data (uuid)
+EXECUTE ON FUNCTION public.get_entity_basic_data (public.entity_type, uuid)
 FROM
   PUBLIC,
   anon;
 
 GRANT
-EXECUTE ON FUNCTION public.get_entity_basic_data (uuid) TO authenticated;
+EXECUTE ON FUNCTION public.get_entity_basic_data (public.entity_type, uuid) TO authenticated;
 
 --------------------------------------------------------------------------------
 -- get_candidate_user_data: returns the entity row for the authenticated user, in ONE project
 --
--- p_project_id is REQUIRED and carries no DEFAULT (162-REVIEW WR-08). One identity may legitimately hold entity rows in several projects -- identity-callback's own lookup says so -- and without a project term this function ended `LIMIT 1` over all of them with no ORDER BY, so a multi-project user got an arbitrary row and the adapter's own project check then failed at random. It comes first because PostgreSQL forbids a parameter without a default from following one that has a default.
+-- p_project_id is REQUIRED and carries no DEFAULT. One identity may hold entity rows in several projects (identity-callback's lookup allows for it), and without a project term `LIMIT 1` with no ORDER BY would return an arbitrary one of them. It comes first because PostgreSQL forbids a parameter without a default from following one that has a default.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.get_candidate_user_data (
   p_project_id uuid,
@@ -207,15 +215,14 @@ EXECUTE ON FUNCTION public.get_candidate_user_data (uuid, public.entity_type) TO
 --------------------------------------------------------------------------------
 -- upsert_answers: atomic answer write for a single entity
 --
--- Covers every entity table carrying an answers column, which is exactly public.candidates and public.organizations; factions and alliances carry no such column.
+-- The entity is named by its type and id together, because the entity tables have independent primary keys and one UUID can name a candidate and an organization at once. The type selects the one table written: 'candidate' writes public.candidates and 'organization' writes public.organizations, the only two tables carrying an answers column. Any other type, and a NULL type, raises before any table is written.
 --
--- Adjacency: candidates are tried first and the organizations attempt runs only when the candidate update matched no row, so one call never writes both tables. That much is enforced by the control flow.
+-- p_overwrite = true replaces the stored answers with p_answers; otherwise p_answers is merged over them. Either way, keys whose value is JSON null are dropped.
 --
--- What is NOT enforced, stated so it is not read as a guarantee: nothing in the schema makes public.candidates.id and public.organizations.id disjoint. They are independent gen_random_uuid() defaults, so a collision cannot arise by accident - but id is a writable, importable column (it is in the dev-seed allowlist, and bulk_import builds its INSERT column list from the JSON keys it is handed), so a hand-authored template or an external import that reuses one UUID across the two tables would make the CANDIDATE branch match and land an intended organization answer on the candidate row, returning success. Disjointness is a convention this function relies on and does not check. If that ever stops being safe, take the entity table from the caller rather than inferring it from which UPDATE matched.
---
--- SECURITY INVOKER: runs with caller's permissions, so each branch's UPDATE is gated by that table's own RLS policies - a candidate can only update their own row, an organization admin only their own organization.
+-- SECURITY INVOKER: the UPDATE is gated by the named table's RLS policies, so a caller can update only the answers of an entity those policies let them edit. An id that matches no row the caller may update raises the not-found exception.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.upsert_answers (
+  p_entity_type public.entity_type,
   p_entity_id uuid,
   p_answers jsonb,
   p_overwrite boolean DEFAULT false
@@ -223,51 +230,34 @@ CREATE OR REPLACE FUNCTION public.upsert_answers (
 DECLARE
   p_updated_answers jsonb;
 BEGIN
-  IF p_overwrite THEN
-    UPDATE public.candidates
-    SET answers = (
-      SELECT COALESCE(jsonb_object_agg(k, v), '{}'::jsonb)
-      FROM jsonb_each(COALESCE(p_answers, '{}'::jsonb)) AS t(k, v)
-      WHERE v IS NOT NULL AND v != 'null'::jsonb
-    )
-    WHERE id = p_entity_id
-    RETURNING public.candidates.answers INTO p_updated_answers;
-
-    IF NOT FOUND THEN
-      UPDATE public.organizations
+  CASE p_entity_type
+    WHEN 'candidate' THEN
+      UPDATE public.candidates
       SET answers = (
         SELECT COALESCE(jsonb_object_agg(k, v), '{}'::jsonb)
-        FROM jsonb_each(COALESCE(p_answers, '{}'::jsonb)) AS t(k, v)
+        FROM jsonb_each(
+          CASE WHEN p_overwrite THEN '{}'::jsonb ELSE COALESCE(public.candidates.answers, '{}'::jsonb) END
+          || COALESCE(p_answers, '{}'::jsonb)
+        ) AS t(k, v)
         WHERE v IS NOT NULL AND v != 'null'::jsonb
       )
       WHERE id = p_entity_id
-      RETURNING public.organizations.answers INTO p_updated_answers;
-    END IF;
-  ELSE
-    UPDATE public.candidates
-    SET answers = (
-      SELECT COALESCE(jsonb_object_agg(k, v), '{}'::jsonb)
-      FROM jsonb_each(
-        COALESCE(public.candidates.answers, '{}'::jsonb) || COALESCE(p_answers, '{}'::jsonb)
-      ) AS t(k, v)
-      WHERE v IS NOT NULL AND v != 'null'::jsonb
-    )
-    WHERE id = p_entity_id
-    RETURNING public.candidates.answers INTO p_updated_answers;
-
-    IF NOT FOUND THEN
+      RETURNING public.candidates.answers INTO p_updated_answers;
+    WHEN 'organization' THEN
       UPDATE public.organizations
       SET answers = (
         SELECT COALESCE(jsonb_object_agg(k, v), '{}'::jsonb)
         FROM jsonb_each(
-          COALESCE(public.organizations.answers, '{}'::jsonb) || COALESCE(p_answers, '{}'::jsonb)
+          CASE WHEN p_overwrite THEN '{}'::jsonb ELSE COALESCE(public.organizations.answers, '{}'::jsonb) END
+          || COALESCE(p_answers, '{}'::jsonb)
         ) AS t(k, v)
         WHERE v IS NOT NULL AND v != 'null'::jsonb
       )
       WHERE id = p_entity_id
       RETURNING public.organizations.answers INTO p_updated_answers;
-    END IF;
-  END IF;
+    ELSE
+      RAISE EXCEPTION 'Entity type % has no answers', p_entity_type;
+  END CASE;
 
   IF NOT FOUND THEN
     RAISE EXCEPTION 'Entity not found or access denied: %', p_entity_id;
@@ -278,4 +268,4 @@ END;
 $$;
 
 GRANT
-EXECUTE ON FUNCTION public.upsert_answers (uuid, jsonb, boolean) TO authenticated;
+EXECUTE ON FUNCTION public.upsert_answers (public.entity_type, uuid, jsonb, boolean) TO authenticated;

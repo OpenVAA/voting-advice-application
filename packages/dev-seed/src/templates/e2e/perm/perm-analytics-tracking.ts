@@ -3,8 +3,7 @@
  *
  * Carries the ANALYTICS OVERLAY that arms the `trackingIntercept` fixture for the `voter-prefs-tracking` spec. That spec requires the `app_settings` singleton to expose:
  *
- *   analytics: { platform: { name: 'umami', code: <dummy>, infoUrl: <test-url> }, trackEvents: true
- *   }
+ *   analytics: { platform: { name: 'umami', code: <dummy>, infoUrl: <test-url> }, trackEvents: true }
  *
  * so the frontend mounts its analytics integration and emits track events the fixture can intercept. Consent is NOT seeded here — it is toggled at runtime inside that spec.
  *
@@ -12,7 +11,7 @@
  *
  * Topology: a minimal walkable voter dataset — 1 election, 1 CG with 1 CO, 2 organisations, 2 member candidates (each answering the single opinion question), ONE opinion category with ONE Likert-5 question. This is the smallest shape that lets a voter answer → reach /results, the surface the tracking spec exercises.
  *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-analytics-'`. Row external_ids authored BARE (writer prepends prefix); nested refs use the FULL prefixed external_id. Additive — own namespaced dataset, does NOT touch `e2e/base`.
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-analytics-'`. Row external_ids authored BARE (writer prepends prefix); nested refs use the FULL prefixed external_id. Its own namespaced dataset; does NOT touch `e2e/base`.
  */
 
 import { buildCandidate, buildElectionConstituencyNoms, LIKERT_5_EN, MINIMAL_BASE_APP_SETTINGS } from './shared';
@@ -40,7 +39,6 @@ export const permAnalyticsTrackingTemplate: Template = {
         election_type: 'organization_list',
         election_date: '2026-06-15',
         sort_order: 0,
-        is_generated: false,
         multiple_rounds: false,
         current_round: 1,
         constituency_groups: [{ external_id: `${P}cg-1` }]
@@ -55,7 +53,6 @@ export const permAnalyticsTrackingTemplate: Template = {
         external_id: 'cg-1',
         name: { en: '[CG1] Only group' },
         sort_order: 0,
-        is_generated: false,
         constituencies: [{ external_id: `${P}co-1a` }]
       }
     ]
@@ -67,8 +64,7 @@ export const permAnalyticsTrackingTemplate: Template = {
       {
         external_id: 'co-1a',
         name: { en: '[CO1A] Only constituency' },
-        sort_order: 0,
-        is_generated: false
+        sort_order: 0
       }
     ]
   },
@@ -81,16 +77,14 @@ export const permAnalyticsTrackingTemplate: Template = {
         name: { en: '[OR1] Party One' },
         short_name: { en: 'OR1' },
         color: { normal: '#1f4ea0', dark: '#7aa3d6' },
-        sort_order: 0,
-        is_generated: false
+        sort_order: 0
       },
       {
         external_id: 'or-2',
         name: { en: '[OR2] Party Two' },
         short_name: { en: 'OR2' },
         color: { normal: '#a82525', dark: '#d67070' },
-        sort_order: 1,
-        is_generated: false
+        sort_order: 1
       }
     ]
   },
@@ -102,8 +96,7 @@ export const permAnalyticsTrackingTemplate: Template = {
         external_id: 'qc-opin',
         name: { en: '[QC-OPIN] Analytics-tracking opinion questions' },
         category_type: 'opinion',
-        sort_order: 0,
-        is_generated: false
+        sort_order: 0
       }
     ]
   },
@@ -119,8 +112,7 @@ export const permAnalyticsTrackingTemplate: Template = {
         category: { external_id: `${P}qc-opin` },
         allow_open: false,
         required: true,
-        sort_order: 0,
-        is_generated: false
+        sort_order: 0
       }
     ]
   },
@@ -168,7 +160,7 @@ export const permAnalyticsTrackingTemplate: Template = {
         settings: {
           ...MINIMAL_BASE_APP_SETTINGS,
           // analytics overlay: FULL platform object (mirrors staticSettings.type.ts analytics.platform) + trackEvents:true.
-          // `code` is a DUMMY value (threat T-121-AN) — never a real key.
+          // `code` is a DUMMY value — never a real key.
           analytics: {
             platform: {
               name: 'umami',

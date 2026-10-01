@@ -23,9 +23,10 @@ contention** at all — the scout's 42-scan zero was taken at `--workers=1` with
 
 ## What was NOT proven, and why it is filed
 
-**Four green runs evidence a low failure frequency. They do not prove absence.** Three green runs
-clear a 1-in-20 defect with probability ≈ 0.86 — i.e. a defect that fires one run in twenty had
-roughly a **one-in-seven** chance of hiding from this gate.
+**Four green runs evidence a low failure frequency. They do not prove absence.** A defect that
+fires one run in twenty stays hidden from all four runs with probability 0.95⁴ ≈ 0.81, so it had
+roughly a **four-in-five** chance of hiding from this gate (corrected 2026-09-27; the earlier figure
+was inverted and counted three runs).
 
 This matters specifically for axe scans in this repository, and not as a general caution:
 `tests/tests/utils/axeScan.ts`'s own docblock records that **scan-timing pressure previously

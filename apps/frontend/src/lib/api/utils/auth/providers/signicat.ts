@@ -1,7 +1,7 @@
 /**
  * Signicat OIDC identity provider.
  *
- * Wraps the existing PKCE + client_secret auth flow into the `IdentityProvider` interface. Behaviour is unchanged from the original inline code in the `/api/oidc/token` route, but the `AuthConfig` claim mappings drive extraction instead of hardcoded claim names.
+ * Implements the PKCE + client_secret auth flow behind the `IdentityProvider` interface, with the `AuthConfig` claim mapping driving extraction.
  *
  * This module carries NO decrypt/verify logic of its own: it delegates to the shared core `../decryptAndVerifyIdToken.ts` and keeps only the per-provider claim mapping. There is exactly one decrypt/verify path in `src`, and a second copy of it here would be a second thing to keep correct.
  *
@@ -25,7 +25,7 @@ import type {
 } from './types';
 
 /**
- * Signicat claim mapping configuration.
+ * Signicat claim mapping for Finnish Trust Network authentication.
  *
  * Signicat returns standard OIDC claims in the id_token. `identityMatchProp` names the claim used to match a returning user to their existing candidate record and MUST be unique per person; `extractClaims` are additional claims stored in user metadata for audit and verification purposes.
  *
@@ -35,7 +35,7 @@ import type {
  *
  * Keyed on `sub`, and it MUST NOT be keyed on `birthdate`, which is NOT an identifier: the Edge Function twin of this config (`identity-callback/claimConfig.ts`) turns `identityMatchProp`'s value into both the `app_metadata.identity_match_value` lookup key and the placeholder email local part, so keying on a birthdate collapses every candidate sharing a date of birth into a single Supabase auth account. The two configs must stay in agreement -- a mismatch keys the frontend and the backend to different claims.
  */
-export const SIGNICAT_AUTH_CONFIG: AuthConfig = {
+export const SIGNICAT_FTN_AUTH_CONFIG: AuthConfig = {
   identityMatchProp: 'sub',
   extractClaims: ['birthdate'],
   firstNameProp: 'given_name',
@@ -43,14 +43,14 @@ export const SIGNICAT_AUTH_CONFIG: AuthConfig = {
 };
 
 export const signicatProvider: IdentityProvider = {
-  type: 'signicat',
+  type: 'signicat-ftn',
 
-  authConfig: SIGNICAT_AUTH_CONFIG,
+  authConfig: SIGNICAT_FTN_AUTH_CONFIG,
 
   async getAuthorizeUrl({ redirectUri, codeChallenge }: AuthorizeParams): Promise<AuthorizeResult> {
     const { PUBLIC_IDENTITY_PROVIDER_CLIENT_ID, PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT } = publicConstants;
 
-    // Assert BEFORE concatenating, never after. An empty endpoint produces a string starting `?`, which is a valid RELATIVE url the browser resolves against the current document — so the failure mode is a silent same-origin reload, not an error. See `requireConfigured` for the incident this guards.
+    // Assert BEFORE concatenating, never after. An empty endpoint produces a string starting `?`, which is a valid RELATIVE url the browser resolves against the current document — so the failure mode is a silent same-origin reload, not an error. See `requireConfigured`.
     requireConfigured({
       PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT,
       PUBLIC_IDENTITY_PROVIDER_CLIENT_ID
@@ -108,15 +108,15 @@ export const signicatProvider: IdentityProvider = {
       const payload = await decryptAndVerifyIdToken(idToken);
 
       const extractedClaims: Record<string, string> = Object.fromEntries(
-        SIGNICAT_AUTH_CONFIG.extractClaims.map((claim) => [claim, String(payload[claim] ?? '')])
+        SIGNICAT_FTN_AUTH_CONFIG.extractClaims.map((claim) => [claim, String(payload[claim] ?? '')])
       );
 
       return {
         success: true,
         data: {
-          firstName: String(payload[SIGNICAT_AUTH_CONFIG.firstNameProp] ?? ''),
-          lastName: String(payload[SIGNICAT_AUTH_CONFIG.lastNameProp] ?? ''),
-          identifier: String(payload[SIGNICAT_AUTH_CONFIG.identityMatchProp] ?? ''),
+          firstName: String(payload[SIGNICAT_FTN_AUTH_CONFIG.firstNameProp] ?? ''),
+          lastName: String(payload[SIGNICAT_FTN_AUTH_CONFIG.lastNameProp] ?? ''),
+          identifier: String(payload[SIGNICAT_FTN_AUTH_CONFIG.identityMatchProp] ?? ''),
           extractedClaims
         }
       };

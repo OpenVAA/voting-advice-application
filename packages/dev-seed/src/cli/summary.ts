@@ -3,15 +3,20 @@
  *
  * Output shape (fixed — not a machine-parseable format):
  *
- *   Applied template: default (built-in) Seed: 42                                              Elapsed: 6.21s Portraits uploaded: 100
+ * ```text
+ * Applied template: default (built-in)
+ * Seed: 42                                              Elapsed: 6.21s
+ *                                                       Portraits uploaded: 100
  *
- *   Table                          Created
- *   ─────────────────────────────── ──────────
- *   elections                      1 ...                            ...
- *   ─────────────────────────────── ──────────
- *   Total                          251
+ * Table                            Created
+ * ────────────────────────────── ──────────
+ * elections                              1
+ * ...                                  ...
+ * ────────────────────────────── ──────────
+ * Total                                251
+ * ```
  *
- * Deferred (note): `--output json` mode for CI/machine consumption.
+ * There is no `--output json` mode for CI/machine consumption.
  */
 
 export interface SummaryInput {

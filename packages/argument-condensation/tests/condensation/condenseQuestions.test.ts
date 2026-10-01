@@ -13,7 +13,7 @@ import type { HasAnswers } from '@openvaa/core';
 import type { Answer } from '@openvaa/data';
 import type { LLMProvider } from '@openvaa/llm';
 
-// Mock LLM Provider for new API
+// Mock LLM provider
 const mockLLMProvider = {
   config: {
     provider: 'openai' as const,
@@ -144,12 +144,10 @@ describe('handleQuestion', () => {
     expect(types).toContain(CONDENSATION_TYPE.LikertPros);
     expect(types).toContain(CONDENSATION_TYPE.LikertCons);
 
-    // Content of each run's condensed arguments — the axis the count and type assertions above leave uncovered. Every one of those passes unchanged when `Condenser.run()` returns `{ arguments: [] }`, because this file only ever read the result's shape and type. These content assertions are PAIRED with the count/type siblings above, not a replacement for them, and are placed after them on purpose so an injected run demonstrably passes those first and reds only here.
-    //
-    // MEASURED, not assumed (observed on a green clean tree): on the `handleQuestion` path `run.data.arguments` is nested one level deeper than its declared `Array<Argument>` type — `[[arg, arg]]`, not `[arg, arg]`. The single-batch MAP-terminated plan these fixtures build never collapses the list-of-lists, and `condenser.ts:205` casts it to `Array<Argument>` anyway. `condenserStandalone.test.ts` does NOT show this, because its plan ends in REDUCE.
-    // The `flat()` below is therefore deliberate and load-bearing, not a convenience: without it every element is an array and `.text` is `undefined`. The nesting is a known defect of the product path and is deliberately NOT fixed here: this is a test-only file.
-    // Do not simplify this back.
-    const argumentsPerRun = results.map((run) => run.data.arguments.flat());
+    // The count and type assertions above still pass when `Condenser.run()` returns no arguments, so check the content too.
+    // The plan these fixtures build ends in MAP, whose output is a list of lists: the result must still be flat.
+    const argumentsPerRun = results.map((run) => run.data.arguments);
+    expect(argumentsPerRun.every((args) => args.every((argument) => !Array.isArray(argument)))).toBe(true);
     expect(argumentsPerRun.map((args) => args.map((argument) => argument.text))).toEqual([
       ['Test argument 1', 'Test argument 2'],
       ['Test argument 1', 'Test argument 2']
@@ -230,8 +228,9 @@ describe('handleQuestion', () => {
     // Check that all condensation results are of type PROS
     expect(results.every((r) => r.condensationType === CONDENSATION_TYPE.CategoricalPros)).toBe(true);
 
-    // Per-cluster content assertions — see the likert cluster above for the full rationale, including why `flat()` is required (measured nesting, not a convenience).
-    const argumentsPerRun = results.map((run) => run.data.arguments.flat());
+    // Per-cluster content assertions, as in the likert test above.
+    const argumentsPerRun = results.map((run) => run.data.arguments);
+    expect(argumentsPerRun.every((args) => args.every((argument) => !Array.isArray(argument)))).toBe(true);
     expect(argumentsPerRun.map((args) => args.map((argument) => argument.text))).toEqual([
       ['Test argument 1', 'Test argument 2'],
       ['Test argument 1', 'Test argument 2'],
@@ -294,8 +293,9 @@ describe('handleQuestion', () => {
     expect(types).toContain(CONDENSATION_TYPE.BooleanPros);
     expect(types).toContain(CONDENSATION_TYPE.BooleanCons);
 
-    // Per-cluster content assertions — see the likert cluster above for the full rationale, including why `flat()` is required (measured nesting, not a convenience).
-    const argumentsPerRun = results.map((run) => run.data.arguments.flat());
+    // Per-cluster content assertions, as in the likert test above.
+    const argumentsPerRun = results.map((run) => run.data.arguments);
+    expect(argumentsPerRun.every((args) => args.every((argument) => !Array.isArray(argument)))).toBe(true);
     expect(argumentsPerRun.map((args) => args.map((argument) => argument.text))).toEqual([
       ['Test argument 1', 'Test argument 2'],
       ['Test argument 1', 'Test argument 2']

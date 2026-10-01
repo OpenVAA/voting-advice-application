@@ -27,61 +27,22 @@
  */
 
 import { expect, test as base } from '@playwright/test';
+import { FIRST_QUESTION_ID } from '../../../../apps/frontend/src/lib/routes/route';
 import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { selectSmallestValidMultiChoice } from '../../utils/multiChoice';
 import { testIds } from '../../utils/testIds';
-import type { Locator, Page } from '@playwright/test';
+import { followCategoryStart, resolveVoterStage, STAGE_BUDGET, walkVoterStages } from '../../utils/voterNavigation';
+import type { Page } from '@playwright/test';
 
 export type AnswerMode = 'min' | 'max';
 
 /**
- * Polling visibility probe. Unlike `locator.isVisible({ timeout })` — which is a one-shot snapshot that silently ignores its `timeout` option — this WAITS up to `timeout` ms for `locator` to become visible, resolving `true` if it does and `false` on timeout. Used for "did we land on this optional page?"
- * branches where the page's content may mount a beat after navigation (e.g.
- * the post-hydration `$dataRoot` provide window on the elections / constituencies selectors — the elections-continue-stall hazard).
- */
-async function waitForVisible(locator: Locator, timeout: number): Promise<boolean> {
-  return locator
-    .waitFor({ state: 'visible', timeout })
-    .then(() => true)
-    .catch(() => false);
-}
-
-/**
- * Follow an `<a>` link by navigating directly to its resolved `href`, once that href has settled to match `hrefPattern`.
- *
- * Guards against two hazards that make a plain `.click()` on these links flake until the 90s ceiling:
- *   1. Reactive-render churn — the link's `href` is bound to a post-hydration `$derived` value (the category-intro start button's `questionId` resolves from `voterCtx.selectedQuestionBlocks`, a reactive `$state`); clicking before it settles detaches the element mid-click.
- *   2. Pointer interception — during navigation the document root ("<html> intercepts pointer events") sits over the link, so the click never lands.
- * Navigating to the resolved href sidesteps both: it waits for the href to be real, then drives a deterministic navigation instead of a racy pointer click.
- */
-async function followLinkWhenHrefResolved(
-  page: Page,
-  link: Locator,
-  hrefPattern: RegExp,
-  timeout: number
-): Promise<void> {
-  await expect(link).toHaveAttribute('href', hrefPattern, { timeout });
-  const href = await link.getAttribute('href');
-  if (href) await page.goto(href);
-}
-
-/**
  * Settle a navigation the answer walk REQUIRES to have happened, failing LOUDLY and AT THE FAULT SITE when it did not.
  *
- * ## Why this is not `waitForURL(...).catch(() => null)`
+ * Every advance in `answerAndAdvanceToResults`'s loop is a URL change: a question route, a category-intro route, or `/results`. So a missing URL change is a fault, never a reason to retry. A retry would re-answer the same question: multi-choice CHECKBOXES toggle, so the answer set that reaches `/results`, and the visual baseline captured from it, would change silently, and an `answerCount`-capped walk would under-answer. It would also move the failure away from the navigation that stalled.
  *
- * Every advance in `answerAndAdvanceToResults`'s loop is a URL change: a question route, a category-intro route, or `/results`. The loop therefore CANNOT make progress without one. Until this helper existed, each of those waits swallowed its timeout and `continue`d, which produced three separate failures — none of them at the real fault site:
- *
- *   1. MIS-ATTRIBUTION. The loop re-entered, re-waited on the answer surface, and eventually blew a budget at the loop-entry `waitFor` — in the archived sighting, 70 s and 8 iterations after the navigation that actually failed.
- *      A long stretch of investigation chased that line instead of the stalled navigation, and the remedy chosen at the time was chartered around a hypothesis (Vite-HMR staleness) the evidence later falsified.
- *   2. ANSWER-STATE CORRUPTION — the serious one. Re-entering re-answers the SAME question, and `multipleChoiceCategorical` choices are CHECKBOXES, which TOGGLE. The archived run shows the app faithfully recording
- *      `choice_0,choice_1` -> (cleared) -> (cleared) -> `choice_2,choice_3` ->
- *      `choice_2,choice_3,choice_0` -> … as the retries toggled boxes on and off.
- *      A walk that silently rewrites its own answer set feeds a DIFFERENT match result to `/results` — and this fixture is what the visual-regression gate screenshots. A swallowed timeout is therefore a determinism hazard for the pixel baseline, not merely a diagnosis nuisance.
- *   3. SKEWED `answered`. The counter increments once per iteration, so a retried question is counted repeatedly and an `answerCount`-capped walk silently under-answers.
- *
- * `TIMEOUTS.slowPage` is already a very generous budget for a client-side navigation. Exceeding it means something is genuinely wrong upstream (the known cause is a dev-server asset request that never gets a response), and the correct response is to stop and say so rather than to spin.
+ * The budget is the walk's `STAGE_BUDGET`, not a navigation-sized window, because the last answer's navigation lands on `/results`: SvelteKit changes the URL only after the results loads resolve, and that render is the heaviest in the walk. It stays below the test ceiling, so a stalled navigation still fails here with this message.
  *
  * @param page - the page whose URL must change.
  * @param urlBefore - the URL captured at the top of the iteration.
@@ -90,16 +51,15 @@ async function followLinkWhenHrefResolved(
  */
 async function requireNavigation(page: Page, urlBefore: string, action: string): Promise<void> {
   try {
-    await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage });
+    await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: STAGE_BUDGET });
   } catch {
     throw new Error(
       `voter-journey: the answer walk did not advance after ${action}. ` +
-        `The URL is still ${page.url()} ${TIMEOUTS.slowPage} ms later. ` +
+        `The URL is still ${page.url()} ${STAGE_BUDGET} ms later. ` +
         'The walk cannot progress without a URL change, so this fails HERE instead of retrying: ' +
         'a retry re-answers the same question, and multi-choice checkboxes TOGGLE, which silently ' +
         'rewrites the answer set the visual baseline is captured from. ' +
-        'Known cause: a host dev-server asset request that never receives a response — see ' +
-        '.planning/debug/answer-surface-wait-timeout.md.'
+        'A known cause is a dev-server asset request that never receives a response.'
     );
   }
 }
@@ -129,87 +89,15 @@ type VoterJourneyFixtures = VoterJourneyFixtureOptions & {
 async function walkUntilQuestionsIntro(page: Page): Promise<void> {
   // 0. Consent-popup guard. When data-collection consent is `indetermined` (the
   //    default for a fresh context) the voter layout auto-opens the DataConsentPopup — a modal `Alert` (role=dialog "Collecting Usage Data").
-  //    It mounts a beat after navigation and, depending on timing, can overlay the bottom-anchored "Continue" button on the elections/constituencies pages (full-width at mobile; intermittently at desktop under full-suite load), intercepting the click and stalling the walk at /elections. This was a latent full-suite flake (voter-journey / a11y-smoke / performance / voter-journey-mobile) before this guard. `addLocatorHandler` grants consent through the real in-app control the moment the popup obstructs an actionability check, then Playwright retries the original action — so the walk proceeds deterministically. It fires ONLY when the popup is present (no-op otherwise), so it is safe for every walk consumer.
+  //    It mounts a beat after navigation and, depending on timing, can overlay the bottom-anchored "Continue" button on the elections/constituencies pages (full-width at mobile; intermittently at desktop under full-suite load), intercepting the click and stalling the walk at /elections. `addLocatorHandler` grants consent through the real in-app control the moment the popup obstructs an actionability check, then Playwright retries the original action — so the walk proceeds deterministically. It fires ONLY when the popup is present (no-op otherwise), so it is safe for every walk consumer.
   const consentGrant = page.getByRole('dialog').getByRole('button', { name: /agree to share my data/i });
   await page.addLocatorHandler(consentGrant, async () => {
     await consentGrant.click();
   });
 
-  // 1. Home page → start.
+  // 1. Home page, then the stage walk. Each optional page (intro, elections, constituencies) is acted on when it renders, whenever that is; the walk stops on the /questions stage. BYPASS-TOLERANT: when a seed sets `questionsIntro.show=false`, the intro page redirects past itself on mount, and the walk stops on the category intro or the first question instead.
   await page.goto(buildRoute({ route: 'Home', locale: 'en' }));
-  const homeStart = page.getByTestId(testIds.voter.home.startButton);
-  await homeStart.waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
-  await homeStart.click();
-
-  // 2. Intro start.
-  const introStart = page.getByTestId(testIds.voter.intro.startButton);
-  const electionsListProbe = page.getByTestId(testIds.voter.elections.list);
-  // Intro may auto-redirect to elections/constituencies; tolerate either.
-  await page
-    .waitForURL((url) => !url.toString().endsWith('/en/') && !url.toString().endsWith('/en'), {
-      timeout: TIMEOUTS.slowPage
-    })
-    .catch(() => null);
-  // NB. Same non-waiting-`isVisible` hazard as the Elections/Constituencies steps below — `locator.isVisible()` is a one-shot snapshot, so on a parked Intro page whose "Continue" button mounts a beat AFTER navigation (the post-hydration `$dataRoot` `$effect` render window), it returns false, the Continue click is skipped, and the walk falls through still ON /intro — stalling every downstream step and failing at fixture line ~231 (questions-start/category-start/question-choice never visible). This was a latent full-suite flake (perm-question-video desktop + mobile, voter-journey-mobile) — worse at the mobile viewport where the slower render widens the window.
-  //
-  // Wait for the page to RESOLVE to one of two states, whichever comes first:
-  //   (a) the Intro "Continue" button paints (questionsIntro.show=true, the
-  //       e2e/base posture) → click it; OR
-  //   (b) the page has already advanced PAST the intro to the elections
-  //       selector (auto-redirect seeds, questionsIntro.show=false) → the
-  //       elections list is present, so skip the click and let step 3 proceed.
-  // Racing the two locators (vs. a bare polling waitForVisible on introStart) means the auto-redirect path resolves the instant the elections list mounts — no fixed 5s penalty — while the base path still waits deterministically for the Continue button to paint instead of one-shot-missing it.
-  await introStart
-    .or(electionsListProbe)
-    .first()
-    .waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage })
-    .catch(() => null);
-  if (await waitForVisible(introStart, TIMEOUTS.element)) {
-    await introStart.click();
-  }
-
-  // 3. Elections page (multi-election): select all elections then continue.
-  const electionsList = page.getByTestId(testIds.voter.elections.list);
-  const electionsContinue = page.getByTestId(testIds.voter.elections.continue);
-  // NB. `locator.isVisible({ timeout })` does NOT wait — Playwright's `isVisible` is a one-shot snapshot and silently ignores the `timeout` option (playwright-core/client/frame.ts). The elections list mounts a beat AFTER navigation — `$dataRoot` is populated by a post-hydration `$effect` in routes/+layout.svelte rather than synchronously at first paint — so a non-waiting probe lands in that sub-second window, returns false, and skips the Continue click, stalling the located walk at /elections (the elections-continue-stall regression). Use a polling `waitForVisible` helper so the conditional "did we land on this page?" check actually waits.
-  if (await waitForVisible(electionsList, TIMEOUTS.page)) {
-    // Accept default (both elections selected) or click each card to ensure selection.
-    await electionsContinue.waitFor({ state: 'visible' });
-    await electionsContinue.click();
-  }
-
-  // 4. Constituencies page: pick the first option in each combobox.
-  const constituenciesList = page.getByTestId(testIds.voter.constituencies.list);
-  const constituenciesContinue = page.getByTestId(testIds.voter.constituencies.continue);
-  // Same non-waiting-`isVisible` hazard as the elections step above — use the polling helper so the post-hydration render window can't skip this page.
-  if (await waitForVisible(constituenciesList, TIMEOUTS.page)) {
-    const comboboxes = constituenciesList.getByRole('combobox');
-    const count = await comboboxes.count();
-    for (let i = 0; i < count; i++) {
-      const combo = comboboxes.nth(i);
-      await combo.click();
-      const listbox = page.getByRole('listbox');
-      await listbox.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
-      await listbox.getByRole('option').first().click();
-    }
-    await constituenciesContinue.waitFor({ state: 'visible' });
-    await constituenciesContinue.click();
-  }
-
-  // 5. Park on the /questions intro — wait for the start button to be visible.
-  //    Do NOT click it; that's the divergence point between locatedVoterPage (stops here) and answeredVoterPage (continues to answer-loop).
-  //
-  //    BYPASS-TOLERANT (trace-confirmed): the /questions intro page auto-redirects on mount (questions/+page.svelte onMount, line 61) when `appSettings.questions.questionsIntro.show === false`. The minimal perm seeds (MINIMAL_BASE_APP_SETTINGS, packages/dev-seed/.../perm/shared.ts:92) set `questionsIntro.show=false`, so the page redirects PAST the intro — to a category intro (when `categoryIntros.show=true`, e.g.
-  //    perm-question-video) or straight to the first question (when `categoryIntros.show=false`). In both cases `voter-questions-start` never paints, so a bare hard-wait on it times out at the WALK stage. The `e2e/base` dataset keeps `questionsIntro.show=true` (base.ts:196), so the start button DOES paint there and the `.or()` resolves on it first — making this change zero-regression for the base journey + a11y-smoke.
-  //    This is the trace-grounded root cause (the earlier "reactive churn / TOCTOU detach" verdict is REFUTED — the failure is deterministic and settings-driven, and occurs here at line ~184, never reaching the suspected `answerAndAdvanceToResults` churn site at line ~209 which stays untouched).
-  const questionsStart = page.getByTestId(testIds.voter.questions.startButton);
-  const categoryStart = page.getByTestId(testIds.voter.questions.categoryStart);
-  const firstQuestion = page.getByTestId(testIds.voter.questions.answerOption).first();
-  await questionsStart
-    .or(categoryStart)
-    .or(firstQuestion)
-    .first()
-    .waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
+  await walkVoterStages(page, ['questions-intro', 'category-intro', 'question']);
 }
 
 /**
@@ -227,153 +115,146 @@ async function walkUntilQuestionsIntro(page: Page): Promise<void> {
  * All three answer-input families share the question-choice testid + name=questionChoices-{id} scoping contract EXCEPT the slider (which has no question-choice options — detected by a scoped choice count of 0). Both branches are inert against a seed that surfaces no number or multi-choice OPINION question.
  */
 async function answerAndAdvanceToResults(page: Page, answerMode: AnswerMode, answerCount?: number): Promise<void> {
-  // 5b. Click questions-intro start.
-  const questionsStart = page.getByTestId(testIds.voter.questions.startButton);
-  if (await questionsStart.isVisible({ timeout: TIMEOUTS.page }).catch(() => false)) {
-    await questionsStart.click();
-  }
+  // 5b. Leave the questions intro, if it is the page showing, for the first category intro or question.
+  await walkVoterStages(page, ['category-intro', 'question']);
 
   // 6. Answer loop: each iteration looks for either a category-intro
   //    (continue) or a question (answer per mode). Terminates on /results.
-  const categoryStart = page.getByTestId(testIds.voter.questions.categoryStart);
-  const answerOption = page.getByTestId(testIds.voter.questions.answerOption);
-  // A NUMBER-scale opinion question renders ONLY a native range slider (question-number-slider) and carries NO question-choice options, so it is NOT matched by `answerOption`. Include it in the loop-entry surface probe below: without it, the entry wait can only pass while the OUTGOING choice question's options are still mounted (the page-reuse DOM-lag race). On a contended run (mobile viewport, full-suite workers) the outgoing choices unmount before the incoming number question paints, leaving neither a category-intro nor a question-choice to match → a 10s timeout on the number question (qu-opin-base-6-number). Probing the slider testid makes the number-scale surface a first-class loop-entry match. The slider is then driven by the choiceCount===0 branch below.
+  // A NUMBER-scale opinion question renders ONLY a native range slider (question-number-slider) and carries NO question-choice options, so the answer-surface wait below races the slider in beside the scoped choices.
   const numberSlider = page.getByTestId(testIds.voter.questions.numberSlider);
   const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
+  const heading = page.getByTestId(testIds.voter.questions.heading);
   const terminal = /\/results/;
-  // A category-intro route is `/questions/category/<id>`; a question route is `/questions/<id>` (no `/category/` segment). Branch on the URL — which is authoritative and immune to the page-reuse DOM lag — rather than a racy `isVisible()` snapshot against a page whose OUTGOING content is still mounted mid-navigation (specs/voter/voter-journey.spec.ts SETTLE-BEFORE-COUNT rationale).
-  const categoryIntro = /\/questions\/category\//;
   let answered = 0;
-  // True iff the PREVIOUS loop iteration answered a NUMBER-scale question via the slider branch. Read by the loop's answer-surface wait below — see the DEAD-WAIT REMOVAL note there for why the slider can only be raced in when this is false.
-  let sliderJustAnswered = false;
+  // The heading text of the NUMBER-scale question the PREVIOUS iteration answered, or `undefined` when it answered something else. Read by the loop's answer-surface wait below; see the note there.
+  let answeredSliderHeading: string | undefined;
   const cap = answerCount ?? Number.POSITIVE_INFINITY;
   const maxIterations = 50; // generous ceiling — base dataset has ≤9 reachable opinion questions
   for (let iter = 0; iter < maxIterations; iter++) {
     if (terminal.test(page.url())) break;
     const urlBefore = page.url();
-    // Wait for a category-intro, a choice/likert question, OR a number-scale slider to be present (number questions render no question-choice option).
-    await categoryStart
-      .or(answerOption.first())
-      .or(numberSlider.first())
-      .first()
-      .waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
+    // Resolve the page that is showing: a category intro, or a question with a choice or a number slider. Both are matched on their route, so the outgoing page's content never counts.
+    const stage = await resolveVoterStage(page, ['category-intro', 'question']);
 
-    if (categoryIntro.test(page.url())) {
-      // The category-intro start button is an `<a href={getRoute('Question', questionId)}>` whose `questionId` is `$derived` from `voterCtx.selectedQuestionBlocks` (a post-hydration reactive `$state`).
-      // On first paint the href is unresolved; when the block populates the link re-renders and a plain click both detaches mid-click AND is intercepted by the navigating document root ("<html> intercepts pointer events") until the 90s ceiling.
-      // Wait for the href to resolve to a real question route, then NAVIGATE to it. See category/[categoryId]/+page.svelte:52,113 (the elections-continue-stall sibling render-timing class).
-      await followLinkWhenHrefResolved(page, categoryStart, /\/questions\//, TIMEOUTS.slowPage);
+    if (stage === 'category-intro') {
+      // The start link's href resolves after hydration; the helper waits for it to point at one of this category's questions, then navigates to it.
+      await followCategoryStart(page);
       await requireNavigation(page, urlBefore, 'following the category-intro start link');
       // Reaching here means the category-intro page RENDERED (we waited for its start link), so any question-page slider is long unmounted — the next iteration may safely race the slider again.
-      sliderJustAnswered = false;
+      answeredSliderHeading = undefined;
       continue;
     }
 
     // Question page — pick by answerMode.
     if (answered >= cap) {
       // Use Skip to advance past remaining questions when answerCount is capped.
-      sliderJustAnswered = false;
+      answeredSliderHeading = undefined;
       await nextButton.click();
       await requireNavigation(page, urlBefore, 'clicking Skip on a capped walk');
       continue;
     }
-    // SETTLE-BEFORE-COUNT. On a Q→Q param-only nav SvelteKit REUSES questions/[questionId]/+page.svelte (the page derives `question` via `$derived` rather than remounting), so the OUTGOING question's `[data-testid=question-choice]` options stay mounted until the PREVIOUS click's deferred `goto` resolves and the incoming options swap in. A bare `answerOption.count()` therefore captures the OUTGOING question's option count, and `.nth(count-1)` points at a stale index that the INCOMING question (fewer options — e.g. Likert4 after Likert5) never has → 90s timeout.
+    // SETTLE-BEFORE-COUNT. On a Q→Q param-only nav SvelteKit REUSES questions/[questionId]/+page.svelte (the page derives `question` via `$derived` rather than remounting), so the OUTGOING question's `[data-testid=question-choice]` options stay mounted until the PREVIOUS click's deferred `goto` resolves and the incoming options swap in. A bare `answerOption.count()` therefore captures the OUTGOING question's option count, and `.nth(count-1)` points at a stale index that the INCOMING question (fewer options — e.g. Likert4 after Likert5) never has, so the click waits until the test times out.
     //
     // Anchor to the CURRENT question deterministically: each choice's `name` is `questionChoices-<questionId>` and the questionId is the last `/questions/` path segment. Scope the option locator to that questionId so the count + `.nth()` only ever see the INCOMING question's options. Mirrors the voter-journey spec's SETTLE-BEFORE-COUNT rationale (specs/voter/voter-journey.spec.ts) — a deterministic settle, NOT a View-Transition workaround (reduced-motion does not fix this and the Playwright option does not reach the app's matchMedia anyway).
-    const questionId = new URL(page.url()).pathname.replace(/\/+$/, '').split('/').filter(Boolean).pop() ?? '';
+    let questionId = new URL(page.url()).pathname.replace(/\/+$/, '').split('/').filter(Boolean).pop() ?? '';
+    // The first-question alias (`/questions/__first__`) renders the first question under a placeholder id, so the choices carry the real id. No question precedes it, so nothing stale can be mounted: resolve its surface and read the real id off a rendered choice. A number question has no choice to read and keeps the alias, which the slider branch below handles.
+    if (questionId === FIRST_QUESTION_ID) {
+      const anyChoice = page.getByTestId(testIds.voter.questions.answerOption).first();
+      await expect(anyChoice.or(numberSlider.first()).first()).toBeVisible({ timeout: STAGE_BUDGET });
+      const name = await anyChoice.getAttribute('name', { timeout: TIMEOUTS.element }).catch(() => null);
+      if (name?.startsWith('questionChoices-')) questionId = name.slice('questionChoices-'.length);
+    }
     // reason: locale-stable composite selector — the `question-choice` testid is ambiguous across the outgoing+incoming questions mounted simultaneously during a param-only Q→Q nav; scoping by the `questionChoices-<id>` name attribute disambiguates to the CURRENT question. No getByTestId/getByRole form expresses a testid+attribute conjunction.
     // eslint-disable-next-line playwright/no-restricted-locators
     const currentChoices = page.locator(`[data-testid="question-choice"][name="questionChoices-${questionId}"]`);
-    // Wait until the incoming question's own ANSWER SURFACE is present (not the stale outgoing one), then read a stable choice count.
+    // Wait until the incoming question's own ANSWER SURFACE is present (not the stale outgoing one), then read a stable choice count. The surface is the scoped choices, or the number slider on a NUMBER-scale question, which renders no choices.
     //
-    // DEAD-WAIT REMOVAL. This used to wait on the scoped choices ALONE. A NUMBER-scale opinion question renders ONLY `question-number-slider` and carries NO `question-choice` nodes, so on that question the wait could never resolve: it burned the full `TIMEOUTS.slowPage` (measured 10 002 ms — 38% of this fixture's 26.4 s) on EVERY traversal, deterministically, and every consumer of `answeredVoterPage` paid it (a11y scans, visual, perf, voter journeys).
-    // Racing the slider in ends the wait on the real surface rather than on the clock. It is NOT a shortened timeout — the wait is still condition-based; the condition just now covers the surface that actually renders.
-    //
-    // The race is GUARDED. Unlike the choices, the slider carries no question-id-scoped attribute (the `name=questionChoices-<id>` contract), so an unscoped slider match cannot distinguish the INCOMING number question from the OUTGOING one still mounted during the page-reuse DOM lag this whole SETTLE-BEFORE-COUNT block exists to defeat. Racing it unguarded on the iteration right after a slider question would resolve on the STALE surface, read `choiceCount === 0` off the not-yet-swapped DOM, re-answer the previous question and skew `answered`. So when the previous question was itself the slider we fall back to the scoped-choices-only wait — byte-equivalent to the pre-136 behaviour. Worst case (two adjacent NUMBER questions) is therefore exactly today's cost, never worse; every other transition loses the dead wait. Dropping the guard requires giving the slider the same `name=questionChoices-<id>` contract QuestionChoices already has (product change — deliberately out of scope here).
-    const answerSurface = sliderJustAnswered
-      ? currentChoices.first()
-      : currentChoices.first().or(numberSlider.first()).first();
-    await answerSurface.waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage }).catch(() => null);
+    // The slider carries no question-id-scoped attribute, so on the iteration right after a slider question an unscoped slider match could be the OUTGOING question's, still mounted during the page-reuse DOM lag; reading `choiceCount === 0` off it would re-answer the previous question. Two adjacent number questions even share one slider element, because the input remounts only at a question-type boundary. So after a slider question the wait first requires the question heading to differ from the answered question's, which it does once the layout renders the incoming question, and then its surface. Otherwise a visible slider can only be this question's. Both waits end when the surface renders, however late.
+    if (answeredSliderHeading !== undefined) {
+      const previousHeading = answeredSliderHeading;
+      await expect
+        .poll(
+          async () =>
+            (await heading.allInnerTexts()).join('\n') !== previousHeading &&
+            ((await currentChoices.count()) > 0 || (await numberSlider.first().isVisible())),
+          {
+            message: `voter-journey: question ${questionId} did not replace the number question answered before it`,
+            timeout: STAGE_BUDGET
+          }
+        )
+        .toBe(true);
+    } else {
+      await expect(currentChoices.first().or(numberSlider.first()).first()).toBeVisible({ timeout: STAGE_BUDGET });
+    }
     const choiceCount = await currentChoices.count();
     if (choiceCount === 0) {
-      // Slider branch: a matchable NUMBER opinion question renders a native range (question-number-slider) and carries NO question-choice options, so the scoped choice count is 0. Probe for a visible slider BEFORE falling through to the Skip fallback. Number questions do NOT auto-advance (plan 06 suppresses the jump for the slider), so drive the answer by keyboard — native range Home/End land the EXACT min/max value per answerMode (the keyboard contract) — then click Next explicitly and settle the URL like the radio path. If no slider is present (e.g. a text-only rendering), fall through to the existing Skip path unchanged.
-      const slider = page.getByTestId(testIds.voter.questions.numberSlider).first();
-      if (answered < cap && (await waitForVisible(slider, TIMEOUTS.page))) {
-        await slider.focus();
-        await slider.press(answerMode === 'max' ? 'End' : 'Home');
-        answered++;
-        // The next iteration's answer-surface wait must NOT race an unscoped slider — this one stays mounted through the page-reuse DOM lag.
-        sliderJustAnswered = true;
-        await nextButton.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
-        await nextButton.click();
-        await requireNavigation(page, urlBefore, 'clicking Next on a number-scale question');
-        continue;
+      // Slider branch: a matchable NUMBER opinion question renders a native range (question-number-slider) and carries NO question-choice options, so the scoped choice count is 0. The surface wait above has already resolved, so a question with neither choices nor a visible slider fails here: skipping it would silently change the answer set. Number questions do NOT auto-advance (the questions layout's `handleAnswer` jumps only for single-choice and boolean inputs), so drive the answer by keyboard — native range Home/End land the EXACT min/max value per answerMode (the keyboard contract) — then click Next explicitly and settle the URL like the radio path.
+      const slider = numberSlider.first();
+      if (!(await slider.isVisible())) {
+        throw new Error(
+          `voter-journey: question ${questionId} rendered neither choices nor a number slider at ${page.url()}`
+        );
       }
-      // No selectable choices and no slider (e.g. text rendering) — Skip.
-      sliderJustAnswered = false;
+      await slider.focus();
+      await slider.press(answerMode === 'max' ? 'End' : 'Home');
+      answered++;
+      // The next iteration's answer-surface wait must NOT race an unscoped slider — this one stays mounted through the page-reuse DOM lag.
+      answeredSliderHeading = (await heading.allInnerTexts()).join('\n');
       await nextButton.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
       await nextButton.click();
-      await requireNavigation(page, urlBefore, 'clicking Skip on a question with no answerable surface');
+      await requireNavigation(page, urlBefore, 'clicking Next on a number-scale question');
       continue;
     }
     // Checkbox branch: MultipleChoiceCategorical opinion questions render CHECKBOX inputs that reuse the question-choice testid + name=questionChoices-{id} contract, while single-choice / boolean / Likert render RADIOS.
     // The input type is authoritative — detect it off the first scoped choice.
     const inputType = await currentChoices.first().getAttribute('type');
     if (inputType === 'checkbox' && answered < cap) {
-      // Select the SMALLEST VALID number of choices, discovered from the app's own validity signal. This used to hard-code "click the first 2", citing the single seeded multi-choice question's minSelections=2 / maxSelections=3 window — a coupling that BREAKS the moment a second window exists: `qu-opin-base-8-multichoice-exact` is authored min===max===1, so 2 clicks is OVER-max and the layout's handleAnswer refuses to persist an out-of-range selection, leaving the question silently UNANSWERED while the walk believed it had answered it.
+      // Select the SMALLEST VALID number of choices, discovered from the app's own validity signal. A fixed click count cannot fit every window: `qu-opin-base-7` allows 2..3 and `qu-opin-base-8-multichoice-exact` exactly 1, and the layout's handleAnswer refuses to persist an out-of-range selection, which would leave the question silently UNANSWERED.
       //
-      // Validity signal: the DELETE button, which QuestionActions enables iff `answers[question.id].value != null && opinionInputValid` — i.e. iff a valid answer actually landed in voterCtx.answers. That makes the walk strictly stricter than before (it now verifies the answer registered).
+      // Validity signal: the DELETE button, which QuestionActions enables iff `answers[question.id].value != null && opinionInputValid` — i.e. iff a valid answer actually landed in voterCtx.answers. So the walk also verifies that the answer registered.
       //
-      // Multi-choice does NOT auto-advance (plan 06), so advance via the explicit Next button. Count the question ONCE regardless of how many boxes were ticked.
+      // Multi-choice does NOT auto-advance, so advance via the explicit Next button. Count the question ONCE regardless of how many boxes were ticked.
       await selectSmallestValidMultiChoice({
         choices: currentChoices,
         validWhenEnabled: page.getByTestId(testIds.shared.questionDelete)
       });
       answered++;
-      sliderJustAnswered = false;
+      answeredSliderHeading = undefined;
       await nextButton.waitFor({ state: 'visible', timeout: TIMEOUTS.page });
       await nextButton.click();
       await requireNavigation(page, urlBefore, 'clicking Next on a multi-choice question');
       continue;
     }
-    // Radio path (single-choice / boolean / Likert) — answering behaviour unchanged; only the `sliderJustAnswered` bookkeeping below is new (136).
-    sliderJustAnswered = false;
+    // Radio path (single-choice / boolean / Likert).
+    answeredSliderHeading = undefined;
     const pickIndex = answerMode === 'min' ? 0 : choiceCount - 1;
     await currentChoices.nth(pickIndex).click();
     answered++;
-    // Auto-advance OR fallback to nextButton (last-question case). The deferred auto-advance `goto` fires after a ~350ms debounce, so allow a beat before falling back to the explicit Next button.
-    try {
-      // reason: tight 3s auto-advance probe — deliberately below TIMEOUTS.page; on timeout the nextButton fallback fires (last-question case). Not bucket-mappable.
-      await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 3_000 });
-    } catch {
-      if (await nextButton.isVisible().catch(() => false)) {
-        await nextButton.click();
-        await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: TIMEOUTS.slowPage }).catch(() => null);
-      }
-    }
-    // Settle the param-only Q→Q nav: wait until the URL leaves the just-answered question route before the next iteration counts options, so the stale outgoing option set can't be captured (the SETTLE-BEFORE-COUNT contract).
-    // The `.catch(() => null)` on the two waits ABOVE is deliberate — the 3 s probe is a genuine either/or (auto-advance vs the Next fallback), and the fallback's own wait is superseded by this one. THIS wait is the loop's progress invariant and must fail loudly.
+    // A single-choice, boolean or Likert answer always auto-advances after a short debounce, to the next question, a category intro or /results after the last question (questions/+layout.svelte `handleAnswer` / `handleJump`). So the walk waits for that navigation and never clicks Next as well: a Next click racing a late auto-advance would skip a question.
+    // The wait is also the SETTLE-BEFORE-COUNT contract: the URL leaves the just-answered question before the next iteration counts options. It is the loop's progress invariant and fails loudly.
     await requireNavigation(page, urlBefore, 'answering a single-choice / boolean / Likert question');
   }
 
   // 7. Multi-election results landing: with 2+ elections and no `electionTab`
   //    in the URL the results page renders the election picker ("Select an election first") instead of the list — case 3 of results/[[electionTab]]/+layout.ts. Select the first election so the candidate/party list renders. The picker is an AccordionSelect exposing ARIA `option` roles (mirrors voter-journey.spec.ts:expectElectionOptionAndSelect).
+  // Resolve which of the two renders first: the picker, or the list itself. The picker can stay visible above the list as the election selector, so the list is the deciding signal.
   const electionAccordion = page.getByTestId(testIds.voter.results.electionAccordion);
-  if (await waitForVisible(electionAccordion, TIMEOUTS.slowPage)) {
+  const resultsList = page.getByTestId(testIds.voter.results.list);
+  await expect(electionAccordion.or(resultsList).first()).toBeVisible({ timeout: STAGE_BUDGET });
+  if (!(await resultsList.isVisible())) {
     const options = electionAccordion.getByRole('option');
-    await options.first().waitFor({ state: 'visible', timeout: TIMEOUTS.slowPage });
+    await options.first().waitFor({ state: 'visible', timeout: STAGE_BUDGET });
     // Collapsed accordion shows only the active option; expand it first, then pick the first election to load its results.
     if ((await options.count()) === 1) await options.first().click({ timeout: TIMEOUTS.click });
     await options.first().click({ timeout: TIMEOUTS.click });
   }
 
-  // 8. Wait for the results list.
-  // reason: 15s exceeds TIMEOUTS.slowPage (10s) — the post-answer-loop /results landing is the heaviest single wait in the walk (full matching compute + entity-list render) and needs extra cold-start headroom. Kept inline as a documented exception.
-  await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible', timeout: 15_000 });
+  // 8. Wait for the results list, which renders after the matching compute; the same budget as the landing above.
+  await resultsList.waitFor({ state: 'visible', timeout: STAGE_BUDGET });
 }
 
 /**
- * Drive the native range slider to an EXACT `value` (129 keyboard contract: step=1, `Home`→min, `ArrowRight` +1). Unlike the walk's extreme-only Home/End branch (which only reaches min/max keyed on `answerMode`), this lands an ARBITRARY in-range value — the boundary test needs mid values (e.g. 5), not just the poles.
+ * Drive the native range slider to an EXACT `value` (the slider's keyboard contract: step=1, `Home`→min, `ArrowRight` +1). Unlike the walk's extreme-only Home/End branch (which only reaches min/max keyed on `answerMode`), this lands an ARBITRARY in-range value — the boundary test needs mid values (e.g. 5), not just the poles.
  *
  * Behaviour: focus the first `question-number-slider`, press `Home` to land deterministically on `min`, then press `ArrowRight` `(value - min)` times.
  * Driving past `max` is a NO-OP per press — the native range input clamps to `[min,max]`, so an out-of-range answer is physically impossible (the boundary proof).

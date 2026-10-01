@@ -1,21 +1,31 @@
 import type { Id } from '@openvaa/core';
 import type { EntityType } from '@openvaa/data';
+import type { Tables } from '@openvaa/supabase-types';
+
+/** A raw `question_categories` row. */
+export type QuestionCategoryRow = Tables<'question_categories'>;
+
+/** A raw `questions` row. */
+export type QuestionRow = Tables<'questions'>;
 
 /**
- * Adapter-internal flattened view of a Nomination during the parent/child reverse-fill pass. See `supabaseDataProvider.ts` for the consuming logic.
+ * The single jsonb value the `get_questions` RPC returns. Both keys are always arrays — `[]` rather than `null` when empty — and each entry is a raw table row, because the function aggregates `to_jsonb(qc)` / `to_jsonb(q)` and therefore emits the same snake_case columns a `select('*')` would return.
+ */
+export type GetQuestionsPayload = {
+  categories: Array<QuestionCategoryRow>;
+  questions: Array<QuestionRow>;
+};
+
+/**
+ * The flattened view of a nomination that the reverse fill in `SupabaseDataProvider._getNominationData` works on.
  *
- * The reverse-fill walks the post-`toDataObject` `nominations` array twice:
- *   1. Index by `parentNominationId` × child `entityType` → array of child ids.
- *   2. For each parent, write the appropriate `*NominationIds` field based on its own `entityType`.
+ * The reverse fill walks the `nominations` array twice:
+ *   1. Index the child ids by `parentNominationId` and child `entityType`.
+ *   2. For each parent, write the `*NominationIds` field that matches its own `entityType`.
  *
- * The `*NominationIds` fields are typed as mutable `Array<Id>` (not `readonly`) because the reverse-fill intentionally mutates them in place. This widening is what justifies the named intermediate type — the public per-variant Nomination types in `@openvaa/data` do not anticipate post-construction mutation; they auto-populate these fields only when nominations arrive in the nested form (e.g. `org.data.candidates = [...]`). Our flat schema only sets the child→parent edge, so the adapter has to fan-out the relationships after construction.
+ * The `*NominationIds` fields are mutable `Array<Id>`, not `readonly`, because the fill writes them in place. The public nomination types in `@openvaa/data` populate these fields only from nested input (e.g. `org.data.candidates = [...]`), and the flat schema sets only the child → parent edge, so the adapter adds the parent → child edges after mapping.
  *
- * Adapter-internal: not exported beyond `supabaseDataProvider.ts`. Filename uses singular `.type.ts` to match the codebase convention (30+ sibling `.type.ts` files exist under `apps/frontend/src/lib`; zero plural `.types.ts` files exist).
- *
- * Note: `Id` is exported from `@openvaa/core`, not `@openvaa/data`; this matches the established codebase convention used in `apps/frontend/src/lib/api/utils/formatId.ts`, `apps/frontend/src/lib/api/base/dataWriter.type.ts`, and several others.
- *
- * @see packages/data/src/objects/nominations/base/nomination.ts:38-45 for the
- *      "either both or neither" parentNominationId/Type invariant the adapter respects upstream of the reverse-fill (line ~326 of `supabaseDataProvider.ts` clears parentNominationId when the parent is unresolvable).
+ * The fill runs after `_getNominationData` has enforced the `Nomination` invariant that `parentNominationId` and `parentNominationType` are both set or both absent: an unresolvable parent id is already cleared.
  */
 export interface InternalFlatNomination {
   id: Id;

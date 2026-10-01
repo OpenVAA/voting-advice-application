@@ -1,32 +1,33 @@
 -- The grant model: `public.grants`, its constraints, its index, its RLS and the access-token hook's schema access.
 --
--- ⚠ THE FILENAME IS OLDER THAN THE SUBJECT. This file was "auth tables" in the plural sense: it once declared `user_roles` and, by ALTER, the per-row publication column on ten voter-facing content tables. 162-15 deleted the role table and both its enums; 162-16 deleted the publication columns and their five partial indexes, because section 3.4's rule -- project open for voters, nomination confirmed, every entity that nomination links confirmed -- is now the ONLY way to ask whether a row is public, and a second mechanism answering the same question is what ROADMAP criterion 2 exists to end. What is left is ONE concern, and it is the central one of phase 162: `public.grants` is declared here and nowhere else in `apps/supabase/supabase/schema/`. The file was deliberately KEPT rather than deleted for exactly that reason (D-38); it is not an empty shell, and renaming it is a separate change with its own diff.
---
--- Depends on: 100-tenancy.sql (accounts, projects)
---             000-enums.sql (grant_scope_type, grant_role_type, entity_type)
+-- Depends on:
+-- - 100-tenancy.sql (accounts, projects)
+-- - 000-enums.sql (grant_scope_type, grant_role_type, entity_type)
 --------------------------------------------------------------------------------
 -- grants table
 --------------------------------------------------------------------------------
--- The grant map of 162-IMPLEMENTATION-BRIEF.md section 3.1: one row per privilege held, keyed by user, scope, target and role. Every column, constraint and index is declared inside this CREATE TABLE body per D-14a rather than accreted by ALTER, and the table ships empty because 162-06 carries the data migration.
+-- The grant map: one row per privilege held, keyed by user, scope, target and role.
 CREATE TABLE public.grants (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users (id) ON DELETE CASCADE,
+  -- How wide the grant is: global, or one account, project or entity.
   scope grant_scope_type NOT NULL,
-  -- D-05's discriminator reuses the existing entity_type vocabulary rather than declaring a fifth parallel one; it is NULL on every non-entity row, and the CHECK below is what makes it honest rather than advisory.
+  -- The entity kind of an entity-scope grant, reusing the entity_type vocabulary; null on every other scope, as the CHECK below requires.
   target_type entity_type,
-  -- Deliberately no FOREIGN KEY: target_id is polymorphic across accounts, projects and the four entity tables by section 3.1's design, so a FK to any one of them would make the other three unrepresentable.
+  -- No foreign key, because the target may be an account, a project or any of the four entity tables; cleanup_grants_on_delete removes a grant when its target is deleted.
   target_id uuid,
+  -- `admin` or `editor` on the target; user_can maps the role and scope to permissions.
   role grant_role_type NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
-  -- NULLS NOT DISTINCT is load-bearing rather than a style choice: measured on this tree's PostgreSQL 15.8, a plain UNIQUE admits two byte-identical project-scope grants because target_type is NULL on every non-entity row, so deleting one row to revoke a privilege would leave the privilege standing; it is a PostgreSQL 15 feature and config.toml pins major_version = 15, so this constraint pins the version floor with no margin.
+  -- NULLS NOT DISTINCT because target_type is null on every non-entity grant: a plain UNIQUE would admit two identical grants, and revoking one would leave the privilege standing. It needs PostgreSQL 15, as in 104-nominations.sql.
   CONSTRAINT grants_user_scope_target_role_key UNIQUE NULLS NOT DISTINCT (user_id, scope, target_type, target_id, role),
-  -- D-05: the discriminator is present exactly when the scope is entity. Both sides are non-null booleans, so the constraint is a total function with no NULL-passes hole. Named explicitly rather than left to PostgreSQL's generated name because 162-17 cites it by name in throws_ok, as 104-nominations.sql does for nominations_election_round_check.
+  -- The entity kind is present exactly when the scope is entity. Both sides are non-null booleans, so a NULL cannot pass the check. Named so a pgTAP `throws_ok` can match it.
   CONSTRAINT grants_entity_scope_target_type_check CHECK ((target_type IS NOT NULL) = (scope = 'entity')),
-  -- Section 3.1's target_id column stated as a constraint: a global grant has no target and an account, project or entity grant must have one, so every row of the eight-row user-type mapping is representable and nothing outside it is. Named for the same throws_ok reason as the constraint above.
+  -- A global grant has no target, and an account, project or entity grant must have one. Named for the same reason.
   CONSTRAINT grants_target_id_scope_check CHECK ((target_id IS NULL) = (scope = 'global'))
 );
 
--- The reverse lookup "who holds a grant on this target", which project.manage_editors administration and 162-06's data migration both need and which the UNIQUE cannot serve because it leads with user_id. There is deliberately no index on user_id alone: the UNIQUE already leads with it and lint-schema.mjs's 0001 advisor matches foreign keys against an index's leading columns, so the FK is covered and a second index would cost every write and buy no read.
+-- The reverse lookup, who holds a grant on this target, which editor administration needs and the UNIQUE cannot serve because it leads with user_id. No index on user_id alone: the UNIQUE leads with it, which covers the foreign key for lint-schema.mjs's unindexed-foreign-key advisor, and a second index would cost every write.
 CREATE INDEX idx_grants_scope_target ON public.grants (scope, target_type, target_id);
 
 --------------------------------------------------------------------------------
@@ -34,11 +35,13 @@ CREATE INDEX idx_grants_scope_target ON public.grants (scope, target_type, targe
 --------------------------------------------------------------------------------
 ALTER TABLE public.grants ENABLE ROW LEVEL SECURITY;
 
--- THE ONLY STATEMENT IN THE SCHEMA THAT GIVES THE ACCESS-TOKEN HOOK ITS SCHEMA ACCESS. 162-03 issued it here as a deliberate repetition of one that lived beside a table 162-15 has now deleted; recorded there as threat T-162-03-05, on the reasoning that re-granting an existing privilege is a no-op then and the surviving statement now. It is now the surviving statement. Removing it issues every token with no authority at all -- a silent total outage that presents as a permission problem, and that no test would catch through a policy. 24-legacy-removal.test.sql asserts it from has_schema_privilege on the applied database.
+-- The only statement in the schema that gives the access-token hook its schema access. Without it every token is issued with no authority, an outage that looks like a permission problem; 24-legacy-removal.test.sql asserts it with has_schema_privilege.
 GRANT USAGE ON SCHEMA public TO supabase_auth_admin;
 
--- SELECT and nothing more (162-REVIEW IN-01): the hook only READS the grant map to build the claim, and its only policy here is a SELECT policy, so INSERT, UPDATE and DELETE were privilege the auth server never needed.
-GRANT SELECT ON TABLE public.grants TO supabase_auth_admin;
+-- SELECT only: the hook only reads the grant map to build the claim, and its one policy here is a SELECT policy.
+GRANT
+SELECT
+  ON TABLE public.grants TO supabase_auth_admin;
 
 CREATE POLICY "auth_admin_read_grants" ON public.grants FOR
 SELECT
@@ -57,9 +60,9 @@ FROM
   public;
 
 --------------------------------------------------------------------------------
--- cleanup_grants_on_delete: a grant does not outlive its target (162-REVIEW IN-02)
+-- cleanup_grants_on_delete: a grant does not outlive its target
 --
--- `target_id` carries no foreign key -- it points into one of six tables depending on `scope` and `target_type` -- so nothing removed a grant when its target row was deleted. The stale row kept being projected into every token the holder was issued, was invisible to "who holds a grant on this target" administration because the target was gone, and would silently RE-ATTACH to a recreated row that reused the id through an import. These AFTER DELETE triggers delete the grants naming the deleted row, on the six tables a grant can target.
+-- `target_id` has no foreign key: it points into one of six tables depending on `scope` and `target_type`. Without these triggers a deleted target's grants would stay: they would still be projected into the holder's tokens, would be invisible to administration by target, and would attach to a recreated row that reused the id through an import. These AFTER DELETE triggers delete the grants naming the deleted row, on the six tables a grant can target.
 --
 -- The trigger arguments carry the scope and, for the entity scope, the target type, so one function serves all six tables and names none of them.
 --

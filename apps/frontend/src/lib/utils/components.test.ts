@@ -1,18 +1,17 @@
 /**
- * `cn` — the class-combining helper, and the merge configuration it stands on.
+ * `cn`, the class-combining helper, and the merge configuration it stands on.
  *
- * Every case below is drawn from THIS repo's real class vocabulary, not from Tailwind's documentation examples. That is the point: `apps/frontend/src/app.css` does not extend Tailwind's theme, it REPLACES it (`--spacing-*: initial`, `--border-width-*: initial` and friends at the top of its `@theme` block), and then defines scales that mix numeric and word names. A default-configured `twMerge` therefore misgroups a measurable slice of this project's classes — in one direction silently DROPPING a class that should have survived, in the other silently declining to merge a genuine conflict.
+ * The cases use this repo's own class vocabulary. `apps/frontend/src/app.css` replaces Tailwind's theme (`--spacing-*: initial`, `--border-width-*: initial` and more at the top of its `@theme` block) with scales that mix numeric and word names, which a default-configured `twMerge` misgroups: it drops some classes that should survive and leaves some genuine conflicts unmerged.
  *
- * The red list under a DEFAULT-configured `twMerge`, measured 2026-09-22 before the configuration was written, is recorded in the item summary. Four cases were red, and the one that matters most is `cn('border-md', 'border-neutral')`: `border-md` is this project's 1px border WIDTH, it is not a number, so a default configuration cannot place it in the border-width group and lets it fall through to the permissive border-COLOUR group — where the later, genuine colour `border-neutral` evicts it.
- * That is `Toggle.svelte`'s own class string losing its border with no caller involved at all.
+ * The case that matters most is `cn('border-md', 'border-neutral')`: `border-md` is a 1px border width, not a number, so a default configuration lets it fall through to the border-colour group, where `border-neutral` evicts it. That is `Toggle.svelte` losing its border with no caller involved.
  *
- * Assertions are on TOKEN SETS, never on the raw output string: `twMerge` makes no promise about whitespace or ordering beyond last-wins, and pinning the string would make this file fail on an upstream formatting change that broke nothing.
+ * Assertions are on token sets, never on the raw output string: `twMerge` promises nothing about whitespace or order beyond last-wins.
  */
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { cn, concatClass } from './components';
+import { BORDER_WIDTH_WORD_NAMES, cn, concatClass, SPACING_WORD_NAMES } from './components';
 
 /** The distinct tokens of a class string, order-insensitive. */
 function tokens(value: string): Set<string> {
@@ -55,7 +54,7 @@ describe('cn — non-conflicts that MUST both survive, because they target diffe
   });
 
   it('keeps a border width alongside a border STYLE', () => {
-    // This is what keeps the QuestionChoices dimmed branch equivalent to the scoped rule it replaces.
+    // The QuestionChoices dimmed branch relies on this.
     expectTokens(cn('border-lg', 'border-none'), ['border-lg', 'border-none']);
   });
 
@@ -102,13 +101,7 @@ describe('cn — the clsx half: composition', () => {
 });
 
 /**
- * ────────────────────────────────────────────────────────────────────────────────────────────────
- * GROUP A — `concatClass` characterisation.
- * ────────────────────────────────────────────────────────────────────────────────────────────────
- *
- * Cases 1-6 describe behaviour `concatClass` ALREADY had before it was reimplemented over `cn`. They were green before that edit and are green after, and that before/after identity is the equivalence proof for its 77 call sites: the reimplementation moved the composition, it did not change what the function does with its inputs. They must not be "adapted" to whatever the new implementation happens to do.
- *
- * Case 7 is the ONE intended change, and it was red before. It is pinned here so that the semantic shift — a caller's class now wins a conflict against the component's own — can never happen again by accident, unnoticed.
+ * `concatClass` characterisation. Cases 1-6 pin what it does with its inputs: the order of the classes, a missing `class` key, the other props, no mutation, and nullish and non-string classes. Case 7 pins that the caller's class wins a conflict against the component's own.
  */
 describe('concatClass — characterisation', () => {
   it('case 1: prepends the component classes before the caller class', () => {
@@ -154,21 +147,15 @@ describe('concatClass — characterisation', () => {
   });
 
   it('case 7: the caller wins a conflict against the component own class', () => {
-    // THE semantic change. Before the reimplementation this yielded ['h-16', 'h-32'] and Tailwind's generated source order decided the winner; now the caller's override actually takes effect.
+    // The caller's `h-32` replaces the component's `h-16`, rather than both surviving and Tailwind's source order deciding.
     expect(classTokens(concatClass({ class: 'h-32' }, 'h-16'))).toEqual(['h-32']);
   });
 });
 
 /**
- * ────────────────────────────────────────────────────────────────────────────────────────────────
- * GROUP B — the self-merge identity sweep.
- * ────────────────────────────────────────────────────────────────────────────────────────────────
+ * The self-merge identity sweep. For every literal class string passed as the second argument to `concatClass` under `apps/frontend/src`, merging the string with itself alone must drop nothing: `cn(s)` has the same token set as `s`. This catches a component losing a class from its own string because the merge misgrouped it, which needs no caller to trigger.
  *
- * The gate the decision to put `cn` inside `concatClass` rests on. For EVERY literal class string passed as the second argument to `concatClass` anywhere under `apps/frontend/src`, merging that string with itself alone must drop nothing: `cn(s)` must have the same token set as `s`.
- *
- * That is the exhaustive check against the dangerous half of the risk — a component silently losing a class out of its OWN string because the merge misgrouped it, which needs no caller to trigger and is exactly the live `Toggle.svelte` defect the merge configuration exists to prevent.
- *
- * The population is DERIVED FROM SOURCE at test time and never hardcoded, so it cannot go stale as components are added, and the non-empty assertion below means a broken scanner fails loudly rather than passing vacuously.
+ * The population is derived from source at test time, so it cannot go stale, and the non-empty assertion below makes a broken scanner fail rather than pass vacuously.
  */
 
 /**
@@ -254,7 +241,54 @@ describe('concatClass — self-merge identity sweep over every literal class str
       const dropped = [...before].filter((token) => !after.has(token));
       if (dropped.length) divergences.push(`${file}: dropped ${dropped.join(', ')} from "${literal}"`);
     }
-    // The failure message IS the trip-condition report: it names the file and the dropped token so the finding can be routed straight to the merge configuration, or escalated if it cannot be.
+    // The failure message names each file and the tokens it dropped.
     expect(divergences).toEqual([]);
+  });
+});
+
+/**
+ * The word-named theme variables `--<prefix>-<name>` declared in `css`, leaving out numeric names and `exclude`. tailwind-merge already recognises those, so only the word names must be listed in `components.ts`.
+ */
+function themeWordNames(css: string, prefix: string, exclude: ReadonlyArray<string>): Array<string> {
+  const names = new Set<string>();
+  for (const [, name] of css.matchAll(new RegExp(`^\\s*--${prefix}-([\\w-]+)\\s*:`, 'gm'))) {
+    if (!/^\d+(\.\d+)?$/.test(name) && !exclude.includes(name)) names.add(name);
+  }
+  return [...names].sort();
+}
+
+/** The names declared in `app.css` but missing from `listed`, and the names in `listed` that `app.css` does not declare. */
+function drift(listed: ReadonlyArray<string>, declared: ReadonlyArray<string>) {
+  return {
+    missingFromList: declared.filter((name) => !listed.includes(name)),
+    notInAppCss: listed.filter((name) => !declared.includes(name)).sort()
+  };
+}
+
+describe('the merge configuration mirrors the word-named tokens of app.css', () => {
+  const appCss = readFileSync(join(SRC_ROOT, 'app.css'), 'utf8');
+  function spacingWords(css: string): Array<string> {
+    return themeWordNames(css, 'spacing', ['px']);
+  }
+  function borderWidthWords(css: string): Array<string> {
+    return themeWordNames(css, 'border-width', ['DEFAULT']);
+  }
+
+  it('finds the word names in app.css, so the parser cannot pass vacuously', () => {
+    expect(spacingWords(appCss)).toContain('xs');
+    expect(borderWidthWords(appCss)).toContain('md');
+  });
+
+  it('SPACING_WORD_NAMES lists exactly the word-named --spacing-* tokens', () => {
+    expect(drift(SPACING_WORD_NAMES, spacingWords(appCss))).toEqual({ missingFromList: [], notInAppCss: [] });
+  });
+
+  it('BORDER_WIDTH_WORD_NAMES lists exactly the word-named --border-width-* tokens', () => {
+    expect(drift(BORDER_WIDTH_WORD_NAMES, borderWidthWords(appCss))).toEqual({ missingFromList: [], notInAppCss: [] });
+  });
+
+  it('names a word token that app.css adds but the list lacks', () => {
+    const withNewToken = `${appCss}\n@theme {\n  --spacing-xxs: 0.125rem;\n}\n`;
+    expect(drift(SPACING_WORD_NAMES, spacingWords(withNewToken)).missingFromList).toEqual(['xxs']);
   });
 });

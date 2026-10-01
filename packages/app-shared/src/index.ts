@@ -15,4 +15,3 @@ export * from './settings/dynamicSettings.type';
 export * from './settings/staticSettings';
 export * from './settings/staticSettings.type';
 export * from './utils/mergeSettings';
-export * from './utils/passwordValidation';

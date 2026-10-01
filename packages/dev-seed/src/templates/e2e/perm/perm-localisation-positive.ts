@@ -1,7 +1,7 @@
 /**
  * perm-localisation-positive minimal-data template.
  *
- * Operates against the 3-locale `staticSettings.supportedLocales` base (`[en, fi, sv]`) directly — NO runtime override. The single-locale variant (perm-localisation-negative) is not seeded here.
+ * Operates against the 3-locale `staticSettings.supportedLocales` base (`[en, fi, sv]`) directly — NO runtime override.
  *
  * Topology: 1 election, 1 CG with 1 CO, 1 organisation, 1 candidate, 1 nomination. 2 question categories (qc-info + qc-opin), each carrying 2 questions:
  *   - q1 (text)                          — multilingual surface (no opt-out)
@@ -13,15 +13,15 @@
  *
  * Prefix discipline: `externalIdPrefix: 'e2e-perm-l10n-pos-'` (distinct from every other perm template).
  *
- * Settings: APP_SETTINGS spreads MINIMAL_BASE_APP_SETTINGS verbatim (helper default) — no i18n override. The runtime `locales` export from `$lib/i18n` resolves to the staticSettings list (en/fi/sv), the LanguageSelection NavGroup (`locales.length > 1` gate at LanguageSelection.svelte:32) renders with three locales, and the translation-options toggle stays visible on every multilingual Input (`multilingual && locales.length > 1` gate at Input.svelte:646,653) for q1 (text) and q3-comment (open-answer textarea).
+ * Settings: APP_SETTINGS spreads MINIMAL_BASE_APP_SETTINGS verbatim (helper default) — no i18n override. The runtime `locales` export from `$lib/i18n` resolves to the staticSettings list (en/fi/sv), the LanguageSelection NavGroup (the `locales.current.length > 1` gate in LanguageSelection.svelte) renders with three locales, and the translation-options toggle stays visible on every multilingual Input (the `multilingual && locales.length > 1` gate in Input.svelte) for q1 (text) and q3-comment (open-answer textarea).
  *
- * q2 + q4 carry `customData.disableMultilingual = true` as a per-question opt-out: even with locales.length > 1, the multilingual toggle is suppressed on those two questions (QuestionInput.svelte:72-77).
+ * q2 + q4 carry `customData.disableMultilingual = true` as a per-question opt-out: even with locales.length > 1, the multilingual toggle is suppressed on those two questions (QuestionInput.svelte).
  *
- * q3 + q4 require `allow_open: true` because the multilingual surface on the opinion editor is the OPEN-ANSWER COMMENT textarea (`<Input type="textarea-multilingual">` at `routes/candidate/(protected)/questions/[questionId]/+page.svelte:294-304`).
+ * q3 + q4 require `allow_open: true` because the multilingual surface on the opinion editor is the OPEN-ANSWER COMMENT textarea (`<Input type="textarea-multilingual">` in `routes/candidate/(protected)/questions/[questionId]/+page.svelte`).
  * Without `allow_open=true` the comment block does not render and the assertions on q3/q4 would target a missing element.
  *
  * The L10N spec depends on:
- *   - The candidate's BARE external_id = `ca-1-1a` (hardcoded in the spec at perm-localisation-positive.spec.ts:88 as `CANDIDATE_EXTERNAL_ID = 'e2e-perm-l10n-pos-ca-1-1a'`).
+ *   - The candidate's BARE external_id = `ca-1-1a` (hardcoded in `perm-localisation-positive.spec.ts` as `CANDIDATE_EXTERNAL_ID = 'e2e-perm-l10n-pos-ca-1-1a'`).
  *   - 4 specific questions with bespoke `[Q1]`/`[Q2]`/`[Q3]`/`[Q4]` name markers (asserted by the spec's `getQuestion(/\[Q1\]/)` calls).
  *   - 2 questions carrying `customData.disableMultilingual = true`.
  *   - 2 opinion questions carrying `allow_open: true`.
@@ -29,7 +29,6 @@
  *
  * Build strategy: use `buildMinimal` for the topology bits the helper supports cleanly (1 election / 1 CG / 1 CO / 1 organisation / app_settings deep-merged with the empty overlay → MINIMAL_BASE_APP_SETTINGS verbatim).
  * Override `question_categories`, `questions`, `candidates`, and `nominations` with the hand-authored bespoke shapes the spec depends on.
- * The composed Template is structurally identical to the pre-port hand-authored template (parity for the spec's selectors and assertions).
  */
 
 import { LIKERT_5_EN } from './shared';
@@ -58,15 +57,13 @@ export const permLocalizationPositiveTemplate: Template = {
         external_id: 'qc-info',
         name: { en: '[QC-INFO] Info questions' },
         category_type: 'info',
-        sort_order: 0,
-        is_generated: false
+        sort_order: 0
       },
       {
         external_id: 'qc-opin',
         name: { en: '[QC-OPIN] Opinion questions' },
         category_type: 'opinion',
-        sort_order: 1,
-        is_generated: false
+        sort_order: 1
       }
     ]
   },
@@ -82,8 +79,7 @@ export const permLocalizationPositiveTemplate: Template = {
         category: { external_id: `${P}qc-info` },
         allow_open: false,
         required: false,
-        sort_order: 0,
-        is_generated: false
+        sort_order: 0
       },
       {
         external_id: 'qu-info-q2',
@@ -93,7 +89,6 @@ export const permLocalizationPositiveTemplate: Template = {
         allow_open: false,
         required: false,
         sort_order: 1,
-        is_generated: false,
         custom_data: { disableMultilingual: true }
       },
       {
@@ -105,8 +100,7 @@ export const permLocalizationPositiveTemplate: Template = {
         // allow_open=true gates the OPEN-ANSWER COMMENT textarea
         allow_open: true,
         required: true,
-        sort_order: 100,
-        is_generated: false
+        sort_order: 100
       },
       {
         external_id: 'qu-opin-q4',
@@ -117,7 +111,6 @@ export const permLocalizationPositiveTemplate: Template = {
         allow_open: true,
         required: false,
         sort_order: 101,
-        is_generated: false,
         custom_data: { disableMultilingual: true }
       }
     ]
@@ -133,7 +126,6 @@ export const permLocalizationPositiveTemplate: Template = {
         last_name: 'Candidate One A',
         terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 0,
-        is_generated: false,
         organization: { external_id: `${P}or-1` },
         answersByExternalId: {
           [`${P}qu-info-q1`]: { value: { en: '[en-answer-q1]' } },
@@ -145,7 +137,7 @@ export const permLocalizationPositiveTemplate: Template = {
     ]
   },
 
-  // 1 nomination via the single-org variant inlined here (mirrors the pre-port file-local `buildElectionConstituencyNomsSingleOrg` helper).
+  // Single-org nominations, authored inline in the shape `buildSingleOrgNoms` (buildMinimal.ts) emits.
   // Only or-1 parent + the candidate child; no or-2 row (single-org perm).
   nominations: {
     count: 0,

@@ -1,13 +1,13 @@
 /**
- * Idura OIDC identity provider for Finnish Trust Network bank authentication.
+ * Idura OIDC identity provider.
  *
  * Implements the full Idura OIDC flow:
  * - **Authorization:** JAR (JWT Secured Authorization Request per RFC 9101) with RS256-signed
  *   request object containing all required claims. The signing key is loaded from env vars.
  * - **Token exchange:** `private_key_jwt` client assertion (RFC 7523) with RS256-signed JWT
  *   containing `iss`, `sub`, `aud` (token endpoint), `exp` (5min), and unique `jti`.
- * - **Claims extraction:** JWE decrypt (RSA-OAEP-256) + JWT verify with Idura-specific
- *   claim mappings (`sub` for identity, plus `hetu` and `country`).
+ * - **Claims extraction:** JWE decrypt (RSA-OAEP-256) + JWT verify with the Finnish Trust Network
+ *   claim mapping in `IDURA_FTN_AUTH_CONFIG` (`sub` for identity, plus `hetu` and `country`).
  */
 
 import * as jose from 'jose';
@@ -26,7 +26,7 @@ import type {
 } from './types';
 
 /**
- * Idura claim mapping configuration.
+ * Idura claim mapping for Finnish Trust Network authentication.
  *
  * Idura Finnish Trust Network authentication returns a stable `sub` claim as the primary identifier. Additional Finnish-specific claims (`birthdate`, `hetu`, `country`) are extracted for metadata storage. `identityMatchProp` names the claim used to match a returning user to their existing candidate record and MUST be unique per person -- see `AuthConfig.identityMatchProp` in `types.ts` for what goes wrong when it is not.
  *
@@ -34,7 +34,7 @@ import type {
  * - Name claims: Standard OIDC `given_name` and `family_name`
  * - Extra claims: `birthdate`, `hetu` (Finnish personal identity code), `country`
  */
-export const IDURA_AUTH_CONFIG: AuthConfig = {
+export const IDURA_FTN_AUTH_CONFIG: AuthConfig = {
   identityMatchProp: 'sub',
   extractClaims: ['birthdate', 'hetu', 'country'],
   firstNameProp: 'given_name',
@@ -58,9 +58,9 @@ async function getSigningKey(): Promise<{ key: CryptoKey | Uint8Array; jwk: jose
 }
 
 export const iduraProvider: IdentityProvider = {
-  type: 'idura',
+  type: 'idura-ftn',
 
-  authConfig: IDURA_AUTH_CONFIG,
+  authConfig: IDURA_FTN_AUTH_CONFIG,
 
   async getAuthorizeUrl({ redirectUri }: AuthorizeParams): Promise<AuthorizeResult> {
     const clientId = publicConstants.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID;
@@ -139,15 +139,15 @@ export const iduraProvider: IdentityProvider = {
       const payload = await decryptAndVerifyIdToken(idToken);
 
       const extractedClaims: Record<string, string> = Object.fromEntries(
-        IDURA_AUTH_CONFIG.extractClaims.map((claim) => [claim, String(payload[claim] ?? '')])
+        IDURA_FTN_AUTH_CONFIG.extractClaims.map((claim) => [claim, String(payload[claim] ?? '')])
       );
 
       return {
         success: true,
         data: {
-          firstName: String(payload[IDURA_AUTH_CONFIG.firstNameProp] ?? ''),
-          lastName: String(payload[IDURA_AUTH_CONFIG.lastNameProp] ?? ''),
-          identifier: String(payload[IDURA_AUTH_CONFIG.identityMatchProp] ?? ''),
+          firstName: String(payload[IDURA_FTN_AUTH_CONFIG.firstNameProp] ?? ''),
+          lastName: String(payload[IDURA_FTN_AUTH_CONFIG.lastNameProp] ?? ''),
+          identifier: String(payload[IDURA_FTN_AUTH_CONFIG.identityMatchProp] ?? ''),
           extractedClaims
         }
       };

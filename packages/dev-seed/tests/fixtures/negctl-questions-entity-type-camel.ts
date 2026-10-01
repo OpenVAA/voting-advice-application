@@ -5,13 +5,13 @@
  *
  * ## What the snake arm could not detect
  *
- * `negctl-questions-entity-type.ts` writes `entity_type` — the spelling the RPC's `skip_columns` array uses, and the spelling `DENIED_BY_TABLE` declares. But `COLUMN_MAP` maps `entity_type` → `entityType` (`packages/supabase-types/src/column-map.ts`), and source (1) of the permitted-key derivation admits, for every column, EVERY camel form `FIELD_MAP` resolves onto it. So `entityType` sat in the PERMITTED set while the deny-list — a plain lookup of a snake literal — never saw it. Measured on the shipped guard: `questions.entity_type` threw; `questions.entityType` passed. `bulkImport` then ran `resolveFieldName('entityType') === 'entity_type'` and shipped the key to the RPC, whose `skip_columns` discarded it: exit 0, and a row missing exactly what the author asked for — verbatim the failure mode `DENIED_BY_TABLE` exists to eliminate.
+ * `negctl-questions-entity-type.ts` writes `entity_type` — the spelling the RPC's `skip_columns` array uses, and the spelling `DENIED_BY_TABLE` declares. But `COLUMN_MAP` maps `entity_type` → `entityType` (`packages/supabase-types/src/column-map.ts`), and source (1) of the permitted-key derivation admits, for every column, EVERY camel form `FIELD_MAP` resolves onto it. So `entityType` is in the PERMITTED set, and a deny-list that looked up only the snake literal would let it through: `bulkImport` resolves `resolveFieldName('entityType') === 'entity_type'` and ships the key to the RPC, whose `skip_columns` discards it — exit 0, and a row missing exactly what the author asked for, the failure mode `DENIED_BY_TABLE` exists to eliminate.
  *
- * The control was therefore STRUCTURALLY unable to detect the hole in the layer it exists to exercise. This file closes that: it is byte-adjacent to the snake fixture and differs from it in exactly one key's spelling.
+ * The snake fixture alone is STRUCTURALLY unable to exercise that arm. This file does: it is byte-adjacent to the snake fixture and differs from it in exactly one key's spelling.
  *
  * ## It is exercised in CI, not only on a live database
  *
- * ⚠ Unlike the other three fixtures, this one IS imported — by `tests/assertKnownRowProps.test.ts`, which feeds its `fixed[]` rows straight to Pass 0 and asserts the deny message. A control reachable only through `yarn db:seed --template <abs path>` fires only when somebody runs a seed against a live database, which is the "guard that cannot fire" shape these controls exist to rule out. The import is read-only and does not move the file's bytes; the CLI invocation below still works and is still the way to observe the exit code end to end.
+ * ⚠ Like the snake fixture, and unlike the other two, this one IS imported — by `tests/assertKnownRowProps.test.ts`, which feeds its `fixed[]` rows straight to Pass 0 and asserts the deny message. A control reachable only through `yarn db:seed --template <abs path>` fires only when somebody runs a seed against a live database, which is the "guard that cannot fire" shape these controls exist to rule out. The import is read-only and does not move the file's bytes; the CLI invocation below still works and is still the way to observe the exit code end to end.
  *
  * ```sh
  * yarn db:seed --template "$PWD/packages/dev-seed/tests/fixtures/negctl-questions-entity-type-camel.ts"
@@ -43,8 +43,7 @@ export default {
       {
         external_id: 'qc-1',
         name: { en: '[negctl144] Category for the entityType deny control' },
-        category_type: 'opinion',
-        is_generated: false
+        category_type: 'opinion'
       }
     ]
   },
@@ -58,7 +57,6 @@ export default {
         type: 'text',
         name: { en: '[negctl144] Question carrying a denied entityType key' },
         category: { external_id: 'negctl144-qc-1' },
-        is_generated: false,
         // ↓↓↓ THE DENIED KEY, IN ITS CAMEL SPELLING — the arm the snake fixture cannot reach. ↓↓↓
         entityType: 'candidate'
       }

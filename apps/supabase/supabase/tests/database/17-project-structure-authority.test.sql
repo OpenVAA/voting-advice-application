@@ -1,11 +1,13 @@
 -- 17-project-structure-authority.test.sql: the authority grid for the account tier, the project row and the project-scoped structure
 --
--- 162-09 routes 25 policies across seven tables onto `user_can`. Bulk conversion is where this wave's hazard lives, and it is not the hazard a read test looks for: A CONVERTED PREDICATE THAT IS WRONG IN THE PERMISSIVE DIRECTION BREAKS NOTHING, REDDENS NOTHING AND SHIPS. A grid of "the caller who may, may" cannot tell "correctly allowed" from "should have been denied".
+-- This file asserts, for the seven structure tables (accounts, projects, elections, constituency_groups, constituencies, constituency_group_constituencies, election_constituency_groups), that each policy's `user_can` permission admits the caller who may and refuses the caller who may not. A predicate that is wrong in the permissive direction breaks no read test, so every allow assertion is paired with a caller who must be refused by it.
 --
--- So the unit of work here is not a converted predicate, it is a converted predicate PLUS THE CALLER WHO MUST BE REFUSED BY IT, and the two callers of each pair differ in EXACTLY ONE PERMISSION:
---   candidate_a           holds project.read_structure          and NOT project.edit_structure a project-scope editor holds project.edit_structure          and NOT project.edit_project_settings admin_a (project admin) holds project.edit_project_settings  and NOT account.manage_projects A policy converted to the wrong permission reddens on the may-not half, which is the half a visibility test cannot supply.
+-- The two callers of each pair differ in exactly one permission:
+-- - candidate_a holds project.read_structure and not project.edit_structure
+-- - a project-scope editor holds project.edit_structure and not project.edit_project_settings
+-- - admin_a (project admin) holds project.edit_project_settings and not account.manage_projects
 --
--- ROADMAP criterion 2 is finished in this file, in both of the two sentences it is written in and each asserted twice. STRUCTURALLY, read from pg_policies on the applied database: the `projects` SELECT and UPDATE quals are unequal, both reach user_can, the SELECT names the read permission and NOT the project-settings one, and the UPDATE names the project-settings one and NOT the read one. 162-04 asserted only that the two strings differ, which stays true even when both are converted onto the same verb — the collapse the criterion exists to catch. BEHAVIOURALLY: candidate_a reads the project's elections and cannot edit them.
+-- The `projects` read and write predicates are asserted to stay distinct twice over. Structurally, from pg_policies on the applied database: the SELECT and UPDATE quals are unequal, both reach user_can, and each names its own permission and not the other's. Behaviourally: candidate_a reads the project's elections and cannot edit them.
 --
 -- Depends on: 00-helpers.test.sql (set_test_user, reset_role, create_test_data, test_id, test_user_id, test_user_grants).
 BEGIN;
@@ -26,7 +28,7 @@ SELECT
 -- =====================================================================
 -- Fixture: the two identities create_test_data() does not carry
 --
--- A PROJECT-SCOPE EDITOR is the one caller that separates project.edit_structure from project.edit_project_settings, and the shared fixture has none. It is created HERE rather than there because 162-06 asserts create_test_data() produces exactly eight grant rows and that a second backfill inserts none, and three sibling plans are editing that file concurrently; this identity rolls back with this transaction. 162-17 owns consolidating it.
+-- A PROJECT-SCOPE EDITOR is the one caller that separates project.edit_structure from project.edit_project_settings, and the shared fixture has none. It is created here, inside this transaction, rather than in create_test_data(), so the shared fixture's eight grant-bearing identities stay unchanged for every other suite.
 --
 -- A GRANT-LESS IDENTITY is what makes the public disjunct measurable: it is the caller for whom the authority term is false by construction, so anything it sees it sees through the public term alone.
 --
@@ -98,7 +100,7 @@ VALUES
     '{"en":"CG A2"}'::jsonb
   );
 
--- The eight fixture identities hold no grant rows until the backfill runs, and set_test_user fires it when handed a non-empty role array. One call is enough for all eight.
+-- The eight fixture identities hold no grant rows until set_test_user is handed a non-empty grant array, which writes the grants of all eight. One call is enough.
 SELECT
   set_test_user (
     'authenticated',
@@ -107,7 +109,7 @@ SELECT
   );
 
 -- =====================================================================
--- Section 1: criterion 2's behavioural sentence — a candidate reads the project's elections and cannot edit them
+-- Section 1: a candidate reads the project's elections and cannot edit them
 -- =====================================================================
 SELECT
   reset_role ();
@@ -159,7 +161,7 @@ SELECT
 -- =====================================================================
 -- Section 2: the project editor — may edit the structure, may not edit the project
 --
--- Tests 3 and 5 are the same caller across two objects, differing in exactly one permission literal. That is criterion 2's structural sentence asserted behaviourally.
+-- Tests 3 and 5 are the same caller across two objects whose predicates differ in exactly one permission literal, so together they assert the projects read/write split behaviourally.
 -- =====================================================================
 SELECT
   set_test_user (
@@ -266,7 +268,7 @@ SELECT
   );
 
 -- =====================================================================
--- Section 3: the tenancy boundary still holds after the conversion
+-- Section 3: the tenancy boundary between projects
 -- =====================================================================
 SELECT
   set_test_user (
@@ -539,9 +541,9 @@ SELECT
   );
 
 -- =====================================================================
--- Section 7: criterion 2, structurally — read from pg_policies on the applied database
+-- Section 7: the read and write predicates, structurally — read from pg_policies on the applied database
 --
--- THIS IS THE TEST THE ROADMAP ASKS FOR: it fails if the two predicates ever collapse back onto one. 162-04's existing assertion that the two STRINGS differ stays green when both are converted onto the same verb, which is exactly the failure this one catches.
+-- This fails if the two projects predicates collapse onto one. Asserting only that the two qual strings differ is not enough: they still differ when both name the same permission.
 -- =====================================================================
 SELECT
   reset_role ();
@@ -648,7 +650,7 @@ SELECT
 -- =====================================================================
 -- Section 9: the write verb across the structure tables — eight more policies, eight pairs
 --
--- Every pair below is the project-scope EDITOR against candidate_a, and the two differ in exactly one permission: the editor holds project.edit_structure, candidate_a holds project.read_structure and not it. A policy converted to the read verb passes the "may" half and reddens only here.
+-- Every pair below is the project-scope EDITOR against candidate_a, and the two differ in exactly one permission: the editor holds project.edit_structure, candidate_a holds project.read_structure and not it. A write policy that names the read permission passes the "may" half and reddens only here.
 --
 -- t17_affected exists because an UPDATE or DELETE refused by a USING clause affects zero rows SILENTLY rather than raising, so the may-not half cannot be written as throws_ok. It is SECURITY INVOKER, so the dynamic statement runs as the caller and row-level security applies; it lives in this transaction and rolls back with it.
 -- =====================================================================
@@ -1018,7 +1020,7 @@ SELECT
 -- =====================================================================
 -- Section 12: the constituency_group_constituencies delegation, behaviourally
 --
--- The parent group is the ONLY thing distinguishing these rows, and the delegation inherits BOTH of the parent's terms rather than only its authority one. So a grant-less caller sees project A's join row (the parent is open for voters) and none of project B's (the parent is closed and it holds no grant), and admin_b sees project B's through its authority over the parent. MEASURED, not predicted: this file first asserted that admin_b sees NONE of project A's join rows, and that was wrong about the code rather than the other way round — project A is open, so its groups are readable by every authenticated caller and its join rows follow them.
+-- The parent group is the ONLY thing distinguishing these rows, and the delegation inherits BOTH of the parent's terms rather than only its authority one. So a grant-less caller sees project A's join row (the parent is open for voters) and none of project B's (the parent is closed and it holds no grant), and admin_b sees project B's through its authority over the parent. admin_b is not asserted blind to project A's join rows: project A is open, so its groups are readable by every authenticated caller and its join rows follow them.
 -- =====================================================================
 SELECT
   reset_role ();
@@ -1485,9 +1487,9 @@ SELECT
   );
 
 -- =====================================================================
--- Section 19: the account admin — the WIDENING and the NARROWING, on the side that gained
+-- Section 19: the account admin — account update and project deletion
 --
--- P-1 ratified (A) on 2026-09-16. admin_update_accounts widens from the root admin alone to the root admin plus that account's own admin; admin_delete_projects narrows from every holder of project access to the account tier. Neither is covered by any assertion in the estate today, which is why each is asserted here in both directions rather than absorbed into the diff.
+-- admin_update_accounts admits the root admin and that account's own admin, and admin_delete_projects admits only the account tier (account.manage_projects), not every holder of project access. Each is asserted in both directions: here for the account admin, in section 20 for the project admin.
 -- =====================================================================
 SELECT
   reset_role ();
@@ -1536,7 +1538,7 @@ SELECT
       )
     ),
     1,
-    'WIDENING, gaining side: account_admin_a CAN update its own account row, where only the root admin could'
+    'account_admin_a CAN update its own account row'
   );
 
 SELECT
@@ -1548,7 +1550,7 @@ SELECT
       )
     ),
     0,
-    'account_admin_a CANNOT update the other account — the widening is scoped to its own'
+    'account_admin_a CANNOT update the other account — its update reach is its own account'
   );
 
 SELECT
@@ -1581,13 +1583,13 @@ SELECT
       )
     ),
     1,
-    'NARROWING, gaining side: account_admin_a CAN delete a project in its account — account.manage_projects'
+    'account_admin_a CAN delete a project in its account — account.manage_projects'
   );
 
 -- =====================================================================
--- Section 20: the project admin — the THIRD population change, and the narrowing's losing side
+-- Section 20: the project admin — it reads its account's row and cannot delete its project
 --
--- THE THIRD POPULATION CHANGE. The S-3 NOTE's second clause, "or its projects", means a project admin now reads the row of the account its project belongs to. It was found because it reddened 04-admin-crud.test.sql's `project_admin cannot SELECT accounts`; the executor halted on it and the operator sanctioned it on 2026-09-17. What widens is bounded and is stated so it is not rediscovered: an accounts row is id, name, created_at, updated_at, so what this caller gains is the account's NAME, and it already administers one of that account's projects.
+-- The account read admits a grant on the account or on one of its projects, so a project admin reads the row of the account its project belongs to. What it can read is bounded: an accounts row is id, name, created_at and updated_at, so it learns the account's name, and it already administers one of that account's projects.
 -- =====================================================================
 SELECT
   reset_role ();
@@ -1613,7 +1615,7 @@ SELECT
       FROM
         accounts
     ) = test_id ('account_a'),
-    'THIRD POPULATION CHANGE: a project admin SELECTs exactly its own account and no other, through a grant on a project of that account'
+    'a project admin SELECTs exactly its own account and no other, through a grant on a project of that account'
   );
 
 SELECT
@@ -1639,7 +1641,7 @@ SELECT
       )
     ),
     0,
-    'a project admin CANNOT update the account row it may now read — on accounts, read and write name different things'
+    'a project admin CANNOT update the account row it may read — on accounts, read and write name different things'
   );
 
 SELECT
@@ -1671,7 +1673,7 @@ SELECT
       )
     ),
     0,
-    'NARROWING, losing side: a project admin CANNOT delete its own project — deletion moved to the account tier'
+    'a project admin CANNOT delete its own project — deletion is an account-tier verb'
   );
 
 SELECT
@@ -1811,7 +1813,7 @@ SELECT
         tablename = 'accounts'
         AND cmd = 'UPDATE'
     ),
-    'accounts: the read predicate names GRANT EXISTENCE and the write predicate names account.edit_settings, so the two name different things and the criterion-2 exemption this table was to receive is WITHDRAWN'
+    'accounts: the read predicate names GRANT EXISTENCE and the write predicate names account.edit_settings, so the two name different things'
   );
 
 SELECT
@@ -1874,12 +1876,7 @@ SELECT
 -- =====================================================================
 -- Section 23: the seven tables as a whole — absence, and routing completeness
 -- =====================================================================
--- ⚠ THE NON-VACUITY CONTROL WAS RE-EXPRESSED BY 162-12, AND THE REASON IS THAT THE PHASE SUCCEEDED.
--- 162-09 proved this scoped scan non-vacuous by asserting that `can_access_project` STILL STOOD in some policy elsewhere in `public` -- a fine control while other tables were unconverted. 162-12 converted the last one: `authenticated_select_nominations` was the FINAL policy in the whole schema naming that shim, MEASURED at zero afterwards, so the old control became unsatisfiable by construction and would have reddened this assertion for the best possible reason.
---
--- The replacement makes the SAME claim -- this scan is scoped rather than vacuous -- against a control that cannot expire: the scanned population itself is non-empty (31 policies on the seven tables). The description string keeps its claim and only the clause naming the control changes.
---
--- HANDOFF TO 162-15: the legacy shim now has ZERO policy callers anywhere in `public`. Its deletion is no longer blocked by any policy on any table.
+-- The absence scan is shown to be scoped rather than vacuous by its own population: the seven tables carry a non-empty set of policies, so a count of zero offenders is a statement about real policies.
 SELECT
   ok (
     (
