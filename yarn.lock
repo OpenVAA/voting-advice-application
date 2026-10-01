@@ -1830,10 +1830,8 @@ __metadata:
     svelte: "catalog:"
     svelte-check: "catalog:"
     svelte-eslint-parser: "npm:^1.6.0"
-    svelte-visibility-change: "npm:^0.6.0"
     tailwind-merge: "npm:^3.7.0"
     tailwindcss: "catalog:"
-    tslib: "npm:^2.8.1"
     tsx: "catalog:"
     typescript: "catalog:"
     vite: "npm:^6.4.1"
@@ -10217,13 +10215,6 @@ __metadata:
     svelte:
       optional: true
   checksum: 10c0/9b7bc592989ccdb5a04b98fcfafab602a3f2537988867261ad41f1a3b6deab121b2082d81b02c7a7db6d3da95ffe42496540569426f34b14c32088c5e0c26993
-  languageName: node
-  linkType: hard
-
-"svelte-visibility-change@npm:^0.6.0":
-  version: 0.6.0
-  resolution: "svelte-visibility-change@npm:0.6.0"
-  checksum: 10c0/1c60f4f08de7e3acb709f5d73967a118f42fc791c76f2188c769cf469f6b132aaaec65fc1b2f2228eb4e336b976b6f361b43a60d919db2d87bc9f772fac187db
   languageName: node
   linkType: hard
 
