@@ -27,4 +27,54 @@
 
 Tracer gate (Task 1): every link exited 0 on the committed tree, so the chain is proven and expansion to the
 bank-auth runs proceeds.
+## D-20 link 5: bank-auth and bank-auth-journey, three consecutive runs each
+
+**Setup.** Ports 8777, 9443 and 5273 were free and no `vite.js dev` process was alive before the first run.
+One baseline `yarn db:reset` (exit 0, 21:38:30Z); all six runs then used `--no-db-reset` on that database.
+The env files were generated from `tests/tests/utils/testKeys.ts` and `DEFAULT_TOKEN_OPTS` into the session
+scratchpad only (`bank-auth-edge.env`, `bank-auth-journey-edge.env`, `bank-auth-journey.env`,
+`bank-auth-jwks/jwks`). The two Edge env files differ in exactly one line, `IDENTITY_PROVIDER_ISSUER`. The JWKS
+was served by `python3 -m http.server 8777` from the scratchpad (`GET /jwks` 200).
+
+| Project | Edge Function env (read back from the running container by key) |
+|---|---|
+| `bank-auth` | `IDENTITY_PROVIDER_ISSUER=https://test-idp.example.com`, `PUBLIC_PROJECT_ID=00000000-0000-0000-0000-0000000000e2`, `SITE_URL=http://127.0.0.1:5273` |
+| `bank-auth-journey` | `IDENTITY_PROVIDER_ISSUER=https://127.0.0.1:9443`, `PUBLIC_PROJECT_ID=00000000-0000-0000-0000-0000000000e2`, `SITE_URL=http://127.0.0.1:5273` |
+
+For the journey, the wrapper's shell exported `PUBLIC_PROJECT_ID=00000000-0000-0000-0000-0000000000e2` and
+sourced the scratchpad `bank-auth-journey.env` (the IdP env and the TLS bypass), in that shell only.
+
+| # | Command | Exit | Totals (report.json; results.json agrees) | Preflight | Window (UTC) | Verdict |
+|---|---|---|---|---|---|---|
+| 7.1 | `PLAYWRIGHT_BANK_AUTH=1 tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/166-04-bank-auth-1 --project bank-auth --no-db-reset` | 0 | `total 8, expected 8, unexpected 0, flaky 0, skipped 0` | 0 / 1 | 21:39:10 -> 21:39:26 | PASS |
+| 7.2 | same, `166-04-bank-auth-2` | 0 | `total 8, expected 8, unexpected 0, flaky 0, skipped 0` | 0 / 1 | 21:39:46 -> 21:40:02 | PASS |
+| 7.3 | same, `166-04-bank-auth-3` | 0 | `total 8, expected 8, unexpected 0, flaky 0, skipped 0` | 0 / 1 | 21:40:02 -> 21:40:18 | PASS |
+| 8.1 | `PLAYWRIGHT_BANK_AUTH=1 tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/166-04-bank-auth-journey-1 --project bank-auth-journey --no-db-reset` | 0 | `total 131, expected 131, unexpected 0, flaky 0, skipped 0` | 0 / 1 | 21:41:15 -> 21:45:47 | PASS |
+| 8.2 | same, `166-04-bank-auth-journey-2` | 0 | `total 131, expected 131, unexpected 0, flaky 0, skipped 0` | 0 / 1 | 21:45:47 -> 21:50:20 | PASS |
+| 8.3 | same, `166-04-bank-auth-journey-3` | 0 | `total 131, expected 131, unexpected 0, flaky 0, skipped 0` | 0 / 1 | 21:50:21 -> 21:54:48 | PASS |
+
+- **bank-auth, every run:** all six spec tests passed, plus base setup and teardown. "should create candidate via
+  identity-callback Edge Function (Idura sub-based identity)" asserts the keys-configured create path loudly and
+  passed, so the path was taken each time. "should return session with magic link when candidate is created"
+  carries the second-POST assertion (`body.candidate_id` equals the first POST's) and passed each time.
+- **bank-auth-journey, every run:** "full bank-auth self-registration journey through to authenticated candidate"
+  passed (its step 6b requires exactly one candidate named by the user's candidate-editor grant), with
+  `data-setup-bank-auth-journey`, `data-teardown-bank-auth-journey` and the whole perm serial chain.
+
+**After the runs.**
+- The function server and the JWKS server were stopped. Ports 8777, 9443 and 5273 have no listener, and no
+  `vite.js dev` process is alive.
+- The `supabase_edge_runtime_openvaa-local` container was restored to the default function settings by one
+  `npx supabase functions serve` with no `--env-file`, then that CLI was stopped. Read back by key: issuer
+  `https://openvaa.test.idura.broker`, project `00000000-0000-0000-0000-000000000001`, `SITE_URL` on 5173.
+  Docker was not restarted; the other Supabase stack's edge runtime was not touched.
+- Orphans, through psql on the local database: `auth.users` with an email ending `@test.openvaa.local`: **0**;
+  E2E-project (`...0e2`) candidates with a null `external_id`: **0**; E2E-project organizations with a null
+  `external_id`: **0**; `auth.users` with an email ending `@bank-auth.placeholder`: **0**.
+- Leak check: `git status --porcelain` lists only an untracked, unrelated
+  `.planning/quick/261001-n8y-.../gate-evidence/` directory (and, before this commit, this file); no env file
+  and nothing under `apps/supabase/supabase/functions`. The plan's check
+  `STATUS="$(git status --porcelain)" && ! printf '%s\n' "$STATUS" | grep -qE '(^|/)\.env|functions/'` exits 0.
+  No command in this plan wrote to the root or the functions env file; the test keys and the TLS bypass exist
+  only in the session scratchpad.
 <!-- gsd:gates-continue -->
