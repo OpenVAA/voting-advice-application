@@ -1,13 +1,10 @@
--- 14-grants-migration.test.sql: the claim switch, and the migration that has to be complete before it
+-- 14-grants-migration.test.sql: the grants claim is the projection of public.grants
 --
--- 162-06 retires the claim key every real token carried and makes custom_access_token_hook project public.grants instead. The failure mode is silent in both directions and loud in neither. A claim emitted under a wrong key denies EVERYONE, and reads as an empty permission set rather than as an error. A backfill that misses a class of identity denies exactly that class, while every test written around the other classes stays green. So the evidence here is built the other way round: the emitted claim is asserted SET-EQUAL to test_grants_claim, the projection helper 162-04 installed for exactly this comparison, The backfill-image half of this file's original evidence -- the mapping compared in both directions against 162-05's independently written oracle, its completeness, its idempotency, and the auth_user_id population this repository contains no natural example of -- was RETIRED BY 162-15 together with both of its subjects, which that plan deleted.
+-- custom_access_token_hook projects public.grants into the token's `grants` claim, and a mismatch fails silently in both directions. A claim emitted under a wrong key denies EVERYONE, and reads as an empty permission set rather than as an error. A projection that misses a class of identity denies exactly that class, while every test written around the other classes stays green. So this file pins the emitted claim as SET-EQUAL to test_grants_claim, the fixture's projection helper; pins the fixture's two-source agreement assertion firing on a disagreement; pins the seeded identities holding their grant rows; and pins a grant being deleted with its target.
 --
 -- THE DECLARED ASSERTION COUNT BELOW IS EXPLICIT and deliberately so: a pgTAP file that asserts nothing exits 0 under no_plan, which is exactly the vacuous pass a permission test must not be able to produce. The declaration below is the only occurrence of that call in this file — a mention of it in prose above would shadow the real declaration for the gate that greps the first occurrence and read as zero.
 --
--- pgTAP SHIPS ITS OWN has_role(). It asserts that a DATABASE ROLE exists and returns text, and with the estate's search_path it shadows ours, so an unqualified one-argument call fails with "function ok(text, unknown) does not exist" rather than as a failed assertion. Every reference to our predicate here is schema-qualified for that reason.
---
--- Depends on: 00-helpers.test.sql (create_test_data, set_test_user, test_grants_claim,
---             test_id, test_user_id, test_user_grants, reset_role)
+-- Depends on: 00-helpers.test.sql (create_test_data, set_test_user, test_grants_claim, test_seed_fixture_grants, test_id, test_user_id, test_user_grants, reset_role).
 BEGIN;
 
 SET
@@ -30,7 +27,7 @@ SELECT
 -- =====================================================================
 -- Extra fixture, local to this transaction
 --
--- One auth user holding no role row at all: the grant-less identity the claim-shape assertions need, and the identity the set_test_user tripwire is asked about.
+-- One auth user holding no grant row at all: the grant-less identity the claim-shape assertions need, and the identity section 7's agreement assertion is asked about.
 -- =====================================================================
 INSERT INTO
   auth.users (
@@ -61,16 +58,14 @@ VALUES
     now()
   );
 
--- The eight fixture identities' authority rows. 162-15 REPLACED THE CALL THAT USED TO DO THIS: until that plan the backfill was invoked here, in the section that compared its image against 162-05's oracle, and every later section rode on the rows it left behind. Both the backfill and the oracle read the retired role table and both are gone; this is the same seeding through the map that replaced them, and without it the hook has nothing to project and section 6's non-vacuity assertion reddens.
+-- The eight fixture identities' authority rows. Without them the hook has nothing to project and section 3's non-vacuity assertion reddens.
 SELECT
   test_seed_fixture_grants ();
 
 -- =====================================================================
--- Section 3: the entity role level (9)
+-- Section 1: the entity role level (1)
 --
--- B6's accepted mapping table spells the entity role with a third level. D-02 amended the vocabulary to two, section 3.1 maps every entity user type to `editor`, and grant_role_type declares no third member -- so the word that table used does not exist.
---
--- 162-15 RETIRED THE SECOND ASSERTION OF THIS SECTION WITH ITS SUBJECT. It joined public.grants to public.user_roles to assert that every entity grant pointed at the entity class its ROLE ROW named; there are no role rows and no such table. Its property -- that the discriminator and the target agree -- now has no second source to agree with, and is carried instead by grants_entity_scope_target_type_check, asserted from the catalogue in 10-schema-migrations.test.sql.
+-- grant_role_type has two members, admin and editor, and every entity user type maps to editor, so the fixture holds no entity-scope grant of any other role. That an entity grant's target type and target agree is carried by grants_entity_scope_target_type_check, asserted from the catalogue in 10-schema-migrations.test.sql.
 -- =====================================================================
 SELECT
   is (
@@ -88,7 +83,7 @@ SELECT
   );
 
 -- =====================================================================
--- Section 5: the hook emits the grants claim, and only it (13-14)
+-- Section 2: the hook emits the grants claim, and only it (2-3)
 -- =====================================================================
 SELECT
   ok (
@@ -121,13 +116,13 @@ SELECT
           ) -> 'claims'
       ) ? 'user_roles'
     ),
-    'and emits no retired claim key beside it: one vocabulary reaches the database, not two'
+    'and emits no user_roles key beside it: one vocabulary reaches the database, not two'
   );
 
 -- =====================================================================
--- Section 6: the emitted array IS the projection, in both directions (15-18)
+-- Section 3: the emitted array IS the projection, in both directions (4-7)
 --
--- 162-04 built test_grants_claim for exactly this comparison and recorded that a divergence across this boundary is a silent TOTAL DENIAL rather than an error. Asserted as a SET in both directions with equal cardinality rather than as string equality: jsonb_agg defines no element order and a reordering that means nothing must not redden.
+-- A divergence across this boundary is a silent TOTAL DENIAL rather than an error. Asserted as a SET in both directions with equal cardinality rather than as string equality: jsonb_agg defines no element order and a reordering that means nothing must not redden.
 -- =====================================================================
 SELECT
   is_empty (
@@ -194,7 +189,7 @@ SELECT
   );
 
 -- =====================================================================
--- Section 7: an identity holding NO grant gets an empty array (19-21)
+-- Section 4: an identity holding NO grant gets an empty array (8-10)
 --
 -- Three different states, and they carry three assertions: a missing key, a null, and an empty array are not the same thing, and only the third is what a grant-less identity should receive.
 -- =====================================================================
@@ -253,20 +248,9 @@ SELECT
   );
 
 -- =====================================================================
--- Section 8: RETIRED BY 162-15, five assertions, class by class
+-- Section 5: no claim-reading fallback exists, asserted per name (11-12)
 --
--- 22 asserted that neither transitional fallback function survives in pg_proc. SUCCESSOR: 24-legacy-removal.test.sql section 2, which asserts each of the two names SEPARATELY rather than as one count of zero over both -- a count is satisfied by one returning while the other stays away only if the count is read as a sum, and the per-name form removes that reading entirely.
--- 23 and 24 asserted that neither shim's body named a deleted function. REASON: their subject is the two shim bodies, which 162-15 deleted. A prosrc predicate over a function that does not exist answers NULL, not true.
--- 25 and 26 pinned each shim's exact argument string, because a change there would break the one-argument call sites at query time rather than at deploy time. REASON: their subject is gone, and 25's pinned string names both retired enums, so it could not survive them in any form. SUCCESSOR for the property that no such predicate returns: 24-legacy-removal.test.sql section 1 assertions 4 and 5, which assert each shim absent at ANY signature -- strictly stronger than pinning one signature, which a resurrection in a different spelling would satisfy.
--- =====================================================================
--- =====================================================================
--- Section 9: 162-05's transitional fallback is absent, asserted per side (27-28)
---
--- 162-05 WROTE THIS AS A BICONDITIONAL and 162-15 REPLACED IT WITH TWO UNCONDITIONAL ABSENCE ASSERTIONS, ONE PER NAME (task 2 Q2 = A). The biconditional said: the two transitional functions exist IF AND ONLY IF the hook emits no grants key. 162-06 made both sides false, and from that commit onward it could not fail for any reachable reason -- a biconditional with both sides false is SATISFIED BY BOTH SIDES COMING BACK TOGETHER, which is precisely the resurrection it was installed to prevent.
---
--- The replacement is strictly stronger: each name is asserted absent on its own, so either half returning alone reddens, and so does both halves returning together. It is asserted at ANY signature rather than at the one the deleted bodies happened to carry.
---
--- Its other side is not dropped: that the hook emits a `grants` key is asserted unconditionally in section 5 above, where it is the subject rather than a term in a conditional.
+-- Each name is asserted absent on its own and at ANY signature, so either one appearing reddens, alone or together with the other. That the hook emits a `grants` key is asserted in section 2 above.
 -- =====================================================================
 SELECT
   is (
@@ -281,7 +265,7 @@ SELECT
         AND p.proname = 'has_role_legacy_claim'
     ),
     0,
-    'has_role_legacy_claim does not exist at any signature (the retired-claim fallback 162-05 installed and 162-06 deleted; asserted alone so its half cannot return under cover of the other)'
+    'has_role_legacy_claim does not exist at any signature (asserted alone, so it cannot appear under cover of the other name)'
   );
 
 SELECT
@@ -301,9 +285,9 @@ SELECT
   );
 
 -- =====================================================================
--- Section 10: the whole path, end to end (29-30)
+-- Section 6: the whole path, end to end (13-14)
 --
--- A row in public.grants, projected by the same projection the hook performs into the session claim by set_test_user, read by user_can, consulted by a real policy. authenticated_select_projects is the policy 162-04 converted to a bare user_can call with no legacy path, which is why it is the one asked here.
+-- A row in public.grants, projected by the same projection the hook performs into the session claim by set_test_user, read by user_can, consulted by a real policy. authenticated_select_projects is a bare user_can call with no other path, which is why it is the one asked here.
 -- =====================================================================
 SELECT
   set_test_user (
@@ -349,11 +333,11 @@ SELECT
   reset_role ();
 
 -- =====================================================================
--- Section 11: the fixture's two-source agreement assertion (31)
+-- Section 7: the fixture's two-source agreement assertion (15)
 --
--- set_test_user's third parameter cannot be removed — an argument-list change is an overload and every call site would bind ambiguously — so it is given work instead. 162-15 REPLACED THE TRIPWIRE THIS SECTION USED TO ASSERT WITH SOMETHING STRICTLY STRONGER, and kept the case the tripwire caught as the case asserted here. The tripwire fired on one condition: a non-empty array for an identity that ends up holding NO grant rows. The agreement assertion fires on that condition AND on every other disagreement between the fixture's written-down authority map and the table — an arm that has drifted, an arm granting what the table does not, a row the table carries that no call site claimed.
+-- set_test_user's third parameter is an assertion as well as an input: a non-empty array is compared, as a set, with the table's projection of that identity, and any disagreement between the fixture's written-down authority map and the table raises -- an arm that has drifted, an arm granting what the table does not, a row the table carries that no call site claimed.
 --
--- The identity below holds no grant row at all, so the array it is handed is maximally in disagreement with the table's empty projection, which is the tripwire's own case asserted through the stronger predicate. The array is grant-shaped rather than role-shaped because the retired vocabulary it used to be spelled in is gone.
+-- The identity below holds no grant row at all, so the array it is handed is maximally in disagreement with the table's empty projection.
 -- =====================================================================
 SELECT
   throws_like (
@@ -363,9 +347,9 @@ SELECT
   );
 
 -- =====================================================================
--- Section 14: seed parity — the reset stack a developer meets first (47-49)
+-- Section 8: seed parity -- the reset stack a developer meets first (16-18)
 --
--- The fixture is not the only thing anyone runs. seed.sql's two role rows are committed data that this transaction sits on top of, so their grants are the real image of the real reset path, and D-19's requirement — that a `yarn db:reset` stack is not blank — is assertable right here rather than only by a shell command outside the estate.
+-- The fixture is not the only thing anyone runs. seed.sql's two grant rows are committed data that this transaction sits on top of, so they are the real image of the real reset path, and the requirement that a `yarn db:reset` stack is not blank is assertable right here rather than only by a shell command outside the estate.
 -- =====================================================================
 SELECT
   is (
@@ -401,7 +385,7 @@ SELECT
     'and the seeded candidate holds exactly one entity grant on its own candidate row'
   );
 
--- The array is the seeded admin's ACTUAL grant row, not a token non-empty value: under 162-15's two-source agreement assertion it is compared as a set against the table's projection of that identity, so a placeholder would raise. seed.sql writes this row directly from 162-15 onward.
+-- The array is the seeded admin's ACTUAL grant row, not a token non-empty value: the two-source agreement assertion compares it as a set against the table's projection of that identity, so a placeholder would raise.
 SELECT
   set_test_user (
     'authenticated',
@@ -426,9 +410,9 @@ SELECT
   reset_role ();
 
 -- =====================================================================
--- IN-02: a grant does not outlive its target
+-- Section 9: a grant does not outlive its target (19-21)
 --
--- `grants.target_id` has no foreign key, so without a delete trigger a deleted candidate's or project's grants stayed behind, projected into every token and ready to re-attach to a recreated row. create_test_data() seeds the fixture's grants (candidate_a's entity grant, admin_a's project grant) through set_test_user, which is called first for that write alone.
+-- `grants.target_id` has no foreign key, so without the cleanup_grants_on_delete triggers a deleted candidate's or project's grants would stay behind, projected into every token and ready to re-attach to a recreated row. The set_test_user call below writes the fixture's grant rows (candidate_a's entity grant, admin_a's project grant) again, a no-op when they are already there, and is undone at once.
 -- =====================================================================
 SELECT
   set_test_user (
@@ -460,7 +444,7 @@ SELECT
         scope = 'project'
         AND target_id = test_id ('project_a')
     ),
-    'IN-02 control: the fixture holds an entity grant on candidate_a and a project grant on project_a before any delete'
+    'control: the fixture holds an entity grant on candidate_a and a project grant on project_a before any delete'
   );
 
 DELETE FROM nominations
@@ -483,7 +467,7 @@ SELECT
         AND target_id = test_id ('candidate_a')
     ),
     0,
-    'IN-02: deleting a candidate deletes the entity grants that targeted it'
+    'deleting a candidate deletes the entity grants that targeted it'
   );
 
 DELETE FROM projects
@@ -502,7 +486,7 @@ SELECT
         AND target_id = test_id ('project_a')
     ),
     0,
-    'IN-02: deleting a project deletes the project grants that targeted it'
+    'deleting a project deletes the project grants that targeted it'
   );
 
 SELECT
