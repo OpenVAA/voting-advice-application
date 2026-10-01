@@ -523,9 +523,9 @@ BEGIN
     (test_id('election_b'), test_id('constituency_group_b'));
 
   -- ===== Organizations ===== `confirmed` follows the publication column's A-true / B-false polarity, one term per row rather than a second pass over the same rows.
-  INSERT INTO organizations (id, project_id, auth_user_id, name, confirmed) VALUES
-    (test_id('org_a'), test_id('project_a'), test_user_id('organization_a'), '{"en":"Org A"}'::jsonb,  true),
-    (test_id('org_b'), test_id('project_b'), NULL,                           '{"en":"Org B"}'::jsonb, false);
+  INSERT INTO organizations (id, project_id, name, confirmed) VALUES
+    (test_id('org_a'), test_id('project_a'), '{"en":"Org A"}'::jsonb,  true),
+    (test_id('org_b'), test_id('project_b'), '{"en":"Org B"}'::jsonb, false);
 
   -- ===== Candidates (no answers to avoid trigger complications) ===== candidate_a + candidate_a2 are confirmed, in the open project, and must stay visible to anon.
   -- `anon_select_candidates` requires `terms_of_use_accepted IS NOT NULL AND < now()` as well as the confirmation and nomination terms of section 3.4, so both are given a timestamp strictly in the past; otherwise the anon-visible-candidate assertions in 03-anon-read.test fail.
@@ -535,10 +535,10 @@ BEGIN
   -- candidate_b stays NULL — it is unconfirmed and its project is closed to voters, so it is invisible twice over anyway, AND a NULL ToU value lets 10-schema-migrations test #30 continue to assert the candidate_b ToU column is NULL after a candidate_a-as-other cross-tenant UPDATE attempt.
   --
   -- The candidates carry NO organization column: 162-07b removed it, and the candidate-to-organization association is now stated once, on the parent_nomination_id edge below. candidate_a reaches org_a through nomination_cand_a -> nomination_org_a; candidate_a2 reaches nothing, because it is a member with no nomination at all, and that asymmetry is what 21-entity-organization.test.sql's email-variable pair discriminates on.
-  INSERT INTO candidates (id, project_id, auth_user_id, first_name, last_name, terms_of_use_accepted, confirmed) VALUES
-    (test_id('candidate_a'),  test_id('project_a'), test_user_id('candidate_a'),  'Alice', 'Alpha',   now() - interval '1 day', true),
-    (test_id('candidate_b'),  test_id('project_b'), test_user_id('candidate_b'),  'Bob',   'Bravo',   NULL,                     false),
-    (test_id('candidate_a2'), test_id('project_a'), test_user_id('candidate_a2'), 'Carol', 'Charlie', now() - interval '1 day', true);
+  INSERT INTO candidates (id, project_id, first_name, last_name, terms_of_use_accepted, confirmed) VALUES
+    (test_id('candidate_a'),  test_id('project_a'), 'Alice', 'Alpha',   now() - interval '1 day', true),
+    (test_id('candidate_b'),  test_id('project_b'), 'Bob',   'Bravo',   NULL,                     false),
+    (test_id('candidate_a2'), test_id('project_a'), 'Carol', 'Charlie', now() - interval '1 day', true);
 
   -- ===== Factions ===== organization_id is NOT NULL as of 162-07b, so each faction is given the organization of its own project: faction_a to org_a, faction_b to org_b. A faction whose organization sat in the other project would violate no constraint the database declares today, which is exactly why the pairing is stated here rather than left to chance -- 162-12 tightens validate_nomination to read it.
   INSERT INTO factions (id, project_id, organization_id, name, confirmed) VALUES

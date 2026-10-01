@@ -50,13 +50,6 @@ CREATE INDEX IF NOT EXISTS idx_nominations_constituency_id ON public.nominations
 
 CREATE INDEX IF NOT EXISTS idx_nominations_parent_nomination_id ON public.nominations (parent_nomination_id);
 
---------------------------------------------------------------------------------
--- auth_user_id indexes (columns defined in 102-entities.sql)
---------------------------------------------------------------------------------
-CREATE INDEX IF NOT EXISTS idx_candidates_auth_user_id ON public.candidates (auth_user_id);
-
-CREATE INDEX IF NOT EXISTS idx_organizations_auth_user_id ON public.organizations (auth_user_id);
-
 -- feedback indexes
 CREATE INDEX IF NOT EXISTS idx_feedback_project_id ON public.feedback (project_id);
 

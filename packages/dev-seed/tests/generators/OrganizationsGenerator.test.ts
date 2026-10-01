@@ -1,7 +1,5 @@
 /**
- * OrganizationsGenerator unit tests.
- *
- * acceptance criteria (a)–(e) + the no-auth scope assertion: generated rows MUST NOT carry `auth_user_id`, because dev-seed writes no auth rows.
+ * OrganizationsGenerator unit tests: the row count, the external-id prefix on generated and fixed rows, fixed-row pass-through, determinism and the project id.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -14,13 +12,13 @@ describe('OrganizationsGenerator', () => {
     expect(gen.generate({ count: 3 })).toHaveLength(3);
   });
 
-  it('applies externalIdPrefix to generated rows (GEN-04)', () => {
+  it('applies externalIdPrefix to generated rows', () => {
     const gen = new OrganizationsGenerator(makeCtx());
     const rows = gen.generate({ count: 2 });
     rows.forEach((r) => expect(r.external_id).toMatch(/^seed_org_/));
   });
 
-  it('applies externalIdPrefix to fixed[] rows (GEN-04)', () => {
+  it('applies externalIdPrefix to fixed[] rows', () => {
     const gen = new OrganizationsGenerator(makeCtx());
     const rows = gen.generate({
       count: 0,
@@ -46,11 +44,5 @@ describe('OrganizationsGenerator', () => {
     const gen = new OrganizationsGenerator(makeCtx());
     const rows = gen.generate({ count: 2 });
     rows.forEach((r) => expect(r.project_id).toBe('00000000-0000-0000-0000-000000000001'));
-  });
-
-  it('does NOT emit auth_user_id (no-auth scope)', () => {
-    const gen = new OrganizationsGenerator(makeCtx());
-    const rows = gen.generate({ count: 3 });
-    rows.forEach((r) => expect(r).not.toHaveProperty('auth_user_id'));
   });
 });

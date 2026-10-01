@@ -816,8 +816,6 @@ CREATE TABLE public.election_constituency_groups (
 CREATE TABLE public.organizations (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id uuid NOT NULL REFERENCES public.projects (id) ON DELETE CASCADE,
-  -- The Supabase Auth user who signs in as this organization; edit rights come from `public.grants`, not from this link.
-  auth_user_id uuid REFERENCES auth.users (id) ON DELETE SET NULL,
   -- Localized string `{ "<locale>": string }`.
   name jsonb,
   -- Localized string `{ "<locale>": string }`: the abbreviated name.
@@ -857,8 +855,6 @@ EXECUTE FUNCTION public.enforce_entity_immutability ('name');
 CREATE TABLE public.candidates (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id uuid NOT NULL REFERENCES public.projects (id) ON DELETE CASCADE,
-  -- The Supabase Auth user who signs in as this candidate; the candidate app loads its own row by it, and edit rights come from `public.grants`.
-  auth_user_id uuid REFERENCES auth.users (id) ON DELETE SET NULL,
   first_name text NOT NULL,
   last_name text NOT NULL,
   -- Localized string `{ "<locale>": string }`: the abbreviated name.
@@ -1686,13 +1682,6 @@ CREATE INDEX IF NOT EXISTS idx_nominations_election_id ON public.nominations (el
 CREATE INDEX IF NOT EXISTS idx_nominations_constituency_id ON public.nominations (constituency_id);
 
 CREATE INDEX IF NOT EXISTS idx_nominations_parent_nomination_id ON public.nominations (parent_nomination_id);
-
---------------------------------------------------------------------------------
--- auth_user_id indexes (columns defined in 102-entities.sql)
---------------------------------------------------------------------------------
-CREATE INDEX IF NOT EXISTS idx_candidates_auth_user_id ON public.candidates (auth_user_id);
-
-CREATE INDEX IF NOT EXISTS idx_organizations_auth_user_id ON public.organizations (auth_user_id);
 
 -- feedback indexes
 CREATE INDEX IF NOT EXISTS idx_feedback_project_id ON public.feedback (project_id);

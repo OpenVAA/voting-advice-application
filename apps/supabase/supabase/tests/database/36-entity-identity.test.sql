@@ -25,11 +25,6 @@ SELECT
 -- =====================================================================
 -- What anon can read
 -- =====================================================================
-SELECT
-  todo_start (
-    'the entity tables still expose an auth user id to anon'
-  );
-
 -- Every column of a foreign key to auth.users, on a table where anon holds SELECT on that column and either row-level security is off or a SELECT policy names anon or PUBLIC.
 SELECT
   is (
@@ -83,9 +78,6 @@ SELECT
 
 SELECT
   reset_role ();
-
-SELECT
-  todo_end ();
 
 -- =====================================================================
 -- Fixture, local to this transaction

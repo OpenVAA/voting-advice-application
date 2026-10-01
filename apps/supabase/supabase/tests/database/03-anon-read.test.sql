@@ -167,7 +167,6 @@ INSERT INTO
   candidates (
     id,
     project_id,
-    auth_user_id,
     first_name,
     last_name,
     terms_of_use_accepted,
@@ -177,7 +176,6 @@ VALUES
   (
     'cccccccc-cccc-cccc-cccc-00000000001a'::uuid,
     test_id ('project_a'),
-    NULL,
     'NoTerms',
     'Anon',
     NULL,
@@ -186,7 +184,6 @@ VALUES
   (
     'cccccccc-cccc-cccc-cccc-00000000001b'::uuid,
     test_id ('project_a'),
-    NULL,
     'FutureTerms',
     'Anon',
     now() + interval '1 day',

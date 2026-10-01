@@ -218,7 +218,6 @@ export type Database = {
       candidates: {
         Row: {
           answers: Json | null;
-          auth_user_id: string | null;
           color: Json | null;
           confirmed: boolean;
           created_at: string;
@@ -238,7 +237,6 @@ export type Database = {
         };
         Insert: {
           answers?: Json | null;
-          auth_user_id?: string | null;
           color?: Json | null;
           confirmed?: boolean;
           created_at?: string;
@@ -258,7 +256,6 @@ export type Database = {
         };
         Update: {
           answers?: Json | null;
-          auth_user_id?: string | null;
           color?: Json | null;
           confirmed?: boolean;
           created_at?: string;
@@ -826,7 +823,6 @@ export type Database = {
       organizations: {
         Row: {
           answers: Json | null;
-          auth_user_id: string | null;
           color: Json | null;
           confirmed: boolean;
           created_at: string;
@@ -844,7 +840,6 @@ export type Database = {
         };
         Insert: {
           answers?: Json | null;
-          auth_user_id?: string | null;
           color?: Json | null;
           confirmed?: boolean;
           created_at?: string;
@@ -862,7 +857,6 @@ export type Database = {
         };
         Update: {
           answers?: Json | null;
-          auth_user_id?: string | null;
           color?: Json | null;
           confirmed?: boolean;
           created_at?: string;

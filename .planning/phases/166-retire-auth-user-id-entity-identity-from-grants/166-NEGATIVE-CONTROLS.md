@@ -278,6 +278,41 @@ Result: PASS
 166-03 removes the wrapper; the same two assertions must then pass un-wrapped (that run is NC-4's
 real GREEN and belongs to 166-03's record).
 
+### GREEN (un-wrapped, 166-03 Task 1 — the column and its indexes dropped)
+
+Tree: 166-03 Task 1's working tree on top of `12e8f01b0` — `candidates` / `organizations` without the
+link column, `idx_candidates_*` / `idx_organizations_*` link indexes gone, the migration regenerated
+(still one file), and the `todo_start` / `todo_end` pair deleted from `36-entity-identity.test.sql`
+with the two assertions byte-identical to 166-01's. `yarn db:reset` exit 0; `yarn db:types` exit 0;
+`yarn workspace @openvaa/supabase test:db` **exit 0**:
+
+```
+/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/supabase/supabase/tests/database/36-entity-identity.test.sql ............... ok
+All tests successful.
+Files=36, Tests=1335,  3 wallclock secs ( 0.06 usr  0.05 sys +  0.17 cusr  0.08 csys =  0.36 CPU)
+Result: PASS
+```
+
+(1335 = 1337 − the two `09-column-restrictions` assertions on the dropped column; `plan (32)`.)
+
+The same file run verbosely (`npx supabase test db supabase/tests/database/00-helpers.test.sql
+supabase/tests/database/36-entity-identity.test.sql --debug`, exit 0), the two NC-4 lines with no
+`# TODO` marker:
+
+```
+1..20
+ok 1 - anon can read no auth user id column except nominations.created_by
+ok 2 - anon cannot select an auth user id column from candidates
+...
+All tests successful.
+Files=2, Tests=29,  0 wallclock secs ( 0.01 usr  0.01 sys +  0.01 cusr  0.00 csys =  0.03 CPU)
+Result: PASS
+```
+
+The census now returns exactly `{public.nominations.created_by}` (the one exemption, never widened),
+and anon selecting the link column from `candidates` raises `42703`. **NC-4 closed: RED observed in
+166-01, GREEN un-wrapped here.**
+
 ---
 
 ## NC-5 — identity-callback finds the candidate through its grant and undoes a failed create (166-02 Task 1, vitest)

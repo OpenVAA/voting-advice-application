@@ -1,8 +1,8 @@
 -- 09-column-restrictions.test.sql: Column-level REVOKE/GRANT tests
 --
 -- Verifies that the column-level REVOKE UPDATE / GRANT UPDATE mechanism prevents authenticated users from modifying protected columns:
--- - candidates: external_id, project_id, auth_user_id, id, sort_order, created_at, updated_at
--- - organizations: external_id, project_id, auth_user_id, id, sort_order, created_at, updated_at
+-- - candidates: external_id, project_id, id, sort_order, created_at, updated_at
+-- - organizations: external_id, project_id, id, sort_order, created_at, updated_at
 -- - projects: account_id
 --
 -- postgres and service_role bypass the column grants and can update every column.
@@ -22,7 +22,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (34);
+  plan (32);
 
 -- Create test fixture data
 SELECT
@@ -73,7 +73,7 @@ SELECT
     ),
     'P0001',
     NULL,
-    'Candidate cannot update confirmed on own record -- and the refusal is the trigger''s raised exception, not the privilege layer''s 42501, so the allow-list change really landed'
+    'Candidate cannot update confirmed on own record -- and the refusal is the trigger''s raised exception, not the privilege layer''s 42501, so the column is inside the UPDATE grant'
   );
 
 SELECT
@@ -85,17 +85,6 @@ SELECT
     '42501',
     NULL,
     'Candidate cannot update project_id on own record'
-  );
-
-SELECT
-  throws_ok (
-    format(
-      $$UPDATE candidates SET auth_user_id = 'cccccccc-cccc-cccc-cccc-000000000099'::uuid WHERE id = '%s'$$,
-      test_id ('candidate_a')
-    ),
-    '42501',
-    NULL,
-    'Candidate cannot update auth_user_id on own record'
   );
 
 SELECT
@@ -267,7 +256,7 @@ SELECT
     ),
     'P0001',
     NULL,
-    'Organization admin cannot update confirmed on own organization -- and the refusal is the trigger''s raised exception, not the privilege layer''s 42501, so the allow-list change really landed here too'
+    'Organization admin cannot update confirmed on own organization -- and the refusal is the trigger''s raised exception, not the privilege layer''s 42501, so the column is inside the UPDATE grant here too'
   );
 
 SELECT
@@ -279,17 +268,6 @@ SELECT
     '42501',
     NULL,
     'Organization admin cannot update project_id on own organization'
-  );
-
-SELECT
-  throws_ok (
-    format(
-      $$UPDATE organizations SET auth_user_id = 'cccccccc-cccc-cccc-cccc-000000000099'::uuid WHERE id = '%s'$$,
-      test_id ('org_a')
-    ),
-    '42501',
-    NULL,
-    'Organization admin cannot update auth_user_id on own organization'
   );
 
 SELECT

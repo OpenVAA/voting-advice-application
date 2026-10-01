@@ -381,33 +381,21 @@ SELECT
 -- =====================================================================
 -- Section 8: get_candidate_user_data answers for ONE project, named by the caller
 --
--- An identity may hold candidate rows in several projects. candidate_a is given a second candidate row in project B, with a grant on it, so BOTH rows are visible to them through RLS -- the project argument is then the only thing that can pick one.
+-- An identity may hold candidate rows in several projects. candidate_a is given a second candidate row in project B, with an editor grant on it, so the identity is the editor of one candidate in each project -- the project argument is then the only thing that can pick one.
+--
+-- The function reads the grant rows, not the token, and create_test_data() writes none, so candidate_a's own rows are written here before the project B row joins them.
 -- =====================================================================
 SELECT
-  set_test_user (
-    'authenticated',
-    test_user_id ('candidate_a'),
-    test_user_grants ('candidate_a')
-  );
-
-SELECT
-  reset_role ();
+  test_seed_identity_grants ('candidate_a');
 
 INSERT INTO
-  candidates (
-    id,
-    project_id,
-    first_name,
-    last_name,
-    auth_user_id
-  )
+  candidates (id, project_id, first_name, last_name)
 VALUES
   (
     '21212121-2121-2121-2121-0000000000b1'::uuid,
     test_id ('project_b'),
     'Alice',
-    'InB',
-    test_user_id ('candidate_a')
+    'InB'
   );
 
 INSERT INTO
