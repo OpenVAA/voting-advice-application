@@ -1836,14 +1836,15 @@ EXECUTE FUNCTION public.cleanup_grants_on_delete ('entity', 'alliance');
 -- - private.nomination_exists_in_contest(entity_type, uuid, uuid, uuid, integer) - whether an entity is already nominated at a contest
 -- - private.caller_nominated_in_contest(uuid, uuid, integer, grant_permission) - whether the caller holds a permission on an entity nominated at a contest
 -- - private.caller_unconfirmed_originated_count() - how many unconfirmed parent nominations the caller has originated
+-- - private.caller_entity_ids(uuid, entity_type) - the entities of one type, in one project, the caller holds an editor grant on
 --
 -- The two public-visibility terms are each defined once here and called directly by the eight entity SELECT policies.
 --------------------------------------------------------------------------------
--- The `private` schema: policy-only SECURITY DEFINER helpers
+-- The `private` schema: SECURITY DEFINER helpers for policies and INVOKER functions
 --
 -- Every SECURITY DEFINER function in `public` is published by PostgREST as `/rest/v1/rpc/<name>`, and Supabase's default privileges make it executable by `anon` and `authenticated`. The hierarchy and visibility hops below answer questions row-level security would refuse the caller directly, such as which project an arbitrary entity id belongs to, so published as RPCs they would be cross-tenant oracles.
 --
--- Revoking EXECUTE is not the fix, because a policy expression runs with the querying role's privileges and would fail with `permission denied`. The helpers therefore live in `private`, which is not in PostgREST's exposed schemas (config.toml `[api] schemas`), while the API roles keep USAGE and EXECUTE so policies can call them. Every call site qualifies the name, so no search_path decides which function runs.
+-- Revoking EXECUTE is not the fix, because a policy expression runs with the querying role's privileges and would fail with `permission denied`. The helpers therefore live in `private`, which is not in PostgREST's exposed schemas (config.toml `[api] schemas`), while the API roles keep USAGE and EXECUTE so policies and SECURITY INVOKER functions, which both run as the caller, can call them. Every call site qualifies the name, so no search_path decides which function runs.
 --
 -- What stays in `public`: `user_can` (the Edge Functions call it over RPC) and `user_has_account_grant`, which answer only about the caller's own claim; `grant_role_permissions` (the matrix, no row data); `project_open_for_voters` (the frontend calls it); and the two storage path helpers (caller-scoped or public by definition). 07-rpc-security.test.sql holds a census of every anon- and authenticated-executable SECURITY DEFINER function in `public`, so a new one has to be added there on purpose.
 --------------------------------------------------------------------------------
@@ -2513,7 +2514,36 @@ SET
     AND NOT n.confirmed;
 $$;
 
--- Policies evaluate as the querying role, so the API roles need EXECUTE on the private helpers; PostgREST cannot reach them because `private` is not an exposed schema. Stated explicitly rather than inherited from PostgreSQL's default PUBLIC grant, so the dependency is visible here.
+--------------------------------------------------------------------------------
+-- caller_entity_ids: which entities of this type, in this project, does the caller edit?
+--
+-- Returns the target ids of the caller's own `(entity, <type>, <id>, editor)` rows in public.grants whose entity lies in p_project_id. get_candidate_user_data calls it to answer "which entity am I". It reads the table rather than the caller's token, so a grant written after the token was issued already counts.
+--
+-- Only the `editor` role is read and `user_can` is not called: user_can answers yes for project, account and global admins, and an entity-scope `admin` grant confers nothing, so neither names an entity the caller is.
+--
+-- SECURITY DEFINER because public.grants is revoked from every API role. The entity's project is probed inline, one EXISTS per entity table, rather than through entity_project_id, because a SECURITY DEFINER function is never inlined and nesting one inside another pays that per-row cost twice.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.caller_entity_ids (
+  p_project_id uuid,
+  p_entity_type public.entity_type
+) RETURNS SETOF uuid LANGUAGE sql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT g.target_id
+  FROM public.grants g
+  WHERE g.user_id = (SELECT auth.uid())
+    AND g.scope = 'entity'
+    AND g.role = 'editor'
+    AND g.target_type = p_entity_type
+    AND CASE p_entity_type
+      WHEN 'candidate' THEN EXISTS (SELECT 1 FROM public.candidates e WHERE e.id = g.target_id AND e.project_id = p_project_id)
+      WHEN 'organization' THEN EXISTS (SELECT 1 FROM public.organizations e WHERE e.id = g.target_id AND e.project_id = p_project_id)
+      WHEN 'faction' THEN EXISTS (SELECT 1 FROM public.factions e WHERE e.id = g.target_id AND e.project_id = p_project_id)
+      WHEN 'alliance' THEN EXISTS (SELECT 1 FROM public.alliances e WHERE e.id = g.target_id AND e.project_id = p_project_id)
+    END;
+$$;
+
+-- Policies and SECURITY INVOKER functions evaluate as the querying role, so the API roles need EXECUTE on the private helpers; PostgREST cannot reach them because `private` is not an exposed schema. Stated explicitly rather than inherited from PostgreSQL's default PUBLIC grant, so the dependency is visible here. The statement reaches only the functions defined before it.
 GRANT
 EXECUTE ON ALL FUNCTIONS IN SCHEMA private TO anon,
 authenticated,
@@ -5894,7 +5924,7 @@ EXECUTE ON FUNCTION public.resolve_email_variables (uuid, uuid[], text, text) TO
 -- Functions:
 -- - get_nominations() - return nominations with entity data
 -- - get_entity_basic_data() - basic-data projection of an entity the caller holds nomination.read on
--- - get_candidate_user_data() - return the entity row for the authenticated user
+-- - get_candidate_user_data() - the caller's own entity row of one type in one project, resolved from their editor grant
 -- - upsert_answers() - atomic answer write for a single entity
 --------------------------------------------------------------------------------
 -- get_nominations RPC: returns nominations with entity data in a single round trip
@@ -6057,9 +6087,15 @@ GRANT
 EXECUTE ON FUNCTION public.get_entity_basic_data (public.entity_type, uuid) TO authenticated;
 
 --------------------------------------------------------------------------------
--- get_candidate_user_data: returns the entity row for the authenticated user, in ONE project
+-- get_candidate_user_data: the caller's own entity of one type, in ONE project
 --
--- p_project_id is REQUIRED and carries no DEFAULT. One identity may hold entity rows in several projects (identity-callback's lookup allows for it), and without a project term `LIMIT 1` with no ORDER BY would return an arbitrary one of them. It comes first because PostgreSQL forbids a parameter without a default from following one that has a default.
+-- Returns the row of the entity the caller holds an `(entity, <type>, <id>, editor)` grant on in p_project_id, read from public.grants through private.caller_entity_ids, or no row when they hold none. Project, account and global admins and holders of an entity-scope `admin` grant resolve to no row: only the editor grant makes the caller that entity.
+--
+-- p_project_id is REQUIRED and carries no DEFAULT, because one identity may hold editor grants in several projects and only the project names one of them. It comes first because PostgreSQL forbids a parameter without a default from following one that has a default.
+--
+-- Two or more editor grants of the asked type in one project raise P0001 whose hint names the ambiguity, rather than picking one. The message names the entity type and no id, because callers log it.
+--
+-- SECURITY INVOKER: the grant lookup is the one definer call on the path, and which rows come back is still decided by the caller's own row-level security.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.get_candidate_user_data (
   p_project_id uuid,
@@ -6079,13 +6115,26 @@ CREATE OR REPLACE FUNCTION public.get_candidate_user_data (
   terms_of_use_accepted timestamptz,
   first_name text,
   last_name text
-) LANGUAGE sql STABLE SECURITY INVOKER AS $$
+) LANGUAGE plpgsql STABLE SECURITY INVOKER
+SET
+  search_path = '' AS $$
+DECLARE
+  v_entity_ids uuid[];
+BEGIN
+  v_entity_ids := ARRAY (SELECT private.caller_entity_ids (p_project_id, p_entity_type));
+  IF cardinality(v_entity_ids) > 1 THEN
+    RAISE EXCEPTION 'the caller holds an editor grant on more than one % in this project', p_entity_type
+      USING ERRCODE = 'P0001', HINT = 'ERR_ENTITY_IDENTITY_AMBIGUOUS';
+  END IF;
+
+  -- The RETURNS TABLE names are OUT variables in plpgsql, so every column is alias-qualified.
+  RETURN QUERY
   SELECT c.id, c.project_id, NULL::jsonb, c.short_name, c.info,
          c.color, c.image, c.sort_order, c.subtype,
          c.custom_data, c.answers, c.terms_of_use_accepted,
          c.first_name, c.last_name
   FROM public.candidates c
-  WHERE c.auth_user_id = (SELECT auth.uid())
+  WHERE c.id = ANY (v_entity_ids)
     AND c.project_id = p_project_id
     AND p_entity_type = 'candidate'
   UNION ALL
@@ -6094,10 +6143,10 @@ CREATE OR REPLACE FUNCTION public.get_candidate_user_data (
          o.custom_data, o.answers, NULL::timestamptz,
          NULL::text, NULL::text
   FROM public.organizations o
-  WHERE o.auth_user_id = (SELECT auth.uid())
+  WHERE o.id = ANY (v_entity_ids)
     AND o.project_id = p_project_id
-    AND p_entity_type = 'organization'
-  LIMIT 1;
+    AND p_entity_type = 'organization';
+END;
 $$;
 
 GRANT

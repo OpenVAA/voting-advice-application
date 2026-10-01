@@ -3,7 +3,7 @@
 -- Functions:
 -- - get_nominations() - return nominations with entity data
 -- - get_entity_basic_data() - basic-data projection of an entity the caller holds nomination.read on
--- - get_candidate_user_data() - return the entity row for the authenticated user
+-- - get_candidate_user_data() - the caller's own entity row of one type in one project, resolved from their editor grant
 -- - upsert_answers() - atomic answer write for a single entity
 --------------------------------------------------------------------------------
 -- get_nominations RPC: returns nominations with entity data in a single round trip
@@ -166,9 +166,15 @@ GRANT
 EXECUTE ON FUNCTION public.get_entity_basic_data (public.entity_type, uuid) TO authenticated;
 
 --------------------------------------------------------------------------------
--- get_candidate_user_data: returns the entity row for the authenticated user, in ONE project
+-- get_candidate_user_data: the caller's own entity of one type, in ONE project
 --
--- p_project_id is REQUIRED and carries no DEFAULT. One identity may hold entity rows in several projects (identity-callback's lookup allows for it), and without a project term `LIMIT 1` with no ORDER BY would return an arbitrary one of them. It comes first because PostgreSQL forbids a parameter without a default from following one that has a default.
+-- Returns the row of the entity the caller holds an `(entity, <type>, <id>, editor)` grant on in p_project_id, read from public.grants through private.caller_entity_ids, or no row when they hold none. Project, account and global admins and holders of an entity-scope `admin` grant resolve to no row: only the editor grant makes the caller that entity.
+--
+-- p_project_id is REQUIRED and carries no DEFAULT, because one identity may hold editor grants in several projects and only the project names one of them. It comes first because PostgreSQL forbids a parameter without a default from following one that has a default.
+--
+-- Two or more editor grants of the asked type in one project raise P0001 whose hint names the ambiguity, rather than picking one. The message names the entity type and no id, because callers log it.
+--
+-- SECURITY INVOKER: the grant lookup is the one definer call on the path, and which rows come back is still decided by the caller's own row-level security.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.get_candidate_user_data (
   p_project_id uuid,
@@ -188,13 +194,26 @@ CREATE OR REPLACE FUNCTION public.get_candidate_user_data (
   terms_of_use_accepted timestamptz,
   first_name text,
   last_name text
-) LANGUAGE sql STABLE SECURITY INVOKER AS $$
+) LANGUAGE plpgsql STABLE SECURITY INVOKER
+SET
+  search_path = '' AS $$
+DECLARE
+  v_entity_ids uuid[];
+BEGIN
+  v_entity_ids := ARRAY (SELECT private.caller_entity_ids (p_project_id, p_entity_type));
+  IF cardinality(v_entity_ids) > 1 THEN
+    RAISE EXCEPTION 'the caller holds an editor grant on more than one % in this project', p_entity_type
+      USING ERRCODE = 'P0001', HINT = 'ERR_ENTITY_IDENTITY_AMBIGUOUS';
+  END IF;
+
+  -- The RETURNS TABLE names are OUT variables in plpgsql, so every column is alias-qualified.
+  RETURN QUERY
   SELECT c.id, c.project_id, NULL::jsonb, c.short_name, c.info,
          c.color, c.image, c.sort_order, c.subtype,
          c.custom_data, c.answers, c.terms_of_use_accepted,
          c.first_name, c.last_name
   FROM public.candidates c
-  WHERE c.auth_user_id = (SELECT auth.uid())
+  WHERE c.id = ANY (v_entity_ids)
     AND c.project_id = p_project_id
     AND p_entity_type = 'candidate'
   UNION ALL
@@ -203,10 +222,10 @@ CREATE OR REPLACE FUNCTION public.get_candidate_user_data (
          o.custom_data, o.answers, NULL::timestamptz,
          NULL::text, NULL::text
   FROM public.organizations o
-  WHERE o.auth_user_id = (SELECT auth.uid())
+  WHERE o.id = ANY (v_entity_ids)
     AND o.project_id = p_project_id
-    AND p_entity_type = 'organization'
-  LIMIT 1;
+    AND p_entity_type = 'organization';
+END;
 $$;
 
 GRANT
