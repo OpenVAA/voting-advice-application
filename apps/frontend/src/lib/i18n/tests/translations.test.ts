@@ -4,99 +4,29 @@ import { fileURLToPath } from 'url';
 import { describe, expect, test } from 'vitest';
 import { t } from '$lib/i18n/wrapper';
 
-// Path to inlang message files
-const messagesDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..', 'messages');
+/**
+ * Structure tests for the Paraglide message catalog in `apps/frontend/messages/`.
+ *
+ * These must stay FILESYSTEM assertions: `vitest.config.ts` aliases `$lib/paraglide/*` to mocks, so a `t()` call here would prove nothing about the real catalog.
+ */
 
-// Path to the type-generation translation source catalog. This is the OTHER, independent i18n catalog: `tools/translationKey/generateTranslationKeyType.ts` reads it to build the `TranslationKey` union, while `messagesDir` above feeds the Paraglide runtime.
-const translationsDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'translations');
+const frontendRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..');
+const messagesDir = path.join(frontendRoot, 'messages');
+const translationKeyTypePath = path.join(frontendRoot, 'src', 'lib', 'types', 'generated', 'translationKey.ts');
+const inlangSettings = JSON.parse(fs.readFileSync(path.join(frontendRoot, 'project.inlang', 'settings.json'), 'utf8'));
 
 const translationLocales = fs
   .readdirSync(messagesDir)
   .filter((name) => fs.lstatSync(path.join(messagesDir, name)).isDirectory())
   .sort();
 
-const firstLocale = translationLocales.includes('en') ? 'en' : translationLocales[0];
-const otherLocales = translationLocales.filter((l) => l !== firstLocale);
-const firstLocaleFilenames = fs.readdirSync(path.join(messagesDir, firstLocale)).sort();
+const baseLocale: string = inlangSettings.baseLocale;
+const otherLocales = translationLocales.filter((l) => l !== baseLocale);
+const baseLocaleFilenames = fs.readdirSync(path.join(messagesDir, baseLocale)).sort();
 
 /**
- * Recursive function to extract leaf keys, handling inlang variant arrays.
- * Variant arrays (array values) are treated as leaf nodes (same as string values).
+ * Flattens a message tree into dot-separated key paths. Inlang variant arrays and bare variant objects (carrying `declarations`, `selectors` or `match`) are single leaves, as in the `TranslationKey` generator.
  */
-function flattenKeys(obj: unknown, prefix: string): Array<string> {
-  const res: Array<string> = [];
-  if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
-    // Leaf node (string, number, or variant array)
-    res.push(prefix);
-  } else {
-    for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
-      res.push(...flattenKeys(value, prefix ? `${prefix}.${key}` : key));
-    }
-  }
-  return res.sort();
-}
-
-function getMessageKeys(locale: string, filename: string): Array<string> {
-  const filePath = path.join(messagesDir, locale, filename);
-  const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-  return flattenKeys(content, filename.replace('.json', ''));
-}
-
-/**
- * Every dotted key authored in the type-generation catalog (`src/lib/i18n/translations/{locale}`).
- *
- * Those files are UNWRAPPED — `translations/en/components.json` starts straight at `accordionSelect` — so the namespace has to come from the FILENAME (`components.json` -> `components`), exactly as `tools/translationKey/generateTranslationKeyType.ts` does when it builds the `TranslationKey` union.
- * Without that prefix every single key would mismatch.
- *
- * The locale directories also hold `index.ts` and `translations.type.ts`, so non-JSON siblings are filtered out rather than parsed.
- */
-function getTranslationKeys(locale: string): Array<string> {
-  const localeDir = path.join(translationsDir, locale);
-  return fs
-    .readdirSync(localeDir)
-    .filter((filename) => filename.endsWith('.json'))
-    .flatMap((filename) =>
-      flattenKeys(JSON.parse(fs.readFileSync(path.join(localeDir, filename), 'utf8')), filename.replace('.json', ''))
-    )
-    .sort();
-}
-
-/**
- * Every dotted key present in the runtime Paraglide catalog (`messages/{locale}`).
- *
- * Those files are WRAPPED — `messages/en/components.json` is `{ "components": { ... } }`, and `messages/en/adminApp.common.json` is `{ "adminApp.common": { ... } }` — so the file's own top-level key already IS the namespace and the flatten must start from an EMPTY prefix.
- *
- * This is why the parity check cannot reuse `getMessageKeys` above: that helper deliberately re-prefixes the filename for its cross-LOCALE comparison (where a constant offset is harmless) and would yield doubled `components.components.*` keys here.
- */
-function getRuntimeCatalogKeys(locale: string): Array<string> {
-  const localeDir = path.join(messagesDir, locale);
-  return fs
-    .readdirSync(localeDir)
-    .filter((filename) => filename.endsWith('.json'))
-    .flatMap((filename) => flattenKeys(JSON.parse(fs.readFileSync(path.join(localeDir, filename), 'utf8')), ''))
-    .sort();
-}
-
-const frontendRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..');
-const translationKeyTypePath = path.join(frontendRoot, 'src', 'lib', 'types', 'generated', 'translationKey.ts');
-
-/**
- * Every key in the base-locale files that Paraglide compiles, read the way the `TranslationKey` generator reads them: `baseLocale` and `pathPattern` from `project.inlang/settings.json`, each file unwrapped from its namespace key, and variant arrays or bare variant objects counted as single leaves.
- */
-function getBaseLocaleCatalogKeys(): Array<string> {
-  const settings = JSON.parse(fs.readFileSync(path.join(frontendRoot, 'project.inlang', 'settings.json'), 'utf8'));
-  const baseLocale: string = settings.baseLocale;
-  const patterns: Array<string> = settings['plugin.inlang.messageFormat'].pathPattern;
-  return patterns
-    .flatMap((pattern) => {
-      const filePath = path.resolve(frontendRoot, pattern.split('{locale}').join(baseLocale));
-      const namespace = path.basename(filePath, '.json');
-      const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-      return flattenMessageKeys(content[namespace], namespace);
-    })
-    .sort();
-}
-
 function flattenMessageKeys(tree: unknown, prefix: string): Array<string> {
   const isBranch =
     typeof tree === 'object' &&
@@ -107,8 +37,27 @@ function flattenMessageKeys(tree: unknown, prefix: string): Array<string> {
   return Object.entries(tree).flatMap(([key, value]) => flattenMessageKeys(value, `${prefix}.${key}`));
 }
 
-const firstLocaleFileKeys = Object.fromEntries(
-  firstLocaleFilenames.map((filename) => [filename, getMessageKeys(firstLocale, filename)])
+/**
+ * The full translation keys of one message file. The file's single top-level key is its namespace, the filename without `.json`, and every key starts with it.
+ */
+function getMessageKeys(locale: string, filename: string): Array<string> {
+  const namespace = filename.replace(/\.json$/, '');
+  const content = JSON.parse(fs.readFileSync(path.join(messagesDir, locale, filename), 'utf8'));
+  return flattenMessageKeys(content[namespace], namespace).sort();
+}
+
+/**
+ * Every key in the base-locale files that Paraglide compiles, read the way the `TranslationKey` generator reads them: `pathPattern` from `project.inlang/settings.json`, each file unwrapped from its namespace key.
+ */
+function getBaseLocaleCatalogKeys(): Array<string> {
+  const patterns: Array<string> = inlangSettings['plugin.inlang.messageFormat'].pathPattern;
+  return patterns
+    .flatMap((pattern) => getMessageKeys(baseLocale, path.basename(pattern.split('{locale}').join(baseLocale))))
+    .sort();
+}
+
+const baseLocaleFileKeys = Object.fromEntries(
+  baseLocaleFilenames.map((filename) => [filename, getMessageKeys(baseLocale, filename)])
 );
 
 test('all 7 locales have message directories', () => {
@@ -122,14 +71,21 @@ test('each locale has 47 message files', () => {
   }
 });
 
-test.each(otherLocales)(`'%s' has same message files as '${firstLocale}'`, (locale) => {
+test.each(otherLocales)(`'%s' has same message files as '${baseLocale}'`, (locale) => {
   const filenames = fs.readdirSync(path.join(messagesDir, locale)).sort();
-  expect(filenames).toEqual(firstLocaleFilenames);
+  expect(filenames).toEqual(baseLocaleFilenames);
 });
 
-test(`'lang.json' in '${firstLocale}' declares a display name for every locale`, () => {
+test.each(translationLocales)('every message file in %s is wrapped in its namespace key', (locale) => {
+  for (const filename of fs.readdirSync(path.join(messagesDir, locale))) {
+    const content = JSON.parse(fs.readFileSync(path.join(messagesDir, locale, filename), 'utf8'));
+    expect(Object.keys(content), `${locale}/${filename}`).toEqual([filename.replace(/\.json$/, '')]);
+  }
+});
+
+test(`'lang.json' in '${baseLocale}' declares a display name for every locale`, () => {
   // The `lang.*` message group (`messages/{locale}/lang.json`) supplies the language-selector display names. Assert the base-locale file carries a non-empty name for every locale that has a message directory; the 'same message keys' matching below then guarantees the other locale files declare the same set of names.
-  const lang = JSON.parse(fs.readFileSync(path.join(messagesDir, firstLocale, 'lang.json'), 'utf8')).lang as Record<
+  const lang = JSON.parse(fs.readFileSync(path.join(messagesDir, baseLocale, 'lang.json'), 'utf8')).lang as Record<
     string,
     string
   >;
@@ -138,49 +94,9 @@ test(`'lang.json' in '${firstLocale}' declares a display name for every locale`,
   }
 });
 
-describe.each(otherLocales)(`'%s' has same message keys as '${firstLocale}'`, (locale) => {
-  test.each(firstLocaleFilenames)('in %s', (filename) => {
-    expect(getMessageKeys(locale, filename)).toEqual(firstLocaleFileKeys[filename]);
-  });
-});
-
-/**
- * The one legitimate asymmetry between the two catalogs.
- *
- * `messages/{locale}/lang.json` is the language-selector display-name catalog and has no `translations/` counterpart by design: `generateTranslationKeyType.ts:24` SYNTHESISES `lang.{locale}` from the locale directory listing instead of reading a file. Those keys are therefore expected to exist runtime-side only.
- *
- * Deliberately an allowlist of exact KEYS, not "skip the file `lang.json`": a blanket file exclusion would also hide a genuine regression inside that file (a typo'd `lang.se`, a dropped `lang.et`).
- */
-const EXPECTED_MESSAGES_ONLY = new Set(translationLocales.map((locale) => `lang.${locale}`));
-
-/**
- * Cross-catalog key-set parity.
- *
- * The two i18n catalogs are independent. `src/lib/i18n/translations/` feeds the `TranslationKey` type; `apps/frontend/messages/` feeds the Paraglide runtime. Adding a key to only the former still type-checks, and at runtime `t()` then renders the raw dotted key path to the user. Seven real user-facing strings shipped through exactly that gap before it was closed (including an `aria-label` that announced `components.accordionSelect.listboxAriaLabel` to screen readers).
- * These two assertions make that defect class structurally unreinventable.
- *
- * This must stay a FILESYSTEM assertion: `vitest.config.ts` aliases `$lib/paraglide/*` to mocks, so a
- * `t()` call here would prove nothing about the real runtime catalog.
- */
-describe.each(translationLocales)('catalog key-set parity — %s', (locale) => {
-  test('every type-gen key exists in the runtime catalog', () => {
-    const runtimeKeys = new Set(getRuntimeCatalogKeys(locale));
-    const missingFromRuntime = getTranslationKeys(locale).filter((key) => !runtimeKeys.has(key));
-    expect(
-      missingFromRuntime,
-      `[${locale}] authored in src/lib/i18n/translations/ but MISSING from messages/${locale}/ — t() will render these raw dotted key paths to users`
-    ).toEqual([]);
-  });
-
-  test('every runtime key exists in the type-gen catalog', () => {
-    const typeGenKeys = new Set(getTranslationKeys(locale));
-    const missingFromTypeGen = getRuntimeCatalogKeys(locale).filter(
-      (key) => !typeGenKeys.has(key) && !EXPECTED_MESSAGES_ONLY.has(key)
-    );
-    expect(
-      missingFromTypeGen,
-      `[${locale}] present in messages/${locale}/ but MISSING from src/lib/i18n/translations/ — TranslationKey will not include these, so t() cannot be called with them`
-    ).toEqual([]);
+describe.each(otherLocales)(`'%s' has same message keys as '${baseLocale}'`, (locale) => {
+  test.each(baseLocaleFilenames)('in %s', (filename) => {
+    expect(getMessageKeys(locale, filename)).toEqual(baseLocaleFileKeys[filename]);
   });
 });
 
@@ -192,8 +108,6 @@ describe.each(translationLocales)('catalog key-set parity — %s', (locale) => {
 describe.each(translationLocales)('argument labels — %s', (locale) => {
   const runtimeArguments = JSON.parse(fs.readFileSync(path.join(messagesDir, locale, 'questions.json'), 'utf8'))
     .questions.arguments as Record<string, string>;
-  const typeGenArguments = JSON.parse(fs.readFileSync(path.join(translationsDir, locale, 'questions.json'), 'utf8'))
-    .arguments as Record<string, string>;
 
   test('the pro label differs from the con label and proCategory carries the pro label, not the con label', () => {
     const { pro, con, proCategory } = runtimeArguments;
@@ -203,10 +117,6 @@ describe.each(translationLocales)('argument labels — %s', (locale) => {
     expect(categoryLabel, `[${locale}] proCategory should not contain the con label '${con}'`).not.toContain(
       con.toLowerCase()
     );
-  });
-
-  test('the type-gen catalogue holds the same argument labels as the runtime catalogue', () => {
-    expect(typeGenArguments).toEqual(runtimeArguments);
   });
 });
 
@@ -225,7 +135,7 @@ test('inlang variant syntax is used for plural messages (not ICU inline)', () =>
 
 test('no DEFAULT_PAYLOAD variables remain in message files', () => {
   for (const locale of translationLocales) {
-    for (const filename of firstLocaleFilenames) {
+    for (const filename of baseLocaleFilenames) {
       const content = fs.readFileSync(path.join(messagesDir, locale, filename), 'utf8');
       expect(content).not.toContain('candidateSingular');
       expect(content).not.toContain('candidatePlural');
@@ -253,7 +163,7 @@ test('all message files are valid JSON', () => {
 /**
  * The generated `TranslationKey` union must hold exactly the base-locale message keys.
  *
- * `t()` accepts only union members, so a union that drifts from `messages/` either rejects a key that renders or accepts one that renders raw. This must stay a FILESYSTEM assertion: `vitest.config.ts` aliases `$lib/paraglide/*` to mocks, so a `t()` call here would prove nothing about the real catalog.
+ * `t()` accepts only union members, so a union that drifts from `messages/` either rejects a key that renders or accepts one that renders raw.
  */
 test('the generated TranslationKey union matches the base-locale message keys', () => {
   const generated = fs.readFileSync(translationKeyTypePath, 'utf8');

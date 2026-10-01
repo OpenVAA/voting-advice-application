@@ -16,10 +16,6 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 ```
 
-## Commit error: ’TypeError: Cannot read properties of undefined (reading 'font')’ error when running `/generateTranslationKeyType.ts`
-
-Try running `yarn build --filter=@openvaa/app-shared` first.
-
 ## Docker error related to `frozen lockfile` when running `yarn dev`
 
 Try deleting `/yarn.lock` and rerunning the command. You may also:
