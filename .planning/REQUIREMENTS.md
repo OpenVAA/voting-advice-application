@@ -196,8 +196,8 @@ _(**Registered 2026-09-23 by `165.1-08` under decision D-22.** Phase 165.1 is an
 _(**Registered 2026-10-01 at planning** from `.planning/phases/166-retire-auth-user-id-entity-identity-from-grants/166-REQUIREMENTS-PROPOSED.md`, the IDs proposed in `166-RESEARCH.md` § Phase Requirements and adopted without change. Each one is subject to the *Standing acceptance rule* above. Counters recounted from the table rows, not incremented.)_
 
 - [x] **AUTHID-01**: `get_candidate_user_data` resolves the caller's own entity from an `(entity, <type>, editor)` grant row read from the table through the private SECURITY DEFINER helper `private.caller_entity_ids`, filtered by project and never through `user_can`; more than one match in a project raises SQLSTATE `P0001` with HINT `ERR_ENTITY_IDENTITY_AMBIGUOUS`; both the candidate and the organization arm. (SC1 · D-03, D-05, D-06, D-07 · plans 166-01)
-- [ ] **AUTHID-02**: `identity-callback` looks a returning identity up by its candidate-editor grant (two service-role queries, project filter inside the lookup), `createCandidate` writes no auth link, and a grant-write failure on the create branch deletes the just-created candidate before rethrowing. (SC2 · D-08, D-09 · plans 166-02)
-- [ ] **AUTHID-03**: `invite-candidate` writes the grant only: the link step and its rollback arm are removed, `rollbackInvite` is kept for the grant failure, `flowConformance.test.ts` counts one rollback call, and the steps are renumbered. (SC3 · D-10 · plans 166-02)
+- [x] **AUTHID-02**: `identity-callback` looks a returning identity up by its candidate-editor grant (two service-role queries, project filter inside the lookup), `createCandidate` writes no auth link, and a grant-write failure on the create branch deletes the just-created candidate before rethrowing. (SC2 · D-08, D-09 · plans 166-02)
+- [x] **AUTHID-03**: `invite-candidate` writes the grant only: the link step and its rollback arm are removed, `rollbackInvite` is kept for the grant failure, `flowConformance.test.ts` counts one rollback call, and the steps are renumbered. (SC3 · D-10 · plans 166-02)
 - [x] **AUTHID-04**: One user per candidate: the partial unique index `idx_grants_one_candidate_editor` on `grants (target_id)` for candidate-editor rows; organizations stay multi-editor; `writeEntityGrant` (both copies) treats a unique violation as success only when it names `grants_user_scope_target_role_key`; no fixture grants two users one candidate. (SC4 · D-11, D-12 · plans 166-01)
 - [ ] **AUTHID-05**: The link column is gone from `candidates` and `organizations` with its two indexes, schema comments, `seed.sql` value, dev-seed permitted keys and absence test, `column-map.ts` entry, regenerated migration and types, pgTAP fixtures and vacuous guards, and the E2E admin client and both bank-auth specs. (SC5 · D-13, D-14, D-16, D-17, D-18 · plans 166-02, 166-03)
 - [ ] **AUTHID-06**: `anon` can read no auth user id from any table except the one named exemption `nominations.created_by`: a pgTAP catalog census plus a behavioural check, observed failing against the tree with the column present before the drop lands. (SC6 (narrowed by D-02) · D-02, D-15 · plans 166-01, 166-03)
@@ -418,8 +418,8 @@ Roadmap: `.planning/ROADMAP.md` (Phases 137-169 — Phase 165 (Review-Stack Comm
 | RNAV-05 | Phase 165.1 — Results Navigation Redraw | Complete |
 | RNAV-06 | Phase 165.1 — Results Navigation Redraw | Complete |
 | AUTHID-01 | Phase 166 — Retire `auth_user_id` — Entity Identity from Grants | Complete |
-| AUTHID-02 | Phase 166 — Retire `auth_user_id` — Entity Identity from Grants | Pending |
-| AUTHID-03 | Phase 166 — Retire `auth_user_id` — Entity Identity from Grants | Pending |
+| AUTHID-02 | Phase 166 — Retire `auth_user_id` — Entity Identity from Grants | Complete |
+| AUTHID-03 | Phase 166 — Retire `auth_user_id` — Entity Identity from Grants | Complete |
 | AUTHID-04 | Phase 166 — Retire `auth_user_id` — Entity Identity from Grants | Complete |
 | AUTHID-05 | Phase 166 — Retire `auth_user_id` — Entity Identity from Grants | Pending |
 | AUTHID-06 | Phase 166 — Retire `auth_user_id` — Entity Identity from Grants | Pending |

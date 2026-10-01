@@ -4,18 +4,18 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 166
 current_phase_name: Retire auth_user_id — Entity Identity from Grants
-current_plan: 2
+current_plan: 3
 status: executing
-stopped_at: Completed 166-01-PLAN.md
-last_updated: "2026-10-01T20:43:28.789Z"
+stopped_at: Completed 166-02-PLAN.md
+last_updated: "2026-10-01T21:06:06.907Z"
 last_activity: 2026-10-01
 last_activity_desc: Phase 166 execution started
-state_head: 0243dec0be7f311b408511e491145c7251f24c8e
+state_head: 90e397ef1121508ffb98750bbefa4b2a57dc1485
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
-  completed_plans: 316
+  completed_plans: 317
   percent: 89
 ---
 
@@ -35,7 +35,7 @@ _(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and P
 Phase: 166 (Retire auth_user_id — Entity Identity from Grants) — EXECUTING
 Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
-Current Plan: 2
+Current Plan: 3
 Total Plans in Phase: 4
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
@@ -819,8 +819,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-10-01T20:43:27.759Z
-Stopped at: Completed 166-01-PLAN.md
+Last session: 2026-10-01T21:06:05.854Z
+Stopped at: Completed 166-02-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -1129,6 +1129,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 165.1 P07 | 38 min | 3 tasks | 17 files |
 | Phase 165.1 P08 | 19 min | 3 tasks | 9 files |
 | Phase 166 P01 | 17min | 3 tasks | 12 files |
+| Phase 166 P02 | 20 min | 3 tasks | 18 files |
 
 ## Deferred Items
 
@@ -2078,6 +2079,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 166]: 166-01: entity identity resolved from the caller's own (entity, type, id, editor) grant rows via private.caller_entity_ids (SECURITY DEFINER, search_path '', never user_can); get_candidate_user_data is plpgsql INVOKER and raises P0001 / HINT ERR_ENTITY_IDENTITY_AMBIGUOUS on 2+ grants in one project
 - [Phase 166]: 166-01: idx_grants_one_candidate_editor (partial unique on grants.target_id for entity/candidate/editor); writeEntityGrant treats only grants_user_scope_target_role_key violations as success; both names pinned in 36-entity-identity
 - [Phase 166]: 166-01: anon-exposure census (single exemption nominations.created_by) observed red and held in todo_start/todo_end; 166-03 must remove the wrapper after the column drop
+- [Phase 166]: identity-callback finds a returning identity's candidate through its candidate-editor grant (grants by user, then candidates by project and granted ids); a failed grant write on the create branch deletes the just-created candidate before rethrowing
+- [Phase 166]: invite-candidate links the invitee through the grant only; rollbackInvite is called once, from the grant-failure arm
+- [Phase 166]: E2E teardown reads candidate ids through the grant BEFORE deleting grants or the user, and resets terms of use by id (SupabaseAdminClient.candidateIdsForUser / userIdForCandidate, public)
 
 ### Quick Tasks Completed
 
