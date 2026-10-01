@@ -77,4 +77,26 @@ sourced the scratchpad `bank-auth-journey.env` (the IdP env and the TLS bypass),
   `STATUS="$(git status --porcelain)" && ! printf '%s\n' "$STATUS" | grep -qE '(^|/)\.env|functions/'` exits 0.
   No command in this plan wrote to the root or the functions env file; the test keys and the TLS bypass exist
   only in the session scratchpad.
+## Documentation (D-04) and population check after Task 3's doc commit (`c7a906e18`)
+
+| Check | Command | Exit | Result |
+|---|---|---|---|
+| Population | `test "$(git grep -l auth_user_id -- apps packages tests .claude/skills)" = "apps/supabase/supabase/tests/database/36-entity-identity.test.sql"` | 0 | only the census file names the column |
+| Docs present | the plan's `test -f ... && grep -q caller_entity_ids ... && grep -q idx_grants_one_candidate_editor ... && grep -q caller_entity_ids <saved-answers todo>` | 0 | both residue todos exist; skill names the helper and the index; todo annotated |
+| Counts | `grep -c` | - | `ERR_ENTITY_IDENTITY_AMBIGUOUS` in SKILL.md: 2; `Phase 166` in SKILL.md: 1; `Phase 167` in the created_by todo: 1 |
+| No source change | `git diff --exit-code -- apps packages tests` | 0 | this plan changes no source |
+
+## D-20 link 6: full suite - NOT RUN (disk floor not met)
+
+| Step | Command | Result |
+|---|---|---|
+| Measure before | `docker run --rm alpine df -k /` | 107016164 KiB size, 87078548 used, **14468692 KiB available (13.8 GiB)**, 86% |
+| Sanctioned prune | `docker builder prune -af` | `Total: 0B` (no build cache to reclaim) |
+| Measure after | `docker run --rm alpine df -k /` and `df -h /` | **14468692 KiB available (13.8 GiB)**, unchanged |
+| Read-only inventory | `docker system df` | images 17.6 GB (6.526 GB reclaimable), containers 44.5 MB (0 reclaimable), local volumes 13.75 GB (86 MB reclaimable), build cache 0 |
+
+The floor is 15 GiB (orchestrator ruling 4). The only remaining reclaimable space is in images and volumes,
+which this plan must not prune because a second, unrelated Supabase stack runs on this host, and a Docker
+restart is likewise prohibited. Per the plan ("If the VM is still below 15 GiB after the prune, stop and report
+rather than run"), the full suite was **not started**. Verdict for link 6: **PENDING - blocked on VM disk**.
 <!-- gsd:gates-continue -->
