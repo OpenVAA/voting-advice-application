@@ -217,12 +217,11 @@ The development stack uses Supabase CLI for backend services:
 
 **Styling**: Tailwind CSS + DaisyUI components. Theme colors defined in `packages/app-shared/src/settings/staticSettings.ts`.
 
-**Path aliases** — all four declared in `apps/frontend/svelte.config.js`, and there are only four; everything else under `apps/frontend/src/lib/` is reached through SvelteKit's built-in `$lib`:
+**Path aliases** — all three declared in `apps/frontend/svelte.config.js`, and there are only three; everything else under `apps/frontend/src/lib/` is reached through SvelteKit's built-in `$lib`:
 
 - `$types` -> `apps/frontend/src/lib/types`
 - `$candidate` -> `apps/frontend/src/lib/candidate`
 - `$layouts` -> `apps/frontend/src/lib/layouts`
-- `$voter` -> declared in `svelte.config.js`, but its target directory (src/lib/voter) does not exist and no source file imports the alias. Voter-side code lives under `apps/frontend/src/lib/contexts/voter/` and `apps/frontend/src/routes/(voters)/`.
 
 **Key directories**:
 

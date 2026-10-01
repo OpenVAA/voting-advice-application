@@ -26,7 +26,6 @@ export default defineConfig({
       // SvelteKit built-in aliases (not available via @sveltejs/vite-plugin-svelte)
       { find: '$lib', replacement: path.resolve(here, 'src/lib') },
       { find: '$types', replacement: path.resolve(here, 'src/lib/types') },
-      { find: '$voter', replacement: path.resolve(here, 'src/lib/voter') },
       { find: '$candidate', replacement: path.resolve(here, 'src/lib/candidate') },
       { find: '$layouts', replacement: path.resolve(here, 'src/lib/layouts') },
       // SvelteKit env modules stub
