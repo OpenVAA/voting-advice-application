@@ -12,7 +12,7 @@
 - ⊘ **v2.12 Runes-Native Cleanup** — Phases 102-105 (SUPERSEDED 2026-06-12 by v2.13)
 - ✅ **v2.13 Context-as-Class Migration** — Phases 106-117 (shipped 2026-06-13)
 - ✅ **v2.14 E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero** — Phases 118-136 (shipped 2026-08-12)
-- 🚧 **v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage** — Phases 137-166 (in progress; 165.1 and 166 added 2026-09-22 and 2026-09-24)
+- 🚧 **v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage** — Phases 137-169 (in progress; 165.1 and 166 added 2026-09-22 and 2026-09-24, 167-169 added 2026-10-01)
 
 See `.planning/MILESTONES.md` for cumulative history and `.planning/milestones/` for archived roadmaps + requirements.
 
@@ -204,7 +204,7 @@ Full details: `.planning/milestones/v2.14-ROADMAP.md`
 
 </details>
 
-### 🚧 v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage (Phases 137-166) — IN PROGRESS
+### 🚧 v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage (Phases 137-169) — IN PROGRESS
 
 **Milestone goal:** Make every automated check in the repo one that can be developed against — closing
 the coverage holes, blind assertions, untrustworthy test data, and missing CI gates that v2.14
@@ -297,6 +297,9 @@ delivery-origin swap whose visual consequence is re-proven by the baselines them
 - [x] **Phase 165: Review-Stack Comment Remediation** - Collect every reviewer and GitHub Copilot comment on the twelve stacked ship PRs (#876-#887), triage each as a real defect, an artifact of reviewing one slice of the 12-way split in isolation, or already resolved, and fix every actionable one on `ship/v2.15-13-review-fixes`, stacked on `ship/v2.15-12-planning`, with the repo comment-hygiene rules applied to every changed file (completed 2026-09-29)
 - [x] **Phase 165.1: Results Navigation Redraw** - Stop the voter results page from remounting and flickering on tab / entity / drawer navigation; reshape its routes to follow the layout and hoist the drawer(s) to one app-wide host. Grounded in spikes 031-034 (`spike/results-redraw`). (completed 2026-09-24)
 - [ ] **Phase 166: Retire `auth_user_id` — Entity Identity from Grants** - Drop `candidates.auth_user_id` / `organizations.auth_user_id`; the "which entity am I" lookups read the entity-scope grant instead, so the two Edge Functions write one link, not two, and published rows stop exposing auth user ids.
+- [ ] **Phase 167: Origin/main Vestige Cleanup** - Discharge the code-side deferrals of the 261001-n8y vestige sweep: pin `safeGetSession` round trips with a test, drop `BACKEND_API_TOKEN` and resolve the old backend-URL pair, remove unused deps (audit baseline in step), port `OpenVAALogo.svelte` to runes, close the stale env.dir todo, delete `gate-evidence/`.
+- [ ] **Phase 168: Docs-Site Rewrite — Strapi to Supabase** - Rewrite, merge or delete the ~30 docs pages still describing Strapi, and bring every other docs page up to date; restructure freely; research interludes untouched.
+- [ ] **Phase 169: Dependency Bump to Latest Safe Versions** - Every dependency to its latest safe version, majors included, migrated and gate-green.
 
 ## Phase Details
 
@@ -1951,9 +1954,65 @@ Plans:
 
 **Plans**: 0 plans
 
+### Phase 167: Origin/main Vestige Cleanup
+
+**Added 2026-10-01** from the origin/main-era vestige sweep (`.planning/quick/261001-n8y-remove-the-legacy-src-lib-i18n-translati/261001-n8y-VESTIGES.md`), which fixed the safe items and deferred the rest. This phase discharges the code-side deferrals; the docs pages go to Phase 168 and the dependency versions to Phase 169.
+
+**Goal**: No origin/main-era vestige survives in code, tests, manifests or planning state, and the session-lookup cost of `safeGetSession` is pinned by a test.
+**Depends on**: Phase 166.
+**Requirements**: TBD — registered at planning.
+**Success Criteria** (draft, to be firmed at planning):
+
+  1. **`apps/frontend/src/lib/supabase/safeGetSession.ts` has a unit test asserting it makes no needless round trips** — the number of auth/DB calls per invocation (and across repeated calls in one request, if it caches) is asserted, not just the return value. If such a test already exists, cite it; otherwise add one and observe it fail against a deliberately chatty variant first.
+  2. **`BACKEND_API_TOKEN` is gone** — the constant in `apps/frontend/src/lib/server/constants.ts` and its `''` entries in the 7 auth test mocks.
+  3. **`PUBLIC_BROWSER_BACKEND_URL` / `PUBLIC_SERVER_BACKEND_URL` are resolved** — either the `/api/cache` route (`cachifyUrl`, `universalAdapter.test.ts`) is shown to still proxy a live backend and the pair is documented in `.env.example`, or the route and the pair are removed. Decide against the adapter todos (`2026-08-28-reintroduce-the-local-data-adapter.md`, `2026-09-27-adapter-selection-entrypoints.md`).
+  4. **Unused dependencies removed** — the docs-app devDependencies and the LLM-package entries the sweep listed (`jsonrepair`, `dotenv`, `js-yaml` + `@types/js-yaml` in question-info, the docs-app ESLint duplicates after a per-workspace lint run), plus `@testing-library/jest-dom` and `eslint-plugin-svelte` in the frontend, with `security/audit-baseline.json` updated in the same commit so the CI audit check stays green. `@vitest/coverage-v8` is decided explicitly (keep with a reason, or remove).
+  5. **`apps/docs/src/lib/components/openVAALogo/OpenVAALogo.svelte` uses Svelte 5 runes** — no `export let`, no `$$Props`; the VESTIGES sweep #14 returns zero.
+  6. **Todo `2026-08-28-vite-envdir-root-would-fix-six-empty-constants.md` is checked against `svelte.config.js` `env.dir`** and closed if stale (or narrowed to what remains).
+  7. **`.planning/quick/261001-n8y-*/gate-evidence/` is inspected for local keys or secrets, then deleted**, never committed. What was found (or that nothing was) is recorded in the phase summary without reproducing any value.
+  8. Every linked todo the phase discharges is moved to `done/`. Every comment touched passes [`CLAUDE.md` § Comment Hygiene](/CLAUDE.md#comment-hygiene).
+  9. Gates: typecheck, lint, unit, production build, `yarn audit:deps` (with the baseline change), then the full E2E suite under the cardinal rule.
+
+**Plans**: 0 plans
+
+### Phase 168: Docs-Site Rewrite — Strapi to Supabase
+
+**Added 2026-10-01.** About 30 `apps/docs` pages still describe the Strapi backend (25 with the "legacy Strapi backend" banner); the full list is in 261001-n8y-VESTIGES.md § Deferred `apps/docs` pages. **Widened the same day (operator):** alongside the Supabase rewrite, every other docs page is checked and brought up to date. The research interludes (the `<ResearchQuote>` blocks, `apps/docs/src/lib/components/ResearchQuote.svelte`) are not edited.
+
+**Goal**: Every page of the docs site describes the system that exists — Supabase backend, Edge Functions, the current i18n, dev-seed and env model, the current features and settings — with no Strapi-era page, banner or nav entry left, and its information architecture reorganised where the old structure no longer fits.
+**Depends on**: Phase 167 (env and dependency decisions the pages must describe).
+**Requirements**: TBD — registered at planning.
+**Success Criteria** (draft, to be firmed at planning):
+
+  1. **Every page on the VESTIGES list is rewritten, merged or deleted** — page structure may change freely; `navigation.config.ts` drops the Strapi entries ("Strapi", "OpenVAA admin tools plugin for Strapi", "Localization in Strapi", "Registration Process in Strapi") and links the new structure. `about/roadmap`'s historical mention may stay.
+  2. **Every other docs page is audited for staleness** — `about/`, `developers-guide/`, `publishers-guide/`, the generated component pages and the landing page — and each out-of-date claim is fixed. The audit records each page as current / updated / deleted. **Research interludes (`<ResearchQuote>` blocks and their content) are left byte-identical** — asserted by diffing them against the phase base.
+  3. **The VESTIGES sweeps #1, #2, #5–#7, #9, #10 return no hit under `apps/docs`** other than recorded intentional ones.
+  4. **Every factual claim is verified against the codebase** (commands, env names, file paths, flows) — no describing behaviour from memory.
+  5. **Candidate-flow pages match the current flows**; the related todos (`password-reset-code-method.md`, `register-page-registrationkey-method.md`, `configurable-mock-data.md`) are cross-checked and updated or closed.
+  6. **The broken docs scripts are dealt with** per `2026-08-28-broken-docs-script-references.md` (typedoc generation and the commented-out `getTypeDocLink`), or that todo is explicitly left open with a reason.
+  7. Gates: docs build, docs lint/check, link check (no broken internal links).
+
+**Plans**: 0 plans
+
+### Phase 169: Dependency Bump to Latest Safe Versions
+
+**Added 2026-10-01.** The 261001-n8y sweep observed `yarn audit:deps` failing with 7 new high+ advisories that predate it (`vitest`, `@vitest/browser`, `@sveltejs/kit`, `tar`, `shell-quote`, `brace-expansion`, …).
+
+**Goal**: Every dependency in every workspace is on its latest safe version, new majors included, with the code migrated to any breaking changes and every gate green.
+**Depends on**: Phases 167 and 168 (runs on the cleaned dependency set).
+**Requirements**: TBD — registered at planning.
+**Success Criteria** (draft, to be firmed at planning):
+
+  1. **Every direct dependency in root, `apps/*` and `packages/*` is at its latest version** unless a recorded reason holds it back (a known regression, an unreleased peer, the LocalStack-style pin rule). "Safe" is defined at planning (e.g. a minimum release age, no open advisory).
+  2. **Majors are migrated, not suppressed** — each major bump lands with its code/config migration, grouped so a failing gate points at one upgrade.
+  3. **`yarn audit:deps` passes** and `security/audit-baseline.json` holds only advisories with no fixed version, each with a current note; todo `2026-09-03-dependabot-alert-list-is-stale-against-main.md` is closed or updated.
+  4. Gates: typecheck, lint, svelte-check, unit, pgTAP, production builds (frontend and docs), then the full E2E suite under the cardinal rule.
+
+**Plans**: 0 plans
+
 ## Progress
 
-**Active milestone: v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage** — Phases 137-166 (32 phases incl. 142.1, 157.1, 157.2, 162.1 and 165.1; 148 absorbed into 147): 31 complete and 1 pending (166). Phase 165 — Review-Stack Comment Remediation maps no requirement; Phase 165.1 — Results Navigation Redraw is an addendum that registered RNAV-01..06. **110/110 requirements mapped** — the 39 original, the review-remediation set added 2026-08-28, PERMFU-01..10 and RNAV-01..06. Plan counts are set per phase by `/gsd-plan-phase`.
+**Active milestone: v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage** — Phases 137-169 (35 phases incl. 142.1, 157.1, 157.2, 162.1 and 165.1; 148 absorbed into 147): 31 complete and 4 pending (166-169). Phase 165 — Review-Stack Comment Remediation maps no requirement; Phase 165.1 — Results Navigation Redraw is an addendum that registered RNAV-01..06. **110/110 requirements mapped** — the 39 original, the review-remediation set added 2026-08-28, PERMFU-01..10 and RNAV-01..06. Plan counts are set per phase by `/gsd-plan-phase`.
 _(**Recounted 2026-09-29** when the two planning records were merged: the phase count is `ls .planning/phases | grep -v '^999' | wc -l` → 32, of which 31 hold a SUMMARY.md for every PLAN.md and Phase 166 holds no plan yet; the requirement count is the scoped awk over REQUIREMENTS.md's § Traceability recorded in its own coverage note → 110. Phase 165.1 was numbered 165 on its own branch (`feat/165-results-navigation-redraw`, PR #888) and renumbered when it was rebased onto `ship/v2.15-13-review-fixes` (PR #889), which had already used 165. The Phases 167-171 placeholders PR #888 had added — per-PR review fixes for #876-#887 — were dropped as superseded by Phase 165.)_
 
 | Phase | Plans Complete | Status | Completed |
@@ -1988,6 +2047,9 @@ _(**Recounted 2026-09-29** when the two planning records were merged: the phase 
 | 165. Review-Stack Comment Remediation | 36/36 | Complete    | 2026-09-29 |
 | 165.1. Results Navigation Redraw | 9/9 | Complete    | 2026-09-24 |
 | 166. Retire `auth_user_id` — Entity Identity from Grants | 0/0 | Not started |  |
+| 167. Origin/main Vestige Cleanup | 0/0 | Not started |  |
+| 168. Docs-Site Rewrite — Strapi to Supabase | 0/0 | Not started |  |
+| 169. Dependency Bump to Latest Safe Versions | 0/0 | Not started |  |
 
 **Shipped milestones:**
 

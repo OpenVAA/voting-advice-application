@@ -1330,6 +1330,7 @@ The pre-close artifact audit surfaced 15 open items. All v2.10-internal artifact
 
 ### Roadmap Evolution
 
+- 2026-10-01: Phases 167-169 added to v2.15 before milestone close (operator): 167 Origin/main Vestige Cleanup (code-side deferrals of quick 261001-n8y VESTIGES.md + a `safeGetSession` round-trip test), 168 Docs-Site Rewrite — Strapi to Supabase (widened: every docs page brought up to date; research interludes not edited), 169 Dependency Bump to Latest Safe Versions (majors included). Numbers 167-171 were free again after the 2026-09-29 drop; `phase.add` picked 172 from the stale mention and was corrected by hand.
 - 2026-09-29: The planning records of PR #888 and PR #889 merged. Both branches had created a Phase 165; the maintainer kept Phase 165 = Review-Stack Comment Remediation (#889) and renumbered Results Navigation Redraw (#888) to Phase 165.1 (directory, plan ids, RNAV traceability, WINDOWS entries). Phases 167-171 (per-PR review fixes for #876-#887, added by #888) were dropped as superseded by Phase 165, which delivered those fixes. Phase 166 stays pending.
 - 2026-09-24: Phase 166 added to v2.15 (operator: extend rather than open a new milestone — related work). 166 retires `candidates/organizations.auth_user_id` in favour of entity-scope grants.
 
