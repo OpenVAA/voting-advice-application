@@ -171,8 +171,8 @@ yarn dev                       # Supabase + frontend on :5173
 ## Troubleshooting (Idura specifics)
 
 - **`/candidate/preregister?error=…`** — the query param tells you the stage:
-  - `invalid_state` → state cookie mismatch (don't switch host mid-flow; cookies
-    are 10-min TTL).
+  - `invalid_state` → the state cookie was missing or did not match the returned
+    state (don't switch host mid-flow; cookies are 10-min TTL).
   - `token_exchange_failed` → `private_key_jwt` assertion rejected: wrong
     `IDURA_SIGNING_JWKS` / `IDURA_SIGNING_KEY_KID`, or the **signing** public key
     isn't registered in Idura, or `IDURA_DOMAIN` is off.

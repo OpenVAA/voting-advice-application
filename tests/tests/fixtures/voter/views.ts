@@ -50,7 +50,7 @@ type ViewFixtures = {
   // EPERM voter-scoped readers.
   aboutPage: AboutPageFixture;
   questionInfo: QuestionInfoFixture;
-  // Document View-Transition capture seam (D-16). Zero production instrumentation: it wraps `document.startViewTransition` from an init script.
+  // Document View-Transition capture seam. Zero production instrumentation: it wraps `document.startViewTransition` from an init script.
   viewTransitionLog: ViewTransitionLogFixture;
   // Forensic capture (auto).
   forensicCapture: ForensicLog;
@@ -81,7 +81,7 @@ export const test = base.extend<ViewFixtures>({
   questionInfo: async ({ page }, use) => {
     await use(createQuestionInfo(page));
   },
-  // NOTE — every other registration in this root wraps a SYNCHRONOUS `create*` call; this one AWAITS its factory, which is a new shape here. The reason is the same one `trackingIntercept.fixture.ts` gives for its own async factory: the factory calls `page.addInitScript`, which returns a Promise, and the script must be installed BEFORE the spec's first navigation or the wrapper is not in place when the root layout's `onNavigate` hook reaches `document.startViewTransition`. Awaiting here is what guarantees that ordering — the fixture is set up before the test body runs. The `forensicCapture` entry below is the precedent for documenting a convention crossing in this file rather than leaving it to be re-derived.
+  // NOTE — every other registration in this root wraps a SYNCHRONOUS `create*` call; this one is the only registration here that AWAITS its factory. The reason is the same one `trackingIntercept.fixture.ts` gives for its own async factory: the factory calls `page.addInitScript`, which returns a Promise, and the script must be installed BEFORE the spec's first navigation or the wrapper is not in place when the root layout's `onNavigate` hook reaches `document.startViewTransition`. Awaiting here is what guarantees that ordering — the fixture is set up before the test body runs. The `forensicCapture` entry below is the precedent for documenting a convention crossing in this file rather than leaving it to be re-derived.
   viewTransitionLog: async ({ page }, use) => {
     await use(await createViewTransitionLog(page));
   },

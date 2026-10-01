@@ -1,9 +1,0 @@
-{
-  "controls": {
-    "noFilterResults": "Suodattimilla ei löytynyt yhtään tulosta. Koeta muuttaa niitä.",
-    "noSearchResults": "Haulla ei löytynyt yhtään tulosta. Koeta muuttaa sitä.",
-    "searchPlaceholder": "Etsi nimellä",
-    "showingNumResults": "Näytetään {numShown, plural, =1 {1 tulos} other {# tulosta}}"
-  },
-  "showMore": "Näytä lisää"
-}

@@ -33,12 +33,12 @@ import { expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
 /**
- * Give every `POST /rest/v1/feedback` from this page its OWN feedback rate-limit bucket by injecting a unique `x-forwarded-for` header per request.
+ * Give every `POST /rest/v1/feedback` from this page its OWN feedback rate-limit bucket by injecting a unique `cf-connecting-ip` header per request.
  *
  * ## Why
- * The DB feedback insert is gated by a per-client-IP rate-limit trigger — 5 inserts per 5-minute window — keyed on the first `x-forwarded-for` IP, which defaults to the literal `'unknown'` in local dev (no proxy header). Under the single-worker full suite EVERY feedback-submitting spec (voter-journey ×2, voter-journey-mobile ×1) POSTs from that SAME `'unknown'` bucket, and a retried test re-submits — so the SHARED budget is exhausted and a genuine submit is rejected 400 `P0001 "Rate limit exceeded"`. The app's catch-less `submit().then()` then leaves the button stuck in `'sending'` until its 5s error-timeout, past the test's `expectSuccess` window → a residual flake.
+ * The DB feedback insert is gated by a per-client rate-limit trigger — 5 inserts per 5-minute window — keyed on `cf-connecting-ip` when `private.deployment_settings.behind_cloudflare` is true, otherwise on the last `x-forwarded-for` hop, which the gateway appends from the connection's peer. Locally every browser request reaches the gateway from the same peer address, so without this fixture EVERY feedback-submitting spec (voter-journey ×2, voter-journey-mobile ×1) and every retry POSTs into one shared bucket, the budget is exhausted, and a genuine submit is rejected 400 `P0001 "Rate limit exceeded"`. The app's catch-less `submit().then()` then leaves the button stuck in `'sending'` until its 5s error-timeout, past the test's `expectSuccess` window → a flake.
  *
- * Stamping a unique IP per request lands each genuine submission in its own rate-limit bucket — exactly how distinct real users behave — so the real rate-limit logic still runs (nothing is masked or disabled), it just no longer collides across tests/retries. PostgREST forwards request headers into `current_setting('request.headers')`, so the injected `x-forwarded-for` reaches the trigger.
+ * The local gateway forwards a client-sent `cf-connecting-ip` unchanged and PostgREST passes it into `current_setting('request.headers')`. The header selects the bucket locally only because `apps/supabase/supabase/seed.sql` sets `private.deployment_settings.behind_cloudflare` to true; without that the rate limit ignores the header. With it, a unique value per request lands each genuine submission in its own bucket — exactly how distinct real users behave — while the real rate-limit logic still runs (nothing is masked or disabled).
  *
  * Install ONCE per page before any feedback submission (idempotent — the route handler is additive and only touches the feedback endpoint).
  */
@@ -47,7 +47,7 @@ export async function isolateFeedbackRateLimit(page: Page): Promise<void> {
     // A fresh RFC-5737 TEST-NET-3 (203.0.113.0/24) address per request — a reserved documentation range, guaranteed never a real client, and unique enough across a suite to keep each submission in its own bucket.
     const ip = `203.0.113.${Math.floor(Math.random() * 254) + 1}`;
     await route.continue({
-      headers: { ...route.request().headers(), 'x-forwarded-for': ip }
+      headers: { ...route.request().headers(), 'cf-connecting-ip': ip }
     });
   });
 }

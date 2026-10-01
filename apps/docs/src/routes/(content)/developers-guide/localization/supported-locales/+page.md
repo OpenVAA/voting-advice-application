@@ -1,12 +1,10 @@
-> **Note:** Parts of this page reference the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
-
 # Supported locales
 
 Supported locales are defined app-wide in [`StaticSettings`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/staticSettings.ts).
 
 ### Adding new locales
 
-1. Add the locale to [`locales`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/i18n/translations/index.ts)
-2. Create versions of all the translation files in the new locale and place them in `frontend/src/lib/i18n/translations/<LOCALE>`
-3. Copy the `dynamic.json` translation file to `../backend/vaa-strapi/src/util/translations/<LOCALE>/dynamic.json`
-4. Make the locale available in [`StaticSettings`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/staticSettings.ts).
+1. Add the locale code to `locales` in [`apps/frontend/project.inlang/settings.json`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/project.inlang/settings.json).
+2. Create `apps/frontend/messages/<LOCALE>/` with every file that `plugin.inlang.messageFormat.pathPattern` in the same settings file lists, each with the same keys as the base locale.
+3. Add the locale's display name to `lang.json` in every locale directory.
+4. Offer the locale via `supportedLocales` in [`StaticSettings`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/staticSettings.ts).

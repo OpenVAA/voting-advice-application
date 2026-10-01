@@ -38,8 +38,8 @@ It will know about /packages/app-shared and /packages/core and /packages/shared-
 
 Figure out if we need different skills for:
 
-- contexts: frontend/src/lib/contexts
-- data api: frontend/src/lib/api + frontend/src/lib/server/api
+- contexts: apps/frontend/src/lib/contexts
+- data api: apps/frontend/src/lib/api + apps/frontend/src/lib/server/api
 - settings: packages/app-shared/src/settings
 
 ### openvaa-components-expert

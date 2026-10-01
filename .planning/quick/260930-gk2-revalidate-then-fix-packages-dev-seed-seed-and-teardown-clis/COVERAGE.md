@@ -1,0 +1,1 @@
+No external API integration: this item adds a host-locality guard in front of the existing dev-seed service-role client construction. The detector matched the Supabase `[api]` port in config.toml and the name of the `dev-seed-integration` CI job. No Supabase or other external API capability is added or changed.

@@ -1,0 +1,34 @@
+
+Planning-Reference Hygiene Report -- criterion 3
+===============================================
+scope   : apps/ packages/ tests/   (CLAUDE.md, .agents/, .claude/ exempt per D-15)
+mode    : assert-clean (gate)
+
+  pattern               occ   files    bare  expect     verdict
+  -----------------  ------  ------  ------  ---------  -------
+  phase-ref              62      36      50  bare = 0   FAIL   
+  spike-ref              33      22      16  bare = 0   FAIL   
+  decision-id-long        0       0       -  occ = 0    OK     
+  decision-id-bare      149      36       -  occ = 0    FAIL   
+  section-anchor         45      20       -  occ = 0    FAIL   
+  planning-path          12      12       -  occ = 0    FAIL   
+  plan-number             1       1       -  occ = 0    FAIL   
+  milestone-ver          14      11       -  -          REPORT 
+  task-id                94      52       -  occ = 0    FAIL   
+
+  planning-reference total (8 rows, comparable to the research loop) : 316
+  task-id supplementary (no counterpart in that loop)                : 94
+  union files touched by any row                                     : 147
+
+---
+Gate rows failing: 7  (milestone-ver is report-only and never counted)
+
+Comment hygiene does not hold (criterion 3).
+  - a strip row above zero: the codemod has not run over those files, or its
+    residue was left to the Stage-2 agent pass. Locate them with, for example:
+      git grep -I -n -P '\bD-\d{2}\b(?!-\d{2})' -- apps/ packages/ tests/
+  - a survivor row with bare > 0: the reference survives but not in the collapsed
+    form D-14 authorises. Rewrite it as 'see phase N' / 'see spike N':
+      git grep -I -n -P '(?i)(?<!see\s)\bphases?\s+\d+' -- apps/ packages/ tests/
+  - milestone-ver is deliberately NOT a gate. Do not mechanically strip it;
+    it matches genuine tool and package versions. Route it to the agent pass.

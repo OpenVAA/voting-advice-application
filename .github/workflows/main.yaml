@@ -176,6 +176,27 @@ jobs:
       - name: "Build frontend"
         run: yarn workspace @openvaa/frontend build
 
+  docker-image-build:
+    # Builds the `production` target of `apps/frontend/Dockerfile` from the repo root. That is the
+    # image `docker-compose.dev.yml` deploys (`target: production`) and the one `render.example.yaml`
+    # deploys (no target, so the final stage, which is `production`), both with the repo root as the
+    # build context.
+    #
+    # It runs on every change, with no paths-filter and no `if:`. The image copies `apps/`,
+    # `packages/`, `scripts/` and the root manifests, and runs the root lifecycle scripts during its
+    # install. A root lifecycle script that needs a file outside those directories breaks only the
+    # image install, which no other job exercises.
+    #
+    # It builds and never pushes: no registry login, no secrets, no third-party build action.
+    # `packages/dev-seed/tests/ciDockerImageBuildGate.test.ts` asserts these properties.
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@v4
+
+      - name: "Build the production frontend image (no push)"
+        run: docker build --progress=plain --file apps/frontend/Dockerfile --target production --tag openvaa-frontend:ci .
+
   supabase-tests:
     runs-on: ubuntu-latest
     steps:

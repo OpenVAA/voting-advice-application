@@ -35,7 +35,7 @@ test.describe('perm-missing-nominations', () => {
     await expect(modal).toContainText(/\[EL2\]/);
 
     // 5. Localised "no nominations for this election" marker — verbatim text
-    //    from apps/frontend/src/lib/i18n/translations/en/results.json `missingNominations.noNominationsForElection` = "not available".
+    //    from apps/frontend/messages/en/results.json `results.missingNominations.noNominationsForElection` = "not available".
     //    Asserted on the modal scope to bound the substring match.
     await expect(modal).toContainText(/not available/);
   });

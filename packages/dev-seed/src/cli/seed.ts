@@ -7,7 +7,7 @@
  *   2. --help short-circuit => print USAGE => exit 0.
  *   3. resolveTemplate(--template) => validated Template.
  *   4. Apply --seed / --external-id-prefix overrides to the template.
- *   5. new Writer — throws with messages on missing env; CLI catches.
+ *   5. new Writer — throws with messages on missing env, and refuses a non-local SUPABASE_URL unless `--allow-remote` or `DEV_SEED_ALLOW_REMOTE=1` opts out; CLI catches.
  *   6. runPipeline(template) — the generator orchestrator.
  *   7. fanOutLocales(rows, template, seed) — no-op if the flag is off.
  *   8. writer.write(rows, prefix, { openForVoters }) — the third argument carries the resolved template's `openForVoters`, because the writer receives rows, not the template; when the template declares it, the writer's last pass sets the target project's openness (162.1 D-21). Optionally returns `{ portraits }`. This CLI tolerates both a `void` return and the `{ portraits: number }` shape, so the writer's signature can move without re-touching it.
@@ -16,6 +16,7 @@
  *
  * error handling:
  *   - Missing env => Writer constructor throws with exact message; CLI prints + exit(1).
+ *   - Non-local SUPABASE_URL without an opt-out => the admin client refuses it before connecting; CLI prints + exit(1).
  *   - Template not found => resolveTemplate throws with built-in list + path suggestion; CLI prints + exit(1).
  *   - Template validation failed => field-path message from validateTemplate; CLI prints + exit(1).
  *   - Supabase unreachable => supabase-js throws `fetch failed`; CLI rephrases to `Cannot reach Supabase at ${url}. Is 'supabase start' running?`
@@ -49,6 +50,7 @@ const { values } = parseArgs({
     template: { type: 'string', short: 't' },
     seed: { type: 'string' },
     'external-id-prefix': { type: 'string' },
+    'allow-remote': { type: 'boolean' },
     help: { type: 'boolean', short: 'h' }
   },
   strict: true,
@@ -85,8 +87,8 @@ try {
 
   const seed = (template as Template & { seed?: number }).seed ?? 42;
 
-  // Writer constructor reads env + throws messages if missing.
-  const writer = new Writer();
+  // Writer constructor reads env + throws messages if missing or non-local.
+  const writer = new Writer({ allowRemote: values['allow-remote'] === true });
 
   // Look up per-template overrides — built-in templates may ship paired Overrides (e.g. the `default` template's non-uniform candidate distribution). Custom filesystem templates can express the same by shipping a sibling `Overrides` export; see the authoring guide in the package README. Custom templates otherwise resolve to `{}` (no overrides).
   const overrides: Overrides = builtIns.overrides[templateArg] ?? {};

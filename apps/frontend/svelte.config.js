@@ -24,7 +24,6 @@ const config = {
     },
     alias: {
       $types: path.resolve('./src/lib/types'),
-      $voter: path.resolve('./src/lib/voter'),
       $candidate: path.resolve('./src/lib/candidate'),
       $layouts: path.resolve('./src/lib/layouts')
     },

@@ -39,6 +39,7 @@
   import { getVoterContext } from '$lib/contexts/voter';
   import { QuestionHeading } from '$lib/dynamic-components/questionHeading';
   import { FIRST_QUESTION_ID, parseParams } from '$lib/routes';
+  import { hasExtendedInfo } from '$lib/utils/questions';
   import { DELAY } from '$lib/utils/timing';
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { Snippet } from 'svelte';
@@ -241,7 +242,7 @@
       {/snippet}
 
       {#if !customData.video}
-        {#if appSettings.questions.interactiveInfo?.enabled && (info || customData.infoSections?.length)}
+        {#if appSettings.questions.interactiveInfo?.enabled && hasExtendedInfo(question)}
           <div class="flex items-center justify-center">
             <QuestionExtendedInfoButton
               {question}

@@ -68,7 +68,7 @@ test.describe('perm-interactive-info (EPERM-07)', () => {
     // Close the modal before navigating — the open Drawer scrim intercepts the page-level question-next pointer events.
     await dismissInfoModal(page);
 
-    // ARGUMENTS render per-type. Each carrier (qu-likert/boolean/categorical) is a SEPARATE question because argument rendering is type-dependent and the categorical layout groups by choiceId. Reach each via question-next, open its popup-info disclosure (the carrier co-seeds an infoSection so the popup disclosure renders — QuestionArguments is gated inside it), assert its argument group, then dismiss the modal before the next nav.
+    // ARGUMENTS render per-type. Each carrier (qu-likert/boolean/categorical) is a SEPARATE question because argument rendering is type-dependent and the categorical layout groups by choiceId. Reach each via question-next, open its popup-info disclosure, assert its argument group, then dismiss the modal before the next nav.
     await advanceToQuestion(page, HEADINGS.default);
     await advanceToQuestion(page, HEADINGS.likert);
     await questionInfo.expectInfoMode(undefined, 'popup');
@@ -107,7 +107,7 @@ test.describe('perm-interactive-info (EPERM-07)', () => {
     await dismissInfoModal(page);
     await expect(dialogs).toHaveCount(0, { timeout: 15_000 });
 
-    // QUESTION → QUESTION WHILE OPEN: the teardown path QuestionExtendedInfoButton's close-by-key effect exists for, and the path spike 034 found could hang the dialog. The navigation is a browser Back over the `goto` the question-next button performed — a real, user-reachable client-side question → question navigation that does not have to click through the modal scrim.
+    // QUESTION → QUESTION WHILE OPEN: the teardown path QuestionExtendedInfoButton's close-by-key effect exists for, where a throw inside the host's render flush can leave the dialog hung (see spike 034). The navigation is a browser Back over the `goto` the question-next button performed — a real, user-reachable client-side question → question navigation that does not have to click through the modal scrim.
     await advanceToQuestion(page, HEADINGS.default);
     await questionInfo.expectInfoMode(undefined, 'popup');
     await expect(dialogs).toHaveCount(1, { timeout: 15_000 });
