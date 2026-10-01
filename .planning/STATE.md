@@ -4,18 +4,18 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 166
 current_phase_name: Retire auth_user_id — Entity Identity from Grants
-current_plan: 3
+current_plan: 4
 status: executing
-stopped_at: Completed 166-02-PLAN.md
-last_updated: "2026-10-01T21:06:06.907Z"
+stopped_at: Completed 166-03-PLAN.md
+last_updated: "2026-10-01T21:31:00.169Z"
 last_activity: 2026-10-01
 last_activity_desc: Phase 166 execution started
-state_head: 90e397ef1121508ffb98750bbefa4b2a57dc1485
+state_head: 0f092a171c89e484ac3e75142f5991eb04c7a052
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
-  completed_plans: 317
+  completed_plans: 318
   percent: 89
 ---
 
@@ -35,7 +35,7 @@ _(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and P
 Phase: 166 (Retire auth_user_id — Entity Identity from Grants) — EXECUTING
 Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
-Current Plan: 3
+Current Plan: 4
 Total Plans in Phase: 4
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
@@ -819,8 +819,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-10-01T21:06:05.854Z
-Stopped at: Completed 166-02-PLAN.md
+Last session: 2026-10-01T21:30:59.142Z
+Stopped at: Completed 166-03-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -1130,6 +1130,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 165.1 P08 | 19 min | 3 tasks | 9 files |
 | Phase 166 P01 | 17min | 3 tasks | 12 files |
 | Phase 166 P02 | 20 min | 3 tasks | 18 files |
+| Phase 166 P03 | 20 min | 3 tasks | 23 files |
 
 ## Deferred Items
 

@@ -1952,7 +1952,7 @@ Plans:
   7. **Every comment the phase touches passes the hygiene rules** — each comment it adds or changes is judged against [`CLAUDE.md` § Comment Hygiene](/CLAUDE.md#comment-hygiene): **no historical narrative** (what the code used to do, how a defect was found, which run or spike diagnosed it — the git history carries that), no planning reference beyond the bare `see phase N` / `see spike N` form, no explanation addressed to the reviewer, concise, and present only where the code cannot explain itself. In particular, no comment narrates the retirement of `auth_user_id`; the code reads as if the grant had always been the link.
   8. Gates: pgTAP, unit, the candidate and bank-auth E2E specs (bank-auth under its 3× determinism gate), then the full E2E suite under the cardinal rule.
 
-**Plans**: 2/4 plans executed
+**Plans**: 3/4 plans executed
 
 Plans:
 **Wave 1**
@@ -1962,7 +1962,7 @@ Plans:
 - [x] 166-02-PLAN.md — Move every reader and writer outside the database onto the grant: `identity-callback` grant lookup with compensating delete, `invite-candidate` link step and its rollback arm removed, the E2E admin client and bank-auth specs off the column (wave 2)
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 166-03-PLAN.md — Drop the column atomically with its indexes, comments, seed value, dev-seed keys, column map, regenerated migration and types and pgTAP fixtures; the census goes green and the vacuous guards go (wave 3)
+- [x] 166-03-PLAN.md — Drop the column atomically with its indexes, comments, seed value, dev-seed keys, column map, regenerated migration and types and pgTAP fixtures; the census goes green and the vacuous guards go (wave 3)
 
 **Wave 4** *(blocked on Wave 3 completion)*
 - [ ] 166-04-PLAN.md — Phase gate in D-20 order (static, unit, pgTAP, candidate E2E, bank-auth and bank-auth-journey 3x, full suite under the cardinal rule), the database skill and saved-answers todo updated, the two residues filed as todos (wave 4)
@@ -2140,7 +2140,7 @@ _(**Recounted 2026-09-29** when the two planning records were merged: the phase 
 | 164. `RETURNS TABLE` Nullability — Audit + Single Override Mechanism _(was 150)_ | 5/5 | Complete    | 2026-09-03 |
 | 165. Review-Stack Comment Remediation | 36/36 | Complete    | 2026-09-29 |
 | 165.1. Results Navigation Redraw | 9/9 | Complete    | 2026-09-24 |
-| 166. Retire `auth_user_id` — Entity Identity from Grants | 2/4 | In Progress|  |
+| 166. Retire `auth_user_id` — Entity Identity from Grants | 3/4 | In Progress|  |
 | 167. Origin/main Vestige Cleanup | 0/6 | Not started |  |
 | 168. Docs-Site Rewrite — Strapi to Supabase | 0/9 | Not started |  |
 | 169. Dependency Bump to Latest Safe Versions | 0/13 | Not started |  |
