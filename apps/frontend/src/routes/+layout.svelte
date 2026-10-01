@@ -144,7 +144,7 @@
     if (umamiRef?.trackEvent) sendTrackingEvent.set(umamiRef.trackEvent);
   });
 
-  // Check if the app has been updated and if so, reload the app. The version is checked based on `pollInterval` in frontend/svelte.config.js
+  // Check if the app has been updated and if so, reload the app. The version is checked based on `pollInterval` in apps/frontend/svelte.config.js
   beforeNavigate(({ willUnload, to }) => {
     if (updated.current && !willUnload && to?.url) location.href = to.url.href;
   });
