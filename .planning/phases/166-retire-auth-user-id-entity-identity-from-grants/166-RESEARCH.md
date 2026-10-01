@@ -728,16 +728,22 @@ PostgREST maps `P0001` to HTTP 400 with body `{"message": …, "details": …, "
 | A4 | The runbook's journey Edge env issuer mismatch still applies (from project memory 2026-09-09; the runbook text is unchanged at HEAD) | Pitfall 10 | A gate run fails with an `iss` rejection that looks like a product defect |
 | A5 | `deleteAllTestUsers` gaining a ToU reset has no observable effect (it has no callers today) | Pattern 7 | None in the suite |
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+All four were resolved by the orchestrator's planning rulings (2026-10-01) or by planner discretion; the resolution is recorded under each item and carried into the named plan.
 
 1. **D-18 "private helpers" vs "both bank-auth specs use them".**
    - What we know: private methods cannot be called from specs; `candidate-bank-auth.spec.ts` uses `createServiceRoleClient`, not `SupabaseAdminClient`.
    - Recommendation: make `candidateIdsForUser` / `userIdForCandidate` public methods so the journey spec calls `client.candidateIdsForUser(authUserId)`; in `candidate-bank-auth.spec.ts` use the Edge Function's returned `candidate_id` plus a grants query on its own client. Confirm with the operator at plan review (small deviation from "private").
+   - **RESOLVED:** orchestrator ruling 1 - both helpers are public; `candidate-bank-auth.spec.ts` keeps its raw service-role client and queries `grants` itself (166-02 Task 1 and Task 3).
 2. **The `LIMIT 1` sentence in `supabaseDataWriter.ts`.**
    - What we know: CONTEXT puts frontend changes out of scope on the premise "zero `auth_user_id` references"; this sentence references the RPC's old shape, not the column.
    - Recommendation: change that one sentence in plan 01 (and accept the whole-file sweep of a 384-line file with 0 mechanical hits), or record it as a residue. Operator call.
+   - **RESOLVED:** orchestrator ruling 2 - the sentence is rewritten in 166-01 Task 3 (comment-only frontend change), and D-19's whole-file sweep applies to `supabaseDataWriter.ts`.
 3. **05-organization-admin `AND NOT (r ? 'auth_user_id')`.** Not named by D-16, same vacuity class. Recommendation: remove it in plan 03 with D-16's rationale.
+   - **RESOLVED:** orchestrator ruling 3 - removed in 166-03 Task 2 alongside D-16's two clauses.
 4. **Index name** (discretion): recommend `idx_grants_one_candidate_editor` in `300-auth-tables.sql`.
+   - **RESOLVED:** adopted under Claude's discretion - `idx_grants_one_candidate_editor` in `300-auth-tables.sql`, directly after `idx_grants_scope_target`, landing with the 12-user-can fixture fix and the two-name pgTAP pin in 166-01 Task 2 (orchestrator ruling 5).
 
 ## Environment Availability
 
