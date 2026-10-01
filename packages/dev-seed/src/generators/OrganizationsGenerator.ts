@@ -1,7 +1,7 @@
 /**
  * OrganizationsGenerator — foundation generator for the `organizations` table (the political entities candidates stand for).
  *
- * Schema: `project_id` is required; `auth_user_id` is nullable FK to auth.users and is left NULL — dev-seed writes no auth rows; `answers` defaults to '{}' at the DB level; standard DataObject scaffolding otherwise. No content FK refs on this table.
+ * Schema: `project_id` is required; `answers` defaults to '{}' at the DB level; standard DataObject scaffolding otherwise. No content FK refs on this table.
  *
  * Follows the generator pattern described in ElectionsGenerator.ts.
  *
@@ -43,7 +43,6 @@ export class OrganizationsGenerator {
         short_name: { en: `P${i + 1}` },
         color: { normal: faker.color.rgb(), dark: faker.color.rgb() },
         sort_order: i
-        // `auth_user_id` omitted — dev-seed writes no auth rows.
         // `answers` omitted — DB default '{}' applies.
       });
     }
