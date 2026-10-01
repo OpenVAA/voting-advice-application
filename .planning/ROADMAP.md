@@ -1940,7 +1940,7 @@ Plans:
 
 **Goal**: The grant is the only link between an auth user and an entity. "Which entity am I" is answered from the entity-scope grant, the invite and identity-callback flows write one link instead of two, and no public row exposes an auth user id.
 **Depends on**: PR #888 (Phase 165.1) merged onto the v2.15 review stack. Touches files in #877's slice (the supabase schema, Edge Functions and pgTAP), which Phase 165 (Review-Stack Comment Remediation, PR #889) also edited, so plan it against the stack tip after #889.
-**Requirements**: TBD — registered at planning.
+**Requirements**: AUTHID-01 … AUTHID-09 — registered at planning on 2026-10-01 in `.planning/REQUIREMENTS.md` § Entity Identity (Phase 166).
 **Success Criteria** (draft, to be firmed at planning):
 
   1. **`get_candidate_user_data` resolves the caller's own entity from an `(entity, <type>, editor)` grant** held by `auth.uid()`, joined to the entity table and filtered by project — **not** through `user_can`, which is also true for project and account admins and would hand an admin an arbitrary candidate. `grants` is revoked from `authenticated`, so the lookup reads the table as `SECURITY DEFINER` (preferred: no dependence on token freshness) or parses the `grants` claim. More than one match in a project is an error, not `LIMIT 1`.
@@ -1952,7 +1952,20 @@ Plans:
   7. **Every comment the phase touches passes the hygiene rules** — each comment it adds or changes is judged against [`CLAUDE.md` § Comment Hygiene](/CLAUDE.md#comment-hygiene): **no historical narrative** (what the code used to do, how a defect was found, which run or spike diagnosed it — the git history carries that), no planning reference beyond the bare `see phase N` / `see spike N` form, no explanation addressed to the reviewer, concise, and present only where the code cannot explain itself. In particular, no comment narrates the retirement of `auth_user_id`; the code reads as if the grant had always been the link.
   8. Gates: pgTAP, unit, the candidate and bank-auth E2E specs (bank-auth under its 3× determinism gate), then the full E2E suite under the cardinal rule.
 
-**Plans**: 0 plans
+**Plans**: 4 plans
+
+Plans:
+**Wave 1**
+- [ ] 166-01-PLAN.md — Make "which entity am I" come from the grant: the `private.caller_entity_ids` SECURITY DEFINER helper, `get_candidate_user_data` over it, the one-user-per-candidate partial unique index and the anon auth-user-id census (TODO-wrapped until the drop), while the link column still exists (wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 166-02-PLAN.md — Move every reader and writer outside the database onto the grant: `identity-callback` grant lookup with compensating delete, `invite-candidate` link step and its rollback arm removed, the E2E admin client and bank-auth specs off the column (wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 166-03-PLAN.md — Drop the column atomically with its indexes, comments, seed value, dev-seed keys, column map, regenerated migration and types and pgTAP fixtures; the census goes green and the vacuous guards go (wave 3)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 166-04-PLAN.md — Phase gate in D-20 order (static, unit, pgTAP, candidate E2E, bank-auth and bank-auth-journey 3x, full suite under the cardinal rule), the database skill and saved-answers todo updated, the two residues filed as todos (wave 4)
 
 ### Phase 167: Origin/main Vestige Cleanup
 
@@ -1960,7 +1973,7 @@ Plans:
 
 **Goal**: No origin/main-era vestige survives in code, tests, manifests or planning state, and the session-lookup cost of `safeGetSession` is pinned by a test.
 **Depends on**: Phase 166.
-**Requirements**: TBD — registered at planning.
+**Requirements**: VEST-01 … VEST-09 — registered at planning on 2026-10-01 in `.planning/REQUIREMENTS.md` § Origin/main Vestige Cleanup (Phase 167).
 **Success Criteria** (draft, to be firmed at planning):
 
   1. **`apps/frontend/src/lib/supabase/safeGetSession.ts` has a unit test asserting it makes no needless round trips** — the number of auth/DB calls per invocation (and across repeated calls in one request, if it caches) is asserted, not just the return value. If such a test already exists, cite it; otherwise add one and observe it fail against a deliberately chatty variant first.
@@ -1973,7 +1986,26 @@ Plans:
   8. Every linked todo the phase discharges is moved to `done/`. Every comment touched passes [`CLAUDE.md` § Comment Hygiene](/CLAUDE.md#comment-hygiene).
   9. Gates: typecheck, lint, unit, production build, `yarn audit:deps` (with the baseline change), then the full E2E suite under the cardinal rule.
 
-**Plans**: 0 plans
+**Plans**: 6 plans
+
+Plans:
+**Wave 1**
+- [ ] 167-01-PLAN.md — Strengthen `safeGetSession.test.ts` to pin every client round trip, each assertion observed failing against a deliberately chattier variant first (wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 167-02-PLAN.md — Remove the `/api/cache` proxy and every env, constant, helper, dependency and template mention only it read, `BACKEND_API_TOKEN` included, in one commit (wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 167-03-PLAN.md — Declare `js-yaml` (and its types) in `@openvaa/llm`, the package that imports it (wave 3)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 167-04-PLAN.md — Remove every unused dependency the phase owns, import `eslint-plugin-svelte` explicitly with lint output proven unchanged, prove lint rules still fire, and hand-edit the audit baseline for the `@testing-library/jest-dom` removal (wave 4)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [ ] 167-05-PLAN.md — Port the docs app's last two Svelte 4 components to runes and correct the stale env-loading comment in `apps/frontend/vite.config.ts` (wave 5)
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [ ] 167-06-PLAN.md — Phase close: inspect and delete `gate-evidence/`, run the full gate set ending in one full E2E run, reconcile todos, VESTIGES rows and comment hygiene (wave 6)
 
 ### Phase 168: Docs-Site Rewrite — Strapi to Supabase
 
@@ -1981,7 +2013,7 @@ Plans:
 
 **Goal**: Every page of the docs site describes the system that exists — Supabase backend, Edge Functions, the current i18n, dev-seed and env model, the current features and settings — with no Strapi-era page, banner or nav entry left, and its information architecture reorganised where the old structure no longer fits.
 **Depends on**: Phase 167 (env and dependency decisions the pages must describe).
-**Requirements**: TBD — registered at planning.
+**Requirements**: DOCS-01 … DOCS-08 — registered at planning on 2026-10-01 in `.planning/REQUIREMENTS.md` § Docs Site (Phase 168).
 **Success Criteria** (draft, to be firmed at planning):
 
   1. **Every page on the VESTIGES list is rewritten, merged or deleted** — page structure may change freely; `navigation.config.ts` drops the Strapi entries ("Strapi", "OpenVAA admin tools plugin for Strapi", "Localization in Strapi", "Registration Process in Strapi") and links the new structure. `about/roadmap`'s historical mention may stay.
@@ -1992,27 +2024,89 @@ Plans:
   6. **The broken docs scripts are dealt with** per `2026-08-28-broken-docs-script-references.md` (typedoc generation and the commented-out `getTypeDocLink`), or that todo is explicitly left open with a reason.
   7. Gates: docs build, docs lint/check, link check (no broken internal links).
 
-**Plans**: 0 plans
+**Plans**: 9 plans
+
+Plans:
+**Wave 1**
+- [ ] 168-01-PLAN.md — Build and prove the verification instruments before any page is rewritten: the extended link checker with `--check`, the ResearchQuote span gate, the claims and command checker, and the audit ledger opened with every base page (wave 1)
+
+**Wave 1.1** *(blocked on 168-01 completion)*
+- [ ] 168-01.1-PLAN.md — Make docs lint real and part of the root gate, repair or delete the broken docs scripts, make the generator prune pages for deleted components, and remove the dependencies that lose their last consumer (wave 1.1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 168-02-PLAN.md — Lay down the D-02 information architecture as a skeleton: moved pages, new pages, redirect stubs, the rewritten `navigation.config.ts` and every inbound reference repointed (wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 168-03-PLAN.md — Write the Backend (Supabase) section and the Seed data page against the post-166/167 code, with a script-verified claim ledger (wave 3)
+- [ ] 168-04-PLAN.md — Rewrite the getting-started and operations pages (Quick start, Architecture, Development, Configuration except App settings, Deployment, Troubleshooting) (wave 3)
+- [ ] 168-05-PLAN.md — Rewrite the Frontend and Localization sections for Svelte 5 runes, the Supabase data adapters and Paraglide i18n (wave 3)
+- [ ] 168-06-PLAN.md — Write the Candidate app section, the Admin app page and both app-settings pages from the code, documenting behaviour without changing it (wave 3)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 168-07-PLAN.md — Regenerate the generated pages with the pruning generator, document the pipeline, audit Contributing, About, the landing page and the Publishers' Guide without touching a research block, and fold every verdict into the ledger (wave 4)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [ ] 168-08-PLAN.md — Phase close (non-autonomous): the full gate set and sweeps, safe commands run with redacted evidence, one independent `gsd-doc-verifier` pass reconciled against the ledgers, the four todos settled and the residue filed (wave 5)
 
 ### Phase 169: Dependency Bump to Latest Safe Versions
 
-**Added 2026-10-01.** The 261001-n8y sweep observed `yarn audit:deps` failing with 7 new high+ advisories that predate it (`vitest`, `@vitest/browser`, `@sveltejs/kit`, `tar`, `shell-quote`, `brace-expansion`, …).
+**Added 2026-10-01.** The 261001-n8y sweep observed `yarn audit:deps` failing with 7 new high+ advisories that predate it — `brace-expansion` ×6 and `undici` ×1. Re-measured at planning (2026-10-01) the gate shows 9 NEW (`brace-expansion` ×6, `devalue` ×2, `undici` ×1). The `vitest`, `@vitest/browser`, `@sveltejs/kit`, `tar`, `shell-quote` and `@faker-js/faker` findings are accepted baseline rows, and every accepted row now has a fixed version published.
 
 **Goal**: Every dependency in every workspace is on its latest safe version, new majors included, with the code migrated to any breaking changes and every gate green.
 **Depends on**: Phases 167 and 168 (runs on the cleaned dependency set).
-**Requirements**: TBD — registered at planning.
+**Requirements**: DEPS-01 … DEPS-16 — registered at planning on 2026-10-01 in `.planning/REQUIREMENTS.md` § Dependency Bump (Phase 169).
 **Success Criteria** (draft, to be firmed at planning):
 
   1. **Every direct dependency in root, `apps/*` and `packages/*` is at its latest version** unless a recorded reason holds it back (a known regression, an unreleased peer, the LocalStack-style pin rule). "Safe" is defined at planning (e.g. a minimum release age, no open advisory).
   2. **Majors are migrated, not suppressed** — each major bump lands with its code/config migration, grouped so a failing gate points at one upgrade.
-  3. **`yarn audit:deps` passes** and `security/audit-baseline.json` holds only advisories with no fixed version, each with a current note; todo `2026-09-03-dependabot-alert-list-is-stale-against-main.md` is closed or updated.
+  3. **`yarn audit:deps` passes**: every row with a published fix is fixed; `security/audit-baseline.json` keeps only no-fix or recorded-hold rows, each with a current note; todo `2026-09-03-dependabot-alert-list-is-stale-against-main.md` is updated and stays pending until v2.15 merges.
   4. Gates: typecheck, lint, svelte-check, unit, pgTAP, production builds (frontend and docs), then the full E2E suite under the cardinal rule.
 
-**Plans**: 0 plans
+**Plans**: 13 plans
+
+Plans:
+**Wave 1**
+- [ ] 169-01-PLAN.md — Group 0: confirm upstream phases and the D-02 roadmap amendment, the version/age table, the 7-day age gate, the audit-liveness re-key and the in-range lockfile refresh (wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 169-02-PLAN.md — Group 1, toolchain: Yarn 4.18, then Node 24 as one isolated commit with its own gate run, image build, E2E and observed CI run, then `@types/node` 24 and TypeScript 6 (wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 169-03-PLAN.md — Group 2, lint and format: `eslint-plugin-import-x`, `eslint-plugin-svelte` 3, FlatCompat removal, ESLint 10, and the formatter/sorter majors each with its own reformat commit (wave 3)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 169-04-PLAN.md — Group 4, test stack (run before group 3 because Vite 8 needs a Vitest that accepts it): one Vitest major with `test.projects`, jsdom 30 + dompurify 4, Playwright 1.63, DaisyUI/Tailwind minors (wave 4)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [ ] 169-05-PLAN.md — Group 3, build: inline restart plugin replacing `vite-plugin-restart`, Kit 2.70 with the 2.x-line adapters, then Vite 8 and vite-plugin-svelte 7 through the catalog (wave 5)
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [ ] 169-06-PLAN.md — Group 5a: the Supabase CLI with its CI pins and regenerated types, then local Postgres 15 to 17 as its own commit, pgTAP and E2E after each (wave 6)
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [ ] 169-07-PLAN.md — Group 5b: supabase-js and `@supabase/ssr`, then the Deno Edge Function imports, with the auth gates, the full E2E suite and bank-auth 3x (wave 7)
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [ ] 169-08-PLAN.md — Group 6: `@faker-js/faker` 10 with old-vs-new seed output diffed before the bump lands (wave 8)
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [ ] 169-09-PLAN.md — Group 7: migrate `ai` and the `@ai-sdk/*` providers in `packages/llm` and remove the importer-less `openai` (wave 9)
+
+**Wave 10** *(blocked on Wave 9 completion)*
+- [ ] 169-10-PLAN.md — Group 8: the remaining small majors one commit each, plus the completeness sweep for unassigned majors and consumer-less catalog entries (wave 10)
+
+**Wave 11** *(blocked on Wave 10 completion)*
+- [ ] 169-11-PLAN.md — Group 9: GitHub Actions majors, the trufflehog patch and the Pages actions, observed through `ci-evidence/**` at job level (wave 11)
+
+**Wave 12** *(blocked on Wave 11 completion)*
+- [ ] 169-12-PLAN.md — Group 10 (non-autonomous): SvelteKit 3 with adapter-node 6 and adapter-static 4 behind an operator checkpoint if they clear the 30-day rule, else a recorded hold (wave 12)
+
+**Wave 13** *(blocked on Wave 12 completion)*
+- [ ] 169-13-PLAN.md — Group 11 and phase gate: audit baseline reconciled, moderate/low advisories listed, final version table, todos filed, then the full gate set and full E2E on PG17 on one HEAD (wave 13)
 
 ## Progress
 
-**Active milestone: v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage** — Phases 137-169 (35 phases incl. 142.1, 157.1, 157.2, 162.1 and 165.1; 148 absorbed into 147): 31 complete and 4 pending (166-169). Phase 165 — Review-Stack Comment Remediation maps no requirement; Phase 165.1 — Results Navigation Redraw is an addendum that registered RNAV-01..06. **110/110 requirements mapped** — the 39 original, the review-remediation set added 2026-08-28, PERMFU-01..10 and RNAV-01..06. Plan counts are set per phase by `/gsd-plan-phase`.
+**Active milestone: v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage** — Phases 137-169 (35 phases incl. 142.1, 157.1, 157.2, 162.1 and 165.1; 148 absorbed into 147): 31 complete and 4 pending (166-169), all four planned on 2026-10-01 (166: 4 plans, 167: 6, 168: 9, 169: 13). Phase 165 — Review-Stack Comment Remediation maps no requirement; Phase 165.1 — Results Navigation Redraw is an addendum that registered RNAV-01..06. **152/152 requirements mapped** — the 39 original, the review-remediation set added 2026-08-28, PERMFU-01..10, RNAV-01..06, and AUTHID-01..09, VEST-01..09, DOCS-01..08 and DEPS-01..16 registered at planning for 166-169 (recounted with the scoped awk recorded in REQUIREMENTS.md's coverage note). Plan counts are set per phase by `/gsd-plan-phase`.
 _(**Recounted 2026-09-29** when the two planning records were merged: the phase count is `ls .planning/phases | grep -v '^999' | wc -l` → 32, of which 31 hold a SUMMARY.md for every PLAN.md and Phase 166 holds no plan yet; the requirement count is the scoped awk over REQUIREMENTS.md's § Traceability recorded in its own coverage note → 110. Phase 165.1 was numbered 165 on its own branch (`feat/165-results-navigation-redraw`, PR #888) and renumbered when it was rebased onto `ship/v2.15-13-review-fixes` (PR #889), which had already used 165. The Phases 167-171 placeholders PR #888 had added — per-PR review fixes for #876-#887 — were dropped as superseded by Phase 165.)_
 
 | Phase | Plans Complete | Status | Completed |
@@ -2046,10 +2140,10 @@ _(**Recounted 2026-09-29** when the two planning records were merged: the phase 
 | 164. `RETURNS TABLE` Nullability — Audit + Single Override Mechanism _(was 150)_ | 5/5 | Complete    | 2026-09-03 |
 | 165. Review-Stack Comment Remediation | 36/36 | Complete    | 2026-09-29 |
 | 165.1. Results Navigation Redraw | 9/9 | Complete    | 2026-09-24 |
-| 166. Retire `auth_user_id` — Entity Identity from Grants | 0/0 | Not started |  |
-| 167. Origin/main Vestige Cleanup | 0/0 | Not started |  |
-| 168. Docs-Site Rewrite — Strapi to Supabase | 0/0 | Not started |  |
-| 169. Dependency Bump to Latest Safe Versions | 0/0 | Not started |  |
+| 166. Retire `auth_user_id` — Entity Identity from Grants | 0/4 | Not started |  |
+| 167. Origin/main Vestige Cleanup | 0/6 | Not started |  |
+| 168. Docs-Site Rewrite — Strapi to Supabase | 0/9 | Not started |  |
+| 169. Dependency Bump to Latest Safe Versions | 0/13 | Not started |  |
 
 **Shipped milestones:**
 

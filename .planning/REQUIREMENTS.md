@@ -191,6 +191,68 @@ _(**Registered 2026-09-23 by `165.1-08` under decision D-22.** Phase 165.1 is an
 - [x] **RNAV-05**: One app-wide drawer host in the root layout serves both the entity-details overlay and the extended-question-info drawer. `DrawerHost.svelte` owns the only `<dialog>`; openers render nothing in place and hand it a payload (`{key, title, content, contexts, onDismiss, testId}`), with the opener's `getAllContexts()` re-provided around the content by `ContextBridge.svelte`. Entity → entity navigation swaps the content without reopening, closing animates out, and the host keeps rendering the payload through the out-animation after the opener is destroyed — which is why hosted content must render from a last-defined value and why a `<svelte:boundary>` wraps the payload. The two callerless per-route drawers (`EntityDetailsDrawer`, `QuestionExtendedInfoDrawer`) are deleted rather than left behind. — **Evidence: `165.1-NEGATIVE-CONTROL.md` § 13 (NC-7):** the boundary is observed firing under an injected mid-flush throw and observed *not* firing in three control runs. **Bounded:** a second throw still escapes the boundary through the payload's `title()` getter, read in the dialog's own `aria-label` outside it (`deferred-items.md` D-165.1-06-01); and the extended-question-info half is exercised by `perm-interactive-info`, a different project, not by any row in the evidence document.
 - [x] **RNAV-06**: The spike scaffolding is gone from the application: no `apps/frontend/src/lib/spike/`, no `// SPIKE` call sites, no `/results-layered` route tree, and a standing unit guard (`lib/_guards/spike-scaffolding.test.ts`) fails if any of the three returns. The voter results E2E specs pass. — **Evidence: `165.1-NEGATIVE-CONTROL.md` § 9 (NC-3):** the guard was observed failing against four distinct realistic reintroductions, including a marker-comment-only file that an import-only guard would have missed, and it clears a non-vacuity floor derived at write time. **Bounded:** the guard walks `apps/frontend/src` only. `.planning/spikes/` keeps the spike records and probes on purpose (D-21), the unmerged `spike/results-redraw` branch survives as the reproduction rig (D-02), and the lab's one persisted artefact — a `redrawLab` `localStorage` key in developer browser profiles — is inert rather than removed (see `165.1-NEGATIVE-CONTROL.md` § *Residue accepted by this phase*).
 
+### Entity Identity (Phase 166)
+
+_(**Registered 2026-10-01 at planning** from `.planning/phases/166-retire-auth-user-id-entity-identity-from-grants/166-REQUIREMENTS-PROPOSED.md`, the IDs proposed in `166-RESEARCH.md` § Phase Requirements and adopted without change. Each one is subject to the *Standing acceptance rule* above. Counters recounted from the table rows, not incremented.)_
+
+- [ ] **AUTHID-01**: `get_candidate_user_data` resolves the caller's own entity from an `(entity, <type>, editor)` grant row read from the table through the private SECURITY DEFINER helper `private.caller_entity_ids`, filtered by project and never through `user_can`; more than one match in a project raises SQLSTATE `P0001` with HINT `ERR_ENTITY_IDENTITY_AMBIGUOUS`; both the candidate and the organization arm. (SC1 · D-03, D-05, D-06, D-07 · plans 166-01)
+- [ ] **AUTHID-02**: `identity-callback` looks a returning identity up by its candidate-editor grant (two service-role queries, project filter inside the lookup), `createCandidate` writes no auth link, and a grant-write failure on the create branch deletes the just-created candidate before rethrowing. (SC2 · D-08, D-09 · plans 166-02)
+- [ ] **AUTHID-03**: `invite-candidate` writes the grant only: the link step and its rollback arm are removed, `rollbackInvite` is kept for the grant failure, `flowConformance.test.ts` counts one rollback call, and the steps are renumbered. (SC3 · D-10 · plans 166-02)
+- [ ] **AUTHID-04**: One user per candidate: the partial unique index `idx_grants_one_candidate_editor` on `grants (target_id)` for candidate-editor rows; organizations stay multi-editor; `writeEntityGrant` (both copies) treats a unique violation as success only when it names `grants_user_scope_target_role_key`; no fixture grants two users one candidate. (SC4 · D-11, D-12 · plans 166-01)
+- [ ] **AUTHID-05**: The link column is gone from `candidates` and `organizations` with its two indexes, schema comments, `seed.sql` value, dev-seed permitted keys and absence test, `column-map.ts` entry, regenerated migration and types, pgTAP fixtures and vacuous guards, and the E2E admin client and both bank-auth specs. (SC5 · D-13, D-14, D-16, D-17, D-18 · plans 166-02, 166-03)
+- [ ] **AUTHID-06**: `anon` can read no auth user id from any table except the one named exemption `nominations.created_by`: a pgTAP catalog census plus a behavioural check, observed failing against the tree with the column present before the drop lands. (SC6 (narrowed by D-02) · D-02, D-15 · plans 166-01, 166-03)
+- [ ] **AUTHID-07**: Every file the phase touches passes `CLAUDE.md` § Comment Hygiene as a whole, and no comment narrates the retirement of the link. (SC7 · D-19 · plans 166-01, 166-02, 166-03)
+- [ ] **AUTHID-08**: Gates green in order: `yarn lint:check` → `yarn test:unit` → `yarn db:reset` + pgTAP → the candidate E2E projects → `bank-auth` and `bank-auth-journey` three times each → the full E2E suite, with "did not run" counted as failure. (SC8 · D-20 · plans 166-04)
+- [ ] **AUTHID-09**: `.claude/skills/database/*` (four files) describe the grant as the only user→entity link; the saved-answers todo is annotated with the grant-based lookup; the two named residues (`nominations.created_by` readable by anon; a failed compensating delete in `identity-callback`) are filed as todos. (D-04 · `<deferred>` · plans 166-04)
+
+### Origin/main Vestige Cleanup (Phase 167)
+
+_(**Registered 2026-10-01 at planning** from `.planning/phases/167-origin-main-vestige-cleanup/167-REQUIREMENTS-PROPOSED.md`, the IDs proposed in `167-RESEARCH.md` § Phase Requirements and adopted without change. Each one is subject to the *Standing acceptance rule* above. Counters recounted from the table rows, not incremented.)_
+
+- [ ] **VEST-01**: `safeGetSession.test.ts` pins the exact `getUser` **and** `getSession` count in every case and fails, with a named error, on any other client member access. The strengthened assertions were observed failing against the V1 (no memo) and V2 (extra read) working-copy variants — V2 against both the old and the new assertions — and the Proxy guard against V3; the shipped source is unchanged. (D-06, D-07, D-08 · plans 167-01)
+- [ ] **VEST-02**: `BACKEND_API_TOKEN` is gone from `apps/frontend/src/lib/server/constants.ts` and all 7 auth test mocks. (D-09 · plans 167-02)
+- [ ] **VEST-03**: The `/api/cache` proxy, `PUBLIC_BROWSER_BACKEND_URL` / `PUBLIC_SERVER_BACKEND_URL`, `PUBLIC_CACHE_ENABLED`, the four `CACHE_*` constants, `disableCache`, `cachifyUrl`, `hasAuthHeaders`, `cacheProxy`, `flat-cache` and the env/deployment-template and in-code cache mentions are removed in one commit. Test sample paths no longer name `/api/cache`. Both adapter todos carry the dated note and stay open. (D-09, D-10, D-11 · plans 167-02, 167-06)
+- [ ] **VEST-04**: No workspace declares a dependency it does not use, and `@openvaa/llm` declares the `js-yaml` it imports. `eslint-plugin-svelte` is kept and imported explicitly, with lint output proven unchanged before and after. Lint rules are proven to still fire after the ESLint-dependency removals. The `security/audit-baseline.json` lodash row and note count are hand-edited in the same commit as the `@testing-library/jest-dom` removal. (D-05, D-12–D-20 · plans 167-03, 167-04)
+- [ ] **VEST-05**: `apps/docs` `OpenVAALogo.svelte` and `PeerNavigation.svelte` use runes, the logo renders unchanged for both call sites, and all ten sweep-#14 patterns plus `$$Props` and `$app/stores`, run with `git grep -P`, return 0. (D-03, D-04, D-21 · plans 167-05, 167-06)
+- [ ] **VEST-06**: The env-dir todo is closed to `done/` with its three-point resolution note, and the `vite.config.ts` comment describes today's loading. (D-22 · plans 167-05, 167-06)
+- [ ] **VEST-07**: `gate-evidence/` was inspected (categories only, no values), deleted and confirmed absent; VESTIGES and the 261001-n8y SUMMARY each record the deletion; the two tracked `260930-kxi` files are untouched. (D-23 · plans 167-06)
+- [ ] **VEST-08**: Reconciliation: the D-02 and residue todos are filed, the VESTIGES deferred rows this phase fixed are marked `fixed` with hashes, and every touched comment is read against Comment Hygiene with no new hygiene-report hits relative to the phase-base baseline. (D-02, D-10, D-27, D-28 · plans 167-06)
+- [ ] **VEST-09**: Gates: typecheck, `lint:check`, `format:check`, `test:unit`, `yarn build` (frontend + docs), docs `svelte-check`, the same-moment audit "no new advisory" set comparison, and one clean full E2E run under the cardinal rule. (D-25, D-26 · plans 167-06)
+
+### Docs Site (Phase 168)
+
+_(**Registered 2026-10-01 at planning** from `.planning/phases/168-docs-site-rewrite-strapi-to-supabase/168-REQUIREMENTS-PROPOSED.md`, the IDs proposed in `168-RESEARCH.md` § Phase Requirements and adopted without change. Each one is subject to the *Standing acceptance rule* above. Counters recounted from the table rows, not incremented.)_
+
+- [ ] **DOCS-01**: Every VESTIGES page is rewritten, merged or deleted; the Developers' Guide follows the D-02 tree; the four Strapi nav titles are gone from `navigation.config.ts`; `generate-navigation-config.ts` leaves no `// New` / `// Removed` marker and no diff. (SC1 · D-02, D-03 · plans 168-02, 168-03, 168-04, 168-05, 168-06, 168-07, 168-08)
+- [ ] **DOCS-02**: Every hand-written page plus the generated set has a row in `168-DOCS-AUDIT.md` with a verdict (current / updated / merged → X / deleted / redirect stub); every `<ResearchQuote>` span is byte-identical to the phase base and `ResearchQuote.svelte` (with `ReferenceList.svelte`, `Author.svelte`) is unchanged, proven by a script observed red on a one-character injection. (SC2 · D-05, D-07, D-08, D-20 · plans 168-01, 168-02, 168-07, 168-08)
+- [ ] **DOCS-03**: VESTIGES sweeps #1, #2, #5–#7, #9, #10 and the three D-21 patterns return no hit under `apps/docs` other than ledger-recorded exceptions. (SC3 · D-21 · plans 168-03, 168-04, 168-05, 168-06, 168-07, 168-08)
+- [ ] **DOCS-04**: Every factual claim on a changed page has a content-anchored claim-ledger row that a script re-verifies; one independent `gsd-doc-verifier` pass covers every changed page and its findings are reconciled against the ledgers; every `yarn …` command on a page matches a script; the safe ones were run once with redacted evidence. (SC4 · D-09, D-11, D-17 · plans 168-01, 168-03, 168-04, 168-05, 168-06, 168-07, 168-08)
+- [ ] **DOCS-05**: The candidate-app pages describe the post-166 grant-only flows; `register-page-registrationkey-method.md` is closed as superseded, `configurable-mock-data.md` closed as satisfied by `@openvaa/dev-seed`, `password-reset-code-method.md` settled by reading the code and left open while the dead branch exists. (SC5 · D-16, D-18 · plans 168-06, 168-08)
+- [ ] **DOCS-06**: The broken docs scripts are repaired or deleted per D-13; `glob` is declared in `apps/docs`; `move-generated.ts` clears its destinations so the orphan `EntityCardAction` page is gone after regeneration; `typedoc`, `typedoc-plugin-markdown` (and the orphaned `@playwright/test`) are removed with the audit-baseline rows reconciled; `2026-08-28-broken-docs-script-references.md` is closed. (SC6 · D-13, D-14 · plans 168-01.1, 168-07, 168-08)
+- [ ] **DOCS-07**: `validate-links.ts --check` covers markdown links, `.svelte` hrefs, navigation leaf routes, `#anchor` targets, redirect stubs, GitHub source paths and in-repo inbound references, each class observed red on an injected fault and `--check` observed to write nothing; every moved or deleted URL has a stub; every in-repo inbound reference resolves to a final page. (SC7 (link check) · D-04, D-10, D-12 · plans 168-01, 168-02, 168-08)
+- [ ] **DOCS-08**: `apps/docs` has a `lint` script that root `lint:check` runs; the ESLint config loads (crash cause recorded CONFIRMED / UNCONFIRMED) and lints `.svelte` with the Svelte parser; docs lint is green and observed red on an injected `simple-import-sort` + `no-explicit-any` violation; docs `check`, `build`, `lint:full`, root `lint:check` and `format:check` are green. (SC7 (build/lint/check) · D-15, D-22 · plans 168-01.1, 168-08)
+
+### Dependency Bump (Phase 169)
+
+_(**Registered 2026-10-01 at planning** from `.planning/phases/169-dependency-bump-to-latest-safe-versions/169-REQUIREMENTS-PROPOSED.md`, the IDs proposed in `169-RESEARCH.md` § Phase Requirements and adopted without change. Each one is subject to the *Standing acceptance rule* above. Counters recounted from the table rows, not incremented.)_
+
+- [ ] **DEPS-01**: "Safe" is defined and enforced: `npmMinimalAgeGate: 7d` in `.yarnrc.yml`, observed binding on a real resolution; every chosen version is recorded with publish date, age and verdict in a version table regenerated at execution start and at phase end. (criterion 1 · D-03, D-04, D-05, D-33 · plans 169-01, 169-13)
+- [ ] **DEPS-02**: Group 0: one lockfile-refresh commit inside the declared ranges clears every NEW high+ finding without a new `resolutions` entry, leaving the packages that later groups own at their pre-phase resolutions. (criterion 3 · D-07, D-25, D-27 · plans 169-01)
+- [ ] **DEPS-03**: Toolchain: Yarn 4.18.x at every pin site; Node 24 everywhere (CI pins incl. both halves of the engine negative control, Dockerfile, both `engines` at `>=24.15.0`, `@types/node` 24.x) as an isolated commit with its own gate run, a production-image build and smoke start, an E2E run and an observed CI run; TypeScript 6.0.3 with the tsconfig defaults reviewed. (criterion 1, 2, 4 · D-11, D-12, D-16, D-25, D-26 · plans 169-02)
+- [ ] **DEPS-04**: Lint and format: `eslint-plugin-import-x` replaces `eslint-plugin-import` with the four rules shown firing on planted violations before and after; ESLint 10 with the config-lookup flag removed at every site and FlatCompat gone; `eslint-plugin-svelte` 3 through the catalog; the prettier/sort plugin majors each followed by their own reformat commit. (criterion 1, 2, 4 · D-13, D-17, D-23 · plans 169-03)
+- [ ] **DEPS-05**: Build: Kit 2.70.x with the latest adapter-node 5.x / adapter-static 3.x; both apps on Vite 8 and vite-plugin-svelte 7 through the catalog; an inline root-`.env` restart plugin replaces `vite-plugin-restart` and is observed restarting the dev server; the build-output diff and the visual gate are recorded. (criterion 1, 2, 4 · D-13, D-15, D-18 · plans 169-05)
+- [ ] **DEPS-06**: Test stack: one Vitest major across the catalog (docs included) with the root workspace file replaced by `test.projects`; jsdom 30 and isomorphic-dompurify 4 with the root resolution deleted; Playwright 1.63 with the visual container digest; DaisyUI/Tailwind minors; per-workspace unit-test counts unchanged. (criterion 1, 2, 4 · D-08, D-13, D-19, D-24 · plans 169-04)
+- [ ] **DEPS-07**: Supabase CLI: the catalog entry and all six `setup-cli` pins at one version; `database.ts` regenerated with every hunk explained; pgTAP and an E2E run after the CLI commit; supabase-js 2.117.x and `@supabase/ssr` 0.12.x with `assert:cookie-names`, the `safeGetSession` round-trip test and the cookie-adapter tests green. (criterion 1, 2, 4 · D-10, D-22, D-25 · plans 169-06, 169-07)
+- [ ] **DEPS-08**: Local Postgres 17: `major_version = 17`; a clean `db:reset` applies every migration; `show server_version` proves 17; `database.ts` regenerated and pgTAP (incl. Phase 166's anon-exposure census) green on 17; PG15-validity of migrations recorded as a standing constraint; hosted upgrade filed as an operator todo. (criterion 4 · D-14 · plans 169-06, 169-13)
+- [ ] **DEPS-09**: Deno Edge Function imports pinned exactly (`nodemailer` ≥ 10.0.6, `jose` 6.2.x via `npm:`, supabase-js exact 2.x matching the npm side); the functions' vitest suites, the email and invite flows in the full E2E suite, and bank-auth E2E 3× green; the audit blind spot filed as a todo. (criterion 1, 3 · D-09 · plans 169-07, 169-13)
+- [ ] **DEPS-10**: `@faker-js/faker` 10.x as its own group, with the old-vs-new seed output diffed for the `default` and `e2e/base` templates before the bump lands; visual re-baselines only where a diff traces to a recorded seed change. (criterion 1, 2 · D-20 · plans 169-08)
+- [ ] **DEPS-11**: LLM SDK stack migrated (`ai` and `@ai-sdk/*` to the latest safe majors) with package, admin-job and E2E gates green; the importer-less `openai` (and `jsonrepair` if still present) removed. (criterion 1, 2 · D-21 · plans 169-09)
+- [ ] **DEPS-12**: Remaining small majors, one commit each, each formatter/sorter major followed by its own reformat commit; `@types/cheerio` removed; consumer-less catalog entries dropped; any major the probe reports as unassigned is bumped or held with a reason. (criterion 1, 2 · D-13, D-23 · plans 169-10)
+- [ ] **DEPS-13**: GitHub Actions majors, the trufflehog patch and the Pages actions, with the CI-shape tests updated, observed through `ci-evidence/**` at job level; the two workflows that cannot run there recorded as unobservable until merge. (criterion 1, 4 · D-10 · plans 169-11)
+- [ ] **DEPS-14**: Kit 3 + adapter-node 6 + adapter-static 4 land behind an operator checkpoint if they clear the 30-day rule on the execution date; otherwise held with a dated todo. (criterion 1 · D-15, D-32 · plans 169-12)
+- [ ] **DEPS-15**: The audit gate's liveness is keyed on the audit's own exit status (not the baseline size), with the network-blocked negative control observed; every surviving baseline row carries a current note; the roadmap premise is amended; the phase's todos are filed or updated. (criterion 3 · D-02, D-28, D-29, D-30, D-31 · plans 169-01, 169-13)
+- [ ] **DEPS-16**: Final gates on one HEAD: typecheck, `lint:check`, `format:check`, svelte-check (frontend and docs), unit, pgTAP, production builds, `audit:deps`, the docs link check and ResearchQuote byte-identity, then the full E2E suite under the cardinal rule after a clean `db:reset` on PG17. (criterion 4 · D-26 · plans 169-13)
+
 ## Future Requirements
 
 Deferred — tracked, not in this milestone's roadmap.
@@ -230,7 +292,8 @@ Deferred — tracked, not in this milestone's roadmap.
 
 ## Traceability
 
-**Coverage: 110/110 v2.15 requirements mapped to exactly one phase each. No orphans, no duplicates.**
+**Coverage: 152/152 v2.15 requirements mapped to exactly one phase each. No orphans, no duplicates.**
+_(**Recounted 2026-10-01 from the table rows, not incremented.** Phases 166–169 registered their requirements at planning: AUTHID-01..09 (166), VEST-01..09 (167), DOCS-01..08 (168) and DEPS-01..16 (169), 42 rows. The command of record, run on the working tree above `4da8c9f61`: `awk '/^## Traceability$/{f=1;next} /^### Phase → requirement rollup$/{f=0} f && /^\| / && !/^\| Requirement \|/ && !/^\|[-: |]*\|$/' .planning/REQUIREMENTS.md | wc -l` → **152** (110 + 9 + 9 + 8 + 16), with the rollup `Count` column summing independently to **152** and a `sort | uniq -d` over the row ids returning nothing.)_
 _(**Recounted 2026-09-23 from the table rows, not incremented.** Phase 165.1 (Results Navigation Redraw, an addendum to v2.15) registered RNAV-01..06 under decision D-22. The recount was scoped to the § Traceability table's own data rows, because **the naive count is wrong on this file**: `grep -c '^| [A-Z]'` returns **120** here — it matches rows in several tables, not only this one. The command of record, run at `b289279c5`:_
 _`awk '/^## Traceability$/{f=1;next} /^### Phase → requirement rollup$/{f=0} f && /^\| / && !/^\| Requirement \|/ && !/^\|[-: |]*\|$/' .planning/REQUIREMENTS.md | wc -l` → **110**, with the rollup `Count` column summing independently to **110** and a `sort | uniq -d` over the row ids returning nothing. The coverage figure, the rollup `Total` and the row count were compared to each other before the commit, because a half-applied edit is the failure this section already documents twice below. `.planning/STATE.md` and `.planning/ROADMAP.md` were corrected in the SAME commit — registering these six reopens a milestone STATE.md recorded as complete.)_
 _(**Recounted 2026-09-18 from the table rows, not incremented.** Phase 162.1 (Permissions Follow-Up) registered PERMFU-01..10; the traceability table and the rollup rows were both counted after the edit and both read **104**: the previous 94 plus the ten PERMFU rows.)_
@@ -240,7 +303,7 @@ ASSERT-11 was given its traceability row on 2026-08-22 but neither counter was a
 remediation requirements added below take the corrected total to **93**: HYG 4 · CFG 8 · SEED 4 · EDGE 4 ·
 DB 8 · ADP 6 · RT 7 · CMP 6 · DOC 4 · PRESHIP 2, over phases 152–162.)_
 _(ASSERT-11 was added to both tables on 2026-08-22 by `142.1-03`; it had been declared in the requirement list and in the roadmap since Phase 142.1 was inserted, but never given a traceability row — so `gsd-tools requirements mark-complete ASSERT-11` reported `table_unmatched` and the requirement was untraceable from the Traceability section. Recorded rather than silently backfilled.)_
-Roadmap: `.planning/ROADMAP.md` (Phases 137-166 — Phase 165 (Review-Stack Comment Remediation) maps no requirement, Phase 165.1 is an addendum to this milestone and Phase 166 has none registered yet; 149 and 150 were renumbered to 163 and 164 on 2026-08-28, and the CIGATE rows below were repaired to match). Future Requirements above are deliberately unmapped.
+Roadmap: `.planning/ROADMAP.md` (Phases 137-169 — Phase 165 (Review-Stack Comment Remediation) maps no requirement, Phase 165.1 is an addendum to this milestone, and Phases 166-169 registered theirs at planning on 2026-10-01; 149 and 150 were renumbered to 163 and 164 on 2026-08-28, and the CIGATE rows below were repaired to match). Future Requirements above are deliberately unmapped.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
@@ -354,6 +417,48 @@ Roadmap: `.planning/ROADMAP.md` (Phases 137-166 — Phase 165 (Review-Stack Comm
 | RNAV-04 | Phase 165.1 — Results Navigation Redraw | Complete |
 | RNAV-05 | Phase 165.1 — Results Navigation Redraw | Complete |
 | RNAV-06 | Phase 165.1 — Results Navigation Redraw | Complete |
+| AUTHID-01 | Phase 166 — Retire `auth_user_id` — Entity Identity from Grants | Pending |
+| AUTHID-02 | Phase 166 — Retire `auth_user_id` — Entity Identity from Grants | Pending |
+| AUTHID-03 | Phase 166 — Retire `auth_user_id` — Entity Identity from Grants | Pending |
+| AUTHID-04 | Phase 166 — Retire `auth_user_id` — Entity Identity from Grants | Pending |
+| AUTHID-05 | Phase 166 — Retire `auth_user_id` — Entity Identity from Grants | Pending |
+| AUTHID-06 | Phase 166 — Retire `auth_user_id` — Entity Identity from Grants | Pending |
+| AUTHID-07 | Phase 166 — Retire `auth_user_id` — Entity Identity from Grants | Pending |
+| AUTHID-08 | Phase 166 — Retire `auth_user_id` — Entity Identity from Grants | Pending |
+| AUTHID-09 | Phase 166 — Retire `auth_user_id` — Entity Identity from Grants | Pending |
+| VEST-01 | Phase 167 — Origin/main Vestige Cleanup | Pending |
+| VEST-02 | Phase 167 — Origin/main Vestige Cleanup | Pending |
+| VEST-03 | Phase 167 — Origin/main Vestige Cleanup | Pending |
+| VEST-04 | Phase 167 — Origin/main Vestige Cleanup | Pending |
+| VEST-05 | Phase 167 — Origin/main Vestige Cleanup | Pending |
+| VEST-06 | Phase 167 — Origin/main Vestige Cleanup | Pending |
+| VEST-07 | Phase 167 — Origin/main Vestige Cleanup | Pending |
+| VEST-08 | Phase 167 — Origin/main Vestige Cleanup | Pending |
+| VEST-09 | Phase 167 — Origin/main Vestige Cleanup | Pending |
+| DOCS-01 | Phase 168 — Docs-Site Rewrite — Strapi to Supabase | Pending |
+| DOCS-02 | Phase 168 — Docs-Site Rewrite — Strapi to Supabase | Pending |
+| DOCS-03 | Phase 168 — Docs-Site Rewrite — Strapi to Supabase | Pending |
+| DOCS-04 | Phase 168 — Docs-Site Rewrite — Strapi to Supabase | Pending |
+| DOCS-05 | Phase 168 — Docs-Site Rewrite — Strapi to Supabase | Pending |
+| DOCS-06 | Phase 168 — Docs-Site Rewrite — Strapi to Supabase | Pending |
+| DOCS-07 | Phase 168 — Docs-Site Rewrite — Strapi to Supabase | Pending |
+| DOCS-08 | Phase 168 — Docs-Site Rewrite — Strapi to Supabase | Pending |
+| DEPS-01 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
+| DEPS-02 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
+| DEPS-03 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
+| DEPS-04 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
+| DEPS-05 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
+| DEPS-06 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
+| DEPS-07 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
+| DEPS-08 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
+| DEPS-09 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
+| DEPS-10 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
+| DEPS-11 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
+| DEPS-12 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
+| DEPS-13 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
+| DEPS-14 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
+| DEPS-15 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
+| DEPS-16 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
 
 ### Phase → requirement rollup
 
@@ -387,4 +492,8 @@ Roadmap: `.planning/ROADMAP.md` (Phases 137-166 — Phase 165 (Review-Stack Comm
 | 163 — CI Gates (SQL + secrets/vuln) _(was 149)_ | CIGATE-01, CIGATE-02, CIGATE-03 | 3 |
 | 164 — RPC Nullability _(was 150)_ | CIGATE-04, CIGATE-05 | 2 |
 | 165.1 — Results Navigation Redraw | RNAV-01..06 | 6 |
-| **Total** | | **110** |
+| 166 — Retire `auth_user_id` | AUTHID-01..09 | 9 |
+| 167 — Origin/main Vestige Cleanup | VEST-01..09 | 9 |
+| 168 — Docs-Site Rewrite | DOCS-01..08 | 8 |
+| 169 — Dependency Bump | DEPS-01..16 | 16 |
+| **Total** | | **152** |
