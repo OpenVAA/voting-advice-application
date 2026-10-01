@@ -149,7 +149,7 @@ describe('invite-candidate flow conformance', () => {
     expect(outside).toEqual([]);
   });
 
-  it.each(RETIRED_CLAIM_KEYS)('reads no retired claim key: %s', (key) => {
+  it.each(RETIRED_CLAIM_KEYS)('reads no claim key outside the grant model: %s', (key) => {
     // THE KEY, NOT ONE ACCESS FORM OF IT. An assertion on one access form (`'payload.' + key`, `"['" + key + "']"`) reddens only if a future edit reintroduces that exact variable NAME as well as that exact access form, so `const claims = decodeTokenPayload(jwt); claims.user_roles` would pass it. The module contains none of the three key names in any form, so binding the bare name costs nothing and is the assertion the test's own title makes.
     expect(INDEX_SOURCE).not.toContain(key);
   });
@@ -199,12 +199,13 @@ describe('invite-candidate flow conformance', () => {
     expect(adminAt).toBeGreaterThan(gateAt);
   });
 
-  it('rolls back the invited auth user as well as the candidate, and treats a failed link as fatal', () => {
+  it('rolls back the invited auth user as well as the candidate when the grant write fails', () => {
     expect(INDEX_SOURCE).toContain('supabaseAdmin.auth.admin.deleteUser(userId)');
-    // Both failure arms after the invite was sent use the full rollback.
-    expect(INDEX_SOURCE.split('await rollbackInvite(supabaseAdmin').length - 1).toBe(2);
+    // The grant write is the one failure arm after the invite was sent, and it uses the full rollback.
+    expect(INDEX_SOURCE.split('await rollbackInvite(supabaseAdmin').length - 1).toBe(1);
     expect(INDEX_SOURCE).not.toContain("Log but don't fail");
-    expect(INDEX_SOURCE).toContain('Failed to link the invited user to the candidate record');
+    // The grant is the only link from the invited user to the candidate, so the flow writes nothing else to the candidate row.
+    expect(INDEX_SOURCE).not.toContain('.update(');
   });
 
   it('names the invited identity as a CANDIDATE entity at the one write site in the flow', () => {

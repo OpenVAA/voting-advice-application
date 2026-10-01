@@ -167,28 +167,7 @@ Deno.serve(async (req) => {
     }
 
     // -------------------------------------------------------------------------
-    // 7. Link auth user to candidate record
-    // -------------------------------------------------------------------------
-    const { error: linkError } = await supabaseAdmin
-      .from('candidates')
-      .update({ auth_user_id: inviteData.user.id })
-      .eq('id', candidate.id);
-
-    // FATAL, with the same full rollback. `get_candidate_user_data` resolves the candidate's own row by `auth_user_id`, so an unlinked candidate holds a grant yet can never load their own record -- the invite would "succeed" into an account that cannot work, and nothing later establishes the link.
-    if (linkError) {
-      await rollbackInvite(supabaseAdmin, { candidateId: candidate.id, userId: inviteData.user.id });
-
-      return new Response(
-        JSON.stringify({
-          error: 'Failed to link the invited user to the candidate record',
-          details: linkError.message
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // -------------------------------------------------------------------------
-    // 8. Return success response
+    // 7. Return success response
     // -------------------------------------------------------------------------
     return new Response(
       JSON.stringify({

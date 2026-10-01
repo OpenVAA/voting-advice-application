@@ -399,3 +399,39 @@ The faulted run left the second candidate behind (the spec's cleanup deletes the
 `{"expected":8,"skipped":0,"unexpected":0,"flaky":0}`, all eight tests `passed`, preflight OK; no
 candidate without an external id left in the e2 project afterwards (`0`). Both servers stopped; ports 8777
 and 5273 have no listener.
+
+---
+
+## NC-7 — invite-candidate writes the grant and nothing else (166-02 Task 2, vitest source-text)
+
+- **Check:** `apps/supabase/supabase/functions/invite-candidate/flowConformance.test.ts` case "rolls back
+  the invited auth user as well as the candidate when the grant write fails": exactly one
+  `await rollbackInvite(supabaseAdmin` call, `supabaseAdmin.auth.admin.deleteUser(userId)` still present
+  (inside `rollbackInvite`), no "Log but don't fail", and no `.update(` call anywhere in the source.
+- **Regression state:** the OLD `invite-candidate/index.ts` at HEAD `c9c0a47b5`, which still carries step 7
+  (the `.update(...)` on `candidates` writing the per-row auth link and its own rollback arm). Only the
+  test case was changed.
+- **Command:** `yarn workspace @openvaa/supabase test:unit`
+
+### RED
+
+`test:unit` **exit 1** (`Test Files  1 failed | 14 passed (15)`, `Tests  1 failed | 204 passed (205)`):
+
+```
+   × invite-candidate flow conformance > rolls back the invited auth user as well as the candidate when the grant write fails 4ms
+ FAIL  supabase/functions/invite-candidate/flowConformance.test.ts > invite-candidate flow conformance > rolls back the invited auth user as well as the candidate when the grant write fails
+AssertionError: expected 2 to be 1 // Object.is equality
+```
+
+### GREEN
+
+Step 7 (the link update and its rollback arm) deleted; "Return success response" renumbered 7;
+`rollbackInvite` kept as the one helper, called once from the grant-failure arm. `test:unit` **exit 0**:
+
+```
+ Test Files  15 passed (15)
+      Tests  205 passed (205)
+```
+
+`grep -cE "^ *// [0-9]+\. " index.ts` = 7; `grep -c "// 8\." index.ts` = 0. No E2E project exercises
+invite-candidate, so this source-text gate and the unit suite are its whole evidence.
