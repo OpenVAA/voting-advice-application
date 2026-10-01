@@ -339,3 +339,63 @@ rethrowing. `test:unit` **exit 0**:
  Test Files  15 passed (15)
       Tests  205 passed (205)
 ```
+
+---
+
+## NC-6 — the returning-identity assertion catches a broken grant lookup (166-02 Task 1, bank-auth E2E)
+
+- **Check:** the new assertion `expect(body.candidate_id).toBe(captured.body.candidate_id)` in
+  `tests/tests/specs/candidate/candidate-bank-auth.spec.ts`, test "should return session with magic link
+  when candidate is created" (the second POST for the same identity).
+- **Regression state:** the committed Task 1 tree (HEAD `079bad487`) with one injected fault: `return null;`
+  as the first statement of `findExistingCandidate` in
+  `apps/supabase/supabase/functions/identity-callback/candidateRecord.ts`, so every login takes the create
+  branch. The function server was restarted on the faulted file before the run.
+- **Environment:** `identity-callback` served by `npx supabase functions serve identity-callback
+  --no-verify-jwt --env-file $SCRATCH/bank-auth-edge.env` (Step E-1 values, issuer
+  `https://test-idp.example.com`, `PUBLIC_PROJECT_ID=00000000-0000-0000-0000-0000000000e2`,
+  `SITE_URL=http://127.0.0.1:5273`), the test JWKS on `python3 -m http.server 8777`. Nothing written
+  into the repository, the root `.env` or `functions/.env`.
+- **Command:** `PLAYWRIGHT_BANK_AUTH=1 tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/166-02-bank-auth-nc6 --project bank-auth --no-db-reset`
+
+### Baseline GREEN before the fault
+
+`tests/e2e-runs/166-02-bank-auth` (Task 1 tree, uncommitted at the time, served fresh): exit file `0`,
+`{"expected":8,"skipped":0,"unexpected":0,"flaky":0}`, preflight OK.
+
+### RED (fault injected)
+
+Exit file **`1`**, `{"expected":4,"skipped":3,"unexpected":1,"flaky":0}`. The create test and the
+wrong-key test pass; in the second-POST test every pre-existing assertion before the new line passes
+(status 200, `success`, `is_new_user === false`, `user_id`), and the new assertion fails:
+
+```
+failed  should return session with magic link when candidate is created
+   ERR: Error: expect(received).toBe(expected) // Object.is equality
+
+        Expected: "9b18c5e1-7c69-44b7-9129-01e441670fbd"
+        Received: "1f55b198-2a76-4c0b-9a55-58e528fb1739"
+
+          244 |     expect(body.user_id).toBe(captured.createdUserId);
+          245 |     // The returning identity is matched to the candidate it already edits, found through its grant, rather than given a second one.
+        > 246 |     expect(body.candidate_id).toBe(captured.body.candidate_id);
+```
+
+The three later tests are `skipped` only because the describe is `mode: 'serial'` and stops at the first
+failure; they are the CORS and malformed-request cases, unaffected by the lookup.
+
+### Revert proof and orphan cleanup
+
+`git checkout -- apps/supabase/supabase/functions/identity-callback/candidateRecord.ts`, then
+`git diff --exit-code -- apps/supabase/supabase/functions/identity-callback/candidateRecord.ts` **exit 0**.
+The faulted run left the second candidate behind (the spec's cleanup deletes the first by id): one row,
+`1f55b198-2a76-4c0b-9a55-58e528fb1739`, removed with
+`DELETE FROM public.candidates WHERE project_id = '00000000-0000-0000-0000-0000000000e2' AND external_id IS NULL`
+(`DELETE 1`; grants naming it afterwards: `0`, removed by `cleanup_grants_on_delete`).
+
+### GREEN (fault reverted, server restarted)
+
+`tests/e2e-runs/166-02-bank-auth-nc6-green` on HEAD `079bad487`: exit file **`0`**,
+`{"expected":8,"skipped":0,"unexpected":0,"flaky":0}`, all eight tests `passed`, preflight OK; no
+candidate without an external id left in the e2 project afterwards (`0`). Both servers stopped; ports 8777
+and 5273 have no listener.
