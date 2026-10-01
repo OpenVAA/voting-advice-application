@@ -18,7 +18,7 @@
  *      candidate + grant → generate magic link) → the server route verifyOtp's
  *      the magic link to ESTABLISH THE SESSION INLINE, then redirects to /candidate/preregister/status?code=success.
  *   5. Assert the success status page (`preregister-status-return`). For the Supabase bank-auth adapter this IS the authenticated end state: the candidate's `auth.users` + `candidates` + `grants` cascade was created server-side by the Edge Function and the session was established by the route's verifyOtp — there is NO confirmation-email / registration-key / set-password leg (the Supabase id_token-callback path creates the user under an identity-derived placeholder email and logs in immediately).
- *   6. End-to-end DB proof: assert via SupabaseAdminClient that the bank-auth identity now resolves to a real `auth.users` row carrying the expected `identity_provider='idura-ftn'` + `identity_match_value=<sub>` app_metadata AND a linked `candidates` row + candidate entity `grants` row — the only way these exist is if the REAL authorize→callback→exchange→decrypt→ claims→create chain ran end to end (unmodified production auth code).
+ *   6. End-to-end DB proof: assert via SupabaseAdminClient that the bank-auth identity now resolves to a real `auth.users` row carrying the expected `identity_provider='idura-ftn'` + `identity_match_value=<sub>` app_metadata AND a candidate-editor `grants` row naming exactly one `candidates` row in the project — the only way these exist is if the REAL authorize→callback→exchange→decrypt→ claims→create chain ran end to end (unmodified production auth code).
  *
  * Rigidity contract: no soft assertions, no try/catch wrapping assertions, and no swallowed-rejection fallbacks on assertion-bearing locator interactions — every assertion is hard and every locator interaction propagates rejection.
  *
@@ -146,7 +146,7 @@ test.describe('candidate bank-auth journey', { tag: ['@bank-auth'] }, () => {
     // ============== Step 6: end-to-end DB proof of the created identity =====
 
     await test.step('6. assert the bank-auth identity + candidate + role were created', async () => {
-      // The ONLY way these rows exist is if the REAL authorize→callback→ exchange→decrypt→claims→create chain ran UNMODIFIED end to end: the Edge Function created the auth user under the identity-derived placeholder email, stamped the idura identity claims into app_metadata, and created the linked candidate + grant.
+      // The ONLY way these rows exist is if the REAL authorize→callback→ exchange→decrypt→claims→create chain ran UNMODIFIED end to end: the Edge Function created the auth user under the identity-derived placeholder email, stamped the idura identity claims into app_metadata, created the candidate, and wrote the candidate-editor grant that links the user to it.
       const client = new SupabaseAdminClient();
 
       // 6a. The auth user exists under the placeholder email with the expected
@@ -159,13 +159,12 @@ test.describe('candidate bank-auth journey', { tag: ['@bank-auth'] }, () => {
       expect(authUser!.app_metadata?.identity_provider, 'identity_provider claim').toBe('idura-ftn');
       expect(authUser!.app_metadata?.identity_match_value, 'identity_match_value claim').toBe(BANK_AUTH_JOURNEY_SUB);
 
-      // 6b. The linked candidate row exists (public.candidates via PostgREST).
-      const candidateResult = await client.findData('candidates', { auth_user_id: authUserId });
-      expect(candidateResult.type, 'candidate lookup should succeed').toBe('success');
-      // reason: discriminated-union data-extraction narrowing (not a branch on test outcome); the line above already asserts `.type === 'success'`. The downstream expect(candidateRows.length, ...) assertion does the checking.
-      // eslint-disable-next-line playwright/no-conditional-in-test
-      const candidateRows = (candidateResult.type === 'success' ? candidateResult.data : undefined) ?? [];
-      expect(candidateRows.length, 'a candidate row should be linked to the bank-auth user').toBe(1);
+      // 6b. Exactly one candidate in this project is named by the bank-auth user's candidate-editor grant.
+      const candidateIds = await client.candidateIdsForUser(authUserId);
+      expect(
+        candidateIds,
+        'one candidate in this project should be named by the bank-auth user’s candidate-editor grant'
+      ).toHaveLength(1);
 
       // 6c. The candidate authority row exists (public.grants via PostgREST); the identity-callback function writes it through `entityGrant.ts`.
       const roleResult = await client.findData('grants', {
