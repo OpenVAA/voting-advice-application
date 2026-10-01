@@ -1,10 +1,7 @@
 /**
  * Generates the `TranslationKey` union from the base-locale Paraglide messages catalog.
  *
- * The base locale and the list of message files are read from `project.inlang/settings.json`, so
- * the union covers exactly the files Paraglide compiles. Each file holds a single top-level key equal
- * to its namespace (the filename without `.json`), and every key path inside it is prefixed with that
- * namespace. Plain strings, inlang variant arrays and bare variant objects are leaves.
+ * The base locale and the list of message files are read from `project.inlang/settings.json`, so the union covers exactly the files Paraglide compiles. Each file holds a single top-level key equal to its namespace (the filename without `.json`), and every key path inside it is prefixed with that namespace. Plain strings, inlang variant arrays and bare variant objects are leaves.
  *
  * Run with `yarn workspace @openvaa/frontend generate:translation-key-type`.
  */
@@ -80,8 +77,7 @@ function getMessageKeys(filePath: string): Array<string> {
 }
 
 /**
- * Flattens a message tree into dot-separated key paths. For example `{a: 'abc', b: {c: 'def'}}` with
- * prefix `p` yields `['p.a', 'p.b.c']`.
+ * Flattens a message tree into dot-separated key paths. For example `{a: 'abc', b: {c: 'def'}}` with prefix `p` yields `['p.a', 'p.b.c']`.
  */
 function flattenKeys(tree: MessageTree, prefix: string): Array<string> {
   const keys = new Array<string>();
