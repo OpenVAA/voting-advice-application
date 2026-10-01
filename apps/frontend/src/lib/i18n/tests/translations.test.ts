@@ -77,6 +77,36 @@ function getRuntimeCatalogKeys(locale: string): Array<string> {
     .sort();
 }
 
+const frontendRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..');
+const translationKeyTypePath = path.join(frontendRoot, 'src', 'lib', 'types', 'generated', 'translationKey.ts');
+
+/**
+ * Every key in the base-locale files that Paraglide compiles, read the way the `TranslationKey` generator reads them: `baseLocale` and `pathPattern` from `project.inlang/settings.json`, each file unwrapped from its namespace key, and variant arrays or bare variant objects counted as single leaves.
+ */
+function getBaseLocaleCatalogKeys(): Array<string> {
+  const settings = JSON.parse(fs.readFileSync(path.join(frontendRoot, 'project.inlang', 'settings.json'), 'utf8'));
+  const baseLocale: string = settings.baseLocale;
+  const patterns: Array<string> = settings['plugin.inlang.messageFormat'].pathPattern;
+  return patterns
+    .flatMap((pattern) => {
+      const filePath = path.resolve(frontendRoot, pattern.split('{locale}').join(baseLocale));
+      const namespace = path.basename(filePath, '.json');
+      const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      return flattenMessageKeys(content[namespace], namespace);
+    })
+    .sort();
+}
+
+function flattenMessageKeys(tree: unknown, prefix: string): Array<string> {
+  const isBranch =
+    typeof tree === 'object' &&
+    tree !== null &&
+    !Array.isArray(tree) &&
+    !('declarations' in tree || 'selectors' in tree || 'match' in tree);
+  if (!isBranch) return [prefix];
+  return Object.entries(tree).flatMap(([key, value]) => flattenMessageKeys(value, `${prefix}.${key}`));
+}
+
 const firstLocaleFileKeys = Object.fromEntries(
   firstLocaleFilenames.map((filename) => [filename, getMessageKeys(firstLocale, filename)])
 );
@@ -218,6 +248,24 @@ test('all message files are valid JSON', () => {
       expect(() => JSON.parse(content)).not.toThrow();
     }
   }
+});
+
+/**
+ * The generated `TranslationKey` union must hold exactly the base-locale message keys.
+ *
+ * `t()` accepts only union members, so a union that drifts from `messages/` either rejects a key that renders or accepts one that renders raw. This must stay a FILESYSTEM assertion: `vitest.config.ts` aliases `$lib/paraglide/*` to mocks, so a `t()` call here would prove nothing about the real catalog.
+ */
+test('the generated TranslationKey union matches the base-locale message keys', () => {
+  const generated = fs.readFileSync(translationKeyTypePath, 'utf8');
+  const unionKeys = (generated.match(/'[^']*'/g) ?? []).map((literal) => literal.slice(1, -1)).sort();
+  const catalogKeys = getBaseLocaleCatalogKeys();
+  const missingFromUnion = catalogKeys.filter((key) => !unionKeys.includes(key));
+  const missingFromCatalog = unionKeys.filter((key) => !catalogKeys.includes(key));
+  expect(
+    { missingFromUnion, missingFromCatalog },
+    'translationKey.ts is stale: run `yarn workspace @openvaa/frontend generate:translation-key-type`'
+  ).toEqual({ missingFromUnion: [], missingFromCatalog: [] });
+  expect(unionKeys).toEqual(catalogKeys);
 });
 
 describe('TranslationKey type safety (CLEAN-04)', () => {
