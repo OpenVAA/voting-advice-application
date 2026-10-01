@@ -7,16 +7,16 @@ current_phase_name: Retire auth_user_id — Entity Identity from Grants
 current_plan: Not started
 status: ready
 stopped_at: "Phase 165 (Review-Stack Comment Remediation, PR #889) and Phase 165.1 (Results Navigation Redraw, PR #888) complete — next: /gsd-plan-phase 166"
-last_updated: "2026-10-01T14:18:37.853Z"
-last_activity: 2026-09-30
+last_updated: "2026-10-01T20:22:44.161Z"
+last_activity: 2026-10-01
 last_activity_desc: Planning records of PR
-state_head: 985f26a6cd0eb531f626506c7bc3112735eb243a
+state_head: bfc014dc72baf6fda3ad989cbcd17be9a7bc67f9
 progress:
-  total_phases: 32
+  total_phases: 35
   completed_phases: 31
-  total_plans: 315
+  total_plans: 347
   completed_plans: 315
-  percent: 97
+  percent: 57
 ---
 
 # Project State
@@ -32,7 +32,7 @@ See: .planning/PROJECT.md (updated 2026-09-20 — v2.15 complete)
 
 Milestone: v2.15 (Phases 137-166 + 142.1 + 157.1 + 157.2 + 162.1 + 165.1, 32 phases; 148 absorbed into 147) — **31/32 phases complete (97%), 315/315 plans**
 _(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and PR #889 were merged: `ls .planning/phases | grep -v '^999' | wc -l` → **32**; `ls .planning/phases/*/[0-9]*-PLAN.md | grep -v '/999' | wc -l` → **315** (270 before either branch + 36 for Phase 165 + 9 for Phase 165.1); a per-directory PLAN-vs-SUMMARY comparison finds every plan summarised and only Phase 166 with no plan, so 31 phases are complete. The SUMMARY file count is 317: `142-W1-SUMMARY.md` (a wave summary) and `161-02.1-SUMMARY.md` (no plan file) are not plans. `percent` is completed/total phases, 31/32 rounded. The Phases 167-171 placeholders PR #888 added were dropped as superseded by Phase 165.)_
-Phase: 166 (Retire `auth_user_id` — Entity Identity from Grants) — ready to plan
+Phase: 166 retire-auth-user-id-entity-identity-from-grants 4 — READY TO EXECUTE
 Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
 Current Plan: Not started
@@ -404,7 +404,7 @@ exists or can exist here. All seven gates above are LOCAL. Carried as `164-03` c
 The milestone counters below are derived by gsd-tools from a milestone-wide scan, not read, so they
 must not be hand-tuned.
 
-**Progress:** [█████████░] 97%
+**Progress:** [██████░░░░] 57%
 
 > **Ordering note for the phases still queued.** 164 runs before 163 because both edit
 > `.github/workflows/main.yaml` and ROADMAP § 164 explicitly forbids them sharing an execution wave.

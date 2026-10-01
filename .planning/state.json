@@ -152,12 +152,27 @@
       "number": "166",
       "name": "Retire `auth_user_id` — Entity Identity from Grants",
       "status": "pending"
+    },
+    {
+      "number": "167",
+      "name": "Origin/main Vestige Cleanup",
+      "status": "pending"
+    },
+    {
+      "number": "168",
+      "name": "Docs-Site Rewrite — Strapi to Supabase",
+      "status": "pending"
+    },
+    {
+      "number": "169",
+      "name": "Dependency Bump to Latest Safe Versions",
+      "status": "pending"
     }
   ],
   "next": {
-    "command": "/gsd:plan-phase 166",
-    "label": "Plan phase 166",
-    "reason": "Phase 166 of 32 — needs a plan"
+    "command": "/gsd:progress",
+    "label": "Show progress",
+    "reason": "Unsure of state — showing progress"
   },
-  "updated_at": "2026-09-29T19:12:32.000Z"
+  "updated_at": "2026-10-01T20:22:44.199Z"
 }
