@@ -4,19 +4,19 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 166
 current_phase_name: Retire auth_user_id — Entity Identity from Grants
-current_plan: Not started
-status: ready
-stopped_at: "Phase 165 (Review-Stack Comment Remediation, PR #889) and Phase 165.1 (Results Navigation Redraw, PR #888) complete — next: /gsd-plan-phase 166"
-last_updated: "2026-10-01T20:22:44.161Z"
+current_plan: 2
+status: executing
+stopped_at: Completed 166-01-PLAN.md
+last_updated: "2026-10-01T20:43:28.789Z"
 last_activity: 2026-10-01
-last_activity_desc: Planning records of PR
-state_head: bfc014dc72baf6fda3ad989cbcd17be9a7bc67f9
+last_activity_desc: Phase 166 execution started
+state_head: 0243dec0be7f311b408511e491145c7251f24c8e
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
-  completed_plans: 315
-  percent: 57
+  completed_plans: 316
+  percent: 89
 ---
 
 # Project State
@@ -26,17 +26,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-20 — v2.15 complete)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 166 — Retire `auth_user_id` — Entity Identity from Grants (ready to plan)
+**Current focus:** Phase 166 — Retire auth_user_id — Entity Identity from Grants
 
 ## Current Position
 
 Milestone: v2.15 (Phases 137-166 + 142.1 + 157.1 + 157.2 + 162.1 + 165.1, 32 phases; 148 absorbed into 147) — **31/32 phases complete (97%), 315/315 plans**
 _(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and PR #889 were merged: `ls .planning/phases | grep -v '^999' | wc -l` → **32**; `ls .planning/phases/*/[0-9]*-PLAN.md | grep -v '/999' | wc -l` → **315** (270 before either branch + 36 for Phase 165 + 9 for Phase 165.1); a per-directory PLAN-vs-SUMMARY comparison finds every plan summarised and only Phase 166 with no plan, so 31 phases are complete. The SUMMARY file count is 317: `142-W1-SUMMARY.md` (a wave summary) and `161-02.1-SUMMARY.md` (no plan file) are not plans. `percent` is completed/total phases, 31/32 rounded. The Phases 167-171 placeholders PR #888 added were dropped as superseded by Phase 165.)_
-Phase: 166 retire-auth-user-id-entity-identity-from-grants 4 — READY TO EXECUTE
+Phase: 166 (Retire auth_user_id — Entity Identity from Grants) — EXECUTING
 Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
-Current Plan: Not started
-Total Plans in Phase: 0
+Current Plan: 2
+Total Plans in Phase: 4
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
 they collapse.** `public.grants` keyed `user_id x scope x target_type x target_id x role`; a **23-member**
@@ -306,7 +306,7 @@ run. WHAT REMAINS: push `ci-evidence/163-crit2-red` and `…-green`, assert the 
 granularity (`frontend-and-shared-module-validation` → `Run Prettier check globally`, log naming the
 file), fill rows 9/10, delete both branches. `CIGATE-02` was NOT marked complete
 (`requirements.ready-ids` → 0/1 ready).
-Status: Ready to plan Phase 166
+Status: Ready to execute
 PUSHED.** `prettier-plugin-sql@0.20.0` is declared once in `packages/shared-config` with
 `overrides: [{ files: '*.sql', options: { language: 'postgresql' } }]`, and reaches every workspace
 through the `?? []` spreads the leaf configs already carried (both leaf configs byte-unchanged).
@@ -404,7 +404,7 @@ exists or can exist here. All seven gates above are LOCAL. Carried as `164-03` c
 The milestone counters below are derived by gsd-tools from a milestone-wide scan, not read, so they
 must not be hand-tuned.
 
-**Progress:** [██████░░░░] 57%
+**Progress:** [█████████░] 89%
 
 > **Ordering note for the phases still queued.** 164 runs before 163 because both edit
 > `.github/workflows/main.yaml` and ROADMAP § 164 explicitly forbids them sharing an execution wave.
@@ -590,7 +590,7 @@ install no Node at all when `engines.node` is absent — it WARNS, it does not f
 its negative control independently of the ruling. Full amendment:
 `.planning/todos/pending/2026-08-29-153-03-scope-amendment-after-d-b5-reversal.md`.
 **153-09 depends on 01, 02 AND 03**, so 03 blocks the phase close and nothing else in the phase.
-Last activity: 2026-10-01 - Completed quick task 261001-n8y: removed the legacy src/lib/i18n/translations catalog (messages/ is the single source; TranslationKey 595 keys unchanged) + origin/main-era vestige sweep (VESTIGES.md); 7 gates green
+Last activity: 2026-10-01 — Phase 166 execution started
 
 **Phase 155 (Edge Function Hardening) is COMPLETE and verified — 6/6 plans.** Its completion line was
 overwritten in this single position slot by 153-01's `record-session` (STATE.md holds one position, and
@@ -819,8 +819,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-09-28T20:24:41.999Z
-Stopped at: Phase 165 and Phase 165.1 complete — next: /gsd-plan-phase 166
+Last session: 2026-10-01T20:43:27.759Z
+Stopped at: Completed 166-01-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -1128,6 +1128,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 165.1 P06 | 39 min | 3 tasks | 4 files |
 | Phase 165.1 P07 | 38 min | 3 tasks | 17 files |
 | Phase 165.1 P08 | 19 min | 3 tasks | 9 files |
+| Phase 166 P01 | 17min | 3 tasks | 12 files |
 
 ## Deferred Items
 
@@ -2074,6 +2075,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 165.1]: The CLAUDE.md results-navigation invariant subsection landed beside the two analog Svelte invariant subsections under Important Implementation Notes, with a pointer line added under Frontend (SvelteKit) where D-24 said to put it — D-24 and 165.1-PATTERNS E3 both place the analogs under the frontend section; they are not there. The plan done-clause (beside the two subsections it belongs with) wins, and the pointer keeps D-24 stated location reaching the rule
 - [Phase 165.1]: The 2026-06-15 view-transition-flicker todo is closed WITH a named residue, not marked done: scroll survival closes as RNAV-02, the in-drawer tab flicker is handed to the parked element-scoped-VT deferred idea — Marking it done would claim a fix that did not ship; the residue half is cosmetic but real
 - [Phase 165.1] The visual gate has NO baseline capturing an open drawer, so this phase's headline change — the app-wide DrawerHost replacing the per-route drawer — is visually unmeasured. G-9 ran green with 4/4 matched, but all four baselines screenshot a page with no overlay showing; G-8's axe scans cover the drawer's conformance, not its appearance. See deferred-items.md D-165.1-07-01 and WINDOWS 282 (open).
+- [Phase 166]: 166-01: entity identity resolved from the caller's own (entity, type, id, editor) grant rows via private.caller_entity_ids (SECURITY DEFINER, search_path '', never user_can); get_candidate_user_data is plpgsql INVOKER and raises P0001 / HINT ERR_ENTITY_IDENTITY_AMBIGUOUS on 2+ grants in one project
+- [Phase 166]: 166-01: idx_grants_one_candidate_editor (partial unique on grants.target_id for entity/candidate/editor); writeEntityGrant treats only grants_user_scope_target_role_key violations as success; both names pinned in 36-entity-identity
+- [Phase 166]: 166-01: anon-exposure census (single exemption nominations.created_by) observed red and held in todo_start/todo_end; 166-03 must remove the wrapper after the column drop
 
 ### Quick Tasks Completed
 
