@@ -128,7 +128,6 @@ the generated `00001` and removed in phase 162; git history retains them. Full t
 9. **Indexing strategy**: Add these indexes for every new content table:
    - B-tree on `project_id` (tenant isolation queries)
    - B-tree on any FK columns (account_id, organization_id, category_id, parent_id)
-   - B-tree on `auth_user_id` if the table has one (candidates, organizations)
    - Composite unique partial index on `(project_id, external_id) WHERE external_id IS NOT NULL`
 
 ## RLS and Auth Patterns
@@ -231,13 +230,43 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
 
 8. **Column-level restrictions**: REVOKE table-level UPDATE from authenticated, then GRANT
    UPDATE only on allowed columns. Applies to:
-   - `candidates`: protected columns are project_id, auth_user_id, external_id, id, sort_order,
-     created_at, updated_at.
-   - `organizations`: protected columns are project_id, auth_user_id, external_id, id, sort_order,
-     created_at, updated_at.
+   - `candidates`: protected columns are project_id, external_id, id, sort_order, created_at,
+     updated_at.
+   - `organizations`: protected columns are project_id, external_id, id, sort_order, created_at,
+     updated_at.
    - Admin operations needing protected columns use `service_role` via Edge Functions, which
      bypasses column-level grants.
    - Source: `apps/supabase/supabase/schema/303-column-grants.sql`.
+
+9. **Which entity am I: the grant is the only link from an auth user to an entity.** No entity table
+   carries an auth user id column; an identity is linked to its candidate or organization by an
+   `(entity, <type>, <id>, editor)` row in `public.grants` and by nothing else.
+   - `get_candidate_user_data(p_project_id, p_entity_type)` is SECURITY INVOKER (plpgsql) and resolves
+     the caller's own entity through `private.caller_entity_ids(p_project_id, p_entity_type)`, a
+     SECURITY DEFINER helper in `301-auth-functions.sql` that reads `public.grants` for
+     `user_id = auth.uid()`, `scope = 'entity'`, `role = 'editor'` and the requested type, keeping only
+     entities in the requested project. It reads the table, not the token, so a grant written after
+     the token was issued already counts.
+   - Only the `editor` role names an entity, and `user_can` is never asked: `user_can` answers yes for
+     project, account and global admins, and an entity-scope `admin` grant confers nothing. An admin
+     with no editor grant gets no row.
+   - More than one match raises SQLSTATE `P0001` with HINT `ERR_ENTITY_IDENTITY_AMBIGUOUS` rather than
+     picking one. Nothing at write time stops one user editing two candidates in one project; the
+     error is raised when that identity is read.
+   - `idx_grants_one_candidate_editor` (a UNIQUE partial index on `grants (target_id)` for
+     candidate-editor rows, in `300-auth-tables.sql`) allows one editor per candidate. Organizations
+     admit several editors.
+   - `writeEntityGrant` (byte-identical in `invite-candidate/` and `identity-callback/`) treats a
+     unique violation as success only when it names `grants_user_scope_target_role_key` (the grant
+     already exists); a violation of any other key, such as the one-editor index, throws
+     `ERR_GRANT_WRITE_FAILED`.
+   - The anon-exposure census in `36-entity-identity.test.sql` permits exactly one column holding an
+     auth user id on a table anon can select: `nominations.created_by`. A new exposure turns it red;
+     never widen the exemption list to make it pass.
+   - Outside the database (Edge Functions, the E2E admin client) the same question is two
+     service-role queries: the user's candidate-editor grants, then the entity table filtered by
+     project and the granted ids. `grants.target_id` has no foreign key, so PostgREST cannot embed
+     the join.
 
 ## Service Patterns
 
@@ -253,11 +282,14 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
    `createClient()` with `service_role` for privileged operations (creating records, inviting
    users, reading auth.users).
    - `invite-candidate`: gated as above; creates the candidate and the auth user, then writes an
-     ENTITY GRANT (`writeEntityGrant`, `(entity, candidate, id, editor)`) rather than a role row,
-     and on a failed grant write or a failed link rolls back both the auth user and the candidate.
+     ENTITY GRANT (`writeEntityGrant`, `(entity, candidate, id, editor)`), which is the only link
+     between them. On a failed grant write it rolls back both the auth user and the candidate.
    - `identity-callback`: handles JWE/JWT from bank auth, provider-agnostic identity matching,
      creates user + candidate + magic link session. It AUTHENTICATES an identity and writes its
-     entity grant; it authorises nothing.
+     entity grant; it authorises nothing. A returning identity's candidate is found through its
+     `(entity, candidate, id, editor)` grant in the served project. When the grant write fails
+     after the function has just created a candidate, it deletes that candidate before rethrowing;
+     a failed delete is logged, not thrown over the original error.
    - `send-email`: gated as above; resolves per-recipient email variables in the configured
      project and sends via SMTP (nodemailer).
 
@@ -516,6 +548,14 @@ and `packages/supabase-types/` (3 commits, 3 files).
 limits, folder enumeration on entity delete, `cleanup_old_answer_files`, the revoked EXECUTE, and the
 `31-storage-cleanup.test.sql` / `storage-cleanup.spec.ts` split between enqueued and observed. The
 2026-08-29 review below is otherwise unchanged.
+
+**Updated 2026-10-02** (Phase 166, plan 166-04): entity identity now comes from grants alone. RLS and
+Auth Patterns gains § 9 ("Which entity am I": `get_candidate_user_data` through
+`private.caller_entity_ids`, editor role only, per project, `ERR_ENTITY_IDENTITY_AMBIGUOUS`,
+`idx_grants_one_candidate_editor`, `writeEntityGrant`'s named idempotent key, the `36` anon census);
+the indexing bullet for the dropped entity link column and that column's entries in § 8's protected
+lists are removed; Service Patterns § 1's `invite-candidate` and `identity-callback` bullets describe
+the grant-only link and the compensating delete.
 
 ### What changed under the targets, and what it did to this skill
 
