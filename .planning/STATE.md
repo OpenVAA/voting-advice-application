@@ -7,10 +7,10 @@ current_phase_name: Retire auth_user_id — Entity Identity from Grants
 current_plan: Not started
 status: ready
 stopped_at: "Phase 165 (Review-Stack Comment Remediation, PR #889) and Phase 165.1 (Results Navigation Redraw, PR #888) complete — next: /gsd-plan-phase 166"
-last_updated: "2026-09-30T13:08:42.246Z"
-last_activity: 2026-09-29
+last_updated: "2026-10-01T14:18:37.853Z"
+last_activity: 2026-09-30
 last_activity_desc: Planning records of PR
-state_head: 60a7cfbad6f28aec66ebaeb6a82f4c4d6a709647
+state_head: 985f26a6cd0eb531f626506c7bc3112735eb243a
 progress:
   total_phases: 32
   completed_phases: 31
@@ -590,7 +590,7 @@ install no Node at all when `engines.node` is absent — it WARNS, it does not f
 its negative control independently of the ruling. Full amendment:
 `.planning/todos/pending/2026-08-29-153-03-scope-amendment-after-d-b5-reversal.md`.
 **153-09 depends on 01, 02 AND 03**, so 03 blocks the phase close and nothing else in the phase.
-Last activity: 2026-09-30 - Completed quick task 260930-kxi: PR 888 follow-ups (Docker CI build, dev-seed teardown env, bank-auth guard, cf-connecting-ip trust); E2E 171/0, bank-auth 8/0, journey 131/0
+Last activity: 2026-10-01 - Completed quick task 261001-n8y: removed the legacy src/lib/i18n/translations catalog (messages/ is the single source; TranslationKey 595 keys unchanged) + origin/main-era vestige sweep (VESTIGES.md); 7 gates green
 
 **Phase 155 (Edge Function Hardening) is COMPLETE and verified — 6/6 plans.** Its completion line was
 overwritten in this single position slot by 153-01's `record-session` (STATE.md holds one position, and
@@ -2117,6 +2117,7 @@ Key cross-milestone reference points carried forward into v2.10:
 | 260930-gk1 | Revalidate then fix apps/supabase/supabase/schema/107-feedback.sql check_feedback_rate_limit which keys the rate limit on the first x-forwarded-for entry (client-spoofable); determine what the Supabase API gateway forwards and key on the trustworthy hop (update the migration/schema consistently and the pgTAP tests) | 2026-09-30 | 37975cf64 | — | .planning/quick/260930-gk1-revalidate-then-fix-apps-supabase-supabase-schema-107-feedba |
 | 260930-gk2 | Revalidate then fix packages/dev-seed seed and teardown CLIs (cli/seed.ts, cli/teardown.ts, supabaseAdminClient.ts) which use the service_role key against whatever SUPABASE_URL is configured with no check it is local; add a guard allowing only local hosts (localhost, 127.0.0.1, ::1, host.docker.internal, kong/supabase docker hostnames as used by the tests) with an explicit opt-out env/flag, and unit tests; make sure E2E/CI invocations still pass the guard | 2026-09-30 | 77e429e9c | — | .planning/quick/260930-gk2-revalidate-then-fix-packages-dev-seed-seed-and-teardown-clis |
 | 260930-kxi | PR 888 follow-ups: Docker CI build, dev-seed teardown env, bank-auth guard, cf-connecting-ip trust + full E2E | 2026-09-30 | 60a7cfbad | — | [260930-kxi-pr-888-follow-ups-docker-ci-build-dev-se](./quick/260930-kxi-pr-888-follow-ups-docker-ci-build-dev-se/) |
+| 261001-n8y | Remove the legacy src/lib/i18n/translations catalog (messages/ is the single source) and sweep the branch for origin/main-era vestiges | 2026-10-01 | 985f26a6c | — | [261001-n8y-remove-the-legacy-src-lib-i18n-translati](./quick/261001-n8y-remove-the-legacy-src-lib-i18n-translati/) |
 
 **Follow-up to 260607-cd0 (executed 2026-06-07, user-approved):** Deprecation run on the report's proposal. Removed dead code — `utils/{answerQuestion,translations,paths}.ts` (`6edeb9fa2`) + `helpers/{db-precondition,voter-iteration}.helper.ts` & the dead `gotoAndSettle` export (`fc08e10f3`). Renamed the 3 surviving helpers `*.helper.ts`→`*.ts` (navigation/select/settle) + retired the `<concern>.helper.ts` convention (barrel + README updated; only the barrel imported them by path so consumers unaffected). Kept + tracked `tests/IDURA-TEST-RUNBOOK.md` in place (`1d90db68c`). **Item 6 (emailHelper→emailBucket) — DONE + verified green 2026-06-07** (`2764a79a9`): the fixture never actually imported emailHelper (docstring was wrong); whole file was dead except `toCallbackUrl`, which moved into `emailBucket.fixture.ts`; both spec imports repointed; `emailHelper.ts` deleted. User confirmed all tests pass on a live stack; todo moved to `.planning/todos/completed/`. **The entire 260607-cd0 cleanup follow-up is now closed** (dead-code sweep + `.helper` rename + IDURA + emailHelper consolidation).
 
