@@ -43,7 +43,7 @@ Accesses `LayoutContext`.
       'flex items-center gap-md px-10 py-md min-h-touch min-w-touch w-full !text-neutral hover:bg-base-200 active:bg-base-200',
       // The width of an icon (24/16 rem) plus the gap between the icon and the text (md = 10/16 rem)
       !icon && 'pl-[2.75rem]',
-      disabled && 'pointer-events-none hover:bg-transparent'
+      disabled && '!text-secondary pointer-events-none hover:bg-transparent'
     )
   );
 </script>
