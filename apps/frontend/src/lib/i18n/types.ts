@@ -1,5 +1,5 @@
 /**
- * The record of values that may be passed to `$t` or `parse` for interpolation
+ * The interpolation values that may be passed as the `params` argument of `t()` (`$lib/i18n/wrapper`).
  */
 export type TranslationsPayload = Partial<{
   analyticsLink: string;

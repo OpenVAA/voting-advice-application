@@ -76,8 +76,12 @@ Do not use special characters like `'\n'` in translations -- their backslashes w
 
 The `assertTranslationKey()` utility provides runtime validation for dynamically constructed keys. For static keys, Paraglide provides compile-time type safety through its generated message functions.
 
+## The `TranslationKey` type
+
+`t()` accepts only members of the `TranslationKey` union in `src/lib/types/generated/translationKey.ts`. The union is generated from the base-locale `messages/` by `yarn workspace @openvaa/frontend generate:translation-key-type`; run it after adding, renaming or removing a key. `src/lib/i18n/tests/translations.test.ts` fails while the committed union is stale.
+
 ## Managing translations
 
-For bulk translation management, use the [`editTranslations`](/frontend/tools/editTranslations/editTranslations.ts) tool. It can export, import, and replace translation keys across the source code.
+For bulk translation management, use the [`editTranslations`](/apps/frontend/tools/editTranslations/editTranslations.ts) tool. It can export, import, and replace translation keys across the source code.
 
 NB! Automatic key replacement only covers `.svelte` files in the frontend. Make sure to check that translations accessed by [e2e tests](/tests/) and other non-Svelte code are also updated accordingly.

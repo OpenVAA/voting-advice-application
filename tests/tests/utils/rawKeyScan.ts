@@ -40,11 +40,6 @@ const FRONTEND_DIR = path.join(TESTS_DIR, '..', '..', 'apps', 'frontend');
 const RUNTIME_CATALOG_DIR = path.join(FRONTEND_DIR, 'messages', 'en');
 
 /**
- * The type-gen source catalog. Unlike the runtime catalog these files do NOT embed their namespace — the prefix comes from the FILENAME, exactly as `apps/frontend/tools/translationKey/generateTranslationKeyType.ts` does it.
- */
-const TYPEGEN_CATALOG_DIR = path.join(FRONTEND_DIR, 'src', 'lib', 'i18n', 'translations', 'en');
-
-/**
  * The generated `TranslationKey` union — the compile-time enumeration of every string a call site is ALLOWED to pass to `t()`, and therefore of every string `t()` can possibly echo back.
  */
 const TRANSLATION_KEY_TYPE_FILE = path.join(FRONTEND_DIR, 'src', 'lib', 'types', 'generated', 'translationKey.ts');
@@ -52,7 +47,7 @@ const TRANSLATION_KEY_TYPE_FILE = path.join(FRONTEND_DIR, 'src', 'lib', 'types',
 /**
  * Non-vacuity floor for the key set.
  *
- * A scanner whose key set silently empties — a moved catalog directory, a renamed locale folder, a JSON parse that yields `{}` — would pass every surface forever while checking nothing. That is the exact failure shape this whole plan exists to eliminate, so an implausibly small key set is a hard error rather than a quiet green. The three sources currently agree on 598 keys; the floor sits far below that so ordinary catalog churn never trips it.
+ * A scanner whose key set silently empties — a moved catalog directory, a renamed locale folder, a JSON parse that yields `{}` — would pass every surface forever while checking nothing. That is the exact failure shape this whole plan exists to eliminate, so an implausibly small key set is a hard error rather than a quiet green. The floor sits far below the real key count so ordinary catalog churn never trips it.
  */
 const MIN_EXPECTED_KEYS = 400;
 
@@ -90,10 +85,17 @@ let cachedKeys: ReadonlySet<string> | undefined;
 /**
  * Flatten a message-catalog object into dotted key paths.
  *
- * Arrays are LEAVES, not containers: the inlang message-format plugin encodes pluralised / selector-driven messages as an array of match objects (`questions.multiChoice.selectExact` is one), and recursing into those would mint nonsense paths like `…selectExact.0.declarations.0` that `t()` can never return. Mirrors the flattening in `apps/frontend/tools/translationKey/generateTranslationKeyType.ts`.
+ * Arrays and bare variant objects (carrying `declarations`, `selectors` or `match`) are LEAVES, not containers: the inlang message-format plugin encodes pluralised / selector-driven messages that way (`questions.multiChoice.selectExact` is one), and recursing into those would mint nonsense paths like `…selectExact.0.declarations.0` that `t()` can never return. Mirrors the flattening in `apps/frontend/tools/translationKey/generateTranslationKeyType.ts`.
  */
 function flattenCatalog(node: unknown, prefix: string, into: Set<string>): void {
-  if (node === null || typeof node !== 'object' || Array.isArray(node)) {
+  if (
+    node === null ||
+    typeof node !== 'object' ||
+    Array.isArray(node) ||
+    'declarations' in node ||
+    'selectors' in node ||
+    'match' in node
+  ) {
     if (prefix) into.add(prefix);
     return;
   }
@@ -102,35 +104,31 @@ function flattenCatalog(node: unknown, prefix: string, into: Set<string>): void 
   }
 }
 
-/** Flatten every `*.json` in `dir` into `into`, optionally prefixing by filename. */
-function flattenCatalogDir(dir: string, prefixFromFilename: boolean, into: Set<string>): void {
+/** Flatten every `*.json` in `dir` into `into`. Each file's top-level key is its namespace, so no prefix is added. */
+function flattenCatalogDir(dir: string, into: Set<string>): void {
   for (const filename of fs.readdirSync(dir)) {
     if (!filename.endsWith('.json')) continue;
     const parsed: unknown = JSON.parse(fs.readFileSync(path.join(dir, filename), 'utf8'));
-    flattenCatalog(parsed, prefixFromFilename ? filename.replace(/\.json$/, '') : '', into);
+    flattenCatalog(parsed, '', into);
   }
 }
 
 /**
  * The set of dotted key paths the app could echo back on a miss — derived from disk, memoised for the worker's lifetime. Nothing here is hardcoded, so a key added tomorrow is guarded tomorrow.
  *
- * ## Why the UNION of three sources and not just the runtime catalog
+ * ## Why the UNION of the runtime catalog and the generated union
  *
- * The three sources agree on 598 keys today (the runtime catalog is a strict superset, holding the 7 synthesized `lang.<locale>` entries the other two derive differently). Taking the union anyway is not belt-and-braces — it is what makes the scanner cover the most likely real regression:
+ * A key **deleted from `messages/` while a call site still uses it** is precisely how a raw key reaches the screen. If the key set came from the runtime catalog alone, that deletion would remove the key from the scanner's own expectations at the same instant it started rendering raw — the scan would go green on the very defect it exists to catch.
  *
- * A key **deleted from the runtime catalog while call sites still reference it** is precisely how a raw key reaches the screen. If the key set came from the runtime catalog alone, that deletion would remove the key from the scanner's own expectations at the same instant it started rendering raw — the scan would go green on the very defect it exists to catch. Because `t()` is typed against `TranslationKey` (generated from the type-gen catalog, a DIFFERENT directory), such a call site still compiles, so TypeScript does not cover this either.
- *
- * Reading all three closes that: a key has to disappear from every source at once to escape, and at that point no call site can reference it.
+ * The committed `TranslationKey` union keeps such a key until someone regenerates it, so the scanner still expects it. Once the union is regenerated the call site stops type-checking, and the staleness test in `apps/frontend/src/lib/i18n/tests/translations.test.ts` fails until it is regenerated. Between them, a deleted key is caught either here or by the compiler.
  */
 export function loadCatalogKeys(): ReadonlySet<string> {
   if (cachedKeys) return cachedKeys;
   const keys = new Set<string>();
 
   // 1. Runtime Paraglide catalog — namespace embedded in the JSON.
-  flattenCatalogDir(RUNTIME_CATALOG_DIR, false, keys);
-  // 2. Type-gen source catalog — namespace derived from the filename.
-  flattenCatalogDir(TYPEGEN_CATALOG_DIR, true, keys);
-  // 3. The generated `TranslationKey` union — every literal in the file is a key.
+  flattenCatalogDir(RUNTIME_CATALOG_DIR, keys);
+  // 2. The generated `TranslationKey` union — every literal in the file is a key.
   for (const [, literal] of fs.readFileSync(TRANSLATION_KEY_TYPE_FILE, 'utf8').matchAll(/'([^']+)'/g)) {
     keys.add(literal);
   }
@@ -139,7 +137,7 @@ export function loadCatalogKeys(): ReadonlySet<string> {
     keys.size,
     `Raw-i18n-key scanner loaded only ${keys.size} catalog keys (floor: ${MIN_EXPECTED_KEYS}). ` +
       'The catalog sources have moved or failed to parse, and the scanner would pass vacuously. ' +
-      `Checked:\n  ${RUNTIME_CATALOG_DIR}\n  ${TYPEGEN_CATALOG_DIR}\n  ${TRANSLATION_KEY_TYPE_FILE}`
+      `Checked:\n  ${RUNTIME_CATALOG_DIR}\n  ${TRANSLATION_KEY_TYPE_FILE}`
   ).toBeGreaterThanOrEqual(MIN_EXPECTED_KEYS);
 
   cachedKeys = keys;

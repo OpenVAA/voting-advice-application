@@ -82,7 +82,7 @@ Multilingual features are only available if the `locales` store contains more th
   } from './shared';
   import type { Id } from '@openvaa/core';
   import type { AnyChoice } from '@openvaa/data';
-  import type { TranslationsPayload } from '$lib/i18n/translations';
+  import type { TranslationsPayload } from '$lib/i18n/types';
   import type { TranslationKey } from '$types';
   import type { InputProps } from './Input.type';
 
