@@ -12,7 +12,7 @@ created: "2026-10-01"
 # Phase 168 — Validation Strategy
 
 > Per-phase validation contract for feedback sampling during execution. Filled at planning (2026-10-01); the
-> per-task map below mirrors the `<verify>` blocks of `168-01..08-PLAN.md`.
+> per-task map below mirrors the `<verify>` blocks of `168-01-PLAN.md`, `168-01.1-PLAN.md` and `168-02..08-PLAN.md`.
 
 ---
 
@@ -21,7 +21,7 @@ created: "2026-10-01"
 | Property | Value |
 |----------|-------|
 | **Framework** | No unit-test suite in `apps/docs`. Validation is gate scripts plus recorded negative controls (REQUIREMENTS.md *Standing acceptance rule*; 167-D08 precedent: temporary working-copy injections, never committed). |
-| **Config file** | none — plan 168-01 (Wave 0 equivalent) builds the instruments: `apps/docs/scripts/validate-links.ts --check`, `apps/docs/scripts/check-research-quotes.ts`, `.planning/phases/168-…/scripts/check-claims.mjs`, the docs `lint` script |
+| **Config file** | none — plans 168-01 and 168-01.1 (Wave 0 equivalent) build the instruments: `apps/docs/scripts/validate-links.ts --check`, `apps/docs/scripts/check-research-quotes.ts`, `.planning/phases/168-…/scripts/check-claims.mjs`, the docs `lint` script |
 | **Quick run command** | `yarn workspace @openvaa/docs validate:links --check` (plus `--scope <route>` per page in plans 03–07) |
 | **Full suite command** | the D-22 gate set: `yarn workspace @openvaa/docs generate:docs` + `git diff --exit-code -- apps/docs`, `check:research-quotes --base <base>`, `validate:links --check`, docs `check`, `build`, `lint:full`, root `yarn lint:check`, `yarn format:check`, the D-21 sweeps — each exit status read directly, never through a pipe |
 | **Estimated runtime** | quick: ~30 s; full: ~6 min (build, root lint:check and format:check dominate) |
@@ -34,7 +34,7 @@ multi-file commands first assert every file exists, so a non-splitting shell fai
 ## Sampling Rate
 
 - **After every task commit:** `validate:links --check` (scoped to the task's pages in 03–07) and `check-claims.mjs ledger` / `commands` for the plan's claims file.
-- **After every plan wave:** wave 1 → `yarn lint:check`; wave 2 → `validate:links --check --only md-link,svelte-href,nav-route,stub,inbound`; wave 3 → each plan's full scoped page gate; wave 4 → `generate:docs` + `check:research-quotes` + unscoped `validate:links --check`.
+- **After every plan wave:** wave 1 → `validate:links --check --only svelte-href,nav-route,stub`; wave 1.1 → `yarn lint:check` (now including docs lint); wave 2 → `validate:links --check --only md-link,svelte-href,nav-route,stub,inbound`; wave 3 → each plan's full scoped page gate; wave 4 → `generate:docs` + `check:research-quotes` + unscoped `validate:links --check`.
 - **Before `/gsd-verify-work`:** the full D-22 set (168-08 Task 1) must be green.
 - **Max feedback latency:** quick checks under 60 s.
 
@@ -46,8 +46,9 @@ multi-file commands first assert every file exists, so a non-splitting shell fai
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
 | 168-01-01 | 01 | 1 | DOCS-07 | T-168-02 | `--check` never writes | gate + NC | upstream precondition; `validate:links --check --only github-path` exits 1 on real dead links; `--only nosuchclass` exits 2; `git diff --exit-code -- apps/docs/src` | ❌ W0 (built here) | ⬜ pending |
 | 168-01-02 | 01 | 1 | DOCS-07, DOCS-04 | T-168-01 | stub targets internal, literal, no chains | gate + NC | `validate:links --check --only svelte-href,nav-route,stub` = 0 and `--only anchor` = 1 at base; ≥ 9 `exit=1` NC records; `yarn workspace @openvaa/docs build` | ❌ W0 | ⬜ pending |
-| 168-01-03 | 01 | 1 | DOCS-02, DOCS-08 | T-168-03 | research spans frozen | gate + NC | `check:research-quotes --base <base>` = 0; no `--base` = 2; `yarn workspace @openvaa/docs lint`; `yarn lint:check`; ledger row count = derived page count | ❌ W0 | ⬜ pending |
-| 168-01-04 | 01 | 1 | DOCS-06 | T-168-SC, T-168-04 | no new advisory; no key in evidence | gate + NC | root `docs:*` targets exist (node one-liner); no typedoc; `yarn docs:components && yarn docs:routes`; `yarn workspace @openvaa/dev-seed test:unit`; `yarn lint:check` | ✅ | ⬜ pending |
+| 168-01-03 | 01 | 1 | DOCS-02 | T-168-03 | research spans frozen | gate + NC | `check:research-quotes --base <base>` = 0; no `--base` = 2; `yarn lint:check`; ledger row count = derived page count | ❌ W0 | ⬜ pending |
+| 168-01.1-01 | 01.1 | 1.1 | DOCS-08 | T-168-05 | lint not weakened (no suppression added) | tracer + NC | `yarn workspace @openvaa/docs lint`; `yarn lint:check`; `lint` script present, `lint:local` gone, NC record names both rules | ❌ W0 | ⬜ pending |
+| 168-01.1-02 | 01.1 | 1.1 | DOCS-06 | T-168-SC, T-168-25 | no new advisory; no key in evidence | gate + NC | root `docs:*` targets exist (node one-liner); no typedoc; `yarn docs:components && yarn docs:routes`; `yarn workspace @openvaa/dev-seed test:unit`; `yarn lint:check` | ✅ | ⬜ pending |
 | 168-02-01 | 02 | 2 | DOCS-01, DOCS-07 | T-168-06 | stub is a literal internal redirect | tracer (build + browser probe) | `generate:navigation` + prettier + `git diff --exit-code` + no markers; `validate:links --check --only md-link,nav-route,stub && build`; probe file has `REDIRECT OK` and `NO REDIRECT` | ✅ | ⬜ pending |
 | 168-02-02 | 02 | 2 | DOCS-01, DOCS-02 | T-168-06 | — | gate | 26 mapped stubs, no extra `+page.ts`, no Strapi nav title; nav consistency; `--only md-link,svelte-href,nav-route,stub` = 0 | ✅ | ⬜ pending |
 | 168-02-03 | 02 | 2 | DOCS-07 | T-168-07 | binding checklist link resolves | gate | `--only md-link,svelte-href,nav-route,stub,inbound` = 0; no in-repo link to a stubbed URL; `build && yarn lint:check` | ✅ | ⬜ pending |
@@ -76,13 +77,14 @@ multi-file commands first assert every file exists, so a non-splitting shell fai
 
 ## Wave 0 Requirements
 
-Plan 168-01 is this phase's Wave 0: every later gate depends on instruments it builds and proves red first.
+Plans 168-01 and 168-01.1 (D-19's plan-01 slot, split for context budget) are this phase's Wave 0: every later gate depends on
+instruments they build and prove red first.
 
 - [ ] `validate:links --check` with seven classes and `--only` / `--scope` (168-01 Tasks 1–2), each class observed red on an injection
 - [ ] `check:research-quotes --base <rev>` with base and head extracts and three red controls (168-01 Task 3)
 - [ ] `scripts/check-claims.mjs` `ledger` and `commands` with recorded controls (168-01 Task 2)
-- [ ] docs `lint` script in the root gate, observed red on an injected violation (168-01 Task 3)
-- [ ] `move-generated.ts` destination clear, observed before/after (168-01 Task 4)
+- [ ] docs `lint` script in the root gate, observed red on an injected violation (168-01.1 Task 1)
+- [ ] `move-generated.ts` destination clear, observed before/after (168-01.1 Task 2)
 
 ---
 
@@ -99,7 +101,7 @@ Plan 168-01 is this phase's Wave 0: every later gate depends on instruments it b
 
 - [x] All tasks have `<automated>` verify or are the one checkpoint whose verification is a file-existence check
 - [x] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references (168-01 builds them; tick at execution)
+- [ ] Wave 0 covers all MISSING references (168-01 and 168-01.1 build them; tick at execution)
 - [x] No watch-mode flags
 - [x] Feedback latency < 60 s for the quick command
 - [ ] `nyquist_compliant: true` set in frontmatter (set by validate-phase)
