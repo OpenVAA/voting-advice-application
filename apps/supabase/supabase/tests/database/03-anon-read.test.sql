@@ -1,6 +1,6 @@
 -- 03-anon-read.test.sql: anonymous read access and write denial
 --
--- Verifies that the anon role can SELECT the publicly visible records of voter-facing tables, sees 0 rows for data section 3.4 does not make public, cannot read admin-only tables, and is completely blocked from INSERT/UPDATE/DELETE on all tables.
+-- Verifies that the anon role can SELECT the publicly visible records of voter-facing tables, sees 0 rows for data the public-visibility rule does not make public, cannot read admin-only tables, and is completely blocked from INSERT/UPDATE/DELETE on all tables.
 --
 -- Also verifies that grants and storage_config are inaccessible to anon (REVOKE ALL, not just RLS -- even SELECT raises 42501).
 --
@@ -28,7 +28,7 @@ SELECT
 SELECT
   set_test_user ('anon');
 
--- Content tables: anon sees the rows section 3.4 makes public. Project A is open for voters and its rows are confirmed, so count >= 1; project B is neither, so the paired negative assertion counts zero.
+-- Content tables: anon sees the rows the public-visibility rule makes public. Project A is open for voters and its rows are confirmed, so count >= 1; project B is neither, so the paired negative assertion counts zero.
 SELECT
   ok (
     (
@@ -155,10 +155,10 @@ SELECT
   );
 
 -- =====================================================================
--- terms_of_use_accepted gating (migration 00002) Insert two ephemeral candidates to exercise the NULL + future-now() branches of the new anon_select_candidates policy:
+-- terms_of_use_accepted gating. Two ephemeral candidates exercise the NULL and future-now() branches of anon_select_candidates:
 --   - candidate_no_terms:     confirmed + nominated, ToU=NULL          → invisible
 --   - candidate_future_terms: confirmed + nominated, ToU=now()+1 day   → invisible
--- candidate_a (confirmed + nominated, ToU=now()) covers the past-now() branch → visible. Asserts the terms-of-use conjunct of section 3.4.
+-- candidate_a (confirmed + nominated, ToU in the past) covers the past-now() branch → visible. Asserts the terms-of-use conjunct of the public-visibility rule.
 -- =====================================================================
 SELECT
   reset_role ();
@@ -190,7 +190,7 @@ VALUES
     true
   );
 
--- Both controls are `confirmed` and both are given a confirmed nomination, so that TERMS OF USE remains the ONLY conjunct separating them from a visible candidate. 162-08 made anon visibility an all-of rule; without these two rows each control would be invisible for THREE reasons and the two assertions below would no longer isolate the conjunct their description strings name -- an assertion that holds for the wrong reason is how a negative control stops measuring without anyone noticing.
+-- Both controls are `confirmed` and both are given a nomination, so that TERMS OF USE is the conjunct their description strings name. Anon visibility is an all-of rule: a control that also failed another conjunct would stay invisible for that reason too, and an assertion that holds for the wrong reason is how a negative control stops measuring without anyone noticing.
 INSERT INTO
   nominations (
     id,
@@ -236,7 +236,7 @@ SELECT
         AND last_name = 'Anon'
     )::integer,
     0,
-    'anon cannot SELECT an otherwise-visible candidate with terms_of_use_accepted = NULL (260524-l1t / D7)'
+    'anon cannot SELECT an otherwise-visible candidate with terms_of_use_accepted = NULL'
   );
 
 SELECT
@@ -251,7 +251,7 @@ SELECT
         AND last_name = 'Anon'
     )::integer,
     0,
-    'anon cannot SELECT an otherwise-visible candidate with terms_of_use_accepted in the future (260524-l1t / D7)'
+    'anon cannot SELECT an otherwise-visible candidate with terms_of_use_accepted in the future'
   );
 
 SELECT
@@ -265,7 +265,7 @@ SELECT
         first_name = 'Alice'
         AND last_name = 'Alpha'
     )::integer = 1,
-    'anon CAN SELECT a candidate with terms_of_use_accepted in the past (candidate_a, 260524-l1t / D7)'
+    'anon CAN SELECT a candidate with terms_of_use_accepted in the past (candidate_a)'
   );
 
 SELECT
@@ -394,12 +394,12 @@ SELECT
   );
 
 -- =====================================================================
--- Section 2: Anon can read the two join tables and app_settings -- gated, as of 162-08, on the project being open for voters
+-- Section 2: Anon can read the two join tables and app_settings -- gated on the project being open for voters
 -- =====================================================================
 SELECT
   set_test_user ('anon');
 
--- app_settings: gated on `project_open_for_voters (project_id)` as of 162-08. It was `USING (true)`; section 3.4 of the implementation brief lists settings FIRST among what an anon reader may see WHEN the project is open, and an ungated anon policy alongside twelve gated ones is a second visibility mechanism. Project A is open for voters, so the count below is at least one.
+-- app_settings: gated on `project_open_for_voters (project_id)`. Settings are among what an anon reader may see WHEN the project is open, and an ungated anon policy alongside twelve gated ones would be a second visibility mechanism. Project A is open for voters, so the count below is at least one.
 SELECT
   ok (
     (
@@ -411,7 +411,7 @@ SELECT
     'anon can SELECT app_settings for a project that is open for voters'
   );
 
--- Join tables: each delegates to `anon_select_constituency_groups` as of 162-08, so a join row is visible exactly when its constituency group is. Neither carries a project_id of its own, so the gate is reached by composition rather than restated.
+-- Join tables: each delegates to `anon_select_constituency_groups`, so a join row is visible exactly when its constituency group is. Neither carries a project_id of its own, so the gate is reached by composition rather than restated.
 SELECT
   ok (
     (
@@ -467,9 +467,9 @@ SELECT
   );
 
 -- =====================================================================
--- Section 4: Anon cannot access the authority map or storage_config These have REVOKE ALL FROM anon -- even SELECT raises 42501
+-- Section 4: Anon cannot access the authority map or storage_config. Both have REVOKE ALL FROM anon, so even SELECT raises 42501.
 --
--- 162-15 RE-EXPRESSED THE FIRST OF THESE IN PLACE, keeping its section, its shape and its PINNED SQLSTATE. The property is that the authority map -- the rows saying who may do what to whom across every account and project in the instance -- is unreadable by the public roles, and a new table in the public schema is exposed through PostgREST by default. That property has a new SUBJECT, public.grants, rather than no subject. The pin is what makes it worth re-expressing rather than deleting: once the retired relation was gone the same statement raised 42P01 instead, so the assertion reddened rather than staying green for the wrong reason, which is how a removed subject is supposed to behave.
+-- The authority map, public.grants -- the rows saying who may do what to whom across every account and project in the instance -- must be unreadable by the public roles, and a new table in the public schema is exposed through PostgREST by default. The SQLSTATE is pinned: a missing relation raises 42P01 instead, so the assertion reddens if its subject disappears rather than staying green for the wrong reason.
 -- =====================================================================
 SELECT
   set_test_user ('anon');
@@ -579,7 +579,7 @@ SELECT
     'anon cannot INSERT into candidates'
   );
 
--- factions. The statement names an organization since 162-07b made that column NOT NULL, so the 42501 below is unambiguously the privilege denial this assertion is about: a statement that would otherwise be VALID is rejected, rather than one that could never have run.
+-- factions. The statement names an organization because that column is NOT NULL, so the 42501 below is unambiguously the privilege denial this assertion is about: a statement that would otherwise be VALID is rejected, rather than one that could never have run.
 SELECT
   throws_ok (
     format(
