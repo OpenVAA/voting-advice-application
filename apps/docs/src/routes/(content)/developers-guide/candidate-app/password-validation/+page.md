@@ -26,11 +26,25 @@ The rules live in [`passwordValidation.ts`](https://github.com/OpenVAA/voting-ad
 1. `PasswordValidator` calls `validatePasswordDetails` 200 ms after the user stops typing, shows the state of each requirement and exposes the verdict through its bindable `validPassword` prop. The component's documentation describes how each requirement is shown.
 2. `PasswordSetter` treats the password as valid only when `validPassword` is `true` and the confirmation matches. It reports `{ valid, errorMessage }` to the page through `onValidityChange`.
 3. The page disables its submit button while the password is not valid, and its submit handler returns without sending anything in that state.
-4. On submit, the page calls the candidate context's `register`, `resetPassword` or `setPassword`. Each goes through the Supabase data writer ([`supabaseDataWriter.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.ts)) to `supabase.auth.updateUser({ password })`.
+4. On submit, the page calls the candidate context's `setPassword` (on the registration page's key branch, `register`). Both go through the Supabase data writer ([`supabaseDataWriter.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.ts)) to `supabase.auth.updateUser({ password })`.
 
-The frontend check is advisory. Supabase Auth enforces its own password policy: `minimum_password_length` and `password_requirements` under `[auth]` in [`config.toml`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/supabase/supabase/config.toml) for the local stack, and the project's Auth settings for a hosted project. Keep that policy no stricter than the frontend rules, or a password the UI accepts will be rejected on submit.
+The frontend check is advisory. Supabase Auth enforces its own password policy: `minimum_password_length` and `password_requirements` under `[auth]` in [`config.toml`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/supabase/supabase/config.toml) for the local stack (6 characters and no required character classes), and the project's Auth settings for a hosted project. Keep that policy no stricter than the frontend rules, or a password the UI accepts will be rejected on submit.
 
 ### Password requirements
+
+`passwordValidation.ts` defines these requirements:
+
+| Requirement  | Met when                                                                      | Kind                   |
+| ------------ | ----------------------------------------------------------------------------- | ---------------------- |
+| `length`     | the password has at least `minPasswordLength` (8) characters                  | positive               |
+| `uppercase`  | it contains an uppercase letter                                               | positive               |
+| `lowercase`  | it contains a lowercase letter                                                | positive               |
+| `number`     | it contains a digit 0–9                                                       | positive               |
+| `symbol`     | it contains a character that is neither a letter nor a digit                  | positive               |
+| `username`   | the username is empty, or the password does not contain it (case-insensitive) | negative, enforced     |
+| `repetition` | no character is repeated 4 times in a row                                     | negative, not enforced |
+
+`PasswordSetter` renders `PasswordValidator` without a username, so on the three password pages the `username` requirement is always met.
 
 Each requirement is a `ValidationDetail`:
 

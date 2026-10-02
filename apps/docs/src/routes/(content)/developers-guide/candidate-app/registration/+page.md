@@ -1,33 +1,39 @@
-> **Note:** This page documents the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
-
 # Registration
 
-The user registration process is primarily handled by the `users-permissions` plugin bundled by Strapi so that we can rely on Strapi's existing security mechanisms (rate-limiting and being battle-tested). The only exception is that the plugin is extended with registration code support (POST /api/auth/local/register endpoint) that is implemented in the [`candidate.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/extensions/users-permissions/controllers/candidate.ts) file. The user is also not logged in automatically by this endpoint to prevent bypassing 2FA in case we want to implement it in the future, in scenarios where the user already exists but is not explicitly linked to a candidate yet.
+Registration completes a candidate account that already exists. The account, the candidate row and the grant between them are created first, by an invitation or by bank-authentication pre-registration (see [Pre-registration and invitation](/developers-guide/candidate-app/pre-registration-and-invitation)). Registration then gives the account a password and records the candidate's acceptance of the terms of use.
 
-The existing content-type of `User` is used to identify the users that can log in, but extended with the `candidate` field so a logged-in user could be associated to a specific candidate. Similarly, the candidate schema also has a belong-to relation back to the user if any exists. This makes it possible to rely on the logic provided by `users-permissions` plugin instead of implementing all the login logic manually. You can find the schema definition for user in the [`schema.json`](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/extensions/users-permissions/content-types/user/schema.json).
+## The invitation path
 
-See [password-validation.md](/developers-guide/candidate-app/password-validation) on additional information on how password validation is handled.
+1. **The email link.** The invitation link returns to the server route `/api/candidate/auth/callback`, which verifies the link, stores the session in cookies and redirects to the set-password page, `/candidate/register/password?email=…`.
+2. **The password.** The page renders [`PasswordSetter`](/developers-guide/candidate-app/password-validation). Because the candidate has a session, an email address and no registration key, the page takes its invite branch and calls the candidate context's `setPassword`, which calls Supabase Auth's `updateUser({ password })` through the Supabase data writer.
+3. **Back to login.** The page then opens the login page with the email address filled in, instead of going straight into the app, because the session from the email link may not survive the client-side navigation to the protected pages. The candidate logs in with the new password (see [Login and password reset](/developers-guide/candidate-app/login-and-password-reset)).
+4. **Terms of use.** The protected layout of the Candidate App shows the terms-of-use form until the candidate has accepted it. Accepting saves the time of acceptance in the candidate row's `terms_of_use_accepted` column.
+5. **The app.** After that, the candidate reaches the Candidate App home page, provided they have at least one nomination.
 
-For logging in and logging out, the frontend stores the session JWT token returned by Strapi in the local storage of the browser. The primary logic for this is handled in [`authenticationStore.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/utils/authenticationStore.ts). Log out is handled simply by resetting the state to being logged out and discarding the saved JWT token inside local storage.
+While the `access.answersLocked` app setting is on, the layout of the `/candidate/register` pages shows a "registration locked" message instead of the pages.
 
-### Email Templates
+## The registration-key contract
 
-You can modify the default email templates in the [email-templates](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/config/email-templates) folder.
+The data writer interface, [`dataWriter.type.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/base/dataWriter.type.ts), declares two methods for registering with a registration key:
 
-#### Using Variables
+- `checkRegistrationKey({ registrationKey })`: checks the key and returns the candidate's name and email address.
+- `register({ registrationKey, password })`: activates the user with the key and a password.
 
-Strapi uses [EJS](https://ejs.co/) as its template engine, thus the email templates support the functionality EJS provides.
+The frontend still calls this contract:
 
-Though the most important functionality you'll need is variables. They can be used by wrapping the variable with `<%=` and `%>`, e.g. `<%= URL %>` would be replaced with the URL variable's contents in the email when it gets sent.
+- The login page links to `/candidate/register` ("Do you have a registration code?" in English).
+- That page reads a key from a form field or the `registrationKey` search parameter and calls `checkRegistrationKey`.
+- The set-password page has a branch that calls `register` when it is given a `registrationKey`.
 
-### Templates
+The Supabase data writer, which is the adapter the app uses, does not implement the contract. Its `_checkRegistrationKey` throws `checkRegistrationKey is not supported by the Supabase adapter. Use invite-based registration.`, so the register page reports every key as wrong. Its `_register` ignores the key and sets the password on the current session, as `setPassword` does. With the Supabase adapter, the invitation and pre-registration are the ways to create an account.
 
-#### Reset Password
+## Data writer methods
 
-The reset password (reset-password.html) template supports the following variables (https://github.com/strapi/strapi/blob/2a2faea1d49c0d84077f66a57b3b73021a4c3ba7/packages/plugins/users-permissions/server/controllers/auth.js#L230-L236):
+The Supabase data writer, [`supabaseDataWriter.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.ts), implements the registration methods like this:
 
-- URL: The public frontend URL to the password reset path (e.g. `http://localhost:5173/candidate/password-reset`)
-- SERVER_URL: The Strapi's base URL
-- ADMIN_URL: The Strapi's admin area URL
-- USER: The user object the email is being sent to, specifically having the user's content-type properties that can be accessed like `USER.PROPERTY_NAME` (e.g. `USER.email`)
-- TOKEN: The password reset token needed to reset the user's password
+| Method                    | Supabase implementation                                                                                                                                                        |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `setPassword`             | `supabase.auth.updateUser({ password })` on the current session                                                                                                                |
+| `register`                | the same call; the registration key is not read                                                                                                                                |
+| `checkRegistrationKey`    | throws                                                                                                                                                                         |
+| `preregisterWithApiToken` | invokes the `invite-candidate` Edge Function (see [Pre-registration and invitation](/developers-guide/candidate-app/pre-registration-and-invitation#calling-invite-candidate)) |
