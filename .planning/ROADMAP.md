@@ -2024,7 +2024,7 @@ Plans:
   6. **The broken docs scripts are dealt with** per `2026-08-28-broken-docs-script-references.md` (typedoc generation and the commented-out `getTypeDocLink`), or that todo is explicitly left open with a reason.
   7. Gates: docs build, docs lint/check, link check (no broken internal links).
 
-**Plans**: 6/9 plans executed
+**Plans**: 7/9 plans executed
 
 Plans:
 **Wave 1**
@@ -2040,7 +2040,7 @@ Plans:
 - [x] 168-03-PLAN.md — Write the Backend (Supabase) section and the Seed data page against the post-166/167 code, with a script-verified claim ledger (wave 3)
 - [x] 168-04-PLAN.md — Rewrite the getting-started and operations pages (Quick start, Architecture, Development, Configuration except App settings, Deployment, Troubleshooting) (wave 3)
 - [x] 168-05-PLAN.md — Rewrite the Frontend and Localization sections for Svelte 5 runes, the Supabase data adapters and Paraglide i18n (wave 3)
-- [ ] 168-06-PLAN.md — Write the Candidate app section, the Admin app page and both app-settings pages from the code, documenting behaviour without changing it (wave 3)
+- [x] 168-06-PLAN.md — Write the Candidate app section, the Admin app page and both app-settings pages from the code, documenting behaviour without changing it (wave 3)
 
 **Wave 4** *(blocked on Wave 3 completion)*
 - [ ] 168-07-PLAN.md — Regenerate the generated pages with the pruning generator, document the pipeline, audit Contributing, About, the landing page and the Publishers' Guide without touching a research block, and fold every verdict into the ledger (wave 4)
@@ -2142,7 +2142,7 @@ _(**Recounted 2026-09-29** when the two planning records were merged: the phase 
 | 165.1. Results Navigation Redraw | 9/9 | Complete    | 2026-09-24 |
 | 166. Retire `auth_user_id` — Entity Identity from Grants | 4/4 | Complete    | 2026-10-02 |
 | 167. Origin/main Vestige Cleanup | 6/6 | Complete    | 2026-10-02 |
-| 168. Docs-Site Rewrite — Strapi to Supabase | 6/9 | In Progress|  |
+| 168. Docs-Site Rewrite — Strapi to Supabase | 7/9 | In Progress|  |
 | 169. Dependency Bump to Latest Safe Versions | 0/13 | Not started |  |
 
 **Shipped milestones:**
