@@ -4,18 +4,18 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 168
 current_phase_name: Docs-Site Rewrite — Strapi to Supabase
-current_plan: 1
+current_plan: 2
 status: executing
-stopped_at: Phase 167 complete, ready to plan Phase 168
-last_updated: "2026-10-02T06:54:01.600Z"
+stopped_at: Completed 168-01-PLAN.md
+last_updated: "2026-10-02T07:19:55.480Z"
 last_activity: 2026-10-02
 last_activity_desc: Phase 168 execution started
-state_head: d089e901952deab8952043bd53da1e4d11f181e1
+state_head: fd7fc1a36d92ca9f3c7a5bddee9d3cb1830e1f9a
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
-  completed_plans: 325
+  completed_plans: 326
   percent: 89
 ---
 
@@ -35,7 +35,7 @@ _(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and P
 Phase: 168 (Docs-Site Rewrite — Strapi to Supabase) — EXECUTING
 Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
-Current Plan: 1
+Current Plan: 2
 Total Plans in Phase: 9
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
@@ -306,7 +306,7 @@ run. WHAT REMAINS: push `ci-evidence/163-crit2-red` and `…-green`, assert the 
 granularity (`frontend-and-shared-module-validation` → `Run Prettier check globally`, log naming the
 file), fill rows 9/10, delete both branches. `CIGATE-02` was NOT marked complete
 (`requirements.ready-ids` → 0/1 ready).
-Status: Executing Phase 168
+Status: Ready to execute
 PUSHED.** `prettier-plugin-sql@0.20.0` is declared once in `packages/shared-config` with
 `overrides: [{ files: '*.sql', options: { language: 'postgresql' } }]`, and reaches every workspace
 through the `?? []` spreads the leaf configs already carried (both leaf configs byte-unchanged).
@@ -819,8 +819,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-10-02T06:47:19.494Z
-Stopped at: Phase 167 complete, ready to plan Phase 168
+Last session: 2026-10-02T07:19:54.152Z
+Stopped at: Completed 168-01-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -1138,6 +1138,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 167 P04 | 11min | 3 tasks | 9 files |
 | Phase 167 P05 | 3min | 3 tasks | 4 files |
 | Phase 167 P06 | 15 min | 3 tasks | 11 files |
+| Phase 168 P01 | 23min | 3 tasks | 15 files |
 
 ## Deferred Items
 
@@ -2102,6 +2103,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 167]: 167-05: OpenVAALogo (docs) keeps the literal fill-* switch plus the trailing fill-${color} append, reproducing the old class string byte for byte and keeping the Tailwind v4 fill utilities; VEST-05 complete, VEST-06 awaits the 167-06 todo closure
 - [Phase 167]: 167-06: the docs workspace's own prettier --check (inside yarn format:check) caught a ⑤ wrap; fixed in style[docs] 275250054, to be folded into ⑤ at review-stack time
 - [Phase 167]: 167-06: gate-evidence/ held no credential (the one pattern hit is verbatim tracked docs placeholder text); deleted, never committed
+- [Phase 168]: Inbound-reference #hash failures are reported under the inbound class (not anchor), so --only inbound proves target and anchor
+- [Phase 168]: Link checker page model: +page.md / +page.svelte pages, +page.ts-only redirect stubs, static assets; nav section routes are not checked; a link landing on a stub is a finding only in --check mode
+- [Phase 168]: Phase 168 base revision 0ec229dfe recorded in gate-evidence/base-rev.txt; every later gate reads it from there
 
 ### Quick Tasks Completed
 
