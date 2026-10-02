@@ -209,7 +209,7 @@ _(**Registered 2026-10-01 at planning** from `.planning/phases/166-retire-auth-u
 
 _(**Registered 2026-10-01 at planning** from `.planning/phases/167-origin-main-vestige-cleanup/167-REQUIREMENTS-PROPOSED.md`, the IDs proposed in `167-RESEARCH.md` § Phase Requirements and adopted without change. Each one is subject to the *Standing acceptance rule* above. Counters recounted from the table rows, not incremented.)_
 
-- [ ] **VEST-01**: `safeGetSession.test.ts` pins the exact `getUser` **and** `getSession` count in every case and fails, with a named error, on any other client member access. The strengthened assertions were observed failing against the V1 (no memo) and V2 (extra read) working-copy variants — V2 against both the old and the new assertions — and the Proxy guard against V3; the shipped source is unchanged. (D-06, D-07, D-08 · plans 167-01)
+- [x] **VEST-01**: `safeGetSession.test.ts` pins the exact `getUser` **and** `getSession` count in every case and fails, with a named error, on any other client member access. The strengthened assertions were observed failing against the V1 (no memo) and V2 (extra read) working-copy variants — V2 against both the old and the new assertions — and the Proxy guard against V3; the shipped source is unchanged. (D-06, D-07, D-08 · plans 167-01)
 - [ ] **VEST-02**: `BACKEND_API_TOKEN` is gone from `apps/frontend/src/lib/server/constants.ts` and all 7 auth test mocks. (D-09 · plans 167-02)
 - [ ] **VEST-03**: The `/api/cache` proxy, `PUBLIC_BROWSER_BACKEND_URL` / `PUBLIC_SERVER_BACKEND_URL`, `PUBLIC_CACHE_ENABLED`, the four `CACHE_*` constants, `disableCache`, `cachifyUrl`, `hasAuthHeaders`, `cacheProxy`, `flat-cache` and the env/deployment-template and in-code cache mentions are removed in one commit. Test sample paths no longer name `/api/cache`. Both adapter todos carry the dated note and stay open. (D-09, D-10, D-11 · plans 167-02, 167-06)
 - [ ] **VEST-04**: No workspace declares a dependency it does not use, and `@openvaa/llm` declares the `js-yaml` it imports. `eslint-plugin-svelte` is kept and imported explicitly, with lint output proven unchanged before and after. Lint rules are proven to still fire after the ESLint-dependency removals. The `security/audit-baseline.json` lodash row and note count are hand-edited in the same commit as the `@testing-library/jest-dom` removal. (D-05, D-12–D-20 · plans 167-03, 167-04)
@@ -426,7 +426,7 @@ Roadmap: `.planning/ROADMAP.md` (Phases 137-169 — Phase 165 (Review-Stack Comm
 | AUTHID-07 | Phase 166 — Retire `auth_user_id` — Entity Identity from Grants | Complete |
 | AUTHID-08 | Phase 166 — Retire `auth_user_id` — Entity Identity from Grants | Complete |
 | AUTHID-09 | Phase 166 — Retire `auth_user_id` — Entity Identity from Grants | Complete |
-| VEST-01 | Phase 167 — Origin/main Vestige Cleanup | Pending |
+| VEST-01 | Phase 167 — Origin/main Vestige Cleanup | Complete |
 | VEST-02 | Phase 167 — Origin/main Vestige Cleanup | Pending |
 | VEST-03 | Phase 167 — Origin/main Vestige Cleanup | Pending |
 | VEST-04 | Phase 167 — Origin/main Vestige Cleanup | Pending |

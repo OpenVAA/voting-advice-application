@@ -1986,11 +1986,11 @@ Plans:
   8. Every linked todo the phase discharges is moved to `done/`. Every comment touched passes [`CLAUDE.md` § Comment Hygiene](/CLAUDE.md#comment-hygiene).
   9. Gates: typecheck, lint, unit, production build, `yarn audit:deps` (with the baseline change), then the full E2E suite under the cardinal rule.
 
-**Plans**: 6 plans
+**Plans**: 1/6 plans executed
 
 Plans:
 **Wave 1**
-- [ ] 167-01-PLAN.md — Strengthen `safeGetSession.test.ts` to pin every client round trip, each assertion observed failing against a deliberately chattier variant first (wave 1)
+- [x] 167-01-PLAN.md — Strengthen `safeGetSession.test.ts` to pin every client round trip, each assertion observed failing against a deliberately chattier variant first (wave 1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 167-02-PLAN.md — Remove the `/api/cache` proxy and every env, constant, helper, dependency and template mention only it read, `BACKEND_API_TOKEN` included, in one commit (wave 2)
@@ -2141,7 +2141,7 @@ _(**Recounted 2026-09-29** when the two planning records were merged: the phase 
 | 165. Review-Stack Comment Remediation | 36/36 | Complete    | 2026-09-29 |
 | 165.1. Results Navigation Redraw | 9/9 | Complete    | 2026-09-24 |
 | 166. Retire `auth_user_id` — Entity Identity from Grants | 4/4 | Complete    | 2026-10-02 |
-| 167. Origin/main Vestige Cleanup | 0/6 | Not started |  |
+| 167. Origin/main Vestige Cleanup | 1/6 | In Progress|  |
 | 168. Docs-Site Rewrite — Strapi to Supabase | 0/9 | Not started |  |
 | 169. Dependency Bump to Latest Safe Versions | 0/13 | Not started |  |
 
