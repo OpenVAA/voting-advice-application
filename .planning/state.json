@@ -161,7 +161,7 @@
     {
       "number": "168",
       "name": "Docs-Site Rewrite — Strapi to Supabase",
-      "status": "in_progress"
+      "status": "complete"
     },
     {
       "number": "169",
@@ -171,8 +171,8 @@
   ],
   "next": {
     "command": "/gsd:progress --next",
-    "label": "Advance to the next step (verify)",
-    "reason": "Phase 168 of 35 · 89% · ready to verify"
+    "label": "Advance to the next step (plan phase 169)",
+    "reason": "Phase 169 of 35 — needs a plan"
   },
-  "updated_at": "2026-10-02T13:08:55.822Z"
+  "updated_at": "2026-10-02T13:18:44.836Z"
 }
