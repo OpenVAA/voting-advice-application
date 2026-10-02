@@ -193,6 +193,26 @@ Copied by 168-07 from each writer plan's `## Sweep exceptions` (`168-03..07-CLAI
 | 168-07 | `about/roadmap` | `Backend migrated from Strapi to Supabase (completed)` | D-21 expected exception: the operator's roadmap history line, left as written (D-05). |
 | 168-07 | `developers-guide/contributing/workflows` | `docker-image-build` (job name) and "production image of the frontend from `apps/frontend/Dockerfile`" (one line) | The CI job builds the frontend's production container image; deployment prose, not a Docker development stack (D-21 permitted case). |
 
+### 168-08: final sweep over all of `apps/docs`
+
+Run at HEAD `4dee167c6` over every tracked file in `apps/docs` (pages, generated pages, scripts, components, README):
+VESTIGES #1, #2, #5–#7, #9, #10 and the three D-21 patterns. Commands, exit codes, every hit and a positive control per
+pattern (the same pattern at the phase base, which hits for all ten) are in `gate-evidence/168-08-sweeps.md`. Eight sweeps
+exit 1. Sweep #1 and the `-i docker` sweep exit 0 with 9 hit lines in total, every one an exception already recorded above.
+No hit is pattern text in `apps/docs/scripts`, and none is in a generated page.
+
+| Sweep | File:line | Hit text | Reason (row above) |
+| --- | --- | --- | --- |
+| #1 Strapi | `apps/docs/src/routes/(content)/about/roadmap/+page.md:6` | `- Backend migrated from Strapi to Supabase (completed)` | 168-07 `about/roadmap`: the operator's history line (D-05, D-21 expected exception). |
+| docker | `apps/docs/src/routes/(content)/developers-guide/contributing/workflows/+page.md:12` | table row `docker-image-build`: "Builds the production image of the frontend from `apps/frontend/Dockerfile`, without pushing it" | 168-07 `contributing/workflows`: CI job building the production image. |
+| docker | `apps/docs/src/routes/(content)/developers-guide/deployment/+page.md:5` | "**The frontend**, a SvelteKit app built into a Node container from [`apps/frontend/Dockerfile`](…)" | 168-04 `deployment`: the frontend container intro. |
+| docker | `apps/docs/src/routes/(content)/developers-guide/deployment/+page.md:38` | "2. Create the service in Render from the Blueprint. It is a Docker web service built from `./apps/frontend/Dockerfile` …" | 168-04 `deployment`: Render step 2. |
+| docker | `apps/docs/src/routes/(content)/developers-guide/deployment/+page.md:78` | "[`docker-compose.dev.yml`](…) at the repository root builds the frontend's production image and runs it against the local Supabase stack." | 168-04 `deployment`: "Testing a production build locally". |
+| docker | `apps/docs/src/routes/(content)/developers-guide/deployment/+page.md:82` | `docker compose -f docker-compose.dev.yml up --build` | 168-04 `deployment`: "Testing a production build locally". |
+| docker | `apps/docs/src/routes/(content)/developers-guide/deployment/+page.md:85` | "… reaches the local API at `http://host.docker.internal:54321` unless `PUBLIC_SUPABASE_URL` says otherwise …" | 168-04 `deployment`: "Testing a production build locally". |
+| docker | `apps/docs/src/routes/(content)/developers-guide/deployment/+page.md:87` | "To build and run the production frontend without Docker, run `yarn build` at the repository root …" | 168-04 `deployment`: "Testing a production build locally". |
+| docker | `apps/docs/src/routes/(content)/developers-guide/development/requirements/+page.md:7` | "- **A container runtime such as Docker**, installed and running. The Supabase CLI runs the local Supabase services …" | 168-04 `development/requirements`: Docker for the Supabase CLI only. |
+
 ## Verifier reconciliation
 
 _Filled by 168-08: each `gsd-doc-verifier` finding against the claim ledgers, and how it was settled._
