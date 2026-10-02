@@ -52,8 +52,8 @@ export const navigation: Navigation = [
         route: '/developers-guide/quick-start'
       },
       {
-        title: 'App and repo structure',
-        route: '/developers-guide/app-and-repo-structure'
+        title: 'Architecture',
+        route: '/developers-guide/architecture'
       },
       {
         title: 'Configuration',

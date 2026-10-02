@@ -1,4 +1,4 @@
-# App and repo structure
+# Architecture
 
 The project is a monorepo and it consists of several yarn workspaces (each is a separate NPM module). See the READMEs in each for more information.
 
