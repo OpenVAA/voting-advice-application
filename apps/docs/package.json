@@ -22,7 +22,8 @@
     "generate:component-docs": "tsx scripts/extract-component-docs.ts",
     "generate:navigation": "tsx scripts/generate-navigation-config.ts",
     "generate:route-map": "tsx scripts/generate-route-map.ts",
-    "validate:links": "tsx scripts/validate-links.ts"
+    "validate:links": "tsx scripts/validate-links.ts",
+    "check:research-quotes": "tsx scripts/check-research-quotes.ts"
   },
   "dependencies": {
     "@openvaa/app-shared": "workspace:^"
