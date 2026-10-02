@@ -1,4 +1,4 @@
-# Storing multi-locale data
+# Multi-locale data
 
 The data model expects single-locale data to be displayed by most frontend components and when transferred between modules. The backend as well as Admin and Candidate Apps, however, deal with multi-locale data.
 

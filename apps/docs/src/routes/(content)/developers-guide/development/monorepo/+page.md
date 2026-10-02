@@ -1,4 +1,4 @@
-# Monorepo
+# Monorepo and Turborepo
 
 All workspaces share a single `yarn.lock` file located at the project root but contain their own `tsconfig.json` and `package.json` files.
 

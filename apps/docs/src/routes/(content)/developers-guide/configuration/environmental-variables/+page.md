@@ -1,6 +1,6 @@
 > **Note:** Parts of this page reference the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
 
-# Environmental variables
+# Environment variables
 
 In addition to basic configuration, some application functions are controlled by env variables. They affect:
 
@@ -9,7 +9,7 @@ In addition to basic configuration, some application functions are controlled by
   - AWS LocalStack (development only)
   - AWS SES email
   - AWS S3 storage
-  - [Mock data generation](/developers-guide/backend/mock-data-generation)
+  - [Mock data generation](/developers-guide/development/seed-data)
   - Dev user credentials (development only)
 - Frontend configuration
   - Disk cache

@@ -1,4 +1,4 @@
-# Localization
+# Localization overview
 
 Localization uses:
 

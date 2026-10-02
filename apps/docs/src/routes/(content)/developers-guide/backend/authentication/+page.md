@@ -1,6 +1,6 @@
 > **Note:** This page documents the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
 
-# Authentication
+# Authentication and authorisation
 
 Standard read calls require no authentication and are included in the default permissions, which are customized in the [Users’ permissions plugin](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/extensions/users-permissions/strapi-server.ts).
 
@@ -8,7 +8,7 @@ Furthermore, all API routes are configured
 
 Write calls require authentication:
 
-- For registered Candidates, this is handled by creating a user. Read more in the [Candidate App documentation](/developers-guide/candidate-user-management/creating-a-new-candidate).
+- For registered Candidates, this is handled by creating a user. Read more in the [Candidate App documentation](/developers-guide/candidate-app/pre-registration-and-invitation).
 - For pre-registration, an API token with the `users-permissions.candidate.preregister` priviledge is required, which must be saved in the `BACKEND_API_TOKEN` env variable. Read more on creating the token in the [Strapi documenation](https://docs.strapi.io/user-docs/settings/API-tokens#creating-a-new-api-token).
 
 ### Adding new content types

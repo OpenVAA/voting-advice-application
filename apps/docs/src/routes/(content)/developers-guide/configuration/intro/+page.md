@@ -1,4 +1,4 @@
-# Configuration
+# Configuration overview
 
 The application configuration is split into three parts:
 

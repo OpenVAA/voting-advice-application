@@ -1,6 +1,6 @@
 > **Note:** Parts of this page reference the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
 
-# App Settings
+# App settings
 
 > This section deals with adding new App Settings. For information about existing ones, see the [Publishers’ Guide](/publishers-guide/app-settings).
 

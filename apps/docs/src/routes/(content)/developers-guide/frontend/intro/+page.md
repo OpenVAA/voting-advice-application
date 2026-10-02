@@ -1,4 +1,4 @@
-# Frontend
+# Frontend overview
 
 > The frontend currently uses Svelte 4. An update to Svelte 5 is scheduled for H1/2026.
 

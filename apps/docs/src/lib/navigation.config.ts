@@ -56,15 +56,42 @@ export const navigation: Navigation = [
         route: '/developers-guide/architecture'
       },
       {
+        title: 'Development',
+        route: '/developers-guide/development',
+        children: [
+          {
+            title: 'Requirements',
+            route: '/developers-guide/development/requirements'
+          },
+          {
+            title: 'Running the development environment',
+            route: '/developers-guide/development/running-the-development-environment'
+          },
+          {
+            title: 'Monorepo and Turborepo',
+            route: '/developers-guide/development/monorepo'
+          },
+          {
+            title: 'Seed data (dev-seed)',
+            route: '/developers-guide/development/seed-data'
+          },
+          {
+            title: 'Testing',
+            route: '/developers-guide/development/testing'
+          }
+        ]
+      },
+      {
         title: 'Configuration',
         route: '/developers-guide/configuration',
         children: [
           {
-            title: 'Configuration',
-            route: '/developers-guide/configuration/intro'
+            title: 'Overview',
+            route: '/developers-guide/configuration/intro',
+            fixedTitle: true
           },
           {
-            title: 'Environmental variables',
+            title: 'Environment variables',
             route: '/developers-guide/configuration/environmental-variables'
           },
           {
@@ -72,40 +99,135 @@ export const navigation: Navigation = [
             route: '/developers-guide/configuration/static-settings'
           },
           {
-            title: 'App Settings',
+            title: 'App settings',
             route: '/developers-guide/configuration/app-settings'
           },
           {
-            title: 'App Customization',
+            title: 'App customization',
             route: '/developers-guide/configuration/app-customization'
           }
         ]
       },
       {
-        title: 'Development',
-        route: '/developers-guide/development',
+        title: 'Backend (Supabase)',
+        route: '/developers-guide/backend',
+        fixedTitle: true,
         children: [
           {
-            title: 'Docker',
-            route: '/developers-guide/development/intro'
+            title: 'Overview',
+            route: '/developers-guide/backend/intro',
+            fixedTitle: true
           },
           {
-            title: 'Requirements',
-            route: '/developers-guide/development/requirements'
+            title: 'Authentication and authorisation',
+            route: '/developers-guide/backend/authentication'
           },
           {
-            title: 'Monorepo',
-            route: '/developers-guide/development/monorepo'
+            title: 'Edge Functions',
+            route: '/developers-guide/backend/edge-functions'
           },
           {
-            title: 'Running the Development Environment',
-            route: '/developers-guide/development/running-the-development-environment'
+            title: 'Email',
+            route: '/developers-guide/backend/email'
           },
           {
-            title: 'Testing',
-            route: '/developers-guide/development/testing'
+            title: 'Data import and deletion',
+            route: '/developers-guide/backend/data-import-and-deletion'
+          },
+          {
+            title: 'Generated types',
+            route: '/developers-guide/backend/generated-types'
           }
         ]
+      },
+      {
+        title: 'Frontend',
+        route: '/developers-guide/frontend',
+        children: [
+          {
+            title: 'Overview',
+            route: '/developers-guide/frontend/intro',
+            fixedTitle: true
+          },
+          {
+            title: 'Routing',
+            route: '/developers-guide/frontend/routing'
+          },
+          {
+            title: 'Contexts',
+            route: '/developers-guide/frontend/contexts'
+          },
+          {
+            title: 'Data API and adapters',
+            route: '/developers-guide/frontend/data-api-and-adapters'
+          },
+          {
+            title: 'Components',
+            route: '/developers-guide/frontend/components'
+          },
+          {
+            title: 'Styling',
+            route: '/developers-guide/frontend/styling'
+          }
+        ]
+      },
+      {
+        title: 'Localization',
+        route: '/developers-guide/localization',
+        children: [
+          {
+            title: 'Overview',
+            route: '/developers-guide/localization/intro',
+            fixedTitle: true
+          },
+          {
+            title: 'Supported locales',
+            route: '/developers-guide/localization/supported-locales'
+          },
+          {
+            title: 'Locale resolution',
+            route: '/developers-guide/localization/locale-resolution'
+          },
+          {
+            title: 'Translations and overrides',
+            route: '/developers-guide/localization/translations-and-overrides'
+          },
+          {
+            title: 'Multi-locale data',
+            route: '/developers-guide/localization/storing-multi-locale-data'
+          }
+        ]
+      },
+      {
+        title: 'Candidate app',
+        route: '/developers-guide/candidate-app',
+        fixedTitle: true,
+        children: [
+          {
+            title: 'Pre-registration and invitation',
+            route: '/developers-guide/candidate-app/pre-registration-and-invitation'
+          },
+          {
+            title: 'Registration',
+            route: '/developers-guide/candidate-app/registration'
+          },
+          {
+            title: 'Login and password reset',
+            route: '/developers-guide/candidate-app/login-and-password-reset'
+          },
+          {
+            title: 'Bank authentication (OIDC)',
+            route: '/developers-guide/candidate-app/bank-authentication'
+          },
+          {
+            title: 'Password validation',
+            route: '/developers-guide/candidate-app/password-validation'
+          }
+        ]
+      },
+      {
+        title: 'Admin app',
+        route: '/developers-guide/admin-app'
       },
       {
         title: 'Deployment',
@@ -146,168 +268,12 @@ export const navigation: Navigation = [
         ]
       },
       {
-        title: 'Backend',
-        route: '/developers-guide/backend',
-        children: [
-          {
-            title: 'Strapi',
-            route: '/developers-guide/backend/intro'
-          },
-          {
-            title: 'Customized behaviour',
-            route: '/developers-guide/backend/customized-behaviour'
-          },
-          {
-            title: 'Plugins',
-            route: '/developers-guide/backend/plugins'
-          },
-          {
-            title: 'OpenVAA admin tools plugin for Strapi',
-            route: '/developers-guide/backend/openvaa-admin-tools-plugin-for-strapi'
-          },
-          {
-            title: 'Default data loading',
-            route: '/developers-guide/backend/default-data-loading'
-          },
-          {
-            title: 'Mock data generation',
-            route: '/developers-guide/backend/mock-data-generation'
-          },
-          {
-            title: 'Authentication',
-            route: '/developers-guide/backend/authentication'
-          },
-          {
-            title: 'Security',
-            route: '/developers-guide/backend/security'
-          },
-          {
-            title: 'Preparing backend dependencies',
-            route: '/developers-guide/backend/preparing-backend-dependencies'
-          },
-          {
-            title: 'Running the backend separately',
-            route: '/developers-guide/backend/running-the-backend-separately'
-          },
-          {
-            title: 'Re-generating types',
-            route: '/developers-guide/backend/re-generating-types'
-          }
-        ]
-      },
-      {
-        title: 'Frontend',
-        route: '/developers-guide/frontend',
-        children: [
-          {
-            title: 'Frontend',
-            route: '/developers-guide/frontend/intro'
-          },
-          {
-            title: 'Components',
-            route: '/developers-guide/frontend/components'
-          },
-          {
-            title: 'Routing',
-            route: '/developers-guide/frontend/routing'
-          },
-          {
-            title: 'Accessing data and state management',
-            route: '/developers-guide/frontend/accessing-data-and-state-management'
-          },
-          {
-            title: 'Data API',
-            route: '/developers-guide/frontend/data-api'
-          },
-          {
-            title: 'Contexts',
-            route: '/developers-guide/frontend/contexts'
-          },
-          {
-            title: 'Environmental variables',
-            route: '/developers-guide/frontend/environmental-variables'
-          },
-          {
-            title: 'Styling',
-            route: '/developers-guide/frontend/styling'
-          }
-        ]
-      },
-      {
-        title: 'Localization',
-        route: '/developers-guide/localization',
-        children: [
-          {
-            title: 'Localization',
-            route: '/developers-guide/localization/intro'
-          },
-          {
-            title: 'Local translations',
-            route: '/developers-guide/localization/local-translations'
-          },
-          {
-            title: 'Locale routes',
-            route: '/developers-guide/localization/locale-routes'
-          },
-          {
-            title: 'Locale selection step-by-step',
-            route: '/developers-guide/localization/locale-selection-step-by-step'
-          },
-          {
-            title: 'Localization in Strapi',
-            route: '/developers-guide/localization/localization-in-strapi'
-          },
-          {
-            title: 'Localization in the frontend',
-            route: '/developers-guide/localization/localization-in-the-frontend'
-          },
-          {
-            title: 'Storing multi-locale data',
-            route: '/developers-guide/localization/storing-multi-locale-data'
-          },
-          {
-            title: 'Supported locales',
-            route: '/developers-guide/localization/supported-locales'
-          }
-        ]
-      },
-      {
-        title: 'Candidate user management',
-        route: '/developers-guide/candidate-user-management',
-        children: [
-          {
-            title: 'Creating a New Candidate',
-            route: '/developers-guide/candidate-user-management/creating-a-new-candidate'
-          },
-          {
-            title: 'Mock Data',
-            route: '/developers-guide/candidate-user-management/mock-data'
-          },
-          {
-            title: 'Password Validation',
-            route: '/developers-guide/candidate-user-management/password-validation'
-          },
-          {
-            title: 'Registration Process in Strapi',
-            route: '/developers-guide/candidate-user-management/registration-process-in-strapi'
-          },
-          {
-            title: 'Resetting the Password',
-            route: '/developers-guide/candidate-user-management/resetting-the-password'
-          }
-        ]
-      },
-      {
-        title: 'LLM features',
-        route: '/developers-guide/llm-features'
-      },
-      {
-        title: 'Automatic Documentation Generation',
-        route: '/developers-guide/auto-documentation'
-      },
-      {
         title: 'Troubleshooting',
         route: '/developers-guide/troubleshooting'
+      },
+      {
+        title: 'About these docs',
+        route: '/developers-guide/about-these-docs'
       }
     ]
   },
