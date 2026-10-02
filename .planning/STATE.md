@@ -5,17 +5,17 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 168
 current_phase_name: Docs-Site Rewrite — Strapi to Supabase
 current_plan: 9
-status: executing
-stopped_at: Completed 168-07-PLAN.md
-last_updated: "2026-10-02T12:29:05.348Z"
+status: verifying
+stopped_at: Completed 168-08-PLAN.md
+last_updated: "2026-10-02T13:09:27.011Z"
 last_activity: 2026-10-02
 last_activity_desc: Phase 168 execution started
-state_head: 240f81e5711a63ae936f6eaca6076b77da0e38a5
+state_head: 624fcb69cfa335ad0b54c3986bc7c5e58998b202
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
-  completed_plans: 333
+  completed_plans: 334
   percent: 89
 ---
 
@@ -306,7 +306,7 @@ run. WHAT REMAINS: push `ci-evidence/163-crit2-red` and `…-green`, assert the 
 granularity (`frontend-and-shared-module-validation` → `Run Prettier check globally`, log naming the
 file), fill rows 9/10, delete both branches. `CIGATE-02` was NOT marked complete
 (`requirements.ready-ids` → 0/1 ready).
-Status: Ready to execute
+Status: Phase complete — ready for verification
 PUSHED.** `prettier-plugin-sql@0.20.0` is declared once in `packages/shared-config` with
 `overrides: [{ files: '*.sql', options: { language: 'postgresql' } }]`, and reaches every workspace
 through the `?? []` spreads the leaf configs already carried (both leaf configs byte-unchanged).
@@ -819,8 +819,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-10-02T12:29:03.999Z
-Stopped at: Completed 168-07-PLAN.md
+Last session: 2026-10-02T13:09:25.589Z
+Stopped at: Completed 168-08-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -1146,6 +1146,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 168 P05 | 30min | 3 tasks | 12 files |
 | Phase 168 P06 | 30min | 3 tasks | 9 files |
 | Phase 168 P07 | 24min | 3 tasks | 131 files |
+| Phase 168 P08 | 38min | 3 tasks | 26 files |
 
 ## Deferred Items
 
@@ -2134,6 +2135,11 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 168]: 168-07: generated pages regenerated (78369e329) before the generator wording audit (12d04f015); the index intro sentence the components skill quotes is kept verbatim
 - [Phase 168]: 168-07: code-proven absences (voter statement weights, real-time top results, csv translation import/export, a database-free static site) are written as 'not yet available' or dropped; operator plans untouched
 - [Phase 168]: 168-07: ledger stub rows keep 'redirect stub' and append the content fate from the owning plan's CLAIMS verdict; no pending verdict remains
+- [Phase 168]: 168-08: verifier pass 58 pages / 1022 claims / 0 BLOCKER-FAIL; q-info/arg-cond sourced from commit history, kept
+- [Phase 168]: 168-08: configurable-mock-data closed (dev-seed satisfies it); password-reset-code-method left open while the ?code= branch exists
+- [Phase 168]: 168-08: OIDC callback never checks the nonce - filed as security todo 2026-10-02-oidc-callback-does-not-verify-nonce.md
+- [Phase 168]: 168-08: localization-in-strapi stub retargeted to Multi-locale data (168-05 F4)
+- [Phase 168]: 168-08: Phase 169 handoff - validate:links --check, check:research-quotes --base 0ec229dfe --component-base 6090476cc, docs build
 
 ### Quick Tasks Completed
 
