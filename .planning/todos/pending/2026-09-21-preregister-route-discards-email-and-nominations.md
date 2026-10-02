@@ -95,3 +95,11 @@ each half needs a product decision that is not mine to take:
 - `2026-09-21-surface-bank-identification-failure-to-the-user.md` — the error-surfacing follow-up.
   Adjacent but independent: that one is about failures the user is not told about, this one is about
   a success that is not one.
+
+## Note (2026-10-02, Phase 168 docs rewrite: 168-06 F5)
+
+The behaviour is documented, not fixed (D-18). The Candidate app › Bank authentication docs page
+(`/developers-guide/candidate-app/bank-authentication`) says that, at the time of writing, the pre-registration route forwards only
+the ID token to `identity-callback` (`apps/frontend/src/routes/api/candidate/preregister/+server.ts`: `body: { id_token: idToken }`). It
+also says a new bank-auth user keeps the placeholder address (`identity-callback/index.ts`: `@bank-auth.placeholder`). When this todo is
+fixed, update that page; its "at the time of writing" sentence is the one to change.

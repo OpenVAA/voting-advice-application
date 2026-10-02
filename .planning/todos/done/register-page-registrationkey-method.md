@@ -45,3 +45,25 @@ The register/password page at `apps/frontend/src/routes/candidate/register/passw
 - `apps/frontend/src/routes/candidate/register/password/+page.svelte`
 - `apps/frontend/src/lib/contexts/candidate/candidateContext.ts` (register function)
 - `apps/frontend/src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.ts` (_register impl)
+
+## Resolution
+
+**Closed 2026-10-02 as superseded, by Phase 168 plan 168-08 (D-18).** The question has an answer, and the open work belongs to
+[`2026-09-15-refactor-candidate-and-entity-registration-flow-and-nominati.md`](../pending/2026-09-15-refactor-candidate-and-entity-registration-flow-and-nominati.md),
+as the header above says.
+
+What 168-06 read at HEAD (finding F2 in `.planning/phases/168-docs-site-rewrite-strapi-to-supabase/168-06-CLAIMS.md`). The code still
+matches the header:
+
+- `checkRegistrationKey` and `register` are declared on the data writer interface:
+  `apps/frontend/src/lib/api/base/dataWriter.type.ts` has `checkRegistrationKey: (opts: { registrationKey: string })`.
+- The Supabase adapter throws for `checkRegistrationKey` and ignores the key in `register`:
+  `apps/frontend/src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.ts` has
+  `checkRegistrationKey is not supported by the Supabase adapter. Use invite-based registration.`
+- Pages still call or reach the key branch: the register page, the set-password page's key branch, and the login page's
+  "Do you have a registration code?" link (`apps/frontend/src/routes/candidate/login/+page.svelte`:
+  `href={getRoute.current('CandAppRegister')}`).
+
+The docs now describe exactly this. The Candidate app › Registration page (`/developers-guide/candidate-app/registration`, commit
+`85436fe9d`) documents the invite branch and the throwing key method. Nothing was deleted (D-18: document behaviour, do not change
+it).

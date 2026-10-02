@@ -280,6 +280,8 @@ pages under `/publishers-guide/`).
 | 212 | pg/preparing/what-data-should-be-collected | fact | Umami is the built-in analytics platform | packages/app-shared/src/settings/staticSettings.type.ts | `readonly name: 'umami';` |
 | 213 | pg/preparing/what-data-should-be-collected | fact | Voters are asked for consent | apps/frontend/src/lib/dynamic-components/dataConsent/DataConsent.svelte | - |
 | 214 | pg/publish-with-openvaa | fact | The Association page has a Contact heading | apps/docs/src/routes/(content)/about/association/+page.md | `### Contact` |
+| 215 | contributing/contribute | fact | `q-info` abbreviates the `question-info` package (row added by 168-08; the abbreviation is a commit-history convention, not code: see `gate-evidence/168-08-verifier-reconciliation.md`) | packages/question-info/package.json | `"name": "@openvaa/question-info",` |
+| 216 | contributing/contribute | fact | `arg-cond` abbreviates the `argument-condensation` package (row added by 168-08; same note) | packages/argument-condensation/package.json | `"name": "@openvaa/argument-condensation",` |
 
 ## Findings for todos
 

@@ -81,7 +81,7 @@ generated set). `Planned fate` comes from CONTEXT `<page_inventory>`. `RQ blocks
 | 54 | `/developers-guide/localization/local-translations` | redirect stub → `/developers-guide/localization/translations-and-overrides` | 168-05 | merge → Translations and overrides; redirect stub | redirect stub | page removed, old URL is a stub (168-02); content: merged → /developers-guide/localization/translations-and-overrides (168-05). Kept almost entirely (it was already Paraglide-era): the file-per-namespace layout and namespace key, `pathPattern`, the file-organisation principles (extended with `adminApp.*`, `common`, `dynamic`, `lang`), "add for all locales", the `TranslationKey` type and its generator, `assertTranslationKey`, and the stale-type test. | `168-05-CLAIMS.md` § Page verdicts | 0 |
 | 55 | `/developers-guide/localization/locale-routes` | redirect stub → `/developers-guide/localization/locale-resolution` | 168-05 | merge → Locale resolution; redirect stub | redirect stub | page removed, old URL is a stub (168-02); content: merged → /developers-guide/localization/locale-resolution (168-05). Kept: "switching locale changes only the locale part of the URL" (now the language menu with `localizeHref`) and building links in another locale (now `getRoute.current({ locale })` on the `AppContext`, not a `getRoute` store on the `I18nContext`). Dropped: the optional `locale` route parameter, the `Accept-Language` redirects, and the soft-match redirects (`/en-UK/foo` → `/en/foo`); none exists with the `url` strategy. | `168-05-CLAIMS.md` § Page verdicts | 0 |
 | 56 | `/developers-guide/localization/locale-selection-step-by-step` | `/developers-guide/localization/locale-resolution` | 168-05 | merge → Locale resolution; redirect stub | redirect stub | old URL is a stub → `/developers-guide/localization/locale-resolution` (168-02); content: merged → /developers-guide/localization/locale-resolution (168-05). The old body (moved here by 168-02) described `hooks.server.ts` parsing `Accept-Language` into `preferredLocale`, the `lang`-parameter redirect table, and `routes/[[lang=locale]]/+layout.ts` calling `loadTranslations` / `addTranslations` / `setRoute`. All replaced by Paraglide's strategy order, `reroute` / `deLocalizeUrl`, `paraglideHandle` (`event.locals.currentLocale`, `%lang%`), `getLocale()`, the root `+layout.ts` locale, and `setOverrides` (on Translations and overrides). | `168-05-CLAIMS.md` § Page verdicts | 0 |
-| 57 | `/developers-guide/localization/localization-in-strapi` | redirect stub → `/developers-guide/localization/translations-and-overrides` | 168-05 | merge / delete → Translations and overrides; redirect stub | redirect stub | page removed, old URL is a stub (168-02); content: merged → /developers-guide/localization/translations-and-overrides (168-05). Survives: translated strings stored as a locale-keyed JSON object (`LocalizedString`) and the data provider picking the requested locale. Both are now on Multi-locale data (§ Storage, § Reading), which Translations and overrides links from its override section, where override values use the same format. Dropped: Strapi's i18n plugin, the ICU plural example (stored overrides are interpolated with `intl-messageformat`, but the catalogue uses inlang variants). See F4 on the stub target. | `168-05-CLAIMS.md` § Page verdicts | 0 |
+| 57 | `/developers-guide/localization/localization-in-strapi` | redirect stub → `/developers-guide/localization/storing-multi-locale-data` (retargeted by 168-08; was `translations-and-overrides`) | 168-05 | merge / delete → Translations and overrides; redirect stub | redirect stub | page removed, old URL is a stub (168-02); content: merged → /developers-guide/localization/translations-and-overrides (168-05). Survives: translated strings stored as a locale-keyed JSON object (`LocalizedString`) and the data provider picking the requested locale. Both are now on Multi-locale data (§ Storage, § Reading), which Translations and overrides links from its override section, where override values use the same format. Dropped: Strapi's i18n plugin, the ICU plural example (stored overrides are interpolated with `intl-messageformat`, but the catalogue uses inlang variants). See F4 on the stub target. | `168-05-CLAIMS.md` § Page verdicts | 0 |
 | 58 | `/developers-guide/localization/localization-in-the-frontend` | `/developers-guide/localization/translations-and-overrides` | 168-05 | merge → Translations and overrides; redirect stub | redirect stub | old URL is a stub → `/developers-guide/localization/translations-and-overrides` (168-02); content: merged → /developers-guide/localization/translations-and-overrides (168-05). Kept: one function for all messages whatever their source, overrides winning over local messages, already-translated Data API data. Dropped: `$t(…)` and the `I18nContext` store, "never import stores from `$lib/i18n`", ICU `parse()` interpolation and `updateDefaultPayload` (neither exists), and the `export let` reactive-default example (the locale is constant per page, so a value from `t()` at init stays correct). | `168-05-CLAIMS.md` § Page verdicts | 0 |
 | 59 | `/developers-guide/localization/storing-multi-locale-data` | `/developers-guide/localization/storing-multi-locale-data` | 168-05 | audit | updated | Audited. Kept: single-locale data in components versus multi-locale data in the backend and the Candidate App, and the `Localized*` types in `@openvaa/app-shared`. Added: `jsonb` locale objects in the schema, `getLocalized` and its fallback order, the adapter `locale` / `defaultLocale`, the SQL `get_localized` (email helpers only), multilingual writes and inputs, `translate` from the contexts, and the separate `@openvaa/data` `LocalizedValue` / `translate`. "Admin App" dropped from the multi-locale sentence (not verified). | `168-05-CLAIMS.md` § Page verdicts | 0 |
 | 60 | `/developers-guide/localization/supported-locales` | `/developers-guide/localization/supported-locales` | 168-05 | audit | updated | Audited. Kept: the four-step recipe for adding a locale. Added: the compiled locales (`project.inlang/settings.json` `locales`, `baseLocale`) versus the offered locales (`supportedLocales`), `isDefault` and the first-entry default, the error for an uncompiled `code`, `lang.json` display names, and a fifth step (run the translation tests and update their expected locale list). | `168-05-CLAIMS.md` § Page verdicts | 0 |
@@ -154,7 +154,7 @@ Derivation: `git ls-files 'apps/docs/src/routes/(content)/developers-guide' | gr
 | 22 | `/developers-guide/localization/local-translations` | `apps/docs/src/routes/(content)/developers-guide/localization/local-translations/+page.ts` | `/developers-guide/localization/translations-and-overrides` | merged | 168-05 |
 | 23 | `/developers-guide/localization/locale-routes` | `apps/docs/src/routes/(content)/developers-guide/localization/locale-routes/+page.ts` | `/developers-guide/localization/locale-resolution` | merged | 168-05 |
 | 24 | `/developers-guide/localization/locale-selection-step-by-step` | `apps/docs/src/routes/(content)/developers-guide/localization/locale-selection-step-by-step/+page.ts` | `/developers-guide/localization/locale-resolution` | moved; merged into Locale resolution | 168-05 |
-| 25 | `/developers-guide/localization/localization-in-strapi` | `apps/docs/src/routes/(content)/developers-guide/localization/localization-in-strapi/+page.ts` | `/developers-guide/localization/translations-and-overrides` | merged / deleted | 168-05 |
+| 25 | `/developers-guide/localization/localization-in-strapi` | `apps/docs/src/routes/(content)/developers-guide/localization/localization-in-strapi/+page.ts` | `/developers-guide/localization/storing-multi-locale-data` (retargeted by 168-08 from `translations-and-overrides`, per 168-05 F4: the surviving content is on Multi-locale data) | merged / deleted | 168-05 |
 | 26 | `/developers-guide/localization/localization-in-the-frontend` | `apps/docs/src/routes/(content)/developers-guide/localization/localization-in-the-frontend/+page.ts` | `/developers-guide/localization/translations-and-overrides` | moved; merged into Translations and overrides | 168-05 |
 
 ### Inbound references repointed
@@ -215,7 +215,30 @@ No hit is pattern text in `apps/docs/scripts`, and none is in a generated page.
 
 ## Verifier reconciliation
 
-_Filled by 168-08: each `gsd-doc-verifier` finding against the claim ledgers, and how it was settled._
+Filled by 168-08 (D-09, orchestrator ruling 6). The full record, one row per page, is in `gate-evidence/168-08-verifier-reconciliation.md`.
+
+- **The pass.** One independent `gsd-doc-verifier` pass covered all 58 changed hand-written pages: every `+page.md|svelte` that
+  `git diff --diff-filter=AMR <base>..HEAD -- apps/docs/src/routes` lists, generated pages excluded. Each page went through a uniquely
+  named copy (`.planning/tmp/docs-verify/MANIFEST.txt`, mapped to pages by `SOURCES.tsv`), so each has its own result file. The
+  orchestrator ran it at HEAD `6c9117378` in 8 parallel batches of about 7–8 pages, not one agent per page.
+- **Result.** 1022 claims checked, 1022 passed, **0 BLOCKER / 0 FAIL**. Every result has `claims_checked > 0`. With no failure to
+  settle, the dispositions are: 0 fixed, 0 verifier limitation, and 1 unverifiable item resolved by source (next bullet).
+- **The one item with no source:** the `q-info` / `arg-cond` commit-prefix abbreviations on `contributing/contribute`. The source is the
+  commit history, not the tree: 10 `[q-info]` and 14 `[arg-cond]` subjects against 1 full-name subject, and no commitlint or hook checks
+  subjects. It is an editorial convention, unchanged since the base. The page is kept as written. `168-07-CLAIMS.md` gains rows #215–#216
+  anchoring the package names the abbreviations expand to.
+- **Caveats the verifiers reported (recorded, not fixed):**
+  - The checks were mostly existence and grep checks (paths, scripts, symbols, config keys, env vars, anchors). Several pages say
+    behaviour claims and prose were **spot-checked**, and the claim counts are **hand tallies**.
+  - Runtime flows were not run. Examples: `db:reset-with-e2e-data`, and the feedback rate-limit semantics on Deployment. These stay
+    **unverifiable (WARNING)**, each anchored: `168-03-CLAIMS.md` #366, `168-04-CLAIMS.md` #440, and #392–#396 for
+    `107-feedback.sql`.
+- **The claim ledgers are the anchor-level evidence; the verifier pass is the independent second look.** Re-run on the final tree:
+  `check-claims.mjs ledger` over `168-03..07-CLAIMS.md` exits 0 (2176 rows pass). `check-claims.mjs commands` over the 83 hand-written
+  pages exits 0 (201 `yarn` commands resolve, 1 placeholder skipped). The `commands` check resolves `yarn workspace …` scripts per
+  workspace, which covers the verifier's known root-only limit (Pitfall 3).
+- **No page edit was driven by the verifier.** The one page-level change in 168-08 is the `localization-in-strapi` stub retarget, commit
+  `d2dee9d6f`, which settles 168-05 F4 (see the routing table under § Residue).
 
 ## Decisions recorded at execution
 
@@ -313,6 +336,33 @@ _Filled by 168-08: each `gsd-doc-verifier` finding against the claim ledgers, an
   anchor `168-0N-CLAIMS.md § Page verdicts`. The 26 stub rows keep `redirect stub` and append the content fate (`content: <verdict>
   (168-0N)` plus the plan's text for the old route). Row `G` reads `regenerated; EntityCardAction removed`.
 
+- **The final gate set ran on the final tree, and a sweep with no hits is recorded with its command** (168-08, D-22, PROH-01). Every
+  D-22 gate's status was read from the command itself, not through a pipe (`gate-evidence/168-08-gates.md`). Each D-21 sweep that
+  exits 1 has a positive control: the same pattern at the base, where it hits (`gate-evidence/168-08-sweeps.md`).
+- **`configurable-mock-data.md` is closed, not narrowed** (168-08, Claude's discretion under D-18). `@openvaa/dev-seed` provides
+  configurable generation: `db:seed --template`, `db:reset-with-data`, `BUILT_IN_TEMPLATES`, and custom templates by path. The todo asked
+  for generation "similar to" `GENERATE_MOCK_DATA_ON_INITIALISE`, not for seeding on initialise as such, so the one unreproduced part
+  (automatic seeding) did not leave a remainder open. A new todo is the route if automatic seeding is wanted.
+- **`password-reset-code-method.md` stays open** (168-08, D-18). 168-06 established that the `?code=` branch is unreachable and would
+  fail if reached, but the branch still exists. The annotation points at the measured PKCE todo
+  (`2026-09-02-forgot-password-pkce-code-not-exchanged.md`), which should be fixed first.
+- **The `localization/localization-in-strapi` stub now points at Multi-locale data** (168-08, settles 168-05 F4; commit `d2dee9d6f`).
+  The old page's surviving content (locale-keyed JSON storage, adapter-side locale picking) lives on
+  `/developers-guide/localization/storing-multi-locale-data`, not on Translations and overrides. The `stub` link class and the span
+  gate were re-run green after the change.
+- **Every `## Findings for todos` row of 168-03..07 is routed** (168-08, D-04). Each one goes to a new todo, a dated note on an
+  existing todo, or a closed todo's Resolution. None is dropped, and findings of the same class are grouped into one todo (README and
+  comment drift, deployment configuration, CLAUDE.md). The table is under § Residue.
+- **The OIDC nonce gap is filed as a dedicated security todo** (168-08, 168-06 F7). No existing todo mentioned the nonce, and a
+  docstring in `providers/types.ts` claims the check exists. It is filed separately from the CLAUDE.md and drift todos and marked
+  `security: true`, so it is not buried among wording fixes.
+- **The D-11 evidence omits the key tables instead of relying on the redaction filter alone** (168-08, PROH-03). The plan's perl filter
+  does not catch the Supabase CLI's S3 key rows, whose separator is `│`. `168-08-d11-runs.md` therefore quotes only the non-key
+  status lines. The secret scan and a hex-key probe over `gate-evidence/` both exit 1.
+- **Supabase was left as found** (168-08, T-168-24). This project's stack was already running before `yarn db:start` (13
+  `openvaa-local` containers), so 168-08 did not stop it. The `yarn dev` process group was stopped with SIGTERM. No Docker restart and
+  no `supabase stop --all`.
+
 ## Dependency reconciliation
 
 _Filled by 168-01.1 (typedoc / typedoc-plugin-markdown, `glob`, the ESLint parser) and 169._
@@ -350,6 +400,138 @@ _Filled by 168-01.1 and later plans._
 
 ## Residue
 
-- **The link check does not run on pull requests** (orchestrator ruling 4 Q1). `docs.yml` runs `generate:docs` (and so
-  `validate-links`) only on pushes to `main` touching `apps/docs/**`, so a frontend rename that breaks a generated
-  page's source link is caught only after merge. 168-08 files the todo.
+Completed by 168-08 (D-04). Residue leaves the phase as named todos, not prose.
+
+### Todos filed by 168-08 (all in `.planning/todos/pending/`)
+
+| Todo | What | Source |
+| --- | --- | --- |
+| `2026-10-01-docs-link-check-on-pull-requests.md` | `validate:links --check` runs only in `docs.yml`, which fires on a push to `main` touching `apps/docs/**`. No pull-request job runs it, and `main.yaml` ignores `**.md`. Options for the operator: a step in `main.yaml`'s lint job, or widening `docs.yml`. | Orchestrator ruling 4 (Q1) |
+| `2026-10-01-claude-md-stale-claims-found-by-docs-rewrite.md` | CLAUDE.md "seeded automatically on `supabase start`" (partly wrong), "Theme colors defined in `staticSettings.ts`" (wrong for the rendered theme), and the Render env set without `PUBLIC_PROJECT_ID`. No cache-disk claim remains in CLAUDE.md at HEAD (checked). | 168-03 F6, 168-05 F2, 168-04 F1 |
+| `2026-10-02-oidc-callback-does-not-verify-nonce.md` | **Security-relevant** (`security: true`): the OIDC callback deletes `oidc_nonce` but never compares it with the token's `nonce` claim, and a docstring claims it does. | 168-06 F7 |
+| `2026-10-02-readme-comment-and-skill-drift-found-by-docs-rewrite.md` | `apps/supabase/README.md` (pgTAP count and command, lint-schema checks, "candidate role"); comments in the callback docblock, `.env.example` `E2E_PROJECT_ID`, `staticSettings.type.ts` `LOCAL_DATA_DIR` and `showSurveyPopup`; the components skill; the docs scripts `tsc`. | 168-03 F1/F4/F5/F7, 168-04 F3/F4/F8, 168-05 F1 (wording), 168-06 F10, 168-07 F1/F2 |
+| `2026-10-02-deployment-config-gaps-found-by-docs-rewrite.md` | Templates without `PUBLIC_PROJECT_ID`; the unused `PUBLIC_*_FRONTEND_URL` pair; the orphan `apps/frontend/docker-compose.dev.yml`; Storage buckets only in the local `config.toml`. | 168-04 F1/F2/F5/F6 |
+| `2026-10-02-admin-with-candidate-grant-locked-out-of-admin-app.md` | A dual-grant identity resolves to `candidate` and is signed out of the Admin App. | 168-06 F6 |
+| `2026-10-02-voter-statement-weights-and-live-top-results-not-implemented.md` | Two described voter features have no frontend code. This is an operator question. | 168-07 F3 |
+| `2026-10-02-routing-and-locale-findings-from-docs-rewrite.md` | Unused `ROUTE_PARAMS`, the unclear `cookie` locale strategy, and the language menu dropping the query string. | 168-05 F3/F5/F6 |
+| `2026-10-02-password-validator-username-never-passed.md` | `PasswordSetter` never passes `username`, so that rule is dead. | 168-06 F8 |
+| `2026-10-02-app-settings-shallow-merge-and-no-admin-editor.md` | `mergeAppSettings` replaces by top-level key, and the Admin App has no settings or customization editor. | 168-06 F11, F9; 168-04 F7 |
+
+### Open todos this phase annotated (left open)
+
+- `password-reset-code-method.md`: the 168-06 reading (the `?code=` branch is unreachable and would fail). It stays open while the branch
+  exists (D-18).
+- `2026-09-02-forgot-password-pkce-code-not-exchanged.md`: the 168-06 F1 residual (the callback ignores `?code=`) and the invite-email
+  analogue.
+- `2026-09-15-refactor-candidate-and-entity-registration-flow-and-nominati.md`: fact 18 re-confirmed (`/candidate/complete-registration`),
+  and neither `invite-candidate` nor `send-email` has a UI caller (168-03 F2/F3, 168-06 F3/F4).
+- `2026-09-21-preregister-route-discards-email-and-nominations.md`: the Bank authentication docs page to update when fixed (168-06 F5).
+- `2026-08-28-reintroduce-the-local-data-adapter.md`: the `apiRoute` client adapters are unwired as well, and the pages to update if the mode
+  returns (168-05 F1, 168-07 F4).
+
+### Every `## Findings for todos` row of 168-03..07, routed
+
+| Finding | Routed to |
+| --- | --- |
+| 168-03 F1, F4, F5, F7 | `2026-10-02-readme-comment-and-skill-drift-found-by-docs-rewrite.md` (items 1–5) |
+| 168-03 F2, F3 | Note on `2026-09-15-refactor-candidate-and-entity-registration-flow-and-nominati.md` (F3 is that todo's fact 18) |
+| 168-03 F6 | `2026-10-01-claude-md-stale-claims-found-by-docs-rewrite.md` (item 1) |
+| 168-03 F8 | Resolution of `done/configurable-mock-data.md` (dev-seed creates no auth users; known limitation) |
+| 168-03 F9 | Closed `configurable-mock-data.md` (moved to `done/`) |
+| 168-04 F1 | `2026-10-02-deployment-config-gaps-found-by-docs-rewrite.md` (item 1) and the CLAUDE.md todo (item 3) |
+| 168-04 F2, F5, F6 | `2026-10-02-deployment-config-gaps-found-by-docs-rewrite.md` (items 2–4) |
+| 168-04 F3 | Drift todo (item 5, with 168-03 F7) |
+| 168-04 F4 | Cross-reference only; its targets are routed above (168-03 F1/F5/F6). Recorded in the drift todo |
+| 168-04 F7 | `2026-10-02-app-settings-shallow-merge-and-no-admin-editor.md` (item 2) |
+| 168-04 F8 | Already done on the Troubleshooting page by 168-04. Recorded in the drift todo's "no action" list |
+| 168-05 F1 | Note on `2026-08-28-reintroduce-the-local-data-adapter.md`; the comment wording is drift todo item 6 |
+| 168-05 F2 | CLAUDE.md todo (item 2, which also records the open design question) |
+| 168-05 F3, F5, F6 | `2026-10-02-routing-and-locale-findings-from-docs-rewrite.md` |
+| 168-05 F4 | **Done in this plan:** stub retargeted to Multi-locale data (`d2dee9d6f`) |
+| 168-06 F1 | Annotation on `password-reset-code-method.md` (left open) and a note on `2026-09-02-forgot-password-pkce-code-not-exchanged.md` |
+| 168-06 F2 | Closed `register-page-registrationkey-method.md` as superseded (moved to `done/`) |
+| 168-06 F3, F4 | Note on `2026-09-15-refactor-candidate-and-entity-registration-flow-and-nominati.md` |
+| 168-06 F5 | Note on `2026-09-21-preregister-route-discards-email-and-nominations.md` |
+| 168-06 F6 | `2026-10-02-admin-with-candidate-grant-locked-out-of-admin-app.md` |
+| 168-06 F7 | `2026-10-02-oidc-callback-does-not-verify-nonce.md` (security) |
+| 168-06 F8 | `2026-10-02-password-validator-username-never-passed.md` |
+| 168-06 F9 | `2026-10-02-app-settings-shallow-merge-and-no-admin-editor.md` (item 2) |
+| 168-06 F10 | Drift todo (item 7) |
+| 168-06 F11 | `2026-10-02-app-settings-shallow-merge-and-no-admin-editor.md` (item 1) |
+| 168-07 F1, F2 | Drift todo (items 8, 9) |
+| 168-07 F3 | `2026-10-02-voter-statement-weights-and-live-top-results-not-implemented.md` |
+| 168-07 F4 | Note on `2026-08-28-reintroduce-the-local-data-adapter.md` (same disposition as 168-05 F1) |
+
+### Redirect stubs to retire later (D-04)
+
+The 26 stub `+page.ts` files under `apps/docs/src/routes/(content)/developers-guide/` each hold one `redirect(308, …)` (§ Redirect stubs above
+has the per-stub table). They keep old URLs working for bookmarks and outside links. Repo content already links only final URLs
+(`validate:links --check --only inbound` exits 0). Retire them in a later phase, after enough time has passed, by deleting the
+directories and re-running `generate:navigation` and `validate:links --check`. Old route → target at the 168-08 HEAD:
+
+1. `/developers-guide/app-and-repo-structure` → `/developers-guide/architecture`
+2. `/developers-guide/auto-documentation` → `/developers-guide/about-these-docs`
+3. `/developers-guide/backend/customized-behaviour` → `/developers-guide/backend/intro`
+4. `/developers-guide/backend/default-data-loading` → `/developers-guide/development/seed-data`
+5. `/developers-guide/backend/mock-data-generation` → `/developers-guide/development/seed-data`
+6. `/developers-guide/backend/openvaa-admin-tools-plugin-for-strapi` → `/developers-guide/backend/data-import-and-deletion`
+7. `/developers-guide/backend/plugins` → `/developers-guide/backend/intro`
+8. `/developers-guide/backend/preparing-backend-dependencies` → `/developers-guide/development/running-the-development-environment`
+9. `/developers-guide/backend/re-generating-types` → `/developers-guide/backend/generated-types`
+10. `/developers-guide/backend/running-the-backend-separately` → `/developers-guide/development/running-the-development-environment`
+11. `/developers-guide/backend/security` → `/developers-guide/backend/authentication`
+12. `/developers-guide/candidate-user-management/creating-a-new-candidate` → `/developers-guide/candidate-app/pre-registration-and-invitation`
+13. `/developers-guide/candidate-user-management/mock-data` → `/developers-guide/development/seed-data`
+14. `/developers-guide/candidate-user-management/password-validation` → `/developers-guide/candidate-app/password-validation`
+15. `/developers-guide/candidate-user-management/registration-process-in-strapi` → `/developers-guide/candidate-app/registration`
+16. `/developers-guide/candidate-user-management/resetting-the-password` → `/developers-guide/candidate-app/login-and-password-reset`
+17. `/developers-guide/development/intro` → `/developers-guide/development/running-the-development-environment`
+18. `/developers-guide/frontend/accessing-data-and-state-management` → `/developers-guide/frontend/data-api-and-adapters`
+19. `/developers-guide/frontend/data-api` → `/developers-guide/frontend/data-api-and-adapters`
+20. `/developers-guide/frontend/environmental-variables` → `/developers-guide/configuration/environmental-variables`
+21. `/developers-guide/llm-features` → `/developers-guide/admin-app`
+22. `/developers-guide/localization/local-translations` → `/developers-guide/localization/translations-and-overrides`
+23. `/developers-guide/localization/locale-routes` → `/developers-guide/localization/locale-resolution`
+24. `/developers-guide/localization/locale-selection-step-by-step` → `/developers-guide/localization/locale-resolution`
+25. `/developers-guide/localization/localization-in-strapi` → `/developers-guide/localization/storing-multi-locale-data` (retargeted in 168-08)
+26. `/developers-guide/localization/localization-in-the-frontend` → `/developers-guide/localization/translations-and-overrides`
+
+Stubs 6, 15 and 25 keep "strapi" in their **paths**. Path names are not content, so sweep #1 (`git grep` over file content) does not
+report them. They go when the stubs are retired.
+
+### Verifier warnings left
+
+The independent pass reported no BLOCKER or FAIL. What it could not verify stays as **unverifiable (WARNING)**, each with supporting
+anchors: runtime flows such as `db:reset-with-e2e-data`, the feedback rate-limit semantics, and the `q-info` / `arg-cond`
+convention, whose source is the commit history. Behaviour claims and prose were spot-checked, not exhaustively verified (§ Verifier
+reconciliation).
+
+### No-product-change probe (D-18)
+
+`git diff --name-only "$(cat gate-evidence/base-rev.txt)"..HEAD -- apps/frontend packages apps/supabase` at 168-08 lists exactly:
+`apps/frontend/src/lib/api/README.md`, `apps/frontend/src/lib/server/api/README.md`, `apps/frontend/src/routes/candidate/README.md`,
+`packages/app-shared/src/settings/README.md` (the 168-02 inbound repoints), and `packages/shared-config/eslint.config.mjs`, whose whole
+diff is `+export { tsParser };` (168-01.1). Nothing under `apps/supabase`. Outside `apps/docs` and `.planning`, the phase also touched
+only the root `README.md` (inbound repoint), root `package.json` (`docs:*` delegation), `security/audit-baseline.json` and `yarn.lock`
+(typedoc removal). These are tooling and docs only, so no product behaviour changed, and no E2E run is required (D-22).
+
+## Handoff to Phase 169
+
+Phase 169's gate re-runs these three commands from the repo root. They must exit 0 on 169's tree:
+
+```bash
+yarn workspace @openvaa/docs validate:links --check
+yarn workspace @openvaa/docs check:research-quotes --base 0ec229dfe7ee26eafa21882fa37f6d49817e51f9 --component-base 6090476cc44aa995e3b36368b8a605c96e4ccc1a
+yarn workspace @openvaa/docs build
+```
+
+- The two SHAs are the recorded ones: `gate-evidence/base-rev.txt` (the span base, the original phase base) and
+  `gate-evidence/component-base-rev.txt` (the component base, re-anchored by the operator ruling of 2026-10-02). The `--base`-only form
+  exits 1 by design. If `--extract-dir` is passed, give it an absolute path.
+- **Pages state no version numbers that 169 could invalidate** (D-17). The docs name tools and scripts, not their versions.
+  Requirements points at the root `package.json` `engines` (Node) and `packageManager` (Yarn) instead of restating them, so a dependency
+  bump in 169 does not stale a page. A check over the hand-written pages for a tool name followed by a number matches only "Svelte 5"
+  (the framework generation, on four pages including the roadmap). That is not a dependency version a 169 bump could change. If 169 changes a script name, a workspace name or a path that a page cites, `validate:links --check` (the
+  `github-path` class) and `check-claims.mjs` (`ledger`, `commands`) report it.
+- 169 also inherits `yarn audit:deps` being red (pre-existing, 167 fact 16) and the four stale js-yaml baseline ids
+  (`168-01.1-SUMMARY.md` § Issues).

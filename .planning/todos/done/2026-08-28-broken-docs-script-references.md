@@ -104,3 +104,32 @@ Phase 153 completed (11/11), as did Phase 163, so there is no scheduled slot to 
 in would make this read as work that is coming when it is not. `related_phase: 163` is recorded
 because Rider 2's correction lands in that phase's roadmap criterion, and because Phase 163 owns the
 CI wiring the declined option would need.
+
+## Resolution
+
+**Closed 2026-10-02 by Phase 168 (docs-site rewrite), plan 168-08 (decision D-13).**
+
+- **The six references are repaired** in 168-01.1, commit `04b772ff1` ("fix[docs]: repair docs scripts, prune stale generated
+  pages, drop unused typedoc and playwright deps"):
+  - The root `docs:*` keys stay, but each now delegates to the real workspace script. In `package.json`:
+    `"docs:generate": "yarn workspace @openvaa/docs generate:docs"`,
+    `"docs:components": "yarn workspace @openvaa/docs generate:component-docs"` and
+    `"docs:routes": "yarn workspace @openvaa/docs generate:route-map"`.
+  - `docs:typedoc` and `docs:typedoc-frontend` are deleted, together with `typedoc` and `typedoc-plugin-markdown`.
+  - `generate:component-docs` now runs the real generator: `apps/docs/package.json` has
+    `"generate:component-docs": "tsx scripts/generate-component-docs.ts"`.
+  - The Playwright wiring (`playwright.config.ts`, `test` / `test:e2e`, `@playwright/test`) is deleted.
+  - `move-generated.ts` now prunes stale generated pages; the orphan `EntityCardAction` page went in `78369e329`.
+- **Rider 1 (`glob`) is done** in the same commit: `apps/docs/package.json` declares `"glob": "^11.0.0"` (the root's range, already
+  locked, no new resolution).
+- **Rider 2 (sqlfluff in `.planning/ROADMAP.md` Phase 163 criterion 1) is out of scope** (D-13). Phase 168 does not edit the
+  roadmap's completed-phase criteria. A reader should still read "sqlfluff" there as "the SQL linter".
+- **Rider 3 (`$voter` alias) was already fixed** before this phase, in `dad6569be` ("refactor[frontend]: drop the $voter path alias,
+  whose target directory does not exist"). `git grep -n voter apps/frontend/svelte.config.js` exits 1.
+- **The declined option** (generate the component listing into the `components` skill) is now cheap, as this todo predicted,
+  because the scripts work. No todo is filed for it, since Phase 160 declined it on purpose. It is recorded here so a later skills
+  pass can reconsider it. A related, smaller item is open: the skill's text still says the `generate:*` scripts are broken (see
+  `2026-10-02-readme-comment-and-skill-drift-found-by-docs-rewrite.md`, item 168-07 F1).
+
+Evidence: `.planning/phases/168-docs-site-rewrite-strapi-to-supabase/168-01.1-SUMMARY.md`, `168-DOCS-AUDIT.md` § Decisions recorded at
+execution and § Dependency reconciliation. Every docs gate was re-run green at 168-08 (`gate-evidence/168-08-gates.md`).
