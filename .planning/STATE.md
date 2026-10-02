@@ -4,18 +4,18 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 167
 current_phase_name: Origin/main Vestige Cleanup
-current_plan: 2
+current_plan: 3
 status: executing
-stopped_at: Completed 167-01-PLAN.md
-last_updated: "2026-10-02T05:54:08.880Z"
+stopped_at: Completed 167-02-PLAN.md
+last_updated: "2026-10-02T06:02:57.018Z"
 last_activity: 2026-10-02
 last_activity_desc: Phase 167 execution started
-state_head: 096896f477c8707a28106ede138b3d275dda4189
+state_head: 837b895c46ff899bf1fb5218efdcaad601412b78
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
-  completed_plans: 320
+  completed_plans: 321
   percent: 89
 ---
 
@@ -35,7 +35,7 @@ _(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and P
 Phase: 167 (Origin/main Vestige Cleanup) — EXECUTING
 Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
-Current Plan: 2
+Current Plan: 3
 Total Plans in Phase: 6
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
@@ -819,8 +819,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-10-02T05:54:07.745Z
-Stopped at: Completed 167-01-PLAN.md
+Last session: 2026-10-02T06:02:55.859Z
+Stopped at: Completed 167-02-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -1133,6 +1133,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 166 P03 | 20 min | 3 tasks | 23 files |
 | Phase 166 P04 | 41min | 3 tasks | 8 files |
 | Phase 167 P01 | 3min | 2 tasks | 3 files |
+| Phase 167 P02 | 7min | 3 tasks | 34 files |
 
 ## Deferred Items
 
@@ -2088,6 +2089,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 166]: 166-04: full E2E suite 171/171 on the grant-only tree; the user's below-floor disk approval (2026-10-02) recorded but unneeded (25.7 GiB free at the run)
 - [Phase 166]: 166-04: bank-auth and bank-auth-journey are opt-in (PLAYWRIGHT_BANK_AUTH=1), so link 5's three runs each are their D-20 evidence, not the full suite
 - [Phase 167]: 167-01: safeGetSession.test.ts pins exact getUser/getSession counts in every case plus a strict-client Proxy (UnexpectedClientAccess); V1/V2-old/V2-new/V3 all observed red; PHASE_BASE=8c519ac97
+- [Phase 167]: 167-02: /api/auth/logout is the live sample API path in route tests (D-11)
+- [Phase 167]: 167-02: cache proxy, backend-URL pair, BACKEND_API_TOKEN and flat-cache removed in one commit (837b895c4); VEST-03 stays open for 167-06's adapter-todo notes
 
 ### Quick Tasks Completed
 
