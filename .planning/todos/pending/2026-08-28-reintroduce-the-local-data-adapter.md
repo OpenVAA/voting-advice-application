@@ -86,3 +86,7 @@ Phase 157 dispositioned this as a todo rather than fixing it in place (decision 
 because it is a feature restoration with an open design question, not the small
 documentation and typing corrections that phase was scoped to. The README half of the
 same review comment WAS fixed in 157.
+
+## Note (2026-10-02, Phase 167)
+
+The `/api/cache` proxy was removed in Phase 167 (commit `837b895c4`), together with `cachifyUrl`, the `CACHE_*` and `PUBLIC_CACHE_ENABLED` settings and the `flat-cache` dependency. Any cache for static-data deployments should be designed together with the local adapter rather than restored from the removed route. This todo stays open.

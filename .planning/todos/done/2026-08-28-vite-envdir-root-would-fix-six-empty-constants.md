@@ -3,6 +3,21 @@ created: '2026-08-28T00:00:00.000Z'
 title: Pointing kit.env.dir / vite envDir at the repo root would fill the empty PUBLIC_ constants, and would also publish every private root key
 area: infra
 priority: medium
+resolved: '2026-10-02'
+resolves_phase: 167
+resolution: >-
+  Closed by Phase 167 (D-22). Each point was re-checked against the tree at a02f3362e.
+  (a) kit.env.dir is repoRoot in apps/frontend/svelte.config.js (since 2a2cce8ed), so the
+  frontend reads the repo-root .env and the PUBLIC_ constants it assigns are no longer empty.
+  (b) The backend-URL pair (PUBLIC_BROWSER_BACKEND_URL, PUBLIC_SERVER_BACKEND_URL) no longer
+  exists: it was removed with the /api/cache proxy in 837b895c4, and the whole-tree grep
+  outside .planning and apps/docs has no hit. (c) The private-side widening is accepted:
+  $env/dynamic/private now sees every root key, and the comment beside env.dir in
+  svelte.config.js records why the browser side is not widened ("`$env/*/public` exposes only
+  `PUBLIC_`-prefixed keys"); kit.env.publicPrefix stays at its default, so the rejected
+  empty-prefix variant is not in play. The stale vite.config.ts comment above
+  resolveProjectIdEnv, which said loadEnv ran over apps/frontend, now describes the root .env
+  loading (a02f3362e).
 files:
   - apps/frontend/svelte.config.js
   - apps/frontend/vite.config.ts

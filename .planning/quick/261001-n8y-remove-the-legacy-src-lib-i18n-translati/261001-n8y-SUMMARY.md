@@ -81,6 +81,7 @@ actuals:
 | 6 | `985f26a6c` | docs: point root-relative frontend/ paths at apps/frontend |
 
 None of these commits contains a `.planning/` file. The docs artifacts (this SUMMARY, VESTIGES.md, `gate-evidence/`) are left uncommitted for the orchestrator.
+The untracked `gate-evidence/` directory cited throughout this SUMMARY was inspected and deleted in Phase 167 (plan 167-06); its counts survive only as transcribed in `261001-n8y-VESTIGES.md`.
 
 ## Task 1: generator, staleness guard, editTranslations (tracer)
 
