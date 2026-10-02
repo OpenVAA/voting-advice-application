@@ -29,7 +29,6 @@
     "@openvaa/core": "workspace:^",
     "ai": "^5.0.0",
     "js-yaml": "catalog:",
-    "jsonrepair": "^3.13.0",
     "openai": "^4.96.0",
     "zod": "catalog:"
   }
