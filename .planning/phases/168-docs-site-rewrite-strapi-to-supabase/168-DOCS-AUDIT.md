@@ -157,6 +157,28 @@ Derivation: `git ls-files 'apps/docs/src/routes/(content)/developers-guide' | gr
 | 25 | `/developers-guide/localization/localization-in-strapi` | `apps/docs/src/routes/(content)/developers-guide/localization/localization-in-strapi/+page.ts` | `/developers-guide/localization/translations-and-overrides` | merged / deleted | 168-05 |
 | 26 | `/developers-guide/localization/localization-in-the-frontend` | `apps/docs/src/routes/(content)/developers-guide/localization/localization-in-the-frontend/+page.ts` | `/developers-guide/localization/translations-and-overrides` | moved; merged into Translations and overrides | 168-05 |
 
+### Inbound references repointed
+
+Repo content links the final URL, never a stub (D-04). The list comes from `validate:links --check --only inbound`: 8 findings
+before the repoint and 0 after (`gate-evidence/168-02-inbound.txt`).
+
+- `README.md` (the "Contributing" item in the header list): `openvaa.org/developers-guide/contributing`, a section route that never
+  had a page, now points to `…/developers-guide/contributing/contribute`.
+- `apps/frontend/src/lib/api/README.md` ("See also the online doc"): the `…/frontend/data-api` URL and its local `data-api/+page.md`
+  path now point to `…/frontend/data-api-and-adapters` and
+  `</apps/docs/src/routes/(content)/developers-guide/frontend/data-api-and-adapters/+page.md>`. The link text is now "Data API and adapters".
+- `apps/frontend/src/lib/server/api/README.md` ("See also the online doc"): the same change as the line above.
+- `apps/frontend/src/routes/candidate/README.md` (the "Candidate user management" item): the section route `…/candidate-user-management`,
+  which never had a page, and its local directory path now point to "Candidate app" at
+  `…/candidate-app/pre-registration-and-invitation`, URL and local `+page.md` path.
+- `packages/app-shared/src/settings/README.md` (the Static settings and App Settings "locally" links): the wrong prefix
+  `/docs/src/routes/developers-guide/configuration/…` is replaced with
+  `</apps/docs/src/routes/(content)/developers-guide/configuration/{static-settings,app-settings}/+page.md>`.
+
+These references already resolved and were left unchanged: `.agents/code-review-checklist.md` (code-style-guide ×2, contribute,
+and the two guide roots), `.github/PULL_REQUEST_TEMPLATE` (`pull-request#self-review`, `contribute#commit-your-update`), root
+`ROADMAP.md` (code-style-guide), `.claude/skills/components/SKILL.md` and `.claude/skills/README.md` (the generated component index).
+
 ## Sweep exceptions
 
 _Filled by 168-08: every remaining D-21 sweep hit under `apps/docs`, with its reason._
@@ -243,6 +265,11 @@ _Filled by 168-08: each `gsd-doc-verifier` finding against the claim ledgers, an
 - **Internal links were repointed mechanically, so one is now a self-link** (168-02). `frontend/data-api-and-adapters` (the old `data-api`
   body) linked "an example of the data loading cascade" at `frontend/accessing-data-and-state-management`, which now redirects to that same
   page. The link points at itself until 168-05 merges the two bodies.
+- **168-07 must keep two Contributing headings** (168-02, D-04, T-168-07). `.github/PULL_REQUEST_TEMPLATE` links
+  `contributing/pull-request#self-review` and `contributing/contribute#commit-your-update`, and `.agents/code-review-checklist.md`
+  (binding for review under CLAUDE.md) links `contributing/code-style-guide` and `contributing/contribute`. All of them resolve after
+  168-02 (`--only inbound` exit 0). The headings "Self-review" (in Pull Request) and "Commit your update" (in Contribute) must keep
+  slugs `self-review` and `commit-your-update`, and those page URLs must not move. `--only inbound` checks both anchors.
 
 ## Dependency reconciliation
 
