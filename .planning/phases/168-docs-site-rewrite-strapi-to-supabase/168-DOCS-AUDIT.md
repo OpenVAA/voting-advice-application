@@ -146,6 +146,40 @@ _Filled by 168-08: each `gsd-doc-verifier` finding against the claim ledgers, an
 - **Placeholder commands are skipped, not resolved** (168-01). `check-claims.mjs commands` lists a command whose
   workspace or script token is a placeholder (`<…>`, `{…}`, `[…]`, `...`) as skipped; at base the one such command is
   `yarn workspace [module-name] [script-name]` in `development/monorepo`.
+- **Docs lint crash cause** (168-01.1, D-15; record `gate-evidence/168-01.1-lint.md` § 2). Order-dependence **CONFIRMED** (the shared
+  config imported before `eslint-config-prettier` crashes with `ERR_INTERNAL_ASSERTION`, the reverse order loads, each loads alone);
+  Node-version independence **CONFIRMED** (identical on v24.14.1 and CI's v22.22.1); the trigger, the shared config's
+  `compat.extends(…, 'prettier')`, **CONFIRMED** (a copy without that entry loads in the crashing order); `eslint-plugin-svelte` as the
+  cause (the v1.2 Phase 19 attribution) **REFUTED** (the crash reproduces without it). The Node-internal mechanism stays
+  **UNCONFIRMED**: a plain top-level `createRequire` of the same module does not reproduce it. Fix: drop the redundant direct import.
+- **`.svelte-kit` is ignored by the docs ESLint config** (168-01.1). ESLint 9 does not read `.gitignore`, and the build output under
+  `apps/docs/.svelte-kit/output` otherwise crashes the run (`naming-convention` needs type information on a `.svelte.js` file). The
+  frontend config ignores the same directory. No rule changed.
+- **Operator ruling 2026-10-02: Option B, "Fix at source, re-anchor freeze"** (168-01.1; D-07 × D-15; record
+  `gate-evidence/168-01.1-lint.md` § 8). D-15 (fix every docs lint error at its source, no suppression, no rule weakening) collided
+  with the D-07 component freeze: 4 of the 14 docs lint errors sat in `ResearchQuote.svelte` (3) and `ReferenceList.svelte` (1).
+  The operator chose to fix them at source and re-anchor only the component part of the freeze; the spans stay anchored to the
+  original phase base.
+- **D-07 scope exception: lint-only edits to two frozen components** (168-01.1, commit `6090476cc`). `ResearchQuote.svelte`: value
+  imports sorted, `type Snippet` moved to a top-level `import type`, `string[]` → `Array<string>`. `ReferenceList.svelte`:
+  `string[]` → `Array<string>`. Made with `eslint --fix` plus `prettier --write`; no markup, style or logic line changed. The six
+  ResearchQuote pages render byte-identical before and after (dev-server SSR, UUID-normalised; a one-character markup change turned
+  all six red). `Author.svelte` is unchanged. Any further edit to the three components is still out of scope.
+- **The span gate is re-anchored for the components only** (168-01.1). `check-research-quotes.ts` gained `--component-base <rev>`
+  (defaults to `--base`): the 22 spans in 6 pages are still compared byte-for-byte against the original phase base
+  (`gate-evidence/base-rev.txt`, `0ec229dfe`), and `COMPONENT_PATHS` against the Task 1 lint-fix commit, recorded in
+  `gate-evidence/component-base-rev.txt` (`6090476cc44aa995e3b36368b8a605c96e4ccc1a`). The single documented invocation for every
+  later plan and for Phase 169, from the repo root:
+
+  ```bash
+  GE=.planning/phases/168-docs-site-rewrite-strapi-to-supabase/gate-evidence
+  yarn workspace @openvaa/docs check:research-quotes --base "$(cat $GE/base-rev.txt)" --component-base "$(cat $GE/component-base-rev.txt)"
+  ```
+
+  The pre-ruling form `--base "$(cat $GE/base-rev.txt)"` alone now exits 1 by design (it still compares the components to
+  `0ec229dfe`). New controls, each red then green: a one-character edit in `Author.svelte` and one in `ResearchQuote.svelte` after the
+  re-anchor commit (exit 1, `changed since component base`), and a one-character edit inside block 1 of `preparing/matching` (exit 1
+  against the original base, `block 1 differs at character 611`).
 
 ## Dependency reconciliation
 
@@ -154,6 +188,12 @@ _Filled by 168-01.1 (typedoc / typedoc-plugin-markdown, `glob`, the ESLint parse
 ## Cross-phase interactions
 
 _Filled by 168-01.1 and later plans._
+
+- **The docs ESLint config takes `tsParser` from `@openvaa/shared-config/eslint`** (168-01.1 × 167-D14). The `.svelte` block needs the
+  TypeScript parser object for `parserOptions.parser`. 167-D14 removed `@typescript-eslint/parser` from `apps/docs` devDependencies, so
+  instead of re-declaring it (a new manifest entry for a SUS-flagged package), `packages/shared-config/eslint.config.mjs`, which already
+  imports and depends on it, gained the one-line named export `export { tsParser };` (appended at the end so the line numbers other files
+  cite in that config do not move). No install, no lockfile change.
 
 ## Out of scope / already done
 
