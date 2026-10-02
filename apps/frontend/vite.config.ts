@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
   // The prefix is the literal variable name: `FRONTEND_PORT` carries no `VITE_` prefix, so Vite's default prefix would match nothing, and the empty-string prefix would pull in every entry of a secrets file. `loadEnv` overlays `process.env` AFTER the parsed file, so a one-off shell prefix (`FRONTEND_PORT=5273 yarn dev`) still overrides a persistent value in the root `.env`.
   const env = loadEnv(mode, repoRoot, 'FRONTEND_PORT');
 
-  // The project id is carried from the root `.env` into `process.env`, which is where SvelteKit's own `loadEnv` over `apps/frontend` picks it up and exposes it through `$env/dynamic/public`. Only the two named keys cross over; see `vite.projectIdEnv.ts` for why a value already in `process.env` is never overwritten.
+  // SvelteKit reads this same root `.env` (`kit.env.dir`), but any `process.env` entry overrides the file, an empty one included, so the two project ids are copied in from the file wherever the shell left them unset or blank. Only those two keys cross over; see `vite.projectIdEnv.ts`.
   resolveProjectIdEnv({ mode, repoRoot, target: process.env });
 
   return {
