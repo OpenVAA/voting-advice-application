@@ -4,18 +4,18 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 168
 current_phase_name: Docs-Site Rewrite — Strapi to Supabase
-current_plan: 5
+current_plan: 6
 status: executing
-stopped_at: Completed 168-03-PLAN.md
-last_updated: "2026-10-02T10:20:23.581Z"
+stopped_at: Completed 168-04-PLAN.md
+last_updated: "2026-10-02T10:54:40.996Z"
 last_activity: 2026-10-02
 last_activity_desc: Phase 168 execution started
-state_head: 70ddd6a7a485eb93204353476d3371defc144849
+state_head: e75eafde8cff4ebc6179ade7f00ecdf1cd75f77b
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
-  completed_plans: 329
+  completed_plans: 330
   percent: 89
 ---
 
@@ -35,7 +35,7 @@ _(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and P
 Phase: 168 (Docs-Site Rewrite — Strapi to Supabase) — EXECUTING
 Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
-Current Plan: 5
+Current Plan: 6
 Total Plans in Phase: 9
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
@@ -819,8 +819,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-10-02T10:20:22.314Z
-Stopped at: Completed 168-03-PLAN.md
+Last session: 2026-10-02T10:54:39.666Z
+Stopped at: Completed 168-04-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -1142,6 +1142,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 168 P01.1 | 130min | 2 tasks | 31 files |
 | Phase 168 P02 | 12min | 3 tasks | 78 files |
 | Phase 168 P03 | 28min | 3 tasks | 8 files |
+| Phase 168 P04 | 31 min | 3 tasks | 13 files |
 
 ## Deferred Items
 
@@ -2120,6 +2121,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 168]: 168-03: Edge Function callers are documented as the code has them (adapter methods), with the missing live UI caller recorded as finding F2 rather than glossed
 - [Phase 168]: 168-03: Negative facts (missing route, uncalled method) go on the page and into Findings with the proving grep, since a content anchor cannot prove absence
 - [Phase 168]: 168-03: Seed data states yarn db:reset as when seed.sql runs; CLAUDE.md's 'seeded on supabase start' recorded as F6, first-start seeding UNCONFIRMED
+- [Phase 168]: 168-04: Quick start asks for the local anon and service-role keys (from supabase status -o env) as well as the preset PUBLIC_PROJECT_ID; Deployment asks for PUBLIC_PROJECT_ID on the Render service, which render.example.yaml omits (finding F1)
+- [Phase 168]: 168-04: the 167 Render clean-up note is on the Deployment page as removal guidance naming the old keys by family (CACHE_*, PUBLIC_*_BACKEND_URL), so the 167-removed-name sweeps stay clean; recorded as a sweep exception for 168-08
 
 ### Quick Tasks Completed
 
