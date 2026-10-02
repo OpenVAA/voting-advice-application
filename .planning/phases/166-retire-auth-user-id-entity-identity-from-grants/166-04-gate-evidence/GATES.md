@@ -86,17 +86,63 @@ sourced the scratchpad `bank-auth-journey.env` (the IdP env and the TLS bypass),
 | Counts | `grep -c` | - | `ERR_ENTITY_IDENTITY_AMBIGUOUS` in SKILL.md: 2; `Phase 166` in SKILL.md: 1; `Phase 167` in the created_by todo: 1 |
 | No source change | `git diff --exit-code -- apps packages tests` | 0 | this plan changes no source |
 
-## D-20 link 6: full suite - NOT RUN (disk floor not met)
+## D-20 link 6: full suite
+
+**First attempt (2026-10-02, about 00:55 local): held on disk.** The VM measured 14468692 KiB available
+(13.8 GiB) before and after `docker builder prune -af` (`Total: 0B`), below the 15 GiB floor. `docker system df`
+showed the only reclaimable space in images (6.526 GB) and volumes (86 MB), which this plan must not prune
+because a second, unrelated Supabase stack runs on this host. The suite was not started and the plan stopped
+at a blocking-human checkpoint.
+
+**User ruling (2026-10-02, via the orchestrator): "Run at 13.8 GiB."** The user explicitly approved running the
+full suite below the floor, on the condition that any `ENOSPC` in the run's console.log voids the run, and
+without pruning images or volumes or restarting Docker.
+
+**Measurement at the resumed run (2026-10-02 08:34 local).** The below-floor approval turned out to be unneeded.
 
 | Step | Command | Result |
 |---|---|---|
-| Measure before | `docker run --rm alpine df -k /` | 107016164 KiB size, 87078548 used, **14468692 KiB available (13.8 GiB)**, 86% |
-| Sanctioned prune | `docker builder prune -af` | `Total: 0B` (no build cache to reclaim) |
-| Measure after | `docker run --rm alpine df -k /` and `df -h /` | **14468692 KiB available (13.8 GiB)**, unchanged |
-| Read-only inventory | `docker system df` | images 17.6 GB (6.526 GB reclaimable), containers 44.5 MB (0 reclaimable), local volumes 13.75 GB (86 MB reclaimable), build cache 0 |
+| Measure before the run | `docker run --rm alpine df -k /` | 107016164 KiB size, 74574452 used, **26972788 KiB available (25.7 GiB)**, 73% |
+| Measure after the run | same | 74530448 used, **27016792 KiB available (25.8 GiB)**, 73% |
 
-The floor is 15 GiB (orchestrator ruling 4). The only remaining reclaimable space is in images and volumes,
-which this plan must not prune because a second, unrelated Supabase stack runs on this host, and a Docker
-restart is likewise prohibited. Per the plan ("If the VM is still below 15 GiB after the prune, stop and report
-rather than run"), the full suite was **not started**. Verdict for link 6: **PENDING - blocked on VM disk**.
-<!-- gsd:gates-continue -->
+The roughly 12 GiB came back between the two sessions. This plan pruned nothing in either session and did not
+restart Docker. The `alpine` image the first measurement used was gone and had to be pulled again, so images
+were removed outside this plan (the cause was not established). `docker builder prune -af` was not re-run,
+because it had reclaimed 0 B and the floor was already met.
+
+**Pre-run state.** No listener on 5273, 8777 or 9443. No `vite.js dev` or `functions serve` process.
+`PLAYWRIGHT_BANK_AUTH`, `NODE_TLS_REJECT_UNAUTHORIZED`, `IDENTITY_PROVIDER_*` and `CI` were unset in the
+wrapper's shell. `git status --porcelain -- apps packages tests` printed nothing. HEAD was `c82b111ce`, the same
+source tree as `6e0e2d968` (this plan changes no source). Load averages were 4.62 / 4.70 / 4.79.
+
+| # | Command | Exit | Totals (report.json; results.json agrees) | Preflight | Window (UTC) | Verdict |
+|---|---|---|---|---|---|---|
+| 9 | `tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/166-04-full` (no `--project`: the full gate suite as `test:e2e` runs it, `--grep-invert @probe`, freshly reset database) | 0 | `total 171, expected 171, unexpected 0, flaky 0, skipped 0` | 0 / 1 | 05:35:03 -> 05:40:33 | PASS |
+
+- **Decode:** `decode-report.py tests/e2e-runs/166-04-full` exited 0, printing `sources_agree: True clean: True`.
+  `total == expected` with nothing unexpected, flaky or skipped, so no test was left unrun.
+- **Posture** (`env-posture.txt`): `ci_env=unset`, `eperm07_knobs=unset`, `db_reset=true`, `package_watcher=true`,
+  observed workers 6 and retries 0, `e2e_project_id=...0e2`. `dirty_files=1` is the unrelated, untracked
+  `.planning/quick/261001-n8y-.../gate-evidence/` directory.
+- **Projects:** 100 projects ran, among them `candidate-journey`, `candidate-a11y-scan`, `voter-*`, `a11y-smoke`,
+  `admin-access`, `eperm07-term-trigger`, `performance`, `storage-cleanup` and every `perm-*` project with its
+  setup and teardown. `bank-auth` and `bank-auth-journey` are opt-in (`PLAYWRIGHT_BANK_AUTH=1`) and are not part
+  of this suite. They are covered by link 5 above.
+- **ENOSPC:** `grep -c ENOSPC` gives 0 in `console.log` (the wrapper's tee'd output, copied into the run
+  directory), `stdout.log`, `devserver.log` and `db-reset.log`. The run is valid.
+- **After the run:** nothing listens on 5273 and no `vite.js dev` process is alive.
+
+**Closing checks after link 6.**
+
+| Check | Command | Exit | Result |
+|---|---|---|---|
+| Population | `test "$(git grep -l auth_user_id -- apps packages tests .claude/skills)" = "apps/supabase/supabase/tests/database/36-entity-identity.test.sql"` | 0 | only the census file names the column |
+| Docs present | Task 3's second `<automated>` check | 0 | both residue todos, the helper and index in the skill, the saved-answers annotation |
+| No source change | `git diff --exit-code -- apps packages tests` | 0 | this plan changes no source |
+
+## Verdict
+
+**PASS. Every D-20 link is green on the final tree:** lint, format, unit, `db:reset` + SQL lint + pgTAP
+(1335 tests), candidate-journey (5/5), candidate-a11y-scan (17/17), bank-auth ×3 (8/8 each), bank-auth-journey ×3
+(131/131 each) and the full suite (171/171). Every run had 0 failed, 0 flaky, 0 skipped and 0 did-not-run. No gate
+was skipped, waived or marked known-flaky.
