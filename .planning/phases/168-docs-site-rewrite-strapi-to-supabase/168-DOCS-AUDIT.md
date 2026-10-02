@@ -180,10 +180,34 @@ _Filled by 168-08: each `gsd-doc-verifier` finding against the claim ledgers, an
   `0ec229dfe`). New controls, each red then green: a one-character edit in `Author.svelte` and one in `ResearchQuote.svelte` after the
   re-anchor commit (exit 1, `changed since component base`), and a one-character edit inside block 1 of `preparing/matching` (exit 1
   against the original base, `block 1 differs at character 611`).
+- **Root `docs:*` keys stay; their delegation targets are repointed** (168-01.1, D-13). `docs:generate` → `generate:docs`,
+  `docs:components` → `generate:component-docs`, `docs:routes` → `generate:route-map` (the workspace names are the real ones);
+  `docs:typedoc` and `docs:typedoc-frontend` are deleted. `generate:component-docs` now runs `scripts/generate-component-docs.ts` (it
+  named the missing `extract-component-docs.ts`).
+- **The generator's missing-source guard no longer exempts `api/` sources** (168-01.1, D-14 fix). With the destination clear added
+  after the guard, the old `&& !src.startsWith('api/')` exemption would let a missing `api/` source wipe its destination. No target
+  starts with `api/`; the exemption was TypeDoc residue. Record: `gate-evidence/168-01.1-generator-nc.md`.
+- **Three TypeDoc lines removed from `apps/docs/README.md` ahead of 168-07's rewrite** (168-01.1). The plan's acceptance grep
+  (`git grep -i typedoc -- apps/docs package.json` empty) covers the README; the lines described config files that do not exist. The
+  rest of the README is still stale and remains 168-07's to rewrite.
 
 ## Dependency reconciliation
 
 _Filled by 168-01.1 (typedoc / typedoc-plugin-markdown, `glob`, the ESLint parser) and 169._
+
+Record: `gate-evidence/168-01.1-audit-deps.md` (logs `168-01.1-audit-before.txt`, `168-01.1-audit-after.txt`).
+
+- **`typedoc` and `typedoc-plugin-markdown` removed from `apps/docs`** (168-01.1, D-13, ruling 5). No script, config or import used
+  them once the typedoc scripts, `TYPEDOC_CONFIG` and the commented link code were gone. The lockfile dropped them and 12 transitive
+  entries (shiki, markdown-it, linkify-it, lunr and others); no new resolution.
+- **`@playwright/test` removed from `apps/docs`** (168-01.1, ruling 5). Its only import was `apps/docs/playwright.config.ts`, deleted with
+  the `test` / `test:e2e` scripts; `yarn why` showed no peer requirement from a docs dependency. `playwright` stays (peer of
+  `@vitest/browser-playwright` in `vite.config.ts`).
+- **`glob` declared in `apps/docs`** at the root's `^11.0.0` (Rider 1; already locked, no new resolution).
+- **Audit baseline: rows 1121797 and 1124012 (linkify-it via `markdown-it@14.1.0`) hand-deleted**, note count 69 → 67 (63 → 61 high).
+  The chain linkify-it ← markdown-it ← typedoc was typedoc-only in the old lockfile; they are exactly the ids the removal made stale.
+  The high+ GHSA set after is a subset of the set before (`comm -13` empty). `--update-baseline` was never run. The `@typescript-eslint/parser`
+  question is settled under Cross-phase interactions (named export, no manifest entry).
 
 ## Cross-phase interactions
 
