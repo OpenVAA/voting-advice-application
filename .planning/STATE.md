@@ -4,18 +4,18 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 167
 current_phase_name: Origin/main Vestige Cleanup
-current_plan: 3
+current_plan: 4
 status: executing
-stopped_at: Completed 167-02-PLAN.md
-last_updated: "2026-10-02T06:02:57.018Z"
+stopped_at: Completed 167-03-PLAN.md
+last_updated: "2026-10-02T06:07:37.263Z"
 last_activity: 2026-10-02
 last_activity_desc: Phase 167 execution started
-state_head: 837b895c46ff899bf1fb5218efdcaad601412b78
+state_head: 70956a8b0369c848f5bb023863081ce6abd39dfd
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
-  completed_plans: 321
+  completed_plans: 322
   percent: 89
 ---
 
@@ -35,7 +35,7 @@ _(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and P
 Phase: 167 (Origin/main Vestige Cleanup) — EXECUTING
 Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
-Current Plan: 3
+Current Plan: 4
 Total Plans in Phase: 6
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
@@ -819,8 +819,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-10-02T06:02:55.859Z
-Stopped at: Completed 167-02-PLAN.md
+Last session: 2026-10-02T06:07:36.077Z
+Stopped at: Completed 167-03-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -1134,6 +1134,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 166 P04 | 41min | 3 tasks | 8 files |
 | Phase 167 P01 | 3min | 2 tasks | 3 files |
 | Phase 167 P02 | 7min | 3 tasks | 34 files |
+| Phase 167 P03 | 2min | 2 tasks | 2 files |
 
 ## Deferred Items
 
@@ -2091,6 +2092,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 167]: 167-01: safeGetSession.test.ts pins exact getUser/getSession counts in every case plus a strict-client Proxy (UnexpectedClientAccess); V1/V2-old/V2-new/V3 all observed red; PHASE_BASE=8c519ac97
 - [Phase 167]: 167-02: /api/auth/logout is the live sample API path in route tests (D-11)
 - [Phase 167]: 167-02: cache proxy, backend-URL pair, BACKEND_API_TOKEN and flat-cache removed in one commit (837b895c4); VEST-03 stays open for 167-06's adapter-todo notes
+- [Phase 167]: 167-03: js-yaml declared in @openvaa/llm via catalog: (commit 879d0ccf0); lockfile assertion replaced the legitimacy checkpoint and passed (no new resolution, js-yaml stays 4.3.2); VEST-04 left open for 167-04
 
 ### Quick Tasks Completed
 
