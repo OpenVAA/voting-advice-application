@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { SCREENSHOTS, SCREENSHOT_BASE_PATH } from '$lib/screenshots';
-  import type { Screenshot } from '$lib/screenshots';
   import { OPENVAA_REPO_URL } from '$lib/consts';
+  import { SCREENSHOT_BASE_PATH, SCREENSHOTS } from '$lib/screenshots';
+  import type { Screenshot } from '$lib/screenshots';
 
   let content: HTMLDivElement;
   let firstItem = $state(0);
@@ -28,7 +28,9 @@
 
   // Update numItems based on screen width
   $effect(() => {
-    const updateNumItems = () => (numItems = getNumItems());
+    function updateNumItems(): void {
+      numItems = getNumItems();
+    }
     updateNumItems();
     window.addEventListener('resize', updateNumItems);
     return () => window.removeEventListener('resize', updateNumItems);

@@ -1,11 +1,12 @@
 <script lang="ts">
-  import { onMount, type Snippet } from 'svelte';
-  import ReferenceList from '$lib/components/ReferenceList.svelte';
+  import { onMount } from 'svelte';
   import Author from '$lib/components/Author.svelte';
+  import ReferenceList from '$lib/components/ReferenceList.svelte';
+  import type { Snippet } from 'svelte';
 
   interface Props {
     title: string;
-    references?: string[];
+    references?: Array<string>;
     author?: string;
     id?: string;
     children: Snippet;

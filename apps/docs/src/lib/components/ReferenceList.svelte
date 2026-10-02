@@ -1,6 +1,6 @@
 <script lang="ts">
   interface Props {
-    references: string[];
+    references: Array<string>;
   }
 
   let { references }: Props = $props();

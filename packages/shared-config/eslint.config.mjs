@@ -187,3 +187,5 @@ export default [
     }
   }
 ];
+
+export { tsParser };

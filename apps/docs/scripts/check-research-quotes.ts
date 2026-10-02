@@ -6,9 +6,9 @@
  * - Base spans come from `git show <base>:<path>` and current spans from the working tree. A span runs from `<ResearchQuote` to the next `</ResearchQuote>`, opening tag included, and spans are compared as exact strings in order.
  * - Per file, the counts of `<ResearchQuote`, of `</ResearchQuote>` and of spans must agree on both sides, and the working-tree file must still contain `import ResearchQuote from`.
  * - A `<ResearchQuote` in any other file under `src/routes` fails (an added block).
- * - `ResearchQuote.svelte`, `ReferenceList.svelte` and `Author.svelte` must not differ from the base.
+ * - `ResearchQuote.svelte`, `ReferenceList.svelte` and `Author.svelte` must not differ from the component base, which is `--component-base` when given and `--base` otherwise. The spans are always compared against `--base`.
  *
- * Usage: check-research-quotes --base <rev> [--extract-dir <dir>]
+ * Usage: check-research-quotes --base <rev> [--component-base <rev>] [--extract-dir <dir>]
  *
  * With `--extract-dir`, the spans are written to `rq-base.json` and `rq-head.json` in that directory as arrays of `{ path, ordinal, span }`.
  *
@@ -44,13 +44,14 @@ class UsageError extends Error {}
  */
 async function main() {
   let base: string;
+  let componentBase: string;
   let extractDir: string | undefined;
   try {
-    ({ base, extractDir } = parseArgs(process.argv.slice(2)));
+    ({ base, componentBase, extractDir } = parseArgs(process.argv.slice(2)));
   } catch (error) {
     if (!(error instanceof UsageError)) throw error;
     console.error(`Usage error: ${error.message}`);
-    console.error('Usage: check-research-quotes --base <rev> [--extract-dir <dir>]');
+    console.error('Usage: check-research-quotes --base <rev> [--component-base <rev>] [--extract-dir <dir>]');
     process.exitCode = 2;
     return;
   }
@@ -92,13 +93,13 @@ async function main() {
     failures.push(`${file}: holds a <ResearchQuote> block but held none at base`);
   }
 
-  const diff = spawnSync('git', ['diff', '--quiet', base, '--', ...COMPONENT_PATHS], { cwd: REPO_ROOT });
+  const diff = spawnSync('git', ['diff', '--quiet', componentBase, '--', ...COMPONENT_PATHS], { cwd: REPO_ROOT });
   if (diff.status === 1) {
-    const changed = execFileSync('git', ['diff', '--name-only', base, '--', ...COMPONENT_PATHS], {
+    const changed = execFileSync('git', ['diff', '--name-only', componentBase, '--', ...COMPONENT_PATHS], {
       cwd: REPO_ROOT,
       encoding: 'utf-8'
     });
-    for (const file of changed.split('\n').filter(Boolean)) failures.push(`${file}: changed since base`);
+    for (const file of changed.split('\n').filter(Boolean)) failures.push(`${file}: changed since component base`);
   } else if (diff.status !== 0) failures.push(`git diff failed with status ${diff.status}`);
 
   if (extractDir) {
@@ -109,6 +110,7 @@ async function main() {
   }
 
   console.info(`Base:            ${base}`);
+  console.info(`Component base:  ${componentBase}`);
   console.info(`Files:           ${files.length}`);
   console.info(`Spans at base:   ${baseSpans.length}`);
   console.info(`Spans now:       ${headSpans.length}`);
@@ -120,31 +122,38 @@ async function main() {
     process.exitCode = 1;
     return;
   }
-  console.info('\nAll <ResearchQuote> spans and the frozen components are identical to the base.');
+  console.info(
+    '\nAll <ResearchQuote> spans are identical to the base and the frozen components to the component base.'
+  );
 }
 
 /**
  * Parse the command line arguments.
- * @throws UsageError on a missing base or an unknown argument
+ * @throws UsageError on a missing base, a revision that is not a commit, or an unknown argument
  */
-function parseArgs(args: Array<string>): { base: string; extractDir?: string } {
+function parseArgs(args: Array<string>): { base: string; componentBase: string; extractDir?: string } {
   let base: string | undefined;
+  let componentBase: string | undefined;
   let extractDir: string | undefined;
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    if (arg === '--base' || arg === '--extract-dir') {
+    if (arg === '--base' || arg === '--component-base' || arg === '--extract-dir') {
       const value = args[++i];
       if (!value || value.startsWith('--')) throw new UsageError(`${arg} needs a value`);
       if (arg === '--base') base = value;
+      else if (arg === '--component-base') componentBase = value;
       else extractDir = path.resolve(value);
     } else {
       throw new UsageError(`unknown argument ${arg}`);
     }
   }
   if (!base) throw new UsageError('--base <rev> is required');
-  const verify = spawnSync('git', ['rev-parse', '--verify', '--quiet', `${base}^{commit}`], { cwd: REPO_ROOT });
-  if (verify.status !== 0) throw new UsageError(`${base} is not a commit`);
-  return { base, extractDir };
+  componentBase ??= base;
+  for (const rev of new Set([base, componentBase])) {
+    const verify = spawnSync('git', ['rev-parse', '--verify', '--quiet', `${rev}^{commit}`], { cwd: REPO_ROOT });
+    if (verify.status !== 0) throw new UsageError(`${rev} is not a commit`);
+  }
+  return { base, componentBase, extractDir };
 }
 
 /**
