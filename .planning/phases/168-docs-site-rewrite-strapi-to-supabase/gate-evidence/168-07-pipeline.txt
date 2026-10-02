@@ -1,0 +1,473 @@
+============================================================
+OpenVAA Documentation Generator
+============================================================
+✓ Created output directories
+
+Extracting component documentation...
+$ tsx scripts/generate-component-docs.ts
+
+Extracting component documentation...
+
+Processing Static Components...
+  Found 68 Svelte files
+  ✓ Video
+  ✓ Warning
+  ✓ Term
+  ✓ Toggle
+  ✓ Tabs
+  ✓ SuccessMessage
+  ✓ SubMatches
+  ✓ Select
+  ✓ ScoreGauge
+  ✓ PreventNavigation
+  ✓ QuestionOpenAnswer
+  ✓ QuestionExtendedInfoButton
+  ✓ QuestionExtendedInfo
+  ✓ QuestionChoices
+  ✓ QuestionBasicInfo
+  ✓ QuestionArguments
+  ✓ QuestionActions
+  ✓ OpinionQuestionInput
+  ✓ NumberScaleInput
+  ✓ Notification
+  ✓ OpenVAALogo
+  ✓ MatchScore
+  ✓ ModalContainer
+  ✓ Modal
+  ✓ Loading
+  ✓ Image
+  ✓ InfoBadge
+  ✓ InfoAnswer
+  ✓ QuestionInput
+  ✓ PreviewAllInputs
+  ✓ InputGroup
+  ✓ Input
+  ✓ Hero
+  ✓ HeroEmoji
+  ✓ PreviewAllIcons
+  ✓ Icon
+  ✓ Expander
+  ✓ ErrorMessage
+  ✓ EntityTag
+  ✓ ElectionTag
+  ✓ EntityFilters
+  ✓ PreHeading
+  ✓ HeadingGroup
+  ✓ ElectionSymbol
+  ✓ WarningMessages
+  ✓ ProgressBar
+  ✓ InfoMessages
+  ✓ ElectionSelector
+  ✓ SingleGroupConstituencySelector
+  ✓ ConstituencySelector
+  ✓ CategoryTag
+  ✓ Button
+  ✓ Avatar
+  ✓ ButtonWithConfirmation
+  ✓ Alert
+  ✓ AccordionSelect
+  ✓ TimedModal
+  ✓ DrawerHost
+  ✓ ConfirmationModal
+  ✓ Drawer
+  ✓ SelectMultiplePart
+  ✓ MultipleTextPart
+  ✓ MultilingualTextPart
+  ✓ ImagePart
+  ✓ TextEntityFilter
+  ✓ NumericEntityFilter
+  ✓ EnumeratedEntityFilter
+  ⚠️  No @component docstring in /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend/src/lib/components/analytics/umami/UmamiAnalytics.svelte
+Processing Dynamic Components...
+  Found 29 Svelte files
+  ✓ QuestionHeading
+  ✓ SurveyButton
+  ✓ LogoutButton
+  ✓ Navigation
+  ✓ NavItem
+  ✓ NavGroup
+  ✓ Footer
+  ✓ Feedback
+  ✓ InfoItem
+  ✓ EntityOpinions
+  ✓ EntityInfo
+  ✓ EntityDetails
+  ✓ EntityChildren
+  ✓ EntityListWithControls
+  ✓ EntityListControls
+  ✓ EntityList
+  ✓ EntityCard
+  ✓ DataConsentInfoButton
+  ✓ DataConsent
+  ✓ SurveyPopup
+  ✓ SurveyBanner
+  ✓ AppLogo
+  ✓ LanguageSelection
+  ✓ VoterNav
+  ✓ CandidateNav
+  ✓ FeedbackModal
+  ✓ AdminNav
+  ✓ FeedbackPopup
+  ✓ DataConsentPopup
+Processing Candidate App Components...
+  Found 7 Svelte files
+  ✓ TermsOfUseForm
+  ✓ TermsOfUse
+  ✓ PreregisteredNotification
+  ✓ PasswordValidator
+  ✓ PasswordField
+  ✓ LogoutButton
+  ✓ PasswordSetter
+
+Generating table of contents...
+
+✓ Generated documentation for 103 components
+✓ Table of contents: /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/docs/scripts/.temp/components/README.md
+
+✓ Extracting component documentation complete
+
+Generating route map...
+$ tsx scripts/generate-route-map.ts
+
+Generating route map...
+
+✓ Route map generated: /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/docs/scripts/.temp/routes/README.md
+
+✓ Generating route map complete
+
+Moving generated files...
+$ tsx scripts/move-generated.ts
+
+Moving and transforming generated documentation...
+
+Moving components → /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/docs/src/routes/(content)/developers-guide/frontend/components/generated...
+✓ components moved and transformed
+Moving routes → /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/docs/src/routes/(content)/developers-guide/frontend/routing/generated...
+✓ routes moved and transformed
+✓ Cleaned up empty generated directory
+
+✓ Generated documentation moved and transformed to docs site
+
+✓ Moving generated files complete
+
+Generating navigation configuration...
+$ tsx scripts/generate-navigation-config.ts
+
+Generating navigation configuration...
+
+✓ Navigation config generated: /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/docs/src/lib/navigation.config.ts
+
+✓ No structural changes, titles updated where applicable
+
+✓ Generating navigation configuration complete
+
+Validating documentation links...
+$ tsx scripts/validate-links.ts
+
+Validating docs links (default mode, relative links are rewritten)...
+
+failed to load language javascript
+failed to load language css
+failed to load language css
+failed to load language css
+failed to load language css
+failed to load language css
+
+============================================================
+VALIDATION SUMMARY
+============================================================
+Markdown files:       186
+Internal md links:    304
+Fixed links:          0
+Literal hrefs:        8 (dynamic, not checked: 12)
+Navigation leaves:    82
+Redirect stubs:       26
+Anchors checked:      51
+Source files:         202 (scanned for GitHub links)
+GitHub links:         386
+Inbound references:   42 (patterns skipped: 1)
+============================================================
+Findings by class:
+  md-link: 0
+  svelte-href: 0
+  nav-route: 0
+  anchor: 0
+  stub: 0
+  github-path: 0
+  inbound: 0
+Total findings: 0
+
+✓ Validating documentation links complete
+
+============================================================
+✓ Documentation generation complete!
+============================================================
+/*! 🌼 daisyUI 5.5.14 */
+eslint.config.js 117ms (unchanged)
+mdsvex.config.js 2ms (unchanged)
+package.json 1ms (unchanged)
+prettier.config.mjs 2ms (unchanged)
+README.md 16ms (unchanged)
+scripts/check-research-quotes.ts 33ms (unchanged)
+scripts/docs-scripts.config.ts 4ms (unchanged)
+scripts/generate-all-docs-and-validate.ts 5ms (unchanged)
+scripts/generate-component-docs.ts 14ms (unchanged)
+scripts/generate-navigation-config.ts 22ms (unchanged)
+scripts/generate-route-map.ts 9ms (unchanged)
+scripts/move-generated.ts 5ms (unchanged)
+scripts/tsconfig.json 1ms (unchanged)
+scripts/utils/links.ts 18ms (unchanged)
+scripts/utils/routes.ts 5ms (unchanged)
+scripts/validate-links.ts 19ms (unchanged)
+src/app.d.ts 3ms (unchanged)
+src/app.html 14ms (unchanged)
+src/lib/components/Author.svelte 28ms (unchanged)
+src/lib/components/Footer.svelte 8ms (unchanged)
+src/lib/components/GithubIcon.svelte 3ms (unchanged)
+src/lib/components/Header.svelte 9ms (unchanged)
+src/lib/components/Navigation.svelte 8ms (unchanged)
+src/lib/components/NavigationItem.svelte 14ms (unchanged)
+src/lib/components/openVAALogo/index.ts 3ms (unchanged)
+src/lib/components/openVAALogo/OpenVAALogo.svelte 7ms (unchanged)
+src/lib/components/openVAALogo/OpenVAALogo.type.ts 3ms (unchanged)
+src/lib/components/PeerNavigation.svelte 5ms (unchanged)
+src/lib/components/ReferenceList.svelte 4ms (unchanged)
+src/lib/components/ResearchQuote.svelte 12ms (unchanged)
+src/lib/components/TableOfContents.svelte 12ms (unchanged)
+src/lib/consts.ts 2ms (unchanged)
+src/lib/layouts/MdLayout.svelte 4ms (unchanged)
+src/lib/layouts/prism-vs.css 7ms (unchanged)
+src/lib/navigation.config.ts 7ms
+src/lib/navigation.type.ts 2ms (unchanged)
+src/lib/screenshots.ts 3ms (unchanged)
+src/lib/utils/navigation.ts 4ms (unchanged)
+src/routes/(content)/+layout.svelte 4ms (unchanged)
+src/routes/(content)/about/association/+page.md 5ms (unchanged)
+src/routes/(content)/about/features/+page.md 8ms (unchanged)
+src/routes/(content)/about/intro/+page.md 1ms (unchanged)
+src/routes/(content)/about/newsletter/+page.svelte 5ms (unchanged)
+src/routes/(content)/about/project/+page.md 6ms (unchanged)
+src/routes/(content)/about/roadmap/+page.md 1ms (unchanged)
+src/routes/(content)/about/rules/+page.md 7ms (unchanged)
+src/routes/(content)/developers-guide/about-these-docs/+page.md 43ms (unchanged)
+src/routes/(content)/developers-guide/admin-app/+page.md 5ms (unchanged)
+src/routes/(content)/developers-guide/app-and-repo-structure/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/architecture/+page.md 5ms (unchanged)
+src/routes/(content)/developers-guide/auto-documentation/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/backend/authentication/+page.md 10ms (unchanged)
+src/routes/(content)/developers-guide/backend/customized-behaviour/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/backend/data-import-and-deletion/+page.md 5ms (unchanged)
+src/routes/(content)/developers-guide/backend/default-data-loading/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/backend/edge-functions/+page.md 8ms (unchanged)
+src/routes/(content)/developers-guide/backend/email/+page.md 4ms (unchanged)
+src/routes/(content)/developers-guide/backend/generated-types/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/backend/intro/+page.md 6ms (unchanged)
+src/routes/(content)/developers-guide/backend/mock-data-generation/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/backend/openvaa-admin-tools-plugin-for-strapi/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/backend/plugins/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/backend/preparing-backend-dependencies/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/backend/re-generating-types/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/backend/running-the-backend-separately/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/backend/security/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/candidate-app/bank-authentication/+page.md 9ms (unchanged)
+src/routes/(content)/developers-guide/candidate-app/login-and-password-reset/+page.md 4ms (unchanged)
+src/routes/(content)/developers-guide/candidate-app/password-validation/+page.md 7ms (unchanged)
+src/routes/(content)/developers-guide/candidate-app/pre-registration-and-invitation/+page.md 6ms (unchanged)
+src/routes/(content)/developers-guide/candidate-app/registration/+page.md 4ms (unchanged)
+src/routes/(content)/developers-guide/candidate-user-management/creating-a-new-candidate/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/candidate-user-management/mock-data/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/candidate-user-management/password-validation/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/candidate-user-management/registration-process-in-strapi/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/candidate-user-management/resetting-the-password/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/configuration/app-customization/+page.md 3ms (unchanged)
+src/routes/(content)/developers-guide/configuration/app-settings/+page.md 7ms (unchanged)
+src/routes/(content)/developers-guide/configuration/environmental-variables/+page.md 8ms (unchanged)
+src/routes/(content)/developers-guide/configuration/intro/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/configuration/static-settings/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/contributing/ai-agents/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/contributing/code-style-guide/+page.md 25ms (unchanged)
+src/routes/(content)/developers-guide/contributing/contribute/+page.md 3ms (unchanged)
+src/routes/(content)/developers-guide/contributing/issues/+page.md 3ms (unchanged)
+src/routes/(content)/developers-guide/contributing/pull-request/+page.md 5ms (unchanged)
+src/routes/(content)/developers-guide/contributing/recommended-ide-settings-code/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/contributing/workflows/+page.md 3ms (unchanged)
+src/routes/(content)/developers-guide/deployment/+page.md 15ms (unchanged)
+src/routes/(content)/developers-guide/development/intro/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/development/monorepo/+page.md 4ms (unchanged)
+src/routes/(content)/developers-guide/development/requirements/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/development/running-the-development-environment/+page.md 5ms (unchanged)
+src/routes/(content)/developers-guide/development/seed-data/+page.md 5ms (unchanged)
+src/routes/(content)/developers-guide/development/testing/+page.md 3ms (unchanged)
+src/routes/(content)/developers-guide/frontend/accessing-data-and-state-management/+page.ts 4ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/+page.md 3ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/+page.md 7ms
+src/routes/(content)/developers-guide/frontend/components/generated/candidate/components/logoutButton/LogoutButton/+page.md 3ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/candidate/components/passwordField/PasswordField/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/candidate/components/passwordSetter/PasswordSetter/+page.md 2ms
+src/routes/(content)/developers-guide/frontend/components/generated/candidate/components/passwordValidator/PasswordValidator/+page.md 3ms
+src/routes/(content)/developers-guide/frontend/components/generated/candidate/components/preregisteredNotification/PreregisteredNotification/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/components/generated/candidate/components/termsOfUse/TermsOfUse/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/candidate/components/termsOfUse/TermsOfUseForm/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/accordionSelect/AccordionSelect/+page.md 2ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/alert/Alert/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/avatar/Avatar/+page.md 2ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/button/Button/+page.md 4ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/buttonWithConfirmation/ButtonWithConfirmation/+page.md 2ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/categoryTag/CategoryTag/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/constituencySelector/ConstituencySelector/+page.md 3ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/constituencySelector/SingleGroupConstituencySelector/+page.md 2ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/controller/InfoMessages/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/controller/ProgressBar/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/controller/WarningMessages/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/electionSelector/ElectionSelector/+page.md 2ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/electionSymbol/ElectionSymbol/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/electionTag/ElectionTag/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/entityFilters/EntityFilters/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/entityFilters/enumerated/EnumeratedEntityFilter/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/entityFilters/numeric/NumericEntityFilter/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/entityFilters/text/TextEntityFilter/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/entityTag/EntityTag/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/errorMessage/ErrorMessage/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/expander/Expander/+page.md 3ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/headingGroup/HeadingGroup/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/headingGroup/PreHeading/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/hero/Hero/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/heroEmoji/HeroEmoji/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/icon/Icon/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/icon/PreviewAllIcons/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/image/Image/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/infoAnswer/InfoAnswer/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/infoBadge/InfoBadge/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/input/Input/+page.md 4ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/input/InputGroup/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/input/parts/ImagePart/+page.md 2ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/input/parts/MultilingualTextPart/+page.md 2ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/input/parts/MultipleTextPart/+page.md 3ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/input/parts/SelectMultiplePart/+page.md 2ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/input/PreviewAllInputs/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/input/QuestionInput/+page.md 2ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/loading/Loading/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/matchScore/MatchScore/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/modal/confirmation/ConfirmationModal/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/modal/drawer/Drawer/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/modal/drawerHost/DrawerHost/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/modal/Modal/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/modal/ModalContainer/+page.md 2ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/modal/timed/TimedModal/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/notification/Notification/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/openVAALogo/OpenVAALogo/+page.md 2ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/preventNavigation/PreventNavigation/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/questions/NumberScaleInput/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/questions/OpinionQuestionInput/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/questions/QuestionActions/+page.md 2ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/questions/QuestionArguments/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/questions/QuestionBasicInfo/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/questions/QuestionChoices/+page.md 4ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/questions/QuestionExtendedInfo/+page.md 2ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/questions/QuestionExtendedInfoButton/+page.md 2ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/questions/QuestionOpenAnswer/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/scoreGauge/ScoreGauge/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/select/Select/+page.md 3ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/subMatches/SubMatches/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/successMessage/SuccessMessage/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/tabs/Tabs/+page.md 2ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/term/Term/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/toggle/Toggle/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/components/video/Video/+page.md 5ms
+src/routes/(content)/developers-guide/frontend/components/generated/components/warning/Warning/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/appLogo/AppLogo/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/dataConsent/DataConsent/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/dataConsent/DataConsentInfoButton/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/dataConsent/popup/DataConsentPopup/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/entityCard/EntityCard/+page.md 3ms
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/entityDetails/EntityChildren/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/entityDetails/EntityDetails/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/entityDetails/EntityInfo/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/entityDetails/EntityOpinions/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/entityDetails/InfoItem/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/entityList/EntityList/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/entityList/EntityListControls/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/entityList/EntityListWithControls/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/feedback/Feedback/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/feedback/modal/FeedbackModal/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/feedback/popup/FeedbackPopup/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/footer/Footer/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/logoutButton/LogoutButton/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/navigation/admin/AdminNav/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/navigation/candidate/CandidateNav/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/navigation/languages/LanguageSelection/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/navigation/NavGroup/+page.md 2ms
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/navigation/Navigation/+page.md 2ms
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/navigation/NavItem/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/navigation/voter/VoterNav/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/questionHeading/QuestionHeading/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/survey/banner/SurveyBanner/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/survey/popup/SurveyPopup/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/survey/SurveyButton/+page.md 1ms (unchanged)
+src/routes/(content)/developers-guide/frontend/contexts/+page.md 6ms (unchanged)
+src/routes/(content)/developers-guide/frontend/data-api-and-adapters/+page.md 9ms (unchanged)
+src/routes/(content)/developers-guide/frontend/data-api/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/frontend/environmental-variables/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/frontend/intro/+page.md 6ms (unchanged)
+src/routes/(content)/developers-guide/frontend/routing/+page.md 5ms (unchanged)
+src/routes/(content)/developers-guide/frontend/routing/generated/+page.md 1ms
+src/routes/(content)/developers-guide/frontend/styling/+page.md 5ms (unchanged)
+src/routes/(content)/developers-guide/llm-features/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/localization/intro/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/localization/local-translations/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/localization/locale-resolution/+page.md 3ms (unchanged)
+src/routes/(content)/developers-guide/localization/locale-routes/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/localization/locale-selection-step-by-step/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/localization/localization-in-strapi/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/localization/localization-in-the-frontend/+page.ts 3ms (unchanged)
+src/routes/(content)/developers-guide/localization/storing-multi-locale-data/+page.md 3ms (unchanged)
+src/routes/(content)/developers-guide/localization/supported-locales/+page.md 2ms (unchanged)
+src/routes/(content)/developers-guide/localization/translations-and-overrides/+page.md 5ms (unchanged)
+src/routes/(content)/developers-guide/quick-start/+page.md 3ms (unchanged)
+src/routes/(content)/developers-guide/troubleshooting/+page.md 4ms (unchanged)
+src/routes/(content)/publishers-guide/after-publishing-the-vaa/intro/+page.md 1ms (unchanged)
+src/routes/(content)/publishers-guide/after-publishing-the-vaa/marketing/+page.md 1ms (unchanged)
+src/routes/(content)/publishers-guide/after-publishing-the-vaa/user-support/+page.md 1ms (unchanged)
+src/routes/(content)/publishers-guide/app-settings/+page.md 11ms (unchanged)
+src/routes/(content)/publishers-guide/data-collection/additional-data-for-the-voter/+page.md 1ms (unchanged)
+src/routes/(content)/publishers-guide/data-collection/candidates-or-parties-answers/+page.md 1ms (unchanged)
+src/routes/(content)/publishers-guide/data-collection/data-from-final-election-lists/+page.md 1ms (unchanged)
+src/routes/(content)/publishers-guide/data-collection/initial-data/+page.md 1ms (unchanged)
+src/routes/(content)/publishers-guide/data-collection/intro/+page.md 1ms (unchanged)
+src/routes/(content)/publishers-guide/data-collection/moderation-of-candidate-answers/+page.md 1ms (unchanged)
+src/routes/(content)/publishers-guide/intro/+page.md 1ms (unchanged)
+src/routes/(content)/publishers-guide/other-information-sources/+page.md 1ms (unchanged)
+src/routes/(content)/publishers-guide/preparing/candidates-and-parties-data-be/+page.md 4ms (unchanged)
+src/routes/(content)/publishers-guide/preparing/intro/+page.md 4ms (unchanged)
+src/routes/(content)/publishers-guide/preparing/languages-will-the-vaa-be/+page.md 1ms (unchanged)
+src/routes/(content)/publishers-guide/preparing/matching/+page.md 11ms (unchanged)
+src/routes/(content)/publishers-guide/preparing/the-application-be-hosted/+page.md 1ms (unchanged)
+src/routes/(content)/publishers-guide/preparing/the-specifics-of-the-elections/+page.md 11ms (unchanged)
+src/routes/(content)/publishers-guide/preparing/the-statements-or-questions-posed/+page.md 26ms (unchanged)
+src/routes/(content)/publishers-guide/preparing/the-vaa-look-and-feel/+page.md 1ms (unchanged)
+src/routes/(content)/publishers-guide/preparing/the-voter-see-when-using/+page.md 14ms (unchanged)
+src/routes/(content)/publishers-guide/preparing/timeline/+page.md 1ms (unchanged)
+src/routes/(content)/publishers-guide/preparing/to-ask-voters-to-give/+page.md 1ms (unchanged)
+src/routes/(content)/publishers-guide/preparing/to-offer-a-survey-for/+page.md 1ms (unchanged)
+src/routes/(content)/publishers-guide/preparing/what-data-should-be-collected/+page.md 1ms (unchanged)
+src/routes/(content)/publishers-guide/preparing/what-other-information-is-collected/+page.md 3ms (unchanged)
+src/routes/(content)/publishers-guide/preparing/who-is-the-target-group/+page.md 1ms (unchanged)
+src/routes/(content)/publishers-guide/publish-with-openvaa/+page.md 1ms (unchanged)
+src/routes/(content)/publishers-guide/what-are-vaas/intro/+page.md 8ms (unchanged)
+src/routes/(content)/publishers-guide/what-are-vaas/vaas-used/+page.md 1ms (unchanged)
+src/routes/+layout.svelte 5ms (unchanged)
+src/routes/+page.svelte 18ms (unchanged)
+src/routes/layout.css 6ms (unchanged)
+svelte.config.js 1ms (unchanged)
+tailwind.config.mjs 8ms (unchanged)
+tsconfig.json 1ms (unchanged)
+turbo.json 1ms (unchanged)
+vite.config.ts 2ms (unchanged)
+exit=0
+
+# --- 168-07 record (appended after the run above) ---
+# HEAD at both runs: 1b465c7da
+# run 1 (this log): yarn workspace @openvaa/docs generate:docs -> exit=0; then git diff --exit-code -- apps/docs -> exit 0 (no change)
+# run 2 (log in the session scratchpad): generate:docs -> exit 0; git diff --exit-code -- apps/docs -> exit 0 (idempotent)
+# then: validate:links --check (unscoped) exit 0, 0 findings; check:research-quotes --base <base-rev.txt> --component-base <component-base-rev.txt> exit 0 (22/22 spans);
+#       docs lint 0, check 0 (652 files, 0/0), build 0, format:check 0, root assert:comment-hygiene 0

@@ -25,13 +25,42 @@ pages under `/publishers-guide/`).
 | `/developers-guide/contributing/recommended-ide-settings-code` | same | updated | "Pretter" typo fixed; the Git Graph link pointed at the ESLint extension and now points at Git Graph (`mhutchie.git-graph`). | 0 |
 | `/developers-guide/contributing/workflows` | same | updated | The one-paragraph page is rewritten from `main.yaml`, `docs.yml`, `release.yml` and the Claude workflows: triggers and `paths-ignore`, the twelve `main.yaml` jobs with what each runs, and the three other workflow groups. | 0 |
 | `/about/association` | same | updated | Audited; operator-authored contact and board data left as written. One typo fixed ("It's purpose"). | 0 |
-| `/about/features` | same | updated | Code-proven status changes only (D-05): multiple-item text and number opinion questions marked available (no longer "to be added"), boolean added as an opinion type, the locale list extended to the seven compiled locales with the three default ones named, the `csv` import/export bullet removed (`git grep -i csv` finds no code outside binary assets), and the local static-data version marked partial (the server-side adapter exists but `createDataProvider` always returns the Supabase provider). Preference order stays "to be added" (still a TODO in `@openvaa/data`). Two typos fixed. Everything else left as written. | 0 |
+| `/about/features` | same | updated | Code-proven status changes only (D-05): multiple-item text and number opinion questions marked available (no longer "to be added"), boolean added as an opinion type, the locale list extended to the seven compiled locales with the three default ones named, the `csv` import/export bullet removed (`git grep -i csv` finds no code outside binary assets), and the local static-data version marked partial (the server-side adapter exists but `createDataProvider` always returns the Supabase provider). During the Publishers' Guide audit (Task 3) two more were marked not yet available in the application: real-time top results while answering (no code in the frontend) and voter-set statement weights (the matching algorithm accepts `questionWeights`, the frontend never passes them). Preference order stays "to be added" (still a TODO in `@openvaa/data`). Two typos fixed. Everything else left as written. | 0 |
 | `/about/intro` | same | current | Audited; no change. | 0 |
 | `/about/newsletter` | same | current | Audited (Mailchimp form, Svelte page); no change. | 0 |
 | `/about/project` | same | updated | Audited; the project history and plans are left as written (operator-authored). Four typos fixed (a missing "focus", "orgnasations", "pespective", "Ín"). | 0 |
 | `/about/roadmap` | same | updated | "Update to Svelte 5" marked "(completed)" (runes forced in `svelte.config.js`). The other plans and the Strapi history line left as written (sweep exception). | 0 |
 | `/about/rules` | same | current | Audited (Finnish association rules); no change. | 0 |
 | `/` (landing `+page.svelte`) | same | current | Audited: the `0.1 Shiba` release matches the frontend's `0.1.0`, every internal `href` resolves (`svelte-href` class), and the feature and project text matches the code. The showcase links are external. No change. | 0 |
+| `/publishers-guide/after-publishing-the-vaa/intro` | same | current | Audited; editorial guidance only; no change. | 0 |
+| `/publishers-guide/after-publishing-the-vaa/marketing` | same | current | Audited; editorial guidance only; no change. | 0 |
+| `/publishers-guide/after-publishing-the-vaa/user-support` | same | current | Audited; editorial guidance only; no change. | 0 |
+| `/publishers-guide/data-collection/additional-data-for-the-voter` | same | current | Audited; editorial checklist; no change. | 0 |
+| `/publishers-guide/data-collection/candidates-or-parties-answers` | same | current | Audited; editorial; no change. | 0 |
+| `/publishers-guide/data-collection/data-from-final-election-lists` | same | updated | Audited; one typo fixed ("election numbers of symbols" → "or symbols"). | 0 |
+| `/publishers-guide/data-collection/initial-data` | same | updated | Audited; one missing word restored ("you will need to provide the data below"). | 0 |
+| `/publishers-guide/data-collection/intro` | same | current | Audited; editorial; no change. | 0 |
+| `/publishers-guide/data-collection/moderation-of-candidate-answers` | same | current | Audited; the open-answer fact matches the code (answers can carry a free-form explanation); no change. | 0 |
+| `/publishers-guide/intro` | same | current | Audited; no change. | 0 |
+| `/publishers-guide/other-information-sources` | same | current | Audited; external references; no change. | 0 |
+| `/publishers-guide/preparing/candidates-and-parties-data-be` | same | updated | Email-based registration now describes the invitation flow as the code has it (the candidate is sent an invitation email, sets a password and logs in) instead of "signing up with their email". Bank-authentication storage (full name, birth date), the FAQ page and the editorial guidance checked and kept. | 0 |
+| `/publishers-guide/preparing/intro` | same | current | Audited prose outside the one ResearchQuote block; no change. Block and import untouched. | 1 |
+| `/publishers-guide/preparing/languages-will-the-vaa-be` | same | current | Audited; the translations folder link (`apps/frontend/messages`) and the Supported locales link resolve; no change. | 0 |
+| `/publishers-guide/preparing/matching` | same | updated | Prose outside the four ResearchQuote blocks only: the distance metric is fixed to Manhattan in the app (other metrics need a source-code change), only candidates are hidden for missing answers (parties are always included), and empty candidate answers ARE penalised as maximally distant (`RelativeMaximum`). Blocks and import untouched (span gate exit 0). | 4 |
+| `/publishers-guide/preparing/the-application-be-hosted` | same | updated | "You may opt for a static website with no separate database" is not possible with the code at HEAD (the app always reads from Supabase); replaced with that fact and a link to Deployment. | 0 |
+| `/publishers-guide/preparing/the-specifics-of-the-elections` | same | current | Audited prose outside the two ResearchQuote blocks (election selection, hierarchical constituencies, alliances match the settings and data model); no change. | 2 |
+| `/publishers-guide/preparing/the-statements-or-questions-posed` | same | updated | Prose outside the six ResearchQuote blocks only: the answer-type paragraph adds that yes/no and numeric (min/max) questions can also be used in matching. Blocks and import untouched. | 6 |
+| `/publishers-guide/preparing/the-vaa-look-and-feel` | same | current | Audited; the listed customisations exist (logo and poster in App customization, colours and font in static settings, text overrides); no change. | 0 |
+| `/publishers-guide/preparing/the-voter-see-when-using` | same | updated | Prose outside the eight ResearchQuote blocks only: statement weights and real-time top results are marked "not yet available" in the process list and their sections (no frontend code for either; the matching algorithm supports weights). Everything else (category intros and selection, results link, sections, card contents, top-3 sub-cards, details tabs) matches the settings. Blocks and import untouched. | 8 |
+| `/publishers-guide/preparing/timeline` | same | current | Audited; editorial; no change. | 0 |
+| `/publishers-guide/preparing/to-ask-voters-to-give` | same | current | Audited; the rating feedback form and the configurable results-page delay (`results.showFeedbackPopup`) match the code; no change. | 0 |
+| `/publishers-guide/preparing/to-offer-a-survey-for` | same | current | Audited; matches the `survey` settings (`linkTemplate`, `showIn`); no change. | 0 |
+| `/publishers-guide/preparing/what-data-should-be-collected` | same | current | Audited; no tracking by default (`analytics.trackEvents: false`), the consent prompt (`DataConsent`) and the Umami adapter match the code; no change. | 0 |
+| `/publishers-guide/preparing/what-other-information-is-collected` | same | current | Audited prose outside the one ResearchQuote block; no change. | 1 |
+| `/publishers-guide/preparing/who-is-the-target-group` | same | current | Audited; editorial; no change. | 0 |
+| `/publishers-guide/publish-with-openvaa` | same | current | Audited; the `#contact` anchor on Association resolves; no change. | 0 |
+| `/publishers-guide/what-are-vaas/intro` | same | current | Audited; research text with `Author` and `ReferenceList` (frozen components); no change. | 0 |
+| `/publishers-guide/what-are-vaas/vaas-used` | same | current | Audited; editorial; no change. | 0 |
 
 ## Claims
 
@@ -220,6 +249,37 @@ pages under `/publishers-guide/`).
 | 181 | about/roadmap | fact | Svelte 5 runes are on | apps/frontend/svelte.config.js | `runes: true` |
 | 182 | landing | fact | The current release is 0.1 | apps/frontend/package.json | `"version": "0.1.0",` |
 | 183 | landing | fact | The GitHub link goes to the repository | apps/docs/src/lib/consts.ts | `export const OPENVAA_REPO_URL = 'https://github.com/OpenVAA/voting-advice-application';` |
+| 184 | pg/preparing/the-application-be-hosted | fact | The app always reads from Supabase | apps/frontend/src/lib/api/dataProvider.ts | `export function createDataProvider(source: AdapterSource): SupabaseDataProvider {` |
+| 185 | pg/preparing/matching | fact | The app matches with the Manhattan metric | apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts | `distanceMetric: DISTANCE_METRIC.Manhattan,` |
+| 186 | pg/preparing/matching | fact | The matching algorithm supports other metrics | packages/matching/src/distance/metric.ts | `export const DISTANCE_METRIC: Record<string, MetricFunction> = {` |
+| 187 | pg/preparing/matching | fact | Missing answers are imputed as the furthest possible answer | apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts | `method: MISSING_VALUE_METHOD.RelativeMaximum` |
+| 188 | pg/preparing/matching | fact | RelativeMaximum imputes the furthest answer from the voter's | packages/matching/src/missingValue/missingValueMethod.ts | `Imputes the furthest possible answer from the reference value` |
+| 189 | pg/preparing/matching | fact | Hiding entities with missing answers is supported for candidates only | packages/app-shared/src/settings/dynamicSettings.type.ts | `This is currently only supported for candidates.` |
+| 190 | pg/preparing/matching | fact | Party answers are imputed from candidates by default | packages/app-shared/src/settings/dynamicSettings.ts | `organizationMatching: 'impute'` |
+| 191 | pg/preparing/the-statements-or-questions-posed | fact | Boolean questions are matchable | packages/data/src/objects/questions/variants/booleanQuestion.ts | `A matchable simple question whose answer is a boolean.` |
+| 192 | pg/preparing/the-statements-or-questions-posed | fact | Number questions are matchable when they have a min and a max | packages/data/src/objects/questions/variants/numberQuestion.ts | `The question is matchable if both` |
+| 193 | pg/preparing/the-voter-see-when-using | fact | The matching algorithm accepts question weights | packages/matching/src/algorithms/matchingAlgorithm.ts | `questionWeights?: Record<Id, number>;` |
+| 194 | pg/preparing/the-voter-see-when-using | fact | The app constructs the algorithm without weights | apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts | `algorithm = new MatchingAlgorithm({` |
+| 195 | pg/preparing/the-voter-see-when-using | fact | Party cards show up to three candidates | apps/frontend/src/lib/dynamic-components/entityCard/EntityCard.svelte | `maxSubcards = 3,` |
+| 196 | pg/preparing/the-voter-see-when-using | fact | Entity details open over the results list | apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/+page.svelte | `import { openEntityDrawer } from '$lib/dynamic-components/entityDetails';` |
+| 197 | pg/preparing/candidates-and-parties-data-be | flow | Candidates are sent an invitation email | apps/supabase/supabase/functions/invite-candidate/index.ts | `supabaseAdmin.auth.admin.inviteUserByEmail(email, {` |
+| 198 | pg/preparing/candidates-and-parties-data-be | flow | An invitation link leads to setting a password | apps/frontend/src/routes/api/candidate/auth/callback/+server.ts | `route: 'CandAppSetPassword'` |
+| 199 | pg/preparing/candidates-and-parties-data-be | fact | Bank authentication stores the birth date | apps/supabase/supabase/functions/identity-callback/claimConfig.ts | `extractClaims: ['birthdate']` |
+| 200 | pg/preparing/candidates-and-parties-data-be | fact | ... and the name | apps/supabase/supabase/functions/identity-callback/index.ts | `given_name: firstName,` |
+| 201 | pg/preparing/candidates-and-parties-data-be | fact | The Candidate App has an FAQ page fed by App customization | apps/frontend/src/routes/candidate/help/+page.svelte | `appCustomization.current.candidateAppFAQ` |
+| 202 | pg/preparing/languages-will-the-vaa-be | path | The translations folder | apps/frontend/messages/README.md | - |
+| 203 | pg/preparing/the-vaa-look-and-feel | fact | The publisher logo is customisable | apps/frontend/src/lib/contexts/app/appCustomization.type.ts | `publisherLogo?: Image;` |
+| 204 | pg/preparing/the-vaa-look-and-feel | fact | The front page poster is customisable | apps/frontend/src/lib/contexts/app/appCustomization.type.ts | `poster?: Image;` |
+| 205 | pg/preparing/the-vaa-look-and-feel | fact | Colours are static settings | packages/app-shared/src/settings/staticSettings.ts | `colors: {` |
+| 206 | pg/preparing/the-vaa-look-and-feel | fact | The font is a static setting | packages/app-shared/src/settings/staticSettings.ts | `font: {` |
+| 207 | pg/preparing/the-vaa-look-and-feel | fact | Any text can be overridden | apps/frontend/src/lib/contexts/app/appCustomization.type.ts | `translationOverrides?: Record<TranslationKey, string>;` |
+| 208 | pg/preparing/to-ask-voters-to-give | fact | The feedback form collects a rating (its `feedback_sent` event carries `rating` and `description`) | apps/frontend/src/lib/dynamic-components/feedback/Feedback.svelte | `feedback_sent` |
+| 209 | pg/preparing/to-ask-voters-to-give | fact | The feedback popup delay is configurable | packages/app-shared/src/settings/dynamicSettings.ts | `showFeedbackPopup: 180,` |
+| 210 | pg/preparing/to-offer-a-survey-for | fact | The survey prompt locations | packages/app-shared/src/settings/dynamicSettings.type.ts | `showIn: Array<'frontpage' ` |
+| 211 | pg/preparing/what-data-should-be-collected | fact | Event tracking is off by default | packages/app-shared/src/settings/staticSettings.ts | `trackEvents: false` |
+| 212 | pg/preparing/what-data-should-be-collected | fact | Umami is the built-in analytics platform | packages/app-shared/src/settings/staticSettings.type.ts | `readonly name: 'umami';` |
+| 213 | pg/preparing/what-data-should-be-collected | fact | Voters are asked for consent | apps/frontend/src/lib/dynamic-components/dataConsent/DataConsent.svelte | - |
+| 214 | pg/publish-with-openvaa | fact | The Association page has a Contact heading | apps/docs/src/routes/(content)/about/association/+page.md | `### Contact` |
 
 ## Findings for todos
 
@@ -227,6 +287,8 @@ pages under `/publishers-guide/`).
 | --- | --- | --- | --- |
 | F1 | `.claude/skills/components/SKILL.md` § "The component listing" still says that "several sibling `generate:*` scripts in `apps/docs/package.json` name files that do not exist; they are filed as a todo, not repaired here". 168-01.1 repaired them (`generate:component-docs` now runs the real generator). Its quote of the index intro is still accurate (the sentence was kept verbatim). | `apps/docs/package.json`: `"generate:component-docs": "tsx scripts/generate-component-docs.ts"` | Skill-text drift for 168-08 (or a skills pass); not a docs-site page. |
 | F2 | `tsc -p apps/docs/scripts/tsconfig.json --noEmit` fails with `TS2307: Cannot find module 'unified'` inside `node_modules/mdsvex/dist/main.d.ts`; no gate runs that command (`check`, `lint`, `build` all pass). Pre-existing, not caused by this plan. | `apps/docs/scripts/validate-links.ts` imports through `utils/links.ts`; `apps/docs/scripts/tsconfig.json`: `"include": ["./**/*.ts"` | Out of scope; recorded for a tooling pass. |
+| F3 | Two voter-facing features that the Publishers' Guide and About › Features described as options do not exist in the frontend: real-time top results while answering, and voter-set statement weights (`@openvaa/matching` accepts `questionWeights`, the voter context never passes them). Both pages now say "not yet available". Whether either is still planned is an operator question. | `apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts`: `algorithm = new MatchingAlgorithm({`; `git grep -n -i weight -- apps/frontend/src` lists only admin pipeline weights and a CSS comment | Roadmap/todo question for the operator (168-08 may record it); no code change (D-18). |
+| F4 | Publishers' Guide › hosting said a VAA without the Candidate App could be "a static website with no separate database". With `createDataProvider` always returning the Supabase provider (168-05 F1), no static mode exists at HEAD. The page now says a database is always needed. | `apps/frontend/src/lib/api/dataProvider.ts`: `export function createDataProvider(source: AdapterSource): SupabaseDataProvider {` | Same disposition as 168-05 F1 (restore or remove the local mode). |
 
 ## Sweep exceptions
 
