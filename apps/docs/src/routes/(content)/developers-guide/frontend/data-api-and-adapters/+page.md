@@ -1,243 +1,177 @@
-> **Note:** Parts of this page reference the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
-
 # Data API and adapters
 
-The Data API is the interface between the frontend and the backend. It handles reading and writing of data in such a way that the frontend can remain agnostic to the actual implementation.
+The Data API in [`$lib/api`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/frontend/src/lib/api) is how the frontend reads and writes data. Layouts, pages, contexts and server routes never query Supabase themselves; they ask the Data API for an adapter and call its methods.
 
-The Data API is composed of three services:
+## The four entry points
 
-1. `DataProvider`: Reads of public data used by the Voter App from the backend.
-2. `FeedbackWriter`: Writes feedback items from either the Voter or Candidate App to the backend.
-3. `DataWriter`: Writes data from the Candidate App to the backend and reads some data requiring authentication.
+Four modules at the root of `$lib/api` are the only way in. Each exports a factory:
 
-> See also an [example of the data loading cascade](/developers-guide/frontend/data-api-and-adapters).
+| Module              | Factory                | Returns                  | Used for                                                                                                                                                  |
+| ------------------- | ---------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dataProvider.ts`   | `createDataProvider`   | `SupabaseDataProvider`   | Reading public data: app settings, app customization, elections, constituencies, nominations, entities and questions                                      |
+| `dataWriter.ts`     | `createDataWriter`     | `SupabaseDataWriter`     | Candidate authentication, registration, pre-registration and passwords; reading and writing the signed-in candidate's data; the Admin App's job endpoints |
+| `adminWriter.ts`    | `createAdminWriter`    | `SupabaseAdminWriter`    | Admin App writes: question updates, job results and email                                                                                                 |
+| `feedbackWriter.ts` | `createFeedbackWriter` | `SupabaseFeedbackWriter` | Feedback from the Voter App and the Candidate App                                                                                                         |
 
-### Cache
+Every call returns a new adapter for one request, or one Admin App job. No adapter is shared between requests: an ESLint rule bans constructing an adapter at module scope, and `src/lib/_guards/eslint-adapter-singleton-guard.test.ts` checks that the rule still fires.
 
-A simple [disk cache](https://github.com/jaredwray/cacheable#readme) may also be opted in by setting the `PUBLIC_CACHE_ENABLED` env variable to `true` (and configuring the other `CACHE_` variables). If enabled, non-authenticated `GET` requests are cached by default. Caching is handled by the [UniversalAdapter.fetch](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/base/universalAdapter.ts) method, using the [/api/cache/+server] route.
+`createDataProvider` always returns the Supabase provider. The `dataAdapter.type` static setting does not change that; it only selects the server-side local adapter described [below](#the-server-side-local-adapter).
 
-Note that the cache can be enabled also when the `local` data adapter is used. This may, however, not improve performance by much, as the only overhead saved is the application of query filters to the locally stored json data.
+## Where the client comes from
 
-### Folder structure
+Every factory takes an `AdapterSource`, which names where the adapter's Supabase client comes from. There are three arms, and each one names a client, so a caller that supplies none does not compile:
 
-- [frontend/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend)
-  - [src/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src)
-    - [lib/api/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api) — All universally available Data API implementations.
-      - [adapters/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters) — Specific Data API implemenations.
-        - [apiRoute/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/apiRoute) — Generic `ApiRouteDataProvider` and `ApiRouteFeedbackWriter` implementations through which all server-run implementations are accessed. Redirects calls to local API routes (see below).
-        - [strapi/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/strapi) – Specific `StrapiDataProvider`, `StrapiFeedbackWriter` and `StrapiDataWriter` implementations for use with the Strapi backend.
-      - [base/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/base) — Common types and interfaces as well as the `UniversalDataProvider`, `UniversalFeedbackWriter` and `UniversalDataWriter` classes which the specific implementations extend. All common data processing, such as color contrast checking, is handled by these classes.
-      - [utils/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/utils) — Utilities related to the Data API.
-      - [dataProvider.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/dataProvider.ts) — The main entry point for the `load` functions via `import { dataProvider } from '$lib/api/dataProvider'`. The implementation specified in the settings is returned (as a Promise).
-      - [dataWriter.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/dataWriter.ts) — The main entry point for the `CandidateContext` methods.
-      - [feedbackWriter.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/feedbackWriter.ts) — The main entry point for the `sendFeedback` method of `AppContext`.
-    - [server/api/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/server/api) – All Data API implementations that must run on the server.
-      - [adapters/local/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/server/api/adapters/local) — Specific `LocalServerDataProvider` and `LocalServerFeedbackWriter` implementations that read and write local `json` files in the [data](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/data) folder.
-      - [dataProvider.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/server/api/dataProvider.ts) — The main entry point for the `GET` function of the `/api/data/[collection]/+server.ts` API route.
-      - [feedbackWriter.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/server/api/feedbackWriter.ts) — The main entry point for the `POST` function of the `/api/feedback/+server.ts` API route.
-    - `routes/[lang=locale]/`
-      - `api/` – Contains the API routes.
-        - `cache/+server.ts` – Implements simple disk caching using [`flat-cache`](https://github.com/jaredwray/cacheable#readme)
-        - `candidate/logout/+server.ts` – Clear the strict cookie containing the authentication token (does not actually access`DataWriter`).
-        - `candidate/preregister/+server.ts` – Access to `DataWriter.preregisterWithApiToken`.
-        - `data/[collection]/+server.ts` – Access to the server-run `ServerDataProvider` implementations.
-        - `feedback/+server.ts` – Access to the server-run `ServerFeedbackWriter` implementations.
-      - `candidate/login/+page.server.ts` - Access to `DataWriter.login` and set the authentication cookie.
-  - [data/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/data) — For data used by the `LocalServerDataProvider` and `LocalServerFeedbackWriter`.
+- **`{ fetch, locals }`**: a server load, form action or endpoint. The adapter uses the per-request client that `hooks.server.ts` put on `event.locals`.
+- **`{ fetch, client }`**: a caller that already holds a client. A universal load builds one with `createSupabaseUniversalClient` from the Supabase auth cookies that `routes/+layout.server.ts` passes down. An Admin App job passes the client from `createSupabaseJobClient`. A route that must run without a session passes `createSupabaseAnonClient({ fetch })`.
+- **`{ fetch, browser: true }`**: browser-only code. The adapter uses the tab's single client from `$lib/supabase/browser`.
 
-### Classes and interfaces
+Every arm also accepts `locale` and `defaultLocale`, the locales the adapter extracts localized values in. A method's own `locale` option overrides them.
+
+The root layout's universal load, `routes/+layout.ts`, shows the `client` arm:
+
+```ts
+import { createDataProvider, createSupabaseUniversalClient } from '$lib/api/dataProvider';
+import { getLocale } from '$lib/paraglide/runtime';
+
+export async function load({ data, fetch }) {
+  const lang = getLocale();
+  const supabaseClient = createSupabaseUniversalClient({ fetch, cookies: data.supabaseCookies });
+  const dataProvider = createDataProvider({ fetch, client: supabaseClient, locale: lang });
+  const appSettingsData = await dataProvider.getAppSettings({ locale: lang }).catch((e) => e);
+  // …
+}
+```
+
+Outside `$lib/api` and `$lib/supabase`, code may not read a Supabase client off `locals` or an adapter: an ESLint adapter-boundary rule bans it, with an annotated allowlist in `apps/frontend/eslint.config.mjs`.
+
+## Reading data
+
+`SupabaseDataProvider` extends `UniversalDataProvider` through the `supabaseAdapterMixin`.
+
+- **Project scope.** The mixin resolves the project id once, from the configuration or from `PUBLIC_PROJECT_ID`, and throws when it is unset or not a UUID. There is no fallback project. Every read and write on a project-scoped table goes through `scopedFrom(table)`, which appends the project filter to reads, updates and deletes and supplies the project column on inserts. See [Project scoping](/developers-guide/backend/intro#project-scoping).
+- **Row-level security.** Every client the frontend builds uses the anon key and, when there is one, the user's session. Row-level security therefore decides what each read and write may touch. The service-role key is never read under `apps/frontend/src`. See [Row-level security and column grants](/developers-guide/backend/authentication#row-level-security-and-column-grants).
+- **Paging.** Large reads are fetched page by page, `staticSettings.dataAdapter.pageSize` rows at a time. The page size must equal PostgREST's `max_rows`.
+- **Localization.** Localized JSONB columns are extracted in the adapter's locale with `getLocalized`, falling back to `defaultLocale`. See [Multi-locale data](/developers-guide/localization/storing-multi-locale-data).
+- **Processing.** `UniversalDataProvider` handles errors and processes the raw data before it reaches the `DataRoot`, for example by checking the contrast of the colors of entities and question categories.
+
+## Writing data
+
+- **`SupabaseDataWriter`** extends `UniversalDataWriter`. It uses Supabase Auth through `this.supabase.auth`, with the session kept in cookies. A few methods call the app's own server routes instead of Supabase: `logout`, `preregisterWithIdToken`, the OIDC token methods `exchangeCodeForIdToken` and `clearIdToken`, and the Admin App's job methods (`getActiveJobs`, `getPastJobs`, `startJob`, `getJobProgress`, `abortJob`, `abortAllJobs`). Their URLs are in `UNIVERSAL_API_ROUTES`.
+- **`SupabaseAdminWriter`** handles the Admin App's own writes: `updateQuestion`, `insertJobResult` and `sendEmail`, and `callerMayOnProject`, which checks the caller's grant. The long-running job features in `$lib/server/admin/features` build it with a job client, so every write runs as the admin who started the job.
+- **`SupabaseFeedbackWriter`** inserts into `public.feedback`, with the project id of the adapter. The `anon_insert_feedback` policy and a rate-limit trigger gate the insert.
+
+In components, the writers are reached through the contexts: `CandidateContext` and `AuthContext` wrap the data writer, `AdminContext` wraps the data and admin writers, and `AppContext.sendFeedback` posts feedback. These wrappers build their writers with the `browser` arm.
+
+## `UniversalAdapter`
+
+All the adapters except the local ones extend [`UniversalAdapter`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/base/universalAdapter.ts). It keeps the request's `fetch` and provides the `fetch`, `get`, `post`, `put` and `delete` helpers for the methods that call HTTP routes. `fetch` passes the URL to the request's `fetch` unchanged, adds an `Authorization: Bearer` header when it is given an `authToken`, and throws when the response is a refusal.
+
+## The server-side local adapter
+
+[`$lib/server/api`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/frontend/src/lib/server/api) holds adapters that only run on the server. Its `dataProvider.ts` and `feedbackWriter.ts` load the local adapter when `staticSettings.dataAdapter.type` is `'local'`, and nothing otherwise. The default setting is `'supabase'`.
+
+- `LocalServerDataProvider` reads `<collection>.json` files from the directory in `LOCAL_DATA_DIR`.
+- `LocalServerFeedbackWriter` writes each feedback item as a file in the `feedbacks` subdirectory.
+
+They are served by two API routes, `GET /api/data/[collection]` and `POST /api/feedback`, which answer with an error when no server adapter is loaded.
+
+The `apiRoute` adapters in `$lib/api/adapters/apiRoute`, `ApiRouteDataProvider` and `ApiRouteDataFeedbackWriter`, call those two routes. No module constructs them, because `createDataProvider` and `createFeedbackWriter` always return the Supabase adapters. Setting `dataAdapter.type` to `'local'` therefore loads the local adapter behind the routes but does not switch the app's reads to it.
+
+## How loaded data reaches components
+
+1. A load function calls the data provider and returns the data. The root `routes/+layout.ts` loads the app settings, the app customization, the elections and the constituencies. The Voter App's `(located)/+layout.ts` loads the questions and the nominations for the selected elections and constituencies.
+2. A layout writes the data into the `DataRoot` of the `DataContext`. The root `+layout.svelte` writes the elections and constituencies through `setDataRoot`, and the `(located)` layout adds the questions, entities and nominations. The `DataRoot`, from [`@openvaa/data`](https://github.com/OpenVAA/voting-advice-application/tree/main/packages/data), turns the raw data into data objects.
+3. Components read the objects from `ctx.dataRoot` or from the values that the other contexts derive from it, such as `selectedElections` or `matches`. See [Contexts](/developers-guide/frontend/contexts).
+
+The signed-in candidate's own data is not in the `DataRoot`. It is in the `userData` member of the `CandidateContext`.
+
+## Folder structure
+
+- [`src/lib/api/`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/frontend/src/lib/api)
+  - `dataProvider.ts`, `dataWriter.ts`, `adminWriter.ts`, `feedbackWriter.ts`: the four factories. `dataProvider.ts` also defines `AdapterSource` and re-exports the client factories that routes may use.
+  - `base/`: the interfaces (`DataProvider`, `DataWriter`, `FeedbackWriter`), `UniversalAdapter` and the `Universal*` base classes, and `UNIVERSAL_API_ROUTES`.
+  - `adapters/supabase/`: the Supabase adapters and `supabaseAdapterMixin`.
+  - `adapters/apiRoute/`: the `apiRoute` adapters.
+  - `utils/`: helpers for parsing and translating data and for the OIDC exchange.
+- [`src/lib/server/api/`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/frontend/src/lib/server/api)
+  - `dataProvider.ts`, `feedbackWriter.ts`: select the server-side adapter.
+  - `adapters/local/`: `LocalServerDataProvider`, `LocalServerFeedbackWriter` and their base class.
+- `src/routes/api/`: the server routes, including `data/[collection]`, `feedback`, `auth/logout`, `candidate/preregister`, `oidc/*` and `admin/jobs/*`.
+
+## Classes
 
 ```mermaid
 ---
-title: Data API classes and interfaces
+title: Data API classes
 ---
 classDiagram
 direction TD
 
-%% CLASS DEFINITIONS
-
-namespace Universal {
-
-  class DPReturnType:::interface {
-    <<Type>>
-    Contains the return types for all DataProvider
-    getter methods, e.g.:
-    Partial~DynamicSettings~ +appSettings
-    Array~ElectionData~ +elections
-  }
-
-  class DataProvider_AdapterType_:::interface {
-    <<Interface>>
-    Ensures that all the getters are implemented
-    both universally and on the server
-    with the return type defined by ~AdapterType~,
-    which is either 'universal' or 'server'
-    +getFooData(options) Promise~DPReturnType['foo'] | Response~
-  }
-
-  class DataWriter_AdapterType_:::interface {
-    <<Interface>>
-    Ensures that all the writers are implemented universally
-    Contains methods for
-    loggin in and out
-    setting and resetting passwords
-    registration
-    pre-registration
-    getting user data
-    setting user data
-  }
-
-  class FeedbackWriter:::interface {
-    <<Interface>>
-    Ensures a matching interface for posting feedback
-    both universally and on the server
-    +postFeedback(data) Promise~Response~
-  }
-
-  class UniversalAdapter:::abstract {
-    <<Abstract>>
-    Implements common fetch for Data API services that handles possible disk caching,
-    must be initialized by providing the fetch function before use.
-    +init(fetch) void
-    +fetch(opts) Promise~Response~
-  }
-
-  class UniversalDataProvider:::abstract {
-    <<Abstract>>
-    Implements all the data getter methods
-    Processes all data returned, e.g., ensuring colors
-    Requires subclasses to implement protected methods
-    +getFooData(options) Promise~DPReturnType['foo']~
-    #_getFooData(options)* Promise~DPReturnType['foo']~
-  }
-
-  class UniversalDataWriter:::abstract {
-    <<Abstract>>
-    Implements all the DataWriter methods,
-    Requires subclasses to implement protected methods,
-    except for methods using universal API routes
-    +getFooData(options) Promise~DPReturnType['foo']~
-    #_getFooData(options)* Promise~DPReturnType['foo']~
-  }
-
-  class UniversalFeedbackWriter:::abstract {
-    <<Abstract>>
-    Implements postFeedback method
-    Processes the data by adding possibly missing fields
-    Requires subclasses to implement the protected method
-    +postFeedback(data) Promise~Response~
-    #_postFeedback(data)* Promise~Response~
-  }
-
-  class StrapiAdapter:::abstract {
-    <<Abstract/Mixin>>
-    Implements methods for accessing the Strapi API
-    +apiFetch(opts) Promise~Response~
-    +apiGet(opts) Promise~StrapiReturnType['foo']~
-    +apiPost(opts) Promise~Response~
-    +apiPut(opts) Promise~Response~
-  }
-
-  class StrapiDataProvider {
-    Implements the actual _getter methods,
-    which use StrapiAdapter.apiGet and convert
-    the Strapi data into DPReturnType['foo']
-    #_getFooData(options) Promise~Array~FooData~~
-  }
-
-  class StrapiDataWriter {
-    Implements the actual _foo methods,
-    mandated by UniversalDataWriter
-  }
-
-  class StrapiFeedbackWriter {
-    Implements the _postFeedback method
-    #_postFeedback(data) Promise~Response~
-  }
-
-  class ApiRouteAdapter:::abstract {
-    <<Abstract/Mixin>>
-    Implements methods for accessing the API routes
-    +apiFetch(opts) Promise~Response~
-    +apiGet(opts) Promise~DPReturnType['foo']~
-    +apiPost(opts) Promise~Response~
-  }
-
-  class ApiRouteDataProvider {
-    Implements the actual _getter methods by fetching
-    from the API route /api/data/[collection]
-    #_getFooData() Promise~DPReturnType['foo']~
-  }
-
-  class ApiRouteFeedbackWriter {
-    Implements the _postFeedback method by fetching
-    from the API route /api/feedback
-    #_postFeedback() Promise~Response~
-  }
+class UniversalAdapter:::abstract {
+  <<Abstract>>
+  Holds the request fetch
+  +fetch(url, init, options) Promise~Response~
+  +get(options)
+  +post(options)
 }
 
-namespace Server {
-
-  class LocalServerAdapter:::abstract {
-    <<Abstract>>
-    Implements methods for accessing local files
-    in the /data folder
-    +exist(endpoint) Promise~boolean~
-    +read(endpoint) Response
-    +create(endpoint, data) Promise~Response~
-  }
-
-  class LocalServerDataProvider {
-    Implements the actual getter methods
-    by reading from disk
-    getFooData(options) Promise~Response~
-  }
-
-  class LocalServerFeedbackWriter {
-    Implements the postFeedback method
-    by writing to disk
-    postFeedback(data) Promise~Response~
-  }
-
+class UniversalDataProvider:::abstract {
+  <<Abstract>>
+  Error handling and data processing
+  +getFooData(options)
+  #_getFooData(options)*
 }
 
-%% CONNECTIONS
+class UniversalDataWriter:::abstract {
+  <<Abstract>>
+  Validation and the methods that call app routes
+  #_fooMethod(options)*
+}
 
-DPReturnType ..> DataProvider_AdapterType_ : defined return types
-DataProvider_AdapterType_ <.. UniversalDataProvider : implements (universal)
-DataWriter_AdapterType_ <.. UniversalDataWriter : implements (universal)
-FeedbackWriter <.. UniversalFeedbackWriter : implements (universal)
+class UniversalFeedbackWriter:::abstract {
+  <<Abstract>>
+  +postFeedback(data)
+  #_postFeedback(data)*
+}
+
+class SupabaseAdapter:::abstract {
+  <<Mixin>>
+  supabase, projectId, locale, defaultLocale
+  +scopedFrom(table)
+}
+
+class ApiRouteAdapter:::abstract {
+  <<Mixin>>
+  Calls /api/data and /api/feedback
+}
+
+class LocalServerAdapter:::abstract {
+  <<Abstract>>
+  Reads and writes files in LOCAL_DATA_DIR
+}
+
 UniversalAdapter <|-- UniversalDataProvider
 UniversalAdapter <|-- UniversalDataWriter
 UniversalAdapter <|-- UniversalFeedbackWriter
 
-StrapiAdapter <|-- StrapiDataProvider : mixin
-StrapiAdapter <|-- StrapiDataWriter : mixin
-StrapiAdapter <|-- StrapiFeedbackWriter : mixin
-UniversalDataProvider <|-- StrapiDataProvider
-UniversalDataWriter <|-- StrapiDataWriter
-UniversalFeedbackWriter <|-- StrapiFeedbackWriter
+UniversalDataProvider <|-- SupabaseDataProvider
+UniversalDataWriter <|-- SupabaseDataWriter
+UniversalFeedbackWriter <|-- SupabaseFeedbackWriter
+UniversalAdapter <|-- SupabaseAdminWriter
+SupabaseAdapter <|-- SupabaseDataProvider : mixin
+SupabaseAdapter <|-- SupabaseDataWriter : mixin
+SupabaseAdapter <|-- SupabaseFeedbackWriter : mixin
+SupabaseAdapter <|-- SupabaseAdminWriter : mixin
 
-ApiRouteAdapter <|-- ApiRouteDataProvider : mixin
-ApiRouteAdapter <|-- ApiRouteFeedbackWriter : mixin
 UniversalDataProvider <|-- ApiRouteDataProvider
-UniversalFeedbackWriter <|-- ApiRouteFeedbackWriter
-ApiRouteDataProvider ..> LocalServerDataProvider : accesses via GET /api/data/[collection]?...
-ApiRouteFeedbackWriter ..> LocalServerFeedbackWriter : accesses via POST /api/feedback
+UniversalFeedbackWriter <|-- ApiRouteDataFeedbackWriter
+ApiRouteAdapter <|-- ApiRouteDataProvider : mixin
+ApiRouteAdapter <|-- ApiRouteDataFeedbackWriter : mixin
 
-DataProvider_AdapterType_ <.. LocalServerDataProvider : implements (server)
-FeedbackWriter <.. LocalServerFeedbackWriter : implements (server)
 LocalServerAdapter <|-- LocalServerDataProvider
 LocalServerAdapter <|-- LocalServerFeedbackWriter
+ApiRouteDataProvider ..> LocalServerDataProvider : GET /api/data/[collection]
+ApiRouteDataFeedbackWriter ..> LocalServerFeedbackWriter : POST /api/feedback
 
-%% STYLING
-
-namespace Legend {
-  class Interface:::interface
-  class Abstract:::abstract
-  class Concrete
-}
-
-classDef interface fill:#afa
 classDef abstract fill:#aaf
 ```
