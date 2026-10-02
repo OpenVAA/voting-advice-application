@@ -4,18 +4,18 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 167
 current_phase_name: Origin/main Vestige Cleanup
-current_plan: 4
+current_plan: 5
 status: executing
-stopped_at: Completed 167-03-PLAN.md
-last_updated: "2026-10-02T06:07:37.263Z"
+stopped_at: Completed 167-04-PLAN.md
+last_updated: "2026-10-02T06:22:27.901Z"
 last_activity: 2026-10-02
 last_activity_desc: Phase 167 execution started
-state_head: 70956a8b0369c848f5bb023863081ce6abd39dfd
+state_head: 299cd6d96a8b71e4a47725e86927d7e5cf772b2d
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
-  completed_plans: 322
+  completed_plans: 323
   percent: 89
 ---
 
@@ -35,7 +35,7 @@ _(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and P
 Phase: 167 (Origin/main Vestige Cleanup) — EXECUTING
 Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
-Current Plan: 4
+Current Plan: 5
 Total Plans in Phase: 6
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
@@ -819,8 +819,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-10-02T06:07:36.077Z
-Stopped at: Completed 167-03-PLAN.md
+Last session: 2026-10-02T06:22:26.721Z
+Stopped at: Completed 167-04-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -1135,6 +1135,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 167 P01 | 3min | 2 tasks | 3 files |
 | Phase 167 P02 | 7min | 3 tasks | 34 files |
 | Phase 167 P03 | 2min | 2 tasks | 2 files |
+| Phase 167 P04 | 11min | 3 tasks | 9 files |
 
 ## Deferred Items
 
@@ -2093,6 +2094,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 167]: 167-02: /api/auth/logout is the live sample API path in route tests (D-11)
 - [Phase 167]: 167-02: cache proxy, backend-URL pair, BACKEND_API_TOKEN and flat-cache removed in one commit (837b895c4); VEST-03 stays open for 167-06's adapter-todo notes
 - [Phase 167]: 167-03: js-yaml declared in @openvaa/llm via catalog: (commit 879d0ccf0); lockfile assertion replaced the legitimacy checkpoint and passed (no new resolution, js-yaml stays 4.3.2); VEST-04 left open for 167-04
+- [Phase 167]: 167-04: eslint-plugin-svelte kept and imported by name (svelte.configs['flat/prettier'] on 2.46.1); findings diff before/after empty; frontend @eslint/eslintrc and @eslint/js removed in commit 4, so no D-12 residue
+- [Phase 167]: 167-04: baseline hand-edit removed only lodash 1115806; the four stale js-yaml ids (1123911, 1123912, 1138114, 1138115) predate the phase and stay for Phase 169
+- [Phase 167]: 167-04: removing docs' globals moved root globals 16.5.0 -> 15.14.0, which shared-config imports undeclared; findings unchanged (no-undef off); 167-06 files the declare-globals todo
 
 ### Quick Tasks Completed
 
