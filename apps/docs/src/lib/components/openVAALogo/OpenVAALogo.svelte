@@ -21,7 +21,13 @@ The logo is rendered as a `<svg>` element, and you can also pass any valid attri
 <script lang="ts">
   import type { OpenVAALogoProps } from './OpenVAALogo.type';
 
-  let { title = 'OpenVAA', color = 'primary', size = 'md', class: className, ...restProps }: OpenVAALogoProps = $props();
+  let {
+    title = 'OpenVAA',
+    color = 'primary',
+    size = 'md',
+    class: className,
+    ...restProps
+  }: OpenVAALogoProps = $props();
 
   // Create class names
   const classes = $derived.by(() => {
@@ -61,7 +67,12 @@ The logo is rendered as a `<svg>` element, and you can also pass any valid attri
   });
 </script>
 
-<svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 458.05 91.74" {...restProps} class={[classes, className]}>
+<svg
+  role="img"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 458.05 91.74"
+  {...restProps}
+  class={[classes, className]}>
   {#if title}
     <title>{title}</title>
   {/if}
