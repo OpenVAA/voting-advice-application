@@ -42,7 +42,6 @@ This is an automatically generated map of the SvelteKit application routes.
     │   │       └── start/
     │   ├── auth/
     │   │   └── logout/
-    │   ├── cache/
     │   ├── candidate/
     │   │   ├── auth/
     │   │   │   ├── callback/
