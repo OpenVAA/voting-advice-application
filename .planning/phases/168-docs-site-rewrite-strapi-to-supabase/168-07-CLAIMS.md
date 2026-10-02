@@ -17,6 +17,21 @@ pages under `/publishers-guide/`).
 | `/developers-guide/about-these-docs` (168-02 moved H1, old body) | `/developers-guide/about-these-docs` | updated | Written from the docs workspace: SvelteKit + mdsvex (`rehype-slug`), the MdLayout, adapter-static SPA with the `404.html` fallback and no prerender, the Deploy Documentation workflow (push to `main` touching `apps/docs/**`, manual dispatch, not on PRs), the dev port from `vite.config.ts`, the five `generate:docs` steps plus Prettier, never hand-editing generated pages, how the navigation generator treats titles (`fixedTitle`), `// New` and `// Removed:` items, redirect stubs, the checks table, the seven link-check classes with `--check`/`--only`/`--scope`, and the research-quote check (`--base`, `--component-base`, `--extract-dir`). | 0 |
 | `apps/docs/README.md` (not a route) | — | updated | The typedoc-era tree (`docs/`, `generated/`, `guides/`, `api/`, `copy-generated.ts`, `generate-docs.ts`), port 5173 and `cd docs` deployment are replaced by the real `scripts/` and `src/` tree, the 17-script table from `package.json`, port 5174 from `vite.config.ts`, the root `docs:*` shortcuts, the workflow and a pointer to About these docs. | 0 |
 | `/developers-guide/frontend/components/generated/**`, `/developers-guide/frontend/routing/generated/**` | same | regenerated; EntityCardAction removed | Regenerated at the phase HEAD with the pruning generator (commit `78369e329`): the orphan `EntityCardAction` page deleted, `QuestionArguments` picks up its current docstring, the route map loses `api/cache` (removed in 167). Then the generator's template text was audited and tidied (commit `12d04f015`): the index names the three scanned directories and how to regenerate; Source links are labelled `Component` / `Types`; the embedded directory README sits under "Directory README" with a tree link and demoted headings (one H1 per page); the route-map intro names `apps/frontend/src/routes` and explains the group and parameter notation. Navigation unchanged. | 0 |
+| `/developers-guide/contributing/ai-agents` | same | updated | "Agent information is only provided for Claude in CLAUDE.md" widened to the three sources that exist (CLAUDE.md, `.claude/skills`, `.agents/code-review-checklist.md`); the trigger list now names the four events `claude.yml` listens to, the access rule is "write, maintain or admin access" (the workflow's permission check) instead of "repository member", and the two hand-startable workflows are mentioned. | 0 |
+| `/developers-guide/contributing/code-style-guide` | same | updated | URL and the headings `Comments` / `Svelte components` kept (the PR checklist links both anchors). The Svelte 4 note, every `export let` / `$$Props` / `$$restProps` example and the dead `IconBase` links are replaced by the runes-era conventions from the code: runes forced by `svelte.config.js`, the `svelte/store` ESLint ban, the third component library (`$candidate/components`), `$props()` typed by a co-located `.type.ts` with defaults in the destructuring and `$derived` instead of reassignment, `HeroEmoji` as it is now, attribute order before the spread, `concatClass` (tailwind-merge, caller wins), renaming dashed attributes in the destructuring, snippets with `{@render}` (Button's `badge`), `Snippet Props` instead of `Slots` in the docstring, `Button` as the documentation example, and the Svelte 5 FAQ link. Three typos fixed. | 0 |
+| `/developers-guide/contributing/contribute` | same | updated | `#commit-your-update` heading kept. Corrected: `.vscode` and `.idea` ARE in the project's `.gitignore` (the page said they were not). The self-review link now has no trailing slash before the anchor. | 0 |
+| `/developers-guide/contributing/issues` | same | updated | Audited; editorial (labels, milestones) left as written. One typo fixed ("Fox example"). | 0 |
+| `/developers-guide/contributing/pull-request` | same | updated | `#self-review` heading kept. "pull requested template" → "pull request template"; the self-link to the checklist is a same-page `#self-review`; three cross-page anchor links lose the trailing slash before `#`. Checklist content unchanged. | 0 |
+| `/developers-guide/contributing/recommended-ide-settings-code` | same | updated | "Pretter" typo fixed; the Git Graph link pointed at the ESLint extension and now points at Git Graph (`mhutchie.git-graph`). | 0 |
+| `/developers-guide/contributing/workflows` | same | updated | The one-paragraph page is rewritten from `main.yaml`, `docs.yml`, `release.yml` and the Claude workflows: triggers and `paths-ignore`, the twelve `main.yaml` jobs with what each runs, and the three other workflow groups. | 0 |
+| `/about/association` | same | updated | Audited; operator-authored contact and board data left as written. One typo fixed ("It's purpose"). | 0 |
+| `/about/features` | same | updated | Code-proven status changes only (D-05): multiple-item text and number opinion questions marked available (no longer "to be added"), boolean added as an opinion type, the locale list extended to the seven compiled locales with the three default ones named, the `csv` import/export bullet removed (`git grep -i csv` finds no code outside binary assets), and the local static-data version marked partial (the server-side adapter exists but `createDataProvider` always returns the Supabase provider). Preference order stays "to be added" (still a TODO in `@openvaa/data`). Two typos fixed. Everything else left as written. | 0 |
+| `/about/intro` | same | current | Audited; no change. | 0 |
+| `/about/newsletter` | same | current | Audited (Mailchimp form, Svelte page); no change. | 0 |
+| `/about/project` | same | updated | Audited; the project history and plans are left as written (operator-authored). Four typos fixed (a missing "focus", "orgnasations", "pespective", "Ín"). | 0 |
+| `/about/roadmap` | same | updated | "Update to Svelte 5" marked "(completed)" (runes forced in `svelte.config.js`). The other plans and the Strapi history line left as written (sweep exception). | 0 |
+| `/about/rules` | same | current | Audited (Finnish association rules); no change. | 0 |
+| `/` (landing `+page.svelte`) | same | current | Audited: the `0.1 Shiba` release matches the frontend's `0.1.0`, every internal `href` resolves (`svelte-href` class), and the feature and project text matches the code. The showcase links are external. No change. | 0 |
 
 ## Claims
 
@@ -125,6 +140,86 @@ pages under `/publishers-guide/`).
 | 101 | generated | fact | Embedded README headings are demoted one level | apps/docs/scripts/generate-component-docs.ts | `function demoteHeadings(markdown: string): string {` |
 | 102 | generated | fact | The route-map intro explains groups and parameters | apps/docs/scripts/generate-route-map.ts | `A name in parentheses is a route group, which adds no URL segment` |
 | 103 | generated | fact | The orphan's component no longer exists: the `entityCard` barrel exports `EntityCard` only (no `EntityCardAction.svelte` is tracked) | apps/frontend/src/lib/dynamic-components/entityCard/index.ts | `export { default as EntityCard } from './EntityCard.svelte';` |
+| 104 | contributing/code-style-guide | fact | Runes mode is forced for files outside `node_modules` | apps/frontend/svelte.config.js | `if (!filename.includes('node_modules')) {` |
+| 105 | contributing/code-style-guide | fact | ESLint bans `svelte/store` | apps/frontend/eslint.config.mjs | `name: 'svelte/store',` |
+| 106 | contributing/code-style-guide | fact | ... across `src/**` | apps/frontend/eslint.config.mjs | `files: ['src/**/*.{ts,js,mjs,cjs,svelte}'],` |
+| 107 | contributing/code-style-guide | path | `$candidate/components` is the third library | apps/frontend/svelte.config.js | `$candidate: path.resolve('./src/lib/candidate')` |
+| 108 | contributing/code-style-guide | fact | HeroEmoji's props type extends the div attributes | apps/frontend/src/lib/components/heroEmoji/HeroEmoji.type.ts | `export type HeroEmojiProps = SvelteHTMLElements['div'] & {` |
+| 109 | contributing/code-style-guide | fact | HeroEmoji reads its props with `$props()` and a rest property | apps/frontend/src/lib/components/heroEmoji/HeroEmoji.svelte | `let { emoji, ...restProps }: HeroEmojiProps = $props();` |
+| 110 | contributing/code-style-guide | fact | HeroEmoji renders only for a non-empty emoji | apps/frontend/src/lib/components/heroEmoji/HeroEmoji.svelte | `{#if emoji != null && emoji !== ''}` |
+| 111 | contributing/code-style-guide | fact | HeroEmoji spreads the rest props through `concatClass` | apps/frontend/src/lib/components/heroEmoji/HeroEmoji.svelte | `restProps,` |
+| 112 | contributing/code-style-guide | fact | The barrel re-exports the component and its type | apps/frontend/src/lib/components/heroEmoji/index.ts | `export { default as HeroEmoji } from './HeroEmoji.svelte';` |
+| 113 | contributing/code-style-guide | fact | `concatClass` lives in `$lib/utils/components` | apps/frontend/src/lib/utils/components.ts | `export function concatClass<TProps extends Record<string, any>>(props: TProps, classes: string) {` |
+| 114 | contributing/code-style-guide | fact | `cn` is built on tailwind-merge | apps/frontend/src/lib/utils/components.ts | `import { extendTailwindMerge } from 'tailwind-merge';` |
+| 115 | contributing/code-style-guide | fact | The caller's classes come last, so the caller wins | apps/frontend/src/lib/utils/components.ts | `class: cn(classes, callerClass)` |
+| 116 | contributing/code-style-guide | fact | Optional props get defaults in the destructuring (Button) | apps/frontend/src/lib/components/button/Button.svelte | `variant = 'normal',` |
+| 117 | contributing/code-style-guide | fact | Button declares an optional `badge` snippet | apps/frontend/src/lib/components/button/Button.type.ts | `badge?: Snippet;` |
+| 118 | contributing/code-style-guide | fact | Button renders it with `{@render}` | apps/frontend/src/lib/components/button/Button.svelte | `{@render badge?.()}` |
+| 119 | contributing/code-style-guide | fact | The caller example passes `badge` as a snippet | apps/frontend/src/lib/components/button/Button.svelte | `{#snippet badge()}<InfoBadge text="5" />{/snippet}` |
+| 120 | contributing/code-style-guide | fact | Docstrings document snippets under `Snippet Props` | apps/frontend/src/lib/components/button/Button.svelte | `### Snippet Props` |
+| 121 | contributing/code-style-guide | fact | The `@component` docstring is what the generator reads | apps/docs/scripts/generate-component-docs.ts | `const match = content.match(/<!--\s*@component\s*([\s\S]*?)-->/i);` |
+| 122 | contributing/code-style-guide | fact | The icon directory has no `IconBase` (the old example) | apps/frontend/src/lib/components/icon/index.ts | `export { default as Icon } from './Icon.svelte';` |
+| 123 | contributing/code-style-guide | fact | `Array<Foo>` is enforced | packages/shared-config/eslint.config.mjs | `'@typescript-eslint/array-type': [` |
+| 124 | contributing/code-style-guide | fact | Type parameters must be `T`-prefixed PascalCase | packages/shared-config/eslint.config.mjs | `regex: '^T[A-Z]',` |
+| 125 | contributing/contribute | fact | `.idea` is ignored | .gitignore | `.idea/` |
+| 126 | contributing/contribute | fact | `.vscode` is ignored | .gitignore | `.vscode/*` |
+| 127 | contributing/contribute | fact | The PR template links `#commit-your-update` | .github/PULL_REQUEST_TEMPLATE | `contributing/contribute#commit-your-update` |
+| 128 | contributing/pull-request | fact | The PR template links `#self-review` | .github/PULL_REQUEST_TEMPLATE | `contributing/pull-request#self-review` |
+| 129 | contributing/ai-agents | path | CLAUDE.md exists | CLAUDE.md | - |
+| 130 | contributing/ai-agents | path | Skills for the components, data, database, filters and matching | .claude/skills/components/SKILL.md | - |
+| 131 | contributing/ai-agents | path | ... data skill | .claude/skills/data/SKILL.md | - |
+| 132 | contributing/ai-agents | path | ... database skill | .claude/skills/database/SKILL.md | - |
+| 133 | contributing/ai-agents | path | ... filters skill | .claude/skills/filters/SKILL.md | - |
+| 134 | contributing/ai-agents | path | ... matching skill | .claude/skills/matching/SKILL.md | - |
+| 135 | contributing/ai-agents | path | The code review checklist | .agents/code-review-checklist.md | - |
+| 136 | contributing/ai-agents | flow | `claude.yml` listens to issue comments | .github/workflows/claude.yml | `issue_comment:` |
+| 137 | contributing/ai-agents | flow | ... to PR review comments | .github/workflows/claude.yml | `pull_request_review_comment:` |
+| 138 | contributing/ai-agents | flow | ... to submitted reviews | .github/workflows/claude.yml | `pull_request_review:` |
+| 139 | contributing/ai-agents | flow | ... and to issues | .github/workflows/claude.yml | `issues:` |
+| 140 | contributing/ai-agents | flow | `@claude review` routes to review | .github/workflows/claude.yml | `grep -qiE '@claude[[:space:][:punct:]]+review'` |
+| 141 | contributing/ai-agents | flow | `@claude solve` routes to solve | .github/workflows/claude.yml | `grep -qiE '@claude[[:space:][:punct:]]+solve'` |
+| 142 | contributing/ai-agents | flow | Other mentions are generic tasks | .github/workflows/claude.yml | `ACTION="generic"` |
+| 143 | contributing/ai-agents | flow | The author needs write, maintain or admin access | .github/workflows/claude.yml | `if [[ "$PERMISSION" == "admin" ` |
+| 144 | contributing/ai-agents | flow | The review workflow can be started by hand with a PR number | .github/workflows/claude-code-review.yml | `description: "PR number to review"` |
+| 145 | contributing/ai-agents | flow | The solve workflow can be started by hand with an issue number | .github/workflows/claude-solve-issue.yml | `description: "Issue number to solve"` |
+| 146 | contributing/workflows | flow | `main.yaml` runs on pull requests | .github/workflows/main.yaml | `pull_request:` |
+| 147 | contributing/workflows | flow | ... and on pushes to `ci-evidence/**` branches | .github/workflows/main.yaml | `- "ci-evidence/**"` |
+| 148 | contributing/workflows | flow | Markdown-only changes are ignored | .github/workflows/main.yaml | `- "**.md"` |
+| 149 | contributing/workflows | flow | `.env.example`-only changes are ignored | .github/workflows/main.yaml | `- ".env.example"` |
+| 150 | contributing/workflows | flow | Validation job: format check | .github/workflows/main.yaml | `run: yarn format:check` |
+| 151 | contributing/workflows | flow | Validation job: typecheck | .github/workflows/main.yaml | `run: yarn typecheck` |
+| 152 | contributing/workflows | flow | Validation job: lint | .github/workflows/main.yaml | `run: yarn lint:check` |
+| 153 | contributing/workflows | flow | Validation job: unit tests | .github/workflows/main.yaml | `run: yarn test:unit` |
+| 154 | contributing/workflows | flow | Validation job: frontend svelte-check | .github/workflows/main.yaml | `run: yarn workspace @openvaa/frontend check` |
+| 155 | contributing/workflows | flow | Validation job: frontend build | .github/workflows/main.yaml | `run: yarn workspace @openvaa/frontend build` |
+| 156 | contributing/workflows | flow | `docker-image-build` builds without pushing | .github/workflows/main.yaml | `name: "Build the production frontend image (no push)"` |
+| 157 | contributing/workflows | flow | `supabase-tests` is filtered to Supabase changes | .github/workflows/main.yaml | `- 'packages/supabase-types/**'` |
+| 158 | contributing/workflows | flow | ... and runs pgTAP | .github/workflows/main.yaml | `run: supabase test db` |
+| 159 | contributing/workflows | flow | `sql-lint` runs `db:lint:sql` | .github/workflows/main.yaml | `run: yarn db:lint:sql` |
+| 160 | contributing/workflows | flow | `supabase-types-drift` regenerates the types | .github/workflows/main.yaml | `run: yarn db:types` |
+| 161 | contributing/workflows | flow | `dev-seed-integration` runs the dev-seed tests | .github/workflows/main.yaml | `run: yarn workspace @openvaa/dev-seed test:unit` |
+| 162 | contributing/workflows | flow | `e2e-tests` uses the run wrapper | .github/workflows/main.yaml | `run: tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/ci --no-db-reset --no-watch` |
+| 163 | contributing/workflows | flow | `e2e-visual` runs the visual project | .github/workflows/main.yaml | `--project visual-regression` |
+| 164 | contributing/workflows | flow | `dependency-audit` fails at high severity outside the baseline | .github/workflows/main.yaml | `name: "Run yarn audit:deps (fails at high severity and above, outside the accepted baseline)"` |
+| 165 | contributing/workflows | flow | `secret-scan` scans for committed secrets | .github/workflows/main.yaml | `name: "Scan for committed secrets (trufflehog)"` |
+| 166 | contributing/workflows | flow | `skill-drift-check` runs the drift audit | .github/workflows/main.yaml | `run: .claude/scripts/audit-skill-drift.sh` |
+| 167 | contributing/workflows | flow | ... which fails when a skill drifted | .claude/scripts/audit-skill-drift.sh | `Drifted skills may contain outdated information.` |
+| 168 | contributing/workflows | flow | The Node engine guard's negative control | .github/workflows/main.yaml | `name: "Assert the node-engine guard REJECTS an out-of-range Node"` |
+| 169 | contributing/workflows | flow | `release.yml` runs on pushes to `main` with Changesets | .github/workflows/release.yml | `uses: changesets/action@v1` |
+| 170 | about/features | fact | Seven locales are compiled | apps/frontend/project.inlang/settings.json | `"locales": ["en", "fi", "sv", "da", "et", "fr", "lb"],` |
+| 171 | about/features | fact | English is offered by default | packages/app-shared/src/settings/staticSettings.ts | `code: 'en',` |
+| 172 | about/features | fact | Finnish is offered by default | packages/app-shared/src/settings/staticSettings.ts | `code: 'fi',` |
+| 173 | about/features | fact | Swedish is offered by default | packages/app-shared/src/settings/staticSettings.ts | `code: 'sv',` |
+| 174 | about/features | fact | Multiple-item text questions exist | packages/data/src/objects/questions/variants/multipleTextQuestion.ts | `export class MultipleTextQuestion extends Question<typeof QUESTION_TYPE.MultipleText> {` |
+| 175 | about/features | fact | ... and have an input | apps/frontend/src/lib/components/input/parts/MultipleTextPart.svelte | - |
+| 176 | about/features | fact | Number opinion questions render as a slider when matchable | apps/frontend/src/lib/components/questions/OpinionQuestionInput.svelte | `{:else if isNumberQuestion(question) && question.isMatchable}` |
+| 177 | about/features | fact | Boolean opinion questions render | apps/frontend/src/lib/components/questions/OpinionQuestionInput.svelte | `{:else if isBooleanQuestion(question)}` |
+| 178 | about/features | fact | Boolean questions are matchable | packages/data/src/objects/questions/variants/booleanQuestion.ts | `A matchable simple question whose answer is a boolean.` |
+| 179 | about/features | fact | Preference order is not implemented | packages/data/src/objects/questions/base/questionTypes.ts | `// PreferenceOrder: 'preferenceOrder', // TODO: Implement` |
+| 180 | about/features | fact | The client always gets the Supabase provider | apps/frontend/src/lib/api/dataProvider.ts | `export function createDataProvider(source: AdapterSource): SupabaseDataProvider {` |
+| 181 | about/roadmap | fact | Svelte 5 runes are on | apps/frontend/svelte.config.js | `runes: true` |
+| 182 | landing | fact | The current release is 0.1 | apps/frontend/package.json | `"version": "0.1.0",` |
+| 183 | landing | fact | The GitHub link goes to the repository | apps/docs/src/lib/consts.ts | `export const OPENVAA_REPO_URL = 'https://github.com/OpenVAA/voting-advice-application';` |
 
 ## Findings for todos
 
@@ -137,3 +232,5 @@ pages under `/publishers-guide/`).
 
 | Page | Hit | Reason |
 | --- | --- | --- |
+| `about/roadmap` | `Backend migrated from Strapi to Supabase (completed)` | D-21 expected exception: the operator's roadmap history line, left as written (D-05). |
+| `developers-guide/contributing/workflows` | `docker-image-build` (job name) and "production image of the frontend from `apps/frontend/Dockerfile`" (one line) | The CI job builds the frontend's production container image; deployment prose, not a Docker development stack (D-21 permitted case). |
