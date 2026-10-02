@@ -25,6 +25,8 @@ and `publishers/app-settings` (`/publishers-guide/app-settings`).
 | `/developers-guide/candidate-app/password-validation` | `/developers-guide/candidate-app/password-validation` | updated | Audited against `passwordValidation.ts`, `PasswordValidator.svelte`, `PasswordSetter.svelte` and the three pages: kept the flow, the `ValidationDetail` semantics and both examples. Corrected step 4 (the live pages call `setPassword`; only the registration key branch calls `register`; `resetPassword` is not called by the session flow). Added the table of the seven requirements with their thresholds (length 8, repetition 4), the note that `PasswordSetter` passes no username so the `username` rule is always met (F8), and the local Supabase Auth policy values (6, no character classes). | 0 |
 | `/developers-guide/llm-features` | redirect stub → `/developers-guide/admin-app` | merged → /developers-guide/admin-app | Its one sentence ("See the relevant packages for these experimental features") is kept as the Packages section, now with links. | 0 |
 | `/developers-guide/admin-app` | `/developers-guide/admin-app` | updated | Written from the route tree: availability (`supportsAdminApp`, `access.adminApp`), the admin login and `ADMIN_GRANTS`, the protected layout's `admin` role, the verified-session gate on actions and job endpoints, the candidate-first role resolution (F6), no settings or customization editor (F9), the home page's three tools plus the disabled factor-analysis link, the job model (admin's own session, results in `custom_data`, `LLM_OPENAI_API_KEY`, in-memory running jobs, `admin_jobs`), and the three packages. | 0 |
+| `/developers-guide/configuration/app-settings` | `/developers-guide/configuration/app-settings` | updated | D-06 re-derivation. Kept: the static/dynamic split, the links to the four settings files and the two "Adding new settings" lists' first two steps. Dropped: the partial-Strapi banner, "implemented only in Strapi" and the loading of defaults into Strapi, the `settings` store in `stores.ts`, "static settings are merged last" (they are merged first), and steps 3-7 (Strapi components, the `app-settings` controller, `strapiDataProvider.ts` populate params, `StrapiAppSettingsData`, `loadDefaultAppSettings`). Added: the `app_settings.settings` column, `StoredSettingsSchema` validation and partial preserve, notification localization, the no-row `project_open_for_voters` rule, read access, the static → dynamic → stored merge by top-level key, editing without an Admin App editor, the 53-key table with defaults (Key coverage), the question-object shape, and the `StoredSettingsSchema` step for a new dynamic setting. | 0 |
+| `/publishers-guide/app-settings` | `/publishers-guide/app-settings` | updated | D-06 re-derivation; H1 kept. Kept: the intro and most per-key prose (D-03). Dropped: the partial-Strapi banner, "edited in the Strapi dashboard" (twice) and the "built-in features" bullet with no section behind it. Fixed: the broken `#customization` anchor (now `/developers-guide/configuration/app-customization`), `organization` card and tab value `candidates` → `children`, `submatches` described as category scores, `showMissing*` as per-entity-type settings, `showSurveyPopup`'s condition (`survey.showIn`, not `analytics.survey`; F10), the mis-indented `results.cardContents.organization`. Added: `alliance` tabs and card contents, `results.sections` values, `preRegistration.enabled`, every default, where a project's values are stored and that a stored group replaces the whole default group (F11). | 0 |
 
 ## Claims
 
@@ -370,6 +372,202 @@ and `publishers/app-settings` (`/publishers-guide/app-settings`).
 | 338 | admin-app | fact | The tools use `@openvaa/llm` | apps/frontend/src/lib/server/llm/llmProvider.ts | `import { LLMProvider } from '@openvaa/llm';` |
 | 339 | admin-app | fact | Argument condensation uses its package | apps/frontend/src/lib/server/admin/features/condenseArguments.ts | `import { handleQuestion } from '@openvaa/argument-condensation';` |
 | 340 | admin-app | fact | Question info uses its package | apps/frontend/src/lib/server/admin/features/generateQuestionInfo.ts | `from '@openvaa/question-info';` |
+| 341 | configuration/app-settings | fact | Key `survey.linkTemplate` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `linkTemplate: string;` |
+| 342 | configuration/app-settings | fact | Key `survey.showIn` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `showIn: Array<'frontpage'` |
+| 343 | configuration/app-settings | fact | Key `entityDetails.contents.candidate` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `[ENTITY_TYPE.Candidate]: Array<EntityDetailsContent>;` |
+| 344 | configuration/app-settings | fact | Default of `entityDetails.contents.candidate` | packages/app-shared/src/settings/dynamicSettings.ts | `candidate: ['info', 'opinions'],` |
+| 345 | configuration/app-settings | fact | Key `entityDetails.contents.organization` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `[ENTITY_TYPE.Organization]: Array<EntityDetailsContent ` |
+| 346 | configuration/app-settings | fact | Default of `entityDetails.contents.organization` | packages/app-shared/src/settings/dynamicSettings.ts | `organization: ['info', 'children', 'opinions'],` |
+| 347 | configuration/app-settings | fact | Key `entityDetails.contents.alliance` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `[ENTITY_TYPE.Alliance]?: Array<EntityDetailsContent ` |
+| 348 | configuration/app-settings | fact | Default of `entityDetails.contents.alliance` | packages/app-shared/src/settings/dynamicSettings.ts | `alliance: ['info', 'children']` |
+| 349 | configuration/app-settings | fact | Key `entityDetails.showMissingElectionSymbol` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `showMissingElectionSymbol: Partial<Record<EntityType, boolean>>;` |
+| 350 | configuration/app-settings | fact | Default of `entityDetails.showMissingElectionSymbol` | packages/app-shared/src/settings/dynamicSettings.ts | `organization: false` |
+| 351 | configuration/app-settings | fact | Key `entityDetails.showMissingAnswers` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `showMissingAnswers: Partial<Record<EntityType, boolean>>;` |
+| 352 | configuration/app-settings | fact | Default of `entityDetails.showMissingAnswers` | packages/app-shared/src/settings/dynamicSettings.ts | `showMissingAnswers: {` |
+| 353 | configuration/app-settings | fact | Key `header.showFeedback` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `showFeedback: boolean;` |
+| 354 | configuration/app-settings | fact | Default of `header.showFeedback` | packages/app-shared/src/settings/dynamicSettings.ts | `showFeedback: true,` |
+| 355 | configuration/app-settings | fact | Key `header.showHelp` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `showHelp: boolean;` |
+| 356 | configuration/app-settings | fact | Default of `header.showHelp` | packages/app-shared/src/settings/dynamicSettings.ts | `showHelp: true` |
+| 357 | configuration/app-settings | fact | Key `headerStyle.dark.bgColor` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `bgColor?: string;` |
+| 358 | configuration/app-settings | fact | Default of `headerStyle.dark.bgColor` | packages/app-shared/src/settings/dynamicSettings.ts | `bgColor: 'var(--color-base-300)',` |
+| 359 | configuration/app-settings | fact | Key `headerStyle.dark.overImgBgColor` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `overImgBgColor?: string;` |
+| 360 | configuration/app-settings | fact | Default of `headerStyle.dark.overImgBgColor` | packages/app-shared/src/settings/dynamicSettings.ts | `overImgBgColor: 'transparent'` |
+| 361 | configuration/app-settings | fact | Key `headerStyle.light.bgColor` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `Background colors for the header in light mode.` |
+| 362 | configuration/app-settings | fact | Default of `headerStyle.light.bgColor` | packages/app-shared/src/settings/dynamicSettings.ts | `bgColor: 'var(--color-base-300)',` |
+| 363 | configuration/app-settings | fact | Key `headerStyle.light.overImgBgColor` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `overImgBgColor?: string;` |
+| 364 | configuration/app-settings | fact | Default of `headerStyle.light.overImgBgColor` | packages/app-shared/src/settings/dynamicSettings.ts | `overImgBgColor: 'transparent'` |
+| 365 | configuration/app-settings | fact | Key `headerStyle.imgSize` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `imgSize?: string;` |
+| 366 | configuration/app-settings | fact | Default of `headerStyle.imgSize` | packages/app-shared/src/settings/dynamicSettings.ts | `imgSize: 'cover',` |
+| 367 | configuration/app-settings | fact | Key `headerStyle.imgPosition` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `imgPosition?: string;` |
+| 368 | configuration/app-settings | fact | Default of `headerStyle.imgPosition` | packages/app-shared/src/settings/dynamicSettings.ts | `imgPosition: 'center'` |
+| 369 | configuration/app-settings | fact | Key `entities.hideIfMissingAnswers.candidate` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `[ENTITY_TYPE.Candidate]: boolean;` |
+| 370 | configuration/app-settings | fact | Default of `entities.hideIfMissingAnswers.candidate` | packages/app-shared/src/settings/dynamicSettings.ts | `hideIfMissingAnswers: {` |
+| 371 | configuration/app-settings | fact | Key `entities.showAllNominations` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `showAllNominations?: boolean;` |
+| 372 | configuration/app-settings | fact | Default of `entities.showAllNominations` | packages/app-shared/src/settings/dynamicSettings.ts | `showAllNominations: true` |
+| 373 | configuration/app-settings | fact | Key `matching.minimumAnswers` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `minimumAnswers: number;` |
+| 374 | configuration/app-settings | fact | Default of `matching.minimumAnswers` | packages/app-shared/src/settings/dynamicSettings.ts | `minimumAnswers: 5,` |
+| 375 | configuration/app-settings | fact | Key `matching.organizationMatching` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `organizationMatching: OrganizationMatchingMethod;` |
+| 376 | configuration/app-settings | fact | Default of `matching.organizationMatching` | packages/app-shared/src/settings/dynamicSettings.ts | `organizationMatching: 'impute'` |
+| 377 | configuration/app-settings | fact | Key `questions.categoryIntros.allowSkip` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `allowSkip?: boolean;` |
+| 378 | configuration/app-settings | fact | Default of `questions.categoryIntros.allowSkip` | packages/app-shared/src/settings/dynamicSettings.ts | `allowSkip: true,` |
+| 379 | configuration/app-settings | fact | Key `questions.categoryIntros.show` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `Whether to show category intro pages before the first question of each category.` |
+| 380 | configuration/app-settings | fact | Default of `questions.categoryIntros.show` | packages/app-shared/src/settings/dynamicSettings.ts | `categoryIntros: {` |
+| 381 | configuration/app-settings | fact | Key `questions.interactiveInfo.enabled` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `interactiveInfo?: {` |
+| 382 | configuration/app-settings | fact | Default of `questions.interactiveInfo.enabled` | packages/app-shared/src/settings/dynamicSettings.ts | `enabled: false` |
+| 383 | configuration/app-settings | fact | Key `questions.questionsIntro.allowCategorySelection` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `allowCategorySelection?: boolean;` |
+| 384 | configuration/app-settings | fact | Default of `questions.questionsIntro.allowCategorySelection` | packages/app-shared/src/settings/dynamicSettings.ts | `allowCategorySelection: true,` |
+| 385 | configuration/app-settings | fact | Key `questions.questionsIntro.show` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `Whether to show the questions intro page.` |
+| 386 | configuration/app-settings | fact | Default of `questions.questionsIntro.show` | packages/app-shared/src/settings/dynamicSettings.ts | `questionsIntro: {` |
+| 387 | configuration/app-settings | fact | Key `questions.showCategoryTags` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `showCategoryTags: boolean;` |
+| 388 | configuration/app-settings | fact | Default of `questions.showCategoryTags` | packages/app-shared/src/settings/dynamicSettings.ts | `showCategoryTags: true,` |
+| 389 | configuration/app-settings | fact | Key `questions.showResultsLink` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `showResultsLink?: boolean;` |
+| 390 | configuration/app-settings | fact | Default of `questions.showResultsLink` | packages/app-shared/src/settings/dynamicSettings.ts | `showResultsLink: true` |
+| 391 | configuration/app-settings | fact | Key `results.cardContents.candidate` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `The additional contents of [ENTITY_TYPE.Candidate] cards.` |
+| 392 | configuration/app-settings | fact | Default of `results.cardContents.candidate` | packages/app-shared/src/settings/dynamicSettings.ts | `candidate: ['submatches'],` |
+| 393 | configuration/app-settings | fact | Key `results.cardContents.organization` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `The additional contents of party cards.` |
+| 394 | configuration/app-settings | fact | Default of `results.cardContents.organization` | packages/app-shared/src/settings/dynamicSettings.ts | `organization: ['children'],` |
+| 395 | configuration/app-settings | fact | Key `results.cardContents.alliance` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `The additional contents of alliance cards.` |
+| 396 | configuration/app-settings | fact | Default of `results.cardContents.alliance` | packages/app-shared/src/settings/dynamicSettings.ts | `alliance: ['children']` |
+| 397 | configuration/app-settings | fact | Key `results.sections` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `sections: Array<typeof ENTITY_TYPE.Candidate ` |
+| 398 | configuration/app-settings | fact | Default of `results.sections` | packages/app-shared/src/settings/dynamicSettings.ts | `sections: ['candidate', 'organization']` |
+| 399 | configuration/app-settings | fact | Key `results.showFeedbackPopup` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `showFeedbackPopup?: number;` |
+| 400 | configuration/app-settings | fact | Default of `results.showFeedbackPopup` | packages/app-shared/src/settings/dynamicSettings.ts | `showFeedbackPopup: 180,` |
+| 401 | configuration/app-settings | fact | Key `results.showSurveyPopup` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `showSurveyPopup?: number;` |
+| 402 | configuration/app-settings | fact | Default of `results.showSurveyPopup` | packages/app-shared/src/settings/dynamicSettings.ts | `showSurveyPopup: 500,` |
+| 403 | configuration/app-settings | fact | Key `elections.disallowSelection` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `disallowSelection?: boolean;` |
+| 404 | configuration/app-settings | fact | Default of `elections.disallowSelection` | packages/app-shared/src/settings/dynamicSettings.ts | `disallowSelection: false,` |
+| 405 | configuration/app-settings | fact | Key `elections.showElectionTags` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `showElectionTags: boolean;` |
+| 406 | configuration/app-settings | fact | Default of `elections.showElectionTags` | packages/app-shared/src/settings/dynamicSettings.ts | `showElectionTags: true,` |
+| 407 | configuration/app-settings | fact | Key `elections.startFromConstituencyGroup` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `startFromConstituencyGroup?: Id;` |
+| 408 | configuration/app-settings | fact | Default of `elections.startFromConstituencyGroup` | packages/app-shared/src/settings/dynamicSettings.ts | `startFromConstituencyGroup: undefined` |
+| 409 | configuration/app-settings | fact | Key `access.candidateApp` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `candidateApp: boolean;` |
+| 410 | configuration/app-settings | fact | Default of `access.candidateApp` | packages/app-shared/src/settings/dynamicSettings.ts | `candidateApp: true,` |
+| 411 | configuration/app-settings | fact | Key `access.voterApp` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `voterApp: boolean;` |
+| 412 | configuration/app-settings | fact | Default of `access.voterApp` | packages/app-shared/src/settings/dynamicSettings.ts | `voterApp: true,` |
+| 413 | configuration/app-settings | fact | Key `access.adminApp` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `adminApp: boolean;` |
+| 414 | configuration/app-settings | fact | Default of `access.adminApp` | packages/app-shared/src/settings/dynamicSettings.ts | `adminApp: true,` |
+| 415 | configuration/app-settings | fact | Key `access.underMaintenance` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `underMaintenance?: boolean;` |
+| 416 | configuration/app-settings | fact | Default of `access.underMaintenance` | packages/app-shared/src/settings/dynamicSettings.ts | `underMaintenance: false,` |
+| 417 | configuration/app-settings | fact | Key `access.answersLocked` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `answersLocked?: boolean;` |
+| 418 | configuration/app-settings | fact | Default of `access.answersLocked` | packages/app-shared/src/settings/dynamicSettings.ts | `answersLocked: false` |
+| 419 | configuration/app-settings | fact | Key `notifications.candidateApp` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `candidateApp?: NotificationData` |
+| 420 | configuration/app-settings | fact | Default of `notifications.candidateApp` | packages/app-shared/src/settings/dynamicSettings.ts | `candidateApp: null,` |
+| 421 | configuration/app-settings | fact | Key `notifications.candidateApp.show` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `show?: boolean;` |
+| 422 | configuration/app-settings | fact | Key `notifications.candidateApp.title` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `title: LocalizedString;` |
+| 423 | configuration/app-settings | fact | Key `notifications.candidateApp.content` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `content: LocalizedString;` |
+| 424 | configuration/app-settings | fact | Key `notifications.candidateApp.icon` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `icon?: string;` |
+| 425 | configuration/app-settings | fact | Key `notifications.voterApp` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `voterApp?: NotificationData` |
+| 426 | configuration/app-settings | fact | Default of `notifications.voterApp` | packages/app-shared/src/settings/dynamicSettings.ts | `voterApp: null` |
+| 427 | configuration/app-settings | fact | Key `notifications.voterApp.show` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `show?: boolean;` |
+| 428 | configuration/app-settings | fact | Key `notifications.voterApp.title` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `title: LocalizedString;` |
+| 429 | configuration/app-settings | fact | Key `notifications.voterApp.content` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `content: LocalizedString;` |
+| 430 | configuration/app-settings | fact | Key `notifications.voterApp.icon` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `icon?: string;` |
+| 431 | configuration/app-settings | fact | Key `candidateApp.questions.hideVideo` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `hideVideo: boolean;` |
+| 432 | configuration/app-settings | fact | Default of `candidateApp.questions.hideVideo` | packages/app-shared/src/settings/dynamicSettings.ts | `hideVideo: false` |
+| 433 | configuration/app-settings | fact | Key `candidateApp.questions.hideHero` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `hideHero: boolean;` |
+| 434 | configuration/app-settings | fact | Default of `candidateApp.questions.hideHero` | packages/app-shared/src/settings/dynamicSettings.ts | `hideHero: false,` |
+| 435 | configuration/app-settings | fact | Key `preRegistration.enabled` exists in `DynamicSettings` | packages/app-shared/src/settings/dynamicSettings.type.ts | `Whether pre-registration is enabled for the Candidate App.` |
+| 436 | publishers/app-settings | fact | Key `survey.linkTemplate` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `linkTemplate: string;` |
+| 437 | publishers/app-settings | fact | Key `survey.showIn` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `showIn: Array<'frontpage'` |
+| 438 | publishers/app-settings | fact | Key `entityDetails.contents.candidate` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `[ENTITY_TYPE.Candidate]: Array<EntityDetailsContent>;` |
+| 439 | publishers/app-settings | fact | Key `entityDetails.contents.organization` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `[ENTITY_TYPE.Organization]: Array<EntityDetailsContent ` |
+| 440 | publishers/app-settings | fact | Key `entityDetails.contents.alliance` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `[ENTITY_TYPE.Alliance]?: Array<EntityDetailsContent ` |
+| 441 | publishers/app-settings | fact | Key `entityDetails.showMissingElectionSymbol` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `showMissingElectionSymbol: Partial<Record<EntityType, boolean>>;` |
+| 442 | publishers/app-settings | fact | Key `entityDetails.showMissingAnswers` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `showMissingAnswers: Partial<Record<EntityType, boolean>>;` |
+| 443 | publishers/app-settings | fact | Key `header.showFeedback` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `showFeedback: boolean;` |
+| 444 | publishers/app-settings | fact | Key `header.showHelp` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `showHelp: boolean;` |
+| 445 | publishers/app-settings | fact | Key `headerStyle.dark.bgColor` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `bgColor?: string;` |
+| 446 | publishers/app-settings | fact | Key `headerStyle.dark.overImgBgColor` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `overImgBgColor?: string;` |
+| 447 | publishers/app-settings | fact | Key `headerStyle.light.bgColor` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `Background colors for the header in light mode.` |
+| 448 | publishers/app-settings | fact | Key `headerStyle.light.overImgBgColor` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `overImgBgColor?: string;` |
+| 449 | publishers/app-settings | fact | Key `headerStyle.imgSize` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `imgSize?: string;` |
+| 450 | publishers/app-settings | fact | Key `headerStyle.imgPosition` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `imgPosition?: string;` |
+| 451 | publishers/app-settings | fact | Key `entities.hideIfMissingAnswers.candidate` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `[ENTITY_TYPE.Candidate]: boolean;` |
+| 452 | publishers/app-settings | fact | Key `entities.showAllNominations` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `showAllNominations?: boolean;` |
+| 453 | publishers/app-settings | fact | Key `matching.minimumAnswers` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `minimumAnswers: number;` |
+| 454 | publishers/app-settings | fact | Key `matching.organizationMatching` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `organizationMatching: OrganizationMatchingMethod;` |
+| 455 | publishers/app-settings | fact | Key `questions.categoryIntros.allowSkip` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `allowSkip?: boolean;` |
+| 456 | publishers/app-settings | fact | Key `questions.categoryIntros.show` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `Whether to show category intro pages before the first question of each category.` |
+| 457 | publishers/app-settings | fact | Key `questions.interactiveInfo.enabled` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `interactiveInfo?: {` |
+| 458 | publishers/app-settings | fact | Key `questions.questionsIntro.allowCategorySelection` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `allowCategorySelection?: boolean;` |
+| 459 | publishers/app-settings | fact | Key `questions.questionsIntro.show` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `Whether to show the questions intro page.` |
+| 460 | publishers/app-settings | fact | Key `questions.showCategoryTags` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `showCategoryTags: boolean;` |
+| 461 | publishers/app-settings | fact | Key `questions.showResultsLink` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `showResultsLink?: boolean;` |
+| 462 | publishers/app-settings | fact | Key `results.cardContents.candidate` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `The additional contents of [ENTITY_TYPE.Candidate] cards.` |
+| 463 | publishers/app-settings | fact | Key `results.cardContents.organization` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `The additional contents of party cards.` |
+| 464 | publishers/app-settings | fact | Key `results.cardContents.alliance` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `The additional contents of alliance cards.` |
+| 465 | publishers/app-settings | fact | Key `results.sections` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `sections: Array<typeof ENTITY_TYPE.Candidate ` |
+| 466 | publishers/app-settings | fact | Key `results.showFeedbackPopup` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `showFeedbackPopup?: number;` |
+| 467 | publishers/app-settings | fact | Key `results.showSurveyPopup` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `showSurveyPopup?: number;` |
+| 468 | publishers/app-settings | fact | Key `elections.disallowSelection` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `disallowSelection?: boolean;` |
+| 469 | publishers/app-settings | fact | Key `elections.showElectionTags` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `showElectionTags: boolean;` |
+| 470 | publishers/app-settings | fact | Key `elections.startFromConstituencyGroup` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `startFromConstituencyGroup?: Id;` |
+| 471 | publishers/app-settings | fact | Key `access.candidateApp` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `candidateApp: boolean;` |
+| 472 | publishers/app-settings | fact | Key `access.voterApp` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `voterApp: boolean;` |
+| 473 | publishers/app-settings | fact | Key `access.adminApp` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `adminApp: boolean;` |
+| 474 | publishers/app-settings | fact | Key `access.underMaintenance` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `underMaintenance?: boolean;` |
+| 475 | publishers/app-settings | fact | Key `access.answersLocked` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `answersLocked?: boolean;` |
+| 476 | publishers/app-settings | fact | Key `notifications.candidateApp` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `candidateApp?: NotificationData` |
+| 477 | publishers/app-settings | fact | Key `notifications.candidateApp.show` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `show?: boolean;` |
+| 478 | publishers/app-settings | fact | Key `notifications.candidateApp.title` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `title: LocalizedString;` |
+| 479 | publishers/app-settings | fact | Key `notifications.candidateApp.content` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `content: LocalizedString;` |
+| 480 | publishers/app-settings | fact | Key `notifications.candidateApp.icon` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `icon?: string;` |
+| 481 | publishers/app-settings | fact | Key `notifications.voterApp` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `voterApp?: NotificationData` |
+| 482 | publishers/app-settings | fact | Key `notifications.voterApp.show` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `show?: boolean;` |
+| 483 | publishers/app-settings | fact | Key `notifications.voterApp.title` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `title: LocalizedString;` |
+| 484 | publishers/app-settings | fact | Key `notifications.voterApp.content` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `content: LocalizedString;` |
+| 485 | publishers/app-settings | fact | Key `notifications.voterApp.icon` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `icon?: string;` |
+| 486 | publishers/app-settings | fact | Key `candidateApp.questions.hideVideo` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `hideVideo: boolean;` |
+| 487 | publishers/app-settings | fact | Key `candidateApp.questions.hideHero` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `hideHero: boolean;` |
+| 488 | publishers/app-settings | fact | Key `preRegistration.enabled` is explained | packages/app-shared/src/settings/dynamicSettings.type.ts | `Whether pre-registration is enabled for the Candidate App.` |
+| 489 | configuration/app-settings | path | The static settings file | packages/app-shared/src/settings/staticSettings.ts | - |
+| 490 | configuration/app-settings | fact | `StaticSettings` is the static type | packages/app-shared/src/settings/staticSettings.type.ts | `export type StaticSettings = ` |
+| 491 | configuration/app-settings | fact | `DynamicSettings` is the dynamic type | packages/app-shared/src/settings/dynamicSettings.type.ts | `export type DynamicSettings = {` |
+| 492 | configuration/app-settings | fact | The defaults object | packages/app-shared/src/settings/dynamicSettings.ts | `export const dynamicSettings: DynamicSettings = {` |
+| 493 | configuration/app-settings | fact | One `app_settings` row per project | apps/supabase/supabase/schema/106-app-settings.sql | `project_id uuid NOT NULL UNIQUE REFERENCES public.projects (id) ON DELETE CASCADE,` |
+| 494 | configuration/app-settings | fact | The `settings` column defaults to an empty object | apps/supabase/supabase/schema/106-app-settings.sql | `settings jsonb NOT NULL DEFAULT '{}'::jsonb,` |
+| 495 | configuration/app-settings | flow | `getAppSettings` reads the `settings` column | apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts | `this.scopedFrom('app_settings').select('settings').maybeSingle();` |
+| 496 | configuration/app-settings | flow | The stored value is parsed against `StoredSettingsSchema` | apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts | `StoredSettingsSchema,` |
+| 497 | configuration/app-settings | fact | The schema is strict | packages/app-shared/src/data/schemas/storedSettings.schema.ts | `export const StoredSettingsSchema = z.strictObject({` |
+| 498 | configuration/app-settings | fact | Strict at every level | packages/app-shared/src/data/schemas/storedSettings.schema.ts | `Strict at EVERY level` |
+| 499 | configuration/app-settings | fact | Every stored member is optional | packages/app-shared/src/data/schemas/storedSettings.schema.ts | `Every field is optional here.` |
+| 500 | configuration/app-settings | fact | Failing top-level members are dropped and the rest kept | apps/frontend/src/lib/api/adapters/supabase/utils/parseOutcome.ts | `the top-level members zod flagged are dropped and the remainder is re-parsed` |
+| 501 | configuration/app-settings | fact | The failure is logged as an error | apps/frontend/src/lib/api/adapters/supabase/utils/parseOutcome.ts | `log.error(message, {` |
+| 502 | configuration/app-settings | flow | Notification titles and contents are localized | apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts | `title: getLocalized(notif.title, locale, this.defaultLocale),` |
+| 503 | configuration/app-settings | fact | Stored notification text is a locale object | packages/app-shared/src/data/schemas/storedSettings.schema.ts | `const LocalizedStringSchema = z.record(z.string(), z.string());` |
+| 504 | configuration/app-settings | fact | Nothing creates a settings row | apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts | `nothing creates a settings row for a project` |
+| 505 | configuration/app-settings | flow | With no row the provider asks `project_open_for_voters` | apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts | `this.supabase.rpc('project_open_for_voters', {` |
+| 506 | configuration/app-settings | flow | An open project gets no overrides | apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts | `if (open === true) return {};` |
+| 507 | configuration/app-settings | flow | A closed project gets `voterApp: false` | apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts | `return { access: { ...dynamicSettings.access, voterApp: false } }` |
+| 508 | configuration/app-settings | fact | Anonymous reads require an open project | apps/supabase/supabase/schema/302-rls.sql | `CREATE POLICY "anon_select_app_settings" ON public.app_settings FOR` |
+| 509 | configuration/app-settings | fact | Grant holders can always read (preview) | apps/supabase/supabase/schema/302-rls.sql | `user_can ('project', project_id, 'project.read_structure')` |
+| 510 | configuration/app-settings | fact | The stored schema accepts `analytics` | packages/app-shared/src/data/schemas/storedSettings.schema.ts | `analytics: z` |
+| 511 | configuration/app-settings | fact | `analytics` is a static setting | packages/app-shared/src/settings/staticSettings.type.ts | `readonly analytics: {` |
+| 512 | configuration/app-settings | flow | The root layout loads the stored settings | apps/frontend/src/routes/+layout.ts | `dataProvider.getAppSettings({ locale: lang })` |
+| 513 | configuration/app-settings | flow | The app context merges static, dynamic and stored settings | apps/frontend/src/lib/contexts/app/appContext.svelte.ts | `mergeInitialAppSettings(staticSettings, dynamicSettings, page.data?.appSettingsData` |
+| 514 | configuration/app-settings | flow | The merge order: static, then dynamic, then stored | apps/frontend/src/lib/utils/settings.ts | `const base = mergeAppSettings(staticSettings, dynamicSettings);` |
+| 515 | configuration/app-settings | fact | The merge replaces by top-level key | apps/frontend/src/lib/utils/settings.ts | `Settings are overwritten by root key unless the key is nullish.` |
+| 516 | configuration/app-settings | fact | Nullish values are skipped | apps/frontend/src/lib/utils/settings.ts | `.filter(([, v]) => v != null)` |
+| 517 | configuration/app-settings | fact | No settings editor in the Admin App (F9) | apps/frontend/src/routes/admin/(protected)/+page.svelte | `href={getRoute.current('AdminAppQuestionInfo')}` |
+| 518 | configuration/app-settings | fact | `app_settings` is importable with `bulk_import` | apps/supabase/supabase/schema/501-bulk-operations.sql | `'nominations', 'app_settings'` |
+| 519 | configuration/app-settings | fact | Writing the row needs `project.edit_app_settings` | apps/supabase/supabase/schema/302-rls.sql | `'project.edit_app_settings'` |
+| 520 | configuration/app-settings | fact | Question objects in card contents | packages/app-shared/src/settings/dynamicSettings.type.ts | `export type QuestionInCardContent = {` |
+| 521 | configuration/app-settings | fact | Question-object formats | packages/app-shared/src/settings/dynamicSettings.type.ts | `export type QuestionInCardContentFormat =` |
+| 522 | configuration/app-settings | fact | The notification icon falls back to `important` | apps/frontend/src/lib/components/notification/Notification.svelte | `data.icon in ICONS ? data.icon : 'important'` |
+| 523 | configuration/app-settings | fact | Organization matching methods | packages/app-shared/src/settings/dynamicSettings.type.ts | `export type OrganizationMatchingMethod =` |
+| 524 | configuration/app-settings | fact | `survey.showIn` values | packages/app-shared/src/settings/dynamicSettings.type.ts | `Array<'frontpage'` |
+| 525 | configuration/app-settings | fact | New stored keys go into `StoredSettingsSchema` | packages/app-shared/src/data/schemas/storedSettings.schema.ts | `preRegistration: z.strictObject({ enabled: z.boolean().optional() }).optional(),` |
+| 526 | configuration/app-settings | fact | The frontend imports the built package | packages/app-shared/package.json | `"types": "./dist/index.d.ts",` |
+| 527 | configuration/app-settings | command | `yarn dev` runs the package watcher | package.json | `"watch:shared":` |
+| 528 | publishers/app-settings | fact | Defaults come from `dynamicSettings.ts` | packages/app-shared/src/settings/dynamicSettings.ts | `export const dynamicSettings: DynamicSettings = {` |
+| 529 | publishers/app-settings | fact | A project's values are in `app_settings.settings` | apps/supabase/supabase/schema/106-app-settings.sql | `the Supabase data provider merges it over the shipped defaults` |
+| 530 | publishers/app-settings | fact | A stored group replaces the default group | apps/frontend/src/lib/utils/settings.ts | `Settings are overwritten by root key unless the key is nullish.` |
+| 531 | publishers/app-settings | fact | Parties' `children` are their candidates; alliances' are member parties | packages/app-shared/src/settings/dynamicSettings.type.ts | `CandidateNominations for Organization, OrganizationNominations for Alliance` |
+| 532 | publishers/app-settings | fact | `submatches` shows the category scores | packages/app-shared/src/settings/dynamicSettings.type.ts | `Show the matching scores for each question category.` |
+| 533 | publishers/app-settings | flow | The survey popup needs `survey.showIn` to include `resultsPopup` | apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte | `appSettings.survey.showIn.includes('resultsPopup')` |
+| 534 | publishers/app-settings | fact | The theme `base-300` colour default | packages/app-shared/src/settings/dynamicSettings.ts | `bgColor: 'var(--color-base-300)',` |
+| 535 | publishers/app-settings | fact | The notification icon defaults to `important` | apps/frontend/src/lib/components/notification/Notification.svelte | `data.icon in ICONS ? data.icon : 'important'` |
+| 536 | publishers/app-settings | fact | Pre-registration needs the env variables too | packages/app-shared/src/settings/dynamicSettings.type.ts | `If enabled, make sure to set the relevant env variables as well.` |
 
 ## Findings for todos
 
@@ -387,7 +585,69 @@ disposition 168-08 should take.
 | F7 | The OIDC callback deletes the `oidc_nonce` cookie but does not compare the nonce with the ID token's `nonce` claim ("a future enhancement"); for Idura the nonce is generated and stored but never checked. No pending todo mentions the nonce check (`grep -l -i nonce .planning/todos/pending/*` finds no todo about it). The Bank authentication page states it. | `apps/frontend/src/routes/api/oidc/callback/+server.ts`: `Nonce verification against the id_token nonce claim is a future enhancement.` | 168-08: file a code todo, or confirm an existing one covers it. |
 | F8 | `PasswordSetter` renders `PasswordValidator` without a `username`, so the enforced `username` requirement is always met on all three password pages; the validator's own documentation says `username` "should be given as props". Observation; the Password validation page states it. | `apps/frontend/src/lib/candidate/components/passwordSetter/PasswordSetter.svelte`: `<PasswordValidator bind:validPassword {password} />`; `apps/frontend/src/lib/candidate/components/passwordValidator/PasswordValidator.svelte`: `should be given as props` | Optional code todo (pass the email or name as the username); 168-08 decides. |
 | F9 | Cross-reference to 168-04 F7: the Admin App has no editor for app settings or `app_settings.customization` (`git grep -n -i customization -- apps/frontend/src/routes/admin` exits 1). The Admin app page says those are changed in the database. | `apps/frontend/src/routes/admin/(protected)/+page.svelte`: `href={getRoute.current('AdminAppQuestionInfo')}` (the last of the home page's tool links) | Observation; no action. |
+| F10 | The doc comment of `results.showSurveyPopup` says the popup needs "the relevant `analytics.survey` settings", but there is no `analytics.survey`: the survey settings are the top-level `survey` key, and the results layout starts the popup countdown only when `survey.showIn` includes `resultsPopup`. Both app-settings pages state the real condition. | `packages/app-shared/src/settings/dynamicSettings.type.ts`: `analytics.survey`; `apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte`: `appSettings.survey.showIn.includes('resultsPopup')` | Comment drift for a code-comment pass; no code change here. |
+| F11 | Stored settings replace the defaults by top-level key (`mergeAppSettings`), so a stored `results` object that sets only `showFeedbackPopup` drops `cardContents` and `sections`; the function carries its own TODO ("Handle merging so that empty objects do not overwrite defaults"), and the provider works around it for `access` by returning the whole object. The old publishers' page did not say this. Both pages now tell the reader to store whole top-level groups. Whether a deep merge is wanted is UNCONFIRMED (an operator decision). | `apps/frontend/src/lib/utils/settings.ts`: `Settings are overwritten by root key unless the key is nullish.`; `apps/frontend/src/lib/utils/settings.ts`: `TODO: Handle merging so that empty objects do not overwrite defaults`; `apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts`: `replaces settings by root key` | Existing in-code TODO; 168-08 may promote it to a todo. No code change here. |
 
 ## Sweep exceptions
 
+None. `git grep -n -i docker` over the eight pages exits 1, as do the D-21 Strapi/AWS/cache sweep, the Svelte 4 sweep, the `[[lang` sweep and the D-17 version sweep, so there is nothing for 168-08 to copy.
+
 ## Key coverage
+
+Derived from `DynamicSettings` in `packages/app-shared/src/settings/dynamicSettings.type.ts` and the defaults in `packages/app-shared/src/settings/dynamicSettings.ts`. A key path is every property whose type is not an inline object (so `entityDetails.showMissingAnswers`, a record, is one path), plus the four fields of `NotificationData` under each of the two `notifications` keys. **53 key paths**, counted twice: by hand from the type, and by a TypeScript-AST walk of the `DynamicSettings` alias (session scratchpad, not committed) whose 53 paths diff empty against this table; the developers' page lists all 53 in its Keys table, and the publishers' page explains all 53 (none omitted). The Anchor column is the key's declaration in the type file; the default's anchor is in the Claims rows.
+
+| Key path | Default | Dev page | Publisher page | Anchor |
+| --- | --- | --- | --- | --- |
+| `survey.linkTemplate` | none (`survey` unset) | yes | yes | `linkTemplate: string;` |
+| `survey.showIn` | none | yes | yes | `showIn: Array<'frontpage'` |
+| `entityDetails.contents.candidate` | `['info', 'opinions']` | yes | yes | `[ENTITY_TYPE.Candidate]: Array<EntityDetailsContent>;` |
+| `entityDetails.contents.organization` | `['info', 'children', 'opinions']` | yes | yes | `[ENTITY_TYPE.Organization]: Array<EntityDetailsContent ` |
+| `entityDetails.contents.alliance` | `['info', 'children']` | yes | yes | `[ENTITY_TYPE.Alliance]?: Array<EntityDetailsContent ` |
+| `entityDetails.showMissingElectionSymbol` | `{ candidate: true, organization: false }` | yes | yes | `showMissingElectionSymbol: Partial<Record<EntityType, boolean>>;` |
+| `entityDetails.showMissingAnswers` | `{ candidate: true, organization: true }` | yes | yes | `showMissingAnswers: Partial<Record<EntityType, boolean>>;` |
+| `header.showFeedback` | `true` | yes | yes | `showFeedback: boolean;` |
+| `header.showHelp` | `true` | yes | yes | `showHelp: boolean;` |
+| `headerStyle.dark.bgColor` | `'var(--color-base-300)'` | yes | yes | `bgColor?: string;` |
+| `headerStyle.dark.overImgBgColor` | `'transparent'` | yes | yes | `overImgBgColor?: string;` |
+| `headerStyle.light.bgColor` | `'var(--color-base-300)'` | yes | yes | `Background colors for the header in light mode.` |
+| `headerStyle.light.overImgBgColor` | `'transparent'` | yes | yes | `overImgBgColor?: string;` |
+| `headerStyle.imgSize` | `'cover'` | yes | yes | `imgSize?: string;` |
+| `headerStyle.imgPosition` | `'center'` | yes | yes | `imgPosition?: string;` |
+| `entities.hideIfMissingAnswers.candidate` | `true` | yes | yes | `[ENTITY_TYPE.Candidate]: boolean;` |
+| `entities.showAllNominations` | `true` | yes | yes | `showAllNominations?: boolean;` |
+| `matching.minimumAnswers` | `5` | yes | yes | `minimumAnswers: number;` |
+| `matching.organizationMatching` | `'impute'` | yes | yes | `organizationMatching: OrganizationMatchingMethod;` |
+| `questions.categoryIntros.allowSkip` | `true` | yes | yes | `allowSkip?: boolean;` |
+| `questions.categoryIntros.show` | `true` | yes | yes | `Whether to show category intro pages before the first question of each category.` |
+| `questions.interactiveInfo.enabled` | `false` | yes | yes | `interactiveInfo?: {` |
+| `questions.questionsIntro.allowCategorySelection` | `true` | yes | yes | `allowCategorySelection?: boolean;` |
+| `questions.questionsIntro.show` | `true` | yes | yes | `Whether to show the questions intro page.` |
+| `questions.showCategoryTags` | `true` | yes | yes | `showCategoryTags: boolean;` |
+| `questions.showResultsLink` | `true` | yes | yes | `showResultsLink?: boolean;` |
+| `results.cardContents.candidate` | `['submatches']` | yes | yes | `The additional contents of [ENTITY_TYPE.Candidate] cards.` |
+| `results.cardContents.organization` | `['children']` | yes | yes | `The additional contents of party cards.` |
+| `results.cardContents.alliance` | `['children']` | yes | yes | `The additional contents of alliance cards.` |
+| `results.sections` | `['candidate', 'organization']` | yes | yes | `sections: Array<typeof ENTITY_TYPE.Candidate ` |
+| `results.showFeedbackPopup` | `180` | yes | yes | `showFeedbackPopup?: number;` |
+| `results.showSurveyPopup` | `500` | yes | yes | `showSurveyPopup?: number;` |
+| `elections.disallowSelection` | `false` | yes | yes | `disallowSelection?: boolean;` |
+| `elections.showElectionTags` | `true` | yes | yes | `showElectionTags: boolean;` |
+| `elections.startFromConstituencyGroup` | none (`undefined`) | yes | yes | `startFromConstituencyGroup?: Id;` |
+| `access.candidateApp` | `true` | yes | yes | `candidateApp: boolean;` |
+| `access.voterApp` | `true` | yes | yes | `voterApp: boolean;` |
+| `access.adminApp` | `true` | yes | yes | `adminApp: boolean;` |
+| `access.underMaintenance` | `false` | yes | yes | `underMaintenance?: boolean;` |
+| `access.answersLocked` | `false` | yes | yes | `answersLocked?: boolean;` |
+| `notifications.candidateApp` | `null` | yes | yes | `candidateApp?: NotificationData` |
+| `notifications.candidateApp.show` | none | yes | yes | `show?: boolean;` |
+| `notifications.candidateApp.title` | none | yes | yes | `title: LocalizedString;` |
+| `notifications.candidateApp.content` | none | yes | yes | `content: LocalizedString;` |
+| `notifications.candidateApp.icon` | none (shown as `important`) | yes | yes | `icon?: string;` |
+| `notifications.voterApp` | `null` | yes | yes | `voterApp?: NotificationData` |
+| `notifications.voterApp.show` | none | yes | yes | `show?: boolean;` |
+| `notifications.voterApp.title` | none | yes | yes | `title: LocalizedString;` |
+| `notifications.voterApp.content` | none | yes | yes | `content: LocalizedString;` |
+| `notifications.voterApp.icon` | none (shown as `important`) | yes | yes | `icon?: string;` |
+| `candidateApp.questions.hideVideo` | `false` | yes | yes | `hideVideo: boolean;` |
+| `candidateApp.questions.hideHero` | `false` | yes | yes | `hideHero: boolean;` |
+| `preRegistration.enabled` | none (`preRegistration` unset) | yes | yes | `Whether pre-registration is enabled for the Candidate App.` |
