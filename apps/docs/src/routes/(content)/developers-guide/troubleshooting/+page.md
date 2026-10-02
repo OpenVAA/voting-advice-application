@@ -1,107 +1,67 @@
-> **Note:** Parts of this page reference the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
-
 # Troubleshooting
 
-If you can't find an answer to your problem below, feel free to reach us via Github [Discussions](https://github.com/OpenVAA/voting-advice-application/discussions).
+If you can't find an answer to your problem below, ask in the project's GitHub [Discussions](https://github.com/OpenVAA/voting-advice-application/discussions).
 
-## Commit error: ’Husky not found’
+## `yarn dev` fails because the port is in use
 
-Try running `npx husky install`.
-
-If that doesn't work, you may need to add these lines to the start of the untracked `/.husky/_/husky.sh` file:
+The frontend dev server uses `strictPort`, so it exits with an error instead of moving to another port when its port is taken. Stop the other process on the port, or run on another one for this session:
 
 ```bash
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+FRONTEND_PORT=5273 yarn dev
 ```
 
-## Docker error related to `frozen lockfile` when running `yarn dev`
+To change the port permanently, set `FRONTEND_PORT` in the root `.env`. See [Ports](/developers-guide/development/running-the-development-environment#ports).
 
-Try deleting `/yarn.lock` and rerunning the command. You may also:
+## The local Supabase stack does not start
 
-- check that you’re using the correct Node version (see [Requirements](/developers-guide/development/requirements)).
-- follow the steps in [Docker error: ”No space left on device” error](#docker-error-no-space-left-on-device-errordocker-no-space-left-on-device-error) below.
+- **The container runtime is not running.** The Supabase CLI runs its services as containers, so start your container runtime (see [Requirements](/developers-guide/development/requirements)) and run `yarn db:start` again.
+- **A port is taken.** The local ports are fixed in `apps/supabase/supabase/config.toml` (see [Local services](/developers-guide/backend/intro#local-services)). Two checkouts of this repository cannot run their stacks at the same time, because both use the same ports: stop the other one with `yarn db:stop` in that checkout. If something unrelated holds a port, change the number in `config.toml` in your checkout.
+- `yarn db:status` shows which services are running.
 
-## Docker error: Load metadata for docker.io/library/node:foo
+## `PUBLIC_PROJECT_ID is required but not set`
 
-Docker needs to be connected to the internet to load the base Docker images.
+The Supabase adapter throws this when `PUBLIC_PROJECT_ID` is empty, and a similar error when the value is not a canonical UUID. Set it in the repo-root `.env`. For the local stack the value is `00000000-0000-0000-0000-000000000001`, the default project that `seed.sql` creates. The frontend reads only the root `.env`; an `apps/frontend/.env` is ignored. See [Environment variables](/developers-guide/configuration/environmental-variables#public_project_id).
 
-## Docker error: ’No space left on device’ error
+## The app is empty
 
-Docker has some issues handling disk usage when spun up multiple times. They may result in errors, such as `Error response from daemon [...] no space left on device`, or similar ones in the logs of the (Postgres) container. To fix these some or all of the steps below may be needed:
+A fresh or reset database holds the default project but no elections or questions. Load the demo data with `yarn db:seed:default`. If the app is still empty, check that `PUBLIC_PROJECT_ID` names the project you seeded: `yarn db:seed` writes into the default project.
 
-1. Clear the Docker cache (see [full guide](https://www.blacksmith.sh/blog/a-guide-to-disk-space-management-with-docker-how-to-clear-your-cache))
-   - **Warning!** If you have containers, volumes or images you want to keep, do not run the commands below.
-   - Run `docker system df` to see Docker disk usage
-   - Stop all containers and prune them: `docker stop $(docker ps -q) && docker container prune`
-   - Prune all unused images `docker image prune --all`
-   - Prune all unused volumes `docker volume prune`
-   - Clear the build cache `docker builder prune`
-2. On Mac you may need to remove the Docker raw file with `rm ~/Library/Containers/com.docker.docker/Data/vms/0/data/Docker.raw`
-3. Restart your computer to clear any temp files possibly bloated by Docker.
+## `SUPABASE_SERVICE_ROLE_KEY env var is required but not set`
 
-Note also the two commands that manage the local backend containers:
+`yarn db:seed` needs the local stack's service-role key in the root `.env`. Print the keys with `yarn workspace @openvaa/supabase supabase status -o env` and copy `SERVICE_ROLE_KEY` into `SUPABASE_SERVICE_ROLE_KEY`, as in the [Quick start](/developers-guide/quick-start).
 
-1. `yarn db:stop`: stops the local Supabase services and keeps their data
-2. `yarn db:reset`: drops and recreates the database from the migrations and `seed.sql`
+## An Edge Function answers `{"error":"Internal server error"}`
 
-## Docker error: Service "foo" can't be used with `extends` as it declare `depends_on`
+An Edge Function returns this fixed message when a variable it requires is missing, and names the variable only in its log. The local functions read `apps/supabase/supabase/functions/.env`, not the root `.env`. Create it from its template, run `yarn check:env-local`, and restart the stack with `yarn db:stop && yarn db:start`. See [Edge Functions](/developers-guide/backend/edge-functions#configuration).
 
-Update your Docker engine to a more recent version.
+## The frontend shows stale code
 
-## Frontend: Candidate registration fails with ’Bad Request’ error
+Vite's dependency cache or the generated `.svelte-kit` directory can go stale after a branch switch or a dependency update. Clear them with:
 
-The `email` property is required for a `Candidate`. If it is not set, registration will result in a ’Bad Request’ error.
-
-## Frontend: Changes to the content in Strapi not updated in the frontend
-
-If you’re adding the content manually in Strapi, make sure to `Publish` all changes to content types that require publishing, such as `Candidate`s.
-
-## Frontend: Server error when trying to access frontend
-
-It takes a while for Strapi to kick up even after the Docker container is running, so if you just started it, wait a few minutes.
-
-If that's not the issue, open Docker and check the `frontend` and `strapi` containers' logs for possible clues.
-
-## Frontend: Strapi relations are not populated
-
-The REST api query syntax can be a bit tricky, notably `*` only goes one-level deep.
-
-Another possible cause is that the access control policy does not allow populating the relations. The policy is defined for each API route in `backend/vaa-strapi/src/api/<schema>/routes/<schema>.ts`. For more information, see [Security](/developers-guide/backend/authentication).
-
-## Playwright: `TimeoutError` when locating elements and running the tests locally
-
-Elements are currently located mostly by their translated labels with hardcoded locales, which match those in the mock data. If, however, the `supportedLocales` you have set in [staticSettings.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/staticSettings.ts) differ from the ones used by the tests, many of them will fail.
-
-## Strapi: Content model is reset after restart
-
-Any changes to the content model are not reflected on local files by default. If you can't see any changes in your local files when editing the content types using Strapi's web UI, check that you have [hot reloading enabled](/developers-guide/development/running-the-development-environment).
-
-## Strapi error: ’Relation already exists’ error on restart after editing the content model
-
-If Strapi gives an error dealing with creating a table with the message that a relation or table already exists, such as the example below, it may be due to [a name that is longer than 63 characters](https://forum.strapi.io/t/create-index-already-exists/16835/7). To fix, shorten the name of the component or its parent. If the name cannot be easily shortened, you can only edit the internal names. For an example, see [this commit](https://github.com/OpenVAA/voting-advice-application/pull/577/commits/a9689458045ee1ebb9e2d00243d2befa5d571574).
-
+```bash
+yarn dev:clean
 ```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                                                                              |
-|   error: create table "public"."components_settings_entity_details_show_missing_election_symbols" ("id" serial primary key, "candidate" boolean      |
-|   null, "party" boolean null) - relation                                     |
-|   "components_settings_entity_details_show_missing_election_symbol"          |
-|   already exists                                                             |
-|   at Parser.parseErrorMessage                                                |
-|   (/opt/node_modules/pg-protocol/dist/parser.js:283:98)                      |
-|   at Parser.handlePacket                                                     |
-|   (/opt/node_modules/pg-protocol/dist/parser.js:122:29)                      |
-|   at Parser.parse (/opt/node_modules/pg-protocol/dist/parser.js:35:38)       |
-|   at Socket.<anonymous>                                                      |
-|   (/opt/node_modules/pg-protocol/dist/index.js:11:42)                        |
-|   at Socket.emit (node:events:517:28)                                        |
-|   at Socket.emit (node:domain:489:12)                                        |
-|   at addChunk (node:internal/streams/readable:368:12)                        |
-|   at readableAddChunk (node:internal/streams/readable:341:9)                 |
-|   at Readable.push (node:internal/streams/readable:278:10)                   |
-|   at TCP.onStreamRead (node:internal/stream_base_commons:190:23)             |
-|                                                                              │
-└──────────────────────────────────────────────────────────────────────────────┘
+
+`yarn dev` also runs it on every start. If a shared package seems stale, run `yarn build`.
+
+## Starting over with a clean database
+
+`yarn db:reset` deletes all data and rebuilds the database from the migrations and `seed.sql`. `yarn db:reset-with-data` also loads the demo data. `yarn dev:reset` and `yarn dev:reset-with-data` do the same and then start `yarn dev`. Do not reset while the E2E suite is running.
+
+## Commit error: Husky hooks do not run or `husky` is not found
+
+The Git hooks in `.husky/` are installed by the root `prepare` script, which runs `husky`. To install them again, run:
+
+```bash
+yarn prepare
 ```
+
+If the hooks cannot find Node or Yarn, for example because Node comes from a version manager such as nvm that your Git client does not load, see the [Husky documentation](https://typicode.github.io/husky/) on configuring the hooks' environment.
+
+## Playwright: the run stops with `E2E PREFLIGHT FAILED`
+
+Before the first spec, the E2E suite checks that the server on the target port is this checkout's dev server and that it serves the project the suite seeds. The message names the cause and the fix. Usually another server holds the port, or the dev server was started without the suite's `PUBLIC_PROJECT_ID`. See [E2E tests](/developers-guide/development/testing#e2e-tests).
+
+## Playwright: tests fail after changing the locales
+
+Most E2E locators use test ids, but some specs assume the locales that `supportedLocales` in [staticSettings.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/staticSettings.ts) ships with: `en`, `fi` and `sv`. For example, the localisation permutation spec expects exactly these three. If you change the supported locales, expect those specs to fail.

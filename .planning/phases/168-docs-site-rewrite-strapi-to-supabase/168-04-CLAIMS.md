@@ -24,6 +24,13 @@ Page keys used in the Claims table (routes under `/developers-guide/`): `quick-s
 | `/developers-guide/backend/preparing-backend-dependencies` | redirect stub → `/developers-guide/development/running-the-development-environment` | merged → /developers-guide/development/running-the-development-environment | Its only still-true point, that a workspace run on its own needs the shared packages built first, is the `yarn build` step of "The frontend only" (and the Module resolution section of Monorepo and Turborepo). The Strapi-specific part (`@openvaa/strapi` needing `@openvaa/app-shared` built) has no equivalent: `@openvaa/supabase` depends on no workspace. | 0 |
 | `/developers-guide/development/monorepo` | `/developers-guide/development/monorepo` | updated | Audited against `turbo.json` and the root scripts. Added a Turborepo section (task ordering, caching, `lint:check`). `yarn workspaces foreach -A build` replaced by `yarn build`. The watch claim corrected: `yarn watch:shared` (`turbo watch build` over `packages/*`) rebuilds packages; the claim that the frontend is restarted is dropped (the dev server's restart plugin watches only the root `.env`). Runtime resolution now names the `exports` → `dist/` mechanism and the two source-exporting packages (`dev-seed`, `supabase-types`). Placeholder command reworded to `<workspace-name> <script-name>`. | 0 |
 | `/developers-guide/development/testing` | `/developers-guide/development/testing` | updated | Banner and the `GENERATE_MOCK_DATA_ON_RESTART` sentence removed; the "run `yarn build` first" step dropped (turbo's `test:unit` depends on `build`). Added the unit-coverage assertion, per-workspace tests, pgTAP (`test:db`), Edge Function tests, and E2E through `tests/scripts/e2e-run.sh` (`--run-dir`, `--no-db-reset`, `--project`). The old "`yarn dev`, then `yarn test:e2e`" recipe was wrong (a plain `yarn dev` serves the default project and the preflight aborts); it now starts the dev server with the suite's `PUBLIC_PROJECT_ID`. The Playwright-project detail moved to a `tests/README.md` link. | 0 |
+| `/developers-guide/configuration/intro` | `/developers-guide/configuration/intro` | updated | Retained as the Configuration overview (168-01 decision). "Split into three parts" with four links becomes four layers with one paragraph each: environment variables (root `.env`, functions `.env`), static settings, app settings (`app_settings.settings`, linking 168-06's page) and app customization (`app_settings.customization`). Link texts corrected ("Environment variables", "App settings", "App customization"). | 0 |
+| `/developers-guide/configuration/environmental-variables` | `/developers-guide/configuration/environmental-variables` | updated | Banner and the Strapi / LocalStack / SES / S3 / mock-data / disk-cache list removed. Rewritten for the post-167 model: the single repo-root `.env` read by SvelteKit (`kit.env.dir`), Vite, dev-seed and Playwright; the empty `apps/frontend/.env.example`; the separate `functions/.env`; the four twins and `yarn check:env-local`; `PUBLIC_PROJECT_ID` (mandatory, no fallback); the constants-module rule; every variable of the three templates by group, one line each. The `behind_cloudflare` pointer kept, its link fixed (no trailing slash). | 0 |
+| `/developers-guide/frontend/environmental-variables` | redirect stub → `/developers-guide/configuration/environmental-variables` | merged → /developers-guide/configuration/environmental-variables | Kept: "variables are read only through `$lib/utils/constants` (public) and `$lib/server/constants` (private) and imported as the `constants` object", re-checked against the two modules (`$env/dynamic/public` / `$env/dynamic/private`; no other module imports `$env/*`). Dropped: the `PUBLIC_BROWSER_BACKEND_URL` example (removed in 167) and the unverified "production compilation intricacies" reason; the example now reads `PUBLIC_PROJECT_ID`. | 0 |
+| `/developers-guide/configuration/static-settings` | `/developers-guide/configuration/static-settings` | updated | Audited against `staticSettings.ts` / `.type.ts`. Removed the "planned to be moved to dynamic settings" note (a plan, not code) and the "Candidate App pre-registration" bullet (no such setting in the type). Each remaining group now names its key (`admin.email`, `appVersion`, `dataAdapter` with `pageSize` = `max_rows`, `colors`, `font`, `supportedLocales`, `analytics`) and the rebuild requirement; the type file stays the reference. | 0 |
+| `/developers-guide/configuration/app-customization` | `/developers-guide/configuration/app-customization` | updated | Banner and every Strapi step (content type, populate restrictions, `strapiDataProvider`, `StrapiAppCustomizationData`, `dynamic.json` preload) removed. Now: the fields, storage in `app_settings.customization` per project, the `StoredCustomizationSchema` shape, how `_getAppCustomization` validates/localizes/resolves image URLs, the overrides loaded first by the root layout, editing without an Admin-app editor, and the three-step recipe for a new option. | 0 |
+| `/developers-guide/deployment` | `/developers-guide/deployment` | updated | Banner, the Costs section (its figures were for the Strapi + Render Postgres + AWS stack; no Supabase-era figure exists in the repo), the AWS/SES/S3 env block, Render Postgres, the Strapi backend service, the Strapi admin/API-token steps, the backend-URL pair and the Strapi build section removed. Now: Render frontend container (`render.example.yaml`, `apps/frontend/Dockerfile`, its env keys, `PUBLIC_PROJECT_ID` to add, service-role key never on the frontend) plus Supabase Cloud (migrations, buckets, access-token hook, auth URLs, SMTP, `max_rows`, account/project rows, `storage_config`, Edge Functions and secrets), the 167 operator note for older Render services, the feedback rate-limit section (kept, re-anchored), and `docker-compose.dev.yml` for a local production build. The custom-domain step kept. | 0 |
+| `/developers-guide/troubleshooting` | `/developers-guide/troubleshooting` | updated | Banner, all Docker sections (frozen lockfile, base image, no space left, `extends`), all Strapi sections, the Strapi "Bad Request" registration section and the broken `#docker-error-no-space-left-on-device-…` self-anchor removed. Husky section rewritten for the `prepare: husky` setup; Playwright locale section corrected (locators are mostly test ids; the localisation spec expects `en`/`fi`/`sv`). Added: busy port (`strictPort`), Supabase not starting / ports in use, `PUBLIC_PROJECT_ID` errors, empty app, missing service-role key, Edge Function 500, stale Vite cache (`yarn dev:clean`), resetting, and the E2E preflight failure. | 0 |
 
 ## Claims
 
@@ -230,14 +237,265 @@ Page keys used in the Claims table (routes under `/developers-guide/`): `quick-s
 | 199 | development/testing | flow | The preflight runs in Playwright's global setup | tests/playwright.config.ts | `globalSetup: './global-setup.ts',` |
 | 200 | development/testing | flow | Preflight clause 2: the served project equals the suite's project | tests/global-setup.ts | `const SERVED_PROJECT_ATTRIBUTE = 'data-project-id';` |
 | 201 | development/testing | flow | The suite resolves its project id from `E2E_PROJECT_ID` or the default | tests/global-setup.ts | `resolveE2eProjectId` |
+| 202 | configuration/intro | path | Root env template | .env.example | - |
+| 203 | configuration/intro | path | Edge Function env template | apps/supabase/supabase/functions/.env.example | - |
+| 204 | configuration/intro | fact | Static settings hold the supported locales | packages/app-shared/src/settings/staticSettings.ts | `supportedLocales: [` |
+| 205 | configuration/intro | fact | Static settings hold the colours | packages/app-shared/src/settings/staticSettings.ts | `colors: {` |
+| 206 | configuration/intro | fact | Static settings hold the font | packages/app-shared/src/settings/staticSettings.ts | `font: {` |
+| 207 | configuration/intro | fact | Static settings hold the data adapter | packages/app-shared/src/settings/staticSettings.ts | `dataAdapter: {` |
+| 208 | configuration/intro | fact | Static settings hold analytics | packages/app-shared/src/settings/staticSettings.ts | `analytics: {` |
+| 209 | configuration/intro | fact | Static settings hold the admin email | packages/app-shared/src/settings/staticSettings.ts | `admin: {` |
+| 210 | configuration/intro | fact | App settings are the per-project `settings` column of `app_settings` | apps/supabase/supabase/schema/106-app-settings.sql | `settings jsonb NOT NULL DEFAULT '{}'::jsonb,` |
+| 211 | configuration/intro | flow | Stored settings are merged over the shipped defaults | apps/supabase/supabase/schema/106-app-settings.sql | `the Supabase data provider merges it over the shipped defaults` |
+| 212 | configuration/intro | fact | One `app_settings` row per project | apps/supabase/supabase/schema/106-app-settings.sql | `project_id uuid NOT NULL UNIQUE REFERENCES public.projects (id) ON DELETE CASCADE,` |
+| 213 | configuration/intro | fact | App customization is the `customization` column of the same table | apps/supabase/supabase/schema/106-app-settings.sql | `customization jsonb DEFAULT '{}'::jsonb,` |
+| 214 | configuration/environmental-variables | fact | `.env` files are ignored by Git | .gitignore | `.env.*` |
+| 215 | configuration/environmental-variables | fact | `.env.example` templates are not ignored | .gitignore | `!.env.example` |
+| 216 | configuration/environmental-variables | flow | SvelteKit's env loader points at the repo root | apps/frontend/svelte.config.js | `dir: repoRoot` |
+| 217 | configuration/environmental-variables | fact | Only `PUBLIC_` variables reach the browser | apps/frontend/svelte.config.js | `so pointing the loader at a file full of secrets does not widen what reaches the browser` |
+| 218 | configuration/environmental-variables | flow | The Vite config reads `FRONTEND_PORT` from the root file | apps/frontend/vite.config.ts | `const env = loadEnv(mode, repoRoot, 'FRONTEND_PORT');` |
+| 219 | configuration/environmental-variables | env | A shell value overrides the file | apps/frontend/vite.config.ts | `still overrides a persistent value in the root` |
+| 220 | configuration/environmental-variables | flow | The seed tool loads the root `.env` | packages/dev-seed/src/cli/seed.ts | `process.loadEnvFile(new URL('../../../../.env', import.meta.url).pathname);` |
+| 221 | configuration/environmental-variables | flow | The Playwright config loads `.env` | tests/playwright.config.ts | `dotenv.config();` |
+| 222 | configuration/environmental-variables | fact | `apps/frontend/.env.example` says an `apps/frontend/.env` is not read | apps/frontend/.env.example | `You do not need this file, and an` |
+| 223 | configuration/environmental-variables | flow | The dev server restarts when the root `.env` changes | apps/frontend/vite.config.ts | `restart: ['../../.env']` |
+| 224 | configuration/environmental-variables | fact | The local Edge runtime does not read the root `.env` | apps/supabase/supabase/functions/.env.example | `The local Supabase edge runtime does` |
+| 225 | configuration/environmental-variables | command | Copy the functions template, then restart the stack | apps/supabase/supabase/functions/.env.example | `cp apps/supabase/supabase/functions/.env.example apps/supabase/supabase/functions/.env` |
+| 226 | configuration/environmental-variables | flow | A running Edge runtime keeps its boot environment | apps/supabase/supabase/functions/.env.example | `Then restart the stack so the container picks it up` |
+| 227 | configuration/environmental-variables | env | Functions var `IDENTITY_PROVIDER_TYPE` | apps/supabase/supabase/functions/.env.example | `IDENTITY_PROVIDER_TYPE=signicat-ftn` |
+| 228 | configuration/environmental-variables | env | Functions var `IDENTITY_PROVIDER_DECRYPTION_JWKS` | apps/supabase/supabase/functions/.env.example | `IDENTITY_PROVIDER_DECRYPTION_JWKS=` |
+| 229 | configuration/environmental-variables | env | Functions var `IDENTITY_PROVIDER_JWKS_URI` | apps/supabase/supabase/functions/.env.example | `IDENTITY_PROVIDER_JWKS_URI=` |
+| 230 | configuration/environmental-variables | env | Functions var `IDENTITY_PROVIDER_CLIENT_ID` | apps/supabase/supabase/functions/.env.example | `IDENTITY_PROVIDER_CLIENT_ID=` |
+| 231 | configuration/environmental-variables | env | Functions var `IDENTITY_PROVIDER_ISSUER` | apps/supabase/supabase/functions/.env.example | `IDENTITY_PROVIDER_ISSUER=` |
+| 232 | configuration/environmental-variables | env | Functions var `PUBLIC_PROJECT_ID` | apps/supabase/supabase/functions/.env.example | `PUBLIC_PROJECT_ID=00000000-0000-0000-0000-000000000001` |
+| 233 | configuration/environmental-variables | env | Functions var `SITE_URL` | apps/supabase/supabase/functions/.env.example | `SITE_URL=http://127.0.0.1:5173` |
+| 234 | configuration/environmental-variables | env | Functions var `SMTP_HOST` | apps/supabase/supabase/functions/.env.example | `SMTP_HOST=inbucket` |
+| 235 | configuration/environmental-variables | env | Functions var `SMTP_PORT` | apps/supabase/supabase/functions/.env.example | `SMTP_PORT=2500` |
+| 236 | configuration/environmental-variables | env | Functions var `SMTP_FROM` | apps/supabase/supabase/functions/.env.example | `SMTP_FROM=noreply@openvaa.org` |
+| 237 | configuration/environmental-variables | fact | The runtime injects `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` | apps/supabase/supabase/functions/.env.example | `NOT LISTED HERE, ON PURPOSE` |
+| 238 | configuration/environmental-variables | fact | The runtime injects `SUPABASE_ANON_KEY` in deployment | .env.example | `Injected automatically by the Edge runtime in deployment; the un-prefixed name is set here` |
+| 239 | configuration/environmental-variables | fact | Four variables exist twice and must agree | .env.example | `Four variables exist TWICE, once per runtime` |
+| 240 | configuration/environmental-variables | fact | The four twins | scripts/assert-env-pair-registry.mjs | `IDENTITY_PROVIDER_CLIENT_ID PUBLIC_IDENTITY_PROVIDER_CLIENT_ID` |
+| 241 | configuration/environmental-variables | command | `yarn check:env-local` compares the pairs and checks the functions file | package.json | `--deno-file apps/supabase/supabase/functions/.env --require-both && yarn assert:edge-function-env apps/supabase/supabase/functions/.env` |
+| 242 | configuration/environmental-variables | fact | The pair checker prints no values | scripts/assert-env-pairs-agree.mjs | `NON-DISCLOSURE IS ABSOLUTE` |
+| 243 | configuration/environmental-variables | fact | The function-env checker prints names only | scripts/assert-edge-function-env.mjs | `This checker reports variable NAMES and line numbers only.` |
+| 244 | configuration/environmental-variables | command | `yarn lint:check` runs `assert:env-pair-registry` | package.json | `yarn assert:env-pair-registry` |
+| 245 | configuration/environmental-variables | fact | The registry guard fails on an undocumented twin | .env.example | `fails if a new twin appears without an entry in this block` |
+| 246 | configuration/environmental-variables | flow | `PUBLIC_PROJECT_ID` scopes the adapter | apps/frontend/src/lib/api/adapters/supabase/supabaseAdapter.ts | `this.#projectId = resolveProjectId(config.projectId);` |
+| 247 | configuration/environmental-variables | flow | Empty `PUBLIC_PROJECT_ID` throws | apps/frontend/src/lib/api/adapters/supabase/supabaseAdapter.ts | `PUBLIC_PROJECT_ID is required but not set.` |
+| 248 | configuration/environmental-variables | flow | Non-canonical `PUBLIC_PROJECT_ID` throws | apps/frontend/src/lib/api/adapters/supabase/supabaseAdapter.ts | `must be a canonical 8-4-4-4-12 hexadecimal uuid` |
+| 249 | configuration/environmental-variables | env | Local value of `PUBLIC_PROJECT_ID` | .env.example | `PUBLIC_PROJECT_ID=00000000-0000-0000-0000-000000000001` |
+| 250 | configuration/environmental-variables | flow | `identity-callback` reads the same name to assign a project | .env.example | `The identity-callback Edge Function reads this same variable` |
+| 251 | configuration/environmental-variables | flow | The public constants module reads `$env/dynamic/public` | apps/frontend/src/lib/utils/constants.ts | `import { env } from '$env/dynamic/public';` |
+| 252 | configuration/environmental-variables | flow | The server constants module reads `$env/dynamic/private` | apps/frontend/src/lib/server/constants.ts | `import { env } from '$env/dynamic/private';` |
+| 253 | configuration/environmental-variables | fact | Unset values become empty strings | apps/frontend/src/lib/utils/constants.ts | `PUBLIC_PROJECT_ID: env.PUBLIC_PROJECT_ID ?? ''` |
+| 254 | configuration/environmental-variables | fact | The constants modules never throw, because every importer would break | apps/frontend/src/lib/utils/constants.ts | `Deliberately the same flat` |
+| 255 | configuration/environmental-variables | fact | The one default: `PUBLIC_IDENTITY_PROVIDER_TYPE` falls back to `signicat-ftn` | apps/frontend/src/lib/utils/constants.ts | `PUBLIC_IDENTITY_PROVIDER_TYPE: env.PUBLIC_IDENTITY_PROVIDER_TYPE ?? 'signicat-ftn',` |
+| 256 | configuration/environmental-variables | flow | Identity-provider values are checked where used | apps/frontend/src/lib/api/utils/auth/providers/requireConfigured.ts | - |
+| 257 | configuration/environmental-variables | env | `PUBLIC_SUPABASE_URL` (local value) | .env.example | `PUBLIC_SUPABASE_URL=http://127.0.0.1:54321` |
+| 258 | configuration/environmental-variables | env | `SUPABASE_URL` | .env.example | `SUPABASE_URL=http://127.0.0.1:54321` |
+| 259 | configuration/environmental-variables | flow | The seed tool falls back from `SUPABASE_URL` to `PUBLIC_SUPABASE_URL` | packages/dev-seed/src/cli/seed.ts | `if (!process.env.SUPABASE_URL && process.env.PUBLIC_SUPABASE_URL) {` |
+| 260 | configuration/environmental-variables | env | `PUBLIC_SUPABASE_ANON_KEY` | .env.example | `PUBLIC_SUPABASE_ANON_KEY=` |
+| 261 | configuration/environmental-variables | env | `SUPABASE_ANON_KEY` | .env.example | `SUPABASE_ANON_KEY=` |
+| 262 | configuration/environmental-variables | env | `SUPABASE_SERVICE_ROLE_KEY` | .env.example | `SUPABASE_SERVICE_ROLE_KEY=` |
+| 263 | configuration/environmental-variables | fact | The service-role key bypasses RLS and has no `PUBLIC_` twin | .env.example | `BYPASSES ROW-LEVEL SECURITY entirely` |
+| 264 | configuration/environmental-variables | fact | Nothing in the frontend reads the service-role key | .env.example | `reads it; only local tooling and the test harness do.` |
+| 265 | configuration/environmental-variables | fact | The seed tool, the E2E wrapper and the bank-auth specs need it | .env.example | `Required by, and each of these fails loudly` |
+| 266 | configuration/environmental-variables | command | `supabase status -o env` prints the local keys | .env.example | `# Get it with: yarn workspace @openvaa/supabase supabase status -o env` |
+| 267 | configuration/environmental-variables | env | `E2E_PROJECT_ID` is commented out in the template | .env.example | `# E2E_PROJECT_ID=00000000-0000-0000-0000-0000000000e2` |
+| 268 | configuration/environmental-variables | flow | The E2E harness reads `E2E_PROJECT_ID` as an override | packages/dev-seed/src/supabaseAdminClient.ts | `const raw = (process.env.E2E_PROJECT_ID ?? '').trim().toLowerCase();` |
+| 269 | configuration/environmental-variables | env | `FRONTEND_PORT` | .env.example | `FRONTEND_PORT=5173` |
+| 270 | configuration/environmental-variables | env | `PUBLIC_BROWSER_FRONTEND_URL` | .env.example | `PUBLIC_BROWSER_FRONTEND_URL=http://localhost:5173` |
+| 271 | configuration/environmental-variables | env | `PUBLIC_SERVER_FRONTEND_URL` | .env.example | `PUBLIC_SERVER_FRONTEND_URL=http://localhost:5173` |
+| 272 | configuration/environmental-variables | fact | The public constants module exposes the frontend URL pair | apps/frontend/src/lib/utils/constants.ts | `PUBLIC_BROWSER_FRONTEND_URL: env.PUBLIC_BROWSER_FRONTEND_URL ?? '',` |
+| 273 | configuration/environmental-variables | env | `LOCAL_DATA_DIR` | .env.example | `LOCAL_DATA_DIR=/var/data/local` |
+| 274 | configuration/environmental-variables | flow | `LOCAL_DATA_DIR` is used only by the `local` adapter | apps/frontend/src/lib/server/api/adapters/local/localPaths.ts | `path.join(constants.LOCAL_DATA_DIR,` |
+| 275 | configuration/environmental-variables | env | `PUBLIC_DEBUG` | .env.example | `PUBLIC_DEBUG=false` |
+| 276 | configuration/environmental-variables | flow | `PUBLIC_DEBUG=true` makes `debug` the default level | .env.example | `a dev build or when PUBLIC_DEBUG=true` |
+| 277 | configuration/environmental-variables | env | `PUBLIC_LOG_LEVEL` | .env.example | `PUBLIC_LOG_LEVEL=warn` |
+| 278 | configuration/environmental-variables | fact | Accepted log levels | .env.example | `Accepted values: debug, info, warn, error.` |
+| 279 | configuration/environmental-variables | fact | Any other value, `silent` included, logs one error and falls back | .env.example | `INCLUDING the word` |
+| 280 | configuration/environmental-variables | env | `PUBLIC_IDENTITY_PROVIDER_TYPE` | .env.example | `PUBLIC_IDENTITY_PROVIDER_TYPE=signicat-ftn` |
+| 281 | configuration/environmental-variables | env | `IDENTITY_PROVIDER_TYPE` | .env.example | `IDENTITY_PROVIDER_TYPE=signicat-ftn` |
+| 282 | configuration/environmental-variables | fact | Provider types `signicat-ftn` and `idura-ftn` | .env.example | `Provider type: 'signicat-ftn' or 'idura-ftn'` |
+| 283 | configuration/environmental-variables | env | `PUBLIC_IDENTITY_PROVIDER_CLIENT_ID` | .env.example | `PUBLIC_IDENTITY_PROVIDER_CLIENT_ID=` |
+| 284 | configuration/environmental-variables | env | `IDENTITY_PROVIDER_CLIENT_ID` | .env.example | `IDENTITY_PROVIDER_CLIENT_ID=` |
+| 285 | configuration/environmental-variables | flow | `identity-callback` checks the client id as the audience | .env.example | `verifies the un-prefixed value as the expected` |
+| 286 | configuration/environmental-variables | env | `IDENTITY_PROVIDER_DECRYPTION_JWKS` | .env.example | `IDENTITY_PROVIDER_DECRYPTION_JWKS=` |
+| 287 | configuration/environmental-variables | env | `IDENTITY_PROVIDER_JWKS_URI` | .env.example | `IDENTITY_PROVIDER_JWKS_URI=` |
+| 288 | configuration/environmental-variables | env | `IDENTITY_PROVIDER_ISSUER` | .env.example | `IDENTITY_PROVIDER_ISSUER=` |
+| 289 | configuration/environmental-variables | fact | Both providers read the shared three | .env.example | `The three variables in this block are read by BOTH providers` |
+| 290 | configuration/environmental-variables | env | `PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT` (Signicat) | .env.example | `PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT=` |
+| 291 | configuration/environmental-variables | env | `IDENTITY_PROVIDER_TOKEN_ENDPOINT` (Signicat) | .env.example | `IDENTITY_PROVIDER_TOKEN_ENDPOINT=` |
+| 292 | configuration/environmental-variables | env | `IDENTITY_PROVIDER_CLIENT_SECRET` (Signicat) | .env.example | `IDENTITY_PROVIDER_CLIENT_SECRET=` |
+| 293 | configuration/environmental-variables | fact | The Signicat-specific block | .env.example | `--- Signicat-specific` |
+| 294 | configuration/environmental-variables | env | `IDURA_DOMAIN` (Idura) | .env.example | `IDURA_DOMAIN=` |
+| 295 | configuration/environmental-variables | env | `IDURA_SIGNING_JWKS` (Idura) | .env.example | `IDURA_SIGNING_JWKS=` |
+| 296 | configuration/environmental-variables | env | `IDURA_SIGNING_KEY_KID` (Idura) | .env.example | `IDURA_SIGNING_KEY_KID=` |
+| 297 | configuration/environmental-variables | fact | The Idura-specific block | .env.example | `--- Idura-specific` |
+| 298 | configuration/environmental-variables | path | Key-generation guide | docs/key-generation.md | - |
+| 299 | configuration/environmental-variables | env | `SITE_URL` has no fallback | .env.example | `Throws when unset; there is no fallback origin.` |
+| 300 | configuration/environmental-variables | env | `SMTP_HOST` | .env.example | `SMTP_HOST=inbucket` |
+| 301 | configuration/environmental-variables | env | `SMTP_PORT` | .env.example | `SMTP_PORT=2500` |
+| 302 | configuration/environmental-variables | env | `SMTP_FROM` | .env.example | `SMTP_FROM=noreply@openvaa.org` |
+| 303 | configuration/environmental-variables | flow | The root `.env` carries the function variables for serving a function against it | .env.example | `A. Serve the function against THIS file` |
+| 304 | configuration/environmental-variables | env | `LLM_OPENAI_API_KEY` | .env.example | `LLM_OPENAI_API_KEY=""` |
+| 305 | configuration/environmental-variables | flow | The LLM features throw without the key | apps/frontend/src/lib/server/llm/llmProvider.ts | `throw new Error('Missing LLM_OPENAI_API_KEY in environment');` |
+| 306 | configuration/environmental-variables | fact | `behind_cloudflare` is a database setting | apps/supabase/supabase/schema/107-feedback.sql | `behind_cloudflare boolean NOT NULL DEFAULT false` |
+| 307 | configuration/static-settings | fact | Static settings are set only by editing the file | packages/app-shared/src/settings/staticSettings.type.ts | `These settings can only be set by editing the` |
+| 308 | configuration/static-settings | flow | `@openvaa/app-shared` is consumed as built `dist/` output | packages/app-shared/package.json | `"default": "./dist/index.js"` |
+| 309 | configuration/static-settings | command | The `yarn dev` watcher rebuilds the packages | package.json | `"watch:shared": "turbo watch build --filter='./packages/*'"` |
+| 310 | configuration/static-settings | fact | `admin.email` is shown to users on errors | packages/app-shared/src/settings/staticSettings.type.ts | `When errors occur, users may be asked to contact this address.` |
+| 311 | configuration/static-settings | fact | Older saved user data is reset | packages/app-shared/src/settings/staticSettings.type.ts | `If the app version in which user data is last saved is smaller than this, the data will be reset.` |
+| 312 | configuration/static-settings | fact | `appVersion.source` | packages/app-shared/src/settings/staticSettings.type.ts | `The url of the source code for the app.` |
+| 313 | configuration/static-settings | fact | `dataAdapter.type` can be `local` | packages/app-shared/src/settings/staticSettings.type.ts | `readonly type: 'local';` |
+| 314 | configuration/static-settings | fact | `dataAdapter.type` can be `supabase` | packages/app-shared/src/settings/staticSettings.type.ts | `readonly type: 'supabase';` |
+| 315 | configuration/static-settings | fact | `supportsCandidateApp` / `supportsAdminApp` | packages/app-shared/src/settings/staticSettings.type.ts | `readonly supportsAdminApp: true;` |
+| 316 | configuration/static-settings | fact | `pageSize` must equal PostgREST `max_rows` | packages/app-shared/src/settings/staticSettings.type.ts | `Must equal PostgREST` |
+| 317 | configuration/static-settings | fact | Local `max_rows` | apps/supabase/supabase/config.toml | `max_rows = 50000` |
+| 318 | configuration/static-settings | fact | Colours per light and dark theme | packages/app-shared/src/settings/staticSettings.type.ts | `These have to be defined separately for both the light (default) and dark themes.` |
+| 319 | configuration/static-settings | fact | Font style decides the fallback fonts | packages/app-shared/src/settings/staticSettings.type.ts | `which will decide the fallback fonts to use` |
+| 320 | configuration/static-settings | fact | One default locale | packages/app-shared/src/settings/staticSettings.type.ts | `Only mark one language as the default language` |
+| 321 | configuration/static-settings | fact | Umami is the supported analytics platform | packages/app-shared/src/settings/staticSettings.type.ts | `readonly name: 'umami';` |
+| 322 | configuration/static-settings | fact | `trackEvents` | packages/app-shared/src/settings/staticSettings.type.ts | `readonly trackEvents: boolean;` |
+| 323 | configuration/app-customization | fact | Fields of `AppCustomization` (publisher, posters, overrides, FAQ) | apps/frontend/src/lib/contexts/app/appCustomization.type.ts | `candidateAppFAQ?: Array<{ question: string; answer: string }>;` |
+| 324 | configuration/app-customization | fact | Stored in `app_settings.customization`, default `{}` | apps/supabase/supabase/schema/106-app-settings.sql | `customization jsonb DEFAULT '{}'::jsonb,` |
+| 325 | configuration/app-customization | fact | The stored shape is `StoredCustomizationSchema` | packages/app-shared/src/data/schemas/storedCustomization.schema.ts | `export const StoredCustomizationSchema = z.strictObject({` |
+| 326 | configuration/app-customization | fact | `publisherName` is a localized string | packages/app-shared/src/data/schemas/storedCustomization.schema.ts | `publisherName: LocalizedStringSchema.optional(),` |
+| 327 | configuration/app-customization | fact | Images are stored as paths | packages/app-shared/src/data/schemas/storedCustomization.schema.ts | `publisherLogo: StoredImageSchema.nullable().optional(),` |
+| 328 | configuration/app-customization | fact | `candPoster` | packages/app-shared/src/data/schemas/storedCustomization.schema.ts | `candPoster: StoredImageSchema.nullable().optional(),` |
+| 329 | configuration/app-customization | fact | Translation overrides map keys to localized strings | packages/app-shared/src/data/schemas/storedCustomization.schema.ts | `translationOverrides: z.record(z.string(), LocalizedStringSchema).optional(),` |
+| 330 | configuration/app-customization | fact | FAQ entries are localized question/answer pairs | packages/app-shared/src/data/schemas/storedCustomization.schema.ts | `question: LocalizedStringSchema,` |
+| 331 | configuration/app-customization | flow | The provider reads the column for the configured project | apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts | `this.scopedFrom('app_settings').select('customization').maybeSingle();` |
+| 332 | configuration/app-customization | flow | Validation keeps the members that pass | apps/frontend/src/lib/api/adapters/supabase/utils/parseStoredCustomization.ts | `keeping the members the schema accepts when others are malformed` |
+| 333 | configuration/app-customization | flow | Strings are localized | apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts | `getLocalized(stored.publisherName, locale, this.defaultLocale)` |
+| 334 | configuration/app-customization | flow | Image paths become public URLs in `public-assets` | apps/frontend/src/lib/api/adapters/supabase/utils/storageUrl.ts | `/storage/v1/object/public/public-assets/` |
+| 335 | configuration/app-customization | fact | The frontend type `AppCustomization` | apps/frontend/src/lib/contexts/app/appCustomization.type.ts | `export type AppCustomization = {` |
+| 336 | configuration/app-customization | flow | The root layout loads the customization first, for the overrides | apps/frontend/src/routes/+layout.ts | `// Load app customization first, because it may contain translation overrides` |
+| 337 | configuration/app-customization | flow | `app_settings` rows can be loaded through bulk import | apps/supabase/supabase/schema/501-bulk-operations.sql | `'nominations', 'app_settings'` |
+| 338 | configuration/app-customization | fact | An `app_settings` import row may carry `customization` | packages/dev-seed/src/template/permittedKeys.ts | `app_settings: ['created_at', 'customization',` |
+| 339 | configuration/app-customization | flow | Derivation happens in `_getAppCustomization` | apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts | `protected async _getAppCustomization(` |
+| 340 | deployment | path | The frontend Dockerfile | apps/frontend/Dockerfile | - |
+| 341 | deployment | path | The Render Blueprint template | render.example.yaml | - |
+| 342 | deployment | flow | The frontend reads env at run time (`$env/dynamic`) | apps/frontend/src/lib/utils/constants.ts | `import { env } from '$env/dynamic/public';` |
+| 343 | deployment | path | The migrations directory | apps/supabase/supabase/migrations | - |
+| 344 | deployment | fact | `config.toml` declares the public `public-assets` bucket | apps/supabase/supabase/config.toml | `[storage.buckets.public-assets]` |
+| 345 | deployment | fact | `config.toml` declares the private `private-assets` bucket | apps/supabase/supabase/config.toml | `[storage.buckets.private-assets]` |
+| 346 | deployment | fact | The migrations create the bucket policies | apps/supabase/supabase/schema/400-storage.sql | `RLS policies on storage.objects for the public-assets and private-assets buckets` |
+| 347 | deployment | fact | The access-token hook is enabled locally | apps/supabase/supabase/config.toml | `uri = "pg-functions://postgres/public/custom_access_token_hook"` |
+| 348 | deployment | fact | The hook puts the grants into the token | apps/supabase/supabase/schema/301-auth-functions.sql | `projects public.grants into the JWT` |
+| 349 | deployment | fact | The local site URL | apps/supabase/supabase/config.toml | `site_url = "http://127.0.0.1:5173"` |
+| 350 | deployment | fact | The callback redirect URL is allow-listed | apps/supabase/supabase/config.toml | `http://localhost:5173/api/candidate/auth/callback` |
+| 351 | deployment | fact | No SMTP server is configured locally (the block is commented out) | apps/supabase/supabase/config.toml | `# [auth.email.smtp]` |
+| 352 | deployment | fact | Local mail goes to the email testing server | apps/supabase/supabase/config.toml | `Emails sent with the local dev setup are not actually sent` |
+| 353 | deployment | fact | `pageSize` is 50000 | packages/app-shared/src/settings/staticSettings.ts | `pageSize: 50000` |
+| 354 | deployment | fact | Local `max_rows` is 50000 | apps/supabase/supabase/config.toml | `max_rows = 50000` |
+| 355 | deployment | fact | `seed.sql` creates test users with a known password | apps/supabase/supabase/seed.sql | `-- Passwords are all 'password123' (bcrypt-hashed).` |
+| 356 | deployment | fact | `seed.sql` creates the default account | apps/supabase/supabase/seed.sql | `'Default Account'` |
+| 357 | deployment | fact | `seed.sql` creates the default project | apps/supabase/supabase/seed.sql | `'Default Project',` |
+| 358 | deployment | fact | Projects are closed to voters by default | apps/supabase/supabase/schema/100-tenancy.sql | `open_for_voters boolean NOT NULL DEFAULT false,` |
+| 359 | deployment | fact | `storage_config` holds the Storage URL and service-role key for the cleanup triggers | apps/supabase/supabase/schema/400-storage.sql | `storage_config - the Storage API URL and service-role key the cleanup triggers use` |
+| 360 | deployment | fact | Only `service_role` and `postgres` can read it | apps/supabase/supabase/schema/400-storage.sql | `-- Only service_role and postgres can access storage_config (not exposed via API)` |
+| 361 | deployment | fact | Cleanup on delete | apps/supabase/supabase/schema/400-storage.sql | `cleanup_entity_storage_files() - AFTER DELETE trigger for entity tables` |
+| 362 | deployment | fact | Cleanup on image replacement | apps/supabase/supabase/schema/400-storage.sql | `cleanup_old_image_file() - BEFORE UPDATE trigger for image columns` |
+| 363 | deployment | fact | `seed.sql` fills local values, to be replaced in production | apps/supabase/supabase/seed.sql | `-- In production, update with actual Supabase URL and service role key.` |
+| 364 | deployment | path | The Edge Functions directory | apps/supabase/supabase/functions | - |
+| 365 | deployment | env | Functions need `PUBLIC_PROJECT_ID` | apps/supabase/supabase/functions/.env.example | `PUBLIC_PROJECT_ID=00000000-0000-0000-0000-000000000001` |
+| 366 | deployment | env | Functions need `SITE_URL` | apps/supabase/supabase/functions/.env.example | `SITE_URL=` |
+| 367 | deployment | env | `SMTP_USER` and `SMTP_PASS` are optional, for servers that need a login | apps/supabase/supabase/functions/.env.example | `SMTP_USER and SMTP_PASS are read` |
+| 368 | deployment | fact | Supabase injects the URL and service-role key | apps/supabase/supabase/functions/.env.example | `NOT LISTED HERE, ON PURPOSE` |
+| 369 | deployment | fact | `identity-callback` runs without JWT verification | .env.example | `--no-verify-jwt` |
+| 370 | deployment | fact | Template step: rename to `render.yaml` | render.example.yaml | `# 1. Rename to render.yaml` |
+| 371 | deployment | fact | Placeholders | render.example.yaml | `<INSTANCE_BRANCH>         e.g. deploy-vaa` |
+| 372 | deployment | fact | `# Check` markers | render.example.yaml | `# 3. Check default values marked with # Check` |
+| 373 | deployment | fact | Docker runtime | render.example.yaml | `runtime: docker` |
+| 374 | deployment | fact | Dockerfile path | render.example.yaml | `dockerfilePath: ./apps/frontend/Dockerfile` |
+| 375 | deployment | fact | Build context is the repository root | render.example.yaml | `dockerContext: .` |
+| 376 | deployment | fact | The image builds the shared packages | apps/frontend/Dockerfile | `RUN yarn build` |
+| 377 | deployment | fact | The image builds the frontend | apps/frontend/Dockerfile | `RUN yarn workspace @openvaa/frontend build` |
+| 378 | deployment | fact | The image runs the built server | apps/frontend/Dockerfile | `CMD node ./apps/frontend/build/index.js` |
+| 379 | deployment | fact | Port 3000 | apps/frontend/Dockerfile | `EXPOSE 3000` |
+| 380 | deployment | env | Template key `PUBLIC_SUPABASE_URL` | render.example.yaml | `- key: PUBLIC_SUPABASE_URL` |
+| 381 | deployment | env | Template key `PUBLIC_SUPABASE_ANON_KEY` | render.example.yaml | `- key: PUBLIC_SUPABASE_ANON_KEY` |
+| 382 | deployment | env | Values entered in Render | render.example.yaml | `sync: false` |
+| 383 | deployment | env | Template key `PUBLIC_DEBUG` | render.example.yaml | `- key: PUBLIC_DEBUG` |
+| 384 | deployment | env | Template key `PUBLIC_LOG_LEVEL` | render.example.yaml | `- key: PUBLIC_LOG_LEVEL` |
+| 385 | deployment | env | Template key `PUBLIC_BROWSER_FRONTEND_URL` | render.example.yaml | `- key: PUBLIC_BROWSER_FRONTEND_URL` |
+| 386 | deployment | env | Template key `PUBLIC_SERVER_FRONTEND_URL` | render.example.yaml | `- key: PUBLIC_SERVER_FRONTEND_URL` |
+| 387 | deployment | env | Commented-out identity-provider group | render.example.yaml | `# - fromGroup: IDENTITY PROVIDER - PRODUCTION CLIENT` |
+| 388 | deployment | flow | The adapter throws without `PUBLIC_PROJECT_ID` | apps/frontend/src/lib/api/adapters/supabase/supabaseAdapter.ts | `PUBLIC_PROJECT_ID is required but not set.` |
+| 389 | deployment | env | `LLM_OPENAI_API_KEY` for the LLM features | apps/frontend/src/lib/server/constants.ts | `LLM_OPENAI_API_KEY: env.LLM_OPENAI_API_KEY ?? ''` |
+| 390 | deployment | fact | The service-role key bypasses RLS; nothing in the frontend reads it | .env.example | `reads it; only local tooling and the test harness do.` |
+| 391 | deployment | fact | Custom domains | render.example.yaml | `domains:` |
+| 392 | deployment | fact | Feedback limit: five per window | apps/supabase/supabase/schema/107-feedback.sql | `p_max_requests      integer  := 5;` |
+| 393 | deployment | fact | Feedback window: five minutes | apps/supabase/supabase/schema/107-feedback.sql | `p_window_secs       interval := interval '5 minutes';` |
+| 394 | deployment | flow | The trigger reads `behind_cloudflare` (missing row = false) | apps/supabase/supabase/schema/107-feedback.sql | `p_behind_cloudflare := COALESCE((SELECT behind_cloudflare FROM private.deployment_settings), false);` |
+| 395 | deployment | flow | With the setting off, the key is the last `x-forwarded-for` hop | apps/supabase/supabase/schema/107-feedback.sql | `split_part(p_headers ->> 'x-forwarded-for', ',', -1)` |
+| 396 | deployment | fact | The migration ships it false | apps/supabase/supabase/schema/107-feedback.sql | `behind_cloudflare boolean NOT NULL DEFAULT false` |
+| 397 | deployment | command | The SQL that turns it on | apps/supabase/supabase/schema/107-feedback.sql | `UPDATE private.deployment_settings SET behind_cloudflare = true;` |
+| 398 | deployment | fact | Hosted deployments must set it | apps/supabase/supabase/schema/107-feedback.sql | `That is why hosted deployments must set it.` |
+| 399 | deployment | fact | The local stack turns it on in `seed.sql` | apps/supabase/supabase/seed.sql | `-- Feedback rate-limit trust for the local stack` |
+| 400 | deployment | fact | The test compose builds the production target | docker-compose.dev.yml | `target: production` |
+| 401 | deployment | fact | It serves on port 3000 | docker-compose.dev.yml | `"3000:3000"` |
+| 402 | deployment | fact | Start Supabase first | docker-compose.dev.yml | `# Prerequisites: supabase start (for backend services)` |
+| 403 | deployment | command | The compose command | docker-compose.dev.yml | `# Usage: docker compose -f docker-compose.dev.yml up --build` |
+| 404 | deployment | env | Default API URL `host.docker.internal:54321` | docker-compose.dev.yml | `${PUBLIC_SUPABASE_URL:-http://host.docker.internal:54321}` |
+| 405 | deployment | env | The anon key comes from the environment | docker-compose.dev.yml | `PUBLIC_SUPABASE_ANON_KEY: ${PUBLIC_SUPABASE_ANON_KEY}` |
+| 406 | deployment | command | `yarn build` builds every workspace | package.json | `"build": "turbo run build"` |
+| 407 | deployment | fact | The frontend uses the Node adapter | apps/frontend/svelte.config.js | `import adapter from '@sveltejs/adapter-node';` |
+| 408 | troubleshooting | fact | `strictPort` | apps/frontend/vite.config.ts | `strictPort: true` |
+| 409 | troubleshooting | env | Shell `FRONTEND_PORT` overrides `.env` | apps/frontend/vite.config.ts | `still overrides a persistent value in the root` |
+| 410 | troubleshooting | fact | The Supabase CLI needs a running container runtime | tests/scripts/e2e-run.sh | `Docker is running.` |
+| 411 | troubleshooting | fact | Local ports are literals in `config.toml` | apps/supabase/supabase/config.toml | `# Every port below is a literal, not an environment lookup.` |
+| 412 | troubleshooting | fact | The stack's project name is fixed, so two checkouts collide on the same ports | apps/supabase/supabase/config.toml | `project_id = "openvaa-local"` |
+| 413 | troubleshooting | command | `yarn db:stop` | package.json | `"db:stop": "yarn workspace @openvaa/supabase stop"` |
+| 414 | troubleshooting | command | `yarn db:status` | package.json | `"db:status": "yarn workspace @openvaa/supabase status"` |
+| 415 | troubleshooting | flow | The empty-id message | apps/frontend/src/lib/api/adapters/supabase/supabaseAdapter.ts | `PUBLIC_PROJECT_ID is required but not set.` |
+| 416 | troubleshooting | flow | The non-UUID message | apps/frontend/src/lib/api/adapters/supabase/supabaseAdapter.ts | `must be a canonical 8-4-4-4-12 hexadecimal uuid` |
+| 417 | troubleshooting | flow | Only the root `.env` is read | apps/frontend/svelte.config.js | `dir: repoRoot` |
+| 418 | troubleshooting | fact | A reset database has no elections or questions (`seed.sql` inserts none) | apps/supabase/supabase/seed.sql | `-- Default project for single-tenant deployment` |
+| 419 | troubleshooting | command | `yarn db:seed:default` | package.json | `"db:seed:default": "yarn db:seed --template default"` |
+| 420 | troubleshooting | flow | `yarn db:seed` writes into the default project | packages/dev-seed/src/supabaseAdminClient.ts | `export const TEST_PROJECT_ID = '00000000-0000-0000-0000-000000000001';` |
+| 421 | troubleshooting | flow | The seed writer's missing-key message | packages/dev-seed/src/writer.ts | `'SUPABASE_SERVICE_ROLE_KEY env var is required but not set. ' +` |
+| 422 | troubleshooting | flow | An Edge Function's fixed 500 body | .env.example | `{"error":"Internal server error"}` |
+| 423 | troubleshooting | flow | The variable name appears only in the log | .env.example | `The variable name appears ONLY in the container log.` |
+| 424 | troubleshooting | command | `yarn check:env-local` | package.json | `"check:env-local": ` |
+| 425 | troubleshooting | command | `yarn dev:clean` clears `.svelte-kit` and the Vite cache | apps/frontend/package.json | `"clean": "rm -rf .svelte-kit node_modules/.vite"` |
+| 426 | troubleshooting | command | `yarn dev` runs `dev:clean` on start | package.json | `"_dev:concurrent": "yarn dev:clean && concurrently` |
+| 427 | troubleshooting | command | `yarn db:reset` | package.json | `"db:reset": "yarn db:start && yarn workspace @openvaa/supabase reset"` |
+| 428 | troubleshooting | command | `yarn dev:reset-with-data` | package.json | `"dev:reset-with-data": "yarn db:reset-with-data && yarn dev"` |
+| 429 | troubleshooting | command | `yarn prepare` installs the Husky hooks | package.json | `"prepare": "husky"` |
+| 430 | troubleshooting | path | The hooks live in `.husky/` | .husky/pre-commit | - |
+| 431 | troubleshooting | flow | The preflight's failure headline | tests/tests/support/preflight.ts | `export const FAILURE_HEADLINE = 'E2E PREFLIGHT FAILED';` |
+| 432 | troubleshooting | flow | The preflight checks the served project | tests/global-setup.ts | `const SERVED_PROJECT_ATTRIBUTE = 'data-project-id';` |
+| 433 | troubleshooting | fact | E2E locators use test ids | tests/tests/utils/testIds.ts | - |
+| 434 | troubleshooting | fact | The shipped locales are `en`, `fi` and `sv` | packages/app-shared/src/settings/staticSettings.ts | `code: 'sv',` |
+| 435 | troubleshooting | fact | The localisation permutation spec expects these three | tests/tests/specs/perm/perm-localisation-positive.spec.ts | `The langSelector assertion expects 3 user-facing locales (en/fi/sv)` |
+| 436 | architecture | path | The `local` server adapter is served through `/api/data/[collection]` | apps/frontend/src/routes/api/data/[collection]/+server.ts | `import { dataProvider as dataProviderPromise } from '$lib/server/api/dataProvider';` |
+| 437 | architecture | flow | The `apiRoute` adapter reads that route | apps/frontend/src/lib/api/adapters/apiRoute/apiRoutes.ts | `/data/${collection}` |
+| 438 | architecture | flow | `createDataProvider` always returns the Supabase provider | apps/frontend/src/lib/api/dataProvider.ts | `return new SupabaseDataProvider(resolveAdapterConfig(source));` |
+| 439 | configuration/static-settings | fact | The client uses the Supabase data provider whatever `dataAdapter.type` names | packages/app-shared/src/settings/staticSettings.type.ts | `the client uses the Supabase data provider whatever` |
+| 440 | development/running-the-development-environment | command | `yarn db:reset-with-e2e-data` resets and seeds `e2e/base` | package.json | `"db:reset-with-e2e-data": "yarn db:reset-with-data --template e2e/base"` |
+| 441 | development/running-the-development-environment | flow | dev-seed writes into the default project | packages/dev-seed/src/supabaseAdminClient.ts | `this.projectId = projectId ?? TEST_PROJECT_ID;` |
+| 442 | development/running-the-development-environment | fact | The E2E suite owns a different project | packages/dev-seed/src/supabaseAdminClient.ts | `export const E2E_PROJECT_ID = '00000000-0000-0000-0000-0000000000e2';` |
 
 ## Findings for todos
 
 | # | Finding | Evidence (anchor file: anchor) | Disposition |
 | --- | --- | --- | --- |
+| F1 | Neither deployment template passes `PUBLIC_PROJECT_ID` to the frontend: `render.example.yaml` lists `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `PUBLIC_DEBUG`, `PUBLIC_LOG_LEVEL` and the frontend URL pair, and the production-test `docker-compose.dev.yml` lists the same set. The Supabase adapter throws at construction when the value is empty, so a service built from either template as written would fail on its first Supabase read. Not run here, so the effect is UNCONFIRMED. The Deployment page tells operators to add the variable. | `apps/frontend/src/lib/api/adapters/supabase/supabaseAdapter.ts`: `PUBLIC_PROJECT_ID is required but not set.`; `git grep -n PUBLIC_PROJECT_ID -- render.example.yaml docker-compose.dev.yml` exits 1 | Config todo candidate for a code phase (D-18: document, do not change). |
+| F2 | `PUBLIC_BROWSER_FRONTEND_URL` and `PUBLIC_SERVER_FRONTEND_URL` are declared in `.env.example`, `render.example.yaml`, `docker-compose.dev.yml` and `$lib/utils/constants`, but no module reads them: outside `constants.ts` they appear only in test mocks. Whether they are reserved or dead is UNCONFIRMED. The Environment variables page lists them without claiming a consumer. | `git grep -n -E 'PUBLIC_(BROWSER\|SERVER)_FRONTEND_URL' -- apps/frontend/src` lists only `constants.ts` and five test files | Todo candidate (remove or wire); no change here. |
+| F3 | Cross-reference to 168-03 F7: the `.env.example` comment says a live `E2E_PROJECT_ID` line would re-point `yarn db:seed:default`; 168-03 found the seed CLI does not read it. The Environment variables page says only that the E2E harness reads it as an override and that the template keeps it commented out. | `packages/dev-seed/src/supabaseAdminClient.ts`: `const raw = (process.env.E2E_PROJECT_ID ?? '').trim().toLowerCase();` | Same disposition as 168-03 F7 (comment pass). |
+| F4 | Cross-reference to 168-03 F1 and F6. F1 (`apps/supabase/README.md` runs pgTAP with `npx supabase test db`): the Testing page uses the workspace script `yarn workspace @openvaa/supabase test:db`. F6 (CLAUDE.md "seeded automatically on `supabase start`"): Quick start and Running the development environment state only that `yarn db:reset` runs `seed.sql`, and make no first-start claim. F5 (README: `invite-candidate` "assigns the `candidate` role") is not restated on any 168-04 page. | `apps/supabase/package.json`: `"test:db": "supabase test db"`; `apps/supabase/supabase/config.toml`: `seeds the database after migrations during a db reset` | No new action; 168-08 handles F1/F5/F6. |
+| F5 | `apps/frontend/docker-compose.dev.yml` (the Dockerfile's `development` target with source volume mounts and a `./data` local-data mount) is referenced by no script, workflow or document outside `.planning`. It looks like a remnant of the Docker development stack; whether anyone still uses it is UNCONFIRMED. The 168-04 pages do not document it. | `git grep -n -l 'frontend/docker-compose.dev.yml' -- ':!.planning'` exits 1; `apps/frontend/Dockerfile`: `FROM frontend AS development` | Todo candidate (keep or delete); no change here. |
+| F6 | The migrations create no Storage bucket: `400-storage.sql` creates only the policies for `public-assets` and `private-assets`, and the buckets themselves exist only in the local `config.toml`. A hosted project needs them created by hand, and no repository script does it. The Deployment page states the manual step. | `git grep -n -E 'INSERT INTO storage\.buckets' -- apps/supabase/supabase/schema` exits 1; `apps/supabase/supabase/config.toml`: `[storage.buckets.public-assets]` | Observation; a deploy script would be a code-phase item. |
+| F7 | The Admin app has no editor for `app_settings.customization`; nothing under `apps/frontend/src/routes/admin` mentions customization. The App customization page says to write the column directly. | `git grep -n -i customization -- apps/frontend/src/routes/admin` exits 1 | Observation for 168-06 (Admin app page); no action. |
+| F8 | The base Troubleshooting page's Husky advice (`npx husky install`, editing `.husky/_/husky.sh`) is from an older Husky; the repo installs hooks with `"prepare": "husky"`. The page now says `yarn prepare` and links Husky's documentation for the version-manager case. | `package.json`: `"prepare": "husky"` | Done on the page; no action. |
 
 ## Sweep exceptions
 
 | Page | Hit | Reason |
 | --- | --- | --- |
 | `development/requirements` | "A container runtime such as Docker" (one line) | The Supabase CLI runs the local Supabase services as containers, so a running container runtime is a requirement; this is the D-21 "Docker for Supabase" case the plan names. |
+| `deployment` | `docker` / `Dockerfile` / `docker-compose.dev.yml` / `docker compose` (six lines: the frontend container intro, Render step 2, and the "Testing a production build locally" section) | D-21 permitted case: the frontend is deployed as a container built from `apps/frontend/Dockerfile`, Render runs it as a Docker web service, and `docker-compose.dev.yml` builds and runs the production image locally. No Docker development stack is described. |
+| `deployment` | `CACHE_*`, `PUBLIC_CACHE_*`, `PUBLIC_*_BACKEND_URL`, "a backend API token", `/var/data/cache` (one paragraph, "Upgrading an older Render service") | Not a D-21 hit (no full removed name is spelled, so the 167-removed-name grep exits 1), recorded so 168-08 reads it as intended: it is the Phase 167 Render operator note (167-06 SUMMARY § Hand-offs), which tells existing services to detach the cache disk and delete those variables. It describes removal, not current configuration. |

@@ -11,17 +11,18 @@ The root [`package.json`](https://github.com/OpenVAA/voting-advice-application/b
 
 ### Database scripts
 
-| Command                   | What it does                                                                                                                      |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `yarn db:start`           | Starts the local Supabase stack (`supabase start` in `@openvaa/supabase`).                                                        |
-| `yarn db:stop`            | Stops it.                                                                                                                         |
-| `yarn db:status`          | Prints the running stack's URLs and keys. Keep this output to yourself: it includes the service-role key.                         |
-| `yarn db:reset`           | Starts the stack, then recreates the database from the migrations and runs `seed.sql`. **All data is lost.**                      |
-| `yarn db:seed`            | Runs the `@openvaa/dev-seed` CLI. Pass `--template <name>` to choose a template.                                                  |
-| `yarn db:seed:default`    | Seeds the `default` demo template.                                                                                                |
-| `yarn db:reset-with-data` | `yarn db:reset`, then `yarn db:seed:default`.                                                                                     |
-| `yarn db:seed:teardown`   | Deletes seeded rows by their external-id prefix.                                                                                  |
-| `yarn db:types`           | Regenerates `@openvaa/supabase-types` from the local database (see [Generated types](/developers-guide/backend/generated-types)). |
+| Command                       | What it does                                                                                                                                   |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `yarn db:start`               | Starts the local Supabase stack (`supabase start` in `@openvaa/supabase`).                                                                     |
+| `yarn db:stop`                | Stops it.                                                                                                                                      |
+| `yarn db:status`              | Prints the running stack's URLs and keys. Keep this output to yourself: it includes the service-role key.                                      |
+| `yarn db:reset`               | Starts the stack, then recreates the database from the migrations and runs `seed.sql`. **All data is lost.**                                   |
+| `yarn db:seed`                | Runs the `@openvaa/dev-seed` CLI. Pass `--template <name>` to choose a template.                                                               |
+| `yarn db:seed:default`        | Seeds the `default` demo template.                                                                                                             |
+| `yarn db:reset-with-data`     | `yarn db:reset`, then `yarn db:seed:default`.                                                                                                  |
+| `yarn db:reset-with-e2e-data` | Resets the database and seeds the `e2e/base` template into the default project. The E2E suite does not need it: it seeds a project of its own. |
+| `yarn db:seed:teardown`       | Deletes seeded rows by their external-id prefix.                                                                                               |
+| `yarn db:types`               | Regenerates `@openvaa/supabase-types` from the local database (see [Generated types](/developers-guide/backend/generated-types)).              |
 
 [Seed data](/developers-guide/development/seed-data) covers the seed commands and their options.
 
