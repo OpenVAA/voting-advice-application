@@ -21,7 +21,6 @@ import type { TestKeySet } from './__fixtures__/keys';
 // `mockConstants` declares the full `constants` shape rather than the subset this file reads: a partial object typechecks under vitest (which does not typecheck) and then drifts silently from the real module.
 const { mockConstants, localJwksState } = vi.hoisted(() => ({
   mockConstants: {
-    BACKEND_API_TOKEN: '',
     IDENTITY_PROVIDER_CLIENT_SECRET: 'test-client-secret',
     IDENTITY_PROVIDER_DECRYPTION_JWKS: '[]',
     IDENTITY_PROVIDER_JWKS_URI: 'https://signicat.example/.well-known/jwks',
@@ -31,10 +30,6 @@ const { mockConstants, localJwksState } = vi.hoisted(() => ({
     IDURA_SIGNING_KEY_KID: '',
     IDURA_DOMAIN: '',
     LOCAL_DATA_DIR: '',
-    CACHE_DIR: '',
-    CACHE_TTL: '',
-    CACHE_LRU_SIZE: '',
-    CACHE_EXPIRATION_INTERVAL: '',
     LLM_OPENAI_API_KEY: ''
   },
   localJwksState: {

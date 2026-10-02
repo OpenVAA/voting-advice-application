@@ -3,13 +3,13 @@
  *
  * Provides the Admin App's `page.data.session` to `authContext`'s `isAuthenticated` derived flag and to `getUserData`'s ancestor pre-check, both of which need EXISTENCE only.
  *
- * ## ⚠ Why this returns a PROJECTION and not the session, and why it must not go back
+ * ## ⚠ Why this returns a PROJECTION and never the session
  *
- * This load used to return `locals.safeGetSession()`'s whole `Session` — `access_token`, **`refresh_token`**, `expires_at` and the full `user` record. Everything a server load returns is serialised into the hydration payload in the HTML body, so that put a REFRESH TOKEN into the document of every Admin App page, for every signed-in user. The refresh token is the higher-value credential of the pair: it is long-lived, and duplicating it into a document body exposes it to HTML/page caches (`render.example.yaml` provisions a cache disk for this service), to `view-source` sharing, and to DOM-snapshot error reporters. That shape was MEASURED on a running server before it was changed here, rather than assumed; the spec named below carries the provenance.
+ * This load returns `{ userId, expiresAt }` and not `locals.safeGetSession()`'s whole `Session` — `access_token`, **`refresh_token`**, `expires_at` and the full `user` record. Everything a server load returns is serialised into the hydration payload in the HTML body, so the session would put a REFRESH TOKEN into the document of every Admin App page, for every signed-in user. The refresh token is the higher-value credential of the pair: it is long-lived, and a document body exposes it to HTML/page caches, to `view-source` sharing, and to DOM-snapshot error reporters.
  *
- * The reason is written out HERE, in full, rather than referenced: a reader arriving at this file must find it without following a link. That is the convention `routes/+layout.server.ts` established when it removed the same class from the root, and this file's projection is the one that file's docstring already sanctioned.
+ * The reason is written out HERE, in full, rather than referenced: a reader arriving at this file must find it without following a link. The root layout, `routes/+layout.server.ts`, follows the same rule and returns no session at all.
  *
- * `{ userId, expiresAt }` is therefore the whole vocabulary. Adding a member back — the access token, the refresh token, the user record — is not a widening of a payload, it is a re-disclosure of a credential; the ONE spec that drives BOTH of these loads — they are byte-identical up to their application name, and a spec pinning only one would let the other drift into a second idiom for one problem — enumerates the returned key set and fails such a member BY NAME, and `scripts/assert-no-session-in-loads.mjs` fails the lint chain if any server load returns the verified-session binding itself.
+ * `{ userId, expiresAt }` is therefore the whole vocabulary. Adding a member to it — the access token, the refresh token, the user record — is not a widening of a payload, it is a re-disclosure of a credential. `routes/admin/layout.server.test.ts` drives BOTH this load and the Candidate App's — they are byte-identical up to their application name, and a spec pinning only one would let the other drift into a second idiom for one problem — enumerates the returned key set and fails such a member BY NAME, and `scripts/assert-no-session-in-loads.mjs` fails the lint chain if any server load returns the verified-session binding itself.
  *
  * ## Why the identifier comes from the VERIFIED user
  *

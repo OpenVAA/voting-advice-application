@@ -324,7 +324,7 @@ Both invariants were diagnosed in this codebase (spikes 031–034) and landed in
 
 ## Deployment
 
-Frontend ships as a Docker container; the backend is Supabase Cloud, so no backend service is needed on Render. `render.example.yaml` is the reference deployment: the frontend service with its `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` environment variables, the domain, and the cache disk. `docker-compose.dev.yml` is for production build testing only, not development.
+Frontend ships as a Docker container; the backend is Supabase Cloud, so no backend service is needed on Render. `render.example.yaml` is the reference deployment: the frontend service with its `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` environment variables, and the domain. `docker-compose.dev.yml` is for production build testing only, not development.
 
 ## Troubleshooting
 

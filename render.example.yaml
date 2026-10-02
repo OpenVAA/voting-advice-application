@@ -25,17 +25,6 @@ services:
       - key: PUBLIC_SUPABASE_ANON_KEY
         sync: false
 
-      - key: PUBLIC_CACHE_ENABLED # Check
-        value: 'false'
-      - key: CACHE_TTL
-        value: 86400000
-      - key: CACHE_LRU_SIZE
-        value: 1000
-      - key: CACHE_EXPIRATION_INTERVAL
-        value: 3600000
-      - key: CACHE_DIR # Must match disk below
-        value: /var/data/cache
-
       - key: PUBLIC_DEBUG
         value: 'false'
       - key: PUBLIC_LOG_LEVEL # debug | info | warn | error; anything else logs one error and falls back to warn
@@ -54,10 +43,5 @@ services:
     dockerfilePath: ./apps/frontend/Dockerfile
     domains:
       - <INSTANCE_DOMAIN>
-
-    disk: # Check and comment out if not planning on using the cache
-      name: disk
-      mountPath: /var/data/cache
-      sizeGB: 1
 
     autoDeployTrigger: 'off' # Check

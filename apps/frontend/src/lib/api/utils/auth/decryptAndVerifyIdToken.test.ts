@@ -28,7 +28,6 @@ const { localJwksState, mockConstants, mockPublicConstants } = vi.hoisted(() => 
     lastOptions: null as Parameters<typeof JoseType.createRemoteJWKSet>[1] | null
   },
   mockConstants: {
-    BACKEND_API_TOKEN: '',
     IDENTITY_PROVIDER_CLIENT_SECRET: '',
     IDENTITY_PROVIDER_DECRYPTION_JWKS: '[]',
     IDENTITY_PROVIDER_JWKS_URI: 'https://test.example/.well-known/jwks',
@@ -38,22 +37,15 @@ const { localJwksState, mockConstants, mockPublicConstants } = vi.hoisted(() => 
     IDURA_SIGNING_KEY_KID: '',
     IDURA_DOMAIN: '',
     LOCAL_DATA_DIR: '',
-    CACHE_DIR: '',
-    CACHE_TTL: '',
-    CACHE_LRU_SIZE: '',
-    CACHE_EXPIRATION_INTERVAL: '',
     LLM_OPENAI_API_KEY: ''
   },
   mockPublicConstants: {
-    PUBLIC_BROWSER_BACKEND_URL: '',
-    PUBLIC_SERVER_BACKEND_URL: '',
     PUBLIC_BROWSER_FRONTEND_URL: '',
     PUBLIC_SERVER_FRONTEND_URL: '',
     PUBLIC_IDENTITY_PROVIDER_CLIENT_ID: 'test-client',
     PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT: '',
     PUBLIC_IDENTITY_PROVIDER_TYPE: 'signicat-ftn',
     PUBLIC_DEBUG: false,
-    PUBLIC_CACHE_ENABLED: false,
     PUBLIC_SUPABASE_URL: 'http://localhost:54321',
     PUBLIC_SUPABASE_ANON_KEY: 'test-anon-key'
   }

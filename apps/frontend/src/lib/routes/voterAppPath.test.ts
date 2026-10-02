@@ -36,7 +36,7 @@ describe('isVoterAppPath', () => {
     ['a Candidate App path', '/candidate/profile'],
     ['a locale-prefixed Candidate App path', '/fi/candidate/profile'],
     ['an Admin App path', '/admin/jobs'],
-    ['an API path', '/api/cache'],
+    ['an API path', '/api/auth/logout'],
     ['a root that only begins with a voter segment', '/resultsx'],
     ['an unknown locale-like prefix', '/xx/results']
   ])('rejects %s: %s', (_label, path) => {

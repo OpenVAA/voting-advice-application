@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { isApiRoute } from './route';
 
 describe('isApiRoute', () => {
-  it.each(['/api', '/api/cache', '/api/candidate/auth/callback', '/api/admin/jobs/single/[jobId]/progress'])(
+  it.each(['/api', '/api/auth/logout', '/api/candidate/auth/callback', '/api/admin/jobs/single/[jobId]/progress'])(
     'claims the API route id %s',
     (routeId) => {
       expect(isApiRoute(routeId)).toBe(true);
