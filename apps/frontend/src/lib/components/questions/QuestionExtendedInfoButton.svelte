@@ -1,5 +1,7 @@
 <!--
-@component A button that will display the question's extended information content in a `Drawer`.
+@component A button that opens the question's extended information content in the app's drawer host.
+
+The dialog itself is the app's `DrawerHost` (`$lib/components/modal/drawerHost`), so this component hands the host a payload rather than rendering an overlay of its own: the content component with its props, and the accessible name. The questions route subtree is a different subtree from the results tree that also opens the host, which is why the host is mounted in the app's root layout rather than in either route.
 
 ### Properties
 
@@ -21,8 +23,9 @@
 
 <script lang="ts">
   import { Button } from '$lib/components/button';
+  import { drawerHost } from '$lib/components/modal/drawerHost';
   import { getComponentContext } from '$lib/contexts/component';
-  import { QuestionExtendedInfoDrawer } from '.';
+  import { QuestionExtendedInfo } from '.';
   import type { QuestionExtendedInfoButtonProps } from './QuestionExtendedInfoButton.type';
 
   let {
@@ -35,17 +38,39 @@
 
   const { t } = getComponentContext();
 
-  let showDrawer = $state(false);
+  const key = drawerHost.newKey('question-info');
+
+  // ⚠ The host keeps rendering the payload through its close animation — i.e. potentially AFTER this component is destroyed, when the `question` prop no longer reads a value. Rendering straight from the prop would crash `QuestionExtendedInfo` mid-flush and abort the host's close (see spike 034). So the payload renders from the last defined question, which outlives the prop.
+  // svelte-ignore state_referenced_locally -- seeded once; kept current by the pre-effect below
+  let shownQuestion = $state.raw(question);
+  $effect.pre(() => {
+    if (question) shownQuestion = question;
+  });
 
   function handleClick(): void {
-    showDrawer = true;
+    drawerHost.open({
+      key,
+      title: () => shownQuestion.text,
+      component: QuestionExtendedInfo,
+      props: () => ({
+        question: shownQuestion,
+        title: shownQuestion.text,
+        onSectionCollapse,
+        onSectionExpand,
+        class: 'p-lg',
+        'data-testid': 'voter-questions-popup-info-modal'
+      })
+      // No payload `testId`: the test id stays on the info body the host renders rather than on the host's persistent `<dialog>`, so the questions-info fixture's hidden-state assertion measures a body that is not mounted rather than a dialog that exists but is closed.
+    });
     onOpen?.();
   }
-</script>
 
-{#if showDrawer}
-  <QuestionExtendedInfoDrawer {question} onClose={() => (showDrawer = false)} {onSectionCollapse} {onSectionExpand} />
-{/if}
+  // Close by key when this control stops standing for the question the host is showing. The effect deliberately READS the question id, so the teardown runs on a question → question navigation too, not only on destroy: the questions layout keeps this component mounted across that navigation (both the popup gate and the `{#if}` around it stay true), so a destroy-only teardown would leave the previous question's info body on screen.
+  $effect(() => {
+    void question?.id;
+    return () => drawerHost.close(key);
+  });
+</script>
 
 <Button
   text={t('components.questionExtendedInfo.title')}

@@ -426,6 +426,17 @@ const BASE_PROJECTS: Array<Project> = [
     dependencies: ['data-setup-base']
   },
 
+  // voter-results-redraw — LEAF. Read-only navigation-BEHAVIOUR regression on the base dataset (phase 165, D-16/D-18): scroll position survives entity open / close / entity-tab switch measured from a scrolled start, overlay navigations run no document View Transition at all, any transition running under an open modal dialog carries no named groups, and the subtrees that must not remount are proven by DOM node identity. assert-only — it opens and closes the results drawer and switches tabs, and mutates no seed, no app_settings and no product file (no own setup/teardown). `testMatch` is scoped to this spec alone (`voter-results-redraw.spec.ts`); sibling voter-* projects' exact testMatch excludes it.
+  //
+  // The block is not optional bookkeeping: see the ORPHAN-PROBE GUARD docblock at the top of this file. A spec file with no project matches no project and runs from NO command while still sitting in `specs/` looking like coverage — which is exactly what happened to four probe files. No `SOFT_ASSERTION_BUDGETS` entry either: this spec is hard-assertions-only by its own rigidity contract.
+  {
+    name: 'voter-results-redraw',
+    testDir: './tests/specs/voter',
+    testMatch: /voter-results-redraw\.spec\.ts/,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-base']
+  },
+
   // === _probes (fixtures-first isolation probes) — LEAF, no data-setup ===
   //
   // Probe specs live under ./tests/specs/_probes. The one there, `defaultTemplateResults`, measures the `default` template, which no gate project seeds. A probe is DELIBERATELY OUTSIDE the gate suite: it runs ONE-AT-A-TIME, seeded OUT-OF-BAND per its header, as a single-file run (`npx playwright test <probe> --project=_probes`). There is intentionally NO data-setup dependency: the isolation contract lives in the RUN discipline, not in a setup project.

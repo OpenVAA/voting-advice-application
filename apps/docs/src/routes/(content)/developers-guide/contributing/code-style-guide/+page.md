@@ -49,6 +49,12 @@ Add comments to all exported variables as well as the properties of exported obj
 
 Try to make the code understandable by itself, but if you suspect the program logic might be unclear to others, rather add comments than leave them out.
 
+A comment describes the code as it is now. Keep comments concise and leave out:
+
+- **The history of the code** — what it used to do, what was replaced, or how a bug was found. The git history records that.
+- **Planning references** — if one is unavoidable, use the short form `see phase 55` or `see spike 66`, never a path to a planning file.
+- **Notes addressed to the reviewer** — explain the change in the PR instead. If such a comment is unavoidable, tag it `[PR review]` and remove it before the PR is merged.
+
 Do not manually break comments into lines of a certain length unless separating paragraphs. This enables developers to use line-wrapping based on their own preference without adding unneccessary lines to the code.
 
 #### TSDoc

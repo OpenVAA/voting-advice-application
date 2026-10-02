@@ -17,7 +17,18 @@ When performing code review, double check all of the items below:
 - [ ] The changes pass the [WCAG A and AA requirements for accessibility](https://usability.yale.edu/web-accessibility/articles/wcag2-checklist).
 - [ ] The changed parts of the app are fully usable with keyboard navigation and screen-reading.
 - [ ] Documentation is added wherever necessary. This includes updating the possibly affected entries in the [Developers’](<apps/docs/src/routes/(content)/developers-guide>) and [Publishers’ Guides](<apps/docs/src/routes/(content)/publishers-guide>).
+- [ ] Every comment the PR adds or changes follows [Comment Hygiene](/CLAUDE.md#comment-hygiene): no historical narrative, no planning references beyond a bare `see phase N` / `see spike N`, no notes addressed to the reviewer (or, if unavoidable, tagged `[PR review]` and removed before merge), and present only where the code cannot explain itself.
 - [ ] The commit history is clean and linear, and the commits follow the [commit guidelines](<apps/docs/src/routes/(content)/developers-guide/contributing/contribute/+page.md>)
+- [ ] The PR does not contain fixes of itself: commits touching the same files or feature are squashed, so the history shows only the final outcome.
+- [ ] Purely formatting changes are, as far as possible, in their own commit, separate from the substantive ones.
+- [ ] Every commit containing migrations or other database changes carries a `[db]` tag, e.g. `fix[db]: foo table`.
+
+### Shipping a Large Branch
+
+_Apply when a long-lived branch is restructured into a stack of review PRs — see `Skill("ship-review-stack")` for the procedure._
+
+- [ ] Planning records are in one commit, other documentation in one commit, and tests in one commit.
+- [ ] The stack's top reproduces the source branch byte for byte; the original reiterative history is kept in a backup worktree only until review ends.
 
 ### Supabase Backend
 

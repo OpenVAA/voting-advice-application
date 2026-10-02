@@ -32,14 +32,7 @@ import type { Route } from './route';
  * @param current - The current route params and url. This is automatically appended by the `getRoute` store.
  * @returns A URL string with locale prefix added by Paraglide.
  */
-export function buildRoute(
-  options: RouteOptions,
-  current?: {
-    params?: Record<string, string>;
-    route?: { id?: string | null };
-    url?: URL;
-  }
-): string {
+export function buildRoute(options: RouteOptions, current?: BuildRouteCurrent): string {
   // Handle calls with just the route name
   if (typeof options === 'string') options = { route: options };
 
@@ -94,6 +87,15 @@ export function buildRoute(
  */
 export function localizeAppPath(path: string, locale?: string): string {
   return localizeHref(path, locale ? { locale: locale as (typeof paraglideLocales)[number] } : undefined);
+}
+
+/**
+ * The current page state `buildRoute` carries route params and persistent search params over from. `page` from `$app/state` satisfies it.
+ */
+export interface BuildRouteCurrent {
+  params?: Record<string, string>;
+  route?: { id?: string | null };
+  url?: URL;
 }
 
 /**

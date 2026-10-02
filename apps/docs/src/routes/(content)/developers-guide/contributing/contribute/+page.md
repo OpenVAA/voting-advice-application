@@ -19,6 +19,8 @@ For commits that affect packages other than the frontend, add the package name (
 - `refactor[data]: doo foo`
 - `refactor[q-info]: doo bar` (you can use the abbreviations `q-info` and `arg-cond` for `question-info` and `argument-condensation`)
 
+Commits containing migrations or other database changes are marked with a `[db]` tag in the same position, e.g. `fix[db]: foo table`.
+
 On top of that, the commit message should follow the following rules:
 
 - Commit messages must have a subject line and may have a body. A blank line must separate the subject line and body.

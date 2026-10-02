@@ -12,17 +12,17 @@ import { isProtectedRoute, PROTECTED_GROUP, ROUTE } from './route';
  *
  * 1. **The pattern.** `PROTECTED_GROUP` and the two group-prefix constants built from it, exported by the sibling `route.ts`, plus every `ROUTE` value that carries the group segment.
  * 2. **The route tree.** The directories under `src/routes/` whose basename is exactly the group segment, and every addressable page directory beneath them, discovered by a filesystem walk rather than by a hand-maintained list.
- * 3. **The request hook.** `hooks.server.ts`, whose application session-gate handler must decide membership from the SvelteKit route id through the exported gate table, never from a substring or suffix test on `url.pathname`.
+ * 3. **The request hook.** `hooks.server.ts`, whose application session-gate handler must decide membership from the SvelteKit route id through the exported gate table and the `$lib/routes` predicates, never from a test on `url.pathname`.
  * 4. **The gate table.** `APP_GATES` in the sibling `appGates.ts`, which is what the handler loops over. A gated application subtree that the tree carries and the table has no row for is an application the request hook does not gate at all.
  *
- * The pattern being defined once was the construction half of that requirement. This file is the proof half: it imports the module AND walks the filesystem AND reads the hook as text, which is why it is a vitest spec and not one of the `scripts/assert-*.mjs` guards. `route.ts` has no imports of its own, so it loads under the jsdom harness with no framework stub.
+ * The pattern being defined once was the construction half of that requirement. This file is the proof half: it imports the module AND walks the filesystem AND reads the hook as text, which is why it is a vitest spec and not one of the `scripts/assert-*.mjs` guards. `route.ts` imports only a constant from a dependency-free module, so it loads under the jsdom harness with no framework stub.
  *
  * ## The five checks
  *
  * - **C1.** Every addressable page directory inside a protected group has at least one `ROUTE` entry that addresses it or something below it. Catches: a new protected route is added and never registered, so the hook still gates it (the predicate is structural) but `buildRoute` cannot address it.
  * - **C2.** Every `ROUTE` value carrying the group segment names a directory that exists on disk. Catches: a `ROUTE` entry that rots after its route is deleted or renamed. Two entries fail this today and are carried in an explicit register below, which is itself asserted so it cannot rot in turn.
  * - **C3.** `isProtectedRoute` answers true for every route id the walk derives and false for a sample of unprotected ids. Catches: the predicate degenerating into a constant, which would make C1 and C2 pass while gating nothing.
- * - **C4.** The application session-gate handler's body contains no `includes` or `endsWith` call on `pathname`. Catches: the reopening of the subpath-unsafe defect class, where serving the app under a path prefix, or a route parameter whose value happens to contain the word, makes the handler misfire.
+ * - **C4.** The application session-gate handler's body does not read `pathname` at all. Catches: the reopening of the subpath-unsafe defect class, where serving the app under a path prefix, or a route parameter whose value happens to contain the word, makes the handler misfire.
  * - **C5.** Every gated application subtree the walk finds has a row in `APP_GATES`, every row claims exactly one such subtree, and the admin row's error-message value is the one the admin protected layout redirects with. Catches: a new application shipping with an auth gate in its route tree and no gate row, which is the shape the Admin App itself had before the table existed — protected in name, ungated by the hook.
  *
  * ## What counts as a gated application subtree, and why the voter surface is not one
@@ -36,8 +36,8 @@ import { isProtectedRoute, PROTECTED_GROUP, ROUTE } from './route';
  * ## Correctness invariants, each one a distinct way this file could hand back a false pass
  *
  * 1. **The walk must find something.** An empty protected set makes C1 and C3 vacuous, so the count is asserted to be at least two before either check runs. Two is the measured truth: one group under the candidate app, one under the admin app.
- * 2. **C4's scan must be scoped to the handler body, not to the whole file.** The same handler skips API requests with a `startsWith` test on `pathname`, which guards a served URL prefix rather than a route id and is correct as written. A whole-file ban would flag it, so the ban names `includes` and `endsWith` only, and the body is extracted by brace matching from the handler's declared identifier.
- * 3. **C4's scan must be proved to have reached real source.** The extracted body is asserted to contain both the API-root `startsWith` call and the `isProtectedRoute` call, so a body that came back empty, or that came back from the wrong region of the file, fails loudly instead of passing by finding nothing.
+ * 2. **C4's scan is scoped to the handler body.** The body is extracted by brace matching from the handler's declared identifier.
+ * 3. **C4's scan must be proved to have reached real source.** The extracted body is asserted to contain both the `isApiRoute` call and the `isProtectedRoute` call, so a body that came back empty, or that came back from the wrong region of the file, fails loudly instead of passing by finding nothing.
  * 4. **Nothing here anchors to a line or column number.** Every assertion binds to an identifier, a path or a message substring. The anchors into `hooks.server.ts` have drifted repeatedly under unrelated edits; identifiers do not drift.
  * 5. **Prefix comparisons are segment-safe.** A bare `startsWith` would let `/candidate/settings` satisfy a directory called `/candidate/set`. Every prefix test below either matches the whole string or requires a separator immediately after the prefix.
  * 6. **The literal-masking pass used by C4 is deliberately simple and does not model regular-expression literals.** It is safe here only because invariant 3 turns any mis-mask into a loud failure rather than a silent empty scan.
@@ -297,11 +297,11 @@ const HOOKS_SOURCE = fs.readFileSync(HOOKS_FILE, 'utf8');
 const HOOKS_CODE = maskNonCode(HOOKS_SOURCE);
 const APP_GATE_HANDLER_BODY = extractHandlerBody(HOOKS_CODE, APP_GATE_HANDLER);
 
-/** A substring or suffix test on a pathname, in either the plain or the optional-chained form. This is the construct C4 bans. */
-const PATHNAME_SUBSTRING_TEST = /\bpathname\s*\??\.\s*(?:includes|endsWith)\s*\(/g;
+/** Any read of a pathname. This is the construct C4 bans. */
+const PATHNAME_READ = /\bpathname\b/g;
 
-/** The prefix test on a pathname, which is correct for a served URL prefix and must stay permitted. C4 also uses its presence as its non-vacuity proof. */
-const PATHNAME_PREFIX_TEST = 'pathname.startsWith(';
+/** The API-endpoint predicate the handler skips API requests with. C4 uses its presence as its non-vacuity proof. */
+const API_ROUTE_TEST = 'isApiRoute(';
 
 describe('the walk is not vacuous (REVIEW-RT-04)', () => {
   it('finds at least the two protected route groups the tree is known to carry', () => {
@@ -419,8 +419,8 @@ describe('C4 — the application session-gate handler decides from the route id,
       `The body of ${APP_GATE_HANDLER} could not be extracted from ${HOOKS_FILE}. Every assertion below scans that body, so an empty one would report a clean handler no matter what the handler does. The handler is located by its declared identifier, so the likely cause is a rename.`
     ).toBeGreaterThan(0);
     expect(
-      APP_GATE_HANDLER_BODY.includes(PATHNAME_PREFIX_TEST),
-      `The extracted body of ${APP_GATE_HANDLER} does not contain ${PATHNAME_PREFIX_TEST}, which the handler uses to skip API requests. That call is correct and is expected to be there, and its presence is how this file proves the extraction reached the handler rather than some empty or wrong region of ${HOOKS_FILE}.`
+      APP_GATE_HANDLER_BODY.includes(API_ROUTE_TEST),
+      `The extracted body of ${APP_GATE_HANDLER} does not contain ${API_ROUTE_TEST}, which the handler uses to skip API requests. Its presence is how this file proves the extraction reached the handler rather than some empty or wrong region of ${HOOKS_FILE}.`
     ).toBe(true);
     expect(
       APP_GATE_HANDLER_BODY.includes('isProtectedRoute('),
@@ -428,18 +428,18 @@ describe('C4 — the application session-gate handler decides from the route id,
     ).toBe(true);
   });
 
-  it('contains no includes or endsWith test on a pathname', () => {
-    PATHNAME_SUBSTRING_TEST.lastIndex = 0;
+  it('does not read a pathname', () => {
+    PATHNAME_READ.lastIndex = 0;
     const offenders: Array<string> = [];
-    let match = PATHNAME_SUBSTRING_TEST.exec(APP_GATE_HANDLER_BODY);
+    let match = PATHNAME_READ.exec(APP_GATE_HANDLER_BODY);
     while (match !== null) {
       const absolute = HOOKS_CODE.indexOf(APP_GATE_HANDLER_BODY) + match.index;
       offenders.push(`${match[0].trim()} in the source line: ${sourceLineAt(HOOKS_SOURCE, absolute)}`);
-      match = PATHNAME_SUBSTRING_TEST.exec(APP_GATE_HANDLER_BODY);
+      match = PATHNAME_READ.exec(APP_GATE_HANDLER_BODY);
     }
     expect(
       offenders,
-      `${APP_GATE_HANDLER} in ${HOOKS_FILE} tests a pathname with includes or endsWith, and that is the subpath-unsafe defect class this handler was rewritten to close. A pathname carries the deployment's base path and the locale prefix and the resolved values of every route parameter, so a substring test fires when the app is served under a path that contains the word and fails to fire when it is served under one that does not. Decide membership from the SvelteKit route id instead, through resolveAppGate and isProtectedRoute, which take a route id and compare whole segments. The prefix test ${PATHNAME_PREFIX_TEST} is deliberately NOT banned: it guards a served URL prefix rather than a route id and is correct as written. Offending constructs: ${offenders.join(' | ')}`
+      `${APP_GATE_HANDLER} in ${HOOKS_FILE} reads a pathname. A pathname carries the deployment's base path and the locale prefix and the resolved values of every route parameter, so a test on it fires when the app is served under a path that contains the word and fails to fire when it is served under one that does not. Decide membership from the SvelteKit route id instead, through the $lib/routes predicates (resolveAppGate, isProtectedRoute, isApiRoute), and derive the login redirect target with loginRedirectTargetOf. Offending constructs: ${offenders.join(' | ')}`
     ).toEqual([]);
   });
 });

@@ -290,7 +290,7 @@ test.describe('perm-localisation-positive', () => {
     await expect(infoTabEn).toBeVisible();
     await expect(infoTabEn).toContainText('[en-answer-q1]');
 
-    // Only the ACTIVE tab's panel is mounted (EntityDetails.svelte:149-153 is an {#if}/{:else if} chain), and the dialog opens on the info tab (activeIndex=0). Switch to the opinions tab (index 1 for a candidate's ['info','opinions'] tab set) before asserting on its panel.
+    // Only the ACTIVE tab's panel is mounted (`EntityDetails.svelte` renders them in an {#if}/{:else if} chain), and the dialog opens on its first tab, info. Switch to the opinions tab — the second tab, `tab-1`, of a candidate's ['info','opinions'] set — before asserting on its panel.
     await dialog.getByTestId('tab-1').click();
     const opinionsTabEn = dialog.getByTestId(testIds.voter.entityDetail.opinionsTab);
     await expect(opinionsTabEn).toBeVisible();

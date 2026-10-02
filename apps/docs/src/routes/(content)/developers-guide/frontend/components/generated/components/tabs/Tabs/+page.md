@@ -4,13 +4,14 @@ Show a tab title bar that can be used to switch between different tabs.
 
 ### Properties
 
-- `tabs`: The titles of the tabs.
-- `activeIndex`: The index of the active tab. Bind to this to change or read the active tab. @default 0
+- `tabs`: The tabs, each `{ label, id? }`.
+- `activeTab`: The `id ?? label` of the active tab. Bind to this to change or read the active tab. When it is unset or matches no tab, the first tab is active. @default the first tab
+- `transitionOnChange`: Cross-fade a local tab switch in a View Transition. @default false
 - Any valid attributes of a `<ul>` element
 
 ### Callbacks
 
-- `onChange`: Callback for when the active tab changes. The event `details` contains the active tab as `tab` as well as its `index`. Note, it's preferable to just bind to the `activeTab` property instead.
+- `onChange`: Callback for when the user activates a tab, called with that tab. Note, it's preferable to just bind to the `activeTab` property instead.
 
 ### Accessibility
 
@@ -20,7 +21,13 @@ Show a tab title bar that can be used to switch between different tabs.
 ### Usage
 
 ```tsx
-<Tabs bind:activeIndex tabs={['Basic Info', 'Opinions']} />
+<Tabs
+  bind:activeTab
+  tabs={[
+    { id: 'info', label: 'Basic Info' },
+    { id: 'opinions', label: 'Opinions' }
+  ]}
+/>
 ```
 
 ## Source

@@ -2,10 +2,9 @@
 import { configureLogger, log } from '@openvaa/app-shared';
 import { redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
-import { API_ROOT } from '$lib/api/base/universalApiRoutes';
 import { getLocale } from '$lib/paraglide/runtime';
 import { paraglideMiddleware } from '$lib/paraglide/server';
-import { buildRoute, isProtectedRoute, resolveAppGate, ROUTE } from '$lib/routes';
+import { buildRoute, isApiRoute, isProtectedRoute, loginRedirectTargetOf, resolveAppGate, ROUTE } from '$lib/routes';
 import { createSafeGetSession } from '$lib/supabase/safeGetSession';
 import { createSupabaseServerClient } from '$lib/supabase/server';
 import { constants } from '$lib/utils/constants';
@@ -28,8 +27,6 @@ if (logLevelProblem) {
     level: logLevel
   });
 }
-
-const NORMALIZED_API_ROOT = API_ROOT.replace(/^\/*/, '/');
 
 // The project id this server queries, published on the HTML root so a caller can observe it.
 // The value is already public: it carries the `PUBLIC_` prefix and ships in the client bundle. Publish no other variable here, and read this one only through `constants`.
@@ -85,10 +82,9 @@ const paraglideHandle: Handle = ({ event, resolve }) =>
 const appGateHandle: Handle = async ({ event, resolve }) => {
   const { url, route } = event;
   const locale = getLocale();
-  const pathname = url.pathname;
 
-  // Skip non-route and API requests. The API test is a prefix test on the pathname because it guards a served URL prefix, not a route id; every gate decision below reads the route id.
-  if (route?.id == null || pathname.startsWith(NORMALIZED_API_ROOT)) {
+  // Skip non-route and API requests.
+  if (route?.id == null || isApiRoute(route.id)) {
     return resolve(event);
   }
   // Bound after the guard, so it narrows to `string`.
@@ -106,9 +102,8 @@ const appGateHandle: Handle = async ({ event, resolve }) => {
   }
   if (!session && isProtectedRoute(routeId)) {
     const { status, route: target, params } = gate.whenUnauthenticatedInProtectedGroup;
-    // The requested path, which the candidate row carries back as `redirectTo` and the admin row ignores. It is read off the pathname because the route id has placeholders instead of values. `redirectTo` is not a route param, so `buildRoute` puts it in the query string, percent-encoded.
-    const cleanPath = pathname.replace(new RegExp(`^/${locale}`), '');
-    redirect(status, buildRoute({ route: target, locale, ...params({ redirectTo: cleanPath.substring(1) }) }));
+    // The requested path, which the candidate row carries back as `redirectTo` and the admin row ignores. It is read off the URL because the route id has placeholders instead of values. `redirectTo` is not a route param, so `buildRoute` puts it in the query string, percent-encoded.
+    redirect(status, buildRoute({ route: target, locale, ...params({ redirectTo: loginRedirectTargetOf(url) }) }));
   }
 
   return resolve(event);

@@ -11,8 +11,8 @@ This is an automatically generated map of the SvelteKit application routes.
     │   │   │   │   └── [categoryId]/
     │   │   │   └── [questionId]/
     │   │   └── results/
+    │   │       ├── statistics/
     │   │       └── [[electionTab]]/
-    │   │           ├── statistics/
     │   │           └── [[entityTab=etPl]]/
     │   │               └── [[entity=etSg]]/
     │   │                   └── [[id]]/

@@ -128,25 +128,11 @@ This is a huge task, so it might be best done as a phase or other structured wor
 
 ## General principles
 
-> The principles described here should be codified for later, perhaps in a skill.
+> These standing rules now live where they are enforced: comment hygiene (former items 3–4) in [`CLAUDE.md` § Comment Hygiene](/CLAUDE.md#comment-hygiene), and the commit-history rules (former item 5) in the [Code Review Checklist](/.agents/code-review-checklist.md), including its § Shipping a Large Branch. The procedure itself is `Skill("ship-review-stack")`.
 > For each of the checklist-type tasks, consider launching an agent for each item or a group of items.
 
 1. Check that all of the condition in the [Code Review Checklist](/.agents/code-review-checklist.md) are addressed
 2. Check that the [Code style guide](<apps/docs/src/routes/(content)/developers-guide/contributing/code-style-guide/+page.md>) is adhered to
-3. Especially for GSD, make sure that in-file comments are concise and do not refer to planning artifacts or historical changes in the codebase
-   1. We use the git history for this
-   2. If an planning reference is imperative, only mention the artifact shortly, e.g. "See phase 55/spike 66"
-4. In case of comments, strive to make the code itself self-explainable and only if that's not enough, add comments
-   1. DO NOT use comments for explaining the changes to the reviewer or if you do, mark these with a clear "[PR review]" tag and remove them en masse before the PR is merged
-5. Before shipping, restructure the commit history so that:
-   1. All planning itesm are in one commit
-   2. All other documentation is in one commit
-   3. All tests are in one commit
-   4. All feat, fix etc. commits that deal with the same files or features are squashed
-      1. The shippable PR must not contain fixes of itself; only the final outcome
-   5. As much as possible, all purely formatting changes are in one commit
-   6. All commits containing migrations or other database changes are clearly marked with a [db] tag, e.g. "fix[db]: foo table"
-   7. You can maintain the original reiterative history in a separate backup worktree while the PR is being reviewed but it won't be needed afterwards
 
 ## The first v0.2 PR stack
 

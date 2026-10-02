@@ -31,7 +31,7 @@
   import { initLayoutContext } from '$lib/contexts/layout';
   import { FeedbackModal } from '$lib/dynamic-components/feedback/modal';
   import { focusNavigationTarget } from '$lib/utils/focusNavigationTarget';
-  import { shouldAnimate, startViewTransition } from '$lib/utils/viewTransition';
+  import { isOverlayNavigation, shouldAnimate, startViewTransition } from '$lib/utils/viewTransition';
   import type { Snippet } from 'svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
   import type { LayoutData } from './$types';
@@ -153,6 +153,8 @@
     submitAllEvents(); // flush pending analytics events
     // Read `navigation.to?.url`, not `page.url`, which is the source URL during onNavigate. `shouldAnimate` also gates reduced motion and ?notr=1.
     if (!shouldAnimate(navigation.to?.url)) return;
+    // Opening / closing a modal overlay (the results entity drawer) gets no document VT: named groups would be painted above the top-layer dialog. The overlay's own motion is the transition. See `$lib/utils/viewTransition`.
+    if (isOverlayNavigation(navigation.from, navigation.to)) return;
     return new Promise<void>((resolve) => {
       startViewTransition(async () => {
         resolve(); // tells SvelteKit to apply the new DOM
@@ -249,6 +251,12 @@
 {/if}
 
 <style>
+  /* A view transition that runs while a modal dialog is open runs without named groups, which would otherwise be painted above the top-layer dialog. `startViewTransition` in `$lib/utils/viewTransition` toggles the class (`VT_NO_NAMES_CLASS`).
+     The `!important` is required: the named elements in the results tree set `view-transition-name` in an inline style attribute, which beats any stylesheet rule without it. */
+  :global(html.vt-no-names *) {
+    view-transition-name: none !important;
+  }
+
   /* Stops every view-transition animation under reduced motion; the media query wraps the `:global` selectors because Svelte's CSS parser rejects an at-rule nested inside `:global`. */
   @media (prefers-reduced-motion: reduce) {
     :global(::view-transition-group(*)),

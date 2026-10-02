@@ -2,21 +2,21 @@
 gsd_state_version: "1.0"
 milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
-current_phase: 165
-current_phase_name: Review-Stack Comment Remediation
+current_phase: 166
+current_phase_name: Retire auth_user_id — Entity Identity from Grants
 current_plan: Not started
-status: completed
-stopped_at: "Phase 165 complete (verification passed 5/5; PR #889 open, CI run 36535849705 green 11/11) — milestone v2.15 ready for /gsd-complete-milestone"
-last_updated: "2026-09-29T07:49:12.738Z"
+status: ready
+stopped_at: "Phase 165 (Review-Stack Comment Remediation, PR #889) and Phase 165.1 (Results Navigation Redraw, PR #888) complete — next: /gsd-plan-phase 166"
+last_updated: "2026-09-29T19:12:32.000Z"
 last_activity: 2026-09-29
-last_activity_desc: Phase 165 complete
+last_activity_desc: Planning records of PR #888 and PR #889 merged; Results Navigation Redraw renumbered to Phase 165.1
 state_head: c0ffbd854568f384f3fe76a19fb39c37bbf62c34
 progress:
-  total_phases: 30
-  completed_phases: 30
-  total_plans: 306
-  completed_plans: 306
-  percent: 100
+  total_phases: 32
+  completed_phases: 31
+  total_plans: 315
+  completed_plans: 315
+  percent: 97
 ---
 
 # Project State
@@ -26,15 +26,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-20 — v2.15 complete)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 165 — Review-Stack Comment Remediation
+**Current focus:** Phase 166 — Retire `auth_user_id` — Entity Identity from Grants (ready to plan)
 
 ## Current Position
 
-Milestone: v2.15 (Phases 137-165 + 142.1 + 157.1 + 157.2, 30 phases; 148 absorbed into 147) — **100% complete, 306/306 plans**
-Phase: 165 (Review-Stack Comment Remediation) — COMPLETE 2026-09-29 (verification passed)
+Milestone: v2.15 (Phases 137-166 + 142.1 + 157.1 + 157.2 + 162.1 + 165.1, 32 phases; 148 absorbed into 147) — **31/32 phases complete (97%), 315/315 plans**
+_(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and PR #889 were merged: `ls .planning/phases | grep -v '^999' | wc -l` → **32**; `ls .planning/phases/*/[0-9]*-PLAN.md | grep -v '/999' | wc -l` → **315** (270 before either branch + 36 for Phase 165 + 9 for Phase 165.1); a per-directory PLAN-vs-SUMMARY comparison finds every plan summarised and only Phase 166 with no plan, so 31 phases are complete. The SUMMARY file count is 317: `142-W1-SUMMARY.md` (a wave summary) and `161-02.1-SUMMARY.md` (no plan file) are not plans. `percent` is completed/total phases, 31/32 rounded. The Phases 167-171 placeholders PR #888 added were dropped as superseded by Phase 165.)_
+Phase: 166 (Retire `auth_user_id` — Entity Identity from Grants) — ready to plan
+Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
 Current Plan: Not started
-Total Plans in Phase: 36
+Total Plans in Phase: 0
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
 they collapse.** `public.grants` keyed `user_id x scope x target_type x target_id x role`; a **23-member**
@@ -304,7 +306,7 @@ run. WHAT REMAINS: push `ci-evidence/163-crit2-red` and `…-green`, assert the 
 granularity (`frontend-and-shared-module-validation` → `Run Prettier check globally`, log naming the
 file), fill rows 9/10, delete both branches. `CIGATE-02` was NOT marked complete
 (`requirements.ready-ids` → 0/1 ready).
-Status: All phases complete
+Status: Ready to plan Phase 166
 PUSHED.** `prettier-plugin-sql@0.20.0` is declared once in `packages/shared-config` with
 `overrides: [{ files: '*.sql', options: { language: 'postgresql' } }]`, and reaches every workspace
 through the `?? []` spreads the leaf configs already carried (both leaf configs byte-unchanged).
@@ -588,7 +590,7 @@ install no Node at all when `engines.node` is absent — it WARNS, it does not f
 its negative control independently of the ruling. Full amendment:
 `.planning/todos/pending/2026-08-29-153-03-scope-amendment-after-d-b5-reversal.md`.
 **153-09 depends on 01, 02 AND 03**, so 03 blocks the phase close and nothing else in the phase.
-Last activity: 2026-09-29 — Phase 165 complete
+Last activity: 2026-09-29 — Phase 165 complete; planning records of PR #888 and PR #889 merged, Results Navigation Redraw renumbered to Phase 165.1
 
 **Phase 155 (Edge Function Hardening) is COMPLETE and verified — 6/6 plans.** Its completion line was
 overwritten in this single position slot by 153-01's `record-session` (STATE.md holds one position, and
@@ -818,7 +820,7 @@ are independent.
 ## Session Continuity
 
 Last session: 2026-09-28T20:24:41.999Z
-Stopped at: Phase 165 complete — all phases complete
+Stopped at: Phase 165 and Phase 165.1 complete — next: /gsd-plan-phase 166
 Resume file: None
 
 ## Deferred Items
@@ -1117,6 +1119,15 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 165 P34 | 35min | 3 tasks | 42 files |
 | Phase 165 P35 | 262min | 3 tasks | 1 files |
 | Phase 165 P36 | 26 min | 3 tasks | 3 files |
+| Phase 165.1 P01 | 19 min | 3 tasks | 31 files |
+| Phase 165.1 P02 | 38 min | 3 tasks | 15 files |
+| Phase 165.1 P03 | 1h 50m | 3 tasks | 5 files |
+| Phase 165.1 P04 | 58 min | 3 tasks | 10 files |
+| Phase 165.1 P05 | 58 min | 3 tasks | 11 files |
+| Phase 165.1 P05.1 | 2h 45m | 3 tasks | 5 files |
+| Phase 165.1 P06 | 39 min | 3 tasks | 4 files |
+| Phase 165.1 P07 | 38 min | 3 tasks | 17 files |
+| Phase 165.1 P08 | 19 min | 3 tasks | 9 files |
 
 ## Deferred Items
 
@@ -1318,6 +1329,9 @@ The pre-close artifact audit surfaced 15 open items. All v2.10-internal artifact
 ## Accumulated Context
 
 ### Roadmap Evolution
+
+- 2026-09-29: The planning records of PR #888 and PR #889 merged. Both branches had created a Phase 165; the maintainer kept Phase 165 = Review-Stack Comment Remediation (#889) and renumbered Results Navigation Redraw (#888) to Phase 165.1 (directory, plan ids, RNAV traceability, WINDOWS entries). Phases 167-171 (per-PR review fixes for #876-#887, added by #888) were dropped as superseded by Phase 165, which delivered those fixes. Phase 166 stays pending.
+- 2026-09-24: Phase 166 added to v2.15 (operator: extend rather than open a new milestone — related work). 166 retires `candidates/organizations.auth_user_id` in favour of entity-scope grants.
 
 - 2026-08-16: Phase 151 added: Ship v0.2 Akita — Review Stack & Commit-History Restructure. Source: root `ROADMAP.md` § "Addendum 1: Shipping v0.2 Akita" (operator-authored). Scope: Code Review Checklist + Code Style Guide sweeps over the whole v0.2 diff, comment hygiene (no planning-artifact/history narration in code), commit-history restructure (planning · docs · tests · squashed feature commits with no self-fixes · formatting · `[db]` tags), backup + byte-identical review worktrees, and a review-only PR stack off `origin/main` split by change nature. Continuation branch `feat-v02-akita-continued` created at `315b9795e` for parallel feature work.
 - 2026-08-09: Phase 134 added: A11y Contrast + i18n Catalog + Boolean-Answer Defect Closure (FIX-01/02/03). Source: `.planning/v2.14-MILESTONE-AUDIT.md` status `tech_debt` — 3 CONFIRMED user-facing defects carried as deferrals (WCAG AA contrast on the elections selector; untranslated `multiChoice` key in all 7 locales; boolean `false` reading back as unanswered). Operator chose remediation-before-close.
@@ -2034,6 +2048,31 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 165]: 165-36 D-14: state-driven voter walks (resolveVoterStage/walkVoterStages) cleared every CI walk failure; CI run 36457265423 is 10/11 green; the first-question alias skip was a latent test defect, now fixed
 - [Phase 165]: 165-36 D-15: JOURNEY_TEST_MAX 240 s (voter-journey passes in CI, 183.5 s); organizationMatching 'none' now leaves organizations/factions/alliances unmatched (product fix, unit + E2E tests)
 - [Phase 165]: 165-36 D-16: TIMEOUTS.testMax 180 s on GitHub Actions (90 s locally), cold-entry waits to the test budget, supabase/setup-cli pinned 2.83.0; CI run 36476589852 green, all 11 jobs
+- [Phase 165.1]: drawerHostState singleton SSR safety is ENFORCED, not documented: open() early-returns on non-browser (T-165.1-04) — Research found the safety was a call-site convention only; a module-level $state written during SSR leaks across requests
+- [Phase 165.1]: DrawerHost holds ModalContainer a11y parity: document-level Escape, focusFirstDescendant after DELAY.sm, labelled backdrop button — The spike used oncancel plus a bare dialog click; parity was chosen deliberately rather than by accident, and a11y-smoke ran green against it
+- [Phase 165.1]: The drawer close duration is one constant: DELAY.xs reaches CSS as --drawer-ms with no hard-coded fallback — A second copy of the number is exactly the JS-timer/CSS-duration drift the custom property exists to prevent
+- [Phase 165.1]: NC-1 is recorded as section 7 of 165.1-NEGATIVE-CONTROL.md, not section 4 as the plan asks — 165.1-01 already owns sections 4-6 and its committed SUMMARY cites them by number; renumbering would falsify a committed document. Drift recorded in section 2b
+- [Phase 165.1]: The 165.1-02 E2E gate was widened from one Playwright project to the whole suite, 165 passed / 0 failed — The plan mounts a dialog in the root layout and a document-level keydown handler, so every route is affected; a single-project run could not clear a11y-smoke or the questions popup Escape path
+- [Phase 165.1]: Phase 165.1-03: criteria 2 and 3 are proven by a committed Playwright spec under its own `voter-results-redraw` project, with the two View-Transition facts read through an init-script capture seam that wraps `document.startViewTransition` — zero production instrumentation
+- [Phase 165.1]: Phase 165.1-03: every absence assertion is preceded by a positive proof that the instrument is live; did-not-remount is asserted by DOM node identity with the node chosen ABOVE any deliberate `{#key}` (the list container for a tab switch, the list itself for open/close)
+- [Phase 165.1]: Phase 165.1-03: the plan-level E2E gate was widened from three named projects to the FULL suite, because adding a Playwright project changes what the default `yarn test:e2e` run is composed of — measured 168 expected / 0 unexpected / 0 skipped / 0 flaky
+- [Phase 165.1]: Phase 165.1-04: the entity-tab layout gates children on `activeEntityType || drawerVisible`, not on `activeEntityType` alone — an overlay keyed on entity+id is not part of the list hierarchy — D-08's literal wording ("render the chooser INSTEAD of children") would nest the drawer opener behind the implied-type gate, where the pre-split layout rendered it ABOVE. Measured: that silently broke drawer deeplinks whose election cannot be resolved (perm-localisation-positive green at 260a3ffe4, red mid-plan). The carve-out keeps D-08's intent while honouring its promise that the restructure is behaviour-equivalent. Simplifying it back reintroduces the regression.
+- [Phase 165.1]: Phase 165.1-04: `ROUTE.Statistics` is now `/results/statistics` — off the `[[electionTab]]` segment and out of the results layout chain (D-25) — Under the election-tab segment the page shared the results leaf's layout chain, and that layout never rendered its children, so the route served the RESULTS page. Zero links and zero tests, which is why it survived. Recorded as a pre-existing defect in 165.1-NEGATIVE-CONTROL.md § 2d. Note routeConsistency.test.ts does NOT guard results paths — it walks only `(protected)` groups — so it cannot catch a half-applied move here.
+- [Phase 165.1]: 165.1-05: the extended question info is served by the app-wide drawer host, with the popup testid deliberately left on the info BODY inside the payload (not on the host dialog) so both questionInfo.fixture.ts branches keep their meaning — The expander branch asserts the SAME locator hidden; on a persistent host dialog toBeHidden() would measure a dialog that exists but is closed rather than one never mounted. Settled by reading both branches line by line (A4), recorded in 165.1-05-SUMMARY.md.
+- [Phase 165.1]: 165.1-05: the close-by-key teardown READS question.id, because the questions layout keeps QuestionExtendedInfoButton mounted across a question-to-question navigation — a destroy-only teardown would leave the previous question's body on screen — Measured on this tree against the plan's prescribed destroy-only form; the new spec case is the control.
+- [Phase 165.1]: 165.1-05: research open question 3 disposed DELETE — both per-route drawers, their prop types and all four barrel lines removed after re-deriving callerlessness at run time — A dead second drawer implementation in a barrel is exactly the rot criterion 6 exists to prevent; recorded with the other five dispositions in 165.1-NEGATIVE-CONTROL.md section 2e.
+- [Phase 165.1]: 165.1-05.1: AccordionSelect's `expanded` now reconciles against a resolved `activeIndex` (edge-triggered, collapse-only), the DELAY.lg collapse is cancellable, and a state CORRECTION plays no slide outro — EQTYP-02 goes 4/16 red on the byte-identical pre-fix body to 0/16 at the fix HEAD (Fisher p = 0.0196 vs pooled 10/32) — The defect is latent BASE code Phase 165.1 made reachable: base remounted the accordion on every results navigation, which re-ran the once-only initialiser by accident. Criterion 1 / D-03 removed that teardown on purpose, so the fix had to land in the component — no remount reintroduced, `(located)/+layout.ts` untouched over 120c47aad..HEAD.
+- [Phase 165.1]: 165.1-05.1: a green negative control is not a pass when it has no power — the first NC returned 0/8 (P(0|25%) = 0.10), so a contemporaneous pre-fix control arm was added and the NC extended to 16, where it went red on run 13 — Without a same-day control, a 0/16 after-measurement cannot distinguish "the fix works" from "the flake went quiet today" — and the NC's own 0/8 was live evidence that the second reading had to be taken seriously. Recorded in 165.1-NEGATIVE-CONTROL.md sections 8d and 8e, including the claims the evidence does NOT license.
+- [Phase 165.1]: 165.1-06: evidence rows continue 165.1-NEGATIVE-CONTROL.md's own section AND row-id sequence (sections 9-13 as NC-3..NC-7) with an id crosswalk, rather than the plan's literal headings which collide with committed sections 4-8
+- [Phase 165.1]: 165.1-06: RESEARCH assumption A1 CONFIRMED by measurement - the drawer host's <svelte:boundary> fires, observed via 6 console lines under the injection against 0 in two un-mutated baselines and 0 under an unrelated mutation
+- [Phase 165.1]: 165.1-06: the title() getter is read outside the host's boundary and its throw escapes uncaught - filed as deferred item D-165.1-06-01 and windows 281, not fixed inside a negative-control row
+- [Phase 165.1]: 165.1-07 phase gate: all nine instruments green at one tree — full E2E 171/0/0/0/0 over 100 projects with the did-not-run count DERIVED (171 specs enumerated, 0 with an empty results array), axe 16/16 clean on the replaced drawer in both themes, and 4 of 4 visual baselines matched in the pinned linux/amd64 container with ZERO re-captured. — D-19 requires the visual project to run first and a baseline to be re-captured only when its diff is explained by an intended change. Nothing differed, so the operator judgement has no subject and no baseline was touched — git status over tests/tests/specs/visual/ is empty after the run.
+- [Phase 165.1]: 165.1-07 found `yarn format:check` ALREADY RED at the phase base 4d023c587 — 13 unformatted files, 11 of them untouched by phase 165.1 and absent from main. Fixed all 13 (two commits, ours kept separate from the pre-existing eleven); the schema reformat then desynced the generated migration and tripped the schema-migration parity guard, remedied via `yarn schema:regenerate`. — Fixed rather than deferred against the executor's default scope boundary because format:check is repo-wide and CI runs it globally, so the branch could not ship with it red. Every reformat was proven semantics-preserving before being written by comparing the file and its prettier output with all whitespace stripped.
+- [Phase 165.1]: RNAV-04 is worded to D-08 (the innermost page renders the results list), not to the ROADMAP criterion (the entity-tab level renders it), with the divergence reconciled inside the requirement text — A reader comparing REQUIREMENTS.md with the ROADMAP must find the reconciliation rather than concluding the criterion is unmet
+- [Phase 165.1]: Both traceability counters recounted from the scoped table rows to 110, never incremented, with the command recorded in the file — The naive grep -c over REQUIREMENTS.md returns 120 because it matches rows in several tables; the file already documents two past incidents of incrementing instead of recounting
+- [Phase 165.1]: The CLAUDE.md results-navigation invariant subsection landed beside the two analog Svelte invariant subsections under Important Implementation Notes, with a pointer line added under Frontend (SvelteKit) where D-24 said to put it — D-24 and 165.1-PATTERNS E3 both place the analogs under the frontend section; they are not there. The plan done-clause (beside the two subsections it belongs with) wins, and the pointer keeps D-24 stated location reaching the rule
+- [Phase 165.1]: The 2026-06-15 view-transition-flicker todo is closed WITH a named residue, not marked done: scroll survival closes as RNAV-02, the in-drawer tab flicker is handed to the parked element-scoped-VT deferred idea — Marking it done would claim a fix that did not ship; the residue half is cosmetic but real
+- [Phase 165.1] The visual gate has NO baseline capturing an open drawer, so this phase's headline change — the app-wide DrawerHost replacing the per-route drawer — is visually unmeasured. G-9 ran green with 4/4 matched, but all four baselines screenshot a page with no overlay showing; G-8's axe scans cover the drawer's conformance, not its appearance. See deferred-items.md D-165.1-07-01 and WINDOWS 282 (open).
 
 ### Quick Tasks Completed
 
@@ -2067,6 +2106,8 @@ Key cross-milestone reference points carried forward into v2.10:
 | 260922-dd5 | Persist survey-popup dismissal so a re-arm cannot re-queue it; the audit found 0 sites needing the onMount conversion | 2026-09-22 | 15c5ef68d | — | .planning/quick/260922-dd5-audit-reactive-popup-queueing-candidate-lay |
 | 260922-dd7 | Offer a results filter only when its entity type yields distinct values | 2026-09-22 | 356b1e81c | — | .planning/quick/260922-dd7-results-filters-relevance-only-show-a-filte |
 | 260922-dd8 | cn over clsx + tailwind-merge; concatClass over cn; QuestionChoices dimming as a named const | 2026-09-22 | 884df28de | — | .planning/quick/260922-dd8-refactor-condition-classes-in-questionchoic |
+| 260926-j71 | Adopt spike 035b: `DrawerHost` mounted per app (voter app now; candidate app = one mount), `ContextBridge` deleted; fix the `Image.svelte` `darkMode` destructure trap. Folded into the PR #888 commit stack. Unit 1856/1856, full E2E 171/171 on the squashed tree | 2026-09-26 | PR #888 stack | complete | [260926-j71-adopt-spike-035b-drawer-host-in-voter-la](./quick/260926-j71-adopt-spike-035b-drawer-host-in-voter-la/) |
+| 260927-kjb | Replace `EntityDrawerOpener` with the `useEntityDrawer` `.svelte.ts` hook; the drawer payload becomes a component plus a props getter (`QuestionExtendedInfoButton` moved too). Folded into the PR #888 commit stack. Unit 3332/3332, full E2E 171/171 | 2026-09-27 | PR #888 stack | complete | [260927-kjb-replace-entitydraweropener-component-wit](./quick/260927-kjb-replace-entitydraweropener-component-wit/) |
 
 **Follow-up to 260607-cd0 (executed 2026-06-07, user-approved):** Deprecation run on the report's proposal. Removed dead code — `utils/{answerQuestion,translations,paths}.ts` (`6edeb9fa2`) + `helpers/{db-precondition,voter-iteration}.helper.ts` & the dead `gotoAndSettle` export (`fc08e10f3`). Renamed the 3 surviving helpers `*.helper.ts`→`*.ts` (navigation/select/settle) + retired the `<concern>.helper.ts` convention (barrel + README updated; only the barrel imported them by path so consumers unaffected). Kept + tracked `tests/IDURA-TEST-RUNBOOK.md` in place (`1d90db68c`). **Item 6 (emailHelper→emailBucket) — DONE + verified green 2026-06-07** (`2764a79a9`): the fixture never actually imported emailHelper (docstring was wrong); whole file was dead except `toCallbackUrl`, which moved into `emailBucket.fixture.ts`; both spec imports repointed; `emailHelper.ts` deleted. User confirmed all tests pass on a live stack; todo moved to `.planning/todos/completed/`. **The entire 260607-cd0 cleanup follow-up is now closed** (dead-code sweep + `.helper` rename + IDURA + emailHelper consolidation).
 
@@ -2090,6 +2131,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - Phase 164: nothing fails if packages/supabase-types/src/index.ts:1 is rewired past the override -- measured green even with the null-guard also deleted (164-04 NC-3b). of the phase's three gates reads index.ts. Filed at .planning/todos/pending/2026-09-03-nothing-guards-the-supabase-types-barrel-wiring.md, WINDOWS 247.
 - The sql-lint CI job has never executed: 163-03 pushed nothing, so CIGATE-01 is unblocked but NOT proven. It closes only when 163-CI-EVIDENCE.md carries a real Actions run URL for job sql-lint in both a RED and a GREEN half.
 - 163-09 is BLOCKED: 163-08 halted at its blocking-human checkpoints. Criterion 2 (CIGATE-02) is proven locally on two schema files but has NO CI run; evidence-ledger rows 9 and 10 carry OWED. Unblocking needs an orchestrator-owned push of ci-evidence/163-crit2-red and -green, with the red asserted at STEP granularity on frontend-and-shared-module-validation -> Run Prettier check globally.
+- Phase 165.1-03 (deferred, not a phase blocker): at MAXIMUM document scroll, opening the entity drawer clamps window.scrollY (measured 1464 -> 1187). Probable content-visibility:auto collapse under an inert document; NOT isolated. See .planning/phases/165.1-results-navigation-redraw/deferred-items.md D-165.1-03-01
+- RESOLVED 2026-09-23 by 165.1-05.1 (was BLOCKING, phase 165.1): voter-journey EQTYP-02 intermittent failure in the results election AccordionSelect. Before 6/16 red at the phase tip and 4/16 on the pre-fix body re-measured contemporaneously; after 0/16 red at the fix HEAD (Fisher p = 0.0196 vs the pooled 10/32 pre-fix evidence). Cause CONFIRMED and narrower than the 165.1-05 hypothesis: AccordionSelect's `expanded` was initialised once and never reconciled, so on the now-persistent results subtree only `activate`'s fire-and-forget DELAY.lg timer collapsed it — a ~450 ms window in which a click on the already-active option re-opens the widget permanently. Both mechanisms PRE-EXIST on base verbatim; the phase made them reachable by removing the teardown (D-03), it did not introduce them. Fix + three-arm negative control in 165.1-NEGATIVE-CONTROL.md § 8; full suite 171/171 at the fix HEAD. WINDOWS 278 fixed.
+- [Phase 165.1] The visual gate has NO baseline capturing an open drawer, so this phase's headline change — the app-wide DrawerHost replacing the per-route drawer — is visually unmeasured. G-9 ran green with 4/4 matched, but all four baselines screenshot a page with no overlay showing; G-8's axe scans cover the drawer's conformance, not its appearance. See deferred-items.md D-165.1-07-01 and WINDOWS 282 (open).
 
 ## Session Continuity
 
