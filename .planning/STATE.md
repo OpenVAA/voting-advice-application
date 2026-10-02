@@ -5,17 +5,17 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 167
 current_phase_name: Origin/main Vestige Cleanup
 current_plan: 6
-status: executing
-stopped_at: Completed 167-05-PLAN.md
-last_updated: "2026-10-02T06:28:35.876Z"
+status: verifying
+stopped_at: Completed 167-06-PLAN.md
+last_updated: "2026-10-02T06:47:20.680Z"
 last_activity: 2026-10-02
 last_activity_desc: Phase 167 execution started
-state_head: a66e60efce66b2c2940fc98b08004cbb422793bc
+state_head: 0c11126cc4e936a7757869b2a0b14a286de823f5
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
-  completed_plans: 324
+  completed_plans: 325
   percent: 89
 ---
 
@@ -306,7 +306,7 @@ run. WHAT REMAINS: push `ci-evidence/163-crit2-red` and `…-green`, assert the 
 granularity (`frontend-and-shared-module-validation` → `Run Prettier check globally`, log naming the
 file), fill rows 9/10, delete both branches. `CIGATE-02` was NOT marked complete
 (`requirements.ready-ids` → 0/1 ready).
-Status: Ready to execute
+Status: Phase complete — ready for verification
 PUSHED.** `prettier-plugin-sql@0.20.0` is declared once in `packages/shared-config` with
 `overrides: [{ files: '*.sql', options: { language: 'postgresql' } }]`, and reaches every workspace
 through the `?? []` spreads the leaf configs already carried (both leaf configs byte-unchanged).
@@ -819,8 +819,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-10-02T06:28:34.688Z
-Stopped at: Completed 167-05-PLAN.md
+Last session: 2026-10-02T06:47:19.494Z
+Stopped at: Completed 167-06-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -1137,6 +1137,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 167 P03 | 2min | 2 tasks | 2 files |
 | Phase 167 P04 | 11min | 3 tasks | 9 files |
 | Phase 167 P05 | 3min | 3 tasks | 4 files |
+| Phase 167 P06 | 15 min | 3 tasks | 11 files |
 
 ## Deferred Items
 
@@ -2099,6 +2100,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 167]: 167-04: baseline hand-edit removed only lodash 1115806; the four stale js-yaml ids (1123911, 1123912, 1138114, 1138115) predate the phase and stay for Phase 169
 - [Phase 167]: 167-04: removing docs' globals moved root globals 16.5.0 -> 15.14.0, which shared-config imports undeclared; findings unchanged (no-undef off); 167-06 files the declare-globals todo
 - [Phase 167]: 167-05: OpenVAALogo (docs) keeps the literal fill-* switch plus the trailing fill-${color} append, reproducing the old class string byte for byte and keeping the Tailwind v4 fill utilities; VEST-05 complete, VEST-06 awaits the 167-06 todo closure
+- [Phase 167]: 167-06: the docs workspace's own prettier --check (inside yarn format:check) caught a ⑤ wrap; fixed in style[docs] 275250054, to be folded into ⑤ at review-stack time
+- [Phase 167]: 167-06: gate-evidence/ held no credential (the one pattern hit is verbatim tracked docs placeholder text); deleted, never committed
 
 ### Quick Tasks Completed
 

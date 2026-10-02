@@ -1986,7 +1986,7 @@ Plans:
   8. Every linked todo the phase discharges is moved to `done/`. Every comment touched passes [`CLAUDE.md` § Comment Hygiene](/CLAUDE.md#comment-hygiene).
   9. Gates: typecheck, lint, unit, production build, `yarn audit:deps` (with the baseline change), then the full E2E suite under the cardinal rule.
 
-**Plans**: 5/6 plans executed
+**Plans**: 6/6 plans executed
 
 Plans:
 **Wave 1**
@@ -2005,7 +2005,7 @@ Plans:
 - [x] 167-05-PLAN.md — Port the docs app's last two Svelte 4 components to runes and correct the stale env-loading comment in `apps/frontend/vite.config.ts` (wave 5)
 
 **Wave 6** *(blocked on Wave 5 completion)*
-- [ ] 167-06-PLAN.md — Phase close: inspect and delete `gate-evidence/`, run the full gate set ending in one full E2E run, reconcile todos, VESTIGES rows and comment hygiene (wave 6)
+- [x] 167-06-PLAN.md — Phase close: inspect and delete `gate-evidence/`, run the full gate set ending in one full E2E run, reconcile todos, VESTIGES rows and comment hygiene (wave 6)
 
 ### Phase 168: Docs-Site Rewrite — Strapi to Supabase
 
@@ -2141,7 +2141,7 @@ _(**Recounted 2026-09-29** when the two planning records were merged: the phase 
 | 165. Review-Stack Comment Remediation | 36/36 | Complete    | 2026-09-29 |
 | 165.1. Results Navigation Redraw | 9/9 | Complete    | 2026-09-24 |
 | 166. Retire `auth_user_id` — Entity Identity from Grants | 4/4 | Complete    | 2026-10-02 |
-| 167. Origin/main Vestige Cleanup | 5/6 | In Progress|  |
+| 167. Origin/main Vestige Cleanup | 6/6 | In Progress|  |
 | 168. Docs-Site Rewrite — Strapi to Supabase | 0/9 | Not started |  |
 | 169. Dependency Bump to Latest Safe Versions | 0/13 | Not started |  |
 
