@@ -1,10 +1,12 @@
 /**
  * Utility functions for working with links in the docs site: markdown link extraction, the page model that decides what a route resolves to, and the GitHub source-path check.
  */
-import { execFileSync } from 'child_process';
+import { execFileSync, spawnSync } from 'child_process';
 import * as fs from 'fs/promises';
+import { compile } from 'mdsvex';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import { mdsvexOptions } from '../../mdsvex.config.js';
 import type { Dirent } from 'fs';
 
 /**
@@ -347,6 +349,134 @@ export function checkGithubSourceLink(url: string, tracked: TrackedPaths): strin
   }
   if (repoPath === '' || tracked.files.has(repoPath) || tracked.dirs.has(repoPath)) return undefined;
   return `Not a tracked file or directory: ${repoPath}`;
+}
+
+const headingIdCache = new Map<string, Promise<Set<string>>>();
+
+/**
+ * Collect the element ids a page offers as `#anchor` targets. A `+page.md` is compiled with the site's own mdsvex options, so the ids are the `rehype-slug` heading ids of the built page; a `.svelte` page offers its literal `id="…"` attributes.
+ * @param pageFile An absolute path to a `+page.md` or `+page.svelte`
+ * @throws If the page cannot be read or compiled
+ */
+export function collectHeadingIds(pageFile: string): Promise<Set<string>> {
+  let ids = headingIdCache.get(pageFile);
+  if (!ids) {
+    ids = readHeadingIds(pageFile);
+    headingIdCache.set(pageFile, ids);
+  }
+  return ids;
+}
+
+async function readHeadingIds(pageFile: string): Promise<Set<string>> {
+  const source = await fs.readFile(pageFile, 'utf-8');
+  let markup = source;
+  if (pageFile.endsWith('.md')) {
+    const compiled = await compile(source, mdsvexOptions);
+    if (!compiled) throw new Error(`mdsvex returned no output for ${pageFile}`);
+    markup = compiled.code;
+  }
+  return new Set([...markup.matchAll(/\sid\s*=\s*(?:"([^"{}]+)"|'([^'{}]+)')/g)].map((m) => m[1] ?? m[2]));
+}
+
+/**
+ * Whether a `#hash` (without the `#`) names one of the ids, compared both as written and URL-decoded.
+ */
+export function hasAnchor(ids: Set<string>, hash: string): boolean {
+  return ids.has(hash) || ids.has(safeDecode(hash));
+}
+
+/**
+ * Extract the literal internal `href="/…"` / `href='/…'` attributes from Svelte or HTML markup. Dynamic `href={…}` values cannot be checked statically and are only counted.
+ */
+export function extractSvelteHrefs(source: string): { hrefs: Array<MarkdownLink>; dynamic: number } {
+  const hrefs: Array<MarkdownLink> = [];
+  let dynamic = 0;
+  const lines = source.split('\n');
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+    for (const match of lines[lineIndex].matchAll(/\bhref\s*=\s*(?:"([^"]*)"|'([^']*)'|\{)/g)) {
+      const value = match[1] ?? match[2];
+      if (value === undefined || value.includes('{')) {
+        dynamic++;
+        continue;
+      }
+      if (!value.startsWith('/') || value.startsWith('//')) continue;
+      hrefs.push({ text: '', url: value, line: lineIndex + 1, column: match.index + 1, raw: match[0] });
+    }
+  }
+  return { hrefs, dynamic };
+}
+
+/**
+ * A reference to the docs site from a tracked file outside `apps/docs`.
+ */
+export interface InboundReference {
+  /**
+   * The referring file, relative to the repository root.
+   */
+  file: string;
+  line: number;
+  column: number;
+  /**
+   * The public URL (`site-url`) or the repository path (`repo-path`), possibly with a `#hash`.
+   */
+  target: string;
+  type: 'site-url' | 'repo-path';
+}
+
+const SITE_URL =
+  /https?:\/\/(?:www\.)?openvaa\.org(\/(?:about|developers-guide|publishers-guide)(?:[/?#][^\s)>"'`\]]*)?)/g;
+const DOCS_REPO_PATH = /(?:apps\/)?docs\/src\/routes(?:\/(?:\([^()\s/]*\)|[^\s()<>"'`[\]/|]+))*\/?/g;
+
+/**
+ * Find every reference to the docs site in tracked files outside `apps/docs`, `.planning`, `yarn.lock` and `node_modules`: public `openvaa.org` URLs of the About, Developers' Guide and Publishers' Guide sections, and repository paths under `docs/src/routes`. Paths containing `...`, `*` or `{` are patterns rather than links; they are skipped and counted.
+ */
+export function findInboundReferences(): { references: Array<InboundReference>; skippedPatterns: number } {
+  const grep = spawnSync(
+    'git',
+    [
+      'grep',
+      '-n',
+      '-I',
+      '--null',
+      '-E',
+      '-e',
+      'https?://(www\\.)?openvaa\\.org/(about|developers-guide|publishers-guide)',
+      '-e',
+      'docs/src/routes',
+      '--',
+      '.',
+      ':(exclude)apps/docs',
+      ':(exclude).planning',
+      ':(exclude)yarn.lock',
+      ':(exclude)**/node_modules/**'
+    ],
+    { cwd: getRepoRoot(), encoding: 'utf-8', maxBuffer: 64 * 1024 * 1024 }
+  );
+  if (grep.status === 1) return { references: [], skippedPatterns: 0 };
+  if (grep.status !== 0) throw new Error(`git grep failed (status ${grep.status}): ${grep.stderr}`);
+
+  const references: Array<InboundReference> = [];
+  let skippedPatterns = 0;
+  for (const outputLine of grep.stdout.split('\n')) {
+    if (!outputLine) continue;
+    const [file, lineNumber, ...rest] = outputLine.split('\0');
+    const content = rest.join('\0');
+    const line = Number(lineNumber);
+
+    for (const match of content.matchAll(SITE_URL)) {
+      const target = match[1].replace(/[.,;:!]+$/, '');
+      references.push({ file, line, column: match.index + 1, target, type: 'site-url' });
+    }
+    for (const match of content.matchAll(DOCS_REPO_PATH)) {
+      if (/\.\.\.|\*|\{/.test(match[0])) {
+        skippedPatterns++;
+        continue;
+      }
+      const target = match[0].replace(/[.,;:!]+$/, '').replace(/\/+$/, '');
+      references.push({ file, line, column: match.index + 1, target, type: 'repo-path' });
+    }
+  }
+  return { references, skippedPatterns };
 }
 
 /**
