@@ -1,31 +1,42 @@
 # Locale resolution
 
-The locale selection process works as follows.
+The locale of a request is resolved by Paraglide. The options are in [`apps/frontend/paraglide.options.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/paraglide.options.ts), which the Vite plugin and `paraglide:compile` share:
 
-[`$lib/i18n`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/i18n/init.ts) is initialized:
+```ts
+strategy: ['url', 'cookie', 'baseLocale'];
+```
 
-1. Supported `locales` and the `defautlLocale` are loaded from [`StaticSettings`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/staticSettings.ts)
+Paraglide tries the strategies in this order:
 
-[`hooks.server.ts: handle`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/hooks.server.ts) parses the route and `Request.accept-language`:
+1. **`url`**: the locale prefix of the URL. The base locale, `en`, has no prefix; the other locales do, for example `/fi/results`.
+2. **`cookie`**: the locale stored in Paraglide's locale cookie.
+3. **`baseLocale`**: the `baseLocale` in `project.inlang/settings.json`, which is `en`.
 
-1. Supported `locales` are loaded from `$lib/i18n`
-2. The locales listed in `Request.accept-language` are iterated and the first one found (using a soft match) in `locales` is saved as `preferredLocale`
-3. We check if there is a `lang` route parameter and it is included in `locales`
-4. Depending on these, one of the following happens:
+The browser's `Accept-Language` header is not one of the strategies, so it does not choose the locale.
 
-| `lang` route param | `preferredLocale` | Action                                                                                                                          |
-| ------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| not defined        | not supported     | Redirect to `/${defautlLocale}/${route}`                                                                                        |
-| not defined        | supported         | Redirect to `/${preferredLocale}/${route}`                                                                                      |
-| soft match         | N/A               | Redirect to `/${supportedLocale}/${route}` where `supportedLocale` is the soft-matched locale, e.g. `'en'` for `lang = 'en-UK'` |
-| supported          | N/A               | Serve content in `lang` (and show notification in the front end if `preferredLocale` is supported and `!= lang`)                |
+## No locale route segment
 
-1. Both `preferredLocale` and `currentLocale` (in which the content is served) are passed further in `locals`.
+The locale is not part of any route. Two hooks handle the prefix:
 
-[`+layout.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/routes/[[lang=locale]]/+layout.ts) loads translations from the local source and the database:
+- `reroute` in [`src/hooks.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/hooks.ts) removes the prefix with Paraglide's `deLocalizeUrl` before SvelteKit matches the route, so `/fi/results` is served by the same route as `/results`.
+- `paraglideHandle` in [`src/hooks.server.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/hooks.server.ts) runs Paraglide's `paraglideMiddleware` on every request. It resolves the locale, stores it in `event.locals.currentLocale`, and writes it into the `lang` attribute of the `<html>` element through the `%lang%` placeholder in `app.html`.
 
-1. Load `DataProvider.getAppCustomization(•).translationOverrides` as dynamic translations for use with `i18n`.
-2. Load local translations with `$lib/i18n: loadTranslations`
-3. Add the `translationOverrides` by `$lib/i18n: addTranslations`
-4. Set the locale to `params.lang`
-5. Call `$lib/i18n: setRoute('')` which is required for the translations to be available.
+After that, code reads the locale with `getLocale()` from `$lib/paraglide/runtime`, or from the `locale` member of the contexts. The root `+layout.ts` passes it to the data provider, so the data is read in the same locale.
+
+## Building localized links
+
+`buildRoute` and the `getRoute` handle of the `AppContext` add the prefix of the current locale with Paraglide's `localizeHref`, so links keep the locale. Pass `locale` to build a link in another locale:
+
+```ts
+appCtx.getRoute.current({ locale: 'fi' });
+```
+
+For an in-app path that is not a route key, use `localizeAppPath` from `$lib/routes`. See [Routing](/developers-guide/frontend/routing).
+
+## Switching the locale
+
+The language menu, `LanguageSelection` in `$lib/dynamic-components/navigation/languages`, lists the offered locales when there is more than one. Each item links to the current path localized with `localizeHref`, and the link has `data-sveltekit-reload`, so switching the locale reloads the page. The `locale` in the contexts therefore stays the same for the life of a page.
+
+## Matching locales in data
+
+When `translate` from `$lib/i18n` picks a translation from a multi-locale value, it falls back to a soft match with `matchLocale` from `$lib/i18n/utils` if the value has no exact match for the locale. See [Multi-locale data](/developers-guide/localization/storing-multi-locale-data).
