@@ -4,18 +4,18 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 168
 current_phase_name: Docs-Site Rewrite — Strapi to Supabase
-current_plan: 2
+current_plan: 3
 status: executing
-stopped_at: Completed 168-01-PLAN.md
-last_updated: "2026-10-02T07:19:55.480Z"
+stopped_at: Completed 168-01.1-PLAN.md
+last_updated: "2026-10-02T09:32:33.497Z"
 last_activity: 2026-10-02
 last_activity_desc: Phase 168 execution started
-state_head: fd7fc1a36d92ca9f3c7a5bddee9d3cb1830e1f9a
+state_head: ac92fd712cdaf7e4af7d55290d84f7ccfc68735e
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
-  completed_plans: 326
+  completed_plans: 327
   percent: 89
 ---
 
@@ -35,7 +35,7 @@ _(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and P
 Phase: 168 (Docs-Site Rewrite — Strapi to Supabase) — EXECUTING
 Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
-Current Plan: 2
+Current Plan: 3
 Total Plans in Phase: 9
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
@@ -819,8 +819,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-10-02T07:19:54.152Z
-Stopped at: Completed 168-01-PLAN.md
+Last session: 2026-10-02T09:32:10.570Z
+Stopped at: Completed 168-01.1-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -1139,6 +1139,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 167 P05 | 3min | 3 tasks | 4 files |
 | Phase 167 P06 | 15 min | 3 tasks | 11 files |
 | Phase 168 P01 | 23min | 3 tasks | 15 files |
+| Phase 168 P01.1 | 130min | 2 tasks | 31 files |
 
 ## Deferred Items
 
@@ -2106,6 +2107,10 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 168]: Inbound-reference #hash failures are reported under the inbound class (not anchor), so --only inbound proves target and anchor
 - [Phase 168]: Link checker page model: +page.md / +page.svelte pages, +page.ts-only redirect stubs, static assets; nav section routes are not checked; a link landing on a stub is a finding only in --check mode
 - [Phase 168]: Phase 168 base revision 0ec229dfe recorded in gate-evidence/base-rev.txt; every later gate reads it from there
+- [Phase 168]: 168-01.1: Operator ruling 2026-10-02 Option B (fix at source, re-anchor freeze): lint-only fixes to ResearchQuote.svelte/ReferenceList.svelte, render-identical; check:research-quotes gains --component-base, spans still vs base-rev.txt (0ec229dfe), components vs gate-evidence/component-base-rev.txt (6090476cc)
+- [Phase 168]: 168-01.1: Span-gate invocation for 168-02..08 and 169 is --base "$(cat $GE/base-rev.txt)" --component-base "$(cat $GE/component-base-rev.txt)"; the --base-only form now exits 1 by design
+- [Phase 168]: 168-01.1: Docs lint crash: order-dependence + Node-version independence CONFIRMED, trigger shared compat.extends prettier CONFIRMED, eslint-plugin-svelte REFUTED, mechanism UNCONFIRMED; tsParser named export from shared-config instead of re-declaring @typescript-eslint/parser
+- [Phase 168]: 168-01.1: typedoc, typedoc-plugin-markdown, @playwright/test removed from apps/docs; baseline rows 1121797/1124012 (linkify-it via typedoc-only markdown-it) hand-deleted, note 69->67; no --update-baseline
 
 ### Quick Tasks Completed
 
@@ -2177,6 +2182,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - Phase 165.1-03 (deferred, not a phase blocker): at MAXIMUM document scroll, opening the entity drawer clamps window.scrollY (measured 1464 -> 1187). Probable content-visibility:auto collapse under an inert document; NOT isolated. See .planning/phases/165.1-results-navigation-redraw/deferred-items.md D-165.1-03-01
 - RESOLVED 2026-09-23 by 165.1-05.1 (was BLOCKING, phase 165.1): voter-journey EQTYP-02 intermittent failure in the results election AccordionSelect. Before 6/16 red at the phase tip and 4/16 on the pre-fix body re-measured contemporaneously; after 0/16 red at the fix HEAD (Fisher p = 0.0196 vs the pooled 10/32 pre-fix evidence). Cause CONFIRMED and narrower than the 165.1-05 hypothesis: AccordionSelect's `expanded` was initialised once and never reconciled, so on the now-persistent results subtree only `activate`'s fire-and-forget DELAY.lg timer collapsed it — a ~450 ms window in which a click on the already-active option re-opens the widget permanently. Both mechanisms PRE-EXIST on base verbatim; the phase made them reachable by removing the teardown (D-03), it did not introduce them. Fix + three-arm negative control in 165.1-NEGATIVE-CONTROL.md § 8; full suite 171/171 at the fix HEAD. WINDOWS 278 fixed.
 - [Phase 165.1] The visual gate has NO baseline capturing an open drawer, so this phase's headline change — the app-wide DrawerHost replacing the per-route drawer — is visually unmeasured. G-9 ran green with 4/4 matched, but all four baselines screenshot a page with no overlay showing; G-8's axe scans cover the drawer's conformance, not its appearance. See deferred-items.md D-165.1-07-01 and WINDOWS 282 (open).
+- 168-02..08 and 169-01/169-03 PLANs still write the pre-ruling 'check:research-quotes --base' form, which now exits 1; use the --component-base invocation recorded in 168-DOCS-AUDIT.md Decisions (168-01.1)
 
 ## Session Continuity
 

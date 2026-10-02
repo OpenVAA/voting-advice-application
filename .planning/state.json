@@ -161,7 +161,7 @@
     {
       "number": "168",
       "name": "Docs-Site Rewrite — Strapi to Supabase",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "number": "169",
@@ -174,5 +174,5 @@
     "label": "Advance to the next step",
     "reason": "Phase 168 of 35 · 89% · executing"
   },
-  "updated_at": "2026-10-02T07:19:39.318Z"
+  "updated_at": "2026-10-02T09:32:03.673Z"
 }

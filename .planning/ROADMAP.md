@@ -2024,14 +2024,14 @@ Plans:
   6. **The broken docs scripts are dealt with** per `2026-08-28-broken-docs-script-references.md` (typedoc generation and the commented-out `getTypeDocLink`), or that todo is explicitly left open with a reason.
   7. Gates: docs build, docs lint/check, link check (no broken internal links).
 
-**Plans**: 1/9 plans executed
+**Plans**: 2/9 plans executed
 
 Plans:
 **Wave 1**
 - [x] 168-01-PLAN.md — Build and prove the verification instruments before any page is rewritten: the extended link checker with `--check`, the ResearchQuote span gate, the claims and command checker, and the audit ledger opened with every base page (wave 1)
 
 **Wave 1.1** *(blocked on 168-01 completion)*
-- [ ] 168-01.1-PLAN.md — Make docs lint real and part of the root gate, repair or delete the broken docs scripts, make the generator prune pages for deleted components, and remove the dependencies that lose their last consumer (wave 1.1)
+- [x] 168-01.1-PLAN.md — Make docs lint real and part of the root gate, repair or delete the broken docs scripts, make the generator prune pages for deleted components, and remove the dependencies that lose their last consumer (wave 1.1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 168-02-PLAN.md — Lay down the D-02 information architecture as a skeleton: moved pages, new pages, redirect stubs, the rewritten `navigation.config.ts` and every inbound reference repointed (wave 2)
@@ -2142,7 +2142,7 @@ _(**Recounted 2026-09-29** when the two planning records were merged: the phase 
 | 165.1. Results Navigation Redraw | 9/9 | Complete    | 2026-09-24 |
 | 166. Retire `auth_user_id` — Entity Identity from Grants | 4/4 | Complete    | 2026-10-02 |
 | 167. Origin/main Vestige Cleanup | 6/6 | Complete    | 2026-10-02 |
-| 168. Docs-Site Rewrite — Strapi to Supabase | 1/9 | In Progress|  |
+| 168. Docs-Site Rewrite — Strapi to Supabase | 2/9 | In Progress|  |
 | 169. Dependency Bump to Latest Safe Versions | 0/13 | Not started |  |
 
 **Shipped milestones:**
