@@ -297,7 +297,7 @@ delivery-origin swap whose visual consequence is re-proven by the baselines them
 - [x] **Phase 165: Review-Stack Comment Remediation** - Collect every reviewer and GitHub Copilot comment on the twelve stacked ship PRs (#876-#887), triage each as a real defect, an artifact of reviewing one slice of the 12-way split in isolation, or already resolved, and fix every actionable one on `ship/v2.15-13-review-fixes`, stacked on `ship/v2.15-12-planning`, with the repo comment-hygiene rules applied to every changed file (completed 2026-09-29)
 - [x] **Phase 165.1: Results Navigation Redraw** - Stop the voter results page from remounting and flickering on tab / entity / drawer navigation; reshape its routes to follow the layout and hoist the drawer(s) to one app-wide host. Grounded in spikes 031-034 (`spike/results-redraw`). (completed 2026-09-24)
 - [x] **Phase 166: Retire `auth_user_id` — Entity Identity from Grants** - Drop `candidates.auth_user_id` / `organizations.auth_user_id`; the "which entity am I" lookups read the entity-scope grant instead, so the two Edge Functions write one link, not two, and published rows stop exposing auth user ids. (completed 2026-10-02)
-- [ ] **Phase 167: Origin/main Vestige Cleanup** - Discharge the code-side deferrals of the 261001-n8y vestige sweep: pin `safeGetSession` round trips with a test, drop `BACKEND_API_TOKEN` and resolve the old backend-URL pair, remove unused deps (audit baseline in step), port `OpenVAALogo.svelte` to runes, close the stale env.dir todo, delete `gate-evidence/`.
+- [x] **Phase 167: Origin/main Vestige Cleanup** - Discharge the code-side deferrals of the 261001-n8y vestige sweep: pin `safeGetSession` round trips with a test, drop `BACKEND_API_TOKEN` and resolve the old backend-URL pair, remove unused deps (audit baseline in step), port `OpenVAALogo.svelte` to runes, close the stale env.dir todo, delete `gate-evidence/`. (completed 2026-10-02)
 - [ ] **Phase 168: Docs-Site Rewrite — Strapi to Supabase** - Rewrite, merge or delete the ~30 docs pages still describing Strapi, and bring every other docs page up to date; restructure freely; research interludes untouched.
 - [ ] **Phase 169: Dependency Bump to Latest Safe Versions** - Every dependency to its latest safe version, majors included, migrated and gate-green.
 
@@ -1986,7 +1986,7 @@ Plans:
   8. Every linked todo the phase discharges is moved to `done/`. Every comment touched passes [`CLAUDE.md` § Comment Hygiene](/CLAUDE.md#comment-hygiene).
   9. Gates: typecheck, lint, unit, production build, `yarn audit:deps` (with the baseline change), then the full E2E suite under the cardinal rule.
 
-**Plans**: 6/6 plans executed
+**Plans**: 6/6 plans complete
 
 Plans:
 **Wave 1**
@@ -2141,7 +2141,7 @@ _(**Recounted 2026-09-29** when the two planning records were merged: the phase 
 | 165. Review-Stack Comment Remediation | 36/36 | Complete    | 2026-09-29 |
 | 165.1. Results Navigation Redraw | 9/9 | Complete    | 2026-09-24 |
 | 166. Retire `auth_user_id` — Entity Identity from Grants | 4/4 | Complete    | 2026-10-02 |
-| 167. Origin/main Vestige Cleanup | 6/6 | In Progress|  |
+| 167. Origin/main Vestige Cleanup | 6/6 | Complete    | 2026-10-02 |
 | 168. Docs-Site Rewrite — Strapi to Supabase | 0/9 | Not started |  |
 | 169. Dependency Bump to Latest Safe Versions | 0/13 | Not started |  |
 

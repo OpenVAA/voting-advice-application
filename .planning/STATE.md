@@ -2,21 +2,21 @@
 gsd_state_version: "1.0"
 milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
-current_phase: 167
-current_phase_name: Origin/main Vestige Cleanup
-current_plan: 6
-status: verifying
-stopped_at: Completed 167-06-PLAN.md
-last_updated: "2026-10-02T06:47:20.680Z"
+current_phase: 168
+current_phase_name: Docs-Site Rewrite — Strapi to Supabase
+current_plan: Not started
+status: planning
+stopped_at: Phase 167 complete, ready to plan Phase 168
+last_updated: "2026-10-02T06:53:19.659Z"
 last_activity: 2026-10-02
-last_activity_desc: Phase 167 execution started
-state_head: 0c11126cc4e936a7757869b2a0b14a286de823f5
+last_activity_desc: Phase 167 complete, transitioned to Phase 168
+state_head: 31f339064d2418fdc1f941e0e071cd7ba94acc89
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
   completed_plans: 325
-  percent: 89
+  percent: 67
 ---
 
 # Project State
@@ -32,10 +32,10 @@ See: .planning/PROJECT.md (updated 2026-09-20 — v2.15 complete)
 
 Milestone: v2.15 (Phases 137-166 + 142.1 + 157.1 + 157.2 + 162.1 + 165.1, 32 phases; 148 absorbed into 147) — **31/32 phases complete (97%), 315/315 plans**
 _(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and PR #889 were merged: `ls .planning/phases | grep -v '^999' | wc -l` → **32**; `ls .planning/phases/*/[0-9]*-PLAN.md | grep -v '/999' | wc -l` → **315** (270 before either branch + 36 for Phase 165 + 9 for Phase 165.1); a per-directory PLAN-vs-SUMMARY comparison finds every plan summarised and only Phase 166 with no plan, so 31 phases are complete. The SUMMARY file count is 317: `142-W1-SUMMARY.md` (a wave summary) and `161-02.1-SUMMARY.md` (no plan file) are not plans. `percent` is completed/total phases, 31/32 rounded. The Phases 167-171 placeholders PR #888 added were dropped as superseded by Phase 165.)_
-Phase: 167 (Origin/main Vestige Cleanup) — EXECUTING
+Phase: 168 — Docs-Site Rewrite — Strapi to Supabase
 Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
-Current Plan: 6
+Current Plan: Not started
 Total Plans in Phase: 6
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
@@ -306,7 +306,7 @@ run. WHAT REMAINS: push `ci-evidence/163-crit2-red` and `…-green`, assert the 
 granularity (`frontend-and-shared-module-validation` → `Run Prettier check globally`, log naming the
 file), fill rows 9/10, delete both branches. `CIGATE-02` was NOT marked complete
 (`requirements.ready-ids` → 0/1 ready).
-Status: Phase complete — ready for verification
+Status: Ready to plan
 PUSHED.** `prettier-plugin-sql@0.20.0` is declared once in `packages/shared-config` with
 `overrides: [{ files: '*.sql', options: { language: 'postgresql' } }]`, and reaches every workspace
 through the `?? []` spreads the leaf configs already carried (both leaf configs byte-unchanged).
@@ -404,7 +404,7 @@ exists or can exist here. All seven gates above are LOCAL. Carried as `164-03` c
 The milestone counters below are derived by gsd-tools from a milestone-wide scan, not read, so they
 must not be hand-tuned.
 
-**Progress:** [█████████░] 89%
+**Progress:** [███████░░░] 67%
 
 > **Ordering note for the phases still queued.** 164 runs before 163 because both edit
 > `.github/workflows/main.yaml` and ROADMAP § 164 explicitly forbids them sharing an execution wave.
@@ -590,7 +590,7 @@ install no Node at all when `engines.node` is absent — it WARNS, it does not f
 its negative control independently of the ruling. Full amendment:
 `.planning/todos/pending/2026-08-29-153-03-scope-amendment-after-d-b5-reversal.md`.
 **153-09 depends on 01, 02 AND 03**, so 03 blocks the phase close and nothing else in the phase.
-Last activity: 2026-10-02 — Phase 167 execution started
+Last activity: 2026-10-02 — Phase 167 complete, transitioned to Phase 168
 
 **Phase 155 (Edge Function Hardening) is COMPLETE and verified — 6/6 plans.** Its completion line was
 overwritten in this single position slot by 153-01's `record-session` (STATE.md holds one position, and
@@ -820,7 +820,7 @@ are independent.
 ## Session Continuity
 
 Last session: 2026-10-02T06:47:19.494Z
-Stopped at: Completed 167-06-PLAN.md
+Stopped at: Phase 167 complete, ready to plan Phase 168
 Resume file: None
 
 ## Deferred Items

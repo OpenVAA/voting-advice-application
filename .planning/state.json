@@ -156,7 +156,7 @@
     {
       "number": "167",
       "name": "Origin/main Vestige Cleanup",
-      "status": "in_progress"
+      "status": "complete"
     },
     {
       "number": "168",
@@ -171,8 +171,8 @@
   ],
   "next": {
     "command": "/gsd:progress --next",
-    "label": "Advance to the next step (verify)",
-    "reason": "Phase 167 of 35 · 89% · ready to verify"
+    "label": "Advance to the next step (plan phase 168)",
+    "reason": "Phase 168 of 35 — needs a plan"
   },
-  "updated_at": "2026-10-02T06:46:57.800Z"
+  "updated_at": "2026-10-02T06:53:19.697Z"
 }
