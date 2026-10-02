@@ -8,14 +8,17 @@ A non-exhaustive list of the application features.
 
 - All texts used in the application are localizable
 - All text properties of the data are localizable
-- Translations can be exported and imported as `csv` files
-- Translations can be easily overriden term by term
+- Translations can be easily overridden term by term
 - Automatic serving of requested locale to users if available
 - Currently available in
   - Danish
   - English
+  - Estonian
   - Finnish
+  - French
+  - Luxembourgish
   - Swedish
+- English, Finnish and Swedish are offered by default; see [Supported locales](/developers-guide/localization/supported-locales) for adding the others
 
 ### Accessibility
 
@@ -33,14 +36,14 @@ A non-exhaustive list of the application features.
 - Result sections
 - Content of entity cards in lists and in the details view
 - Numerous other settings which can be edited in real time via the backend
-- Futher customization available by editing the source code
+- Further customization available by editing the source code
 
 ### Data Input
 
 - Using Supabase Studio
 - Using a json import tool
 - Using a custom Admin UI (to be added in [`0.2 Akita`](/about/roadmap))
-- Support for a local version with static data
+- Support for a local version with static data (partial: the server-side adapter exists, but the app does not currently read from it; see [Data API and adapters](/developers-guide/frontend/data-api-and-adapters#the-server-side-local-adapter))
   - Data provided as flat json files
   - Does not support the Candidate App
 
@@ -61,8 +64,9 @@ A non-exhaustive list of the application features.
 - Opinion question types
   - Ordinal questions, e.g. Likert with full configurability (number of options, their labels and distances)
   - Categorical questions
+  - Boolean
   - Preference order (to be added in [`0.2 Akita`](/about/roadmap))
-  - Number (to be added in [`0.2 Akita`](/about/roadmap))
+  - Number
 - Info question types
   - Text
   - Number
@@ -71,7 +75,7 @@ A non-exhaustive list of the application features.
   - Categorical with multiple selections
   - Date
   - Website link
-  - Multiple-item text (to be added in [`0.2 Akita`](/about/roadmap))
+  - Multiple-item text
   - Image (partial support)
 - Candidate portrait or Party logo
 - Question categories

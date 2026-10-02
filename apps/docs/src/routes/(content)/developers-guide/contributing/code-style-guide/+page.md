@@ -55,11 +55,11 @@ A comment describes the code as it is now. Keep comments concise and leave out:
 - **Planning references** — if one is unavoidable, use the short form `see phase 55` or `see spike 66`, never a path to a planning file.
 - **Notes addressed to the reviewer** — explain the change in the PR instead. If such a comment is unavoidable, tag it `[PR review]` and remove it before the PR is merged.
 
-Do not manually break comments into lines of a certain length unless separating paragraphs. This enables developers to use line-wrapping based on their own preference without adding unneccessary lines to the code.
+Do not manually break comments into lines of a certain length unless separating paragraphs. This enables developers to use line-wrapping based on their own preference without adding unnecessary lines to the code.
 
 #### TSDoc
 
-In Typescript, use [TSDoc comments](https://tsdoc.org/) for all documentation unless you're only adding remarks concering the program flow, e.g.:
+In Typescript, use [TSDoc comments](https://tsdoc.org/) for all documentation unless you're only adding remarks concerning the program flow, e.g.:
 
 ```ts
 /**
@@ -115,7 +115,7 @@ const { foo } = getFoo();
 const { bar } = getBar();
 foobar({ foo, bar }); // Instead of foobar({ foo: foo, bar: bar })
 function foobar({ foo, bar }: { foo: string; bar: string }) {
-  // Do smthx
+  // Do smth
 }
 ```
 
@@ -135,31 +135,32 @@ See the [frontend styling guide](/developers-guide/frontend/styling) for informa
 
 ### Svelte components
 
-> The frontend currently uses Svelte 4. An update to Svelte 5 is scheduled for H1/2026.
+The frontend uses Svelte 5 with runes: `apps/frontend/svelte.config.js` turns runes mode on for every file outside `node_modules`. Components take their properties with `$props()`, keep state in `$state` and `$derived`, and receive content as snippets. Do not use the pre-runes syntax for properties, slots or reactive statements. Do not import `svelte/store` in `apps/frontend/src` either; ESLint rejects it there.
 
 #### File structure
 
-Put each component in its own folder in `$lib/components`, or `$lib/dynamic-components` in case of [dynamic components](/developers-guide/frontend/components). Multiple components that are integrally tied together may be included in the same folder (but see note below on exports). Separate the type definitions in a `.type.ts` file and provide an `index.ts` for easy imports. Thus, the `$lib/components/myComponent` folder would have the files:
+Put each component in its own folder in `$lib/components`, in `$lib/dynamic-components` for [dynamic components](/developers-guide/frontend/components), or in `$candidate/components` for components used only by the Candidate App. Multiple components that are integrally tied together may be included in the same folder (but see the note below on exports). Put the property type in a `.type.ts` file next to the component and provide an `index.ts` for easy imports. Thus, the `$lib/components/myComponent` folder would have the files:
 
 - `MyComponent.svelte`: the component itself
-- `MyComponent.type.ts`: the type definitions for the component's properties
+- `MyComponent.type.ts`: the type of the component's properties
 - `index.ts`: provides shortcuts to imports:
   ```ts
-  export {default as MyComponent} from './MyComponent.svelte;
-  export * from './MyComponent.type;
+  export { default as MyComponent } from './MyComponent.svelte';
+  export * from './MyComponent.type';
   ```
 
-**NB.** All components exported from the `index.ts` file, will be loaded even when only one of them imported in the application, so place multiple components in the same folder tree only when it's absolutely necessary.
+**NB.** All components exported from the `index.ts` file will be loaded even when only one of them is imported in the application, so place multiple components in the same folder tree only when it's absolutely necessary.
 
 #### Component properties
 
-Currently, most components use attribute forwarding with [Svelte's `$$restProps` variable](https://svelte.dev/docs/basic-markup#attributes-and-props). This means that any HTML or SVG attributes that the main element of the component accepts can be passed as the components properties – or, in case of a component derived from another Svelte component, the parent components properties. This is most commonly used for passing extra classes to the element.
+Declare the properties as a type in the `.type.ts` file and read them with a single destructuring of `$props()`. The type usually extends the attributes of the component's main element, so any HTML or SVG attribute that element accepts can be passed to the component. Collect those with a rest property and spread them onto the element. This is most commonly used for passing extra classes to the element.
 
-For example, in the `HeroEmoji` component additional CSS classes as well as any arbitraty properties of the `<div>` element can be passed to the `<div>` surrounding the emoji.
+For example, the [`HeroEmoji`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/heroEmoji/HeroEmoji.svelte) component passes additional CSS classes and any other attributes of a `<div>` element to the `<div>` surrounding the emoji:
 
 ```ts
 // HeroEmoji.type.ts
 import type { SvelteHTMLElements } from 'svelte/elements';
+
 export type HeroEmojiProps = SvelteHTMLElements['div'] & {
   /**
    * The emoji to use. Note that all non-emoji characters will be removed. If `undefined` the component will not be rendered at all. @default `undefined`
@@ -168,24 +169,22 @@ export type HeroEmojiProps = SvelteHTMLElements['div'] & {
 };
 ```
 
-```tsx
-// HeroEmoji.svelte
+```svelte
+<!-- HeroEmoji.svelte -->
 <script lang="ts">
   import { concatClass } from '$lib/utils/components';
   import type { HeroEmojiProps } from './HeroEmoji.type';
 
-  type $$Props = HeroEmojiProps;
-
-  export let emoji: $$Props['emoji'] = undefined;
+  let { emoji, ...restProps }: HeroEmojiProps = $props();
 </script>
 
-{#if emoji}
+{#if emoji != null && emoji !== ''}
   <div
     aria-hidden="true"
     role="img"
     style="font-variant-emoji: emoji;"
     {...concatClass(
-      $$restProps,
+      restProps,
       'whitespace-nowrap truncate text-clip text-center font-emoji text-[6.5rem] leading-[1.1]'
     )}>
     {emoji}
@@ -193,53 +192,68 @@ export type HeroEmojiProps = SvelteHTMLElements['div'] & {
 {/if}
 ```
 
+Give optional properties their defaults in the destructuring, e.g. `let { variant = 'normal', ...restProps }: ButtonProps = $props();`. Values computed from properties go in `$derived`, so they follow the properties when these change; do not reassign a property.
+
 Also see the other existing components for more details on how this is done.
 
-##### Default values for properties included `$$restProps`
+##### Default attributes and classes
 
-In most cases, default values for properties included in `$$restProps`, such as `aria-hidden` can be just added as attributes in the relevant element or component. The only thing to keep in mind is that they must precede `$$restProps`, otherwise they will override the values in it. For example:
+Default values for attributes that are passed in the rest properties, such as `aria-hidden`, can be added as attributes on the element. They must come before the spread, otherwise they override the caller's values:
 
-```tsx
-<div aria-label="Default label" {...$$restProps}>
-  ...
-</div>
+```svelte
+<div aria-label="Default label" {...restProps}>...</div>
 ```
 
-However, if you want to concatenate values with properties in `$$restProps`, such as concatenating a default `class` string with one possibly defined in `$$restProps`, this should be added after `{...$$restProps}`. To make this easier, a `concatClass` helper function is provided in [`$lib/utils/components`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/utils/components.ts). For example:
+To combine the component's own classes with a `class` the caller passes, spread the rest properties through the `concatClass` helper in [`$lib/utils/components`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/utils/components.ts) instead of setting `class` yourself:
 
-```tsx
-<div {...concatClass($$restProps, 'default-class')}>...</div>
+```svelte
+<div {...concatClass(restProps, 'default-class')}>...</div>
 ```
+
+`concatClass` merges the two with `tailwind-merge`, and the caller's classes come last, so where the two conflict (for example `h-16` and `h-32`), the caller's class wins.
 
 ##### Aria attributes and the `class` attribute
 
-Note that you most Aria attributes cannot be exposed with `let export foo` because their names contain dashes, which also applies to the HTML `class` attribute. In order to access these, either use the `$restProps` object or specify them in the properties type the component uses, i.e., the one assigned to `type $$Props` and access them via `$$props`. For example:
+Attributes whose names contain dashes, such as most Aria attributes, are read from `$props()` by renaming them in the destructuring. Declare them in the property type if the element's attribute type does not already include them:
 
-```tsx
+```ts
 // Foo.type.ts
 export type FooProps = SvelteHTMLElements['p'] & {
   'aria-roledescription'?: string | null;
-  class?: string | null;
 };
+```
 
-// Foo.svelte: <script>
-type $$Props = FooProps;
-let ariaDesc: $$Props['aria-roledescription'] = $$props['aria-roledescription'];
-let className: $$Props['class'] = $$props['class'];
+```svelte
+<!-- Foo.svelte -->
+<script lang="ts">
+  import type { FooProps } from './Foo.type';
+
+  let { 'aria-roledescription': ariaDesc, class: className, ...restProps }: FooProps = $props();
+</script>
+```
+
+##### Snippets
+
+Content a component renders, whether its children or a named region, is a property of type `Snippet` and is rendered with `{@render}`. For example, [`Button`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/button/Button.svelte) declares an optional `badge?: Snippet` in [`Button.type.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/button/Button.type.ts) and renders it with `{@render badge?.()}`. A caller passes it like this:
+
+```svelte
+<Button onclick={addToList} variant="icon" icon="addToList" text="Add to list">
+  {#snippet badge()}<InfoBadge text="5" />{/snippet}
+</Button>
 ```
 
 #### Component documentation
 
-Follow Svelte's [guidelines for component documentation](https://svelte.dev/docs/faq#how-do-i-document-my-components). For an example, see [`IconBase`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/icon/base/IconBase.svelte) component and its associated [type definition](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/icon/base/IconBase.type.ts).
+Follow Svelte's [guidelines for component documentation](https://svelte.dev/docs/svelte/faq#How-do-I-document-my-components). For an example, see the [`Button`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/button/Button.svelte) component and its [type definition](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/button/Button.type.ts).
 
-Place the Svelte docstring at the top of the file, before the `<script>` block. The documentation must consist of:
+Place the `@component` docstring at the top of the file, before the `<script>` block. The [component documentation generator](/developers-guide/about-these-docs) publishes it on this site, so a component without one is missing from the [component pages](/developers-guide/frontend/components/generated). The documentation must consist of:
 
-- general description
-- 'Properties' (see below)
-- 'Slots' detailing all slots and their uses (if applicable)
-- 'Usage' showing a concise code block of the component’s use
+- a general description
+- `Properties` (see below)
+- `Snippet Props` detailing the snippets the component renders and their uses (if applicable)
+- `Usage` showing a concise code block of the component's use
 
-The type file defining the properties is the prime source of truth for the properties’ descriptions. Make sure the "Properties" section of the component doc string matches that.
+The type file defining the properties is the prime source of truth for the properties' descriptions. Make sure the "Properties" section of the component docstring matches it.
 
 Add documentation for pages, layouts and other non-reusable components, detailing their main purpose. Include in their documentation under separate subheadings:
 
@@ -247,4 +261,4 @@ Add documentation for pages, layouts and other non-reusable components, detailin
 - Route and query `Params` affecting the behaviour
 - `Tracking events` initiated by the page
 
-It is not necessary to duplicate the documentation of the individual properties in the doc string of the `.svelte` file, because the properties should have their explanations directly in the interface definition in the `.type.ts` file (using [`/** ... */` TSDoc comments](https://tsdoc.org/)). The component's possible slots should, however, be included in the doc string.
+It is not necessary to duplicate the documentation of the individual properties in the docstring of the `.svelte` file, because the properties should have their explanations directly in the type definition in the `.type.ts` file (using [`/** ... */` TSDoc comments](https://tsdoc.org/)). The component's snippets should, however, be included in the docstring.
