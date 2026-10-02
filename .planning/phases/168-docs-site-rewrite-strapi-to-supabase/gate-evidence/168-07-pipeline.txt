@@ -1,3 +1,10 @@
+# --- 168-07 record: the log of run 1 follows; the file ends with its exit status ---
+# HEAD at both runs: 1b465c7da
+# run 1 (the log below): yarn workspace @openvaa/docs generate:docs -> exit=0; then git diff --exit-code -- apps/docs -> exit 0 (no change)
+# run 2 (log in the session scratchpad): generate:docs -> exit 0; git diff --exit-code -- apps/docs -> exit 0 (idempotent)
+# then: validate:links --check (unscoped) exit 0, 0 findings; check:research-quotes --base <base-rev.txt> --component-base <component-base-rev.txt> exit 0 (22/22 spans);
+#       docs lint 0, check 0 (652 files, 0/0), build 0, format:check 0, root assert:comment-hygiene 0
+
 ============================================================
 OpenVAA Documentation Generator
 ============================================================
@@ -464,10 +471,3 @@ tsconfig.json 1ms (unchanged)
 turbo.json 1ms (unchanged)
 vite.config.ts 2ms (unchanged)
 exit=0
-
-# --- 168-07 record (appended after the run above) ---
-# HEAD at both runs: 1b465c7da
-# run 1 (this log): yarn workspace @openvaa/docs generate:docs -> exit=0; then git diff --exit-code -- apps/docs -> exit 0 (no change)
-# run 2 (log in the session scratchpad): generate:docs -> exit 0; git diff --exit-code -- apps/docs -> exit 0 (idempotent)
-# then: validate:links --check (unscoped) exit 0, 0 findings; check:research-quotes --base <base-rev.txt> --component-base <component-base-rev.txt> exit 0 (22/22 spans);
-#       docs lint 0, check 0 (652 files, 0/0), build 0, format:check 0, root assert:comment-hygiene 0
