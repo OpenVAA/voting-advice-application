@@ -23,6 +23,5 @@ Reactivity is not supported for the properties: `variant`, `iconPos`.
 
 ## Source
 
-[apps/frontend/src/lib/components/buttonWithConfirmation/ButtonWithConfirmation.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/buttonWithConfirmation/ButtonWithConfirmation.svelte)
-
-[apps/frontend/src/lib/components/buttonWithConfirmation/ButtonWithConfirmation.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/buttonWithConfirmation/ButtonWithConfirmation.type.ts)
+- Component: [apps/frontend/src/lib/components/buttonWithConfirmation/ButtonWithConfirmation.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/buttonWithConfirmation/ButtonWithConfirmation.svelte)
+- Types: [apps/frontend/src/lib/components/buttonWithConfirmation/ButtonWithConfirmation.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/buttonWithConfirmation/ButtonWithConfirmation.type.ts)

@@ -17,6 +17,5 @@ Display an entity's election symbol, which is usually a number but may also be a
 
 ## Source
 
-[apps/frontend/src/lib/components/electionSymbol/ElectionSymbol.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/electionSymbol/ElectionSymbol.svelte)
-
-[apps/frontend/src/lib/components/electionSymbol/ElectionSymbol.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/electionSymbol/ElectionSymbol.type.ts)
+- Component: [apps/frontend/src/lib/components/electionSymbol/ElectionSymbol.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/electionSymbol/ElectionSymbol.svelte)
+- Types: [apps/frontend/src/lib/components/electionSymbol/ElectionSymbol.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/electionSymbol/ElectionSymbol.type.ts)

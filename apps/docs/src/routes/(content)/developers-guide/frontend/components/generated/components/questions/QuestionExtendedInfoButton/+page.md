@@ -23,6 +23,5 @@ The dialog itself is the app's `DrawerHost` (`$lib/components/modal/drawerHost`)
 
 ## Source
 
-[apps/frontend/src/lib/components/questions/QuestionExtendedInfoButton.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionExtendedInfoButton.svelte)
-
-[apps/frontend/src/lib/components/questions/QuestionExtendedInfoButton.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionExtendedInfoButton.type.ts)
+- Component: [apps/frontend/src/lib/components/questions/QuestionExtendedInfoButton.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionExtendedInfoButton.svelte)
+- Types: [apps/frontend/src/lib/components/questions/QuestionExtendedInfoButton.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionExtendedInfoButton.type.ts)

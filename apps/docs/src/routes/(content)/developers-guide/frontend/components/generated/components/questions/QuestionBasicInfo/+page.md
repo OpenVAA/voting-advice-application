@@ -17,6 +17,5 @@ Display the question's expandable information content.
 
 ## Source
 
-[apps/frontend/src/lib/components/questions/QuestionBasicInfo.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionBasicInfo.svelte)
-
-[apps/frontend/src/lib/components/questions/QuestionBasicInfo.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionBasicInfo.type.ts)
+- Component: [apps/frontend/src/lib/components/questions/QuestionBasicInfo.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionBasicInfo.svelte)
+- Types: [apps/frontend/src/lib/components/questions/QuestionBasicInfo.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionBasicInfo.type.ts)

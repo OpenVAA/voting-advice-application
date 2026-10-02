@@ -18,6 +18,5 @@ This component reads `fctx.version` inside its `$derived` so that any filter-rul
 
 ## Source
 
-[apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.svelte)
-
-[apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.type.ts)
+- Component: [apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.svelte)
+- Types: [apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityList/EntityListWithControls.type.ts)

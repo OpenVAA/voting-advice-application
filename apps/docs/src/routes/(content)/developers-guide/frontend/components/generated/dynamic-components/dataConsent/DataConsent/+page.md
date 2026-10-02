@@ -27,6 +27,5 @@ Accesses `AppContext` to set and read `userPreferences`.
 
 ## Source
 
-[apps/frontend/src/lib/dynamic-components/dataConsent/DataConsent.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/dataConsent/DataConsent.svelte)
-
-[apps/frontend/src/lib/dynamic-components/dataConsent/DataConsent.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/dataConsent/DataConsent.type.ts)
+- Component: [apps/frontend/src/lib/dynamic-components/dataConsent/DataConsent.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/dataConsent/DataConsent.svelte)
+- Types: [apps/frontend/src/lib/dynamic-components/dataConsent/DataConsent.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/dataConsent/DataConsent.type.ts)

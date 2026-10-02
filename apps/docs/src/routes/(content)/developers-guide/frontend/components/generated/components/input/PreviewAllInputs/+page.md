@@ -16,6 +16,5 @@ Preview component displaying all available input types.
 
 ## Source
 
-[apps/frontend/src/lib/components/input/PreviewAllInputs.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/PreviewAllInputs.svelte)
-
-[apps/frontend/src/lib/components/input/PreviewAllInputs.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/PreviewAllInputs.type.ts)
+- Component: [apps/frontend/src/lib/components/input/PreviewAllInputs.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/PreviewAllInputs.svelte)
+- Types: [apps/frontend/src/lib/components/input/PreviewAllInputs.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/PreviewAllInputs.type.ts)

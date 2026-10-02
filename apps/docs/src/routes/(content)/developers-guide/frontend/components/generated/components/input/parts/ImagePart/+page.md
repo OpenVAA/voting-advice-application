@@ -14,13 +14,14 @@ See `ImagePart.type.ts`.
 
 ## Source
 
-[apps/frontend/src/lib/components/input/parts/ImagePart.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/parts/ImagePart.svelte)
+- Component: [apps/frontend/src/lib/components/input/parts/ImagePart.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/parts/ImagePart.svelte)
+- Types: [apps/frontend/src/lib/components/input/parts/ImagePart.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/parts/ImagePart.type.ts)
 
-[apps/frontend/src/lib/components/input/parts/ImagePart.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/parts/ImagePart.type.ts)
+## Directory README
 
-## Additional Documentation
+From the README in [apps/frontend/src/lib/components/input/parts](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/frontend/src/lib/components/input/parts):
 
-# `Input` parts
+## `Input` parts
 
 The four components here are the extracted complex markup branches of `Input.svelte`, one per branch:
 `MultilingualTextPart` (per-locale text fields and textareas), `SelectMultiplePart` (the options

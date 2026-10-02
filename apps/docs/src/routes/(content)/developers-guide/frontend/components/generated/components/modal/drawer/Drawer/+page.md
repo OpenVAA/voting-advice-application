@@ -33,6 +33,5 @@ See the `<ModalContainer>` component documentation for more information.
 
 ## Source
 
-[apps/frontend/src/lib/components/modal/drawer/Drawer.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/drawer/Drawer.svelte)
-
-[apps/frontend/src/lib/components/modal/drawer/Drawer.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/drawer/Drawer.type.ts)
+- Component: [apps/frontend/src/lib/components/modal/drawer/Drawer.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/drawer/Drawer.svelte)
+- Types: [apps/frontend/src/lib/components/modal/drawer/Drawer.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/drawer/Drawer.type.ts)

@@ -16,6 +16,5 @@ Render an enumerated filter for entities that displays a list of values to inclu
 
 ## Source
 
-[apps/frontend/src/lib/components/entityFilters/enumerated/EnumeratedEntityFilter.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/entityFilters/enumerated/EnumeratedEntityFilter.svelte)
-
-[apps/frontend/src/lib/components/entityFilters/enumerated/EnumeratedEntityFilter.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/entityFilters/enumerated/EnumeratedEntityFilter.type.ts)
+- Component: [apps/frontend/src/lib/components/entityFilters/enumerated/EnumeratedEntityFilter.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/entityFilters/enumerated/EnumeratedEntityFilter.svelte)
+- Types: [apps/frontend/src/lib/components/entityFilters/enumerated/EnumeratedEntityFilter.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/entityFilters/enumerated/EnumeratedEntityFilter.type.ts)
