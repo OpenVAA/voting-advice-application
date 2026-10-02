@@ -4,18 +4,18 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 168
 current_phase_name: Docs-Site Rewrite — Strapi to Supabase
-current_plan: 8
+current_plan: 9
 status: executing
-stopped_at: Completed 168-06-PLAN.md
-last_updated: "2026-10-02T12:01:18.529Z"
+stopped_at: Completed 168-07-PLAN.md
+last_updated: "2026-10-02T12:29:05.348Z"
 last_activity: 2026-10-02
 last_activity_desc: Phase 168 execution started
-state_head: c8a39444508fe9eb549b1af22d3595d45a62a3a4
+state_head: 240f81e5711a63ae936f6eaca6076b77da0e38a5
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
-  completed_plans: 332
+  completed_plans: 333
   percent: 89
 ---
 
@@ -35,7 +35,7 @@ _(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and P
 Phase: 168 (Docs-Site Rewrite — Strapi to Supabase) — EXECUTING
 Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
-Current Plan: 8
+Current Plan: 9
 Total Plans in Phase: 9
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
@@ -819,8 +819,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-10-02T12:01:17.138Z
-Stopped at: Completed 168-06-PLAN.md
+Last session: 2026-10-02T12:29:03.999Z
+Stopped at: Completed 168-07-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -1145,6 +1145,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 168 P04 | 31 min | 3 tasks | 13 files |
 | Phase 168 P05 | 30min | 3 tasks | 12 files |
 | Phase 168 P06 | 30min | 3 tasks | 9 files |
+| Phase 168 P07 | 24min | 3 tasks | 131 files |
 
 ## Deferred Items
 
@@ -2130,6 +2131,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 168]: 168-05: Locale resolution lists Paraglide's url/cookie/baseLocale order without claiming when the cookie wins (F5 UNCONFIRMED); Accept-Language is not a strategy
 - [Phase 168]: 168-06: password-reset ?code= branch unreachable from in-repo paths (F1) — todo stays open for a code phase; registrationKey todo closes as superseded (F2)
 - [Phase 168]: 168-06: app settings merge static -> dynamic defaults -> app_settings.settings by top-level key; docs tell readers to store whole groups (F11)
+- [Phase 168]: 168-07: generated pages regenerated (78369e329) before the generator wording audit (12d04f015); the index intro sentence the components skill quotes is kept verbatim
+- [Phase 168]: 168-07: code-proven absences (voter statement weights, real-time top results, csv translation import/export, a database-free static site) are written as 'not yet available' or dropped; operator plans untouched
+- [Phase 168]: 168-07: ledger stub rows keep 'redirect stub' and append the content fate from the owning plan's CLAIMS verdict; no pending verdict remains
 
 ### Quick Tasks Completed
 
