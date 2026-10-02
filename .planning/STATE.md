@@ -5,17 +5,17 @@ milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 166
 current_phase_name: Retire auth_user_id — Entity Identity from Grants
 current_plan: 4
-status: executing
-stopped_at: Completed 166-03-PLAN.md
-last_updated: "2026-10-01T21:31:00.169Z"
+status: verifying
+stopped_at: Completed 166-04-PLAN.md
+last_updated: "2026-10-02T05:44:02.717Z"
 last_activity: 2026-10-01
 last_activity_desc: Phase 166 execution started
-state_head: 0f092a171c89e484ac3e75142f5991eb04c7a052
+state_head: 565d9c562905f68077919bd2b756bc9f04238337
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
-  completed_plans: 318
+  completed_plans: 319
   percent: 89
 ---
 
@@ -306,7 +306,7 @@ run. WHAT REMAINS: push `ci-evidence/163-crit2-red` and `…-green`, assert the 
 granularity (`frontend-and-shared-module-validation` → `Run Prettier check globally`, log naming the
 file), fill rows 9/10, delete both branches. `CIGATE-02` was NOT marked complete
 (`requirements.ready-ids` → 0/1 ready).
-Status: Ready to execute
+Status: Phase complete — ready for verification
 PUSHED.** `prettier-plugin-sql@0.20.0` is declared once in `packages/shared-config` with
 `overrides: [{ files: '*.sql', options: { language: 'postgresql' } }]`, and reaches every workspace
 through the `?? []` spreads the leaf configs already carried (both leaf configs byte-unchanged).
@@ -819,8 +819,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-10-01T21:30:59.142Z
-Stopped at: Completed 166-03-PLAN.md
+Last session: 2026-10-02T05:44:01.574Z
+Stopped at: Completed 166-04-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -1131,6 +1131,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 166 P01 | 17min | 3 tasks | 12 files |
 | Phase 166 P02 | 20 min | 3 tasks | 18 files |
 | Phase 166 P03 | 20 min | 3 tasks | 23 files |
+| Phase 166 P04 | 41min | 3 tasks | 8 files |
 
 ## Deferred Items
 
@@ -2083,6 +2084,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 166]: identity-callback finds a returning identity's candidate through its candidate-editor grant (grants by user, then candidates by project and granted ids); a failed grant write on the create branch deletes the just-created candidate before rethrowing
 - [Phase 166]: invite-candidate links the invitee through the grant only; rollbackInvite is called once, from the grant-failure arm
 - [Phase 166]: E2E teardown reads candidate ids through the grant BEFORE deleting grants or the user, and resets terms of use by id (SupabaseAdminClient.candidateIdsForUser / userIdForCandidate, public)
+- [Phase 166]: 166-04: full E2E suite 171/171 on the grant-only tree; the user's below-floor disk approval (2026-10-02) recorded but unneeded (25.7 GiB free at the run)
+- [Phase 166]: 166-04: bank-auth and bank-auth-journey are opt-in (PLAYWRIGHT_BANK_AUTH=1), so link 5's three runs each are their D-20 evidence, not the full suite
 
 ### Quick Tasks Completed
 
