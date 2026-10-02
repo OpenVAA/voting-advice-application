@@ -177,15 +177,6 @@ async function generateComponentMarkdown(doc: ComponentDoc): Promise<string> {
   if (doc.typeFilePath) {
     const relativeTypePath = path.relative(REPO_ROOT, doc.typeFilePath).replace(/\\/g, '/');
     lines.push(`[${relativeTypePath}](${GITHUB_BASE}/${relativeTypePath})\n`);
-    // const typeDocPath = await getTypeDocLink(doc.typeFilePath);
-
-    // lines.push('## Type Definition\n');
-
-    // if (typeDocPath) {
-    //   lines.push(`See [TypeDoc documentation](${typeDocPath}) for detailed type information.\n`); }
-
-    // lines.push(
-    //   `Source: [\`${typeGithubPath}\`](${GITHUB_BASE}/${typeGithubPath})\n` );
   }
 
   // README content if exists
@@ -198,15 +189,6 @@ async function generateComponentMarkdown(doc: ComponentDoc): Promise<string> {
 
   return lines.join('\n');
 }
-
-// /**
-//  * Get the TypeDoc link for a type file (relative to generated API docs)
-//  */
-// async function getTypeDocLink(typeFilePath: string): Promise<string | null> {
-//   // This is a simplified version - TypeDoc will generate the actual paths // The link structure will depend on TypeDoc's output
-//   const relativePath = typeFilePath.replace('frontend/src/lib/', '').replace('.type.ts', '');
-//   return `../api/frontend/${relativePath}.md`;
-// }
 
 /**
  * Generate table of contents for all components

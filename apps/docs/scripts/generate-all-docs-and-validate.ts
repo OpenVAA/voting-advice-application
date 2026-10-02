@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 /**
- * Main script to generate all documentation This orchestrates TypeDoc, component extraction, and route mapping
+ * Generate all documentation: component docs, the route map, the generated-page move and the navigation config, then validate the links.
  */
 import { exec } from 'child_process';
 import * as fs from 'fs/promises';

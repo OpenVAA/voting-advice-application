@@ -2,7 +2,7 @@
   "recorded": "2026-09-03",
   "recordedAtHead": "5c1295f18db13c50bc901957f391b9b354a169e1",
   "threshold": "high",
-  "note": "These 69 findings (63 high, 6 critical) are ACCEPTED, NOT ABSENT: the gate does not report them, and they are still in the dependency tree. Four of the six critical rows are the test toolchain (vitest, @vitest/browser) and the other two are shell-quote via concurrently and tar via the supabase CLI, so this file is not a clean bill of health and must not be read as one. A NEW advisory at high or above that is not listed here reddens the build, INCLUDING a new advisory against a package already listed. That is deliberate, and it is why the subtraction in scripts/assert-dependency-audit.mjs is keyed on the advisory ID and never on the package name: silencing a package by name would silence its future as well as its present. This list will drift. Nine of the rows are tar advisories published against an ever-widening version range, and the same pattern holds for brace-expansion and minimatch, so newly published advisories on packages already listed here will redden the build periodically. The first such red is the designed behaviour, not a regression. The remedy is a reviewed baseline update via `yarn audit:deps --update-baseline`, which stamps a fresh `recorded` date and preserves existing rationales; it is never a package-name silence and never a threshold change. This count will not agree with the Dependabot banner GitHub prints on every push, and the disagreement is expected rather than a gap in this file. Measured 2026-09-03: Dependabot reported 315 open alerts (25 critical / 118 high / 136 moderate / 36 low) against the DEFAULT BRANCH, which still carries the pre-v2 layout -- 12 of those alerts are against manifests that do not exist in this tree at all (backend/vaa-strapi/package.json, frontend/package.json), 49 of the 59 distinct high+ advisories it reports and this file does not are for packages absent from this lockfile entirely (Strapi, axios, handlebars, @xmldom/xmldom, fast-uri, tar-fs and others), and the remaining 10 were each checked against the resolved version here and are ranges this branch has already moved past. Dependabot also counts one alert per advisory-and-manifest pair, so its 315 alerts carry 256 distinct advisories and its 143 high+ alerts carry 106.",
+  "note": "These 67 findings (61 high, 6 critical) are ACCEPTED, NOT ABSENT: the gate does not report them, and they are still in the dependency tree. Four of the six critical rows are the test toolchain (vitest, @vitest/browser) and the other two are shell-quote via concurrently and tar via the supabase CLI, so this file is not a clean bill of health and must not be read as one. A NEW advisory at high or above that is not listed here reddens the build, INCLUDING a new advisory against a package already listed. That is deliberate, and it is why the subtraction in scripts/assert-dependency-audit.mjs is keyed on the advisory ID and never on the package name: silencing a package by name would silence its future as well as its present. This list will drift. Nine of the rows are tar advisories published against an ever-widening version range, and the same pattern holds for brace-expansion and minimatch, so newly published advisories on packages already listed here will redden the build periodically. The first such red is the designed behaviour, not a regression. The remedy is a reviewed baseline update via `yarn audit:deps --update-baseline`, which stamps a fresh `recorded` date and preserves existing rationales; it is never a package-name silence and never a threshold change. This count will not agree with the Dependabot banner GitHub prints on every push, and the disagreement is expected rather than a gap in this file. Measured 2026-09-03: Dependabot reported 315 open alerts (25 critical / 118 high / 136 moderate / 36 low) against the DEFAULT BRANCH, which still carries the pre-v2 layout -- 12 of those alerts are against manifests that do not exist in this tree at all (backend/vaa-strapi/package.json, frontend/package.json), 49 of the 59 distinct high+ advisories it reports and this file does not are for packages absent from this lockfile entirely (Strapi, axios, handlebars, @xmldom/xmldom, fast-uri, tar-fs and others), and the remaining 10 were each checked against the resolved version here and are ranges this branch has already moved past. Dependabot also counts one alert per advisory-and-manifest pair, so its 315 alerts carry 256 distinct advisories and its 143 high+ alerts carry 106.",
   "accepted": [
     {
       "id": 1158500,
@@ -246,24 +246,6 @@
       "issue": "Kysely: JSON-path traversal injection via unsanitized path-leg metacharacters in `JSONPathBuilder.key()` / `.at()`",
       "via": "@inlang/sdk@2.8.0",
       "rationale": "Transitive via @inlang/sdk, the Paraglide i18n build tooling; it compiles repo-local message catalogs at build time and never reaches a production database."
-    },
-    {
-      "id": 1121797,
-      "package": "linkify-it",
-      "severity": "high",
-      "ghsa": "GHSA-22p9-wv53-3rq4",
-      "issue": "LinkifyIt#match scan loop has quadratic algorithmic complexity",
-      "via": "markdown-it@14.1.0",
-      "rationale": "Transitive via markdown-it in docs tooling; the quadratic-scan classes apply to repo-local markdown."
-    },
-    {
-      "id": 1124012,
-      "package": "linkify-it",
-      "severity": "high",
-      "ghsa": "GHSA-v245-v573-v5vm",
-      "issue": "linkify-it: Quadratic-complexity DoS via the `mailto:` validator scan-loop on attacker text",
-      "via": "markdown-it@14.1.0",
-      "rationale": "Transitive via markdown-it in docs tooling; the quadratic-scan classes apply to repo-local markdown."
     },
     {
       "id": 1113459,

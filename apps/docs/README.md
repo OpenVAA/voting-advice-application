@@ -7,7 +7,6 @@ This directory contains the OpenVAA documentation website, which combines auto-g
 The documentation system consists of:
 
 1. **Generated Documentation** (`/docs/generated/`) - Auto-generated from source code
-   - TypeDoc API references from TypeScript packages
    - Component docs from Svelte `@component` docstrings
    - Route map from SvelteKit routes
 
@@ -25,10 +24,7 @@ docs/
 │   ├── generate-docs.ts         # Main orchestrator
 │   ├── generate-component-docs.ts # Svelte component extraction
 │   ├── generate-route-map.ts    # Route map generation
-│   ├── copy-generated.ts        # Copy docs to static site
-│   └── config/
-│       ├── typedoc.json         # TypeDoc config for packages
-│       └── typedoc.frontend.json # TypeDoc config for frontend
+│   └── copy-generated.ts        # Copy docs to static site
 ├── src/
 │   ├── routes/
 │   │   ├── +page.md              # Home page
