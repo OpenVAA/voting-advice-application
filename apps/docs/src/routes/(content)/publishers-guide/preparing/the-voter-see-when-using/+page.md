@@ -27,8 +27,8 @@ When voters use the VAA, the process they go through includes the steps below, s
       - answer the statement
       - clear answer if already answered
       - optional: jump directly to results if available
-      - optional: set statement weight
-      - optional: see real-time results for the top candidates or parties when answering
+      - optional (not yet available): set statement weight
+      - optional (not yet available): see real-time results for the top candidates or parties when answering
 3. Results
    1. Optional introductory content at the start of the results page
    2. Selection of the election for which to show results if the VAA has multiple elections
@@ -120,6 +120,8 @@ Voters may be given the option to mark some statements more or less important th
 
 Currently, however, this will mean that answering the statements is a little bit slower for the user, so enabling this option must be considered with that in mind.
 
+The matching algorithm supports statement weights, but the application does not yet offer voters a way to set them.
+
 ## Should the voter be able to jump into results?
 
 <ResearchQuote
@@ -161,7 +163,7 @@ To this date, there is no research on the potentially biasing effects of this fe
 
 A list of the top 5 or so candidates or parties can be shown to the user when they are answering the statements. This may heighten user engagement but may also have an adverse effect on how the VAA is used.
 
-This is an experimental feature and only available if the VAA has a single election.
+This feature is not yet available in the application.
 
 ## Should the voter see candidates, parties or both in the results and in which order?
 

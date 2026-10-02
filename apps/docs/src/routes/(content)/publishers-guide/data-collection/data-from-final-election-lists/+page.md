@@ -4,7 +4,7 @@ After the election lists have been confirmed, you will need to corroborate that 
 
 In addition, some data will only be available at this time, such as:
 
-- [ ] The election numbers of symbols
+- [ ] The election numbers or symbols
 - [ ] Electoral alliances between parties in each constituency
 - [ ] The party or constituency association nominating each candidate in each constituency
 

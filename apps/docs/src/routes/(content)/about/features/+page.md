@@ -105,8 +105,8 @@ A non-exhaustive list of the application features.
   - Directional
   - Euclidean
 - Sub-category matching, e.g., by Question category
-- Optional real-time display of top results while answering statements
-- Optional statement weighting with configurable weights
+- Optional real-time display of top results while answering statements (not yet available in the application)
+- Optional statement weighting with configurable weights (supported by the matching algorithm; the application does not yet offer it to voters)
 
 ### Candidate application
 
