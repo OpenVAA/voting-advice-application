@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@openvaa/shared-config": "workspace:^",
-    "@sveltejs/adapter-node": "^5.5.4",
+    "@sveltejs/adapter-node": "^5.5.7",
     "@sveltejs/kit": "catalog:",
     "@sveltejs/vite-plugin-svelte": "^5.1.1",
     "@tailwindcss/vite": "catalog:",
