@@ -280,6 +280,29 @@ majors match (ai 7 with provider 4), so nothing in group 7 is held. `openai` is 
 ruling 2): `git grep` finds no `from 'openai'`, `require('openai')` or `import('openai')` outside `.planning`.
 `jsonrepair` was already gone from `packages/llm/package.json` (nothing to remove).
 
+### 169-10 (group 8) re-measurement, 2026-10-03
+
+`node 169-version-probe.mjs --node 24.21.0 --out tests/e2e-runs/169-gates/10/t0-probe.md` (the whole tree, so the
+completeness sweep reads the same table) at 2026-10-03T16:45:55Z, exit 0: 69 distinct registry packages; verdicts
+HOLD-30d 5 · HOLD-7d 12 · current 42 · major 10; **no `UNASSIGNED-MAJOR` row**. The group-8 rows:
+
+| Package | Resolved before | Target (published, age) | Target line x.0.0 | Verdict / hold |
+|---|---|---|---|---|
+| `concurrently` | 9.2.4 (`^9.0.0`, root) | **10.0.5** (2026-08-15, 49.6 d) | 10.0.0 2026-05-28 | major; both rules met. `engines.node >=22` |
+| `lint-staged` | 16.4.0 (`^16.4.0`, root) | **17.6.0** (2026-09-26, 7.4 d) | 17.0.0 2026-05-06 | major; both rules met. `engines.node >=22.22.1` admits 24.21.0 |
+| `@changesets/cli` | 2.31.1 (`^2.30.0`, root) | **3.0.3** (2026-09-14, 19.1 d) | 3.0.0 2026-08-11 | major; both rules met. `engines.node ^22.11 \|\| ^24 \|\| >=26` |
+| `@changesets/changelog-github` | 0.6.0 (`^0.6.0`, root) | **1.0.1** (2026-09-04, 29.4 d) | 1.0.0 2026-08-11 | major; both rules met |
+| `glob` | 11.1.0 (`^11.0.0`, root and `apps/docs`) | **13.0.6** (2026-02-19, 226.0 d) | 13.0.0 2025-11-19 | major; both rules met |
+| `@types/cheerio` | 0.22.35 (root) | 1.0.0 (deprecated stub) | — | **removed**, not bumped (D-23) |
+| `dotenv` | 17.4.2 (catalog `^17.3.1`, root) | 17.4.2 (2026-04-12, 174.0 d), the newest 17.x | 18.0.0 **2026-09-17T21:18:40Z** (16.8 d) | **HOLD-30d**: 18.x clears 2026-10-17T21:18Z (§ 3) |
+| `js-yaml` | 4.3.2 (catalog `^4.1.0`, `packages/llm`) | **5.4.2** (2026-09-13, 20.7 d) | 5.0.0 2026-06-20 | major; both rules met. Ships its own types (`dist/js-yaml.d.ts`) |
+| `intl-messageformat` | 11.2.15 (`^11.1.3`, `apps/frontend`) | 11.2.15 (2026-09-12, 21.0 d), the newest 11.x | 12.0.0 **2026-09-15T12:27Z** (18.2 d) | **HOLD-30d**: 12.x clears 2026-10-15T12:27Z (§ 3) |
+| `globals` | 15.15.0 (catalog `^15.14.0`, `apps/frontend`) | **17.12.0** (2026-09-01, 32.2 d) | 17.0.0 2026-01-01 | major; both rules met. 17.13.0 (2026-10-01, 2.5 d) is inside the 7-day window (HOLD-7d) |
+
+The other two `major` rows are not group 8's: `@types/node` 26 and `typescript` 7 (G1, held in § 3 with their
+reasons). The three HOLD-30d rows outside group 8 are Kit 3 / `adapter-node` 6 / `adapter-static` 4 (169-12, clear
+2026-10-31T17:2xZ). Nothing in this group was taken from the youngest-releases list.
+
 ## 2. Package legitimacy
 
 **Operator approvals (step 0, run before any repository change, 2026-10-03T06:37Z):** the box check printed
@@ -572,12 +595,50 @@ Older lines are no way out. `nodemailer@9.1.1` and `nodemailer@6.10.1` both stil
 - Installed under `npmMinimalAgeGate: 7d` with the caret ranges `^7.0.116` / `^4.0.82` / `^4.0.78`; the gate resolved
   each to the measured target. No codemod was run (`@ai-sdk/codemod` was not fetched).
 
+### 169-10 (group 8)
+
+- Every direct package moved here was already in `yarn.lock` and is in the § 2 table above (`concurrently` and `glob`
+  OK; `lint-staged`, the changesets pair, `globals` and `js-yaml` `SUS` for `too-new` only). No direct package is
+  new to the repository, so no box in `169-LEGITIMACY-APPROVALS.md` was needed.
+- Names new to `yarn.lock` all come from the changesets pair; `concurrently`, `lint-staged`, `glob`, `js-yaml`,
+  `globals` and the `@types/cheerio` removal added none. `package-legitimacy check --ecosystem npm`, 2026-10-03
+  (`tests/e2e-runs/169-gates/10/t2-cs-legit.json`):
+
+| Package (version taken) | Verdict | Reasons | Weekly downloads | Repository | Postinstall | Deprecated |
+|---|---|---|---|---|---|---|
+| `@changesets/format` (0.1.2) | OK | — | 1718836 | git+https://github.com/changesets/format.git | — | no |
+| `@clack/core` (1.5.1) | SUS | too-new | 31520911 | git+https://github.com/bombshell-dev/clack.git | — | no |
+| `@clack/prompts` (1.8.1) | SUS | too-new | 31525886 | git+https://github.com/bombshell-dev/clack.git | — | no |
+| `@manypkg/tools` (2.1.2) | OK | — | 3010335 | git+https://github.com/Thinkmill/manypkg.git | — | no |
+| `@pnpm/deps.graph-sequencer` (1100.0.1) | OK | — | 1739629 | https://github.com/pnpm/pnpm/tree/main/pnpm11/deps/graph-sequencer | — | no |
+| `fast-string-truncated-width` (3.0.3) | OK | — | 44314373 | git+https://github.com/fabiospampinato/fast-string-truncated-width.git | — | no |
+| `fast-string-width` (3.0.2) | OK | — | 44270355 | git+https://github.com/fabiospampinato/fast-string-width.git | — | no |
+| `fast-wrap-ansi` (0.2.2) | OK | — | 45154982 | git+https://github.com/43081j/fast-wrap-ansi.git | — | no |
+| `import-meta-resolve` (4.2.0) | OK | — | 39722083 | git+https://github.com/wooorm/import-meta-resolve.git | — | no |
+| `jju` (1.4.0) | OK | — | 15496672 | git://github.com/rlidwka/jju | — | no |
+| `jsonc-parser` (3.3.1) | OK | — | 85194487 | git+https://github.com/microsoft/node-jsonc-parser.git | — | no |
+| `launch-editor` (2.14.1) | OK | — | 37842317 | git+https://github.com/vitejs/launch-editor.git | — | no |
+| `sisteransi` (1.0.5) | OK | — | 87964662 | git+https://github.com/terkelg/sisteransi.git | — | no |
+
+  No `SLOP`. The two `SUS` rows are `too-new` only, on established packages: the `@clack` packages' newest release is
+  from 2026-09-13, and the versions taken passed `npmMinimalAgeGate: 7d`. No new name runs an install script.
+- `gh api "/advisories?ecosystem=npm&affects=<pkg>@<v>"` on 2026-10-03: **0** advisories of any severity for
+  `concurrently@10.0.5`, `lint-staged@17.6.0`, `@changesets/cli@3.0.3`, `@changesets/changelog-github@1.0.1`,
+  `@changesets/config@4.0.1`, `glob@13.0.6`, `js-yaml@5.4.2`, `globals@17.12.0`, `@clack/prompts@1.8.1`,
+  `@clack/core@1.5.1` and `yargs@18.0.0`, and for the held `dotenv@17.4.2` and `intl-messageformat@11.2.15`.
+- **The `braces` path is gone.** `@changesets/cli` 3 globs with `picomatch` instead of `micromatch`. The changesets
+  commit (`40a426cb1`) therefore took `micromatch` 4.0.8, `braces` 3.0.3, `fill-range`, `to-regex-range` and
+  `is-number` out of the tree. Right after that install, `yarn why braces` and `yarn why micromatch` print nothing.
+  `yarn audit:deps` says `Summary: 0 new advisory(ies) at high+, 0 accepted` and lists **1240992** (`braces`) among
+  the accepted ids that no longer appear. `security/audit-baseline.json` was **not** edited; 169-13 reconciles it
+  (§ 7).
+
 ## 3. Holds
 
 | Package | Held at | Newer line | Reason | Decision ref | Re-check date or trigger |
 |---|---|---|---|---|---|
 | `ai`, `@ai-sdk/google`, `@ai-sdk/openai` (+ their exact pins `@ai-sdk/gateway`, `@ai-sdk/provider`, `@ai-sdk/provider-utils`) | pre-phase resolutions: `ai` 5.0.60, `@ai-sdk/google` 2.0.23, `@ai-sdk/openai` 2.0.42, gateway 1.0.33, provider 2.0.0, provider-utils 3.0.10 / 3.0.12 | in-range `ai` 5.0.267, google 2.0.99, openai 2.0.130 (→ provider-utils 3.0.39) | **Narrowed out of the group-0 refresh.** `@ai-sdk/provider-utils` ≥ 3.0.35 (2026-08-26) depends on `undici ^5.29.0`; the in-range refresh pulled `undici` 5.29.0 and `@fastify/busboy` 2.1.1 back into the tree, adding NEW high 1240982 (`@fastify/busboy` <3.2.1, no in-range fix under `undici` 5's `^2.0.0`) and re-attaching accepted `undici` rows 1114638 / 1114640 / 1121245 to a new dependent. Moved into the excluded set per 169-01 Task 3 step 6; the family's majors are 169-09's | D-07, D-21, D-25 (G7) | **RELEASED 2026-10-03 by 169-09** (`0bf2782a7`): `ai` 7.0.116, `@ai-sdk/google` 4.0.82, `@ai-sdk/openai` 4.0.78 on provider 4.0.18 / provider-utils 5.0.49, which depend on `undici ^7.29.0`; `undici` 5 and `@fastify/busboy` stay out of the tree (§ 2, 169-09) |
-| `braces` | 3.0.3 | none published | No fixed version exists (GHSA-vfj7-8cjw-p6xm covers `<=3.0.3`; 3.0.3 is the latest). Accepted in the baseline with a rationale (§ 7) | D-02 (baseline keeps no-fix rows), D-05 | when `braces` publishes a fix; or once `@changesets/cli` 2's `micromatch` path (169-10) is gone, the row goes stale. `vite-plugin-restart` left the tree in 169-05 (`f88e60568`), and the baseline rationale now names only the `@changesets/cli` path |
+| `braces` | 3.0.3 | none published | No fixed version exists (GHSA-vfj7-8cjw-p6xm covers `<=3.0.3`; 3.0.3 is the latest). Accepted in the baseline with a rationale (§ 7) | D-02 (baseline keeps no-fix rows), D-05 | when `braces` publishes a fix; or once `@changesets/cli` 2's `micromatch` path (169-10) is gone, the row goes stale. `vite-plugin-restart` left the tree in 169-05 (`f88e60568`), and the baseline rationale now names only the `@changesets/cli` path. **Path GONE 2026-10-03 (169-10, `40a426cb1`):** `@changesets/cli` 3 uses `picomatch`, so `micromatch` and `braces` left the tree; `yarn why braces` prints nothing and the audit lists 1240992 as no longer appearing (`0 accepted`). The baseline row is now stale; 169-13 drops it in the reviewed rewrite (the baseline file was not edited here) |
 | `@types/node` | **24.19.0** (catalog `^24.19.0`; 169-02, `968113336`) | 26.6.3 / 26.6.4 (`latest`), 25.x; 24.19.1 (1.4 d old on 2026-10-03) | **Types track the runtime major** (Node 24 at every pin site). 24.19.1 is inside the 7-day window | D-11, R3, D-03 | when the runtime moves to a newer major; 24.19.1 clears 2026-10-08T22:38Z |
 | `typescript` | **6.0.3** (catalog `^6.0.3`; 169-02, `ebeaafa5c`) | 7.0.2 (2026-07-08, x.0.0 86.7 d old — the age rule alone would admit it) | Blocking peers measured 2026-10-03: `@typescript-eslint/eslint-plugin` / `@typescript-eslint/parser` / `typescript-eslint` 8.70.1 `typescript: >=4.8.4 <6.1.0` (8.71.0, the newest, is inside the 7-day window); `svelte-check` 4.7.6 `^5.0.0 \|\| ^6.0.0`; `@sveltejs/kit@3` `typescript: ^6.0.0`. 6.0.3 is the newest 6.x (6.0.0 was never published) | D-16 | typescript-eslint and svelte-check admit 7 (and Kit 3's peer, once Kit 3 lands) |
 | `eslint`, `@eslint/js` | ~~9.39.5~~ **RELEASED 2026-10-03 → 10.11.0 / 10.0.1** (`34ce0d51c`, operator ruling) | 10.12.0 (2026-10-02T20:08Z, 0.81 d old on 2026-10-03T15:30Z) | **Hold released by operator ruling 2026-10-03.** ESLint 10 landed with three scoped one-line `eslint-disable-next-line no-useless-assignment` comments on the write-only `$bindable` props (eslint-plugin-svelte#1478), overruling PROH-169-07 for exactly those lines. The drawer focus return was wired (`e3a661517`), clearing `no-unassigned-vars` at source. The config-lookup flag is gone from all 21 live sites. 10.12.0 is inside the 7-day window | D-06, D-17, PROH-169-07 (overruled for 3 lines) | 10.12.0 clears 2026-10-09T20:08Z; the three disables go when #1478 ships (todo `2026-10-03-remove-bindable-no-useless-assignment-disables.md`) |
@@ -587,6 +648,9 @@ Older lines are no way out. `nodemailer@9.1.1` and `nodemailer@6.10.1` both stil
 | `vite` | **8.3.1** (catalog `^8.3.1`; 169-05) | 8.3.2 (2026-10-01T10:17Z, 2.11 d old on 2026-10-03) | Inside the 7-day window | D-03 | 8.3.2 clears 2026-10-08T10:17Z |
 | `supabase` (CLI) + the six `setup-cli` `version:` pins | **2.118.0** (catalog `^2.118.0`; 169-06, `cb14c57d2`) | 2.119.0 (2026-09-30T21:36Z, 2.66 d old on 2026-10-03) | Inside the 7-day window. The CLI and the CI pins must move together (`rpcNullabilityGate.test.ts`), and a CLI move changes the service images and the type generator, so 2.119.0 needs its own db:types / pgTAP / E2E pass | D-03, D-10 | 2.119.0 clears 2026-10-07T21:36Z |
 | `nodemailer` (Deno `npm:` import in `send-email/index.ts`) | **6.9.10** (unchanged; 6 high advisories, § 2) | 10.0.x (10.0.0 published 2026-09-04T07:45:32Z, 29.28 d old on 2026-10-03; 10.0.11 6.27 d old) | **New major inside the 30-day window.** Every older line still carries an open high advisory (GHSA-v53p-9fqp-m79j covers `<= 10.0.5`), so PROH-169-16 says wait rather than take 6.10 / 7 / 8 / 9. supabase-js and jose were pinned without it. DEPS-09 stays Pending | D-03, D-09, PROH-169-16 | 10.0.0 clears 2026-10-04T07:45:32Z and 10.0.11 clears 2026-10-04T07:50:47Z. Resume steps in todo `2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md` |
+| `dotenv` | **17.4.2** (catalog `^17.3.1`, the newest 17.x; root, used by `tests/playwright.config.ts` and `tests/seed-test-data.ts`) | 18.0.0–18.0.5 (18.0.0 published 2026-09-17T21:18:40Z, 16.8 d old on 2026-10-03) | **New major inside the 30-day window** (RESEARCH Pitfall 1). The current line has no advisory (§ 2, 169-10). `npx playwright test --list -c tests/playwright.config.ts` still loads the config on 17.4.2 (exit 0, 173 tests, no `.env` value or dotenv banner in the output) | D-03, D-23 | 18.x clears **2026-10-17T21:18Z**; then bump the catalog, check 18's default logging (no env value may print) and re-run `typecheck:tests` and the `--list` config load |
+| `intl-messageformat` | **11.2.15** (`apps/frontend` `^11.1.3`, the newest 11.x) | 12.0.0–12.1.2 (12.0.0 published 2026-09-15T12:27Z, 18.2 d old on 2026-10-03) | **New major inside the 30-day window** (RESEARCH Pitfall 1). The current line has no advisory (§ 2, 169-10) | D-03, D-23 | 12.x clears **2026-10-15T12:27Z**; then bump, adapt `overrides.ts` if needed, run the frontend i18n tests and `check` |
+| `globals` | **17.12.0** (catalog `^17.12.0`; 169-10, `5017d4a17`) | 17.13.0 (2026-10-01T03:57Z, 2.53 d old on 2026-10-03) | Inside the 7-day window. `eslint-plugin-svelte` 3.23.0 keeps its own nested `globals` 16.5.0 (`^16.0.0`, not a declarer) | D-03, D-13 | 17.13.0 clears 2026-10-08T03:57Z |
 
 ## 4. Gate runs
 
@@ -1080,6 +1144,49 @@ E2E `169-09-group7` (`bash 169-e2e.sh 169-09-group7`, the full default suite):
   voter-journey Base-6 slider flake did not recur. No E2E spec drives the LLM admin jobs (they need a provider key),
   so the runtime proof of the SDK path is the § 6 smoke run, not E2E.
 - No listener is left on 5173 or 5273 afterwards.
+
+### 169-10 — the small majors (group 8)
+
+| Plan | Label | HEAD | install | dedupe | typecheck | lint | format | check-fe | check-docs | unit | build | audit | docs-links | docs-rq | E2E (total / passed / failed / flaky / did-not-run) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 169-10 | `169-10-group8` (concurrently 10, lint-staged 17, changesets 3, glob 13, `@types/cheerio` removed, js-yaml 5, globals 17) | `5017d4a17` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | — (D-26: no E2E after group 8) |
+
+Notes:
+- `169-10-group8` (2026-10-03T16:57:18Z–16:59:58Z, `tests/e2e-runs/169-gates/169-10-group8/`): `porcelain_lines: 0`,
+  `TURBO_FORCE: true`, Node v24.21.0, Yarn 4.18.1; every turbo task ran uncached (typecheck 23/23, unit 25/25, build
+  14/14, `0 cached`).
+  - `01-install`: the only peer notice is the long-standing `YN0002` (`playwright-core` for `@axe-core/playwright`).
+  - `04-lint`: 0 errors, 17 warnings. The normalised list (33 lines, `10/lint-norm-after.txt`) is identical to
+    169-09's (`09/lint-norm-after.txt`, sorted `diff` exit 0). No new finding, no new disable. The globals commit was
+    also checked alone before it was committed: `TURBO_FORCE=true yarn lint:check` exit 0, same 33-line list
+    (`10/t3-globals-lint-norm.txt`).
+  - `08-unit`: every workspace green, including `@openvaa/llm` (prompt loading through js-yaml 5), `argument-condensation`
+    and `question-info` (both register their real prompt directories in their test setup), and frontend 129 files.
+  - `10-audit`: exit 0, **`Summary: 0 new advisory(ies) at high+, 0 accepted`**. `braces` (1240992) is now among the
+    baseline ids that no longer appear (§ 2, 169-10).
+  - `11-docs-links`: 0 findings. `12-docs-rq` (two-base form, base `0ec229dfe`, component base `6090476cc`): every
+    `<ResearchQuote>` span identical to the base and the frozen components identical to the component base.
+- Exercises recorded per upgrade (logs under `tests/e2e-runs/169-gates/10/`):
+  - `concurrently` 10.0.5: `yarn concurrently -n a,b -c blue,green --kill-others-on-fail "node -e 0" "node -e 0"` exit 0
+    (`t1-conc-exercise.log`); negative control, one command exiting 3 → the other is sent SIGTERM and the run exits 1
+    (`t1-conc-negative.log`), so `--kill-others-on-fail` still binds.
+  - `lint-staged` 17.6.0, with nothing staged (`git diff --cached --quiet` checked first, so its backup stash is never
+    reached): `yarn lint-staged --debug` exit 0; the debug output shows `.lintstagedrc.json` found and loaded with both
+    globs (`*.{html,js,…,yml}` → `prettier --write`, `eslint --fix`; `*.{css,json,md}` → `prettier --write`) and ends
+    `lint-staged could not find any staged files.` (`t1-ls-exercise.log`). The tracer gate re-ran both commands after
+    the second commit: exit 0.
+  - changesets 3.0.3 / changelog-github 1.0.1: see § 6 (`yarn changeset status` exit 1 is the documented "packages
+    changed, no changesets" outcome, unchanged from 2.x; `--since=HEAD` exit 0; config 4 `readConfig` → no warnings,
+    no errors).
+  - `glob` 13.0.6: `yarn workspace @openvaa/docs generate:docs` exit 0 (103 components, the route map, `yarn format`
+    reports every file unchanged); afterwards `git status --porcelain -- apps/docs` is empty once the manifest is
+    committed (`t2-glob-generate.log`). The 104 + 1 generated pages are tracked, not ignored.
+  - `@types/cheerio` removed: `yarn typecheck:tests` exit 0 (`t2-tc-typecheck-tests.log`); `cheerio` 1.2.0's own
+    `dist/esm/index.d.ts` types `emailBucket.fixture.ts`.
+  - `dotenv` (held): `npx playwright test --list -c tests/playwright.config.ts` exit 0, `Total: 173 tests in 100 files`,
+    no `.env` value and no dotenv banner in the output (`t2-dotenv-list.log`).
+  - `js-yaml` 5.4.2: `@openvaa/llm` typecheck + 43/43, `argument-condensation` 30/30, `question-info` 22/22 (with the
+    rebuilt `@openvaa/llm` dist); the 31-file parse comparison is in § 6.
 
 ## 5. Negative controls
 
@@ -2059,6 +2166,59 @@ results by default (7.0, "Request and Response Bodies Are Excluded by Default").
 admits only the `system` entries the callers build server-side from prompt templates; no caller passes user-authored
 message arrays, so this restores the 5.x behaviour without adding a path for role injection.
 
+### 169-10 — the small majors, one commit each (D-23, D-13)
+
+| Commit | Upgrade | Lockfile names (new / gone / moved) | Code or config change |
+|---|---|---|---|
+| `797196ee4` | `concurrently` 9.2.4 → 10.0.5 | gone `require-directory`; moved `yargs` 18, `yargs-parser` 22, `cliui` 9, `supports-color` 10 | none. 10.0.0 dropped Node < 22, went ESM-only, removed `--name-separator` and the `killOthers` API option, and defaults prefix colours to automatic; `_dev:concurrent` sets `-c blue,green` explicitly and uses none of the removed options |
+| `893da1fdd` | `lint-staged` 16.4.0 → 17.6.0 | gone `listr2` and its renderer (`ansi-escapes`, `cli-cursor`, `cli-truncate`, `colorette`, `eventemitter3`, `log-update`, `restore-cursor`, `rfdc`, `slice-ansi`, …) and `commander` 14 | none. 17 needs Node ≥ 22.22.1 and Git ≥ 2.32 (host Git 2.50.1), makes `yaml` optional (the config is JSON) and keeps the JSON config format |
+| `40a426cb1` | `@changesets/cli` 2.31.1 → 3.0.3, `@changesets/changelog-github` 0.6.0 → 1.0.1 | 13 new (§ 2, 169-10), 48 gone (among them `micromatch`, `braces`, `fill-range`, `to-regex-range`, `is-number`, `fast-glob`, `globby`, `fs-extra` 7/8, `enquirer`, `@inquirer/external-editor`, `spawndamnit`, `node-fetch` 2, `prettier` 2.8.8, `js-yaml` 3, `@types/node` 12, `dotenv` 8), 37 moved | `.changeset/config.json` `$schema` → `@changesets/config@4.0.1/schema.json`. Every key is valid under config 4 (`baseBranch`, `access`, `ignore`, `fixed`, `linked`, `updateInternalDependencies`, `privatePackages`, `changelog`, `commit`); there is no `prettier` key to migrate; `privatePackages: { version: true, tag: false }` stays explicit, so the new "private packages not versioned by default" does not change behaviour |
+| `e268a7d19` | `glob` 11.1.0 → 13.0.6 (root and `apps/docs`) | gone `jackspeak`, `@isaacs/cliui`, `foreground-child`, `package-json-from-dist`, `signal-exit` 4 | none. 12 removed the CLI's unsafe `--shell`, 13 moved the CLI to `glob-bin`; the promise API (`import { glob } from 'glob'`) in the five docs scripts is unchanged, and nothing runs the glob CLI |
+| `876970adb` | `@types/cheerio` 0.22.35 removed | gone `@types/cheerio`; `@types/node` 26.6.3 and `undici-types` 8 (pulled only by the stub's `@types/node: *`) | none |
+| `d1b3332d5` | `js-yaml` 4.3.2 → 5.4.2 (catalog), `@types/js-yaml` dropped from the catalog and `packages/llm` | gone `@types/js-yaml`; `js-yaml` now resolves once (5.4.2) | none in `promptRegistry.ts`: `import * as yaml from 'js-yaml'` + `yaml.load(content)` works on 5's named exports and keeps the default safe load (CORE_SCHEMA, no custom tags). The 5.0 change "`load()` throws on empty input" lands in `scanDirectory`'s existing per-file `try/catch`, which warns and skips the file as before |
+| `5017d4a17` | `globals` 15.15.0 → 17.12.0 (catalog), plus `globals: catalog:` in `@openvaa/shared-config` | `globals` 15.15.0 gone; `eslint-plugin-svelte` keeps its own 16.5.0 | `packages/shared-config/package.json` declares the `globals` its `eslint.config.mjs` imports (Rule 2 deviation; resolves todo `2026-10-02-declare-globals-in-shared-config.md`) |
+
+**changesets on the new major.** `yarn changeset status` prints `🦋 changeset v3.0.3` and `Some packages have been
+changed but no changesets were found`, exit 1 (`t2-cs-status.log`). That is the CLI's documented outcome when the
+branch has package changes and no changeset; 2.x has the same branch and exit code
+(`packages/cli/src/commands/status/index.ts` at `@changesets/cli@2.29.7`: `if (changedPackages.length > 0 &&
+changesets.length === 0) { … process.exit(1) }`), and this branch is far ahead of `main` with no `.changeset/*.md`.
+`yarn changeset status --since=HEAD` exits 0 (`Packages to be bumped:` with an empty list), and config 4's
+`readConfig(cwd, packages)` returns `warnings: []`, `errors: undefined` with the expected `changelog`,
+`privatePackages` and `baseBranch` (`t2-cs-readconfig.log`). `@changesets/changelog-github` 1.0.1 imports and exposes
+`getReleaseLine` / `getDependencyReleaseLine`. `release.yml`'s `changesets/action@v1` only calls `changeset version`
+when changesets exist, so 3.0's "`version` exits 1 with no changesets" does not affect it; the action's own major is
+169-11's.
+
+**js-yaml 5 parses every prompt file to the same value.** A throwaway script loaded all 31 tracked prompt YAML files
+(`git ls-files 'packages/*/src/**/*.yaml'`: 28 under `argument-condensation`, 3 under `question-info`) with the
+`js-yaml` that `packages/llm` resolves, once on 4.3.2 before the bump and once on 5.4.2 after it, and wrote the
+results as JSON. The two outputs are byte-identical (sha256 `c631134c38ae…527568c` both). None of the files uses `<<`
+merge keys, `!!` tags or date-like scalars, the three places where 5.0's CORE_SCHEMA default differs from 4's.
+T-169-33: the loader keeps `yaml.load` with its default schema; no unsafe or custom schema was introduced.
+
+**globals 17 and the lint config.** `@openvaa/shared-config` imported `globals` without declaring it, so every
+workspace linting through it got whichever `globals` was hoisted to the root (15.15.0 before this plan, 15.14.0
+after 167-04, 16.5.0 before that). With the declaration, both `@openvaa/shared-config` and `apps/frontend` resolve
+17.12.0. `eslint --print-config` on `apps/frontend/src/lib/i18n/overrides.ts` and on `packages/core/src/index.ts`
+shows 1227 `languageOptions.globals` names, against 1151 for `browser` + `node` + `jest` from 15.15.0 (read from the
+Yarn cache copy). 84 names were added; 8 were removed: the audio-worklet scope names (`AudioWorkletGlobalScope`,
+`AudioWorkletProcessor`, `currentFrame`, `currentTime`, `registerProcessor`, `sampleRate`, `WorkletGlobalScope`,
+which 17.0 split out of `browser`) and `Float16Array`. `no-undef` is off (`[0]`) in both resolved configs, so no
+finding moved. The lint list is unchanged.
+
+**The completeness sweep (Task 3 steps 4–5).**
+- Fresh probe `node 169-version-probe.mjs --node 24.21.0 --out tests/e2e-runs/169-gates/10-t3-probe.md` at
+  2026-10-03T16:56:32Z, exit 0: 67 distinct registry packages; verdicts HOLD-30d 5 · HOLD-7d 13 · current 47 ·
+  major 2; **0 `UNASSIGNED-MAJOR` rows**. The two `major` rows are `@types/node` 26 and `typescript` 7 (G1, both held
+  in § 3: types track the Node 24 runtime; typescript-eslint 8.70.1 and svelte-check cap TypeScript below 7). The five
+  HOLD-30d rows are Kit 3 / `adapter-node` 6 / `adapter-static` 4 (169-12) and `dotenv` 18 / `intl-messageformat` 12
+  (held here, § 3). The probe reads manifests only; the GitHub Actions majors (169-11) and the Deno `npm:` pins
+  (`nodemailer`, held to 2026-10-04T07:51Z by its own todo) are outside it and assigned.
+- Catalog: 35 keys after the plan (36 before; `@types/js-yaml` left with the js-yaml commit). The plan's check prints
+  `35 catalog keys, all consumed` (`t3-catalog-check.txt`); each key has at least one `"<key>": "catalog:"` reference
+  in a tracked manifest. No "drop consumer-less entries" commit was needed.
+
 ## 7. Operator follow-ups
 
 - **Review the `braces` baseline row (169-01, `c97bc9898`).** GHSA-vfj7-8cjw-p6xm (id 1240992) was published
@@ -2209,6 +2369,31 @@ message arrays, so this restores the 5.x behaviour without adding a path for rol
   and AI SDK 7 rejects that by default. It restores the 5.x behaviour for that one method; `streamText` keeps the
   SDK's rejecting default. If the prompts are ever restructured into `instructions` plus a user turn, the opt-in can
   go. No E2E spec runs the LLM admin jobs (they need a provider key); the runtime proof is a mock-model smoke run.
+
+- **The `braces` baseline row is now stale (169-10).** `@changesets/cli` 3 (`40a426cb1`) replaced `micromatch` with
+  `picomatch`, so the only path to `braces` 3.0.3 is gone. `yarn audit:deps` reports `0 new advisory(ies) at high+, 0
+  accepted` and lists 1240992 among the ids that no longer appear. The operator's pending review of that row becomes
+  "drop it". `security/audit-baseline.json` is unchanged here; 169-13's reviewed rewrite removes it with the other
+  stale rows.
+- **Residue for 169-13 (169-10, recorded, not removed):**
+  - The root `glob` devDependency (`^13.0.6`) has no importer in the root workspace's own files: `git grep` for
+    `from 'glob'` / `require('glob')` in `tests/`, `scripts/` and root `*.mjs` exits 1. Only `apps/docs/scripts/*`
+    import `glob`, and `apps/docs` declares it itself. It was bumped with the docs declaration, per the plan.
+  - `apps/docs`'s `eslint-config-prettier` devDependency (`catalog:`) is still unused by its own config
+    (`apps/docs/eslint.config.js` imports only `@openvaa/shared-config/eslint` and `eslint-plugin-svelte`;
+    `@openvaa/shared-config` declares `eslint-config-prettier` itself). 168 review IN-01. The plan's sweep covers
+    unassigned majors and consumer-less catalog keys, not unused declarations, so it was left in place. The catalog
+    key stays consumed either way (`@openvaa/shared-config` references it).
+- **`yarn changeset status` exits 1 on this branch (169-10).** The cause is "packages changed, no changesets found",
+  which 2.x reports the same way. It is not a new failure and no gate runs it. Release flow note: `changeset version`
+  now exits 1 when there is nothing to release, but `changesets/action@v1` calls it only when changesets exist.
+- **Held to the calendar (169-10):** `intl-messageformat` 12 clears 2026-10-15T12:27Z and `dotenv` 18 clears
+  2026-10-17T21:18Z (§ 3). Both clear before 169-12's own hold (Kit 3, 2026-10-31), so whichever run comes first after
+  those dates can take them, each as a one-commit bump with the exercise named in its § 3 row. Todo
+  `2026-10-03-dotenv-18-and-intl-messageformat-12-held.md` has the steps.
+- **Undeclared `globals` import resolved (169-10).** `@openvaa/shared-config` now declares `globals: catalog:`
+  (`5017d4a17`). This closes 167 review WR-02 / todo `2026-10-02-declare-globals-in-shared-config.md`, which was moved
+  to `done/`.
 
 ## 8. Moderate and low advisories on chosen versions
 

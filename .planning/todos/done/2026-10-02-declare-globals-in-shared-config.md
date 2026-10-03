@@ -30,3 +30,16 @@ because shared-config turns `no-undef` off (167-04 SUMMARY, normalised findings 
 Declare `"globals": "catalog:"` in `packages/shared-config/package.json` (or the version range the
 team wants every consumer to see), run `yarn install`, and confirm with a before/after lint findings
 diff and a `--print-config` diff on a representative file that nothing else changed.
+
+## Resolution (2026-10-03, Phase 169 plan 169-10)
+
+- **Declared** (`5017d4a17`, with the globals major): `packages/shared-config/package.json` has `"globals": "catalog:"`,
+  and the catalog moved `globals` `^15.14.0` → `^17.12.0`. `yarn why globals` shows `@openvaa/shared-config` and
+  `apps/frontend` both on 17.12.0. `eslint-plugin-svelte` keeps its own nested 16.5.0, from its own `^16.0.0` range.
+- **Lint findings diff:** `TURBO_FORCE=true yarn lint:check` exit 0. The normalised finding list (0 errors, 17
+  warnings, 33 lines) is identical to the 169-09 baseline (sorted `diff` exit 0). The group-8 gate run
+  `169-10-group8` repeats that result.
+- **`--print-config` diff:** `apps/frontend/src/lib/i18n/overrides.ts` and `packages/core/src/index.ts` each resolve
+  1227 `languageOptions.globals` names, against 1151 for `browser` + `node` + `jest` from 15.15.0. 84 names were
+  added and 8 removed: the audio-worklet scope names, which globals 17 split out of `browser`, and `Float16Array`.
+  `no-undef` is off in both configs, so no finding changed.
