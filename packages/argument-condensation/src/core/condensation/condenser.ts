@@ -402,7 +402,8 @@ export class Condenser {
         // Mark node as failed and stop processing (sequential dependency)
         this.treeBuilder.completeNode(nodeId, 1, false, error instanceof Error ? error.message : 'Unknown error');
         throw new Error(
-          `Failed to parse ${isFirstBatch ? 'initial' : 'refinement'} response: ${error instanceof Error ? error.message : 'Unknown error'}`
+          `Failed to parse ${isFirstBatch ? 'initial' : 'refinement'} response: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          { cause: error }
         );
       }
 
@@ -785,7 +786,8 @@ export class Condenser {
       throw new Error(
         `${operation} operation failed for ${logIdentifier}. The LLM Provider failed to provide a valid response. Reason: ${
           error instanceof Error ? error.message : 'Unknown error'
-        }`
+        }`,
+        { cause: error }
       );
     }
 

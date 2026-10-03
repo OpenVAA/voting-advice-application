@@ -60,7 +60,7 @@ export async function generateInfo({
     const examplesSlice = EXAMPLES.slice(0, 3);
     const formattedExamples = examplesSlice
       .map((example) => {
-        let exampleOutput = '';
+        let exampleOutput: string;
 
         if (promptKey === 'generateTerms') {
           exampleOutput = JSON.stringify({ terms: example.terms }, null, 2);
@@ -153,6 +153,6 @@ export async function generateInfo({
       });
     });
   } catch (error) {
-    throw new Error(`Error generating question info: ${error}`);
+    throw new Error(`Error generating question info: ${error}`, { cause: error });
   }
 }
