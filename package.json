@@ -68,7 +68,7 @@
     "@openvaa/shared-config": "workspace:^",
     "@openvaa/supabase-types": "workspace:^",
     "@playwright/test": "catalog:",
-    "@supabase/supabase-js": "^2.99.3",
+    "@supabase/supabase-js": "catalog:",
     "@types/cheerio": "^0.22.35",
     "@types/node": "catalog:",
     "cheerio": "^1.0.0",
