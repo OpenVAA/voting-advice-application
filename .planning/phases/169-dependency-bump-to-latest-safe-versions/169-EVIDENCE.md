@@ -82,6 +82,19 @@ The 6 accepted rows still present: `tar` 1123940 (critical) / 1123941 / 1145647 
 `@faker-js/faker` 1158500 (169-08), `@sveltejs/kit` 1116433 (169-05), `braces` 1240992 (no fix). The 62 stale
 ids are left in the baseline for 169-13's reviewed rewrite (PROH-169-02: no `--update-baseline` here).
 
+### 169-02 (group 1) re-measurement, 2026-10-03
+
+- **Yarn target 4.18.1**, published 2026-09-24T20:40:35Z (`gh release list -R yarnpkg/berry`: the `Latest`
+  release), 8.5 days old at 2026-10-03T08:45Z, so it clears the 7-day rule; no newer 4.x exists. 4.14.0
+  (berry PR #7089) made `enableScripts: false` the default, 4.14.1/4.16.0 fix the Node 24.15+ EBADF bug
+  (PRs #7104, #7152), 4.15.0 made `npmMinimalAgeGate: 1d` the default (this repo sets 7d).
+- `git grep -n -E "ignoreDeprecations|@ts-ignore" -- '*.json' 'apps/**/*.ts' 'packages/**/*.ts'` at
+  `520dcfb80` (pre-plan) → **0 lines**.
+- Packages with install scripts in the installed tree (scan of every `node_modules` under the repository for
+  `preinstall`/`install`/`postinstall` or a `binding.gyp`): `esbuild` 0.25.12 / 0.27.7 / 0.28.2
+  (`postinstall: node install.js`) and `supabase` 2.83.0 (`postinstall: node scripts/postinstall.js`). Nothing
+  else; no `binding.gyp` anywhere.
+
 ## 2. Package legitimacy
 
 **Operator approvals (step 0, run before any repository change, 2026-10-03T06:37Z):** the box check printed
@@ -136,6 +149,43 @@ all ticked on the operator's explicit approval, 2026-10-03.
 No `SLOP`. Every `SUS` is `too-new` on an established package (the age gate removes it by construction),
 except `@types/cheerio` (`no-repository, deprecated`): it is already in `yarn.lock`, it is not installed or
 moved by any plan, and 169-10 removes it (D-23). No stop.
+
+### 169-02 (group 1)
+
+**Vendored Yarn release (169-02 Task 1):** `yarn set version 4.18.1` downloaded
+`https://repo.yarnpkg.com/4.18.1/packages/yarnpkg-cli/bin/yarn.js` into `.yarn/releases/yarn-4.18.1.cjs`;
+`shasum -a 256` → `a28ad591febb769f939c11f82f89bacad0b0fac0c884d3b78fa2aaaee970907e` (matches
+repo.yarnpkg.com). `yarn-4.13.0.cjs` deleted; `ls .yarn/releases` lists only the new file.
+
+**Install-script posture — operator ruling, 2026-10-03 (Option B, given through the orchestrator after the
+first 169-02 executor stopped at a blocking-human decision).** Yarn 4.18 defaults to `enableScripts: false`;
+`supabase@2.83.0` (its postinstall fetches the CLI binary) and `esbuild` (`node install.js`) need theirs.
+The operator chose: scripts stay off globally with a per-package allow-list of `supabase` and `esbuild`
+only (`unrs-resolver` joins when 169-03 lands, already approved under box A); `approvedGitRepositories`
+keeps its empty default (no git dependencies); `enableScripts: true` globally was explicitly rejected.
+
+Mechanism, from the Yarn 4.18.1 source (tag `@yarnpkg/cli/4.18.1`):
+
+- `packages/plugin-pnp/sources/jsInstallUtils.ts` `extractBuildRequest` — the node-modules linker
+  (`packages/plugin-nm/sources/NodeModulesLinker.ts`) calls it for every package with build scripts:
+  `if (dependencyMeta && dependencyMeta.built === false)` → skipped; then
+  `if (!configuration.get('enableScripts') && !dependencyMeta.built)` → skipped with
+  `"… lists build scripts, but all build scripts have been disabled."` So `built: true` re-enables one
+  package while `enableScripts` is false.
+- `packages/yarnpkg-core/sources/Project.ts` `getDependencyMeta` reads `dependenciesMeta` from the
+  **top-level workspace manifest only**.
+- `packages/yarnpkg-core/sources/Configuration.ts`: `enableScripts` default `false`.
+- Yarn's own docs (berry PR #7089, `docs/features/security.mdx`): "Yarn doesn't run postinstalls by default
+  ever since 4.14. You must either enable them globally … or on a by-package basis using `dependenciesMeta` in
+  your top-level `package.json`."
+- The same PR adds a lockfile-migration rule (`plugin-essentials` `install.ts`): an install that migrates a
+  lockfile older than version 9 writes `enableScripts: true` into `.yarnrc.yml`. The committed lockfile is at
+  version 10 and `.yarnrc.yml` states `enableScripts: false` explicitly, so that migration cannot flip it.
+
+Applied (commit `ee5c3d620`): `.yarnrc.yml` `enableScripts: false` (with a two-line comment pointing at the
+allow-list); root `package.json` `"dependenciesMeta": { "esbuild": { "built": true }, "supabase": { "built":
+true } }`. Yarn records the root workspace's `dependenciesMeta` in `yarn.lock` (`--immutable` refused the first
+install with exactly that 5-line hunk), so it is part of the same commit.
 
 ## 3. Holds
 
@@ -231,6 +281,32 @@ saved aside first and copied back after the run. Logs: `tests/e2e-runs/169-gates
 
 `yarn workspace @openvaa/dev-seed typecheck` → 0; `TURBO_FORCE=true yarn lint:check` → 0;
 `yarn assert:unit-coverage` → 0; Prettier clean on all three touched files.
+
+### Install-script allow-list (169-02 Task 1, Yarn 4.18.1, host Node v24.14.1)
+
+Logs: `tests/e2e-runs/169-gates/02-t1-*.log`. Every row ran with `.yarnrc.yml` `enableScripts: false`
+(`yarn config get enableScripts` → `false`).
+
+| Control | Setup | Command | Exit | What Yarn printed / what the tree showed |
+|---|---|---|---|---|
+| **POS** (clean reinstall, both allowed) | every `node_modules` under the repository and `.yarn/install-state.gz` deleted; allow-list `esbuild`, `supabase` | `yarn install --inline-builds` (`02-t1-clean-install.log`) | 0 | `YN0007 … must be built` for `esbuild@npm:0.28.2`, `0.25.12`, `0.27.7` and `supabase@npm:2.83.0`; supabase's postinstall STDOUT: `Downloading …/v2.83.0/supabase_darwin_arm64.tar.gz` · `Checksum verified.` · `Installed Supabase CLI successfully`; root `preinstall` (a workspace script, always run): `assert-node-engine: v24.14.1 satisfies "engines.node": ">=22" — OK`. No `YN0004`. Afterwards `node_modules/supabase/bin/supabase` exists (91 MB), `yarn workspace @openvaa/supabase supabase --version` → `2.83.0` (exit 0); `require('esbuild').transformSync('export const x: number = 1', {loader: 'ts'})` → `"export const x = 1;\n"` (esbuild 0.27.7), `node_modules/.bin/esbuild --version` → `0.27.7` |
+| **NEG** (a package not on the list) | working copy only: `supabase` removed from `dependenciesMeta` (allow-list = `esbuild`), `node_modules/supabase` deleted | `yarn install --inline-builds` (`02-t1-nc-supabase-not-allowed.log`) | 0 | `YN0004: │ supabase@npm:2.83.0 lists build scripts, but all build scripts have been disabled.` — no `YN0007` and no postinstall output for it. `node_modules/supabase/bin` absent; `yarn workspace @openvaa/supabase supabase --version` → exit **1** (`node:internal/modules/cjs/loader` throw) |
+| **Restore** | `package.json` and `yarn.lock` copied back from the saved copies (`cmp` → 0) | `yarn install --immutable --inline-builds` (`02-t1-nc-restore.log`) | 0 | `YN0007 … supabase@npm:2.83.0 must be built`, `Installed Supabase CLI successfully`; `supabase --version` → `2.83.0` |
+
+No package in the tree other than the two allowed ones has an install script (§ 1, 169-02 re-measurement), so
+the negative control removes one allowed package rather than relying on a third. It shows both halves: the
+allow-list is what makes a script run (removing the entry stops it, with Yarn's own `YN0004` naming the
+package), and the global setting is what stops the rest.
+
+Task 1 checks at `ee5c3d620` (Node v24.14.1): `yarn --version` → `4.18.1`; `grep -c "yarnPath:
+.yarn/releases/yarn-4.18.1.cjs" .yarnrc.yml` → 1; `git grep -n -E "4\.13" -- package.json
+apps/frontend/package.json apps/frontend/Dockerfile .github .yarnrc.yml
+packages/dev-seed/tests/assertDeclaredBinariesGate.test.ts` → nothing (exit 1); `yarn install --immutable` → 0;
+`yarn workspace @openvaa/dev-seed vitest run tests/assertDeclaredBinariesGate.test.ts tests/nodeEngineGate.test.ts
+tests/ciDockerImageBuildGate.test.ts` → 0 (3 files, 22 tests); `docker build --file apps/frontend/Dockerfile
+--target production --tag openvaa-frontend:169-yarn .` → **0** (`02-t1-docker.log`; in the image Yarn 4.18.1
+built exactly `esbuild` ×3, `supabase@npm:2.83.0` and the root workspace, no `YN0004`; image removed after).
+Docker VM free before the build: 23 791 272 KiB (22.7 GiB).
 
 ## 6. Diffs and traces
 
