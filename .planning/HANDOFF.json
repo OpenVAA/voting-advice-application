@@ -1,10 +1,10 @@
 {
   "version": "1.0",
-  "timestamp": "2026-10-03T18:55:00.000Z",
+  "timestamp": "2026-10-03T18:53:29.333Z",
   "phase": "169",
   "phase_name": "dependency-bump-to-latest-safe-versions",
   "phase_dir": ".planning/phases/169-dependency-bump-to-latest-safe-versions",
-  "plan": 12,
+  "plan": 13,
   "task": 1,
   "total_tasks": 2,
   "status": "ready",
@@ -80,12 +80,18 @@
       "name": "Plan 169-11 (group 9: checkout/setup-node/upload-artifact v7, paths-filter v4, setup-cli v3 (version 2.118.0 kept), changesets/action v2 (github-token input, v2 input names, push-with-git-cli true), configure-pages v6, upload-pages-artifact v5, deploy-pages v5, trufflehog 3.97.9 — one commit each, CI-shape tests + comments updated; first CI run of groups 2-9: run 1 37139970902 and run 2 37142651706 e2e-tests red (performance 5901 ms = Playwright 1.63 trace recording in the measured window -> performance project untraced f6bbc68ab; term popup + Base-6 slider keyboard steps inside the View Transition window -> waitForNavigationFocusReset 549f6a60d/edaa28205); run 3 37144076939 12/12 success, E2E 171 passed, pgTAP 1335 on PG17; release.yml/docs.yml unobservable until merge; DEPS-13 complete)",
       "status": "done",
       "commit": "6440218f0"
+    },
+    {
+      "id": 13,
+      "name": "Plan 169-12 (group 10: SvelteKit 3 / adapter-node 6 / adapter-static 4 HELD — verdict HOLD-AGE measured live 2026-10-03T18:49:51Z: each x.0.0 2.06 d old and the only release in its major, clearing 2026-10-31T17:22:34Z / 17:24:31Z / 17:21:55Z; every Kit 3.0.0 peer already met (vite 8.3.1, vite-plugin-svelte 7.3.1, svelte 5.57.1, typescript 6.0.3, Node floor 24.15.0); Kit stays 2.70.3, adapters 5.5.7 / 3.0.10, nothing installed; D-32 checkpoint skipped per plan; todo 2026-10-03-sveltekit-3-held-by-the-age-rule.md carries the Vite 8 configLoader item; DEPS-14 complete via its hold branch)",
+      "status": "done",
+      "commit": "fed9d50d0"
     }
   ],
   "remaining_tasks": [
     {
       "id": 4,
-      "name": "Plans 169-11 through 169-13 (sequential); apply the nodemailer 10 pin todo (2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md) in the first plan that runs after 2026-10-04T07:51Z (169-13 at the latest). The dotenv 18 / intl-messageformat 12 todo (2026-10-03-dotenv-18-and-intl-messageformat-12-held.md) clears 2026-10-15 / 2026-10-17. The PG17 ruling is applied: local stack is Postgres 17.6, so 169-13's PG17 gate may run",
+      "name": "Plan 169-13 (group 11 + phase gate). Apply the nodemailer 10 Edge pin todo (2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md) — it clears 2026-10-04T07:51Z (10.0.11 at 07:50:47Z), so 169-13 must run after that or record it still held. The dotenv 18 / intl-messageformat 12 todo clears 2026-10-17 / 2026-10-15; the Kit 3 todo clears 2026-10-31T17:24:31Z. Drop the stale braces baseline row. Local stack Postgres 17.6, so the PG17 gate may run. Next ci-evidence/169-deps push leases on 59607e5cd6b55ed9bc94563ad9a29dd1a31662d0",
       "status": "not_started"
     },
     {
@@ -123,6 +129,11 @@
     {
       "action": "Decide on Playwright 1.63 trace cost and the thin CI performance margin",
       "context": "169-11: traced 584-611 ms vs untraced 241-244 ms locally; performance project now untraced; CI run 3 still measured 4603 ms (ttfb 707 ms) vs 5000 ms budget, likeliest next CI flake; options: global retain-on-failure vs on-first-retry in CI, per-stage measurement before any budget talk (169-EVIDENCE.md section 7)"
+    },
+    {
+      "action": "On or after 2026-10-31T17:25Z: re-measure SvelteKit 3 / adapter-node 6 / adapter-static 4 and take the D-32 checkpoint (land-with-sv / land-by-hand / hold)",
+      "context": "todo 2026-10-03-sveltekit-3-held-by-the-age-rule.md; 169-EVIDENCE.md § 1 (169-12) and § 3; land the Vite 8 configLoader extensionless-import fix next to it",
+      "blocking": false
     }
   ],
   "decisions": [
@@ -205,9 +216,14 @@
       "decision": "169-10: small majors one commit each; dotenv 18 and intl-messageformat 12 held by the 30-day rule (todo); @openvaa/shared-config declares globals: catalog:",
       "rationale": "D-03 re-measured 2026-10-03T16:45Z; D-13, D-23; 167 handoff WR-02",
       "phase": "169"
+    },
+    {
+      "decision": "169-12: SvelteKit 3 family held by the 30-day new-major rule (HOLD-AGE); peers already ready; Kit stays 2.70.3; DEPS-14 satisfied by its hold branch",
+      "rationale": "D-03 re-measured live 2026-10-03T18:49Z; D-15, D-32, ruling 11; PROH-169-22",
+      "phase": "169"
     }
   ],
   "uncommitted_files": [],
-  "next_action": "Continue /gsd-execute-phase 169 from 169-12 (Kit 3: held by the age rule until 2026-10-31T17:2xZ unless the operator rules otherwise; the plan lands it behind an operator checkpoint or files a dated hold todo). 169-11 is complete: every Action on its new major, CI run 37144076939 12/12 success. remote ci-evidence/169-deps = 59607e5cd (lease value for the next push). Apply the nodemailer 10 todo in the first plan that runs after 2026-10-04T07:51Z. Local stack Postgres 17.6; ESLint 10.11.0; never supabase stop --all.",
+  "next_action": "Continue /gsd-execute-phase 169 from 169-13 (group 11 + the phase gate: audit baseline reconciled incl. dropping the stale braces row, moderate/low advisories listed, final version table, todos filed, full gate set + full E2E on PG17 on one HEAD). 169-12 is complete: Kit 3 HELD to 2026-10-31T17:24:31Z (todo filed). nodemailer 10 Edge pin clears 2026-10-04T07:51Z — apply its todo in 169-13 if run after that, else record it still held. remote ci-evidence/169-deps = 59607e5cd6b55ed9bc94563ad9a29dd1a31662d0 (lease value for the next push). Local stack Postgres 17.6; ESLint 10.11.0; never supabase stop --all.",
   "context_notes": "Work only in the -gsd worktree. Node 24.21.0 must be on PATH. Orchestrator hand-drives executors at top level; one gsd-executor per plan, sequential mode."
 }

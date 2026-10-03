@@ -249,7 +249,7 @@ _(**Registered 2026-10-01 at planning** from `.planning/phases/169-dependency-bu
 - [x] **DEPS-11**: LLM SDK stack migrated (`ai` and `@ai-sdk/*` to the latest safe majors) with package, admin-job and E2E gates green; the importer-less `openai` (and `jsonrepair` if still present) removed. (criterion 1, 2 · D-21 · plans 169-09)
 - [ ] **DEPS-12**: Remaining small majors, one commit each, each formatter/sorter major followed by its own reformat commit; `@types/cheerio` removed; consumer-less catalog entries dropped; any major the probe reports as unassigned is bumped or held with a reason. (criterion 1, 2 · D-13, D-23 · plans 169-10)
 - [x] **DEPS-13**: GitHub Actions majors, the trufflehog patch and the Pages actions, with the CI-shape tests updated, observed through `ci-evidence/**` at job level; the two workflows that cannot run there recorded as unobservable until merge. (criterion 1, 4 · D-10 · plans 169-11)
-- [ ] **DEPS-14**: Kit 3 + adapter-node 6 + adapter-static 4 land behind an operator checkpoint if they clear the 30-day rule on the execution date; otherwise held with a dated todo. (criterion 1 · D-15, D-32 · plans 169-12)
+- [x] **DEPS-14**: Kit 3 + adapter-node 6 + adapter-static 4 land behind an operator checkpoint if they clear the 30-day rule on the execution date; otherwise held with a dated todo. (criterion 1 · D-15, D-32 · plans 169-12) — **Satisfied by its hold branch (169-12, 2026-10-03):** the three did not clear (HOLD-AGE; x.0.0s 2.06 d old, clear 2026-10-31T17:24:31Z), so they are held with the dated todo `2026-10-03-sveltekit-3-held-by-the-age-rule.md`; Kit 3 itself has not landed.
 - [ ] **DEPS-15**: The audit gate's liveness is keyed on the audit's own exit status (not the baseline size), with the network-blocked negative control observed; every surviving baseline row carries a current note; the roadmap premise is amended; the phase's todos are filed or updated. (criterion 3 · D-02, D-28, D-29, D-30, D-31 · plans 169-01, 169-13)
 - [ ] **DEPS-16**: Final gates on one HEAD: typecheck, `lint:check`, `format:check`, svelte-check (frontend and docs), unit, pgTAP, production builds, `audit:deps`, the docs link check and ResearchQuote byte-identity, then the full E2E suite under the cardinal rule after a clean `db:reset` on PG17. (criterion 4 · D-26 · plans 169-13)
 
@@ -456,7 +456,7 @@ Roadmap: `.planning/ROADMAP.md` (Phases 137-169 — Phase 165 (Review-Stack Comm
 | DEPS-11 | Phase 169 — Dependency Bump to Latest Safe Versions | Complete |
 | DEPS-12 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
 | DEPS-13 | Phase 169 — Dependency Bump to Latest Safe Versions | Complete |
-| DEPS-14 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
+| DEPS-14 | Phase 169 — Dependency Bump to Latest Safe Versions | Complete |
 | DEPS-15 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
 | DEPS-16 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
 
