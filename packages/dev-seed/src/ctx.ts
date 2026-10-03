@@ -68,7 +68,7 @@ export interface Ctx {
  *  - `answerEmitter`: undefined (CandidatesGenerator falls back to `defaultRandomValidEmit`).
  */
 export function buildCtx(template: Template): Ctx {
-  // Construct a fresh Faker instance per pipeline run (NOT the module-level `faker` singleton + `faker.seed()`). Seeding happens via `.seed()` on the fresh instance immediately after construction — the `new Faker({ seed })` constructor option does not exist in the @faker-js/faker v10 API surface we consume.
+  // Construct a fresh Faker instance per pipeline run (NOT the module-level `faker` singleton + `faker.seed()`). Seeding happens via `.seed()` on the fresh instance immediately after construction. The v10 constructor also accepts a `seed` option, which yields the same sequence; `.seed()` is kept because `makeLocaleFaker` in `locales.ts` and the tests seed their instances the same way, so every Faker this package builds is seeded by one idiom.
   const faker = new Faker({ locale: [en] });
   faker.seed(template.seed ?? 42);
   return {
