@@ -1,37 +1,76 @@
 {
   "version": "1.0",
-  "timestamp": "2026-10-03T09:30:24.551Z",
+  "timestamp": "2026-10-03T10:35:00.000Z",
   "phase": "169",
   "phase_name": "dependency-bump-to-latest-safe-versions",
   "phase_dir": ".planning/phases/169-dependency-bump-to-latest-safe-versions",
-  "plan": 2,
-  "task": 3,
+  "plan": 3,
+  "task": 1,
   "total_tasks": 3,
-  "status": "paused",
+  "status": "ready",
   "completed_tasks": [
-    {"id": 1, "name": "Yarn 4.18.1 at every pin site with install-script allow-list", "status": "done", "commit": "ee5c3d620"},
-    {"id": 2, "name": "Node 24 at every pin site; gates, image smoke, E2E 171/171, ci-evidence", "status": "done", "commit": "9047537eb"},
-    {"id": 3, "name": "@types/node 24 + TypeScript 6; group-1 gates; CI result", "status": "in_progress", "progress": "commits 968113336, ebeaafa5c, 1a8aefc00 in; CI run 37111729145 11/12 green, e2e-tests red twice (voter-journey.spec.ts:1412)"}
+    {
+      "id": 1,
+      "name": "Plan 169-01 (group 0)",
+      "status": "done",
+      "commit": "520dcfb80"
+    },
+    {
+      "id": 2,
+      "name": "Plan 169-02 (group 1: Yarn 4.18.1, Node 24, @types/node 24, TypeScript 6.0.3; CI run 37115289953 12/12 success)",
+      "status": "done",
+      "commit": "ecdd0c344"
+    }
   ],
   "remaining_tasks": [
-    {"id": 3, "name": "169-02 Task 3 step 6: resolve CI e2e-tests red; evidence §4; SUMMARY; deferred-items.md; STATE/ROADMAP", "status": "in_progress"},
-    {"id": 4, "name": "Plans 169-03 through 169-13 (sequential)", "status": "not_started"},
-    {"id": 5, "name": "Phase 169 code review, verification, phase.complete", "status": "not_started"}
+    {
+      "id": 4,
+      "name": "Plans 169-03 through 169-13 (sequential)",
+      "status": "not_started"
+    },
+    {
+      "id": 5,
+      "name": "Phase 169 code review, verification, phase.complete",
+      "status": "not_started"
+    }
   ],
-  "blockers": [
-    {"description": "CI e2e-tests: voter-journey.spec.ts:1412 'all-min walk' expectElectionOptionAndSelect toHaveCount(1) got 2; 1 failed, 88 did-not-run; root cause UNCONFIRMED (suspected CI fixed-window race; Node 24 not ruled out)", "type": "technical", "workaround": "diagnose from CI error-context; fix forward per plan"}
-  ],
+  "blockers": [],
   "async_jobs": [],
   "human_actions_pending": [
-    {"action": "Review the hand-added `braces` row in security/audit-baseline.json (no fixed release; added under D-02 by 169-01)", "context": "DEPS-02 left Pending until reviewed", "blocking": false}
+    {
+      "action": "Review the hand-added `braces` row in security/audit-baseline.json (no fixed release; added under D-02 by 169-01)",
+      "context": "DEPS-02 left Pending until reviewed",
+      "blocking": false
+    }
   ],
   "decisions": [
-    {"decision": "Full E2E may run at >=13.8 GiB free in the Docker VM", "rationale": "operator ruling 2026-10-02", "phase": "166"},
-    {"decision": "Fix frozen docs components at source; re-anchor component freeze to 6090476cc", "rationale": "operator ruling 2026-10-02 (Option B)", "phase": "168"},
-    {"decision": "Legitimacy approvals A, B, C granted", "rationale": "operator 2026-10-03", "phase": "169"},
-    {"decision": "Yarn 4.18: enableScripts false globally; dependenciesMeta.built allow-list for esbuild, supabase (+unrs-resolver in 169-03)", "rationale": "operator ruling 2026-10-03 (Option B)", "phase": "169"}
+    {
+      "decision": "Full E2E may run at >=13.8 GiB free in the Docker VM",
+      "rationale": "operator ruling 2026-10-02",
+      "phase": "166"
+    },
+    {
+      "decision": "Fix frozen docs components at source; re-anchor component freeze to 6090476cc",
+      "rationale": "operator ruling 2026-10-02 (Option B)",
+      "phase": "168"
+    },
+    {
+      "decision": "Legitimacy approvals A, B, C granted",
+      "rationale": "operator 2026-10-03",
+      "phase": "169"
+    },
+    {
+      "decision": "Yarn 4.18: enableScripts false globally; dependenciesMeta.built allow-list for esbuild, supabase (+unrs-resolver in 169-03)",
+      "rationale": "operator ruling 2026-10-03 (Option B)",
+      "phase": "169"
+    },
+    {
+      "decision": "169-02 CI e2e red (run 37111729145) ruled a CI fixed-window race and fixed forward with the route-transition budget (8d91d37f8); run 37115289953 12/12 success",
+      "rationale": "no server request in the failing window; mechanism UNCONFIRMED",
+      "phase": "169"
+    }
   ],
   "uncommitted_files": [],
-  "next_action": "Diagnose 169-02 CI e2e-tests failure (voter-journey.spec.ts:1412), close 169-02, then continue /gsd-execute-phase 169 from 169-03. Read .planning/phases/169-dependency-bump-to-latest-safe-versions/.continue-here.md first.",
+  "next_action": "Continue /gsd-execute-phase 169 from 169-03. Read .planning/phases/169-dependency-bump-to-latest-safe-versions/.continue-here.md first.",
   "context_notes": "Work only in the -gsd worktree. Node 24.21.0 must be on PATH. Orchestrator hand-drives executors at top level; one gsd-executor per plan, sequential mode."
 }

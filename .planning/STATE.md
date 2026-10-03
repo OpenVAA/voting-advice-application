@@ -4,18 +4,18 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 169
 current_phase_name: Dependency Bump to Latest Safe Versions
-current_plan: 2
+current_plan: 3
 status: executing
-stopped_at: Completed 169-01-PLAN.md
-last_updated: "2026-10-03T07:18:57.066Z"
+stopped_at: Completed 169-02-PLAN.md
+last_updated: "2026-10-03T10:30:23.343Z"
 last_activity: 2026-10-03
 last_activity_desc: Phase 169 execution started
-state_head: 5f22a0362c758b8f5061d3137150fee0b328bd7e
+state_head: ecdd0c344e326a2ec72f77ff9f322f13e894a6dd
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
-  completed_plans: 335
+  completed_plans: 336
   percent: 89
 ---
 
@@ -35,7 +35,7 @@ _(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and P
 Phase: 169 (Dependency Bump to Latest Safe Versions) — EXECUTING
 Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
-Current Plan: 2
+Current Plan: 3
 Total Plans in Phase: 13
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
@@ -819,8 +819,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-10-03T07:18:37.804Z
-Stopped at: Completed 169-01-PLAN.md
+Last session: 2026-10-03T10:30:21.903Z
+Stopped at: Completed 169-02-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -1148,6 +1148,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 168 P07 | 24min | 3 tasks | 131 files |
 | Phase 168 P08 | 38min | 3 tasks | 26 files |
 | Phase 169 P01 | 40min | 3 tasks | 37 files |
+| Phase 169 P02 | 3h15m | 3 tasks | 20 files |
 
 ## Deferred Items
 
@@ -2144,6 +2145,10 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 169]: 169-01: AI SDK family (ai, @ai-sdk/*) excluded from the group-0 refresh — @ai-sdk/provider-utils >=3.0.35 pulls undici 5 + @fastify/busboy (NEW high 1240982); majors stay 169-09's
 - [Phase 169]: 169-01: braces GHSA-vfj7-8cjw-p6xm (1240992, no fixed release) accepted by a hand-written baseline row under D-02 — operator review requested (169-EVIDENCE.md section 7)
 - [Phase 169]: 169-01: package typecheck scripts are 'tsc --noEmit --composite false' so a typecheck never writes dist/tsconfig.tsbuildinfo while tsup rebuilds dist (fixes a turbo typecheck/build race)
+- [Phase 169]: 169-02: Yarn 4.18 install scripts stay off globally; only esbuild and supabase build via root dependenciesMeta.built (operator ruling, Option B; unrs-resolver joins in 169-03)
+- [Phase 169]: 169-02: Node 24.21.0 at every pin site in one commit (77d3ce8bf), engines.node >=24.15.0; measured alone 12/12 gates, image smoke, E2E 171/171
+- [Phase 169]: 169-02: TypeScript 6.0.3 + @types/node 24.19.0; TS 6 types:[] default answered by types:[node] in tsconfig.base.json; TS 7 held on typescript-eslint/svelte-check peers
+- [Phase 169]: 169-02: CI run 37111729145 e2e red = fixed-window race on the slow runner (mechanism UNCONFIRMED); results accordion collapse waits use TIMEOUTS.page (8d91d37f8); CI run 37115289953 12/12 success
 
 ### Quick Tasks Completed
 
