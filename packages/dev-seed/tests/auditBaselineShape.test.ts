@@ -66,9 +66,7 @@ interface AuditRun {
 }
 
 type AuditRunKind =
-  | { kind: 'clean' }
-  | { kind: 'did-not-run'; status: number | null }
-  | { kind: 'findings'; lines: Array<string> };
+  { kind: 'clean' } | { kind: 'did-not-run'; status: number | null } | { kind: 'findings'; lines: Array<string> };
 
 interface AuditRunModule {
   classifyAuditRun: (run: AuditRun) => AuditRunKind;

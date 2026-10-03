@@ -50,13 +50,7 @@ async function advanceClick(page: Page, target: Locator): Promise<string | undef
  *  - `question`: a question page, with a choice or a number slider.
  */
 export type VoterStage =
-  | 'home'
-  | 'intro'
-  | 'elections'
-  | 'constituencies'
-  | 'questions-intro'
-  | 'category-intro'
-  | 'question';
+  'home' | 'intro' | 'elections' | 'constituencies' | 'questions-intro' | 'category-intro' | 'question';
 
 /** Every stage, in walk order. */
 const ALL_STAGES: ReadonlyArray<VoterStage> = [

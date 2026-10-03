@@ -35,8 +35,7 @@ import type { CollectionKey } from './permittedKeys';
  * - The bare form carries an array of reference objects.
  */
 export type SentinelPayload =
-  | { externalId?: Array<string>; external_id?: Array<string> }
-  | Array<{ external_id?: string; externalId?: string }>;
+  { externalId?: Array<string>; external_id?: Array<string> } | Array<{ external_id?: string; externalId?: string }>;
 
 /**
  * The collections a `join`-target rule may declare — the tables `linkJoinTables` resolves a PARENT `external_id` to a UUID for.

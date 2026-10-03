@@ -163,22 +163,19 @@ describe('baseTemplate — multi-election row-count shape (derived from e2e/base
 describe('baseTemplate — display-text contracts (bracketed [id] desc naming)', () => {
   it('test-e2e-base-el-reg name is "[el-reg] Regional Election"', () => {
     const e = fixedOf('elections').find((r) => r.external_id === 'test-e2e-base-el-reg') as
-      | { name?: { en?: string } }
-      | undefined;
+      { name?: { en?: string } } | undefined;
     expect(e?.name?.en).toBe('[el-reg] Regional Election');
   });
 
   it('test-e2e-base-el-mun name is "[el-mun] Municipal Election"', () => {
     const e = fixedOf('elections').find((r) => r.external_id === 'test-e2e-base-el-mun') as
-      | { name?: { en?: string } }
-      | undefined;
+      { name?: { en?: string } } | undefined;
     expect(e?.name?.en).toBe('[el-mun] Municipal Election');
   });
 
   it('test-e2e-base-ca-aa-special is the partial-answer "Special" candidate under party AA', () => {
     const c = fixedOf('candidates').find((r) => r.external_id === 'test-e2e-base-ca-aa-special') as
-      | { first_name?: string; organization?: { external_id?: string } }
-      | undefined;
+      { first_name?: string; organization?: { external_id?: string } } | undefined;
     expect(c?.first_name).toBe('Special');
     expect(c?.organization?.external_id).toBe('test-e2e-base-or-aa');
   });
@@ -187,16 +184,14 @@ describe('baseTemplate — display-text contracts (bracketed [id] desc naming)',
 describe('baseTemplate — registration + hierarchy invariants', () => {
   it('test-e2e-base-ca-aa-hidden has NO terms_of_use_accepted (candidate-level hidden)', () => {
     const c = fixedOf('candidates').find((r) => r.external_id === 'test-e2e-base-ca-aa-hidden') as
-      | { terms_of_use_accepted?: string }
-      | undefined;
+      { terms_of_use_accepted?: string } | undefined;
     expect(c).toBeDefined();
     expect(c?.terms_of_use_accepted).toBeUndefined();
   });
 
   it('test-e2e-base-ca-aa-unregistered has NO terms_of_use_accepted and NO answers', () => {
     const c = fixedOf('candidates').find((r) => r.external_id === 'test-e2e-base-ca-aa-unregistered') as
-      | { terms_of_use_accepted?: string; answersByExternalId?: unknown }
-      | undefined;
+      { terms_of_use_accepted?: string; answersByExternalId?: unknown } | undefined;
     expect(c).toBeDefined();
     expect(c?.terms_of_use_accepted).toBeUndefined();
     expect(c?.answersByExternalId).toBeUndefined();
@@ -204,8 +199,7 @@ describe('baseTemplate — registration + hierarchy invariants', () => {
 
   it('test-e2e-base-ca-independent has no organization ref (independent candidate)', () => {
     const c = fixedOf('candidates').find((r) => r.external_id === 'test-e2e-base-ca-independent') as
-      | { organization?: unknown }
-      | undefined;
+      { organization?: unknown } | undefined;
     expect(c).toBeDefined();
     expect(c?.organization).toBeUndefined();
   });
@@ -232,15 +226,13 @@ describe('baseTemplate — registration + hierarchy invariants', () => {
 describe('baseTemplate — question scoping sentinels', () => {
   it('test-e2e-base-qg-opin-el-reg carries an _elections scoping sentinel for test-e2e-base-el-reg', () => {
     const cat = fixedOf('question_categories').find((r) => r.external_id === 'test-e2e-base-qg-opin-el-reg') as
-      | { _elections?: { external_id?: Array<string> } }
-      | undefined;
+      { _elections?: { external_id?: Array<string> } } | undefined;
     expect(cat?._elections?.external_id).toContain('test-e2e-base-el-reg');
   });
 
   it('test-e2e-base-qg-opin-co-mun-se-sw carries a _constituencies sentinel for the SE/SW municipalities', () => {
     const cat = fixedOf('question_categories').find((r) => r.external_id === 'test-e2e-base-qg-opin-co-mun-se-sw') as
-      | { _constituencies?: { external_id?: Array<string> } }
-      | undefined;
+      { _constituencies?: { external_id?: Array<string> } } | undefined;
     expect(cat?._constituencies?.external_id).toEqual(
       expect.arrayContaining(['test-e2e-base-co-mun-se', 'test-e2e-base-co-mun-sw'])
     );
