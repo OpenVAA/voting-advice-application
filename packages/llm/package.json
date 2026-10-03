@@ -30,7 +30,6 @@
     "@openvaa/core": "workspace:^",
     "ai": "^7.0.116",
     "js-yaml": "catalog:",
-    "openai": "^4.96.0",
     "zod": "catalog:"
   }
 }
