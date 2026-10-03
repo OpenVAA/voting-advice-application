@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
 import { callerMayOnProject } from './callerAuthority.ts';
 import { writeEntityGrant } from './entityGrant.ts';
 import { requireEnv } from './envConfig.ts';

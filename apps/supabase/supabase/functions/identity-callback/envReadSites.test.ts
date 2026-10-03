@@ -1,7 +1,7 @@
 /**
  * Source-level guard over `index.ts`'s environment READ SITES.
  *
- * `index.ts` cannot be imported by vitest — it resolves `https://esm.sh/@supabase/supabase-js@2` and `https://deno.land/x/jose@v5.9.6/index.ts`, which are Deno-only remote specifiers. So the property asserted here ("every required variable is read through a guard that names it when unset") is asserted against the module's SOURCE TEXT, the way this repository already gates call shapes it cannot execute (`scripts/assert-project-scoped-queries.mjs`).
+ * `index.ts` cannot be imported by vitest — it imports `@supabase/supabase-js` and `jose` through `npm:` specifiers, which only Deno resolves. So the property asserted here ("every required variable is read through a guard that names it when unset") is asserted against the module's SOURCE TEXT, the way this repository already gates call shapes it cannot execute (`scripts/assert-project-scoped-queries.mjs`).
  *
  * Why this exists: five of the seven required variables threw `ERR_ENV_UNCONFIGURED` naming the variable, while `IDENTITY_PROVIDER_DECRYPTION_JWKS` and `IDENTITY_PROVIDER_JWKS_URI` were read as `Deno.env.get(...)!` and threw incidentally instead — a `SyntaxError` from `JSON.parse(undefined)` and a `TypeError` from `new URL(undefined)`. Both still failed closed, so this was a diagnostics defect rather than a security one: an operator with a half-configured deployment got an error naming neither the variable nor configuration as the cause. The two reads now go through `requireEnv`, and this file is what stops them drifting back.
  *

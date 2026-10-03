@@ -3,7 +3,7 @@
  *
  * The flow's gate is checked against the role x permission matrix on every build, so a later change to the gate reddens here rather than diverging from the matrix unnoticed.
  *
- * In the shape of `identity-callback/envReadSites.test.ts`, and for the same reason: `index.ts` cannot be imported by vitest because it resolves `https://esm.sh/@supabase/supabase-js@2`, a Deno-only remote specifier, so the properties below are asserted against the module's SOURCE TEXT, the way this repository gates call shapes it cannot execute. The grant WRITE lives in `entityGrant.ts`, which reaches no remote origin, so that half is asserted by IMPORT rather than by text. A property that can be asserted by import is better asserted that way.
+ * In the shape of `identity-callback/envReadSites.test.ts`, and for the same reason: `index.ts` cannot be imported by vitest because it imports `@supabase/supabase-js` through an `npm:` specifier, which only Deno resolves, so the properties below are asserted against the module's SOURCE TEXT, the way this repository gates call shapes it cannot execute. The grant WRITE lives in `entityGrant.ts`, which reaches no remote origin, so that half is asserted by IMPORT rather than by text. A property that can be asserted by import is better asserted that way.
  *
  * THE PERMISSION VOCABULARY IS DERIVED, NEVER TRANSCRIBED, and so are the four grant scopes and the two role levels. All three are read out of the declarative enum source at `schema/000-enums.sql`. Deriving them keeps this file from becoming a second copy of the matrix vocabulary, and reading them as TEXT rather than importing the generated types is why this gate adds no workspace dependency.
  *

@@ -24,8 +24,8 @@
  * - SUPABASE_SERVICE_ROLE_KEY: Service role key for admin operations (auto-set by Supabase)
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import * as jose from 'https://deno.land/x/jose@v5.9.6/index.ts';
+import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
+import * as jose from 'npm:jose@6.2.12';
 import { createCandidate, deleteCandidate, findExistingCandidate } from './candidateRecord.ts';
 import { writeEntityGrant } from './entityGrant.ts';
 import { extractIdentityClaims, resolveProviderConfig } from './claimConfig.ts';
@@ -94,7 +94,7 @@ async function verifyJwt(jwt: string): Promise<jose.JWTPayload> {
  * Returns the user ID if found, null otherwise.
  */
 async function findUserByIdentityMatch(
-  // reason: the supabase-js client is imported from an esm.sh URL at runtime and the Deno type-check has no local declaration for SupabaseClient<Database> to narrow to. Only `.auth.admin.listUsers` is used, and its result is destructured and guarded below.
+  // reason: this function has no generated `Database` type to parameterise `SupabaseClient` with, and nothing type-checks this file (no `deno check` runs, and vitest reads it only as source text), so a client type here would go unchecked. Only `.auth.admin.listUsers` is used, and its result is destructured and guarded below.
   // deno-lint-ignore no-explicit-any
   supabaseAdmin: any,
   identityMatchValue: string

@@ -6,6 +6,8 @@
  * No mocks and no network -- the layer-2 key pair is generated locally and the token is verified against its own public half.
  */
 
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { describe, it, expect } from 'vitest';
 import * as jose from 'jose';
 import { requireVerifyClaimBinding } from './verifyConfig';
@@ -66,7 +68,7 @@ describe('requireVerifyClaimBinding', () => {
 
 describe('a wrong-audience, wrong-issuer token under the two options shapes', () => {
   it('is accepted under the pre-fix empty options object and rejected under the guard output', async () => {
-    // Version skew, stated rather than elided: this file runs jose@6.2.1 from node_modules while the Edge Function runs jose@v5.9.6 from deno.land. The two majors were measured to agree on the presence-versus-value semantics this test turns on, and layer 1 above -- the pure guard -- is the version-independent primary proof. This layer corroborates that the guard's OUTPUT is the shape that actually rejects.
+    // This file runs jose from node_modules, and the last case in this file holds it to the exact version the Edge Function pins, so the presence-versus-value semantics this test turns on are the function's own. Layer 1 above -- the pure guard -- stays the version-independent primary proof; this layer corroborates that the guard's OUTPUT is the shape that actually rejects.
     const { publicKey, privateKey } = await jose.generateKeyPair('RS256');
     const jwt = await new jose.SignJWT({ sub: 'test-subject' })
       .setProtectedHeader({ alg: 'RS256' })
@@ -89,5 +91,14 @@ describe('a wrong-audience, wrong-issuer token under the two options shapes', ()
     await expect(jose.jwtVerify(jwt, publicKey, options)).rejects.toThrow(
       expect.objectContaining({ code: 'ERR_JWT_CLAIM_VALIDATION_FAILED' })
     );
+  });
+});
+
+describe('the jose this file runs', () => {
+  it('is the exact version the Edge Function pins', () => {
+    const indexSource = readFileSync(new URL('./index.ts', import.meta.url), 'utf8');
+    const pinned = /from 'npm:jose@([^']+)'/.exec(indexSource)?.[1];
+    const installed: string = createRequire(import.meta.url)('jose/package.json').version;
+    expect(pinned).toBe(installed);
   });
 });
