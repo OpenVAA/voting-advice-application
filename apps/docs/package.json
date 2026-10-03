@@ -39,7 +39,7 @@
     "eslint": "catalog:",
     "eslint-config-prettier": "catalog:",
     "eslint-plugin-svelte": "catalog:",
-    "glob": "^11.0.0",
+    "glob": "^13.0.6",
     "mdsvex": "^0.12.6",
     "playwright": "^1.63.0",
     "prettier": "catalog:",
