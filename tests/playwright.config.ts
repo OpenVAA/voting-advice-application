@@ -227,13 +227,15 @@ const BASE_PROJECTS: Array<Project> = [
     : []),
 
   // Performance budgets: page load timing assertions (default-on; disable with PLAYWRIGHT_NO_PERF).
+  //
+  // Tracing is OFF for this project only. Trace recording runs in the browser while the measured window is open, so its cost lands inside `timeToMatches`. Measured on the same results reload, idle dev server, 3 runs each (2026-10-03): Playwright 1.63 traced 584–611 ms, untraced 241–244 ms; Playwright 1.58 traced 213–243 ms. The 5000 ms budget was calibrated on a window that carried no such overhead, and it stays unchanged. A failing run still prints the spec's own `Results performance:` diagnostics (time to matches, fetch count, ttfb).
   ...(process.env.PLAYWRIGHT_NO_PERF
     ? []
     : [
         {
           name: 'performance',
           testDir: './tests/specs/perf',
-          use: { ...devices['Desktop Chrome'] },
+          use: { ...devices['Desktop Chrome'], trace: 'off' },
           dependencies: ['data-setup-base']
         }
       ]),

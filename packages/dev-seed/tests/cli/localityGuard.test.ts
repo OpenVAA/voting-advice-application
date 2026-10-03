@@ -26,6 +26,9 @@ const DUMMY_KEY = 'not-a-real-key';
 const UNREACHABLE_NON_LOCAL = 'http://0.0.0.0:9';
 const UNREACHABLE_LOCAL = 'http://127.0.0.1:9';
 
+// The teardown CLI's first request past the guard is a read, and supabase-js retries a read whose fetch rejects three times with 1 s, 2 s and 4 s back-off, so reaching "Cannot reach Supabase" takes about 7 s, longer than the default test timeout.
+const PAST_TEARDOWN_GUARD = { timeout: 30000 };
+
 interface CliRun {
   status: number | null;
   stdout: string;
@@ -68,21 +71,21 @@ describe('teardown CLI locality guard', () => {
     expect(run.stderr).toContain(REFUSAL_MARKER);
   });
 
-  it('gets past the guard with --allow-remote', () => {
+  it('gets past the guard with --allow-remote', PAST_TEARDOWN_GUARD, () => {
     const run = teardown(UNREACHABLE_NON_LOCAL, ['--allow-remote']);
     expect(run.status).toBe(1);
     expect(run.stderr).toContain(`Cannot reach Supabase at ${UNREACHABLE_NON_LOCAL}`);
     expect(run.stderr).not.toContain(REFUSAL_MARKER);
   });
 
-  it('gets past the guard with DEV_SEED_ALLOW_REMOTE=1', () => {
+  it('gets past the guard with DEV_SEED_ALLOW_REMOTE=1', PAST_TEARDOWN_GUARD, () => {
     const run = teardown(UNREACHABLE_NON_LOCAL, [], '1');
     expect(run.status).toBe(1);
     expect(run.stderr).toContain(`Cannot reach Supabase at ${UNREACHABLE_NON_LOCAL}`);
     expect(run.stderr).not.toContain(REFUSAL_MARKER);
   });
 
-  it('lets a local host through', () => {
+  it('lets a local host through', PAST_TEARDOWN_GUARD, () => {
     const run = teardown(UNREACHABLE_LOCAL);
     expect(run.status).toBe(1);
     expect(run.stderr).toContain('Cannot reach Supabase');

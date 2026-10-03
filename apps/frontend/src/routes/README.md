@@ -9,7 +9,7 @@ Locale handling is managed by Paraglide JS via the reroute hook in `src/hooks.ts
 - Voters app routes are in `(voters)/`, with those requiring a selected election and constituency under `(voters)/(located)/`
 - Candidate app routes are in `candidate/`, and the ones requiring a signed-in candidate under `candidate/(protected)/`
 - Admin app routes are in `admin/`, and the ones requiring the `admin` role under `admin/(protected)/`
-- Server endpoints are in `api/` — `api/admin/jobs/**` (job control, each guarded on the `admin` role), `api/auth/**`, `api/oidc/**` (the bank-authentication provider exchange), plus `api/candidate/preregister`, `api/data/[collection]`, `api/feedback` and `api/cache`
+- Server endpoints are in `api/` — `api/admin/jobs/**` (job control, each guarded on the `admin` role), `api/auth/**`, `api/oidc/**` (the bank-authentication provider exchange), plus `api/candidate/preregister`, `api/data/[collection]` and `api/feedback`
 
 The only non-route file left directly in this directory is `+error.svelte`. The app
 shell components that used to sit here now live outside the router's namespace, at

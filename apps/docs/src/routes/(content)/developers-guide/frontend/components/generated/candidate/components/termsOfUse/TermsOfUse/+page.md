@@ -10,4 +10,4 @@ A utility component for displaying candidate app terms of use and privacy statem
 
 ## Source
 
-[apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUse.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUse.svelte)
+- Component: [apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUse.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUse.svelte)

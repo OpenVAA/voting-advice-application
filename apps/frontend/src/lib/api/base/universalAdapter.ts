@@ -1,8 +1,5 @@
 import qs from 'qs';
-import { constants } from '$lib/utils/constants';
 import { addHeader } from '../utils/addHeader';
-import { hasAuthHeaders } from '../utils/authHeaders';
-import { cachifyUrl } from '../utils/cachifyUrl';
 import { isRefusedResponse } from '../utils/isRefusedResponse';
 import { parseResponse } from '../utils/parseResponse';
 import type { ParsedResponse, ResponseParser } from '../utils/parseResponse';
@@ -11,7 +8,7 @@ import type { AdapterConfig, FetchOptions, GetOptions, PostOptions, SearchParams
 const DEFAULT_PARSER = 'json' as const;
 
 /**
- * The abstract base class for all the universal Data API services. It provides the `fetch` handling, wrapped in possible caching, that all of them share.
+ * The abstract base class for all the universal Data API services. It provides the `fetch` handling that all of them share.
  */
 export abstract class UniversalAdapter {
   readonly #fetch: Fetch;
@@ -24,37 +21,22 @@ export abstract class UniversalAdapter {
   }
 
   /**
-   * The `fetch` wrapped in possible caching.
+   * Calls the request `fetch` with `url` and `init`, adding an `Authorization: Bearer` header when `authToken` is given.
    * @param url - The URL to fetch
    * @param init - The request options.
    * @param options - Additional options for the fetch request.
-   *
-   * `GET` requests are cached if:
-   * - The `CACHE_ENABLED` env variable is `'true'`.
-   * - The `disableCache` option is not set in the `fetch` options.
-   * - The `Authorization` header is not present.
+   * @throws If the request fails or the response is a refusal.
    */
-  async fetch(
-    url: string | URL,
-    init: RequestInit = {},
-    { authToken, disableCache }: FetchOptions = {}
-  ): Promise<Response> {
+  async fetch(url: string | URL, init: RequestInit = {}, { authToken }: FetchOptions = {}): Promise<Response> {
     const { headers, ...initRest } = init;
     const fullHeaders = authToken ? addHeader(headers, 'Authorization', `Bearer ${authToken}`) : headers;
-
-    const isCacheEnabled =
-      constants.PUBLIC_CACHE_ENABLED &&
-      !disableCache &&
-      (!init?.method || init.method === 'GET') &&
-      !hasAuthHeaders(fullHeaders);
-    const maybeCachedUrl = isCacheEnabled ? cachifyUrl(url) : url;
 
     const fullInit: RequestInit = { ...initRest };
     if (fullHeaders) fullInit.headers = fullHeaders;
 
-    const response = await this.#fetch(maybeCachedUrl, fullInit).catch((error) => {
+    const response = await this.#fetch(url, fullInit).catch((error) => {
       throw new Error(
-        `Error with UniversalAdapter.fetch when fetching '${maybeCachedUrl}': ${error instanceof Error ? error.message : error}`
+        `Error with UniversalAdapter.fetch when fetching '${url}': ${error instanceof Error ? error.message : error}`
       );
     });
 
@@ -63,7 +45,7 @@ export abstract class UniversalAdapter {
       const body = await response.json().catch(() => ({}));
       const message = body?.message ?? '(Could not parse error message from Response.)';
       throw new Error(
-        `Error with UniversalAdapter.fetch when parsing response from '${maybeCachedUrl}': ${response.status} • ${message}`
+        `Error with UniversalAdapter.fetch when parsing response from '${url}': ${response.status} • ${message}`
       );
     }
 

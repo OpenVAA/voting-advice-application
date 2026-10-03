@@ -1,0 +1,260 @@
+Validating docs links (check mode, no files are written)...
+
+
+============================================================
+VALIDATION SUMMARY
+============================================================
+Markdown files:       197
+Internal md links:    173
+Fixed links:          0
+Literal hrefs:        8 (dynamic, not checked: 12)
+Navigation leaves:    92
+Redirect stubs:       0
+Anchors checked:      23
+Source files:         213 (scanned for GitHub links)
+GitHub links:         370
+Inbound references:   42 (patterns skipped: 1)
+============================================================
+
+FINDINGS:
+
+apps/docs/src/routes/(content)/developers-guide/candidate-user-management/mock-data/+page.md:
+  [anchor] apps/docs/src/routes/(content)/developers-guide/candidate-user-management/mock-data/+page.md:3
+    [Mock users](/developers-guide/backend/mock-data-generation/#mock-users)
+    → No id "mock-users" on apps/docs/src/routes/(content)/developers-guide/backend/mock-data-generation/+page.md
+
+apps/docs/src/routes/(content)/developers-guide/frontend/contexts/+page.md:
+  [anchor] apps/docs/src/routes/(content)/developers-guide/frontend/contexts/+page.md:9
+    [example of the data loading cascade](#example-loading-cascade-for-the-voterlocatedquestions-route-example)
+    → No id "example-loading-cascade-for-the-voterlocatedquestions-route-example" on apps/docs/src/routes/(content)/developers-guide/frontend/contexts/+page.md
+
+apps/docs/src/routes/(content)/developers-guide/troubleshooting/+page.md:
+  [anchor] apps/docs/src/routes/(content)/developers-guide/troubleshooting/+page.md:24
+    [Docker error: ”No space left on device” error](#docker-error-no-space-left-on-device-errordocker-no-space-left-on-device-error)
+    → No id "docker-error-no-space-left-on-device-errordocker-no-space-left-on-device-error" on apps/docs/src/routes/(content)/developers-guide/troubleshooting/+page.md
+
+apps/docs/src/routes/(content)/publishers-guide/app-settings/+page.md:
+  [anchor] apps/docs/src/routes/(content)/publishers-guide/app-settings/+page.md:14
+    [Customization](#customization)
+    → No id "customization" on apps/docs/src/routes/(content)/publishers-guide/app-settings/+page.md
+
+apps/docs/src/routes/(content)/developers-guide/backend/authentication/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/authentication/+page.md:5
+    [Users’ permissions plugin](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/extensions/users-permissions/strapi-server.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/extensions/users-permissions/strapi-server.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/authentication/+page.md:18
+    [api.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/util/api.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/util/api.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/authentication/+page.md:19
+    [Users’ permissions plugin](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/extensions/users-permissions/strapi-server.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/extensions/users-permissions/strapi-server.ts
+
+apps/docs/src/routes/(content)/developers-guide/backend/default-data-loading/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/default-data-loading/+page.md:7
+    [Question Types](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/functions/loadDefaultData.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/functions/loadDefaultData.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/default-data-loading/+page.md:8
+    [App Settings](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/functions/loadDefaultAppSettings.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/functions/loadDefaultAppSettings.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/default-data-loading/+page.md:9
+    [Translation overrides](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/functions/loadDynamicTranslations.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/functions/loadDynamicTranslations.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/default-data-loading/+page.md:11
+    [setDefaultApiPermissions.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/functions/setDefaultApiPermissions.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/functions/setDefaultApiPermissions.ts
+
+apps/docs/src/routes/(content)/developers-guide/backend/mock-data-generation/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/mock-data-generation/+page.md:9
+    [generateMockData](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/functions/generateMockData.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/functions/generateMockData.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/mock-data-generation/+page.md:48
+    [mockUsers](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/functions/mockData/mockUsers.json)
+    → Not a tracked file or directory: backend/vaa-strapi/src/functions/mockData/mockUsers.json
+
+apps/docs/src/routes/(content)/developers-guide/backend/openvaa-admin-tools-plugin-for-strapi/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/openvaa-admin-tools-plugin-for-strapi/+page.md:22
+    [plugin config](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/config/plugins.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/config/plugins.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/openvaa-admin-tools-plugin-for-strapi/+page.md:41
+    [docker-compose](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/docker-compose.dev.yml)
+    → Not a tracked file or directory: backend/vaa-strapi/docker-compose.dev.yml
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/openvaa-admin-tools-plugin-for-strapi/+page.md:59
+    [RegistrationEmailToOne](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/plugins/openvaa-admin-tools/admin/src/components/RegistrationEmailToOne.tsx)
+    → Not a tracked file or directory: backend/vaa-strapi/src/plugins/openvaa-admin-tools/admin/src/components/RegistrationEmailToOne.tsx
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/openvaa-admin-tools-plugin-for-strapi/+page.md:60
+    [`email.sendEmail`](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/services/email.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/services/email.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/openvaa-admin-tools-plugin-for-strapi/+page.md:70
+    [RegistrationEmailToAll](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/plugins/openvaa-admin-tools/adminsrc/components/RegistrationEmailToAll.tsx)
+    → Not a tracked file or directory: backend/vaa-strapi/src/plugins/openvaa-admin-tools/adminsrc/components/RegistrationEmailToAll.tsx
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/openvaa-admin-tools-plugin-for-strapi/+page.md:71
+    [`email.sendEmailToUnregistered`](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/services/email.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/services/email.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/openvaa-admin-tools-plugin-for-strapi/+page.md:86
+    [ImportData](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/plugins/openvaa-admin-tools/adminsrc/components/ImportData.tsx)
+    → Not a tracked file or directory: backend/vaa-strapi/src/plugins/openvaa-admin-tools/adminsrc/components/ImportData.tsx
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/openvaa-admin-tools-plugin-for-strapi/+page.md:87
+    [`data.import`](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/services/data.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/services/data.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/openvaa-admin-tools-plugin-for-strapi/+page.md:98
+    [DeleteData](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/plugins/openvaa-admin-tools/adminsrc/components/DeleteData.tsx)
+    → Not a tracked file or directory: backend/vaa-strapi/src/plugins/openvaa-admin-tools/adminsrc/components/DeleteData.tsx
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/openvaa-admin-tools-plugin-for-strapi/+page.md:99
+    [`data.delete`](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/services/data.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/services/data.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/openvaa-admin-tools-plugin-for-strapi/+page.md:110
+    [FindData](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/plugins/openvaa-admin-tools/adminsrc/components/FindData.tsx)
+    → Not a tracked file or directory: backend/vaa-strapi/src/plugins/openvaa-admin-tools/adminsrc/components/FindData.tsx
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/openvaa-admin-tools-plugin-for-strapi/+page.md:111
+    [`data.find`](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/services/data.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/services/data.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/openvaa-admin-tools-plugin-for-strapi/+page.md:122
+    [SendEmail](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/plugins/openvaa-admin-tools/adminsrc/components/SendEmail.tsx)
+    → Not a tracked file or directory: backend/vaa-strapi/src/plugins/openvaa-admin-tools/adminsrc/components/SendEmail.tsx
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/openvaa-admin-tools-plugin-for-strapi/+page.md:124
+    [`data.findCandidates`](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/services/data.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/services/data.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/openvaa-admin-tools-plugin-for-strapi/+page.md:125
+    [`email.sendEmail`](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/services/email.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/services/email.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/openvaa-admin-tools-plugin-for-strapi/+page.md:139
+    [route policies](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/routes/admin/index.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/src/routes/admin/index.ts
+
+apps/docs/src/routes/(content)/developers-guide/backend/plugins/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/plugins/+page.md:6
+    [plugins.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/config/plugins.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/config/plugins.ts
+
+apps/docs/src/routes/(content)/developers-guide/backend/security/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/security/+page.md:9
+    [acl.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/util/acl.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/util/acl.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/security/+page.md:9
+    [policies](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/policies/)
+    → Not a tracked file or directory: backend/vaa-strapi/src/policies
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/security/+page.md:11
+    [strapi-server.js](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/extensions/users-permissions/strapi-server.js)
+    → Not a tracked file or directory: backend/vaa-strapi/src/extensions/users-permissions/strapi-server.js
+
+apps/docs/src/routes/(content)/developers-guide/candidate-user-management/registration-process-in-strapi/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/candidate-user-management/registration-process-in-strapi/+page.md:5
+    [`candidate.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/extensions/users-permissions/controllers/candidate.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/extensions/users-permissions/controllers/candidate.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/candidate-user-management/registration-process-in-strapi/+page.md:7
+    [`schema.json`](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/extensions/users-permissions/content-types/user/schema.json)
+    → Not a tracked file or directory: backend/vaa-strapi/src/extensions/users-permissions/content-types/user/schema.json
+  [github-path] apps/docs/src/routes/(content)/developers-guide/candidate-user-management/registration-process-in-strapi/+page.md:11
+    [`authenticationStore.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/utils/authenticationStore.ts)
+    → Not a tracked file or directory: apps/frontend/src/lib/utils/authenticationStore.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/candidate-user-management/registration-process-in-strapi/+page.md:15
+    [email-templates](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/config/email-templates)
+    → Not a tracked file or directory: backend/vaa-strapi/config/email-templates
+
+apps/docs/src/routes/(content)/developers-guide/configuration/app-customization/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-customization/+page.md:14
+    [app-customization route](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/api/app-customization/routes/app-customization.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/api/app-customization/routes/app-customization.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-customization/+page.md:15
+    [strapiDataProvider.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/strapi/dataProvider/strapiDataProvider.ts)
+    → Not a tracked file or directory: apps/frontend/src/lib/api/adapters/strapi/dataProvider/strapiDataProvider.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-customization/+page.md:16
+    [app-customization route](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/api/app-customization/routes/app-customization.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/api/app-customization/routes/app-customization.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-customization/+page.md:17
+    [strapiData.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/strapi/strapiData.type.ts)
+    → Not a tracked file or directory: apps/frontend/src/lib/api/adapters/strapi/strapiData.type.ts
+
+apps/docs/src/routes/(content)/developers-guide/configuration/app-settings/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-settings/+page.md:15
+    [`settings` store](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/stores/stores.ts)
+    → Not a tracked file or directory: apps/frontend/src/lib/stores/stores.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-settings/+page.md:31
+    [`app-settings` route controller](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/api/app-setting/controllers/app-setting.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/api/app-setting/controllers/app-setting.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-settings/+page.md:31
+    [`cardContents`](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/functions/utils/appSettings.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/functions/utils/appSettings.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-settings/+page.md:32
+    [strapiDataProvider.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/strapi/dataProvider/strapiDataProvider.ts)
+    → Not a tracked file or directory: apps/frontend/src/lib/api/adapters/strapi/dataProvider/strapiDataProvider.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-settings/+page.md:34
+    [strapiData.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/strapi/strapiData.type.ts)
+    → Not a tracked file or directory: apps/frontend/src/lib/api/adapters/strapi/strapiData.type.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-settings/+page.md:35
+    [strapiDataProvider.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/strapi/dataProvider/strapiDataProvider.ts)
+    → Not a tracked file or directory: apps/frontend/src/lib/api/adapters/strapi/dataProvider/strapiDataProvider.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-settings/+page.md:36
+    [loadDefaultAppSettings](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/functions/loadDefaultAppSettings.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/functions/loadDefaultAppSettings.ts
+
+apps/docs/src/routes/(content)/developers-guide/contributing/code-style-guide/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/contributing/code-style-guide/+page.md:233
+    [`IconBase`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/icon/base/IconBase.svelte)
+    → Not a tracked file or directory: apps/frontend/src/lib/components/icon/base/IconBase.svelte
+  [github-path] apps/docs/src/routes/(content)/developers-guide/contributing/code-style-guide/+page.md:233
+    [type definition](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/icon/base/IconBase.type.ts)
+    → Not a tracked file or directory: apps/frontend/src/lib/components/icon/base/IconBase.type.ts
+
+apps/docs/src/routes/(content)/developers-guide/deployment/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/deployment/+page.md:32
+    [Strapi plugin config](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/config/plugins.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/config/plugins.ts
+
+apps/docs/src/routes/(content)/developers-guide/development/running-the-development-environment/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/development/running-the-development-environment/+page.md:37
+    [docker-compose.dev.yml](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/docker-compose.dev.yml)
+    → Not a tracked file or directory: backend/vaa-strapi/docker-compose.dev.yml
+
+apps/docs/src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/entityCard/EntityCardAction/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/entityCard/EntityCardAction/+page.md:27
+    [apps/frontend/src/lib/dynamic-components/entityCard/EntityCardAction.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityCard/EntityCardAction.svelte)
+    → Not a tracked file or directory: apps/frontend/src/lib/dynamic-components/entityCard/EntityCardAction.svelte
+  [github-path] apps/docs/src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/entityCard/EntityCardAction/+page.md:29
+    [apps/frontend/src/lib/dynamic-components/entityCard/EntityCardAction.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityCard/EntityCardAction.type.ts)
+    → Not a tracked file or directory: apps/frontend/src/lib/dynamic-components/entityCard/EntityCardAction.type.ts
+
+apps/docs/src/routes/(content)/developers-guide/frontend/data-api/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/frontend/data-api/+page.md:28
+    [strapi/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/strapi)
+    → Not a tracked file or directory: apps/frontend/src/lib/api/adapters/strapi
+  [github-path] apps/docs/src/routes/(content)/developers-guide/frontend/data-api/+page.md:35
+    [data](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/data)
+    → Not a tracked file or directory: apps/frontend/data
+  [github-path] apps/docs/src/routes/(content)/developers-guide/frontend/data-api/+page.md:46
+    [data/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/data)
+    → Not a tracked file or directory: apps/frontend/data
+
+apps/docs/src/routes/(content)/developers-guide/localization/locale-selection-step-by-step/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/localization/locale-selection-step-by-step/+page.md:25
+    [`+layout.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/routes/[[lang=locale]]/+layout.ts)
+    → Not a tracked file or directory: apps/frontend/src/routes/[[lang=locale]]/+layout.ts
+
+README.md:
+  [inbound] README.md:16
+    /developers-guide/contributing
+    → No page at /developers-guide/contributing
+
+apps/frontend/src/routes/candidate/README.md:
+  [inbound] apps/frontend/src/routes/candidate/README.md:5
+    /developers-guide/candidate-user-management
+    → No page at /developers-guide/candidate-user-management
+
+packages/app-shared/src/settings/README.md:
+  [inbound] packages/app-shared/src/settings/README.md:5
+    docs/src/routes/developers-guide/configuration/static-settings/+page.md
+    → Not a tracked file or directory: docs/src/routes/developers-guide/configuration/static-settings/+page.md
+  [inbound] packages/app-shared/src/settings/README.md:6
+    docs/src/routes/developers-guide/configuration/app-settings/+page.md
+    → Not a tracked file or directory: docs/src/routes/developers-guide/configuration/app-settings/+page.md
+
+Findings by class:
+  md-link: 0
+  svelte-href: 0
+  nav-route: 0
+  anchor: 4
+  stub: 0
+  github-path: 54
+  inbound: 4
+Total findings: 62
+exit=1

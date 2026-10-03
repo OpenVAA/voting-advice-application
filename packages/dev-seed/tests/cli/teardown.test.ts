@@ -77,7 +77,7 @@ vi.mock('@supabase/supabase-js', () => {
 });
 
 // Import AFTER vi.mock so `createClient` is the mocked version.
-// eslint-disable-next-line import/first
+// eslint-disable-next-line import-x/first
 import { SupabaseAdminClient } from '../../src/supabaseAdminClient';
 
 function resetStorageMockState(): void {
@@ -207,9 +207,9 @@ describe('SupabaseAdminClient storage cleanup surface', () => {
 // runTeardown orchestrator
 // ---------------------------------------------------------------------------
 
-// eslint-disable-next-line import/first
+// eslint-disable-next-line import-x/first
 import { runTeardown } from '../../src/cli/teardown';
-// eslint-disable-next-line import/first
+// eslint-disable-next-line import-x/first
 import { TEARDOWN_USAGE } from '../../src/cli/teardown-help';
 
 interface FakeClient {

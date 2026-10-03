@@ -60,7 +60,7 @@ SELECT
 -- =====================================================================
 -- Section 2: Candidate can UPDATE own allowed columns
 -- =====================================================================
--- ⚠ THE SELF-EDIT POLICY IS THIS SECTION'S SUBJECT, AND 162-13 ADDED A SECOND GATE IN FRONT OF IT. `enforce_entity_immutability()` refuses a name change on a CONFIRMED entity row to a caller holding no `entity.edit_immutable`, and the shared fixture confirms `candidate_a`. Unconfirming the row as the owner for the length of this section is what keeps the two assertions below measuring the ROW POLICY they were written for rather than the trigger's condition; the assertion added after them restores the confirmation and observes that the identical statement is then refused, which is strictly more than the pair alone ever said and is the only thing in this file that would notice the freeze being rewritten as absolute.
+-- ⚠ THE SELF-EDIT POLICY IS THIS SECTION'S SUBJECT, AND A SECOND GATE STANDS IN FRONT OF IT. `enforce_entity_immutability()` refuses a name change on a CONFIRMED entity row to a caller holding no `entity.edit_immutable`, and the shared fixture confirms `candidate_a`. Unconfirming the row as postgres for the length of this section keeps the two assertions below measuring the ROW POLICY rather than the trigger's condition; the assertion after them restores the confirmation and observes that the identical statement is then refused, which is the only thing in this file that would notice the freeze being rewritten as absolute.
 SELECT
   reset_role ();
 
@@ -128,7 +128,7 @@ SELECT
   );
 
 -- =====================================================================
--- Section 3: Candidate cannot UPDATE another candidate's record (candidate_a2 is in the same project but different auth_user_id)
+-- Section 3: Candidate cannot UPDATE another candidate's record (candidate_a2 is another identity's candidate in the same project)
 -- =====================================================================
 SELECT
   set_test_user (

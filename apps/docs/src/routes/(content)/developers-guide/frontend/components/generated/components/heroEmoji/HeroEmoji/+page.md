@@ -20,6 +20,5 @@ To change the size of the emoji, add a `text-[size]` utility class using the `cl
 
 ## Source
 
-[apps/frontend/src/lib/components/heroEmoji/HeroEmoji.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/heroEmoji/HeroEmoji.svelte)
-
-[apps/frontend/src/lib/components/heroEmoji/HeroEmoji.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/heroEmoji/HeroEmoji.type.ts)
+- Component: [apps/frontend/src/lib/components/heroEmoji/HeroEmoji.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/heroEmoji/HeroEmoji.svelte)
+- Types: [apps/frontend/src/lib/components/heroEmoji/HeroEmoji.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/heroEmoji/HeroEmoji.type.ts)

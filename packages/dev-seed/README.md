@@ -244,9 +244,7 @@ pipeline programmatically:
 ```ts
 import { runPipeline, type Overrides, type Template } from '@openvaa/dev-seed';
 
-const template: Template = {
-  /* ... */
-};
+const template: Template = {/* ... */};
 
 const overrides: Overrides = {
   candidates: (_fragment, ctx) => {
@@ -254,9 +252,7 @@ const overrides: Overrides = {
     // Reads ctx.faker, ctx.refs.organizations, ctx.externalIdPrefix.
     // See packages/dev-seed/src/templates/defaults/candidates-override.ts
     // for the built-in `default` template's non-uniform distribution.
-    return [
-      /* your rows */
-    ];
+    return [/* your rows */];
   }
 };
 

@@ -5,7 +5,7 @@
 #
 # Measured findings this file suppresses, by detector:
 #   3x FlatIO   -> yarn.lock                       (dependency integrity hashes)
-#   1x Gitlab   -> .yarn/releases/yarn-4.13.0.cjs  (the vendored Yarn release bundle)
+#   1x Gitlab   -> .yarn/releases/yarn-*.cjs       (the vendored Yarn release bundle)
 #   1x PrivateKey -> tests/tests/support/mock-oidc-key.pem
 #   1x CustomRegex (OpenVAACIEvidenceToken) -> 163-RESEARCH.md, the last entry below (run 36429830379)
 #

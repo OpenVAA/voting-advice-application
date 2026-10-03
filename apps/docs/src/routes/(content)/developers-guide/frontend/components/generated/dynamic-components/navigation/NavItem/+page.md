@@ -25,6 +25,5 @@ Accesses `LayoutContext`.
 
 ## Source
 
-[apps/frontend/src/lib/dynamic-components/navigation/NavItem.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/NavItem.svelte)
-
-[apps/frontend/src/lib/dynamic-components/navigation/NavItem.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/NavItem.type.ts)
+- Component: [apps/frontend/src/lib/dynamic-components/navigation/NavItem.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/NavItem.svelte)
+- Types: [apps/frontend/src/lib/dynamic-components/navigation/NavItem.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/NavItem.type.ts)

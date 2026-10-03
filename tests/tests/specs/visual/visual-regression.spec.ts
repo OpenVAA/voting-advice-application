@@ -46,7 +46,7 @@ import type { Page } from '@playwright/test';
  *
  * `staticSettings.font.url` serves Inter from the app's OWN origin with `display: swap`, so a page paints in the `system-ui` fallback first and re-lays out when Inter arrives. A screenshot taken inside that window captures fallback advance widths — every glyph lands a few pixels off while the box layout is unchanged, which is exactly the diff this produced before the gate existed. The voter cases never showed it only because their walk takes ~20s, long enough for the swap; the candidate-preview cases capture ~4s in and straddled the race.
  *
- * What this check actually covers, MEASURED in mcr.microsoft.com/playwright:v1.58.2-noble rather than inferred:
+ * What this check actually covers, MEASURED in mcr.microsoft.com/playwright:v1.63.0-noble (the pinned image, Chromium 153) rather than inferred:
  *
  * - An `@font-face` rule whose `src` is unreachable -> `check('1em Inter')` returns
  *   `false` -> CAUGHT HERE, by name.
@@ -54,7 +54,7 @@ import type { Page } from '@playwright/test';
  *   `check` returns `true` and `document.fonts.size` is 0 -> NOT caught here.
  * - A valid `src` -> `check` returns `true` -> passes, correctly.
  *
- * The docblock this replaces claimed the middle case failed here by name. It never did, at any point in this function's life. That uncovered case is handed to `guardThirdPartyFonts` below, which asserts /fonts/inter.css returned 200 — which is what makes a wrong vendored path fail by name rather than as a whole-page diff.
+ * That uncovered middle case is handed to `guardThirdPartyFonts` below, which asserts /fonts/inter.css returned 200 — which is what makes a wrong vendored path fail by name rather than as a whole-page diff.
  * Demonstrated in BOTH directions by the F2-BOGUS-RED and F3-BOGUS-GREEN control rows.
  */
 async function settleFonts(page: Page): Promise<void> {

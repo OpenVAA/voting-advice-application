@@ -16,6 +16,5 @@ Render a numeric filter for entities.
 
 ## Source
 
-[apps/frontend/src/lib/components/entityFilters/numeric/NumericEntityFilter.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/entityFilters/numeric/NumericEntityFilter.svelte)
-
-[apps/frontend/src/lib/components/entityFilters/numeric/NumericEntityFilter.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/entityFilters/numeric/NumericEntityFilter.type.ts)
+- Component: [apps/frontend/src/lib/components/entityFilters/numeric/NumericEntityFilter.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/entityFilters/numeric/NumericEntityFilter.svelte)
+- Types: [apps/frontend/src/lib/components/entityFilters/numeric/NumericEntityFilter.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/entityFilters/numeric/NumericEntityFilter.type.ts)

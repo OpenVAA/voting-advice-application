@@ -26,8 +26,7 @@ async function waitForLoginForm(page: Page, loginRoute: string, emailTestId: str
       return; // Login form appeared
     } catch {
       if (attempt < maxAttempts - 1) {
-        // reason: no `page.reload(...)` here — the next loop iteration starts
-        //   with another `page.goto(loginRoute, ...)` which fully replaces the page state, so reloading first would add an extra network round-trip without observable effect. Fall through to the next iteration's goto() instead.
+        // reason: no `page.reload(...)` here — the next loop iteration starts with another `page.goto(loginRoute, ...)` which fully replaces the page state, so reloading first would add an extra network round-trip without observable effect. Fall through to the next iteration's goto() instead.
       } else {
         // Final attempt failed
         throw new Error(
@@ -44,10 +43,9 @@ async function waitForLoginForm(page: Page, loginRoute: string, emailTestId: str
  *
  * Depends on `data-setup-base` (the candidate row must exist in the database before it can be force-registered).
  *
- * The `candidates` table carries NO email column, so the base seed cannot ship a
- * *registered* candidate — registration is a runtime act. This setup therefore mints the auth user itself via `SupabaseAdminClient.forceRegister`, exactly as every perm-* setup does, then logs in through the real candidate-app login form (synthetic tokens fail server-side `safeGetSession()` JWT validation, so only a real Supabase-minted session survives the protected candidate layout).
+ * The `candidates` table carries NO email column, so the base seed cannot ship a *registered* candidate — registration is a runtime act. This setup therefore mints the auth user itself via `SupabaseAdminClient.forceRegister`, exactly as every perm-* setup does, then logs in through the real candidate-app login form (synthetic tokens fail server-side `safeGetSession()` JWT validation, so only a real Supabase-minted session survives the protected candidate layout).
  *
- * The `unregisterCandidate` call ahead of `forceRegister` makes re-runs idempotent: a prior run's auth user would otherwise collide as "User already exists". It is safe with respect to `terms_of_use_accepted` because `data-setup-base` has just re-inserted the candidate row with `auth_user_id` NULL, so the stale auth user matches no row and only the orphan auth.users record is removed.
+ * The `unregisterCandidate` call ahead of `forceRegister` makes re-runs idempotent: a prior run's auth user would otherwise collide as "User already exists". It is safe with respect to `terms_of_use_accepted` because `data-setup-base` has just deleted and re-inserted the base dataset: deleting the candidate row removed every grant naming it, so the stale auth user's editor grant names no candidate, nothing is reset, and only the user's remaining grants and the orphan auth.users record are removed.
  */
 setup('register + authenticate as base candidate', async ({ page }) => {
   // Candidate app data loading can be slow; increase timeout

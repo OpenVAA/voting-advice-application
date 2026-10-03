@@ -14,10 +14,7 @@ export type QuestionChoicesProps = SvelteHTMLElements['fieldset'] & {
    * `MultipleChoiceCategoricalQuestion` activates checkbox multi-select mode.
    */
   question:
-    | SingleChoiceCategoricalQuestion
-    | SingleChoiceOrdinalQuestion
-    | BooleanQuestion
-    | MultipleChoiceCategoricalQuestion;
+    SingleChoiceCategoricalQuestion | SingleChoiceOrdinalQuestion | BooleanQuestion | MultipleChoiceCategoricalQuestion;
   /**
    * Explicit choices to render. When provided, overrides `question.choices`.
    * Required for `BooleanQuestion` (which has no native `choices`); synthesized by the caller (e.g. `OpinionQuestionInput.svelte` boolean branch). @default undefined

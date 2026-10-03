@@ -20,6 +20,5 @@ A template part that outputs the navigation menu for the Candidate App for use i
 
 ## Source
 
-[apps/frontend/src/lib/dynamic-components/navigation/candidate/CandidateNav.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/candidate/CandidateNav.svelte)
-
-[apps/frontend/src/lib/dynamic-components/navigation/candidate/CandidateNav.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/candidate/CandidateNav.type.ts)
+- Component: [apps/frontend/src/lib/dynamic-components/navigation/candidate/CandidateNav.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/candidate/CandidateNav.svelte)
+- Types: [apps/frontend/src/lib/dynamic-components/navigation/candidate/CandidateNav.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/navigation/candidate/CandidateNav.type.ts)

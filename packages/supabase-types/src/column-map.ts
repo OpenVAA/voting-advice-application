@@ -60,9 +60,6 @@ export const COLUMN_MAP = {
   open_answer: 'openAnswer',
   question_id: 'questionId',
 
-  // Auth columns
-  auth_user_id: 'authUserId',
-
   // Candidate columns
   terms_of_use_accepted: 'termsOfUseAccepted',
 

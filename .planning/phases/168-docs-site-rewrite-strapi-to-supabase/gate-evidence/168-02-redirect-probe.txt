@@ -1,0 +1,20 @@
+# 168-02 Task 1 runtime redirect probe (DOCS-07)
+# Recorded: 2026-10-02T09:36:46Z on HEAD 4db0dc5e7 plus the staged Task 1 change
+# Build: yarn workspace @openvaa/docs build -> exit=0 (adapter-static, fallback 404.html)
+# Server: throwaway Node http server outside the repo over apps/docs/build; an existing file is served with 200,
+#   any other path gets HTTP 404 with the body of build/404.html (GitHub Pages behaviour).
+#   Check: fetch http://localhost:4417/developers-guide/no-such-route -> status 404
+# Probe: throwaway script using the docs workspace's playwright package (Chromium, headless). It opens <path>,
+#   waits up to 10 s for location.pathname to equal the expected target, then reads the first h1.
+#   Prints REDIRECT OK <path> -> <final path> ... h1: <text>  or  NO REDIRECT <path> ...
+# The server was stopped after the run (lsof on :4417 empty). The throwaway files are not committed.
+
+## Run 1: the old URL (stub apps/docs/src/routes/(content)/developers-guide/app-and-repo-structure/+page.ts)
+$ node probe.cjs <root> http://localhost:4417 /developers-guide/app-and-repo-structure /developers-guide/architecture
+REDIRECT OK /developers-guide/app-and-repo-structure -> /developers-guide/architecture (initial HTTP 404) h1: Architecture
+exit=0
+
+## Run 2 (control): a URL with no stub, same script, same expected target
+$ node probe.cjs <root> http://localhost:4417 /developers-guide/no-such-route /developers-guide/architecture
+NO REDIRECT /developers-guide/no-such-route (initial HTTP 404; final path /developers-guide/no-such-route; expected /developers-guide/architecture) h1: 404
+exit=0

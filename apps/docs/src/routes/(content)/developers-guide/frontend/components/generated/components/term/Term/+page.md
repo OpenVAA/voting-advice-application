@@ -22,6 +22,5 @@ The trigger is a focusable `button` (W3C APG tooltip pattern) whose accessible n
 
 ## Source
 
-[apps/frontend/src/lib/components/term/Term.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/term/Term.svelte)
-
-[apps/frontend/src/lib/components/term/Term.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/term/Term.type.ts)
+- Component: [apps/frontend/src/lib/components/term/Term.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/term/Term.svelte)
+- Types: [apps/frontend/src/lib/components/term/Term.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/term/Term.type.ts)

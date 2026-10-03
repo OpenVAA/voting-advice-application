@@ -17,6 +17,5 @@ Used to display a message when an action succeeds.
 
 ## Source
 
-[apps/frontend/src/lib/components/successMessage/SuccessMessage.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/successMessage/SuccessMessage.svelte)
-
-[apps/frontend/src/lib/components/successMessage/SuccessMessage.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/successMessage/SuccessMessage.type.ts)
+- Component: [apps/frontend/src/lib/components/successMessage/SuccessMessage.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/successMessage/SuccessMessage.svelte)
+- Types: [apps/frontend/src/lib/components/successMessage/SuccessMessage.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/successMessage/SuccessMessage.type.ts)

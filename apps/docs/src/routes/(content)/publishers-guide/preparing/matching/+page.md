@@ -75,7 +75,7 @@ Both Euclidean and Manhattan distance metrics ignore possible correlations of VA
 
 </ResearchQuote>
 
-The distance calculation metric can also be changed from the commonly used Manhattan or ‘city block’ metric to something else.
+The application uses the commonly used Manhattan or ‘city block’ metric. The matching algorithm also supports other metrics, but changing the metric requires a change to the application’s source code.
 
 If you’re unsure, it’s best not to change the metric.
 
@@ -125,9 +125,9 @@ We recommend using the method recommended by Mendez (2017), if it is applicable 
 
 </ResearchQuote>
 
-The default option is that only candidates or parties who have answered all statements are included in the VAA.
+The default option is that only candidates who have answered all statements are included in the VAA. Parties are always included; for their missing answers, see the next section.
 
-It is also possible to allow them to leave some answers empty, in which case they may be penalised in the results calculation by treating empty answers as maximally distant from the voter’s answer.
+It is also possible to allow candidates to leave some answers empty, in which case they are penalised in the results calculation by treating empty answers as maximally distant from the voter’s answer.
 
 ## How should party scores be computed from candidate answers?
 

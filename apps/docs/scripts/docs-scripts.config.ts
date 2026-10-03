@@ -81,11 +81,3 @@ export const ROUTES_DIR = join(FRONTEND_ROOT, 'src', 'routes');
  * GitHub repository base URL for source links
  */
 export const GITHUB_BASE = 'https://github.com/OpenVAA/voting-advice-application/blob/main';
-
-/**
- * TypeDoc configuration files
- */
-export const TYPEDOC_CONFIG = {
-  packages: join(DOCS_ROOT, 'scripts', 'config', 'typedoc.json'),
-  frontend: join(DOCS_ROOT, 'scripts', 'config', 'typedoc.frontend.json')
-} as const;

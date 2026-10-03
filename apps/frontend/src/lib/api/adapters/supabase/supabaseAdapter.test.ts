@@ -9,7 +9,7 @@ import type { SupabaseAdapterConfig } from './supabaseAdapter.type';
  * The constants module is mocked rather than `$env/dynamic/public`, because `constants` reads the env object ONCE at module load and freezes the result into an object literal. Mutating the env stub after that load would change nothing the adapter can see, so the seam has to sit one level closer to the reader.
  */
 const { mockConstants } = vi.hoisted(() => ({
-  mockConstants: { PUBLIC_PROJECT_ID: '', PUBLIC_CACHE_ENABLED: false } as Record<string, unknown>
+  mockConstants: { PUBLIC_PROJECT_ID: '' } as Record<string, unknown>
 }));
 
 vi.mock('$lib/utils/constants', () => ({

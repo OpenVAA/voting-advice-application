@@ -21,6 +21,5 @@ If there's only one option, it is automatically selected and no interactions are
 
 ## Source
 
-[apps/frontend/src/lib/components/electionSelector/ElectionSelector.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/electionSelector/ElectionSelector.svelte)
-
-[apps/frontend/src/lib/components/electionSelector/ElectionSelector.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/electionSelector/ElectionSelector.type.ts)
+- Component: [apps/frontend/src/lib/components/electionSelector/ElectionSelector.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/electionSelector/ElectionSelector.svelte)
+- Types: [apps/frontend/src/lib/components/electionSelector/ElectionSelector.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/electionSelector/ElectionSelector.type.ts)

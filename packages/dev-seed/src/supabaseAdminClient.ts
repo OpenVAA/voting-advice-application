@@ -478,9 +478,11 @@ export class SupabaseAdminClient {
     const parentId = await this.resolveExternalId(entry.collection, entry.parentExternalId);
     for (const refExternalId of entry.refExternalIds) {
       const childId = await this.resolveExternalId(entry.refTable, refExternalId);
+      // Named and typed, because `upsert` infers its row type from the argument, and from an inline object whose keys are computed strings it infers `string` and rejects the object.
+      const row: Record<string, string> = { [target.parentColumn]: parentId, [target.childColumn]: childId };
       const { error: insertError } = await this.client
         .from(target.table)
-        .upsert({ [target.parentColumn]: parentId, [target.childColumn]: childId }, { onConflict: target.onConflict });
+        .upsert(row, { onConflict: target.onConflict });
       if (insertError) {
         throw new Error(`linkJoinTables: failed to insert ${target.table}: ${insertError.message}`);
       }

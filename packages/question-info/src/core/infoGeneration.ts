@@ -60,7 +60,7 @@ export async function generateInfo({
     const examplesSlice = EXAMPLES.slice(0, 3);
     const formattedExamples = examplesSlice
       .map((example) => {
-        let exampleOutput = '';
+        let exampleOutput: string;
 
         if (promptKey === 'generateTerms') {
           exampleOutput = JSON.stringify({ terms: example.terms }, null, 2);
@@ -123,6 +123,8 @@ export async function generateInfo({
               content: promptText
             }
           ],
+          // The whole prompt is sent as a system message, which AI SDK 7 rejects unless this is set. The template interpolates admin-authored question data and generation options, not voter or candidate text. Moving it to `instructions` is tracked in `.planning/todos/pending/2026-10-03-llm-move-system-template-to-instructions.md`.
+          allowSystemInMessages: true,
           temperature: 0,
           validationRetries: 3
         };
@@ -153,6 +155,6 @@ export async function generateInfo({
       });
     });
   } catch (error) {
-    throw new Error(`Error generating question info: ${error}`);
+    throw new Error(`Error generating question info: ${error}`, { cause: error });
   }
 }

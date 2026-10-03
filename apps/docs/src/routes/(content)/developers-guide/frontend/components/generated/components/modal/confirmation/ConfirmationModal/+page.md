@@ -30,6 +30,5 @@ A modal dialog that asks for user confirmation.
 
 ## Source
 
-[apps/frontend/src/lib/components/modal/confirmation/ConfirmationModal.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/confirmation/ConfirmationModal.svelte)
-
-[apps/frontend/src/lib/components/modal/confirmation/ConfirmationModal.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/confirmation/ConfirmationModal.type.ts)
+- Component: [apps/frontend/src/lib/components/modal/confirmation/ConfirmationModal.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/confirmation/ConfirmationModal.svelte)
+- Types: [apps/frontend/src/lib/components/modal/confirmation/ConfirmationModal.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/confirmation/ConfirmationModal.type.ts)

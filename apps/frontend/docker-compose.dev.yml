@@ -11,8 +11,6 @@ services:
       - ../../packages:/opt/packages:ro
       # Local data
       - ./data:/var/data/local
-      # Cache volume
-      - cache:/var/data/cache
       # Mark these as volumes so they get ignored
       - /opt/apps/frontend/node_modules
       - /opt/apps/frontend/.svelte-kit

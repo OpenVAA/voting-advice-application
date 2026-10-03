@@ -1,62 +1,63 @@
 # Styling
 
-The frontend uses [Tailwind](https://tailwindcss.com/docs) and the [DaisyUI plugin](https://daisyui.com/components/) for styling. See below for more information on how these are used in the project.
+The frontend uses [Tailwind CSS](https://tailwindcss.com/docs) with the [DaisyUI plugin](https://daisyui.com/components/). There is no Tailwind configuration file: both are configured in CSS, in [`apps/frontend/src/app.css`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/app.css), which `@import`s Tailwind, loads DaisyUI with `@plugin 'daisyui'`, defines the two themes and the `@theme` scales, and sets the global styles. Tailwind runs as a Vite plugin.
 
 ### Tailwind classes
 
-We use only a limited set of some of the [Tailwind utility classes](https://tailwindcss.com/docs/) for, e.g., spacing and font sizes, as well as the colours DaisyUI uses. For a list of the classes in use, see `tailwind.config.cjs` or use autocomplete.
+The `@theme` block in `app.css` clears Tailwind's default spacing, text size, radius, font and transition scales and replaces them with a restricted set. This keeps the design consistent, and autocomplete shows the allowed values. Spacing has named values, such as `gap-md` or `p-lg`, for the most common sizes, and numeric values, such as `w-40`, for the rest. Text sizes are named, such as `text-md`.
 
-The reason for limiting Tailwind classes is that this way adherence to the design system is easier, because Tailwind gives nice autocomplete for the available options. For most classes names, such as `md` and `lg` are used. For spacing numeric values are also available, such as `w-40`, with the named ones, such as `gap-md`, reserved the most commonly used values.
+You can still use [arbitrary values](https://tailwindcss.com/docs/adding-custom-styles#using-arbitrary-values) with the bracket notation, for example `w-[21.35px]`. Never build a class name in code, such as `'w-' + size`, unless the whole class string appears in the source: Tailwind only generates the classes it finds in the source files. The colour classes that components build from a colour name are listed in the `@source inline(…)` safelist in `app.css`.
 
-Note that you can still use [arbitrary values](https://tailwindcss.com/docs/adding-custom-styles#using-arbitrary-values) with any Tailwind utility class with the bracket notation, e.g. `w-[21.35px]`. Bear in mind, however, that you should not construct these (or any other Tailwind classes) in code, unless the whole final string for the class is spelled out in code, such as `class = 'w-' + size === 'lg' ? 'lg' : 'md'`, because Tailwind only compiles classes it can spot in the source code using a naïve search.
+A component's `<style>` block that needs Tailwind's theme uses `@reference` to `src/tailwind-theme.css`, which references `app.css`.
 
 #### Passing classes to components
 
-The components in the app allow passing any attributes of the underlying element as component properties. This is most commonly used to add extra classes to those defined by the component (see [Component properties](/developers-guide/contributing/code-style-guide/#component-properties) in the Contributors’ guide). However, note that due to styling compartmentalization, **you should only pass Tailwind or global classes, not any classes defined locally**.
+The components pass any attributes they receive on to their main element. This is most often used to add classes. The component combines them with its own classes with `concatClass`, and where the two conflict, the class you pass wins. See [Components](/developers-guide/frontend/components). Because of Svelte's style scoping, **pass only Tailwind or global classes, never classes defined in a component's `<style>` block**.
 
 ### Colors
 
-For DaisyUI, all the [basic colours](https://daisyui.com/docs/colors/) are defined for both the default and the dark theme, which is used in dark mode. The colours are applicable to Tailwind utility classes (e.g. `text-primary`, `bg-base-300`) and DaisyUI component classes (e.g. `btn-primary`). You can see all the colours in `tailwind.config.cjs` but the most common ones are listed below.
+`app.css` defines two DaisyUI themes with `@plugin 'daisyui/theme'`: `light`, the default, and `dark`, used when the browser prefers a dark colour scheme. Each defines all the basic DaisyUI [colours](https://daisyui.com/docs/colors/) and their `-content` pairs. The colours work in Tailwind utility classes (`text-primary`, `bg-base-300`) and in DaisyUI component classes (`btn-primary`). The most common light-theme colours are:
 
-|                                                                                                                       | Name            | Use                                                                   |
-| --------------------------------------------------------------------------------------------------------------------- | --------------- | --------------------------------------------------------------------- |
-| <div style="background: #333333; width: 1.5rem; height: 1.5rem;"/>                                                    | `neutral`       | Default colour for text                                               |
-| <div style="background: #2546a8; width: 1.5rem; height: 1.5rem;"/>                                                    | `primary`       | For actions and links                                                 |
-|  <div style="background: #666666; width: 1.5rem; height: 1.5rem;"/>                                                   | `secondary`     | For secondary text and disabled buttons                               |
-|  <div style="background: #a82525; width: 1.5rem; height: 1.5rem;"/>                                                   | `warning`       | For warnings and actions demanding caution                            |
-|  <div style="background: #a82525; width: 1.5rem; height: 1.5rem;"/>                                                   | `error`         | For errors                                                            |
-|  <div style="background: #ffffff; outline: 1px solid #666666; outline-offset: -1px; width: 1.5rem; height: 1.5rem;"/> | `base-100`      | Default background                                                    |
-|  <div style="background: #e8f5f6; width: 1.5rem; height: 1.5rem;"/>                                                   | `base-200`      | Slightly less prominent shaded background                             |
-|  <div style="background: #d1ebee; width: 1.5rem; height: 1.5rem;"/>                                                   | `base-300`      | Default prominent background                                          |
-|  <div style="background: #ffffff; outline: 1px solid #2546a8; outline-offset: -1px; width: 1.5rem; height: 1.5rem;"/> | primary-content | Text on `bg-primary`. Each colour has its associated `content` colour |
+|                                                                                                                      | Name              | Use                                                                    |
+| -------------------------------------------------------------------------------------------------------------------- | ----------------- | ---------------------------------------------------------------------- |
+| <div style="background: #333333; width: 1.5rem; height: 1.5rem;"/>                                                   | `neutral`         | Default colour for text                                                |
+| <div style="background: #2546a8; width: 1.5rem; height: 1.5rem;"/>                                                   | `primary`         | For actions and links                                                  |
+| <div style="background: #666666; width: 1.5rem; height: 1.5rem;"/>                                                   | `secondary`       | For secondary text and disabled buttons                                |
+| <div style="background: #a82525; width: 1.5rem; height: 1.5rem;"/>                                                   | `warning`         | For warnings and actions demanding caution                             |
+| <div style="background: #a82525; width: 1.5rem; height: 1.5rem;"/>                                                   | `error`           | For errors                                                             |
+| <div style="background: #ffffff; outline: 1px solid #666666; outline-offset: -1px; width: 1.5rem; height: 1.5rem;"/> | `base-100`        | Default background                                                     |
+| <div style="background: #e8f5f6; width: 1.5rem; height: 1.5rem;"/>                                                   | `base-200`        | Slightly less prominent shaded background                              |
+| <div style="background: #d1ebee; width: 1.5rem; height: 1.5rem;"/>                                                   | `base-300`        | Default prominent background                                           |
+| <div style="background: #ffffff; outline: 1px solid #2546a8; outline-offset: -1px; width: 1.5rem; height: 1.5rem;"/> | `primary-content` | Text on `bg-primary`. Each colour has its associated `content` colour. |
+
+`StaticSettings` also has a `colors` object with the same light and dark values. The frontend reads it for the `theme-color` meta tags and as the background when it checks the contrast of the colours of entities and question categories. The theme colours themselves come from `app.css`, so a change of palette has to be made in both places. See [Static settings](/developers-guide/configuration/static-settings).
 
 #### Color contrast
 
-In order to fulfil the application's accessibility requirements, a [WCAG AA level color contrast](https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html) has to be reached. The colors have been defined to ensure this as long as:
+To meet the app's accessibility requirements, text must reach the [WCAG AA colour contrast](https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html). The colours are defined so that this holds as long as:
 
-- If the background is any of the base colors, e.g. `bg-base-100`, `bg-base-200` or `bg-base-300`, you can use any of the basic text colors on it.
-- If background is any other color, such as `bg-primary`, always use the matching `content` color for text on it, e.g. `text-primary-content`.
+- On any of the base backgrounds, for example `bg-base-100`, `bg-base-200` or `bg-base-300`, you use any of the basic text colours.
+- On any other background, such as `bg-primary`, you use the matching `content` colour for text, for example `text-primary-content`.
 
 #### Testing the colors
 
-To test all of the application's colors, copy-paste the contents of [`color-test.txt`](/developers-guide/frontend/styling/color-test.txt) in a `+page.svelte` file somewhere, navigate to it and use the Wave browser extension to check the colors. Remember to do this for both the light and dark modes.
+To test all of the app's colours, copy the contents of [`color-test.txt`](/developers-guide/frontend/styling/color-test.txt) into a `+page.svelte` file, open the page and check the colours with the WAVE browser extension. Do this in both the light and the dark mode.
 
-The file is not included anywhere as a ready Svelte file, because otherwise all of the color classes in it would unnecessarily be compiled into the application by Tailwind.
+The file is not included in the app as a Svelte file, because Tailwind would then compile all of its colour classes into the app.
 
 ### Z-index
 
-For basic content, avoid using `z-index` and prefer layerying using the element order.
+For basic content, avoid `z-index` and layer elements by their order instead.
 
-For elements that absolutely need their `z-index` set, the following Tailwind classes are used:
+Elements that need a `z-index` use these Tailwind classes:
 
-- `z-10`: Navigation drawer menu, page header
-- `z-20`: Buttons overlaid on the header by the [`<Video>`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/video/Video.svelte) component
-- `z-30`: The [`<Alert>`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/alert/Alert.svelte) component
-- `z-40`: Not used currently
-- `z-50`: Not used currently
+- `z-10`: the navigation drawer, the drawer close buttons, the `<Select>` menu and the `<Term>` tooltip
+- `z-20`: the buttons the [`<Video>`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/video/Video.svelte) component lays over the header
+- `z-30`: the [`<Alert>`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/alert/Alert.svelte) component
+- `z-40` and `z-50`: not used
 
-Note that the dialog created by the [`<Modal>`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/Modal.svelte) component, is placed in a ’Top Layer’ placed in front of any content, regardless of their `z-index`.
+The dialog of the [`<Modal>`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/Modal.svelte) component is placed in the browser's top layer, in front of all other content whatever its `z-index`.
 
 ### Default styling
 
-See `app.css` for some styling defaults that are set throughout the app.
+The `@layer base` block in `app.css` sets the styling defaults for the whole app.

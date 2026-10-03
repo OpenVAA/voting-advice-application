@@ -36,5 +36,4 @@ export type NavItemProps = LinkOrButtonElementProps & {
  * The base properties of a navigation item must be either those of an `<a>` element with the `href` attribute, or a `<button>` element, preferably with the `on:click` event handler.
  */
 type LinkOrButtonElementProps =
-  | WithRequired<SvelteHTMLElements['a'], 'href'>
-  | (SvelteHTMLElements['button'] & { href?: null });
+  WithRequired<SvelteHTMLElements['a'], 'href'> | (SvelteHTMLElements['button'] & { href?: null });

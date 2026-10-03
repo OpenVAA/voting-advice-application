@@ -270,7 +270,6 @@ SELECT
         AND with_check LIKE '%storage_path_can%'
         AND with_check NOT LIKE '%can_access_project%'
         AND with_check NOT LIKE '%has_role%'
-        AND with_check NOT LIKE '%auth_user_id%'
         AND with_check NOT LIKE '%uid()%'
         AND with_check NOT LIKE '%is_storage_entity_published%'
         AND with_check NOT LIKE '%''candidates''%'
@@ -695,7 +694,6 @@ SELECT
         AND (
           COALESCE(qual, '') || COALESCE(with_check, '') LIKE '%can_access_project%'
           OR COALESCE(qual, '') || COALESCE(with_check, '') LIKE '%has_role%'
-          OR COALESCE(qual, '') || COALESCE(with_check, '') LIKE '%auth_user_id%'
           OR COALESCE(qual, '') || COALESCE(with_check, '') LIKE '%uid()%'
           OR COALESCE(qual, '') || COALESCE(with_check, '') LIKE '%published%'
           OR COALESCE(qual, '') || COALESCE(with_check, '') LIKE '%''candidates''%'

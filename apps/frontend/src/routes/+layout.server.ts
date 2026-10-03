@@ -1,23 +1,23 @@
 /**
- * # Root server loader — the request's session, and the cookies a universal load may rebuild a client from
+ * # Root server loader — the Supabase cookies a universal load rebuilds its client from
  *
  * ## Why this file exists
  *
- * A universal load runs twice — once on the SSR pass and once in the browser — and it has no `event`, so it cannot reach the per-request, cookie-bearing client `hooks.server.ts` puts on `event.locals`. Until this file, `routes/+layout.ts` closed that gap by handing the adapter a bare `fetch`, which fell through to a plain anonymous client: SvelteKit's load `fetch` forwards cookies same-domain only and Supabase is cross-origin, and PostgREST authenticates on `Authorization` rather than on cookies, so the transport override changed nothing about the credential. That is ruling **D10**'s root cause. The remedy is the official `@supabase/ssr` isomorphic shape: this server load returns the cookie list, which IS serialisable, and `routes/+layout.ts` rebuilds a real cookie-bearing client from it, which is NOT.
+ * A universal load runs twice — once on the SSR pass and once in the browser — and it has no `event`, so it cannot reach the per-request, cookie-bearing client `hooks.server.ts` puts on `event.locals`. A bare `fetch` cannot stand in for that client: SvelteKit's load `fetch` forwards cookies same-domain only, Supabase is cross-origin, and PostgREST authenticates on `Authorization` rather than on cookies. So this server load returns the cookie list, which IS serialisable, and `routes/+layout.ts` rebuilds a real cookie-bearing client from it, which is NOT. That is the official `@supabase/ssr` isomorphic shape.
  *
- * ## The payload shape, and where it comes from
+ * ## The payload shape
  *
- * There is no in-tree analog of a server load returning a cookie array, so the shape below is derived from the mechanism rather than copied: `createServerClient`'s cookie adapter reads `getAll()` and uses only `name` and `value`, so only `name` and `value` cross — the options a cookie was WRITTEN with (`httpOnly`, `secure`, `sameSite`, `maxAge`) are meaningless on the read side and are dropped rather than serialised.
+ * `createServerClient`'s cookie adapter reads `getAll()` and uses only `name` and `value`, so only `name` and `value` cross — the options a cookie was WRITTEN with (`httpOnly`, `secure`, `sameSite`, `maxAge`) are meaningless on the read side and are dropped rather than serialised.
  *
- * The key is `supabaseCookies` and not `cookies` on purpose: it says WHICH cookies, so a later reader cannot mistake it for the request's whole jar, and it keeps the payload's name honest about the filter below.
+ * The key is `supabaseCookies` and not `cookies` on purpose: it says WHICH cookies, so a reader cannot mistake it for the request's whole jar, and it keeps the payload's name honest about the filter below.
  *
  * ## ⚠ Why there is NO `session` here, and why there must not be
  *
- * This load used to return `locals.safeGetSession()`'s whole `Session` — `access_token`, **`refresh_token`**, `expires_at` and the full `user` record — alongside the cookie array. Everything a server load returns is serialised into the hydration payload in the HTML body, so that put a REFRESH TOKEN into the document of every route in the application, for every authenticated user. The refresh token is the higher-value credential of the pair: it is long-lived, and duplicating it into a document body exposes it to HTML/page caches (`render.example.yaml` provisions a cache disk for this service), to `view-source` sharing, and to DOM-snapshot error reporters.
+ * This load returns no `Session`. Everything a server load returns is serialised into the hydration payload in the HTML body, so a session returned here would sit in the document of every route in the application, for every authenticated user, carrying `access_token`, **`refresh_token`**, `expires_at` and the full `user` record. The refresh token is the higher-value credential of the pair: it is long-lived, and a document body exposes it to HTML/page caches, to `view-source` sharing, and to DOM-snapshot error reporters.
  *
- * Nothing read it. `routes/+layout.ts` shadows this load and deliberately does not forward it, and `authContext`'s `page.data.session` is supplied by `routes/admin/+layout.server.ts` and `routes/candidate/+layout.server.ts`. Computing it also cost a `getUser()` round-trip to Supabase Auth on every authenticated request for a value nobody consumed.
+ * Nothing needs it here either. `routes/+layout.ts` shadows this load and does not forward a session, and `authContext`'s `page.data.session` is supplied by `routes/admin/+layout.server.ts` and `routes/candidate/+layout.server.ts`. Computing it would also cost a `getUser()` round-trip to Supabase Auth on every authenticated request.
  *
- * A future consumer that genuinely needs the session at the root gets a PROJECTION — `{ userId, expiresAt }` — and never the token-bearing object.
+ * A consumer that genuinely needs the session at the root gets a PROJECTION — `{ userId, expiresAt }` — and never the token-bearing object. `scripts/assert-no-session-in-loads.mjs` fails the lint chain if any server load returns the verified-session binding itself.
  *
  * ## ⚠ Shadowing
  *

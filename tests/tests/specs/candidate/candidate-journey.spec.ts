@@ -337,7 +337,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
 
     await test.step('3. registration: send invite email + extract link', async () => {
       // Trigger the registration / invite email via the Supabase admin API.
-      // SupabaseAdminClient.sendEmail (since the candidate has no auth_user_id yet) invokes inviteUserByEmail under the hood.
+      // SupabaseAdminClient.sendEmail (since no candidate-editor grant names the candidate yet) invokes inviteUserByEmail under the hood, then writes the grant.
       await client.sendEmail({
         candidateExternalId: UNREGISTERED_CANDIDATE_EXTERNAL_ID,
         email: UNREGISTERED_CANDIDATE_EMAIL,

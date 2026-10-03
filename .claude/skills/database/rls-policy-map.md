@@ -272,7 +272,7 @@ Derived from `information_schema.column_privileges` for `authenticated`:
 | `nominations` | `confirmed`, `constituency_id`, `custom_data`, `election_id`, `election_round`, `parent_nomination_id` |
 
 `candidates` carries no `name` column — a candidate's display name is `first_name` + `last_name`. Note that
-`sort_order`, `created_at`, `updated_at`, `project_id`, `auth_user_id`, `external_id` and `id` are **not**
+`sort_order`, `created_at`, `updated_at`, `project_id`, `external_id` and `id` are **not**
 in any entity table's list: ordering is admin-controlled, and a record owner who can rewrite when their row
 was created or last touched can repudiate their own edit history. `updated_at` is maintained by the
 `set_updated_at` trigger, which keeps working without the caller holding a privilege on that column —

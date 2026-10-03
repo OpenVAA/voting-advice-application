@@ -17,6 +17,5 @@ Used to show an entity's children in an `EntityDetails` component.
 
 ## Source
 
-[apps/frontend/src/lib/dynamic-components/entityDetails/EntityChildren.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/EntityChildren.svelte)
-
-[apps/frontend/src/lib/dynamic-components/entityDetails/EntityChildren.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/EntityChildren.type.ts)
+- Component: [apps/frontend/src/lib/dynamic-components/entityDetails/EntityChildren.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/EntityChildren.svelte)
+- Types: [apps/frontend/src/lib/dynamic-components/entityDetails/EntityChildren.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/EntityChildren.type.ts)

@@ -5,7 +5,7 @@
  *
  * The incident this file exists for: five `packages/*` workspaces — `core`, `matching`, `llm`,
  * `question-info` and `argument-condensation` — held 18 test files and 140 tests that no CI
- * command executed. Each shipped a `vitest.config.ts` so the root workspace file would discover
+ * command executed. Each shipped a `vitest.config.ts` so the root Vitest config would discover
  * it, and three of the five even declared a `test` script, so from the repository root the tests
  * looked covered. They were — by a command CI never calls. Nothing in the tree could tell a wired
  * tree from an unwired one, and the hole was found by an audit rather than by a failure.

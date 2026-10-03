@@ -14,7 +14,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
  * Correctness invariants, each one a distinct way this spec could hand back a false PASS:
  *
  * 1. Every probe `filePath` MUST resolve under `apps/frontend/src` (see `SRC` below), or the guard block's `files` scope simply does not apply and every assertion passes vacuously. The paths are VIRTUAL — no file is ever written to any of them.
- * 2. The `ESLint` construction below MUST carry the ESLint v10 config-lookup-from-file flag (the literal flag name appears exactly once in this file, on that construction, so a grep can prove it is present). It loads the real `apps/frontend/eslint.config.mjs` and matches `apps/frontend/package.json`'s lint script exactly; omitting it risks config-resolution drift, and this spec would then measure a different config than the gate does.
+ * 2. `new ESLint()` is constructed WITHOUT a config option. ESLint resolves the configuration nearest each linted file, and for every probe path below that is the real `apps/frontend/eslint.config.mjs` — the same file `apps/frontend/package.json`'s lint script resolves. That lookup is how the frontend config, and so the rules under test, reach this spec. Passing `overrideConfigFile`, `overrideConfig` or `baseConfig` here would replace or extend that resolution, and this spec would then measure a different config than the gate does.
  * 3. Assert on `ruleId`, never on a bare problem count. A violating fixture also trips unrelated rules — `unused-imports/no-unused-vars` among them — so a count assertion would pass for the wrong reason.
  * 4. SEVEN entries share `ruleId === 'no-restricted-syntax'` under this block (the five parse-posture selectors plus the two re-included inherited ones). Assertions therefore disambiguate on the MESSAGE SUBSTRING and NEVER on line or column. Line and column move with any edit; the messages are the contract.
  * 5. The flat-config REPLACE trap gets a standing regression case PER INHERITED ENTRY. Flat config REPLACES a rule's options array per-file rather than merging it (`157-NEGATIVE-CONTROL-LEDGER.md` § Probe: `PROBE VERDICT: REPLACE`, measured for both restricted rules), so a new block that sets `no-restricted-syntax` for adapter files replaces the inherited array wholesale. Dropping an inherited entry produces ZERO errors on the real tree — the adapter contains no enums and no dynamic store imports today — so no other gate in this repository would catch it, and these two cases are the only detector.
@@ -28,8 +28,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
  * TRANSCRIPTION NOTE, kept because the reconciliation is the point and not because the question is still open. Wave 0 found `157.1-01-PLAN.md`, `157.1-07-PLAN.md` and `157.1-VALIDATION.md` describing research's scored set as ELEVEN violation fixtures, while research's own scored table (`157.1-RESEARCH.md` § "The five selectors — written, executed, and scored against 17 fixtures") lists TWELVE violation rows (V1, V2, V2b, V3, V4, V5, V5b, V6, V7, V8, V9, V10) and FIVE silent compliant rows (C1, C2, C3, C4, C8), with a sixth compliant fixture — C7 — recorded separately in § "What the guard cannot see" as the one measured false positive. This file transcribed what was MEASURED: twelve violations and six compliant fixtures, C7 among them and flagged non-silent. The count was **SETTLED at TWELVE** and the plan documents were amended to match; the ledger's closing note records that ruling. Dropping a measured violation to reach eleven, or inventing a sixth silent fixture that was never scored, would each be a fabrication in a phase whose entire subject is not fabricating evidence.
  */
 
-// MANDATORY (invariant 2): loads the real apps/frontend/eslint.config.mjs.
-const eslint = new ESLint({ flags: ['v10_config_lookup_from_file'] });
+// Invariant 2: no config option, so ESLint resolves the real apps/frontend/eslint.config.mjs for each probe path.
+const eslint = new ESLint();
 
 // MANDATORY (invariant 1): every probe path resolves under apps/frontend/src, which is what puts the fixture inside the guard block's `files` scope. The paths below are VIRTUAL — no file is ever written to them; they are only passed as `lintText`'s `filePath` option.
 const SRC = path.resolve(__dirname, '../..');
@@ -295,7 +295,7 @@ describe('parse-posture ESLint guard — criterion 6, D1/D2', () => {
     });
   }, 120_000);
 
-  // LIVE at `157.1-01`, and the only live case in this file until `157.1-07` installs the block. It measures the APPARATUS rather than the guard: that the config-lookup flag on the `ESLint` construction really resolves this repository's own flat config for a guarded adapter path. Invariant 2 is otherwise unobservable — a construction that silently resolved no config would make every todo case below pass vacuously the moment it was flipped live.
+  // LIVE at `157.1-01`, and the only live case in this file until `157.1-07` installs the block. It measures the APPARATUS rather than the guard: that the option-less `ESLint` construction really resolves this repository's own flat config for a guarded adapter path. Invariant 2 is otherwise unobservable — a construction that silently resolved no config would make every todo case below pass vacuously the moment it was flipped live.
   it('resolves the real flat config for a guarded adapter path', async () => {
     const config = await eslint.calculateConfigForFile(path.join(SRC, GUARDED_DIRS[0], '__parse_posture_probe__.ts'));
 

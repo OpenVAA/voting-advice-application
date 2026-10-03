@@ -42,3 +42,7 @@ The complete list from the comment, plus the client move that phase 165 attached
 - `2026-08-28-hooks-supabase-handle-parameterisation.md` — `hooks.server.ts`'s Supabase handle, which requirement 6 moves behind the adapter.
 - `2026-08-28-admin-login-supabase-independence.md` — the admin login's direct Supabase dependency.
 - `adapter-package-loading.md` — the earlier package-based adapter loading idea, which overlaps requirement 3.
+
+## Note (2026-10-02, Phase 167)
+
+The `/api/cache` proxy was removed in Phase 167 (commit `837b895c4`), together with `cachifyUrl`, the `CACHE_*` and `PUBLIC_CACHE_ENABLED` settings and the `flat-cache` dependency. Any cache for static-data deployments should be designed together with the local adapter rather than restored from the removed route. This todo stays open.

@@ -45,6 +45,5 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
 
 ## Source
 
-[apps/frontend/src/lib/dynamic-components/feedback/Feedback.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/feedback/Feedback.svelte)
-
-[apps/frontend/src/lib/dynamic-components/feedback/Feedback.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/feedback/Feedback.type.ts)
+- Component: [apps/frontend/src/lib/dynamic-components/feedback/Feedback.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/feedback/Feedback.svelte)
+- Types: [apps/frontend/src/lib/dynamic-components/feedback/Feedback.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/feedback/Feedback.type.ts)

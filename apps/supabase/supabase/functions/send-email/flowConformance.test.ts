@@ -3,7 +3,7 @@
  *
  * THIS MODULE IS THE ONE THE BRIEF'S CENSUS MISSED. `162-IMPLEMENTATION-BRIEF.md` § 5 names four frontend claim readers; D-25 measured five, and the fifth is this one. It is NOT a display read: it gates BULK SEND, so when the claim changed under 162-06 the pre-change reader's `payload.user_roles || []` would have evaluated to the empty list and every administrator would have lost bulk send — a silent authorisation outage in a module no plan named. A flow check built on the brief's number would have omitted the only one of the five whose failure is an outage, which is why the census behind this file was re-derived from the tree rather than taken from any document.
  *
- * In the shape of `identity-callback/envReadSites.test.ts`: `index.ts` resolves remote Deno specifiers (`https://esm.sh/@supabase/supabase-js@2`, `npm:nodemailer@6.9.10`) and cannot be imported by vitest, so the properties are asserted against the module's SOURCE TEXT.
+ * In the shape of `identity-callback/envReadSites.test.ts`: `index.ts` imports `@supabase/supabase-js` and `nodemailer` through `npm:` specifiers, which only Deno resolves, so it cannot be imported by vitest, and the properties are asserted against the module's SOURCE TEXT.
  *
  * THE PERMISSION VOCABULARY IS DERIVED, NEVER TRANSCRIBED. It is read out of the declarative enum source at `schema/000-enums.sql`, and its size is pinned at 23.
  *

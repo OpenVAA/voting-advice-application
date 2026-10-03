@@ -3,9 +3,8 @@
  * `tests/utils/**\/*.test.ts` so we do NOT pick up the Playwright spec files in
  * `tests/specs/**` (those are e2e tests run by Playwright, NOT vitest).
  *
- * Note: this config is NOT yet listed in the root `vitest.workspace.ts`
- * (which currently only includes `packages/**`). Authors who add a tests
- * unit-test entry should run it directly via:
+ * Note: this config is NOT listed in the root `vitest.config.ts`, whose `test.projects` names only the package-level configs under `packages`.
+ * Authors who add a tests unit-test entry should run it directly via:
  *
  *   yarn vitest run --config tests/vitest.config.ts
  *

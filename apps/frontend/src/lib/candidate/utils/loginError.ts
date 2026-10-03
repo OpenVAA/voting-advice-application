@@ -20,8 +20,4 @@ const CANDIDATE_LOGIN_ERROR: Record<CandidateLoginError, TranslationKey> = {
  * The allowed error codes for candidate login to be displayed on the login page. These are subkeys of `candidateApp.error.` translations.
  */
 export type CandidateLoginError =
-  | 'candidateNoNomination'
-  | 'loginFailed'
-  | 'nominationNoElection'
-  | 'userNoCandidate'
-  | 'userNotAuthorized';
+  'candidateNoNomination' | 'loginFailed' | 'nominationNoElection' | 'userNoCandidate' | 'userNotAuthorized';

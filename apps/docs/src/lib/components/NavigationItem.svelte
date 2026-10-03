@@ -1,7 +1,7 @@
 <script lang="ts">
+  import Self from './NavigationItem.svelte';
   import { hasChildren, isActive } from '../utils/navigation';
   import type { NavigationItem as NavigationItemType, NavigationSection } from '$lib/navigation.type';
-  import Self from './NavigationItem.svelte';
 
   interface Props {
     item: NavigationItemType | NavigationSection;

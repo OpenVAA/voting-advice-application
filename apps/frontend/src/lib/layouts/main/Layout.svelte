@@ -39,7 +39,8 @@ Defines the outer layout for the application, including the header and menu.
   const { pageStyles, navigation, navigationSettings, video } = getLayoutContext();
   navigation.close = closeDrawer;
 
-  let drawerOpenElement: HTMLButtonElement | undefined;
+  /** The menu button in `Header` that opens the drawer. Bound from `Header` so that `closeDrawer()` can return focus to it. */
+  let drawerOpenElement = $state<HTMLButtonElement>();
 
   /**
    * Open the drawer. We also focus on the relevant element to make it easy to toggle it back when using keyboard navigation.
@@ -53,7 +54,7 @@ Defines the outer layout for the application, including the header and menu.
   }
 
   /**
-   * Close the drawer. We also focus on the relevant element to make it easy to toggle it back when using keyboard navigation.
+   * Close the drawer and return focus to the menu button that opened it, so keyboard navigation continues from there (WCAG 2.4.3).
    */
   function closeDrawer() {
     isDrawerOpen = false;
@@ -81,7 +82,7 @@ Defines the outer layout for the application, including the header and menu.
 
   <!-- Drawer content -->
   <div class="drawer-content flex flex-col">
-    <Header {menuId} {openDrawer} {isDrawerOpen} {drawerOpenElement} />
+    <Header {menuId} {openDrawer} {isDrawerOpen} bind:drawerOpenElement />
     <main id={mainContentId} class="flex flex-grow flex-col items-stretch">
       <!-- Video -->
       <div

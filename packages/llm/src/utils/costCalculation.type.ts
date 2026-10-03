@@ -6,10 +6,11 @@ export interface ModelPricing {
   input: number;
   output: number;
   cachedInput?: number;
+  /** The rate for reasoning tokens. Defaults to `output`, since providers bill reasoning as output. */
   reasoning?: number;
 }
 
-/** Input, output, reasoning and total costs. Output contains reasoning costs */
+/** Input, output, reasoning and total costs. Output contains reasoning costs, and total is input plus output. */
 export interface LLMCosts {
   input: number;
   output: number;

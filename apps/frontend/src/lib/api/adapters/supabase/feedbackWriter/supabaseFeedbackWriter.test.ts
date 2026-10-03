@@ -7,7 +7,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
  * `constants` freezes its reads at module load, so the seam is the constants module rather than the env stub behind it.
  */
 const { mockConstants } = vi.hoisted(() => ({
-  mockConstants: { PUBLIC_PROJECT_ID: '', PUBLIC_CACHE_ENABLED: false } as Record<string, unknown>
+  mockConstants: { PUBLIC_PROJECT_ID: '' } as Record<string, unknown>
 }));
 
 vi.mock('$lib/utils/constants', () => ({

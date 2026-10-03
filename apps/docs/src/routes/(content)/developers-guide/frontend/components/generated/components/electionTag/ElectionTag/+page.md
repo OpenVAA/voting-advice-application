@@ -19,6 +19,5 @@ Used when the application has multiple elections and question may apply to only 
 
 ## Source
 
-[apps/frontend/src/lib/components/electionTag/ElectionTag.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/electionTag/ElectionTag.svelte)
-
-[apps/frontend/src/lib/components/electionTag/ElectionTag.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/electionTag/ElectionTag.type.ts)
+- Component: [apps/frontend/src/lib/components/electionTag/ElectionTag.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/electionTag/ElectionTag.svelte)
+- Types: [apps/frontend/src/lib/components/electionTag/ElectionTag.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/electionTag/ElectionTag.type.ts)

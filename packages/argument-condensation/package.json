@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "scripts": {
     "build": "tsup && tsc --emitDeclarationOnly --outDir dist && mkdir -p dist/core/condensation/prompts && find src/core/condensation/prompts -mindepth 1 -maxdepth 1 -type d -exec cp -R {} dist/core/condensation/prompts/ \\;",
-    "lint": "eslint --flag v10_config_lookup_from_file src/",
-    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit --composite false",
     "test:unit": "vitest run",
     "test:watch": "vitest watch",
     "dev:vis": "serve tools/visualization"
@@ -18,18 +18,16 @@
   },
   "devDependencies": {
     "@openvaa/shared-config": "workspace:^",
-    "@types/js-yaml": "catalog:",
-    "dotenv": "catalog:",
     "serve": "^14.2.3",
     "tsup": "catalog:",
     "typescript": "catalog:",
+    "vite": "catalog:",
     "vitest": "catalog:"
   },
   "dependencies": {
     "@openvaa/app-shared": "workspace:^",
     "@openvaa/core": "workspace:^",
     "@openvaa/data": "workspace:^",
-    "@openvaa/llm": "workspace:^",
-    "js-yaml": "catalog:"
+    "@openvaa/llm": "workspace:^"
   }
 }

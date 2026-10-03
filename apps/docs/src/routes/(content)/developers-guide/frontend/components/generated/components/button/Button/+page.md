@@ -50,6 +50,5 @@ text="Add to list">
 
 ## Source
 
-[apps/frontend/src/lib/components/button/Button.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/button/Button.svelte)
-
-[apps/frontend/src/lib/components/button/Button.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/button/Button.type.ts)
+- Component: [apps/frontend/src/lib/components/button/Button.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/button/Button.svelte)
+- Types: [apps/frontend/src/lib/components/button/Button.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/button/Button.type.ts)

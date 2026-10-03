@@ -125,11 +125,13 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
   });
 
   test.afterAll(async () => {
-    // Cleanup: remove the test user if created during the probe
+    // Cleanup: remove the candidate, the grants and the test user the probe created. The candidate is deleted by the id the probe returned, then the user's remaining grants, then the auth user.
     if (probe?.createdUserId) {
-      // Delete candidate record first (FK constraint)
+      await adminClient
+        .from('candidates')
+        .delete()
+        .eq('id', probe.body.candidate_id as string);
       await adminClient.from('grants').delete().eq('user_id', probe.createdUserId);
-      await adminClient.from('candidates').delete().eq('auth_user_id', probe.createdUserId);
       await adminClient.auth.admin.deleteUser(probe.createdUserId);
     }
   });
@@ -159,11 +161,21 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     // Verify candidate record was created with correct names
     const { data: candidate } = await adminClient
       .from('candidates')
-      .select('first_name, last_name, auth_user_id')
+      .select('first_name, last_name')
       .eq('id', captured.body.candidate_id as string)
       .single();
     expect(candidate?.first_name).toBe(TEST_IDENTITY.given_name);
     expect(candidate?.last_name).toBe(TEST_IDENTITY.family_name);
+
+    // The created candidate is linked to the returned user by exactly one candidate-editor grant, and that grant is the only one the new user holds.
+    const { data: grantRows, error: grantError } = await adminClient
+      .from('grants')
+      .select('scope, target_type, target_id, role')
+      .eq('user_id', captured.body.user_id as string);
+    expect(grantError).toBeNull();
+    expect(grantRows).toEqual([
+      { scope: 'entity', target_type: 'candidate', target_id: captured.body.candidate_id, role: 'editor' }
+    ]);
 
     // Verify app_metadata carries the Idura sub-based identity model.
     const {
@@ -230,6 +242,8 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     expect(body.success).toBe(true);
     expect(body.is_new_user).toBe(false); // Should find existing user
     expect(body.user_id).toBe(captured.createdUserId);
+    // The returning identity is matched to the candidate it already edits, found through its grant, rather than given a second one.
+    expect(body.candidate_id).toBe(captured.body.candidate_id);
 
     // Verify session data is returned with a magic-link action_link containing a token.
     // Both `session` and `session.action_link` are part of the Supabase magic-link contract (admin.generateLink response shape) — they MUST be present together when keys are configured, so the test asserts them unconditionally.

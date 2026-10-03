@@ -11,7 +11,7 @@ import type { LanguageModelUsage as TokenUsage } from 'ai';
  *   processingTimeMs: 420,
  *   nLlmCalls: 66,
  *   costs: { input: 0.5, output: 0.5, total: 1 },
- *   tokens: { inputTokens: 6700, outputTokens: 6800, totalTokens: 13500 }
+ *   tokens: { inputTokens: 6700, outputTokens: 6800, totalTokens: 13500, inputTokenDetails: {...}, outputTokenDetails: {...} }
  * };
  * ```
  */

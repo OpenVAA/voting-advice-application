@@ -16,7 +16,6 @@
 -- =====================================================================
 -- Protected (admin-only) columns:
 -- - project_id - determines project tenancy
--- - auth_user_id - links candidate to auth user, set during invite/registration
 -- - id - primary key, immutable
 -- - sort_order - presentation order, admin-controlled
 -- - created_at - audit field, maintained by the database
@@ -54,7 +53,6 @@ UPDATE (
 -- =====================================================================
 -- Protected (admin-only) columns:
 -- - project_id - determines project tenancy
--- - auth_user_id - links organization to auth user
 -- - id - primary key, immutable
 -- - sort_order - presentation order, admin-controlled
 -- - created_at - audit field, maintained by the database

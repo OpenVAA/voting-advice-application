@@ -102,7 +102,7 @@ describe('the docker-image-build job builds the production image and publishes n
       .map((line) => line.trim())
       .filter((line) => /^(-\s+)?uses:/.test(line))
       .map((line) => line.replace(/^(-\s+)?uses:\s*/, ''));
-    expect(uses).toEqual(['actions/checkout@v4']);
+    expect(uses).toEqual(['actions/checkout@v7']);
   });
 
   it('carries no paths-filter and no if: key, so every change runs it', () => {

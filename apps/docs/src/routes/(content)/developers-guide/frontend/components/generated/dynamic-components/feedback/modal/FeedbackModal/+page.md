@@ -19,6 +19,5 @@ Show a modal dialog for sending feedback.
 
 ## Source
 
-[apps/frontend/src/lib/dynamic-components/feedback/modal/FeedbackModal.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/feedback/modal/FeedbackModal.svelte)
-
-[apps/frontend/src/lib/dynamic-components/feedback/modal/FeedbackModal.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/feedback/modal/FeedbackModal.type.ts)
+- Component: [apps/frontend/src/lib/dynamic-components/feedback/modal/FeedbackModal.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/feedback/modal/FeedbackModal.svelte)
+- Types: [apps/frontend/src/lib/dynamic-components/feedback/modal/FeedbackModal.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/feedback/modal/FeedbackModal.type.ts)

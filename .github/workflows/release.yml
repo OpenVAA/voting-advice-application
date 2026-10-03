@@ -21,29 +21,35 @@ jobs:
 
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Setup Yarn 4.13
+      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
+      # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
+      - name: Setup Node.js 24.21.0
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.21.0
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Setup Yarn 4.18
         uses: threeal/setup-yarn-action@v2
         with:
-          version: 4.13
-
-      - name: Setup Node.js 22.22.1
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.22.1
-          cache: "yarn"
-          registry-url: 'https://registry.npmjs.org'
+          version: 4.18
 
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
 
       - name: Create Release Pull Request or Publish
-        uses: changesets/action@v1
+        uses: changesets/action@v2
+        # The token input is the action's only credential: it ignores a GITHUB_TOKEN env var, and
+        # hands the token to `changeset version` and the publish script as GITHUB_TOKEN itself (the
+        # GitHub changelog generator reads it there). Release commits and tags go out through the
+        # Git CLI rather than the action's default GitHub API path.
         with:
-          title: "chore: version packages"
-          commit: "chore: version packages"
-          publish: yarn release
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pr-title: "chore: version packages"
+          commit-message: "chore: version packages"
+          publish-script: yarn release
+          push-with-git-cli: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true

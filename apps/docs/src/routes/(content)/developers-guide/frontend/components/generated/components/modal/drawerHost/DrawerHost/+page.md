@@ -22,4 +22,4 @@ The hosted payload is wrapped in `<svelte:boundary>` — the only valid attribut
 
 ## Source
 
-[apps/frontend/src/lib/components/modal/drawerHost/DrawerHost.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/drawerHost/DrawerHost.svelte)
+- Component: [apps/frontend/src/lib/components/modal/drawerHost/DrawerHost.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/drawerHost/DrawerHost.svelte)

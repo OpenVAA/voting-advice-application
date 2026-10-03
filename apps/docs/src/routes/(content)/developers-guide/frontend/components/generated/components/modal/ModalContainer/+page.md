@@ -43,6 +43,5 @@ A modal dialog.
 
 ## Source
 
-[apps/frontend/src/lib/components/modal/ModalContainer.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/ModalContainer.svelte)
-
-[apps/frontend/src/lib/components/modal/ModalContainer.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/ModalContainer.type.ts)
+- Component: [apps/frontend/src/lib/components/modal/ModalContainer.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/ModalContainer.svelte)
+- Types: [apps/frontend/src/lib/components/modal/ModalContainer.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/ModalContainer.type.ts)

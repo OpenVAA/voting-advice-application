@@ -141,7 +141,7 @@ describe('project-id defaults at the two construction sites', () => {
   });
 
   /**
-   * The tests/ subclass has no vitest project of its own (`vitest.workspace.ts` enumerates `packages/**` only), so its constructor default is asserted from its SOURCE. The behaviour under assertion is the one edit that re-points every argument-less `new SupabaseAdminClient()` inside `tests/`; losing it would leave the whole harness reading the default project again.
+   * The tests/ subclass has no vitest project of its own (the root `vitest.config.ts` lists only the package-level `vitest.config.ts` files under `packages` in `test.projects`), so its constructor default is asserted from its SOURCE. The behaviour under assertion is the one edit that re-points every argument-less `new SupabaseAdminClient()` inside `tests/`; losing it would leave the whole harness reading the default project again.
    */
   it('the tests/ subclass defaults its project to the resolved E2E project', () => {
     const source = readFileSync(resolve(REPO_ROOT, 'tests/tests/utils/supabaseAdminClient.ts'), 'utf8');

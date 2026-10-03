@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "echo 'Nothing to build.'",
-    "lint": "eslint --flag v10_config_lookup_from_file src/",
+    "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run",
     "seed": "tsx src/cli/seed.ts",
@@ -32,6 +32,7 @@
     "eslint": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
+    "vite": "catalog:",
     "vitest": "catalog:"
   }
 }

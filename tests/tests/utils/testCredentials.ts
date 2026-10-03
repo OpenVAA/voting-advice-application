@@ -3,11 +3,11 @@
  *
  * Used by the opt-in `auth-setup` project (tests/tests/setup/shared/auth.setup.ts) and the perm-* setups (TEST_CANDIDATE_PASSWORD only).
  *
- * The values are self-contained literals rather than being derived at module load from a dev-seed template — deriving them threw at import time once the source template was retired, crashing every consumer (including the default-suite perm-* setups that only need the password literal).
+ * The values are self-contained literals rather than being derived at module load from a dev-seed template, so a change to a template can never make this module throw at import time and crash every consumer (including the default-suite perm-* setups that only need the password literal).
  *
  * ## The registered-base-candidate contract
  *
- * The `candidates` table has NO email column, so a base candidate is not "registered" by the seed — the seed only creates the candidate row. Registration is a RUNTIME act: `auth-setup` calls `SupabaseAdminClient.forceRegister(externalId, email, password)`, which mints the auth user, assigns the `candidate` role and links `auth_user_id` on the row named by `TEST_CANDIDATE_EXTERNAL_ID`. This mirrors exactly what every perm-* setup already does; the email below is therefore a tests/-owned handle for that runtime registration, not a seeded column value.
+ * The `candidates` table has NO email column, so a base candidate is not "registered" by the seed — the seed only creates the candidate row. Registration is a RUNTIME act: `auth-setup` calls `SupabaseAdminClient.forceRegister(externalId, email, password)`, which mints the auth user and writes the candidate-editor grant linking it to the row named by `TEST_CANDIDATE_EXTERNAL_ID`. This mirrors exactly what every perm-* setup already does; the email below is therefore a tests/-owned handle for that runtime registration, not a seeded column value.
  *
  * `TEST_CANDIDATE_EXTERNAL_ID` points at CA-AA-1, the base dataset's perfect-match candidate: it carries `terms_of_use_accepted` (so the post-login ToU gate does not intercept) and a full info + opinion answer set (so the candidate preview page has content to render for the visual baselines).
  *

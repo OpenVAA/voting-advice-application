@@ -9,7 +9,7 @@
  *
  * ⚠ BYTE-IDENTICAL COPIES live in `invite-candidate/` and `send-email/`, because Supabase deploys each top-level function directory as its own unit and this repository has no shared module directory for Edge Functions (the `envConfig.ts` precedent). `scripts/assert-edge-env-defaults.mjs` (a `yarn lint:check` link) fails when the two copies differ. Edit both or neither.
  *
- * Reaches no remote origin, so vitest can import it -- unlike `index.ts`, which resolves an `https://esm.sh` specifier.
+ * Reaches no remote origin, so vitest can import it -- unlike `index.ts`, whose `npm:` specifiers only Deno resolves.
  */
 
 /** The slice of a supabase-js client this module uses: an awaitable `rpc` call. */

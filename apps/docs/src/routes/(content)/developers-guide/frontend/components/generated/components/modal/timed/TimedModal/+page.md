@@ -51,6 +51,5 @@ See the `<Modal>` component documentation for more information.
 
 ## Source
 
-[apps/frontend/src/lib/components/modal/timed/TimedModal.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/timed/TimedModal.svelte)
-
-[apps/frontend/src/lib/components/modal/timed/TimedModal.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/timed/TimedModal.type.ts)
+- Component: [apps/frontend/src/lib/components/modal/timed/TimedModal.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/timed/TimedModal.svelte)
+- Types: [apps/frontend/src/lib/components/modal/timed/TimedModal.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/timed/TimedModal.type.ts)
