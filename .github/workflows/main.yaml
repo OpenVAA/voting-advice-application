@@ -76,7 +76,7 @@ jobs:
   # outbound request.
   #
   # Pinning: the Action ref and the image tag spell the same release differently. The git tag is
-  # `v3.97.2` and the ghcr tag is `3.97.2`; `ghcr.io/trufflesecurity/trufflehog:v3.97.2` returns
+  # `v3.97.9` and the ghcr tag is `3.97.9`; `ghcr.io/trufflesecurity/trufflehog:v3.97.9` returns
   # MANIFEST_UNKNOWN, so copying the `v` across breaks `docker run`. Both are pinned, like every other
   # Action in this file, so a recorded run is reproducible against a fixed version.
   secret-scan:
@@ -107,9 +107,9 @@ jobs:
           echo "base=$BASE" >> "$GITHUB_OUTPUT"
 
       - name: "Scan for committed secrets (trufflehog)"
-        uses: trufflesecurity/trufflehog@v3.97.2
+        uses: trufflesecurity/trufflehog@v3.97.9
         with:
-          version: "3.97.2"
+          version: "3.97.9"
           base: ${{ steps.range.outputs.base }}
           head: ${{ github.sha }}
           # No `--results`, no `--only-verified`: both drop unverified findings, which is the only class the

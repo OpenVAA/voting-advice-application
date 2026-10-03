@@ -36,7 +36,7 @@ const WORKFLOW = readFileSync(resolve(REPO_ROOT, '.github/workflows/main.yaml'),
 const JOB_KEY = '\n  secret-scan:';
 const NEXT_JOB_KEY = '\n  frontend-and-shared-module-validation:';
 /**
- * The tool's USAGE token, deliberately not the bare `trufflesecurity/trufflehog` string. The bare name also appears in the job's comment block, which records that the git tag (`v3.97.2`) and the ghcr image tag (`3.97.2`) spell the same release differently -- a real gotcha that must stay written down. Counting the bare name makes the guard redden on that prose and invites deleting it, which is backwards. What the guard actually needs to hold is ONE STEP, not one mention.
+ * The tool's USAGE token, deliberately not the bare `trufflesecurity/trufflehog` string. The bare name also appears in the job's comment block, which records that the git tag (`v3.97.9`) and the ghcr image tag (`3.97.9`) spell the same release differently -- a real gotcha that must stay written down. Counting the bare name makes the guard redden on that prose and invites deleting it, which is backwards. What the guard actually needs to hold is ONE STEP, not one mention.
  */
 const TOOL_STEP = 'uses: trufflesecurity/trufflehog@';
 const DETECTOR_CONFIG = '.github/trufflehog-openvaa.yml';
