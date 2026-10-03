@@ -579,7 +579,7 @@ jobs:
         run: tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/ci --no-db-reset --no-watch
 
       - name: "Upload the E2E run directory"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: e2e-run
@@ -655,7 +655,7 @@ jobs:
         run: PLAYWRIGHT_VISUAL=1 tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/ci-visual --no-db-reset --no-watch --project visual-regression
 
       - name: "Upload the visual run directory"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: e2e-run-visual
