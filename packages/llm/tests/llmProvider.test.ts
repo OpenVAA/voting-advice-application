@@ -199,7 +199,7 @@ describe('LLMProvider', () => {
         model: expect.objectContaining({ modelName: 'gpt-4o-mini' }),
         schema,
         messages: options.messages,
-        allowSystemInMessages: true,
+        allowSystemInMessages: false,
         temperature: undefined,
         maxRetries: 3
       });
@@ -250,13 +250,38 @@ describe('LLMProvider', () => {
         model: expect.anything(),
         schema: options.schema,
         messages: options.messages,
-        allowSystemInMessages: true,
+        allowSystemInMessages: false,
         temperature: 0.7,
         maxRetries: 5
       });
     });
 
-    it('should accept a prompt sent as a system message', async () => {
+    it('should keep the SDK default and reject system messages unless the caller opts in', async () => {
+      mockGenerateObject.mockResolvedValueOnce({
+        object: { name: 'Test' },
+        usage: makeUsage(100, 50),
+        finishReason: 'stop' as const,
+        reasoning: undefined,
+        warnings: undefined,
+        request: {} as never,
+        response: {} as never,
+        providerMetadata: undefined,
+        toJsonResponse: vi.fn()
+      });
+
+      const messages = [{ role: 'system' as const, content: 'Condense these arguments.' }];
+      await provider.generateObject({
+        modelConfig: { primary: 'gpt-4o-mini' },
+        schema: z.object({ name: z.string() }),
+        messages
+      });
+
+      expect(mockGenerateObject).toHaveBeenCalledWith(
+        expect.objectContaining({ messages, allowSystemInMessages: false })
+      );
+    });
+
+    it('should forward an explicit allowSystemInMessages opt-in from the caller', async () => {
       mockGenerateObject.mockResolvedValueOnce({
         object: { name: 'Test' },
         usage: makeUsage(100, 50),
@@ -273,7 +298,8 @@ describe('LLMProvider', () => {
       const result = await provider.generateObject({
         modelConfig: { primary: 'gpt-4o-mini' },
         schema: z.object({ name: z.string() }),
-        messages
+        messages,
+        allowSystemInMessages: true
       });
 
       expect(mockGenerateObject).toHaveBeenCalledWith(

@@ -73,8 +73,8 @@ export class LLMProvider {
           model: this.provider.languageModel(model),
           schema: options.schema,
           messages: options.messages ?? [],
-          // Callers build these messages server-side from prompt templates, with the prompt as a system message.
-          allowSystemInMessages: true, // The SDK rejects system messages in `messages` unless this is set.
+          // The SDK rejects `role: 'system'` entries in `messages` unless this is set. Keep that safe default and let each caller opt in explicitly, so a caller that forwards a client-supplied message array never inherits the opt-in.
+          allowSystemInMessages: options.allowSystemInMessages ?? false,
           temperature: options.temperature,
           maxRetries: options.maxRetries ?? 3 // Retries for network errors
         });

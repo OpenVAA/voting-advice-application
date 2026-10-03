@@ -386,6 +386,8 @@ export class Condenser {
       const llmResult = await this.input.options.llmProvider.generateObject({
         schema: ResponseWithArgumentsSchema,
         messages,
+        // The whole prompt is sent as a system message, which AI SDK 7 rejects unless this is set. NOTE: the template interpolates candidate-written comments, so untrusted text runs with system-role authority here. The fix (template in `instructions`, comments in a user message) is tracked in `.planning/todos/pending/2026-10-03-llm-move-system-template-to-instructions.md`.
+        allowSystemInMessages: true,
         temperature: 0.7,
         maxRetries: 3
       });
@@ -774,6 +776,8 @@ export class Condenser {
         requests: llmInputs.map((input) => ({
           schema: ResponseWithArgumentsSchema,
           messages: input.messages,
+          // The whole prompt is sent as a system message, which AI SDK 7 rejects unless this is set. NOTE: the templates interpolate candidate-written comments, or arguments the model condensed from them, so untrusted text runs with system-role authority here. The fix is tracked in `.planning/todos/pending/2026-10-03-llm-move-system-template-to-instructions.md`.
+          allowSystemInMessages: true,
           temperature: input.temperature,
           maxRetries: 3,
           validationRetries: 2
