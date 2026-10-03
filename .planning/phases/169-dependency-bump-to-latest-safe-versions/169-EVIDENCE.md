@@ -95,6 +95,26 @@ ids are left in the baseline for 169-13's reviewed rewrite (PROH-169-02: no `--u
   (`postinstall: node install.js`) and `supabase` 2.83.0 (`postinstall: node scripts/postinstall.js`). Nothing
   else; no `binding.gyp` anywhere.
 
+### 169-03 (group 2) re-measurement, 2026-10-03
+
+`node 169-version-probe.mjs --only eslint,@eslint/js,eslint-plugin-import,@eslint/eslintrc,eslint-plugin-svelte,svelte-eslint-parser,@typescript-eslint/eslint-plugin,@typescript-eslint/parser,eslint-plugin-unused-imports,eslint-plugin-playwright,eslint-config-prettier,eslint-plugin-simple-import-sort,prettier,prettier-plugin-svelte,prettier-plugin-tailwindcss --node 24.21.0`
+at 2026-10-03T10:34:07Z → exit 0, 15 packages (`eslint-plugin-import-x` is not yet declared, so it was measured
+with `npm view`). Verdicts: current 7 · major 6 · HOLD-7d 2.
+
+| Package | Resolved | Target (published, age) | Target line x.0.0 | Verdict / hold |
+|---|---|---|---|---|
+| `eslint` | 9.39.5 | **10.11.0** (2026-09-18, 14.6 d) | 10.0.0 2026-02-06 | major; 10.12.0 (2026-10-02T20:08Z, 0.6 d) held by the 7-day rule |
+| `@eslint/js` | 9.39.5 | **10.0.1** (2026-02-06, 238.5 d) | 10.0.0 | major |
+| `eslint-plugin-import-x` (new) | — | **4.17.1** (2026-06-28, 97.1 d; `latest`) | 4.0.0 long past | peer `eslint ^8.57.0 \|\| ^9.0.0 \|\| ^10.0.0` admits both 9 and 10 |
+| `eslint-plugin-svelte` | 2.46.1 (frontend) / 3.23.0 (docs) | **3.23.0** (2026-08-13, 51.4 d) | 3.0.0 2025-02-26 | major (frontend) |
+| `eslint-plugin-simple-import-sort` | 12.1.1 | **14.0.0** (2026-07-16, 78.6 d) | 14.0.0 2026-07-16 (78.6 d) | major |
+| `prettier-plugin-svelte` | 3.5.2 | **4.1.1** (2026-06-15, 109.7 d) | 4.0.0 2026-05-20 (136 d) | major |
+| `prettier-plugin-tailwindcss` | 0.7.4 | **0.8.1** (2026-07-15, 80.0 d) | 0.8.0 2026-04-27 (159 d) | major |
+| `@typescript-eslint/eslint-plugin`, `@typescript-eslint/parser` | 8.70.1 | 8.70.1 | 8.0.0 | HOLD-7d: 8.71.0 (2026-09-28T17:1xZ, 4.7 d) |
+| `@eslint/eslintrc` | 3.3.7 | 3.3.7 | — | current (removed by this plan) |
+| `eslint-plugin-import` | 2.32.0 | 2.32.0 | — | current (removed by this plan) |
+| `svelte-eslint-parser` 1.8.1, `eslint-plugin-unused-imports` 4.4.1, `eslint-plugin-playwright` 2.12.0, `eslint-config-prettier` 10.1.8, `prettier` 3.9.9 | = target | — | — | current |
+
 ## 2. Package legitimacy
 
 **Operator approvals (step 0, run before any repository change, 2026-10-03T06:37Z):** the box check printed
@@ -186,6 +206,54 @@ Applied (commit `ee5c3d620`): `.yarnrc.yml` `enableScripts: false` (with a two-l
 allow-list); root `package.json` `"dependenciesMeta": { "esbuild": { "built": true }, "supabase": { "built":
 true } }`. Yarn records the root workspace's `dependenciesMeta` in `yarn.lock` (`--immutable` refused the first
 install with exactly that 5-line hunk), so it is part of the same commit.
+
+### 169-03 (group 2)
+
+**Box A re-read (Task 1 precondition, 2026-10-03T10:33Z):** `169-LEGITIMACY-APPROVALS.md` § A is `[x]`
+(`eslint-plugin-import-x` + `unrs-resolver`'s postinstall).
+
+**`unrs-resolver` postinstall, printed before the install commit.** `npm view unrs-resolver@1.12.2 scripts` →
+`{ "postinstall": "node postinstall.js" }`; its only dependency is `napi-postinstall ^0.3.4`, and its 22
+`optionalDependencies` are the `@unrs/resolver-binding-<platform>` packages at the same version. After the
+install, `node_modules/unrs-resolver/postinstall.js` reads in full:
+
+```js
+const { checkAndPreparePackage } = require("napi-postinstall");
+
+const packageJson = require("./package.json");
+
+checkAndPreparePackage(packageJson, true);
+```
+
+i.e. it checks that the platform binding (`@unrs/resolver-binding-darwin-arm64` here, installed as an optional
+dependency) is present and only falls back to fetching it from the npm registry when it is not. The install log
+(`tests/e2e-runs/169-gates/03/t1-install.log`) shows `YN0007: unrs-resolver@npm:1.12.2 must be built` and no
+`YN0004` / `YN0009`: it ran because it is on the allow-list, which now reads `esbuild`, `supabase`,
+`unrs-resolver` (root `package.json` `dependenciesMeta.<name>.built: true`; `enableScripts: false` unchanged;
+no `approvedGitRepositories`). The lockfile's root-workspace entry gained the matching 2-line
+`dependenciesMeta` hunk.
+
+**Every package name new to `yarn.lock`** (30, `tests/e2e-runs/169-gates/03/t1-new-names.txt`), checked with
+`gsd-tools query package-legitimacy check --ecosystem npm` (`t1-legit.json`):
+
+| Package | Verdict | Reasons | Weekly downloads | Repository | Postinstall | Resolved (published, age on 2026-10-03) |
+|---|---|---|---|---|---|---|
+| `eslint-plugin-import-x` | OK | — | 8176981 | github.com/un-ts/eslint-plugin-import-x | — | 4.17.1 (2026-06-28, 97.2 d) |
+| `unrs-resolver` | OK | — | 68533880 | github.com/unrs/unrs-resolver | `node postinstall.js` | 1.12.2 (2026-05-19, 136.9 d) |
+| `@unrs/resolver-binding-*` (22 platform packages) | OK ×22 | — | 1.56 M – 60.9 M | github.com/unrs/unrs-resolver | — | 1.12.2 (2026-05-19, 136.9 d) |
+| `napi-postinstall` | OK | — | 66837104 | github.com/un-ts/napi-postinstall | — | 0.3.4 (2025-10-04, 364.2 d) |
+| `eslint-import-context` | OK | — | 13071697 | github.com/un-ts/eslint-import-context | — | 0.1.9 (2025-06-26, 464.2 d) |
+| `stable-hash-x` | OK | — | 13235935 | github.com/un-ts/stable-hash-x | — | 0.2.0 (2025-06-25, 464.8 d) |
+| `get-tsconfig` | OK | — | 130497396 | github.com/privatenumber/get-tsconfig | — | 4.14.3 (2026-08-17, 46.9 d) |
+| `resolve-pkg-maps` | OK | — | 112686313 | github.com/privatenumber/resolve-pkg-maps | — | 1.0.0 (2022-12-14) |
+| `comment-parser` | SUS | too-new (its `latest`) | 15271812 | github.com/yavorskiy/comment-parser | — | 1.4.9 (2026-09-08, 24.7 d) |
+
+No `SLOP`; the one `SUS` is `too-new` on an established package, and the version actually resolved is 24.7 days
+old. Every new `name@version` resolved is at least 7 days old (`npmMinimalAgeGate: 7d` applied; youngest
+`comment-parser@1.4.9`). `@emnapi/core` / `@emnapi/runtime` / `@emnapi/wasi-threads` gained a 1.10.0 / 1.2.1
+version (the `@unrs/resolver-binding-wasm32-wasi` chain; names already in the lockfile, published 2026-04, ≥ 170
+d). The swap removed 91 package versions that only `eslint-plugin-import` pulled in (the `es-abstract` /
+`array.prototype.*` / `is-*` shim family, `tsconfig-paths`, `eslint-module-utils`, `resolve` 2.0.0-next).
 
 ## 3. Holds
 
@@ -475,6 +543,31 @@ Log: `tests/e2e-runs/169-gates/02-t2-guard-old.log`.
 `yarn workspace @openvaa/dev-seed vitest run tests/nodeEngineGate.test.ts tests/assertDeclaredBinariesGate.test.ts
 tests/ciDockerImageBuildGate.test.ts` → 0 (22 tests): the rejecting toolchain's major (22) sits below the declared
 floor (24).
+
+### The four import rules on planted violations (D-17) — 169-03
+
+Runner: `bash 169-planted-import-rules.sh <namespace>` (committed in the phase directory). It writes one fixture
+per rule under `packages/core/src/__planted_169__/`, lints them from `packages/core` with the repository's
+`node_modules/.bin/eslint` (the root config, i.e. the shared config) in JSON form, requires each fixture's
+messages to include `<namespace>/<rule>`, removes the fixtures and requires `git status --porcelain --
+packages/core/src` to be empty. The config-lookup flag is passed only when ESLint reports major 9.
+
+| When | ESLint | Command | Exit | Output |
+|---|---|---|---|---|
+| before the swap (HEAD `81687aa55`) | 9.39.5 | `… import` | 0 | `import/first: fired` · `import/newline-after-import: fired` · `import/no-duplicates: fired` · `import/consistent-type-specifier-style: fired` |
+| before the swap — negative control | 9.39.5 | `… import-x` | **1** | all four `import-x/…: MISSING` (the plugin is not registered yet, so the script can say MISSING) |
+| after the swap (working tree of `d3383c7e4`) | 9.39.5 | `… import-x` | 0 | `import-x/first: fired` · `import-x/newline-after-import: fired` · `import-x/no-duplicates: fired` · `import-x/consistent-type-specifier-style: fired` |
+| after the swap — negative control | 9.39.5 | `… import` | **1** | all four `import/…: MISSING` (the old namespace is gone) |
+
+`TURBO_FORCE=true yarn lint:check`, each status read from its own exit file:
+
+| When | Exit | Findings (`turbo run lint` + `eslint tests`) | Log |
+|---|---|---|---|
+| before the swap | 0 | 0 errors, **17 warnings**: 15 `unused-imports/no-unused-vars` in `packages/dev-seed/src/generators/*`, 1 in `apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.test.ts`, 1 unused `eslint-disable` directive in `tests/tests/support/mockOidcIssuerEntry.ts` | `tests/e2e-runs/169-gates/03/t1-lint-before.log`, normalised list `t1-findings-before.tsv` |
+| after the swap | 0 | the same 17 (normalised `file / severity / rule / message` lists: `diff` exit 0) | `t1-lint-after.log`, `t1-findings-after.tsv` |
+
+The starting state is "0 errors and 17 pre-existing warnings", not "zero findings"; D-17's "zero new findings" is
+held by equality of the normalised lists from here on.
 
 ## 6. Diffs and traces
 
