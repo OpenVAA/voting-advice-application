@@ -1373,6 +1373,37 @@ digest), Postgres 17 locally and in CI, faker 10, AI SDK 7 and the small majors.
   margin (§ 7).
 - Fix-forward budget: two iterations (runs 2 and 3), within the plan's limit.
 
+### 169-13 — the phase gate on one HEAD (D-26, DEPS-16, roadmap criterion 4)
+
+Every step below ran on **HEAD `be000f31a8664a315b1662073abc79bb78bf206b`** (the last code-or-ledger commit before
+the close-out; nothing was committed between the steps, and the working tree was clean for each).
+
+| Plan | Label | HEAD | install | dedupe | typecheck | lint | format | check-fe | check-docs | unit | build | audit | docs-links | docs-rq | E2E (total / passed / failed / flaky / did-not-run) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 169-13 | `169-13-final` (the phase's final tree: every group, the rulings, the reconciled baseline) | `be000f31a` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | **171 / 171 / 0 / 0 / 0** (`169-e2e/169-13-final`) |
+
+- **Gates** `169-13-final` (2026-10-03T19:08:46Z–19:11:25Z, `tests/e2e-runs/169-gates/169-13-final/`): `env.txt`
+  head `be000f31a…`, `porcelain_lines: 0`, `TURBO_FORCE: true`, Node v24.21.0, Yarn 4.18.1; `summary.tsv` 12 rows of
+  `0`; every turbo task uncached (typecheck 23/23, unit 25/25, build 14/14, `0 cached`). `04-lint`: 0 errors, 17
+  warnings; the normalised finding list (33 lines) equals 169-11's `fix1-lint-norm.txt` after sorting (`diff` exit 0,
+  `13/final-lint-norm.sorted.txt`). `10-audit`: `0 new advisory(ies) at high+, 0 accepted` against the rewritten
+  baseline. `12-docs-rq` (two-base form, `--base 0ec229dfe… --component-base 6090476cc…`): every `<ResearchQuote>`
+  span identical to the base, the three frozen components identical to the component base. `11-docs-links` 0.
+- **Postgres 17, pgTAP and the SQL lint** (19:11Z–19:12Z): `yarn db:reset` exit 0; `show server_version` → **17.6**
+  (`13/final-server-version.txt`); `yarn workspace @openvaa/supabase test:db` exit 0 → `Files=36, Tests=1335`,
+  `Result: PASS`, 0 lines `not ok`, all 36 files `ok` including the Phase 166 anon-exposure census file
+  `36-entity-identity.test.sql` and `16-anon-visibility.test.sql` (`13-final-pgtap.log`); `yarn db:lint:sql` exit 0
+  (`13/final-db-lint-sql.log`): `No schema errors found`, plpgsql_check `results: []`, and the Splinter-derived
+  advisory list `0 error(s), 3 warning(s)` — the three pre-existing "foreign keys without indexes" notes
+  (`constituency_group_constituencies.constituency_id`, `election_constituency_groups.constituency_group_id`,
+  `nominations.created_by`). That output is byte-identical (CLI update banner excluded) to the rulings-pass PG17 run
+  `rulings/r1-db-lint.log`, which matched the PG15 runs; the warnings are informational and do not fail the lint.
+- **Full E2E** `169-13-final` (`bash 169-e2e.sh 169-13-final`): `docker builder prune -af`, Docker VM **29.63 GiB**
+  free; `e2e-run.sh` at head `be000f31a` (`head` file = `env.txt` head), `project: <full default suite>`,
+  `db-reset: yes`, 2026-10-03T19:13:11Z–19:18:40Z, `playwright-exit: 0`, preflight successes 1 / failures 0;
+  `summary.json`: **total 171, passed 171, failed 0, flaky 0, skipped 0, didNotRun 0**. No listener left on 5273.
+  The cardinal rule holds on the first attempt; no re-run, no isolation run was needed.
+
 ## 5. Negative controls
 
 ### Operator rulings 2026-10-03 (between 169-07 and 169-08)
