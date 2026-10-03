@@ -6,11 +6,11 @@ current_phase: 169
 current_phase_name: Dependency Bump to Latest Safe Versions
 current_plan: 8
 status: executing
-stopped_at: Completed 169-07-PLAN.md
-last_updated: "2026-10-03T15:25:52.736Z"
+stopped_at: Applied operator rulings 2026-10-03 (169-RULINGS-SUMMARY.md); next 169-08
+last_updated: "2026-10-03T15:53:40.034Z"
 last_activity: 2026-10-03
 last_activity_desc: Phase 169 execution started
-state_head: 417423414239c16a326a1fe47ae66ff76c017899
+state_head: d729394684742cde0011d8518b3eb0dbdb5db1fa
 progress:
   total_phases: 35
   completed_phases: 31
@@ -819,9 +819,9 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-10-03T15:25:50.743Z
-Stopped at: Completed 169-07-PLAN.md
-Resume file: None
+Last session: 2026-10-03T15:53:38.638Z
+Stopped at: Applied operator rulings 2026-10-03 (169-RULINGS-SUMMARY.md); next 169-08
+Resume file: .planning/phases/169-dependency-bump-to-latest-safe-versions/.continue-here.md
 
 ## Deferred Items
 
@@ -2169,6 +2169,10 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 169]: 169-07: cookie adapter forwards ssr cache headers via event.setHeaders once per name per request
 - [Phase 169]: 169-07: Edge Functions pinned to npm:@supabase/supabase-js@2.117.2 and npm:jose@6.2.12; nodemailer 10 HELD until 2026-10-04T07:51Z (30-day new-major rule), todo has resume steps
 - [Phase 169]: 169-07: bank-auth 3x run as two projects x3 (one served function has one issuer)
+- [Phase 169]: Operator ruling 2026-10-03 (operator, in chat) R1: local Postgres 17 with option A — is_valid_choice_id marked STABLE in schema + migration (f1ac8164a), overruling PROH-169-12 for this one reviewed volatility fix; config.toml major_version = 17 (bfdc1afc3); pgTAP 1335/1335, db:lint:sql 0, E2E 171/171 on PG17.6
+- [Phase 169]: Operator ruling 2026-10-03 (operator, in chat) R2: ESLint 10.11.0 landed (34ce0d51c) with three one-line eslint-disable-next-line no-useless-assignment comments on write-only $bindable props (eslint-plugin-svelte#1478), overruling PROH-169-07 for exactly those lines; config-lookup flag removed at all 21 sites; DEPS-04 complete; removal todo filed
+- [Phase 169]: Operator ruling 2026-10-03 (operator, in chat) R3: Layout drawer focus return wired — Header drawerOpenElement $bindable, Layout binds it (e3a661517), TDD Layout.svelte.test.ts (WCAG 2.4.3)
+- [Phase 169]: Operator ruling 2026-10-03 (operator, in chat) R4: Vite 8 default build target (chrome111/edge111/firefox114/safari16.4/ios16.4) accepted as the browser floor; no build.target override
 
 ### Quick Tasks Completed
 

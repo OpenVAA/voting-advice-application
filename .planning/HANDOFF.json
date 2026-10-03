@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-10-03T15:26:25.599Z",
+  "timestamp": "2026-10-03T16:00:00.000Z",
   "phase": "169",
   "phase_name": "dependency-bump-to-latest-safe-versions",
   "phase_dir": ".planning/phases/169-dependency-bump-to-latest-safe-versions",
@@ -50,12 +50,18 @@
       "name": "Plan 169-07 (group 5b: supabase-js 2.117.2 + @supabase/ssr 0.12.7 via catalog with cache-header forwarding; Edge Functions on npm:@supabase/supabase-js@2.117.2 + npm:jose@6.2.12; 169-07-group5 12/12; E2E 169-07-group5-r2 171/171; bank-auth 8/8 x3 + bank-auth-journey 131/131 x3; DEPS-07 complete; nodemailer 10 HELD until 2026-10-04T07:51Z)",
       "status": "done",
       "commit": "417423414"
+    },
+    {
+      "id": 8,
+      "name": "Operator rulings 2026-10-03 applied between 169-07 and 169-08: R1 is_valid_choice_id STABLE + local Postgres 17 (f1ac8164a, bfdc1afc3); R2 ESLint 10.11.0 with three scoped no-useless-assignment disables, config-lookup flag removed (34ce0d51c); R3 Layout drawer focus return wired, TDD (05f88a2a6, e3a661517, bf47b1e96); R4 Vite 8 default browser target accepted; R5 voter-journey slider race left deferred (cause UNCONFIRMED); DEPS-04 complete",
+      "status": "done",
+      "commit": "d72939468"
     }
   ],
   "remaining_tasks": [
     {
       "id": 4,
-      "name": "Plans 169-08 through 169-13 (sequential); apply the nodemailer 10 pin todo (2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md) in the first plan that runs after 2026-10-04T07:51Z (169-13 at the latest); 169-13 must not start its PG17 gate until the PG17 ruling is applied",
+      "name": "Plans 169-08 through 169-13 (sequential); apply the nodemailer 10 pin todo (2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md) in the first plan that runs after 2026-10-04T07:51Z (169-13 at the latest). The PG17 ruling is applied: local stack is Postgres 17.6, so 169-13's PG17 gate may run",
       "status": "not_started"
     },
     {
@@ -73,25 +79,9 @@
       "blocking": false
     },
     {
-      "action": "Rule on ESLint 10: option A (wait for eslint-plugin-svelte#1478) or option B (scoped '**/*.svelte' no-useless-assignment off, overruling PROH-169-07); and wire or delete Layout.svelte's never-wired drawer focus return",
-      "context": "todo 2026-10-03-eslint-10-held-on-bindable-no-useless-assignment.md; 169-EVIDENCE.md § 3/§ 7; DEPS-04 stays Pending until ESLint 10 lands",
-      "blocking": false
-    },
-    {
       "action": "Repair Docker Desktop's credential helper (docker-credential-desktop get hangs on pull; worked around with a scratch DOCKER_CONFIG + DOCKER_HOST)",
       "context": "169-EVIDENCE.md § 6/§ 7 (169-04); same fault as 136-05",
       "blocking": false
-    },
-    {
-      "action": "Confirm the supported-browser floor raised by Vite 8's default build target (chrome111, edge111, firefox114, safari16.4, ios16.4; the frontend was on Vite 6's es2020/chrome87/safari14 default) or set build.target",
-      "context": "169-EVIDENCE.md § 7 (169-05); applies from the next production deploy",
-      "blocking": false
-    },
-    {
-      "action": "Rule on local Postgres 17: option A (mark public.is_valid_choice_id STABLE in schema/011-validation-functions.sql + migrations/00001_initial_schema.sql; recommended), B (hold PG17 locally), or C (rewrite the body IMMUTABLE-safe)",
-      "context": "todo 2026-10-03-pg17-local-blocked-on-is-valid-choice-id-volatility.md (resume steps); patches tests/e2e-runs/169-gates/06/t2-option-a-stable.patch and t2-pg17-config.patch; 169-EVIDENCE.md § 4/§ 6/§ 7 (169-06 Task 2). PG17 image plpgsql_check flags IMMUTABLE-vs-STABLE; PROH-169-12 forbids the schema fix; D-14 is an operator overrule. DEPS-08 Pending.",
-      "blocking": true,
-      "blocking_scope": "169-13 PG17 pgTAP / final-E2E-on-PG17 gate only; 169-07..169-12 proceed on PG15"
     },
     {
       "action": "Hosted Postgres stays 15: upgrade hosted to 17 when ready; until then every migration must stay PG15-valid",
@@ -153,9 +143,29 @@
       "decision": "nodemailer 10 held by the 30-day new-major rule; supabase-js and jose pinned without it",
       "rationale": "D-03 + PROH-169-16 (plan: the task waits)",
       "phase": "169"
+    },
+    {
+      "decision": "Local Postgres 17 with option A: public.is_valid_choice_id marked STABLE in schema + migration (f1ac8164a), config.toml major_version = 17 (bfdc1afc3)",
+      "rationale": "operator ruling 2026-10-03, in chat; overrules PROH-169-12 for this one reviewed volatility fix",
+      "phase": "169"
+    },
+    {
+      "decision": "ESLint 10.11.0 landed with three one-line eslint-disable-next-line no-useless-assignment comments on write-only $bindable props (eslint-plugin-svelte#1478); config-lookup flag removed at all 21 sites (34ce0d51c); todo to remove the disables",
+      "rationale": "operator ruling 2026-10-03, in chat; overrules PROH-169-07 for exactly those three lines",
+      "phase": "169"
+    },
+    {
+      "decision": "Layout.svelte drawer focus return wired: Header drawerOpenElement $bindable, Layout binds it (e3a661517), TDD test Layout.svelte.test.ts",
+      "rationale": "operator ruling 2026-10-03, in chat (WCAG 2.4.3)",
+      "phase": "169"
+    },
+    {
+      "decision": "Vite 8 default build target accepted as the browser floor (chrome111/edge111/firefox114/safari16.4/ios16.4); no build.target override",
+      "rationale": "operator ruling 2026-10-03, in chat",
+      "phase": "169"
     }
   ],
   "uncommitted_files": [],
-  "next_action": "Continue /gsd-execute-phase 169 from 169-08 (group 6: @faker-js/faker 10). Local stack is PG15 on the CLI 2.118.0 images with the default function env. Apply the nodemailer 10 todo once 2026-10-04T07:51Z has passed. 169-13 must not run its PG17 gate until the PG17 ruling is applied. Read .planning/phases/169-dependency-bump-to-latest-safe-versions/.continue-here.md first.",
+  "next_action": "Continue /gsd-execute-phase 169 from 169-08 (group 6: @faker-js/faker 10). Local stack is now Postgres 17.6 (postgres:17.6.1.171) on the CLI 2.118.0 images; ESLint 10.11.0 is in place with no config-lookup flag. Apply the nodemailer 10 todo once 2026-10-04T07:51Z has passed. Read .planning/phases/169-dependency-bump-to-latest-safe-versions/.continue-here.md first.",
   "context_notes": "Work only in the -gsd worktree. Node 24.21.0 must be on PATH. Orchestrator hand-drives executors at top level; one gsd-executor per plan, sequential mode."
 }
