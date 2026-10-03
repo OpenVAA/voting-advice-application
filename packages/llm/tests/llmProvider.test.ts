@@ -876,30 +876,63 @@ describe('LLMProvider', () => {
   });
 
   describe('calculateLLMCost on the SDK usage shape', () => {
-    it('should read cached input and reasoning tokens from the usage details', async () => {
+    // AI SDK 7 `LanguageModelUsage`: `outputTokens` is the total output and `outputTokenDetails.reasoningTokens` is a subset of it (text 800k + reasoning 200k = 1M here). `inputTokens` is the total input and `inputTokenDetails.cacheReadTokens` is the cached subset (600k uncached + 400k cached = 1M).
+    const usage: LanguageModelUsage = {
+      inputTokens: 1_000_000,
+      inputTokenDetails: { noCacheTokens: 600_000, cacheReadTokens: 400_000, cacheWriteTokens: 0 },
+      outputTokens: 1_000_000,
+      outputTokenDetails: { textTokens: 800_000, reasoningTokens: 200_000 },
+      totalTokens: 2_000_000
+    };
+
+    async function actualCalculateLLMCost() {
       const actual = await vi.importActual<{ calculateLLMCost: typeof calculateLLMCost }>(
         '../src/utils/costCalculation'
       );
-      const usage: LanguageModelUsage = {
-        inputTokens: 1_000_000,
-        inputTokenDetails: { noCacheTokens: 600_000, cacheReadTokens: 400_000, cacheWriteTokens: 0 },
-        outputTokens: 1_000_000,
-        outputTokenDetails: { textTokens: 800_000, reasoningTokens: 200_000 },
-        totalTokens: 2_000_000
-      };
+      return actual.calculateLLMCost;
+    }
+
+    it('should price reasoning as a split of the output, not on top of it', async () => {
+      const calculate = await actualCalculateLLMCost();
       const pricing = { input: 1, output: 2, cachedInput: 0.5, reasoning: 3 };
 
-      expect(actual.calculateLLMCost({ pricing, usage })).toEqual({
+      // input: all 1M input tokens at the input rate = 1.0 (no cache split without useCachedInput).
+      // output: 800k text tokens at 2 = 1.6, plus 200k reasoning tokens at 3 = 0.6, so 2.2.
+      // reasoning: the 0.6 already inside output, reported separately and not added again.
+      // total: 1.0 + 2.2 = 3.2.
+      expect(calculate({ pricing, usage })).toEqual({
+        input: expect.closeTo(1),
+        output: expect.closeTo(2.2),
+        reasoning: expect.closeTo(0.6),
+        total: expect.closeTo(3.2)
+      });
+    });
+
+    it('should bill uncached input at the input rate and cached input at the cached rate', async () => {
+      const calculate = await actualCalculateLLMCost();
+      const pricing = { input: 1, output: 2, cachedInput: 0.5, reasoning: 3 };
+
+      // input: 600k uncached tokens at 1 = 0.6, plus 400k cached tokens at 0.5 = 0.2, so 0.8.
+      // output and reasoning as above: 2.2 and 0.6. total: 0.8 + 2.2 = 3.0.
+      expect(calculate({ pricing, usage, useCachedInput: true })).toEqual({
+        input: expect.closeTo(0.8),
+        output: expect.closeTo(2.2),
+        reasoning: expect.closeTo(0.6),
+        total: expect.closeTo(3)
+      });
+    });
+
+    it('should price reasoning at the output rate when the model has no reasoning rate', async () => {
+      const calculate = await actualCalculateLLMCost();
+      const pricing = { input: 1, output: 2 };
+
+      // input: no cachedInput rate, so all 1M input tokens fall back to the input rate = 1.0 even with useCachedInput.
+      // output: all 1M output tokens at 2 = 2.0, of which the 200k reasoning tokens are 0.4. total: 1.0 + 2.0 = 3.0.
+      expect(calculate({ pricing, usage, useCachedInput: true })).toEqual({
         input: expect.closeTo(1),
         output: expect.closeTo(2),
-        reasoning: expect.closeTo(0.6),
-        total: expect.closeTo(3.6)
-      });
-      expect(actual.calculateLLMCost({ pricing, usage, useCachedInput: true })).toEqual({
-        input: expect.closeTo(0.2),
-        output: expect.closeTo(2),
-        reasoning: expect.closeTo(0.6),
-        total: expect.closeTo(2.8)
+        reasoning: expect.closeTo(0.4),
+        total: expect.closeTo(3)
       });
     });
   });
