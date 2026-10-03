@@ -2399,6 +2399,123 @@ scratch copy of the evidence commit with the Action's own arguments (`git file:/
 --exclude-paths=.github/trufflehog-exclude-paths.txt`): exit 0, 2632 chunks, `verified_secrets: 0,
 unverified_secrets: 0`. CI's `secret-scan` agreed (§ 4).
 
+### 169-13 Task 1 — the audit baseline reconciled by hand, row by row (D-29, D-28, D-02)
+
+**Before the edit (2026-10-03T18:57Z, HEAD `9e3301a35`).** `yarn audit:deps` → exit 0
+(`tests/e2e-runs/169-gates/13-t1-audit-before.log`): `[ACCEPTED] 0`, `[NEW] 0`, and **all 68 rows** of
+`security/audit-baseline.json` (62 high, 6 critical) listed as "no longer appear in the audit". There was nothing
+left to accept.
+
+**How the file was rewritten.** By hand, not with `--update-baseline` (orchestrator rule for this plan). The edit
+mirrors what the script's `updateBaseline` emits on a tree with no findings: `recorded` `2026-10-03`,
+`recordedAtHead` `9e3301a35a3bcf66bb7fa6e4d83c449f8248a9fb`, `threshold` `high` kept, `accepted` `[]`, and a new
+`note` that states the current count (none accepted at high or critical), what an accepted row means
+(present-but-accepted), that a NEW advisory reddens the build because the subtraction is keyed on the advisory ID,
+the two allowed rationale forms, and the Deno blind spot. The note has no history and no retired-backend text
+(`grep -c -i strapi security/audit-baseline.json` → 0). Because no row survives, no row needed a current
+`no fixed version published` / `held:` note, and no `REVIEW REQUIRED` text exists (PROH-169-23 holds trivially).
+
+**Each dropped row, checked against GitHub's advisory record (`gh api /advisories/<ghsa>`, 50 distinct GHSAs, fetched
+2026-10-03T18:58Z) and the versions `yarn.lock` resolves now.** For each row, either the package is no longer in the
+tree (`yarn why <pkg>` prints nothing, no `yarn.lock` entry), or every resolved version is outside every vulnerable
+range GitHub lists for that package. No resolved version matches any range (semver check over the lockfile,
+`scripts`-free, kept in the scratch evidence). The removal is therefore "no longer present", not "accepted
+elsewhere":
+
+| id | package | severity | GHSA | vulnerable range(s) (GitHub, 2026-10-03) | in the tree now | why the row goes |
+|---|---|---|---|---|---|---|
+| 1158500 | `@faker-js/faker` | high | GHSA-qxc2-j82w-r537 | <= 10.4.0 | 10.6.0 | every resolved version is outside the range (patched: 10.5.0) |
+| 1112954 | `@isaacs/brace-expansion` | high | GHSA-7h2j-956f-4vf2 | <= 5.0.0 | absent (`yarn why` empty) | package no longer in the tree |
+| 1116433 | `@sveltejs/kit` | high | GHSA-2crg-3p73-43xp | <= 2.57.0 | 2.70.3 | every resolved version is outside the range (patched: 2.57.1) |
+| 1139523 | `@vitest/browser` | critical | GHSA-p63j-vcc4-9vmv | >= 4.0.0, < 4.1.10 / < 3.2.7 / >= 5.0.0-beta.1, < 5.0.0-beta.6 | 5.0.2 | every resolved version is outside the range (patched: 4.1.10 | 3.2.7 | 5.0.0-beta.6) |
+| 1139526 | `@vitest/browser` | critical | GHSA-g8mr-85jm-7xhm | >= 5.0.0-beta.0, <= 5.0.0-beta.3 / >= 4.0.0, <= 4.1.7 / >= 3.0.0, <= 3.2.4 | 5.0.2 | every resolved version is outside the range (patched: 5.0.0-beta.4 | 4.1.8 | 3.2.5) |
+| 1123896 | `brace-expansion` | high | GHSA-3jxr-9vmj-r5cp | >= 3.0.0, < 5.0.7 / < 1.1.16 / >= 2.0.0, < 2.1.2 | 1.1.21, 5.0.12 | every resolved version is outside the range (patched: 5.0.7 | 1.1.16 | 2.1.2) |
+| 1123897 | `brace-expansion` | high | GHSA-3jxr-9vmj-r5cp | >= 3.0.0, < 5.0.7 / < 1.1.16 / >= 2.0.0, < 2.1.2 | 1.1.21, 5.0.12 | every resolved version is outside the range (patched: 5.0.7 | 1.1.16 | 2.1.2) |
+| 1123898 | `brace-expansion` | high | GHSA-3jxr-9vmj-r5cp | >= 3.0.0, < 5.0.7 / < 1.1.16 / >= 2.0.0, < 2.1.2 | 1.1.21, 5.0.12 | every resolved version is outside the range (patched: 5.0.7 | 1.1.16 | 2.1.2) |
+| 1130588 | `brace-expansion` | high | GHSA-mh99-v99m-4gvg | >= 4.0.0, < 5.0.8 / >= 3.0.0, < 3.0.3 / >= 2.0.0, < 2.1.3 / < 1.1.17 | 1.1.21, 5.0.12 | every resolved version is outside the range (patched: 5.0.8 | 3.0.3 | 2.1.3 | 1.1.17) |
+| 1130589 | `brace-expansion` | high | GHSA-mh99-v99m-4gvg | >= 4.0.0, < 5.0.8 / >= 3.0.0, < 3.0.3 / >= 2.0.0, < 2.1.3 / < 1.1.17 | 1.1.21, 5.0.12 | every resolved version is outside the range (patched: 5.0.8 | 3.0.3 | 2.1.3 | 1.1.17) |
+| 1130591 | `brace-expansion` | high | GHSA-mh99-v99m-4gvg | >= 4.0.0, < 5.0.8 / >= 3.0.0, < 3.0.3 / >= 2.0.0, < 2.1.3 / < 1.1.17 | 1.1.21, 5.0.12 | every resolved version is outside the range (patched: 5.0.8 | 3.0.3 | 2.1.3 | 1.1.17) |
+| 1130734 | `brace-expansion` | high | GHSA-rgw5-rvv9-x895 | < 1.1.18 / >= 2.0.0, < 2.1.4 / >= 3.0.0, < 3.0.6 / >= 4.0.0, < 5.0.9 | 1.1.21, 5.0.12 | every resolved version is outside the range (patched: 1.1.18 | 2.1.4 | 3.0.6 | 5.0.9) |
+| 1130736 | `brace-expansion` | high | GHSA-rgw5-rvv9-x895 | < 1.1.18 / >= 2.0.0, < 2.1.4 / >= 3.0.0, < 3.0.6 / >= 4.0.0, < 5.0.9 | 1.1.21, 5.0.12 | every resolved version is outside the range (patched: 1.1.18 | 2.1.4 | 3.0.6 | 5.0.9) |
+| 1130737 | `brace-expansion` | high | GHSA-rgw5-rvv9-x895 | < 1.1.18 / >= 2.0.0, < 2.1.4 / >= 3.0.0, < 3.0.6 / >= 4.0.0, < 5.0.9 | 1.1.21, 5.0.12 | every resolved version is outside the range (patched: 1.1.18 | 2.1.4 | 3.0.6 | 5.0.9) |
+| 1240992 | `braces` | high | GHSA-vfj7-8cjw-p6xm | <= 3.0.3 | absent (`yarn why` empty) | package no longer in the tree |
+| 1120448 | `devalue` | high | GHSA-77vg-94rm-hx3p | >= 5.6.3, <= 5.8.0 | 5.9.4 | every resolved version is outside the range (patched: 5.8.1) |
+| 1114526 | `flatted` | high | GHSA-25h7-pfq9-p65f | < 3.4.0 | 3.4.4 | every resolved version is outside the range (patched: 3.4.0) |
+| 1115357 | `flatted` | high | GHSA-rf6f-7fwh-wjgh | <= 3.4.1 | 3.4.4 | every resolved version is outside the range (patched: 3.4.2) |
+| 1120743 | `form-data` | high | GHSA-hmw2-7cc7-3qxx | < 2.5.6 / >= 3.0.0, < 3.0.5 / >= 4.0.0, < 4.0.6 | absent (`yarn why` empty) | package no longer in the tree |
+| 1109842 | `glob` | high | GHSA-5j98-mcp5-4vw2 | >= 11.0.0, < 11.1.0 / >= 10.2.0, < 10.5.0 | 13.0.6 | every resolved version is outside the range (patched: 11.1.0 | 10.5.0) |
+| 1130722 | `ip-address` | high | GHSA-mwp4-54f8-5fhr | <= 10.3.0 | absent (`yarn why` empty) | package no longer in the tree |
+| 1123911 | `js-yaml` | high | GHSA-52cp-r559-cp3m | >= 3.0.0, < 3.15.0 / >= 4.0.0, < 4.3.0 | 5.4.2 | every resolved version is outside the range (patched: 3.15.0 | 4.3.0) |
+| 1123912 | `js-yaml` | high | GHSA-52cp-r559-cp3m | >= 3.0.0, < 3.15.0 / >= 4.0.0, < 4.3.0 | 5.4.2 | every resolved version is outside the range (patched: 3.15.0 | 4.3.0) |
+| 1138114 | `js-yaml` | high | GHSA-5p4m-2wfm-xmqj | >= 4.0.0, < 4.3.1 / >= 3.0.0, < 3.15.1 | 5.4.2 | every resolved version is outside the range (patched: 4.3.1 | 3.15.1) |
+| 1138115 | `js-yaml` | high | GHSA-5p4m-2wfm-xmqj | >= 4.0.0, < 4.3.1 / >= 3.0.0, < 3.15.1 | 5.4.2 | every resolved version is outside the range (patched: 4.3.1 | 3.15.1) |
+| 1115131 | `kysely` | high | GHSA-wmrf-hv6w-mr66 | >= 0.26.0, <= 0.28.11 | 0.28.17 | every resolved version is outside the range (patched: 0.28.12) |
+| 1115531 | `kysely` | high | GHSA-8cpq-38p9-67gx | <= 0.28.13 | 0.28.17 | every resolved version is outside the range (patched: 0.28.14) |
+| 1120248 | `kysely` | high | GHSA-pv5w-4p9q-p3v2 | >= 0.26.0, < 0.28.17 | 0.28.17 | every resolved version is outside the range (patched: 0.28.17) |
+| 1113459 | `minimatch` | high | GHSA-3ppc-4f35-3m26 | >= 10.0.0, < 10.2.1 / >= 9.0.0, < 9.0.6 / >= 8.0.0, < 8.0.5 / >= 7.0.0, < 7.4.7 / >= 6.0.0, < 6.2.1 / >= 5.0.0, < 5.1.7 / >= 4.0.0, < 4.2.4 / < 3.1.3 | 3.1.5, 10.2.6 | every resolved version is outside the range (patched: 10.2.1 | 9.0.6 | 8.0.5 | 7.4.7 | 6.2.1 | 5.1.7 | 4.2.4 | 3.1.3) |
+| 1113465 | `minimatch` | high | GHSA-3ppc-4f35-3m26 | >= 10.0.0, < 10.2.1 / >= 9.0.0, < 9.0.6 / >= 8.0.0, < 8.0.5 / >= 7.0.0, < 7.4.7 / >= 6.0.0, < 6.2.1 / >= 5.0.0, < 5.1.7 / >= 4.0.0, < 4.2.4 / < 3.1.3 | 3.1.5, 10.2.6 | every resolved version is outside the range (patched: 10.2.1 | 9.0.6 | 8.0.5 | 7.4.7 | 6.2.1 | 5.1.7 | 4.2.4 | 3.1.3) |
+| 1113466 | `minimatch` | high | GHSA-3ppc-4f35-3m26 | >= 10.0.0, < 10.2.1 / >= 9.0.0, < 9.0.6 / >= 8.0.0, < 8.0.5 / >= 7.0.0, < 7.4.7 / >= 6.0.0, < 6.2.1 / >= 5.0.0, < 5.1.7 / >= 4.0.0, < 4.2.4 / < 3.1.3 | 3.1.5, 10.2.6 | every resolved version is outside the range (patched: 10.2.1 | 9.0.6 | 8.0.5 | 7.4.7 | 6.2.1 | 5.1.7 | 4.2.4 | 3.1.3) |
+| 1113538 | `minimatch` | high | GHSA-7r86-cg39-jmmj | >= 10.0.0, < 10.2.3 / >= 9.0.0, < 9.0.7 / >= 8.0.0, < 8.0.6 / >= 7.0.0, < 7.4.8 / >= 6.0.0, < 6.2.2 / >= 5.0.0, < 5.1.8 / >= 4.0.0, < 4.2.5 / < 3.1.3 | 3.1.5, 10.2.6 | every resolved version is outside the range (patched: 10.2.3 | 9.0.7 | 8.0.6 | 7.4.8 | 6.2.2 | 5.1.8 | 4.2.5 | 3.1.3) |
+| 1113544 | `minimatch` | high | GHSA-7r86-cg39-jmmj | >= 10.0.0, < 10.2.3 / >= 9.0.0, < 9.0.7 / >= 8.0.0, < 8.0.6 / >= 7.0.0, < 7.4.8 / >= 6.0.0, < 6.2.2 / >= 5.0.0, < 5.1.8 / >= 4.0.0, < 4.2.5 / < 3.1.3 | 3.1.5, 10.2.6 | every resolved version is outside the range (patched: 10.2.3 | 9.0.7 | 8.0.6 | 7.4.8 | 6.2.2 | 5.1.8 | 4.2.5 | 3.1.3) |
+| 1113545 | `minimatch` | high | GHSA-7r86-cg39-jmmj | >= 10.0.0, < 10.2.3 / >= 9.0.0, < 9.0.7 / >= 8.0.0, < 8.0.6 / >= 7.0.0, < 7.4.8 / >= 6.0.0, < 6.2.2 / >= 5.0.0, < 5.1.8 / >= 4.0.0, < 4.2.5 / < 3.1.3 | 3.1.5, 10.2.6 | every resolved version is outside the range (patched: 10.2.3 | 9.0.7 | 8.0.6 | 7.4.8 | 6.2.2 | 5.1.8 | 4.2.5 | 3.1.3) |
+| 1113546 | `minimatch` | high | GHSA-23c5-xmqv-rm74 | >= 10.0.0, < 10.2.3 / >= 9.0.0, < 9.0.7 / >= 8.0.0, < 8.0.6 / >= 7.0.0, < 7.4.8 / >= 6.0.0, < 6.2.2 / >= 5.0.0, < 5.1.8 / >= 4.0.0, < 4.2.5 / < 3.1.4 | 3.1.5, 10.2.6 | every resolved version is outside the range (patched: 10.2.3 | 9.0.7 | 8.0.6 | 7.4.8 | 6.2.2 | 5.1.8 | 4.2.5 | 3.1.4) |
+| 1113552 | `minimatch` | high | GHSA-23c5-xmqv-rm74 | >= 10.0.0, < 10.2.3 / >= 9.0.0, < 9.0.7 / >= 8.0.0, < 8.0.6 / >= 7.0.0, < 7.4.8 / >= 6.0.0, < 6.2.2 / >= 5.0.0, < 5.1.8 / >= 4.0.0, < 4.2.5 / < 3.1.4 | 3.1.5, 10.2.6 | every resolved version is outside the range (patched: 10.2.3 | 9.0.7 | 8.0.6 | 7.4.8 | 6.2.2 | 5.1.8 | 4.2.5 | 3.1.4) |
+| 1113553 | `minimatch` | high | GHSA-23c5-xmqv-rm74 | >= 10.0.0, < 10.2.3 / >= 9.0.0, < 9.0.7 / >= 8.0.0, < 8.0.6 / >= 7.0.0, < 7.4.8 / >= 6.0.0, < 6.2.2 / >= 5.0.0, < 5.1.8 / >= 4.0.0, < 4.2.5 / < 3.1.4 | 3.1.5, 10.2.6 | every resolved version is outside the range (patched: 10.2.3 | 9.0.7 | 8.0.6 | 7.4.8 | 6.2.2 | 5.1.8 | 4.2.5 | 3.1.4) |
+| 1138811 | `nanoid` | high | GHSA-28wg-ghj8-5hjv | < 3.3.16 / >= 4.0.0, < 5.1.16 | 3.3.19 | every resolved version is outside the range (patched: 3.3.16 | 5.1.16) |
+| 1139427 | `nanoid` | high | GHSA-2v37-7h3g-55p8 | >= 4.0.0, < 5.1.6 / < 3.3.18 | 3.3.19 | every resolved version is outside the range (patched: 5.1.6 | 3.3.18) |
+| 1153189 | `nanoid` | high | GHSA-xwg4-73v4-xw9w | < 3.3.12 / >= 4.0.0, < 5.1.11 | 3.3.19 | every resolved version is outside the range (patched: 3.3.12 | 5.1.11) |
+| 1115552 | `picomatch` | high | GHSA-c2c7-rcm5-vvqj | >= 4.0.0, < 4.0.4 / >= 3.0.0, < 3.0.2 / < 2.3.2 | 4.0.7 | every resolved version is outside the range (patched: 4.0.4 | 3.0.2 | 2.3.2) |
+| 1115554 | `picomatch` | high | GHSA-c2c7-rcm5-vvqj | >= 4.0.0, < 4.0.4 / >= 3.0.0, < 3.0.2 / < 2.3.2 | 4.0.7 | every resolved version is outside the range (patched: 4.0.4 | 3.0.2 | 2.3.2) |
+| 1124252 | `postcss` | high | GHSA-6g55-p6wh-862q | <= 8.5.11 | 8.5.28 | every resolved version is outside the range (patched: 8.5.12) |
+| 1139510 | `postcss` | high | GHSA-r28c-9q8g-f849 | <= 8.5.17 | 8.5.28 | every resolved version is outside the range (patched: 8.5.18) |
+| 1113515 | `rollup` | high | GHSA-mw96-cpmx-2vgc | < 2.80.0 / >= 3.0.0, < 3.30.0 / >= 4.0.0, < 4.59.0 | 4.63.5 | every resolved version is outside the range (patched: 2.80.0 | 3.30.0 | 4.59.0) |
+| 1120422 | `shell-quote` | critical | GHSA-w7jw-789q-3m8p | >= 1.1.0, <= 1.8.3 | 1.9.0, 1.10.0 | every resolved version is outside the range (patched: 1.8.4) |
+| 1123944 | `shell-quote` | high | GHSA-395f-4hp3-45gv | <= 1.8.4 | 1.9.0, 1.10.0 | every resolved version is outside the range (patched: 1.9.0) |
+| 1112659 | `tar` | high | GHSA-34x7-hfp2-rc4v | < 7.5.7 | 7.5.22 | every resolved version is outside the range (patched: 7.5.7) |
+| 1113300 | `tar` | high | GHSA-8qq5-rm4j-mr97 | <= 7.5.2 | 7.5.22 | every resolved version is outside the range (patched: 7.5.3) |
+| 1113375 | `tar` | high | GHSA-83g3-92jg-28cx | < 7.5.8 | 7.5.22 | every resolved version is outside the range (patched: 7.5.8) |
+| 1114200 | `tar` | high | GHSA-qffp-2rhf-9h96 | <= 7.5.9 | 7.5.22 | every resolved version is outside the range (patched: 7.5.10) |
+| 1114302 | `tar` | high | GHSA-9ppj-qmqm-q256 | <= 7.5.10 | 7.5.22 | every resolved version is outside the range (patched: 7.5.11) |
+| 1114680 | `tar` | high | GHSA-r6q2-hw4h-h46w | <= 7.5.3 | 7.5.22 | every resolved version is outside the range (patched: 7.5.4) |
+| 1123940 | `tar` | critical | GHSA-23hp-3jrh-7fpw | <= 7.5.18 | 7.5.22 | every resolved version is outside the range (patched: 7.5.19) |
+| 1123941 | `tar` | high | GHSA-8x88-c5mf-7j5w | <= 7.5.17 | 7.5.22 | every resolved version is outside the range (patched: 7.5.18) |
+| 1145647 | `tar` | high | GHSA-r292-9mhp-454m | <= 7.5.20 | 7.5.22 | every resolved version is outside the range (patched: 7.5.21) |
+| 1114592 | `undici` | high | GHSA-f269-vfmq-vjvj | >= 6.0.0, < 6.24.0 / >= 7.0.0, < 7.24.0 | 7.30.0, 8.11.2 | every resolved version is outside the range (patched: 6.24.0 | 7.24.0) |
+| 1114638 | `undici` | high | GHSA-vrm6-8vpv-qv8q | < 6.24.0 / >= 7.0.0, < 7.24.0 | 7.30.0, 8.11.2 | every resolved version is outside the range (patched: 6.24.0 | 7.24.0) |
+| 1114640 | `undici` | high | GHSA-v9p9-hfj2-hcw8 | < 6.24.0 / >= 7.0.0, < 7.24.0 | 7.30.0, 8.11.2 | every resolved version is outside the range (patched: 6.24.0 | 7.24.0) |
+| 1121245 | `undici` | high | GHSA-vxpw-j846-p89q | < 6.27.0 / >= 7.0.0, < 7.28.0 / >= 8.0.0, < 8.5.0 | 7.30.0, 8.11.2 | every resolved version is outside the range (patched: 6.27.0 | 7.28.0 | 8.5.0) |
+| 1116232 | `vite` | high | GHSA-v2wj-q39q-566r | >= 8.0.0, <= 8.0.4 / >= 7.1.0, <= 7.3.1 | 8.3.1 | every resolved version is outside the range (patched: 8.0.5 | 7.3.2) |
+| 1116234 | `vite` | high | GHSA-p9ff-h696-f583 | >= 8.0.0, <= 8.0.4 / >= 7.0.0, <= 7.3.1 / >= 6.0.0, <= 6.4.1 | 8.3.1 | every resolved version is outside the range (patched: 8.0.5 | 7.3.2 | 6.4.2) |
+| 1116235 | `vite` | high | GHSA-p9ff-h696-f583 | >= 8.0.0, <= 8.0.4 / >= 7.0.0, <= 7.3.1 / >= 6.0.0, <= 6.4.1 | 8.3.1 | every resolved version is outside the range (patched: 8.0.5 | 7.3.2 | 6.4.2) |
+| 1123525 | `vite` | high | GHSA-fx2h-pf6j-xcff | >= 8.0.0, <= 8.0.15 / >= 7.0.0, <= 7.3.4 / <= 6.4.2 | 8.3.1 | every resolved version is outside the range (patched: 8.0.16 | 7.3.5 | 6.4.3) |
+| 1123526 | `vite` | high | GHSA-fx2h-pf6j-xcff | >= 8.0.0, <= 8.0.15 / >= 7.0.0, <= 7.3.4 / <= 6.4.2 | 8.3.1 | every resolved version is outside the range (patched: 8.0.16 | 7.3.5 | 6.4.3) |
+| 1139528 | `vitest` | critical | GHSA-5xrq-8626-4rwp | >= 4.0.0, < 4.1.0 / < 3.2.6 | 5.0.2 | every resolved version is outside the range (patched: 4.1.0 | 3.2.6) |
+| 1139529 | `vitest` | critical | GHSA-5xrq-8626-4rwp | >= 4.0.0, < 4.1.0 / < 3.2.6 | 5.0.2 | every resolved version is outside the range (patched: 4.1.0 | 3.2.6) |
+| 1123259 | `ws` | high | GHSA-96hv-2xvq-fx4p | >= 1.1.0, < 5.2.5 / >= 6.0.0, < 6.2.4 / >= 7.0.0, < 7.5.11 / >= 8.0.0, < 8.21.0 | 8.21.3 | every resolved version is outside the range (patched: 5.2.5 | 6.2.4 | 7.5.11 | 8.21.0) |
+
+Where each row went (from the phase's own ledger): `@faker-js/faker` 1158500 with faker 10.6.0 (169-08);
+`@sveltejs/kit` 1116433 with Kit 2.70.3 (169-05); `@vitest/browser` / `vitest` with Vitest 5.0.2 (169-04); `vite`
+with Vite 8.3.1 (169-05); `tar` with the Supabase CLI 2.118.0, which dropped its `tar` 7.5.11 path (169-06; the only
+`tar` left is `node-gyp` 13's 7.5.22); `js-yaml` (the four D-29 ids 1123911/1123912/1138114/1138115) with `js-yaml`
+5.4.2 and the `@eslint/eslintrc` removal (169-03, 169-10) — so the stale `@eslint/eslintrc` `via` text (167 review
+WR-01) went with its rows; `shell-quote` with the `concurrently` bumps (1.9.0 pinned exactly; `launch-editor` takes 1.10.0); `undici` with the
+AI SDK 7 move off `undici` 5 (169-09; 7.30.0 now, also via `cheerio` 1.2.0); `braces` 1240992 with `@changesets/cli` 3, which uses `picomatch` (169-10); and the rest
+(`brace-expansion`, `minimatch`, `picomatch`, `nanoid`, `postcss`, `rollup`, `ws`, `flatted`, `devalue`, `kysely`,
+`glob`, `form-data`, `ip-address`, `@isaacs/brace-expansion`) with group 0's in-range refresh (169-01) and the later
+majors.
+
+**The operator's `braces` review item (169-01, § 7) is resolved by removal.** The row was hand-added in 169-01 with a
+"no fixed version published" rationale and flagged for review. `braces` is no longer in the tree (`yarn why braces`
+→ nothing; no `braces@` key in `yarn.lock`; `micromatch` is gone too), and GitHub still lists no patched version
+(`first_patched_version: null`, range `<= 3.0.3`), so if a future dependency brings `braces` back, the gate reports
+1240992 as NEW and a reviewed edit decides again. DEPS-02 closes on this evidence.
+
+**After the edit.** `yarn audit:deps` → exit 0, `Baseline … recorded 2026-10-03 at 9e3301a35, 0 accepted`,
+`0 new advisory(ies) at high+, 0 accepted` (`13-t1-audit-after.log`). `auditBaselineShape.test.ts` → 14/14 passed,
+including the zero-row case D-28 made legal (`13-t1-shape.log`). The plan's two `node -e` acceptance checks exit 0
+(every rationale in an allowed form — vacuously; none of the four `js-yaml` ids present). `prettier --check
+security/audit-baseline.json` → clean.
+
 ## 7. Operator follow-ups
 
 - **Review the `braces` baseline row (169-01, `c97bc9898`).** GHSA-vfj7-8cjw-p6xm (id 1240992) was published
@@ -2609,4 +2726,55 @@ unverified_secrets: 0`. CI's `secret-scan` agreed (§ 4).
 
 ## 8. Moderate and low advisories on chosen versions
 
-Listed at phase end (169-13).
+Listed at phase end (169-13 Task 1, 2026-10-03T19:00Z, HEAD `9e3301a35`, after the baseline rewrite; the tree's
+packages did not change in 169-13).
+
+**Commands and exits.** `yarn npm audit --all --recursive --severity moderate --json` → exit 1, 1 NDJSON line
+(`tests/e2e-runs/169-gates/13-t1-moderate.ndjson`); `… --severity low --json` → exit 1, 3 NDJSON lines
+(`13-t1-low.ndjson`). Non-zero with output is "findings", not "did not run" (the D-28 classification). At high and
+above the audit reports nothing (§ 6, 169-13 Task 1).
+
+**npm tree (what `yarn audit:deps` sees).**
+
+| Package | Resolved | Severity | Advisory | Dependent (path) | Fix available to this tree? |
+|---|---|---|---|---|---|
+| `cookie` | 0.6.0 | low | GHSA-pxg6-pf52-xh8x (1103907) — cookie name/path/domain accept out-of-bounds characters; vulnerable `<0.7.0` | `@sveltejs/kit` 2.70.3 (`cookie: ^0.6.0`) | Not inside Kit 2's range. Kit 3.0.0 depends on `cookie ^2.0.1`, so it leaves with the held Kit 3 move (§ 3, clears 2026-10-31). The app's own auth cookies go through `@supabase/ssr` (`cookie` 1.1.1, not affected) |
+| `esbuild` | 0.27.7 | low | GHSA-g7r4-m6w7-qqqr (1120680) — arbitrary file read through esbuild's development server on Windows; vulnerable `>=0.27.3 <0.28.1` | `tsup` 8.5.1 (`esbuild: ^0.27.0`), the build tool of the tsup packages | Not inside tsup's range; 8.5.1 is the newest `tsup` (published 2025-11-12). The packages use esbuild as a bundler only, never its dev server, and CI runs on Linux. `tsx` 4.23.15 already resolves `esbuild` 0.28.2 |
+| `whatwg-encoding` | 3.1.1 | moderate (deprecation notice, not an advisory) | "whatwg-encoding (deprecation)" — use `@exodus/bytes` instead | `encoding-sniffer` 0.2.1 ← `cheerio` 1.2.0 (`@openvaa/llm`) | Not in range: `encoding-sniffer` 1.0.2 moved to `@exodus/bytes`, but `cheerio` 1.2.0 (the newest) still declares `encoding-sniffer ^0.2.1`. A deprecation, not a vulnerability |
+
+No moderate advisory proper is reported on the npm tree; the one `moderate` line is a deprecation.
+
+**Deno Edge Function imports (invisible to `yarn audit:deps`; checked by hand, D-09).** `gh api
+"/advisories?ecosystem=npm&affects=<pkg>@<version>"` on 2026-10-03T19:00Z (`13-t1-nodemailer-6.9.10-adv.tsv`):
+
+- `npm:@supabase/supabase-js@2.117.2` (all three functions) → 0 advisories; `npm:jose@6.2.12` (`identity-callback`)
+  → 0; `npm:nodemailer@10.0.11` (the held target) → 0.
+- `npm:nodemailer@6.9.10` (`send-email`, still pinned — **a known, dated, time-bounded hold**: 10.0.11 clears the
+  age rule at 2026-10-04T07:50:47Z, todo `2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md`) → **17
+  advisories: 6 high (4 distinct + 2 GitHub "Duplicate Advisory" entries), 10 moderate, 1 low**. All are fixed in
+  10.0.6+:
+
+| GHSA | Severity | Range | Patched | Summary |
+|---|---|---|---|---|
+| GHSA-v53p-9fqp-m79j | high | `<= 10.0.5` | 10.0.6 | addressparser free-text fallback: quadratic backtracking, remote DoS |
+| GHSA-2x7j-588g-ccc2 | high | `< 9.1.0` | 9.1.0 | addressparser O(n²) on a crafted address list, remote DoS |
+| GHSA-p6gq-j5cr-w38f | high | `<= 9.0.0` | 9.0.1 | message-level `raw` bypasses `disableFileAccess`/`disableUrlAccess` (file read, SSRF) |
+| GHSA-h3hj-cmcx-xc66 | high | `<= 9.0.0` | — | duplicate of GHSA-p6gq-j5cr-w38f |
+| GHSA-rcmh-qjqh-p98v | high | `>= 3.0.0, <= 7.0.10` | 7.0.11 | addressparser recursive calls, DoS |
+| GHSA-jj37-3377-m6vv | high | `< 7.0.7` | 7.0.7 | duplicate of GHSA-mm7p-fcc7-pg87 (email to an unintended domain) |
+| GHSA-8vvx-rff5-p5rq | moderate | `< 10.0.2` | 10.0.2 | nested recipient arrays bypass the parser depth limit, stack exhaustion |
+| GHSA-6vj9-mwq6-2f5v | moderate | `>= 5.0.0, < 10.0.2` | 10.0.2 | process-global DNS cache reuses TLS `servername` across transports |
+| GHSA-wmmp-3585-3rmp | moderate | `< 9.1.0` | 9.1.0 | IDN/Punycode allow-list bypass |
+| GHSA-8m3c-c648-2xjj | moderate | `<= 9.1.0` | 9.1.1 | `resolveContent()` legacy signature bypasses file/URL access limits |
+| GHSA-268h-hp4c-crq3 | moderate | `<= 8.0.8` | 8.0.9 | CRLF injection in List-* header comments |
+| GHSA-wqvq-jvpq-h66f | moderate | `<= 8.0.8` | 8.0.9 | jsonTransport bypasses file/URL access limits |
+| GHSA-r7g4-qg5f-qqm2 | moderate | `<= 8.0.7` | 8.0.8 | TLS certificate validation in the OAuth2 token fetch |
+| GHSA-vvjj-xcjg-gr5g | moderate | `<= 8.0.4` | 8.0.5 | SMTP command injection via CRLF in the transport `name` |
+| GHSA-46j5-6fg5-4gv3 | moderate | `< 7.0.11` | 7.0.11 | duplicate: DoS through uncontrolled recursion |
+| GHSA-mm7p-fcc7-pg87 | moderate | `< 7.0.7` | 7.0.7 | email to an unintended domain (interpretation conflict) |
+| GHSA-c7w3-x93f-qmm8 | low | `< 8.0.4` | 8.0.4 | SMTP command injection via `envelope.size` |
+
+This is the only open high advisory on any chosen version, and it sits outside the npm tree: `send-email` runs under
+Deno, so `yarn audit:deps` exits 0 while it is pinned. That is the audit blind spot D-09 names (todo
+`2026-10-03-deno-edge-imports-invisible-to-audit-deps.md`). `send-email` has no E2E caller and no production caller
+(168-03 F2; the production-caller part UNCONFIRMED), which bounds the exposure until the pin moves; it does not remove it.
