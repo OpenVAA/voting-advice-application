@@ -22,7 +22,7 @@
     "@openvaa/shared-config": "workspace:^",
     "@sveltejs/adapter-node": "^5.5.7",
     "@sveltejs/kit": "catalog:",
-    "@sveltejs/vite-plugin-svelte": "^5.1.1",
+    "@sveltejs/vite-plugin-svelte": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@types/node": "catalog:",
     "@types/qs": "^6.15.0",
@@ -41,7 +41,7 @@
     "tailwindcss": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
-    "vite": "^6.4.1",
+    "vite": "catalog:",
     "vitest": "catalog:"
   },
   "engines": {
