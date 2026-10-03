@@ -115,6 +115,29 @@ with `npm view`). Verdicts: current 7 · major 6 · HOLD-7d 2.
 | `eslint-plugin-import` | 2.32.0 | 2.32.0 | — | current (removed by this plan) |
 | `svelte-eslint-parser` 1.8.1, `eslint-plugin-unused-imports` 4.4.1, `eslint-plugin-playwright` 2.12.0, `eslint-config-prettier` 10.1.8, `prettier` 3.9.9 | = target | — | — | current |
 
+### 169-04 (group 4) re-measurement, 2026-10-03
+
+`node 169-version-probe.mjs --only <pkgs> --node 24.21.0`, one run per upgrade, each just before it:
+`isomorphic-dompurify,jsdom` at 11:08:10Z (`04-t2-probe.md`); the Playwright / Tailwind / DaisyUI / Vitest set at
+11:12:07Z (`04-t3-probe-preview.md`); `daisyui` again at 11:26:06Z (`04-t3-daisyui-probe.md`);
+`vitest,@vitest/browser-playwright` at 2026-10-03T12:25:04Z (`04-t1-probe.md`). Logs under `tests/e2e-runs/169-gates/`.
+
+| Package | Resolved before | Target (published, age) | Target line x.0.0 | Verdict / hold |
+|---|---|---|---|---|
+| `isomorphic-dompurify` | 3.19.0 | **4.4.0** (2026-09-25, 7.7 d) | 4.0.0 2026-09-01 (32 d) | major; engines `^22.22.2 \|\| ^24.15.0 \|\| >=26.0.0` admits the host's 24.21.0 |
+| `jsdom` | 26.1.0 (held by the root resolution) | **30.1.1** (2026-09-22, 11.4 d) | 30.0.0 2026-07-27 | major; same engines |
+| `@playwright/test`, `playwright` (docs) | 1.58.2 | **1.63.0** (2026-09-04, 28.5 d) | — | in-major; 1.63.0 is `latest` |
+| `tailwindcss`, `@tailwindcss/vite` | 4.2.1 | **4.3.3** (2026-07-16, 79.0 d) | — | in-major; `@tailwindcss/vite` peer `vite ^5.2.0 \|\| ^6 \|\| ^7 \|\| ^8` admits the frontend's 6.4.3 and the docs app's 7.3.6 |
+| `@tailwindcss/typography` (docs) | 0.5.19 | **0.5.20** (2026-06-08, 117.0 d) | — | in-major |
+| `daisyui` | 5.5.14 | **5.7.46** (2026-09-24, 8.7 d) | — | in-major; HOLD-7d 5.7.47 (2026-09-30T00:29Z, 3.45 d) |
+| `vitest` (catalog; the docs app had its own `^4.0.15`) | 3.2.7 / 4.1.11 (docs) | **5.0.2** (2026-09-25, 8.1 d) | 5.0.0 2026-09-03T12:24:30Z (30.0 d at the probe) | major (docs app: 4 → 5); HOLD-7d 5.0.3 (2026-09-30T11:30Z, 3.04 d); engines `^22.12.0 \|\| ^24.0.0 \|\| >=26.0.0`; peer `vite ^6.4.0 \|\| ^7.0.0 \|\| ^8.0.0` |
+| `@vitest/browser-playwright` (docs) | 4.1.11 | **5.0.2** (2026-09-25, 8.1 d) | 5.0.0 2026-09-03T12:22:01Z | major; HOLD-7d 5.0.3 (2026-09-30T11:29Z); peer `vitest 5.0.2`, `playwright *` |
+
+`vitest` 5.0.0 was published 2026-09-03T12:24:30Z and `@vitest/browser-playwright` 5.0.0 at 12:22:01Z, so the
+30-day major rule cleared at 12:24:30Z today. At the 11:12Z preview the probe still reported `HOLD-30d`. The
+migration was prepared in the working tree from 11:30Z and committed only after the probe re-run named 5.x
+(2026-10-03T12:25:04Z). The tree's only record of Vitest 5 is that commit.
+
 ## 2. Package legitimacy
 
 **Operator approvals (step 0, run before any repository change, 2026-10-03T06:37Z):** the box check printed
@@ -249,7 +272,36 @@ no `approvedGitRepositories`). The lockfile's root-workspace entry gained the ma
 | `comment-parser` | SUS | too-new (its `latest`) | 15271812 | github.com/yavorskiy/comment-parser | — | 1.4.9 (2026-09-08, 24.7 d) |
 
 No `SLOP`; the one `SUS` is `too-new` on an established package, and the version actually resolved is 24.7 days
-old. Every new `name@version` resolved is at least 7 days old (`npmMinimalAgeGate: 7d` applied; youngest
+old.
+
+### 169-04 (group 4)
+
+New lockfile names per upgrade (`tests/e2e-runs/169-gates/04/t*-new-names.txt`), each run through
+`gsd-tools query package-legitimacy check --ecosystem npm` (`t*-legit.json`). Every new `name@version` resolved
+was listed with its publish date (`t*-new-versions.txt`); the youngest is `@asamuzakjp/css-color@7.1.0` at 7.2 days,
+so every one clears the 7-day rule (`npmMinimalAgeGate: 7d` applied). None declares an install script.
+
+| Upgrade | New name | Verdict | Reasons | Weekly downloads | Repository | Resolved (published, age) |
+|---|---|---|---|---|---|---|
+| isomorphic-dompurify 4 + jsdom 30 | `@exodus/bytes` | SUS | too-new (its `latest`) | 49909933 | github.com/ExodusOSS/bytes | 1.16.0 (2026-09-22, 10.9 d) |
+| | `@asamuzakjp/dom-selector` | SUS | too-new | 54477804 | github.com/asamuzaK/domSelector | 9.2.1 (2026-09-20, 13.0 d) |
+| | `@csstools/css-syntax-patches-for-csstree` | SUS | too-new | 56549128 | github.com/csstools/postcss-plugins | 1.1.14 (2026-09-15, 18.1 d) |
+| | `bidi-js` | SUS | too-new | 60263939 | github.com/lojjic/bidi-js | 1.1.0 (2026-09-06, 26.6 d) |
+| | `mdn-data` | SUS | too-new | 148718646 | github.com/mdn/data | 2.27.1 (2026-02-13, 231.5 d) |
+| | `@bramus/specificity` | OK | — | 42559857 | github.com/bramus/specificity | 2.4.2 (2025-06-02) |
+| | `css-tree` | OK | — | 144114785 | github.com/csstree/csstree | 3.2.1 (2026-03-05) |
+| Playwright 1.63.0 | — (no new name) | | | | | `@playwright/test`, `playwright`, `playwright-core` 1.63.0 (28.5 d) |
+| Tailwind 4.3.3 | — (no new name) | | | | | `tailwindcss`, `@tailwindcss/{vite,node,oxide,oxide-*}` 4.3.3 (79.0 d); `lightningcss` 1.32.0 (208 d) |
+| DaisyUI 5.7.46 | — (no new name) | | | | | 5.7.46 (8.7 d) |
+| Vitest 5 | `@vitest/ui` | SUS | too-new | 17139732 | github.com/vitest-dev/vitest | 5.0.2 (2026-09-25, 8.1 d); a dependency of `@vitest/browser` 5 |
+
+Every `SUS` is `too-new` on an established package (tens of millions of weekly downloads): the check reads the
+package's newest publish, not the version resolved. No `SLOP`; no new direct package (the Vitest move adds a
+`vite` declaration to eleven workspaces, a package already in the tree, see § 6).
+
+Removed by the jsdom move: `cssstyle`, `http-proxy-agent`, `nwsapi`, `rrweb-cssom`, `symbol-tree`. Removed by the
+Vitest move: Vitest 3's `vite-node`, `tinypool`, `tinyspy`, `@vitest/{expect,runner,snapshot}`, `loupe` and its
+chain, and the Rolldown/Oxc packages the docs app's Vitest 4 had pulled in through Vite 8. Every new `name@version` resolved is at least 7 days old (`npmMinimalAgeGate: 7d` applied; youngest
 `comment-parser@1.4.9`). `@emnapi/core` / `@emnapi/runtime` / `@emnapi/wasi-threads` gained a 1.10.0 / 1.2.1
 version (the `@unrs/resolver-binding-wasm32-wasi` chain; names already in the lockfile, published 2026-04, ≥ 170
 d). The swap removed 91 package versions that only `eslint-plugin-import` pulled in (the `es-abstract` /
@@ -264,6 +316,8 @@ d). The swap removed 91 package versions that only `eslint-plugin-import` pulled
 | `@types/node` | **24.19.0** (catalog `^24.19.0`; 169-02, `968113336`) | 26.6.3 / 26.6.4 (`latest`), 25.x; 24.19.1 (1.4 d old on 2026-10-03) | **Types track the runtime major** (Node 24 at every pin site). 24.19.1 is inside the 7-day window | D-11, R3, D-03 | when the runtime moves to a newer major; 24.19.1 clears 2026-10-08T22:38Z |
 | `typescript` | **6.0.3** (catalog `^6.0.3`; 169-02, `ebeaafa5c`) | 7.0.2 (2026-07-08, x.0.0 86.7 d old — the age rule alone would admit it) | Blocking peers measured 2026-10-03: `@typescript-eslint/eslint-plugin` / `@typescript-eslint/parser` / `typescript-eslint` 8.70.1 `typescript: >=4.8.4 <6.1.0` (8.71.0, the newest, is inside the 7-day window); `svelte-check` 4.7.6 `^5.0.0 \|\| ^6.0.0`; `@sveltejs/kit@3` `typescript: ^6.0.0`. 6.0.3 is the newest 6.x (6.0.0 was never published) | D-16 | typescript-eslint and svelte-check admit 7 (and Kit 3's peer, once Kit 3 lands) |
 | `eslint`, `@eslint/js` | **9.39.5** (catalog `^9.39.2` / `^9.39.1`, unchanged) | 10.11.0 / 10.0.1 (age rule admits both) | **Upstream false positive.** ESLint 10's recommended `no-useless-assignment` reports every write-only `$bindable` prop (3 sites: `OpinionQuestionInput.svelte` `valid`, `Video.svelte` `mode`, `EntityList.svelte` `itemsShown`). eslint-plugin-svelte#1478 has been open since 2026-02-23 and 3.23.0 is the newest release. PROH-169-07 forbids disabling the rule, and a dummy read would bend the code. One real `no-unassigned-vars` defect (`Layout.svelte` `drawerOpenElement`, the drawer focus return is never wired) needs a behaviour decision. The 15 other ESLint-10 findings are fixed (`14b62f26c`). The config-lookup flag stays at all 19 sites, because ESLint 9 needs it | D-06, D-17, PROH-169-07 | eslint-plugin-svelte#1478 fixed in a release at least 7 days old, or an operator overrule (todo `2026-10-03-eslint-10-held-on-bindable-no-useless-assignment.md`, options A/B) |
+| `vitest`, `@vitest/browser-playwright` | **5.0.2** (catalog `^5.0.2`; 169-04) | 5.0.3 (2026-09-30T11:30Z / 11:29Z, 3.0 d old on 2026-10-03) | Inside the 7-day window; 5.0.2 is the newest 5.x old enough | D-03 | 5.0.3 clears 2026-10-07T11:30Z |
+| `daisyui` | **5.7.46** (catalog `^5.7.46`; 169-04) | 5.7.47 (2026-09-30T00:29Z, 3.45 d old on 2026-10-03) | Inside the 7-day window | D-03 | 5.7.47 clears 2026-10-07T00:29Z |
 
 ## 4. Gate runs
 
@@ -279,6 +333,8 @@ Runner: `bash 169-gates.sh <label>` (`TURBO_FORCE=true`; each status read direct
 | 169-02 | `169-02-node24-r2` (the Node 24 commit alone) | `77d3ce8bf` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | **171 / 171 / 0 / 0 / 0** (`169-e2e/169-02-node24`) |
 | 169-02 | `169-02-group1` (+ CI step order, secret-scan fixture, `@types/node` 24, TS 6) | `ebeaafa5c` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | — |
 | 169-03 | `169-03-group2` (import-x, eslint-plugin-svelte 3, no FlatCompat, the 15 ESLint-10 source fixes, prettier-plugin-svelte 4, prettier-plugin-tailwindcss 0.8.1, simple-import-sort 14; ESLint held on 9.39.5) | `2e3a79846` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | — (no E2E in group 2, D-26) |
+| 169-04 | `169-04-precommit-dryrun` (Vitest 5 uncommitted; informational) | `5408452ab` + working tree | 0 | 0 | **1** | **1** | **1** | **1** | 0 | 0 | 0 | 0 | 0 | 0 | — |
+| 169-04 | `169-04-group4` (isomorphic-dompurify 4 + jsdom 30, Playwright 1.63.0 + image digest, Tailwind 4.3.3, DaisyUI 5.7.46 + its reformat, Vitest 5.0.2 + `test.projects`) | `7b41eb90a` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | **171 / 171 / 0 / 0 / 0** (`169-e2e/169-04-group4`) |
 
 Notes on `169-01-baseline` (2026-10-03T06:43:09Z–06:45:43Z, `tests/e2e-runs/169-gates/169-01-baseline/`):
 
@@ -322,6 +378,34 @@ Notes on `169-03-group2` (2026-10-03T10:58:56Z–11:01:13Z, `tests/e2e-runs/169-
 - Forced turbo runs: `03-typecheck` 23/23 and `09-build` 14/14 tasks executed.
 - `04-lint` reports 0 errors and the same 17 baseline warnings as before the plan (normalised list, `diff` exit 0).
 - `10-audit`: `0 new advisory(ies) at high+`.
+
+Notes on `169-04-precommit-dryrun` (`tests/e2e-runs/169-gates/169-04-precommit-dryrun/`). This was an informational run on the
+uncommitted Vitest tree, made while waiting for Vitest 5.0.0 to clear the 30-day rule.
+- `03-typecheck`, `04-lint` and `06-check-frontend` were red on the same 2 svelte-check errors: Vitest 5's stricter
+  `Mock` / `MockInstance` types in two frontend tests (§ 6, Task 1 fix 4).
+- `05-format` was red on one docs file, the DaisyUI 5.7 class sort (§ 6, Task 3; reformatted in `a376b16d1`).
+- Both were fixed before the Vitest commit.
+
+Notes on `169-04-group4` (2026-10-03T12:27:19Z–12:29:31Z, `tests/e2e-runs/169-gates/169-04-group4/`):
+- `porcelain_lines: 1` (this ledger, uncommitted).
+- Forced turbo runs: `03-typecheck` 23/23, `08-unit` 25/25 and `09-build` 14/14 tasks executed, none cached.
+- `04-lint` reports 0 errors and 17 warnings. The normalised finding list (path + rule + message, 33 lines) is
+  identical to `169-03-group2`'s (`diff` exit 0).
+- `10-audit`: `0 new advisory(ies) at high+, 6 accepted`.
+- `12-docs-rq`: every `<ResearchQuote>` span identical to the base and the three frozen components identical to
+  the component base.
+
+E2E `169-04-group4` (`bash 169-e2e.sh 169-04-group4`, the full default suite):
+- Docker VM 22.01 GiB free after `docker builder prune -af`.
+- `e2e-run.sh` at HEAD `7b41eb90a` with `db_reset=true` and project `…0000e2`, 2026-10-03T12:31:00Z–12:35:23Z.
+- Wrapper exit 0; preflight successes 1, failures 0.
+- `summary.json`: **total 171, passed 171, failed 0, flaky 0, skipped 0, didNotRun 0**.
+- No listener left on 5273.
+- This run is the first full E2E run on Playwright 1.63.0 and Vitest 5, and it is the runner's own proof after the
+  move.
+
+Final visual run `169-04-visual-final` at `7b41eb90a`, image `eff16c30e6f3…`: exit 0, 7 expected / 0 unexpected /
+0 flaky.
 
 ### 169-02 Task 2 — the Node 24 commit (`77d3ce8bf`), measured alone
 
@@ -761,6 +845,174 @@ lines, one version swapped, no new name. The age rule held for all three (§ 1, 
 
 No ResearchQuote span changed in any of the three, and no `prettier-ignore` was needed.
 
+### 169-04 Task 2 — isomorphic-dompurify 4, jsdom 30 and the root resolution (D-08, D-23), commit `668dc5675`
+
+Logs: `tests/e2e-runs/169-gates/04/t2*`.
+
+**What the deleted resolution worked around.** `git log -S'"isomorphic-dompurify/jsdom"' -- package.json` names
+`3d75e3e27` ("chore: update the monorepo and frontend-app build, lint, CI and deployment plumbing", 2026-08-17).
+That commit is a squash whose message gives no reason. Its `package.json` hunk adds
+`"resolutions": { "isomorphic-dompurify/jsdom": "^26.1.0" }`, while `apps/frontend` moves `isomorphic-dompurify`
+^2.19.0 → ^3.3.0 and `jsdom` ^24.1.3 → ^26.1.0. The pre-squash commit is still reachable:
+`git log --all -S'isomorphic-dompurify/jsdom'` → `5555f42a6` "fix: resolve jsdom ESM incompatibility and IPv6 test
+baseURL". Its message: "Pin isomorphic-dompurify/jsdom to ^26.1.0 via yarn resolutions to avoid
+html-encoding-sniffer@6 -> @exodus/bytes ESM-only module breaking SSR … Temporary workaround — revert resolution
+once upstream fixes land." So the 3.x line's own newer jsdom required the ESM-only `@exodus/bytes` from CommonJS,
+and the resolution held it down to jsdom 26, which predates that chain.
+
+**Why it can go now.** jsdom 30.1.1 still depends on `@exodus/bytes ^1.15.1` (`"type":"module"`). It loads because
+Node ≥ 24.15 (the host and every pin, 169-02) supports `require()` of ES modules without a flag. Measured on the
+installed tree (`t2-node-entry.log`): `import('isomorphic-dompurify')` (the `node` → `import` entry) and
+`require('isomorphic-dompurify')` (the `node` → `require` entry) both construct their jsdom window. Both strip
+`onerror`, `<script>` and the `javascript:` href from a sample.
+
+**Resolution after the move.** `yarn why jsdom` → one `jsdom@npm:30.1.1`, used by both `@openvaa/frontend` (its
+test environment) and `isomorphic-dompurify@npm:4.4.0` (`^30.0.0`). `yarn why isomorphic-dompurify` → `4.4.0` only.
+`dompurify` → 3.4.16: isomorphic-dompurify 4 still wraps DOMPurify 3, so "DOMPurify 4" in the plan means the
+wrapper's major. The root `resolutions` object is gone
+(`node -p "JSON.stringify(require('./package.json').resolutions ?? null)"` → `null`).
+
+**Sanitiser tests.** No unit test covered `sanitizeHtml` before this plan
+(`git grep -l sanitize -- 'apps/frontend/src/**/*.test.ts'` named only an unrelated data-writer test). The commit adds
+`apps/frontend/src/lib/utils/sanitize.test.ts` (6 tests): empty input; ordinary markup kept verbatim; `<script>`
+removed; inline event handler removed; `javascript:` URL removed; SVG/MathML dropped under the html-only profile.
+They pass on jsdom 30 (`t2-sanitize-test.log`).
+
+**Gates for the commit:** `yarn workspace @openvaa/frontend test:unit` → 2018/2018 before the test file was added,
+then 2024/2024; `check` → 0 errors / 0 warnings over 2705 files; `build` → exit 0. In the SSR output the server
+chunk `sanitize.js` keeps `from "isomorphic-dompurify"` external, so production loads the `node` entry tested
+above. No `ssr.noExternal` / `ssr.external` change was needed.
+
+### 169-04 Task 3 — Playwright 1.63.0, the visual container image, Tailwind 4.3.3, DaisyUI 5.7.46 (D-24)
+
+**Image.** `docker pull --platform linux/amd64 mcr.microsoft.com/playwright:v1.63.0-noble` →
+`mcr.microsoft.com/playwright@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27` (amd64,
+created 2026-09-04T23:42:21Z). The pre-plan default was `sha256:6446946a1d9f…` (v1.58.2-noble, not present locally).
+The first pull stalled with no output. `docker-credential-desktop get` never returned: the documented host wedge
+(136-05 / 136-06). The stalled pull and its helper process were killed, and the pull was repeated with a scratch
+`DOCKER_CONFIG` holding `{}` plus `DOCKER_HOST=unix://$HOME/.docker/run/docker.sock`. The registry is
+anonymous, so no credential is involved.
+
+**Measured in the new image** (`t3pw-socat.log`, `t3pw-fontprobe.log`):
+- `command -v`: `socat` not found; `curl` /usr/bin/curl, `npx` /usr/bin/npx, `node` /usr/bin/node (v24.20.0).
+- Browsers: `chromium-1243`, `chromium_headless_shell-1243`, `firefox-1543`, `webkit-2359`.
+- `document.fonts.check('1em Inter')` in Chromium 153.0.8010.12, through a probe script run in the image against
+  the repo's own `inter-latin-400-normal.woff2`:
+  - unreachable `src` → `check=false size=1`;
+  - zero `@font-face` rules → `check=true size=0`;
+  - valid `src` → `check=true size=1`.
+  These are the three cases the visual spec's `settleFonts` docblock states, so the docblock now names this image.
+
+**Visual container runs** (`tests/scripts/visual-container.sh`). The host prerequisites were `yarn build`,
+`yarn db:reset`, `yarn db:seed --template e2e/base`, then the frontend dev server with `--host 0.0.0.0`:
+
+| Run dir | After commit | Image digest | Playwright | Result |
+|---|---|---|---|---|
+| `169-04-visual-playwright-attempt1-wrong-project` | Playwright | `eff16c30e6f3…` | 1.63.0 | exit 1 before any test: the served-project preflight refused. The dev server had been started without `PUBLIC_PROJECT_ID`, so it served the default project. A harness setup error, not a visual result |
+| `169-04-visual-playwright` | `34670ea56` Playwright | `eff16c30e6f3…` | 1.63.0 | **exit 0**, 7 expected / 0 unexpected / 0 flaky: 4 screenshots + setup/teardown |
+| `169-04-visual-tailwind` | `b9dc939fa` Tailwind | `eff16c30e6f3…` | 1.63.0 | **exit 0**, 7 / 0 / 0 |
+| `169-04-visual-daisyui` | `5408452ab` DaisyUI | `eff16c30e6f3…` | 1.63.0 | **exit 0**, 7 / 0 / 0 |
+| `169-04-visual-final` | `7b41eb90a` (plan HEAD, after Vitest 5 and the reformat) | `eff16c30e6f3…` | 1.63.0 | **exit 0**, 7 / 0 / 0 |
+
+From the second run on, the dev server ran with `PUBLIC_PROJECT_ID=00000000-0000-0000-0000-0000000000e2`, the
+project `e2e-run.sh` gives its own server. It was restarted after each CSS bump, so the run saw the new CSS. Each
+app's production build passed after each bump.
+
+**DaisyUI 5.7 changes the class sort, `a376b16d1`.** The gate dry run's `05-format` was red on one file: the docs app's
+`src/lib/components/Header.svelte`. `prettier-plugin-tailwindcss` reads the docs stylesheet, which loads DaisyUI,
+and now sorts `btn-ghost` before `text-lg`. Attribution was measured by formatting the unchanged file through
+`--stdin-filepath`, comparing two package sets:
+- DaisyUI temporarily back on 5.5.14, Tailwind 4.3.3: no class change;
+- DaisyUI 5.7.46: the reorder.
+
+The manifest and lockfile were restored byte-for-byte from copies afterwards. The reorder is committed alone as
+`style: reformat for the DaisyUI 5.7 class order`. `check:research-quotes` (two-base form) → 0; this file is not one
+of the three frozen components. A class attribute's order does not change the cascade, and the docs app is not in
+the visual suite.
+
+**No diff, so no re-baseline.** None of the four snapshots (`voter-results-{desktop,mobile}`,
+`candidate-preview-{desktop,mobile}`) mismatched on the new browser build or on either CSS bump. No snapshot file
+changed and no `test(visual): re-baseline` commit exists.
+
+### 169-04 Task 1 — one Vitest 5 through the catalog, `test.projects` (D-19, D-13), commit `7b41eb90a`
+
+**Per-workspace unit counts** (`TURBO_FORCE=true yarn test:unit`):
+- before: `04-t1-unit-before.log`, at `5408452ab` on Vitest 3.2.7;
+- after: `04-t1-unit-after.log`, on 5.0.2, with `NO_COLOR=1`, because Vitest 5 colours its summary under turbo and
+  the extraction reads plain text;
+- earlier "before" runs kept as `04-t1-unit-before.at-61dfb2fb2.log` and `.at-668dc5675.log`: identical except
+  the frontend's +6 sanitiser tests.
+
+| Workspace | Test files before | Tests passed before | Test files after | Tests passed after |
+|---|---|---|---|---|
+| `@openvaa/supabase` | 15 | 205 | 15 | 205 |
+| `@openvaa/core` | 3 | 8 | 3 | 8 |
+| `@openvaa/matching` | 5 | 43 | 5 | 43 |
+| `@openvaa/data` | 47 | 244 | 47 | 244 |
+| `@openvaa/filters` | 1 | 22 | 1 | 22 |
+| `@openvaa/app-shared` | 9 | 92 | 9 | 92 |
+| `@openvaa/llm` | 2 | 39 | 2 | 39 |
+| `@openvaa/question-info` | 2 | 22 | 2 | 22 |
+| `@openvaa/argument-condensation` | 6 | 30 | 6 | 30 |
+| `@openvaa/dev-seed` | 66 | 901 | 66 | 901 |
+| `@openvaa/frontend` | 127 | 2024 | 127 | 2024 |
+
+The plan's equality check (the `node -e` over both logs) → "11 workspaces equal", exit 0. `yarn assert:unit-coverage` → 0
+violations, 11 workspaces executed (4 unwired: dev-tools, docs, shared-config, supabase-types — unchanged).
+
+**Root runner.** `yarn vitest run --config vitest.config.ts` → exit 0, 141 files / 1401 tests. These are exactly
+the sums over the 9 package projects (the 9 `packages/*/vitest.config.ts`). `vitest list --json` names those 9
+projects. `apps/supabase` and `apps/frontend` are not in `test.projects`, as before (the deleted file listed
+`packages/**` only). `apps/docs`: `vitest run --passWithNoTests` loads both the `server` and the
+`client (chromium)` projects through `@vitest/browser-playwright` 5 (exit 0, no test files). `check` → 0 / 0 over
+729 files; `build` → exit 0.
+
+**Migration fixes at source** (no test skipped, deleted or `.todo`-ed; each count above unchanged):
+1. `packages/matching/tests/space.test.ts` — a `describe('MatchingSpace.fromQuestions', …)` called inside
+   `test('MatchingSpace', …)`. Vitest 5 throws on it ("Calling the suite function inside test function is not
+   allowed"). The block held no test, only two `expect`s. It became a plain block inside the test. Once it ran, its
+   second assertion failed: `delete questionWeights[2]` deletes the key `"2"`, but the weights are keyed by question
+   id (`mockQuestion_<random>`). The test now deletes `questionWeights[questions[2].id]`, which is what its comment
+   ("the last should default to one") describes. `MatchingSpace.fromQuestions` was already correct. These two
+   assertions evidently never executed on Vitest 3: a suite registered inside a running test was never collected.
+   That mechanism is **UNCONFIRMED**; the failing assertion on first execution is measured.
+2. `packages/dev-seed/tests/writer.test.ts` — the mocked `SupabaseAdminClient` constructor used an arrow
+   `mockImplementation`. Since Vitest 4, `new` on a mock constructs, and an arrow function cannot be constructed
+   (28 failures, "The vi.fn() mock did not use 'function' or 'class'"). It is now a `function` implementation
+   that returns the instance, with a one-line reason.
+3. `apps/frontend/src/lib/utils/motion.test.ts` — `vi.spyOn(window, 'matchMedia')` failed ("can only spy on a
+   function. Received undefined"), because jsdom implements no `matchMedia`. The stub is now
+   `vi.stubGlobal('matchMedia', vi.fn(…))`; the existing `afterEach` already calls `vi.unstubAllGlobals()`. Both
+   directions (matches → `true`, no match → `false`) still assert. Why `spyOn` passed on Vitest 3 is
+   **UNCONFIRMED**.
+4. Types, found by a gate dry run on the uncommitted tree (`169-04-precommit-dryrun`: typecheck, lint and
+   check-frontend red, with 2 svelte-check errors). Vitest 5 types `ReturnType<typeof vi.fn>` as
+   `Mock<Procedure | Constructable>`, which is no longer assignable to `fetch`, and `ReturnType<typeof vi.spyOn>`
+   no longer types `mock.calls`.
+   - `universalAdapter.test.ts`: `mockFetch` is now `Mock<typeof fetch>` from `vi.fn<typeof fetch>()`. The six
+     `mock.calls[0][1]` reads take a `!`, because the init argument is optional in `fetch`'s signature. One
+     `mockImplementation` drops its narrower `url: string` annotation; its body already used `String(url)`.
+   - `fetchJwksLeakSafe.test.ts`: `consoleError` is now `MockInstance<typeof console.error>`.
+   - Result: svelte-check 0 errors over 2671 files; the two files' 71 tests pass.
+
+**`vite` declared where Vitest runs.** Vitest 5 made `vite` a peer dependency ("Yarn users must install vite
+explicitly", migration guide). The first install reported `YN0002 … doesn't provide vite, requested by vitest` for
+the root, `apps/supabase` and nine packages. A new catalog entry `vite: ^7.3.6` (the version the tree already
+resolved, so no new package) is consumed as `catalog:` by those 11 workspaces. The frontend keeps its direct
+`^6.4.1` (6.4.3, which satisfies Vitest 5's `^6.4.0`), and the docs app keeps its direct `^7.2.6`. 169-05 then
+moves this catalog entry to Vite 8 and switches both apps to `catalog:`, instead of creating the entry.
+
+Other Vitest 4/5 breaking items, searched with `git grep`: nested `vi.mock`/`vi.hoisted`, unawaited
+`resolves`/`rejects`, `toMatchFileSnapshot`, `test.sequential`, `poolOptions`, `deps.inline`,
+`environmentMatchGlobs`, `VITEST_WORKER_ID`/`VITEST_POOL_ID`, removed entry points, `-t` patterns, `basic`
+reporter. None found. After the run, no `.vitest/` directory exists anywhere in the tree, so no ignore line was
+added.
+
+**Comments that cited the deleted file**, re-derived with `git grep -n -i -E "vitest\.workspace|workspace file"`:
+the 9 package `vitest.config.ts` docblocks (six of which also misspelled "for" as "ror"), the two dev-seed test comments,
+`tests/vitest.config.ts`, and `scripts/assert-unit-test-coverage.mjs`. The phrasing avoids the glob
+`packages/*/…` inside block comments, where `*/` would end the comment.
+
 ## 7. Operator follow-ups
 
 - **Review the `braces` baseline row (169-01, `c97bc9898`).** GHSA-vfj7-8cjw-p6xm (id 1240992) was published
@@ -798,6 +1050,23 @@ No ResearchQuote span changed in any of the three, and no `prettier-ignore` was 
   - Separately, decide on `Layout.svelte`'s drawer focus return, which ESLint 10's `no-unassigned-vars` showed
     has never been wired: wire it or delete it.
   - Todo: `2026-10-03-eslint-10-held-on-bindable-no-useless-assignment.md`.
+
+- **A `git stash` entry left in the shared stash list (169-04 executor error).** The executor
+  broke the never-`git stash` rule three times. Twice it ran a read-only `git stash list` with its output discarded.
+  Once, at 2026-10-03T12:26Z in the -gsd worktree, it ran a bare `git stash` by mistake. That `git stash` saved
+  the then-uncommitted `169-EVIDENCE.md` edits as `stash@{0}` =
+  `d17abc887ab62d6d0c4c1c5925a862cfc0cfc902` ("WIP on fix/888-review-findings: 7b41eb90a …"). The file was
+  restored at once with `git show d17abc887:<path> > <path>` (diff stat identical: 222 insertions, 1 deletion), and
+  the executor ran no stash subcommand after that. The entry is still on top of the stash list that the main
+  checkout and every worktree share, above four older entries (two lint-staged backups and two WIPs on other
+  branches). A `git stash pop` in any checkout would apply this one ledger diff. It holds nothing else and is safe
+  to drop (`git stash drop stash@{0}` after `git stash show -p stash@{0}`). The executor did not drop it, because
+  the rule forbids every stash subcommand.
+- **Docker credential helper wedged again (169-04).** `docker-credential-desktop get` hung on the first
+  `docker pull`. This is the same host fault as 136-05. The pull went through with a scratch `DOCKER_CONFIG` and an
+  explicit `DOCKER_HOST`. Repairing Docker Desktop's credential helper is a host action.
+- **`vite` catalog entry (169-04).** A catalog `vite: ^7.3.6` now exists, consumed by the 11 workspaces that run
+  Vitest but do not build with Vite. 169-05 bumps it to 8 and points both apps at it.
 
 ## 8. Moderate and low advisories on chosen versions
 
