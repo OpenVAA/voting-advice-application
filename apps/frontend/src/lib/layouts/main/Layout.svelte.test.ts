@@ -14,6 +14,14 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 /** The layout context's `navigation` object. `Layout` assigns its `closeDrawer` to `close`. */
 const navigation: { close?: () => void } = {};
 
+/** The layout context's `video` state. Reactive like the real one, because `Layout` binds `video.player` and `video.mode` to it. */
+const video = $state<{ show: boolean; hasContent: boolean; player: unknown; mode: unknown }>({
+  show: false,
+  hasContent: false,
+  player: undefined,
+  mode: undefined
+});
+
 vi.mock('$lib/contexts/app', () => ({
   getAppContext: () => ({
     t: (key: string) => key,
@@ -42,7 +50,7 @@ vi.mock('$lib/contexts/layout', () => ({
     navigationSettings: { current: { hide: false } },
     progress: { current: { current: 0 }, max: 1 },
     topBarSettings: { current: { imageSrc: undefined, progress: 'hide', actions: {} } },
-    video: { show: false, hasContent: false, player: undefined, mode: undefined }
+    video
   })
 }));
 
