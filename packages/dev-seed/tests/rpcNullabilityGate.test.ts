@@ -9,7 +9,7 @@
  *
  * Both halves are silently deletable. Remove the CI job and nothing goes red — the tree still contains the override file, the merge, the script and the enumeration, and every local command still passes. Unhook `assert:rpc-nullability` from `lint:check` and the script survives on disk, runnable, running nowhere. A guard reports its own absence as a pass, which is the worst failure shape available to a gate: the enforcement, not the artefact, is what makes the mechanism durable, and the artefacts all outlive the enforcement.
  *
- * The `paths-filter` assertion below is the same argument one level down. The job carries no filter ON PURPOSE: a bump of the pinned `supabase/setup-cli@v1` version in the workflow can change the generator's output with no `apps/supabase/**` or `packages/supabase-types/**` path changing, and a path filter would skip the job in exactly that case. That absence is a mitigation, and an unasserted absence is one PR away from being narrowed back.
+ * The `paths-filter` assertion below is the same argument one level down. The job carries no filter ON PURPOSE: a bump of the CLI `version:` pinned on the workflow's `supabase/setup-cli` steps can change the generator's output with no `apps/supabase/**` or `packages/supabase-types/**` path changing, and a path filter would skip the job in exactly that case. That absence is a mitigation, and an unasserted absence is one PR away from being narrowed back.
  *
  * ## Why it lives in packages/dev-seed
  *
@@ -73,7 +73,7 @@ describe('the supabase-types regeneration-drift gate is wired so it can actually
   });
 
   it('carries NO path filter, so a generator change with no repo path changing still reddens', () => {
-    // The mitigation, asserted as an absence. A bump of the pinned `supabase/setup-cli@v1` version changes the generated file with no filtered path changing, and a filter would skip the job precisely then. Compare `supabase-tests`, every step of which is filtered.
+    // The mitigation, asserted as an absence. A bump of the CLI `version:` pinned on the `supabase/setup-cli` steps changes the generated file with no filtered path changing, and a filter would skip the job precisely then. Compare `supabase-tests`, every step of which is filtered.
     expect(withoutComments(jobBlock(DRIFT_JOB))).not.toContain('paths-filter');
   });
 

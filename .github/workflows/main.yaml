@@ -212,7 +212,7 @@ jobs:
               - 'apps/supabase/**'
               - 'packages/supabase-types/**'
 
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         if: steps.changes.outputs.supabase == 'true'
         with:
           version: 2.118.0
@@ -264,7 +264,7 @@ jobs:
       - name: "Checkout source code"
         uses: actions/checkout@v7
 
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
           version: 2.118.0
 
@@ -381,7 +381,7 @@ jobs:
       - name: "Checkout source code"
         uses: actions/checkout@v7
 
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
           version: 2.118.0
 
@@ -467,7 +467,7 @@ jobs:
     #   2. Every step in `supabase-tests` sits behind a `dorny/paths-filter`, so a drift check there
     #      would not run when neither `apps/supabase/**` nor `packages/supabase-types/**` changed.
     #
-    #   3. A bump of the pinned `supabase/setup-cli@v1` version, in this file, can change the
+    #   3. A bump of the CLI `version:` pinned on the `supabase/setup-cli` steps can change the
     #      generator's output with no `apps/supabase/**` or `packages/supabase-types/**` path
     #      changing, which is exactly what a filter would hide.
     #
@@ -479,7 +479,7 @@ jobs:
       - name: "Checkout source code"
         uses: actions/checkout@v7
 
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
           version: 2.118.0
 
@@ -532,7 +532,7 @@ jobs:
       - name: "Configure environment"
         run: cp .env.example .env
 
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
           version: 2.118.0
 
@@ -615,7 +615,7 @@ jobs:
       - name: "Configure environment"
         run: cp .env.example .env
 
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
           version: 2.118.0
 
