@@ -278,6 +278,7 @@ Runner: `bash 169-gates.sh <label>` (`TURBO_FORCE=true`; each status read direct
 | 169-02 | `169-02-node24` (interrupted, see notes) | `77d3ce8bf` | 0 | 0 | 0 | — | — | — | — | — | — | — | — | — | — |
 | 169-02 | `169-02-node24-r2` (the Node 24 commit alone) | `77d3ce8bf` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | **171 / 171 / 0 / 0 / 0** (`169-e2e/169-02-node24`) |
 | 169-02 | `169-02-group1` (+ CI step order, secret-scan fixture, `@types/node` 24, TS 6) | `ebeaafa5c` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | — |
+| 169-03 | `169-03-group2` (import-x, eslint-plugin-svelte 3, no FlatCompat, the 15 ESLint-10 source fixes, prettier-plugin-svelte 4, prettier-plugin-tailwindcss 0.8.1, simple-import-sort 14; ESLint held on 9.39.5) | `2e3a79846` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | — (no E2E in group 2, D-26) |
 
 Notes on `169-01-baseline` (2026-10-03T06:43:09Z–06:45:43Z, `tests/e2e-runs/169-gates/169-01-baseline/`):
 
@@ -315,6 +316,12 @@ E2E `169-01-group0` (`bash 169-e2e.sh 169-01-group0`, full default suite): Docke
 2026-10-03T07:10:03Z–07:16:01Z, wrapper exit 0, preflight successes 1 / failures 0. `summary.json`: **total 171,
 passed 171, failed 0, flaky 0, skipped 0, didNotRun 0**. No listener left on 5273. This is the measured-green
 tree 169-02's Node 24 commit is judged against (D-11 attribution).
+
+Notes on `169-03-group2` (2026-10-03T10:58:56Z–11:01:13Z, `tests/e2e-runs/169-gates/169-03-group2/`):
+- Run on a clean tree (`porcelain_lines: 0`).
+- Forced turbo runs: `03-typecheck` 23/23 and `09-build` 14/14 tasks executed.
+- `04-lint` reports 0 errors and the same 17 baseline warnings as before the plan (normalised list, `diff` exit 0).
+- `10-audit`: `0 new advisory(ies) at high+`.
 
 ### 169-02 Task 2 — the Node 24 commit (`77d3ce8bf`), measured alone
 
@@ -740,6 +747,19 @@ Resolution:
 - The ESLint 10 bump, the flag removal and the docblock rewrite were reverted file by file (`git checkout -- <the
   19 files and yarn.lock>`), and `yarn install` brought back 9.39.5.
 - The attempt's diff is kept locally as `t2c-eslint10-config.patch` (gitignored) for the re-application.
+
+### 169-03 Task 3 — the formatter and sorter majors, each with its reformat (D-23)
+
+Each bump was a catalog change plus `yarn install`. Each lockfile diff touched only that package's own entry: 4–5
+lines, one version swapped, no new name. The age rule held for all three (§ 1, 169-03 table).
+
+| Order | Bump commit | Changelog breaking items that apply here | Reformat command | Result | `check:research-quotes` (two-base form) |
+|---|---|---|---|---|---|
+| 1 | `cb266766b` `prettier-plugin-svelte` 3.5.2 → **4.1.1** | 4.0.0 requires Svelte 5 (the tree resolves only `svelte` 5.57.1) and removes `svelteBracketNewLine` / `svelteStrictMode`, which no prettier config in the repository sets (`git grep` → nothing) | `yarn format` (root Prettier and `yarn workspace @openvaa/docs format`), exit 0; 188 `.svelte` paths in the log | **no diff** (`git status --porcelain` empty) | 0 |
+| 2 | `59f6acf8a` `prettier-plugin-tailwindcss` 0.7.4 → **0.8.1** | 0.8.0 requires Prettier ≥ 3.7 (the tree has 3.9.9). 0.8.1 restores class sorting in Svelte markup under `prettier-plugin-svelte` 4. No option this repository sets was renamed (`tailwindStylesheet` in the docs config) | `yarn format`, exit 0 | 2 files: `Select.svelte` and `routes/candidate/help/+page.svelte`. In each, a `class` list inside an `{#each} … {:else}` branch was re-sorted to the order the plugin already gives `text-secondary` elsewhere in the frontend (unknown/theme class first). Neither run on the 0.7 line, with svelte plugin 3 or 4, had touched them, so the 0.7 line evidently did not visit those branches → `4fa365e41` `style: reformat for prettier-plugin-tailwindcss 0.8.1` | 0 |
+| 3 | `2e3a79846` `eslint-plugin-simple-import-sort` 12.1.1 → **14.0.0** | 13.0.0 orders imports from one source by import style; 14.0.0 handles string-literal export names. The rule options are unchanged | `TURBO_FORCE=true yarn lint:fix`, exit 0 | **no diff from the sorter.** The run's only change was ESLint's own autofix of the pre-existing unused `eslint-disable-next-line no-console` directive in `tests/tests/support/mockOidcIssuerEntry.ts`, one of the 17 baseline warnings. It replaced the line with whitespace, is unrelated to the sorter and was reverted (`git checkout -- <that file>`) | 0 |
+
+No ResearchQuote span changed in any of the three, and no `prettier-ignore` was needed.
 
 ## 7. Operator follow-ups
 
