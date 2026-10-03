@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsup && tsc --emitDeclarationOnly --outDir dist",
     "lint": "eslint --flag v10_config_lookup_from_file src/",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit --composite false",
     "test:unit": "vitest run",
     "test:watch": "vitest"
   },
