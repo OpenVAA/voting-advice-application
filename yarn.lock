@@ -1661,6 +1661,7 @@ __metadata:
     eslint-plugin-import-x: "catalog:"
     eslint-plugin-simple-import-sort: "catalog:"
     eslint-plugin-unused-imports: "npm:^4.4.1"
+    globals: "catalog:"
     prettier: "catalog:"
     prettier-plugin-sql: "catalog:"
     typescript: "catalog:"
@@ -4964,13 +4965,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globals@npm:^15.14.0":
-  version: 15.15.0
-  resolution: "globals@npm:15.15.0"
-  checksum: 10c0/f9ae80996392ca71316495a39bec88ac43ae3525a438b5626cd9d5ce9d5500d0a98a266409605f8cd7241c7acf57c354a48111ea02a767ba4f374b806d6861fe
-  languageName: node
-  linkType: hard
-
 "globals@npm:^16.0.0":
   version: 16.5.0
   resolution: "globals@npm:16.5.0"
@@ -4978,7 +4972,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globals@npm:^17.3.0":
+"globals@npm:^17.12.0, globals@npm:^17.3.0":
   version: 17.12.0
   resolution: "globals@npm:17.12.0"
   checksum: 10c0/8325cf8818c848871d17c32974c2c74e9c5f09c1b0e04421886f64f21e77c3e95f3ba25586743895a73acd860ada151132481d87d44a1f12993ae7758a694d03
