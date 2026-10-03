@@ -2062,11 +2062,11 @@ Plans:
   3. **`yarn audit:deps` passes**: every row with a published fix is fixed; `security/audit-baseline.json` keeps only no-fix or recorded-hold rows, each with a current note; todo `2026-09-03-dependabot-alert-list-is-stale-against-main.md` is updated and stays pending until v2.15 merges.
   4. Gates: typecheck, lint, svelte-check, unit, pgTAP, production builds (frontend and docs), then the full E2E suite under the cardinal rule.
 
-**Plans**: 13 plans
+**Plans**: 1/13 plans executed
 
 Plans:
 **Wave 1**
-- [ ] 169-01-PLAN.md — Group 0: confirm upstream phases and the D-02 roadmap amendment, the version/age table, the 7-day age gate, the audit-liveness re-key and the in-range lockfile refresh (wave 1)
+- [x] 169-01-PLAN.md — Group 0: confirm upstream phases and the D-02 roadmap amendment, the version/age table, the 7-day age gate, the audit-liveness re-key and the in-range lockfile refresh (wave 1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 169-02-PLAN.md — Group 1, toolchain: Yarn 4.18, then Node 24 as one isolated commit with its own gate run, image build, E2E and observed CI run, then `@types/node` 24 and TypeScript 6 (wave 2)
@@ -2143,7 +2143,7 @@ _(**Recounted 2026-09-29** when the two planning records were merged: the phase 
 | 166. Retire `auth_user_id` — Entity Identity from Grants | 4/4 | Complete    | 2026-10-02 |
 | 167. Origin/main Vestige Cleanup | 6/6 | Complete    | 2026-10-02 |
 | 168. Docs-Site Rewrite — Strapi to Supabase | 9/9 | Complete    | 2026-10-02 |
-| 169. Dependency Bump to Latest Safe Versions | 0/13 | Not started |  |
+| 169. Dependency Bump to Latest Safe Versions | 1/13 | In Progress|  |
 
 **Shipped milestones:**
 

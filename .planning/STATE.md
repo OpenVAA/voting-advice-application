@@ -4,18 +4,18 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 169
 current_phase_name: Dependency Bump to Latest Safe Versions
-current_plan: 1
+current_plan: 2
 status: executing
-stopped_at: Phase 168 complete, ready to plan Phase 169
-last_updated: "2026-10-03T06:35:29.806Z"
+stopped_at: Completed 169-01-PLAN.md
+last_updated: "2026-10-03T07:18:57.066Z"
 last_activity: 2026-10-03
 last_activity_desc: Phase 169 execution started
-state_head: db9d324cb7dd14169316b042214472a5bc37e7bf
+state_head: 5f22a0362c758b8f5061d3137150fee0b328bd7e
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
-  completed_plans: 334
+  completed_plans: 335
   percent: 89
 ---
 
@@ -35,7 +35,7 @@ _(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and P
 Phase: 169 (Dependency Bump to Latest Safe Versions) — EXECUTING
 Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
-Current Plan: 1
+Current Plan: 2
 Total Plans in Phase: 13
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
@@ -306,7 +306,7 @@ run. WHAT REMAINS: push `ci-evidence/163-crit2-red` and `…-green`, assert the 
 granularity (`frontend-and-shared-module-validation` → `Run Prettier check globally`, log naming the
 file), fill rows 9/10, delete both branches. `CIGATE-02` was NOT marked complete
 (`requirements.ready-ids` → 0/1 ready).
-Status: Executing Phase 169
+Status: Ready to execute
 PUSHED.** `prettier-plugin-sql@0.20.0` is declared once in `packages/shared-config` with
 `overrides: [{ files: '*.sql', options: { language: 'postgresql' } }]`, and reaches every workspace
 through the `?? []` spreads the leaf configs already carried (both leaf configs byte-unchanged).
@@ -819,8 +819,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-10-02T13:09:25.589Z
-Stopped at: Phase 168 complete, ready to plan Phase 169
+Last session: 2026-10-03T07:18:37.804Z
+Stopped at: Completed 169-01-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -1147,6 +1147,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 168 P06 | 30min | 3 tasks | 9 files |
 | Phase 168 P07 | 24min | 3 tasks | 131 files |
 | Phase 168 P08 | 38min | 3 tasks | 26 files |
+| Phase 169 P01 | 40min | 3 tasks | 37 files |
 
 ## Deferred Items
 
@@ -2140,6 +2141,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 168]: 168-08: OIDC callback never checks the nonce - filed as security todo 2026-10-02-oidc-callback-does-not-verify-nonce.md
 - [Phase 168]: 168-08: localization-in-strapi stub retargeted to Multi-locale data (168-05 F4)
 - [Phase 168]: 168-08: Phase 169 handoff - validate:links --check, check:research-quotes --base 0ec229dfe --component-base 6090476cc, docs build
+- [Phase 169]: 169-01: AI SDK family (ai, @ai-sdk/*) excluded from the group-0 refresh — @ai-sdk/provider-utils >=3.0.35 pulls undici 5 + @fastify/busboy (NEW high 1240982); majors stay 169-09's
+- [Phase 169]: 169-01: braces GHSA-vfj7-8cjw-p6xm (1240992, no fixed release) accepted by a hand-written baseline row under D-02 — operator review requested (169-EVIDENCE.md section 7)
+- [Phase 169]: 169-01: package typecheck scripts are 'tsc --noEmit --composite false' so a typecheck never writes dist/tsconfig.tsbuildinfo while tsup rebuilds dist (fixes a turbo typecheck/build race)
 
 ### Quick Tasks Completed
 

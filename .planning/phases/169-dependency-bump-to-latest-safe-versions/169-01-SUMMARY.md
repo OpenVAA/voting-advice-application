@@ -57,7 +57,7 @@ patterns-established:
   - "Lockfile refresh = one bash-array yarn up -R over every lockfile name minus the owned/excluded set, then yarn dedupe; boundaries proven by byte-diffing the excluded blocks and a registry age backstop over every new name@version"
 
 requirements-completed: [DEPS-01, DEPS-02, DEPS-15]
-requirements-note: "Addressed by this plan, not all finished: DEPS-01 and DEPS-15 are shared with 169-13 (phase-end table, baseline notes). DEPS-02's audit is green, but its last NEW row (braces, no fix) was cleared by an accepted baseline row awaiting operator review, so REQUIREMENTS.md marks it only through the shared-ID gate."
+requirements-note: "Addressed by this plan, none marked Complete in REQUIREMENTS.md. DEPS-01 and DEPS-15 are shared with 169-13 (the shared-ID gate blocks them). DEPS-02 passed the gate (ready-ids 1/3) but was deliberately left Pending: its text says the refresh 'clears every NEW high+ finding', and the last one (braces, no fix published) was cleared by an accepted baseline row that awaits operator review."
 
 coverage:
   - id: D1
