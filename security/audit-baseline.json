@@ -131,6 +131,15 @@
       "rationale": "Dev-tooling transitive only, reached exclusively through minimatch 3.x/9.x/10.x; the DoS classes need an attacker-supplied glob, and every glob in this repo is repo-authored."
     },
     {
+      "id": 1240992,
+      "package": "braces",
+      "severity": "high",
+      "ghsa": "GHSA-vfj7-8cjw-p6xm",
+      "issue": "braces vulnerable to stack-exhaustion denial of service through deeply nested patterns",
+      "via": "micromatch@4.0.8",
+      "rationale": "No fixed version is published: 3.0.3, the latest release of braces, is inside the vulnerable range (<=3.0.3). Dev-tooling transitive only, reached through micromatch 4.x from vite-plugin-restart (the frontend dev server plugin that restarts on a root .env change) and from @changesets/cli (via @changesets/config, @changesets/git and @manypkg/get-packages -> globby -> fast-glob). The stack-exhaustion DoS needs an attacker-supplied pattern, and every pattern these tools expand is repo-authored. Re-check when braces publishes a fix, or when both dependents are gone."
+    },
+    {
       "id": 1120448,
       "package": "devalue",
       "severity": "high",
