@@ -661,6 +661,24 @@ packages/core/src` to be empty. The config-lookup flag is passed only when ESLin
 The starting state is "0 errors and 17 pre-existing warnings", not "zero findings"; D-17's "zero new findings" is
 held by equality of the normalised lists from here on.
 
+### Dev-server restart on the root `.env` (D-18) — 169-05
+
+Unit: `yarn workspace @openvaa/frontend vitest run vite.restartOnRootEnv.test.ts`. RED at `8fe8e3455` (exit 1,
+the module did not exist yet; `05/t1-red.log`), GREEN at `f88e60568` (exit 0, 6 passed; `05/t1-green.log`):
+name and `apply: 'serve'`; the watcher gets `add(<repoRoot>/.env)`; `change` and `add` of the root `.env`
+each restart once; a non-normalised path to the same file restarts; `apps/frontend/.env`, `.env.example`,
+`.env.local` and a source file never restart.
+
+Live: `bash 169-restart-probe.sh <label>` (committed in the phase directory). It starts
+`FRONTEND_PORT=5199 yarn workspace @openvaa/frontend dev` in its own process group, waits for Vite's ready line,
+`touch`es the root `.env` (mtime only, the contents are never read), and waits 60 s for `server restarted`. Logs
+`tests/e2e-runs/169-gates/<label>-dev.log`.
+
+| When | Vite | Label | Exit | Restart log line |
+|---|---|---|---|---|
+| plugin wired (`f88e60568` tree) | 6.4.3 | `169-05-t1-restart` | 0 | `15.46.37 [vite] server restarted.` (touched 2026-10-03T12:46:37Z) |
+| negative control: the `restartOnRootEnv(repoRoot)` entry commented out, then restored with `git checkout -- apps/frontend/vite.config.ts` | 6.4.3 | `169-05-t1-restart-negative` | **1** | none within 60 s (touched 12:46:54Z): Vite alone does not watch the repo-root `.env` |
+
 ## 6. Diffs and traces
 
 ### Group 0 lockfile refresh (169-01 Task 3, commit `27a209c99`)
