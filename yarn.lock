@@ -2417,14 +2417,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@supabase/ssr@npm:^0.9.0":
-  version: 0.9.0
-  resolution: "@supabase/ssr@npm:0.9.0"
+"@supabase/ssr@npm:^0.12.7":
+  version: 0.12.7
+  resolution: "@supabase/ssr@npm:0.12.7"
   dependencies:
     cookie: "npm:^1.0.2"
   peerDependencies:
-    "@supabase/supabase-js": ^2.97.0
-  checksum: 10c0/72ae27d9f873c0fd69109126e9bbf1d6e994c5c3706041fca4daf1f6aa551402b3064c30178ad4fa4035156cd76cf537cddbc7c15000574365aa94651dbc3ec5
+    "@supabase/supabase-js": ^2.114.0
+  checksum: 10c0/d1c02a6a5bb49f138c10c13e465b3d35d0abac779702c234bbd0fb7c46af73ba792202c33a0d11875bb77cab8284da40c4c0d5cde6b4942bd262bcd8e163b635
   languageName: node
   linkType: hard
 
