@@ -364,6 +364,45 @@ installed, and neither its migrator nor `sv` was run (PROH-169-22). `yarn why @s
 is not `CLEARS`. Task 3's land branch is skipped for the same reason. The hold is in § 3. Todo:
 `2026-10-03-sveltekit-3-held-by-the-age-rule.md`.
 
+### 169-13 (group 11) end-of-phase re-measurement, 2026-10-03 — the final version table (D-33, criterion 1)
+
+`node 169-version-probe.mjs --out 169-VERSION-TABLE.md --node 24.21.0` at 2026-10-03T19:00:38Z, HEAD `ab0857938`
+(exit 0, `tests/e2e-runs/169-gates/13-t2-probe.log`): **67 distinct registry packages** across 16 manifests (72 at
+phase start: `@eslint/eslintrc`, `eslint-plugin-import`, `vite-plugin-restart`, `openai` and `@types/cheerio` left;
+`eslint-plugin-import-x` came in; `@types/js-yaml` left). Verdicts: **current 47 · HOLD-7d 13 · HOLD-30d 5 · major 2 ·
+in-major 0** (phase start: current 12 · in-major 32 · major 27 · HOLD-30d 1).
+
+Every non-`current` row against § 3:
+
+| Package | Verdict | § 3 row |
+|---|---|---|
+| `@ai-sdk/google`, `@ai-sdk/openai`, `ai` | HOLD-7d | `ai`, `@ai-sdk/*` (7-day) — added here |
+| `@sveltejs/kit`, `@sveltejs/adapter-node`, `@sveltejs/adapter-static` | HOLD-30d | the three Kit 3 rows (169-12) |
+| `@types/node` | major (26.6.3; 24.19.1 HOLD-7d) | `@types/node` — types track the runtime major |
+| `@typescript-eslint/eslint-plugin`, `@typescript-eslint/parser` | HOLD-7d | added here |
+| `@vitest/browser-playwright`, `vitest` | HOLD-7d | `vitest`, `@vitest/browser-playwright` |
+| `daisyui` | HOLD-7d | `daisyui` |
+| `dotenv`, `intl-messageformat` | HOLD-30d | their rows (169-10) |
+| `eslint` | HOLD-7d | `eslint`, `@eslint/js` (10.12.0 clears 2026-10-09) |
+| `globals` | HOLD-7d | `globals` |
+| `supabase` | HOLD-7d | `supabase` (CLI) |
+| `turbo` | HOLD-7d | added here |
+| `typescript` | major (7.0.2) | `typescript` — peer-blocked (D-16) |
+| `vite` | HOLD-7d | `vite` |
+
+No row is `in-major` (nothing was simply not bumped) and no `major` row is unheld, so no bump was needed in 169-13.
+The Deno pin `nodemailer` is outside the probe's manifest scan; its hold is the § 3 `nodemailer` row.
+
+**Version prose (Task 2 step 5).** `git grep -n -i -E "node(\.js)? ?(18|20|22)\b|postgres(ql)? ?15\b|vite ?[5-7]\b|vitest
+?[34]\b|eslint ?9\b" -- apps/docs/src CLAUDE.md README.md apps/frontend/README.md` → exit 1 (no match): no
+statement made false by the phase; nothing to correct.
+
+**Roadmap premise (D-02).** `roadmap.get-phase 169 --pick section` still carries the measured advisory set and
+criterion 3 "every row with a published fix is fixed; … keeps only no-fix or recorded-hold rows, each with a current
+note" (applied at planning); no edit.
+
+**`.github/dependabot.yml` (D-31).** `git diff --exit-code 5ed82f437..HEAD -- .github/dependabot.yml` → exit 0.
+
 ## 2. Package legitimacy
 
 **Operator approvals (step 0, run before any repository change, 2026-10-03T06:37Z):** the box check printed
@@ -699,7 +738,7 @@ Older lines are no way out. `nodemailer@9.1.1` and `nodemailer@6.10.1` both stil
 | Package | Held at | Newer line | Reason | Decision ref | Re-check date or trigger |
 |---|---|---|---|---|---|
 | `ai`, `@ai-sdk/google`, `@ai-sdk/openai` (+ their exact pins `@ai-sdk/gateway`, `@ai-sdk/provider`, `@ai-sdk/provider-utils`) | pre-phase resolutions: `ai` 5.0.60, `@ai-sdk/google` 2.0.23, `@ai-sdk/openai` 2.0.42, gateway 1.0.33, provider 2.0.0, provider-utils 3.0.10 / 3.0.12 | in-range `ai` 5.0.267, google 2.0.99, openai 2.0.130 (→ provider-utils 3.0.39) | **Narrowed out of the group-0 refresh.** `@ai-sdk/provider-utils` ≥ 3.0.35 (2026-08-26) depends on `undici ^5.29.0`; the in-range refresh pulled `undici` 5.29.0 and `@fastify/busboy` 2.1.1 back into the tree, adding NEW high 1240982 (`@fastify/busboy` <3.2.1, no in-range fix under `undici` 5's `^2.0.0`) and re-attaching accepted `undici` rows 1114638 / 1114640 / 1121245 to a new dependent. Moved into the excluded set per 169-01 Task 3 step 6; the family's majors are 169-09's | D-07, D-21, D-25 (G7) | **RELEASED 2026-10-03 by 169-09** (`0bf2782a7`): `ai` 7.0.116, `@ai-sdk/google` 4.0.82, `@ai-sdk/openai` 4.0.78 on provider 4.0.18 / provider-utils 5.0.49, which depend on `undici ^7.29.0`; `undici` 5 and `@fastify/busboy` stay out of the tree (§ 2, 169-09) |
-| `braces` | 3.0.3 | none published | No fixed version exists (GHSA-vfj7-8cjw-p6xm covers `<=3.0.3`; 3.0.3 is the latest). Accepted in the baseline with a rationale (§ 7) | D-02 (baseline keeps no-fix rows), D-05 | when `braces` publishes a fix; or once `@changesets/cli` 2's `micromatch` path (169-10) is gone, the row goes stale. `vite-plugin-restart` left the tree in 169-05 (`f88e60568`), and the baseline rationale now names only the `@changesets/cli` path. **Path GONE 2026-10-03 (169-10, `40a426cb1`):** `@changesets/cli` 3 uses `picomatch`, so `micromatch` and `braces` left the tree; `yarn why braces` prints nothing and the audit lists 1240992 as no longer appearing (`0 accepted`). The baseline row is now stale; 169-13 drops it in the reviewed rewrite (the baseline file was not edited here) |
+| `braces` | 3.0.3 | none published | No fixed version exists (GHSA-vfj7-8cjw-p6xm covers `<=3.0.3`; 3.0.3 is the latest). Accepted in the baseline with a rationale (§ 7) | D-02 (baseline keeps no-fix rows), D-05 | when `braces` publishes a fix; or once `@changesets/cli` 2's `micromatch` path (169-10) is gone, the row goes stale. `vite-plugin-restart` left the tree in 169-05 (`f88e60568`), and the baseline rationale now names only the `@changesets/cli` path. **Path GONE 2026-10-03 (169-10, `40a426cb1`):** `@changesets/cli` 3 uses `picomatch`, so `micromatch` and `braces` left the tree; `yarn why braces` prints nothing and the audit lists 1240992 as no longer appearing (`0 accepted`). The baseline row is now stale; 169-13 drops it in the reviewed rewrite (the baseline file was not edited here). **Row dropped 2026-10-03 by 169-13 (`ab0857938`, § 6): hold closed** |
 | `@types/node` | **24.19.0** (catalog `^24.19.0`; 169-02, `968113336`) | 26.6.3 / 26.6.4 (`latest`), 25.x; 24.19.1 (1.4 d old on 2026-10-03) | **Types track the runtime major** (Node 24 at every pin site). 24.19.1 is inside the 7-day window | D-11, R3, D-03 | when the runtime moves to a newer major; 24.19.1 clears 2026-10-08T22:38Z |
 | `typescript` | **6.0.3** (catalog `^6.0.3`; 169-02, `ebeaafa5c`) | 7.0.2 (2026-07-08, x.0.0 86.7 d old — the age rule alone would admit it) | Blocking peers measured 2026-10-03: `@typescript-eslint/eslint-plugin` / `@typescript-eslint/parser` / `typescript-eslint` 8.70.1 `typescript: >=4.8.4 <6.1.0` (8.71.0, the newest, is inside the 7-day window); `svelte-check` 4.7.6 `^5.0.0 \|\| ^6.0.0`; `@sveltejs/kit@3` `typescript: ^6.0.0`. 6.0.3 is the newest 6.x (6.0.0 was never published) | D-16 | typescript-eslint and svelte-check admit 7 (and Kit 3's peer, once Kit 3 lands) |
 | `eslint`, `@eslint/js` | ~~9.39.5~~ **RELEASED 2026-10-03 → 10.11.0 / 10.0.1** (`34ce0d51c`, operator ruling) | 10.12.0 (2026-10-02T20:08Z, 0.81 d old on 2026-10-03T15:30Z) | **Hold released by operator ruling 2026-10-03.** ESLint 10 landed with three scoped one-line `eslint-disable-next-line no-useless-assignment` comments on the write-only `$bindable` props (eslint-plugin-svelte#1478), overruling PROH-169-07 for exactly those lines. The drawer focus return was wired (`e3a661517`), clearing `no-unassigned-vars` at source. The config-lookup flag is gone from all 21 live sites. 10.12.0 is inside the 7-day window | D-06, D-17, PROH-169-07 (overruled for 3 lines) | 10.12.0 clears 2026-10-09T20:08Z; the three disables go when #1478 ships (todo `2026-10-03-remove-bindable-no-useless-assignment-disables.md`) |
@@ -710,10 +749,13 @@ Older lines are no way out. `nodemailer@9.1.1` and `nodemailer@6.10.1` both stil
 | `@sveltejs/adapter-static` (docs) | **3.0.10** (169-05) | 4.0.0 (2026-10-01T17:21:55Z; 2.06 d old at the 169-12 re-measurement; the only 4.x) | **New major line inside the 30-day window** (169-12 Task 1, `HOLD-AGE`). It moves with Kit 3 (D-15 step 2) | D-03, D-15 | **2026-10-31T17:21:55Z**; same todo |
 | `vite` | **8.3.1** (catalog `^8.3.1`; 169-05) | 8.3.2 (2026-10-01T10:17Z, 2.11 d old on 2026-10-03) | Inside the 7-day window | D-03 | 8.3.2 clears 2026-10-08T10:17Z |
 | `supabase` (CLI) + the six `setup-cli` `version:` pins | **2.118.0** (catalog `^2.118.0`; 169-06, `cb14c57d2`) | 2.119.0 (2026-09-30T21:36Z, 2.66 d old on 2026-10-03) | Inside the 7-day window. The CLI and the CI pins must move together (`rpcNullabilityGate.test.ts`), and a CLI move changes the service images and the type generator, so 2.119.0 needs its own db:types / pgTAP / E2E pass | D-03, D-10 | 2.119.0 clears 2026-10-07T21:36Z |
-| `nodemailer` (Deno `npm:` import in `send-email/index.ts`) | **6.9.10** (unchanged; 6 high advisories, § 2) | 10.0.x (10.0.0 published 2026-09-04T07:45:32Z, 29.28 d old on 2026-10-03; 10.0.11 6.27 d old) | **New major inside the 30-day window.** Every older line still carries an open high advisory (GHSA-v53p-9fqp-m79j covers `<= 10.0.5`), so PROH-169-16 says wait rather than take 6.10 / 7 / 8 / 9. supabase-js and jose were pinned without it. DEPS-09 stays Pending | D-03, D-09, PROH-169-16 | 10.0.0 clears 2026-10-04T07:45:32Z and 10.0.11 clears 2026-10-04T07:50:47Z. Resume steps in todo `2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md` |
+| `nodemailer` (Deno `npm:` import in `send-email/index.ts`) | **6.9.10** (unchanged; 6 high advisories, § 2) | 10.0.x (10.0.0 published 2026-09-04T07:45:32Z, 29.28 d old on 2026-10-03; 10.0.11 6.27 d old) | **New major inside the 30-day window.** Every older line still carries an open high advisory (GHSA-v53p-9fqp-m79j covers `<= 10.0.5`), so PROH-169-16 says wait rather than take 6.10 / 7 / 8 / 9. supabase-js and jose were pinned without it. DEPS-09 stays Pending | D-03, D-09, PROH-169-16 | 10.0.0 clears 2026-10-04T07:45:32Z and 10.0.11 clears 2026-10-04T07:50:47Z. Resume steps in todo `2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md`. **Still held when Phase 169 closed** (169-13 ran 2026-10-03T19:00Z, ~13 h before the trigger) |
 | `dotenv` | **17.4.2** (catalog `^17.3.1`, the newest 17.x; root, used by `tests/playwright.config.ts` and `tests/seed-test-data.ts`) | 18.0.0–18.0.5 (18.0.0 published 2026-09-17T21:18:40Z, 16.8 d old on 2026-10-03) | **New major inside the 30-day window** (RESEARCH Pitfall 1). The current line has no advisory (§ 2, 169-10). `npx playwright test --list -c tests/playwright.config.ts` still loads the config on 17.4.2 (exit 0, 173 tests, no `.env` value or dotenv banner in the output) | D-03, D-23 | 18.x clears **2026-10-17T21:18Z**; then bump the catalog, check 18's default logging (no env value may print) and re-run `typecheck:tests` and the `--list` config load |
 | `intl-messageformat` | **11.2.15** (`apps/frontend` `^11.1.3`, the newest 11.x) | 12.0.0–12.1.2 (12.0.0 published 2026-09-15T12:27Z, 18.2 d old on 2026-10-03) | **New major inside the 30-day window** (RESEARCH Pitfall 1). The current line has no advisory (§ 2, 169-10) | D-03, D-23 | 12.x clears **2026-10-15T12:27Z**; then bump, adapt `overrides.ts` if needed, run the frontend i18n tests and `check` |
 | `globals` | **17.12.0** (catalog `^17.12.0`; 169-10, `5017d4a17`) | 17.13.0 (2026-10-01T03:57Z, 2.53 d old on 2026-10-03) | Inside the 7-day window. `eslint-plugin-svelte` 3.23.0 keeps its own nested `globals` 16.5.0 (`^16.0.0`, not a declarer) | D-03, D-13 | 17.13.0 clears 2026-10-08T03:57Z |
+| `ai`, `@ai-sdk/google`, `@ai-sdk/openai` (7-day) | **7.0.116 / 4.0.82 / 4.0.78** (169-09, `0bf2782a7`) | `ai` 7.0.117–7.0.127 (2026-09-27…10-01), google 4.0.83–4.0.87 and openai 4.0.79–4.0.83 (2026-09-28…09-30) | Inside the 7-day window (169-13 version table, 2026-10-03T19:00Z). The family moves together on one `@ai-sdk/provider-utils` | D-03, D-21 | first clears 2026-10-04T03:28Z (`ai` 7.0.117); all clear 2026-10-08T19:20Z; todo `2026-10-03-age-held-majors-recheck.md` |
+| `@typescript-eslint/parser`, `@typescript-eslint/eslint-plugin` | **8.70.1** (catalog `^8.57.0`) | 8.71.0 (2026-09-28T17:09Z / 17:13Z) | Inside the 7-day window (169-13 version table). 8.71.0 still caps `typescript` at `<6.1.0` (TS 7 hold above) | D-03 | 8.71.0 clears 2026-10-05T17:13Z; same todo |
+| `turbo` | **2.11.4** (root `^2.8.17`; group 0) | 2.11.5–2.11.7 (2026-09-28…10-02) | Inside the 7-day window (169-13 version table) | D-03 | 2.11.5 clears 2026-10-05T00:45Z, 2.11.7 2026-10-09T14:58Z; same todo |
 
 ## 4. Gate runs
 
@@ -2723,6 +2765,43 @@ security/audit-baseline.json` → clean.
   the runner (Vite 8 dev server under the suite's parallel load is one candidate) and was not isolated:
   **UNCONFIRMED**. Watch the next CI runs; if `timeToMatches` keeps climbing, measure it per stage before touching the
   budget, which the spec forbids raising to make a red test green.
+
+- **169-13 — where every hold, operator item and residue now lives (PROH-169-24).** Todos are under
+  `.planning/todos/pending/`; "summary" means a line in `169-13-SUMMARY.md` only.
+
+  | Item (source) | Disposition |
+  |---|---|
+  | `braces` baseline row review (169-01) | **Resolved by removal** — `braces` left the tree with changesets 3 (169-10); row dropped in `ab0857938` (§ 6). No todo |
+  | Stale baseline rows, incl. faker 1158500, the four `js-yaml` ids and the `@eslint/eslintrc` `via` text (167 WR-01) | Resolved — all 68 rows dropped, each checked (§ 6). No todo |
+  | Deno-import audit blind spot (D-09) | `2026-10-03-deno-edge-imports-invisible-to-audit-deps.md` |
+  | nodemailer 10 Edge pin (169-07) | `2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md` (updated: still held at phase close; DEPS-09 Pending for this alone) |
+  | Hosted Postgres 15 → 17, PG15-validity constraint, the IMMUTABLE label on hosted DBs that applied `00001`, the one-time local PG15→17 volume step (169-06, rulings) | `2026-10-03-upgrade-hosted-postgres-to-17.md` |
+  | Render on Node 24 from the next deploy (169-02), ssr 0.12 cookie note (169-07) | `2026-10-03-render-node-24-deploy-watch.md` |
+  | TypeScript 7 (D-16) | `2026-10-03-typescript-7-held.md` |
+  | Kit 3 / adapter-node 6 / adapter-static 4 (169-12) + the `configLoader: 'native'` item | `2026-10-03-sveltekit-3-held-by-the-age-rule.md` (exists; not duplicated) |
+  | `dotenv` 18 / `intl-messageformat` 12 (169-10) | `2026-10-03-dotenv-18-and-intl-messageformat-12-held.md` (exists) |
+  | Every 7-day hold in § 3 (AI SDK, typescript-eslint, turbo, Vitest, DaisyUI, Supabase CLI, Vite, globals, `@types/node`, ESLint 10.12) | `2026-10-03-age-held-majors-recheck.md` |
+  | The three bindable `no-useless-assignment` disables (rulings R2) | `2026-10-03-remove-bindable-no-useless-assignment-disables.md` (exists) |
+  | Widen Dependabot after the merge (D-31) | `2026-10-03-widen-dependabot-after-v2-15-merge.md` |
+  | Dependabot reconciliation (D-30) | `2026-09-03-dependabot-alert-list-is-stale-against-main.md` (updated, stays pending) |
+  | Docs app's dead Vitest browser config | `2026-10-03-remove-docs-vitest-browser-config.md` |
+  | `release.yml` / `docs.yml` unobservable until merge (169-11) | `2026-10-03-watch-first-main-run-of-release-and-docs-workflows.md` |
+  | Playwright 1.63 trace cost; thin CI `performance` margin 4603/5000 ms (169-11) | `2026-10-03-playwright-163-trace-cost-and-thin-ci-performance-margin.md` |
+  | Auth-cookie `Cache-Control` vs a route's own `setHeaders` (169-07) | `2026-10-03-auth-cookie-cache-control-vs-route-setheaders.md` |
+  | Root `glob` without importer (169-10) | `2026-10-03-root-glob-devdependency-has-no-importer.md` |
+  | Docs `eslint-config-prettier` unused (168 IN-01) | `2026-10-03-docs-eslint-config-prettier-unused.md` |
+  | `[inbucket]` deprecation (169-06) | `2026-10-03-supabase-config-inbucket-section-deprecated.md` |
+  | AI SDK 7 `allowSystemInMessages` opt-in (169-09) | `2026-10-03-ai-sdk-7-allow-system-in-messages-opt-in.md` |
+  | `send-email` / `invite-candidate` without E2E coverage (169-07, 168-03 F2/F3) | `2026-10-03-edge-email-functions-have-no-e2e-coverage.md` |
+  | Docker credential helper; reclaimable images incl. `postgres:15.8.1.085`, the CLI 2.83 images and the trufflehog images (169-04/06/11) | `2026-10-03-dev-host-docker-credential-helper-and-image-reclaim.md` |
+  | `yarn dedupe --check` in CI (169-01) | `2026-10-03-ci-yarn-dedupe-check-decision.md` |
+  | `apps/docs/scripts/tsconfig.json` does not type-check (169-02 deferred item) | `2026-10-03-docs-scripts-tsconfig-does-not-typecheck.md` |
+  | Vite 8 browser floor (169-05) | Accepted by the operator 2026-10-03 (ruling R4) — no todo, per the ruling; summary line |
+  | Dev host `nvm alias default` moved to 24.21.0 (169-02) | Summary line (restore command recorded above) |
+  | `yarn db:seed` default template writes different values at seed 42 under faker 10 (169-08) | Summary line |
+  | `yarn changeset status` exits 1 on this branch (169-10) | Summary line (same as 2.x; no gate runs it) |
+  | `supabase/setup-cli` v3 registry fallback (169-11) | Summary line (no action) |
+  | Voter-journey Base-6 slider race (169-07; addressed 169-11, mechanism UNCONFIRMED) | `deferred-items.md` (status: addressed) + summary line |
 
 ## 8. Moderate and low advisories on chosen versions
 
