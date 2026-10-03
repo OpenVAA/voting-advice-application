@@ -42,6 +42,7 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
     cards,
     itemsPerPage = 50,
     itemsTolerance = 0.2,
+    // eslint-disable-next-line no-useless-assignment -- false positive on write-only $bindable prop; remove when https://github.com/sveltejs/eslint-plugin-svelte/issues/1478 is fixed
     itemsShown = $bindable(0),
     scrollIntoView = true,
     ...restProps
