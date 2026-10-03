@@ -89,7 +89,7 @@
   },
   "engines": {
     "node": ">=22",
-    "yarn": "4.13",
+    "yarn": "4.18",
     "npm": "please-use-yarn"
   },
   "type": "module",
@@ -97,7 +97,15 @@
     "packages/*",
     "apps/*"
   ],
-  "packageManager": "yarn@4.13.0",
+  "packageManager": "yarn@4.18.1",
+  "dependenciesMeta": {
+    "esbuild": {
+      "built": true
+    },
+    "supabase": {
+      "built": true
+    }
+  },
   "resolutions": {
     "isomorphic-dompurify/jsdom": "^26.1.0"
   }

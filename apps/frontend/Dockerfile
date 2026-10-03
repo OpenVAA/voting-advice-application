@@ -3,7 +3,7 @@ FROM node:22-alpine AS base
 WORKDIR /opt
 
 # Setup env variable for yarn
-ENV YARN_VERSION=4.13.0
+ENV YARN_VERSION=4.18.1
 
 # install and use yarn 4.x
 RUN corepack enable && corepack prepare yarn@${YARN_VERSION}

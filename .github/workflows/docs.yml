@@ -27,10 +27,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Yarn 4.13
+      - name: Setup Yarn 4.18
         uses: threeal/setup-yarn-action@v2
         with:
-          version: 4.13
+          version: 4.18
 
       - name: Setup Node.js 22.22.1
         uses: actions/setup-node@v4

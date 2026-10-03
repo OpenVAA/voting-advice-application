@@ -47,7 +47,7 @@
   },
   "engines": {
     "node": ">=22",
-    "yarn": "4.13",
+    "yarn": "4.18",
     "npm": "please-use-yarn"
   },
   "type": "module",
@@ -72,5 +72,5 @@
     "tailwind-merge": "^3.7.0",
     "zod": "catalog:"
   },
-  "packageManager": "yarn@4.13.0"
+  "packageManager": "yarn@4.18.1"
 }
