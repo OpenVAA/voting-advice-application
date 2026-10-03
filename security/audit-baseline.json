@@ -137,7 +137,7 @@
       "ghsa": "GHSA-vfj7-8cjw-p6xm",
       "issue": "braces vulnerable to stack-exhaustion denial of service through deeply nested patterns",
       "via": "micromatch@4.0.8",
-      "rationale": "No fixed version is published: 3.0.3, the latest release of braces, is inside the vulnerable range (<=3.0.3). Dev-tooling transitive only, reached through micromatch 4.x from vite-plugin-restart (the frontend dev server plugin that restarts on a root .env change) and from @changesets/cli (via @changesets/config, @changesets/git and @manypkg/get-packages -> globby -> fast-glob). The stack-exhaustion DoS needs an attacker-supplied pattern, and every pattern these tools expand is repo-authored. Re-check when braces publishes a fix, or when both dependents are gone."
+      "rationale": "No fixed version is published: 3.0.3, the latest release of braces, is inside the vulnerable range (<=3.0.3). Dev-tooling transitive only, reached through micromatch 4.x from @changesets/cli (via @changesets/config, @changesets/git and @manypkg/get-packages -> globby -> fast-glob). The stack-exhaustion DoS needs an attacker-supplied pattern, and every pattern this tool expands is repo-authored. Re-check when braces publishes a fix, or when that dependent is gone."
     },
     {
       "id": 1120448,

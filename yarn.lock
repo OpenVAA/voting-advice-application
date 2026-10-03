@@ -1819,7 +1819,6 @@ __metadata:
     tsx: "catalog:"
     typescript: "catalog:"
     vite: "npm:^6.4.1"
-    vite-plugin-restart: "npm:^2.0.0"
     vitest: "catalog:"
     zod: "catalog:"
   languageName: unknown
@@ -8803,17 +8802,6 @@ __metadata:
   peerDependencies:
     vite: ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0
   checksum: 10c0/58dbbbff2805201dac1c16b7a153bb702f4eee28e4d43806e3eebcf2b6289631a2d5f09ac48f0a3ed7247934e7605885e4145db7fdd73231d465a62f37043d80
-  languageName: node
-  linkType: hard
-
-"vite-plugin-restart@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "vite-plugin-restart@npm:2.0.0"
-  dependencies:
-    micromatch: "npm:^4.0.8"
-  peerDependencies:
-    vite: ^2.9.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0
-  checksum: 10c0/142378458b0a5312a3da4a3af7dcd23214b3588ba79133dc84137e84383c13bddf00d1e7c6d25935542e0dfecdc585b61eef2075a29bbd715a6923658f360900
   languageName: node
   linkType: hard
 

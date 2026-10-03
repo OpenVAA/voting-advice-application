@@ -1,11 +1,11 @@
 import { fileURLToPath } from 'node:url';
-import { sveltekit } from '@sveltejs/kit/vite';
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
+import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, loadEnv } from 'vite';
-import ViteRestart from 'vite-plugin-restart';
 import { PARAGLIDE_OPTIONS } from './paraglide.options';
 import { resolveProjectIdEnv } from './vite.projectIdEnv';
+import { restartOnRootEnv } from './vite.restartOnRootEnv';
 
 // The root `.env` lives two levels above `apps/frontend`. `apps/frontend/package.json` declares `type: module`, so `__dirname` is unavailable here — derive the repo root from `import.meta.url`.
 const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
@@ -23,9 +23,7 @@ export default defineConfig(({ mode }) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       paraglideVitePlugin(PARAGLIDE_OPTIONS) as any,
       sveltekit(),
-      ViteRestart({
-        restart: ['../../.env']
-      })
+      restartOnRootEnv(repoRoot)
     ],
     resolve: {
       preserveSymlinks: true
