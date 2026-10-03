@@ -31,7 +31,7 @@
     "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "catalog:",
     "@sveltejs/vite-plugin-svelte": "^6.2.1",
-    "@tailwindcss/typography": "^0.5.19",
+    "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "catalog:",
     "@types/node": "catalog:",
     "@vitest/browser-playwright": "^4.0.15",
