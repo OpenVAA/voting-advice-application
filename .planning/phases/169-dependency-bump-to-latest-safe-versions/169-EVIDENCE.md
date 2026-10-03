@@ -214,6 +214,23 @@ container had been created, and the stack was down in that window. The ten new i
 (`06/t1-prepull*.log`; four pulls hit ECR's `toomanyrequests` and went through on retry). The second `yarn db:start`,
 with the same environment, exited 0 with every image already local.
 
+**Postgres before and after the major switch (169-06 Task 2).** All values come from `psql
+postgresql://postgres:postgres@127.0.0.1:54322/postgres` (`06/t2-pg15-*.txt`, `06/t2-pg17-*.txt`).
+
+| | PG15 stack (CLI 2.118.0, before the switch) | PG17 stack (after the volume reset and `db:reset`) |
+|---|---|---|
+| `show server_version` | `15.8` | **`17.6`** (`PostgreSQL 17.6 on aarch64-unknown-linux-gnu`) |
+| db image | `postgres:15.8.1.085` | `postgres:17.6.1.171` |
+| installed extensions | pg_graphql 1.5.11, pg_net 0.14.0, pg_stat_statements 1.10, pgcrypto 1.3, pgjwt 0.2.0, plpgsql 1.0, supabase_vault 0.3.1, uuid-ossp 1.1 | pg_net **0.20.4**, pg_stat_statements 1.11, pgcrypto 1.3, plpgsql 1.0, supabase_vault 0.3.1, uuid-ossp 1.1 |
+| available: pgtap / plpgsql_check / pgjwt / pg_graphql | 1.2.0 / 2.7 / 0.2.0 (installed) / 1.5.11 (installed) | **1.3.3 / 2.8** / 0.2.0 (not installed) / 1.6.1 (not installed) |
+
+`pgtap` and `plpgsql_check` are created on demand by `supabase test db` (`00-helpers.test.sql`) and `supabase db lint`,
+so neither is installed after a reset on either major. The schema never names `pgjwt` (`git grep -i pgjwt
+apps/supabase/supabase` → nothing). On PG17 the base image no longer pre-installs it or `pg_graphql`.
+`graphql_public.graphql` still exists, and `database.ts` did not change. `apps/supabase/supabase/.temp/` holds
+`cli-latest` and `start-secrets` only; there is no `postgres-version`, so nothing overrides the image (RESEARCH
+Pitfall 11).
+
 ## 2. Package legitimacy
 
 **Operator approvals (step 0, run before any repository change, 2026-10-03T06:37Z):** the box check printed
@@ -735,6 +752,21 @@ E2E `169-06-cli` (`bash 169-e2e.sh 169-06-cli`, the full default suite):
 
 Tracer gate (`<verify>` re-run after the E2E run): `test:db` exit 0 (`Files=36, Tests=1335`, `PASS`), `db:lint:sql`
 exit 0, `rpcNullabilityGate.test.ts` exit 0 (`06/t1-tracer-*.log`). Postgres 17 went ahead on this proven slice.
+
+### 169-06 Task 2 — local Postgres 17, STOPPED at the SQL lint (not committed)
+
+The `config.toml` edit (`major_version = 17`) is **uncommitted**. The checks below ran on the PG17 stack with that edit
+in the working tree, at HEAD `b0532f674`.
+
+| Check | Result |
+|---|---|
+| `show server_version` | `17.6` (passes the `17.*` gate) |
+| `yarn db:types` on the fresh PG17 reset, before pgTAP | exit 0, **no diff** to `database.ts` |
+| `yarn workspace @openvaa/supabase test:db > tests/e2e-runs/169-gates/06-t2-pgtap.log` | **exit 0**, `Files=36, Tests=1335`, `Result: PASS`, 0 `not ok`; `36-entity-identity.test.sql` `ok` |
+| `yarn db:lint:sql` (`06/t2-db-lint.log`) | **exit 1**: two `plpgsql_check` warnings on `public.is_valid_choice_id`, "routine is marked as IMMUTABLE, but expression is STABLE" (body line 9, the `SELECT jsonb_agg(c -> 'id') … FROM jsonb_array_elements(…)`; body line 16, `RETURN p_choice_ids @> jsonb_build_array(p_value)`). `--fail-on warning` makes this red |
+| migrations / schema / seed diff against the phase base `5ed82f437` | empty (`git diff --stat` prints nothing) |
+| E2E `169-06-pg17-uncommitted-probe` (information only; the official `169-06-pg17` label is unused) | Docker VM 30.59 GiB free; HEAD `b0532f674` plus the uncommitted `config.toml`; Playwright start 2026-10-03T14:07:34Z, 4.5 min; wrapper exit 0; **171 / 171 passed, 0 failed, 0 flaky, 0 didNotRun** |
+| group gates `169-06-group5a` | not run (the plan runs them after the PG17 commit) |
 
 ## 5. Negative controls
 
@@ -1386,6 +1418,37 @@ lockfile.
 - `config.toml` warns `config section [inbucket] is deprecated. Please use [local_smtp] instead` on every CLI call
   (§ 7).
 
+### 169-06 Task 2 — the PG17 SQL-lint red and where it comes from
+
+**The finding.** On the PG17 stack, `supabase db lint --schema public --fail-on warning` reports `public.is_valid_choice_id`
+(`011-validation-functions.sql`, mirrored in `00001_initial_schema.sql`). The function is declared `LANGUAGE plpgsql
+IMMUTABLE`, and its body calls `jsonb_agg` and `jsonb_build_array`, which `pg_proc` marks `s` (STABLE).
+
+**Attribution probe** (`06/t2-probe.sh`, `06/t2-plpgsql-check-probe.log`): throwaway containers with no published
+port and only a read-only bind mount of the log directory, which exit when the probe finishes: `docker run --rm
+--name probe_openvaa-local --user postgres -v <06 dir>:/probe:ro --entrypoint bash <image> /probe/t2-probe.sh`. Each probe ran `initdb`, `create extension plpgsql_check`, loaded only
+this function's `CREATE` statement from the schema file, then ran `plpgsql_check_function(…, format:='json')`, the
+call `supabase db lint` makes.
+
+| Image | Postgres | plpgsql_check | Result |
+|---|---|---|---|
+| `postgres:15.8.1.085` | 15.8 | 2.7 | no issues |
+| `postgres:17.6.1.171` | 17.6 | 2.8 | the same two warnings |
+
+`provolatile` for `jsonb_agg(anyelement)`, `jsonb_agg_transfn`, `jsonb_build_array("any")` and `jsonb_build_array()` is
+`s` on **both** 15.8 and 17.6. The functions' volatility did not change. What changed is that the PG17 image's checker
+now reports the mismatch. The red is attributable to the Postgres commit, through the image it selects. Whether
+plpgsql_check 2.8 or a PG17 planner change makes the checker see it is **UNCONFIRMED**: each image bundles one
+checker version, and the upstream source was not traced to a commit.
+
+**Why it was not fixed here.** The finding is real: an IMMUTABLE function calls STABLE functions. The only caller,
+`validate_answer_value`, is VOLATILE, and no index, generated column or other IMMUTABLE function depends on it. A fix
+means editing a schema file and the migration, either by marking it `STABLE` or by rewriting the body to use only
+immutable operators. PROH-169-12 forbids that edit, and so do the plan's empty migrations/schema/seed diff and its
+"no migration or schema file changed in this phase" truth. Silencing it (`--fail-on`, an ignore) would weaken a gate.
+The plan has no hold provision for D-14, which is an operator overrule, so execution stopped for an operator decision
+(§ 7).
+
 ## 7. Operator follow-ups
 
 - **Review the `braces` baseline row (169-01, `c97bc9898`).** GHSA-vfj7-8cjw-p6xm (id 1240992) was published
@@ -1455,6 +1518,40 @@ lockfile.
   loader, which Vite plans to make the default in a later major. The fix needs `.ts` import extensions, and with
   them `allowImportingTsExtensions`, in the tsconfig that type-checks the config. It is a small config change to
   make at the next Vite major or in 169-12.
+
+- **DECISION NEEDED — the PG17 SQL lint red (169-06 Task 2, § 6).** On the PG17 image, `yarn db:lint:sql` fails on
+  `public.is_valid_choice_id`: it is declared IMMUTABLE but calls the STABLE `jsonb_agg` / `jsonb_build_array`. The
+  PG15 image's checker does not report it. pgTAP (1335/1335) and the full E2E run (171/171) pass on PG17. The fix is a
+  schema + migration edit, which PROH-169-12 forbids, so 169-06 stopped before the Postgres commit. Options:
+  - (A) Allow one schema fix: mark `is_valid_choice_id` `STABLE` in `011-validation-functions.sql` and
+    `00001_initial_schema.sql`. That is valid on PG15 and PG17, and it fixes a mislabel that is real on both. The
+    only caller (`validate_answer_value`) is VOLATILE, so nothing cascades. The cost: the phase's "no schema change"
+    proof becomes "one reviewed volatility fix".
+  - (B) Hold Postgres 17 locally: revert `major_version` to 15, reset this project's stack to PG15, and record the
+    hold plus a todo. DEPS-08 stays Pending.
+  - (C) Keep the body IMMUTABLE by rewriting it with immutable operators only. This is also a schema edit, and it must
+    keep the "empty choice list admits any value" behaviour.
+- **Hosted Postgres stays 15 (169-06).** The local stack moves to 17 with the Postgres commit (once it lands).
+  Hosted is not upgraded by this phase. Until the operator upgrades hosted to 17 (a Supabase dashboard / hosting
+  action), local and hosted diverge. 169-13 files the todo.
+- **Standing constraint until hosted runs 17:** every migration must stay valid on Postgres 15, with no PG16/17-only
+  syntax, function or GUC. `config.toml`'s `[db]` comment states the rule. This phase changed no migration, schema or
+  seed file (diff against `5ed82f437` is empty), unless option (A) above is chosen.
+- **Operator-facing local step for the PG17 switch.** A PG15 data volume cannot be opened by PG17, so every
+  developer machine needs this once after pulling the Postgres commit:
+  `yarn db:stop && yarn workspace @openvaa/supabase exec supabase stop --no-backup && yarn db:reset`. Local data is
+  re-seeded, not migrated. Run `docker builder prune -af` first if disk is tight.
+- **Docker credential helper wedged again (169-06).** The CLI's own `docker pull`s hung in
+  `docker-credential-desktop get` for 30 minutes during `yarn db:start`. Ten images went through with a scratch
+  `DOCKER_CONFIG` and `DOCKER_HOST`. Until the helper is repaired, the first `yarn db:start` after any CLI bump on
+  this host needs that workaround.
+- **Old Supabase images can be reclaimed (169-06, operator only).** The CLI 2.83.0 images (postgrest v14.5, gotrue
+  v2.187.0, storage-api v1.41.8, realtime v2.78.10, edge-runtime v1.71.0, postgres-meta v0.96.1, studio
+  2026.03.04, mailpit v1.22.3, logflare 1.34.7, vector 0.28.1) and, after the PG17 switch, `postgres:15.8.1.085` are
+  no longer used by this project. Pruning images is an operator action on this host.
+- **`[inbucket]` is deprecated in CLI 2.118.0.** Every CLI call warns `config section [inbucket] is deprecated.
+  Please use [local_smtp] instead`. Renaming the section in `config.toml` is a small follow-up that changes the
+  local mail config. The plan did not name it, so it was not changed here.
 
 ## 8. Moderate and low advisories on chosen versions
 
