@@ -231,6 +231,28 @@ apps/supabase/supabase` → nothing). On PG17 the base image no longer pre-insta
 `cli-latest` and `start-secrets` only; there is no `postgres-version`, so nothing overrides the image (RESEARCH
 Pitfall 11).
 
+### 169-07 (group 5, second half) re-measurement, 2026-10-03
+
+`node 169-version-probe.mjs --only @supabase/supabase-js,@supabase/ssr,jose --node 24.21.0` at 2026-10-03T14:26:32Z
+(`tests/e2e-runs/169-gates/07/t1-probe.md`):
+
+| Package | Resolved before | Target (published, age) | Target line x.0.0 | Verdict / hold |
+|---|---|---|---|---|
+| `@supabase/supabase-js` | 2.99.3 (catalog `^2.49.4`, root direct `^2.99.3`) | **2.117.2** (2026-09-25, 8.2 d) | 2.0.0 2022-10-11 | in-major; meets ssr 0.12's `^2.114.0` peer |
+| `@supabase/ssr` | 0.9.0 (catalog `^0.9.0`) | **0.12.7** (2026-09-08, 25.3 d) | 0.12.0 2026-06-09 (116 d) | major (a 0.x minor), both rules met |
+| `jose` | 6.2.12 | 6.2.12 (2026-09-05, 28.2 d) | 6.0.0 2025-02-22 | current. This is the version the Deno `npm:jose@` pin takes |
+
+`nodemailer` is not an npm dependency, so the probe does not cover it. It was measured with `npm view nodemailer time`
+at 2026-10-03T14:27Z:
+- The newest 10.x is 10.0.14 (0.03 d old).
+- 10.0.11 is 6.27 d old and clears the 7-day rule at 2026-10-04T07:50:47Z.
+- 10.0.10 (19.06 d) is the newest 10.x at least 7 days old.
+- The line start, **10.0.0, is 29.28 d old** (published 2026-09-04T07:45:32Z) and clears the 30-day new-major rule at
+  2026-10-04T07:45:32Z.
+
+So no 10.x version can be taken on the execution date, and every older line carries an open high advisory (§ 2).
+Per PROH-169-16 the nodemailer pin waits (§ 3).
+
 ## 2. Package legitimacy
 
 **Operator approvals (step 0, run before any repository change, 2026-10-03T06:37Z):** the box check printed
@@ -457,6 +479,36 @@ per-platform packages that box B approves. No `SLOP`; no new direct package. `jo
 `supabase@2.83.0`) left the findings. The lockfile diff is confined to `supabase`'s subtree, plus the two descriptor
 merges that removal causes (`debug@npm:4`, `node-domexception@npm:^1.0.0` dropped from shared entries; same versions).
 
+### 169-07 (group 5, second half)
+
+**npm side.** The new lockfile names were computed from a key snapshot taken before and after each install
+(`tests/e2e-runs/169-gates/07/t{1,2}-names-{before,after}.txt`), and checked with `gsd-tools query
+package-legitimacy check --ecosystem npm` (`07/t1-legit.json`). Both installs ran under `npmMinimalAgeGate: 7d`.
+
+| Install | New name | Verdict | Reasons | Weekly downloads | Repository | Resolved (published) | postinstall |
+|---|---|---|---|---|---|---|---|
+| supabase-js 2.117.2 | `@supabase/phoenix` | OK | — | 23 116 330 | github.com/supabase/phoenix | 0.4.5 (2026-07-15) | none |
+| ssr 0.12.7 | (none) | — | — | — | — | — | — |
+
+- supabase-js 2.117.2 replaces the 2.99.3 family (`auth-js`, `functions-js`, `postgrest-js`, `realtime-js`,
+  `storage-js`, all at 2.117.2) and adds `@supabase/phoenix` 0.4.5, which realtime-js now uses.
+- It drops `@types/phoenix` and `@types/ws`, and the `ws@npm:^8.18.2` descriptor (it merges into `ws@npm:^8.21.3`).
+- ssr 0.12.7 changes only its own entry. Its single dependency, `cookie ^1.0.2`, already resolves to 1.1.1.
+- Neither is a new direct package. There is no `SLOP` and no `SUS`.
+
+**Deno side (D-09, D-05).** The GitHub advisory database was queried on 2026-10-03 for each exact pin
+(`07/t3-adv-*.tsv`):
+
+| Query | High / critical | All advisories |
+|---|---|---|
+| `gh api "/advisories?ecosystem=npm&affects=@supabase/supabase-js@2.117.2"` | 0 | 0 |
+| `gh api "/advisories?ecosystem=npm&affects=jose@6.2.12"` | 0 | 0 |
+| `gh api "/advisories?ecosystem=npm&affects=nodemailer@10.0.11"` (the target once the hold clears; not taken) | 0 | 0 |
+| `gh api "/advisories?ecosystem=npm&affects=nodemailer@6.9.10"` (still pinned, unchanged) | 6 high (GHSA-p6gq-j5cr-w38f, GHSA-2x7j-588g-ccc2, GHSA-v53p-9fqp-m79j, GHSA-rcmh-qjqh-p98v, and the duplicates GHSA-h3hj-cmcx-xc66 and GHSA-jj37-3377-m6vv) | 17 |
+
+Older lines are no way out. `nodemailer@9.1.1` and `nodemailer@6.10.1` both still match GHSA-v53p-9fqp-m79j
+(`<= 10.0.5`, first patched in 10.0.6), and each carries other highs too.
+
 ## 3. Holds
 
 | Package | Held at | Newer line | Reason | Decision ref | Re-check date or trigger |
@@ -471,6 +523,7 @@ merges that removal causes (`debug@npm:4`, `node-domexception@npm:^1.0.0` droppe
 | `@sveltejs/kit`, `@sveltejs/adapter-node`, `@sveltejs/adapter-static` | **2.70.3 / 5.5.7 / 3.0.10** (169-05) | 3.0.0 / 6.0.0 / 4.0.0 (2026-10-01, 1.8 d old on 2026-10-03) | New major lines inside the 30-day window | D-03, D-15 | 169-12; clear 2026-10-31T17:22Z / 17:24Z / 17:21Z |
 | `vite` | **8.3.1** (catalog `^8.3.1`; 169-05) | 8.3.2 (2026-10-01T10:17Z, 2.11 d old on 2026-10-03) | Inside the 7-day window | D-03 | 8.3.2 clears 2026-10-08T10:17Z |
 | `supabase` (CLI) + the six `setup-cli` `version:` pins | **2.118.0** (catalog `^2.118.0`; 169-06, `cb14c57d2`) | 2.119.0 (2026-09-30T21:36Z, 2.66 d old on 2026-10-03) | Inside the 7-day window. The CLI and the CI pins must move together (`rpcNullabilityGate.test.ts`), and a CLI move changes the service images and the type generator, so 2.119.0 needs its own db:types / pgTAP / E2E pass | D-03, D-10 | 2.119.0 clears 2026-10-07T21:36Z |
+| `nodemailer` (Deno `npm:` import in `send-email/index.ts`) | **6.9.10** (unchanged; 6 high advisories, § 2) | 10.0.x (10.0.0 published 2026-09-04T07:45:32Z, 29.28 d old on 2026-10-03; 10.0.11 6.27 d old) | **New major inside the 30-day window.** Every older line still carries an open high advisory (GHSA-v53p-9fqp-m79j covers `<= 10.0.5`), so PROH-169-16 says wait rather than take 6.10 / 7 / 8 / 9. supabase-js and jose were pinned without it. DEPS-09 stays Pending | D-03, D-09, PROH-169-16 | 10.0.0 clears 2026-10-04T07:45:32Z and 10.0.11 clears 2026-10-04T07:50:47Z. Resume steps in todo `2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md` |
 
 ## 4. Gate runs
 
@@ -798,6 +851,106 @@ can continue. The A/B/C choice stays with the operator (todo
   - `yarn db:types` → exit 0, no diff (`git status --short` empty).
   - `test:db` → exit 0, `Files=36, Tests=1335`, `PASS`, 0 `not ok`, `36-entity-identity.test.sql` ok.
   - `db:lint:sql` → exit 0 (`{"results":[]}`; schema lint `0 error(s), 3 warning(s)`).
+
+### 169-07 — supabase-js, ssr, the Edge Function pins (group 5, second half)
+
+**Task 1, supabase-js 2.117.2 (`3f4fe2ebf`).** Logs are in `tests/e2e-runs/169-gates/07/t1-*`.
+- `TURBO_FORCE=true yarn typecheck` first exited 2 on `@openvaa/dev-seed` (TS2345 at the join-table `upsert`; see § 6).
+  After the fix it ran 23/23.
+- `yarn workspace @openvaa/dev-seed test:unit` first gave 898/901. The three teardown locality-guard cases that get
+  past the guard timed out at 5 s, because postgrest-js now retries a failed read (§ 6). After the fix it gave 901/901.
+- `TURBO_FORCE=true yarn test:unit` 25/25.
+- `vitest run src/lib/supabase/` 22/22, and the `safeGetSession` round-trip counts are unchanged.
+- `yarn assert:cookie-names` 0 violations.
+- E2E `169-07-supabase-js` (`--project auth-setup`, a real candidate login with `data-setup-base` first): 3/3/0/0/0.
+- Tracer gate: the `<verify>` was re-run on the committed tree (`169-07-supabase-js-tracer`, 3/3/0/0/0; vitest 22/22;
+  cookie names 0) before expanding.
+
+**Task 2, ssr 0.12.7 (`fd8b72ce7` RED, `9075a027b` GREEN).**
+- RED: `server.test.ts` gave 2 failed / 7 passed. The two failures were `expected "vi.fn()" to be called 1 times, but
+  got 0 times`. The no-headers case passes by construction.
+- GREEN: `vitest run src/lib/supabase/` 25/25.
+- `yarn assert:cookie-names` 0.
+- `yarn workspace @openvaa/frontend check`: 2099 files, 0 errors, 0 warnings.
+- E2E `169-07-ssr` (`--project auth-setup`): 3/3/0/0/0, with no header error in `devserver.log`.
+
+**Task 3, the Edge Function pins (`cce9b5b16`).**
+- Static gates:
+  - `yarn workspace @openvaa/supabase test:unit` 206/206 in 15 files, including the new jose-pin case.
+  - Negative control for that case: changing the pin to `6.2.11` reddens it with `expected '6.2.11' to be '6.2.12'`.
+  - `yarn assert:edge-function-env` 0 violations; `yarn assert:edge-env-defaults` 0; `yarn assert:comment-hygiene` 0.
+- Boot checks after `yarn db:stop && yarn db:start` (edge-runtime v1.76.2, Deno 2.1.4), recorded in
+  `07/t3-boot-codes.txt`:
+
+  | Function | `OPTIONS` status | Edge-runtime log |
+  |---|---|---|
+  | `send-email` | 200 | `serving the request with supabase/functions/send-email`, no boot error |
+  | `invite-candidate` | 200 | served, no boot error |
+  | `identity-callback` | 200 | served, no boot error |
+
+  - Negative control: pointing `invite-candidate` at `npm:@supabase/supabase-js@2.0.0-does-not-exist` gave `503
+    {"code":"BOOT_ERROR"}` and `worker boot error: … Could not find npm package`. With the file restored it gave 200,
+    so the check catches a bad specifier.
+  - Functional probe of the two functions no E2E spec calls, with an anon bearer token:
+    - `invite-candidate` and `send-email` both answered `401 {"error":"Invalid or expired authentication token"}`.
+    - That answer comes after `createClient(...)` from the new `npm:` import and its `auth.getUser()` round trip to
+      GoTrue.
+    - There is no E2E caller for either function; this matches the 168-03 F2 finding.
+- Gate run `169-07-group5`: **12/12 zero**, at HEAD `cce9b5b16`, in `tests/e2e-runs/169-gates/169-07-group5/`.
+  - `porcelain_lines: 0`.
+  - `03-typecheck` 23/23, `08-unit` 25/25 and `09-build` 14/14 executed, none cached.
+  - `01-install`: the same single `zod`-against-`openai` YN0060.
+  - `04-lint`: 0 errors, 17 warnings. The normalised list (33 lines) is identical to 169-06's (`07/lint-norm-after.txt`
+    vs `06/lint-norm-after.txt`, sorted `diff` exit 0).
+  - `10-audit`: `0 new advisory(ies) at high+, 2 accepted`.
+  - `12-docs-rq` (two-base form): exit 0.
+- Full E2E:
+  - **`169-07-group5`** (first attempt, at `cce9b5b16`) gave 171 / 82 passed / **1 failed** / 0 flaky / 88 did not run.
+    - The failure was `voter-journey` › "full voter journey end-to-end". At Base-6 (number scale), `question-delete`
+      stayed disabled and the test timed out at 240 s.
+    - The 88 did-not-run are its serial-chain dependants.
+    - The trace shows the spec pressing `End` on the slider and clicking Next 14 ms later. When Base-6 was revisited,
+      the slider read 5 and no answer was stored.
+    - Nothing in this plan touches the voter answer path, which is client-side. The root cause is **UNCONFIRMED**:
+      likely a race between the keyboard answer commit and the Next navigation in the spec helper.
+    - Re-tested in isolation: `169-07-voter-journey-iso-{1,2,3}` gave 4/4 each. The `voter-journey` project then also
+      passed inside all three bank-auth-journey chains below.
+    - Logged in `deferred-items.md`.
+  - **`169-07-group5-r2`** (re-run at `cce9b5b16`, fresh dev server, `db:reset`, Docker VM 30.23 GiB free): **171
+    passed, 0 failed, 0 flaky, 0 skipped, 0 did not run**, 4.8 min, `ENOSPC` 0. This is the group's full-suite verdict.
+- Bank-auth 3×.
+  - Setup:
+    - One baseline `yarn db:reset`. Storage `GET /storage/v1/bucket` answered 200 and listed `public-assets` and
+      `private-assets`.
+    - The test JWKS (`sigPubJwk`) was served on 8777 (`GET /jwks` 200).
+    - The env files were generated from `testKeys.ts` and `DEFAULT_TOKEN_OPTS` into the session scratchpad only.
+    - Each run went through `tests/scripts/e2e-run.sh --no-db-reset`, which spawns and kills its own dev server, so
+      every run had a fresh one.
+  - The plan's single combined command cannot work, because one served function has one `IDENTITY_PROVIDER_ISSUER`.
+    The synthetic `bank-auth` token is issued by `https://test-idp.example.com` and the journey's token by the mock
+    issuer, `https://127.0.0.1:9443`. So, as 166-04 did, each project ran three times consecutively. The Edge env files
+    differ only in the issuer, and each was read back from the running container by key:
+
+  | Project | Edge env (read back) | Runs (HEAD `cce9b5b16`) | Totals each | Verdict |
+  |---|---|---|---|---|
+  | `bank-auth` | issuer `https://test-idp.example.com`, project `…0e2`, `SITE_URL` `http://127.0.0.1:5273` | `169-07-bankauth-{1,2,3}`, started 15:06:13Z / 15:06:29Z / 15:06:44Z | 8 / 8 passed / 0 / 0 / 0 / 0 | PASS ×3 |
+  | `bank-auth-journey` | issuer `https://127.0.0.1:9443`, same project and `SITE_URL`; the wrapper shell exported `PUBLIC_PROJECT_ID=…0e2` and sourced the journey IdP env | `169-07-bankauth-journey-{1,2,3}`, ended 15:12:17Z / 15:16:26Z / 15:20:46Z | 131 / 131 passed / 0 / 0 / 0 / 0 | PASS ×3 |
+
+  - In every `bank-auth` run, "should create candidate via identity-callback Edge Function (Idura sub-based identity)"
+    (the keys-configured create path, asserted loudly), "should return session with magic link when candidate is
+    created" and "should reject an id_token encrypted with a mismatched (wrong) decryption key" passed. That is the jose
+    6 `importJWK` / `compactDecrypt` / `jwtVerify` path, with RSA-OAEP-256 / A256GCM.
+  - In every journey run, "full bank-auth self-registration journey through to authenticated candidate" passed, along
+    with the whole perm serial chain.
+- After the runs:
+  - The function server and the JWKS server were stopped. Ports 8777, 9443 and 5273 have no listener, and no
+    `vite.js dev` is alive.
+  - The stack was restored with `yarn db:stop && yarn db:start`. Read back by key: issuer
+    `https://openvaa.test.idura.broker`, project `…0001`.
+  - Orphans, through psql: `@test.openvaa.local` users 0, `@bank-auth.placeholder` users 0, and E2E-project candidates
+    and organizations with a null `external_id` 0.
+  - Leak check: `git status --porcelain` lists only the new todo. No env file, and nothing under `functions/`.
+  - Docker was not restarted, and the other stack was not touched.
 
 ## 5. Negative controls
 
@@ -1488,6 +1641,69 @@ The plan has no hold provision for D-14, which is an operator overrule, so execu
 - Probe (`06/t2-probe-stable.sh`, `06/t2-option-a-probe.log`): the same function declared `STABLE`, loaded alone into a
   throwaway `postgres:17.6.1.171` container, gives **no issues** from plpgsql_check 2.8.
 
+### 169-07 — supabase-js 2.117.2, ssr 0.12.7 and the Edge Function pins (D-22, D-09)
+
+**supabase-js 2.117.2 (`3f4fe2ebf`).**
+- Lockfile: the diff (44 insertions, 50 deletions) stays inside the supabase-js family (§ 2). `yarn why
+  @supabase/supabase-js` lists one 2.117.2 for the root, `@openvaa/frontend` and `@openvaa/dev-seed`. The root's
+  direct range is now `catalog:`.
+- Two behaviour changes in postgrest-js surfaced, and both were adapted in the same commit:
+  - **Row-type inference on `upsert`.** `upsert<Row extends Insert>(values: RejectExcessProperties<Insert, Row> | …)`
+    is new. With the untyped admin client, `Insert` is `any`, and from the inline `{ [target.parentColumn]: …,
+    [target.childColumn]: … }` TypeScript infers `Row = string`. The call then fails with TS2345 (`'{ [x: string]:
+    string; }' is not assignable to … RejectExcessProperties<any, string>`). Naming the row `Record<string, string>`
+    fixes the inference. Runtime behaviour is unchanged.
+  - **Read retries.** `fetchWithRetry` retries a GET/HEAD whose fetch rejects, up to `DEFAULT_MAX_RETRIES = 3` times
+    with `1000 * 2 ** n` ms back-off, and on a 503 or 520 answer.
+    - The teardown CLI's first call past the locality guard is a read. Against an unreachable host it now reports
+      "Cannot reach Supabase" after about 7 s; measured `secs=7` for `teardown.ts` against `http://127.0.0.1:9`.
+    - The three guard tests asserting that message ran into Vitest's 5 s default. They now carry a 30 s budget,
+      `PAST_TEARDOWN_GUARD = { timeout: 30000 }`. No assertion changed.
+    - The seed CLI's first call is an RPC POST, which is not retried, so its cases stay fast.
+    - Side effect: the CLIs now ride out the 503 PostgREST answers while its schema cache loads after a reset.
+
+**ssr 0.12.7 (`9075a027b`).**
+- `SetAllCookies` gains a second argument, `headers: Record<string, string>`. A server client passes it with the first
+  cookie write and then `{}` (0.12.6: once per client). The values are `Cache-Control: private, no-cache, no-store,
+  must-revalidate, max-age=0`, `Expires: 0` and `Pragma: no-cache`.
+- `createSupabaseCookieAdapter` now forwards them through `event.setHeaders`, each lower-cased name at most once per
+  adapter. One adapter serves one request: `hooks.server.ts` is the only caller of `createSupabaseServerClient`, and no
+  route calls `setHeaders` itself (`git grep -n setHeaders -- apps/frontend/src` outside tests finds only the adapter).
+- **Old sessions are still read; no sign-out on deploy.** The 0.12.7 and 0.9.0 tarballs were compared:
+  - both default `cookieEncoding` to `"base64url"`;
+  - both write `"base64-" + base64url(value)`;
+  - both decode prefixed and unprefixed values;
+  - `utils/chunker.js` is identical (`MAX_CHUNK_SIZE = 3180`, `.0`/`.1` names).
+  - The base64url+length encoding listed in the 0.12.0 notes was reverted in the same release train (#100), and the new
+    `cookies.encode: "tokens-only"` is opt-in and not used here.
+- `browser.ts` passes no options, so the changelog renames nothing it uses.
+
+**Edge Function pins (`cce9b5b16`).**
+- Before:
+  - `https://esm.sh/@supabase/supabase-js@2` (floating) in all three functions;
+  - `https://deno.land/x/jose@v5.9.6/index.ts` in `identity-callback`;
+  - `npm:nodemailer@6.9.10` in `send-email`.
+- After:
+  - `npm:@supabase/supabase-js@2.117.2` in all three;
+  - `npm:jose@6.2.12` in `identity-callback`;
+  - nodemailer unchanged (held, § 3).
+- `git grep -n -E "from '(https://esm\.sh|https://deno\.land)"` and the major-only `npm:` pattern both find nothing.
+- jose 6 needs no code change here:
+  - `decodeProtectedHeader`, `importJWK`, `compactDecrypt`, `jwtVerify`, `createRemoteJWKSet`, `JWK` and `JWTPayload`
+    all keep their names;
+  - `importJWK` resolving to `CryptoKey | Uint8Array` is what `compactDecrypt` accepts;
+  - the removed algorithms (RSA1_5, Ed448/X448, secp256k1) are not used. The test JWE uses `RSA-OAEP-256`, the
+    frontend's tests use RSA-OAEP and RSA-OAEP-256, and the code's fallback is `'RSA-OAEP'`.
+- The `// reason:` comment on the untyped admin client now gives a reason that is true for an `npm:` import: no
+  generated `Database` type, and nothing type-checks the file.
+- The docblocks in `envReadSites.test.ts` and both `flowConformance.test.ts` files, and the two byte-identical
+  `callerAuthority.ts` copies, now describe `npm:` specifiers that only Deno resolves, without quoting a version.
+- The `verifyConfig.test.ts` "version skew" paragraph now says what is true and enforced: the new case `the jose this
+  file runs › is the exact version the Edge Function pins` compares `npm:jose@<v>` in `index.ts` with the installed
+  `jose/package.json`.
+- The 168-06 F7 nonce finding is in the SvelteKit OIDC callback (`apps/frontend/src/routes/api/oidc/callback`), not in
+  `identity-callback/index.ts`, so these edits do not touch it.
+
 ## 7. Operator follow-ups
 
 - **Review the `braces` baseline row (169-01, `c97bc9898`).** GHSA-vfj7-8cjw-p6xm (id 1240992) was published
@@ -1599,6 +1815,19 @@ The plan has no hold provision for D-14, which is an operator overrule, so execu
 - **`[inbucket]` is deprecated in CLI 2.118.0.** Every CLI call warns `config section [inbucket] is deprecated.
   Please use [local_smtp] instead`. Renaming the section in `config.toml` is a small follow-up that changes the
   local mail config. The plan did not name it, so it was not changed here.
+
+- **nodemailer 10 pin waits on the calendar (169-07).** `send-email` still runs `npm:nodemailer@6.9.10`, which has six
+  high advisory entries (four distinct). The 10.x line clears the 30-day rule at 2026-10-04T07:45:32Z, and 10.0.11
+  clears the 7-day rule at 07:50:47Z. Todo `2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md` has the resume
+  steps: re-measure, advisory query, a one-line edit, boot check, full E2E. Until it lands, DEPS-09 stays Pending.
+- **`send-email` and `invite-candidate` have no E2E caller (169-07, confirms 168-03 F2).** Their runtime proof in this
+  plan is a boot check plus an anon-token probe that reaches `auth.getUser()` through the new client. The plan's "email
+  and invite specs" do not exist as Edge-Function callers.
+- **The cookie adapter now sets `Cache-Control: private, no-cache, no-store, must-revalidate, max-age=0` on every
+  response that writes auth cookies (169-07).** That is intended (RESEARCH § Security Domain V3). Any future route that
+  calls `setHeaders({ 'cache-control': … })` on a request that also refreshes a session will hit SvelteKit's
+  duplicate-header throw. The adapter skips names it has already forwarded, but it cannot know about a route's own
+  call.
 
 ## 8. Moderate and low advisories on chosen versions
 

@@ -12,3 +12,10 @@
   **Fix:** Pick one of two options:
   - Bring `apps/docs/scripts/` under a gated type-check: extend the shared base, add the missing `unified` types and a declaration for `mdsvex.config.js`, and add `tsc -p scripts/tsconfig.json --noEmit` to the docs `typecheck` script.
   - Delete `apps/docs/scripts/tsconfig.json` if nothing is meant to type-check the scripts.
+
+- `voter-journey` › "full voter journey end-to-end" failed once at Base-6 (number scale); root cause UNCONFIRMED
+  status: open
+  **Found during:** 169-07 Task 3, full E2E `169-07-group5` (at `cce9b5b16`).
+  **What:** `question-delete` stayed disabled on Base-6, and the test timed out at 240 s; 88 serial dependants did not run. The trace (`tests/playwright-results/voter-journey-voter-journey-full-voter-journey-end-to-end-voter-journey/trace.zip`) shows `expectNumberQuestionAndAdvance` focusing the slider, pressing `End` and clicking Next 14 ms later. On the revisit the slider read 5 and no answer was stored.
+  **Why deferred:** Nothing in 169-07 touches the client-side voter answer path. The project passed 3/3 in isolation (`169-07-voter-journey-iso-{1,2,3}`), inside all three `bank-auth-journey` chains, and in the full re-run `169-07-group5-r2` (171/171). It also passed in every earlier 169 run. The spec is not 169-07's to change.
+  **Fix (suggested):** in `tests/tests/specs/voter/voter-journey.spec.ts` `expectNumberQuestionAndAdvance`, wait for the answer to be stored before clicking Next, for example `await expect(page.getByTestId(testIds.shared.questionDelete)).toBeEnabled()`. Confirm the race first with a planted delay.
