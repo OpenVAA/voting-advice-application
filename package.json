@@ -69,7 +69,6 @@
     "@openvaa/supabase-types": "workspace:^",
     "@playwright/test": "catalog:",
     "@supabase/supabase-js": "catalog:",
-    "@types/cheerio": "^0.22.35",
     "@types/node": "catalog:",
     "cheerio": "^1.0.0",
     "concurrently": "^10.0.5",
