@@ -32,7 +32,9 @@ comment states this rule; revisit that comment once hosted is on 17 (it can then
 
 1. Operator: upgrade the hosted project to Postgres 17 (Supabase dashboard → Infrastructure → upgrade), in a
    maintenance window, after a backup. Confirm with `SHOW server_version;`.
-2. Optionally align the volatility label on hosted (`ALTER FUNCTION … STABLE`, or a follow-up migration).
+2. Optionally align the volatility label on hosted (`ALTER FUNCTION … STABLE`, or a follow-up migration). Until then,
+   `supabase db diff` against hosted reports this one attribute as drift; it is this known change, not an unknown one
+   (169-REVIEW IN-07). Do it at the latest in the first hosted deploy after the merge.
 3. Update the `config.toml` `[db]` comment.
 
 ## The one-time local step for every developer machine

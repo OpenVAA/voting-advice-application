@@ -28,6 +28,11 @@ input, the renamed inputs (`pr-title`, `commit-message`, `publish-script`) and `
 Note: `changeset version` (Changesets 3) exits 1 when there is nothing to release; the action calls it only when
 changesets exist.
 
+Optional pre-merge rehearsal (169-REVIEW IN-08): run `release.yml` once on `workflow_dispatch` in a fork, or with
+`publish-script` stubbed to `changeset status`, so the action v2 + Changesets 3 combination is observed before `main`.
+Publishing auth is still unresolved: `release.yml` sets no `NODE_AUTH_TOKEN` and relies on npm trusted publishing,
+which is deferred until after the first publish.
+
 ## `docs.yml`
 
 checkout v7, setup-node v7, `configure-pages` v6, `upload-pages-artifact` v5 (dotfiles excluded) and `deploy-pages` v5.

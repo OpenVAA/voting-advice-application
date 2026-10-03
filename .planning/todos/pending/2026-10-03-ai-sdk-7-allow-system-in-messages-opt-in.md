@@ -11,6 +11,11 @@ re_check_trigger: "a prompt restructure in packages/llm, argument-condensation o
 
 # The system-message opt-in (169-09)
 
+> **Superseded (2026-10-03, 169 code review WR-01)** by `2026-10-03-llm-move-system-template-to-instructions.md`. The
+> provider no longer opts in for every caller (commit 5e1d4394a); each of the three callers opts in explicitly. The
+> claim below that "the opt-in does not let a user inject a system turn today" is true of the array shape only: the
+> condenser interpolates candidate-written comments into the system message. Work from the new todo.
+
 AI SDK 7 rejects `role: 'system'` entries inside `messages` by default. Every caller of
 `LLMProvider.generateObject` (`@openvaa/argument-condensation`, `@openvaa/question-info`) sends its server-built prompt
 as a system message, so `packages/llm/src/llm-providers/llmProvider.ts` passes `allowSystemInMessages: true` there
