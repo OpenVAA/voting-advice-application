@@ -4,18 +4,18 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 169
 current_phase_name: Dependency Bump to Latest Safe Versions
-current_plan: 5
+current_plan: 6
 status: executing
-stopped_at: Completed 169-04-PLAN.md
-last_updated: "2026-10-03T12:40:10.245Z"
+stopped_at: Completed 169-05-PLAN.md
+last_updated: "2026-10-03T13:16:53.448Z"
 last_activity: 2026-10-03
 last_activity_desc: Phase 169 execution started
-state_head: ff4d4ac0127c63715ad772c5419a999279b81097
+state_head: 398e126fbcd2a1c7a3c259ab658cbd8663f7e028
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
-  completed_plans: 338
+  completed_plans: 339
   percent: 89
 ---
 
@@ -35,7 +35,7 @@ _(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and P
 Phase: 169 (Dependency Bump to Latest Safe Versions) — EXECUTING
 Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
-Current Plan: 5
+Current Plan: 6
 Total Plans in Phase: 13
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
@@ -819,8 +819,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-10-03T12:40:08.897Z
-Stopped at: Completed 169-04-PLAN.md
+Last session: 2026-10-03T13:16:52.115Z
+Stopped at: Completed 169-05-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -1151,6 +1151,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 169 P02 | 3h15m | 3 tasks | 20 files |
 | Phase 169 P03 | 32min | 3 tasks | 24 files |
 | Phase 169 P04 | 92min | 3 tasks | 40 files |
+| Phase 169 P05 | 45min | 3 tasks | 13 files |
 
 ## Deferred Items
 
@@ -2157,6 +2158,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 169]: 169-04: Vitest 5 makes vite a peer — new catalog vite ^7.3.6 (already-resolved version) declared by the 11 workspaces that run vitest; 169-05 bumps it to Vite 8 and moves both apps onto it
 - [Phase 169]: 169-04: isomorphic-dompurify 4 + jsdom 30 with the root resolutions block deleted; the pin (5555f42a6) worked around the ESM-only @exodus/bytes chain, which Node 24.15+ require(esm) now loads
 - [Phase 169]: 169-04: no visual re-baseline — all four snapshots matched on Playwright 1.63.0 (image sha256:eff16c30e6f3…) and after Tailwind 4.3.3 / DaisyUI 5.7.46
+- [Phase 169]: 169-05: Vite 8.3.1 (8.3.2 held by the 7-day rule until 2026-10-08) and vite-plugin-svelte 7.3.1 through new/bumped catalog entries for both apps; Kit 2.70.3 + adapter-node 5.5.7; Kit 3 family held until 2026-10-31 (169-12)
+- [Phase 169]: 169-05: vite-plugin-restart replaced by the serve-only restartOnRootEnv plugin (unit + live probe on Vite 6 and 8 with a negative control); braces baseline rationale hand-edited to the remaining @changesets/cli path
+- [Phase 169]: 169-05: Vite 8 raises the default browser floor to chrome111/edge111/firefox114/safari16.4/ios16.4 — operator to confirm or set build.target; configLoader native notice left as a follow-up (needs allowImportingTsExtensions)
 
 ### Quick Tasks Completed
 
