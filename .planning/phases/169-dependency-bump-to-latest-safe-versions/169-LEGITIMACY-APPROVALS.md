@@ -29,7 +29,7 @@ New to the repository. Replaces `eslint-plugin-import`, whose peer range stops a
 | `unrs-resolver` (transitive) | https://www.npmjs.com/package/unrs-resolver | github.com/unrs/unrs-resolver | runs `postinstall: node postinstall.js` (checks for the native binding; may fetch the platform binding from the npm registry) |
 | `@unrs/resolver-binding-<platform>` (transitive, optional) | https://www.npmjs.com/search?q=%40unrs%2Fresolver-binding | github.com/unrs/unrs-resolver | platform binaries |
 
-- [ ] **Approved:** install `eslint-plugin-import-x` (latest version at least 7 days old) and let
+- [x] **Approved:** install `eslint-plugin-import-x` (latest version at least 7 days old) and let
   `unrs-resolver`'s postinstall run. 169-03 prints the postinstall script into `169-EVIDENCE.md`
   before the install commit.
 
@@ -42,7 +42,7 @@ The `supabase` npm package has shipped the CLI as per-platform `optionalDependen
 |---|---|---|---|
 | `@supabase/cli-darwin-arm64`, `@supabase/cli-linux-x64`, `@supabase/cli-linux-x64-musl`, `@supabase/cli-linux-arm64`, `@supabase/cli-linux-arm64-musl` (whichever the chosen version declares) | https://www.npmjs.com/package/supabase (see its `optionalDependencies`) | github.com/supabase/cli | SUS: too-new (the age gate removes this), arm64 downloads unknown |
 
-- [ ] **Approved:** let the `supabase` CLI bump bring in its official per-platform packages.
+- [x] **Approved:** let the `supabase` CLI bump bring in its official per-platform packages.
 
 ## C. The SvelteKit 3 migrator `sv` (plan 169-12, D-15 step 2) — only if Kit 3 clears the age rule
 
@@ -53,4 +53,6 @@ repeats this question with the exact version, so ticking here is optional.
 |---|---|---|---|
 | `sv` | https://www.npmjs.com/package/sv | github.com/sveltejs/cli | SUS: too-new |
 
-- [ ] **Approved in advance:** 169-12 may run `sv` (a version at least 7 days old) if Kit 3 lands.
+- [x] **Approved in advance:** 169-12 may run `sv` (a version at least 7 days old) if Kit 3 lands.
+
+_Ticked by the orchestrator on the operator's explicit approval of A, B and C (AskUserQuestion, 2026-10-03)._
