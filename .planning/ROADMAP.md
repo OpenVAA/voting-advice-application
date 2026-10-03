@@ -2062,7 +2062,7 @@ Plans:
   3. **`yarn audit:deps` passes**: every row with a published fix is fixed; `security/audit-baseline.json` keeps only no-fix or recorded-hold rows, each with a current note; todo `2026-09-03-dependabot-alert-list-is-stale-against-main.md` is updated and stays pending until v2.15 merges.
   4. Gates: typecheck, lint, svelte-check, unit, pgTAP, production builds (frontend and docs), then the full E2E suite under the cardinal rule.
 
-**Plans**: 12/13 plans executed
+**Plans**: 13/13 plans executed
 
 Plans:
 **Wave 1**
@@ -2102,7 +2102,7 @@ Plans:
 - [x] 169-12-PLAN.md — Group 10 (non-autonomous): SvelteKit 3 with adapter-node 6 and adapter-static 4 behind an operator checkpoint if they clear the 30-day rule, else a recorded hold (wave 12)
 
 **Wave 13** *(blocked on Wave 12 completion)*
-- [ ] 169-13-PLAN.md — Group 11 and phase gate: audit baseline reconciled, moderate/low advisories listed, final version table, todos filed, then the full gate set and full E2E on PG17 on one HEAD (wave 13)
+- [x] 169-13-PLAN.md — Group 11 and phase gate: audit baseline reconciled, moderate/low advisories listed, final version table, todos filed, then the full gate set and full E2E on PG17 on one HEAD (wave 13)
 
 ## Progress
 
@@ -2143,7 +2143,7 @@ _(**Recounted 2026-09-29** when the two planning records were merged: the phase 
 | 166. Retire `auth_user_id` — Entity Identity from Grants | 4/4 | Complete    | 2026-10-02 |
 | 167. Origin/main Vestige Cleanup | 6/6 | Complete    | 2026-10-02 |
 | 168. Docs-Site Rewrite — Strapi to Supabase | 9/9 | Complete    | 2026-10-02 |
-| 169. Dependency Bump to Latest Safe Versions | 12/13 | In Progress|  |
+| 169. Dependency Bump to Latest Safe Versions | 13/13 | In Progress|  |
 
 **Shipped milestones:**
 

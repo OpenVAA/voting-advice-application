@@ -236,22 +236,22 @@ _(**Registered 2026-10-01 at planning** from `.planning/phases/168-docs-site-rew
 
 _(**Registered 2026-10-01 at planning** from `.planning/phases/169-dependency-bump-to-latest-safe-versions/169-REQUIREMENTS-PROPOSED.md`, the IDs proposed in `169-RESEARCH.md` § Phase Requirements and adopted without change. Each one is subject to the *Standing acceptance rule* above. Counters recounted from the table rows, not incremented.)_
 
-- [ ] **DEPS-01**: "Safe" is defined and enforced: `npmMinimalAgeGate: 7d` in `.yarnrc.yml`, observed binding on a real resolution; every chosen version is recorded with publish date, age and verdict in a version table regenerated at execution start and at phase end. (criterion 1 · D-03, D-04, D-05, D-33 · plans 169-01, 169-13)
-- [ ] **DEPS-02**: Group 0: one lockfile-refresh commit inside the declared ranges clears every NEW high+ finding without a new `resolutions` entry, leaving the packages that later groups own at their pre-phase resolutions. (criterion 3 · D-07, D-25, D-27 · plans 169-01)
+- [x] **DEPS-01**: "Safe" is defined and enforced: `npmMinimalAgeGate: 7d` in `.yarnrc.yml`, observed binding on a real resolution; every chosen version is recorded with publish date, age and verdict in a version table regenerated at execution start and at phase end. (criterion 1 · D-03, D-04, D-05, D-33 · plans 169-01, 169-13)
+- [x] **DEPS-02**: Group 0: one lockfile-refresh commit inside the declared ranges clears every NEW high+ finding without a new `resolutions` entry, leaving the packages that later groups own at their pre-phase resolutions. (criterion 3 · D-07, D-25, D-27 · plans 169-01) — **Closed 2026-10-03 (169-13):** the `braces` row hand-added in 169-01 under operator review is resolved by removal — `braces` left the tree with `@changesets/cli` 3 (169-10), and 169-13's reconciliation dropped it with the other 67 stale rows (`ab0857938`, EVIDENCE § 6).
 - [x] **DEPS-03**: Toolchain: Yarn 4.18.x at every pin site; Node 24 everywhere (CI pins incl. both halves of the engine negative control, Dockerfile, both `engines` at `>=24.15.0`, `@types/node` 24.x) as an isolated commit with its own gate run, a production-image build and smoke start, an E2E run and an observed CI run; TypeScript 6.0.3 with the tsconfig defaults reviewed. (criterion 1, 2, 4 · D-11, D-12, D-16, D-25, D-26 · plans 169-02)
 - [x] **DEPS-04**: Lint and format: `eslint-plugin-import-x` replaces `eslint-plugin-import` with the four rules shown firing on planted violations before and after; ESLint 10 with the config-lookup flag removed at every site and FlatCompat gone; `eslint-plugin-svelte` 3 through the catalog; the prettier/sort plugin majors each followed by their own reformat commit. (criterion 1, 2, 4 · D-13, D-17, D-23 · plans 169-03)
 - [x] **DEPS-05**: Build: Kit 2.70.x with the latest adapter-node 5.x / adapter-static 3.x; both apps on Vite 8 and vite-plugin-svelte 7 through the catalog; an inline root-`.env` restart plugin replaces `vite-plugin-restart` and is observed restarting the dev server; the build-output diff and the visual gate are recorded. (criterion 1, 2, 4 · D-13, D-15, D-18 · plans 169-05)
 - [x] **DEPS-06**: Test stack: one Vitest major across the catalog (docs included) with the root workspace file replaced by `test.projects`; jsdom 30 and isomorphic-dompurify 4 with the root resolution deleted; Playwright 1.63 with the visual container digest; DaisyUI/Tailwind minors; per-workspace unit-test counts unchanged. (criterion 1, 2, 4 · D-08, D-13, D-19, D-24 · plans 169-04)
 - [x] **DEPS-07**: Supabase CLI: the catalog entry and all six `setup-cli` pins at one version; `database.ts` regenerated with every hunk explained; pgTAP and an E2E run after the CLI commit; supabase-js 2.117.x and `@supabase/ssr` 0.12.x with `assert:cookie-names`, the `safeGetSession` round-trip test and the cookie-adapter tests green. (criterion 1, 2, 4 · D-10, D-22, D-25 · plans 169-06, 169-07)
-- [ ] **DEPS-08**: Local Postgres 17: `major_version = 17`; a clean `db:reset` applies every migration; `show server_version` proves 17; `database.ts` regenerated and pgTAP (incl. Phase 166's anon-exposure census) green on 17; PG15-validity of migrations recorded as a standing constraint; hosted upgrade filed as an operator todo. (criterion 4 · D-14 · plans 169-06, 169-13)
-- [ ] **DEPS-09**: Deno Edge Function imports pinned exactly (`nodemailer` ≥ 10.0.6, `jose` 6.2.x via `npm:`, supabase-js exact 2.x matching the npm side); the functions' vitest suites, the email and invite flows in the full E2E suite, and bank-auth E2E 3× green; the audit blind spot filed as a todo. (criterion 1, 3 · D-09 · plans 169-07, 169-13)
+- [x] **DEPS-08**: Local Postgres 17: `major_version = 17`; a clean `db:reset` applies every migration; `show server_version` proves 17; `database.ts` regenerated and pgTAP (incl. Phase 166's anon-exposure census) green on 17; PG15-validity of migrations recorded as a standing constraint; hosted upgrade filed as an operator todo. (criterion 4 · D-14 · plans 169-06, 169-13)
+- [ ] **DEPS-09**: Deno Edge Function imports pinned exactly (`nodemailer` ≥ 10.0.6, `jose` 6.2.x via `npm:`, supabase-js exact 2.x matching the npm side); the functions' vitest suites, the email and invite flows in the full E2E suite, and bank-auth E2E 3× green; the audit blind spot filed as a todo. (criterion 1, 3 · D-09 · plans 169-07, 169-13) — **Still Pending at phase close (169-13, 2026-10-03T19:00Z) for one reason only:** the `send-email` pin `npm:nodemailer@6.9.10` → 10.0.11 clears the age rule at 2026-10-04T07:51Z; resume steps in todo `2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md`. Everything else is done (supabase-js and jose pinned exactly, function suites and bank-auth 3× green, the audit-blind-spot todo `2026-10-03-deno-edge-imports-invisible-to-audit-deps.md` filed).
 - [x] **DEPS-10**: `@faker-js/faker` 10.x as its own group, with the old-vs-new seed output diffed for the `default` and `e2e/base` templates before the bump lands; visual re-baselines only where a diff traces to a recorded seed change. (criterion 1, 2 · D-20 · plans 169-08)
 - [x] **DEPS-11**: LLM SDK stack migrated (`ai` and `@ai-sdk/*` to the latest safe majors) with package, admin-job and E2E gates green; the importer-less `openai` (and `jsonrepair` if still present) removed. (criterion 1, 2 · D-21 · plans 169-09)
-- [ ] **DEPS-12**: Remaining small majors, one commit each, each formatter/sorter major followed by its own reformat commit; `@types/cheerio` removed; consumer-less catalog entries dropped; any major the probe reports as unassigned is bumped or held with a reason. (criterion 1, 2 · D-13, D-23 · plans 169-10)
+- [x] **DEPS-12**: Remaining small majors, one commit each, each formatter/sorter major followed by its own reformat commit; `@types/cheerio` removed; consumer-less catalog entries dropped; any major the probe reports as unassigned is bumped or held with a reason. (criterion 1, 2 · D-13, D-23 · plans 169-10) — **Satisfied 2026-10-03 (169-13) including its hold branch:** every small major landed one commit each in 169-10 except `dotenv` 18 and `intl-messageformat` 12, which are held by the 30-day rule with a reason and a dated todo (`2026-10-03-dotenv-18-and-intl-messageformat-12-held.md`); the final version table has 0 `in-major` and no unheld major.
 - [x] **DEPS-13**: GitHub Actions majors, the trufflehog patch and the Pages actions, with the CI-shape tests updated, observed through `ci-evidence/**` at job level; the two workflows that cannot run there recorded as unobservable until merge. (criterion 1, 4 · D-10 · plans 169-11)
 - [x] **DEPS-14**: Kit 3 + adapter-node 6 + adapter-static 4 land behind an operator checkpoint if they clear the 30-day rule on the execution date; otherwise held with a dated todo. (criterion 1 · D-15, D-32 · plans 169-12) — **Satisfied by its hold branch (169-12, 2026-10-03):** the three did not clear (HOLD-AGE; x.0.0s 2.06 d old, clear 2026-10-31T17:24:31Z), so they are held with the dated todo `2026-10-03-sveltekit-3-held-by-the-age-rule.md`; Kit 3 itself has not landed.
-- [ ] **DEPS-15**: The audit gate's liveness is keyed on the audit's own exit status (not the baseline size), with the network-blocked negative control observed; every surviving baseline row carries a current note; the roadmap premise is amended; the phase's todos are filed or updated. (criterion 3 · D-02, D-28, D-29, D-30, D-31 · plans 169-01, 169-13)
-- [ ] **DEPS-16**: Final gates on one HEAD: typecheck, `lint:check`, `format:check`, svelte-check (frontend and docs), unit, pgTAP, production builds, `audit:deps`, the docs link check and ResearchQuote byte-identity, then the full E2E suite under the cardinal rule after a clean `db:reset` on PG17. (criterion 4 · D-26 · plans 169-13)
+- [x] **DEPS-15**: The audit gate's liveness is keyed on the audit's own exit status (not the baseline size), with the network-blocked negative control observed; every surviving baseline row carries a current note; the roadmap premise is amended; the phase's todos are filed or updated. (criterion 3 · D-02, D-28, D-29, D-30, D-31 · plans 169-01, 169-13)
+- [x] **DEPS-16**: Final gates on one HEAD: typecheck, `lint:check`, `format:check`, svelte-check (frontend and docs), unit, pgTAP, production builds, `audit:deps`, the docs link check and ResearchQuote byte-identity, then the full E2E suite under the cardinal rule after a clean `db:reset` on PG17. (criterion 4 · D-26 · plans 169-13)
 
 ## Future Requirements
 
@@ -443,22 +443,22 @@ Roadmap: `.planning/ROADMAP.md` (Phases 137-169 — Phase 165 (Review-Stack Comm
 | DOCS-06 | Phase 168 — Docs-Site Rewrite — Strapi to Supabase | Complete |
 | DOCS-07 | Phase 168 — Docs-Site Rewrite — Strapi to Supabase | Complete |
 | DOCS-08 | Phase 168 — Docs-Site Rewrite — Strapi to Supabase | Complete |
-| DEPS-01 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
-| DEPS-02 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
+| DEPS-01 | Phase 169 — Dependency Bump to Latest Safe Versions | Complete |
+| DEPS-02 | Phase 169 — Dependency Bump to Latest Safe Versions | Complete |
 | DEPS-03 | Phase 169 — Dependency Bump to Latest Safe Versions | Complete |
 | DEPS-04 | Phase 169 — Dependency Bump to Latest Safe Versions | Complete |
 | DEPS-05 | Phase 169 — Dependency Bump to Latest Safe Versions | Complete |
 | DEPS-06 | Phase 169 — Dependency Bump to Latest Safe Versions | Complete |
 | DEPS-07 | Phase 169 — Dependency Bump to Latest Safe Versions | Complete |
-| DEPS-08 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
+| DEPS-08 | Phase 169 — Dependency Bump to Latest Safe Versions | Complete |
 | DEPS-09 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
 | DEPS-10 | Phase 169 — Dependency Bump to Latest Safe Versions | Complete |
 | DEPS-11 | Phase 169 — Dependency Bump to Latest Safe Versions | Complete |
-| DEPS-12 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
+| DEPS-12 | Phase 169 — Dependency Bump to Latest Safe Versions | Complete |
 | DEPS-13 | Phase 169 — Dependency Bump to Latest Safe Versions | Complete |
 | DEPS-14 | Phase 169 — Dependency Bump to Latest Safe Versions | Complete |
-| DEPS-15 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
-| DEPS-16 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
+| DEPS-15 | Phase 169 — Dependency Bump to Latest Safe Versions | Complete |
+| DEPS-16 | Phase 169 — Dependency Bump to Latest Safe Versions | Complete |
 
 ### Phase → requirement rollup
 

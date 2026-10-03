@@ -1,12 +1,12 @@
 {
   "version": "1.0",
-  "timestamp": "2026-10-03T18:53:29.333Z",
+  "timestamp": "2026-10-03T19:23:00.000Z",
   "phase": "169",
   "phase_name": "dependency-bump-to-latest-safe-versions",
   "phase_dir": ".planning/phases/169-dependency-bump-to-latest-safe-versions",
   "plan": 13,
   "task": 1,
-  "total_tasks": 2,
+  "total_tasks": 1,
   "status": "ready",
   "completed_tasks": [
     {
@@ -86,28 +86,29 @@
       "name": "Plan 169-12 (group 10: SvelteKit 3 / adapter-node 6 / adapter-static 4 HELD — verdict HOLD-AGE measured live 2026-10-03T18:49:51Z: each x.0.0 2.06 d old and the only release in its major, clearing 2026-10-31T17:22:34Z / 17:24:31Z / 17:21:55Z; every Kit 3.0.0 peer already met (vite 8.3.1, vite-plugin-svelte 7.3.1, svelte 5.57.1, typescript 6.0.3, Node floor 24.15.0); Kit stays 2.70.3, adapters 5.5.7 / 3.0.10, nothing installed; D-32 checkpoint skipped per plan; todo 2026-10-03-sveltekit-3-held-by-the-age-rule.md carries the Vite 8 configLoader item; DEPS-14 complete via its hold branch)",
       "status": "done",
       "commit": "fed9d50d0"
+    },
+    {
+      "id": 14,
+      "name": "Plan 169-13 (group 11 + phase gate): audit baseline rewritten by hand to accepted [] — all 68 rows fixed in the tree, each checked against GitHub's range and the resolved version (EVIDENCE § 6), braces review item resolved by removal; moderate/low listed (cookie low via Kit 2, esbuild low via tsup, whatwg-encoding deprecation; nodemailer 6.9.10 Deno pin 6 high/10 moderate/1 low, held); version table 67 pkgs current 47 / HOLD-7d 13 / HOLD-30d 5 / major 2 (both held) / in-major 0; 18 new todos + Dependabot (D-30) and nodemailer todos updated; phase gate on ONE HEAD be000f31a: 169-13-final 12/12, PG17.6 pgTAP 1335/1335 + db:lint:sql 0, full E2E 171/171/0/0/0; DEPS-01/02/08/12/15/16 complete, DEPS-09 Pending (nodemailer only); nothing pushed",
+      "status": "done",
+      "commit": "aa93649a4"
     }
   ],
   "remaining_tasks": [
     {
-      "id": 4,
-      "name": "Plan 169-13 (group 11 + phase gate). Apply the nodemailer 10 Edge pin todo (2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md) — it clears 2026-10-04T07:51Z (10.0.11 at 07:50:47Z), so 169-13 must run after that or record it still held. The dotenv 18 / intl-messageformat 12 todo clears 2026-10-17 / 2026-10-15; the Kit 3 todo clears 2026-10-31T17:24:31Z. Drop the stale braces baseline row. Local stack Postgres 17.6, so the PG17 gate may run. Next ci-evidence/169-deps push leases on 59607e5cd6b55ed9bc94563ad9a29dd1a31662d0",
+      "id": 5,
+      "name": "Phase 169 code review (gsd-code-reviewer) + verification (gsd-verifier) + REVIEW-DISPOSITION + phase.complete 169",
       "status": "not_started"
     },
     {
-      "id": 5,
-      "name": "Phase 169 code review, verification, phase.complete",
+      "id": 6,
+      "name": "nodemailer 10 Edge pin (todo 2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md) on or after 2026-10-04T07:51Z — closes DEPS-09; a quick task is enough (one-line edit, unit, boot check, full E2E)",
       "status": "not_started"
     }
   ],
   "blockers": [],
   "async_jobs": [],
   "human_actions_pending": [
-    {
-      "action": "Review the hand-added `braces` row in security/audit-baseline.json (no fixed release; added under D-02 by 169-01)",
-      "context": "DEPS-02 left Pending until reviewed; 169-05 hand-edited the rationale text to drop vite-plugin-restart (removed) and name only the @changesets/cli micromatch path; UPDATE 169-10: @changesets/cli 3 (40a426cb1) uses picomatch, so micromatch/braces left the tree; the audit no longer reports 1240992 (0 accepted) and the row is stale; 169-13 drops it in the reviewed rewrite",
-      "blocking": false
-    },
     {
       "action": "Repair Docker Desktop's credential helper (docker-credential-desktop get hangs on pull; worked around with a scratch DOCKER_CONFIG + DOCKER_HOST)",
       "context": "169-EVIDENCE.md § 6/§ 7 (169-04); same fault as 136-05",
@@ -221,9 +222,10 @@
       "decision": "169-12: SvelteKit 3 family held by the 30-day new-major rule (HOLD-AGE); peers already ready; Kit stays 2.70.3; DEPS-14 satisfied by its hold branch",
       "rationale": "D-03 re-measured live 2026-10-03T18:49Z; D-15, D-32, ruling 11; PROH-169-22",
       "phase": "169"
-    }
+    },
+    "169-13: braces review item resolved by removal (row dropped with all 67 other stale rows; package no longer in the tree) — DEPS-02 closed; DEPS-12 closed via its held-with-a-reason branch; DEPS-09 Pending only for the nodemailer 10 Edge pin (clears 2026-10-04T07:51Z)"
   ],
   "uncommitted_files": [],
-  "next_action": "Continue /gsd-execute-phase 169 from 169-13 (group 11 + the phase gate: audit baseline reconciled incl. dropping the stale braces row, moderate/low advisories listed, final version table, todos filed, full gate set + full E2E on PG17 on one HEAD). 169-12 is complete: Kit 3 HELD to 2026-10-31T17:24:31Z (todo filed). nodemailer 10 Edge pin clears 2026-10-04T07:51Z — apply its todo in 169-13 if run after that, else record it still held. remote ci-evidence/169-deps = 59607e5cd6b55ed9bc94563ad9a29dd1a31662d0 (lease value for the next push). Local stack Postgres 17.6; ESLint 10.11.0; never supabase stop --all.",
+  "next_action": "Phase 169: all 13 plans complete (169-13 SUMMARY aa93649a4). Next: code review (gsd-code-reviewer) + phase verification (gsd-verifier) in parallel, write 169-REVIEW-DISPOSITION.md, then phase.complete 169. Final code HEAD for the gate: be000f31a (12/12 gates, PG17 pgTAP 1335, E2E 171/171). Open: nodemailer 10 Edge pin on/after 2026-10-04T07:51Z (todo) closes DEPS-09. remote ci-evidence/169-deps = 59607e5cd6b55ed9bc94563ad9a29dd1a31662d0 (lease value for any next push; nothing pushed in 169-13). Local stack Postgres 17.6; ESLint 10.11.0; never supabase stop --all.",
   "context_notes": "Work only in the -gsd worktree. Node 24.21.0 must be on PATH. Orchestrator hand-drives executors at top level; one gsd-executor per plan, sequential mode."
 }
