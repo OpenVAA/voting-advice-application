@@ -132,10 +132,10 @@ jobs:
         with:
           version: 4.18
 
-      - name: Setup Node.js 22.22.1
+      - name: Setup Node.js 24.21.0
         uses: actions/setup-node@v4
         with:
-          node-version: 22.22.1
+          node-version: 24.21.0
           cache: "yarn"
 
       - name: "Install all dependencies"
@@ -272,10 +272,10 @@ jobs:
         with:
           version: 4.18
 
-      - name: Setup Node.js 22.22.1
+      - name: Setup Node.js 24.21.0
         uses: actions/setup-node@v4
         with:
-          node-version: 22.22.1
+          node-version: 24.21.0
           cache: "yarn"
 
       - name: "Install all dependencies"
@@ -336,10 +336,10 @@ jobs:
         with:
           version: 4.18
 
-      - name: Setup Node.js 22.22.1
+      - name: Setup Node.js 24.21.0
         uses: actions/setup-node@v4
         with:
-          node-version: 22.22.1
+          node-version: 24.21.0
           cache: "yarn"
 
       - name: "Install all dependencies"
@@ -387,10 +387,10 @@ jobs:
         with:
           version: 4.18
 
-      - name: Setup Node.js 22.22.1
+      - name: Setup Node.js 24.21.0
         uses: actions/setup-node@v4
         with:
-          node-version: 22.22.1
+          node-version: 24.21.0
           cache: "yarn"
 
       - name: "Install all dependencies"
@@ -484,10 +484,10 @@ jobs:
         with:
           version: 4.18
 
-      - name: Setup Node.js 22.22.1
+      - name: Setup Node.js 24.21.0
         uses: actions/setup-node@v4
         with:
-          node-version: 22.22.1
+          node-version: 24.21.0
           cache: "yarn"
 
       - name: "Install all dependencies"
@@ -536,10 +536,10 @@ jobs:
         with:
           version: 4.18
 
-      - name: Setup Node.js 22.22.1
+      - name: Setup Node.js 24.21.0
         uses: actions/setup-node@v4
         with:
-          node-version: 22.22.1
+          node-version: 24.21.0
           cache: "yarn"
 
       - name: "Install yarn dependencies"
@@ -618,10 +618,10 @@ jobs:
         with:
           version: 4.18
 
-      - name: Setup Node.js 22.22.1
+      - name: Setup Node.js 24.21.0
         uses: actions/setup-node@v4
         with:
-          node-version: 22.22.1
+          node-version: 24.21.0
           cache: "yarn"
 
       - name: "Install yarn dependencies"
@@ -678,9 +678,9 @@ jobs:
   # No install, no Yarn, no cache: the guard imports only Node built-ins, which is what lets it run
   # from `preinstall`.
   #
-  # The out-of-range toolchain floats within its major: every 20.x is outside the declared ">=22",
+  # The out-of-range toolchain floats within its major: every 22.x is outside the declared ">=24.15.0",
   # and a pinned patch would break when it left the runner's version manifest. If the declared range
-  # is ever widened to admit Node 20, the first assertion below goes red on purpose.
+  # is ever widened to admit Node 22, the first assertion below goes red on purpose.
   node-engine-range-negative-control:
     runs-on: ubuntu-latest
 
@@ -688,10 +688,10 @@ jobs:
       - name: "Checkout source code"
         uses: actions/checkout@v4
 
-      - name: "Setup Node.js 20.x (deliberately out of range)"
+      - name: "Setup Node.js 22.x (deliberately out of range)"
         uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
+          node-version: "22.x"
 
       - name: "Assert the node-engine guard REJECTS an out-of-range Node"
         run: |
@@ -710,10 +710,10 @@ jobs:
           esac
           echo "rejected as required under $(node -v): $OUTPUT"
 
-      - name: "Setup Node.js 22.22.1 (in range)"
+      - name: "Setup Node.js 24.21.0 (in range)"
         uses: actions/setup-node@v4
         with:
-          node-version: 22.22.1
+          node-version: 24.21.0
 
       - name: "Assert the node-engine guard ACCEPTS an in-range Node"
         run: |

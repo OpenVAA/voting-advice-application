@@ -32,10 +32,10 @@ jobs:
         with:
           version: 4.18
 
-      - name: Setup Node.js 22.22.1
+      - name: Setup Node.js 24.21.0
         uses: actions/setup-node@v4
         with:
-          node-version: 22.22.1
+          node-version: 24.21.0
           cache: "yarn"
 
       - name: Install dependencies
