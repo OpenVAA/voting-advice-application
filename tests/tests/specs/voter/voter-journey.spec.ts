@@ -381,8 +381,8 @@ async function expectElectionOptionAndSelect({ page, text }: { page: Page; text:
   const target = electionAccordion.getByRole('option', { name: text }).first();
   await expect(target).toBeVisible({ timeout: TIMEOUTS.element });
   await target.click({ timeout: TIMEOUTS.click });
-  // We need to wait for the accordion to collapse again to ensure the state has changed
-  await expect(visibleOptions).toHaveCount(1, { timeout: TIMEOUTS.element });
+  // We need to wait for the accordion to collapse again to ensure the state has changed. The collapse lands only once the results subtree has re-rendered for the newly selected election, so it is a route-transition wait, not an element wait: on the slower CI runner it was observed still open with the previous election's list 2 s after the click (169-02 CI run 37111729145, both attempts).
+  await expect(visibleOptions).toHaveCount(1, { timeout: TIMEOUTS.page });
   const resultsList = page.getByTestId(testIds.voter.results.list);
   await expect(resultsList).toBeVisible({ timeout: TIMEOUTS.page });
 }
