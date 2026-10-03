@@ -107,8 +107,5 @@
     "unrs-resolver": {
       "built": true
     }
-  },
-  "resolutions": {
-    "isomorphic-dompurify/jsdom": "^26.1.0"
   }
 }
