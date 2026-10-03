@@ -40,11 +40,16 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: Create Release Pull Request or Publish
-        uses: changesets/action@v1
+        uses: changesets/action@v2
+        # The token input is the action's only credential: it ignores a GITHUB_TOKEN env var, and
+        # hands the token to `changeset version` and the publish script as GITHUB_TOKEN itself (the
+        # GitHub changelog generator reads it there). Release commits and tags go out through the
+        # Git CLI rather than the action's default GitHub API path.
         with:
-          title: "chore: version packages"
-          commit: "chore: version packages"
-          publish: yarn release
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pr-title: "chore: version packages"
+          commit-message: "chore: version packages"
+          publish-script: yarn release
+          push-with-git-cli: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
