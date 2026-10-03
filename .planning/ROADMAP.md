@@ -2062,7 +2062,7 @@ Plans:
   3. **`yarn audit:deps` passes**: every row with a published fix is fixed; `security/audit-baseline.json` keeps only no-fix or recorded-hold rows, each with a current note; todo `2026-09-03-dependabot-alert-list-is-stale-against-main.md` is updated and stays pending until v2.15 merges.
   4. Gates: typecheck, lint, svelte-check, unit, pgTAP, production builds (frontend and docs), then the full E2E suite under the cardinal rule.
 
-**Plans**: 3/13 plans executed
+**Plans**: 4/13 plans executed
 
 Plans:
 **Wave 1**
@@ -2075,7 +2075,7 @@ Plans:
 - [x] 169-03-PLAN.md — Group 2, lint and format: `eslint-plugin-import-x`, `eslint-plugin-svelte` 3, FlatCompat removal, ESLint 10, and the formatter/sorter majors each with its own reformat commit (wave 3)
 
 **Wave 4** *(blocked on Wave 3 completion)*
-- [ ] 169-04-PLAN.md — Group 4, test stack (run before group 3 because Vite 8 needs a Vitest that accepts it): one Vitest major with `test.projects`, jsdom 30 + dompurify 4, Playwright 1.63, DaisyUI/Tailwind minors (wave 4)
+- [x] 169-04-PLAN.md — Group 4, test stack (run before group 3 because Vite 8 needs a Vitest that accepts it): one Vitest major with `test.projects`, jsdom 30 + dompurify 4, Playwright 1.63, DaisyUI/Tailwind minors (wave 4)
 
 **Wave 5** *(blocked on Wave 4 completion)*
 - [ ] 169-05-PLAN.md — Group 3, build: inline restart plugin replacing `vite-plugin-restart`, Kit 2.70 with the 2.x-line adapters, then Vite 8 and vite-plugin-svelte 7 through the catalog (wave 5)
@@ -2143,7 +2143,7 @@ _(**Recounted 2026-09-29** when the two planning records were merged: the phase 
 | 166. Retire `auth_user_id` — Entity Identity from Grants | 4/4 | Complete    | 2026-10-02 |
 | 167. Origin/main Vestige Cleanup | 6/6 | Complete    | 2026-10-02 |
 | 168. Docs-Site Rewrite — Strapi to Supabase | 9/9 | Complete    | 2026-10-02 |
-| 169. Dependency Bump to Latest Safe Versions | 3/13 | In Progress|  |
+| 169. Dependency Bump to Latest Safe Versions | 4/13 | In Progress|  |
 
 **Shipped milestones:**
 

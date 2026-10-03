@@ -1,10 +1,10 @@
 {
   "version": "1.0",
-  "timestamp": "2026-10-03T11:05:00.000Z",
+  "timestamp": "2026-10-03T12:40:00.000Z",
   "phase": "169",
   "phase_name": "dependency-bump-to-latest-safe-versions",
   "phase_dir": ".planning/phases/169-dependency-bump-to-latest-safe-versions",
-  "plan": 4,
+  "plan": 5,
   "task": 1,
   "total_tasks": 3,
   "status": "ready",
@@ -26,12 +26,18 @@
       "name": "Plan 169-03 (group 2: import-x, eslint-plugin-svelte 3, no FlatCompat, 15 ESLint-10 source fixes, prettier-plugin-svelte 4, prettier-plugin-tailwindcss 0.8.1, simple-import-sort 14; 169-03-group2 12/12; ESLint 10 HELD)",
       "status": "done",
       "commit": "85e644f6c"
+    },
+    {
+      "id": 4,
+      "name": "Plan 169-04 (group 4: isomorphic-dompurify 4 + jsdom 30 with resolutions deleted, Playwright 1.63.0 + PW_IMAGE digest, Tailwind 4.3.3, DaisyUI 5.7.46, Vitest 5.0.2 + test.projects + catalog vite ^7.3.6; 169-04-group4 12/12; E2E 171/171; DEPS-06 complete)",
+      "status": "done",
+      "commit": "ff4d4ac01"
     }
   ],
   "remaining_tasks": [
     {
       "id": 4,
-      "name": "Plans 169-04 through 169-13 (sequential)",
+      "name": "Plans 169-05 through 169-13 (sequential)",
       "status": "not_started"
     },
     {
@@ -51,6 +57,16 @@
     {
       "action": "Rule on ESLint 10: option A (wait for eslint-plugin-svelte#1478) or option B (scoped '**/*.svelte' no-useless-assignment off, overruling PROH-169-07); and wire or delete Layout.svelte's never-wired drawer focus return",
       "context": "todo 2026-10-03-eslint-10-held-on-bindable-no-useless-assignment.md; 169-EVIDENCE.md § 3/§ 7; DEPS-04 stays Pending until ESLint 10 lands",
+      "blocking": false
+    },
+    {
+      "action": "Drop the stray stash entry stash@{0} = d17abc887 ('WIP on fix/888-review-findings: 7b41eb90a ...') left by the 169-04 executor's mistaken `git stash`; it holds only a 169-EVIDENCE.md diff already restored and committed (inspect with `git stash show -p stash@{0}`, then `git stash drop stash@{0}`)",
+      "context": "169-EVIDENCE.md § 7; the stash list is shared with the main checkout, so a `git stash pop` there would apply it",
+      "blocking": false
+    },
+    {
+      "action": "Repair Docker Desktop's credential helper (docker-credential-desktop get hangs on pull; worked around with a scratch DOCKER_CONFIG + DOCKER_HOST)",
+      "context": "169-EVIDENCE.md § 6/§ 7 (169-04); same fault as 136-05",
       "blocking": false
     }
   ],

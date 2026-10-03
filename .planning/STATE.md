@@ -4,18 +4,18 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 169
 current_phase_name: Dependency Bump to Latest Safe Versions
-current_plan: 4
+current_plan: 5
 status: executing
-stopped_at: Completed 169-03-PLAN.md
-last_updated: "2026-10-03T11:03:52.901Z"
+stopped_at: Completed 169-04-PLAN.md
+last_updated: "2026-10-03T12:40:10.245Z"
 last_activity: 2026-10-03
 last_activity_desc: Phase 169 execution started
-state_head: 85e644f6cc0a45efac017297e8a95ef110e6ac9b
+state_head: ff4d4ac0127c63715ad772c5419a999279b81097
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
-  completed_plans: 337
+  completed_plans: 338
   percent: 89
 ---
 
@@ -35,7 +35,7 @@ _(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and P
 Phase: 169 (Dependency Bump to Latest Safe Versions) — EXECUTING
 Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
-Current Plan: 4
+Current Plan: 5
 Total Plans in Phase: 13
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
@@ -819,8 +819,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-10-03T11:03:51.480Z
-Stopped at: Completed 169-03-PLAN.md
+Last session: 2026-10-03T12:40:08.897Z
+Stopped at: Completed 169-04-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -1150,6 +1150,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 169 P01 | 40min | 3 tasks | 37 files |
 | Phase 169 P02 | 3h15m | 3 tasks | 20 files |
 | Phase 169 P03 | 32min | 3 tasks | 24 files |
+| Phase 169 P04 | 92min | 3 tasks | 40 files |
 
 ## Deferred Items
 
@@ -2152,6 +2153,10 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 169]: 169-02: CI run 37111729145 e2e red = fixed-window race on the slow runner (mechanism UNCONFIRMED); results accordion collapse waits use TIMEOUTS.page (8d91d37f8); CI run 37115289953 12/12 success
 - [Phase 169]: 169-03: ESLint 10 held on 9.39.5 (D-06) — no-useless-assignment false positives on write-only $bindable props (eslint-plugin-svelte#1478) and a never-wired Layout drawer focus return need an operator ruling; 15 real ESLint-10 findings fixed at source (14b62f26c)
 - [Phase 169]: 169-03: eslint-plugin-import-x 4.17.1 replaces eslint-plugin-import (4 rules proven on planted violations before/after and on ESLint 10); unrs-resolver joins the dependenciesMeta build allow-list
+- [Phase 169]: 169-04: Vitest 5.0.2 (not 4) — 5.0.0 cleared the 30-day rule at 12:24:30Z on the execution day; committed after the 12:25Z probe; 5.0.3 held by the 7-day rule
+- [Phase 169]: 169-04: Vitest 5 makes vite a peer — new catalog vite ^7.3.6 (already-resolved version) declared by the 11 workspaces that run vitest; 169-05 bumps it to Vite 8 and moves both apps onto it
+- [Phase 169]: 169-04: isomorphic-dompurify 4 + jsdom 30 with the root resolutions block deleted; the pin (5555f42a6) worked around the ESM-only @exodus/bytes chain, which Node 24.15+ require(esm) now loads
+- [Phase 169]: 169-04: no visual re-baseline — all four snapshots matched on Playwright 1.63.0 (image sha256:eff16c30e6f3…) and after Tailwind 4.3.3 / DaisyUI 5.7.46
 
 ### Quick Tasks Completed
 
