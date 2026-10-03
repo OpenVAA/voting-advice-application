@@ -1,10 +1,10 @@
 {
   "version": "1.0",
-  "timestamp": "2026-10-03T16:46:00.000Z",
+  "timestamp": "2026-10-03T17:08:00.000Z",
   "phase": "169",
   "phase_name": "dependency-bump-to-latest-safe-versions",
   "phase_dir": ".planning/phases/169-dependency-bump-to-latest-safe-versions",
-  "plan": 10,
+  "plan": 11,
   "task": 1,
   "total_tasks": 2,
   "status": "ready",
@@ -68,12 +68,18 @@
       "name": "Plan 169-09 (group 7: ai 7.0.116 + @ai-sdk/google 4.0.82 + @ai-sdk/openai 4.0.78 on provider-utils 5.0.49 / undici 7 — undici 5 and @fastify/busboy stay out, audit 0 new; generateObject opts in to system messages (AI SDK 7 rejects them by default and every caller sends its prompt as one); createGoogle; cost calc on usage details; openai 4 removed; 169-09-group7 12/12; E2E 171/171; DEPS-11 complete)",
       "status": "done",
       "commit": "b2652b7e7"
+    },
+    {
+      "id": 11,
+      "name": "Plan 169-10 (group 8: concurrently 10.0.5, lint-staged 17.6.0, @changesets/cli 3.0.3 + changelog-github 1.0.1, glob 13.0.6, @types/cheerio removed, js-yaml 5.4.2 (own types, @types/js-yaml dropped; 31 prompt files parse identically), globals 17.12.0 via catalog + declared in @openvaa/shared-config; changesets 3 drops micromatch/braces -> audit 0 new, 0 accepted, braces row stale for 169-13; dotenv 18 (2026-10-17T21:18Z) and intl-messageformat 12 (2026-10-15T12:27Z) HELD, todo filed; sweep 0 UNASSIGNED-MAJOR, 35 catalog keys all consumed; 169-10-group8 12/12; DEPS-12 stays Pending)",
+      "status": "done",
+      "commit": "533d8e8c4"
     }
   ],
   "remaining_tasks": [
     {
       "id": 4,
-      "name": "Plans 169-10 through 169-13 (sequential); apply the nodemailer 10 pin todo (2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md) in the first plan that runs after 2026-10-04T07:51Z (169-13 at the latest). The PG17 ruling is applied: local stack is Postgres 17.6, so 169-13's PG17 gate may run",
+      "name": "Plans 169-11 through 169-13 (sequential); apply the nodemailer 10 pin todo (2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md) in the first plan that runs after 2026-10-04T07:51Z (169-13 at the latest). The dotenv 18 / intl-messageformat 12 todo (2026-10-03-dotenv-18-and-intl-messageformat-12-held.md) clears 2026-10-15 / 2026-10-17. The PG17 ruling is applied: local stack is Postgres 17.6, so 169-13's PG17 gate may run",
       "status": "not_started"
     },
     {
@@ -87,7 +93,7 @@
   "human_actions_pending": [
     {
       "action": "Review the hand-added `braces` row in security/audit-baseline.json (no fixed release; added under D-02 by 169-01)",
-      "context": "DEPS-02 left Pending until reviewed; 169-05 hand-edited the rationale text to drop vite-plugin-restart (removed) and name only the @changesets/cli micromatch path",
+      "context": "DEPS-02 left Pending until reviewed; 169-05 hand-edited the rationale text to drop vite-plugin-restart (removed) and name only the @changesets/cli micromatch path; UPDATE 169-10: @changesets/cli 3 (40a426cb1) uses picomatch, so micromatch/braces left the tree; the audit no longer reports 1240992 (0 accepted) and the row is stale; 169-13 drops it in the reviewed rewrite",
       "blocking": false
     },
     {
@@ -180,9 +186,14 @@
       "decision": "169-09: LLMProvider.generateObject passes allowSystemInMessages: true (AI SDK 7 rejects system messages in messages by default; every caller sends its server-built prompt as one); streamText keeps the SDK default; generateObject kept (deprecated, still exported)",
       "rationale": "restores 5.x behaviour without rewriting prompts; no caller passes user-authored messages",
       "phase": "169"
+    },
+    {
+      "decision": "169-10: small majors one commit each; dotenv 18 and intl-messageformat 12 held by the 30-day rule (todo); @openvaa/shared-config declares globals: catalog:",
+      "rationale": "D-03 re-measured 2026-10-03T16:45Z; D-13, D-23; 167 handoff WR-02",
+      "phase": "169"
     }
   ],
   "uncommitted_files": [],
-  "next_action": "Continue /gsd-execute-phase 169 from 169-10 (group 8: remaining small tooling majors; DEPS-12). 169-09 (AI SDK 7 / @ai-sdk 4, openai removed) is complete. Local stack is Postgres 17.6; run db:reset before relying on a pristine DB. ESLint 10.11.0, no config-lookup flag. Apply the nodemailer 10 todo once 2026-10-04T07:51Z has passed. Read .planning/phases/169-dependency-bump-to-latest-safe-versions/.continue-here.md first.",
+  "next_action": "Continue /gsd-execute-phase 169 from 169-11 (group 9: GitHub Actions majors, the trufflehog patch and the Pages actions, observed through ci-evidence/** at job level). 169-10 (small majors) is complete; the audit is now 0 new, 0 accepted (braces gone). Local stack is Postgres 17.6; run db:reset before relying on a pristine DB. ESLint 10.11.0, no config-lookup flag. Apply the nodemailer 10 todo once 2026-10-04T07:51Z has passed. Read .planning/phases/169-dependency-bump-to-latest-safe-versions/.continue-here.md first.",
   "context_notes": "Work only in the -gsd worktree. Node 24.21.0 must be on PATH. Orchestrator hand-drives executors at top level; one gsd-executor per plan, sequential mode."
 }

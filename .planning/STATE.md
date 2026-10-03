@@ -4,18 +4,18 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 169
 current_phase_name: Dependency Bump to Latest Safe Versions
-current_plan: 10
+current_plan: 11
 status: executing
-stopped_at: "Completed 169-09-PLAN.md (AI SDK: ai 7.0.116, @ai-sdk/* 4; openai removed); next 169-10"
-last_updated: "2026-10-03T16:43:26.669Z"
+stopped_at: "Completed 169-10-PLAN.md (small majors: concurrently 10, lint-staged 17, changesets 3, glob 13, js-yaml 5, globals 17; dotenv 18 / intl-messageformat 12 held); next 169-11"
+last_updated: "2026-10-03T17:06:46.641Z"
 last_activity: 2026-10-03
 last_activity_desc: Phase 169 execution started
-state_head: b2652b7e784f057bbbfd31fea2f4cff102b4f30a
+state_head: 533d8e8c48ed35667af4f1b94c2a85d93c200cb7
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
-  completed_plans: 343
+  completed_plans: 344
   percent: 89
 ---
 
@@ -35,7 +35,7 @@ _(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and P
 Phase: 169 (Dependency Bump to Latest Safe Versions) — EXECUTING
 Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
-Current Plan: 10
+Current Plan: 11
 Total Plans in Phase: 13
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
@@ -819,8 +819,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-10-03T16:43:25.140Z
-Stopped at: Completed 169-09-PLAN.md (AI SDK: ai 7.0.116, @ai-sdk/* 4; openai removed); next 169-10
+Last session: 2026-10-03T17:06:22.264Z
+Stopped at: Completed 169-10-PLAN.md (small majors; dotenv 18 / intl-messageformat 12 held); next 169-11
 Resume file: .planning/phases/169-dependency-bump-to-latest-safe-versions/.continue-here.md
 
 ## Deferred Items
@@ -1156,6 +1156,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 169 P07 | 58min | 3 tasks | 16 files |
 | Phase 169 P08 | 19min | 2 tasks | 4 files |
 | Phase 169 P09 | 28min | 3 tasks | 10 files |
+| Phase 169 P10 | 19min | 3 tasks | 9 files |
 
 ## Deferred Items
 
@@ -2180,6 +2181,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 169]: 169-09: ai 7.0.116 + @ai-sdk/google 4.0.82 + @ai-sdk/openai 4.0.78 (provider 4.0.18 / provider-utils 5.0.49, undici ^7; undici 5 and @fastify/busboy stay out; audit 0 new); openai 4 removed (no importer)
 - [Phase 169]: 169-09: LLMProvider.generateObject passes allowSystemInMessages: true because every caller sends its server-built prompt as a system message, which AI SDK 7 rejects by default; streamText keeps the SDK default; generateObject kept (deprecated, still exported)
 - [Phase 169]: 169-09: TokenUsage stays the SDK LanguageModelUsage; cost calculation reads inputTokenDetails.cacheReadTokens and outputTokenDetails.reasoningTokens; the condenser fills the detail objects with undefined
+- [Phase 169]: 169-10: concurrently 10.0.5, lint-staged 17.6.0, changesets 3.0.3 + changelog-github 1.0.1, glob 13.0.6, js-yaml 5.4.2, globals 17.12.0 (one commit each); @types/cheerio removed; dotenv 18 (clears 2026-10-17T21:18Z) and intl-messageformat 12 (clears 2026-10-15T12:27Z) held, todo filed
+- [Phase 169]: 169-10: changesets 3 uses picomatch, so micromatch/braces left the tree; audit 0 new, 0 accepted; the braces baseline row 1240992 is stale and left for 169-13's reviewed rewrite (baseline not edited)
+- [Phase 169]: 169-10: @openvaa/shared-config now declares globals: catalog: (it imported globals undeclared); lint findings unchanged
 
 ### Quick Tasks Completed
 

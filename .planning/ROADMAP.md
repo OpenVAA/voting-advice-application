@@ -2062,7 +2062,7 @@ Plans:
   3. **`yarn audit:deps` passes**: every row with a published fix is fixed; `security/audit-baseline.json` keeps only no-fix or recorded-hold rows, each with a current note; todo `2026-09-03-dependabot-alert-list-is-stale-against-main.md` is updated and stays pending until v2.15 merges.
   4. Gates: typecheck, lint, svelte-check, unit, pgTAP, production builds (frontend and docs), then the full E2E suite under the cardinal rule.
 
-**Plans**: 9/13 plans executed
+**Plans**: 10/13 plans executed
 
 Plans:
 **Wave 1**
@@ -2093,7 +2093,7 @@ Plans:
 - [x] 169-09-PLAN.md — Group 7: migrate `ai` and the `@ai-sdk/*` providers in `packages/llm` and remove the importer-less `openai` (wave 9)
 
 **Wave 10** *(blocked on Wave 9 completion)*
-- [ ] 169-10-PLAN.md — Group 8: the remaining small majors one commit each, plus the completeness sweep for unassigned majors and consumer-less catalog entries (wave 10)
+- [x] 169-10-PLAN.md — Group 8: the remaining small majors one commit each, plus the completeness sweep for unassigned majors and consumer-less catalog entries (wave 10)
 
 **Wave 11** *(blocked on Wave 10 completion)*
 - [ ] 169-11-PLAN.md — Group 9: GitHub Actions majors, the trufflehog patch and the Pages actions, observed through `ci-evidence/**` at job level (wave 11)
@@ -2143,7 +2143,7 @@ _(**Recounted 2026-09-29** when the two planning records were merged: the phase 
 | 166. Retire `auth_user_id` — Entity Identity from Grants | 4/4 | Complete    | 2026-10-02 |
 | 167. Origin/main Vestige Cleanup | 6/6 | Complete    | 2026-10-02 |
 | 168. Docs-Site Rewrite — Strapi to Supabase | 9/9 | Complete    | 2026-10-02 |
-| 169. Dependency Bump to Latest Safe Versions | 9/13 | In Progress|  |
+| 169. Dependency Bump to Latest Safe Versions | 10/13 | In Progress|  |
 
 **Shipped milestones:**
 
