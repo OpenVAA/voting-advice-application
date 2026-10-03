@@ -4415,10 +4415,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"daisyui@npm:^5.5.14":
-  version: 5.5.14
-  resolution: "daisyui@npm:5.5.14"
-  checksum: 10c0/07fd07e9246efcadc5d6c425ea646580a31856569ee3db8d38519d92713ddf4c3b173379dca67723bc21d529c4b00b3425121a3ea3764381ade3e8b34725db60
+"daisyui@npm:^5.7.46":
+  version: 5.7.46
+  resolution: "daisyui@npm:5.7.46"
+  checksum: 10c0/26db9625961b3bc30e63e6166c8347065d6c6eb48b8b6e4d94d4d6ad4aa1400a66573349cae8a72e9306846b0285ceada83341383c5ba9cb3bd25a8592d496e3
   languageName: node
   linkType: hard
 
