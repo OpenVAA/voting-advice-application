@@ -303,6 +303,35 @@ The other two `major` rows are not group 8's: `@types/node` 26 and `typescript` 
 reasons). The three HOLD-30d rows outside group 8 are Kit 3 / `adapter-node` 6 / `adapter-static` 4 (169-12, clear
 2026-10-31T17:2xZ). Nothing in this group was taken from the youngest-releases list.
 
+### 169-11 (group 9) re-measurement, 2026-10-03
+
+The version probe reads manifests only, so the Actions were measured from the GitHub releases API at
+2026-10-03T17:09:32Z (`gh api repos/<owner>/<repo>/releases`, non-draft, non-prerelease;
+`tests/e2e-runs/169-gates/11/t0-action-releases.tsv`). Each major tag was then resolved to its commit
+(`gh api repos/<owner>/<repo>/commits/<tag>`): every floating major tag points at the same commit as the newest
+release of that major, so `@vN` runs exactly the release measured below. The inputs of every target were read from
+its `action.yml` at that tag (`11/t0-action-inputs.txt`).
+
+| Action | Pinned before | Target (newest release, published, age) | Target line x.0.0 (published, age) | Verdict |
+|---|---|---|---|---|
+| `actions/checkout` | `@v4` (17 steps, six workflows) | **v7** = v7.0.1 (2026-07-20, 75.1 d) | v7.0.0 2026-06-18 (107.1 d) | major; both rules met |
+| `actions/setup-node` | `@v4` (11) | **v7** = v7.0.0 (2026-07-14, 81.6 d) | same | major; both rules met |
+| `actions/upload-artifact` | `@v4` (2) | **v7** = v7.0.1 (2026-04-10, 176.0 d) | v7.0.0 2026-02-26 (219.0 d) | major; both rules met |
+| `dorny/paths-filter` | `@v3` (1) | **v4** = v4.0.3 (2026-08-05, 59.2 d) | v4.0.0 2026-03-12 (204.8 d) | major; both rules met |
+| `supabase/setup-cli` | `@v1` (6) | **v3** = v3.0.1 (2026-09-24, 9.5 d) | v3.0.0 2026-07-07 (88.2 d) | major; both rules met |
+| `changesets/action` | `@v1` (1, `release.yml`) | **v2** = v2.1.2 (2026-09-07, 26.2 d) | v2.0.0 2026-08-11 (53.2 d) | major; both rules met |
+| `actions/configure-pages` | `@v4` (1, `docs.yml`) | **v6** = v6.0.0 (2026-03-25, 192.0 d) | same | major; both rules met |
+| `actions/upload-pages-artifact` | `@v3` (1) | **v5** = v5.0.0 (2026-04-10, 175.9 d) | same | major; both rules met |
+| `actions/deploy-pages` | `@v4` (1) | **v5** = v5.0.1 (2026-09-01, 31.8 d) | v5.0.0 2026-03-25 (192.0 d) | major; both rules met |
+| `trufflesecurity/trufflehog` | `@v3.97.2` + `version: "3.97.2"` | **3.97.9** (2026-09-24, 9.3 d), the newest 3.x | — (patch) | patch; 7-day rule met |
+| `threeal/setup-yarn-action` | `@v2` (9) | v2.0.0 is the newest release | — | current; untouched |
+| `anthropics/claude-code-action` | `@v1` (3) | v1.0.240 is the newest; still major 1 | — | current; untouched |
+
+Nothing was held. No workflow is triggered by `pull_request_target` or `workflow_run` (`git grep` over the six
+`on:` blocks), so checkout v7's new block on checking out fork-PR code in those two events (actions/checkout#2454)
+changes nothing here; the `claude.yml` events (`issue_comment`, `pull_request_review*`, `issues`) check out the
+default ref as before.
+
 ## 2. Package legitimacy
 
 **Operator approvals (step 0, run before any repository change, 2026-10-03T06:37Z):** the box check printed
@@ -1187,6 +1216,86 @@ Notes:
     no `.env` value and no dotenv banner in the output (`t2-dotenv-list.log`).
   - `js-yaml` 5.4.2: `@openvaa/llm` typecheck + 43/43, `argument-condensation` 30/30, `question-info` 22/22 (with the
     rebuilt `@openvaa/llm` dist); the 31-file parse comparison is in § 6.
+
+### 169-11 CI evidence (`ci-evidence/169-deps`, `main.yaml`) — the first CI observation of groups 2–9
+
+Same procedure as 169-02: a source-only tree of HEAD (scratch `GIT_INDEX_FILE`, `.planning` and `.bg-shell`
+removed; `git ls-tree -r --name-only <sha>` → **0** paths under `.planning/` for each of the three commits below;
+the only non-`.planning` difference from HEAD is the removed `.bg-shell/manifest.json`), parent `59f8dacdd`, pushed
+with `--force-with-lease` to `ci-evidence/169-deps` (2cf0e8416 → 3a27c98fc → d69c5d62a → 59607e5cd). Job lists:
+`tests/e2e-runs/169-gates/11-t3-ci-run1.json`, `11-t3-ci-run2.json`, `11-t3-ci.json` (run 3, the plan's verify
+command). The run before these (37115289953, tree of `8d91d37f8`) carried group 1 only, so run 1 below is the first
+CI run of groups 2–8 as well as of the Actions majors: ESLint 10, Vite 8, Vitest 5, Playwright 1.63 (`PW_IMAGE`
+digest), Postgres 17 locally and in CI, faker 10, AI SDK 7 and the small majors. The pending todo
+`2026-09-03-ci-e2e-ssr-500.md` (dev server answering HTTP 500) describes none of the reds below, so it exempts no job.
+
+| Job | Run 1 `37139970902` (`3a27c98fc` = tree of `70c397a8c`) | Run 2 `37142651706` (`d69c5d62a` = tree of `549f6a60d`) | Run 3 `37144076939` (`59607e5cd` = tree of `edaa28205`) |
+|---|---|---|---|
+| `node-engine-range-negative-control` | success | success | **success** |
+| `docker-image-build` | success (its only `uses:` is `actions/checkout@v7`) | success | **success** |
+| `supabase-tests` | success (setup-cli v3 → CLI 2.118.0; `postgres:17.6.1.171`; pgTAP `Files=36, Tests=1335`, `Result: PASS`) | success | **success** (pgTAP `Files=36, Tests=1335`, `Result: PASS`) |
+| `skill-drift-check` | success | success | **success** |
+| `secret-scan` | success (trufflehog 3.97.9) | success | **success** |
+| `dependency-audit` | success | success | **success** |
+| `sql-lint` | success | success | **success** |
+| `supabase-types-drift` | success | success | **success** |
+| `dev-seed-integration` | success | success | **success** |
+| `frontend-and-shared-module-validation` | success | success | **success** |
+| `e2e-visual` | success (Playwright 1.63 container) | success | **success** (7 passed) |
+| `e2e-tests` | **failure** (step "Run E2E tests": 81 passed / 2 failed / 88 did not run) | **failure** (82 passed / 1 failed / 88 did not run) | **success** (171 passed; no failed, flaky or did-not-run line in the job log) |
+| **Run conclusion** | failure | failure | **success** (2026-10-03T18:24:31Z–18:42:09Z, attempt 1; 12/12 jobs `success`) |
+
+- **Run 1, red 1 — `performance` › "voter results page renders matches within budget": `timeToMatches` 5901 ms
+  against the 5000 ms budget** (`resultsFetches` 11, ttfb 403 ms). Run 37115289953 had measured 1329 ms.
+  **Attributed to group 4 (Playwright 1.63, `34670ea56`), harness-side, not the app.** Local full-suite runs had
+  already moved from ~210–300 ms (`169-01`, `169-02`) to 690–1160 ms from `169-04-group4` onwards, under budget
+  locally and so unnoticed. A bisect on an isolated scratch clone (`git clone` of this repository; the running
+  stack untouched: `db:start` neutralised in the clone's copy of `e2e-run.sh`, `--no-db-reset`, port 5273), the
+  `performance` project alone, 3 runs per point, idle dev server:
+
+  | Point | `timeToMatches` (ms) | ttfb (ms) |
+  |---|---|---|
+  | `8d91d37f8` (CI run 37115289953's tree) | 243, 310, 325 | 34–36 |
+  | `668dc5675` (group 4, before Playwright; Playwright 1.58.2, Chromium 145) | 243, 237, 213 | 32–37 |
+  | `34670ea56` (Playwright 1.63.0, Chromium 153) | 512, 535, 506 | 30–33 |
+  | `7b41eb90a` (end of group 4) | 521, 482, 492 | 24–35 |
+  | `70c397a8c` (HEAD), traced (config default) | 611, 584, 585 | 33–36 |
+  | `70c397a8c` (HEAD), `--trace=off` | 242, 244, 241 | 39–40 |
+
+  The step is the Playwright commit, which changes no app code, and untraced HEAD equals traced 1.58: the cost is
+  Playwright 1.63's trace recording inside the measured window (the config records a trace for every test). Fix
+  (`f6bbc68ab`): `trace: 'off'` for the `performance` project only, with the measurements in the config comment; the
+  budget, the window and every assertion are unchanged. Locally afterwards: 255 ms (`169-e2e/169-11-fix-performance`,
+  3/3). Run 2 measured **3045 ms** (pass). That is higher than the 1329 ms of run 37115289953; the CI runner's share
+  of that gap was not isolated (UNCONFIRMED), and the margin is recorded as a follow-up (§ 7).
+- **Run 1, red 2 — `voter-journey` › "full voter journey end-to-end", step "customData.terms": the term popup was
+  never visible within 2000 ms after `termTrigger.focus()`.** The trace: the Base-3 heading text matched (DOM swapped)
+  at +4.169 s, focus at +4.205 s; the screencast frames at +0.05 s and +0.33 s after the focus still show Base-2 (the
+  View Transition's old snapshot), Base-3 appears by +0.84 s with no popup and no focus on the trigger. The root
+  layout's `afterNavigate` → rAF focus reset (`focusNavigationTarget`) runs only after the transition ends
+  (`tests/tests/helpers/navigation.ts` records the same ordering), takes focus to the heading, and `Term.svelte`
+  hides the popup on `focusout`. A test race exposed by the slower page, not a product defect. Fix (`549f6a60d`): the
+  step polls until focus sits on `[data-focus-on-nav] ?? h1` with `TIMEOUTS.page` before focusing the trigger; the
+  popup assertions keep `TIMEOUTS.element`. Run 2 passed the step.
+- **Run 2, red — `voter-journey` › "full voter journey end-to-end", step "answer remaining base questions…":
+  `question-delete` stayed disabled on Base-6 until the 240 s test timeout.** This is the intermittent recorded in
+  `deferred-items.md` since 169-07 (seen once locally, root cause UNCONFIRMED), now seen in CI. The CI trace shows
+  the same window as red 2: Base-6's heading matched, the slider was focused and `End` pressed (+0.000 s), Next
+  clicked at +0.094 s, while the frame at +0.013 s still shows Base-5. Why the press was not stored is
+  **UNCONFIRMED** (the slider persists in its `change` handler); the press demonstrably landed inside the transition
+  window. Fix (`edaa28205`): one helper, `waitForNavigationFocusReset`, now used by the term step and by
+  `expectNumberQuestionAndAdvance`, which also waits for the stored answer (`question-delete` enabled,
+  `TIMEOUTS.element`) before clicking Next, so a lost press fails at the press instead of as a 240 s timeout two
+  steps later. Locally `voter-journey` passed 2/2 afterwards (`169-11-fix2-voter-journey-{1,2}`).
+- Observed in run 1 besides the reds: `supabase/setup-cli@v3` installs CLI 2.118.0 in every job that uses it; image
+  pulls default to `public.ecr.aws` and fall back to `ghcr.io` (§ 7). Postgres 17 (`config.toml` `major_version =
+  17`) starts in CI and passes pgTAP. `release.yml` and `docs.yml` did not run (they do not trigger on
+  `ci-evidence/**`); § 7 records the follow-up.
+- **Run 3 is the observed run D-10 requires: every job concluded `success`**, no todo exemption used. The plan's
+  verify command (`11-t3-ci.json`, allowed list `e2e-tests e2e-visual`) printed `12 jobs read`, exit 0. Its
+  `performance` test passed at **4603 ms** (ttfb 707 ms) against the 5000 ms budget: green, but with less than 10 %
+  margin (§ 7).
+- Fix-forward budget: two iterations (runs 2 and 3), within the plan's limit.
 
 ## 5. Negative controls
 
@@ -2219,6 +2328,43 @@ finding moved. The lint list is unchanged.
   `35 catalog keys, all consumed` (`t3-catalog-check.txt`); each key has at least one `"<key>": "catalog:"` reference
   in a tracked manifest. No "drop consumer-less entries" commit was needed.
 
+### 169-11 — the GitHub Actions majors, the Pages actions and trufflehog, one commit each (D-10, ruling 4)
+
+After every commit: all six workflows parse with `js-yaml` (`6 workflows parse`), the five CI-shape files pass
+(`ciDockerImageBuildGate`, `ciSecretScanFlags`, `ciTypecheckGate`, `rpcNullabilityGate`, `nodeEngineGate`: 5 files,
+38 tests) and Prettier accepts the changed files (`tests/e2e-runs/169-gates/11/t*-shape.log`). No lockfile change;
+no npm package installed. `.github/dependabot.yml` is unchanged (`git diff --quiet 64065412f HEAD --
+.github/dependabot.yml`).
+
+| Commit | Upgrade | Input changes, checked against the target's `action.yml` |
+|---|---|---|
+| `ca501461c` | `actions/checkout` v4 → v7 (17 steps) | none; `fetch-depth` is still an input. `ciDockerImageBuildGate.test.ts` now expects `['actions/checkout@v7']` |
+| `0f366de0a` | `actions/setup-node` v4 → v7 (11) | none; `node-version` and `registry-url` are still inputs. No step sets `cache:`, and v6+ limits the automatic package-manager cache to npm (`packageManager` is `yarn@4.18.1`), so no cache appears. v7 no longer exports a dummy `NODE_AUTH_TOKEN` (actions/setup-node#1558); `release.yml` sets no token |
+| `242c5d1a7` | `actions/upload-artifact` v4 → v7 (2) | none; `name`, `path`, `retention-days` unchanged; the new `archive` input keeps its zipped default |
+| `810083443` | `dorny/paths-filter` v3 → v4 (1) | none (`filters`) |
+| `32c9336ea` | `supabase/setup-cli` v1 → v3 (6) | none; every step keeps `version: 2.118.0`, so `rpcNullabilityGate.test.ts` still binds them to the lockfile. v3 installs the CLI from npm into a `$RUNNER_TEMP` prefix added to `PATH`, so a later `setup-node` does not hide it; it needs Node ≥ 20 and npm on the runner when it runs (the image default before `setup-node`). For CLI ≥ 2.108.0 it no longer forces `SUPABASE_INTERNAL_IMAGE_REGISTRY=ghcr.io` (v3.0.1). The three comments naming `setup-cli@v1` now describe the pinned CLI `version:` |
+| `2e9f5d343` | `changesets/action` v1 → v2 (1) | `title` → `pr-title`, `commit` → `commit-message`, `publish` → `publish-script` (values unchanged); `github-token: ${{ secrets.GITHUB_TOKEN }}` added; the step's `env: GITHUB_TOKEN` removed; `push-with-git-cli: true` added. See below |
+| `8fe98ace5` | `actions/configure-pages` v4 → v6 | none (no input set; v5's only breaking change is for `static_site_generator: next`) |
+| `bba6dc891` | `actions/upload-pages-artifact` v3 → v5 | none (`path`). v4+ leaves dotfiles out unless `include-hidden-files` is set; `apps/docs/static` and the routes contain no dot-named file, and adapter-static writes none |
+| `82f0991fb` | `actions/deploy-pages` v4 → v5 | none; the workflow's `pages: write` / `id-token: write` and the `github-pages` environment are unchanged |
+| `70c397a8c` | trufflehog 3.97.2 → 3.97.9 (`uses:` and `version:`) | `action.yml` byte-identical between the two tags. The comment's tag examples and the `ciSecretScanFlags.test.ts` docblock now quote `v3.97.9` / `3.97.9`; ghcr.io answers 200 for `trufflehog:3.97.9` and 404 for `:v3.97.9`, as the comment says |
+
+**`changesets/action` v2 and the token (T-169-34).** v2's `src/index.ts` takes the `github-token` input as its only
+credential and warns when a `GITHUB_TOKEN` env var differs from it; `src/run.ts` runs `changeset version` and the
+publish script with `env: { ...process.env, GITHUB_TOKEN: github.getToken() }`. `@changesets/get-github-info` (the
+changelog generator's helper) reads `process.env.GITHUB_TOKEN`, so it still gets the token without the step's env
+entry. v1's `commitMode` defaulted to `"git-cli"`; v2's `push-with-git-cli` defaults to `false` (GitHub API), so it
+is set to `true` to keep the push path. `create-github-releases` keeps its default (`true`, as v1's
+`createGithubReleases`), and `push-git-tags` defaults to `true`. v2 refuses Changesets CLI 2; the root declares
+`@changesets/cli ^3.0.3`. The job's `permissions` (`contents`, `pull-requests`, `id-token` write) and
+`NPM_CONFIG_PROVENANCE: true` are unchanged. v2 also drops its `.npmrc` handling for `NPM_TOKEN`; the job sets none.
+
+**trufflehog over the evidence range, locally, before the push.** `ghcr.io/trufflesecurity/trufflehog:3.97.9` over a
+scratch copy of the evidence commit with the Action's own arguments (`git file://… --since-commit 59f8dacdd --branch
+3a27c98fc --fail --no-update --github-actions --config=.github/trufflehog-openvaa.yml
+--exclude-paths=.github/trufflehog-exclude-paths.txt`): exit 0, 2632 chunks, `verified_secrets: 0,
+unverified_secrets: 0`. CI's `secret-scan` agreed (§ 4).
+
 ## 7. Operator follow-ups
 
 - **Review the `braces` baseline row (169-01, `c97bc9898`).** GHSA-vfj7-8cjw-p6xm (id 1240992) was published
@@ -2394,6 +2540,35 @@ finding moved. The lint list is unchanged.
 - **Undeclared `globals` import resolved (169-10).** `@openvaa/shared-config` now declares `globals: catalog:`
   (`5017d4a17`). This closes 167 review WR-02 / todo `2026-10-02-declare-globals-in-shared-config.md`, which was moved
   to `done/`.
+- **Watch the first `main` run of `release.yml` and `docs.yml` after merge (169-11).** Neither workflow triggers on
+  `ci-evidence/**` (`release.yml`: push to `main`; `docs.yml`: push to `main` under `apps/docs/**`, or manual
+  dispatch), so their changes are **unobservable until merge**:
+  - `release.yml`: checkout v7, setup-node v7 (no dummy `NODE_AUTH_TOKEN` any more) and `changesets/action` v2 with
+    the `github-token` input, renamed inputs and `push-with-git-cli: true`. On the first `main` push, check that the
+    step runs `changeset version` (or skips it with no changesets) without the "GITHUB_TOKEN environment variable is
+    set and does not match" warning, and that a release PR, if one is due, is opened and pushed as before.
+  - `docs.yml`: checkout v7, setup-node v7, `configure-pages` v6, `upload-pages-artifact` v5 (dotfiles excluded) and
+    `deploy-pages` v5. A manual `workflow_dispatch` after merge exercises all of them; check the deployed site loads.
+- **Playwright 1.63's trace recording slows render-heavy pages (169-11).** Measured on the results reload
+  (`performance` spec, idle dev server, 3 runs each, 2026-10-03): Playwright 1.58 traced 213–243 ms; Playwright 1.63
+  traced 584–611 ms, untraced 241–244 ms. The app did not get slower across groups 2–8 (untraced HEAD equals traced
+  1.58). The suite records a trace for every test (`retain-on-failure` records like `'on'`), so every spec now runs
+  under that extra browser-side cost, and on the ~4.3× slower CI runner it widens every fixed-window race. 169-11
+  turned tracing off for the `performance` project only (`f6bbc68ab`). Whether to keep global `retain-on-failure`, move
+  to `on-first-retry` in CI, or report the overhead upstream is an operator call. Which part of the trace recorder
+  costs the time (DOM snapshots or the screencast) was not isolated: **UNCONFIRMED**.
+- **`supabase/setup-cli` v3 no longer forces ghcr.io (169-11).** For CLI ≥ 2.108.0 the action leaves the registry to
+  the CLI, which pulls from `public.ecr.aws` and falls back to `ghcr.io` (run 37139970902 `supabase-tests`: 22
+  "Retrying after" lines, 34 ECR and 16 ghcr image references, `Start Supabase` green). No action needed; if ECR
+  throttling ever makes the start step slow, pin `SUPABASE_INTERNAL_IMAGE_REGISTRY=ghcr.io` in the job env.
+- **The CI `performance` margin is thin (169-11) — likely next CI flake.** Untraced, runs 37142651706 and
+  37144076939 measured `timeToMatches` 3045 ms (ttfb 290 ms) and **4603 ms (ttfb 707 ms)** against the 5000 ms
+  budget; the last pre-group-2 run (37115289953, traced on Playwright 1.58, Vite 7) measured 1329 ms (ttfb 51 ms). The
+  ttfb share points at the server side under the suite's parallel load; local full-suite ttfb also moved from 21–27 ms
+  (169-01/02) to 38–174 ms from 169-04/05 on. Locally the untraced window is back at the pre-group-4 value (241–255 ms), so the remaining CI gap is in
+  the runner (Vite 8 dev server under the suite's parallel load is one candidate) and was not isolated:
+  **UNCONFIRMED**. Watch the next CI runs; if `timeToMatches` keeps climbing, measure it per stage before touching the
+  budget, which the spec forbids raising to make a red test green.
 
 ## 8. Moderate and low advisories on chosen versions
 
