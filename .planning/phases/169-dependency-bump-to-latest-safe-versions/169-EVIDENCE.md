@@ -337,6 +337,64 @@ was due.
 gates 0; forced turbo `0 cached` (typecheck 23/23, unit 25/25, build 14/14); audit `0 new advisory(ies) at high+, 6
 accepted`.
 
+### 169-02 CI evidence (`ci-evidence/169-deps`, `main.yaml`)
+
+Each evidence commit is a source-only tree (`GIT_INDEX_FILE` scratch index, `.planning` and `.bg-shell` removed,
+`git ls-tree -r --name-only` → 0 paths under `.planning/`) with parent `59f8dacdd` (origin/main). Job lists:
+`tests/e2e-runs/169-gates/02-t2-ci-jobs-run1.json`, `02-t3-ci-jobs-run2.json`, `02-t3-ci-jobs-run3.json`. The
+pending todo `2026-09-03-ci-e2e-ssr-500.md` (dev server answering HTTP 500) does not describe any red here, so it
+exempts no job. `release.yml` and `docs.yml` (both edited for Node 24 / Yarn 4.18) do not trigger on
+`ci-evidence/**`. They cannot be observed until merge.
+
+| Job | Run 1 `37110493184` (`91e58711a` = tree of `77d3ce8bf`) | Run 2 `37111729145` (`3eaa31396` = tree of `d01096223`), attempts 1 and 2 | Run 3 `37115289953` (`2cf0e8416` = tree of `8d91d37f8`) |
+|---|---|---|---|
+| `node-engine-range-negative-control` | success | success | **success** |
+| `docker-image-build` | success | success | **success** |
+| `supabase-tests` | success | success | **success** |
+| `skill-drift-check` | success | success | **success** |
+| `secret-scan` | failure (trufflehog: the `localSupabaseUrl.test.ts` userinfo fixture URL, pre-existing since `214cf8d3b`) | success | **success** |
+| `dependency-audit` | failure (step "Setup Yarn 4.18") | success | **success** |
+| `sql-lint` | failure (step "Setup Yarn 4.18") | success | **success** |
+| `supabase-types-drift` | failure (step "Setup Yarn 4.18") | success | **success** |
+| `dev-seed-integration` | failure (step "Setup Yarn 4.18") | success | **success** |
+| `frontend-and-shared-module-validation` | failure (step "Setup Yarn 4.18") | success | **success** |
+| `e2e-visual` | failure (step "Setup Yarn 4.18") | success | **success** (7 passed) |
+| `e2e-tests` | failure (step "Setup Yarn 4.18") | **failure, both attempts** (step "Run E2E tests"; 82 passed / 1 failed / 88 did-not-run) | **success** (171 passed; no failed, flaky or did-not-run line in the job log) |
+| **Run conclusion** | failure | failure | **success** (2026-10-03T10:06:21Z–10:26:35Z, attempt 1) |
+
+- **Run 1.**
+  - The seven "Setup Yarn 4.18" failures: `setup-yarn` ran its install while the runner was still on its default
+    Node 22, and the new preinstall guard (`engines.node >=24.15.0`) refused it. That is the guard working. The
+    workflow ordered its steps wrong. Fixed in `4dbc7aeed`: Node is set up before Yarn in 9 jobs, and
+    setup-node's `cache: "yarn"` is dropped.
+  - `secret-scan` fixed in `d01096223` (the fixture URL is now built from parts).
+- **Run 2.**
+  - `e2e-tests` failed on both attempts, each time in a different test but at the same helper line,
+    `voter-journey.spec.ts:385` (`expectElectionOptionAndSelect`: `expect(visibleOptions).toHaveCount(1, { timeout:
+    TIMEOUTS.element })`, 2000 ms; got 2). Attempt 1 failed in `number-scale boundary matching › all-min walk`
+    (line 1412). Attempt 2 failed in `full voter journey end-to-end` (line 472). Each time, this happened right
+    after another election was clicked in the results accordion.
+  - The attempt-2 trace has screencast frames at +0.87 s and +2.0 s after the click. Both show the accordion
+    still expanded, with the list below still showing the PREVIOUS election ("13 candidates in constituency
+    [co-reg-n]"). For about 1.1 s there are no frames at all, a busy main thread.
+  - The only network traffic in that window is storage image GETs, with no `__data.json` or other server
+    request. The wait is therefore on client-side results re-rendering, which the dev server's Node version
+    does not affect.
+  - The attempt-1 error-context snapshot, taken right after the timeout, shows the accordion already
+    collapsed, i.e. the collapse landed just past 2 s.
+  - **Verdict:** a fixed-window race on the slower CI runner, not a Node 24 or TypeScript 6 regression. Locally
+    the same suite is 171/171 on Node 24 (`169-e2e/169-02-node24`). **Component mechanism UNCONFIRMED**: whether
+    a collapse timer or a remount-then-reconcile of the results subtree delays the collapse was not traced.
+  - **Fix forward, `8d91d37f8`:** both copies of the helper (`expectElectionOptionAndSelect` in
+    `voter-journey.spec.ts` and `selectElectionByName` in `tests/tests/utils/selectElection.ts`) now wait with
+    `TIMEOUTS.page` (5 s), because what they wait on is a route transition. The assertion (`toHaveCount(1)`) is
+    unchanged.
+  - Diagnosis artifacts (scratchpad copies of the run's `results.json`, trace and error-context) were not kept
+    in the repository. They can be downloaded again with `gh run download 37111729145` while GitHub retains them.
+- **Run 3** carries the whole of group 1: Yarn 4.18.1, Node 24, the CI step order, the secret-scan fixture,
+  `@types/node` 24, TypeScript 6.0.3 and the E2E budget fix. **Every job concluded `success`**, including the
+  negative control (both halves bound under Node 24.21.0). This is the observed CI run D-11 requires.
+
 ## 5. Negative controls
 
 ### Age gate binding proof (D-04)

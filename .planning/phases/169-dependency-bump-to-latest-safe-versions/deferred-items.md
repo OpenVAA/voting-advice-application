@@ -1,0 +1,14 @@
+## Deferred Items
+
+- `apps/docs/scripts/tsconfig.json` does not type-check, under TypeScript 5.9.3 or 6.0.3, and no gate runs it
+  status: open
+  **Found during:** 169-02 Task 3, the TypeScript 6 review of every tsconfig the plan's `read_first` names.
+  **What:** `tsc -p apps/docs/scripts/tsconfig.json --noEmit` exits 2 on both TypeScript lines.
+  - Under 5.9.3 (the pre-plan version, run from the Yarn cache copy `typescript-npm-5.9.3` on 2026-10-03), it reports one error: `node_modules/mdsvex/dist/main.d.ts(2,34): error TS2307: Cannot find module 'unified' or its corresponding type declarations.`
+  - Under 6.0.3 (the repository's TypeScript after `ebeaafa5c`), it reports that error plus `apps/docs/scripts/utils/links.ts(9,31): error TS7016` for the untyped `../../mdsvex.config.js` import. TypeScript 6 turns `strict` on by default, and this config sets no `strict`.
+
+  The config does not extend `@openvaa/shared-config/ts`, and nothing runs it. On 2026-10-03, `git grep -n "scripts/tsconfig"` outside `.planning/` found no match. The docs app's `typecheck` and `check` scripts run `svelte-check --tsconfig ./tsconfig.json`, which includes `src/`, `test/` and `tests/` but not `scripts/`. `169-gates.sh` and the workflows under `.github/workflows/` do not reference it either. The scripts themselves (`validate:links`, `check:research-quotes`) run through `tsx`, which does no type-checking, and both are green in every 169 gate run.
+  **Why deferred:** The 5.9.3 error is already there before the TS 6 move. The only error TS 6 adds is in a file that no gate checks. Typing the scripts is outside 169-02's scope, which is limited to the toolchain pins.
+  **Fix:** Pick one of two options:
+  - Bring `apps/docs/scripts/` under a gated type-check: extend the shared base, add the missing `unified` types and a declaration for `mdsvex.config.js`, and add `tsc -p scripts/tsconfig.json --noEmit` to the docs `typecheck` script.
+  - Delete `apps/docs/scripts/tsconfig.json` if nothing is meant to type-check the scripts.
