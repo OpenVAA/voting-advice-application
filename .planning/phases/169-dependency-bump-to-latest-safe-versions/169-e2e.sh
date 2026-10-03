@@ -72,7 +72,7 @@ MIN_KIB=14470349 # 13.8 GiB, the floor the operator accepted for this host
 case "$AVAIL_KIB" in
   '' | *[!0-9]*) echo "169-e2e.sh: could not parse free space from: $DF_OUT" >&2; exit 3 ;;
 esac
-AVAIL_GIB="$(awk -v k="$AVAIL_KIB" 'BEGIN { printf "%.2f", k / 1048576 }')"
+AVAIL_GIB="$(LC_ALL=C awk -v k="$AVAIL_KIB" 'BEGIN { printf "%.2f", k / 1048576 }')"
 if [ "$AVAIL_KIB" -lt "$MIN_KIB" ]; then
   echo "169-e2e.sh: only ${AVAIL_GIB} GiB free in the Docker VM (floor 13.8 GiB) -- stop and report; never restart Docker or prune images/volumes" >&2
   exit 3

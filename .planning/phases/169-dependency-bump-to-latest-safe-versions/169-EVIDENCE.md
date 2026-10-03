@@ -66,8 +66,21 @@ NEW ids (11, not the 9 the planning snapshot recorded):
 | **1240992** | **braces** | GHSA-vfj7-8cjw-p6xm | 3.0.3 | **<=3.0.3** | micromatch@4.0.8 | **no — 3.0.3 (2024-05-21) is the latest release** |
 | **1240991** | **http-cache-semantics** | GHSA-ch52-4w7c-c8xp | 4.1.1 | **<=4.2.0** | make-fetch-happen@14.0.3 | **no — 4.2.0 (2025-05-09) is the latest release** |
 
-The two bold rows were published after planning (2026-10-01) and have **no fixed version on the registry**,
-so no in-range refresh can clear them. See § 3 and § 7.
+The two bold rows were published after planning (2026-10-01) and have **no fixed version on the registry**.
+`http-cache-semantics` was cleared anyway, by removal: `node-gyp@npm:latest` (requested by Yarn's `fsevents`
+compat patch) refreshed 11.0.0 → 13.0.2, which drops `make-fetch-happen`. `braces` stays (see below).
+
+**Audit after the group-0 refresh** (169-01 Task 3, `tests/e2e-runs/169-gates/01-t3-audit*.log`):
+
+| Step | Exit | NEW | ACCEPTED | stale baseline ids |
+|---|---|---|---|---|
+| attempt 1: whole tree minus the planned excluded set | 1 | 2 — `@fastify/busboy` 1240982 (**introduced by the refresh**) and `braces` 1240992 | 8 | 59 |
+| attempt 2: attempt 1 minus the AI SDK family (§ 3) | 1 | 1 — `braces` 1240992 (no fix published) | 5 | 62 |
+| after the braces row is accepted (`c97bc9898`, § 7) | **0** | **0** — `Summary: 0 new advisory(ies) at high+, 6 accepted` | 6 | 62 |
+
+The 6 accepted rows still present: `tar` 1123940 (critical) / 1123941 / 1145647 via `supabase@2.83.0` (169-06),
+`@faker-js/faker` 1158500 (169-08), `@sveltejs/kit` 1116433 (169-05), `braces` 1240992 (no fix). The 62 stale
+ids are left in the baseline for 169-13's reviewed rewrite (PROH-169-02: no `--update-baseline` here).
 
 ## 2. Package legitimacy
 
@@ -128,6 +141,8 @@ moved by any plan, and 169-10 removes it (D-23). No stop.
 
 | Package | Held at | Newer line | Reason | Decision ref | Re-check date or trigger |
 |---|---|---|---|---|---|
+| `ai`, `@ai-sdk/google`, `@ai-sdk/openai` (+ their exact pins `@ai-sdk/gateway`, `@ai-sdk/provider`, `@ai-sdk/provider-utils`) | pre-phase resolutions: `ai` 5.0.60, `@ai-sdk/google` 2.0.23, `@ai-sdk/openai` 2.0.42, gateway 1.0.33, provider 2.0.0, provider-utils 3.0.10 / 3.0.12 | in-range `ai` 5.0.267, google 2.0.99, openai 2.0.130 (→ provider-utils 3.0.39) | **Narrowed out of the group-0 refresh.** `@ai-sdk/provider-utils` ≥ 3.0.35 (2026-08-26) depends on `undici ^5.29.0`; the in-range refresh pulled `undici` 5.29.0 and `@fastify/busboy` 2.1.1 back into the tree, adding NEW high 1240982 (`@fastify/busboy` <3.2.1, no in-range fix under `undici` 5's `^2.0.0`) and re-attaching accepted `undici` rows 1114638 / 1114640 / 1121245 to a new dependent. Moved into the excluded set per 169-01 Task 3 step 6; the family's majors are 169-09's | D-07, D-21, D-25 (G7) | 169-09 (AI SDK majors); re-check that the target `ai` / `@ai-sdk/*` majors do not depend on `undici` 5 |
+| `braces` | 3.0.3 | none published | No fixed version exists (GHSA-vfj7-8cjw-p6xm covers `<=3.0.3`; 3.0.3 is the latest). Accepted in the baseline with a rationale (§ 7) | D-02 (baseline keeps no-fix rows), D-05 | when `braces` publishes a fix; or once `vite-plugin-restart` (169-05) and `@changesets/cli` 2's `micromatch` path (169-10) are both gone, the row goes stale |
 
 ## 4. Gate runs
 
@@ -137,6 +152,8 @@ Runner: `bash 169-gates.sh <label>` (`TURBO_FORCE=true`; each status read direct
 | Plan | Label | HEAD | install | dedupe | typecheck | lint | format | check-fe | check-docs | unit | build | audit | docs-links | docs-rq | E2E (total / passed / failed / flaky / did-not-run) |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 169-01 | `169-01-baseline` (only the age-gate line changed) | `5ed82f437` + `.yarnrc.yml` | 0 | **1** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | **1** | 0 | 0 | — |
+| 169-01 | `169-01-group0-attempt1` (after the refresh + braces row) | `c97bc9898` | 0 | 0 | **2** | **2** | **1** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | — |
+| 169-01 | `169-01-group0` | `54041714e` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | **171 / 171 / 0 / 0 / 0** (`169-e2e/169-01-group0`) |
 
 Notes on `169-01-baseline` (2026-10-03T06:43:09Z–06:45:43Z, `tests/e2e-runs/169-gates/169-01-baseline/`):
 
@@ -147,6 +164,33 @@ Notes on `169-01-baseline` (2026-10-03T06:43:09Z–06:45:43Z, `tests/e2e-runs/16
   nothing), so the starting tree was never held to it; the gate is new with this phase. The plan expected 0
   here. Group 0's `yarn dedupe` is what brings it to 0, and `169-01-group0` must show it at 0.
 - Every forced turbo gate reported `0 cached` (`03-typecheck` 23/23 and `09-build` 25/25 tasks executed).
+
+Notes on `169-01-group0-attempt1` (06:56:47Z–06:59:11Z, kept at `tests/e2e-runs/169-gates/169-01-group0-attempt1/`):
+
+- `03-typecheck` exit 2 and `04-lint` exit 2 — `@openvaa/llm` (and `typecheck:tests` inside `lint:check`)
+  type-checked `packages/app-shared/dist/index.js` (TS7006 / TS2339 / TS7053) because `dist/index.d.ts` was
+  missing. **Mechanism, confirmed by reproduction:** turbo runs `@openvaa/app-shared:typecheck` alongside
+  `@openvaa/app-shared:build` (log: both "force executing" two lines apart; `typecheck` depends on `^build`
+  only). On these composite projects `tsc --noEmit` writes `dist/tsconfig.tsbuildinfo`; when that write lands
+  after tsup's "Cleaning output folder", the build's `tsc --emitDeclarationOnly` takes the stale buildinfo as up
+  to date and emits nothing. By hand: a current buildinfo copied into an emptied `dist` → `tsc
+  --emitDeclarationOnly` exit 0 with only `tsconfig.tsbuildinfo` in `dist`. **Trigger UNCONFIRMED:** it fired
+  on the first two forced turbo runs after the lockfile refresh (turbo 2.8.17 → 2.11.4 and several `@types/*`
+  moved) and in none of 6 forced `yarn typecheck` re-runs in isolation afterwards; a dependency change widening
+  the window is the likely but unproven reason. Fixed forward in `0c98a4621` (`tsc --noEmit --composite false`
+  in the 8 tsup packages: the typecheck no longer touches `dist`, mtime unchanged per package; a planted
+  `TS2322` in `@openvaa/app-shared` still fails it with exit 2; 3 further forced runs green).
+- `05-format` exit 1 — 19 files reformatted by Prettier 3.9.9 (refreshed from 3.7.4); `yarn format` and nothing
+  else, committed separately as `54041714e`. The docs app's own format pass changed nothing, and `12-docs-rq`
+  stayed green (22 spans identical).
+
+`169-01-group0` (07:07:13Z–07:09:52Z): all twelve gates 0.
+
+E2E `169-01-group0` (`bash 169-e2e.sh 169-01-group0`, full default suite): Docker VM 25.31 GiB free after
+`docker builder prune -af`, port 5273 free; `e2e-run.sh` at HEAD `54041714e` with `db_reset=true`,
+2026-10-03T07:10:03Z–07:16:01Z, wrapper exit 0, preflight successes 1 / failures 0. `summary.json`: **total 171,
+passed 171, failed 0, flaky 0, skipped 0, didNotRun 0**. No listener left on 5273. This is the measured-green
+tree 169-02's Node 24 commit is judged against (D-11 attribution).
 
 ## 5. Negative controls
 
@@ -167,9 +211,120 @@ Scratch project made with `mktemp -d` under the session scratchpad (outside the 
 
 The scratch directory was deleted afterwards.
 
+### Audit liveness (D-28) — 169-01 Task 2
+
+"Blocked" = `YARN_NPM_AUDIT_REGISTRY=http://127.0.0.1:9 YARN_HTTP_RETRY=0` (the audit's request is refused;
+stderr carries a Yarn `RequestError … ECONNREFUSED` stack, stdout is empty, `yarn npm audit` exits 1).
+"Emptied copy" = the working-copy `security/audit-baseline.json` rewritten with `accepted: []`, the real file
+saved aside first and copied back after the run. Logs: `tests/e2e-runs/169-gates/01-t2-nc*.log`.
+
+| Control | Gate version | Command | Exit | What it showed | Revert proof |
+|---|---|---|---|---|---|
+| RED | test-first | `yarn workspace @openvaa/dev-seed vitest run tests/auditBaselineShape.test.ts` (commit `78b2950d3`) | 1 | 5 failed / 9 passed: every `the gate proves the audit ran` case failed with `Cannot find module '…/scripts/lib/audit-run.mjs'` | — |
+| **NC-1** | **pre-change** (`78b2950d3`) | emptied copy + blocked → `node scripts/assert-dependency-audit.mjs` | **0** | `[ACCEPTED] 0 · [NEW] 0 · Summary: 0 new advisory(ies) at high+, 0 accepted` — **the silent pass**: a failed audit reads as a clean tree once the baseline is empty | `git diff --exit-code -- security/audit-baseline.json` → 0 |
+| **NC-2** | post-change (`06bb72877`) | emptied copy + blocked → gate | **2** | `ERROR: \`yarn npm audit …\` printed no findings and exited with status 1, so the audit did not run against http://127.0.0.1:9 …` | `git diff --exit-code -- security/audit-baseline.json` → 0 |
+| **NC-3** | post-change | real baseline + blocked → gate | **2** | same ERROR line | — (baseline untouched) |
+| **NC-4** | post-change | real baseline + blocked → `--update-baseline` | **2** | same ERROR line; no `Rewrote …` line | `git diff --exit-code -- security/audit-baseline.json` → 0 (file untouched) |
+| **NC-5** | post-change, working copy only | `classifyAuditRun` perturbed to return `clean` for any empty output (status ignored) → shape test (`--reporter=verbose`) | **1** | 3 failed / 11 passed — `reads empty output with a non-zero exit as an audit that did not run`, `reads empty output from an audit killed by a signal as an audit that did not run`, `classifies the real audit as did-not-run when the registry is unreachable` | original copied back; `cmp` → 0, and after the commit `git diff --exit-code -- scripts/lib/audit-run.mjs` → 0 |
+| GREEN | post-change | shape test | 0 | 14 passed (the real blocked-registry case ran in ~0.8 s) | — |
+| findings path | post-change | `yarn audit:deps` (network open) | **1** | `Summary: 11 new advisory(ies) at high+, 63 accepted` — unchanged | — |
+
+`yarn workspace @openvaa/dev-seed typecheck` → 0; `TURBO_FORCE=true yarn lint:check` → 0;
+`yarn assert:unit-coverage` → 0; Prettier clean on all three touched files.
+
 ## 6. Diffs and traces
 
+### Group 0 lockfile refresh (169-01 Task 3, commit `27a209c99`)
+
+Procedure: the include list is every package name with an `npm:` descriptor in `yarn.lock` (811) minus
+`@openvaa/*` and the planned excluded set (11) → 800 names; minus the AI SDK family (§ 3) → **794**
+(`tests/e2e-runs/169-gates/01-t3-include-list.v2.txt`). One `yarn up -R <794 names>` passed as a bash array
+(zsh hands an unquoted list over as ONE argument, which Yarn rejects with "Ranges aren't allowed when using
+--recursive"), then `yarn dedupe` ("No packages can be deduped"). `yarn.lock`: 2473 insertions / 2654
+deletions; descriptors 1240 → 1254.
+
+Boundaries proven:
+
+- Excluded set (`supabase`, `@playwright/test`, `playwright`, `@sveltejs/kit`, `@sveltejs/adapter-node`,
+  `@sveltejs/adapter-static`, `@supabase/supabase-js`, `daisyui`, `tailwindcss`, `@tailwindcss/vite`,
+  `@tailwindcss/typography`): their full `yarn.lock` blocks before vs after — `diff` exit 0
+  (`01-t3-excluded-{before,after}.txt`). AI SDK family blocks before vs after: `diff` exit 0.
+- `git diff --exit-code` over every `package.json` and `.yarnrc.yml` → 0; the manifest / `.yarnrc.yml` sha256
+  list re-checked OK. `git grep -n '"resolutions"'` → only the pre-existing root block
+  (`isomorphic-dompurify/jsdom: ^26.1.0`).
+- Age backstop: every one of the **405** `name@version` pairs new to `yarn.lock` checked against its registry
+  publish time as of 2026-10-03T06:52Z (before the refresh): **0 under 7 days**, 0 registry errors; youngest
+  `esrap@2.3.14` (2026-09-25T23:16Z, 7.32 d) (`01-t3-agecheck.log`). No `npmPreapprovedPackages` entry was
+  needed or added.
+- 79 package names are new to `yarn.lock` and 50 left it (`01-t3-{new,gone}-names.txt`). The new names were
+  legitimacy-checked (`01-t3-legit-new.json`): 0 `SLOP`; 2 OK and 77 `SUS` for `too-new` and/or
+  `unknown-downloads` only; none has a postinstall. Each comes from its parent package's own upstream
+  repository: `rolldown`, 15 `@rolldown/binding-*` and `@rolldown/pluginutils` (vite 8.3.1, which vitest
+  4.1.11's own `vite ^6 || ^7 || ^8` dependency now resolves to — the docs app's declared `vite` stays on 7.3.6);
+  `@lix-js/sdk-*`, `@bytecodealliance/jco-*`, `binaryen`, `oxc-minify`, 20 `@oxc-minify/binding-*`,
+  `@oxc-project/types` and `valibot` (`@inlang/paraglide-js` 2.25.4 → `@inlang/sdk` 3); `@turbo/*` (turbo
+  2.11's renamed platform packages); `@vercel/cli-config`, `@vercel/cli-exec`, `xdg-*`, `os-paths`
+  (`@vercel/oidc` 3.8.9, in range under `@ai-sdk/gateway` 1.0.33); `@blazediff/core` (`@vitest/browser`
+  4.1.11); `@sveltejs/load-config` (svelte-check 4.7.6); small `ljharb` / `inspect-js` shims.
+
+Direct-dependency resolutions that moved (declared range: before → after):
+
+- `@axe-core/playwright` (^4.11.3): 4.11.3 → 4.13.0
+- `@changesets/cli` (^2.30.0): 2.30.0 → 2.31.1
+- `@eslint/eslintrc` (^3.2.0): 3.2.0 → 3.3.7
+- `@eslint/js` (^9.39.1): 9.39.2 → 9.39.5
+- `@inlang/paraglide-js` (^2.15.0): 2.15.0 → 2.25.4
+- `@sveltejs/vite-plugin-svelte` (^6.2.1, docs): 6.2.1 → 6.2.4
+- `@types/node` (^22.19.15): 22.19.15 → 22.20.4
+- `@typescript-eslint/eslint-plugin`, `@typescript-eslint/parser` (^8.57.0): 8.57.1 → 8.70.1
+- `@vitest/browser-playwright` (^4.0.15): 4.0.15 → 4.1.11
+- `cheerio` (^1.0.0): 1.0.0 → 1.2.0 (moves to `undici ^7`)
+- `concurrently` (^9.0.0): 9.2.1 → 9.2.4
+- `dotenv` (^17.3.1): 17.3.1 → 17.4.2
+- `eslint` (^9.39.2): 9.39.2 → 9.39.5
+- `eslint-plugin-playwright` (^2.9.0): 2.9.0 → 2.12.0
+- `eslint-plugin-svelte` (^3.13.1, docs): 3.13.1 → 3.23.0
+- `globals` (^15.14.0): 15.14.0 → 15.15.0
+- `intl-messageformat` (^11.1.3): 11.1.3 → 11.2.15
+- `isomorphic-dompurify` (^3.3.0): 3.3.0 → 3.19.0
+- `jose` (^6.2.1): 6.2.1 → 6.2.12
+- `mdsvex` (^0.12.6): 0.12.6 → 0.12.8
+- `prettier` (^3.7.4): 3.7.4 → 3.9.9
+- `prettier-plugin-svelte` (^3.5.1): 3.5.1 → 3.5.2
+- `prettier-plugin-tailwindcss` (^0.7.2): 0.7.2 → 0.7.4
+- `qs` (^6.15.0): 6.15.0 → 6.16.0
+- `serve` (^14.2.3): 14.2.4 → 14.2.6
+- `svelte` (^5.53.12): 5.53.12 → 5.57.1
+- `svelte-check` (^4.4.5): 4.4.5 → 4.7.6
+- `svelte-eslint-parser` (^1.6.0): 1.6.0 → 1.8.1
+- `tsx` (^4.19.2): 4.19.2 → 4.23.15
+- `turbo` (^2.8.17): 2.8.17 → 2.11.4
+- `vite` (^6.4.1, frontend): 6.4.1 → 6.4.3; (^7.2.6, docs): 7.3.0 → 7.3.6
+- `vite-plugin-devtools-json` (^1.0.0): 1.0.0 → 1.1.0
+- `vitest` (^3.2.4, catalog): 3.2.4 → 3.2.7; (^4.0.15, docs): 4.0.15 → 4.1.11
+- `zod` (^4.3.6): 4.3.6 → 4.6.5
+
+Not moved although declared: the excluded set and the AI SDK family (above), and `eslint-plugin-svelte` ^2.46.1
+(frontend; 2.46.1 is already the newest 2.x).
+
 ## 7. Operator follow-ups
+
+- **Review the `braces` baseline row (169-01, `c97bc9898`).** GHSA-vfj7-8cjw-p6xm (id 1240992) was published
+  after planning and covers every `braces` release, so the gate could not reach 0 NEW by any refresh. Under D-02
+  ("the baseline keeps only no-fix or recorded-hold rows") the row was added BY HAND (no `--update-baseline`,
+  PROH-169-02) with a written rationale in the existing dev-tooling style: reached only through `micromatch` 4
+  from `vite-plugin-restart` and `@changesets/cli`, every expanded pattern repo-authored. 169-13's reviewed
+  baseline rewrite keeps or drops it; the operator may prefer to rule on it sooner.
+- `02-dedupe` is a gate this phase introduced; the starting lockfile failed it (71 dedupable descriptors), and
+  nothing in CI runs it. Group 0 brought it to 0. Whether CI should hold the lockfile to `yarn dedupe --check`
+  is an operator call (not changed here).
+- The typecheck/build race fixed in `0c98a4621` exists in CI's `turbo run typecheck` too; the fix applies there
+  unchanged.
+- Handoffs carried forward untouched by group 0 (each belongs to a later group): the unused
+  `eslint-config-prettier` devDependency in `apps/docs` (168 review, IN-01 → 169-03/169-10); the undeclared
+  `globals` import in `@openvaa/shared-config` (167 review WR-02, todo `2026-10-02-declare-globals-in-shared-config.md`
+  → 169-10; the refresh moved the hoisted `globals` 15.14.0 → 15.15.0); stale `via` descriptions in the
+  baseline (167 review WR-01 → 169-13's rewrite).
 
 ## 8. Moderate and low advisories on chosen versions
 
