@@ -715,6 +715,18 @@ test.describe('voter journey', () => {
       await expect(termTrigger.first()).toBeVisible({ timeout: TIMEOUTS.element });
       await expect.soft(termTrigger.first()).toHaveText(/Likert/i, { timeout: TIMEOUTS.element });
 
+      // Wait for the root layout's post-navigation focus reset before focusing the trigger. The heading text above settles on the DOM swap, but the reset (`afterNavigate` → rAF → `[data-focus-on-nav] ?? h1`) runs only after the View Transition finishes. A trigger focused before that loses focus to the heading, and the popup closes with it. The reset completes the navigation, so it gets the route-transition budget.
+      await expect
+        .poll(
+          () =>
+            page.evaluate(() => {
+              const target = document.querySelector('[data-focus-on-nav]') ?? document.querySelector('h1');
+              return target !== null && document.activeElement === target;
+            }),
+          { timeout: TIMEOUTS.page }
+        )
+        .toBe(true);
+
       // The definition popup is mounted only while the trigger is hovered/focused (Term.svelte W3C APG tooltip pattern). Focus reveals it; assert the definition content (seeded title + content joined as "title: content").
       await termTrigger.first().focus();
       const termPopup = page.getByTestId(testIds.voter.questions.termPopup);
