@@ -261,6 +261,25 @@ Per PROH-169-16 the nodemailer pin waits (§ 3).
 |---|---|---|---|---|
 | `@faker-js/faker` | 8.4.1 (catalog `^8.4.1`; root and `@openvaa/dev-seed` on `catalog:`) | **10.6.0** (2026-08-14, 50.0 d) | 10.0.0 2025-08-24 | major; both rules met. `engines.node` `^20.19.0 \|\| ^22.13.0 \|\| ^23.5.0 \|\| >=24.0.0` admits 24.21.0. No faker release is under 7 days old |
 
+### 169-09 (group 7) re-measurement, 2026-10-03
+
+`node 169-version-probe.mjs --only ai,@ai-sdk/google,@ai-sdk/openai` at 2026-10-03T16:17:57Z. The probe picks the
+newest release at least 7 days old; each pick's `@ai-sdk/provider` pin was then read with `npm view <pkg>@<v>
+dependencies`, and the ages of the exact transitive pins were measured from `npm view <pkg> time`:
+
+| Package | Resolved before | Target (published, age) | Target line x.0.0 | Verdict / hold |
+|---|---|---|---|---|
+| `ai` | 5.0.60 (`^5.0.0`) | **7.0.116** (2026-09-25T20:41Z, 7.82 d) | 7.0.0 2026-06-25 | major; both rules met. `engines.node >=22`, ESM-only. 7.0.117–7.0.127 are inside the 7-day window (HOLD-7d) |
+| `@ai-sdk/google` | 2.0.23 (`^2.0.20`) | **4.0.82** (2026-09-25T20:40Z, 7.82 d) | 4.0.0 2026-06-25 | major; both rules met. 4.0.83–4.0.87 inside the window |
+| `@ai-sdk/openai` | 2.0.42 (`^2.0.31`) | **4.0.78** (2026-09-26T02:01Z, 7.60 d) | 4.0.0 2026-06-25 | major; both rules met. 4.0.79–4.0.83 inside the window |
+
+The three picks pin the same core: `@ai-sdk/provider` **4.0.18** (10.32 d) and `@ai-sdk/provider-utils` **5.0.49**
+(7.82 d); `ai` also pins `@ai-sdk/gateway` **4.0.94** (7.82 d), which pins `@vercel/oidc` 3.2.0 (234.6 d).
+`provider-utils` 5.0.49 adds `@workflow/serde` 4.1.0 (178.7 d). Every version taken is at least 7 days old, and the
+majors match (ai 7 with provider 4), so nothing in group 7 is held. `openai` is removed rather than bumped (orchestrator
+ruling 2): `git grep` finds no `from 'openai'`, `require('openai')` or `import('openai')` outside `.planning`.
+`jsonrepair` was already gone from `packages/llm/package.json` (nothing to remove).
+
 ## 2. Package legitimacy
 
 **Operator approvals (step 0, run before any repository change, 2026-10-03T06:37Z):** the box check printed
@@ -525,11 +544,39 @@ Older lines are no way out. `nodemailer@9.1.1` and `nodemailer@6.10.1` both stil
 - `gh api "/advisories?ecosystem=npm&affects=@faker-js/faker@10.6.0"` on 2026-10-03: **0** advisories of any
   severity. 8.4.1 carried GHSA-qxc2-j82w-r537 (high, `helpers.fake` code execution), the accepted baseline row 1158500.
 
+### 169-09 (group 7)
+
+- **One name new to `yarn.lock`: `@workflow/serde` 4.1.0** (a dependency of `@ai-sdk/provider-utils` 5.0.49).
+  `package-legitimacy check` → `SUS`, reason `too-new` only (that is the package's newest release, 2026-09-30; the
+  version taken is 4.1.0 from 2026-04-07). 21.07M weekly downloads, repository `github.com/vercel/workflow`, no
+  postinstall, not deprecated, published by Vercel maintainers. Under the 169-01 conventions a `too-new`-only `SUS`
+  on an established package does not stop the plan.
+- `ai`, `@ai-sdk/google`, `@ai-sdk/openai`, `@ai-sdk/gateway`, `@ai-sdk/provider`, `@ai-sdk/provider-utils`: all
+  already in the lockfile; `package-legitimacy check` → `SUS`, `too-new` only (33.7M / 10.7M / 17.3M / 32.0M / 75.2M /
+  53.1M weekly downloads, repository `github.com/vercel/ai`, no postinstall).
+- Names that left the lockfile with the old SDK: `@opentelemetry/api`, `@vercel/cli-config`, `@vercel/cli-exec`,
+  `os-paths`, `xdg-app-paths`, `xdg-portable` (plus `jose` 5.10.0, `zod` 4.1.11 and the `execa` 5.1.1 alias). Note
+  `@vercel/oidc` moves *down* from 3.8.9 to 3.2.0, because `@ai-sdk/gateway` 4.0.94 pins it exactly.
+- Removing `openai` 4 took 20 more names out: `@types/node-fetch`, `@types/node` 18.19.130, `abort-controller`,
+  `agentkeepalive`, `asynckit`, `combined-stream`, `delayed-stream`, `es-set-tostringtag`, `event-target-shim`,
+  `form-data-encoder`, `form-data`, `formdata-node`, `has-tostringtag`, `humanize-ms`, `mime-db`, `mime-types`,
+  `node-domexception`, `openai`, `undici-types` 5.26.x, `web-streams-polyfill` 4.0.0-beta.3.
+- **The 169-01 key check: `undici` 5 / `@fastify/busboy` do not come back.** `@ai-sdk/provider-utils` 5.0.49 depends
+  on `undici ^7.29.0`, which resolves to the `undici` 7.30.0 already in the tree (cheerio). After the bump `yarn why
+  undici` lists only 7.30.0 (provider-utils, cheerio) and 8.11.2 (jsdom, node-gyp); `yarn why @fastify/busboy` prints
+  nothing, and `grep -c '@fastify/busboy' yarn.lock` is 0. `yarn audit:deps` right after the install: `0 new
+  advisory(ies) at high+, 1 accepted` (`braces`). No override, no baseline row.
+- `gh api "/advisories?ecosystem=npm&affects=<pkg>@<v>"` on 2026-10-03: **0** advisories of any severity for
+  `ai@7.0.116`, `@ai-sdk/google@4.0.82`, `@ai-sdk/openai@4.0.78`, `@ai-sdk/provider-utils@5.0.49`,
+  `@ai-sdk/gateway@4.0.94`, `@ai-sdk/provider@4.0.18`, `@workflow/serde@4.1.0`, `@vercel/oidc@3.2.0`, `undici@7.30.0`.
+- Installed under `npmMinimalAgeGate: 7d` with the caret ranges `^7.0.116` / `^4.0.82` / `^4.0.78`; the gate resolved
+  each to the measured target. No codemod was run (`@ai-sdk/codemod` was not fetched).
+
 ## 3. Holds
 
 | Package | Held at | Newer line | Reason | Decision ref | Re-check date or trigger |
 |---|---|---|---|---|---|
-| `ai`, `@ai-sdk/google`, `@ai-sdk/openai` (+ their exact pins `@ai-sdk/gateway`, `@ai-sdk/provider`, `@ai-sdk/provider-utils`) | pre-phase resolutions: `ai` 5.0.60, `@ai-sdk/google` 2.0.23, `@ai-sdk/openai` 2.0.42, gateway 1.0.33, provider 2.0.0, provider-utils 3.0.10 / 3.0.12 | in-range `ai` 5.0.267, google 2.0.99, openai 2.0.130 (→ provider-utils 3.0.39) | **Narrowed out of the group-0 refresh.** `@ai-sdk/provider-utils` ≥ 3.0.35 (2026-08-26) depends on `undici ^5.29.0`; the in-range refresh pulled `undici` 5.29.0 and `@fastify/busboy` 2.1.1 back into the tree, adding NEW high 1240982 (`@fastify/busboy` <3.2.1, no in-range fix under `undici` 5's `^2.0.0`) and re-attaching accepted `undici` rows 1114638 / 1114640 / 1121245 to a new dependent. Moved into the excluded set per 169-01 Task 3 step 6; the family's majors are 169-09's | D-07, D-21, D-25 (G7) | 169-09 (AI SDK majors); re-check that the target `ai` / `@ai-sdk/*` majors do not depend on `undici` 5 |
+| `ai`, `@ai-sdk/google`, `@ai-sdk/openai` (+ their exact pins `@ai-sdk/gateway`, `@ai-sdk/provider`, `@ai-sdk/provider-utils`) | pre-phase resolutions: `ai` 5.0.60, `@ai-sdk/google` 2.0.23, `@ai-sdk/openai` 2.0.42, gateway 1.0.33, provider 2.0.0, provider-utils 3.0.10 / 3.0.12 | in-range `ai` 5.0.267, google 2.0.99, openai 2.0.130 (→ provider-utils 3.0.39) | **Narrowed out of the group-0 refresh.** `@ai-sdk/provider-utils` ≥ 3.0.35 (2026-08-26) depends on `undici ^5.29.0`; the in-range refresh pulled `undici` 5.29.0 and `@fastify/busboy` 2.1.1 back into the tree, adding NEW high 1240982 (`@fastify/busboy` <3.2.1, no in-range fix under `undici` 5's `^2.0.0`) and re-attaching accepted `undici` rows 1114638 / 1114640 / 1121245 to a new dependent. Moved into the excluded set per 169-01 Task 3 step 6; the family's majors are 169-09's | D-07, D-21, D-25 (G7) | **RELEASED 2026-10-03 by 169-09** (`0bf2782a7`): `ai` 7.0.116, `@ai-sdk/google` 4.0.82, `@ai-sdk/openai` 4.0.78 on provider 4.0.18 / provider-utils 5.0.49, which depend on `undici ^7.29.0`; `undici` 5 and `@fastify/busboy` stay out of the tree (§ 2, 169-09) |
 | `braces` | 3.0.3 | none published | No fixed version exists (GHSA-vfj7-8cjw-p6xm covers `<=3.0.3`; 3.0.3 is the latest). Accepted in the baseline with a rationale (§ 7) | D-02 (baseline keeps no-fix rows), D-05 | when `braces` publishes a fix; or once `@changesets/cli` 2's `micromatch` path (169-10) is gone, the row goes stale. `vite-plugin-restart` left the tree in 169-05 (`f88e60568`), and the baseline rationale now names only the `@changesets/cli` path |
 | `@types/node` | **24.19.0** (catalog `^24.19.0`; 169-02, `968113336`) | 26.6.3 / 26.6.4 (`latest`), 25.x; 24.19.1 (1.4 d old on 2026-10-03) | **Types track the runtime major** (Node 24 at every pin site). 24.19.1 is inside the 7-day window | D-11, R3, D-03 | when the runtime moves to a newer major; 24.19.1 clears 2026-10-08T22:38Z |
 | `typescript` | **6.0.3** (catalog `^6.0.3`; 169-02, `ebeaafa5c`) | 7.0.2 (2026-07-08, x.0.0 86.7 d old — the age rule alone would admit it) | Blocking peers measured 2026-10-03: `@typescript-eslint/eslint-plugin` / `@typescript-eslint/parser` / `typescript-eslint` 8.70.1 `typescript: >=4.8.4 <6.1.0` (8.71.0, the newest, is inside the 7-day window); `svelte-check` 4.7.6 `^5.0.0 \|\| ^6.0.0`; `@sveltejs/kit@3` `typescript: ^6.0.0`. 6.0.3 is the newest 6.x (6.0.0 was never published) | D-16 | typescript-eslint and svelte-check admit 7 (and Kit 3's peer, once Kit 3 lands) |
@@ -1000,6 +1047,39 @@ dev --host 0.0.0.0`:
 - **No visual diff, so no re-baseline** (PROH-169-17 held trivially). This is what § 6 predicts: the visual specs
   read the `e2e/base` dataset, which is byte-identical on 10.6.0.
 - The dev server was stopped afterwards; no listener is left on 5173 or 5273.
+
+### 169-09 — the AI SDK majors and the `openai` removal (group 7)
+
+| Plan | Label | HEAD | install | dedupe | typecheck | lint | format | check-fe | check-docs | unit | build | audit | docs-links | docs-rq | E2E (total / passed / failed / flaky / did-not-run) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 169-09 | `169-09-group7-attempt1` (ai 7.0.116, @ai-sdk/* 4, openai removed) | `32a0eed8a` | 0 | 0 | 0 | **1** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | — |
+| 169-09 | `169-09-group7` (+ the comment-hygiene fix `6ab069778`) | `6ab069778` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | **171 / 171 / 0 / 0 / 0** (`169-e2e/169-09-group7`) |
+
+Notes:
+- `169-09-group7-attempt1` (directory renamed from `169-09-group7` after the run, so the label could be reused):
+  `04-lint` exit 1 on one finding, `assert:comment-hygiene` rule 2 in `llmProvider.ts` — a new two-line comment
+  broke one sentence across lines. Fixed by joining it (`6ab069778`, comment only); ESLint itself reported nothing new.
+- `169-09-group7` (2026-10-03T16:33:21Z–16:35:36Z, `tests/e2e-runs/169-gates/169-09-group7/`): `porcelain_lines: 1`
+  (this evidence file, uncommitted), `TURBO_FORCE: true`, Node v24.21.0, Yarn 4.18.1.
+  - `01-install`: the `YN0060` about `zod` against `openai` is gone; the only peer notice left is the long-standing
+    `YN0002` (`playwright-core` for `@axe-core/playwright`).
+  - `04-lint`: 0 errors, 17 warnings. The normalised list (33 lines, `09/lint-norm-after.txt`) is identical to
+    169-08's (`08/lint-norm-after.txt`, sorted `diff` exit 0). No new finding, no new disable.
+  - `08-unit`: `@openvaa/llm` 43 tests (39 before; four added), `argument-condensation` 6 files, `question-info`
+    2 files, frontend 129 files, dev-seed 66 files, all passing.
+  - `09-build`: the frontend production build bundles the ESM-only `ai` 7 into the server output without error.
+  - `10-audit`: exit 0, `Summary: 0 new advisory(ies) at high+, 1 accepted` (`braces`). No AI SDK advisory, no
+    `undici` 5, no `@fastify/busboy`.
+  - `12-docs-rq` (two-base form): every `<ResearchQuote>` span identical to the base; the frozen components identical
+    to the component base.
+
+E2E `169-09-group7` (`bash 169-e2e.sh 169-09-group7`, the full default suite):
+- Docker VM 30.01 GiB free after `docker builder prune -af`.
+- `e2e-run.sh` at HEAD `6ab069778` with `db_reset=true`, one fresh dev server on 5273; finished 2026-10-03T16:41Z.
+- Wrapper exit 0. `summary.json`: **total 171, passed 171, failed 0, flaky 0, skipped 0, didNotRun 0**. The
+  voter-journey Base-6 slider flake did not recur. No E2E spec drives the LLM admin jobs (they need a provider key),
+  so the runtime proof of the SDK path is the § 6 smoke run, not E2E.
+- No listener is left on 5173 or 5273 afterwards.
 
 ## 5. Negative controls
 
@@ -1924,6 +2004,61 @@ the instrument itself is reproducible. `diff-seed.mjs` matches rows by index and
   met, anon reads OK.
 - **Visual and E2E traces.** None needed: the templates they seed are byte-identical (see § 4 for the runs).
 
+### 169-09 — the AI SDK majors in `packages/llm` (D-21), commits `0bf2782a7` and `32a0eed8a`
+
+The import surface at execution (`git grep -n -E "from '(ai|@ai-sdk/[a-z-]+)'" -- ':!.planning'`): four `packages/llm/src`
+files plus `index.ts`'s type re-export, and `packages/llm/tests/llmProvider.test.ts`. The migration followed the 6.0
+and 7.0 guides bundled in the installed package (`node_modules/ai/docs/08-migration-guides/`), by hand:
+
+| SDK change (guide section) | Where it bites | What changed |
+|---|---|---|
+| `createGoogleGenerativeAI` → `createGoogle` (7.0, Google provider; old name kept as a deprecated alias) | `llmProvider.ts` `initProvider` | uses `createGoogle` |
+| `generateObject` deprecated for `generateText({ output: Output.object(...) })` (6.0) — **still exported in 7.0.116** | `llmProvider.ts` `generateObject` | kept, per the plan's "else keep it". The zod schema is still passed and still validates; `NoObjectGeneratedError` still drives the validation retry (smoke run below) |
+| **System messages in `messages` are rejected by default** (7.0, "Prompt Messages") | every caller: `argument-condensation` (`condenser.ts`, two calls) and `question-info` (`infoGeneration.ts`) send their whole prompt as `[{ role: 'system', content: promptText }]` | `generateObject` passes `allowSystemInMessages: true`. Moving the prompt to `instructions` is not possible without rewriting the callers' prompts as a user turn: `standardizePrompt` throws `messages must not be empty` for `instructions` with no message. The callers' unit tests mock `LLMProvider`, so **no existing test would have caught this**; it would have failed every admin condensation and question-info job at runtime |
+| `system` → `instructions` (7.0; `system` kept as a deprecated fallback) | `llmProvider.ts` `streamText` | passes `instructions: options.instructions ?? options.system`; `streamText` stays on the SDK default (system messages in `messages` rejected) — it has no caller outside the tests |
+| `cachedInputTokens` / `reasoningTokens` removed from `LanguageModelUsage` (6.0 deprecation, 7.0 removal) | `costCalculation.ts` | reads `inputTokenDetails.cacheReadTokens` and `outputTokenDetails.reasoningTokens`. Before this, the reasoning and cached-input costs were read from fields 7.0 no longer has |
+| `LanguageModelUsage` gained required `inputTokenDetails` / `outputTokenDetails` | `condenser.ts` builds `llmMetrics.tokens` (typed `TokenUsage`) from per-call totals | adds the two detail objects with `undefined` members (the per-call records keep only totals). `TokenUsage` stays the SDK type, re-exported under the same name |
+| `CallSettings` → `LanguageModelCallOptions & Omit<RequestOptions, 'timeout'>` (7.0; old name deprecated) | `provider.types.ts` | a local `CallSettings` alias with that definition; the public option types keep their names |
+| `StreamTextResult` takes `<TOOLS, RUNTIME_CONTEXT, OUTPUT>` | `provider.types.ts` `LLMStreamResult` | `StreamTextResult<NonNullable<TOOLS>, Record<string, unknown>, never>` (`Context` is not exported from `ai`) |
+| `usage` on `streamText` now totals all steps (7.0) | `streamText` cost promise | no code change; a multi-step tool loop is now charged for every step, not only the last |
+| OpenAI `strictJsonSchema` defaults to `true` (6.0) | structured output on OpenAI | no change needed: the callers' schemas (`ResponseWithArgumentsSchema`, `chooseQInfoSchema`) have only required fields, which strict mode accepts. Strict mode makes the provider enforce the schema too; our zod parse still runs |
+
+**Tests.** `llmProvider.test.ts` mocks now use the 7.0 shapes (a `makeUsage()` helper for the full usage record; the
+seven new `StreamTextResult` members, typed `as never` rather than with new `any` disables). Added cases: the Google
+factory is `createGoogle`; `generateObject` forwards `allowSystemInMessages: true` with a system-only prompt;
+`system` → `instructions` and `instructions` wins over `system`; and the **real** `calculateLLMCost` on the 7.0 usage
+shape (cached input from `cacheReadTokens`, reasoning from `outputTokenDetails`). The test file also typechecks clean
+against 7.0 under an ad-hoc `tsc` run that includes `tests/` (the package tsconfig excludes them). `eslint-disable`
+count in the file: 61 before, 61 after.
+
+**Smoke run against the real 7.0 runtime (no network, no API key).** A throwaway script (deleted after the run) built
+`LLMProvider` from `dist/`, replaced its provider with `MockLanguageModelV4` from `ai/test`, and called it:
+- `generateObject` with `[{ role: 'system', content: 'Condense these.' }]` and `ResponseWithArgumentsSchema`'s shape →
+  the object came back parsed, the model saw one `system` message, and `usage` carried the detail objects.
+- The same call where the model returns `{"arguments":"nope"}` with `validationRetries: 2` → `Failed to generate
+  object after 2 validation attempts. Last error: No object generated: …`, i.e. the zod schema still rejects a
+  non-conforming object and the retry path still keys on `NoObjectGeneratedError`.
+- Plain `generateObject` from `ai` with a system message and no opt-in → `Invalid prompt: System messages are not
+  allowed in the prompt or messages fields. Use the instructions option instead.` (the runtime hazard above,
+  confirmed).
+- `LLMProvider.streamText` (provider `google`) with `system: 'Be brief.'` → streamed `Hello`; the model saw
+  `[["system","Be brief."],["user","Hi"]]`; the cost promise resolved.
+
+**Results before the gates** (`0bf2782a7` working tree): `@openvaa/llm` build 0 and 43/43 tests;
+`argument-condensation` 30/30; `question-info` 22/22; `apps/frontend` `src/lib/server/admin/` 42/42;
+`TURBO_FORCE=true yarn typecheck` 23/23 tasks. After `32a0eed8a` (`openai` removed): `llm` build 0, 43/43; the
+`YN0060` warning about `zod` against `openai` is gone from `yarn install`.
+
+**Security read of the migrated paths (T-169-30).** `initProvider` hands `config.apiKey` only to `createOpenAI` /
+`createGoogle`. The error paths are unchanged in what they print: `Unsupported provider: <name>`, `Failed to generate
+object after N validation attempts. Last error: <SDK message>`, and the original SDK error rethrown for non-validation
+failures. None logs `config`, the key or the provider object. `getModelPricing` logs only provider and model names.
+The admin features (`condenseArguments.ts`, `generateQuestionInfo.ts`) record `(error as Error).message` and
+`jobRecord.recordFailure(error)` as before; neither changed. 7.0 also stops putting request and response bodies on
+results by default (7.0, "Request and Response Bodies Are Excluded by Default"). The `allowSystemInMessages` opt-in
+admits only the `system` entries the callers build server-side from prompt templates; no caller passes user-authored
+message arrays, so this restores the 5.x behaviour without adding a path for role injection.
+
 ## 7. Operator follow-ups
 
 - **Review the `braces` baseline row (169-01, `c97bc9898`).** GHSA-vfj7-8cjw-p6xm (id 1240992) was published
@@ -2068,6 +2203,12 @@ the instrument itself is reproducible. `diff-seed.mjs` matches rows by index and
 - **`yarn db:seed` (the `default` template) now writes different names, answers and question texts at seed 42
   (169-08).** Anyone holding screenshots or notes of the default dev dataset will see new values. Row counts are
   unchanged.
+
+- **AI SDK 7 system-message opt-in (169-09).** `LLMProvider.generateObject` passes `allowSystemInMessages: true`,
+  because every caller (`argument-condensation`, `question-info`) sends its server-built prompt as a `system` message
+  and AI SDK 7 rejects that by default. It restores the 5.x behaviour for that one method; `streamText` keeps the
+  SDK's rejecting default. If the prompts are ever restructured into `instructions` plus a user turn, the opt-in can
+  go. No E2E spec runs the LLM admin jobs (they need a provider key); the runtime proof is a mock-model smoke run.
 
 ## 8. Moderate and low advisories on chosen versions
 
