@@ -51,7 +51,7 @@ function findEntities(entities: Array<Alliance>, nominationData: PublicAllianceN
         n.constituency.id === nominationData.constituencyId &&
         contentsMatch(
           n.organizationNominations.map((o) => o.entity.id),
-          nominationData.organizations.map((o) => o.entityId)
+          nominationData.organizations!.map((o) => o.entityId)
         )
       )
         found.push(obj);
@@ -79,7 +79,7 @@ function findNominations(
       obj.constituency.id === nominationData.constituencyId &&
       contentsMatch(
         obj.organizationNominations.map((o) => o.entity.id),
-        nominationData.organizations.map((o) => o.entityId)
+        nominationData.organizations!.map((o) => o.entityId)
       )
     )
       found.push(obj);

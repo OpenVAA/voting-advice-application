@@ -1,0 +1,29 @@
+{
+  "about": {
+    "content": "<p>De Froenkatalog besteet aus enger Auswiel vun 20 Themen aus de 44 Themen, déi am smartwielen Online-Tool enthalen sinn, dat fir d'Europawalen 2024 agesat gouf. Smartwielen gouf vun der Universitéit Lëtzebuerg an dem Zentrum fir Politesch Bildung (ZpB) ugebueden. D'Universitéit Lëtzebuerg setzt och de aktuellen (net-ëffentlechen) Online-Tool fir Fuerschungszwecker an, a Kooperatioun mat OpenVAA.</p><p>De Wal-Kompass funktionéiert, andeems en d'Meenungen, déi Dir agitt, mat deenen vun de Parteien vergläicht. Hir Äntwerten goufen vum smartwielen-Team am Kader vun de Europawalen 2024 gesammelt. D'Tool erméiglecht eng Ofgläichung mat de 7 Parteien, déi an der Chamber de Deputéierte zu Lëtzebuerg vertruede sinn.</p><p>Am Resultatssecteur kritt Dir fir all eng vun dëse 7 Parteien e Match-Score. Dëse Match-Score ass de Prozentsaz, deen ugëtt, wéi no Dir hinnen zoustëmmt.</p><ul><li>E Score vun 100 bedeit, datt Dir op all Äntwertfroen vollstänneg averstan sidd.</li><li>E Score vun 0 bedeit, datt Dir op all Froen net averstan sidd.</li><li>E Score tëscht dëseenen zwee Extremer bedeit, datt Dir op e puer Froen averstan sidd an op aneren net.</li></ul><p>Fir weider Detailer iwwer d'Methoden, déi benotzt goufen, kënnt Dir eis per E-Mail op patrick.dumont@uni.lu erreechen.</p>",
+    "feedback": {
+      "title": "Feedback"
+    },
+    "organizationMatching": {
+      "content": [
+        {
+          "declarations": ["input partyMatchingMethod"],
+          "selectors": ["partyMatchingMethod"],
+          "match": {
+            "partyMatchingMethod=answersOnly": "<p>D’Parteiresultater goufe berechent op Basis vun de Reaktioune vun de Parteien.</p> ",
+            "partyMatchingMethod=imputed": "<p>D’Parteiresultater goufe berechent op Basis vun hiren Äntwerten oder, wann eng Partei d’Froe net beäntwert huet, aus dem Modus oder der Median vun den Äntwerte vun hire Kandidat*inne am Walbezierk.</p> ",
+            "partyMatchingMethod=other": "<p>D’Parteiresultater goufe berechent op Basis vun hiren Äntwerten oder, wann eng Partei d’Froe net beäntwert huet, op Basis vun den Äntwerte vu senge Kandidat*inne am Walbezierk.</p> <p>Gitt weg, datt d’Kandidat*inne vun enger Partei bei bestëmmte Froen net mat hirer Partei averstanen sinn; dës berechent Positioun spigelt dofir eventuell net komplett déi offiziell Haltung vun der Partei erëm.</p>"
+          }
+        }
+      ],
+      "title": "Iwwereneestëmmung mat de Parteien"
+    },
+    "returnButton": "Zréck op d’Startsäit",
+    "source": {
+      "content": "De Quellcode vun der Applikatioun ass verfügbar op",
+      "sitename": "GitHub",
+      "title": "Quellcode"
+    },
+    "title": "Wéi funktionéiert dës Applikatioun?"
+  }
+}

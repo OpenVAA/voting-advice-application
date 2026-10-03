@@ -1,0 +1,20 @@
+# PreregisteredNotification
+
+Show a notification prompting the user to login instead of preregistering again.
+
+### Properties
+
+- Any valid properties of an `Alert` component
+
+### Usage
+
+```tsx
+popupQueue.push({
+  component: PreregisteredNotification
+});
+```
+
+## Source
+
+- Component: [apps/frontend/src/lib/candidate/components/preregisteredNotification/PreregisteredNotification.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/preregisteredNotification/PreregisteredNotification.svelte)
+- Types: [apps/frontend/src/lib/candidate/components/preregisteredNotification/PreregisteredNotification.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/preregisteredNotification/PreregisteredNotification.type.ts)

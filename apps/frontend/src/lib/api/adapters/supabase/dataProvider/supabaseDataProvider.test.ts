@@ -1,0 +1,2563 @@
+import { configureLogger } from '@openvaa/app-shared';
+import { ENTITY_TYPE } from '@openvaa/data';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { SupabaseDataProvider } from './supabaseDataProvider';
+import type { DynamicSettings, LogRecord } from '@openvaa/app-shared';
+import type { Database } from '@openvaa/supabase-types';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseAdapterConfig } from '../supabaseAdapter.type';
+
+// Mock $env/dynamic/public before any imports that depend on it
+vi.mock('$env/dynamic/public', () => ({
+  env: {
+    PUBLIC_SUPABASE_URL: 'http://localhost:54321',
+    PUBLIC_SUPABASE_ANON_KEY: 'test-anon-key',
+    PUBLIC_PROJECT_ID: '00000000-0000-0000-0000-000000000001'
+  }
+}));
+
+// Mock parseAnswers to avoid dependency on svelte/store via $lib/i18n
+vi.mock('$lib/api/utils/parseAnswers', () => ({
+  parseAnswers: vi.fn((answers: Record<string, unknown> | null, _locale: string | null) => {
+    if (!answers) return undefined;
+    // Simplified mock: return answers as-is (value/info structure preserved)
+    const result: Record<string, unknown> = {};
+    for (const [qid, answer] of Object.entries(answers)) {
+      if (answer && typeof answer === 'object') {
+        result[qid] = answer;
+      }
+    }
+    return result;
+  })
+}));
+
+/**
+ * A flexible mock Supabase client that supports chainable PostgREST query patterns:
+ *   .from(table).select(columns).limit(n).single()  -> {data, error}
+ *   .from(table).select(columns).order(col)          -> {data, error}
+ *   .from(table).select(columns).eq(col, val)        -> {data, error}
+ *   .from(table).select(columns).in(col, vals)       -> {data, error}
+ *   .from(table).select(columns).order(col).range(a, b) -> {data, error}
+ *   .rpc(fnName, params)                              -> {data, error}
+ *
+ * Configure per-table responses via `mockResponses`.
+ * Configure RPC responses via `mockRpcResponses`.
+ * Configure a SEQUENCE of per-table responses via `mockResponseQueues`: each awaited chain for that table shifts the next entry, and falls back to `mockResponses` once the queue is empty. This is how a test hands a paged read a full first page followed by a short one.
+ */
+function createMockSupabaseClient() {
+  const mockResponses: Record<string, { data: unknown; error: unknown }> = {};
+  const mockRpcResponses: Record<string, { data: unknown; error: unknown }> = {};
+  const mockResponseQueues: Record<string, Array<{ data: unknown; error: unknown }>> = {};
+
+  function createChain(table: string) {
+    const chain = {
+      select: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
+      range: vi.fn().mockReturnThis(),
+      single: vi.fn().mockImplementation(() => {
+        return Promise.resolve(mockResponses[table] ?? { data: null, error: null });
+      }),
+      maybeSingle: vi.fn().mockImplementation(() => {
+        return Promise.resolve(mockResponses[table] ?? { data: null, error: null });
+      }),
+      then: undefined as unknown as PromiseLike<unknown>['then']
+    };
+    // Make the chain itself thenable so `await query` works on non-single queries.
+    // Params are left unannotated so they are contextually typed from PromiseLike<unknown>['then'] (optional onfulfilled?/onrejected?), matching the field type.
+    chain.then = (resolve, reject) => {
+      const result = mockResponseQueues[table]?.shift() ?? mockResponses[table] ?? { data: null, error: null };
+      return Promise.resolve(result).then(resolve, reject);
+    };
+    return chain;
+  }
+
+  // Every chain handed out is retained so a test can assert what was called ON it. The provider reaches tables through the adapter's `scopedFrom` facade, which appends the project filter to a builder the test never sees otherwise, so without this the project filter is unobservable and a test claiming to check it would be checking nothing.
+  const chains: Array<{ table: string; chain: ReturnType<typeof createChain> }> = [];
+  const rpcBuilders: Array<{ fnName: string; builder: { range: ReturnType<typeof vi.fn> } }> = [];
+
+  const client = {
+    from: vi.fn((table: string) => {
+      const chain = createChain(table);
+      chains.push({ table, chain });
+      return chain;
+    }),
+    // An RPC call returns a builder, as postgrest-js does: thenable (so `get_questions` still resolves when awaited directly) and carrying `.range()` (so a paged `get_nominations` read can set its window). Every builder is retained in `rpcBuilders` so a test can assert the ranges requested per call.
+    rpc: vi.fn((fnName: string, _params?: Record<string, unknown>) => {
+      const builder = {
+        range: vi.fn().mockReturnThis(),
+        then: undefined as unknown as PromiseLike<unknown>['then']
+      };
+      builder.then = (resolve, reject) =>
+        Promise.resolve(mockRpcResponses[fnName] ?? { data: null, error: null }).then(resolve, reject);
+      rpcBuilders.push({ fnName, builder });
+      return builder;
+    }),
+    _mockResponses: mockResponses,
+    _mockRpcResponses: mockRpcResponses,
+    _mockResponseQueues: mockResponseQueues,
+    _chains: chains,
+    _rpcBuilders: rpcBuilders
+  };
+  return client;
+}
+
+/**
+ * Every `(column, value)` pair passed to `.eq()` on the chains created for `table`.
+ * @param client - The mock client under test.
+ * @param table - The table whose chains to read.
+ * @returns One entry per `.eq()` call, across every chain created for that table.
+ */
+function eqCallsFor(client: MockClient, table: string): Array<[string, unknown]> {
+  return client._chains
+    .filter((entry) => entry.table === table)
+    .flatMap((entry) => entry.chain.eq.mock.calls as Array<[string, unknown]>);
+}
+
+/**
+ * Every `.limit()` call made on the chains created for `table`.
+ * @param client - The mock client under test.
+ * @param table - The table whose chains to read.
+ * @returns One entry per `.limit()` call.
+ */
+function limitCallsFor(client: MockClient, table: string): Array<Array<unknown>> {
+  return client._chains
+    .filter((entry) => entry.table === table)
+    .flatMap((entry) => entry.chain.limit.mock.calls as Array<Array<unknown>>);
+}
+
+/**
+ * Every `.order()` call made on the chains created for `table`, as `[column, ...options]`.
+ * @param client - The mock client under test.
+ * @param table - The table whose chains to read.
+ * @returns One entry per `.order()` call, in call order across every chain created for that table.
+ */
+function orderCallsFor(client: MockClient, table: string): Array<Array<unknown>> {
+  return client._chains
+    .filter((entry) => entry.table === table)
+    .flatMap((entry) => entry.chain.order.mock.calls as Array<Array<unknown>>);
+}
+
+/**
+ * Every `(from, to)` pair passed to `.range()` on the chains created for `table`.
+ * @param client - The mock client under test.
+ * @param table - The table whose chains to read.
+ * @returns One entry per `.range()` call, in call order across every chain created for that table.
+ */
+function rangeCallsFor(client: MockClient, table: string): Array<[number, number]> {
+  return client._chains
+    .filter((entry) => entry.table === table)
+    .flatMap((entry) => entry.chain.range.mock.calls as Array<[number, number]>);
+}
+
+/**
+ * Every `(from, to)` pair passed to `.range()` on the builders returned for RPC `fnName`.
+ * @param client - The mock client under test.
+ * @param fnName - The RPC whose builders to read.
+ * @returns One entry per builder: the list of `.range()` calls made on it.
+ */
+function rpcRangeCallsFor(client: MockClient, fnName: string): Array<Array<[number, number]>> {
+  return client._rpcBuilders
+    .filter((entry) => entry.fnName === fnName)
+    .map((entry) => entry.builder.range.mock.calls as Array<[number, number]>);
+}
+
+type MockClient = ReturnType<typeof createMockSupabaseClient>;
+// reason: createMockSupabaseClient is structural-only; SupabaseClient<Database> has 50+ methods we don't mock
+function asSupabaseMock(m: MockClient): SupabaseClient<Database> {
+  return m as unknown as SupabaseClient<Database>;
+}
+
+/**
+ * Run `read` with the structured logger capturing into an array, then restore the silent default.
+ * The logger's configuration is module-scoped and starts at `'silent'`, so a parse-failure record is invisible until the level is raised. The restore runs in a `finally` so one failing expectation cannot leave the level raised for the rest of the file.
+ * @param read - The provider call under test.
+ * @returns The call's result and every record emitted while it ran.
+ */
+async function withCapturedLogs<TResult>(
+  read: () => Promise<TResult>
+): Promise<{ result: TResult; records: Array<LogRecord> }> {
+  const records: Array<LogRecord> = [];
+  configureLogger({ level: 'warn', sink: (record) => records.push(record) });
+  try {
+    const result = await read();
+    return { result, records };
+  } finally {
+    configureLogger({ level: 'silent', sink: undefined });
+  }
+}
+
+// Local narrow type for assertion casts in this file (replaces `(result as any)` patterns).
+// reason: assertions read into nested JSONB shapes that aren't in DynamicSettings's strict typing
+type DynamicSettingsTestNarrow = Partial<DynamicSettings> & {
+  notifications?: {
+    candidateApp?: { title?: string; content?: string };
+    voterApp?: { title?: string; content?: string };
+  };
+};
+
+// Local narrow for entity/nomination test assertions — tests read fields the variant types make optional.
+// reason: AnyEntityVariantData / AnyNominationVariantPublicData are discriminated unions; tests read across variants
+type EntityTestNarrow = {
+  id: string;
+  type?: string;
+  firstName?: string;
+  lastName?: string;
+  organizationId?: string;
+  name?: string;
+  shortName?: string;
+  info?: string;
+  image?: { url?: string };
+};
+type NominationTestNarrow = {
+  id: string;
+  entityType?: string;
+  entityId?: string;
+  electionId?: string;
+  constituencyId?: string;
+  electionRound?: number;
+  electionSymbol?: string;
+  parentNominationId?: string | null;
+  parentNominationType?: string;
+  image?: { url?: string };
+};
+type QuestionTestNarrow = {
+  choices?: Array<{ label?: string }>;
+  settings?: unknown;
+  electionIds?: Array<string>;
+  constituencyIds?: Array<string>;
+  entityType?: Array<string>;
+};
+
+describe('SupabaseDataProvider', () => {
+  let provider: SupabaseDataProvider;
+  let mockSupabase: MockClient;
+
+  beforeEach(() => {
+    mockSupabase = createMockSupabaseClient();
+    const config: SupabaseAdapterConfig = {
+      fetch: vi.fn(),
+      client: asSupabaseMock(mockSupabase),
+      locale: 'en',
+      defaultLocale: 'en'
+    };
+    provider = new SupabaseDataProvider(config);
+  });
+
+  describe('getAppSettings', () => {
+    it('fetches from app_settings table and returns the validated settings JSONB', async () => {
+      const mockSettings = {
+        access: { candidateApp: true, voterApp: true, adminApp: false },
+        header: { showFeedback: true, showHelp: true }
+      };
+      mockSupabase._mockResponses['app_settings'] = {
+        data: { settings: mockSettings },
+        error: null
+      };
+
+      const result = await provider.getAppSettings();
+
+      expect(mockSupabase.from).toHaveBeenCalledWith('app_settings');
+      expect(result).toEqual(mockSettings);
+    });
+
+    it('localizes notification title and content fields when locale provided', async () => {
+      const mockSettings = {
+        notifications: {
+          candidateApp: {
+            show: true,
+            title: { en: 'English title', fi: 'Finnish title' },
+            content: { en: 'English content', fi: 'Finnish content' }
+          },
+          voterApp: {
+            show: true,
+            title: { en: 'Voter EN', fi: 'Voter FI' },
+            content: { en: 'Content EN', fi: 'Content FI' }
+          }
+        }
+      };
+      mockSupabase._mockResponses['app_settings'] = {
+        data: { settings: mockSettings },
+        error: null
+      };
+
+      // Create a provider with fi locale
+      const fiConfig: SupabaseAdapterConfig = {
+        fetch: vi.fn(),
+        client: asSupabaseMock(mockSupabase),
+        locale: 'fi',
+        defaultLocale: 'en'
+      };
+      const fiProvider = new SupabaseDataProvider(fiConfig);
+
+      const result = await fiProvider.getAppSettings();
+
+      const r = result as DynamicSettingsTestNarrow;
+      expect(r.notifications?.candidateApp?.title).toBe('Finnish title');
+      expect(r.notifications?.candidateApp?.content).toBe('Finnish content');
+      expect(r.notifications?.voterApp?.title).toBe('Voter FI');
+      expect(r.notifications?.voterApp?.content).toBe('Content FI');
+    });
+
+    // WR-04. `routes/+layout.ts` called `getAppSettings()` with no argument while its two siblings in the same `Promise.all` passed `{ locale: lang }`, so the notification banners were rendered in English — or in whichever key came first, for a column with no `en` entry — for every user on every route. Two paths now reach the Finnish copy, and BOTH are asserted, because the request-level fix and the construction-level fallback are independent and either one silently going away would restore the defect.
+    it('localizes notifications from the per-call `options.locale`, which overrides the construction locale', async () => {
+      const mockSettings = {
+        notifications: {
+          voterApp: {
+            show: true,
+            title: { en: 'Voter EN', fi: 'Voter FI' },
+            content: { en: 'Content EN', fi: 'Content FI' }
+          }
+        }
+      };
+      mockSupabase._mockResponses['app_settings'] = {
+        data: { settings: mockSettings },
+        error: null
+      };
+
+      // `provider` is built with NO construction locale, exactly as a caller that names the language per call would have it.
+      const result = (await provider.getAppSettings({ locale: 'fi' })) as DynamicSettingsTestNarrow;
+
+      expect(result.notifications?.voterApp?.title).toBe('Voter FI');
+      expect(result.notifications?.voterApp?.content).toBe('Content FI');
+    });
+
+    // REGRESSION (162.1 D-16). Zero `app_settings` rows is what anon reads on a project that is not open for voters. The provider used to map that to `{}`, the voter app then rejected the empty election data in the root layout, and every route including both login pages rendered the global error page. Zero rows now asks the project's own openness, and only that answer decides.
+    it('returns the voter app as inaccessible when zero settings rows come back and the project is not open for voters', async () => {
+      mockSupabase._mockResponses['app_settings'] = { data: null, error: null };
+      mockSupabase._mockRpcResponses['project_open_for_voters'] = { data: false, error: null };
+
+      const result = (await provider.getAppSettings()) as DynamicSettingsTestNarrow;
+
+      expect(result.access?.voterApp).toBe(false);
+      // The whole `access` object is carried, because the app context merges settings by root key; the other gates keep their shipped defaults.
+      expect(result.access?.candidateApp).toBe(true);
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('project_open_for_voters', {
+        p_project_id: '00000000-0000-0000-0000-000000000001'
+      });
+    });
+
+    it('returns an empty object when zero settings rows come back but the project is open, because an open project may have no settings row', async () => {
+      mockSupabase._mockResponses['app_settings'] = { data: null, error: null };
+      mockSupabase._mockRpcResponses['project_open_for_voters'] = { data: true, error: null };
+
+      const result = await provider.getAppSettings();
+
+      expect(result).toEqual({});
+    });
+
+    it('throws a getAppSettings error when zero settings rows come back and the openness RPC fails', async () => {
+      mockSupabase._mockResponses['app_settings'] = { data: null, error: null };
+      mockSupabase._mockRpcResponses['project_open_for_voters'] = { data: null, error: { message: 'rpc-boom' } };
+
+      await expect(provider.getAppSettings()).rejects.toThrow('getAppSettings: rpc-boom');
+    });
+
+    it('throws when zero settings rows come back and the openness RPC returns a non-boolean', async () => {
+      mockSupabase._mockResponses['app_settings'] = { data: null, error: null };
+      mockSupabase._mockRpcResponses['project_open_for_voters'] = { data: null, error: null };
+
+      await expect(provider.getAppSettings()).rejects.toThrow('non-boolean');
+    });
+
+    it('never asks the openness RPC when the caller can read the settings row (162.1 D-17)', async () => {
+      mockSupabase._mockResponses['app_settings'] = { data: { settings: { access: { voterApp: true } } }, error: null };
+
+      const result = await provider.getAppSettings();
+
+      expect(result).toEqual({ access: { voterApp: true } });
+      expect(mockSupabase.rpc).not.toHaveBeenCalled();
+    });
+
+    it('throws on Supabase query error', async () => {
+      mockSupabase._mockResponses['app_settings'] = {
+        data: null,
+        error: { code: '42P01', message: 'relation does not exist' }
+      };
+
+      await expect(provider.getAppSettings()).rejects.toThrow('getAppSettings');
+    });
+
+    it('parses an empty settings object without degrading', async () => {
+      mockSupabase._mockResponses['app_settings'] = { data: { settings: {} }, error: null };
+
+      const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
+
+      expect(result).toEqual({});
+      expect(records).toHaveLength(0);
+    });
+
+    it('preserves the members zod accepts and reports an error once when a nested key is unknown', async () => {
+      // The unknown key sits at the third nesting level, which top-level strictness alone does not reach.
+      mockSupabase._mockResponses['app_settings'] = {
+        data: {
+          settings: {
+            access: { candidateApp: true },
+            notifications: {
+              candidateApp: { title: { en: 'T' }, content: { en: 'C' }, bogusNestedKey: 1 }
+            }
+          }
+        },
+        error: null
+      };
+
+      const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
+
+      // This assertion read `toEqual({})` and the case was named for it: one unrecognised nested key discarded every dynamic setting in the column, the availability gates among them (T-157.1-14). The offending top-level ancestor is now dropped by name and the remainder re-parses, so the access member survives its malformed sibling.
+      expect(result).toEqual({ access: { candidateApp: true } });
+      expect(records).toHaveLength(1);
+      expect(records[0].severityText).toBe('ERROR');
+      expect(records[0].attributes?.issues).toEqual(['notifications.candidateApp']);
+      // The refused KEY NAME is disclosed deliberately — it is the only thing that identifies an unrecognised key, and closing the A2 hole depends on it (decision A2 NOTE, fact 3). What was STORED under and beside it is not: this exhaustive assertion is what proves nothing else rode along, and the notification copy from the offending object is absent from the serialised record (T-157-17).
+      expect(records[0].attributes).toEqual({
+        column: 'app_settings.settings',
+        id: undefined,
+        issues: ['notifications.candidateApp'],
+        rejectedKeys: ['bogusNestedKey'],
+        preserved: true
+      });
+      expect(JSON.stringify(records[0])).not.toContain('"T"');
+    });
+
+    it('preserves the access member when an unrecognised top-level key is present', async () => {
+      // The A2 hole, driven end to end through the provider rather than against the helper alone: zod reports an unrecognised TOP-LEVEL key at the EMPTY path, so a rejected-member derivation reading `issue.path[0]` names nothing and used to take the whole column down with it. Ledger row 2, cell `2-NEW-E2E`.
+      mockSupabase._mockResponses['app_settings'] = {
+        data: { settings: { access: { candidateApp: true }, bogusTopLevelKey: 1 } },
+        error: null
+      };
+
+      const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
+
+      expect(result).toEqual({ access: { candidateApp: true } });
+      expect(records).toHaveLength(1);
+      expect(records[0].severityText).toBe('ERROR');
+      // The path is empty precisely because the key is top-level; `rejectedKeys` is the only field that names it.
+      expect(records[0].attributes?.issues).toEqual(['']);
+      expect(records[0].attributes?.rejectedKeys).toEqual(['bogusTopLevelKey']);
+    });
+  });
+
+  describe('getAppCustomization', () => {
+    it('returns AppCustomization with localized publisherName string', async () => {
+      mockSupabase._mockResponses['app_settings'] = {
+        data: {
+          customization: {
+            publisherName: { en: 'Publisher EN', fi: 'Publisher FI' }
+          }
+        },
+        error: null
+      };
+
+      const fiConfig: SupabaseAdapterConfig = {
+        fetch: vi.fn(),
+        client: asSupabaseMock(mockSupabase),
+        locale: 'fi',
+        defaultLocale: 'en'
+      };
+      const fiProvider = new SupabaseDataProvider(fiConfig);
+
+      const result = await fiProvider.getAppCustomization();
+
+      expect(result.publisherName).toBe('Publisher FI');
+    });
+
+    it('converts publisherLogo, poster, candPoster storage paths to Image objects with absolute URLs', async () => {
+      mockSupabase._mockResponses['app_settings'] = {
+        data: {
+          customization: {
+            publisherLogo: { path: 'proj/logo.png' },
+            poster: { path: 'proj/poster.jpg', pathDark: 'proj/poster-dark.jpg' },
+            candPoster: { path: 'proj/cand.png' }
+          }
+        },
+        error: null
+      };
+
+      const result = await provider.getAppCustomization();
+
+      expect(result.publisherLogo?.url).toBe(
+        'http://localhost:54321/storage/v1/object/public/public-assets/proj/logo.png'
+      );
+      expect(result.poster?.url).toBe('http://localhost:54321/storage/v1/object/public/public-assets/proj/poster.jpg');
+      expect(result.poster?.urlDark).toBe(
+        'http://localhost:54321/storage/v1/object/public/public-assets/proj/poster-dark.jpg'
+      );
+      expect(result.candPoster?.url).toBe(
+        'http://localhost:54321/storage/v1/object/public/public-assets/proj/cand.png'
+      );
+    });
+
+    it('localizes translationOverrides (each override value is a LocalizedString)', async () => {
+      mockSupabase._mockResponses['app_settings'] = {
+        data: {
+          customization: {
+            translationOverrides: {
+              'common.appTitle': { en: 'My VAA', fi: 'Minun VAA' },
+              'common.startButton': { en: 'Start', fi: 'Aloita' }
+            }
+          }
+        },
+        error: null
+      };
+
+      const fiConfig: SupabaseAdapterConfig = {
+        fetch: vi.fn(),
+        client: asSupabaseMock(mockSupabase),
+        locale: 'fi',
+        defaultLocale: 'en'
+      };
+      const fiProvider = new SupabaseDataProvider(fiConfig);
+
+      const result = await fiProvider.getAppCustomization();
+
+      // reason: tests use string literals not in the strict TranslationKey union; index access requires the same key type
+      const overrides = result.translationOverrides as Record<string, string> | undefined;
+      expect(overrides?.['common.appTitle']).toBe('Minun VAA');
+      expect(overrides?.['common.startButton']).toBe('Aloita');
+    });
+
+    it('localizes candidateAppFAQ question and answer fields', async () => {
+      mockSupabase._mockResponses['app_settings'] = {
+        data: {
+          customization: {
+            candidateAppFAQ: [
+              {
+                question: { en: 'How?', fi: 'Miten?' },
+                answer: { en: 'Like this', fi: 'Nain' }
+              }
+            ]
+          }
+        },
+        error: null
+      };
+
+      const fiConfig: SupabaseAdapterConfig = {
+        fetch: vi.fn(),
+        client: asSupabaseMock(mockSupabase),
+        locale: 'fi',
+        defaultLocale: 'en'
+      };
+      const fiProvider = new SupabaseDataProvider(fiConfig);
+
+      const result = await fiProvider.getAppCustomization();
+
+      expect(result.candidateAppFAQ?.[0].question).toBe('Miten?');
+      expect(result.candidateAppFAQ?.[0].answer).toBe('Nain');
+    });
+
+    it('returns an empty customization without asking the openness RPC when zero rows come back', async () => {
+      mockSupabase._mockResponses['app_settings'] = { data: null, error: null };
+
+      const result = await provider.getAppCustomization();
+
+      expect(result).toEqual({});
+      expect(mockSupabase.rpc).not.toHaveBeenCalled();
+    });
+
+    it('returns empty object if customization column is empty/null', async () => {
+      mockSupabase._mockResponses['app_settings'] = {
+        data: { customization: null },
+        error: null
+      };
+
+      const result = await provider.getAppCustomization();
+
+      expect(result).toEqual({});
+    });
+
+    it('parses a customization row missing every field into the same empty customization', async () => {
+      mockSupabase._mockResponses['app_settings'] = { data: { customization: {} }, error: null };
+
+      const { result, records } = await withCapturedLogs(() => provider.getAppCustomization());
+
+      expect(result).toEqual({});
+      expect(records).toHaveLength(0);
+    });
+
+    it('drops only the malformed publisherLogo and keeps the rest of the customization usable', async () => {
+      mockSupabase._mockResponses['app_settings'] = {
+        data: {
+          customization: {
+            publisherName: { en: 'Publisher EN' },
+            publisherLogo: { path: 42 },
+            poster: { path: 'proj/poster.jpg' }
+          }
+        },
+        error: null
+      };
+
+      const { result, records } = await withCapturedLogs(() => provider.getAppCustomization());
+
+      expect(result.publisherLogo).toBeUndefined();
+      expect(result.publisherName).toBe('Publisher EN');
+      expect(result.poster?.url).toBe('http://localhost:54321/storage/v1/object/public/public-assets/proj/poster.jpg');
+      expect(records).toHaveLength(1);
+      expect(records[0].severityText).toBe('ERROR');
+      expect(records[0].attributes?.issues).toEqual(['publisherLogo.path']);
+    });
+
+    it('preserves the publisher name when an unrecognised top-level key is present', async () => {
+      // The permanent home of the probe that measured ledger row 2's blind half (`2-OLD`, taken by 157.1-03 against the shipped one-off partial-preserve, where it failed with `expected undefined to be 'Publisher EN'`). Same input shape, same assertion — so the RED recorded there and the GREEN recorded here are two observations of ONE assertion rather than two unrelated ones.
+      mockSupabase._mockResponses['app_settings'] = {
+        data: {
+          customization: {
+            publisherName: { en: 'Publisher EN' },
+            bogusTopLevelKey: 1
+          }
+        },
+        error: null
+      };
+
+      const { result, records } = await withCapturedLogs(() => provider.getAppCustomization());
+
+      expect(result.publisherName).toBe('Publisher EN');
+      expect(records).toHaveLength(1);
+      expect(records[0].severityText).toBe('ERROR');
+      expect(records[0].attributes?.rejectedKeys).toEqual(['bogusTopLevelKey']);
+    });
+  });
+
+  describe('getElectionData', () => {
+    it('fetches elections with embedded election_constituency_groups and returns ElectionData array', async () => {
+      mockSupabase._mockResponses['elections'] = {
+        data: [
+          {
+            id: 'e1',
+            name: { en: 'Election 2024' },
+            short_name: { en: 'E24' },
+            info: null,
+            sort_order: 1,
+            election_date: '2024-06-01',
+            election_type: 'organization_list',
+            current_round: 1,
+            multiple_rounds: false,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            election_constituency_groups: [{ constituency_group_id: 'cg1' }]
+          }
+        ],
+        error: null
+      };
+
+      const result = await provider.getElectionData();
+
+      expect(mockSupabase.from).toHaveBeenCalledWith('elections');
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('e1');
+      expect(result[0].name).toBe('Election 2024');
+    });
+
+    // REWRITTEN, not deleted. These lines are the only statement anywhere in the repository of what the elections mapping is, and a mapping with no test is how `election_type` came to have two meanings in the first place. Before 162-07 this case pinned `election_type -> subtype`; that term is gone under Q2 = (A), so the case now states the mapping that replaced it -- and states it in BOTH directions, because the failure this guards against is silent. A row whose two columns disagree is the only fixture that can tell them apart.
+    it('maps election_date to date and current_round to round, and feeds subtype from its OWN column', async () => {
+      mockSupabase._mockResponses['elections'] = {
+        data: [
+          {
+            id: 'e1',
+            name: { en: 'Election' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            election_date: '2024-06-01',
+            election_type: 'organization_list',
+            current_round: 2,
+            multiple_rounds: true,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: 'presidential',
+            election_constituency_groups: []
+          }
+        ],
+        error: null
+      };
+
+      const result = await provider.getElectionData();
+
+      expect(result[0].date).toBe('2024-06-01');
+      expect(result[0].round).toBe(2);
+      expect(result[0].subtype).toBe('presidential');
+    });
+
+    // The negative half, as its own case. `election_type` now carries the nomination shape (D-16), and the hazard that ruling names is that the application property "would start receiving nomination shapes" with nothing recording that its meaning had changed. Nothing goes red on its own when that happens, so it is asserted directly: a row whose nomination-shape column is populated and whose subtype column is empty must produce NO subtype.
+    it('never feeds subtype from the nomination-shape column', async () => {
+      mockSupabase._mockResponses['elections'] = {
+        data: [
+          {
+            id: 'e1',
+            name: { en: 'Election' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            election_date: null,
+            election_type: 'candidate_only',
+            current_round: 1,
+            multiple_rounds: false,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            election_constituency_groups: []
+          }
+        ],
+        error: null
+      };
+
+      const result = await provider.getElectionData();
+
+      expect(result[0].subtype).toBeUndefined();
+    });
+
+    it('extracts constituencyGroupIds from join table rows as array of UUID strings', async () => {
+      mockSupabase._mockResponses['elections'] = {
+        data: [
+          {
+            id: 'e1',
+            name: { en: 'Election' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            election_date: null,
+            election_type: 'organization_list',
+            current_round: 1,
+            multiple_rounds: false,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            election_constituency_groups: [{ constituency_group_id: 'cg1' }, { constituency_group_id: 'cg2' }]
+          }
+        ],
+        error: null
+      };
+
+      const result = await provider.getElectionData();
+
+      expect(result[0].constituencyGroupIds).toEqual(['cg1', 'cg2']);
+    });
+
+    it('converts image field via parseStoredImage', async () => {
+      mockSupabase._mockResponses['elections'] = {
+        data: [
+          {
+            id: 'e1',
+            name: { en: 'Election' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            election_date: null,
+            election_type: 'organization_list',
+            current_round: 1,
+            multiple_rounds: false,
+            color: null,
+            image: { path: 'proj/election/e1/banner.png' },
+            custom_data: null,
+            subtype: null,
+            election_constituency_groups: []
+          }
+        ],
+        error: null
+      };
+
+      const result = await provider.getElectionData();
+
+      expect(result[0].image?.url).toBe(
+        'http://localhost:54321/storage/v1/object/public/public-assets/proj/election/e1/banner.png'
+      );
+    });
+
+    it('localizes name, short_name, info fields', async () => {
+      mockSupabase._mockResponses['elections'] = {
+        data: [
+          {
+            id: 'e1',
+            name: { en: 'Election EN', fi: 'Election FI' },
+            short_name: { en: 'E-EN', fi: 'E-FI' },
+            info: { en: 'Info EN', fi: 'Info FI' },
+            sort_order: 1,
+            election_date: null,
+            election_type: 'organization_list',
+            current_round: 1,
+            multiple_rounds: false,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            election_constituency_groups: []
+          }
+        ],
+        error: null
+      };
+
+      const fiConfig: SupabaseAdapterConfig = {
+        fetch: vi.fn(),
+        client: asSupabaseMock(mockSupabase),
+        locale: 'fi',
+        defaultLocale: 'en'
+      };
+      const fiProvider = new SupabaseDataProvider(fiConfig);
+
+      const result = await fiProvider.getElectionData();
+
+      expect(result[0].name).toBe('Election FI');
+      expect(result[0].shortName).toBe('E-FI');
+      expect(result[0].info).toBe('Info FI');
+    });
+
+    it('applies id filter when options.id is provided', async () => {
+      mockSupabase._mockResponses['elections'] = {
+        data: [],
+        error: null
+      };
+
+      await provider.getElectionData({ id: 'e1' });
+
+      const chain = mockSupabase.from.mock.results[0].value;
+      expect(chain.eq).toHaveBeenCalledWith('id', 'e1');
+    });
+  });
+
+  describe('getConstituencyData', () => {
+    it('returns { groups: ConstituencyGroupData[], constituencies: ConstituencyData[] }', async () => {
+      mockSupabase._mockResponses['constituency_groups'] = {
+        data: [
+          {
+            id: 'cg1',
+            name: { en: 'Group 1' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            constituency_group_constituencies: [{ constituency_id: 'c1' }]
+          }
+        ],
+        error: null
+      };
+      mockSupabase._mockResponses['constituencies'] = {
+        data: [
+          {
+            id: 'c1',
+            name: { en: 'Constituency 1' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            keywords: null,
+            parent_id: null
+          }
+        ],
+        error: null
+      };
+
+      const result = await provider.getConstituencyData();
+
+      expect(result.groups).toHaveLength(1);
+      expect(result.constituencies).toHaveLength(1);
+      expect(result.groups[0].id).toBe('cg1');
+      expect(result.constituencies[0].id).toBe('c1');
+    });
+
+    it('extracts constituencyIds from join table rows', async () => {
+      mockSupabase._mockResponses['constituency_groups'] = {
+        data: [
+          {
+            id: 'cg1',
+            name: { en: 'Group' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            constituency_group_constituencies: [{ constituency_id: 'c1' }, { constituency_id: 'c2' }]
+          }
+        ],
+        error: null
+      };
+      mockSupabase._mockResponses['constituencies'] = {
+        data: [],
+        error: null
+      };
+
+      const result = await provider.getConstituencyData();
+
+      expect(result.groups[0].constituencyIds).toEqual(['c1', 'c2']);
+    });
+
+    it('localizes keywords field then splits by comma+whitespace into string array', async () => {
+      mockSupabase._mockResponses['constituency_groups'] = {
+        data: [],
+        error: null
+      };
+      mockSupabase._mockResponses['constituencies'] = {
+        data: [
+          {
+            id: 'c1',
+            name: { en: 'Constituency' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            keywords: { en: 'Helsinki, Espoo, Vantaa', fi: 'Helsinki, Espoo, Vantaa' },
+            parent_id: null
+          }
+        ],
+        error: null
+      };
+
+      const result = await provider.getConstituencyData();
+
+      expect(result.constituencies[0].keywords).toEqual(['Helsinki', 'Espoo', 'Vantaa']);
+    });
+
+    it('applies id filter to constituency_groups (not constituencies)', async () => {
+      mockSupabase._mockResponses['constituency_groups'] = {
+        data: [],
+        error: null
+      };
+      mockSupabase._mockResponses['constituencies'] = {
+        data: [],
+        error: null
+      };
+
+      await provider.getConstituencyData({ id: 'cg1' });
+
+      // constituency_groups should have the id filter applied
+      const groupChain = mockSupabase.from.mock.results[0].value;
+      expect(groupChain.eq).toHaveBeenCalledWith('id', 'cg1');
+
+      // constituencies should carry the project filter and NO id filter: a constituency may belong to a group through a parent chain, so narrowing the second read by the caller's group id would drop it. The assertion is on the absence of an `id` filter specifically rather than on the absence of any filter, because every read now carries the project.
+      const constChain = mockSupabase.from.mock.results[1].value;
+      expect(constChain.eq).toHaveBeenCalledWith('project_id', '00000000-0000-0000-0000-000000000001');
+      expect(constChain.eq.mock.calls.map(([column]: [string]) => column)).toEqual(['project_id']);
+    });
+
+    it('converts image fields via parseStoredImage', async () => {
+      mockSupabase._mockResponses['constituency_groups'] = {
+        data: [
+          {
+            id: 'cg1',
+            name: { en: 'Group' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: { path: 'proj/group/cg1/img.png' },
+            custom_data: null,
+            subtype: null,
+            constituency_group_constituencies: []
+          }
+        ],
+        error: null
+      };
+      mockSupabase._mockResponses['constituencies'] = {
+        data: [
+          {
+            id: 'c1',
+            name: { en: 'Const' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: { path: 'proj/const/c1/img.png' },
+            custom_data: null,
+            subtype: null,
+            keywords: null,
+            parent_id: null
+          }
+        ],
+        error: null
+      };
+
+      const result = await provider.getConstituencyData();
+
+      expect(result.groups[0].image?.url).toBe(
+        'http://localhost:54321/storage/v1/object/public/public-assets/proj/group/cg1/img.png'
+      );
+      expect(result.constituencies[0].image?.url).toBe(
+        'http://localhost:54321/storage/v1/object/public/public-assets/proj/const/c1/img.png'
+      );
+    });
+  });
+
+  describe('getEntityData', () => {
+    // D-08: a page boundary cut on `sort_order` alone is not stable across requests (spike 030 measured 768 of 36,056 rows swapped for duplicates), so `id` is the tie-breaker on every paged table read.
+    it('orders each entity table by sort_order then id and requests the first page of 50,000 rows', async () => {
+      mockSupabase._mockResponses['candidates'] = { data: [], error: null };
+      mockSupabase._mockResponses['organizations'] = { data: [], error: null };
+
+      await provider.getEntityData();
+
+      for (const table of ['candidates', 'organizations']) {
+        expect(orderCallsFor(mockSupabase, table).map((call) => call[0])).toEqual(['sort_order', 'id']);
+        expect(rangeCallsFor(mockSupabase, table)).toEqual([[0, 49999]]);
+      }
+    });
+
+    // REGRESSION (spike 026 F1). An unpaged read returned 1,000 of 1,510 nominations with HTTP 200 under the default row cap; a full first page must be followed by a request for the next one, built on a fresh query.
+    it('reads past a full first page of 50,000 candidates with a second ranged request', async () => {
+      const fullPage = Array.from({ length: 50000 }, (_, i) => ({
+        id: `c${i}`,
+        name: { en: `Candidate ${i}` },
+        sort_order: i,
+        image: null,
+        answers: null
+      }));
+      mockSupabase._mockResponseQueues['candidates'] = [
+        { data: fullPage, error: null },
+        { data: [], error: null }
+      ];
+      mockSupabase._mockResponses['organizations'] = { data: [], error: null };
+
+      const result = await provider.getEntityData({ entityType: ENTITY_TYPE.Candidate });
+
+      expect(result).toHaveLength(50000);
+      expect(rangeCallsFor(mockSupabase, 'candidates')).toEqual([
+        [0, 49999],
+        [50000, 99999]
+      ]);
+      // A fresh builder per page: two chains for the table, each ranged once.
+      expect(mockSupabase._chains.filter((entry) => entry.table === 'candidates')).toHaveLength(2);
+    });
+
+    it('fetches candidates with firstName, lastName, organizationId and type=candidate', async () => {
+      mockSupabase._mockResponses['candidates'] = {
+        data: [
+          {
+            id: 'c1',
+            name: { en: 'Jane Doe' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            first_name: 'Jane',
+            last_name: 'Doe',
+            organization_id: 'org1',
+            answers: { q1: { value: 3, info: { en: 'Because...' } } }
+          }
+        ],
+        error: null
+      };
+      mockSupabase._mockResponses['organizations'] = {
+        data: [],
+        error: null
+      };
+
+      const result = (await provider.getEntityData()) as Array<EntityTestNarrow>;
+
+      const candidate = result.find((e) => e.id === 'c1');
+      expect(candidate).toBeDefined();
+      expect(candidate?.type).toBe('candidate');
+      expect(candidate?.firstName).toBe('Jane');
+      expect(candidate?.lastName).toBe('Doe');
+      expect(candidate?.organizationId).toBe('org1');
+    });
+
+    it('fetches organizations and sets type to organization', async () => {
+      mockSupabase._mockResponses['candidates'] = {
+        data: [],
+        error: null
+      };
+      mockSupabase._mockResponses['organizations'] = {
+        data: [
+          {
+            id: 'org1',
+            name: { en: 'Party A' },
+            short_name: { en: 'PA' },
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            answers: { q1: { value: 2 } }
+          }
+        ],
+        error: null
+      };
+
+      const result = (await provider.getEntityData()) as Array<EntityTestNarrow>;
+
+      const org = result.find((e) => e.id === 'org1');
+      expect(org).toBeDefined();
+      expect(org?.type).toBe('organization');
+    });
+
+    it('applies entityType filter (queries only the specified entity table)', async () => {
+      mockSupabase._mockResponses['candidates'] = {
+        data: [
+          {
+            id: 'c1',
+            name: { en: 'Jane' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            first_name: 'Jane',
+            last_name: 'Doe',
+            organization_id: null,
+            answers: null
+          }
+        ],
+        error: null
+      };
+
+      await provider.getEntityData({ entityType: ENTITY_TYPE.Candidate });
+
+      // Should only query candidates table, not organizations
+      const calledTables = mockSupabase.from.mock.calls.map((c) => c[0]);
+      expect(calledTables).toContain('candidates');
+      expect(calledTables).not.toContain('organizations');
+    });
+
+    it('applies id filter with eq for single value', async () => {
+      mockSupabase._mockResponses['candidates'] = {
+        data: [],
+        error: null
+      };
+      mockSupabase._mockResponses['organizations'] = {
+        data: [],
+        error: null
+      };
+
+      await provider.getEntityData({ id: 'c1' });
+
+      const chain = mockSupabase.from.mock.results[0].value;
+      expect(chain.eq).toHaveBeenCalledWith('id', 'c1');
+    });
+
+    it('applies id filter with in for array values', async () => {
+      mockSupabase._mockResponses['candidates'] = {
+        data: [],
+        error: null
+      };
+      mockSupabase._mockResponses['organizations'] = {
+        data: [],
+        error: null
+      };
+
+      await provider.getEntityData({ id: ['c1', 'c2'] });
+
+      const chain = mockSupabase.from.mock.results[0].value;
+      expect(chain.in).toHaveBeenCalledWith('id', ['c1', 'c2']);
+    });
+
+    it('processes answers through parseAnswers for localization', async () => {
+      const { parseAnswers } = await import('$lib/api/utils/parseAnswers');
+
+      mockSupabase._mockResponses['candidates'] = {
+        data: [
+          {
+            id: 'c1',
+            name: { en: 'Jane' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            first_name: 'Jane',
+            last_name: 'Doe',
+            organization_id: null,
+            answers: { q1: { value: 3, info: { en: 'Reason' } } }
+          }
+        ],
+        error: null
+      };
+      mockSupabase._mockResponses['organizations'] = {
+        data: [],
+        error: null
+      };
+
+      await provider.getEntityData();
+
+      expect(parseAnswers).toHaveBeenCalledWith({ q1: { value: 3, info: { en: 'Reason' } } }, 'en');
+    });
+
+    it('converts image field via parseStoredImage', async () => {
+      mockSupabase._mockResponses['candidates'] = {
+        data: [
+          {
+            id: 'c1',
+            name: { en: 'Jane' },
+            short_name: null,
+            info: null,
+            sort_order: 1,
+            color: null,
+            image: { path: 'proj/cand/c1/photo.jpg' },
+            custom_data: null,
+            subtype: null,
+            first_name: 'Jane',
+            last_name: 'Doe',
+            organization_id: null,
+            answers: null
+          }
+        ],
+        error: null
+      };
+      mockSupabase._mockResponses['organizations'] = {
+        data: [],
+        error: null
+      };
+
+      const result = (await provider.getEntityData()) as Array<EntityTestNarrow>;
+
+      expect(result[0].image?.url).toBe(
+        'http://localhost:54321/storage/v1/object/public/public-assets/proj/cand/c1/photo.jpg'
+      );
+    });
+
+    it('localizes name, short_name, info via toDataObject', async () => {
+      mockSupabase._mockResponses['candidates'] = {
+        data: [],
+        error: null
+      };
+      mockSupabase._mockResponses['organizations'] = {
+        data: [
+          {
+            id: 'org1',
+            name: { en: 'Party EN', fi: 'Party FI' },
+            short_name: { en: 'P-EN', fi: 'P-FI' },
+            info: { en: 'Info EN', fi: 'Info FI' },
+            sort_order: 1,
+            color: null,
+            image: null,
+            custom_data: null,
+            subtype: null,
+            answers: null
+          }
+        ],
+        error: null
+      };
+
+      const fiConfig: SupabaseAdapterConfig = {
+        fetch: vi.fn(),
+        client: asSupabaseMock(mockSupabase),
+        locale: 'fi',
+        defaultLocale: 'en'
+      };
+      const fiProvider = new SupabaseDataProvider(fiConfig);
+
+      const result = (await fiProvider.getEntityData()) as Array<EntityTestNarrow>;
+
+      const org = result.find((e) => e.id === 'org1');
+      expect(org?.name).toBe('Party FI');
+      expect(org?.shortName).toBe('P-FI');
+      expect(org?.info).toBe('Info FI');
+    });
+  });
+
+  describe('getQuestionData', () => {
+    it('returns { categories, questions } arrays', async () => {
+      mockSupabase._mockRpcResponses['get_questions'] = {
+        data: {
+          categories: [
+            {
+              id: 'cat1',
+              name: { en: 'Category 1' },
+              short_name: null,
+              info: null,
+              sort_order: 1,
+              color: null,
+              image: null,
+              custom_data: null,
+              subtype: null,
+              category_type: 'opinion',
+              election_ids: null,
+              election_rounds: null,
+              constituency_ids: null,
+              entity_type: null
+            }
+          ],
+          questions: [
+            {
+              id: 'q1',
+              name: { en: 'Question 1' },
+              short_name: null,
+              info: null,
+              sort_order: 1,
+              color: null,
+              image: null,
+              custom_data: null,
+              subtype: null,
+              type: 'singleChoiceOrdinal',
+              category_id: 'cat1',
+              choices: [{ id: 1, label: { en: 'Agree', fi: 'Samaa' } }],
+              settings: null,
+              election_ids: null,
+              election_rounds: null,
+              constituency_ids: null,
+              entity_type: null,
+              allow_open: false,
+              required: true
+            }
+          ]
+        },
+        error: null
+      };
+
+      const result = await provider.getQuestionData();
+
+      expect(result.categories).toHaveLength(1);
+      expect(result.questions).toHaveLength(1);
+    });
+
+    it('maps category_type to type on categories', async () => {
+      mockSupabase._mockRpcResponses['get_questions'] = {
+        data: {
+          categories: [
+            {
+              id: 'cat1',
+              name: { en: 'Cat' },
+              short_name: null,
+              info: null,
+              sort_order: 1,
+              color: null,
+              image: null,
+              custom_data: null,
+              subtype: null,
+              category_type: 'opinion',
+              election_ids: null,
+              election_rounds: null,
+              constituency_ids: null,
+              entity_type: null
+            }
+          ],
+          questions: []
+        },
+        error: null
+      };
+
+      const result = await provider.getQuestionData();
+
+      expect(result.categories[0].type).toBe('opinion');
+    });
+
+    it('localizes name, short_name, info on both categories and questions', async () => {
+      mockSupabase._mockRpcResponses['get_questions'] = {
+        data: {
+          categories: [
+            {
+              id: 'cat1',
+              name: { en: 'Cat EN', fi: 'Cat FI' },
+              short_name: { en: 'C-EN', fi: 'C-FI' },
+              info: { en: 'Info EN', fi: 'Info FI' },
+              sort_order: 1,
+              color: null,
+              image: null,
+              custom_data: null,
+              subtype: null,
+              category_type: 'opinion',
+              election_ids: null,
+              election_rounds: null,
+              constituency_ids: null,
+              entity_type: null
+            }
+          ],
+          questions: [
+            {
+              id: 'q1',
+              name: { en: 'Q EN', fi: 'Q FI' },
+              short_name: { en: 'QS-EN', fi: 'QS-FI' },
+              info: { en: 'QI EN', fi: 'QI FI' },
+              sort_order: 1,
+              color: null,
+              image: null,
+              custom_data: null,
+              subtype: null,
+              type: 'singleChoiceOrdinal',
+              category_id: 'cat1',
+              choices: null,
+              settings: null,
+              election_ids: null,
+              election_rounds: null,
+              constituency_ids: null,
+              entity_type: null,
+              allow_open: false,
+              required: true
+            }
+          ]
+        },
+        error: null
+      };
+
+      const fiConfig: SupabaseAdapterConfig = {
+        fetch: vi.fn(),
+        client: asSupabaseMock(mockSupabase),
+        locale: 'fi',
+        defaultLocale: 'en'
+      };
+      const fiProvider = new SupabaseDataProvider(fiConfig);
+
+      const result = await fiProvider.getQuestionData();
+
+      expect(result.categories[0].name).toBe('Cat FI');
+      expect(result.categories[0].shortName).toBe('C-FI');
+      expect(result.categories[0].info).toBe('Info FI');
+      expect(result.questions[0].name).toBe('Q FI');
+      expect(result.questions[0].shortName).toBe('QS-FI');
+      expect(result.questions[0].info).toBe('QI FI');
+    });
+
+    it('localizes choice labels in choice-type questions', async () => {
+      mockSupabase._mockRpcResponses['get_questions'] = {
+        data: {
+          categories: [
+            {
+              id: 'cat1',
+              name: { en: 'Cat' },
+              short_name: null,
+              info: null,
+              sort_order: 1,
+              color: null,
+              image: null,
+              custom_data: null,
+              subtype: null,
+              category_type: 'opinion',
+              election_ids: null,
+              election_rounds: null,
+              constituency_ids: null,
+              entity_type: null
+            }
+          ],
+          questions: [
+            {
+              id: 'q1',
+              name: { en: 'Q1' },
+              short_name: null,
+              info: null,
+              sort_order: 1,
+              color: null,
+              image: null,
+              custom_data: null,
+              subtype: null,
+              type: 'singleChoiceOrdinal',
+              category_id: 'cat1',
+              choices: [
+                { id: 1, label: { en: 'Agree', fi: 'Samaa mielta' } },
+                { id: 2, label: { en: 'Disagree', fi: 'Eri mielta' } }
+              ],
+              settings: null,
+              election_ids: null,
+              election_rounds: null,
+              constituency_ids: null,
+              entity_type: null,
+              allow_open: false,
+              required: true
+            }
+          ]
+        },
+        error: null
+      };
+
+      const fiConfig: SupabaseAdapterConfig = {
+        fetch: vi.fn(),
+        client: asSupabaseMock(mockSupabase),
+        locale: 'fi',
+        defaultLocale: 'en'
+      };
+      const fiProvider = new SupabaseDataProvider(fiConfig);
+
+      const result = await fiProvider.getQuestionData();
+
+      const choices = (result.questions[0] as QuestionTestNarrow).choices;
+      expect(choices?.[0].label).toBe('Samaa mielta');
+      expect(choices?.[1].label).toBe('Eri mielta');
+    });
+
+    it('passes through settings, electionIds, constituencyIds, entityType', async () => {
+      mockSupabase._mockRpcResponses['get_questions'] = {
+        data: {
+          categories: [
+            {
+              id: 'cat1',
+              name: { en: 'Cat' },
+              short_name: null,
+              info: null,
+              sort_order: 1,
+              color: null,
+              image: null,
+              custom_data: null,
+              subtype: null,
+              category_type: 'opinion',
+              election_ids: null,
+              election_rounds: null,
+              constituency_ids: null,
+              entity_type: null
+            }
+          ],
+          questions: [
+            {
+              id: 'q1',
+              name: { en: 'Q1' },
+              short_name: null,
+              info: null,
+              sort_order: 1,
+              color: null,
+              image: null,
+              custom_data: null,
+              subtype: null,
+              type: 'singleChoiceOrdinal',
+              category_id: 'cat1',
+              choices: null,
+              settings: { display: 'likert' },
+              election_ids: ['e1'],
+              election_rounds: [1],
+              constituency_ids: ['co1'],
+              entity_type: ['candidate'],
+              allow_open: true,
+              required: false
+            }
+          ]
+        },
+        error: null
+      };
+
+      const result = await provider.getQuestionData();
+      const q = result.questions[0] as QuestionTestNarrow;
+
+      expect(q.settings).toEqual({ display: 'likert' });
+      expect(q.electionIds).toEqual(['e1']);
+      expect(q.constituencyIds).toEqual(['co1']);
+      expect(q.entityType).toEqual(['candidate']);
+    });
+
+    it('bridges the allow_open column into customData.allowOpen (frontend consumer reads customData)', async () => {
+      mockSupabase._mockRpcResponses['get_questions'] = {
+        data: {
+          categories: [{ id: 'cat1', name: { en: 'C' }, category_type: 'opinion', sort_order: 1 }],
+          questions: [
+            // allow_open: false → customData.allowOpen false (open-answer field hidden)
+            {
+              id: 'q1',
+              name: { en: 'Q1' },
+              type: 'singleChoiceOrdinal',
+              category_id: 'cat1',
+              custom_data: null,
+              allow_open: false
+            },
+            // allow_open: true → customData.allowOpen true (open-answer field shown)
+            {
+              id: 'q2',
+              name: { en: 'Q2' },
+              type: 'singleChoiceOrdinal',
+              category_id: 'cat1',
+              custom_data: { hero: { emoji: 'x' } },
+              allow_open: true
+            },
+            // allow_open: null → defaults to true (schema default)
+            {
+              id: 'q3',
+              name: { en: 'Q3' },
+              type: 'singleChoiceOrdinal',
+              category_id: 'cat1',
+              custom_data: null,
+              allow_open: null
+            },
+            // explicit custom_data.allowOpen wins over the column
+            {
+              id: 'q4',
+              name: { en: 'Q4' },
+              type: 'singleChoiceOrdinal',
+              category_id: 'cat1',
+              custom_data: { allowOpen: false },
+              allow_open: true
+            }
+          ]
+        },
+        error: null
+      };
+
+      const result = await provider.getQuestionData();
+      function cd(q: unknown) {
+        return (q as { customData: { allowOpen?: boolean; hero?: unknown } }).customData;
+      }
+
+      expect(cd(result.questions[0]).allowOpen).toBe(false);
+      expect(cd(result.questions[1]).allowOpen).toBe(true);
+      expect(cd(result.questions[1]).hero).toEqual({ emoji: 'x' }); // existing custom_data preserved
+      expect(cd(result.questions[2]).allowOpen).toBe(true); // null → schema default true
+      expect(cd(result.questions[3]).allowOpen).toBe(false); // explicit JSONB wins over column
+    });
+
+    it('bridges custom_data.min/max into top-level min/max for number questions only', async () => {
+      mockSupabase._mockRpcResponses['get_questions'] = {
+        data: {
+          categories: [{ id: 'cat1', name: { en: 'C' }, category_type: 'opinion', sort_order: 1 }],
+          questions: [
+            // number row with custom_data min/max → lifted to top-level (question matchable)
+            {
+              id: 'q1',
+              name: { en: 'Q1' },
+              type: 'number',
+              category_id: 'cat1',
+              custom_data: { min: 0, max: 10 },
+              allow_open: false
+            },
+            // number row WITHOUT custom_data min/max → no top-level min/max (non-matchable)
+            { id: 'q2', name: { en: 'Q2' }, type: 'number', category_id: 'cat1', custom_data: null, allow_open: false },
+            // non-number row with custom_data.min → NOT lifted to top-level
+            {
+              id: 'q3',
+              name: { en: 'Q3' },
+              type: 'text',
+              category_id: 'cat1',
+              custom_data: { min: 3 },
+              allow_open: false
+            }
+          ]
+        },
+        error: null
+      };
+
+      const result = await provider.getQuestionData();
+      function q(i: number) {
+        return result.questions[i] as { min?: number; max?: number; customData: { min?: number; max?: number } };
+      }
+
+      // number + custom_data range → top-level min/max present, customData still carries them
+      expect(q(0).min).toBe(0);
+      expect(q(0).max).toBe(10);
+      expect(q(0).customData.min).toBe(0);
+      expect(q(0).customData.max).toBe(10);
+
+      // number without range → no top-level min/max (stays non-matchable)
+      expect(q(1).min).toBeUndefined();
+      expect(q(1).max).toBeUndefined();
+
+      // text row → custom_data.min NOT lifted to top-level
+      expect(q(2).min).toBeUndefined();
+    });
+
+    it('forwards electionId to the RPC and does not re-filter the payload client-side', async () => {
+      mockSupabase._mockRpcResponses['get_questions'] = {
+        data: {
+          categories: [
+            {
+              id: 'cat1',
+              name: { en: 'Matching' },
+              short_name: null,
+              info: null,
+              sort_order: 1,
+              color: null,
+              image: null,
+              custom_data: null,
+              subtype: null,
+              category_type: 'opinion',
+              election_ids: ['e1'],
+              election_rounds: null,
+              constituency_ids: null,
+              entity_type: null
+            },
+            {
+              id: 'cat2',
+              name: { en: 'Global' },
+              short_name: null,
+              info: null,
+              sort_order: 2,
+              color: null,
+              image: null,
+              custom_data: null,
+              subtype: null,
+              category_type: 'info',
+              election_ids: null,
+              election_rounds: null,
+              constituency_ids: null,
+              entity_type: null
+            },
+            {
+              id: 'cat3',
+              name: { en: 'Other election' },
+              short_name: null,
+              info: null,
+              sort_order: 3,
+              color: null,
+              image: null,
+              custom_data: null,
+              subtype: null,
+              category_type: 'opinion',
+              election_ids: ['e2'],
+              election_rounds: null,
+              constituency_ids: null,
+              entity_type: null
+            }
+          ],
+          questions: []
+        },
+        error: null
+      };
+
+      const result = await provider.getQuestionData({ electionId: 'e1' });
+
+      // The election filter is now applied by the RPC, so the adapter's job is to forward it and pass the payload through untouched.
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('get_questions', {
+        p_project_id: '00000000-0000-0000-0000-000000000001',
+        p_election_id: 'e1',
+        p_constituency_id: undefined,
+        p_election_round: undefined
+      });
+      // cat3 is scoped to e2 and this mock deliberately returns it anyway. A client-side filter re-applied on top of the RPC would drop it, so its presence is the negative assertion that no such filter survives.
+      expect(result.categories).toHaveLength(3);
+      expect(result.categories.map((c) => c.id)).toEqual(['cat1', 'cat2', 'cat3']);
+    });
+
+    it('converts image fields via parseStoredImage', async () => {
+      mockSupabase._mockRpcResponses['get_questions'] = {
+        data: {
+          categories: [
+            {
+              id: 'cat1',
+              name: { en: 'Cat' },
+              short_name: null,
+              info: null,
+              sort_order: 1,
+              color: null,
+              image: { path: 'proj/cat/cat1/img.png' },
+              custom_data: null,
+              subtype: null,
+              category_type: 'opinion',
+              election_ids: null,
+              election_rounds: null,
+              constituency_ids: null,
+              entity_type: null
+            }
+          ],
+          questions: [
+            {
+              id: 'q1',
+              name: { en: 'Q1' },
+              short_name: null,
+              info: null,
+              sort_order: 1,
+              color: null,
+              image: { path: 'proj/q/q1/img.png' },
+              custom_data: null,
+              subtype: null,
+              type: 'singleChoiceOrdinal',
+              category_id: 'cat1',
+              choices: null,
+              settings: null,
+              election_ids: null,
+              election_rounds: null,
+              constituency_ids: null,
+              entity_type: null,
+              allow_open: false,
+              required: true
+            }
+          ]
+        },
+        error: null
+      };
+
+      const result = await provider.getQuestionData();
+
+      expect(result.categories[0].image?.url).toBe(
+        'http://localhost:54321/storage/v1/object/public/public-assets/proj/cat/cat1/img.png'
+      );
+      expect(result.questions[0].image?.url).toBe(
+        'http://localhost:54321/storage/v1/object/public/public-assets/proj/q/q1/img.png'
+      );
+    });
+  });
+
+  describe('getQuestionData via the get_questions RPC', () => {
+    /** Build the single jsonb value the `get_questions` RPC returns, so every case below mocks the shape 157-04 proved against a live database. */
+    function rpcPayload(payload: {
+      categories?: Array<Record<string, unknown>>;
+      questions?: Array<Record<string, unknown>>;
+    }) {
+      return { data: { categories: payload.categories ?? [], questions: payload.questions ?? [] }, error: null };
+    }
+
+    it('reads categories and questions out of one jsonb payload', async () => {
+      mockSupabase._mockRpcResponses['get_questions'] = rpcPayload({
+        categories: [{ id: 'cat1', name: { en: 'Category 1' }, sort_order: 1, category_type: 'opinion' }],
+        questions: [
+          {
+            id: 'q1',
+            name: { en: 'Question 1' },
+            sort_order: 1,
+            type: 'singleChoiceOrdinal',
+            category_id: 'cat1',
+            choices: [{ id: 1, label: { en: 'Agree', fi: 'Samaa' } }],
+            allow_open: false
+          }
+        ]
+      });
+
+      const result = await provider.getQuestionData();
+
+      expect(result.categories).toHaveLength(1);
+      expect(result.questions).toHaveLength(1);
+      expect(result.categories[0].id).toBe('cat1');
+      expect(result.questions[0].id).toBe('q1');
+    });
+
+    it('issues exactly one RPC call per read and no table query', async () => {
+      mockSupabase._mockRpcResponses['get_questions'] = rpcPayload({});
+
+      await provider.getQuestionData();
+
+      // The single-call assertion is the mechanical guard against a follow-up `from('questions')` round trip being reintroduced as a fallback.
+      expect(mockSupabase.rpc).toHaveBeenCalledTimes(1);
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('get_questions', {
+        p_project_id: '00000000-0000-0000-0000-000000000001',
+        p_election_id: undefined,
+        p_constituency_id: undefined,
+        p_election_round: undefined
+      });
+      expect(mockSupabase.from).not.toHaveBeenCalled();
+    });
+
+    it('forwards electionId, constituencyId and electionRound under their p_ names', async () => {
+      mockSupabase._mockRpcResponses['get_questions'] = rpcPayload({});
+
+      await provider.getQuestionData({ electionId: 'e1', constituencyId: 'c1', electionRound: 2 });
+
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('get_questions', {
+        p_project_id: '00000000-0000-0000-0000-000000000001',
+        p_election_id: 'e1',
+        p_constituency_id: 'c1',
+        p_election_round: 2
+      });
+      // The round is a scalar, so it adds no level to the fan-out.
+      expect(mockSupabase.rpc).toHaveBeenCalledTimes(1);
+    });
+
+    it('fans out over election and constituency arrays and merges the results by id', async () => {
+      // A caller nominated in two elections passes a two-element array; picking [0] would drop the other election's scoped questions. See `candidate/(protected)/+layout.server.ts`, which derives electionId from the candidate's nominations.
+      mockSupabase._mockRpcResponses['get_questions'] = rpcPayload({
+        categories: [{ id: 'cat1', name: { en: 'C' }, sort_order: 1, category_type: 'opinion' }],
+        questions: [
+          { id: 'q1', name: { en: 'Q' }, sort_order: 1, type: 'text', category_id: 'cat1', allow_open: false }
+        ]
+      });
+
+      const result = await provider.getQuestionData({ electionId: ['e1', 'e2'], constituencyId: ['c1', 'c2'] });
+
+      expect(mockSupabase.rpc).toHaveBeenCalledTimes(4);
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('get_questions', {
+        p_project_id: '00000000-0000-0000-0000-000000000001',
+        p_election_id: 'e2',
+        p_constituency_id: 'c2',
+        p_election_round: undefined
+      });
+      // The four calls return the same rows, so the union must deduplicate them rather than return them four times.
+      expect(result.categories).toHaveLength(1);
+      expect(result.questions).toHaveLength(1);
+    });
+
+    it('defaults a null category_type to opinion', async () => {
+      mockSupabase._mockRpcResponses['get_questions'] = rpcPayload({
+        categories: [{ id: 'cat1', name: { en: 'C' }, sort_order: 1, category_type: null }]
+      });
+
+      const result = await provider.getQuestionData();
+
+      expect(result.categories[0].type).toBe('opinion');
+    });
+
+    it('drops a non-numeric custom_data min/max rather than coercing it', async () => {
+      mockSupabase._mockRpcResponses['get_questions'] = rpcPayload({
+        categories: [{ id: 'cat1', name: { en: 'C' }, sort_order: 1, category_type: 'opinion' }],
+        questions: [
+          {
+            id: 'q1',
+            name: { en: 'Q1' },
+            sort_order: 1,
+            type: 'number',
+            category_id: 'cat1',
+            custom_data: { min: 0, max: 10 },
+            allow_open: false
+          },
+          {
+            id: 'q2',
+            name: { en: 'Q2' },
+            sort_order: 2,
+            type: 'number',
+            category_id: 'cat1',
+            custom_data: { min: '3', max: { evil: true } },
+            allow_open: false
+          }
+        ]
+      });
+
+      const result = await provider.getQuestionData();
+      function q(i: number) {
+        return result.questions[i] as { min?: number; max?: number };
+      }
+
+      expect(q(0).min).toBe(0);
+      expect(q(0).max).toBe(10);
+      // Untrusted-JSONB tampering guard: a non-numeric value is dropped, never coerced to a number.
+      expect(q(1).min).toBeUndefined();
+      expect(q(1).max).toBeUndefined();
+    });
+
+    it('bridges the allow_open column into customData.allowOpen', async () => {
+      mockSupabase._mockRpcResponses['get_questions'] = rpcPayload({
+        categories: [{ id: 'cat1', name: { en: 'C' }, sort_order: 1, category_type: 'opinion' }],
+        questions: [
+          { id: 'q1', name: { en: 'Q1' }, sort_order: 1, type: 'text', category_id: 'cat1', allow_open: true },
+          { id: 'q2', name: { en: 'Q2' }, sort_order: 2, type: 'text', category_id: 'cat1', allow_open: false }
+        ]
+      });
+
+      const result = await provider.getQuestionData();
+      function cd(i: number) {
+        return (result.questions[i] as { customData: { allowOpen?: boolean } }).customData;
+      }
+
+      expect(cd(0).allowOpen).toBe(true);
+      expect(cd(1).allowOpen).toBe(false);
+    });
+
+    it('localizes choice labels to the requested locale', async () => {
+      mockSupabase._mockRpcResponses['get_questions'] = rpcPayload({
+        categories: [{ id: 'cat1', name: { en: 'C' }, sort_order: 1, category_type: 'opinion' }],
+        questions: [
+          {
+            id: 'q1',
+            name: { en: 'Q1', fi: 'K1' },
+            sort_order: 1,
+            type: 'singleChoiceOrdinal',
+            category_id: 'cat1',
+            choices: [
+              { id: 1, label: { en: 'Agree', fi: 'Samaa mielta' } },
+              { id: 2, label: { en: 'Disagree', fi: 'Eri mielta' } }
+            ],
+            allow_open: false
+          }
+        ]
+      });
+
+      const fiConfig: SupabaseAdapterConfig = {
+        fetch: vi.fn(),
+        client: asSupabaseMock(mockSupabase),
+        locale: 'fi',
+        defaultLocale: 'en'
+      };
+      const fiProvider = new SupabaseDataProvider(fiConfig);
+
+      const result = await fiProvider.getQuestionData();
+      const choices = (result.questions[0] as QuestionTestNarrow).choices;
+
+      expect(choices?.[0].label).toBe('Samaa mielta');
+      expect(choices?.[1].label).toBe('Eri mielta');
+    });
+
+    it('drops a question whose category the RPC filtered out', async () => {
+      // The RPC filters categories and questions independently, so an unscoped question under a scoped category survives its category. `DataRoot.getQuestionCategory` throws `DataNotFoundError` for such an orphan, so the adapter must not hand one to the data model. This is the case the deleted `.in('category_id', ...)` narrowing used to make unreachable, reproduced from the e2e dataset's QG-Opin-EL-Reg / QU-Opin-EL-Reg-1 pair.
+      mockSupabase._mockRpcResponses['get_questions'] = {
+        data: {
+          categories: [{ id: 'cat1', name: { en: 'Surviving' }, sort_order: 1, category_type: 'opinion' }],
+          questions: [
+            { id: 'q1', name: { en: 'Kept' }, sort_order: 1, type: 'text', category_id: 'cat1', allow_open: false },
+            { id: 'q2', name: { en: 'Orphan' }, sort_order: 2, type: 'text', category_id: 'cat2', allow_open: false }
+          ]
+        },
+        error: null
+      };
+
+      const result = await provider.getQuestionData({ electionId: 'e1' });
+
+      expect(result.questions.map((q) => q.id)).toEqual(['q1']);
+    });
+
+    it('returns no questions when the filter leaves no categories', async () => {
+      // The previous `.in('category_id', categoryIds)` narrowing was guarded by `categoryIds.length > 0`, so an empty filtered category list read every question in the table. Empty in must now mean empty out.
+      mockSupabase._mockRpcResponses['get_questions'] = {
+        data: {
+          categories: [],
+          questions: [
+            { id: 'q1', name: { en: 'Q1' }, sort_order: 1, type: 'text', category_id: 'cat1', allow_open: false }
+          ]
+        },
+        error: null
+      };
+
+      const result = await provider.getQuestionData({ electionId: 'e1' });
+
+      expect(result.categories).toHaveLength(0);
+      expect(result.questions).toHaveLength(0);
+    });
+
+    it('throws when the RPC returns an error', async () => {
+      mockSupabase._mockRpcResponses['get_questions'] = { data: null, error: { message: 'boom' } };
+
+      await expect(provider.getQuestionData()).rejects.toThrow(/getQuestionData/);
+    });
+  });
+
+  describe('getNominationData', () => {
+    const baseCandidateNomRow = {
+      id: 'n1',
+      name: { en: 'Nom1' },
+      short_name: null,
+      info: null,
+      color: null,
+      image: null,
+      sort_order: 1,
+      subtype: null,
+      custom_data: null,
+      entity_type: 'candidate',
+      candidate_id: 'c1',
+      organization_id: null,
+      faction_id: null,
+      alliance_id: null,
+      election_id: 'e1',
+      constituency_id: 'co1',
+      election_round: 1,
+      election_symbol: '42',
+      parent_nomination_id: 'n3',
+      entity_id: 'c1',
+      entity_name: { en: 'Jane Doe' },
+      entity_short_name: null,
+      entity_info: null,
+      entity_color: null,
+      entity_image: null,
+      entity_sort_order: 1,
+      entity_subtype: null,
+      entity_custom_data: null,
+      entity_answers: { q1: { value: 3 } },
+      entity_first_name: 'Jane',
+      entity_last_name: 'Doe'
+    };
+
+    const duplicateCandidateNomRow = {
+      ...baseCandidateNomRow,
+      id: 'n2',
+      name: { en: 'Nom2' },
+      election_symbol: '43',
+      parent_nomination_id: 'n3'
+    };
+
+    const orgNomRow = {
+      id: 'n3',
+      name: { en: 'Org Nom' },
+      short_name: null,
+      info: null,
+      color: null,
+      image: { path: 'proj/nom/n3/img.png' },
+      sort_order: 2,
+      subtype: null,
+      custom_data: null,
+      entity_type: 'organization',
+      candidate_id: null,
+      organization_id: 'org1',
+      faction_id: null,
+      alliance_id: null,
+      election_id: 'e1',
+      constituency_id: 'co1',
+      election_round: 1,
+      election_symbol: null,
+      parent_nomination_id: null,
+      entity_id: 'org1',
+      entity_name: { en: 'Party A' },
+      entity_short_name: { en: 'PA' },
+      entity_info: null,
+      entity_color: null,
+      entity_image: { path: 'proj/org/org1/logo.png' },
+      entity_sort_order: 1,
+      entity_subtype: null,
+      entity_custom_data: null,
+      entity_answers: { q1: { value: 2 } },
+      entity_first_name: null,
+      entity_last_name: null
+    };
+
+    it('calls this.supabase.rpc with get_nominations and correct parameters', async () => {
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [],
+        error: null
+      };
+
+      await provider.getNominationData({
+        electionId: 'e1',
+        constituencyId: 'co1',
+        includeUnconfirmed: true
+      });
+
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('get_nominations', {
+        p_project_id: '00000000-0000-0000-0000-000000000001',
+        p_election_id: 'e1',
+        p_constituency_id: 'co1',
+        p_include_unconfirmed: true,
+        p_election_round: undefined
+      });
+    });
+
+    it('forwards an electionRound option to the RPC as p_election_round', async () => {
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [],
+        error: null
+      };
+
+      await provider.getNominationData({
+        electionId: 'e1',
+        constituencyId: 'co1',
+        electionRound: 2
+      });
+
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('get_nominations', {
+        p_project_id: '00000000-0000-0000-0000-000000000001',
+        p_election_id: 'e1',
+        p_constituency_id: 'co1',
+        p_include_unconfirmed: false,
+        p_election_round: 2
+      });
+      // The round is a scalar, so it must not add a level to the fan-out: one election and one constituency still means exactly one call.
+      expect(mockSupabase.rpc).toHaveBeenCalledTimes(1);
+    });
+
+    it('fans out over arrays without multiplying by the election round', async () => {
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [],
+        error: null
+      };
+
+      await provider.getNominationData({
+        electionId: ['e1', 'e2'],
+        constituencyId: ['co1', 'co2'],
+        electionRound: 1
+      });
+
+      expect(mockSupabase.rpc).toHaveBeenCalledTimes(4);
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('get_nominations', {
+        p_project_id: '00000000-0000-0000-0000-000000000001',
+        p_election_id: 'e2',
+        p_constituency_id: 'co2',
+        p_include_unconfirmed: false,
+        p_election_round: 1
+      });
+    });
+
+    it('returns 3 nominations (no dedup on nominations) and 2 deduplicated entities', async () => {
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [baseCandidateNomRow, duplicateCandidateNomRow, orgNomRow],
+        error: null
+      };
+
+      const result = await provider.getNominationData();
+
+      const nominations = result.nominations as Array<NominationTestNarrow>;
+      const entities = result.entities as Array<EntityTestNarrow>;
+
+      // 3 nominations (no dedup)
+      expect(nominations).toHaveLength(3);
+
+      // 2 entities (candidate c1 deduped from 2 nominations, org org1)
+      expect(entities).toHaveLength(2);
+    });
+
+    it('candidate entities have firstName, lastName, type=candidate and NO organizationId', async () => {
+      // The organizationId assertion that stood here is retired, not weakened. 162-07b removed `candidates.organization_id` and the `entity_organization_id` output column that projected it, because the candidate-to-organization association is stated once, on the `parent_nomination_id` edge. The negative below is deliberate: it is what would catch a reintroduction of the field under a re-derived value, which the plan's prohibitions forbid — re-sourcing the same field from the hierarchy would keep a second statement of a relationship the nomination edge already carries. The reverse-fill in the provider walks that edge, so nothing that needs the relationship lost access to it.
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [baseCandidateNomRow],
+        error: null
+      };
+
+      const result = await provider.getNominationData();
+      const entities = result.entities as Array<EntityTestNarrow>;
+      const candidate = entities.find((e) => e.id === 'c1');
+
+      expect(candidate).toBeDefined();
+      expect(candidate?.type).toBe('candidate');
+      expect(candidate?.firstName).toBe('Jane');
+      expect(candidate?.lastName).toBe('Doe');
+      expect(candidate).not.toHaveProperty('organizationId');
+    });
+
+    it('organization entities have type=organization', async () => {
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [orgNomRow],
+        error: null
+      };
+
+      const result = await provider.getNominationData();
+      const entities = result.entities as Array<EntityTestNarrow>;
+      const org = entities.find((e) => e.id === 'org1');
+
+      expect(org).toBeDefined();
+      expect(org?.type).toBe('organization');
+    });
+
+    it('entity answers are processed through parseAnswers', async () => {
+      const { parseAnswers } = await import('$lib/api/utils/parseAnswers');
+
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [baseCandidateNomRow],
+        error: null
+      };
+
+      await provider.getNominationData();
+
+      expect(parseAnswers).toHaveBeenCalledWith({ q1: { value: 3 } }, 'en');
+    });
+
+    it('nomination objects include entityType, entityId, electionId, constituencyId fields', async () => {
+      // Include orgNomRow so the candidate nomination's parent (n3 → organization) resolves in the in-memory parent-type lookup.
+      // Without it, the adapter clears parentNominationId to honor the Nomination "either both or neither" invariant. In production, get_nominations always returns all nominations for the election so the parent IS in the same fan-out.
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [baseCandidateNomRow, orgNomRow],
+        error: null
+      };
+
+      const result = await provider.getNominationData();
+      const nom = (result.nominations as Array<NominationTestNarrow>).find((n) => n.id === 'n1');
+
+      expect(nom?.entityType).toBe('candidate');
+      expect(nom?.entityId).toBe('c1');
+      expect(nom?.electionId).toBe('e1');
+      expect(nom?.constituencyId).toBe('co1');
+      expect(nom?.electionRound).toBe(1);
+      expect(nom?.electionSymbol).toBe('42');
+      expect(nom?.parentNominationId).toBe('n3');
+      // parentNominationType is derived from the parent's entity_type.
+      expect(nom?.parentNominationType).toBe('organization');
+    });
+
+    it('clears parentNominationId when the parent nomination is not in the result set', async () => {
+      // If the RPC fan-out doesn't include the parent (e.g., a cross-constituency parent that the filter excluded), the adapter MUST clear parentNominationId so the Nomination constructor's "either both or neither" invariant holds.
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [baseCandidateNomRow], // no orgNomRow — parent unresolvable
+        error: null
+      };
+
+      const result = await provider.getNominationData();
+      const nom = (result.nominations as Array<NominationTestNarrow>).find((n) => n.id === 'n1');
+
+      expect(nom?.entityType).toBe('candidate');
+      expect(nom?.parentNominationId).toBeNull();
+      expect(nom?.parentNominationType).toBeUndefined();
+    });
+
+    it('a ROOT nomination (parent_nomination_id IS null) yields parentNominationId null and no parentNominationType', async () => {
+      // Distinct input from the test above: there the parent id is set but its row is absent from the fan-out; here the column is genuinely null, which is the shape every top-level nomination has in production. Both reach the same output, so name them apart.
+      // This pins the null path against a BEHAVIOURAL change — someone replacing `?? null` with `?? undefined`, or setting parentNominationType unconditionally. It is NOT a proof that the null-guard is load-bearing: `Map.get(null)` returns undefined and `undefined ?? null` is null, so the guarded and unguarded expressions are runtime-identical on this path. That proof is a typecheck under mutation, not a unit test.
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [orgNomRow],
+        error: null
+      };
+
+      const result = await provider.getNominationData();
+      const nom = (result.nominations as Array<NominationTestNarrow>).find((n) => n.id === 'n3');
+
+      expect(nom?.parentNominationId).toBeNull();
+      expect(nom?.parentNominationType).toBeUndefined();
+    });
+
+    it('entity and nomination images are converted via parseStoredImage', async () => {
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [orgNomRow],
+        error: null
+      };
+
+      const result = await provider.getNominationData();
+      const nom = (result.nominations as Array<NominationTestNarrow>)[0];
+      const entity = (result.entities as Array<EntityTestNarrow>)[0];
+
+      expect(nom.image?.url).toBe('http://localhost:54321/storage/v1/object/public/public-assets/proj/nom/n3/img.png');
+      expect(entity.image?.url).toBe(
+        'http://localhost:54321/storage/v1/object/public/public-assets/proj/org/org1/logo.png'
+      );
+    });
+
+    it('returns { nominations, entities } shape', async () => {
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [],
+        error: null
+      };
+
+      const result = await provider.getNominationData();
+
+      expect(result).toHaveProperty('nominations');
+      expect(result).toHaveProperty('entities');
+      expect(Array.isArray(result.nominations)).toBe(true);
+      expect(Array.isArray(result.entities)).toBe(true);
+    });
+
+    it('passes default values when no filter options provided', async () => {
+      mockSupabase._mockRpcResponses['get_nominations'] = {
+        data: [],
+        error: null
+      };
+
+      await provider.getNominationData();
+
+      // The regenerated RPC types `p_election_id` / `p_constituency_id` as `string | undefined`, so the provider now coerces the null fan-out locals to `undefined`. Omitting the value applies the SQL DEFAULT NULL — semantically identical to passing null (behavior-neutral).
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('get_nominations', {
+        p_project_id: '00000000-0000-0000-0000-000000000001',
+        p_election_id: undefined,
+        p_constituency_id: undefined,
+        p_include_unconfirmed: false,
+        p_election_round: undefined
+      });
+      // `convertFilterValue(undefined)` returns the single-element `[null]` sentinel, so the unfiltered read is exactly one call rather than none.
+      expect(mockSupabase.rpc).toHaveBeenCalledTimes(1);
+    });
+  });
+  // =========================================================================
+  // Project scoping
+  // =========================================================================
+  describe('project scoping', () => {
+    const PROJECT_ID = '00000000-0000-0000-0000-000000000001';
+
+    it('getAppSettings selects the app_settings row by project and never by limit(1)', async () => {
+      mockSupabase._mockResponses['app_settings'] = { data: { settings: {} }, error: null };
+
+      await provider.getAppSettings();
+
+      expect(eqCallsFor(mockSupabase, 'app_settings')).toContainEqual(['project_id', PROJECT_ID]);
+      // `app_settings.project_id` is UNIQUE, so the project filter already selects at most one row. A `limit(1)` with no `order` is what made this read pick an arbitrary row once a second project existed.
+      expect(limitCallsFor(mockSupabase, 'app_settings')).toEqual([]);
+    });
+
+    it('getAppCustomization selects the app_settings row by project and never by limit(1)', async () => {
+      mockSupabase._mockResponses['app_settings'] = { data: { customization: {} }, error: null };
+
+      await provider.getAppCustomization();
+
+      expect(eqCallsFor(mockSupabase, 'app_settings')).toContainEqual(['project_id', PROJECT_ID]);
+      expect(limitCallsFor(mockSupabase, 'app_settings')).toEqual([]);
+    });
+
+    it('getElectionData filters elections by project', async () => {
+      mockSupabase._mockResponses['elections'] = { data: [], error: null };
+
+      await provider.getElectionData();
+
+      expect(eqCallsFor(mockSupabase, 'elections')).toContainEqual(['project_id', PROJECT_ID]);
+    });
+
+    it('getElectionData keeps the project filter when an id filter is also applied', async () => {
+      mockSupabase._mockResponses['elections'] = { data: [], error: null };
+
+      await provider.getElectionData({ id: 'election-1' });
+
+      const calls = eqCallsFor(mockSupabase, 'elections');
+      expect(calls).toContainEqual(['project_id', PROJECT_ID]);
+      expect(calls).toContainEqual(['id', 'election-1']);
+    });
+
+    it('getConstituencyData filters both constituency_groups and constituencies by project', async () => {
+      mockSupabase._mockResponses['constituency_groups'] = { data: [], error: null };
+      mockSupabase._mockResponses['constituencies'] = { data: [], error: null };
+
+      await provider.getConstituencyData();
+
+      expect(eqCallsFor(mockSupabase, 'constituency_groups')).toContainEqual(['project_id', PROJECT_ID]);
+      expect(eqCallsFor(mockSupabase, 'constituencies')).toContainEqual(['project_id', PROJECT_ID]);
+    });
+
+    it('getEntityData filters both branches of the union-typed table variable by project', async () => {
+      mockSupabase._mockResponses['candidates'] = { data: [], error: null };
+      mockSupabase._mockResponses['organizations'] = { data: [], error: null };
+
+      await provider.getEntityData();
+
+      expect(eqCallsFor(mockSupabase, 'candidates')).toContainEqual(['project_id', PROJECT_ID]);
+      expect(eqCallsFor(mockSupabase, 'organizations')).toContainEqual(['project_id', PROJECT_ID]);
+    });
+
+    it('getNominationData passes p_project_id on the unfiltered call, where both scope ids are null', async () => {
+      mockSupabase._mockRpcResponses['get_nominations'] = { data: [], error: null };
+
+      await provider.getNominationData();
+
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('get_nominations', {
+        p_project_id: PROJECT_ID,
+        p_election_id: undefined,
+        p_constituency_id: undefined,
+        p_include_unconfirmed: false,
+        p_election_round: undefined
+      });
+    });
+
+    it('getNominationData passes p_project_id on every call of a multi-election fan-out', async () => {
+      mockSupabase._mockRpcResponses['get_nominations'] = { data: [], error: null };
+
+      await provider.getNominationData({ electionId: ['e1', 'e2'], constituencyId: ['c1', 'c2'] });
+
+      // Two elections crossed with two constituencies is four calls, and the project key must be on all four rather than on the first.
+      expect(mockSupabase.rpc).toHaveBeenCalledTimes(4);
+      const projectKeys = mockSupabase.rpc.mock.calls.map(
+        (call) => (call[1] as Record<string, unknown> | undefined)?.p_project_id
+      );
+      expect(projectKeys).toEqual([PROJECT_ID, PROJECT_ID, PROJECT_ID, PROJECT_ID]);
+    });
+
+    it('getQuestionData passes p_project_id on the unfiltered call, where both scope ids are null', async () => {
+      mockSupabase._mockRpcResponses['get_questions'] = { data: { categories: [], questions: [] }, error: null };
+
+      await provider.getQuestionData();
+
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('get_questions', {
+        p_project_id: PROJECT_ID,
+        p_election_id: undefined,
+        p_constituency_id: undefined,
+        p_election_round: undefined
+      });
+    });
+
+    it('getQuestionData passes p_project_id on every call of a multi-election fan-out', async () => {
+      mockSupabase._mockRpcResponses['get_questions'] = { data: { categories: [], questions: [] }, error: null };
+
+      await provider.getQuestionData({ electionId: ['e1', 'e2'], constituencyId: ['c1', 'c2'] });
+
+      // Two elections crossed with two constituencies is four calls, and the project key must be on all four rather than on the first.
+      expect(mockSupabase.rpc).toHaveBeenCalledTimes(4);
+      const projectKeys = mockSupabase.rpc.mock.calls.map(
+        (call) => (call[1] as Record<string, unknown> | undefined)?.p_project_id
+      );
+      expect(projectKeys).toEqual([PROJECT_ID, PROJECT_ID, PROJECT_ID, PROJECT_ID]);
+    });
+
+    it('the provider issues no unscoped read: every table chain it creates carries the project filter', async () => {
+      mockSupabase._mockResponses['app_settings'] = { data: { settings: {} }, error: null };
+      mockSupabase._mockResponses['elections'] = { data: [], error: null };
+      mockSupabase._mockResponses['constituency_groups'] = { data: [], error: null };
+      mockSupabase._mockResponses['constituencies'] = { data: [], error: null };
+      mockSupabase._mockResponses['candidates'] = { data: [], error: null };
+      mockSupabase._mockResponses['organizations'] = { data: [], error: null };
+
+      await provider.getAppSettings();
+      await provider.getAppCustomization();
+      await provider.getElectionData();
+      await provider.getConstituencyData();
+      await provider.getEntityData();
+
+      // The positive control for the assertion below: a zero-length chain list would satisfy `every` vacuously, so the count is asserted first. Six reads over five distinct tables produce six chains — app_settings twice, then elections, constituency_groups, constituencies, candidates and organizations.
+      expect(mockSupabase._chains.length).toBe(7);
+      const unscoped = mockSupabase._chains.filter(
+        (entry) => !entry.chain.eq.mock.calls.some(([column]) => column === 'project_id')
+      );
+      expect(unscoped.map((entry) => entry.table)).toEqual([]);
+    });
+  });
+
+  // D-07 / D-08: every multi-row read is paged through `fetchAllRows` at `staticSettings.dataAdapter.pageSize` (50,000), every paged TABLE read breaks `sort_order` ties on `id`, and the single-row reads are left unpaged.
+  describe('paged reads', () => {
+    const PROJECT_ID = '00000000-0000-0000-0000-000000000001';
+
+    it('getElectionData orders by sort_order then id, requests range(0, 49999) and keeps the id and project filters', async () => {
+      mockSupabase._mockResponses['elections'] = { data: [], error: null };
+
+      await provider.getElectionData({ id: 'e1' });
+
+      expect(orderCallsFor(mockSupabase, 'elections').map((call) => call[0])).toEqual(['sort_order', 'id']);
+      expect(rangeCallsFor(mockSupabase, 'elections')).toEqual([[0, 49999]]);
+      expect(eqCallsFor(mockSupabase, 'elections')).toEqual(
+        expect.arrayContaining([
+          ['id', 'e1'],
+          ['project_id', PROJECT_ID]
+        ])
+      );
+    });
+
+    it('getElectionData builds a fresh query per page, each carrying the id filter and the project filter', async () => {
+      mockSupabase._mockResponseQueues['elections'] = [
+        { data: Array.from({ length: 50000 }, (_, i) => ({ id: `e${i}`, name: { en: 'E' } })), error: null },
+        { data: [], error: null }
+      ];
+
+      await provider.getElectionData({ id: ['e1', 'e2'] });
+
+      const chains = mockSupabase._chains.filter((entry) => entry.table === 'elections');
+      expect(chains).toHaveLength(2);
+      for (const { chain } of chains) {
+        expect(chain.in).toHaveBeenCalledWith('id', ['e1', 'e2']);
+        expect(chain.eq).toHaveBeenCalledWith('project_id', PROJECT_ID);
+      }
+      expect(rangeCallsFor(mockSupabase, 'elections')).toEqual([
+        [0, 49999],
+        [50000, 99999]
+      ]);
+    });
+
+    it('getElectionData keeps its error prefix', async () => {
+      mockSupabase._mockResponses['elections'] = { data: null, error: { message: 'boom' } };
+      await expect(provider.getElectionData()).rejects.toThrow('getElectionData: boom');
+    });
+
+    it('getConstituencyData pages both constituency_groups and constituencies, ordered by sort_order then id', async () => {
+      mockSupabase._mockResponses['constituency_groups'] = { data: [], error: null };
+      mockSupabase._mockResponses['constituencies'] = { data: [], error: null };
+
+      await provider.getConstituencyData({ id: 'g1' });
+
+      for (const table of ['constituency_groups', 'constituencies']) {
+        expect(orderCallsFor(mockSupabase, table).map((call) => call[0])).toEqual(['sort_order', 'id']);
+        expect(rangeCallsFor(mockSupabase, table)).toEqual([[0, 49999]]);
+        expect(eqCallsFor(mockSupabase, table)).toContainEqual(['project_id', PROJECT_ID]);
+      }
+      expect(eqCallsFor(mockSupabase, 'constituency_groups')).toContainEqual(['id', 'g1']);
+    });
+
+    it('getConstituencyData keeps the error prefix of each half', async () => {
+      mockSupabase._mockResponses['constituency_groups'] = { data: null, error: { message: 'g-boom' } };
+      await expect(provider.getConstituencyData()).rejects.toThrow('getConstituencyData (groups): g-boom');
+
+      mockSupabase._mockResponses['constituency_groups'] = { data: [], error: null };
+      mockSupabase._mockResponses['constituencies'] = { data: null, error: { message: 'c-boom' } };
+      await expect(provider.getConstituencyData()).rejects.toThrow('getConstituencyData (constituencies): c-boom');
+    });
+
+    it('getNominationData requests range(0, 49999) on every get_nominations call of the fan-out', async () => {
+      mockSupabase._mockRpcResponses['get_nominations'] = { data: [], error: null };
+
+      await provider.getNominationData({ electionId: ['e1', 'e2'], constituencyId: ['c1', 'c2'] });
+
+      expect(rpcRangeCallsFor(mockSupabase, 'get_nominations')).toEqual([
+        [[0, 49999]],
+        [[0, 49999]],
+        [[0, 49999]],
+        [[0, 49999]]
+      ]);
+    });
+
+    it('getNominationData rejects with its prefix when a fan-out call fails', async () => {
+      mockSupabase._mockRpcResponses['get_nominations'] = { data: null, error: { message: 'rpc-boom' } };
+      await expect(provider.getNominationData({ electionId: 'e1', constituencyId: 'c1' })).rejects.toThrow(
+        'getNominationData: rpc-boom'
+      );
+    });
+
+    it('getQuestionData issues no range call: get_questions returns one aggregated row', async () => {
+      mockSupabase._mockRpcResponses['get_questions'] = { data: { categories: [], questions: [] }, error: null };
+
+      await provider.getQuestionData({ electionId: 'e1' });
+
+      expect(rpcRangeCallsFor(mockSupabase, 'get_questions')).toEqual([[]]);
+    });
+
+    it('the app_settings reads issue no range call', async () => {
+      mockSupabase._mockResponses['app_settings'] = { data: { settings: {}, customization: {} }, error: null };
+
+      await provider.getAppSettings();
+      await provider.getAppCustomization();
+
+      expect(rangeCallsFor(mockSupabase, 'app_settings')).toEqual([]);
+    });
+  });
+});

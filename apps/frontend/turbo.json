@@ -1,0 +1,10 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "inputs": ["$TURBO_DEFAULT$", "data/**", "!src/lib/paraglide/**"],
+      "outputs": ["build/**", "src/lib/paraglide/**"]
+    }
+  }
+}

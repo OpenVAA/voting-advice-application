@@ -76,6 +76,4 @@ export interface QuestionFilterOptions {
 export type FilterableQuestion = TextQuestion | MultipleTextQuestion | NumberQuestion | ChoiceQuestion;
 
 export type ChoiceQuestion =
-  | SingleChoiceOrdinalQuestion
-  | SingleChoiceCategoricalQuestion
-  | MultipleChoiceCategoricalQuestion;
+  SingleChoiceOrdinalQuestion | SingleChoiceCategoricalQuestion | MultipleChoiceCategoricalQuestion;

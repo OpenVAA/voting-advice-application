@@ -3,9 +3,7 @@ import type { Argument } from '../../types';
 /**
  * Validates and normalizes the input to be of type `Argument[][]`.
  *
- * This function takes an input that can be either a single array of arguments (`Argument[]`)
- * or an array of argument arrays (`Argument[][]`). It ensures the structural integrity
- * of the data by checking that no deeper nesting (e.g., `Argument[][][]`) exists.
+ * This function takes an input that can be either a single array of arguments (`Argument[]`) or an array of argument arrays (`Argument[][]`). It ensures the structural integrity of the data by checking that no deeper nesting (e.g., `Argument[][][]`) exists.
  *
  * @param {Array<Argument> - | Array<Array<Argument>>} argumentData - The input data to normalize.
  * @returns {Array<Array<Argument>>} The normalized data as an array of argument arrays.

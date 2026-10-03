@@ -22,7 +22,7 @@ export function getModelPricing(provider: string, model: string): ModelPricing |
  * If cached input pricing is not provided, we fallback to the non-cached input pricing.
  *
  * @param pricing - The pricing information for the model (caller provides appropriate pricing)
- * @param usage - Token usage information
+ * @param usage - Token usage information. Cached input is read from `inputTokenDetails.cacheReadTokens` and reasoning from `outputTokenDetails.reasoningTokens`
  * @param useCachedInput - Whether to treat input tokens as cached (affects which token properties are used)
  * @returns Cost in USD
  *
@@ -30,7 +30,7 @@ export function getModelPricing(provider: string, model: string): ModelPricing |
  * ```typescript
  * const cost = calculateLLMCost({
  *   pricing: { input: 0.00015, output: 0.0006, cachedInput: 0.0001, reasoning: 0 },
- *   usage: { inputTokens: 100000, outputTokens: 100000, reasoningTokens: 0 },
+ *   usage: result.usage, // inputTokens, outputTokens, inputTokenDetails.cacheReadTokens, outputTokenDetails.reasoningTokens
  *   useCachedInput: false
  * });
  * ```
@@ -44,7 +44,9 @@ export function calculateLLMCost({
   usage: TokenUsage;
   useCachedInput?: boolean;
 }): LLMCosts {
-  const { inputTokens, outputTokens, reasoningTokens = 0, cachedInputTokens } = usage;
+  const { inputTokens, outputTokens } = usage;
+  const reasoningTokens = usage.outputTokenDetails?.reasoningTokens ?? 0;
+  const cachedInputTokens = usage.inputTokenDetails?.cacheReadTokens;
 
   let totalInputTokens: number;
   let inputPrice: number;

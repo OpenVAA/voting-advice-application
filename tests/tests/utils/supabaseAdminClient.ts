@@ -1,0 +1,758 @@
+/**
+ * Supabase Admin Client for E2E test data management.
+ *
+ * Subclasses the bulk-write base from `@openvaa/dev-seed`. The base owns the bulk-write surface (bulkImport, bulkDelete, importAnswers, linkJoinTables, updateAppSettings). This subclass adds the auth/email + legacy E2E query helpers that tests/ needs but dev-seed does not — keeping the dev-seed surface narrow.
+ *
+ * `updateAppSettings` (inherited) usage policy:
+ *   Baseline test-setup usage of `updateAppSettings` has migrated to the `@openvaa/dev-seed` e2e template's `app_settings.fixed[]` block.
+ *
+ *   `updateAppSettings` is RETAINED for per-test scenario mutations: specs may call it inside `beforeAll` / `afterAll` to test behavior-under-different-settings (e.g. perm-startfromcg.spec.ts resolves + writes startFromConstituencyGroup at runtime).
+ *
+ *   Do NOT use `updateAppSettings` from a `*.setup.ts` file for baseline settings — extend the appropriate template instead.
+ *
+ * Project default: this subclass defaults its project to the E2E project (`resolveE2eProjectId()`), while `DevSeedAdminClient` keeps defaulting to the default project. That single difference is what re-points every argument-less `new SupabaseAdminClient()` inside `tests/` at the suite's own project while leaving `yarn db:seed` and `yarn db:reset-with-data` filling the default one.
+ *
+ * Inherited from `DevSeedAdminClient`:
+ *   - `protected client: SupabaseClient`
+ *   - `protected projectId: string`
+ *   - `public bulkImport(data)`
+ *   - `public bulkDelete(collections)`
+ *   - `public importAnswers(data)`
+ *   - `public linkJoinTables(data)`
+ *   - `public ensureProject(projectId?)` — idempotent project + `app_settings` bootstrap
+ *   - `public updateAppSettings(partialSettings)` — see usage-policy note above
+ *
+ * Added by this subclass:
+ *   - Auth helpers (private): `safeListUsers`
+ *   - E2E query helpers: `findData`, `query`, `update`, `getAppSettings`, `countRowsByPrefix`
+ *   - Identity lookups through candidate-editor grants: `candidateIdsForUser`, `userIdForCandidate`
+ *   - Auth actions: `setPassword`, `forceRegister`, `forceRegisterAdmin`, `unregisterCandidate`, `sendEmail`, `sendForgotPassword`, `deleteAllTestUsers`
+ *
+ * Existing call sites `new SupabaseAdminClient()` or `new SupabaseAdminClient(url, key, projectId)` keep the same signature — the constructor below only substitutes a different project default.
+ *
+ * @example
+ * ```ts
+ * const client = new SupabaseAdminClient();
+ * await client.bulkImport({ elections: [...], candidates: [...] });   // inherited
+ * await client.importAnswers({ candidates: [{ answersByExternalId: {...} }] });
+ * await client.linkJoinTables({ elections: [...], constituency_groups: [...] });
+ * await client.bulkDelete({ elections: { prefix: 'test-' } });
+ * await client.forceRegister('cand-1', 'cand-1@example.com', 'pw');    // subclass
+ * ```
+ */
+
+import {
+  ALLOWED_TEARDOWN_TABLES,
+  E2E_PROJECT_ID,
+  resolveE2eProjectId,
+  SupabaseAdminClient as DevSeedAdminClient,
+  TEST_PROJECT_ID
+} from '@openvaa/dev-seed';
+import { PROPERTY_MAP, TABLE_MAP } from '@openvaa/supabase-types';
+import type { FindDataResult } from '@openvaa/dev-seed';
+// Direct import, the same shape `buildRoute.ts` uses. Type-only: the constant is consumed as `typeof ADMIN_GRANTS` below, which is a compile-time read of the application's own declaration and needs no runtime binding.
+import type { ADMIN_GRANTS } from '../../../apps/frontend/src/lib/auth/roles';
+
+// Re-exports for backward-compat with existing E2E imports.
+// `tests/seed-test-data.ts` + all tests/tests/**/*.spec.ts files may import
+// these from `./utils/supabaseAdminClient` — preserving the path + names.
+export { TEST_PROJECT_ID };
+// Re-exported beside `TEST_PROJECT_ID` so specs and setups can name the suite's own project without reaching into the dev-seed package for it.
+export { E2E_PROJECT_ID, resolveE2eProjectId };
+export type { FindDataResult };
+
+/**
+ * Default Supabase URL for local development (supabase start).
+ * Used by `sendEmail`/`sendForgotPassword` for the frontend redirect URL.
+ */
+const SUPABASE_URL = process.env.SUPABASE_URL ?? 'http://localhost:54321';
+
+/**
+ * The admin grant shape `forceRegisterAdmin` mints.
+ *
+ * The annotation is the point: the type is `ADMIN_GRANTS`'s own element type, so this is a COMPILE-TIME membership check against the application's declaration rather than a pair chosen here. A shape removed from `ADMIN_GRANTS` reddens this line under `yarn typecheck:tests` instead of silently minting an identity the app's gates no longer accept.
+ *
+ * The project scope is the NARROWEST of the three — a project grant reaches its own project and nothing else, whereas an account grant reaches every project under an account and a global one reaches everything. A test identity should be no wider than the test needs.
+ */
+const TEST_ADMIN_GRANT: (typeof ADMIN_GRANTS)[number] = { scope: 'project', role: 'admin' };
+
+/**
+ * Maps camelCase collection names to Supabase snake_case table names.
+ * Extends TABLE_MAP with legacy/alias mappings for backward compatibility.
+ *
+ * Duplicated locally (mirrors the dev-seed base) so `findData` / `query` can translate camelCase collection names without re-exporting a private helper from the dev-seed package.
+ */
+const COLLECTION_MAP: Record<string, string> = {
+  ...TABLE_MAP,
+  // Legacy aliases
+  parties: 'organizations',
+  questionTypes: 'question_types'
+};
+
+/**
+ * Maps camelCase filter field names to Supabase snake_case column names.
+ * Extends PROPERTY_MAP with legacy/alias mappings.
+ */
+const FIELD_MAP: Record<string, string> = {
+  ...PROPERTY_MAP,
+  // Legacy aliases
+  documentId: 'id'
+};
+
+/**
+ * Resolve a collection name: if it matches a COLLECTION_MAP entry, use that; otherwise return as-is (already snake_case).
+ */
+function resolveCollectionName(collection: string): string {
+  return COLLECTION_MAP[collection] ?? collection;
+}
+
+/**
+ * Convert a camelCase field name to snake_case using FIELD_MAP, or fall through as-is if already snake_case.
+ */
+function resolveFieldName(field: string): string {
+  return FIELD_MAP[field] ?? field;
+}
+
+export class SupabaseAdminClient extends DevSeedAdminClient {
+  /**
+   * Same signature as the base constructor; the only difference is the project it falls back to.
+   *
+   * An argument-less client here targets the E2E project, while the base class keeps targeting the default project — which is why `yarn db:seed` and `yarn db:reset-with-data` still fill the project a local development session reads.
+   *
+   * @param url - Supabase URL. Defaults to the base class's local-development value.
+   * @param serviceRoleKey - Service-role key. Defaults to the base class's local-development value.
+   * @param projectId - Explicit project. Defaults to the resolved E2E project.
+   */
+  constructor(url?: string, serviceRoleKey?: string, projectId?: string) {
+    super(url, serviceRoleKey, projectId ?? resolveE2eProjectId());
+  }
+
+  /**
+   * Safely list all auth users, working around the GoTrue NULL column bug.
+   * If listUsers fails, returns an empty array instead of throwing.
+   */
+  private async safeListUsers(): Promise<Array<{ id: string; email?: string; [key: string]: unknown }>> {
+    const {
+      data: { users },
+      error
+    } = await this.client.auth.admin.listUsers();
+    if (error) {
+      console.warn(`listUsers failed (GoTrue NULL column bug?): ${JSON.stringify(error)}`);
+      return [];
+    }
+    return users as Array<{ id: string; email?: string; [key: string]: unknown }>;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Data querying
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Find data in a collection with filters.
+   *
+   * Translates filter syntax `{ field: { $eq: value } }` to PostgREST `.eq(field, value)`. Adds `documentId: row.id` alias to each result row.
+   *
+   * @param collection - Collection name (camelCase or snake_case)
+   * @param filters - Filter object with `{ field: { $eq: value } }` syntax
+   * @returns FindDataResult with matching records
+   */
+  async findData(collection: string, filters: Record<string, unknown>): Promise<FindDataResult> {
+    const tableName = resolveCollectionName(collection);
+    let query = this.client.from(tableName).select('*');
+
+    // Apply filters: translate { field: { $eq: value } } to .eq(field, value)
+    for (const [key, filterValue] of Object.entries(filters)) {
+      const snakeKey = resolveFieldName(key);
+
+      if (typeof filterValue === 'object' && filterValue !== null && !Array.isArray(filterValue)) {
+        const filterObj = filterValue as Record<string, unknown>;
+        if ('$eq' in filterObj) {
+          query = query.eq(snakeKey, filterObj.$eq as string);
+        } else if ('$ne' in filterObj) {
+          query = query.neq(snakeKey, filterObj.$ne as string);
+        } else if ('$in' in filterObj) {
+          query = query.in(snakeKey, filterObj.$in as Array<string>);
+        } else if ('$like' in filterObj) {
+          query = query.like(snakeKey, filterObj.$like as string);
+        } else {
+          // Direct equality if no operator
+          query = query.eq(snakeKey, filterValue);
+        }
+      } else {
+        // Direct equality
+        query = query.eq(snakeKey, filterValue);
+      }
+    }
+
+    // Scope to project (most tables have project_id) Skip for join tables and tables without project_id
+    const tablesWithoutProjectId = new Set([
+      'election_constituency_groups',
+      'constituency_group_constituencies',
+      'grants'
+    ]);
+    if (!tablesWithoutProjectId.has(tableName)) {
+      query = query.eq('project_id', this.projectId);
+    }
+
+    const { data: rows, error } = await query;
+
+    if (error) {
+      return { type: 'failure', cause: error.message };
+    }
+
+    // Add documentId alias for backward compatibility
+    const enrichedRows = (rows ?? []).map((row: Record<string, unknown>) => ({
+      ...row,
+      documentId: row.id
+    }));
+
+    return { type: 'success', data: enrichedRows };
+  }
+
+  /**
+   * Generic PostgREST query builder for a collection.
+   *
+   * Returns the query builder for more complex queries that findData doesn't cover.
+   *
+   * @param collection - Collection name (camelCase or snake_case)
+   * @returns PostgREST query builder scoped to this project
+   */
+  query(collection: string) {
+    const tableName = resolveCollectionName(collection);
+    return this.client.from(tableName).select('*').eq('project_id', this.projectId);
+  }
+
+  /**
+   * Generic update for a single record by ID.
+   *
+   * @param collection - Collection name (camelCase or snake_case)
+   * @param id - UUID of the record to update
+   * @param data - Fields to update
+   * @throws Error if the update fails
+   */
+  async update(collection: string, id: string, data: Record<string, unknown>): Promise<void> {
+    const tableName = resolveCollectionName(collection);
+    const { error } = await this.client.from(tableName).update(data).eq('id', id);
+    if (error) throw new Error(`update(${tableName}, ${id}) failed: ${error.message}`);
+  }
+
+  /**
+   * Post-seed read helper.
+   *
+   * Returns the current persisted `app_settings.settings` JSONB for this client's project, or `null` if the bootstrap row is missing.
+   *
+   * Consumed by `data.setup.ts` immediately after `writer.write(...)` to verify the dev-seed e2e template's `app_settings.fixed[]` block actually persisted via Pass-5 (`merge_jsonb_column`). Subset match (`expect(...).toMatchObject(expected)`) — `merge_jsonb_column` is additive, so stale keys from a prior run do not fail the assertion.
+   *
+   * Mirrors the read shape of the inherited `updateAppSettings` method (`packages/dev-seed/src/supabaseAdminClient.ts`) but selects `settings` instead of `id`.
+   *
+   * @returns the persisted settings object, or `null` when no row exists.
+   * @throws Error if the underlying fetch fails.
+   */
+  async getAppSettings(): Promise<Record<string, unknown> | null> {
+    const { data: row, error } = await this.client
+      .from('app_settings')
+      .select('settings')
+      .eq('project_id', this.projectId)
+      .single();
+    if (error) {
+      // PGRST116 = no rows; treat as null (the bootstrap row is missing, which a setup-file caller will surface as a clearer error).
+      const code = (error as { code?: string }).code;
+      if (code === 'PGRST116') return null;
+      throw new Error(`getAppSettings: fetch failed: ${error.message}`);
+    }
+    return (row?.settings ?? null) as Record<string, unknown> | null;
+  }
+
+  /**
+   * Exact row count across the ten teardown tables for a given `external_id` prefix.
+   *
+   * Iterates `ALLOWED_TEARDOWN_TABLES` imported from `@openvaa/dev-seed` — the SAME list `runTeardown`'s `bulkDelete` clears — so the probe cannot drift from the delete it measures.
+   *
+   * Uses a HEAD count query (`{ count: 'exact', head: true }`) and reads the returned `count`, never the length of a returned row array — that length is bounded by PostgREST's default page limit and would silently under-report a prefix matching more rows than one page.
+   *
+   * Read-only — returns integers only, no row content. Scoped by `project_id` and by `external_id LIKE '<prefix>%'`, matching the delete's own prefix semantics.
+   *
+   * Only `*` is rejected before the query runs. PostgREST's `like` filter (used here) maps a literal `*` in the input to SQL `%`, but `bulk_delete`'s raw SQL `external_id LIKE $2` (`00001_initial_schema.sql`) does not — a `*` in the prefix would therefore be counted under a DIFFERENT match set than `bulk_delete` actually deletes.
+   *
+   * `_` and `%` are NOT rejected: both PostgREST's `like` and the RPC's raw SQL `LIKE` treat `_` as a single-character wildcard and `%` as a multi-character wildcard identically on both sides, so the probe and the delete over-match the SAME extra rows — `rowsDeleted === rowsBefore` still holds; the prefix is merely imprecise, not mismeasured. Because this probe runs BEFORE the delete (`runTeardownAsserted`), rejecting `_`/`%` would make a teardown using such a prefix throw and delete NOTHING — turning an imprecise-but-correct delete into a silent full leak of the dataset. The dev-seed CLI's default `seed_` prefix (which contains `_`) is the case this guard must not break.
+   *
+   * @param prefix - `external_id` prefix, forwarded verbatim (no normalisation).
+   * @returns total matching rows summed across the ten tables.
+   * @throws Error if any per-table count query fails, or if `prefix` contains
+   *   the LIKE metacharacter `*`.
+   */
+  async countRowsByPrefix(prefix: string): Promise<number> {
+    if (prefix.includes('*')) {
+      throw new Error(
+        `countRowsByPrefix: prefix '${prefix}' contains '*'. PostgREST's \`like\` filter maps '*' to ` +
+          "SQL '%', but bulk_delete's raw `external_id LIKE $2` does not — the probe would count a " +
+          'wildcard match while the delete matched the literal, so the count would not measure the delete.'
+      );
+    }
+    let total = 0;
+    for (const table of ALLOWED_TEARDOWN_TABLES) {
+      const { count, error } = await this.client
+        .from(table)
+        .select('*', { count: 'exact', head: true })
+        .eq('project_id', this.projectId)
+        .like('external_id', `${prefix}%`);
+      if (error) {
+        throw new Error(`countRowsByPrefix failed: ${error.message}`);
+      }
+      total += count ?? 0;
+    }
+    return total;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Identity through candidate-editor grants
+  // ---------------------------------------------------------------------------
+
+  /**
+   * The ids of the candidates in this client's project that the user edits.
+   *
+   * The `(entity, candidate, <id>, editor)` grant is the only link from an auth user to a candidate, so the ids come from the user's candidate-editor grants and are then narrowed to this project: grants carry no project of their own.
+   *
+   * @param userId - The auth user whose grants are read.
+   * @returns The candidate ids, or an empty array when the user holds no candidate-editor grant on a candidate in this project.
+   * @throws Error if either query fails.
+   */
+  async candidateIdsForUser(userId: string): Promise<Array<string>> {
+    const { data: grants, error: grantError } = await this.client
+      .from('grants')
+      .select('target_id')
+      .eq('user_id', userId)
+      .eq('scope', 'entity')
+      .eq('target_type', 'candidate')
+      .eq('role', 'editor');
+    if (grantError) throw new Error(`candidateIdsForUser: ${grantError.message}`);
+
+    const grantedIds = (grants ?? []).map((grant) => grant.target_id as string);
+    if (grantedIds.length === 0) return [];
+
+    const { data: candidates, error: candidateError } = await this.client
+      .from('candidates')
+      .select('id')
+      .in('id', grantedIds)
+      .eq('project_id', this.projectId);
+    if (candidateError) throw new Error(`candidateIdsForUser: ${candidateError.message}`);
+
+    return (candidates ?? []).map((candidate) => candidate.id as string);
+  }
+
+  /**
+   * The auth user holding the candidate-editor grant on a candidate, if any.
+   *
+   * At most one user can hold it: the schema admits one editor per candidate.
+   *
+   * @param candidateId - The candidate whose editor is looked up.
+   * @returns The user id, or null when no grant names the candidate.
+   * @throws Error if the query fails.
+   */
+  async userIdForCandidate(candidateId: string): Promise<string | null> {
+    const { data: grant, error } = await this.client
+      .from('grants')
+      .select('user_id')
+      .eq('scope', 'entity')
+      .eq('target_type', 'candidate')
+      .eq('target_id', candidateId)
+      .eq('role', 'editor')
+      .maybeSingle();
+    if (error) throw new Error(`userIdForCandidate: ${error.message}`);
+    const userId: unknown = grant?.user_id;
+    return typeof userId === 'string' ? userId : null;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Auth user management
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Set a user's password by email address.
+   *
+   * Looks up the auth user by email, then updates their password via the Admin Auth API.
+   *
+   * @param email - Email address of the user
+   * @param password - New password to set
+   * @throws Error if user not found or update fails
+   */
+  async setPassword(email: string, password: string): Promise<void> {
+    const users = await this.safeListUsers();
+
+    const user = users.find((u) => u.email === email);
+    if (!user) throw new Error(`setPassword: no user found with email ${email}`);
+
+    const { error } = await this.client.auth.admin.updateUserById(user.id, { password });
+    if (error) throw new Error(`setPassword: updateUser failed: ${error.message}`);
+  }
+
+  /**
+   * Force-register a candidate: create the auth user and write the candidate-editor grant that links it to the candidate record.
+   *
+   * @param candidateExternalId - External ID of the candidate to register
+   * @param email - Email address for the new auth user
+   * @param password - Password for the new auth user
+   * @throws Error if any step fails
+   */
+  async forceRegister(candidateExternalId: string, email: string, password: string): Promise<void> {
+    // 1. Create auth user with confirmed email
+    const { data: createData, error: createError } = await this.client.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true
+    });
+    if (createError) throw new Error(`forceRegister: createUser failed: ${createError.message}`);
+    const user = createData.user;
+
+    // Wrap the steps after the account exists in try/catch with a compensating `auth.admin.deleteUser` rollback on partial failure. Without it, a failure in step 2 or 3 leaves orphan auth users that surface as "User already exists" errors on subsequent test runs, requiring manual cleanup.
+    try {
+      // 2. Look up candidate ID by external_id
+      const { data: candidate, error: cError } = await this.client
+        .from('candidates')
+        .select('id')
+        .eq('external_id', candidateExternalId)
+        .eq('project_id', this.projectId)
+        .single();
+      if (cError) {
+        throw new Error(`forceRegister: failed to find candidate ${candidateExternalId}: ${cError.message}`);
+      }
+
+      // 3. Write the candidate-editor grant. It is the only link from the identity to the candidate, which is how the candidate app finds the user's own record, and `custom_access_token_hook` projects `public.grants` into the JWT on every token issue: a caller whose claim is an empty array is denied everything, so an identity minted without this row logs in and is then refused by policies, which reads as a product defect rather than as a fixture gap.
+      const { error: grantError } = await this.client.from('grants').insert({
+        user_id: user.id,
+        scope: 'entity',
+        target_type: 'candidate',
+        target_id: candidate.id,
+        role: 'editor'
+      });
+      if (grantError) throw new Error(`forceRegister: insert grant failed: ${grantError.message}`);
+    } catch (mutationErr) {
+      // reason: compensating rollback on partial failure prevents orphan auth users that cascade as "User already exists" errors across subsequent test runs. The rollback failure (if any) is logged but not re-thrown — we always re-throw the original mutationErr so the caller sees the real cause.
+      await this.client.auth.admin.deleteUser(user.id).then(
+        () => {},
+        (rollbackErr) => {
+          console.error('[forceRegister] rollback (auth.admin.deleteUser) failed:', rollbackErr);
+        }
+      );
+      throw mutationErr;
+    }
+  }
+
+  /**
+   * Force-register an ADMIN: create the auth user, then write ONE project-scoped admin grant row.
+   *
+   * The sibling of {@link forceRegister}, minus its candidate lookup — an admin identity is one account plus one grant row and nothing else (see `tests/tests/utils/adminCredentials.ts` for why the seed structurally cannot express it).
+   *
+   * Exactly two mutations. The second is wrapped in the SAME compensating rollback shape `forceRegister` uses, and for the same reason rather than as defensive style: a failure between minting the account and writing the grant leaves an orphan `auth.users` row that surfaces as "User already exists" on every subsequent run and needs manual cleanup.
+   *
+   * The shape is `TEST_ADMIN_GRANT` — a member of the application's own `ADMIN_GRANTS`, checked at compile time by that constant's declaration, not a pair picked here. The target is `TEST_PROJECT_ID`, because the RLS predicate guarding `admin_jobs` is `user_can('project', X, …)` and a project grant reaches only its own project. An admin scoped anywhere else logs in fine and then fails the job insert for a reason that has nothing to do with what a test is measuring.
+   *
+   * Removal is `unregisterCandidate(email)`, which is misnamed for this use but correct for it: an admin holds no candidate-editor grant, so its terms-of-use reset finds no candidate and resets nothing, and its remaining two steps delete the grant rows by `user_id` and the auth user itself.
+   *
+   * @param email - Email address for the new admin auth user.
+   * @param password - Password for the new admin auth user.
+   * @throws Error if account creation or the grant insert fails. On a grant-insert failure the account is rolled back and the ORIGINAL cause is re-thrown.
+   */
+  async forceRegisterAdmin(email: string, password: string): Promise<void> {
+    // 1. Create auth user with confirmed email.
+    const { data: createData, error: createError } = await this.client.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true
+    });
+    if (createError) throw new Error(`forceRegisterAdmin: createUser failed: ${createError.message}`);
+    const user = createData.user;
+
+    try {
+      // 2. Write the project-scoped admin grant. `target_type` is null on every non-entity row — the table's CHECK constraint requires exactly that — and `custom_access_token_hook` reads this row on every token issue to build the JWT's `grants` claim.
+      const { error: grantError } = await this.client.from('grants').insert({
+        user_id: user.id,
+        scope: TEST_ADMIN_GRANT.scope,
+        target_type: null,
+        target_id: this.projectId,
+        role: TEST_ADMIN_GRANT.role
+      });
+      if (grantError) throw new Error(`forceRegisterAdmin: insert grant failed: ${grantError.message}`);
+    } catch (mutationErr) {
+      // reason: compensating rollback on partial failure prevents orphan auth users that cascade as "User already exists" errors across subsequent test runs. The rollback failure (if any) is logged but not re-thrown — we always re-throw the original mutationErr so the caller sees the real cause.
+      await this.client.auth.admin.deleteUser(user.id).then(
+        () => {},
+        (rollbackErr) => {
+          console.error('[forceRegisterAdmin] rollback (auth.admin.deleteUser) failed:', rollbackErr);
+        }
+      );
+      throw mutationErr;
+    }
+  }
+
+  /**
+   * Look up a bank-auth `auth.users` row by email via the admin list API, returning the narrowed fields the bank-auth journey's end-state assertion reads: `id` + the bank-auth identity `app_metadata` claims the identity-callback Edge Function stamped at create time.
+   *
+   * `auth.users` lives in the `auth` schema, NOT the `public` schema that `findData`/`query` target via PostgREST — so it must be read through the GoTrue admin API. Returns `undefined` when no user matches (idempotent).
+   *
+   * @param email - The auth user's email (for bank-auth: the identity-derived
+   *   placeholder `${sub}@bank-auth.placeholder`).
+   */
+  async getAuthUserByEmail(email: string): Promise<
+    | {
+        id: string;
+        email?: string;
+        app_metadata?: {
+          identity_provider?: string;
+          identity_match_prop?: string;
+          identity_match_value?: string;
+        };
+      }
+    | undefined
+  > {
+    const users = await this.safeListUsers();
+    const user = users.find((u) => u.email === email);
+    if (!user) return undefined;
+    return {
+      id: user.id,
+      email: user.email,
+      app_metadata: (user.app_metadata ?? {}) as {
+        identity_provider?: string;
+        identity_match_prop?: string;
+        identity_match_value?: string;
+      }
+    };
+  }
+
+  /**
+   * Delete the bank-auth candidate the identity-callback Edge Function created for a given placeholder email, with the grants naming it.
+   *
+   * The bank-auth self-registration flow creates a fresh `candidates` row with no `external_id`, so `runTeardown`'s prefix delete misses it. The row is found through the candidate-editor grant held by the auth user the Edge Function created under the identity-derived placeholder email (`${sub}@bank-auth.placeholder`). Without this delete the bank-auth candidate rows would accumulate across repeated runs, because `unregisterCandidate` removes the user's grants and the auth user but never a candidate row.
+   *
+   * Call it BEFORE `unregisterCandidate`: the grant it reads the candidate through is deleted with the auth user. Idempotent — a no-op when no user or candidate matches.
+   *
+   * @param placeholderEmail - The `${sub}@bank-auth.placeholder` address the bank-auth auth user was created with.
+   * @throws Error if the lookup or a delete fails.
+   */
+  async deleteBankAuthCandidateBySub(placeholderEmail: string): Promise<void> {
+    const users = await this.safeListUsers();
+    const user = users.find((u) => u.email === placeholderEmail);
+    if (!user) return; // Nothing created yet (or listUsers failed — safe to skip).
+
+    const candidateIds = await this.candidateIdsForUser(user.id);
+    for (const candidateId of candidateIds) {
+      // Delete the grants naming the candidate, then the candidate. Deleting the candidate also removes them through `cleanup_grants_on_delete`; the explicit delete keeps every removal path in this file reading the same way, none of them depending on remembering which trigger or constraint does the work.
+      const { error: grantError } = await this.client
+        .from('grants')
+        .delete()
+        .eq('scope', 'entity')
+        .eq('target_id', candidateId);
+      if (grantError) {
+        throw new Error(`deleteBankAuthCandidateBySub: delete grants failed: ${grantError.message}`);
+      }
+      const { error: candError } = await this.client
+        .from('candidates')
+        .delete()
+        .eq('id', candidateId)
+        .eq('project_id', this.projectId);
+      if (candError) {
+        throw new Error(`deleteBankAuthCandidateBySub: delete candidate failed: ${candError.message}`);
+      }
+    }
+  }
+
+  /**
+   * Delete every `admin_jobs` row written by `author`, in this client's project.
+   *
+   * NOTHING ELSE IN THE SUITE CAN REACH THESE ROWS. `admin_jobs` is not in `ALLOWED_TEARDOWN_TABLES`, so `runTeardown`'s prefix delete never sees it; the table carries no `external_id` column for a prefix to match on in the first place; its `election_id` is `ON DELETE SET NULL` rather than cascading, so an election teardown leaves the row behind with a null reference; and its `project_id` cascades only from a `projects` row the seed bootstraps and nothing deletes. A job row this suite causes therefore accumulates forever unless it is deleted BY AUTHOR, which is what this method is for.
+   *
+   * Idempotent — deleting no rows is not an error. Read-back of what was deleted is deliberately not returned: the caller that needs a count reads it first through `query('admin_jobs')`.
+   *
+   * @param author - The `author` column value, i.e. the admin's email address.
+   * @throws Error if the delete fails.
+   */
+  async deleteAdminJobsByAuthor(author: string): Promise<void> {
+    const { error } = await this.client
+      .from('admin_jobs')
+      .delete()
+      .eq('project_id', this.projectId)
+      .eq('author', author);
+    if (error) throw new Error(`deleteAdminJobsByAuthor: ${error.message}`);
+  }
+
+  /**
+   * Unregister a candidate: reset terms of use on the candidates the user's editor grant names, then delete the user's grants and the auth user.
+   *
+   * If the user doesn't exist (already unregistered), this is a no-op. The candidate rows themselves are left in place.
+   *
+   * @param email - Email address of the candidate to unregister
+   * @throws Error if a lookup, the reset or a delete fails.
+   */
+  async unregisterCandidate(email: string): Promise<void> {
+    // 1. Find auth user by email
+    const users = await this.safeListUsers();
+
+    const user = users.find((u) => u.email === email);
+    if (!user) return; // Already unregistered (or listUsers failed - safe to skip)
+
+    // 2. Read the ids of the candidates the user edits BEFORE anything is deleted. The grant is the only link from the user to a candidate, so once step 4 deletes the grants (or step 5 deletes the user, which cascades to them) the ids can no longer be found and the reset in step 3 silently matches nothing.
+    const candidateIds = await this.candidateIdsForUser(user.id);
+
+    // 3. Reset `terms_of_use_accepted` on those candidates. Without the reset the candidate-registration spec sees a stale "ToU already accepted" state on later runs: the auth user is freshly created by the test but the underlying candidate row still carries the ToU timestamp from the prior run, so the post-login ToU gate is bypassed and the test reaches /candidate home directly instead of finding the ToU checkbox.
+    if (candidateIds.length > 0) {
+      const { error: resetError } = await this.client
+        .from('candidates')
+        .update({ terms_of_use_accepted: null })
+        .in('id', candidateIds);
+      if (resetError) throw new Error(`unregisterCandidate: reset terms of use failed: ${resetError.message}`);
+    }
+
+    // 4. Delete the identity's grants. Step 5 deletes the auth user and `grants.user_id` is `ON DELETE CASCADE`, so this is belt-and-braces rather than the load-bearing step — it is kept explicit so every removal path in this file reads the same way and none of them depends on remembering which constraint does the work.
+    const { error: grantError } = await this.client.from('grants').delete().eq('user_id', user.id);
+    if (grantError) throw new Error(`unregisterCandidate: delete grants failed: ${grantError.message}`);
+
+    // 5. Delete auth user
+    const { error: deleteError } = await this.client.auth.admin.deleteUser(user.id);
+    if (deleteError) throw new Error(`unregisterCandidate: deleteUser failed: ${deleteError.message}`);
+  }
+
+  /**
+   * Send an email to a candidate via the Supabase Admin Auth API.
+   *
+   * For test purposes, this uses `auth.admin.inviteUserByEmail` which sends an invite/magic link email via Inbucket in local dev. The invite email contains a link the candidate can use to set their password.
+   *
+   * A candidate is registered exactly when a candidate-editor grant names it. A registered candidate gets a magic link instead (since inviteUserByEmail would fail for existing users); an unregistered one is invited, and the grant linking the new user to the candidate is written.
+   *
+   * @param params - Email parameters
+   * @param params.candidateExternalId - External ID of the candidate
+   * @param params.subject - Email subject (used for logging; actual subject from GoTrue template)
+   * @param params.content - Email content (used for logging; actual content from GoTrue template)
+   * @throws Error if the candidate is not found or email sending fails
+   */
+  async sendEmail(params: {
+    candidateExternalId: string;
+    subject: string;
+    content: string;
+    email?: string;
+  }): Promise<void> {
+    const { data: candidate, error: cError } = await this.client
+      .from('candidates')
+      .select('id, first_name, last_name')
+      .eq('external_id', params.candidateExternalId)
+      .eq('project_id', this.projectId)
+      .single();
+
+    if (cError) {
+      throw new Error(`sendEmail: failed to find candidate ${params.candidateExternalId}: ${cError.message}`);
+    }
+
+    const registeredUserId = await this.userIdForCandidate(candidate.id);
+
+    if (registeredUserId) {
+      // A candidate-editor grant names the candidate, so it is already registered -- generate a magic link which sends an email via Inbucket
+      const {
+        data: { user },
+        error: getUserError
+      } = await this.client.auth.admin.getUserById(registeredUserId);
+      if (getUserError || !user?.email) {
+        throw new Error(`sendEmail: failed to get auth user for candidate: ${getUserError?.message}`);
+      }
+
+      const { error: linkError } = await this.client.auth.admin.generateLink({
+        type: 'magiclink',
+        email: user.email
+      });
+      if (linkError) throw new Error(`sendEmail: generateLink failed: ${linkError.message}`);
+    } else {
+      // No grant names the candidate yet -- use inviteUserByEmail to create the user and send an invite email via Inbucket, then write the candidate-editor grant that links the new user to the candidate.
+      const email = params.email;
+      if (!email) {
+        throw new Error(
+          `sendEmail: candidate ${params.candidateExternalId} is not registered and no email was provided.`
+        );
+      }
+
+      // Use inviteUserByEmail to create the user and send the invite email.
+      // redirectTo points to the auth callback which handles token exchange.
+      const frontendUrl = SUPABASE_URL.replace('54321', '5173');
+      const { data: inviteData, error: inviteError } = await this.client.auth.admin.inviteUserByEmail(email, {
+        redirectTo: `${frontendUrl}/en/api/candidate/auth/callback`
+      });
+      if (inviteError) throw new Error(`sendEmail: inviteUserByEmail failed: ${inviteError.message}`);
+
+      const userId = inviteData.user.id;
+
+      // Write the candidate-editor grant. Same reason as the other two minting sites: the grant row is the only link from the new identity to the candidate and the whole of its authority.
+      const { error: grantError } = await this.client.from('grants').insert({
+        user_id: userId,
+        scope: 'entity',
+        target_type: 'candidate',
+        target_id: candidate.id,
+        role: 'editor'
+      });
+      if (grantError) throw new Error(`sendEmail: insert grant failed: ${grantError.message}`);
+    }
+  }
+
+  /**
+   * Trigger a password recovery email for a user.
+   *
+   * Uses `auth.admin.generateLink({ type: 'recovery' })` which generates a recovery link. In local dev with Inbucket, the email is delivered to the Inbucket inbox for the user's email address.
+   *
+   * Alternatively uses `auth.resetPasswordForEmail` which sends the actual recovery email via GoTrue/Inbucket.
+   *
+   * @param email - Email address of the user to send recovery to
+   * @throws Error if the operation fails
+   */
+  async sendForgotPassword(email: string): Promise<void> {
+    // Use resetPasswordForEmail which sends the actual email via Mailpit.
+    // Redirect to the auth callback which exchanges the token and redirects to password-reset.
+    const { error } = await this.client.auth.resetPasswordForEmail(email, {
+      redirectTo: `${SUPABASE_URL.replace('54321', '5173')}/en/api/candidate/auth/callback`
+    });
+    if (error) throw new Error(`sendForgotPassword: failed: ${error.message}`);
+  }
+
+  /**
+   * Delete all test auth users (emails containing 'openvaa.org' or 'test').
+   *
+   * Used during teardown to clean up auth state. For each user, reads the candidates its editor grant names and resets their terms of use, then deletes the user's grants and the auth user, in the order `unregisterCandidate` uses and for the same reason.
+   *
+   * @throws Error listing every per-user step that failed, after all users have been processed.
+   */
+  async deleteAllTestUsers(): Promise<void> {
+    const users = await this.safeListUsers();
+
+    const testUsers = users.filter((u) => u.email && (u.email.includes('openvaa.org') || u.email.includes('test')));
+
+    // Propagate per-user step errors instead of silently swallowing them.
+    // Discarding PostgREST/admin-API errors on every step lets a teardown that fails mid-loop proceed against a corrupted state and produce confusing downstream failures. Collect errors and throw at the end with an aggregated message so partial deletions complete first.
+    const errors: Array<{ user: string; step: string; error: unknown }> = [];
+
+    for (const user of testUsers) {
+      // Read the candidate ids BEFORE the grants are deleted: the grant is the only link from the user to a candidate, so afterwards the reset below would match nothing.
+      let candidateIds: Array<string> = [];
+      try {
+        candidateIds = await this.candidateIdsForUser(user.id);
+      } catch (lookupError) {
+        errors.push({ user: user.id, step: 'read-candidate-ids', error: lookupError });
+      }
+
+      if (candidateIds.length > 0) {
+        const { error: resetError } = await this.client
+          .from('candidates')
+          .update({ terms_of_use_accepted: null })
+          .in('id', candidateIds);
+        if (resetError) errors.push({ user: user.id, step: 'reset-terms-of-use', error: resetError });
+      }
+
+      // Delete the identity's grants. The auth-user deletion below cascades to them anyway; explicit for the same symmetry reason as `unregisterCandidate`.
+      const { error: grantsError } = await this.client.from('grants').delete().eq('user_id', user.id);
+      if (grantsError) errors.push({ user: user.id, step: 'delete-grants', error: grantsError });
+
+      // Delete auth user
+      const { error: deleteError } = await this.client.auth.admin.deleteUser(user.id);
+      if (deleteError) errors.push({ user: user.id, step: 'delete-auth-user', error: deleteError });
+    }
+
+    if (errors.length > 0) {
+      // reason: collect-and-throw at end so partial deletions complete first AND the caller sees the failures (matches `unregisterCandidate`'s throw-on-error pattern in this file).
+      throw new Error(`deleteAllTestUsers: ${errors.length} failure(s) — ${JSON.stringify(errors)}`);
+    }
+  }
+}

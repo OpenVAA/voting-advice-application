@@ -1,0 +1,8 @@
+{
+  "candidateApp.help": {
+    "ingress": "Alla on vastauksia yleisimpiin kysymyksiin ehdokkaiden vaalikoneen käytöstä. Jos et löydä vastausta pulmaasi alta, voit ottaa yhteyttä tukeen.",
+    "noFAQ": "Kysymyksiä ei vielä ole.",
+    "supportEmailSubject": "Tukipyyntö",
+    "title": "Ehdokastuki"
+  }
+}

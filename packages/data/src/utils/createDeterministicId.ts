@@ -29,7 +29,8 @@ export function createDeterministicId<TType extends DynamicObjectType>({
       otherProps = [data.entityType, (data as AnyNominationVariantData).entityId];
       break;
     case 'alliance':
-      otherProps = [...(data as PublicAllianceNominationData).organizations.map((o) => o.entityId)].sort();
+      // Implicit alliance entity creation only runs when nested `organizations` is provided (see AllianceNomination constructor: id-only path supplies an explicit entityId and bypasses this function entirely). The `!` is safe here.
+      otherProps = [...(data as PublicAllianceNominationData).organizations!.map((o) => o.entityId)].sort();
       break;
     case 'faction':
       otherProps = [...(data as PublicFactionNominationData).candidates.map((o) => o.entityId)].sort();
@@ -54,8 +55,7 @@ export function createDeterministicId<TType extends DynamicObjectType>({
 }
 
 /**
- * cyrb53 (c) 2018 bryc (github.com/bryc)
- * License: Public domain (or MIT if needed). Attribution appreciated.
+ * cyrb53 (c) 2018 bryc (github.com/bryc) License: Public domain (or MIT if needed). Attribution appreciated.
  * A fast and simple 53-bit string hash function with decent collision resistance. Largely inspired by MurmurHash2/3, but with a focus on speed/simplicity.
  * Source: https://github.com/bryc/code/blob/master/jshash/experimental/cyrb53.js
  */

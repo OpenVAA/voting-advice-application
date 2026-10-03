@@ -1,4 +1,4 @@
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createGoogle } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateObject, NoObjectGeneratedError, streamText } from 'ai';
 import { getFallbackModel } from '../fallbackModels';
@@ -13,11 +13,11 @@ import type {
   ProviderConfig
 } from './provider.types';
 
-// TODO: add internal rate limit parsing (parse "Try again in ... etc." from error messages)
+// TODO: add internal rate limit parsing (parse "Try again in ... etc." from error messages).
 // TODO: middleware for centralized rate limiting & usage throttling: track TPM across models & providers, gating users, etc.
-// TODO: implement fallback model usage
-// TODO: sending abort request to model provider for long-running calls (e.g. pdf processing etc.)
-// TODO: if an error occurs due to object generation failure, we can retry by giving the model the error message
+// TODO: implement fallback model usage.
+// TODO: sending abort request to model provider for long-running calls (e.g. pdf processing etc.).
+// TODO: if an error occurs due to object generation failure, we can retry by giving the model the error message.
 
 /** Orchestrates LLM calls with cost calculation, latency tracking, error handling and validation retries */
 export class LLMProvider {
@@ -35,7 +35,7 @@ export class LLMProvider {
       case 'openai':
         return createOpenAI({ apiKey: config.apiKey });
       case 'google':
-        return createGoogleGenerativeAI({ apiKey: config.apiKey });
+        return createGoogle({ apiKey: config.apiKey });
       // Add other providers as needed and update the provider config to support them
       default:
         throw new Error(`Unsupported provider: ${config.provider}`);
@@ -73,6 +73,8 @@ export class LLMProvider {
           model: this.provider.languageModel(model),
           schema: options.schema,
           messages: options.messages ?? [],
+          // Callers build these messages server-side from prompt templates, with the prompt as a system message.
+          allowSystemInMessages: true, // The SDK rejects system messages in `messages` unless this is set.
           temperature: options.temperature,
           maxRetries: options.maxRetries ?? 3 // Retries for network errors
         });
@@ -111,8 +113,7 @@ export class LLMProvider {
     );
   }
   /** Generate multiple objects in parallel with validation retries.
-   *  Requests are processed in batches of maxConcurrent. Batches are processed in order sequentially,
-   *  so each batch is as slow as the slowest request in the batch.
+   *  Requests are processed in batches of maxConcurrent. Batches are processed in order sequentially, so each batch is as slow as the slowest request in the batch.
    * @param requests - The requests to make
    * @param maxConcurrent - The maximum number of concurrent requests to make
    * @returns The generated objects
@@ -186,7 +187,7 @@ export class LLMProvider {
       options.modelConfig?.primary ?? getFallbackModel(this.config.provider, options.modelConfig?.primary ?? 'unknown');
 
     const result = streamText({
-      system: options.system,
+      instructions: options.instructions ?? options.system,
       model: this.provider.languageModel(model),
       messages: options.messages ?? [],
       temperature: options.temperature,

@@ -1,0 +1,20 @@
+# WarningMessages
+
+Reusable component for displaying warning and error messages with scrolling.
+
+### Properties
+
+- `warnings`: Array of warning messages to display. Default: `[]`
+- `errors`: Array of error messages to display. Default: `[]`
+- Any valid attributes of a `<div>` element
+
+### Usage
+
+```tsx
+<WarningMessages warnings={warningMessages} errors={errorMessages} />
+```
+
+## Source
+
+- Component: [apps/frontend/src/lib/components/controller/WarningMessages.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/controller/WarningMessages.svelte)
+- Types: [apps/frontend/src/lib/components/controller/WarningMessages.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/controller/WarningMessages.type.ts)
