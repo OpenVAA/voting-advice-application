@@ -215,7 +215,7 @@ jobs:
       - uses: supabase/setup-cli@v1
         if: steps.changes.outputs.supabase == 'true'
         with:
-          version: 2.83.0
+          version: 2.118.0
 
       - name: "Start Supabase"
         if: steps.changes.outputs.supabase == 'true'
@@ -266,7 +266,7 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: 2.83.0
+          version: 2.118.0
 
       # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
       # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
@@ -383,7 +383,7 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: 2.83.0
+          version: 2.118.0
 
       # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
       # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
@@ -481,7 +481,7 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: 2.83.0
+          version: 2.118.0
 
       # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
       # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
@@ -534,7 +534,7 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: 2.83.0
+          version: 2.118.0
 
       # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
       # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
@@ -617,7 +617,7 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: 2.83.0
+          version: 2.118.0
 
       # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
       # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
