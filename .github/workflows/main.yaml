@@ -130,7 +130,7 @@ jobs:
       # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
       # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
       - name: Setup Node.js 24.21.0
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24.21.0
 
@@ -271,7 +271,7 @@ jobs:
       # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
       # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
       - name: Setup Node.js 24.21.0
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24.21.0
 
@@ -336,7 +336,7 @@ jobs:
       # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
       # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
       - name: Setup Node.js 24.21.0
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24.21.0
 
@@ -388,7 +388,7 @@ jobs:
       # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
       # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
       - name: Setup Node.js 24.21.0
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24.21.0
 
@@ -486,7 +486,7 @@ jobs:
       # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
       # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
       - name: Setup Node.js 24.21.0
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24.21.0
 
@@ -539,7 +539,7 @@ jobs:
       # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
       # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
       - name: Setup Node.js 24.21.0
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24.21.0
 
@@ -622,7 +622,7 @@ jobs:
       # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
       # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
       - name: Setup Node.js 24.21.0
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24.21.0
 
@@ -696,7 +696,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: "Setup Node.js 22.x (deliberately out of range)"
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "22.x"
 
@@ -718,7 +718,7 @@ jobs:
           echo "rejected as required under $(node -v): $OUTPUT"
 
       - name: "Setup Node.js 24.21.0 (in range)"
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24.21.0
 
