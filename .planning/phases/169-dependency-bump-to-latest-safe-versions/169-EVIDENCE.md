@@ -27,6 +27,11 @@ Roadmap premise (D-02): `roadmap.get-phase 169 --pick section` already contains 
 (`brace-expansion` ×6, `devalue` ×2, `undici` ×1) and criterion 3 reads "every row with a published fix is
 fixed" — **applied at planning**; 169-01 made no ROADMAP edit.
 
+**169-06 Task 1 step 0 (before any change, 2026-10-03T13:19Z):** `docker builder prune -af`, then
+`docker run --rm alpine df -k /` → **23 078 048 KiB available (22.01 GiB)** of 107 016 164 KiB. That is above the
+15 GiB floor, so the task went ahead. The new CLI's service images then took about 5 GiB: the 169-06-cli E2E
+preflight read 16.87 GiB.
+
 ## 1. Re-measurement at execution start
 
 **Version/age table:** `node 169-version-probe.mjs --out 169-VERSION-TABLE.md --node 24.14.1` at
@@ -160,6 +165,54 @@ commit (`05-t3-probe.md`). Logs under `tests/e2e-runs/169-gates/`.
 Every plugin in both configs admits Vite 8 at its resolved version, and so do Kit 2.70.3 (`vite … || ^8.0.0`,
 `@sveltejs/vite-plugin-svelte … || ^7.0.0`, `typescript ^5.3.3 || ^6.0.0`) and Vitest 5.0.2 (`vite ^6.4.0 || ^7.0.0 ||
 ^8.0.0`). Nothing blocks Vite 8, so no D-06 hold applies.
+
+### 169-06 (group 5, first half) re-measurement, 2026-10-03
+
+`node 169-version-probe.mjs --only supabase --node 24.21.0` at 2026-10-03T13:20:07Z (`tests/e2e-runs/169-gates/06/t1-probe.md`):
+
+| Package | Resolved before | Target (published, age) | Target line x.0.0 | Verdict / hold |
+|---|---|---|---|---|
+| `supabase` (CLI, catalog) | 2.83.0 (catalog `^2.78.1`) | **2.118.0** (2026-09-25, 8.0 d) | 2.0.0 2024-12-04 | in-major; HOLD-7d 2.119.0 (2026-09-30T21:36Z, 2.66 d) |
+
+`npm view supabase@2.118.0`: dependencies `jose ^6.2.10`, `eciesjs ^0.5.0`; eight `optionalDependencies`
+`@supabase/cli-{darwin-arm64,darwin-x64,linux-arm64,linux-arm64-musl,linux-x64,linux-x64-musl,windows-arm64,windows-x64}`
+at exactly 2.118.0; no install script (`scripts` has no `preinstall`/`install`/`postinstall`); `bin` `dist/supabase.js`.
+The GitHub release `v2.118.0` (2026-09-25T13:23Z) carries the `supabase_linux_amd64.tar.gz` asset that
+`supabase/setup-cli@v1` downloads, so the six CI pins can move to the same version.
+
+**Service images of the local stack.** Before (CLI 2.83.0, from `docker ps`, project containers only): postgres
+15.8.1.085, postgrest v14.5, gotrue v2.187.0, storage-api v1.41.8, realtime v2.78.10, edge-runtime v1.71.0,
+postgres-meta v0.96.1, studio 2026.03.04-sha-0043607, mailpit v1.22.3, logflare 1.34.7, vector 0.28.1-alpine,
+kong 2.8.1, imgproxy v3.8.0.
+
+After `yarn db:stop` → `yarn db:start` → `yarn db:reset` on CLI 2.118.0 (`06/t1-images.txt`, every name ending in
+`_openvaa-local`):
+
+| Service | Image |
+|---|---|
+| db | `public.ecr.aws/supabase/postgres:15.8.1.085` (unchanged: CLI 2.118.0 keeps it for major 15) |
+| rest | `public.ecr.aws/supabase/postgrest:v16.3` |
+| auth | `public.ecr.aws/supabase/gotrue:v2.197.0` |
+| storage | `public.ecr.aws/supabase/storage-api:v1.77.0` |
+| realtime | `public.ecr.aws/supabase/realtime:v2.135.3` |
+| edge_runtime | `public.ecr.aws/supabase/edge-runtime:v1.76.2` |
+| pg_meta (type generator) | `public.ecr.aws/supabase/postgres-meta:v0.99.0` |
+| studio | `public.ecr.aws/supabase/studio:2026.09.14-sha-4dd8a95` |
+| inbucket | `public.ecr.aws/supabase/mailpit:v1.30.2` |
+| analytics | `public.ecr.aws/supabase/logflare:1.50.12` |
+| vector | `public.ecr.aws/supabase/vector:0.53.0-alpine` |
+| kong | `public.ecr.aws/supabase/kong:2.8.1` |
+| imgproxy | `public.ecr.aws/supabase/imgproxy:v3.8.0` |
+
+The CLI 2.118.0 binary pins `supabase/postgres:17.6.1.171` for major 17 (its embedded Dockerfile, `FROM
+supabase/postgres:17.6.1.171 AS pg`). RESEARCH's `17.11.0.002` / `15.19.0.002` belong to 2.119.0, which is held.
+
+**Image pull.** The CLI's own `docker pull`s hung in `docker-credential-desktop get` (the 169-04 host fault). The
+first `yarn db:start` made no progress for 30 minutes and was stopped by the harness's background time limit; no
+container had been created, and the stack was down in that window. The ten new images were then pulled with a scratch
+`DOCKER_CONFIG` (`{}`) and `DOCKER_HOST=unix://$HOME/.docker/run/docker.sock`, plus `postgres:17.6.1.171` for Task 2
+(`06/t1-prepull*.log`; four pulls hit ECR's `toomanyrequests` and went through on retry). The second `yarn db:start`,
+with the same environment, exited 0 with every image already local.
 
 ## 2. Package legitimacy
 
@@ -353,6 +406,40 @@ apps). Other new versions of names already in the lockfile: `vite` 8.3.1 (9.0 d)
 Tailwind keeps its exact 1.32.0). Removed by the Vite move: `@sveltejs/vite-plugin-svelte-inspector` (now inside
 vite-plugin-svelte 7) and esbuild 0.25.12's platform packages that Vite 6/7 pulled in.
 
+### 169-06 (group 5, first half)
+
+Box B (Supabase CLI platform packages) was re-read before the install: `[x]` (the plan's precondition, met). New
+lockfile names from `yarn up -R supabase` (`tests/e2e-runs/169-gates/06/t1-new-names.txt`, key diff
+`t1-lock-keys-{before,after}.txt`), checked with `gsd-tools query package-legitimacy check --ecosystem npm`
+(`06/t1-legit.json`). Install ran under `npmMinimalAgeGate: 7d`. The check ran right after `yarn up`, not before it.
+`yarn up` is what yields the new-name list, so the check came before the commit and before anything executed the new
+packages.
+
+| New name | Verdict | Reasons | Weekly downloads | Repository | Resolved (published) | postinstall |
+|---|---|---|---|---|---|---|
+| `@supabase/cli-darwin-arm64` | SUS | too-new | 197 164 | github.com/supabase/cli | 2.118.0 (2026-09-25) | none |
+| `@supabase/cli-darwin-x64` | SUS | too-new | 74 549 | github.com/supabase/cli | 2.118.0 | none |
+| `@supabase/cli-linux-arm64` | SUS | too-new | 132 642 | github.com/supabase/cli | 2.118.0 | none |
+| `@supabase/cli-linux-arm64-musl` | SUS | too-new | 92 969 | github.com/supabase/cli | 2.118.0 | none |
+| `@supabase/cli-linux-x64` | SUS | too-new | 4 434 591 | github.com/supabase/cli | 2.118.0 | none |
+| `@supabase/cli-linux-x64-musl` | SUS | too-new | 1 746 652 | github.com/supabase/cli | 2.118.0 | none |
+| `@supabase/cli-windows-arm64` | SUS | too-new | 65 491 | github.com/supabase/cli | 2.118.0 | none |
+| `@supabase/cli-windows-x64` | SUS | too-new | 227 566 | github.com/supabase/cli | 2.118.0 | none |
+| `eciesjs` | OK | — | 13 191 197 | github.com/ecies/js | 0.5.0 (2026-04-03) | none |
+| `@ecies/ciphers` | OK | — | 12 955 131 | github.com/ecies/js-ciphers | 0.2.6 (2026-03-31) | none |
+| `@noble/ciphers` | OK | — | 40 963 067 | github.com/paulmillr/noble-ciphers | 1.3.0 (2025-04-24) | none |
+| `@noble/curves` | OK | — | 38 335 008 | github.com/paulmillr/noble-curves | 1.9.7 (2025-08-15) | none |
+| `@noble/hashes` | OK | — | 109 155 238 | github.com/paulmillr/noble-hashes | 1.8.0 (2025-04-21) | none |
+
+Every `SUS` is `too-new`, read from the package's newest publish (2.119.0, 2026-09-30), on the official
+per-platform packages that box B approves. No `SLOP`; no new direct package. `jose` keeps its single resolution 6.2.12
+(the new `^6.2.10` descriptor merged into the existing entry). Removed with the old CLI's downloader:
+`bin-links`, `cmd-shim`, `read-cmd-shim`, `npm-normalize-package-bin`, `proc-log`, `write-file-atomic` 7,
+`https-proxy-agent` 7 / `agent-base` 7, `node-fetch` 3 (+ `fetch-blob`, `formdata-polyfill`, `data-uri-to-buffer`,
+`web-streams-polyfill`) and **`tar` 7.5.11**. With that, the accepted `tar` rows 1123940 / 1123941 / 1145647 (via
+`supabase@2.83.0`) left the findings. The lockfile diff is confined to `supabase`'s subtree, plus the two descriptor
+merges that removal causes (`debug@npm:4`, `node-domexception@npm:^1.0.0` dropped from shared entries; same versions).
+
 ## 3. Holds
 
 | Package | Held at | Newer line | Reason | Decision ref | Re-check date or trigger |
@@ -366,6 +453,7 @@ vite-plugin-svelte 7) and esbuild 0.25.12's platform packages that Vite 6/7 pull
 | `daisyui` | **5.7.46** (catalog `^5.7.46`; 169-04) | 5.7.47 (2026-09-30T00:29Z, 3.45 d old on 2026-10-03) | Inside the 7-day window | D-03 | 5.7.47 clears 2026-10-07T00:29Z |
 | `@sveltejs/kit`, `@sveltejs/adapter-node`, `@sveltejs/adapter-static` | **2.70.3 / 5.5.7 / 3.0.10** (169-05) | 3.0.0 / 6.0.0 / 4.0.0 (2026-10-01, 1.8 d old on 2026-10-03) | New major lines inside the 30-day window | D-03, D-15 | 169-12; clear 2026-10-31T17:22Z / 17:24Z / 17:21Z |
 | `vite` | **8.3.1** (catalog `^8.3.1`; 169-05) | 8.3.2 (2026-10-01T10:17Z, 2.11 d old on 2026-10-03) | Inside the 7-day window | D-03 | 8.3.2 clears 2026-10-08T10:17Z |
+| `supabase` (CLI) + the six `setup-cli` `version:` pins | **2.118.0** (catalog `^2.118.0`; 169-06, `cb14c57d2`) | 2.119.0 (2026-09-30T21:36Z, 2.66 d old on 2026-10-03) | Inside the 7-day window. The CLI and the CI pins must move together (`rpcNullabilityGate.test.ts`), and a CLI move changes the service images and the type generator, so 2.119.0 needs its own db:types / pgTAP / E2E pass | D-03, D-10 | 2.119.0 clears 2026-10-07T21:36Z |
 
 ## 4. Gate runs
 
@@ -629,6 +717,24 @@ exempts no job. `release.yml` and `docs.yml` (both edited for Node 24 / Yarn 4.1
 - **Run 3** carries the whole of group 1: Yarn 4.18.1, Node 24, the CI step order, the secret-scan fixture,
   `@types/node` 24, TypeScript 6.0.3 and the E2E budget fix. **Every job concluded `success`**, including the
   negative control (both halves bound under Node 24.21.0). This is the observed CI run D-11 requires.
+
+### 169-06 Task 1 — after the CLI commit (`cb14c57d2`), before Postgres 17
+
+pgTAP, `db:lint:sql`, the CI-pin gate test and the audit after this commit are in § 6 (169-06 Task 1). All exited 0.
+
+E2E `169-06-cli` (`bash 169-e2e.sh 169-06-cli`, the full default suite):
+- Docker VM had 16.87 GiB free after `docker builder prune -af` (the new service images took about 5 GiB).
+- `e2e-run.sh` ran at HEAD `cb14c57d2` with a `db:reset` and project `…0000e2`, Playwright start
+  2026-10-03T13:56:23Z, 4.6 min.
+- The stack ran PostgREST v16.3, GoTrue v2.197.0, storage-api v1.77.0, realtime v2.135.3 and edge-runtime v1.76.2,
+  on Postgres 15.8.1.085.
+- Wrapper exit 0.
+- `summary.json`: **total 171, passed 171, failed 0, flaky 0, skipped 0, didNotRun 0**.
+- No listener was left on 5273.
+- The run is attributed to the CLI's service images alone, because Postgres was still 15.
+
+Tracer gate (`<verify>` re-run after the E2E run): `test:db` exit 0 (`Files=36, Tests=1335`, `PASS`), `db:lint:sql`
+exit 0, `rpcNullabilityGate.test.ts` exit 0 (`06/t1-tracer-*.log`). Postgres 17 went ahead on this proven slice.
 
 ## 5. Negative controls
 
@@ -1243,6 +1349,42 @@ e2e/base`, then the frontend dev server on Vite 8.3.1 with `PUBLIC_PROJECT_ID=�
 `tests/scripts/visual-container.sh --run-dir tests/e2e-runs/169-05-visual`, image `eff16c30e6f3…`, Playwright 1.63.0:
 **exit 0**, 7 expected / 0 unexpected / 0 flaky (4 screenshots plus setup and teardown). No snapshot changed, so
 there is no re-baseline commit.
+
+### 169-06 Task 1 — the Supabase CLI 2.118.0 and the regenerated `database.ts` (D-10), commit `cb14c57d2`
+
+**Order.** `yarn db:stop` → `yarn db:start` (new images) → `yarn db:reset` (exit 0, `Applying migration
+00001_initial_schema.sql`, seed, both storage buckets) → `yarn db:types` (exit 0) on that fresh reset, **before** any
+pgTAP run → pgTAP → `db:lint:sql`. Before/after copies: `tests/e2e-runs/169-gates/06/t1-database-{before,after}.ts`.
+
+**The `database.ts` diff (18 hunks, +27 / −100).** No migration, schema or seed file changed in the commit
+(`git diff HEAD~1 HEAD --stat -- apps/supabase/supabase/{migrations,schema,seed.sql}` prints nothing), so every hunk
+comes from the generator. postgres-meta moved v0.96.1 → v0.99.0, and v0.99.0's one feature is "consume
+@supabase/postgrest-typegen for type generation" (supabase/postgres-meta#1084, release 2026-08-31). A
+whitespace-insensitive token diff (`06/t1-database-semantic.diff`) splits the hunks into three kinds:
+
+| Kind | Hunks | What changed | Why |
+|---|---|---|---|
+| Layout | 16 | Short object types (`graphql`'s args, most `Functions` `Args` blocks, `_bulk_upsert_record`, `delete_storage_object`, `get_localized`, `is_valid_choice_id`, `jsonb_recursive_merge`, `merge_jsonb_column`, the `DatabaseWithoutInternals` helper generics, …) are emitted on one line; Prettier keeps an object on one line when its input has no newline after `{` and it fits 120 columns. The token diff shows only a dropped `;` before `}` | the new typegen's printer |
+| `NonNullable<Json>` | 1 (Row / Insert / Update of `app_settings.settings`) | `Json` → `NonNullable<Json>` | `app_settings.settings` is the schema's only `jsonb NOT NULL` column (`106-app-settings.sql`). `Json` includes `null`, so the new typegen narrows NOT NULL json columns. That is more accurate, and no write site passes `null` |
+| `never` | 1 (Insert and Update of `nominations.entity_type`) | `Database['public']['Enums']['entity_type']` → `never` | `nominations.entity_type` is `GENERATED ALWAYS AS (…)` (`104-nominations.sql`), so Postgres refuses any written value. The new typegen marks generated columns unwritable. That is more accurate, and no write site sets it |
+
+`TURBO_FORCE=true yarn typecheck` on the regenerated file → exit 0, 23/23 tasks (`06/t1-typecheck.log`), so no
+consumer wrote `entity_type` or a `null` setting. `prettier --check` on the three edited files → clean. CI's
+`supabase-tests` drift check regenerates with the same CLI version, because the six `setup-cli` pins equal the
+lockfile.
+
+**pgTAP and lint after the CLI commit** (stack on the 2.118.0 images, PG 15.8.1.085):
+- `yarn workspace @openvaa/supabase test:db > tests/e2e-runs/169-gates/06-t1-pgtap.log` → **exit 0**: `Files=36,
+  Tests=1335`, `Result: PASS`, 0 lines starting `not ok`. The census file `36-entity-identity.test.sql` is listed
+  `ok`, the same count as 166-04's run.
+- `yarn db:lint:sql` → **exit 0**: `db lint` `{"results":[]}`; Splinter-derived schema lint `0 error(s), 3
+  warning(s)`, the same as 166's (`06/t1-db-lint.log`).
+- `yarn workspace @openvaa/dev-seed vitest run tests/rpcNullabilityGate.test.ts` → **exit 0**, 9/9. That run
+  includes "the Supabase CLI that CI pins is the one the workspace resolves" (six pins = `supabase@npm:2.118.0`).
+- `yarn audit:deps` → exit 0, `0 new advisory(ies) at high+, 2 accepted` (`@faker-js/faker` 1158500, `braces`
+  1240992). The three `tar` rows via `supabase@2.83.0` are now among the 66 stale ids left for 169-13.
+- `config.toml` warns `config section [inbucket] is deprecated. Please use [local_smtp] instead` on every CLI call
+  (§ 7).
 
 ## 7. Operator follow-ups
 
