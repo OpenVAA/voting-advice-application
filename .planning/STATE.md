@@ -4,18 +4,18 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 169
 current_phase_name: Dependency Bump to Latest Safe Versions
-current_plan: 9
+current_plan: 10
 status: executing
-stopped_at: Completed 169-08-PLAN.md (faker 10.6.0); next 169-09
-last_updated: "2026-10-03T16:15:41.954Z"
+stopped_at: "Completed 169-09-PLAN.md (AI SDK: ai 7.0.116, @ai-sdk/* 4; openai removed); next 169-10"
+last_updated: "2026-10-03T16:43:26.669Z"
 last_activity: 2026-10-03
 last_activity_desc: Phase 169 execution started
-state_head: b5b2742caa7e38353432c25100a6c7706d0fff4d
+state_head: b2652b7e784f057bbbfd31fea2f4cff102b4f30a
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
-  completed_plans: 342
+  completed_plans: 343
   percent: 89
 ---
 
@@ -35,7 +35,7 @@ _(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and P
 Phase: 169 (Dependency Bump to Latest Safe Versions) — EXECUTING
 Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
-Current Plan: 9
+Current Plan: 10
 Total Plans in Phase: 13
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
@@ -819,8 +819,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-10-03T16:15:40.461Z
-Stopped at: Completed 169-08-PLAN.md (faker 10.6.0); next 169-09
+Last session: 2026-10-03T16:43:25.140Z
+Stopped at: Completed 169-09-PLAN.md (AI SDK: ai 7.0.116, @ai-sdk/* 4; openai removed); next 169-10
 Resume file: .planning/phases/169-dependency-bump-to-latest-safe-versions/.continue-here.md
 
 ## Deferred Items
@@ -1155,6 +1155,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 169 P06 | 61min | 1 tasks | 4 files |
 | Phase 169 P07 | 58min | 3 tasks | 16 files |
 | Phase 169 P08 | 19min | 2 tasks | 4 files |
+| Phase 169 P09 | 28min | 3 tasks | 10 files |
 
 ## Deferred Items
 
@@ -2176,6 +2177,9 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 169]: Operator ruling 2026-10-03 (operator, in chat) R4: Vite 8 default build target (chrome111/edge111/firefox114/safari16.4/ios16.4) accepted as the browser floor; no build.target override
 - [Phase 169]: 169-08: faker 10.6.0 through the catalog; seed diff at seed 42 shows equal row counts for default and e2e/base, e2e/base byte-identical, only default is seed-dependent among 31 templates; no visual re-baseline (7/0/0 twice)
 - [Phase 169]: 169-08: faker.seed() kept in buildCtx although Faker 10.5+ accepts a constructor seed (measured identical sequence); stale faker audit row 1158500 left for 169-13
+- [Phase 169]: 169-09: ai 7.0.116 + @ai-sdk/google 4.0.82 + @ai-sdk/openai 4.0.78 (provider 4.0.18 / provider-utils 5.0.49, undici ^7; undici 5 and @fastify/busboy stay out; audit 0 new); openai 4 removed (no importer)
+- [Phase 169]: 169-09: LLMProvider.generateObject passes allowSystemInMessages: true because every caller sends its server-built prompt as a system message, which AI SDK 7 rejects by default; streamText keeps the SDK default; generateObject kept (deprecated, still exported)
+- [Phase 169]: 169-09: TokenUsage stays the SDK LanguageModelUsage; cost calculation reads inputTokenDetails.cacheReadTokens and outputTokenDetails.reasoningTokens; the condenser fills the detail objects with undefined
 
 ### Quick Tasks Completed
 
