@@ -332,6 +332,38 @@ Nothing was held. No workflow is triggered by `pull_request_target` or `workflow
 changes nothing here; the `claude.yml` events (`issue_comment`, `pull_request_review*`, `issues`) check out the
 default ref as before.
 
+### 169-12 (group 10) re-measurement, 2026-10-03 — Kit 3 verdict: **HOLD-AGE**
+
+Measured live at 2026-10-03T18:49:51Z. The age clock comes from `npm view <pkg> time --json`. The peers come from
+`npm view @sveltejs/kit@3.0.0 peerDependencies peerDependenciesMeta engines --json`. Each peer was compared with its
+`yarn.lock` resolution, using the hoisted `semver` 7.8.5 (`satisfies(v, range, { includePrerelease: true })`).
+Verdict file: `tests/e2e-runs/169-gates/12-kit3-verdict.json` (gitignored).
+
+| Package | Held at | x.0.0 published (age) | Clears (x.0.0 + 30 d) | Releases in the major | Target (≥ 7 d) | Age OK |
+|---|---|---|---|---|---|---|
+| `@sveltejs/kit` | 2.70.3 | 3.0.0, 2026-10-01T17:22:34.593Z (2.06 d) | **2026-10-31T17:22:34Z** | 3.0.0 only (`latest`; `next` 3.0.0-next.32) | none | no |
+| `@sveltejs/adapter-node` | 5.5.7 | 6.0.0, 2026-10-01T17:24:31.997Z (2.06 d) | **2026-10-31T17:24:31Z** | 6.0.0 only | none | no |
+| `@sveltejs/adapter-static` | 3.0.10 | 4.0.0, 2026-10-01T17:21:55.874Z (2.06 d) | **2026-10-31T17:21:55Z** | 4.0.0 only | none | no |
+
+No 3.x / 6.x / 4.x release is 7 days old yet, so the peers were measured against 3.0.0, the only 3.x:
+
+| Kit 3.0.0 peer | Range | Resolved in the tree | OK |
+|---|---|---|---|
+| `vite` | `^8.0.12` | 8.3.1 | yes |
+| `@sveltejs/vite-plugin-svelte` | `^7.0.0` | 7.3.1 | yes |
+| `svelte` | `^5.57.1` | 5.57.1 | yes |
+| `typescript` (optional) | `^6.0.0` | 6.0.3 | yes |
+| `@opentelemetry/api` (optional) | `^1.0.0` | not installed | yes (optional, absent) |
+| `engines.node` | `>=22.17` | declared `>=24.15.0` (floor 24.15.0, a subset of the range); CI pin 24.21.0 | yes |
+
+The peers are ready. All of them landed under Kit 2.70: TypeScript 6 and Node 24 in 169-02, Vite 8 and
+vite-plugin-svelte 7 in 169-05. A Kit-3-only commit is possible, but the age rule blocks it. Kit 3 was not
+installed, and neither its migrator nor `sv` was run (PROH-169-22). `yarn why @sveltejs/kit` shows only
+`2.70.3`, in both apps (`tests/e2e-runs/169-gates/12-kit-why.txt`). The adapters are still on
+`adapter-node` 5.5.7 and `adapter-static` 3.0.10. Task 2, the operator checkpoint, is skipped because the verdict
+is not `CLEARS`. Task 3's land branch is skipped for the same reason. The hold is in § 3. Todo:
+`2026-10-03-sveltekit-3-held-by-the-age-rule.md`.
+
 ## 2. Package legitimacy
 
 **Operator approvals (step 0, run before any repository change, 2026-10-03T06:37Z):** the box check printed
@@ -673,7 +705,9 @@ Older lines are no way out. `nodemailer@9.1.1` and `nodemailer@6.10.1` both stil
 | `eslint`, `@eslint/js` | ~~9.39.5~~ **RELEASED 2026-10-03 → 10.11.0 / 10.0.1** (`34ce0d51c`, operator ruling) | 10.12.0 (2026-10-02T20:08Z, 0.81 d old on 2026-10-03T15:30Z) | **Hold released by operator ruling 2026-10-03.** ESLint 10 landed with three scoped one-line `eslint-disable-next-line no-useless-assignment` comments on the write-only `$bindable` props (eslint-plugin-svelte#1478), overruling PROH-169-07 for exactly those lines. The drawer focus return was wired (`e3a661517`), clearing `no-unassigned-vars` at source. The config-lookup flag is gone from all 21 live sites. 10.12.0 is inside the 7-day window | D-06, D-17, PROH-169-07 (overruled for 3 lines) | 10.12.0 clears 2026-10-09T20:08Z; the three disables go when #1478 ships (todo `2026-10-03-remove-bindable-no-useless-assignment-disables.md`) |
 | `vitest`, `@vitest/browser-playwright` | **5.0.2** (catalog `^5.0.2`; 169-04) | 5.0.3 (2026-09-30T11:30Z / 11:29Z, 3.0 d old on 2026-10-03) | Inside the 7-day window; 5.0.2 is the newest 5.x old enough | D-03 | 5.0.3 clears 2026-10-07T11:30Z |
 | `daisyui` | **5.7.46** (catalog `^5.7.46`; 169-04) | 5.7.47 (2026-09-30T00:29Z, 3.45 d old on 2026-10-03) | Inside the 7-day window | D-03 | 5.7.47 clears 2026-10-07T00:29Z |
-| `@sveltejs/kit`, `@sveltejs/adapter-node`, `@sveltejs/adapter-static` | **2.70.3 / 5.5.7 / 3.0.10** (169-05) | 3.0.0 / 6.0.0 / 4.0.0 (2026-10-01, 1.8 d old on 2026-10-03) | New major lines inside the 30-day window | D-03, D-15 | 169-12; clear 2026-10-31T17:22Z / 17:24Z / 17:21Z |
+| `@sveltejs/kit` | **2.70.3** (catalog `^2.70.3`; 169-05) | 3.0.0 (2026-10-01T17:22:34Z; 2.06 d old at the 169-12 re-measurement, 2026-10-03T18:49Z; the only 3.x) | **New major line inside the 30-day window** (169-12 Task 1 verdict `HOLD-AGE`, § 1). Every Kit 3.0.0 peer and engine is already satisfied by the tree (vite 8.3.1, vite-plugin-svelte 7.3.1, svelte 5.57.1, typescript 6.0.3, Node floor 24.15.0), so only the age clock holds it. Not installed; neither its migrator nor `sv` was run (PROH-169-22) | D-03, D-15, D-32, ruling 11 | **2026-10-31T17:22:34Z**. Then re-measure, take the operator checkpoint (D-32) and land it with the adapters as one commit. Todo `2026-10-03-sveltekit-3-held-by-the-age-rule.md` |
+| `@sveltejs/adapter-node` (frontend) | **5.5.7** (169-05) | 6.0.0 (2026-10-01T17:24:31Z; 2.06 d old at the 169-12 re-measurement; the only 6.x) | **New major line inside the 30-day window** (169-12 Task 1, `HOLD-AGE`). It moves with Kit 3 (D-15 step 2) | D-03, D-15 | **2026-10-31T17:24:31Z**, the latest of the three; same todo |
+| `@sveltejs/adapter-static` (docs) | **3.0.10** (169-05) | 4.0.0 (2026-10-01T17:21:55Z; 2.06 d old at the 169-12 re-measurement; the only 4.x) | **New major line inside the 30-day window** (169-12 Task 1, `HOLD-AGE`). It moves with Kit 3 (D-15 step 2) | D-03, D-15 | **2026-10-31T17:21:55Z**; same todo |
 | `vite` | **8.3.1** (catalog `^8.3.1`; 169-05) | 8.3.2 (2026-10-01T10:17Z, 2.11 d old on 2026-10-03) | Inside the 7-day window | D-03 | 8.3.2 clears 2026-10-08T10:17Z |
 | `supabase` (CLI) + the six `setup-cli` `version:` pins | **2.118.0** (catalog `^2.118.0`; 169-06, `cb14c57d2`) | 2.119.0 (2026-09-30T21:36Z, 2.66 d old on 2026-10-03) | Inside the 7-day window. The CLI and the CI pins must move together (`rpcNullabilityGate.test.ts`), and a CLI move changes the service images and the type generator, so 2.119.0 needs its own db:types / pgTAP / E2E pass | D-03, D-10 | 2.119.0 clears 2026-10-07T21:36Z |
 | `nodemailer` (Deno `npm:` import in `send-email/index.ts`) | **6.9.10** (unchanged; 6 high advisories, § 2) | 10.0.x (10.0.0 published 2026-09-04T07:45:32Z, 29.28 d old on 2026-10-03; 10.0.11 6.27 d old) | **New major inside the 30-day window.** Every older line still carries an open high advisory (GHSA-v53p-9fqp-m79j covers `<= 10.0.5`), so PROH-169-16 says wait rather than take 6.10 / 7 / 8 / 9. supabase-js and jose were pinned without it. DEPS-09 stays Pending | D-03, D-09, PROH-169-16 | 10.0.0 clears 2026-10-04T07:45:32Z and 10.0.11 clears 2026-10-04T07:50:47Z. Resume steps in todo `2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md` |
@@ -2443,6 +2477,9 @@ unverified_secrets: 0`. CI's `secret-scan` agreed (§ 4).
   loader, which Vite plans to make the default in a later major. The fix needs `.ts` import extensions, and with
   them `allowImportingTsExtensions`, in the tsconfig that type-checks the config. It is a small config change to
   make at the next Vite major or in 169-12.
+  **Carried forward 2026-10-03 (169-12):** Kit 3 is held (§ 3), so this item now sits under "Related item" in
+  `2026-10-03-sveltekit-3-held-by-the-age-rule.md`. It should land next to the Kit 3 migration, which rewrites the
+  same config files. Nothing was changed here.
 
 - **RESOLVED 2026-10-03 (option A, operator in chat) — was: DECISION NEEDED — the PG17 SQL lint red (169-06 Task 2, § 6).** Applied as `f1ac8164a` (STABLE in both SQL files) and `bfdc1afc3` (local `major_version = 17`); the local stack runs Postgres 17.6. See § 6 (operator rulings). Original entry: On the PG17 image, `yarn db:lint:sql` fails on
   `public.is_valid_choice_id`: it is declared IMMUTABLE but calls the STABLE `jsonb_agg` / `jsonb_build_array`. The
