@@ -220,7 +220,10 @@ export class Condenser {
         tokens: {
           totalTokens: totalTokens.totalTokens,
           inputTokens: totalTokens.inputTokens,
-          outputTokens: totalTokens.outputTokens
+          outputTokens: totalTokens.outputTokens,
+          // The per-call records keep only the totals, so the breakdown is unknown here
+          inputTokenDetails: { noCacheTokens: undefined, cacheReadTokens: undefined, cacheWriteTokens: undefined },
+          outputTokenDetails: { textTokens: undefined, reasoningTokens: undefined }
         }
       },
       success: true,
