@@ -308,6 +308,86 @@ describe('LLMProvider', () => {
       expect(result.object).toEqual({ name: 'Test' });
     });
 
+    it('should forward instructions to the SDK alongside the messages', async () => {
+      mockGenerateObject.mockResolvedValueOnce({
+        object: { name: 'Test' },
+        usage: makeUsage(100, 50),
+        finishReason: 'stop' as const,
+        reasoning: undefined,
+        warnings: undefined,
+        request: {} as never,
+        response: {} as never,
+        providerMetadata: undefined,
+        toJsonResponse: vi.fn()
+      });
+
+      const messages = [{ role: 'user' as const, content: 'The comments to condense.' }];
+      await provider.generateObject({
+        modelConfig: { primary: 'gpt-4o-mini' },
+        schema: z.object({ name: z.string() }),
+        instructions: 'Condense these arguments.',
+        messages
+      });
+
+      expect(mockGenerateObject).toHaveBeenCalledWith(
+        expect.objectContaining({
+          instructions: 'Condense these arguments.',
+          messages,
+          allowSystemInMessages: false
+        })
+      );
+    });
+
+    it('should forward the deprecated system option as instructions', async () => {
+      mockGenerateObject.mockResolvedValueOnce({
+        object: { name: 'Test' },
+        usage: makeUsage(100, 50),
+        finishReason: 'stop' as const,
+        reasoning: undefined,
+        warnings: undefined,
+        request: {} as never,
+        response: {} as never,
+        providerMetadata: undefined,
+        toJsonResponse: vi.fn()
+      });
+
+      await provider.generateObject({
+        modelConfig: { primary: 'gpt-4o-mini' },
+        schema: z.object({ name: z.string() }),
+        system: 'Condense these arguments.',
+        messages: [{ role: 'user' as const, content: 'The comments to condense.' }]
+      });
+
+      expect(mockGenerateObject).toHaveBeenCalledWith(
+        expect.objectContaining({ instructions: 'Condense these arguments.' })
+      );
+    });
+
+    it('should forward the prompt form instead of replacing it with an empty message list', async () => {
+      mockGenerateObject.mockResolvedValueOnce({
+        object: { name: 'Test' },
+        usage: makeUsage(100, 50),
+        finishReason: 'stop' as const,
+        reasoning: undefined,
+        warnings: undefined,
+        request: {} as never,
+        response: {} as never,
+        providerMetadata: undefined,
+        toJsonResponse: vi.fn()
+      });
+
+      await provider.generateObject({
+        modelConfig: { primary: 'gpt-4o-mini' },
+        schema: z.object({ name: z.string() }),
+        instructions: 'Answer briefly.',
+        prompt: 'What is the capital of France?'
+      });
+
+      const [call] = mockGenerateObject.mock.calls[0];
+      expect(call).toMatchObject({ instructions: 'Answer briefly.', prompt: 'What is the capital of France?' });
+      expect(call).not.toHaveProperty('messages');
+    });
+
     it('should retry on validation failures up to validationRetries limit', async () => {
       const validationError = new Error('Validation failed');
       mockNoObjectGeneratedErrorIsInstance.mockReturnValue(true);

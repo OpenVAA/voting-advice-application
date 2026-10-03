@@ -72,7 +72,9 @@ export class LLMProvider {
         const result = await generateObject({
           model: this.provider.languageModel(model),
           schema: options.schema,
-          messages: options.messages ?? [],
+          // Forward every prompt field the options type admits: `system` is the SDK's deprecated alias of `instructions`, and `prompt` and `messages` are mutually exclusive.
+          instructions: options.instructions ?? options.system,
+          ...(options.prompt !== undefined ? { prompt: options.prompt } : { messages: options.messages ?? [] }),
           // The SDK rejects `role: 'system'` entries in `messages` unless this is set. Keep that safe default and let each caller opt in explicitly, so a caller that forwards a client-supplied message array never inherits the opt-in.
           allowSystemInMessages: options.allowSystemInMessages ?? false,
           temperature: options.temperature,
