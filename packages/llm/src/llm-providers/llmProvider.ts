@@ -73,9 +73,8 @@ export class LLMProvider {
           model: this.provider.languageModel(model),
           schema: options.schema,
           messages: options.messages ?? [],
-          // The callers compose these messages server-side from prompt templates and send the prompt as a system
-          // message. The SDK rejects system messages in `messages` unless this is set.
-          allowSystemInMessages: true,
+          // Callers build these messages server-side from prompt templates, with the prompt as a system message.
+          allowSystemInMessages: true, // The SDK rejects system messages in `messages` unless this is set.
           temperature: options.temperature,
           maxRetries: options.maxRetries ?? 3 // Retries for network errors
         });
