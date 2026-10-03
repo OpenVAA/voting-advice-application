@@ -211,6 +211,7 @@ status: complete
 
 ## Operator follow-ups (EVIDENCE § 7)
 
+- **D-14 bank-auth gate on PG17: now observed (post-gate, no action needed).** The phase's earlier bank-auth 3x runs, at `cce9b5b16`, were on Postgres 15. After the phase gate, both projects were re-run 3x on PG17 (`show server_version` 17.6) at HEAD `5b0f3a498`, whose code is identical to `be000f31a`. The procedure was 169-07's. `bank-auth` passed 8/8 three times, and `bank-auth-journey` passed 131/131 three times, each with 0 failed, 0 flaky and 0 did-not-run. Artifacts: `tests/e2e-runs/169-pg17-bankauth{,-journey}-{1,2,3}`; details in EVIDENCE § 4, "169 post-gate: bank-auth 3x on PG17". The stack's default function env was restored afterwards.
 - **nodemailer 10 Edge pin**: apply the todo on or after 2026-10-04T07:51Z. This hold is the only reason DEPS-09 is still Pending.
 - **Deno audit blind spot**: `yarn audit:deps` cannot see the Edge Functions' `npm:` imports, so it exits 0 while `send-email` runs a nodemailer with 6 high advisories. Todo `…-deno-edge-imports-invisible-to-audit-deps.md`.
 - **Render runs Node 24 from the next deploy.** Confirm the service is Docker-runtime and watch the first deploy. Rollback is a redeploy. ssr 0.12 reads 0.9 cookies, so the deploy should not sign anyone out. Todo `…-render-node-24-deploy-watch.md`.

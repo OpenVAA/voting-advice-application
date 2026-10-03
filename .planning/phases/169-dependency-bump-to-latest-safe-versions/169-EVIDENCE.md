@@ -1404,6 +1404,58 @@ the close-out; nothing was committed between the steps, and the working tree was
   `summary.json`: **total 171, passed 171, failed 0, flaky 0, skipped 0, didNotRun 0**. No listener left on 5273.
   The cardinal rule holds on the first attempt; no re-run, no isolation run was needed.
 
+### 169 post-gate: bank-auth 3x on PG17
+
+D-14 asks for the bank-auth E2E 3x on the Postgres 17 stack. The only 3x runs in the phase so far
+(`169-07-bankauth-{1,2,3}`, `169-07-bankauth-journey-{1,2,3}`) ran at `cce9b5b16`, before 169-06's PG17 switch landed,
+on **Postgres 15**. This subsection records the same gate on PG17.
+
+- **HEAD `5b0f3a4986a192b74468ec5cbcb813fa4256fa9c`** for every run (each run's `head` file). Its code is identical to
+  the phase-gate head `be000f31a`: `git diff --stat be000f31a 5b0f3a498 -- . ':!.planning'` is empty.
+- **`show server_version` → `17.6`** on `supabase_db_openvaa-local` (image `public.ecr.aws/supabase/postgres:17.6.1.171`).
+  It was read before the baseline reset, after it, and again after the stack was restored.
+- **Procedure:** the same as 169-07, step for step (2026-10-03T19:38Z–19:56Z).
+  - One baseline `yarn db:reset`, exit 0. `storage.buckets` then listed `private-assets` and `public-assets`, and
+    `/storage/v1/status` answered 200.
+  - The test JWKS (`sigPubJwk`) was served on 8777 (`GET /jwks` 200).
+  - The three env files were generated from `testKeys.ts` and `DEFAULT_TOKEN_OPTS`, into the session scratchpad
+    only. They are byte-identical to 169-07's (`cmp`).
+  - `supabase functions serve --no-verify-jwt --env-file …` ran with CLI 2.118.0 and edge-runtime 1.76.2.
+  - Each run went through `tests/scripts/e2e-run.sh --no-db-reset --project <p>` with `PLAYWRIGHT_BANK_AUTH=1` and
+    `FRONTEND_PORT=5273`. The wrapper spawns and kills its own dev server, so every run had a fresh one.
+  - The journey shell also exported `PUBLIC_PROJECT_ID=…0e2` and sourced the journey IdP env.
+  - Each project ran three times in a row, and `summary.json` was derived with `tests/scripts/e2e-evidence.mjs`.
+  - The Edge env was read back from the running container by key before each project:
+
+  | Project | Edge env (read back) | Run | Window (UTC) | total / passed / failed / flaky / skipped / did-not-run | Preflight OK / failed |
+  |---|---|---|---|---|---|
+  | `bank-auth` | issuer `https://test-idp.example.com`, project `…0e2`, `SITE_URL` `http://127.0.0.1:5273`, JWKS `http://host.docker.internal:8777/jwks` | `tests/e2e-runs/169-pg17-bankauth-1` | 19:40:41Z–19:40:56Z | 8 / 8 / 0 / 0 / 0 / 0 | 1 / 0 |
+  | | | `tests/e2e-runs/169-pg17-bankauth-2` | 19:40:56Z–19:41:10Z | 8 / 8 / 0 / 0 / 0 / 0 | 1 / 0 |
+  | | | `tests/e2e-runs/169-pg17-bankauth-3` | 19:41:10Z–19:41:24Z | 8 / 8 / 0 / 0 / 0 / 0 | 1 / 0 |
+  | `bank-auth-journey` | issuer `https://127.0.0.1:9443`, client `test-client-id`, same project, `SITE_URL` and JWKS | `tests/e2e-runs/169-pg17-bankauth-journey-1` | 19:41:54Z–19:45:58Z | 131 / 131 / 0 / 0 / 0 / 0 | 1 / 0 |
+  | | | `tests/e2e-runs/169-pg17-bankauth-journey-2` | 19:45:58Z–19:50:01Z | 131 / 131 / 0 / 0 / 0 / 0 | 1 / 0 |
+  | | | `tests/e2e-runs/169-pg17-bankauth-journey-3` | 19:50:01Z–19:54:07Z | 131 / 131 / 0 / 0 / 0 / 0 | 1 / 0 |
+
+  - **Verdict: PASS x3 for both projects.** Every wrapper and Playwright exit was 0. No re-run and no isolation run
+    was needed.
+  - Every `bank-auth` run passed these three tests, which exercise the jose 6 decrypt / verify / create path on PG17:
+    - "should create candidate via identity-callback Edge Function (Idura sub-based identity)" (the
+      keys-configured create path);
+    - "should return session with magic link when candidate is created";
+    - "should reject an id_token encrypted with a mismatched (wrong) decryption key".
+  - Every journey run passed "full bank-auth self-registration journey through to authenticated candidate", its
+    setup and teardown, and the whole perm serial chain. `ENOSPC` was 0 in each `devserver.log`, and the
+    journey-phase function log has 0 error lines.
+- **After the runs:**
+  - The function server and the JWKS server were stopped. Ports 5273, 8777 and 9443 have no listener. No `vite.js
+    dev`, mock issuer or `functions serve` process is alive.
+  - The stack's default function env was restored with `yarn db:stop && yarn db:start` (both exit 0). Read back by
+    key: issuer `https://openvaa.test.idura.broker`, project `…0001`, `SITE_URL` `http://127.0.0.1:5173`.
+  - Orphans, through psql: `@test.openvaa.local` users 0, `@bank-auth.placeholder` users 0, and E2E-project
+    (`…0e2`) candidates, organizations and nominations 0.
+  - Leak check: `git status --porcelain` lists no env file and nothing under `functions/`.
+  - Docker was not restarted and nothing was pruned. Only `*_openvaa-local` containers were touched.
+
 ## 5. Negative controls
 
 ### Operator rulings 2026-10-03 (between 169-07 and 169-08)
