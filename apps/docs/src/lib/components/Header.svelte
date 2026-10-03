@@ -28,7 +28,7 @@
             <li>
               <a
                 href={firstChild}
-                class="btn text-lg btn-ghost data-active:font-bold data-active:text-primary"
+                class="btn btn-ghost text-lg data-active:font-bold data-active:text-primary"
                 data-active={isActive || undefined}>
                 {section.title}
               </a>
