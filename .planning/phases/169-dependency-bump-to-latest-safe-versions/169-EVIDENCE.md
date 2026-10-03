@@ -263,6 +263,7 @@ d). The swap removed 91 package versions that only `eslint-plugin-import` pulled
 | `braces` | 3.0.3 | none published | No fixed version exists (GHSA-vfj7-8cjw-p6xm covers `<=3.0.3`; 3.0.3 is the latest). Accepted in the baseline with a rationale (§ 7) | D-02 (baseline keeps no-fix rows), D-05 | when `braces` publishes a fix; or once `vite-plugin-restart` (169-05) and `@changesets/cli` 2's `micromatch` path (169-10) are both gone, the row goes stale |
 | `@types/node` | **24.19.0** (catalog `^24.19.0`; 169-02, `968113336`) | 26.6.3 / 26.6.4 (`latest`), 25.x; 24.19.1 (1.4 d old on 2026-10-03) | **Types track the runtime major** (Node 24 at every pin site). 24.19.1 is inside the 7-day window | D-11, R3, D-03 | when the runtime moves to a newer major; 24.19.1 clears 2026-10-08T22:38Z |
 | `typescript` | **6.0.3** (catalog `^6.0.3`; 169-02, `ebeaafa5c`) | 7.0.2 (2026-07-08, x.0.0 86.7 d old — the age rule alone would admit it) | Blocking peers measured 2026-10-03: `@typescript-eslint/eslint-plugin` / `@typescript-eslint/parser` / `typescript-eslint` 8.70.1 `typescript: >=4.8.4 <6.1.0` (8.71.0, the newest, is inside the 7-day window); `svelte-check` 4.7.6 `^5.0.0 \|\| ^6.0.0`; `@sveltejs/kit@3` `typescript: ^6.0.0`. 6.0.3 is the newest 6.x (6.0.0 was never published) | D-16 | typescript-eslint and svelte-check admit 7 (and Kit 3's peer, once Kit 3 lands) |
+| `eslint`, `@eslint/js` | **9.39.5** (catalog `^9.39.2` / `^9.39.1`, unchanged) | 10.11.0 / 10.0.1 (age rule admits both) | **Upstream false positive.** ESLint 10's recommended `no-useless-assignment` reports every write-only `$bindable` prop (3 sites: `OpinionQuestionInput.svelte` `valid`, `Video.svelte` `mode`, `EntityList.svelte` `itemsShown`). eslint-plugin-svelte#1478 has been open since 2026-02-23 and 3.23.0 is the newest release. PROH-169-07 forbids disabling the rule, and a dummy read would bend the code. One real `no-unassigned-vars` defect (`Layout.svelte` `drawerOpenElement`, the drawer focus return is never wired) needs a behaviour decision. The 15 other ESLint-10 findings are fixed (`14b62f26c`). The config-lookup flag stays at all 19 sites, because ESLint 9 needs it | D-06, D-17, PROH-169-07 | eslint-plugin-svelte#1478 fixed in a release at least 7 days old, or an operator overrule (todo `2026-10-03-eslint-10-held-on-bindable-no-useless-assignment.md`, options A/B) |
 
 ## 4. Gate runs
 
@@ -644,6 +645,102 @@ Direct-dependency resolutions that moved (declared range: before → after):
 Not moved although declared: the excluded set and the AI SDK family (above), and `eslint-plugin-svelte` ^2.46.1
 (frontend; 2.46.1 is already the newest 2.x).
 
+### 169-03 Task 2 — `eslint-plugin-svelte` 3, the FlatCompat removal, the ESLint 10 attempt
+
+Logs and JSON: `tests/e2e-runs/169-gates/03/t2*`.
+
+**Commit A `51e22ea78` (`eslint-plugin-svelte` 3.23.0 through the catalog).**
+- Catalog `^2.46.1` → `^3.23.0`; `apps/docs` `^3.13.1` → `catalog:`; the frontend spread goes from
+  `svelte.configs['flat/prettier']` to `svelte.configs.prettier`.
+- `yarn why eslint-plugin-svelte` → only `3.23.0`, for both apps.
+- The install removed 8 versions (`eslint-plugin-svelte` 2.46.1, `eslint-compat-utils`, `espree` 9 …) and added no
+  package name.
+- Frontend findings (`eslint --format json src/` from `apps/frontend`, normalised to `file / severity / rule /
+  message`):
+  - before: 849 files, 1 finding (`candidateContext.svelte.test.ts` warning `unused-imports/no-unused-vars`);
+  - after: 849 files, the same 1 finding (`diff` exit 0).
+- Docs `eslint .`: exit 0 before and after.
+
+**Commit B `087697975` (no FlatCompat).**
+- `compat.extends('eslint:recommended', 'plugin:@typescript-eslint/recommended', 'prettier')` is replaced, in
+  that order, by `js.configs.recommended`, `...typescriptEslint.configs['flat/recommended']` and
+  `eslint-config-prettier`'s default export.
+- Removed: the `FlatCompat` import, `compat`, and the `path` / `fileURLToPath` / `__dirname` setup.
+- `@eslint/eslintrc` is removed from the catalog and from `packages/shared-config/package.json`, the only
+  manifest that declared it. On ESLint 9 it stays in the lockfile as ESLint's own dependency.
+- `--print-config` before vs after:
+
+| File (linted from its workspace) | Rules before | Rules after | Rule differences (severity-normalised) | Other keys |
+|---|---|---|---|---|
+| `packages/core/src/index.ts` | 460 | 460 | 0 | identical |
+| `apps/frontend/src/lib/utils/components.ts` | 472 | 472 | 0 | identical |
+| `apps/frontend/src/lib/components/alert/Alert.svelte` | 470 | 470 | 0 | identical |
+| `tests/tests/utils/selectElection.ts` | 499 | 499 | 0 | identical |
+| `apps/docs/src/routes/+layout.svelte` | 470 | 470 | 0 | identical |
+
+- `TURBO_FORCE=true yarn lint:check` → 0, the same 17 findings (`diff` exit 0).
+- Planted proof `import-x` → 4/4 fired.
+
+**Commit C — ESLint 10: attempted, measured, held (§ 3).**
+
+Peer ranges at the resolved versions (`npm view <pkg>@<v> peerDependencies`, 2026-10-03). All admit ESLint 10:
+
+| Package@resolved | `eslint` peer |
+|---|---|
+| `@typescript-eslint/eslint-plugin`, `parser`, `utils` @8.70.1 | `^8.57.0 \|\| ^9.0.0 \|\| ^10.0.0` |
+| `eslint-plugin-unused-imports@4.4.1` | `^10.0.0 \|\| ^9.0.0 \|\| ^8.0.0` |
+| `eslint-plugin-playwright@2.12.0` | `>=8.40.0` |
+| `eslint-config-prettier@10.1.8` | `>=7.0.0` |
+| `eslint-plugin-svelte@3.23.0` | `^8.57.1 \|\| ^9.0.0 \|\| ^10.0.0` |
+| `svelte-eslint-parser@1.8.1` | (no eslint peer) |
+| `eslint-plugin-import-x@4.17.1` | `^8.57.0 \|\| ^9.0.0 \|\| ^10.0.0` |
+| `eslint-plugin-simple-import-sort@12.1.1` / `@14.0.0` | `>=5.0.0` |
+| `@eslint/js@10.0.1` | `^10.0.0` |
+
+The attempt in the working tree:
+- Catalog `eslint ^10.11.0`, `@eslint/js ^10.0.1`; `yarn why eslint` → 6 × `10.11.0`.
+- Removed the flag at all 19 sites: root `lint:fix` / `lint:check`, 11 workspace `lint` scripts,
+  `.lintstagedrc.json`, the 4 guard `new ESLint()` calls and `packages/README.md`.
+- Rewrote the guard docblocks.
+- New lockfile names (9): `@cacheable/memory`, `@cacheable/utils`, `@keyv/bigmap`, `@keyv/serialize`,
+  `@types/esrecurse`, `cacheable`, `hashery`, `hookified`, `qified`. Legitimacy: 6 OK, 3 SUS `too-new` only
+  (their `latest`); the resolved versions are 97–441 d old; no postinstall (`t2c-legit.json`).
+
+Results on ESLint 10.11.0:
+- Planted proof `import-x` → 4/4 fired (no flag passed).
+- `yarn workspace @openvaa/frontend vitest run src/lib/_guards/` → 0 (5 files, 390 tests).
+- `turbo run lint --continue` + `eslint tests` → **19 errors** from the new recommended rules:
+
+| File | Rule | Disposition |
+|---|---|---|
+| `packages/dev-seed/src/cli/resolve-template.ts` (JSON parse, module import) ×2 | `preserve-caught-error` | fixed: `{ cause: err }` |
+| `packages/dev-seed/src/writer.ts` (portrait assets) | `preserve-caught-error` | fixed: `{ cause: err }` |
+| `packages/question-info/src/core/infoGeneration.ts` `exampleOutput` | `no-useless-assignment` | fixed: declared without a dead initial value |
+| `packages/question-info/src/core/infoGeneration.ts` (outer catch) | `preserve-caught-error` | fixed: `{ cause: error }` |
+| `packages/argument-condensation/src/core/condensation/condenser.ts` ×2 | `preserve-caught-error` | fixed: `{ cause: error }` |
+| `packages/argument-condensation/src/core/utils/condensation/calculateLLMCallCounts.ts` `llmCallCount` | `no-useless-assignment` | fixed: every `switch` arm assigns or throws |
+| `apps/frontend/src/lib/contexts/tests/noDataRootDerivedAlias.test.ts` | `preserve-caught-error` | fixed: `{ cause }` |
+| `apps/frontend/src/lib/layouts/tests/noRelativeLayoutImports.test.ts` | `preserve-caught-error` | fixed: `{ cause }` |
+| `apps/frontend/src/lib/server/admin/requireAdminIdentity.ts` `administersProject` | `no-useless-assignment` | fixed: `try` and `catch` both assign |
+| `apps/frontend/src/lib/utils/color/PreviewColorContrast.svelte` `parsedColor`, `bgLum` | `no-useless-assignment` | fixed: both branches assign |
+| `tests/tests/support/preflight.ts` `lastStatus`, `lastError` | `no-useless-assignment` | fixed: every loop path assigns before the read |
+| `apps/frontend/src/lib/components/questions/OpinionQuestionInput.svelte` `valid` | `no-useless-assignment` | **false positive**: write-only `$bindable` (eslint-plugin-svelte#1478) → hold |
+| `apps/frontend/src/lib/components/video/Video.svelte` `mode` | `no-useless-assignment` | **false positive**, same → hold |
+| `apps/frontend/src/lib/dynamic-components/entityList/EntityList.svelte` `itemsShown` | `no-useless-assignment` | **false positive**, same → hold |
+| `apps/frontend/src/lib/layouts/main/Layout.svelte` `drawerOpenElement` | `no-unassigned-vars` | **real defect**: the drawer focus return is never wired; a behaviour decision → hold, todo |
+
+- After the 15 fixes, the same ESLint 10 run reported exactly the 4 hold rows (`t2c-lint-continue2.log`).
+- No `eslint-env` comment exists in the tree, and none was reported.
+
+Resolution:
+- The 15 fixes landed as `14b62f26c` `fix(lint): …`. On ESLint 9:
+  - `TURBO_FORCE=true yarn lint:check` → 0, with the same 17 findings as the plan's baseline (`diff` exit 0);
+  - `test:unit` for dev-seed (901), question-info (22) and argument-condensation (30) → 0;
+  - the frontend specs for the touched files plus the guards → 0 (420 tests).
+- The ESLint 10 bump, the flag removal and the docblock rewrite were reverted file by file (`git checkout -- <the
+  19 files and yarn.lock>`), and `yarn install` brought back 9.39.5.
+- The attempt's diff is kept locally as `t2c-eslint10-config.patch` (gitignored) for the re-application.
+
 ## 7. Operator follow-ups
 
 - **Review the `braces` baseline row (169-01, `c97bc9898`).** GHSA-vfj7-8cjw-p6xm (id 1240992) was published
@@ -672,6 +769,15 @@ Not moved although declared: the excluded set and the AI SDK family (above), and
   service setting that pins a Node version outside the Dockerfile to 24 (none is expected for a Docker service —
   unverified), and watch the first production deploy after merge. Rollback after that deploy is a redeploy of the
   previous image, not a revert. Not deployed by this phase.
+- **ESLint 10 is held on 9.39.5 (169-03), and needs an operator ruling to land before upstream fixes it.**
+  - What blocks it: three `no-useless-assignment` false positives on write-only `$bindable` props
+    (eslint-plugin-svelte#1478, open).
+  - Option A: wait for the upstream fix.
+  - Option B: overrule PROH-169-07 for one scoped line, `'no-useless-assignment': 'off'` for `**/*.svelte` in
+    the frontend config.
+  - Separately, decide on `Layout.svelte`'s drawer focus return, which ESLint 10's `no-unassigned-vars` showed
+    has never been wired: wire it or delete it.
+  - Todo: `2026-10-03-eslint-10-held-on-bindable-no-useless-assignment.md`.
 
 ## 8. Moderate and low advisories on chosen versions
 
