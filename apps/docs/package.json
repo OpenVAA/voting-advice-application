@@ -34,7 +34,7 @@
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "catalog:",
     "@types/node": "catalog:",
-    "@vitest/browser-playwright": "^4.0.15",
+    "@vitest/browser-playwright": "catalog:",
     "daisyui": "catalog:",
     "eslint": "catalog:",
     "eslint-config-prettier": "catalog:",
@@ -53,6 +53,6 @@
     "typescript": "catalog:",
     "vite": "^7.2.6",
     "vite-plugin-devtools-json": "^1.0.0",
-    "vitest": "^4.0.15"
+    "vitest": "catalog:"
   }
 }

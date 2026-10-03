@@ -84,6 +84,7 @@
     "tsup": "catalog:",
     "tsx": "catalog:",
     "turbo": "^2.8.17",
+    "vite": "catalog:",
     "vitest": "catalog:"
   },
   "engines": {

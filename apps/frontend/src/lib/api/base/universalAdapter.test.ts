@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { UniversalAdapter } from './universalAdapter';
 import { isRefusedResponse } from '../utils/isRefusedResponse';
 import { parseResponse } from '../utils/parseResponse';
+import type { Mock } from 'vitest';
 import type * as ParseResponseModule from '../utils/parseResponse';
 
 // The parser is SPIED, not replaced: every case in this file runs the real implementation. The spy exists so the seam pin below can assert the parser was never INVOKED for a refused response, which is a different property from "an error was produced" and is the one that fails if the response check is deleted, moved after the parse, or made conditional.
@@ -15,10 +16,10 @@ class TestAdapter extends UniversalAdapter {}
 
 describe('UniversalAdapter', () => {
   let adapter: TestAdapter;
-  let mockFetch: ReturnType<typeof vi.fn>;
+  let mockFetch: Mock<typeof fetch>;
 
   beforeEach(() => {
-    mockFetch = vi.fn();
+    mockFetch = vi.fn<typeof fetch>();
     adapter = new TestAdapter({ fetch: mockFetch });
     vi.mocked(parseResponse).mockClear();
   });
@@ -221,7 +222,7 @@ describe('UniversalAdapter', () => {
         init: { headers: { 'X-Custom': 'value' } }
       });
 
-      const callInit = mockFetch.mock.calls[0][1];
+      const callInit = mockFetch.mock.calls[0][1]!;
       expect(callInit.headers).toBeDefined();
     });
   });
@@ -274,7 +275,7 @@ describe('UniversalAdapter', () => {
         body
       });
 
-      const callInit = mockFetch.mock.calls[0][1];
+      const callInit = mockFetch.mock.calls[0][1]!;
       expect(callInit.method).toBe('POST');
       expect(callInit.body).toBe(JSON.stringify(body));
       expect(new Headers(callInit.headers).get('Content-Type')).toBe('application/json');
@@ -290,7 +291,7 @@ describe('UniversalAdapter', () => {
 
       await adapter.post({ url: 'http://openvaa.org/api' });
 
-      const callInit = mockFetch.mock.calls[0][1];
+      const callInit = mockFetch.mock.calls[0][1]!;
       expect(callInit.method).toBe('POST');
       expect(callInit.body).toBeUndefined();
     });
@@ -345,7 +346,7 @@ describe('UniversalAdapter', () => {
 
       await adapter.post({ url: 'http://openvaa.org/api', body });
 
-      const callInit = mockFetch.mock.calls[0][1];
+      const callInit = mockFetch.mock.calls[0][1]!;
       expect(callInit.body).toBe(JSON.stringify(body));
     });
 
@@ -362,7 +363,7 @@ describe('UniversalAdapter', () => {
         init: { headers: { 'X-Custom': 'header' } }
       });
 
-      const callInit = mockFetch.mock.calls[0][1];
+      const callInit = mockFetch.mock.calls[0][1]!;
       expect(callInit.headers).toBeDefined();
     });
   });
@@ -381,7 +382,7 @@ describe('UniversalAdapter', () => {
         body
       });
 
-      const callInit = mockFetch.mock.calls[0][1];
+      const callInit = mockFetch.mock.calls[0][1]!;
       expect(callInit.method).toBe('PUT');
       expect(callInit.body).toBe(JSON.stringify(body));
       expect(result).toEqual({ updated: true });
@@ -503,7 +504,7 @@ describe('UniversalAdapter', () => {
         openRefused = resolve;
       });
 
-      mockFetch.mockImplementation(async (url: string) => {
+      mockFetch.mockImplementation(async (url) => {
         if (String(url).includes('refused')) {
           await refusedGate;
           return refusedResponse;
