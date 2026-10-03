@@ -253,6 +253,14 @@ at 2026-10-03T14:27Z:
 So no 10.x version can be taken on the execution date, and every older line carries an open high advisory (§ 2).
 Per PROH-169-16 the nodemailer pin waits (§ 3).
 
+### 169-08 (group 6) re-measurement, 2026-10-03
+
+`node 169-version-probe.mjs --only @faker-js/faker --node 24.21.0` at 2026-10-03T15:55:51Z:
+
+| Package | Resolved before | Target (published, age) | Target line x.0.0 | Verdict / hold |
+|---|---|---|---|---|
+| `@faker-js/faker` | 8.4.1 (catalog `^8.4.1`; root and `@openvaa/dev-seed` on `catalog:`) | **10.6.0** (2026-08-14, 50.0 d) | 10.0.0 2025-08-24 | major; both rules met. `engines.node` `^20.19.0 \|\| ^22.13.0 \|\| ^23.5.0 \|\| >=24.0.0` admits 24.21.0. No faker release is under 7 days old |
+
 ## 2. Package legitimacy
 
 **Operator approvals (step 0, run before any repository change, 2026-10-03T06:37Z):** the box check printed
@@ -508,6 +516,14 @@ package-legitimacy check --ecosystem npm` (`07/t1-legit.json`). Both installs ra
 
 Older lines are no way out. `nodemailer@9.1.1` and `nodemailer@6.10.1` both still match GHSA-v53p-9fqp-m79j
 (`<= 10.0.5`, first patched in 10.0.6), and each carries other highs too.
+
+### 169-08 (group 6)
+
+- `@faker-js/faker` is not a new lockfile name, and 10.6.0 has no dependencies, so the install added no name to
+  `yarn.lock`. The lockfile diff is the one `@faker-js/faker@npm:^10.6.0` entry (4 insertions, 4 deletions).
+  Installed under `npmMinimalAgeGate: 7d`. RESEARCH § Package Legitimacy Audit lists it as approved (official repo).
+- `gh api "/advisories?ecosystem=npm&affects=@faker-js/faker@10.6.0"` on 2026-10-03: **0** advisories of any
+  severity. 8.4.1 carried GHSA-qxc2-j82w-r537 (high, `helpers.fake` code execution), the accepted baseline row 1158500.
 
 ## 3. Holds
 
@@ -951,6 +967,39 @@ can continue. The A/B/C choice stays with the operator (todo
     and organizations with a null `external_id` 0.
   - Leak check: `git status --porcelain` lists only the new todo. No env file, and nothing under `functions/`.
   - Docker was not restarted, and the other stack was not touched.
+
+### 169-08 — `@faker-js/faker` 10.6.0 (group 6)
+
+| Plan | Label | HEAD | install | dedupe | typecheck | lint | format | check-fe | check-docs | unit | build | audit | docs-links | docs-rq | E2E (total / passed / failed / flaky / did-not-run) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 169-08 | `169-08-group6` (faker 10.6.0, `ctx.ts` comment) | `5c338398f` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | **171 / 171 / 0 / 0 / 0** (`169-e2e/169-08-group6`) |
+
+Notes on `169-08-group6` (2026-10-03T16:00:22Z–16:02:59Z, `tests/e2e-runs/169-gates/169-08-group6/`):
+- `porcelain_lines: 0`, `TURBO_FORCE: true`, Node v24.21.0, Yarn 4.18.1.
+- `01-install`: the only YN0060 left is `zod` against `openai` (169-09's).
+- `04-lint`: 0 errors, 17 warnings. The normalised list (33 lines, `08/lint-norm-after.txt`) is identical to the
+  rulings run's (`rulings/gates-r2-lint-norm.txt`, sorted `diff` exit 0). No new finding, no new disable.
+- `10-audit`: exit 0, `Summary: 0 new advisory(ies) at high+, 1 accepted`. The one remaining accepted finding is
+  `braces` (no fix published). The faker row 1158500 left the findings; the audit lists it, with the other stale rows,
+  as droppable at the next reviewed baseline update (169-13). A high+ finding still remains, so the gate passes on
+  "nothing new", not on an empty audit.
+- `12-docs-rq` (two-base form): every `<ResearchQuote>` span identical to the base; the frozen components identical to
+  the component base.
+
+E2E `169-08-group6` (`bash 169-e2e.sh 169-08-group6`, the full default suite):
+- Docker VM 30.15 GiB free after `docker builder prune -af`.
+- `e2e-run.sh` at HEAD `5c338398f` with `db_reset=true`, Playwright start 2026-10-03T16:04:49Z, 4.5 min.
+- Wrapper exit 0. `summary.json`: **total 171, passed 171, failed 0, flaky 0, skipped 0, didNotRun 0**. The
+  voter-journey Base-6 slider flake did not recur.
+
+Visual gate at `5c338398f`, image `sha256:eff16c30e6f3…` (present locally, not pulled), after `yarn db:reset && yarn
+db:seed --template e2e/base` (143 rows, 30 portraits) and `PUBLIC_PROJECT_ID=…0000e2 yarn workspace @openvaa/frontend
+dev --host 0.0.0.0`:
+- `169-08-visual`: exit 0, 7 expected / 0 unexpected / 0 flaky.
+- `169-08-visual-final`: exit 0, 7 expected / 0 unexpected / 0 flaky.
+- **No visual diff, so no re-baseline** (PROH-169-17 held trivially). This is what § 6 predicts: the visual specs
+  read the `e2e/base` dataset, which is byte-identical on 10.6.0.
+- The dev server was stopped afterwards; no listener is left on 5173 or 5273.
 
 ## 5. Negative controls
 
@@ -1814,6 +1863,67 @@ Evidence files are under `tests/e2e-runs/169-gates/rulings/` (gitignored).
 **Optional R5 — voter-journey Base-6 slider race.** Left deferred, because the cause is still UNCONFIRMED and the
 suggested wait may not fix it. The reasoning is in `deferred-items.md`.
 
+### 169-08 — `@faker-js/faker` 10.6.0 and the seed diff at the same seed (D-20), commit `5c338398f`
+
+**Method.** A scratch script (`tests/e2e-runs/169-08-faker/dump-seed.ts`, gitignored) does what the seed CLI does
+before it writes: `BUILT_IN_TEMPLATES[name]`, `BUILT_IN_OVERRIDES[name]`, `runPipeline(template, overrides)`, then
+`fanOutLocales(rows, template, seed)`. It runs one template per process, as the CLI does, because generators mutate a
+template's `fixed[]` in place. It writes key-sorted JSON plus the per-table row counts, offline (no Writer, no
+database). Both templates run at their own seed, 42. A second `before` run was byte-identical to the first (`cmp`), so
+the instrument itself is reproducible. `diff-seed.mjs` matches rows by index and counts differing leaf values.
+
+**Row counts per table: identical before and after, for both templates.**
+
+| Table | `default` 8.4.1 → 10.6.0 | rows with a changed value | changed leaves | `e2e/base` 8.4.1 → 10.6.0 | changed leaves |
+|---|---|---|---|---|---|
+| elections | 1 → 1 | 0 | 0 | 2 → 2 | 0 |
+| constituency_groups | 1 → 1 | 0 | 0 | 2 → 2 | 0 |
+| constituencies | 5 → 5 | 0 | 0 | 6 → 6 | 0 |
+| organizations | 8 → 8 | 0 | 0 | 5 → 5 | 0 |
+| alliances | 2 → 2 | 0 | 0 | 2 → 2 | 0 |
+| factions | 0 → 0 | 0 | 0 | 0 → 0 | 0 |
+| question_categories | 4 → 4 | 0 | 0 | 8 → 8 | 0 |
+| questions | 26 → 26 | 26 | 126 | 26 → 26 | 0 |
+| candidates | 327 → 327 | 327 | 6 893 | 30 → 30 | 0 |
+| nominations | 377 → 377 | 0 | 0 | 61 → 61 | 0 |
+| app_settings | 1 → 1 | 0 | 0 | 1 → 1 | 0 |
+| accounts, projects, feedback | 0 → 0 | 0 | 0 | 0 → 0 | 0 |
+
+- **`e2e/base` is byte-identical** (sha256 `b8958a28…` before and after). Every row it emits is a fixed row, so no
+  faker value reaches it.
+- **Which templates can change at all.** Every built-in template was run under 10.6.0 at its seed and at seed + 1
+  (`seed-sensitivity.ts`, `seed-sensitivity.txt`). Only `default` changes with the seed. The other 30 (`e2e/base` and
+  every `perm-*` / `show-feedback-survey`) are seed-independent, so the faker major cannot have changed what they
+  write. The E2E suite and the visual gate seed only those templates. `default` is seeded by `yarn db:seed`, the
+  `@probe` spec (excluded from the gate) and the dev-seed integration test.
+- **`default`: what changed** (same seed, new values; Faker 9 moved to a 53-bit Mersenne randomiser):
+  - `candidates.first_name` (326 rows) and `last_name` (325 rows); 325 distinct full names now, 326 before.
+  - `candidates.answersByExternalId.*.value`: 6 242 leaves across the 26 questions (ordinal, categorical and the
+    multiple-choice `seed_q_025` arrays).
+  - `questions.name.{en,fi,sv}` (26 each), `choices[].label.en`, `custom_data.terms[]` content / title / triggers.
+  - The choice count of four `singleChoiceCategorical` questions, which `QuestionsGenerator` draws from faker:
+    `seed_q_018` 5 → 4, `seed_q_019` 3 → 5, `seed_q_020` 3 → 5, `seed_q_021` 3 → 4. This is a value inside a JSONB
+    column, not a row; the table shapes are unchanged.
+- **Three sample differences** (`default`, seed 42):
+  1. `seed_cand_0000` name: `Garnet Wiegand` → `Nikita Crist`.
+  2. `seed_cand_0000` answer to `seed_q_000`: `"4"` → `"1"`.
+  3. `seed_q_000` `name.en`: `Theca virga auctus synagoga tergum patruus patria armarium?` → `Virga synagoga patruus
+     armarium armarium adsum usitas paulatim?`
+- **No call-site migration.** Every faker API dev-seed calls (`person.firstName/lastName`, `company.name/buzzNoun`,
+  `lorem.sentence/word/words`, `word.adjective/noun` with no length options, `number.int/float` with `min`/`max`,
+  `datatype.boolean`, `date.recent/future` with `refDate`, `location.country/state`, `color.rgb`) exists in 10.6.0
+  with the same arguments; `yarn workspace @openvaa/dev-seed typecheck` exit 0. The word module's `'fail'` length
+  strategy does not apply, because no `faker.word.*` call passes a length.
+- **`ctx.ts` comment.** 10.6.0's `FakerOptions` has `seed?: number` (since 10.5.0). Measured: `new Faker({ locale:
+  [en], seed: 42 })` and `new Faker({ locale: [en] }).seed(42)` yield the same sequence. The comment now says so, and
+  that `.seed()` stays because `makeLocaleFaker` and the tests seed the same way. The old text said the option did not
+  exist in v10, which was false for the installed version.
+- **Tests.** `yarn workspace @openvaa/dev-seed test:unit` 66 files / 901 tests pass with **no expectation changed**:
+  the determinism cases hold run to run on 10.6.0, and no unit test pins a generated `default` value. The live
+  `default-template.integration.test.ts` (PG17 local stack) passes 3/3: 327 candidates written, the operation budget
+  met, anon reads OK.
+- **Visual and E2E traces.** None needed: the templates they seed are byte-identical (see § 4 for the runs).
+
 ## 7. Operator follow-ups
 
 - **Review the `braces` baseline row (169-01, `c97bc9898`).** GHSA-vfj7-8cjw-p6xm (id 1240992) was published
@@ -1950,6 +2060,14 @@ suggested wait may not fix it. The reasoning is in `deferred-items.md`.
   calls `setHeaders({ 'cache-control': … })` on a request that also refreshes a session will hit SvelteKit's
   duplicate-header throw. The adapter skips names it has already forwarded, but it cannot know about a route's own
   call.
+
+- **The faker baseline row is now stale (169-08).** `yarn audit:deps` no longer reports 1158500
+  (`@faker-js/faker`, GHSA-qxc2-j82w-r537); `10-audit` says `0 new advisory(ies) at high+, 1 accepted` (`braces`), and
+  lists 1158500 among the accepted rows that could be dropped. The baseline file is unchanged here; 169-13 reconciles
+  it by hand.
+- **`yarn db:seed` (the `default` template) now writes different names, answers and question texts at seed 42
+  (169-08).** Anyone holding screenshots or notes of the default dev dataset will see new values. Row counts are
+  unchanged.
 
 ## 8. Moderate and low advisories on chosen versions
 
