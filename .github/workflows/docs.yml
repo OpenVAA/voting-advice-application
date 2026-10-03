@@ -25,7 +25,7 @@ jobs:
       TURBO_TEAM: ${{ vars.TURBO_TEAM }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
       # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.

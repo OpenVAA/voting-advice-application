@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -83,7 +83,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -125,7 +125,7 @@ jobs:
 
     steps:
       - name: "Checkout Frontend source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
       # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
@@ -193,7 +193,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: "Build the production frontend image (no push)"
         run: docker build --progress=plain --file apps/frontend/Dockerfile --target production --tag openvaa-frontend:ci .
@@ -202,7 +202,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - uses: dorny/paths-filter@v3
         id: changes
@@ -262,7 +262,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - uses: supabase/setup-cli@v1
         with:
@@ -331,7 +331,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
       # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
@@ -379,7 +379,7 @@ jobs:
 
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - uses: supabase/setup-cli@v1
         with:
@@ -477,7 +477,7 @@ jobs:
 
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - uses: supabase/setup-cli@v1
         with:
@@ -527,7 +527,7 @@ jobs:
 
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: "Configure environment"
         run: cp .env.example .env
@@ -610,7 +610,7 @@ jobs:
 
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: "Configure environment"
         run: cp .env.example .env
@@ -693,7 +693,7 @@ jobs:
 
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: "Setup Node.js 22.x (deliberately out of range)"
         uses: actions/setup-node@v4
