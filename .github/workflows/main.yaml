@@ -127,16 +127,17 @@ jobs:
       - name: "Checkout Frontend source code"
         uses: actions/checkout@v4
 
-      - name: Setup Yarn 4.18
-        uses: threeal/setup-yarn-action@v2
-        with:
-          version: 4.18
-
+      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
+      # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
       - name: Setup Node.js 24.21.0
         uses: actions/setup-node@v4
         with:
           node-version: 24.21.0
-          cache: "yarn"
+
+      - name: Setup Yarn 4.18
+        uses: threeal/setup-yarn-action@v2
+        with:
+          version: 4.18
 
       - name: "Install all dependencies"
         run: yarn install --frozen-lockfile
@@ -267,16 +268,17 @@ jobs:
         with:
           version: 2.83.0
 
-      - name: Setup Yarn 4.18
-        uses: threeal/setup-yarn-action@v2
-        with:
-          version: 4.18
-
+      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
+      # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
       - name: Setup Node.js 24.21.0
         uses: actions/setup-node@v4
         with:
           node-version: 24.21.0
-          cache: "yarn"
+
+      - name: Setup Yarn 4.18
+        uses: threeal/setup-yarn-action@v2
+        with:
+          version: 4.18
 
       - name: "Install all dependencies"
         run: yarn install --frozen-lockfile
@@ -331,16 +333,17 @@ jobs:
       - name: "Checkout source code"
         uses: actions/checkout@v4
 
-      - name: Setup Yarn 4.18
-        uses: threeal/setup-yarn-action@v2
-        with:
-          version: 4.18
-
+      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
+      # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
       - name: Setup Node.js 24.21.0
         uses: actions/setup-node@v4
         with:
           node-version: 24.21.0
-          cache: "yarn"
+
+      - name: Setup Yarn 4.18
+        uses: threeal/setup-yarn-action@v2
+        with:
+          version: 4.18
 
       - name: "Install all dependencies"
         run: yarn install --frozen-lockfile
@@ -382,16 +385,17 @@ jobs:
         with:
           version: 2.83.0
 
-      - name: Setup Yarn 4.18
-        uses: threeal/setup-yarn-action@v2
-        with:
-          version: 4.18
-
+      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
+      # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
       - name: Setup Node.js 24.21.0
         uses: actions/setup-node@v4
         with:
           node-version: 24.21.0
-          cache: "yarn"
+
+      - name: Setup Yarn 4.18
+        uses: threeal/setup-yarn-action@v2
+        with:
+          version: 4.18
 
       - name: "Install all dependencies"
         run: yarn install --frozen-lockfile
@@ -479,16 +483,17 @@ jobs:
         with:
           version: 2.83.0
 
-      - name: Setup Yarn 4.18
-        uses: threeal/setup-yarn-action@v2
-        with:
-          version: 4.18
-
+      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
+      # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
       - name: Setup Node.js 24.21.0
         uses: actions/setup-node@v4
         with:
           node-version: 24.21.0
-          cache: "yarn"
+
+      - name: Setup Yarn 4.18
+        uses: threeal/setup-yarn-action@v2
+        with:
+          version: 4.18
 
       - name: "Install all dependencies"
         run: yarn install --frozen-lockfile
@@ -531,16 +536,17 @@ jobs:
         with:
           version: 2.83.0
 
-      - name: Setup Yarn 4.18
-        uses: threeal/setup-yarn-action@v2
-        with:
-          version: 4.18
-
+      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
+      # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
       - name: Setup Node.js 24.21.0
         uses: actions/setup-node@v4
         with:
           node-version: 24.21.0
-          cache: "yarn"
+
+      - name: Setup Yarn 4.18
+        uses: threeal/setup-yarn-action@v2
+        with:
+          version: 4.18
 
       - name: "Install yarn dependencies"
         run: yarn install --frozen-lockfile
@@ -613,16 +619,17 @@ jobs:
         with:
           version: 2.83.0
 
-      - name: Setup Yarn 4.18
-        uses: threeal/setup-yarn-action@v2
-        with:
-          version: 4.18
-
+      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
+      # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
       - name: Setup Node.js 24.21.0
         uses: actions/setup-node@v4
         with:
           node-version: 24.21.0
-          cache: "yarn"
+
+      - name: Setup Yarn 4.18
+        uses: threeal/setup-yarn-action@v2
+        with:
+          version: 4.18
 
       - name: "Install yarn dependencies"
         run: yarn install --frozen-lockfile
