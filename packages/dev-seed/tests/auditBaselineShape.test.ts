@@ -14,9 +14,10 @@
  * Same reason as its siblings `ciTypecheckGate.test.ts` and `ciSecretScanFlags.test.ts`, whose shape this file follows: `yarn test:unit` is `turbo run test:unit`, so a repo-meta spec needs a package to run in, and this package already reads repo-root files from its tests. Read `ciTypecheckGate.test.ts`'s docblock for the fuller version.
  */
 
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -58,13 +59,33 @@ interface Baseline {
 const baseline = JSON.parse(readFileSync(BASELINE_PATH, 'utf8')) as Baseline;
 const yarnrc = readFileSync(YARNRC_PATH, 'utf8');
 
+/** One finished `yarn npm audit --json` run: the exit status (`null` when a signal killed it) and its stdout. */
+interface AuditRun {
+  status: number | null;
+  stdout: string;
+}
+
+type AuditRunKind =
+  | { kind: 'clean' }
+  | { kind: 'did-not-run'; status: number | null }
+  | { kind: 'findings'; lines: Array<string> };
+
+interface AuditRunModule {
+  classifyAuditRun: (run: AuditRun) => AuditRunKind;
+}
+
+const AUDIT_RUN_PATH = resolve(REPO_ROOT, 'scripts/lib/audit-run.mjs');
+
+function loadAuditRun(): Promise<AuditRunModule> {
+  return import(pathToFileURL(AUDIT_RUN_PATH).href) as Promise<AuditRunModule>;
+}
+
+/** A port nothing listens on, so the audit's registry request is refused at once. */
+const BLOCKED_REGISTRY = 'http://127.0.0.1:9';
+
 describe('security/audit-baseline.json carries what D-L3(a) requires of it', () => {
   it('declares the locked `high` threshold', () => {
     expect(baseline.threshold).toBe('high');
-  });
-
-  it('is not empty, so the assertions below measure something', () => {
-    expect(baseline.accepted.length).toBeGreaterThan(0);
   });
 
   it('gives every accepted advisory a severity from the allowed set', () => {
@@ -100,6 +121,52 @@ describe('security/audit-baseline.json carries what D-L3(a) requires of it', () 
     const bad = baseline.accepted.filter((row) => !row.package || !/^GHSA-/.test(String(row.ghsa)));
     expect(bad.map((row) => `${row.id}: package=${row.package} ghsa=${row.ghsa}`)).toEqual([]);
   });
+});
+
+/**
+ * An empty baseline is legal: once every fixable advisory is fixed, the accepted set can be empty, and every per-row assertion above still holds over zero rows. What must never pass is an audit that did not run. Its stdout is as empty as a clean audit's, so the gate tells the two apart by the audit's own exit status, and these cases pin that classification down.
+ */
+describe('the gate proves the audit ran', () => {
+  it('reads empty output with exit 0 as a clean audit', async () => {
+    const { classifyAuditRun } = await loadAuditRun();
+    expect(classifyAuditRun({ status: 0, stdout: '' })).toEqual({ kind: 'clean' });
+    expect(classifyAuditRun({ status: 0, stdout: ' \n\t\n' })).toEqual({ kind: 'clean' });
+  });
+
+  it('reads empty output with a non-zero exit as an audit that did not run', async () => {
+    const { classifyAuditRun } = await loadAuditRun();
+    expect(classifyAuditRun({ status: 1, stdout: '' })).toEqual({ kind: 'did-not-run', status: 1 });
+  });
+
+  it('reads empty output from an audit killed by a signal as an audit that did not run', async () => {
+    const { classifyAuditRun } = await loadAuditRun();
+    expect(classifyAuditRun({ status: null, stdout: '' })).toEqual({ kind: 'did-not-run', status: null });
+  });
+
+  it('reads NDJSON output as findings and drops blank lines', async () => {
+    const { classifyAuditRun } = await loadAuditRun();
+    const first = '{"value":"a","children":{"ID":1}}';
+    const second = '{"value":"b","children":{"ID":2}}';
+    expect(classifyAuditRun({ status: 1, stdout: `${first}\n\n${second}\n` })).toEqual({
+      kind: 'findings',
+      lines: [first, second]
+    });
+  });
+
+  it('classifies the real audit as did-not-run when the registry is unreachable', async () => {
+    const { classifyAuditRun } = await loadAuditRun();
+    const run = spawnSync('yarn', ['npm', 'audit', '--all', '--recursive', '--severity', 'high', '--json'], {
+      cwd: REPO_ROOT,
+      encoding: 'utf8',
+      env: { ...process.env, YARN_NPM_AUDIT_REGISTRY: BLOCKED_REGISTRY, YARN_HTTP_RETRY: '0' },
+      maxBuffer: 64 * 1024 * 1024
+    });
+    expect(run.error).toBeUndefined();
+    expect(classifyAuditRun({ status: run.status, stdout: run.stdout })).toEqual({
+      kind: 'did-not-run',
+      status: run.status
+    });
+  }, 60_000);
 });
 
 describe('the raw `yarn npm audit` a developer runs by hand stays unfiltered', () => {
