@@ -4,18 +4,18 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 169
 current_phase_name: Dependency Bump to Latest Safe Versions
-current_plan: 3
+current_plan: 4
 status: executing
-stopped_at: Completed 169-02-PLAN.md
-last_updated: "2026-10-03T10:30:23.343Z"
+stopped_at: Completed 169-03-PLAN.md
+last_updated: "2026-10-03T11:03:52.901Z"
 last_activity: 2026-10-03
 last_activity_desc: Phase 169 execution started
-state_head: ecdd0c344e326a2ec72f77ff9f322f13e894a6dd
+state_head: 85e644f6cc0a45efac017297e8a95ef110e6ac9b
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
-  completed_plans: 336
+  completed_plans: 337
   percent: 89
 ---
 
@@ -35,7 +35,7 @@ _(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and P
 Phase: 169 (Dependency Bump to Latest Safe Versions) — EXECUTING
 Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
-Current Plan: 3
+Current Plan: 4
 Total Plans in Phase: 13
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
@@ -819,8 +819,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-10-03T10:30:21.903Z
-Stopped at: Completed 169-02-PLAN.md
+Last session: 2026-10-03T11:03:51.480Z
+Stopped at: Completed 169-03-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -1149,6 +1149,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 168 P08 | 38min | 3 tasks | 26 files |
 | Phase 169 P01 | 40min | 3 tasks | 37 files |
 | Phase 169 P02 | 3h15m | 3 tasks | 20 files |
+| Phase 169 P03 | 32min | 3 tasks | 24 files |
 
 ## Deferred Items
 
@@ -2149,6 +2150,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 169]: 169-02: Node 24.21.0 at every pin site in one commit (77d3ce8bf), engines.node >=24.15.0; measured alone 12/12 gates, image smoke, E2E 171/171
 - [Phase 169]: 169-02: TypeScript 6.0.3 + @types/node 24.19.0; TS 6 types:[] default answered by types:[node] in tsconfig.base.json; TS 7 held on typescript-eslint/svelte-check peers
 - [Phase 169]: 169-02: CI run 37111729145 e2e red = fixed-window race on the slow runner (mechanism UNCONFIRMED); results accordion collapse waits use TIMEOUTS.page (8d91d37f8); CI run 37115289953 12/12 success
+- [Phase 169]: 169-03: ESLint 10 held on 9.39.5 (D-06) — no-useless-assignment false positives on write-only $bindable props (eslint-plugin-svelte#1478) and a never-wired Layout drawer focus return need an operator ruling; 15 real ESLint-10 findings fixed at source (14b62f26c)
+- [Phase 169]: 169-03: eslint-plugin-import-x 4.17.1 replaces eslint-plugin-import (4 rules proven on planted violations before/after and on ESLint 10); unrs-resolver joins the dependenciesMeta build allow-list
 
 ### Quick Tasks Completed
 

@@ -1,10 +1,10 @@
 {
   "version": "1.0",
-  "timestamp": "2026-10-03T10:35:00.000Z",
+  "timestamp": "2026-10-03T11:05:00.000Z",
   "phase": "169",
   "phase_name": "dependency-bump-to-latest-safe-versions",
   "phase_dir": ".planning/phases/169-dependency-bump-to-latest-safe-versions",
-  "plan": 3,
+  "plan": 4,
   "task": 1,
   "total_tasks": 3,
   "status": "ready",
@@ -20,12 +20,18 @@
       "name": "Plan 169-02 (group 1: Yarn 4.18.1, Node 24, @types/node 24, TypeScript 6.0.3; CI run 37115289953 12/12 success)",
       "status": "done",
       "commit": "ecdd0c344"
+    },
+    {
+      "id": 3,
+      "name": "Plan 169-03 (group 2: import-x, eslint-plugin-svelte 3, no FlatCompat, 15 ESLint-10 source fixes, prettier-plugin-svelte 4, prettier-plugin-tailwindcss 0.8.1, simple-import-sort 14; 169-03-group2 12/12; ESLint 10 HELD)",
+      "status": "done",
+      "commit": "85e644f6c"
     }
   ],
   "remaining_tasks": [
     {
       "id": 4,
-      "name": "Plans 169-03 through 169-13 (sequential)",
+      "name": "Plans 169-04 through 169-13 (sequential)",
       "status": "not_started"
     },
     {
@@ -40,6 +46,11 @@
     {
       "action": "Review the hand-added `braces` row in security/audit-baseline.json (no fixed release; added under D-02 by 169-01)",
       "context": "DEPS-02 left Pending until reviewed",
+      "blocking": false
+    },
+    {
+      "action": "Rule on ESLint 10: option A (wait for eslint-plugin-svelte#1478) or option B (scoped '**/*.svelte' no-useless-assignment off, overruling PROH-169-07); and wire or delete Layout.svelte's never-wired drawer focus return",
+      "context": "todo 2026-10-03-eslint-10-held-on-bindable-no-useless-assignment.md; 169-EVIDENCE.md § 3/§ 7; DEPS-04 stays Pending until ESLint 10 lands",
       "blocking": false
     }
   ],
@@ -68,9 +79,14 @@
       "decision": "169-02 CI e2e red (run 37111729145) ruled a CI fixed-window race and fixed forward with the route-transition budget (8d91d37f8); run 37115289953 12/12 success",
       "rationale": "no server request in the failing window; mechanism UNCONFIRMED",
       "phase": "169"
+    },
+    {
+      "decision": "ESLint 10 held on 9.39.5 per D-06 (write-only $bindable no-useless-assignment false positives, eslint-plugin-svelte#1478); config-lookup flag stays; 15 real findings fixed in 14b62f26c",
+      "rationale": "PROH-169-07 forbids disabling the rule; a dummy read would bend code",
+      "phase": "169"
     }
   ],
   "uncommitted_files": [],
-  "next_action": "Continue /gsd-execute-phase 169 from 169-03. Read .planning/phases/169-dependency-bump-to-latest-safe-versions/.continue-here.md first.",
+  "next_action": "Continue /gsd-execute-phase 169 from 169-04 (group 4, test stack, run before group 3). Read .planning/phases/169-dependency-bump-to-latest-safe-versions/.continue-here.md first.",
   "context_notes": "Work only in the -gsd worktree. Node 24.21.0 must be on PATH. Orchestrator hand-drives executors at top level; one gsd-executor per plan, sequential mode."
 }
