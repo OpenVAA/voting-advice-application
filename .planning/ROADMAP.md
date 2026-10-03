@@ -2062,7 +2062,7 @@ Plans:
   3. **`yarn audit:deps` passes**: every row with a published fix is fixed; `security/audit-baseline.json` keeps only no-fix or recorded-hold rows, each with a current note; todo `2026-09-03-dependabot-alert-list-is-stale-against-main.md` is updated and stays pending until v2.15 merges.
   4. Gates: typecheck, lint, svelte-check, unit, pgTAP, production builds (frontend and docs), then the full E2E suite under the cardinal rule.
 
-**Plans**: 6/13 plans executed
+**Plans**: 7/13 plans executed
 
 Plans:
 **Wave 1**
@@ -2084,7 +2084,7 @@ Plans:
 - [x] 169-06-PLAN.md — Group 5a: the Supabase CLI with its CI pins and regenerated types, then local Postgres 15 to 17 as its own commit, pgTAP and E2E after each (wave 6) — CLI 2.118.0 + pins + types done; **local Postgres 17 DEFERRED pending an operator ruling** (todo `2026-10-03-pg17-local-blocked-on-is-valid-choice-id-volatility.md`; blocks 169-13's PG17 gate)
 
 **Wave 7** *(blocked on Wave 6 completion)*
-- [ ] 169-07-PLAN.md — Group 5b: supabase-js and `@supabase/ssr`, then the Deno Edge Function imports, with the auth gates, the full E2E suite and bank-auth 3x (wave 7)
+- [x] 169-07-PLAN.md — Group 5b: supabase-js and `@supabase/ssr`, then the Deno Edge Function imports, with the auth gates, the full E2E suite and bank-auth 3x (wave 7)
 
 **Wave 8** *(blocked on Wave 7 completion)*
 - [ ] 169-08-PLAN.md — Group 6: `@faker-js/faker` 10 with old-vs-new seed output diffed before the bump lands (wave 8)
@@ -2143,7 +2143,7 @@ _(**Recounted 2026-09-29** when the two planning records were merged: the phase 
 | 166. Retire `auth_user_id` — Entity Identity from Grants | 4/4 | Complete    | 2026-10-02 |
 | 167. Origin/main Vestige Cleanup | 6/6 | Complete    | 2026-10-02 |
 | 168. Docs-Site Rewrite — Strapi to Supabase | 9/9 | Complete    | 2026-10-02 |
-| 169. Dependency Bump to Latest Safe Versions | 6/13 | In Progress|  |
+| 169. Dependency Bump to Latest Safe Versions | 7/13 | In Progress|  |
 
 **Shipped milestones:**
 
