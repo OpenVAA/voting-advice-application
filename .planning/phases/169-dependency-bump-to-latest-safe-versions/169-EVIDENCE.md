@@ -204,6 +204,8 @@ Runner: `bash 169-gates.sh <label>` (`TURBO_FORCE=true`; each status read direct
 | 169-01 | `169-01-baseline` (only the age-gate line changed) | `5ed82f437` + `.yarnrc.yml` | 0 | **1** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | **1** | 0 | 0 | — |
 | 169-01 | `169-01-group0-attempt1` (after the refresh + braces row) | `c97bc9898` | 0 | 0 | **2** | **2** | **1** | 0 | 0 | 0 | 0 | 0 | 0 | 0 | — |
 | 169-01 | `169-01-group0` | `54041714e` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | **171 / 171 / 0 / 0 / 0** (`169-e2e/169-01-group0`) |
+| 169-02 | `169-02-node24` (interrupted, see notes) | `77d3ce8bf` | 0 | 0 | 0 | — | — | — | — | — | — | — | — | — | — |
+| 169-02 | `169-02-node24-r2` (the Node 24 commit alone) | `77d3ce8bf` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | **171 / 171 / 0 / 0 / 0** (`169-e2e/169-02-node24`) |
 
 Notes on `169-01-baseline` (2026-10-03T06:43:09Z–06:45:43Z, `tests/e2e-runs/169-gates/169-01-baseline/`):
 
@@ -241,6 +243,58 @@ E2E `169-01-group0` (`bash 169-e2e.sh 169-01-group0`, full default suite): Docke
 2026-10-03T07:10:03Z–07:16:01Z, wrapper exit 0, preflight successes 1 / failures 0. `summary.json`: **total 171,
 passed 171, failed 0, flaky 0, skipped 0, didNotRun 0**. No listener left on 5273. This is the measured-green
 tree 169-02's Node 24 commit is judged against (D-11 attribution).
+
+### 169-02 Task 2 — the Node 24 commit (`77d3ce8bf`), measured alone
+
+**Target.** `https://nodejs.org/dist/index.json`: **24.21.0** (2026-09-07, LTS "Krypton", 26.3 d old; newest
+24.x). `docker pull node:24-alpine` → `node@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1`;
+`docker run --rm node:24-alpine node -v` → `v24.21.0`.
+
+**Host.** Before: `node -v` → v24.14.1, `nvm alias default` → `24` (→ v24.14.1). `nvm install 24.21.0`
+(checksum matched) and `nvm alias default 24.21.0`. A fresh interactive shell with a clean environment
+(`env -i HOME=… PATH=/usr/bin:/bin:/usr/sbin:/sbin zsh -ic 'node -v'`) → `v24.21.0`. Restore command in § 7.
+The executor's own tool shell keeps the PATH it started with, so every 169-02 command from here on ran with
+`~/.nvm/versions/node/v24.21.0/bin` prepended (each gate/E2E log's `env.txt` / `node -v` line shows
+v24.21.0). Observed, not changed: a non-interactive login shell (`zsh -lc`) does not load nvm and resolves
+`/usr/local/bin/node` v22.5.1.
+
+**Sites (population `git grep -n -E "22\.22\.1|node:22|\">=22\"|20\.x"` over the plan's paths).** 10 CI
+`node-version: 22.22.1` + step names → 24.21.0 (main.yaml 8, docs.yml 1, release.yml 1); the negative control's
+rejecting step `"20.x"` → `"22.x"` with its comment ("every 22.x is outside the declared \">=24.15.0\"", "widened
+to admit Node 22"); `FROM node:24-alpine AS base`; `engines.node` `">=24.15.0"` in both manifests; the
+declared-binaries literal; the two `requireAdminIdentity.test.ts` `reason:` comments no longer name a CI-pinned
+Node. Docs prose naming the project's Node major (`git grep -n -i -E "node(\.js)? ?22\b|node 22|nvm use 22"`
+over CLAUDE.md, README.md, apps, packages, docs, tests, plus a wider `node(\.js)?[ @:v-]*(>=)?22|22\.x` sweep):
+**none**. Two hits left as they are: `packages/dev-seed/src/cli/{seed,teardown}.ts` "Node 22+ built-in" — they
+state the minimum Node for `process.loadEnvFile`, not the project's Node. `yarn install` under v24.21.0: lockfile
+unchanged, the allowed builds re-ran (`YN0008 … dependency tree changed`), preinstall `v24.21.0 satisfies
+"engines.node": ">=24.15.0" — OK`. `git show --stat 77d3ce8bf`: 8 files, 30/30 lines, no `yarn.lock`.
+
+**Gate run.** `169-02-node24` (08:05:16Z) stopped after `03-typecheck`: `04-lint` sat for 24 m 44 s in
+`turbo run lint` with `@openvaa/core#lint` and `@openvaa/dev-tools#lint` started and no output, and turbo then
+force-killed both (the executor's session hit a stream-watchdog stall over the same window and the background
+job was lost). Re-tested in isolation under v24.21.0: `TURBO_FORCE=true yarn turbo run lint --filter
+@openvaa/core --filter @openvaa/dev-tools` → exit 0 in 2.4 s. **Cause UNCONFIRMED** (not reproducible; the
+overlap with the session stall is the likely but unproven reason). Re-run from the start as **`169-02-node24-r2`**
+(08:33:15Z–08:36:23Z, node v24.21.0, yarn 4.18.1, HEAD `77d3ce8bf`, porcelain 0): **all twelve gates 0**;
+forced turbo `0 cached` (typecheck 14/14, unit 23/23, build 25/25); audit `0 new advisory(ies) at high+, 6
+accepted`. `04-lint` 43 s.
+
+**Image build and smoke (R6, Pitfall 5).** `docker build --file apps/frontend/Dockerfile --target production
+--tag openvaa-frontend:169-node24 .` → **0** (`tests/e2e-runs/169-gates/02-t2-docker.log`; base
+`node:24-alpine`, in-image Yarn 4.18.1 built `esbuild` ×3, `supabase@npm:2.83.0` and the root workspace, whose
+preinstall guard passed under the image's Node). `docker run --rm openvaa-frontend:169-node24 node -v` →
+**`v24.21.0`** (Yarn 4.18.1, Alpine 3.24.2). With this project's Supabase stack up: `docker run -d --name
+openvaa-169-smoke -p 3169:3000 --env-file .env -e PUBLIC_SUPABASE_URL=http://host.docker.internal:54321
+openvaa-frontend:169-node24` → log `Listening on http://0.0.0.0:3000`; `curl -s -o /dev/null -w '%{http_code}'
+http://localhost:3169/` → **`200`** after 2 s (`<title>Election Compass</title>`); `/fi` 200, `/candidate/login`
+200, `/en/elections` 307; `docker exec … node -v` → v24.21.0; no `error`/`warn` lines in the container log.
+`docker rm -f openvaa-169-smoke` and `docker rmi openvaa-frontend:169-node24` → 0. No env value recorded.
+
+**E2E.** `bash 169-e2e.sh 169-02-node24` (shell on v24.21.0): Docker VM 25.04 GiB free after `docker builder
+prune -af`, port 5273 free; `e2e-run.sh` at HEAD `77d3ce8bf`, `db_reset=true`, 2026-10-03T08:39:58Z–08:46:07Z,
+wrapper exit 0, preflight failures 0 / successes 1. `summary.json`: **total 171, passed 171, failed 0, flaky 0,
+skipped 0, didNotRun 0** — identical to the group-0 tree, so the runtime move changed no E2E outcome.
 
 ## 5. Negative controls
 
@@ -307,6 +361,21 @@ tests/ciDockerImageBuildGate.test.ts` → 0 (3 files, 22 tests); `docker build -
 --target production --tag openvaa-frontend:169-yarn .` → **0** (`02-t1-docker.log`; in the image Yarn 4.18.1
 built exactly `esbuild` ×3, `supabase@npm:2.83.0` and the root workspace, no `YN0004`; image removed after).
 Docker VM free before the build: 23 791 272 KiB (22.7 GiB).
+
+### Node-engine guard binds in both directions (169-02 Task 2, at `77d3ce8bf`)
+
+Log: `tests/e2e-runs/169-gates/02-t2-guard-old.log`.
+
+| Runtime | Command | Exit | Output |
+|---|---|---|---|
+| previous host Node v24.14.1 (`~/.nvm/versions/node/v24.14.1/bin/node`) | `node scripts/assert-node-engine.mjs` | **1** | `assert-node-engine: this Node is v24.14.1, and the root manifest declares "engines.node": ">=24.15.0". Switch to a Node satisfying that range, or change the declared range deliberately.` |
+| v22.22.1 (the old CI pin) | same | **1** | `assert-node-engine: this Node is v22.22.1, …` |
+| pinned v24.21.0 | same | 0 | `assert-node-engine: v24.21.0 satisfies "engines.node": ">=24.15.0" — OK` |
+| pinned v24.21.0 | `node scripts/assert-node-engine.mjs --self-test` | 0 | `assert-node-engine --self-test: 23 cases OK` |
+
+`yarn workspace @openvaa/dev-seed vitest run tests/nodeEngineGate.test.ts tests/assertDeclaredBinariesGate.test.ts
+tests/ciDockerImageBuildGate.test.ts` → 0 (22 tests): the rejecting toolchain's major (22) sits below the declared
+floor (24).
 
 ## 6. Diffs and traces
 
@@ -401,6 +470,16 @@ Not moved although declared: the excluded set and the AI SDK family (above), and
   `globals` import in `@openvaa/shared-config` (167 review WR-02, todo `2026-10-02-declare-globals-in-shared-config.md`
   → 169-10; the refresh moved the hoisted `globals` 15.14.0 → 15.15.0); stale `via` descriptions in the
   baseline (167 review WR-01 → 169-13's rewrite).
+
+- **Dev host Node default (169-02).** `nvm alias default` moved from `24` (→ v24.14.1) to `24.21.0`. Restore with
+  `nvm alias default 24` (or `nvm alias default 24.14.1`). Note that v24.14.1 is now below `engines.node`
+  (`>=24.15.0`), so the preinstall guard refuses installs under it. A non-interactive login shell on this host
+  resolves `/usr/local/bin/node` v22.5.1, which the guard also refuses.
+- **Render runs Node 24 from the next deploy (169-02).** Render builds `apps/frontend/Dockerfile`
+  (`runtime: docker`), whose base is now `node:24-alpine` (v24.21.0 at the pull of 2026-10-03). Change any Render
+  service setting that pins a Node version outside the Dockerfile to 24 (none is expected for a Docker service —
+  unverified), and watch the first production deploy after merge. Rollback after that deploy is a redeploy of the
+  previous image, not a revert. Not deployed by this phase.
 
 ## 8. Moderate and low advisories on chosen versions
 
