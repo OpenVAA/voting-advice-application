@@ -19,7 +19,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
  * 2. `new ESLint({ flags: ['v10_config_lookup_from_file'] })` is MANDATORY. It loads the
  *    real `apps/frontend/eslint.config.mjs` and matches `apps/frontend/package.json`'s lint script exactly; omitting it risks config-resolution drift, and the spec would then be measuring a different config than the gate does.
  * 3. Filter messages by `ruleId` — never by a bare `errorCount`. The violating fixture
- *    also trips an unrelated `import/newline-after-import` rule, so a count assertion would pass for the wrong reason.
+ *    also trips an unrelated `import-x/newline-after-import` rule, so a count assertion would pass for the wrong reason.
  * 4. TWO bans share `ruleId === 'no-restricted-syntax'`: the dynamic
  *    `svelte/store` closure and the inherited TS-enum ban. Assertions therefore disambiguate on the MESSAGE SUBSTRING — 'svelte/store is banned' for the dynamic cases, 'const assertion' for the enum case — and NEVER on line or column. Line and column move with any edit; the messages are the contract.
  */

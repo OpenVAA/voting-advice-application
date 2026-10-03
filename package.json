@@ -75,7 +75,6 @@
     "concurrently": "^9.0.0",
     "dotenv": "catalog:",
     "eslint": "catalog:",
-    "eslint-plugin-import": "catalog:",
     "eslint-plugin-playwright": "^2.9.0",
     "eslint-plugin-simple-import-sort": "catalog:",
     "glob": "^11.0.0",
@@ -103,6 +102,9 @@
       "built": true
     },
     "supabase": {
+      "built": true
+    },
+    "unrs-resolver": {
       "built": true
     }
   },
