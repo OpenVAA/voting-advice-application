@@ -245,7 +245,7 @@ _(**Registered 2026-10-01 at planning** from `.planning/phases/169-dependency-bu
 - [x] **DEPS-07**: Supabase CLI: the catalog entry and all six `setup-cli` pins at one version; `database.ts` regenerated with every hunk explained; pgTAP and an E2E run after the CLI commit; supabase-js 2.117.x and `@supabase/ssr` 0.12.x with `assert:cookie-names`, the `safeGetSession` round-trip test and the cookie-adapter tests green. (criterion 1, 2, 4 · D-10, D-22, D-25 · plans 169-06, 169-07)
 - [ ] **DEPS-08**: Local Postgres 17: `major_version = 17`; a clean `db:reset` applies every migration; `show server_version` proves 17; `database.ts` regenerated and pgTAP (incl. Phase 166's anon-exposure census) green on 17; PG15-validity of migrations recorded as a standing constraint; hosted upgrade filed as an operator todo. (criterion 4 · D-14 · plans 169-06, 169-13)
 - [ ] **DEPS-09**: Deno Edge Function imports pinned exactly (`nodemailer` ≥ 10.0.6, `jose` 6.2.x via `npm:`, supabase-js exact 2.x matching the npm side); the functions' vitest suites, the email and invite flows in the full E2E suite, and bank-auth E2E 3× green; the audit blind spot filed as a todo. (criterion 1, 3 · D-09 · plans 169-07, 169-13)
-- [ ] **DEPS-10**: `@faker-js/faker` 10.x as its own group, with the old-vs-new seed output diffed for the `default` and `e2e/base` templates before the bump lands; visual re-baselines only where a diff traces to a recorded seed change. (criterion 1, 2 · D-20 · plans 169-08)
+- [x] **DEPS-10**: `@faker-js/faker` 10.x as its own group, with the old-vs-new seed output diffed for the `default` and `e2e/base` templates before the bump lands; visual re-baselines only where a diff traces to a recorded seed change. (criterion 1, 2 · D-20 · plans 169-08)
 - [ ] **DEPS-11**: LLM SDK stack migrated (`ai` and `@ai-sdk/*` to the latest safe majors) with package, admin-job and E2E gates green; the importer-less `openai` (and `jsonrepair` if still present) removed. (criterion 1, 2 · D-21 · plans 169-09)
 - [ ] **DEPS-12**: Remaining small majors, one commit each, each formatter/sorter major followed by its own reformat commit; `@types/cheerio` removed; consumer-less catalog entries dropped; any major the probe reports as unassigned is bumped or held with a reason. (criterion 1, 2 · D-13, D-23 · plans 169-10)
 - [ ] **DEPS-13**: GitHub Actions majors, the trufflehog patch and the Pages actions, with the CI-shape tests updated, observed through `ci-evidence/**` at job level; the two workflows that cannot run there recorded as unobservable until merge. (criterion 1, 4 · D-10 · plans 169-11)
@@ -452,7 +452,7 @@ Roadmap: `.planning/ROADMAP.md` (Phases 137-169 — Phase 165 (Review-Stack Comm
 | DEPS-07 | Phase 169 — Dependency Bump to Latest Safe Versions | Complete |
 | DEPS-08 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
 | DEPS-09 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
-| DEPS-10 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
+| DEPS-10 | Phase 169 — Dependency Bump to Latest Safe Versions | Complete |
 | DEPS-11 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
 | DEPS-12 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |
 | DEPS-13 | Phase 169 — Dependency Bump to Latest Safe Versions | Pending |

@@ -1,10 +1,10 @@
 {
   "version": "1.0",
-  "timestamp": "2026-10-03T16:00:00.000Z",
+  "timestamp": "2026-10-03T16:16:00.000Z",
   "phase": "169",
   "phase_name": "dependency-bump-to-latest-safe-versions",
   "phase_dir": ".planning/phases/169-dependency-bump-to-latest-safe-versions",
-  "plan": 8,
+  "plan": 9,
   "task": 1,
   "total_tasks": 2,
   "status": "ready",
@@ -56,12 +56,18 @@
       "name": "Operator rulings 2026-10-03 applied between 169-07 and 169-08: R1 is_valid_choice_id STABLE + local Postgres 17 (f1ac8164a, bfdc1afc3); R2 ESLint 10.11.0 with three scoped no-useless-assignment disables, config-lookup flag removed (34ce0d51c); R3 Layout drawer focus return wired, TDD (05f88a2a6, e3a661517, bf47b1e96); R4 Vite 8 default browser target accepted; R5 voter-journey slider race left deferred (cause UNCONFIRMED); DEPS-04 complete",
       "status": "done",
       "commit": "d72939468"
+    },
+    {
+      "id": 9,
+      "name": "Plan 169-08 (group 6: @faker-js/faker 10.6.0 via catalog; seed diff at seed 42 recorded first — equal row counts for default and e2e/base, e2e/base byte-identical, only default seed-dependent among 31 templates; ctx.ts comment matches the 10.x constructor; 169-08-group6 12/12; E2E 171/171; visual 7/0/0 x2, no re-baseline; DEPS-10 complete; faker audit row 1158500 now stale for 169-13)",
+      "status": "done",
+      "commit": "b5b2742ca"
     }
   ],
   "remaining_tasks": [
     {
       "id": 4,
-      "name": "Plans 169-08 through 169-13 (sequential); apply the nodemailer 10 pin todo (2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md) in the first plan that runs after 2026-10-04T07:51Z (169-13 at the latest). The PG17 ruling is applied: local stack is Postgres 17.6, so 169-13's PG17 gate may run",
+      "name": "Plans 169-09 through 169-13 (sequential); apply the nodemailer 10 pin todo (2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md) in the first plan that runs after 2026-10-04T07:51Z (169-13 at the latest). The PG17 ruling is applied: local stack is Postgres 17.6, so 169-13's PG17 gate may run",
       "status": "not_started"
     },
     {
@@ -166,6 +172,6 @@
     }
   ],
   "uncommitted_files": [],
-  "next_action": "Continue /gsd-execute-phase 169 from 169-08 (group 6: @faker-js/faker 10). Local stack is now Postgres 17.6 (postgres:17.6.1.171) on the CLI 2.118.0 images; ESLint 10.11.0 is in place with no config-lookup flag. Apply the nodemailer 10 todo once 2026-10-04T07:51Z has passed. Read .planning/phases/169-dependency-bump-to-latest-safe-versions/.continue-here.md first.",
+  "next_action": "Continue /gsd-execute-phase 169 from 169-09 (group 7: the AI SDK majors in packages/llm — ai, @ai-sdk/*, openai). 169-08 (faker 10.6.0) is complete. Local stack is Postgres 17.6 on the CLI 2.118.0 images, last reset + seeded with e2e/base; run db:reset before relying on a pristine DB. ESLint 10.11.0, no config-lookup flag. Apply the nodemailer 10 todo once 2026-10-04T07:51Z has passed. Read .planning/phases/169-dependency-bump-to-latest-safe-versions/.continue-here.md first.",
   "context_notes": "Work only in the -gsd worktree. Node 24.21.0 must be on PATH. Orchestrator hand-drives executors at top level; one gsd-executor per plan, sequential mode."
 }

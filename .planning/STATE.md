@@ -4,18 +4,18 @@ milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
 current_phase: 169
 current_phase_name: Dependency Bump to Latest Safe Versions
-current_plan: 8
+current_plan: 9
 status: executing
-stopped_at: Applied operator rulings 2026-10-03 (169-RULINGS-SUMMARY.md); next 169-08
-last_updated: "2026-10-03T15:53:40.034Z"
+stopped_at: Completed 169-08-PLAN.md (faker 10.6.0); next 169-09
+last_updated: "2026-10-03T16:15:41.954Z"
 last_activity: 2026-10-03
 last_activity_desc: Phase 169 execution started
-state_head: d729394684742cde0011d8518b3eb0dbdb5db1fa
+state_head: b5b2742caa7e38353432c25100a6c7706d0fff4d
 progress:
   total_phases: 35
   completed_phases: 31
   total_plans: 347
-  completed_plans: 341
+  completed_plans: 342
   percent: 89
 ---
 
@@ -35,7 +35,7 @@ _(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and P
 Phase: 169 (Dependency Bump to Latest Safe Versions) — EXECUTING
 Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
-Current Plan: 8
+Current Plan: 9
 Total Plans in Phase: 13
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
@@ -819,8 +819,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-10-03T15:53:38.638Z
-Stopped at: Applied operator rulings 2026-10-03 (169-RULINGS-SUMMARY.md); next 169-08
+Last session: 2026-10-03T16:15:40.461Z
+Stopped at: Completed 169-08-PLAN.md (faker 10.6.0); next 169-09
 Resume file: .planning/phases/169-dependency-bump-to-latest-safe-versions/.continue-here.md
 
 ## Deferred Items
@@ -1154,6 +1154,7 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 169 P05 | 45min | 3 tasks | 13 files |
 | Phase 169 P06 | 61min | 1 tasks | 4 files |
 | Phase 169 P07 | 58min | 3 tasks | 16 files |
+| Phase 169 P08 | 19min | 2 tasks | 4 files |
 
 ## Deferred Items
 
@@ -2173,6 +2174,8 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 169]: Operator ruling 2026-10-03 (operator, in chat) R2: ESLint 10.11.0 landed (34ce0d51c) with three one-line eslint-disable-next-line no-useless-assignment comments on write-only $bindable props (eslint-plugin-svelte#1478), overruling PROH-169-07 for exactly those lines; config-lookup flag removed at all 21 sites; DEPS-04 complete; removal todo filed
 - [Phase 169]: Operator ruling 2026-10-03 (operator, in chat) R3: Layout drawer focus return wired — Header drawerOpenElement $bindable, Layout binds it (e3a661517), TDD Layout.svelte.test.ts (WCAG 2.4.3)
 - [Phase 169]: Operator ruling 2026-10-03 (operator, in chat) R4: Vite 8 default build target (chrome111/edge111/firefox114/safari16.4/ios16.4) accepted as the browser floor; no build.target override
+- [Phase 169]: 169-08: faker 10.6.0 through the catalog; seed diff at seed 42 shows equal row counts for default and e2e/base, e2e/base byte-identical, only default is seed-dependent among 31 templates; no visual re-baseline (7/0/0 twice)
+- [Phase 169]: 169-08: faker.seed() kept in buildCtx although Faker 10.5+ accepts a constructor seed (measured identical sequence); stale faker audit row 1158500 left for 169-13
 
 ### Quick Tasks Completed
 
