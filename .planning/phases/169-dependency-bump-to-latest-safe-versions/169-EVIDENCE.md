@@ -138,6 +138,29 @@ with `npm view`). Verdicts: current 7 · major 6 · HOLD-7d 2.
 migration was prepared in the working tree from 11:30Z and committed only after the probe re-run named 5.x
 (2026-10-03T12:25:04Z). The tree's only record of Vitest 5 is that commit.
 
+### 169-05 (group 3) re-measurement, 2026-10-03
+
+`node 169-version-probe.mjs --only <pkgs> --node 24.21.0`, one run per upgrade, each just before it:
+`@sveltejs/kit,@sveltejs/adapter-node,@sveltejs/adapter-static,svelte` at 12:48:21Z (`05-t2-probe.md`);
+`vite,@sveltejs/vite-plugin-svelte,@tailwindcss/vite,vite-plugin-devtools-json,@inlang/paraglide-js` after the Kit
+commit (`05-t3-probe.md`). Logs under `tests/e2e-runs/169-gates/`.
+
+| Package | Resolved before | Target (published, age) | Target line x.0.0 | Verdict / hold |
+|---|---|---|---|---|
+| `@sveltejs/kit` | 2.55.0 | **2.70.3** (2026-08-18, 45.9 d) | — | in-major; HOLD-30d 3.x (3.0.0 2026-10-01T17:22Z, clears 2026-10-31T17:22Z, 169-12's) |
+| `@sveltejs/adapter-node` | 5.5.4 | **5.5.7** (2026-06-24, 100.6 d) | — | in-major; HOLD-30d 6.x (6.0.0 2026-10-01T17:24Z, clears 2026-10-31T17:24Z) |
+| `@sveltejs/adapter-static` | 3.0.10 | **3.0.10** (already the newest 3.x, 365.9 d) | — | unchanged; HOLD-30d 4.x (4.0.0 2026-10-01T17:21Z, clears 2026-10-31T17:21Z) |
+| `svelte` | 5.57.1 (catalog floor `^5.53.12`) | **5.57.1** (2026-09-18, 14.5 d) | — | current; floor raised to `^5.57.1` (Kit 3's peer) |
+| `vite` | 6.4.3 (frontend) / 7.3.6 (docs, catalog) | **8.3.1** (2026-09-24, 9.0 d) | 8.0.0 2026-03-12 | major; HOLD-7d 8.3.2 (2026-10-01T10:17Z, 2.11 d); engines `^20.19.0 \|\| >=22.12.0` |
+| `@sveltejs/vite-plugin-svelte` | 5.1.1 (frontend) / 6.2.4 (docs) | **7.3.1** (2026-09-23, 10.1 d) | 7.0.0 2026-02-23 | major; peer `vite ^8.0.0-beta.7 \|\| ^8.0.0`, `svelte ^5.46.4` |
+| `@tailwindcss/vite` | 4.3.3 | 4.3.3 | — | current; peer `vite ^5.2.0 \|\| ^6 \|\| ^7 \|\| ^8` |
+| `vite-plugin-devtools-json` (docs) | 1.1.0 | 1.1.0 | — | current; peer includes `^8.0.0` |
+| `@inlang/paraglide-js` | 2.25.4 | 2.25.4 | — | current; peer `vite >=5.0.0` |
+
+Every plugin in both configs admits Vite 8 at its resolved version, and so do Kit 2.70.3 (`vite … || ^8.0.0`,
+`@sveltejs/vite-plugin-svelte … || ^7.0.0`, `typescript ^5.3.3 || ^6.0.0`) and Vitest 5.0.2 (`vite ^6.4.0 || ^7.0.0 ||
+^8.0.0`). Nothing blocks Vite 8, so no D-06 hold applies.
+
 ## 2. Package legitimacy
 
 **Operator approvals (step 0, run before any repository change, 2026-10-03T06:37Z):** the box check printed
@@ -307,17 +330,42 @@ version (the `@unrs/resolver-binding-wasm32-wasi` chain; names already in the lo
 d). The swap removed 91 package versions that only `eslint-plugin-import` pulled in (the `es-abstract` /
 `array.prototype.*` / `is-*` shim family, `tsconfig-paths`, `eslint-module-utils`, `resolve` 2.0.0-next).
 
+### 169-05 (group 3)
+
+New lockfile names per upgrade (`tests/e2e-runs/169-gates/05/t*-new-names.txt`), each run through
+`gsd-tools query package-legitimacy check --ecosystem npm` (`t2-legit.json`, `t3-legit.json`). Install ran under
+`npmMinimalAgeGate: 7d`; no new name declares an install script (`postinstall: null` for all).
+
+| Upgrade | New name | Verdict | Reasons | Weekly downloads | Repository | Resolved (published, age) |
+|---|---|---|---|---|---|---|
+| `vite-plugin-restart` removal | — (removed: `vite-plugin-restart`) | | | | | |
+| Svelte floor | — (descriptor only) | | | | | 5.57.1 unchanged |
+| Kit 2.70.3 + adapter-node 5.5.7 | `@rollup/plugin-replace` | OK | — | 17207858 | github.com/rollup/plugins | 6.0.3 (2025-10-29); a dependency of adapter-node 5.5.7 |
+| Vite 8.3.1 + vite-plugin-svelte 7.3.1 | `rolldown` | SUS | too-new (its `latest`) | 124979918 | github.com/rolldown/rolldown | 1.2.11 (2026-09-24, 8.9 d) |
+| | `@rolldown/binding-*` (15 platform packages: android-arm-eabi, android-arm64, darwin-arm64, darwin-x64, freebsd-x64, linux-arm-gnueabihf, linux-arm64-gnu, linux-arm64-musl, linux-ppc64-gnu, linux-s390x-gnu, linux-x64-gnu, linux-x64-musl, openharmony-arm64, win32-arm64-msvc, win32-x64-msvc) | SUS ×15 | too-new | 0.9 M – 107 M each | github.com/rolldown/rolldown | 1.2.11 (darwin-arm64 2026-09-24T13:54Z, 9.0 d) |
+| | `@oxc-project/types` | SUS | too-new | 195151104 | github.com/oxc-project/oxc | 0.151.0 (2026-09-21, 12.0 d) |
+| | `@rolldown/pluginutils` | OK | — | 200034410 | github.com/rolldown/plugins | 1.0.1 (2026-05-13, 143.4 d) |
+
+Every `SUS` is `too-new` on an established package; the check reads the package's newest publish, not the version
+resolved. No `SLOP`; no new direct package (`vite` and `@sveltejs/vite-plugin-svelte` were already direct in both
+apps). Other new versions of names already in the lockfile: `vite` 8.3.1 (9.0 d), `@sveltejs/vite-plugin-svelte`
+7.3.1 (10.1 d), `lightningcss` 1.33.0 and its platform packages (2026-07-20, 75.3 d; Vite 8 depends on it,
+Tailwind keeps its exact 1.32.0). Removed by the Vite move: `@sveltejs/vite-plugin-svelte-inspector` (now inside
+vite-plugin-svelte 7) and esbuild 0.25.12's platform packages that Vite 6/7 pulled in.
+
 ## 3. Holds
 
 | Package | Held at | Newer line | Reason | Decision ref | Re-check date or trigger |
 |---|---|---|---|---|---|
 | `ai`, `@ai-sdk/google`, `@ai-sdk/openai` (+ their exact pins `@ai-sdk/gateway`, `@ai-sdk/provider`, `@ai-sdk/provider-utils`) | pre-phase resolutions: `ai` 5.0.60, `@ai-sdk/google` 2.0.23, `@ai-sdk/openai` 2.0.42, gateway 1.0.33, provider 2.0.0, provider-utils 3.0.10 / 3.0.12 | in-range `ai` 5.0.267, google 2.0.99, openai 2.0.130 (→ provider-utils 3.0.39) | **Narrowed out of the group-0 refresh.** `@ai-sdk/provider-utils` ≥ 3.0.35 (2026-08-26) depends on `undici ^5.29.0`; the in-range refresh pulled `undici` 5.29.0 and `@fastify/busboy` 2.1.1 back into the tree, adding NEW high 1240982 (`@fastify/busboy` <3.2.1, no in-range fix under `undici` 5's `^2.0.0`) and re-attaching accepted `undici` rows 1114638 / 1114640 / 1121245 to a new dependent. Moved into the excluded set per 169-01 Task 3 step 6; the family's majors are 169-09's | D-07, D-21, D-25 (G7) | 169-09 (AI SDK majors); re-check that the target `ai` / `@ai-sdk/*` majors do not depend on `undici` 5 |
-| `braces` | 3.0.3 | none published | No fixed version exists (GHSA-vfj7-8cjw-p6xm covers `<=3.0.3`; 3.0.3 is the latest). Accepted in the baseline with a rationale (§ 7) | D-02 (baseline keeps no-fix rows), D-05 | when `braces` publishes a fix; or once `vite-plugin-restart` (169-05) and `@changesets/cli` 2's `micromatch` path (169-10) are both gone, the row goes stale |
+| `braces` | 3.0.3 | none published | No fixed version exists (GHSA-vfj7-8cjw-p6xm covers `<=3.0.3`; 3.0.3 is the latest). Accepted in the baseline with a rationale (§ 7) | D-02 (baseline keeps no-fix rows), D-05 | when `braces` publishes a fix; or once `@changesets/cli` 2's `micromatch` path (169-10) is gone, the row goes stale. `vite-plugin-restart` left the tree in 169-05 (`f88e60568`), and the baseline rationale now names only the `@changesets/cli` path |
 | `@types/node` | **24.19.0** (catalog `^24.19.0`; 169-02, `968113336`) | 26.6.3 / 26.6.4 (`latest`), 25.x; 24.19.1 (1.4 d old on 2026-10-03) | **Types track the runtime major** (Node 24 at every pin site). 24.19.1 is inside the 7-day window | D-11, R3, D-03 | when the runtime moves to a newer major; 24.19.1 clears 2026-10-08T22:38Z |
 | `typescript` | **6.0.3** (catalog `^6.0.3`; 169-02, `ebeaafa5c`) | 7.0.2 (2026-07-08, x.0.0 86.7 d old — the age rule alone would admit it) | Blocking peers measured 2026-10-03: `@typescript-eslint/eslint-plugin` / `@typescript-eslint/parser` / `typescript-eslint` 8.70.1 `typescript: >=4.8.4 <6.1.0` (8.71.0, the newest, is inside the 7-day window); `svelte-check` 4.7.6 `^5.0.0 \|\| ^6.0.0`; `@sveltejs/kit@3` `typescript: ^6.0.0`. 6.0.3 is the newest 6.x (6.0.0 was never published) | D-16 | typescript-eslint and svelte-check admit 7 (and Kit 3's peer, once Kit 3 lands) |
 | `eslint`, `@eslint/js` | **9.39.5** (catalog `^9.39.2` / `^9.39.1`, unchanged) | 10.11.0 / 10.0.1 (age rule admits both) | **Upstream false positive.** ESLint 10's recommended `no-useless-assignment` reports every write-only `$bindable` prop (3 sites: `OpinionQuestionInput.svelte` `valid`, `Video.svelte` `mode`, `EntityList.svelte` `itemsShown`). eslint-plugin-svelte#1478 has been open since 2026-02-23 and 3.23.0 is the newest release. PROH-169-07 forbids disabling the rule, and a dummy read would bend the code. One real `no-unassigned-vars` defect (`Layout.svelte` `drawerOpenElement`, the drawer focus return is never wired) needs a behaviour decision. The 15 other ESLint-10 findings are fixed (`14b62f26c`). The config-lookup flag stays at all 19 sites, because ESLint 9 needs it | D-06, D-17, PROH-169-07 | eslint-plugin-svelte#1478 fixed in a release at least 7 days old, or an operator overrule (todo `2026-10-03-eslint-10-held-on-bindable-no-useless-assignment.md`, options A/B) |
 | `vitest`, `@vitest/browser-playwright` | **5.0.2** (catalog `^5.0.2`; 169-04) | 5.0.3 (2026-09-30T11:30Z / 11:29Z, 3.0 d old on 2026-10-03) | Inside the 7-day window; 5.0.2 is the newest 5.x old enough | D-03 | 5.0.3 clears 2026-10-07T11:30Z |
 | `daisyui` | **5.7.46** (catalog `^5.7.46`; 169-04) | 5.7.47 (2026-09-30T00:29Z, 3.45 d old on 2026-10-03) | Inside the 7-day window | D-03 | 5.7.47 clears 2026-10-07T00:29Z |
+| `@sveltejs/kit`, `@sveltejs/adapter-node`, `@sveltejs/adapter-static` | **2.70.3 / 5.5.7 / 3.0.10** (169-05) | 3.0.0 / 6.0.0 / 4.0.0 (2026-10-01, 1.8 d old on 2026-10-03) | New major lines inside the 30-day window | D-03, D-15 | 169-12; clear 2026-10-31T17:22Z / 17:24Z / 17:21Z |
+| `vite` | **8.3.1** (catalog `^8.3.1`; 169-05) | 8.3.2 (2026-10-01T10:17Z, 2.11 d old on 2026-10-03) | Inside the 7-day window | D-03 | 8.3.2 clears 2026-10-08T10:17Z |
 
 ## 4. Gate runs
 
@@ -335,6 +383,7 @@ Runner: `bash 169-gates.sh <label>` (`TURBO_FORCE=true`; each status read direct
 | 169-03 | `169-03-group2` (import-x, eslint-plugin-svelte 3, no FlatCompat, the 15 ESLint-10 source fixes, prettier-plugin-svelte 4, prettier-plugin-tailwindcss 0.8.1, simple-import-sort 14; ESLint held on 9.39.5) | `2e3a79846` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | — (no E2E in group 2, D-26) |
 | 169-04 | `169-04-precommit-dryrun` (Vitest 5 uncommitted; informational) | `5408452ab` + working tree | 0 | 0 | **1** | **1** | **1** | **1** | 0 | 0 | 0 | 0 | 0 | 0 | — |
 | 169-04 | `169-04-group4` (isomorphic-dompurify 4 + jsdom 30, Playwright 1.63.0 + image digest, Tailwind 4.3.3, DaisyUI 5.7.46 + its reformat, Vitest 5.0.2 + `test.projects`) | `7b41eb90a` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | **171 / 171 / 0 / 0 / 0** (`169-e2e/169-04-group4`) |
+| 169-05 | `169-05-group3` (`restartOnRootEnv` replacing vite-plugin-restart, Svelte floor `^5.57.1`, Kit 2.70.3 + adapter-node 5.5.7, Vite 8.3.1 + vite-plugin-svelte 7.3.1 through the catalog) | `bf828a1da` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | **171 / 171 / 0 / 0 / 0** (`169-e2e/169-05-group3`) |
 
 Notes on `169-01-baseline` (2026-10-03T06:43:09Z–06:45:43Z, `tests/e2e-runs/169-gates/169-01-baseline/`):
 
@@ -406,6 +455,32 @@ E2E `169-04-group4` (`bash 169-e2e.sh 169-04-group4`, the full default suite):
 
 Final visual run `169-04-visual-final` at `7b41eb90a`, image `eff16c30e6f3…`: exit 0, 7 expected / 0 unexpected /
 0 flaky.
+
+Notes on `169-05-group3` (2026-10-03T12:59:16Z–13:01:52Z, `tests/e2e-runs/169-gates/169-05-group3/`):
+- `porcelain_lines: 0`.
+- Forced turbo runs: `03-typecheck` 23/23, `08-unit` 25/25 and `09-build` 14/14 tasks executed, none cached.
+- `01-install`: the only YN0060 left is `zod` against `openai` (169-09's). Kit's `typescript ^5.3.3` warning is gone.
+- `02-dedupe`: nothing to dedupe.
+- `04-lint` reports 0 errors and 17 warnings. The normalised finding list (path, position, rule and message, 33 lines)
+  is identical to `169-04-group4`'s (`diff` exit 0, `05/lint-norm-{before,after}.txt`). ESLint stays on 9.39.5, with
+  the config-lookup flag kept.
+- `10-audit`: `0 new advisory(ies) at high+, 5 accepted`. The `@sveltejs/kit` row 1116433 left with Kit 2.70.3.
+- `12-docs-rq` (two-base form): every `<ResearchQuote>` span is identical to the base, and the three frozen
+  components are identical to the component base.
+
+E2E `169-05-group3` (`bash 169-e2e.sh 169-05-group3`, the full default suite):
+- Docker VM had 22.01 GiB free after `docker builder prune -af`.
+- `e2e-run.sh` ran at HEAD `bf828a1da` with `db_reset=true` and project `…0000e2`, 2026-10-03T13:02:15Z–13:07:53Z.
+- Wrapper exit 0; preflight successes 1, failures 0.
+- `summary.json`: **total 171, passed 171, failed 0, flaky 0, skipped 0, didNotRun 0**.
+- No listener was left on 5273.
+- This is the first full E2E run on Vite 8 (Rolldown) and SvelteKit 2.70.3. Both this run and the visual gate drive a Vite 8
+  dev server. The Rolldown production bundle is exercised only by `09-build` (exit 0) and measured by the § 6
+  build-output diff; no browser test ran against `apps/frontend/build`.
+
+Final visual run `169-05-visual-final` at `bf828a1da`, image `eff16c30e6f3…`, after a fresh `db:reset` + `db:seed
+--template e2e/base` and a Vite 8.3.1 dev server with `PUBLIC_PROJECT_ID=…0000e2`: exit 0, 7 expected / 0
+unexpected / 0 flaky.
 
 ### 169-02 Task 2 — the Node 24 commit (`77d3ce8bf`), measured alone
 
@@ -678,6 +753,7 @@ Live: `bash 169-restart-probe.sh <label>` (committed in the phase directory). It
 |---|---|---|---|---|
 | plugin wired (`f88e60568` tree) | 6.4.3 | `169-05-t1-restart` | 0 | `15.46.37 [vite] server restarted.` (touched 2026-10-03T12:46:37Z) |
 | negative control: the `restartOnRootEnv(repoRoot)` entry commented out, then restored with `git checkout -- apps/frontend/vite.config.ts` | 6.4.3 | `169-05-t1-restart-negative` | **1** | none within 60 s (touched 12:46:54Z): Vite alone does not watch the repo-root `.env` |
+| plugin on Vite 8 (working tree of `bf828a1da`) | 8.3.1 | `169-05-t3-restart` | 0 | `15.54.57 [vite] server restarted.` (touched 12:54:57Z). The first start took 26.6 s (`Forced re-optimization of dependencies` after the Vite move); later starts take about 0.5 s |
 
 ## 6. Diffs and traces
 
@@ -1031,6 +1107,143 @@ the 9 package `vitest.config.ts` docblocks (six of which also misspelled "for" a
 `tests/vitest.config.ts`, and `scripts/assert-unit-test-coverage.mjs`. The phrasing avoids the glob
 `packages/*/…` inside block comments, where `*/` would end the comment.
 
+### 169-05 — SvelteKit 2.70.3, Vite 8.3.1, vite-plugin-svelte 7.3.1 (D-15 step 1, D-18, D-13)
+
+**Kit 2.70.3, `a6495d823`.**
+- The changelog from 2.55.0 to 2.70.3 marks breaking changes only for the experimental remote functions (`query.run()`,
+  `requested`, refresh semantics). The repository has no `*.remote.*` file and no `remoteFunctions` setting, so
+  nothing changed at source.
+- `yarn install` no longer prints Kit's `typescript ^5.3.3` YN0060. The only YN0060 left is `zod` against `openai`,
+  which belongs to the AI SDK and to 169-09.
+- `yarn audit:deps`: the accepted `@sveltejs/kit` row 1116433 (GHSA-2crg-3p73-43xp, the `BODY_SIZE_LIMIT` DoS) left
+  the findings: 6 accepted → 5, 0 new. `devalue` resolves to 5.9.4 everywhere.
+- Both apps' `check` → 0 / 0. `TURBO_FORCE=true yarn build` → 0, with the same warning set as 169-04's build (sorted
+  diff of warning lines → none). Frontend `test:unit` → 128 files / 2030 tests.
+
+**Svelte floor, `830196b65`.** The catalog floor moved from `^5.53.12` to `^5.57.1`; the resolution is unchanged at
+5.57.1, and the lockfile diff is the descriptor line only.
+
+**Vite 8.3.1 + vite-plugin-svelte 7.3.1, `bf828a1da`.**
+- `yarn why vite` → `vite@npm:8.3.1` only (13 consumers); `yarn why @sveltejs/vite-plugin-svelte` → 7.3.1 only. The
+  docs app's Vitest-driven nested Vite is gone, so the workspace has one Vite.
+- One migration fix at source: vite-plugin-svelte 7 removed the inline `hot` option. It logged `invalid plugin option
+  \`hot\` in inline config` on the first unit run, which was green anyway. `apps/frontend/vitest.config.ts` now
+  passes `compilerOptions: { hmr: !process.env.VITEST }`, the replacement the plugin's changelog names, and the
+  warning is gone.
+- No `rollupOptions`, `rolldownOptions`, `esbuild`, `oxc` or `ssr` key was added to either config (PROH-169-11).
+- Both apps' `check` → 0 / 0; build → 0; frontend `test:unit` → 128 files / 2030 tests.
+
+**One new build-time notice (not fixed, see § 7).** Vite 8 prints `(!) Your Vite config uses features that are
+unsupported by configLoader: 'native'` for the three extensionless relative imports in
+`apps/frontend/vite.config.ts` (`./paraglide.options`, `./vite.projectIdEnv`, `./vite.restartOnRootEnv`). The
+default loader (`bundle`) is unaffected. Adding `.ts` extensions needs `allowImportingTsExtensions` in a tsconfig
+the config shares with the app, so this is left as a follow-up rather than changed in a dependency commit. The
+notice was not suppressed with `VITE_CONFIG_NATIVE_IGNORE_WARNING`.
+
+**Build-output diff.** `find <app>/build -type f -exec stat -f '%z %N'`, before at `a6495d823` (Kit 2.70.3 on Vite
+6.4.3 / 7.3.6) and after at the `bf828a1da` tree (Vite 8.3.1). Files `tests/e2e-runs/169-gates/05-build-before.txt`,
+`05-build-after.txt` and `05-build-{before,after}-docs.txt`. Each diff was computed from those files
+(`05-build-diff-frontend.md`, `05-build-diff-docs.md`). In the per-file table, content hashes are stripped from
+names, and pure-hash chunk names cannot be matched across builds, so they are only counted.
+
+Frontend (`apps/frontend/build`, adapter-node):
+
+| Measure | Vite 6.4.3 | Vite 8.3.1 | Delta |
+|---|---|---|---|
+| files | 1097 | 1073 | −24 |
+| total bytes | 14 457 035 | 13 511 028 | −946 007 (−6.5 %) |
+| `.js` files / bytes | 434 / 4 856 508 | 425 / 4 377 001 | −9 / −479 507 |
+| client chunks (`_app/immutable/chunks/*.js`) | 126 | 120 | −6 |
+| client JS (`_app/immutable/**/*.js`) files / bytes | 183 / 1 559 601 | 177 / 1 480 530 | −6 / −79 071 (−5.1 %) |
+| server chunks (`server/chunks/**/*.js`) | 247 | 244 | −3 |
+| `.css` files | 4 | 4 | 0 |
+| source maps / precompressed (`.br`, `.gz`) | 251 / 390 | 248 / 378 | −3 / −12 |
+
+Ten largest per-file deltas (frontend):
+
+| File (hash-normalised) | Before | After | Delta |
+|---|---|---|---|
+| `server/chunks/chunks/server.js-#.js` | 454 | 120058 | +119604 |
+| `server/chunks/chunks/shared.js-#.js` | 194 | 58164 | +57970 |
+| `server/chunks/chunks/entities.js-#.js` | 493 | 52578 | +52085 |
+| `server/chunks/chunks/dataProvider.js-#.js` | 40028 | 79119 | +39091 |
+| `server/chunks/chunks/utils.js-#.js` | 1131 | 39683 | +38552 |
+| `server/chunks/chunks/internal2.js-#.js` | 2817 | 39124 | +36307 |
+| `server/chunks/chunks/runtime.js-#.js` | 15370 | 31266 | +15896 |
+| `server/chunks/entries/pages/(voters)/(located)/questions/_layout.svelte.js-#.js` | 24161 | 11253 | −12908 |
+| `server/chunks/entries/hooks.server.js-#.js` | 15013 | 24530 | +9517 |
+| `client/_app/immutable/nodes/4.#.js` | 13215 | 5832 | −7383 |
+
+Notable deltas (frontend):
+- The large per-file deltas are on the server side and come from Rolldown's chunking. Rolldown names shared server
+  chunks after their module (`server.js`, `shared.js`, `entities.js`, …) and pulls code that Rollup had spread over
+  small `index*.js` and component chunks into them. 63 named chunks exist only before (`index2.js` … `index10.js`,
+  `Footer.js`, `Hero.js`, …) and 60 only after (`footer.js`, `hero.js`, `i18n.js`, `env.js`, …), lower-cased by
+  Rolldown's naming. Server JS as a whole shrank.
+- The client ships 6 fewer chunks and 79 KB (5.1 %) less JS.
+- The main stylesheet grew from 186 506 to 191 698 bytes (+5 192, +2.8 %). The per-component CSS files were renamed
+  by the new chunking (`EntityListControls.css` → `entityList.css`, `Layout.css` → `main.css`; within 70 bytes
+  each).
+
+Docs (`apps/docs/build`, adapter-static, before on Vite 7.3.6):
+
+| Measure | Vite 7.3.6 | Vite 8.3.1 | Delta |
+|---|---|---|---|
+| files | 278 | 272 | −6 |
+| total bytes | 8 264 555 | 8 250 311 | −14 244 |
+| `.js` files / bytes | 240 / 1 074 821 | 234 / 1 055 108 | −6 / −19 713 |
+| client chunks | 21 | 15 | −6 |
+| `.css` files | 2 | 2 | 0 |
+
+Ten largest per-file deltas (docs): `entry/start.#.js` 22741 → 77 (−22664, now a re-export stub; the code moved into
+the shared chunks); `assets/0.#.css` 143888 → 149781 (+5893); `entry/app.#.js` 55403 → 51452 (−3951);
+`nodes/0.#.js` 8408 → 7096 (−1312); `404.html` 2354 → 1999 (−355); `nodes/3.#.js` −149; `nodes/168.#.js`,
+`nodes/172.#.js`, `nodes/33.#.js`, `nodes/51.#.js` −82 each. Every named file exists in both builds.
+
+**The CSS growth (both apps), partly attributed.** Two docs-only builds with a temporary `build` key, each restored
+with `git checkout -- apps/docs/vite.config.ts` afterwards (logs `05/t3-docs-*.log`):
+- `cssMinify: 'esbuild'`: the main stylesheet is byte-identical to the Vite 8 default (149 781 bytes, same hash).
+- `cssTarget` set to Vite 7's default (`chrome107`, `edge107`, `firefox104`, `safari16`): 154 125 bytes.
+
+So the stylesheet size follows the CSS target, and Vite 8's raised default target is the lever that moves it.
+What makes the Vite 8 output larger than Vite 7's at its own default target is UNCONFIRMED. Candidates are
+Lightning CSS 1.33 (Vite 8's own) and Vite 8's CSS pipeline; the second build shows that the minifier choice alone
+does not explain it. The visual gate found no pixel difference (below).
+
+**Production-bundle smoke (added; neither the E2E suite nor the visual gate runs the production build).** The frontend
+was built and served with `vite preview --port 3999` and `PUBLIC_PROJECT_ID=…0000e2`, which serves the SvelteKit
+production output, on the e2e/base seed. Six routes and one immutable asset were requested. The same script ran
+twice:
+- on the `bf828a1da` tree (Vite 8.3.1);
+- on a temporary checkout of `a6495d823`'s `.yarnrc.yml`, `yarn.lock`, both app manifests and `vitest.config.ts`
+  (Vite 6.4.3). Those files were restored with `git checkout HEAD -- <the same files>` plus `yarn install`, and the
+  frontend was rebuilt. `git status` afterwards showed only this ledger.
+
+| Request | Vite 6.4.3 | Vite 8.3.1 |
+|---|---|---|
+| `/`, `/en` | 200 (6622 B) | 200 (6620 B) |
+| `/en/elections`, `/en/info` | 200 (6628 B) | 200 (6626 B) |
+| `/en/questions` | 307 | 307 |
+| `/en/candidate/login` | 200 (6711 B) | 200 (6709 B) |
+| `_app/immutable/entry/start.*.js` | 200 (118 B) | 200 (82 B) |
+| server log `level: 50` records | 6 × `DataProvider returned an invalid result` (`reason: 'empty'`) | the same 6 |
+
+The six `empty` records appear identically on both bundlers, so they are not a Vite 8 change. Their cause in the
+preview setup is UNCONFIRMED. Logs: `05/prod-smoke-server-vite{6,8}.log`.
+
+**Vite 8 forwards browser console errors to the dev-server terminal when it detects a coding agent**
+(`server.forwardConsole` defaults to `determineAgent().isAgent`, `resolveForwardConsoleOptions` in Vite's
+`node.js`). So the E2E `devserver.log` now carries 7 `(client) [console.error] … DataProvider returned an invalid
+result … reason: "error"` lines that 169-04's log could not show. The suite passed 171/171. Most likely they are
+newly visible rather than new, because Vite 6/7 did not forward browser console output. That was not measured
+(169-04 kept no browser console log), and which tests emit them is not traced: UNCONFIRMED.
+
+**Visual gate.** Host prerequisites: the `bf828a1da` tree built, `yarn db:reset`, `yarn db:seed --template
+e2e/base`, then the frontend dev server on Vite 8.3.1 with `PUBLIC_PROJECT_ID=…0000e2` and `--host 0.0.0.0`.
+`tests/scripts/visual-container.sh --run-dir tests/e2e-runs/169-05-visual`, image `eff16c30e6f3…`, Playwright 1.63.0:
+**exit 0**, 7 expected / 0 unexpected / 0 flaky (4 screenshots plus setup and teardown). No snapshot changed, so
+there is no re-baseline commit.
+
 ## 7. Operator follow-ups
 
 - **Review the `braces` baseline row (169-01, `c97bc9898`).** GHSA-vfj7-8cjw-p6xm (id 1240992) was published
@@ -1080,11 +1293,26 @@ the 9 package `vitest.config.ts` docblocks (six of which also misspelled "for" a
   branches). A `git stash pop` in any checkout would apply this one ledger diff. It holds nothing else and is safe
   to drop (`git stash drop stash@{0}` after `git stash show -p stash@{0}`). The executor did not drop it, because
   the rule forbids every stash subcommand.
+  **Resolved:** the orchestrator verified that every line of the entry was already committed, then dropped it
+  (2026-10-03, before 169-05). No action remains.
 - **Docker credential helper wedged again (169-04).** `docker-credential-desktop get` hung on the first
   `docker pull`. This is the same host fault as 136-05. The pull went through with a scratch `DOCKER_CONFIG` and an
   explicit `DOCKER_HOST`. Repairing Docker Desktop's credential helper is a host action.
 - **`vite` catalog entry (169-04).** A catalog `vite: ^7.3.6` now exists, consumed by the 11 workspaces that run
-  Vitest but do not build with Vite. 169-05 bumps it to 8 and points both apps at it.
+  Vitest but do not build with Vite. 169-05 bumps it to 8 and points both apps at it. **Done in 169-05** (`bf828a1da`: `vite ^8.3.1`, both apps on `catalog:`).
+
+- **Vite 8 raises the supported-browser floor (169-05).** Vite 8's default build target is
+  `chrome111`, `edge111`, `firefox114`, `safari16.4`, `ios16.4` (`ESBUILD_BASELINE_WIDELY_AVAILABLE_TARGET` in
+  `vite/dist/node/chunks/node.js`). The frontend moved from Vite 6's `modules` default (`es2020`, `chrome87`,
+  `edge88`, `firefox78`, `safari14`) and the docs app from Vite 7's (`chrome107`, `edge107`, `firefox104`,
+  `safari16`). Voters on older browsers (for example Safari before 16.4 / iOS before 16.4) may get syntax the browser
+  cannot parse. Confirm that this floor is acceptable for the voter app, or set `build.target`. Neither config sets
+  it now.
+- **`configLoader: 'native'` notice (169-05).** Vite 8 warns that `apps/frontend/vite.config.ts` imports three local
+  modules without file extensions. This is harmless under the default bundle loader, but it would break the native
+  loader, which Vite plans to make the default in a later major. The fix needs `.ts` import extensions, and with
+  them `allowImportingTsExtensions`, in the tsconfig that type-checks the config. It is a small config change to
+  make at the next Vite major or in 169-12.
 
 ## 8. Moderate and low advisories on chosen versions
 
