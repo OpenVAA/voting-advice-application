@@ -38,7 +38,7 @@
     "daisyui": "catalog:",
     "eslint": "catalog:",
     "eslint-config-prettier": "catalog:",
-    "eslint-plugin-svelte": "^3.13.1",
+    "eslint-plugin-svelte": "catalog:",
     "glob": "^11.0.0",
     "mdsvex": "^0.12.6",
     "playwright": "^1.58.2",

@@ -174,7 +174,7 @@ const ADAPTER_INIT_DECLARATION_BROAD = [
  */
 export default [
   ...sharedConfig,
-  ...svelte.configs['flat/prettier'],
+  ...svelte.configs.prettier,
   {
     ignores: [
       'ios/*',
