@@ -86,3 +86,22 @@ host, a `db:start` that needs a pull uses a scratch `DOCKER_CONFIG` (`{}`) and
     `yarn db:stop && yarn workspace @openvaa/supabase exec supabase stop --no-backup && yarn db:reset`.
 
 Hosted Postgres stays 15 until the operator upgrades it. Every migration must stay valid on PG15 until then.
+
+## Resolution
+
+**Closed 2026-10-03: option A, by operator ruling (given in chat to the orchestrator).** The ruling overrules PROH-169-12
+for this one reviewed volatility fix and was applied between plans 169-07 and 169-08 (`169-RULINGS-SUMMARY.md`):
+
+- `f1ac8164a` fix(supabase): mark `is_valid_choice_id` STABLE, in `schema/011-validation-functions.sql` and the
+  generated `migrations/00001_initial_schema.sql` (`assert:schema-migration-parity` green).
+- `bfdc1afc3` chore(supabase): local Postgres 17 (`config.toml` `major_version = 17`, with the standing-constraint
+  comment).
+- This project's stack only: `yarn db:stop && yarn workspace @openvaa/supabase exec supabase stop --no-backup &&
+  yarn db:reset` (other containers untouched). `show server_version` = `17.6` on `postgres:17.6.1.171`;
+  `.temp/postgres-version` absent; `provolatile` = `s`; `db:types` no diff; pgTAP `Files=36, Tests=1335`, PASS, census
+  file ok; `db:lint:sql` exit 0 with output identical to the PG15 run (`tests/e2e-runs/169-gates/rulings/r1-*`).
+
+DEPS-08 stays Pending: 169-13 owns its remaining parts (the hosted-Postgres-17 operator todo and the final PG17
+pgTAP / SQL-lint / E2E gate on one HEAD). Hosted databases that already applied `00001` keep the IMMUTABLE label until
+they are re-created or a later migration re-declares the function; on PG15 that is harmless (only the PG17 image's
+checker reports it).

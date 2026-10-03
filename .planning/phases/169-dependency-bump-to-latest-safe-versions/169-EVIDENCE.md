@@ -517,7 +517,7 @@ Older lines are no way out. `nodemailer@9.1.1` and `nodemailer@6.10.1` both stil
 | `braces` | 3.0.3 | none published | No fixed version exists (GHSA-vfj7-8cjw-p6xm covers `<=3.0.3`; 3.0.3 is the latest). Accepted in the baseline with a rationale (§ 7) | D-02 (baseline keeps no-fix rows), D-05 | when `braces` publishes a fix; or once `@changesets/cli` 2's `micromatch` path (169-10) is gone, the row goes stale. `vite-plugin-restart` left the tree in 169-05 (`f88e60568`), and the baseline rationale now names only the `@changesets/cli` path |
 | `@types/node` | **24.19.0** (catalog `^24.19.0`; 169-02, `968113336`) | 26.6.3 / 26.6.4 (`latest`), 25.x; 24.19.1 (1.4 d old on 2026-10-03) | **Types track the runtime major** (Node 24 at every pin site). 24.19.1 is inside the 7-day window | D-11, R3, D-03 | when the runtime moves to a newer major; 24.19.1 clears 2026-10-08T22:38Z |
 | `typescript` | **6.0.3** (catalog `^6.0.3`; 169-02, `ebeaafa5c`) | 7.0.2 (2026-07-08, x.0.0 86.7 d old — the age rule alone would admit it) | Blocking peers measured 2026-10-03: `@typescript-eslint/eslint-plugin` / `@typescript-eslint/parser` / `typescript-eslint` 8.70.1 `typescript: >=4.8.4 <6.1.0` (8.71.0, the newest, is inside the 7-day window); `svelte-check` 4.7.6 `^5.0.0 \|\| ^6.0.0`; `@sveltejs/kit@3` `typescript: ^6.0.0`. 6.0.3 is the newest 6.x (6.0.0 was never published) | D-16 | typescript-eslint and svelte-check admit 7 (and Kit 3's peer, once Kit 3 lands) |
-| `eslint`, `@eslint/js` | **9.39.5** (catalog `^9.39.2` / `^9.39.1`, unchanged) | 10.11.0 / 10.0.1 (age rule admits both) | **Upstream false positive.** ESLint 10's recommended `no-useless-assignment` reports every write-only `$bindable` prop (3 sites: `OpinionQuestionInput.svelte` `valid`, `Video.svelte` `mode`, `EntityList.svelte` `itemsShown`). eslint-plugin-svelte#1478 has been open since 2026-02-23 and 3.23.0 is the newest release. PROH-169-07 forbids disabling the rule, and a dummy read would bend the code. One real `no-unassigned-vars` defect (`Layout.svelte` `drawerOpenElement`, the drawer focus return is never wired) needs a behaviour decision. The 15 other ESLint-10 findings are fixed (`14b62f26c`). The config-lookup flag stays at all 19 sites, because ESLint 9 needs it | D-06, D-17, PROH-169-07 | eslint-plugin-svelte#1478 fixed in a release at least 7 days old, or an operator overrule (todo `2026-10-03-eslint-10-held-on-bindable-no-useless-assignment.md`, options A/B) |
+| `eslint`, `@eslint/js` | ~~9.39.5~~ **RELEASED 2026-10-03 → 10.11.0 / 10.0.1** (`34ce0d51c`, operator ruling) | 10.12.0 (2026-10-02T20:08Z, 0.81 d old on 2026-10-03T15:30Z) | **Hold released by operator ruling 2026-10-03.** ESLint 10 landed with three scoped one-line `eslint-disable-next-line no-useless-assignment` comments on the write-only `$bindable` props (eslint-plugin-svelte#1478), overruling PROH-169-07 for exactly those lines. The drawer focus return was wired (`e3a661517`), clearing `no-unassigned-vars` at source. The config-lookup flag is gone from all 21 live sites. 10.12.0 is inside the 7-day window | D-06, D-17, PROH-169-07 (overruled for 3 lines) | 10.12.0 clears 2026-10-09T20:08Z; the three disables go when #1478 ships (todo `2026-10-03-remove-bindable-no-useless-assignment-disables.md`) |
 | `vitest`, `@vitest/browser-playwright` | **5.0.2** (catalog `^5.0.2`; 169-04) | 5.0.3 (2026-09-30T11:30Z / 11:29Z, 3.0 d old on 2026-10-03) | Inside the 7-day window; 5.0.2 is the newest 5.x old enough | D-03 | 5.0.3 clears 2026-10-07T11:30Z |
 | `daisyui` | **5.7.46** (catalog `^5.7.46`; 169-04) | 5.7.47 (2026-09-30T00:29Z, 3.45 d old on 2026-10-03) | Inside the 7-day window | D-03 | 5.7.47 clears 2026-10-07T00:29Z |
 | `@sveltejs/kit`, `@sveltejs/adapter-node`, `@sveltejs/adapter-static` | **2.70.3 / 5.5.7 / 3.0.10** (169-05) | 3.0.0 / 6.0.0 / 4.0.0 (2026-10-01, 1.8 d old on 2026-10-03) | New major lines inside the 30-day window | D-03, D-15 | 169-12; clear 2026-10-31T17:22Z / 17:24Z / 17:21Z |
@@ -953,6 +953,29 @@ can continue. The A/B/C choice stays with the operator (todo
   - Docker was not restarted, and the other stack was not touched.
 
 ## 5. Negative controls
+
+### Operator rulings 2026-10-03 (between 169-07 and 169-08)
+
+- Gate run **`169-rulings`** at `34ce0d51c` (after R1-R3): **12/12 zero**. `porcelain_lines: 1` (the new `.planning`
+  todo). `04-lint`: 0 errors, 17 warnings, and the normalised list equals `07/lint-norm-after.txt`.
+- `bf47b1e96` (test-only: the reactive fake `video` context) followed, so the set was re-run on the final code HEAD.
+- Gate run **`169-rulings-r2`** at `bf47b1e96`: **12/12 zero**, 2026-10-03T15:42:31Z–15:44:46Z, on ESLint 10.11.0 and
+  local Postgres 17.6. `porcelain_lines: 5`, all `.planning` (todo moves, evidence, handoff).
+  - `01-install`: the same single `zod`/`openai` YN0060.
+  - `03-typecheck` 23/23, `08-unit` 25/25 and `09-build` 14/14 executed, none cached.
+  - `08-unit`: frontend 129 files / 2035 tests (169-07: 128 / 2033; the delta is the new `Layout.svelte.test.ts`, 2
+    tests), with no `binding_property_non_reactive` on stderr.
+  - `04-lint`: 0 errors, 17 warnings. The normalised list (33 lines) is identical to 169-07's (sorted `diff` exit 0).
+  - `10-audit`: `0 new advisory(ies) at high+, 2 accepted`.
+  - `12-docs-rq` (two-base form): exit 0.
+- pgTAP and the SQL lint on Postgres 17.6 after a clean reset are recorded in § 6 (operator rulings, R1):
+  `Files=36, Tests=1335`, PASS; `db:lint:sql` exit 0.
+- Full E2E **`169-rulings`** at `bf47b1e96` on **Postgres 17.6**: `169-e2e.sh` ran `docker builder prune -af` (30.38 GiB
+  free in the Docker VM), started one fresh dev server on 5273 and ran a `db:reset`. Result: **171 passed, 0 failed,
+  0 flaky, 0 skipped, 0 did not run**, 4.45 min, `ENOSPC` 0. No suspected flake, so no isolation re-test was needed.
+  - This is the first full suite on PG17 that counts. 169-06's PG17 run was information-only, because the SQL lint was
+    red then.
+  - After the run, no listener remained on 5273 and no `vite.js dev` process was alive.
 
 ### Age gate binding proof (D-04)
 
@@ -1704,6 +1727,93 @@ The plan has no hold provision for D-14, which is an operator overrule, so execu
 - The 168-06 F7 nonce finding is in the SvelteKit OIDC callback (`apps/frontend/src/routes/api/oidc/callback`), not in
   `identity-callback/index.ts`, so these edits do not touch it.
 
+### Operator rulings 2026-10-03 — applied between 169-07 and 169-08 (`169-RULINGS-SUMMARY.md`)
+
+The operator gave four rulings in chat to the orchestrator on 2026-10-03; an executor applied them on HEAD `59be299ca`.
+Evidence files are under `tests/e2e-runs/169-gates/rulings/` (gitignored).
+
+**R1 — local Postgres 17 with option A (overrules PROH-169-12 for this one fix).**
+
+- `f1ac8164a` fix(supabase): `public.is_valid_choice_id` `IMMUTABLE` → `STABLE` in `schema/011-validation-functions.sql`
+  and the generated `migrations/00001_initial_schema.sql`, applied from `06/t2-option-a-stable.patch`. Checks:
+  - `assert:schema-migration-parity`: 26 schema files → 6372 lines = `00001` 6372 lines, generated copy current;
+  - `assert:comment-hygiene` 0; Prettier clean.
+- Stack switch, this project only:
+  - Before: 13 `*_openvaa-local` containers plus the unrelated `my-redis` (`r1-containers-before.txt`).
+  - `yarn db:stop`, then `supabase stop --no-backup` (`{"project_id_filter":"openvaa-local","backup":false}`).
+    Afterwards only `my-redis` runs and no `openvaa` volume is left.
+  - `docker builder prune -af` reclaimed 0 B. 30.70 GiB free in the Docker VM.
+  - `yarn db:reset` (scratch `DOCKER_CONFIG`) exit 0.
+- Measured on the fresh reset:
+  - `show server_version` = `17.6` on `public.ecr.aws/supabase/postgres:17.6.1.171`, and
+    `apps/supabase/supabase/.temp/postgres-version` is absent.
+  - `pg_proc.provolatile` for `is_valid_choice_id` = `s`.
+  - `yarn db:types` exit 0, and `packages/supabase-types` shows no diff.
+  - pgTAP: `Files=36, Tests=1335`, `Result: PASS`, `36-entity-identity.test.sql … ok`, no `not ok`.
+  - `yarn db:lint:sql` exit 0: `No schema errors found`, `{"results":[]}`. The Splinter-derived summary is
+    `0 error(s), 3 warning(s)` (the three unindexed foreign keys), the same as the PG15 run in `06/t1-db-lint.log`.
+- `bfdc1afc3` chore(supabase): local Postgres 17 (`config.toml` from `06/t2-pg17-config.patch`).
+
+**R2 — ESLint 10 (overrules PROH-169-07 for exactly three lines).** `34ce0d51c`:
+
+- **Age rule, re-measured 2026-10-03T15:30Z:** `eslint` 10.11.0 (2026-09-18, 14.80 d) is the newest 10.x at least 7 days
+  old; 10.12.0 is 0.81 d old. `@eslint/js` 10.0.1 (238.71 d).
+- **Peers admit `eslint` 10** (`r2-peers.txt`): `@typescript-eslint/*` 8.70.1 `^8.57.0 || ^9.0.0 || ^10.0.0`;
+  `eslint-plugin-unused-imports` 4.4.1 `^10.0.0 || …`; `eslint-plugin-playwright` 2.12.0 `>=8.40.0`;
+  `eslint-config-prettier` 10.1.8 `>=7.0.0`; `eslint-plugin-svelte` 3.23.0 `… || ^10.0.0`; `eslint-plugin-import-x`
+  4.17.1 `… || ^10.0.0`; `eslint-plugin-simple-import-sort` 14.0.0 `>=5.0.0`. `svelte-eslint-parser` 1.8.1 declares no
+  `eslint` peer.
+- **Install:** `yarn install` exit 0, with the same single `zod`/`openai` YN0060 as before. New lockfile names:
+  `@cacheable/memory`, `@cacheable/utils`, `@keyv/bigmap`, `@keyv/serialize`, `@types/esrecurse`, `cacheable`,
+  `hashery`, `hookified`, `qified`. That is the same nine names 169-03 measured and legitimacy-checked
+  (`03/t2c-new-names.txt`, `03/t2c-legit.json`). Gone: `@eslint/eslintrc`, `callsites`, `import-fresh`, `json-buffer`,
+  `lodash.merge`, `parent-module`. `yarn dedupe --check` 0.
+- **Flag removal:** the saved `03/t2c-eslint10-config.patch` applied cleanly to every file except `.yarnrc.yml`.
+  That file's context had moved in later plans, so its two catalog lines were edited by hand.
+  - Population, re-derived live with `git grep -n -e v10_config_lookup -- ':!.planning'`: 21 lines in 18 files.
+    169-03 counted 19.
+  - After the change the grep finds nothing (exit 1).
+  - Prettier collapsed the shortened `.lintstagedrc.json` array onto one line.
+- **Findings on ESLint 10 before the disables:** the 17 baseline warnings plus exactly the four expected errors
+  (`r2-lint-raw.log`):
+  - `OpinionQuestionInput.svelte:50:5`, `Video.svelte:132:5` and `EntityList.svelte:45:5`, all `no-useless-assignment`;
+  - `Layout.svelte:42:7` `no-unassigned-vars`.
+- **Disables:** one comment each, directly above the three props inside the `$props()` destructuring:
+  `// eslint-disable-next-line no-useless-assignment -- false positive on write-only $bindable prop; remove when
+  https://github.com/sveltejs/eslint-plugin-svelte/issues/1478 is fixed`. ESLint reports none of them as unused.
+  `git grep -n 'eslint-disable-next-line no-useless-assignment'` finds exactly 3.
+- **After the disables and R3:**
+  - `TURBO_FORCE=true yarn lint:check` exit 0.
+  - The normalised list (33 lines; 0 errors, 17 warnings) equals `07/lint-norm-after.txt` (sorted `diff` exit 0).
+  - **Delta against the prior list: none.** The four ESLint-10 errors were absorbed by the three disables and the R3
+    source fix.
+- **Proofs on 10.11.0:**
+  - `169-planted-import-rules.sh import-x` exit 0, 4/4 fired.
+  - The four `eslint-*-guard.test.ts` specs: 4 files, 385 tests, passing. Per-file counts 30 / 88 / 91 / 176 equal
+    169-03's ESLint-10 run, which also included the 5-test `spike-scaffolding.test.ts`.
+
+**R3 — drawer focus return wired (WCAG 2.4.3).**
+
+- `05f88a2a6` (RED) adds `apps/frontend/src/lib/layouts/main/Layout.svelte.test.ts`. It mounts `Layout` for real
+  against fake contexts and covers both close paths, `LayoutContext.navigation.close()` and the overlay click.
+  - Two of two failed: `expected <button …(2)> to be <button …(5)>`. Focus stayed on `#drawerCloseButton`.
+- `e3a661517` (GREEN):
+  - `Header`'s `drawerOpenElement = $bindable()`;
+  - `Layout`'s `let drawerOpenElement = $state<HTMLButtonElement>()` with `bind:drawerOpenElement`;
+  - the `closeDrawer()` docblock corrected.
+  - Result: 2 of 2 pass, and `svelte-check` reports 0 errors / 0 warnings.
+- `bf47b1e96` makes the fake `video` context a `$state` object. The plain object had caused
+  `binding_property_non_reactive` dev warnings on stderr.
+  - Re-checked: still RED against the pre-fix `Layout` / `Header` (restored from `05f88a2a6` for one run, then put back
+    with `git checkout -- <file>`), and GREEN with no stderr at HEAD.
+- Rendered pixels: unchanged. The fix only changes which element `focus()` targets after a close. No visual spec opens
+  or closes the drawer, so no visual gate was run.
+
+**R4 — browser support floor.** No code change. Recorded in § 7.
+
+**Optional R5 — voter-journey Base-6 slider race.** Left deferred, because the cause is still UNCONFIRMED and the
+suggested wait may not fix it. The reasoning is in `deferred-items.md`.
+
 ## 7. Operator follow-ups
 
 - **Review the `braces` baseline row (169-01, `c97bc9898`).** GHSA-vfj7-8cjw-p6xm (id 1240992) was published
@@ -1741,6 +1851,12 @@ The plan has no hold provision for D-14, which is an operator overrule, so execu
   - Separately, decide on `Layout.svelte`'s drawer focus return, which ESLint 10's `no-unassigned-vars` showed
     has never been wired: wire it or delete it.
   - Todo: `2026-10-03-eslint-10-held-on-bindable-no-useless-assignment.md`.
+  - **RESOLVED 2026-10-03 by operator ruling (operator, in chat).** ESLint 10 landed (`34ce0d51c`) with three scoped
+    one-line `eslint-disable-next-line no-useless-assignment` comments, one per write-only `$bindable` prop, each
+    citing eslint-plugin-svelte#1478 (PROH-169-07 overruled for exactly those three lines; the rule stays on
+    everywhere else, narrower than option B). The drawer focus return was **wired**, not deleted (`05f88a2a6` RED,
+    `e3a661517` fix). Follow-up todo `2026-10-03-remove-bindable-no-useless-assignment-disables.md`. Details in § 6
+    (operator rulings).
 
 - **A `git stash` entry left in the shared stash list (169-04 executor error).** The executor
   broke the never-`git stash` rule three times. Twice it ran a read-only `git stash list` with its output discarded.
@@ -1768,13 +1884,16 @@ The plan has no hold provision for D-14, which is an operator overrule, so execu
   `safari16`). Voters on older browsers (for example Safari before 16.4 / iOS before 16.4) may get syntax the browser
   cannot parse. Confirm that this floor is acceptable for the voter app, or set `build.target`. Neither config sets
   it now.
+  **RESOLVED 2026-10-03 (operator, in chat): the operator accepted Vite 8's default build target** (`chrome111`,
+  `edge111`, `firefox114`, `safari16.4`, `ios16.4`) for both apps. No `build.target` override is set, and no code
+  changed. 169-13's follow-up todo list no longer needs a browser-floor confirmation item.
 - **`configLoader: 'native'` notice (169-05).** Vite 8 warns that `apps/frontend/vite.config.ts` imports three local
   modules without file extensions. This is harmless under the default bundle loader, but it would break the native
   loader, which Vite plans to make the default in a later major. The fix needs `.ts` import extensions, and with
   them `allowImportingTsExtensions`, in the tsconfig that type-checks the config. It is a small config change to
   make at the next Vite major or in 169-12.
 
-- **DECISION NEEDED — the PG17 SQL lint red (169-06 Task 2, § 6).** On the PG17 image, `yarn db:lint:sql` fails on
+- **RESOLVED 2026-10-03 (option A, operator in chat) — was: DECISION NEEDED — the PG17 SQL lint red (169-06 Task 2, § 6).** Applied as `f1ac8164a` (STABLE in both SQL files) and `bfdc1afc3` (local `major_version = 17`); the local stack runs Postgres 17.6. See § 6 (operator rulings). Original entry: On the PG17 image, `yarn db:lint:sql` fails on
   `public.is_valid_choice_id`: it is declared IMMUTABLE but calls the STABLE `jsonb_agg` / `jsonb_build_array`. The
   PG15 image's checker does not report it. pgTAP (1335/1335) and the full E2E run (171/171) pass on PG17. The fix is a
   schema + migration edit, which PROH-169-12 forbids, so 169-06 stopped before the Postgres commit. On the
@@ -1796,6 +1915,9 @@ The plan has no hold provision for D-14, which is an operator overrule, so execu
   syntax, function or GUC. The parked config patch (`t2-pg17-config.patch`) writes this rule into `config.toml`'s
   `[db]` comment; the committed file still says `major_version = 15`, matching hosted. This phase changed no migration,
   schema or seed file (diff against `5ed82f437` is empty), unless option (A) above is chosen.
+  **Update 2026-10-03:** option (A) was chosen. `config.toml` now says `major_version = 17` with this rule in its
+  `[db]` comment, and the one schema/migration change in the phase is the reviewed `is_valid_choice_id` volatility fix
+  (`f1ac8164a`).
 - **Operator-facing local step for the PG17 switch.** A PG15 data volume cannot be opened by PG17, so every
   developer machine needs this once after pulling the Postgres commit:
   `yarn db:stop && yarn workspace @openvaa/supabase exec supabase stop --no-backup && yarn db:reset`. Local data is

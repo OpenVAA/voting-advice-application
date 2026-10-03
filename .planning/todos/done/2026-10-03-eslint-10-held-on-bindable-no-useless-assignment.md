@@ -73,3 +73,20 @@ The move itself has three parts:
   Derive the population with `git grep -n -e v10_config_lookup -- ':!.planning'`; it was 19 sites on
   2026-10-03.
 - Rewrite the guard docblocks' invariant 2, which calls the flag mandatory.
+
+## Resolution
+
+**Closed 2026-10-03 by operator ruling (given in chat to the orchestrator)**, applied between plans 169-07 and 169-08
+(`169-RULINGS-SUMMARY.md`):
+
+- **ESLint 10 landed** (`34ce0d51c`): `eslint` 10.11.0 / `@eslint/js` 10.0.1, the config-lookup flag removed from all
+  21 live sites, the guard docblocks' invariant 2 rewritten.
+- **Option B variant, narrower than proposed:** instead of turning the rule off for `**/*.svelte`, the operator
+  overruled PROH-169-07 for exactly three one-line `eslint-disable-next-line no-useless-assignment` comments, one per
+  write-only `$bindable` prop, each citing eslint-plugin-svelte#1478. The rule stays on everywhere else.
+- **Drawer focus return: wired** (`05f88a2a6` RED test, `e3a661517` fix): `Header`'s `drawerOpenElement` is
+  `$bindable()`, and `Layout` binds it into a `$state` variable, so `closeDrawer()` returns focus to the menu button.
+  That clears the `no-unassigned-vars` finding at source.
+
+Follow-up: todo `2026-10-03-remove-bindable-no-useless-assignment-disables.md` (remove the three disables once #1478
+ships).
