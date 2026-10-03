@@ -193,6 +193,8 @@ install with exactly that 5-line hunk), so it is part of the same commit.
 |---|---|---|---|---|---|
 | `ai`, `@ai-sdk/google`, `@ai-sdk/openai` (+ their exact pins `@ai-sdk/gateway`, `@ai-sdk/provider`, `@ai-sdk/provider-utils`) | pre-phase resolutions: `ai` 5.0.60, `@ai-sdk/google` 2.0.23, `@ai-sdk/openai` 2.0.42, gateway 1.0.33, provider 2.0.0, provider-utils 3.0.10 / 3.0.12 | in-range `ai` 5.0.267, google 2.0.99, openai 2.0.130 (→ provider-utils 3.0.39) | **Narrowed out of the group-0 refresh.** `@ai-sdk/provider-utils` ≥ 3.0.35 (2026-08-26) depends on `undici ^5.29.0`; the in-range refresh pulled `undici` 5.29.0 and `@fastify/busboy` 2.1.1 back into the tree, adding NEW high 1240982 (`@fastify/busboy` <3.2.1, no in-range fix under `undici` 5's `^2.0.0`) and re-attaching accepted `undici` rows 1114638 / 1114640 / 1121245 to a new dependent. Moved into the excluded set per 169-01 Task 3 step 6; the family's majors are 169-09's | D-07, D-21, D-25 (G7) | 169-09 (AI SDK majors); re-check that the target `ai` / `@ai-sdk/*` majors do not depend on `undici` 5 |
 | `braces` | 3.0.3 | none published | No fixed version exists (GHSA-vfj7-8cjw-p6xm covers `<=3.0.3`; 3.0.3 is the latest). Accepted in the baseline with a rationale (§ 7) | D-02 (baseline keeps no-fix rows), D-05 | when `braces` publishes a fix; or once `vite-plugin-restart` (169-05) and `@changesets/cli` 2's `micromatch` path (169-10) are both gone, the row goes stale |
+| `@types/node` | **24.19.0** (catalog `^24.19.0`; 169-02, `968113336`) | 26.6.3 / 26.6.4 (`latest`), 25.x; 24.19.1 (1.4 d old on 2026-10-03) | **Types track the runtime major** (Node 24 at every pin site). 24.19.1 is inside the 7-day window | D-11, R3, D-03 | when the runtime moves to a newer major; 24.19.1 clears 2026-10-08T22:38Z |
+| `typescript` | **6.0.3** (catalog `^6.0.3`; 169-02, `ebeaafa5c`) | 7.0.2 (2026-07-08, x.0.0 86.7 d old — the age rule alone would admit it) | Blocking peers measured 2026-10-03: `@typescript-eslint/eslint-plugin` / `@typescript-eslint/parser` / `typescript-eslint` 8.70.1 `typescript: >=4.8.4 <6.1.0` (8.71.0, the newest, is inside the 7-day window); `svelte-check` 4.7.6 `^5.0.0 \|\| ^6.0.0`; `@sveltejs/kit@3` `typescript: ^6.0.0`. 6.0.3 is the newest 6.x (6.0.0 was never published) | D-16 | typescript-eslint and svelte-check admit 7 (and Kit 3's peer, once Kit 3 lands) |
 
 ## 4. Gate runs
 
@@ -206,6 +208,7 @@ Runner: `bash 169-gates.sh <label>` (`TURBO_FORCE=true`; each status read direct
 | 169-01 | `169-01-group0` | `54041714e` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | **171 / 171 / 0 / 0 / 0** (`169-e2e/169-01-group0`) |
 | 169-02 | `169-02-node24` (interrupted, see notes) | `77d3ce8bf` | 0 | 0 | 0 | — | — | — | — | — | — | — | — | — | — |
 | 169-02 | `169-02-node24-r2` (the Node 24 commit alone) | `77d3ce8bf` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | **171 / 171 / 0 / 0 / 0** (`169-e2e/169-02-node24`) |
+| 169-02 | `169-02-group1` (+ CI step order, secret-scan fixture, `@types/node` 24, TS 6) | `ebeaafa5c` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | — |
 
 Notes on `169-01-baseline` (2026-10-03T06:43:09Z–06:45:43Z, `tests/e2e-runs/169-gates/169-01-baseline/`):
 
@@ -277,7 +280,7 @@ job was lost). Re-tested in isolation under v24.21.0: `TURBO_FORCE=true yarn tur
 @openvaa/core --filter @openvaa/dev-tools` → exit 0 in 2.4 s. **Cause UNCONFIRMED** (not reproducible; the
 overlap with the session stall is the likely but unproven reason). Re-run from the start as **`169-02-node24-r2`**
 (08:33:15Z–08:36:23Z, node v24.21.0, yarn 4.18.1, HEAD `77d3ce8bf`, porcelain 0): **all twelve gates 0**;
-forced turbo `0 cached` (typecheck 14/14, unit 23/23, build 25/25); audit `0 new advisory(ies) at high+, 6
+forced turbo `0 cached` (typecheck 23/23, unit 25/25, build 14/14); audit `0 new advisory(ies) at high+, 6
 accepted`. `04-lint` 43 s.
 
 **Image build and smoke (R6, Pitfall 5).** `docker build --file apps/frontend/Dockerfile --target production
@@ -295,6 +298,44 @@ http://localhost:3169/` → **`200`** after 2 s (`<title>Election Compass</title
 prune -af`, port 5273 free; `e2e-run.sh` at HEAD `77d3ce8bf`, `db_reset=true`, 2026-10-03T08:39:58Z–08:46:07Z,
 wrapper exit 0, preflight failures 0 / successes 1. `summary.json`: **total 171, passed 171, failed 0, flaky 0,
 skipped 0, didNotRun 0** — identical to the group-0 tree, so the runtime move changed no E2E outcome.
+
+### 169-02 Task 3 — `@types/node` 24 and TypeScript 6
+
+Probe: `node 169-version-probe.mjs --only @types/node,typescript,@typescript-eslint/eslint-plugin,@typescript-eslint/parser,svelte-check
+--node 24.21.0` (`tests/e2e-runs/169-gates/02-t3-probe.md`, 2026-10-03T09:03:59Z; `typescript-eslint` itself is not a
+declared package, so the probe refused it by name and the two declared `@typescript-eslint/*` packages stand in).
+Newest 24.x `@types/node` at least 7 days old: **24.19.0** (2026-09-25T22:09Z, 7.46 d). TypeScript: 6.0.2
+(2026-03-23), **6.0.3** (2026-04-16), 7.0.2 (2026-07-08). Peer ranges as in § 3. Neither commit added a package name
+to `yarn.lock` (`@types/node` 24.19.0 brings `undici-types` 7.24.6, a name already present), so no legitimacy check
+was due.
+
+- **`@types/node` (`968113336`).** `yarn why @types/node`: root, `apps/docs`, `apps/frontend`, `packages/dev-seed`,
+  `packages/dev-tools` → `24.19.0`. Third-party transitive copies are untouched (`@types/node@*` from `@types/ws`,
+  `@types/node-fetch`, `@types/cheerio` → 26.6.3; `openai` → 18.19.130; `@manypkg/find-root` → 12.20.55).
+  `TURBO_FORCE=true yarn typecheck` → 0 (23/23, 0 cached); `yarn typecheck:tests` → 0.
+- **TypeScript 6.0.3 (`ebeaafa5c`).** First pass, catalog only: `yarn typecheck` → **2**: `@openvaa/core`
+  `src/controller/controller.ts` TS2584 "Cannot find name 'console'" ×4 — TS 6's `types: []` default dropped the
+  automatically included `@types/node` (`lib: ["es2022"]` has no `console`); `typecheck:tests` → 2 as a knock-on
+  (core's `dist` had no declarations, so `dist/index.js` was checked); both apps' `check` → 0. Fix:
+  `"types": ["node"]` in `packages/shared-config/tsconfig.base.json` (frontend keeps `["vitest/globals"]`;
+  dev-seed, dev-tools, tests already set `["node"]`). Second pass: typecheck 0 (23/23), typecheck:tests 0,
+  frontend check 0 (2117 files, 0 errors, 0 warnings), docs check 0 (648 files), build 0. No other TS 6 default
+  surfaced in a gated config: no tsconfig sets `baseUrl`, `moduleResolution: node10`, `outFile`,
+  `downlevelIteration` or `ignoreDeprecations`; every `moduleResolution` is `bundler`; side-effect imports
+  (`noUncheckedSideEffectImports`) raised nothing in typecheck or either `check`. `yarn why typescript` → only
+  6.0.3 (14 workspaces, through Yarn's compat patch). `git grep -n -E "ignoreDeprecations|@ts-ignore" -- '*.json'
+  'apps/**/*.ts' 'packages/**/*.ts'` → 0 lines, as before the plan.
+  Remaining peer warning (`YN0060`): `@sveltejs/kit` 2.55.0's optional `typescript: ^5.3.3` (frontend, docs);
+  Kit 2.70.3 declares `^5.3.3 || ^6.0.0` and lands in 169-05.
+- **Ungated config, pre-existing red (deferred).** `apps/docs/scripts/tsconfig.json` (not extending the base and
+  run by no script or gate): `tsc -p apps/docs/scripts/tsconfig.json --noEmit` → exit 2 under **both** TS 5.9.3
+  (`mdsvex/dist/main.d.ts` cannot resolve `unified`) and 6.0.3 (that error plus TS7016 for the untyped
+  `../../mdsvex.config.js` import — TS 6's `strict` default now applies there, the config sets no `strict`). Left
+  as found; recorded in `deferred-items.md`.
+
+**`169-02-group1`** (09:08:41Z–09:11:08Z, node v24.21.0, yarn 4.18.1, HEAD `ebeaafa5c`, porcelain 0): all twelve
+gates 0; forced turbo `0 cached` (typecheck 23/23, unit 25/25, build 14/14); audit `0 new advisory(ies) at high+, 6
+accepted`.
 
 ## 5. Negative controls
 
