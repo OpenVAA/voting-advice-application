@@ -6,7 +6,6 @@
     "build": "echo 'Nothing to build.'"
   },
   "dependencies": {
-    "@eslint/eslintrc": "catalog:",
     "@eslint/js": "catalog:",
     "@typescript-eslint/eslint-plugin": "catalog:",
     "@typescript-eslint/parser": "catalog:",
