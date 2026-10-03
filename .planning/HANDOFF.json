@@ -1,10 +1,10 @@
 {
   "version": "1.0",
-  "timestamp": "2026-10-03T17:08:00.000Z",
+  "timestamp": "2026-10-03T18:55:00.000Z",
   "phase": "169",
   "phase_name": "dependency-bump-to-latest-safe-versions",
   "phase_dir": ".planning/phases/169-dependency-bump-to-latest-safe-versions",
-  "plan": 11,
+  "plan": 12,
   "task": 1,
   "total_tasks": 2,
   "status": "ready",
@@ -74,6 +74,12 @@
       "name": "Plan 169-10 (group 8: concurrently 10.0.5, lint-staged 17.6.0, @changesets/cli 3.0.3 + changelog-github 1.0.1, glob 13.0.6, @types/cheerio removed, js-yaml 5.4.2 (own types, @types/js-yaml dropped; 31 prompt files parse identically), globals 17.12.0 via catalog + declared in @openvaa/shared-config; changesets 3 drops micromatch/braces -> audit 0 new, 0 accepted, braces row stale for 169-13; dotenv 18 (2026-10-17T21:18Z) and intl-messageformat 12 (2026-10-15T12:27Z) HELD, todo filed; sweep 0 UNASSIGNED-MAJOR, 35 catalog keys all consumed; 169-10-group8 12/12; DEPS-12 stays Pending)",
       "status": "done",
       "commit": "533d8e8c4"
+    },
+    {
+      "id": 12,
+      "name": "Plan 169-11 (group 9: checkout/setup-node/upload-artifact v7, paths-filter v4, setup-cli v3 (version 2.118.0 kept), changesets/action v2 (github-token input, v2 input names, push-with-git-cli true), configure-pages v6, upload-pages-artifact v5, deploy-pages v5, trufflehog 3.97.9 — one commit each, CI-shape tests + comments updated; first CI run of groups 2-9: run 1 37139970902 and run 2 37142651706 e2e-tests red (performance 5901 ms = Playwright 1.63 trace recording in the measured window -> performance project untraced f6bbc68ab; term popup + Base-6 slider keyboard steps inside the View Transition window -> waitForNavigationFocusReset 549f6a60d/edaa28205); run 3 37144076939 12/12 success, E2E 171 passed, pgTAP 1335 on PG17; release.yml/docs.yml unobservable until merge; DEPS-13 complete)",
+      "status": "done",
+      "commit": "6440218f0"
     }
   ],
   "remaining_tasks": [
@@ -109,6 +115,14 @@
     {
       "action": "nodemailer 10 pin for send-email after 2026-10-04T07:51Z (four distinct high advisories on 6.9.10 until then)",
       "context": "todo 2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md; DEPS-09 Pending until it lands"
+    },
+    {
+      "action": "After merge: watch the first main run of release.yml (changesets/action v2 token input, push-with-git-cli) and dispatch docs.yml once (Pages actions v6/v5/v5)",
+      "context": "169-11; neither workflow triggers on ci-evidence/**; 169-EVIDENCE.md section 7"
+    },
+    {
+      "action": "Decide on Playwright 1.63 trace cost and the thin CI performance margin",
+      "context": "169-11: traced 584-611 ms vs untraced 241-244 ms locally; performance project now untraced; CI run 3 still measured 4603 ms (ttfb 707 ms) vs 5000 ms budget, likeliest next CI flake; options: global retain-on-failure vs on-first-retry in CI, per-stage measurement before any budget talk (169-EVIDENCE.md section 7)"
     }
   ],
   "decisions": [
@@ -194,6 +208,6 @@
     }
   ],
   "uncommitted_files": [],
-  "next_action": "Continue /gsd-execute-phase 169 from 169-11 (group 9: GitHub Actions majors, the trufflehog patch and the Pages actions, observed through ci-evidence/** at job level). 169-10 (small majors) is complete; the audit is now 0 new, 0 accepted (braces gone). Local stack is Postgres 17.6; run db:reset before relying on a pristine DB. ESLint 10.11.0, no config-lookup flag. Apply the nodemailer 10 todo once 2026-10-04T07:51Z has passed. Read .planning/phases/169-dependency-bump-to-latest-safe-versions/.continue-here.md first.",
+  "next_action": "Continue /gsd-execute-phase 169 from 169-12 (Kit 3: held by the age rule until 2026-10-31T17:2xZ unless the operator rules otherwise; the plan lands it behind an operator checkpoint or files a dated hold todo). 169-11 is complete: every Action on its new major, CI run 37144076939 12/12 success. remote ci-evidence/169-deps = 59607e5cd (lease value for the next push). Apply the nodemailer 10 todo in the first plan that runs after 2026-10-04T07:51Z. Local stack Postgres 17.6; ESLint 10.11.0; never supabase stop --all.",
   "context_notes": "Work only in the -gsd worktree. Node 24.21.0 must be on PATH. Orchestrator hand-drives executors at top level; one gsd-executor per plan, sequential mode."
 }
