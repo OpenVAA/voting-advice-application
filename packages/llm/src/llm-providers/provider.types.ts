@@ -1,9 +1,17 @@
 import type { Controller } from '@openvaa/core';
-import type { CallSettings, GenerateObjectResult, Prompt, StopCondition, StreamTextResult, ToolSet } from 'ai';
+import type {
+  GenerateObjectResult,
+  LanguageModelCallOptions,
+  Prompt,
+  RequestOptions,
+  StopCondition,
+  StreamTextResult,
+  ToolSet
+} from 'ai';
 import type { z } from 'zod';
 import type { LLMCosts, ModelPricing } from '../utils/costCalculation.type';
 
-// Vercel AI SDK defines their types similarly with Prompt and CallSettings as base types.
+// Vercel AI SDK defines their types similarly with Prompt and the call settings (LanguageModelCallOptions and RequestOptions) as base types.
 // For streamText, for example, they define its params as Prompt & CallSetting & 20-ish other params that are defined explicitly, not inside any type. We do the same here by cherry-picking the explicit params from Vercel's StreamText. In addition to copying their existing params to our own LLMStreamOptions type, we also add our own params that are not in Vercel's type.
 // These types are here to facilitate LLM-related functionality that is not supported by Vercel's AI SDK. Namely, cost calculation, latency tracking and validation failure retries.
 
@@ -36,6 +44,9 @@ export interface LLMCallMetadata {
   // nånting annat som behövs?
 }
 
+/** The model-facing and transport call settings shared by the SDK's generation functions. */
+type CallSettings = LanguageModelCallOptions & Omit<RequestOptions, 'timeout'>;
+
 // ------------------------------------------------------------
 // OBJECT GENERATION
 // ------------------------------------------------------------
@@ -64,7 +75,7 @@ export type LLMStreamOptions<TOOLS extends ToolSet | undefined = undefined> = Pr
   };
 
 export interface LLMStreamResult<TOOLS extends ToolSet | undefined = undefined>
-  extends StreamTextResult<NonNullable<TOOLS>, never>, Omit<LLMCallMetadata, 'costs'> {
+  extends StreamTextResult<NonNullable<TOOLS>, Record<string, unknown>, never>, Omit<LLMCallMetadata, 'costs'> {
   // Override costs to be a Promise since stream results are immediately available
   costs: Promise<LLMCosts>;
 }

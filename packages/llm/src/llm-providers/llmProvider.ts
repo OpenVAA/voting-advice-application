@@ -1,4 +1,4 @@
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createGoogle } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateObject, NoObjectGeneratedError, streamText } from 'ai';
 import { getFallbackModel } from '../fallbackModels';
@@ -35,7 +35,7 @@ export class LLMProvider {
       case 'openai':
         return createOpenAI({ apiKey: config.apiKey });
       case 'google':
-        return createGoogleGenerativeAI({ apiKey: config.apiKey });
+        return createGoogle({ apiKey: config.apiKey });
       // Add other providers as needed and update the provider config to support them
       default:
         throw new Error(`Unsupported provider: ${config.provider}`);
@@ -72,7 +72,11 @@ export class LLMProvider {
         const result = await generateObject({
           model: this.provider.languageModel(model),
           schema: options.schema,
-          messages: options.messages ?? [],
+          // Forward every prompt field the options type admits: `system` is the SDK's deprecated alias of `instructions`, and `prompt` and `messages` are mutually exclusive.
+          instructions: options.instructions ?? options.system,
+          ...(options.prompt !== undefined ? { prompt: options.prompt } : { messages: options.messages ?? [] }),
+          // The SDK rejects `role: 'system'` entries in `messages` unless this is set. Keep that safe default and let each caller opt in explicitly, so a caller that forwards a client-supplied message array never inherits the opt-in.
+          allowSystemInMessages: options.allowSystemInMessages ?? false,
           temperature: options.temperature,
           maxRetries: options.maxRetries ?? 3 // Retries for network errors
         });
@@ -185,7 +189,7 @@ export class LLMProvider {
       options.modelConfig?.primary ?? getFallbackModel(this.config.provider, options.modelConfig?.primary ?? 'unknown');
 
     const result = streamText({
-      system: options.system,
+      instructions: options.instructions ?? options.system,
       model: this.provider.languageModel(model),
       messages: options.messages ?? [],
       temperature: options.temperature,

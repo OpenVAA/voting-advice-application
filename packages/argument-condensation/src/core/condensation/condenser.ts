@@ -220,7 +220,10 @@ export class Condenser {
         tokens: {
           totalTokens: totalTokens.totalTokens,
           inputTokens: totalTokens.inputTokens,
-          outputTokens: totalTokens.outputTokens
+          outputTokens: totalTokens.outputTokens,
+          // The per-call records keep only the totals, so the breakdown is unknown here
+          inputTokenDetails: { noCacheTokens: undefined, cacheReadTokens: undefined, cacheWriteTokens: undefined },
+          outputTokenDetails: { textTokens: undefined, reasoningTokens: undefined }
         }
       },
       success: true,
@@ -383,6 +386,8 @@ export class Condenser {
       const llmResult = await this.input.options.llmProvider.generateObject({
         schema: ResponseWithArgumentsSchema,
         messages,
+        // The whole prompt is sent as a system message, which AI SDK 7 rejects unless this is set. NOTE: the template interpolates candidate-written comments, so untrusted text runs with system-role authority here. The fix (template in `instructions`, comments in a user message) is tracked in `.planning/todos/pending/2026-10-03-llm-move-system-template-to-instructions.md`.
+        allowSystemInMessages: true,
         temperature: 0.7,
         maxRetries: 3
       });
@@ -402,7 +407,8 @@ export class Condenser {
         // Mark node as failed and stop processing (sequential dependency)
         this.treeBuilder.completeNode(nodeId, 1, false, error instanceof Error ? error.message : 'Unknown error');
         throw new Error(
-          `Failed to parse ${isFirstBatch ? 'initial' : 'refinement'} response: ${error instanceof Error ? error.message : 'Unknown error'}`
+          `Failed to parse ${isFirstBatch ? 'initial' : 'refinement'} response: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          { cause: error }
         );
       }
 
@@ -770,6 +776,8 @@ export class Condenser {
         requests: llmInputs.map((input) => ({
           schema: ResponseWithArgumentsSchema,
           messages: input.messages,
+          // The whole prompt is sent as a system message, which AI SDK 7 rejects unless this is set. NOTE: the templates interpolate candidate-written comments, or arguments the model condensed from them, so untrusted text runs with system-role authority here. The fix is tracked in `.planning/todos/pending/2026-10-03-llm-move-system-template-to-instructions.md`.
+          allowSystemInMessages: true,
           temperature: input.temperature,
           maxRetries: 3,
           validationRetries: 2
@@ -785,7 +793,8 @@ export class Condenser {
       throw new Error(
         `${operation} operation failed for ${logIdentifier}. The LLM Provider failed to provide a valid response. Reason: ${
           error instanceof Error ? error.message : 'Unknown error'
-        }`
+        }`,
+        { cause: error }
       );
     }
 

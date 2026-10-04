@@ -17,7 +17,7 @@ import type { CondensationOutputType } from './condensationType';
  *     processingTimeMs: 420,
  *     nLlmCalls: 66,
  *     costs: { input: 0.5, output: 0.51, total: 1.01 },
- *     tokens: { inputTokens: 6700, outputTokens: 6800, totalTokens: 13500 } // Optional: reasoningTokens, cachedInputTokens
+ *     tokens: { inputTokens: 6700, outputTokens: 6800, totalTokens: 13500, inputTokenDetails: {...}, outputTokenDetails: {...} }
  *   },
  *   success: true,
  *   metadata: {
