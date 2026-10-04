@@ -18,7 +18,7 @@ export type OpenVAALogoProps = SvelteHTMLElements['svg'] & {
   /**
    * The color of the logo as one of the predefined colours.
    *
-   * @default 'neutral'
+   * @default 'primary'
    */
   color?: 'primary' | 'secondary' | 'neutral' | null;
 };

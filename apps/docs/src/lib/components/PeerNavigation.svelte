@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { getPeerNavigation } from '$lib/utils/navigation';
 
-  $: peerNav = getPeerNavigation($page.url);
+  const peerNav = $derived(getPeerNavigation(page.url));
 </script>
 
 {#if peerNav.prev || peerNav.next}
