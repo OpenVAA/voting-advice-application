@@ -74,7 +74,6 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 
 - id: uuid PK DEFAULT gen_random_uuid()
 - project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
-- auth_user_id: uuid FK auth.users(id) ON DELETE SET NULL
 - name: jsonb, short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
 - sort_order: integer, subtype: text, custom_data: jsonb
 - confirmed: boolean NOT NULL DEFAULT false
@@ -86,7 +85,6 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
 
 - id: uuid PK DEFAULT gen_random_uuid()
 - project_id: uuid NOT NULL FK projects(id) ON DELETE CASCADE
-- auth_user_id: uuid FK auth.users(id) ON DELETE SET NULL
 - first_name: text NOT NULL, last_name: text NOT NULL
 - short_name: jsonb, info: jsonb, color: jsonb, image: jsonb
 - sort_order: integer, subtype: text, custom_data: jsonb
@@ -186,6 +184,15 @@ Complete column listing for all 17 tables in the OpenVAA Supabase schema. Source
   CHECK ((target_type IS NOT NULL) = (scope = 'entity'))
 - CONSTRAINT grants_target_id_scope_check
   CHECK ((target_id IS NULL) = (scope = 'global'))
+- UNIQUE INDEX idx_grants_one_candidate_editor ON (target_id)
+  WHERE scope = 'entity' AND target_type = 'candidate' AND role = 'editor'
+  -- one editor per candidate, because a candidate-scope user IS the candidate. Organizations admit
+  several editors, and an `admin`-role entity grant is outside the index. A second user's editor grant
+  on a candidate is refused naming this index; an exact duplicate grant is refused naming
+  `grants_user_scope_target_role_key`, which is checked first.
+- **The grant is the only link from an auth user to an entity.** No entity table carries an auth user
+  id column; "which entity am I" is answered from the caller's `(entity, <type>, <id>, editor)` rows
+  here, through `private.caller_entity_ids` (see Utility Functions).
 
 ### Settings
 
@@ -232,11 +239,11 @@ Storage cleanup tables: candidates, organizations, factions, alliances, election
 
 **project_id B-tree** (200-indexes.sql): idx\_{table}\_project_id on elections, constituency_groups, constituencies, organizations, candidates, factions, alliances, question_categories, questions, nominations, app_settings (11 tables).
 
-**FK B-tree** (200-indexes.sql): idx*projects_account_id, idx_candidates_organization_id, idx_questions_category_id, idx_constituencies_parent_id, idx_nominations*{candidate_id, organization_id, faction_id, alliance_id, election_id, constituency_id, parent_nomination_id}, idx_candidates_auth_user_id, idx_organizations_auth_user_id.
+**FK B-tree** (200-indexes.sql): idx*projects_account_id, idx_candidates_organization_id, idx_questions_category_id, idx_constituencies_parent_id, idx_nominations*{candidate_id, organization_id, faction_id, alliance_id, election_id, constituency_id, parent_nomination_id}.
 
 **External ID composite unique partial** (500-external-id.sql): idx\_{table}\_external_id ON (project_id, external_id) WHERE external_id IS NOT NULL on all 11 content tables.
 
-**grants** (300-auth-tables.sql): idx_grants_scope_target -- the reverse lookup "who holds a grant on this target", which the UNIQUE cannot serve because it leads with user_id. There is deliberately no index on user_id alone: the UNIQUE already leads with it.
+**grants** (300-auth-tables.sql): idx_grants_scope_target -- the reverse lookup "who holds a grant on this target", which the UNIQUE cannot serve because it leads with user_id. There is deliberately no index on user_id alone: the UNIQUE already leads with it. idx_grants_one_candidate_editor -- UNIQUE partial on (target_id) WHERE scope = 'entity' AND target_type = 'candidate' AND role = 'editor': at most one editor per candidate.
 
 ## Utility Functions
 
@@ -256,6 +263,7 @@ Storage cleanup tables: candidates, organizations, factions, alliances, election
 | private.is_child_nominee(entity_type, uuid, entity_type, uuid)               | 301  | SECURITY DEFINER | The one-hop parent -> child nomination reach, typed on both sides                                                  |
 | project_open_for_voters(uuid)                                                | 301  | SECURITY DEFINER | The project-level anon visibility sub-rule                                                                         |
 | private.entity_has_confirmed_nomination(entity_type, uuid, uuid)             | 301  | SECURITY DEFINER | The nomination-level anon visibility sub-rule                                                                      |
+| private.caller_entity_ids(uuid, entity_type)                                 | 301  | SECURITY DEFINER | The ids of the caller's own `(entity, <type>, <id>, editor)` grants whose entity lies in the given project          |
 | storage_path_can(grant_scope_type, text, text, text, storage_verb)           | 400  | SECURITY DEFINER | The storage authority question, asked of a PATH                                                                    |
 | storage_path_is_public(text, text, text)                                     | 400  | SECURITY DEFINER | The storage visibility question, asked of a PATH                                                                   |
 | delete_storage_object(text, text)                                            | 400  | SECURITY DEFINER | Deletes storage file via pg_net HTTP                                                                               |
@@ -268,7 +276,7 @@ Storage cleanup tables: candidates, organizations, factions, alliances, election
 | resolve_email_variables(uuid, uuid[], text, text)                            | 502  | SECURITY DEFINER | Resolves per-recipient email template variables in the given project                                               |
 | get_nominations(uuid, uuid, uuid, boolean, integer)                          | 503  | SECURITY INVOKER | Nominations with entity data; `p_project_id` required                                                              |
 | get_entity_basic_data(entity_type, uuid)                                     | 503  | SECURITY DEFINER | Basic data of an entity the caller holds nomination.read on; probes only the named table                           |
-| get_candidate_user_data(uuid, entity_type)                                   | 503  | SECURITY INVOKER | The caller's own entity row in the given project                                                                   |
+| get_candidate_user_data(uuid, entity_type)                                   | 503  | SECURITY INVOKER | The caller's own entity row in the given project, resolved from the caller's editor grant; ambiguity raises P0001 / `ERR_ENTITY_IDENTITY_AMBIGUOUS` |
 | upsert_answers(entity_type, uuid, jsonb, boolean)                            | 503  | SECURITY INVOKER | Atomic answer write; the type selects the one table written (`candidate` or `organization`), any other type raises |
 
 ## COLUMN_MAP / PROPERTY_MAP Bridge
@@ -293,6 +301,6 @@ Key mappings from COLUMN_MAP:
 - election_date -> electionDate, election_start_date -> electionStartDate
 - election_type -> electionType (the COLUMN MAP entry only; the frontend adapter no longer maps this column onto any application property — 162-07 removed that term so `ElectionData.subtype` is fed by `elections.subtype` alone), multiple_rounds -> multipleRounds, current_round -> currentRound
 - project_id -> projectId, account_id -> accountId, default_locale -> defaultLocale
-- created_at -> createdAt, updated_at -> updatedAt, auth_user_id -> authUserId
+- created_at -> createdAt, updated_at -> updatedAt
 
 To regenerate: `cd apps/supabase && npx supabase gen types typescript --local > ../../packages/supabase-types/src/database.ts`

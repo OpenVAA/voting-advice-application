@@ -191,7 +191,7 @@ $$;
 --
 -- Returns true if p_value matches any choice id, and also when p_valid_choices is NULL or carries no ids (nothing to validate against).
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.is_valid_choice_id (p_value JSONB, p_valid_choices JSONB) RETURNS BOOLEAN LANGUAGE plpgsql IMMUTABLE AS $$
+CREATE OR REPLACE FUNCTION public.is_valid_choice_id (p_value JSONB, p_valid_choices JSONB) RETURNS BOOLEAN LANGUAGE plpgsql STABLE AS $$
 DECLARE
   p_choice_ids JSONB;
 BEGIN
@@ -816,8 +816,6 @@ CREATE TABLE public.election_constituency_groups (
 CREATE TABLE public.organizations (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id uuid NOT NULL REFERENCES public.projects (id) ON DELETE CASCADE,
-  -- The Supabase Auth user who signs in as this organization; edit rights come from `public.grants`, not from this link.
-  auth_user_id uuid REFERENCES auth.users (id) ON DELETE SET NULL,
   -- Localized string `{ "<locale>": string }`.
   name jsonb,
   -- Localized string `{ "<locale>": string }`: the abbreviated name.
@@ -857,8 +855,6 @@ EXECUTE FUNCTION public.enforce_entity_immutability ('name');
 CREATE TABLE public.candidates (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id uuid NOT NULL REFERENCES public.projects (id) ON DELETE CASCADE,
-  -- The Supabase Auth user who signs in as this candidate; the candidate app loads its own row by it, and edit rights come from `public.grants`.
-  auth_user_id uuid REFERENCES auth.users (id) ON DELETE SET NULL,
   first_name text NOT NULL,
   last_name text NOT NULL,
   -- Localized string `{ "<locale>": string }`: the abbreviated name.
@@ -1190,7 +1186,7 @@ CREATE TABLE public.nominations (
   ),
   -- An entity is nominated at most once per election, constituency and round under the same parent. A different parent makes a distinct nomination, such as one presidential candidate nominated by three parties.
   --
-  -- `NULLS NOT DISTINCT` is what makes the constraint catch anything: every row has three null entity foreign keys and every top-level nomination a null parent, so a plain UNIQUE would never find two rows equal. It needs PostgreSQL 15, which `supabase/config.toml` declares, and the applied database is checked through `pg_index.indnullsnotdistinct`.
+  -- `NULLS NOT DISTINCT` is what makes the constraint catch anything: every row has three null entity foreign keys and every top-level nomination a null parent, so a plain UNIQUE would never find two rows equal. It needs PostgreSQL 15 or later (`supabase/config.toml` declares 17), and the applied database is checked through `pg_index.indnullsnotdistinct`.
   --
   -- Named so a pgTAP `throws_ok` can match it.
   CONSTRAINT nominations_entity_parent_contest_key UNIQUE NULLS NOT DISTINCT (
@@ -1687,13 +1683,6 @@ CREATE INDEX IF NOT EXISTS idx_nominations_constituency_id ON public.nominations
 
 CREATE INDEX IF NOT EXISTS idx_nominations_parent_nomination_id ON public.nominations (parent_nomination_id);
 
---------------------------------------------------------------------------------
--- auth_user_id indexes (columns defined in 102-entities.sql)
---------------------------------------------------------------------------------
-CREATE INDEX IF NOT EXISTS idx_candidates_auth_user_id ON public.candidates (auth_user_id);
-
-CREATE INDEX IF NOT EXISTS idx_organizations_auth_user_id ON public.organizations (auth_user_id);
-
 -- feedback indexes
 CREATE INDEX IF NOT EXISTS idx_feedback_project_id ON public.feedback (project_id);
 
@@ -1705,7 +1694,7 @@ CREATE INDEX IF NOT EXISTS idx_admin_jobs_project_id ON public.admin_jobs (proje
 CREATE INDEX IF NOT EXISTS idx_admin_jobs_election_id ON public.admin_jobs (election_id);
 
 CREATE INDEX IF NOT EXISTS idx_admin_jobs_job_type ON public.admin_jobs (job_type);
--- The grant model: `public.grants`, its constraints, its index, its RLS and the access-token hook's schema access.
+-- The grant model: `public.grants`, its constraints, its indexes, its RLS and the access-token hook's schema access.
 --
 -- Depends on:
 -- - 100-tenancy.sql (accounts, projects)
@@ -1726,7 +1715,7 @@ CREATE TABLE public.grants (
   -- `admin` or `editor` on the target; user_can maps the role and scope to permissions.
   role grant_role_type NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
-  -- NULLS NOT DISTINCT because target_type is null on every non-entity grant: a plain UNIQUE would admit two identical grants, and revoking one would leave the privilege standing. It needs PostgreSQL 15, as in 104-nominations.sql.
+  -- NULLS NOT DISTINCT because target_type is null on every non-entity grant: a plain UNIQUE would admit two identical grants, and revoking one would leave the privilege standing. It needs PostgreSQL 15 or later, as in 104-nominations.sql.
   CONSTRAINT grants_user_scope_target_role_key UNIQUE NULLS NOT DISTINCT (user_id, scope, target_type, target_id, role),
   -- The entity kind is present exactly when the scope is entity. Both sides are non-null booleans, so a NULL cannot pass the check. Named so a pgTAP `throws_ok` can match it.
   CONSTRAINT grants_entity_scope_target_type_check CHECK ((target_type IS NOT NULL) = (scope = 'entity')),
@@ -1736,6 +1725,13 @@ CREATE TABLE public.grants (
 
 -- The reverse lookup, who holds a grant on this target, which editor administration needs and the UNIQUE cannot serve because it leads with user_id. No index on user_id alone: the UNIQUE leads with it, which covers the foreign key for lint-schema.mjs's unindexed-foreign-key advisor, and a second index would cost every write.
 CREATE INDEX idx_grants_scope_target ON public.grants (scope, target_type, target_id);
+
+-- A candidate has at most one editor, because a candidate-scope user is the candidate. Organizations admit several editors, and an `admin`-role entity grant is outside the index. Nothing at write time stops one user editing two candidates in one project; get_candidate_user_data raises on that when it is read. A second user's editor grant on a candidate is refused naming this index, while an exact duplicate grant is refused naming grants_user_scope_target_role_key, which is checked first.
+CREATE UNIQUE INDEX idx_grants_one_candidate_editor ON public.grants (target_id)
+WHERE
+  scope = 'entity'
+  AND target_type = 'candidate'
+  AND role = 'editor';
 
 --------------------------------------------------------------------------------
 -- RLS on grants — critical to prevent circular RLS with the auth hook
@@ -1836,14 +1832,15 @@ EXECUTE FUNCTION public.cleanup_grants_on_delete ('entity', 'alliance');
 -- - private.nomination_exists_in_contest(entity_type, uuid, uuid, uuid, integer) - whether an entity is already nominated at a contest
 -- - private.caller_nominated_in_contest(uuid, uuid, integer, grant_permission) - whether the caller holds a permission on an entity nominated at a contest
 -- - private.caller_unconfirmed_originated_count() - how many unconfirmed parent nominations the caller has originated
+-- - private.caller_entity_ids(uuid, entity_type) - the entities of one type, in one project, the caller holds an editor grant on
 --
 -- The two public-visibility terms are each defined once here and called directly by the eight entity SELECT policies.
 --------------------------------------------------------------------------------
--- The `private` schema: policy-only SECURITY DEFINER helpers
+-- The `private` schema: SECURITY DEFINER helpers for policies and INVOKER functions
 --
 -- Every SECURITY DEFINER function in `public` is published by PostgREST as `/rest/v1/rpc/<name>`, and Supabase's default privileges make it executable by `anon` and `authenticated`. The hierarchy and visibility hops below answer questions row-level security would refuse the caller directly, such as which project an arbitrary entity id belongs to, so published as RPCs they would be cross-tenant oracles.
 --
--- Revoking EXECUTE is not the fix, because a policy expression runs with the querying role's privileges and would fail with `permission denied`. The helpers therefore live in `private`, which is not in PostgREST's exposed schemas (config.toml `[api] schemas`), while the API roles keep USAGE and EXECUTE so policies can call them. Every call site qualifies the name, so no search_path decides which function runs.
+-- Revoking EXECUTE is not the fix, because a policy expression runs with the querying role's privileges and would fail with `permission denied`. The helpers therefore live in `private`, which is not in PostgREST's exposed schemas (config.toml `[api] schemas`), while the API roles keep USAGE and EXECUTE so policies and SECURITY INVOKER functions, which both run as the caller, can call them. Every call site qualifies the name, so no search_path decides which function runs.
 --
 -- What stays in `public`: `user_can` (the Edge Functions call it over RPC) and `user_has_account_grant`, which answer only about the caller's own claim; `grant_role_permissions` (the matrix, no row data); `project_open_for_voters` (the frontend calls it); and the two storage path helpers (caller-scoped or public by definition). 07-rpc-security.test.sql holds a census of every anon- and authenticated-executable SECURITY DEFINER function in `public`, so a new one has to be added there on purpose.
 --------------------------------------------------------------------------------
@@ -2513,7 +2510,36 @@ SET
     AND NOT n.confirmed;
 $$;
 
--- Policies evaluate as the querying role, so the API roles need EXECUTE on the private helpers; PostgREST cannot reach them because `private` is not an exposed schema. Stated explicitly rather than inherited from PostgreSQL's default PUBLIC grant, so the dependency is visible here.
+--------------------------------------------------------------------------------
+-- caller_entity_ids: which entities of this type, in this project, does the caller edit?
+--
+-- Returns the target ids of the caller's own `(entity, <type>, <id>, editor)` rows in public.grants whose entity lies in p_project_id. get_candidate_user_data calls it to answer "which entity am I". It reads the table rather than the caller's token, so a grant written after the token was issued already counts.
+--
+-- Only the `editor` role is read and `user_can` is not called: user_can answers yes for project, account and global admins, and an entity-scope `admin` grant confers nothing, so neither names an entity the caller is.
+--
+-- SECURITY DEFINER because public.grants is revoked from every API role. The entity's project is probed inline, one EXISTS per entity table, rather than through entity_project_id, because a SECURITY DEFINER function is never inlined and nesting one inside another pays that per-row cost twice.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.caller_entity_ids (
+  p_project_id uuid,
+  p_entity_type public.entity_type
+) RETURNS SETOF uuid LANGUAGE sql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT g.target_id
+  FROM public.grants g
+  WHERE g.user_id = (SELECT auth.uid())
+    AND g.scope = 'entity'
+    AND g.role = 'editor'
+    AND g.target_type = p_entity_type
+    AND CASE p_entity_type
+      WHEN 'candidate' THEN EXISTS (SELECT 1 FROM public.candidates e WHERE e.id = g.target_id AND e.project_id = p_project_id)
+      WHEN 'organization' THEN EXISTS (SELECT 1 FROM public.organizations e WHERE e.id = g.target_id AND e.project_id = p_project_id)
+      WHEN 'faction' THEN EXISTS (SELECT 1 FROM public.factions e WHERE e.id = g.target_id AND e.project_id = p_project_id)
+      WHEN 'alliance' THEN EXISTS (SELECT 1 FROM public.alliances e WHERE e.id = g.target_id AND e.project_id = p_project_id)
+    END;
+$$;
+
+-- Policies and SECURITY INVOKER functions evaluate as the querying role, so the API roles need EXECUTE on the private helpers; PostgREST cannot reach them because `private` is not an exposed schema. Stated explicitly rather than inherited from PostgreSQL's default PUBLIC grant, so the dependency is visible here. The statement reaches only the functions defined before it.
 GRANT
 EXECUTE ON ALL FUNCTIONS IN SCHEMA private TO anon,
 authenticated,
@@ -2976,7 +3002,7 @@ CREATE POLICY "admin_delete_election_constituency_groups" ON public.election_con
 --
 -- An entity grantee holds neither project permission, so it cannot reach another entity of its project through a project-scope call. For an entity grant, user_can's reach is equality with the granted entity, type and id both, so "is this row mine" needs no column comparison. Each entity policy passes its own table's entity type.
 --
--- A parent entity's reach to its child nominee is not a row disjunct and must not become one: a SELECT policy returns every column, `answers` and `auth_user_id` included. That reach is served by public.get_entity_basic_data (503-entity-rpcs.sql), which is gated on `nomination.read` and returns an allow-listed projection; 18-entity-policies.test.sql asserts the parent cannot SELECT the child's row.
+-- A parent entity's reach to its child nominee is not a row disjunct and must not become one: a SELECT policy returns every column, `answers` included. That reach is served by public.get_entity_basic_data (503-entity-rpcs.sql), which is gated on `nomination.read` and returns an allow-listed projection; 18-entity-policies.test.sql asserts the parent cannot SELECT the child's row.
 --
 -- Row state (`confirmed`, open for voters, the terms-of-use timestamps) appears only in the public disjunct, never beside a grant, because user_can answers whether a role may apply a permission, not whether the row's state admits it. An entity grantee therefore reads and edits its own unconfirmed row, which the sign-up flow needs; name immutability on a confirmed entity is enforced by a trigger.
 --
@@ -2984,7 +3010,7 @@ CREATE POLICY "admin_delete_election_constituency_groups" ON public.election_con
 --
 -- The `admin_*` policies also admit project editors, who hold project.edit_entities; the prefix is kept because every table's policies share it.
 -- =====================================================================
--- organizations (project_id, confirmed, auth_user_id)
+-- organizations (project_id, confirmed)
 -- =====================================================================
 ALTER TABLE public.organizations ENABLE ROW LEVEL SECURITY;
 
@@ -3101,7 +3127,7 @@ CREATE POLICY "admin_delete_organizations" ON public.organizations FOR DELETE TO
 );
 
 -- =====================================================================
--- candidates (project_id, auth_user_id)
+-- candidates (project_id)
 -- =====================================================================
 -- Answers are stored in the JSONB `answers` column, so these row policies govern them too.
 ALTER TABLE public.candidates ENABLE ROW LEVEL SECURITY;
@@ -3168,11 +3194,11 @@ WITH
     )
   );
 
--- Entity self-update: whoever holds `entity.edit_answers` on this row may update it. For an entity grant user_can's reach is equality with the granted entity, type and id both, so no `auth_user_id` comparison is needed.
+-- Entity self-update: whoever holds `entity.edit_answers` on this row may update it. For an entity grant user_can's reach is equality with the granted entity, type and id both.
 --
 -- The `'entity'` scope literal is the whole safety argument: written `'project'`, it would let any entity editor in the project rewrite every candidate in it. 18-entity-policies.test.sql asserts that same-type, same-project denial.
 --
--- Structural columns (project_id, auth_user_id, external_id, ...) are protected by this table's column grants in 303-column-grants.sql, because row-level security cannot admit a row while withholding a column.
+-- Structural columns (project_id, external_id, ...) are protected by this table's column grants in 303-column-grants.sql, because row-level security cannot admit a row while withholding a column.
 CREATE POLICY "entity_update_own_candidates" ON public.candidates
 FOR UPDATE
   TO authenticated USING (
@@ -4028,7 +4054,6 @@ CREATE POLICY "admin_delete_admin_jobs" ON public.admin_jobs FOR DELETE TO authe
 -- =====================================================================
 -- Protected (admin-only) columns:
 -- - project_id - determines project tenancy
--- - auth_user_id - links candidate to auth user, set during invite/registration
 -- - id - primary key, immutable
 -- - sort_order - presentation order, admin-controlled
 -- - created_at - audit field, maintained by the database
@@ -4066,7 +4091,6 @@ UPDATE (
 -- =====================================================================
 -- Protected (admin-only) columns:
 -- - project_id - determines project tenancy
--- - auth_user_id - links organization to auth user
 -- - id - primary key, immutable
 -- - sort_order - presentation order, admin-controlled
 -- - created_at - audit field, maintained by the database
@@ -5879,7 +5903,7 @@ BEGIN
 END;
 $$;
 
--- service_role only. The function is SECURITY DEFINER, reads auth.users and checks nothing about its caller, so any role that can EXECUTE it can read the email address of any user id it names, and user ids are readable from public columns (candidates.auth_user_id). Its one caller, the send-email Edge Function, calls it through a service-role client after its own authority check. Supabase's default privileges grant EXECUTE on every new public function to anon and authenticated, so the REVOKE names them as well as PUBLIC.
+-- service_role only. The function is SECURITY DEFINER, reads auth.users and checks nothing about its caller, so any role that can EXECUTE it can read the email address of any user id it names, and user ids are readable from a public column (nominations.created_by). Its one caller, the send-email Edge Function, calls it through a service-role client after its own authority check. Supabase's default privileges grant EXECUTE on every new public function to anon and authenticated, so the REVOKE names them as well as PUBLIC.
 REVOKE
 EXECUTE ON FUNCTION public.resolve_email_variables (uuid, uuid[], text, text)
 FROM
@@ -5894,7 +5918,7 @@ EXECUTE ON FUNCTION public.resolve_email_variables (uuid, uuid[], text, text) TO
 -- Functions:
 -- - get_nominations() - return nominations with entity data
 -- - get_entity_basic_data() - basic-data projection of an entity the caller holds nomination.read on
--- - get_candidate_user_data() - return the entity row for the authenticated user
+-- - get_candidate_user_data() - the caller's own entity row of one type in one project, resolved from their editor grant
 -- - upsert_answers() - atomic answer write for a single entity
 --------------------------------------------------------------------------------
 -- get_nominations RPC: returns nominations with entity data in a single round trip
@@ -5992,7 +6016,7 @@ authenticated;
 --
 -- The entity is named by its type and id together, because the four entity tables have independent primary keys and one uuid can name two entities in two projects. The type selects the one table probed, and the gate asks about that same entity.
 --
--- The projection is an ALLOW-LIST, not `to_jsonb(row) - <deny-list>`: a column added to an entity table later is withheld until someone decides it is basic data. Withheld today: answers, auth_user_id, terms_of_use_accepted, custom_data, external_id and the two timestamps.
+-- The projection is an ALLOW-LIST, not `to_jsonb(row) - <deny-list>`: a column added to an entity table later is withheld until someone decides it is basic data. Withheld today: answers, terms_of_use_accepted, custom_data, external_id and the two timestamps.
 --
 -- Returns NULL -- never raises -- when the caller lacks the permission, when the type is NULL, or when the named table holds no row with that id, so the answer does not distinguish "does not exist" from "not yours".
 --
@@ -6057,9 +6081,15 @@ GRANT
 EXECUTE ON FUNCTION public.get_entity_basic_data (public.entity_type, uuid) TO authenticated;
 
 --------------------------------------------------------------------------------
--- get_candidate_user_data: returns the entity row for the authenticated user, in ONE project
+-- get_candidate_user_data: the caller's own entity of one type, in ONE project
 --
--- p_project_id is REQUIRED and carries no DEFAULT. One identity may hold entity rows in several projects (identity-callback's lookup allows for it), and without a project term `LIMIT 1` with no ORDER BY would return an arbitrary one of them. It comes first because PostgreSQL forbids a parameter without a default from following one that has a default.
+-- Returns the row of the entity the caller holds an `(entity, <type>, <id>, editor)` grant on in p_project_id, read from public.grants through private.caller_entity_ids, or no row when they hold none. Project, account and global admins and holders of an entity-scope `admin` grant resolve to no row: only the editor grant makes the caller that entity.
+--
+-- p_project_id is REQUIRED and carries no DEFAULT, because one identity may hold editor grants in several projects and only the project names one of them. It comes first because PostgreSQL forbids a parameter without a default from following one that has a default.
+--
+-- Two or more editor grants of the asked type in one project raise P0001 whose hint names the ambiguity, rather than picking one. The message names the entity type and no id, because callers log it.
+--
+-- SECURITY INVOKER: the grant lookup is the one definer call on the path, and which rows come back is still decided by the caller's own row-level security.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.get_candidate_user_data (
   p_project_id uuid,
@@ -6079,13 +6109,26 @@ CREATE OR REPLACE FUNCTION public.get_candidate_user_data (
   terms_of_use_accepted timestamptz,
   first_name text,
   last_name text
-) LANGUAGE sql STABLE SECURITY INVOKER AS $$
+) LANGUAGE plpgsql STABLE SECURITY INVOKER
+SET
+  search_path = '' AS $$
+DECLARE
+  v_entity_ids uuid[];
+BEGIN
+  v_entity_ids := ARRAY (SELECT private.caller_entity_ids (p_project_id, p_entity_type));
+  IF cardinality(v_entity_ids) > 1 THEN
+    RAISE EXCEPTION 'the caller holds an editor grant on more than one % in this project', p_entity_type
+      USING ERRCODE = 'P0001', HINT = 'ERR_ENTITY_IDENTITY_AMBIGUOUS';
+  END IF;
+
+  -- The RETURNS TABLE names are OUT variables in plpgsql, so every column is alias-qualified.
+  RETURN QUERY
   SELECT c.id, c.project_id, NULL::jsonb, c.short_name, c.info,
          c.color, c.image, c.sort_order, c.subtype,
          c.custom_data, c.answers, c.terms_of_use_accepted,
          c.first_name, c.last_name
   FROM public.candidates c
-  WHERE c.auth_user_id = (SELECT auth.uid())
+  WHERE c.id = ANY (v_entity_ids)
     AND c.project_id = p_project_id
     AND p_entity_type = 'candidate'
   UNION ALL
@@ -6094,10 +6137,10 @@ CREATE OR REPLACE FUNCTION public.get_candidate_user_data (
          o.custom_data, o.answers, NULL::timestamptz,
          NULL::text, NULL::text
   FROM public.organizations o
-  WHERE o.auth_user_id = (SELECT auth.uid())
+  WHERE o.id = ANY (v_entity_ids)
     AND o.project_id = p_project_id
-    AND p_entity_type = 'organization'
-  LIMIT 1;
+    AND p_entity_type = 'organization';
+END;
 $$;
 
 GRANT

@@ -1,9 +1,9 @@
 /**
- * Source-level conformance gate over `identity-callback`'s grant write — and over the gap it still carries.
+ * Source-level conformance checks over `identity-callback`'s grant write.
  *
- * This is the IDENTITY ENTRY POINT, not an authorisation gate: it asks no authority question of a claim, it MINTS one. What criterion 7 needs checked here is therefore the other direction — that the grant it writes is one of § 3.1's eight rows, that its entity type reaches the write site as a VALUE rather than as a literal at each site (D-20's margin note, D-21's phase-wide instruction), and that no retired claim vocabulary survives on the path.
+ * This is the IDENTITY ENTRY POINT, not an authorisation gate: it asks no authority question of a claim, it MINTS one. What is checked here is therefore the grant it writes: that the row is an entity-scope editor grant, that the entity type reaches the write site as a VALUE rather than as a literal inside the grant module, that the write happens once after both candidate branches with the new candidate deleted when it fails, and that no claim key outside the grant model is read on the path.
  *
- * AND THE GAP IS ASSERTED AS PRESENT, deliberately. D-22 records that entity-type SELECTION is absent at this entry point: the flow writes one entity type and the matrix admits four. 162-06 is prohibited from closing it and defers it to brief § 6.1 by name, so this gate pins the gap rather than pretending it is shut — and it will redden when somebody closes it, which is the moment `162-FLOW-CONFORMANCE.md`'s DEFERRED row stops being true.
+ * The entry point also names exactly one entity type and takes no type selection from the request. That is asserted as present, so the check reddens when a selection is added and the entry point starts creating other entity kinds.
  *
  * In the shape of `envReadSites.test.ts`, which sits beside this file and states the reason `index.ts` cannot be imported by vitest. The grant WRITE half is asserted by IMPORT of `entityGrant.ts`, which reaches no remote origin.
  */
@@ -32,6 +32,11 @@ const RETIRED_CLAIM_KEYS = ['user_roles', 'user_role_type', 'role_scope_type'] a
 const GRANT_SCOPES = ['global', 'account', 'project', 'entity'] as const;
 const GRANT_ROLES = ['admin', 'editor'] as const;
 
+/** How many times `needle` occurs in the entry point's source. */
+function occurrences(needle: string): number {
+  return INDEX_SOURCE.split(needle).length - 1;
+}
+
 describe('identity-callback flow conformance', () => {
   it('derived a 23-member permission vocabulary before any membership assertion uses it', () => {
     expect(PERMISSIONS.length).toBe(23);
@@ -53,7 +58,7 @@ describe('identity-callback flow conformance', () => {
     expect(outside).toEqual([]);
   });
 
-  it.each(RETIRED_CLAIM_KEYS)('reads no retired claim key: %s', (key) => {
+  it.each(RETIRED_CLAIM_KEYS)('reads no claim key outside the grant model: %s', (key) => {
     expect(INDEX_SOURCE).not.toContain(`payload.${key}`);
     expect(INDEX_SOURCE).not.toContain(`['${key}']`);
   });
@@ -63,15 +68,29 @@ describe('identity-callback flow conformance', () => {
     expect(INDEX_SOURCE).not.toContain("scope: 'entity'");
   });
 
-  it('writes the grant on BOTH the new-candidate and the existing-candidate branch, so a failed first write is repaired (162-REVIEW WR-06)', () => {
+  it('writes the grant once, after both candidate branches, and deletes a just-created candidate when that write fails', () => {
+    // The grant is the only link from the identity to its candidate, so a candidate created on this request whose grant write failed could never be found again, and the next login would create a second one. The delete sits in the write's catch arm, guarded to the create branch, and runs before the failure is rethrown.
     const branchEnd = INDEX_SOURCE.indexOf('candidateId = candidate.id;\n    }\n');
     const grantAt = INDEX_SOURCE.indexOf('await writeEntityGrant(supabaseAdmin');
     expect(branchEnd).toBeGreaterThan(-1);
     expect(grantAt).toBeGreaterThan(branchEnd);
-    expect(INDEX_SOURCE.split('await writeEntityGrant(').length - 1).toBe(1);
+    expect(occurrences('await writeEntityGrant(')).toBe(1);
+
+    const tryAt = INDEX_SOURCE.lastIndexOf('try {', grantAt);
+    expect(tryAt).toBeGreaterThan(branchEnd);
+
+    const catchAt = INDEX_SOURCE.indexOf('catch (grantError)', grantAt);
+    const guardAt = INDEX_SOURCE.indexOf('if (!existingCandidate)', catchAt);
+    const deleteAt = INDEX_SOURCE.indexOf('await deleteCandidate(supabaseAdmin', guardAt);
+    const rethrowAt = INDEX_SOURCE.indexOf('throw grantError', deleteAt);
+    expect(catchAt).toBeGreaterThan(grantAt);
+    expect(guardAt).toBeGreaterThan(catchAt);
+    expect(deleteAt).toBeGreaterThan(guardAt);
+    expect(rethrowAt).toBeGreaterThan(deleteAt);
+    expect(occurrences('await deleteCandidate(')).toBe(1);
   });
 
-  it('writes a grant shape that is one of § 3.1’s eight rows', async () => {
+  it('writes an entity-scope editor grant, one of the scope and role pairs the grant model defines', async () => {
     const written: Array<Record<string, unknown>> = [];
     const client = {
       from: () => ({
@@ -94,7 +113,7 @@ describe('identity-callback flow conformance', () => {
     expect(written[0].target_type).toBe('candidate');
   });
 
-  it('takes the entity type as a VALUE at the write site rather than as a literal (D-20, D-21)', async () => {
+  it('takes the entity type as a VALUE at the write site rather than as a literal in the grant module', async () => {
     const written: Array<Record<string, unknown>> = [];
     const client = {
       from: () => ({
@@ -115,7 +134,7 @@ describe('identity-callback flow conformance', () => {
     expect(GRANT_MODULE_SOURCE).not.toContain("'candidate'");
   });
 
-  it('a failed grant write THROWS rather than being swallowed (D-20)', async () => {
+  it('a failed grant write THROWS rather than being swallowed', async () => {
     const client = {
       from: () => ({
         insert: async () => ({ error: { message: 'boom' } })
@@ -131,9 +150,9 @@ describe('identity-callback flow conformance', () => {
   });
 
   /**
-   * D-22, PINNED AS OPEN. The entity type is named at exactly ONE call site in this function and nowhere else, and there is no selection of it anywhere on the path — no request field, no parameter, no branch. `162-FLOW-CONFORMANCE.md` records this as DEFERRED with brief § 6.1 as its owner. When the sign-up phase closes it, this assertion reddens, which is the signal that the DEFERRED row has stopped being true and the document needs re-deriving.
+   * The entity type is named at exactly ONE call site in this function and nowhere else, and there is no selection of it anywhere on the path: no request field, no parameter, no branch. When the entry point starts accepting a type selection, this assertion reddens, which is the signal to re-derive the checks in this file for every entity kind it can then create.
    */
-  it('still names exactly ONE entity type on the whole path — D-22’s gap, pinned as OPEN', () => {
+  it('names exactly ONE entity type on the whole path and takes no type selection from the request', () => {
     const entityTypeArguments = Array.from(INDEX_SOURCE.matchAll(/entityType:\s*'([a-z]+)'/g)).map((m) => m[1]);
     expect(entityTypeArguments).toEqual(['candidate']);
   });

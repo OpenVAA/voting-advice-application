@@ -14,7 +14,7 @@ import { testIds } from '../../utils/testIds';
  *
  * The grant row this mints is what makes the identity an admin at all: `custom_access_token_hook` reads `public.grants` on every token issue and projects the rows into the JWT's `grants` claim, which is what the login action's admin gate and the protected layout's identity check then read. An account without it logs in and is bounced straight back out.
  *
- * The `unregisterCandidate` call ahead of `forceRegisterAdmin` makes re-runs idempotent: a prior run's auth user would otherwise collide as "User already exists". It is the correct removal for an admin despite its name — its candidate-row update matches no row for an account with no `auth_user_id` link, and its other two steps delete the grant rows by `user_id` and the account itself.
+ * The `unregisterCandidate` call ahead of `forceRegisterAdmin` makes re-runs idempotent: a prior run's auth user would otherwise collide as "User already exists". It is the correct removal for an admin despite its name — its terms-of-use reset touches only candidates the account's editor grant names, and an admin holds no such grant, so it resets nothing; its other two steps delete the grant rows by `user_id` and the account itself.
  *
  * The stale-job pre-clear is the second half of that idempotency. `admin_jobs` rows are reachable by NOTHING else in the suite (see `deleteAdminJobsByAuthor`), so a run that died between the spec's write and its teardown would leave a row behind and the spec's own count assertion would then be reading someone else's history.
  */

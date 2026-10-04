@@ -16,8 +16,8 @@
  *
  * The candidates table has NO email column in the schema, so the email string lives exclusively here (not on the seeded row). The registration flow:
  *   1. The spec calls `client.sendEmail({ candidateExternalId: UNREGISTERED_CANDIDATE_EXTERNAL_ID, email: UNREGISTERED_CANDIDATE_EMAIL, ... })`.
- *   2. SupabaseAdminClient.sendEmail (since the candidate has no auth_user_id yet) invokes `inviteUserByEmail(email)` to create the auth user and email the candidate.
- *   3. The teardown calls `unregisterCandidate(UNREGISTERED_CANDIDATE_EMAIL)` to remove the auth.users row created by step 2 so the next cold-start run is clean.
+ *   2. SupabaseAdminClient.sendEmail (since no candidate-editor grant names the candidate yet) invokes `inviteUserByEmail(email)` to create the auth user and email the candidate, then writes the grant that links the new user to the candidate.
+ *   3. The teardown calls `unregisterCandidate(UNREGISTERED_CANDIDATE_EMAIL)`, which resets terms of use on the candidate the grant names and removes the grant and the auth.users row created by step 2, so the next cold-start run is clean.
  */
 export const UNREGISTERED_CANDIDATE_EMAIL = 'unregistered-aa@test.openvaa.local';
 

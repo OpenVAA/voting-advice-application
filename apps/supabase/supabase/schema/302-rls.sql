@@ -448,7 +448,7 @@ CREATE POLICY "admin_delete_election_constituency_groups" ON public.election_con
 --
 -- An entity grantee holds neither project permission, so it cannot reach another entity of its project through a project-scope call. For an entity grant, user_can's reach is equality with the granted entity, type and id both, so "is this row mine" needs no column comparison. Each entity policy passes its own table's entity type.
 --
--- A parent entity's reach to its child nominee is not a row disjunct and must not become one: a SELECT policy returns every column, `answers` and `auth_user_id` included. That reach is served by public.get_entity_basic_data (503-entity-rpcs.sql), which is gated on `nomination.read` and returns an allow-listed projection; 18-entity-policies.test.sql asserts the parent cannot SELECT the child's row.
+-- A parent entity's reach to its child nominee is not a row disjunct and must not become one: a SELECT policy returns every column, `answers` included. That reach is served by public.get_entity_basic_data (503-entity-rpcs.sql), which is gated on `nomination.read` and returns an allow-listed projection; 18-entity-policies.test.sql asserts the parent cannot SELECT the child's row.
 --
 -- Row state (`confirmed`, open for voters, the terms-of-use timestamps) appears only in the public disjunct, never beside a grant, because user_can answers whether a role may apply a permission, not whether the row's state admits it. An entity grantee therefore reads and edits its own unconfirmed row, which the sign-up flow needs; name immutability on a confirmed entity is enforced by a trigger.
 --
@@ -456,7 +456,7 @@ CREATE POLICY "admin_delete_election_constituency_groups" ON public.election_con
 --
 -- The `admin_*` policies also admit project editors, who hold project.edit_entities; the prefix is kept because every table's policies share it.
 -- =====================================================================
--- organizations (project_id, confirmed, auth_user_id)
+-- organizations (project_id, confirmed)
 -- =====================================================================
 ALTER TABLE public.organizations ENABLE ROW LEVEL SECURITY;
 
@@ -573,7 +573,7 @@ CREATE POLICY "admin_delete_organizations" ON public.organizations FOR DELETE TO
 );
 
 -- =====================================================================
--- candidates (project_id, auth_user_id)
+-- candidates (project_id)
 -- =====================================================================
 -- Answers are stored in the JSONB `answers` column, so these row policies govern them too.
 ALTER TABLE public.candidates ENABLE ROW LEVEL SECURITY;
@@ -640,11 +640,11 @@ WITH
     )
   );
 
--- Entity self-update: whoever holds `entity.edit_answers` on this row may update it. For an entity grant user_can's reach is equality with the granted entity, type and id both, so no `auth_user_id` comparison is needed.
+-- Entity self-update: whoever holds `entity.edit_answers` on this row may update it. For an entity grant user_can's reach is equality with the granted entity, type and id both.
 --
 -- The `'entity'` scope literal is the whole safety argument: written `'project'`, it would let any entity editor in the project rewrite every candidate in it. 18-entity-policies.test.sql asserts that same-type, same-project denial.
 --
--- Structural columns (project_id, auth_user_id, external_id, ...) are protected by this table's column grants in 303-column-grants.sql, because row-level security cannot admit a row while withholding a column.
+-- Structural columns (project_id, external_id, ...) are protected by this table's column grants in 303-column-grants.sql, because row-level security cannot admit a row while withholding a column.
 CREATE POLICY "entity_update_own_candidates" ON public.candidates
 FOR UPDATE
   TO authenticated USING (

@@ -9,15 +9,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json;
-          operationName?: string;
-          query?: string;
-          variables?: Json;
-        };
-        Returns: Json;
-      };
+      graphql: { Args: { extensions?: Json; operationName?: string; query?: string; variables?: Json }; Returns: Json };
     };
     Enums: {
       [_ in never]: never;
@@ -184,7 +176,7 @@ export type Database = {
           external_id: string | null;
           id: string;
           project_id: string;
-          settings: Json;
+          settings: NonNullable<Json>;
           updated_at: string;
         };
         Insert: {
@@ -193,7 +185,7 @@ export type Database = {
           external_id?: string | null;
           id?: string;
           project_id: string;
-          settings?: Json;
+          settings?: NonNullable<Json>;
           updated_at?: string;
         };
         Update: {
@@ -202,7 +194,7 @@ export type Database = {
           external_id?: string | null;
           id?: string;
           project_id?: string;
-          settings?: Json;
+          settings?: NonNullable<Json>;
           updated_at?: string;
         };
         Relationships: [
@@ -218,7 +210,6 @@ export type Database = {
       candidates: {
         Row: {
           answers: Json | null;
-          auth_user_id: string | null;
           color: Json | null;
           confirmed: boolean;
           created_at: string;
@@ -238,7 +229,6 @@ export type Database = {
         };
         Insert: {
           answers?: Json | null;
-          auth_user_id?: string | null;
           color?: Json | null;
           confirmed?: boolean;
           created_at?: string;
@@ -258,7 +248,6 @@ export type Database = {
         };
         Update: {
           answers?: Json | null;
-          auth_user_id?: string | null;
           color?: Json | null;
           confirmed?: boolean;
           created_at?: string;
@@ -722,7 +711,7 @@ export type Database = {
           election_id: string;
           election_round?: number | null;
           election_symbol?: string | null;
-          entity_type?: Database['public']['Enums']['entity_type'];
+          entity_type?: never;
           external_id?: string | null;
           faction_id?: string | null;
           id?: string;
@@ -749,7 +738,7 @@ export type Database = {
           election_id?: string;
           election_round?: number | null;
           election_symbol?: string | null;
-          entity_type?: Database['public']['Enums']['entity_type'];
+          entity_type?: never;
           external_id?: string | null;
           faction_id?: string | null;
           id?: string;
@@ -826,7 +815,6 @@ export type Database = {
       organizations: {
         Row: {
           answers: Json | null;
-          auth_user_id: string | null;
           color: Json | null;
           confirmed: boolean;
           created_at: string;
@@ -844,7 +832,6 @@ export type Database = {
         };
         Insert: {
           answers?: Json | null;
-          auth_user_id?: string | null;
           color?: Json | null;
           confirmed?: boolean;
           created_at?: string;
@@ -862,7 +849,6 @@ export type Database = {
         };
         Update: {
           answers?: Json | null;
-          auth_user_id?: string | null;
           color?: Json | null;
           confirmed?: boolean;
           created_at?: string;
@@ -1113,22 +1099,13 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      _bulk_upsert_record: {
-        Args: { p_item: Json; p_project_id: string; p_table_name: string };
-        Returns: boolean;
-      };
+      _bulk_upsert_record: { Args: { p_item: Json; p_project_id: string; p_table_name: string }; Returns: boolean };
       bulk_delete: { Args: { p_data: Json }; Returns: Json };
       bulk_import: { Args: { p_data: Json }; Returns: Json };
       custom_access_token_hook: { Args: { p_event: Json }; Returns: Json };
-      delete_storage_object: {
-        Args: { p_bucket: string; p_file_path: string };
-        Returns: undefined;
-      };
+      delete_storage_object: { Args: { p_bucket: string; p_file_path: string }; Returns: undefined };
       get_candidate_user_data: {
-        Args: {
-          p_entity_type?: Database['public']['Enums']['entity_type'];
-          p_project_id: string;
-        };
+        Args: { p_entity_type?: Database['public']['Enums']['entity_type']; p_project_id: string };
         Returns: {
           answers: Json;
           color: Json;
@@ -1147,16 +1124,10 @@ export type Database = {
         }[];
       };
       get_entity_basic_data: {
-        Args: {
-          p_entity_id: string;
-          p_entity_type: Database['public']['Enums']['entity_type'];
-        };
+        Args: { p_entity_id: string; p_entity_type: Database['public']['Enums']['entity_type'] };
         Returns: Json;
       };
-      get_localized: {
-        Args: { p_default_locale?: string; p_locale: string; p_val: Json };
-        Returns: string;
-      };
+      get_localized: { Args: { p_default_locale?: string; p_locale: string; p_val: Json }; Returns: string };
       get_nominations: {
         Args: {
           p_constituency_id?: string;
@@ -1200,12 +1171,7 @@ export type Database = {
         }[];
       };
       get_questions: {
-        Args: {
-          p_constituency_id?: string;
-          p_election_id?: string;
-          p_election_round?: number;
-          p_project_id: string;
-        };
+        Args: { p_constituency_id?: string; p_election_id?: string; p_election_round?: number; p_project_id: string };
         Returns: Json;
       };
       grant_role_permissions: {
@@ -1218,39 +1184,17 @@ export type Database = {
       };
       is_image: { Args: { p_val: Json }; Returns: boolean };
       is_localized_string: { Args: { p_val: Json }; Returns: boolean };
-      is_valid_choice_id: {
-        Args: { p_valid_choices: Json; p_value: Json };
-        Returns: boolean;
-      };
-      jsonb_recursive_merge: {
-        Args: { p_base: Json; p_patch: Json };
-        Returns: Json;
-      };
+      is_valid_choice_id: { Args: { p_valid_choices: Json; p_value: Json }; Returns: boolean };
+      jsonb_recursive_merge: { Args: { p_base: Json; p_patch: Json }; Returns: Json };
       merge_jsonb_column: {
-        Args: {
-          p_column_name: string;
-          p_partial_data: Json;
-          p_row_id: string;
-          p_table_name: string;
-        };
+        Args: { p_column_name: string; p_partial_data: Json; p_row_id: string; p_table_name: string };
         Returns: undefined;
       };
-      merge_question_custom_data: {
-        Args: { p_patch: Json; p_question_id: string };
-        Returns: Json;
-      };
-      project_open_for_voters: {
-        Args: { p_project_id: string };
-        Returns: boolean;
-      };
+      merge_question_custom_data: { Args: { p_patch: Json; p_question_id: string }; Returns: Json };
+      project_open_for_voters: { Args: { p_project_id: string }; Returns: boolean };
       referenced_storage_paths: { Args: { p_row: Json }; Returns: string[] };
       resolve_email_variables: {
-        Args: {
-          p_project_id: string;
-          p_template_body?: string;
-          p_template_subject?: string;
-          p_user_ids: string[];
-        };
+        Args: { p_project_id: string; p_template_body?: string; p_template_subject?: string; p_user_ids: string[] };
         Returns: {
           email: string;
           preferred_locale: string;
@@ -1258,10 +1202,7 @@ export type Database = {
           variables: Json;
         }[];
       };
-      resolve_external_ref: {
-        Args: { p_project_id: string; p_ref: Json; p_target_table: string };
-        Returns: string;
-      };
+      resolve_external_ref: { Args: { p_project_id: string; p_ref: Json; p_target_table: string }; Returns: string };
       storage_path_can: {
         Args: {
           p_id: string;
@@ -1272,10 +1213,7 @@ export type Database = {
         };
         Returns: boolean;
       };
-      storage_path_is_public: {
-        Args: { p_id: string; p_project: string; p_type: string };
-        Returns: boolean;
-      };
+      storage_path_is_public: { Args: { p_id: string; p_project: string; p_type: string }; Returns: boolean };
       upsert_answers: {
         Args: {
           p_answers: Json;
@@ -1294,16 +1232,9 @@ export type Database = {
         };
         Returns: boolean;
       };
-      user_has_account_grant: {
-        Args: { p_account_id: string };
-        Returns: boolean;
-      };
+      user_has_account_grant: { Args: { p_account_id: string }; Returns: boolean };
       validate_answer_value: {
-        Args: {
-          p_answer_val: Json;
-          p_q_type: Database['public']['Enums']['question_type'];
-          p_valid_choices?: Json;
-        };
+        Args: { p_answer_val: Json; p_q_type: Database['public']['Enums']['question_type']; p_valid_choices?: Json };
         Returns: undefined;
       };
       validate_image: { Args: { p_val: Json }; Returns: undefined };
@@ -1362,17 +1293,14 @@ type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+    keyof (DefaultSchema['Tables'] & DefaultSchema['Views']) | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
-    : never = never
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+    : never) = never
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
       Row: infer R;
@@ -1389,14 +1317,12 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables'] | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
-    : never = never
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+    : never) = never
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Insert: infer I;
     }
@@ -1412,14 +1338,12 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables'] | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
-    : never = never
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+    : never) = never
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Update: infer U;
     }
@@ -1435,14 +1359,12 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums'] | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
-    : never = never
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+    : never) = never
+> = DefaultSchemaEnumNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
     ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
@@ -1450,16 +1372,13 @@ export type Enums<
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema['CompositeTypes']
-    | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    keyof DefaultSchema['CompositeTypes'] | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
-    : never = never
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+    : never) = never
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
     ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]

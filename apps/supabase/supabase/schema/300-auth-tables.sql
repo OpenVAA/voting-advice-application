@@ -1,4 +1,4 @@
--- The grant model: `public.grants`, its constraints, its index, its RLS and the access-token hook's schema access.
+-- The grant model: `public.grants`, its constraints, its indexes, its RLS and the access-token hook's schema access.
 --
 -- Depends on:
 -- - 100-tenancy.sql (accounts, projects)
@@ -19,7 +19,7 @@ CREATE TABLE public.grants (
   -- `admin` or `editor` on the target; user_can maps the role and scope to permissions.
   role grant_role_type NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
-  -- NULLS NOT DISTINCT because target_type is null on every non-entity grant: a plain UNIQUE would admit two identical grants, and revoking one would leave the privilege standing. It needs PostgreSQL 15, as in 104-nominations.sql.
+  -- NULLS NOT DISTINCT because target_type is null on every non-entity grant: a plain UNIQUE would admit two identical grants, and revoking one would leave the privilege standing. It needs PostgreSQL 15 or later, as in 104-nominations.sql.
   CONSTRAINT grants_user_scope_target_role_key UNIQUE NULLS NOT DISTINCT (user_id, scope, target_type, target_id, role),
   -- The entity kind is present exactly when the scope is entity. Both sides are non-null booleans, so a NULL cannot pass the check. Named so a pgTAP `throws_ok` can match it.
   CONSTRAINT grants_entity_scope_target_type_check CHECK ((target_type IS NOT NULL) = (scope = 'entity')),
@@ -29,6 +29,13 @@ CREATE TABLE public.grants (
 
 -- The reverse lookup, who holds a grant on this target, which editor administration needs and the UNIQUE cannot serve because it leads with user_id. No index on user_id alone: the UNIQUE leads with it, which covers the foreign key for lint-schema.mjs's unindexed-foreign-key advisor, and a second index would cost every write.
 CREATE INDEX idx_grants_scope_target ON public.grants (scope, target_type, target_id);
+
+-- A candidate has at most one editor, because a candidate-scope user is the candidate. Organizations admit several editors, and an `admin`-role entity grant is outside the index. Nothing at write time stops one user editing two candidates in one project; get_candidate_user_data raises on that when it is read. A second user's editor grant on a candidate is refused naming this index, while an exact duplicate grant is refused naming grants_user_scope_target_role_key, which is checked first.
+CREATE UNIQUE INDEX idx_grants_one_candidate_editor ON public.grants (target_id)
+WHERE
+  scope = 'entity'
+  AND target_type = 'candidate'
+  AND role = 'editor';
 
 --------------------------------------------------------------------------------
 -- RLS on grants — critical to prevent circular RLS with the auth hook

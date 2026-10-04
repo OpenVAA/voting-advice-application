@@ -273,7 +273,7 @@ SELECT
 -- =====================================================================
 -- TEST A above is the control. Nadia is in project A but nominated nowhere, so she is outside organization_a's nomination hierarchy and stays invisible, which proves the parent reach is not a project-wide read.
 --
--- TEST C is the subject. Nora is unconfirmed and nominated under organization_a's own nomination, and her row is refused, because a row policy would return the whole row (answers, auth_user_id, terms_of_use_accepted, custom_data) to her parent's editor. Her basic data is served by `get_entity_basic_data`, which asks the same `user_can` question and returns an allow-listed projection; the assertions below cover both halves and a non-parent control.
+-- TEST C is the subject. Nora is unconfirmed and nominated under organization_a's own nomination, and her row is refused, because a row policy would return the whole row (answers, terms_of_use_accepted, custom_data) to her parent's editor. Her basic data is served by `get_entity_basic_data`, which asks the same `user_can` question and returns an allow-listed projection; the assertions below cover both halves and a non-parent control.
 SELECT
   reset_role ();
 
@@ -330,14 +330,13 @@ SELECT
     'TEST C: an organization-role caller CANNOT SELECT the row of a non-public, unconfirmed candidate nominated under its own nomination -- a row policy would disclose the whole row, answers included'
   );
 
--- The reach itself survives, as a column projection: get_entity_basic_data answers the parent with the child's basic data and WITHOUT the answers, auth_user_id, terms_of_use_accepted or custom_data keys.
+-- The reach itself survives, as a column projection: get_entity_basic_data answers the parent with the child's basic data and WITHOUT the answers, terms_of_use_accepted or custom_data keys.
 SELECT
   ok (
     (
       SELECT
         r ->> 'first_name' = 'Nora'
         AND NOT (r ? 'answers')
-        AND NOT (r ? 'auth_user_id')
         AND NOT (r ? 'terms_of_use_accepted')
         AND NOT (r ? 'custom_data')
       FROM
@@ -385,7 +384,7 @@ SELECT
 
 -- TEST B. The candidates SELECT qual delegates authority to `user_can`, carries no `nomination.read` row reach, and names both public-visibility helpers (`project_open_for_voters`, `entity_has_confirmed_nomination`) directly.
 --
--- It also names none of the predicates the policy must not re-derive (`has_role`, `organization_id`, `can_access_project`, `auth_user_id`, `published`) and no `entity_is_anon_visible` composition, so it fails both if the reach regresses and if one of those mechanisms returns.
+-- It also names none of the four predicates the policy must not re-derive (`has_role`, `organization_id`, `can_access_project`, `published`) and no `entity_is_anon_visible` composition, so it fails both if the reach regresses and if one of those mechanisms appears in it.
 SELECT
   ok (
     (
@@ -398,7 +397,6 @@ SELECT
         AND qual NOT LIKE '%has_role%'
         AND qual NOT LIKE '%organization_id%'
         AND qual NOT LIKE '%can_access_project%'
-        AND qual NOT LIKE '%auth_user_id%'
         AND qual NOT LIKE '%published%'
       FROM
         pg_policies
@@ -406,7 +404,7 @@ SELECT
         tablename = 'candidates'
         AND policyname = 'authenticated_select_candidates'
     ),
-    'TEST B: the candidates SELECT qual delegates to user_can, does NOT carry the nomination.read row reach, calls BOTH public-visibility helpers directly, and re-derives none of the five predicates a converted policy must not name -- nor the entity_is_anon_visible composition'
+    'TEST B: the candidates SELECT qual delegates to user_can, does NOT carry the nomination.read row reach, calls BOTH public-visibility helpers directly, and re-derives none of the four predicates the policy must not name -- nor the entity_is_anon_visible composition'
   );
 
 -- The companion that keeps TEST B from being satisfiable by a policy that simply removed everything: the organizations and candidates SELECT predicates are the same expression modulo the table name, the entity-type literal and the two terms-of-use conjuncts only `candidates` carries.

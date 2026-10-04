@@ -913,7 +913,7 @@ export const baseTemplate: Template = {
         organization: { external_id: 'test-e2e-base-or-aa' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
-      // CA-AA-1 — the perfect-match candidate (POLAR_MAX → matches voter answerMode='max')
+      // CA-AA-1 — a generic candidate (GENERIC answers)
       {
         external_id: 'test-e2e-base-ca-aa-1',
         first_name: 'Generic',
@@ -1017,7 +1017,7 @@ export const baseTemplate: Template = {
         organization: { external_id: 'test-e2e-base-or-c' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
-      // Unregistered candidate under party AA in CO-Reg-N. NO terms_of_use_accepted (registration must trigger ToU gate). NO answersByExternalId (unregistered → no answers). NO auth_user_id (sendEmail-driven invite flow creates this at runtime).
+      // Unregistered candidate under party AA in CO-Reg-N. NO terms_of_use_accepted (registration must trigger ToU gate). NO answersByExternalId (unregistered → no answers). NO editor grant (the sendEmail-driven invite flow writes it at runtime).
       // candidates table has NO email column; email lives in a sibling const file.
       // Election symbol "999" is set on the paired nomination row below.
       {
