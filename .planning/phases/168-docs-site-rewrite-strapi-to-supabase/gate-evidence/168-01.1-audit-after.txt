@@ -1,0 +1,230 @@
+=== Dependency audit (threshold high+, D-L3(a)) ===
+
+Baseline security/audit-baseline.json recorded 2026-09-03 at 5c1295f18, 69 accepted advisory(ies).
+
+[ACCEPTED] 63 finding(s)
+  [critical]  @vitest/browser            1139523   GHSA-p63j-vcc4-9vmv
+    @vitest/browser: Browser Mode provider commands bypass the file-access permission gate
+    https://github.com/advisories/GHSA-p63j-vcc4-9vmv
+  [critical]  @vitest/browser            1139526   GHSA-g8mr-85jm-7xhm
+    Vitest Browser: Exposed Browser Mode API Can Proxy CDP and Overwrite Config Files, Leading to RCE
+    https://github.com/advisories/GHSA-g8mr-85jm-7xhm
+  [critical]  shell-quote                1120422   GHSA-w7jw-789q-3m8p
+    shell-quote quote() does not escape newlines in object .op values
+    https://github.com/advisories/GHSA-w7jw-789q-3m8p
+  [critical]  tar                        1123940   GHSA-23hp-3jrh-7fpw
+    node-tar: Decompression/parse DoS via unlimited input
+    https://github.com/advisories/GHSA-23hp-3jrh-7fpw
+  [critical]  vitest                     1139528   GHSA-5xrq-8626-4rwp
+    When Vitest UI server is listening, arbitrary file can be read and executed
+    https://github.com/advisories/GHSA-5xrq-8626-4rwp
+  [critical]  vitest                     1139529   GHSA-5xrq-8626-4rwp
+    When Vitest UI server is listening, arbitrary file can be read and executed
+    https://github.com/advisories/GHSA-5xrq-8626-4rwp
+  [high]      @faker-js/faker            1158500   GHSA-qxc2-j82w-r537
+    Faker: helpers.fake exploitable into arbritary code execution
+    https://github.com/advisories/GHSA-qxc2-j82w-r537
+  [high]      @isaacs/brace-expansion    1112954   GHSA-7h2j-956f-4vf2
+    @isaacs/brace-expansion has Uncontrolled Resource Consumption
+    https://github.com/advisories/GHSA-7h2j-956f-4vf2
+  [high]      @sveltejs/kit              1116433   GHSA-2crg-3p73-43xp
+    @sveltejs/adapter-node has a BODY_SIZE_LIMIT bypass
+    https://github.com/advisories/GHSA-2crg-3p73-43xp
+  [high]      brace-expansion            1123896   GHSA-3jxr-9vmj-r5cp
+    brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups
+    https://github.com/advisories/GHSA-3jxr-9vmj-r5cp
+  [high]      brace-expansion            1123897   GHSA-3jxr-9vmj-r5cp
+    brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups
+    https://github.com/advisories/GHSA-3jxr-9vmj-r5cp
+  [high]      brace-expansion            1123898   GHSA-3jxr-9vmj-r5cp
+    brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups
+    https://github.com/advisories/GHSA-3jxr-9vmj-r5cp
+  [high]      brace-expansion            1130588   GHSA-mh99-v99m-4gvg
+    brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash
+    https://github.com/advisories/GHSA-mh99-v99m-4gvg
+  [high]      brace-expansion            1130589   GHSA-mh99-v99m-4gvg
+    brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash
+    https://github.com/advisories/GHSA-mh99-v99m-4gvg
+  [high]      brace-expansion            1130591   GHSA-mh99-v99m-4gvg
+    brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash
+    https://github.com/advisories/GHSA-mh99-v99m-4gvg
+  [high]      brace-expansion            1130734   GHSA-rgw5-rvv9-x895
+    brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation
+    https://github.com/advisories/GHSA-rgw5-rvv9-x895
+  [high]      brace-expansion            1130736   GHSA-rgw5-rvv9-x895
+    brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation
+    https://github.com/advisories/GHSA-rgw5-rvv9-x895
+  [high]      brace-expansion            1130737   GHSA-rgw5-rvv9-x895
+    brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation
+    https://github.com/advisories/GHSA-rgw5-rvv9-x895
+  [high]      devalue                    1120448   GHSA-77vg-94rm-hx3p
+    Svelte devalue: DoS via sparse array deserialization
+    https://github.com/advisories/GHSA-77vg-94rm-hx3p
+  [high]      flatted                    1114526   GHSA-25h7-pfq9-p65f
+    flatted vulnerable to unbounded recursion DoS in parse() revive phase
+    https://github.com/advisories/GHSA-25h7-pfq9-p65f
+  [high]      flatted                    1115357   GHSA-rf6f-7fwh-wjgh
+    Prototype Pollution via parse() in NodeJS flatted
+    https://github.com/advisories/GHSA-rf6f-7fwh-wjgh
+  [high]      form-data                  1120743   GHSA-hmw2-7cc7-3qxx
+    form-data: CRLF injection in form-data via unescaped multipart field names and filenames
+    https://github.com/advisories/GHSA-hmw2-7cc7-3qxx
+  [high]      glob                       1109842   GHSA-5j98-mcp5-4vw2
+    glob CLI: Command injection via -c/--cmd executes matches with shell:true
+    https://github.com/advisories/GHSA-5j98-mcp5-4vw2
+  [high]      ip-address                 1130722   GHSA-mwp4-54f8-5fhr
+    ip-address: Address4 decodes leading-zero octets as decimal while resolvers decode them as octal, allowing SSRF and trust-boundary bypass
+    https://github.com/advisories/GHSA-mwp4-54f8-5fhr
+  [high]      kysely                     1115131   GHSA-wmrf-hv6w-mr66
+    SQL Injection via unsanitized JSON path keys when ignoring/silencing compilation errors or using `Kysely<any>`.
+    https://github.com/advisories/GHSA-wmrf-hv6w-mr66
+  [high]      kysely                     1115531   GHSA-8cpq-38p9-67gx
+    Kysely has a MySQL SQL Injection via Insufficient Backslash Escaping in `sql.lit(string)` usage or similar methods that append string literal values into the compiled SQL strings
+    https://github.com/advisories/GHSA-8cpq-38p9-67gx
+  [high]      kysely                     1120248   GHSA-pv5w-4p9q-p3v2
+    Kysely: JSON-path traversal injection via unsanitized path-leg metacharacters in `JSONPathBuilder.key()` / `.at()`
+    https://github.com/advisories/GHSA-pv5w-4p9q-p3v2
+  [high]      minimatch                  1113459   GHSA-3ppc-4f35-3m26
+    minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern
+    https://github.com/advisories/GHSA-3ppc-4f35-3m26
+  [high]      minimatch                  1113465   GHSA-3ppc-4f35-3m26
+    minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern
+    https://github.com/advisories/GHSA-3ppc-4f35-3m26
+  [high]      minimatch                  1113466   GHSA-3ppc-4f35-3m26
+    minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern
+    https://github.com/advisories/GHSA-3ppc-4f35-3m26
+  [high]      minimatch                  1113538   GHSA-7r86-cg39-jmmj
+    minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments
+    https://github.com/advisories/GHSA-7r86-cg39-jmmj
+  [high]      minimatch                  1113544   GHSA-7r86-cg39-jmmj
+    minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments
+    https://github.com/advisories/GHSA-7r86-cg39-jmmj
+  [high]      minimatch                  1113545   GHSA-7r86-cg39-jmmj
+    minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments
+    https://github.com/advisories/GHSA-7r86-cg39-jmmj
+  [high]      minimatch                  1113546   GHSA-23c5-xmqv-rm74
+    minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions
+    https://github.com/advisories/GHSA-23c5-xmqv-rm74
+  [high]      minimatch                  1113552   GHSA-23c5-xmqv-rm74
+    minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions
+    https://github.com/advisories/GHSA-23c5-xmqv-rm74
+  [high]      minimatch                  1113553   GHSA-23c5-xmqv-rm74
+    minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions
+    https://github.com/advisories/GHSA-23c5-xmqv-rm74
+  [high]      nanoid                     1138811   GHSA-28wg-ghj8-5hjv
+    nanoid: non-secure generators can loop indefinitely with negative size
+    https://github.com/advisories/GHSA-28wg-ghj8-5hjv
+  [high]      nanoid                     1139427   GHSA-2v37-7h3g-55p8
+    nanoid: custom generators can loop indefinitely when size is zero
+    https://github.com/advisories/GHSA-2v37-7h3g-55p8
+  [high]      nanoid                     1153189   GHSA-xwg4-73v4-xw9w
+    nanoid: Integer Overflow or Wraparound
+    https://github.com/advisories/GHSA-xwg4-73v4-xw9w
+  [high]      picomatch                  1115552   GHSA-c2c7-rcm5-vvqj
+    Picomatch has a ReDoS vulnerability via extglob quantifiers
+    https://github.com/advisories/GHSA-c2c7-rcm5-vvqj
+  [high]      picomatch                  1115554   GHSA-c2c7-rcm5-vvqj
+    Picomatch has a ReDoS vulnerability via extglob quantifiers
+    https://github.com/advisories/GHSA-c2c7-rcm5-vvqj
+  [high]      postcss                    1124252   GHSA-6g55-p6wh-862q
+    PostCSS: Arbitrary file read and information disclosure via attacker-controlled sourceMappingURL in CSS comments
+    https://github.com/advisories/GHSA-6g55-p6wh-862q
+  [high]      postcss                    1139510   GHSA-r28c-9q8g-f849
+    PostCSS: Path Traversal in Previous Source Map Auto-Loading (sourceMappingURL) leads to Arbitrary .map File Disclosure
+    https://github.com/advisories/GHSA-r28c-9q8g-f849
+  [high]      rollup                     1113515   GHSA-mw96-cpmx-2vgc
+    Rollup 4 has Arbitrary File Write via Path Traversal
+    https://github.com/advisories/GHSA-mw96-cpmx-2vgc
+  [high]      shell-quote                1123944   GHSA-395f-4hp3-45gv
+    shell-quote: Quadratic-complexity Denial of Service in `parse()` (CWE-407)
+    https://github.com/advisories/GHSA-395f-4hp3-45gv
+  [high]      tar                        1112659   GHSA-34x7-hfp2-rc4v
+    node-tar Vulnerable to Arbitrary File Creation/Overwrite via Hardlink Path Traversal
+    https://github.com/advisories/GHSA-34x7-hfp2-rc4v
+  [high]      tar                        1113300   GHSA-8qq5-rm4j-mr97
+    node-tar is Vulnerable to Arbitrary File Overwrite and Symlink Poisoning via Insufficient Path Sanitization
+    https://github.com/advisories/GHSA-8qq5-rm4j-mr97
+  [high]      tar                        1113375   GHSA-83g3-92jg-28cx
+    Arbitrary File Read/Write via Hardlink Target Escape Through Symlink Chain in node-tar Extraction
+    https://github.com/advisories/GHSA-83g3-92jg-28cx
+  [high]      tar                        1114200   GHSA-qffp-2rhf-9h96
+    tar has Hardlink Path Traversal via Drive-Relative Linkpath
+    https://github.com/advisories/GHSA-qffp-2rhf-9h96
+  [high]      tar                        1114302   GHSA-9ppj-qmqm-q256
+    node-tar Symlink Path Traversal via Drive-Relative Linkpath
+    https://github.com/advisories/GHSA-9ppj-qmqm-q256
+  [high]      tar                        1114680   GHSA-r6q2-hw4h-h46w
+    Race Condition in node-tar Path Reservations via Unicode Ligature Collisions on macOS APFS
+    https://github.com/advisories/GHSA-r6q2-hw4h-h46w
+  [high]      tar                        1123941   GHSA-8x88-c5mf-7j5w
+    node-tar: Negative tar entry size causes infinite loop in archive replace
+    https://github.com/advisories/GHSA-8x88-c5mf-7j5w
+  [high]      tar                        1145647   GHSA-r292-9mhp-454m
+    node-tar: Uncontrolled recursion in mapHas/filesFilter allows uncatchable stack-overflow DoS via crafted long-path tar with member selection
+    https://github.com/advisories/GHSA-r292-9mhp-454m
+  [high]      undici                     1114592   GHSA-f269-vfmq-vjvj
+    Undici: Malicious WebSocket 64-bit length overflows parser and crashes the client
+    https://github.com/advisories/GHSA-f269-vfmq-vjvj
+  [high]      undici                     1114638   GHSA-vrm6-8vpv-qv8q
+    Undici has Unbounded Memory Consumption in WebSocket permessage-deflate Decompression
+    https://github.com/advisories/GHSA-vrm6-8vpv-qv8q
+  [high]      undici                     1114640   GHSA-v9p9-hfj2-hcw8
+    Undici has Unhandled Exception in WebSocket Client Due to Invalid server_max_window_bits Validation
+    https://github.com/advisories/GHSA-v9p9-hfj2-hcw8
+  [high]      undici                     1121245   GHSA-vxpw-j846-p89q
+    undici WebSocket client vulnerable to denial of service via fragment count bypass
+    https://github.com/advisories/GHSA-vxpw-j846-p89q
+  [high]      vite                       1116232   GHSA-v2wj-q39q-566r
+    Vite: `server.fs.deny` bypassed with queries
+    https://github.com/advisories/GHSA-v2wj-q39q-566r
+  [high]      vite                       1116234   GHSA-p9ff-h696-f583
+    Vite Vulnerable to Arbitrary File Read via Vite Dev Server WebSocket
+    https://github.com/advisories/GHSA-p9ff-h696-f583
+  [high]      vite                       1116235   GHSA-p9ff-h696-f583
+    Vite Vulnerable to Arbitrary File Read via Vite Dev Server WebSocket
+    https://github.com/advisories/GHSA-p9ff-h696-f583
+  [high]      vite                       1123525   GHSA-fx2h-pf6j-xcff
+    vite: `server.fs.deny` bypass on Windows alternate paths
+    https://github.com/advisories/GHSA-fx2h-pf6j-xcff
+  [high]      vite                       1123526   GHSA-fx2h-pf6j-xcff
+    vite: `server.fs.deny` bypass on Windows alternate paths
+    https://github.com/advisories/GHSA-fx2h-pf6j-xcff
+  [high]      ws                         1123259   GHSA-96hv-2xvq-fx4p
+    ws: Memory exhaustion DoS from tiny fragments and data chunks
+    https://github.com/advisories/GHSA-96hv-2xvq-fx4p
+
+[NEW] 9 finding(s)
+  [high]      brace-expansion            1240104   GHSA-qhr7-859c-m2p7
+    brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion
+    https://github.com/advisories/GHSA-qhr7-859c-m2p7
+  [high]      brace-expansion            1240105   GHSA-qhr7-859c-m2p7
+    brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion
+    https://github.com/advisories/GHSA-qhr7-859c-m2p7
+  [high]      brace-expansion            1240107   GHSA-qhr7-859c-m2p7
+    brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion
+    https://github.com/advisories/GHSA-qhr7-859c-m2p7
+  [high]      brace-expansion            1240108   GHSA-6j4f-fj2g-mc7p
+    brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion
+    https://github.com/advisories/GHSA-6j4f-fj2g-mc7p
+  [high]      brace-expansion            1240109   GHSA-6j4f-fj2g-mc7p
+    brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion
+    https://github.com/advisories/GHSA-6j4f-fj2g-mc7p
+  [high]      brace-expansion            1240111   GHSA-6j4f-fj2g-mc7p
+    brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion
+    https://github.com/advisories/GHSA-6j4f-fj2g-mc7p
+  [high]      devalue                    1240870   GHSA-j22f-vq7h-c4qm
+    devalue: `stringify`/`uneval` serialize shared memory
+    https://github.com/advisories/GHSA-j22f-vq7h-c4qm
+  [high]      devalue                    1240872   GHSA-mcm9-63f2-9j32
+    devalue: Repeated primitive strings cause quadratic expansion in uneval
+    https://github.com/advisories/GHSA-mcm9-63f2-9j32
+  [high]      undici                     1240042   GHSA-rfgv-xxqx-mfg5
+    undici vulnerable to Denial of Service via unrequested WebSocket subprotocol
+    https://github.com/advisories/GHSA-rfgv-xxqx-mfg5
+
+Note: 6 accepted advisory(ies) no longer appear in the audit and could be dropped at the next reviewed baseline update: 1123911, 1123912, 1138114, 1138115, 1121797, 1124012
+
+Summary: 9 new advisory(ies) at high+, 63 accepted
+
+A NEW advisory is not a baseline problem. Fix or upgrade the dependency; if the finding must be accepted, add it with a written rationale via a reviewed `--update-baseline` run. Never silence it by package name.
+exit=1

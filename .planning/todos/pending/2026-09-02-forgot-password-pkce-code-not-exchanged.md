@@ -63,3 +63,18 @@ this item:
    to.
 3. Add an E2E case that follows the verify redirect rather than bypassing it, so the shape
    the user actually receives is the shape under test.
+
+## 2026-10-02: note from Phase 168 (168-06 finding F1, residual)
+
+The 168-06 docs writer reached the same conclusion from the code alone: the callback reads only `token_hash`, `type` and `next`. The
+browser client sets no `flowType`, so it defaults to PKCE. Every `[auth.email.template.*]` section in `config.toml` is commented
+out, so the local stack uses Supabase's default templates. Under that setup, the verify redirect delivers `?code=` to the callback.
+
+The writer also noted that the **invite** email has the same shape. `invite-candidate` sets
+`redirectTo = ${SITE_URL}/candidate/complete-registration`, a route that does not exist; that defect is tracked in
+`2026-09-15-refactor-candidate-and-entity-registration-flow-and-nominati.md`. So a real invitation email probably fails the same way
+as this measured recovery email. That is UNCONFIRMED, because the invite path was not run.
+
+The docs page `/developers-guide/candidate-app/login-and-password-reset` describes the flow the callback implements
+(`token_hash` → `verifyOtp`). `password-reset-code-method.md` now carries the reading that the reset page's own `?code=` branch is
+unreachable, and should close once this todo's fix lands.

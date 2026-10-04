@@ -1,0 +1,39 @@
+---
+phase: 169
+review: 169-REVIEW.md
+recorded: 2026-10-03
+---
+
+# Phase 169 — Code-review disposition
+
+The code-review gate is advisory. The review found 0 critical, 4 warning and 9 info findings. Three of the warnings sit in the AI SDK 7 migration of `@openvaa/llm` (the one place in the phase where behaviour, not just a version, changed). They are fixed here, one commit each, test first. The fourth warning is the nodemailer Edge pin, which is time-held and already tracked. None of the findings is a crash, data-loss or authentication defect. WR-01 records a pre-existing prompt-injection surface (candidate text in a system message), now made explicit and tracked.
+
+| ID | Severity | Finding | Disposition |
+|----|----------|---------|-------------|
+| WR-01 | warning | `LLMProvider.generateObject` hard-codes `allowSystemInMessages: true`, overriding a caller's `false`, and its comment calls the prompts trusted although `condenser.ts` puts candidate-written comments into the system message | **fixed** `5e1d4394a`. The provider forwards `options.allowSystemInMessages ?? false`. The condenser (refine and parallel paths) and question-info opt in explicitly, each with a comment; the condenser comments say plainly that candidate text runs with system-role authority. Tests: false by default, true on opt-in, and both callers' requests carry the opt-in. Structural fix (template → `instructions`, candidate text → user message, then drop the opt-ins) is a prompt/behaviour change, so out of scope for a dependency phase: todo `2026-10-03-llm-move-system-template-to-instructions.md` (supersedes `2026-10-03-ai-sdk-7-allow-system-in-messages-opt-in.md`, which now carries a superseded note) |
+| WR-02 | warning | `generateObject` admits `instructions` / `system` / `prompt` in its options type but forwards only `messages`, so instructions are silently dropped | **fixed** `d2c988d74`. Forwards `instructions ?? system` and passes `prompt` or `messages` through (never both). Tests assert each reaches the SDK call. Residue: `streamText` still does not forward `prompt`; folded into the WR-01 todo |
+| WR-03 | warning | `calculateLLMCost` adds reasoning cost on top of `outputTokens` (which already includes reasoning in AI SDK 7) and, with `useCachedInput`, bills only cached input; the test locked in the wrong totals | **fixed** `8c433571f`. Reasoning is split out of `outputTokens` and priced once (reasoning rate, else output rate); `total = input + output`. Cached mode bills `inputTokens − cacheReadTokens` at the input rate and the cached part at the cached rate. The SDK `LanguageModelUsage` semantics are cited in the JSDoc. The test now expects 3.2 (was 3.6) and 3.0 with input 0.8 (was 0.2), with the arithmetic written out, plus a no-reasoning-rate case. No live impact before the fix: no `MODEL_PRICING` entry sets `reasoning` and production uses `useCachedInput: false` |
+| WR-04 | warning | `send-email` ships `npm:nodemailer@6.9.10` (17 advisories, 6 high) and no gate covers Deno `npm:` pins | **deferred** to `2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md`. The 7-day age-rule hold on 10.0.11 lifts **2026-10-04T07:51Z**. It **must land before merge or the next deploy**, whichever comes first. The suggested source-level gate (audit the Edge `npm:` pins in `lint:check`) is already the subject of `2026-10-03-deno-edge-imports-invisible-to-audit-deps.md` (priority high) |
+| IN-01 | info | `@ai-sdk/google` 4 counts thinking tokens inside `outputTokens`, so Gemini 2.5 cost figures step up across the upgrade | **accepted**. Closer to Google's billing; with WR-03 the thinking tokens are now a clean split of `output` (reported in `reasoning`) rather than a double count. The `@openvaa/llm` README cost section now states that `output` includes reasoning. The 2.x behaviour is UNCONFIRMED (no longer installed) and the step only affects cross-upgrade comparison of admin cost logs |
+| IN-02 | info | The root-`.env` restart plugin has no `unlink` handler and no debounce | **todo** `2026-10-03-vite-restart-plugin-unlink-and-debounce.md` (low; dev-loop nuisance only) |
+| IN-03 | info | `dependenciesMeta` re-enables install scripts for `supabase`, which has none (2.118.0 checked), so it pre-authorises a future one | **todo** `2026-10-03-drop-supabase-from-dependenciesmeta-built.md` (low; supply-chain posture under `enableScripts: false`) |
+| IN-04 | info | `generateObject` is `@deprecated` in AI SDK 7 | **tracked** as step 4 of `2026-10-03-llm-move-system-template-to-instructions.md`: the migration to `generateText({ output: Output.object(...) })` is the natural pass in which to restructure the prompts |
+| IN-05 | info | Drawer focus return also runs on `autoCloseNav` link clicks and keyboard focus-out, with no unit pin | **accepted**. Returning focus to the menu button on close is the standard disclosure/drawer pattern; the full E2E suite passed 171/171 with these paths live. Add the two unit cases opportunistically when `Layout.svelte` is next touched |
+| IN-06 | info | `prettier-plugin-tailwindcss` 0.8 sorts DaisyUI `text-secondary` as an unknown class (frontend config has no `tailwindStylesheet`) | **accepted**. Class order in a static attribute does not change rendering; the cause is UNCONFIRMED and the cost is sort quality and possible future reformat churn only. Revisit if a Prettier run reorders classes unexpectedly |
+| IN-07 | info | The `IMMUTABLE` → `STABLE` fix edited the applied `00001` migration, so a hosted DB keeps `IMMUTABLE` and `supabase db diff` reports drift | **tracked** in the existing `2026-10-03-upgrade-hosted-postgres-to-17.md` (step 2 now notes the expected `db diff` drift and asks for the `ALTER FUNCTION … STABLE` at the latest at the first hosted deploy after merge). Harmless for query results on PG15 |
+| IN-08 | info | `release.yml` / `docs.yml` migrations are verified statically only | **tracked** in the existing `2026-10-03-watch-first-main-run-of-release-and-docs-workflows.md` (now also notes the optional fork / stubbed `publish-script` rehearsal and the unresolved trusted-publishing auth). Both workflows can only run on `main` |
+| IN-09 | info | No parity test holds the three `npm:@supabase/supabase-js@2.117.2` Edge pins to each other or to the installed version | **todo** `2026-10-03-supabase-js-edge-pin-parity-test.md` (low; sibling of the jose pin test in `verifyConfig.test.ts`) |
+
+## Verification of the fixes
+
+Run in the main `-gsd` checkout on branch `fix/888-review-findings` (no isolated worktree), Node 24.21.0, after the three commits:
+
+- Unit tests: `@openvaa/llm` 49/49, `@openvaa/argument-condensation` 31/31, `@openvaa/question-info` 22/22, frontend `src/lib/server/admin/` 42/42 (after rebuilding the three packages so the frontend resolved the fixed `dist`). Each new test failed before its fix and passed after.
+- `TURBO_FORCE=true yarn lint:check`: exit 0, which includes the forced `turbo run typecheck` and `assert:comment-hygiene` (0 violations). 0 errors and 17 warnings; the normalised warning list is identical to `tests/e2e-runs/169-gates/09/lint-norm-after.txt`.
+- The `@openvaa/llm` tests are outside its `tsconfig` include, so they were also type-checked ad hoc (`tsc` over `src` + `tests`): 0 errors.
+- Prettier: clean on every touched file.
+- **No E2E run.** No E2E spec drives these paths: the LLM admin jobs need a provider key, and no spec calls `generateObject`, `streamText` or `calculateLLMCost`. No live LLM was called; every test mocks the AI SDK.
+
+## Verification follow-up: D-14 gap closed
+
+`169-VERIFICATION.md` raised one WARNING: the D-14 bank-auth 3× gate had run only on Postgres 15. Commit `fd1288351` closes it: bank-auth 8/8 ×3 and bank-auth-journey 131/131 ×3 on the PG17 stack (17.6), recorded in `169-EVIDENCE.md` § 4. The one open action left from verification is the nodemailer pin (WR-04).

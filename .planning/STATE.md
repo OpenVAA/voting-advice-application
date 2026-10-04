@@ -2,21 +2,20 @@
 gsd_state_version: "1.0"
 milestone: v2.15
 milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
-current_phase: 166
-current_phase_name: Retire auth_user_id — Entity Identity from Grants
+current_phase: 169
+current_phase_name: COMPLETE 2026-10-04
 current_plan: Not started
-status: ready
-stopped_at: "Phase 165 (Review-Stack Comment Remediation, PR #889) and Phase 165.1 (Results Navigation Redraw, PR #888) complete — next: /gsd-plan-phase 166"
-last_updated: "2026-09-29T19:12:32.000Z"
-last_activity: 2026-09-29
-last_activity_desc: Planning records of PR #888 and PR #889 merged; Results Navigation Redraw renumbered to Phase 165.1
-state_head: c0ffbd854568f384f3fe76a19fb39c37bbf62c34
+status: "Phases 166-169 shipped — PR #890 updated"
+stopped_at: "Phase 169 complete (2026-10-04): nodemailer 10.0.11 pin landed, DEPS-09 closed, re-verified 20/20 passed"
+last_updated: "2026-10-04T10:27:25.179Z"
+last_activity: 2026-10-04
+state_head: dd9762419cdcc933675b46da0c2ee8cdf0f60af6
 progress:
-  total_phases: 32
+  total_phases: 35
   completed_phases: 31
-  total_plans: 315
-  completed_plans: 315
-  percent: 97
+  total_plans: 347
+  completed_plans: 347
+  percent: 89
 ---
 
 # Project State
@@ -26,17 +25,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-20 — v2.15 complete)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 166 — Retire `auth_user_id` — Entity Identity from Grants (ready to plan)
+**Current focus:** Phase 169 — Dependency Bump to Latest Safe Versions
 
 ## Current Position
 
 Milestone: v2.15 (Phases 137-166 + 142.1 + 157.1 + 157.2 + 162.1 + 165.1, 32 phases; 148 absorbed into 147) — **31/32 phases complete (97%), 315/315 plans**
 _(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and PR #889 were merged: `ls .planning/phases | grep -v '^999' | wc -l` → **32**; `ls .planning/phases/*/[0-9]*-PLAN.md | grep -v '/999' | wc -l` → **315** (270 before either branch + 36 for Phase 165 + 9 for Phase 165.1); a per-directory PLAN-vs-SUMMARY comparison finds every plan summarised and only Phase 166 with no plan, so 31 phases are complete. The SUMMARY file count is 317: `142-W1-SUMMARY.md` (a wave summary) and `161-02.1-SUMMARY.md` (no plan file) are not plans. `percent` is completed/total phases, 31/32 rounded. The Phases 167-171 placeholders PR #888 added were dropped as superseded by Phase 165.)_
-Phase: 166 (Retire `auth_user_id` — Entity Identity from Grants) — ready to plan
+Phase: 169 (Dependency Bump to Latest Safe Versions) — COMPLETE 2026-10-04 (13/13 plans; nodemailer 10.0.11 pin landed post-phase; verification passed 20/20)
 Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
 Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
-Current Plan: Not started
-Total Plans in Phase: 0
+Current Plan: 13 (complete)
+Total Plans in Phase: 13
 
 162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
 they collapse.** `public.grants` keyed `user_id x scope x target_type x target_id x role`; a **23-member**
@@ -306,7 +305,7 @@ run. WHAT REMAINS: push `ci-evidence/163-crit2-red` and `…-green`, assert the 
 granularity (`frontend-and-shared-module-validation` → `Run Prettier check globally`, log naming the
 file), fill rows 9/10, delete both branches. `CIGATE-02` was NOT marked complete
 (`requirements.ready-ids` → 0/1 ready).
-Status: Ready to plan Phase 166
+Status: Phases 166-169 shipped — PR #890 updated
 PUSHED.** `prettier-plugin-sql@0.20.0` is declared once in `packages/shared-config` with
 `overrides: [{ files: '*.sql', options: { language: 'postgresql' } }]`, and reaches every workspace
 through the `?? []` spreads the leaf configs already carried (both leaf configs byte-unchanged).
@@ -404,7 +403,7 @@ exists or can exist here. All seven gates above are LOCAL. Carried as `164-03` c
 The milestone counters below are derived by gsd-tools from a milestone-wide scan, not read, so they
 must not be hand-tuned.
 
-**Progress:** [███████░░░] 68%
+**Progress:** [█████████░] 89%
 
 > **Ordering note for the phases still queued.** 164 runs before 163 because both edit
 > `.github/workflows/main.yaml` and ROADMAP § 164 explicitly forbids them sharing an execution wave.
@@ -590,7 +589,7 @@ install no Node at all when `engines.node` is absent — it WARNS, it does not f
 its negative control independently of the ruling. Full amendment:
 `.planning/todos/pending/2026-08-29-153-03-scope-amendment-after-d-b5-reversal.md`.
 **153-09 depends on 01, 02 AND 03**, so 03 blocks the phase close and nothing else in the phase.
-Last activity: 2026-09-29 — Phase 165 complete; planning records of PR #888 and PR #889 merged, Results Navigation Redraw renumbered to Phase 165.1
+Last activity: 2026-10-04
 
 **Phase 155 (Edge Function Hardening) is COMPLETE and verified — 6/6 plans.** Its completion line was
 overwritten in this single position slot by 153-01's `record-session` (STATE.md holds one position, and
@@ -819,8 +818,8 @@ are independent.
 
 ## Session Continuity
 
-Last session: 2026-09-28T20:24:41.999Z
-Stopped at: Phase 165 and Phase 165.1 complete — next: /gsd-plan-phase 166
+Last session: 2026-10-03T19:21:50.258Z
+Stopped at: Phase 169 complete — all phases complete
 Resume file: None
 
 ## Deferred Items
@@ -1128,6 +1127,38 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 165.1 P06 | 39 min | 3 tasks | 4 files |
 | Phase 165.1 P07 | 38 min | 3 tasks | 17 files |
 | Phase 165.1 P08 | 19 min | 3 tasks | 9 files |
+| Phase 166 P01 | 17min | 3 tasks | 12 files |
+| Phase 166 P02 | 20 min | 3 tasks | 18 files |
+| Phase 166 P03 | 20 min | 3 tasks | 23 files |
+| Phase 166 P04 | 41min | 3 tasks | 8 files |
+| Phase 167 P01 | 3min | 2 tasks | 3 files |
+| Phase 167 P02 | 7min | 3 tasks | 34 files |
+| Phase 167 P03 | 2min | 2 tasks | 2 files |
+| Phase 167 P04 | 11min | 3 tasks | 9 files |
+| Phase 167 P05 | 3min | 3 tasks | 4 files |
+| Phase 167 P06 | 15 min | 3 tasks | 11 files |
+| Phase 168 P01 | 23min | 3 tasks | 15 files |
+| Phase 168 P01.1 | 130min | 2 tasks | 31 files |
+| Phase 168 P02 | 12min | 3 tasks | 78 files |
+| Phase 168 P03 | 28min | 3 tasks | 8 files |
+| Phase 168 P04 | 31 min | 3 tasks | 13 files |
+| Phase 168 P05 | 30min | 3 tasks | 12 files |
+| Phase 168 P06 | 30min | 3 tasks | 9 files |
+| Phase 168 P07 | 24min | 3 tasks | 131 files |
+| Phase 168 P08 | 38min | 3 tasks | 26 files |
+| Phase 169 P01 | 40min | 3 tasks | 37 files |
+| Phase 169 P02 | 3h15m | 3 tasks | 20 files |
+| Phase 169 P03 | 32min | 3 tasks | 24 files |
+| Phase 169 P04 | 92min | 3 tasks | 40 files |
+| Phase 169 P05 | 45min | 3 tasks | 13 files |
+| Phase 169 P06 | 61min | 1 tasks | 4 files |
+| Phase 169 P07 | 58min | 3 tasks | 16 files |
+| Phase 169 P08 | 19min | 2 tasks | 4 files |
+| Phase 169 P09 | 28min | 3 tasks | 10 files |
+| Phase 169 P10 | 19min | 3 tasks | 9 files |
+| Phase 169 P11 | 100min | 3 tasks | 14 files |
+| Phase 169 P12 | 5min | 1 tasks | 3 files |
+| Phase 169 P13 | 24min | 3 tasks | 23 files |
 
 ## Deferred Items
 
@@ -1330,6 +1361,7 @@ The pre-close artifact audit surfaced 15 open items. All v2.10-internal artifact
 
 ### Roadmap Evolution
 
+- 2026-10-01: Phases 167-169 added to v2.15 before milestone close (operator): 167 Origin/main Vestige Cleanup (code-side deferrals of quick 261001-n8y VESTIGES.md + a `safeGetSession` round-trip test), 168 Docs-Site Rewrite — Strapi to Supabase (widened: every docs page brought up to date; research interludes not edited), 169 Dependency Bump to Latest Safe Versions (majors included). Numbers 167-171 were free again after the 2026-09-29 drop; `phase.add` picked 172 from the stale mention and was corrected by hand.
 - 2026-09-29: The planning records of PR #888 and PR #889 merged. Both branches had created a Phase 165; the maintainer kept Phase 165 = Review-Stack Comment Remediation (#889) and renumbered Results Navigation Redraw (#888) to Phase 165.1 (directory, plan ids, RNAV traceability, WINDOWS entries). Phases 167-171 (per-PR review fixes for #876-#887, added by #888) were dropped as superseded by Phase 165, which delivered those fixes. Phase 166 stays pending.
 - 2026-09-24: Phase 166 added to v2.15 (operator: extend rather than open a new milestone — related work). 166 retires `candidates/organizations.auth_user_id` in favour of entity-scope grants.
 
@@ -2073,6 +2105,95 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 165.1]: The CLAUDE.md results-navigation invariant subsection landed beside the two analog Svelte invariant subsections under Important Implementation Notes, with a pointer line added under Frontend (SvelteKit) where D-24 said to put it — D-24 and 165.1-PATTERNS E3 both place the analogs under the frontend section; they are not there. The plan done-clause (beside the two subsections it belongs with) wins, and the pointer keeps D-24 stated location reaching the rule
 - [Phase 165.1]: The 2026-06-15 view-transition-flicker todo is closed WITH a named residue, not marked done: scroll survival closes as RNAV-02, the in-drawer tab flicker is handed to the parked element-scoped-VT deferred idea — Marking it done would claim a fix that did not ship; the residue half is cosmetic but real
 - [Phase 165.1] The visual gate has NO baseline capturing an open drawer, so this phase's headline change — the app-wide DrawerHost replacing the per-route drawer — is visually unmeasured. G-9 ran green with 4/4 matched, but all four baselines screenshot a page with no overlay showing; G-8's axe scans cover the drawer's conformance, not its appearance. See deferred-items.md D-165.1-07-01 and WINDOWS 282 (open).
+- [Phase 166]: 166-01: entity identity resolved from the caller's own (entity, type, id, editor) grant rows via private.caller_entity_ids (SECURITY DEFINER, search_path '', never user_can); get_candidate_user_data is plpgsql INVOKER and raises P0001 / HINT ERR_ENTITY_IDENTITY_AMBIGUOUS on 2+ grants in one project
+- [Phase 166]: 166-01: idx_grants_one_candidate_editor (partial unique on grants.target_id for entity/candidate/editor); writeEntityGrant treats only grants_user_scope_target_role_key violations as success; both names pinned in 36-entity-identity
+- [Phase 166]: 166-01: anon-exposure census (single exemption nominations.created_by) observed red and held in todo_start/todo_end; 166-03 must remove the wrapper after the column drop
+- [Phase 166]: identity-callback finds a returning identity's candidate through its candidate-editor grant (grants by user, then candidates by project and granted ids); a failed grant write on the create branch deletes the just-created candidate before rethrowing
+- [Phase 166]: invite-candidate links the invitee through the grant only; rollbackInvite is called once, from the grant-failure arm
+- [Phase 166]: E2E teardown reads candidate ids through the grant BEFORE deleting grants or the user, and resets terms of use by id (SupabaseAdminClient.candidateIdsForUser / userIdForCandidate, public)
+- [Phase 166]: 166-04: full E2E suite 171/171 on the grant-only tree; the user's below-floor disk approval (2026-10-02) recorded but unneeded (25.7 GiB free at the run)
+- [Phase 166]: 166-04: bank-auth and bank-auth-journey are opt-in (PLAYWRIGHT_BANK_AUTH=1), so link 5's three runs each are their D-20 evidence, not the full suite
+- [Phase 167]: 167-01: safeGetSession.test.ts pins exact getUser/getSession counts in every case plus a strict-client Proxy (UnexpectedClientAccess); V1/V2-old/V2-new/V3 all observed red; PHASE_BASE=8c519ac97
+- [Phase 167]: 167-02: /api/auth/logout is the live sample API path in route tests (D-11)
+- [Phase 167]: 167-02: cache proxy, backend-URL pair, BACKEND_API_TOKEN and flat-cache removed in one commit (837b895c4); VEST-03 stays open for 167-06's adapter-todo notes
+- [Phase 167]: 167-03: js-yaml declared in @openvaa/llm via catalog: (commit 879d0ccf0); lockfile assertion replaced the legitimacy checkpoint and passed (no new resolution, js-yaml stays 4.3.2); VEST-04 left open for 167-04
+- [Phase 167]: 167-04: eslint-plugin-svelte kept and imported by name (svelte.configs['flat/prettier'] on 2.46.1); findings diff before/after empty; frontend @eslint/eslintrc and @eslint/js removed in commit 4, so no D-12 residue
+- [Phase 167]: 167-04: baseline hand-edit removed only lodash 1115806; the four stale js-yaml ids (1123911, 1123912, 1138114, 1138115) predate the phase and stay for Phase 169
+- [Phase 167]: 167-04: removing docs' globals moved root globals 16.5.0 -> 15.14.0, which shared-config imports undeclared; findings unchanged (no-undef off); 167-06 files the declare-globals todo
+- [Phase 167]: 167-05: OpenVAALogo (docs) keeps the literal fill-* switch plus the trailing fill-${color} append, reproducing the old class string byte for byte and keeping the Tailwind v4 fill utilities; VEST-05 complete, VEST-06 awaits the 167-06 todo closure
+- [Phase 167]: 167-06: the docs workspace's own prettier --check (inside yarn format:check) caught a ⑤ wrap; fixed in style[docs] 275250054, to be folded into ⑤ at review-stack time
+- [Phase 167]: 167-06: gate-evidence/ held no credential (the one pattern hit is verbatim tracked docs placeholder text); deleted, never committed
+- [Phase 168]: Inbound-reference #hash failures are reported under the inbound class (not anchor), so --only inbound proves target and anchor
+- [Phase 168]: Link checker page model: +page.md / +page.svelte pages, +page.ts-only redirect stubs, static assets; nav section routes are not checked; a link landing on a stub is a finding only in --check mode
+- [Phase 168]: Phase 168 base revision 0ec229dfe recorded in gate-evidence/base-rev.txt; every later gate reads it from there
+- [Phase 168]: 168-01.1: Operator ruling 2026-10-02 Option B (fix at source, re-anchor freeze): lint-only fixes to ResearchQuote.svelte/ReferenceList.svelte, render-identical; check:research-quotes gains --component-base, spans still vs base-rev.txt (0ec229dfe), components vs gate-evidence/component-base-rev.txt (6090476cc)
+- [Phase 168]: 168-01.1: Span-gate invocation for 168-02..08 and 169 is --base "$(cat $GE/base-rev.txt)" --component-base "$(cat $GE/component-base-rev.txt)"; the --base-only form now exits 1 by design
+- [Phase 168]: 168-01.1: Docs lint crash: order-dependence + Node-version independence CONFIRMED, trigger shared compat.extends prettier CONFIRMED, eslint-plugin-svelte REFUTED, mechanism UNCONFIRMED; tsParser named export from shared-config instead of re-declaring @typescript-eslint/parser
+- [Phase 168]: 168-01.1: typedoc, typedoc-plugin-markdown, @playwright/test removed from apps/docs; baseline rows 1121797/1124012 (linkify-it via typedoc-only markdown-it) hand-deleted, note 69->67; no --update-baseline
+- [Phase 168]: 168-02: frontend/data-api stubbed per D-04 literal list (ruling 4 Q2); both API READMEs repointed to frontend/data-api-and-adapters
+- [Phase 168]: 168-02: never-paged section routes (contributing, candidate-user-management) get no stub; inbound README links repointed to leaf pages
+- [Phase 168]: 168-02: nav title == page H1 except the four Overview leaves and page-less sections Backend (Supabase) / Candidate app (fixedTitle: true); renaming an H1 renames the nav item
+- [Phase 168]: 168-02: 168-07 must keep Contributing headings Self-review and Commit your update (PR-template anchors)
+- [Phase 168]: 168-03: Edge Function callers are documented as the code has them (adapter methods), with the missing live UI caller recorded as finding F2 rather than glossed
+- [Phase 168]: 168-03: Negative facts (missing route, uncalled method) go on the page and into Findings with the proving grep, since a content anchor cannot prove absence
+- [Phase 168]: 168-03: Seed data states yarn db:reset as when seed.sql runs; CLAUDE.md's 'seeded on supabase start' recorded as F6, first-start seeding UNCONFIRMED
+- [Phase 168]: 168-04: Quick start asks for the local anon and service-role keys (from supabase status -o env) as well as the preset PUBLIC_PROJECT_ID; Deployment asks for PUBLIC_PROJECT_ID on the Render service, which render.example.yaml omits (finding F1)
+- [Phase 168]: 168-04: the 167 Render clean-up note is on the Deployment page as removal guidance naming the old keys by family (CACHE_*, PUBLIC_*_BACKEND_URL), so the 167-removed-name sweeps stay clean; recorded as a sweep exception for 168-08
+- [Phase 168]: 168-05: Data API docs state createDataProvider/createFeedbackWriter always return the Supabase adapters; the apiRoute adapters are unwired and dataAdapter.type 'local' only loads the server-side local adapter (F1)
+- [Phase 168]: 168-05: Styling documents the theme palette in app.css and StaticSettings.colors as a duplicate used only for theme-color meta and ensureColors (F2)
+- [Phase 168]: 168-05: Locale resolution lists Paraglide's url/cookie/baseLocale order without claiming when the cookie wins (F5 UNCONFIRMED); Accept-Language is not a strategy
+- [Phase 168]: 168-06: password-reset ?code= branch unreachable from in-repo paths (F1) — todo stays open for a code phase; registrationKey todo closes as superseded (F2)
+- [Phase 168]: 168-06: app settings merge static -> dynamic defaults -> app_settings.settings by top-level key; docs tell readers to store whole groups (F11)
+- [Phase 168]: 168-07: generated pages regenerated (78369e329) before the generator wording audit (12d04f015); the index intro sentence the components skill quotes is kept verbatim
+- [Phase 168]: 168-07: code-proven absences (voter statement weights, real-time top results, csv translation import/export, a database-free static site) are written as 'not yet available' or dropped; operator plans untouched
+- [Phase 168]: 168-07: ledger stub rows keep 'redirect stub' and append the content fate from the owning plan's CLAIMS verdict; no pending verdict remains
+- [Phase 168]: 168-08: verifier pass 58 pages / 1022 claims / 0 BLOCKER-FAIL; q-info/arg-cond sourced from commit history, kept
+- [Phase 168]: 168-08: configurable-mock-data closed (dev-seed satisfies it); password-reset-code-method left open while the ?code= branch exists
+- [Phase 168]: 168-08: OIDC callback never checks the nonce - filed as security todo 2026-10-02-oidc-callback-does-not-verify-nonce.md
+- [Phase 168]: 168-08: localization-in-strapi stub retargeted to Multi-locale data (168-05 F4)
+- [Phase 168]: 168-08: Phase 169 handoff - validate:links --check, check:research-quotes --base 0ec229dfe --component-base 6090476cc, docs build
+- [Phase 169]: 169-01: AI SDK family (ai, @ai-sdk/*) excluded from the group-0 refresh — @ai-sdk/provider-utils >=3.0.35 pulls undici 5 + @fastify/busboy (NEW high 1240982); majors stay 169-09's
+- [Phase 169]: 169-01: braces GHSA-vfj7-8cjw-p6xm (1240992, no fixed release) accepted by a hand-written baseline row under D-02 — operator review requested (169-EVIDENCE.md section 7)
+- [Phase 169]: 169-01: package typecheck scripts are 'tsc --noEmit --composite false' so a typecheck never writes dist/tsconfig.tsbuildinfo while tsup rebuilds dist (fixes a turbo typecheck/build race)
+- [Phase 169]: 169-02: Yarn 4.18 install scripts stay off globally; only esbuild and supabase build via root dependenciesMeta.built (operator ruling, Option B; unrs-resolver joins in 169-03)
+- [Phase 169]: 169-02: Node 24.21.0 at every pin site in one commit (77d3ce8bf), engines.node >=24.15.0; measured alone 12/12 gates, image smoke, E2E 171/171
+- [Phase 169]: 169-02: TypeScript 6.0.3 + @types/node 24.19.0; TS 6 types:[] default answered by types:[node] in tsconfig.base.json; TS 7 held on typescript-eslint/svelte-check peers
+- [Phase 169]: 169-02: CI run 37111729145 e2e red = fixed-window race on the slow runner (mechanism UNCONFIRMED); results accordion collapse waits use TIMEOUTS.page (8d91d37f8); CI run 37115289953 12/12 success
+- [Phase 169]: 169-03: ESLint 10 held on 9.39.5 (D-06) — no-useless-assignment false positives on write-only $bindable props (eslint-plugin-svelte#1478) and a never-wired Layout drawer focus return need an operator ruling; 15 real ESLint-10 findings fixed at source (14b62f26c)
+- [Phase 169]: 169-03: eslint-plugin-import-x 4.17.1 replaces eslint-plugin-import (4 rules proven on planted violations before/after and on ESLint 10); unrs-resolver joins the dependenciesMeta build allow-list
+- [Phase 169]: 169-04: Vitest 5.0.2 (not 4) — 5.0.0 cleared the 30-day rule at 12:24:30Z on the execution day; committed after the 12:25Z probe; 5.0.3 held by the 7-day rule
+- [Phase 169]: 169-04: Vitest 5 makes vite a peer — new catalog vite ^7.3.6 (already-resolved version) declared by the 11 workspaces that run vitest; 169-05 bumps it to Vite 8 and moves both apps onto it
+- [Phase 169]: 169-04: isomorphic-dompurify 4 + jsdom 30 with the root resolutions block deleted; the pin (5555f42a6) worked around the ESM-only @exodus/bytes chain, which Node 24.15+ require(esm) now loads
+- [Phase 169]: 169-04: no visual re-baseline — all four snapshots matched on Playwright 1.63.0 (image sha256:eff16c30e6f3…) and after Tailwind 4.3.3 / DaisyUI 5.7.46
+- [Phase 169]: 169-05: Vite 8.3.1 (8.3.2 held by the 7-day rule until 2026-10-08) and vite-plugin-svelte 7.3.1 through new/bumped catalog entries for both apps; Kit 2.70.3 + adapter-node 5.5.7; Kit 3 family held until 2026-10-31 (169-12)
+- [Phase 169]: 169-05: vite-plugin-restart replaced by the serve-only restartOnRootEnv plugin (unit + live probe on Vite 6 and 8 with a negative control); braces baseline rationale hand-edited to the remaining @changesets/cli path
+- [Phase 169]: 169-05: Vite 8 raises the default browser floor to chrome111/edge111/firefox114/safari16.4/ios16.4 — operator to confirm or set build.target; configLoader native notice left as a follow-up (needs allowImportingTsExtensions)
+- [Phase 169]: 169-06: Supabase CLI 2.118.0 + six setup-cli pins (2.119.0 held to 2026-10-07T21:36Z); database.ts regenerated by postgres-meta v0.99.0, all hunks generator-driven
+- [Phase 169]: 169-06: local Postgres 17 DEFERRED (orchestrator ruling, not an operator decision) — PG17 image's plpgsql_check flags is_valid_choice_id IMMUTABLE-vs-STABLE; fix is a schema edit PROH-169-12 forbids; operator chooses A (STABLE, recommended) / B (hold) / C (rewrite); local stack stays PG15; blocks 169-13's PG17 gate and DEPS-08 only
+- [Phase 169]: 169-07: supabase-js 2.117.2 and @supabase/ssr 0.12.7 through the catalog; ssr 0.12 reads 0.9 cookies (no sign-out on deploy)
+- [Phase 169]: 169-07: cookie adapter forwards ssr cache headers via event.setHeaders once per name per request
+- [Phase 169]: 169-07: Edge Functions pinned to npm:@supabase/supabase-js@2.117.2 and npm:jose@6.2.12; nodemailer 10 HELD until 2026-10-04T07:51Z (30-day new-major rule), todo has resume steps
+- [Phase 169]: 169-07: bank-auth 3x run as two projects x3 (one served function has one issuer)
+- [Phase 169]: Operator ruling 2026-10-03 (operator, in chat) R1: local Postgres 17 with option A — is_valid_choice_id marked STABLE in schema + migration (f1ac8164a), overruling PROH-169-12 for this one reviewed volatility fix; config.toml major_version = 17 (bfdc1afc3); pgTAP 1335/1335, db:lint:sql 0, E2E 171/171 on PG17.6
+- [Phase 169]: Operator ruling 2026-10-03 (operator, in chat) R2: ESLint 10.11.0 landed (34ce0d51c) with three one-line eslint-disable-next-line no-useless-assignment comments on write-only $bindable props (eslint-plugin-svelte#1478), overruling PROH-169-07 for exactly those lines; config-lookup flag removed at all 21 sites; DEPS-04 complete; removal todo filed
+- [Phase 169]: Operator ruling 2026-10-03 (operator, in chat) R3: Layout drawer focus return wired — Header drawerOpenElement $bindable, Layout binds it (e3a661517), TDD Layout.svelte.test.ts (WCAG 2.4.3)
+- [Phase 169]: Operator ruling 2026-10-03 (operator, in chat) R4: Vite 8 default build target (chrome111/edge111/firefox114/safari16.4/ios16.4) accepted as the browser floor; no build.target override
+- [Phase 169]: 169-08: faker 10.6.0 through the catalog; seed diff at seed 42 shows equal row counts for default and e2e/base, e2e/base byte-identical, only default is seed-dependent among 31 templates; no visual re-baseline (7/0/0 twice)
+- [Phase 169]: 169-08: faker.seed() kept in buildCtx although Faker 10.5+ accepts a constructor seed (measured identical sequence); stale faker audit row 1158500 left for 169-13
+- [Phase 169]: 169-09: ai 7.0.116 + @ai-sdk/google 4.0.82 + @ai-sdk/openai 4.0.78 (provider 4.0.18 / provider-utils 5.0.49, undici ^7; undici 5 and @fastify/busboy stay out; audit 0 new); openai 4 removed (no importer)
+- [Phase 169]: 169-09: LLMProvider.generateObject passes allowSystemInMessages: true because every caller sends its server-built prompt as a system message, which AI SDK 7 rejects by default; streamText keeps the SDK default; generateObject kept (deprecated, still exported)
+- [Phase 169]: 169-09: TokenUsage stays the SDK LanguageModelUsage; cost calculation reads inputTokenDetails.cacheReadTokens and outputTokenDetails.reasoningTokens; the condenser fills the detail objects with undefined
+- [Phase 169]: 169-10: concurrently 10.0.5, lint-staged 17.6.0, changesets 3.0.3 + changelog-github 1.0.1, glob 13.0.6, js-yaml 5.4.2, globals 17.12.0 (one commit each); @types/cheerio removed; dotenv 18 (clears 2026-10-17T21:18Z) and intl-messageformat 12 (clears 2026-10-15T12:27Z) held, todo filed
+- [Phase 169]: 169-10: changesets 3 uses picomatch, so micromatch/braces left the tree; audit 0 new, 0 accepted; the braces baseline row 1240992 is stale and left for 169-13's reviewed rewrite (baseline not edited)
+- [Phase 169]: 169-10: @openvaa/shared-config now declares globals: catalog: (it imported globals undeclared); lint findings unchanged
+- [Phase 169]: 169-11: CI red 1 (performance 5901 ms) was Playwright 1.63's trace recording inside the measured window (bisect step at 34670ea56; untraced HEAD = traced 1.58); the performance project now records no trace, budget unchanged
+- [Phase 169]: 169-11: voter-journey keyboard/focus steps after a client navigation wait for the root layout's focus reset (waitForNavigationFocusReset, TIMEOUTS.page); clicks already wait out the View Transition, focus()/keyboard.press() do not
+- [Phase 169]: 169-11: changesets/action v2 gets the token as the github-token input (env token dropped; v2 re-exports it as GITHUB_TOKEN to version/publish) and push-with-git-cli: true to keep v1's git-cli mode
+- [Phase 169]: 169-12: SvelteKit 3 / adapter-node 6 / adapter-static 4 HELD (HOLD-AGE, measured 2026-10-03T18:49Z; x.0.0s 2.06 d old, clear 2026-10-31T17:22Z/17:24Z/17:21Z); every Kit 3.0.0 peer already met by the tree; Kit stays 2.70.3; todo 2026-10-03-sveltekit-3-held-by-the-age-rule.md (carries the Vite 8 configLoader item)
+- [Phase 169]: 169-13: audit baseline rewritten by hand to accepted [] — all 68 rows (62 high, 6 critical) were fixed in the tree during the phase; each removal checked against GitHub's range and the resolved version (EVIDENCE § 6); braces review item resolved by removal; DEPS-02 closed
+- [Phase 169]: 169-13: nodemailer 10 Edge pin NOT applied (clears 2026-10-04T07:51Z, ~13 h after the run); DEPS-09 stays Pending for that alone — todo 2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md
+- [Phase 169]: 169-13: DEPS-12 complete via its 'held with a reason' branch (dotenv 18 / intl-messageformat 12 dated holds; in-major 0)
+- [Phase 169]: 169-13: phase gate on one HEAD be000f31a — 12/12 gates, PG17.6 pgTAP 1335/1335 + db:lint:sql 0, full E2E 171/171/0/0/0; DEPS-01/08/15/16 complete
 
 ### Quick Tasks Completed
 
@@ -2108,6 +2229,17 @@ Key cross-milestone reference points carried forward into v2.10:
 | 260922-dd8 | cn over clsx + tailwind-merge; concatClass over cn; QuestionChoices dimming as a named const | 2026-09-22 | 884df28de | — | .planning/quick/260922-dd8-refactor-condition-classes-in-questionchoic |
 | 260926-j71 | Adopt spike 035b: `DrawerHost` mounted per app (voter app now; candidate app = one mount), `ContextBridge` deleted; fix the `Image.svelte` `darkMode` destructure trap. Folded into the PR #888 commit stack. Unit 1856/1856, full E2E 171/171 on the squashed tree | 2026-09-26 | PR #888 stack | complete | [260926-j71-adopt-spike-035b-drawer-host-in-voter-la](./quick/260926-j71-adopt-spike-035b-drawer-host-in-voter-la/) |
 | 260927-kjb | Replace `EntityDrawerOpener` with the `useEntityDrawer` `.svelte.ts` hook; the drawer payload becomes a component plus a props getter (`QuestionExtendedInfoButton` moved too). Folded into the PR #888 commit stack. Unit 3332/3332, full E2E 171/171 | 2026-09-27 | PR #888 stack | complete | [260927-kjb-replace-entitydraweropener-component-wit](./quick/260927-kjb-replace-entitydraweropener-component-wit/) |
+| 260930-gjv | Revalidate then fix CLAUDE.md "Comment Hygiene" violations in code comments added by the Phase 165 results-redraw work under apps/ and tests/ (historical narrative like "Until v2.16 Phase 165…"/"Measured: 6 red of 16 runs", .planning/ paths, D-NN / T-165-NN ids, 165-NEGATIVE-CONTROL.md anchors) e.g. AccordionSelect.svelte, (voters)/(located)/+layout.ts, lib/routes route.ts Statistics comment, results layouts, DrawerHost.svelte, QuestionExtendedInfoButton.svelte, useEntityDrawer, viewTransition.ts; rewrite each to describe the code as it is now (bare "see phase N"/"see spike N" allowed); comment-only, no behaviour change; run .claude hygiene-grep-report.sh --assert-clean if present | 2026-09-30 | a9ad4ba05 | — | .planning/quick/260930-gjv-revalidate-then-fix-claude-md-comment-hygiene-violations-in |
+| 260930-gjw | Revalidate then fix: root package.json "preinstall": "node scripts/assert-node-engine.mjs" breaks apps/frontend/Dockerfile because the Dockerfile copies only package.json yarn.lock .yarnrc.yml turbo.json .yarn apps packages before `yarn install --immutable` and never copies scripts/; make the Docker build install succeed (e.g. COPY the script before install) without weakening the engine guard elsewhere | 2026-09-30 | 6798df661 | — | .planning/quick/260930-gjw-revalidate-then-fix-root-package-json-preinstall-node-script |
+| 260930-gjx | Revalidate then forward-port origin/main commit 66d3ee33d (pro/con argument fix) which this branch predates: QuestionArguments.svelte TITLE_KEYS inverted (*Cons→pro, *Pros→con) and sort order; QuestionExtendedInfo.svelte arguments expander nested inside the infoSections block and `{#if args}` should be `args?.length`; apps/frontend/src/routes/(voters)/(located)/questions/+layout.svelte interactiveInfo condition missing `\|\| customData.arguments?.length`; and the fi con/pro translation values in whichever catalogue t() resolves (Paraglide apps/frontend/messages/*), keeping all locales consistent; add/adjust unit tests | 2026-09-30 | f8769eb97 | — | .planning/quick/260930-gjx-revalidate-then-forward-port-origin-main-commit-66d3ee33d-pr |
+| 260930-gjy | Revalidate then fix: apps/frontend/src/routes/api/oidc/callback/+server.ts verifies `state` only when the oidc_state cookie exists, so a missing cookie accepts any ?code= (login CSRF); check each configured provider (idura, signicat) for state/PKCE usage and make the callback fail closed when the flow is expected to carry state; add a unit test | 2026-09-30 | d88096c06 | — | .planning/quick/260930-gjy-revalidate-then-fix-apps-frontend-src-routes-api-oidc-callba |
+| 260930-gjz | Revalidate then fix: turbo.json build task inputs (src/**, tsconfig*, tsup.config.ts, package.json) omit apps/frontend build inputs (messages/**, static/**, svelte.config.js, vite.config.ts, project.inlang/**) so remote-cache (TURBO_TOKEN in CI) can replay a stale frontend build and skip Paraglide generation; fix with a package-level apps/frontend/turbo.json (or equivalent) and also check apps/docs | 2026-09-30 | 539ae3a28 | — | .planning/quick/260930-gjz-revalidate-then-fix-turbo-json-build-task-inputs-src-tsconfi |
+| 260930-gk0 | Revalidate then fix apps/frontend/src/lib/components/modal/drawerHost/DrawerHost.svelte: close animation gated on shouldAnimate(undefined) which is false when document.startViewTransition is missing, so browsers without View Transitions skip the CSS close animation though only reduced motion should; and the focus-entry setTimeout (DELAY.sm) is never cancelled when the drawer closes quickly, pushing focus into a closing dialog; add unit tests | 2026-09-30 | 0ff348c57 | — | .planning/quick/260930-gk0-revalidate-then-fix-apps-frontend-src-lib-components-modal-d |
+| 260930-gk1 | Revalidate then fix apps/supabase/supabase/schema/107-feedback.sql check_feedback_rate_limit which keys the rate limit on the first x-forwarded-for entry (client-spoofable); determine what the Supabase API gateway forwards and key on the trustworthy hop (update the migration/schema consistently and the pgTAP tests) | 2026-09-30 | 37975cf64 | — | .planning/quick/260930-gk1-revalidate-then-fix-apps-supabase-supabase-schema-107-feedba |
+| 260930-gk2 | Revalidate then fix packages/dev-seed seed and teardown CLIs (cli/seed.ts, cli/teardown.ts, supabaseAdminClient.ts) which use the service_role key against whatever SUPABASE_URL is configured with no check it is local; add a guard allowing only local hosts (localhost, 127.0.0.1, ::1, host.docker.internal, kong/supabase docker hostnames as used by the tests) with an explicit opt-out env/flag, and unit tests; make sure E2E/CI invocations still pass the guard | 2026-09-30 | 77e429e9c | — | .planning/quick/260930-gk2-revalidate-then-fix-packages-dev-seed-seed-and-teardown-clis |
+| 260930-kxi | PR 888 follow-ups: Docker CI build, dev-seed teardown env, bank-auth guard, cf-connecting-ip trust + full E2E | 2026-09-30 | 60a7cfbad | — | [260930-kxi-pr-888-follow-ups-docker-ci-build-dev-se](./quick/260930-kxi-pr-888-follow-ups-docker-ci-build-dev-se/) |
+| 261001-n8y | Remove the legacy src/lib/i18n/translations catalog (messages/ is the single source) and sweep the branch for origin/main-era vestiges | 2026-10-01 | 985f26a6c | — | [261001-n8y-remove-the-legacy-src-lib-i18n-translati](./quick/261001-n8y-remove-the-legacy-src-lib-i18n-translati/) |
+| 261004-hzy | Fix local send-email SMTP_PORT 2500 → 1025 (Mailpit). Both `.env.example` templates + email docs page; `SMTP_HOST=inbucket` kept (Mailpit's network alias). Verified on the stack network: `inbucket:1025` gives the Mailpit ESMTP banner, `:2500` refused. Closes the Phase 169 deferred item. Local gitignored `.env` files must be updated by hand. | 2026-10-04 | 04a6fd021 | complete | [261004-hzy-fix-local-send-email-smtp-port-2500-to-1](./quick/261004-hzy-fix-local-send-email-smtp-port-2500-to-1/) |
 
 **Follow-up to 260607-cd0 (executed 2026-06-07, user-approved):** Deprecation run on the report's proposal. Removed dead code — `utils/{answerQuestion,translations,paths}.ts` (`6edeb9fa2`) + `helpers/{db-precondition,voter-iteration}.helper.ts` & the dead `gotoAndSettle` export (`fc08e10f3`). Renamed the 3 surviving helpers `*.helper.ts`→`*.ts` (navigation/select/settle) + retired the `<concern>.helper.ts` convention (barrel + README updated; only the barrel imported them by path so consumers unaffected). Kept + tracked `tests/IDURA-TEST-RUNBOOK.md` in place (`1d90db68c`). **Item 6 (emailHelper→emailBucket) — DONE + verified green 2026-06-07** (`2764a79a9`): the fixture never actually imported emailHelper (docstring was wrong); whole file was dead except `toCallbackUrl`, which moved into `emailBucket.fixture.ts`; both spec imports repointed; `emailHelper.ts` deleted. User confirmed all tests pass on a live stack; todo moved to `.planning/todos/completed/`. **The entire 260607-cd0 cleanup follow-up is now closed** (dead-code sweep + `.helper` rename + IDURA + emailHelper consolidation).
 
@@ -2134,6 +2266,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - Phase 165.1-03 (deferred, not a phase blocker): at MAXIMUM document scroll, opening the entity drawer clamps window.scrollY (measured 1464 -> 1187). Probable content-visibility:auto collapse under an inert document; NOT isolated. See .planning/phases/165.1-results-navigation-redraw/deferred-items.md D-165.1-03-01
 - RESOLVED 2026-09-23 by 165.1-05.1 (was BLOCKING, phase 165.1): voter-journey EQTYP-02 intermittent failure in the results election AccordionSelect. Before 6/16 red at the phase tip and 4/16 on the pre-fix body re-measured contemporaneously; after 0/16 red at the fix HEAD (Fisher p = 0.0196 vs the pooled 10/32 pre-fix evidence). Cause CONFIRMED and narrower than the 165.1-05 hypothesis: AccordionSelect's `expanded` was initialised once and never reconciled, so on the now-persistent results subtree only `activate`'s fire-and-forget DELAY.lg timer collapsed it — a ~450 ms window in which a click on the already-active option re-opens the widget permanently. Both mechanisms PRE-EXIST on base verbatim; the phase made them reachable by removing the teardown (D-03), it did not introduce them. Fix + three-arm negative control in 165.1-NEGATIVE-CONTROL.md § 8; full suite 171/171 at the fix HEAD. WINDOWS 278 fixed.
 - [Phase 165.1] The visual gate has NO baseline capturing an open drawer, so this phase's headline change — the app-wide DrawerHost replacing the per-route drawer — is visually unmeasured. G-9 ran green with 4/4 matched, but all four baselines screenshot a page with no overlay showing; G-8's axe scans cover the drawer's conformance, not its appearance. See deferred-items.md D-165.1-07-01 and WINDOWS 282 (open).
+- ~~168-02..08 and 169-01/169-03 PLANs still write the pre-ruling 'check:research-quotes --base' form~~ — resolved 2026-10-02: the orchestrator rewrote all 21 invocations to add `--component-base` (168-07, 168-08, 169-01, 169-03)
 
 ## Session Continuity
 

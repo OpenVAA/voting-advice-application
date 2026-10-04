@@ -1,0 +1,19 @@
+SKIP (not code) apps/docs/src/routes/(content)/developers-guide/frontend/components/generated/components/modal/drawerHost/DrawerHost/+page.md
+SAME (strings blanked) apps/frontend/src/lib/_guards/spike-scaffolding.test.ts
+SAME apps/frontend/src/lib/components/accordionSelect/AccordionSelect.svelte
+SAME apps/frontend/src/lib/components/modal/drawerHost/DrawerHost.svelte
+SAME apps/frontend/src/lib/components/modal/drawerHost/drawerHostState.svelte.ts
+SAME apps/frontend/src/lib/routes/route.ts
+SAME (strings blanked) apps/frontend/src/lib/utils/viewTransition.test.ts
+SAME apps/frontend/src/lib/utils/viewTransition.ts
+SAME (strings blanked) apps/frontend/src/routes/(voters)/(located)/layout.tracking.test.ts
+SAME apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte
+SAME apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/+layout.svelte
+SAME apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/+page.svelte
+SAME (strings blanked) apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/page.guards.test.ts
+SAME tests/playwright.config.ts
+SAME tests/tests/fixtures/voter/views.ts
+SAME (strings blanked) tests/tests/specs/perm/perm-interactive-info.spec.ts
+SAME (strings blanked) tests/tests/specs/voter/voter-results-redraw.spec.ts
+SAME tests/tests/utils/testIds.ts
+comment-only-check: 17 code file(s) compared against 77e429e9cbdb64db25480786cddb9bf4829524d6, 0 failing

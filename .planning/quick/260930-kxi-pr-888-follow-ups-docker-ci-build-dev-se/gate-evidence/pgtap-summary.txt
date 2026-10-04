@@ -1,0 +1,2 @@
+Files=35, Tests=1317,  3 wallclock secs ( 0.08 usr  0.03 sys +  0.14 cusr  0.10 csys =  0.35 CPU)
+Result: PASS

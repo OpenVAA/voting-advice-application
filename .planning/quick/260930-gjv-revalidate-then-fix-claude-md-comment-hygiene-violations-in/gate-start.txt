@@ -1,0 +1,124 @@
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:7: phase 165
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:7: criterion 6
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:7: RNAV-06
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:7: D-20
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:9: Phase 165
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:9: criterion 6
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:9: criterion 6
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:9: D-20
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:16: Criterion 6
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:19: Phase 165
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:23: .planning/
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:23: D-21
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:23: criterion 6
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:28: criterion 6
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:57: spike 034
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:60: Criterion 6
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:60: D-20
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:124: D-20
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:140: RNAV-06
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:140: criterion 6
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:144: Phase 165
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:144: criterion 6
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:158: D-20
+apps/frontend/src/lib/_guards/spike-scaffolding.test.ts:158: criterion 6
+apps/frontend/src/lib/components/accordionSelect/AccordionSelect.svelte:50: e2e-runs/
+apps/frontend/src/lib/components/accordionSelect/AccordionSelect.svelte:69: v2.16
+apps/frontend/src/lib/components/accordionSelect/AccordionSelect.svelte:69: Phase 165
+apps/frontend/src/lib/components/accordionSelect/AccordionSelect.svelte:69: Phase 165
+apps/frontend/src/lib/components/accordionSelect/AccordionSelect.svelte:69: D-03
+apps/frontend/src/lib/components/accordionSelect/AccordionSelect.svelte:69: .planning/
+apps/frontend/src/lib/components/accordionSelect/AccordionSelect.svelte:69: 165-BASE-FLAKE-MEASUREMENT.md
+apps/frontend/src/lib/components/modal/drawerHost/drawerHostState.svelte.ts:44: T-165-04
+apps/frontend/src/lib/routes/route.ts:88: phase 165
+apps/frontend/src/lib/routes/route.ts:88: D-25
+apps/frontend/src/lib/routes/route.ts:88: 165-NEGATIVE-CONTROL.md
+apps/frontend/src/lib/routes/route.ts:88: §
+apps/frontend/src/lib/routes/route.ts:89: D-08
+apps/frontend/src/lib/utils/viewTransition.test.ts:8: spike 031
+apps/frontend/src/lib/utils/viewTransition.ts:12: spike 031
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte:5: phase 165
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte:5: D-07
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte:5: D-08
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte:12: D-08
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/+layout.svelte:5: phase 165
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/+layout.svelte:5: D-07
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/+layout.svelte:5: D-08
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/+layout.svelte:9: Post-88-02
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/+layout.svelte:11: Spike 033
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/+layout.svelte:13: D-08
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/+layout.svelte:69: phase-165
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/+layout.svelte:96: D-08
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/+page.svelte:9: phase 165
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/+page.svelte:9: D-08
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/+page.svelte:16: Spike 033
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/+page.svelte:18: D-09
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/+page.svelte:18: 165-NEGATIVE-CONTROL.md
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/+page.svelte:18: §
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/page.guards.test.ts:4: Phase 165
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/page.guards.test.ts:4: D-10
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/page.guards.test.ts:4: D-08
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/page.guards.test.ts:4: T-165-02
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/page.guards.test.ts:11: Post-88-02
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/page.guards.test.ts:94: D-10
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/page.guards.test.ts:94: T-165-02
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/page.guards.test.ts:94: T-165-03
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/page.guards.test.ts:132: Post-88-02
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/page.guards.test.ts:151: D-08
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/page.guards.test.ts:161: D-09
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/page.guards.test.ts:162: 165-NEGATIVE-CONTROL.md
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/page.guards.test.ts:162: §
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/page.guards.test.ts:162: D-09
+apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/[[entityTab=etPl]]/[[entity=etSg]]/[[id]]/page.guards.test.ts:162: D-10
+tests/playwright.config.ts:429: phase 165
+tests/playwright.config.ts:429: D-16
+tests/playwright.config.ts:429: D-18
+tests/tests/fixtures/voter/views.ts:53: D-16
+tests/tests/specs/perm/perm-interactive-info.spec.ts:110: spike 034
+tests/tests/specs/voter/voter-results-redraw.spec.ts:6: D-16
+tests/tests/specs/voter/voter-results-redraw.spec.ts:8: Phase 165
+tests/tests/specs/voter/voter-results-redraw.spec.ts:8: criteria 2
+tests/tests/specs/voter/voter-results-redraw.spec.ts:12: RNAV-02
+tests/tests/specs/voter/voter-results-redraw.spec.ts:12: D-15
+tests/tests/specs/voter/voter-results-redraw.spec.ts:12: spike 032
+tests/tests/specs/voter/voter-results-redraw.spec.ts:13: RNAV-03
+tests/tests/specs/voter/voter-results-redraw.spec.ts:13: D-16
+tests/tests/specs/voter/voter-results-redraw.spec.ts:14: RNAV-04
+tests/tests/specs/voter/voter-results-redraw.spec.ts:14: D-18
+tests/tests/specs/voter/voter-results-redraw.spec.ts:15: RNAV-05
+tests/tests/specs/voter/voter-results-redraw.spec.ts:15: D-12
+tests/tests/specs/voter/voter-results-redraw.spec.ts:84: D-16
+tests/tests/specs/voter/voter-results-redraw.spec.ts:95: RNAV-02
+tests/tests/specs/voter/voter-results-redraw.spec.ts:95: RNAV-04
+tests/tests/specs/voter/voter-results-redraw.spec.ts:104: D-15
+tests/tests/specs/voter/voter-results-redraw.spec.ts:113: spike 032
+tests/tests/specs/voter/voter-results-redraw.spec.ts:164: D-18
+tests/tests/specs/voter/voter-results-redraw.spec.ts:191: RNAV-03
+tests/tests/specs/voter/voter-results-redraw.spec.ts:260: RNAV-05
+tests/tests/specs/voter/voter-results-redraw.spec.ts:260: D-12
+tests/tests/specs/voter/voter-results-redraw.spec.ts:295: D-18
+tests/tests/specs/voter/voter-results-redraw.spec.ts:315: spike 034
+tests/tests/specs/voter/voter-results-redraw.spec.ts:315: D-12
+tests/tests/specs/voter/voter-results-redraw.spec.ts:315: D-12
+tests/tests/specs/voter/voter-results-redraw.spec.ts:320: spike 034
+tests/tests/specs/voter/voter-results-redraw.spec.ts:326: RNAV-04
+tests/tests/specs/voter/voter-results-redraw.spec.ts:326: D-08
+tests/tests/specs/voter/voter-results-redraw.spec.ts:326: D-09
+tests/tests/specs/voter/voter-results-redraw.spec.ts:330: D-09
+tests/tests/specs/voter/voter-results-redraw.spec.ts:330: 165-NEGATIVE-CONTROL.md
+tests/tests/specs/voter/voter-results-redraw.spec.ts:330: §
+tests/tests/specs/voter/voter-results-redraw.spec.ts:332: D-09
+tests/tests/specs/voter/voter-results-redraw.spec.ts:332: D-10
+tests/tests/specs/voter/voter-results-redraw.spec.ts:338: 165-RESEARCH.md
+tests/tests/specs/voter/voter-results-redraw.spec.ts:386: D-08
+tests/tests/specs/voter/voter-results-redraw.spec.ts:404: Post-88-02
+tests/tests/specs/voter/voter-results-redraw.spec.ts:404: D-08
+tests/tests/specs/voter/voter-results-redraw.spec.ts:441: D-08
+tests/tests/specs/voter/voter-results-redraw.spec.ts:441: spike 033
+tests/tests/specs/voter/voter-results-redraw.spec.ts:441: D-08
+tests/tests/specs/voter/voter-results-redraw.spec.ts:446: spike 033
+tests/tests/specs/voter/voter-results-redraw.spec.ts:454: D-18
+tests/tests/specs/voter/voter-results-redraw.spec.ts:464: spike-033
+tests/tests/specs/voter/voter-results-redraw.spec.ts:464: D-08
+tests/tests/utils/testIds.ts:194: D-18
+HITS=123

@@ -1,0 +1,293 @@
+# 168-02 Task 3 inbound references (DOCS-07). Recorded 2026-10-02T09:42:20Z
+
+## BEFORE (HEAD 38684046d, after Task 2)
+$ yarn workspace @openvaa/docs validate:links --check --only inbound
+Validating docs links (check mode, no files are written)...
+
+
+============================================================
+VALIDATION SUMMARY
+============================================================
+Markdown files:       0
+Internal md links:    0
+Fixed links:          0
+Literal hrefs:        0 (dynamic, not checked: 0)
+Navigation leaves:    0
+Redirect stubs:       0
+Anchors checked:      2
+Source files:         0 (scanned for GitHub links)
+GitHub links:         0
+Inbound references:   42 (patterns skipped: 1)
+============================================================
+
+FINDINGS:
+
+README.md:
+  [inbound] README.md:16
+    /developers-guide/contributing
+    → No page at /developers-guide/contributing
+
+apps/frontend/src/lib/api/README.md:
+  [inbound] apps/frontend/src/lib/api/README.md:3
+    /developers-guide/frontend/data-api
+    → Targets redirect stub → /developers-guide/frontend/data-api-and-adapters; link the final URL
+  [inbound] apps/frontend/src/lib/api/README.md:3
+    apps/docs/src/routes/(content)/developers-guide/frontend/data-api/+page.md
+    → Not a tracked file or directory: apps/docs/src/routes/(content)/developers-guide/frontend/data-api/+page.md
+
+apps/frontend/src/lib/server/api/README.md:
+  [inbound] apps/frontend/src/lib/server/api/README.md:3
+    /developers-guide/frontend/data-api
+    → Targets redirect stub → /developers-guide/frontend/data-api-and-adapters; link the final URL
+  [inbound] apps/frontend/src/lib/server/api/README.md:3
+    apps/docs/src/routes/(content)/developers-guide/frontend/data-api/+page.md
+    → Not a tracked file or directory: apps/docs/src/routes/(content)/developers-guide/frontend/data-api/+page.md
+
+apps/frontend/src/routes/candidate/README.md:
+  [inbound] apps/frontend/src/routes/candidate/README.md:5
+    /developers-guide/candidate-user-management
+    → No page at /developers-guide/candidate-user-management
+
+packages/app-shared/src/settings/README.md:
+  [inbound] packages/app-shared/src/settings/README.md:5
+    docs/src/routes/developers-guide/configuration/static-settings/+page.md
+    → Not a tracked file or directory: docs/src/routes/developers-guide/configuration/static-settings/+page.md
+  [inbound] packages/app-shared/src/settings/README.md:6
+    docs/src/routes/developers-guide/configuration/app-settings/+page.md
+    → Not a tracked file or directory: docs/src/routes/developers-guide/configuration/app-settings/+page.md
+
+Findings by class:
+  inbound: 8
+Total findings: 8
+exit=1
+
+## Repoints applied (working tree on top of 38684046d)
+- README.md:16 https://openvaa.org/developers-guide/contributing -> .../developers-guide/contributing/contribute
+- apps/frontend/src/lib/api/README.md:3 and apps/frontend/src/lib/server/api/README.md:3: [Data API] .../frontend/data-api and the local data-api/+page.md -> [Data API and adapters] .../frontend/data-api-and-adapters and </apps/docs/src/routes/(content)/developers-guide/frontend/data-api-and-adapters/+page.md>
+- apps/frontend/src/routes/candidate/README.md:5: [Candidate user management] .../candidate-user-management and its local dir -> [Candidate app] .../candidate-app/pre-registration-and-invitation and </apps/docs/src/routes/(content)/developers-guide/candidate-app/pre-registration-and-invitation/+page.md>
+- packages/app-shared/src/settings/README.md:5-6: local links /docs/src/routes/developers-guide/configuration/{static-settings,app-settings}/+page.md -> </apps/docs/src/routes/(content)/developers-guide/configuration/{static-settings,app-settings}/+page.md>
+- The one skipped pattern (patterns skipped: 1) is .claude/scripts/audit-skill-routing.sh:262, a shell comment holding 'apps/docs/src/routes/(content)/.../generated/+page.md'; it is not a link.
+
+## AFTER
+$ yarn workspace @openvaa/docs validate:links --check --only inbound
+Validating docs links (check mode, no files are written)...
+
+
+============================================================
+VALIDATION SUMMARY
+============================================================
+Markdown files:       0
+Internal md links:    0
+Fixed links:          0
+Literal hrefs:        0 (dynamic, not checked: 0)
+Navigation leaves:    0
+Redirect stubs:       0
+Anchors checked:      2
+Source files:         0 (scanned for GitHub links)
+GitHub links:         0
+Inbound references:   42 (patterns skipped: 1)
+============================================================
+Findings by class:
+  inbound: 0
+Total findings: 0
+exit=0
+
+## Full structural set
+$ yarn workspace @openvaa/docs validate:links --check --only md-link,svelte-href,nav-route,stub,inbound
+Validating docs links (check mode, no files are written)...
+
+
+============================================================
+VALIDATION SUMMARY
+============================================================
+Markdown files:       187
+Internal md links:    162
+Fixed links:          0
+Literal hrefs:        8 (dynamic, not checked: 12)
+Navigation leaves:    82
+Redirect stubs:       26
+Anchors checked:      21
+Source files:         0 (scanned for GitHub links)
+GitHub links:         0
+Inbound references:   42 (patterns skipped: 1)
+============================================================
+Findings by class:
+  md-link: 0
+  svelte-href: 0
+  nav-route: 0
+  stub: 0
+  inbound: 0
+Total findings: 0
+exit=0
+
+## Remaining classes, unscoped, for the record (owned by 168-03..07)
+$ yarn workspace @openvaa/docs validate:links --check --only anchor
+Validating docs links (check mode, no files are written)...
+
+
+============================================================
+VALIDATION SUMMARY
+============================================================
+Markdown files:       187
+Internal md links:    162
+Fixed links:          0
+Literal hrefs:        8 (dynamic, not checked: 12)
+Navigation leaves:    0
+Redirect stubs:       26
+Anchors checked:      19
+Source files:         0 (scanned for GitHub links)
+GitHub links:         0
+Inbound references:   0 (patterns skipped: 0)
+============================================================
+
+FINDINGS:
+
+apps/docs/src/routes/(content)/developers-guide/frontend/contexts/+page.md:
+  [anchor] apps/docs/src/routes/(content)/developers-guide/frontend/contexts/+page.md:9
+    [example of the data loading cascade](#example-loading-cascade-for-the-voterlocatedquestions-route-example)
+    → No id "example-loading-cascade-for-the-voterlocatedquestions-route-example" on apps/docs/src/routes/(content)/developers-guide/frontend/contexts/+page.md
+
+apps/docs/src/routes/(content)/developers-guide/troubleshooting/+page.md:
+  [anchor] apps/docs/src/routes/(content)/developers-guide/troubleshooting/+page.md:24
+    [Docker error: ”No space left on device” error](#docker-error-no-space-left-on-device-errordocker-no-space-left-on-device-error)
+    → No id "docker-error-no-space-left-on-device-errordocker-no-space-left-on-device-error" on apps/docs/src/routes/(content)/developers-guide/troubleshooting/+page.md
+
+apps/docs/src/routes/(content)/publishers-guide/app-settings/+page.md:
+  [anchor] apps/docs/src/routes/(content)/publishers-guide/app-settings/+page.md:14
+    [Customization](#customization)
+    → No id "customization" on apps/docs/src/routes/(content)/publishers-guide/app-settings/+page.md
+
+Findings by class:
+  anchor: 3
+Total findings: 3
+exit=1
+
+$ yarn workspace @openvaa/docs validate:links --check --only github-path
+Validating docs links (check mode, no files are written)...
+
+
+============================================================
+VALIDATION SUMMARY
+============================================================
+Markdown files:       0
+Internal md links:    0
+Fixed links:          0
+Literal hrefs:        0 (dynamic, not checked: 0)
+Navigation leaves:    0
+Redirect stubs:       0
+Anchors checked:      0
+Source files:         203 (scanned for GitHub links)
+GitHub links:         330
+Inbound references:   0 (patterns skipped: 0)
+============================================================
+
+FINDINGS:
+
+apps/docs/src/routes/(content)/developers-guide/backend/authentication/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/authentication/+page.md:5
+    [Users’ permissions plugin](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/extensions/users-permissions/strapi-server.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/extensions/users-permissions/strapi-server.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/authentication/+page.md:18
+    [api.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/util/api.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/util/api.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/backend/authentication/+page.md:19
+    [Users’ permissions plugin](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/extensions/users-permissions/strapi-server.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/extensions/users-permissions/strapi-server.ts
+
+apps/docs/src/routes/(content)/developers-guide/candidate-app/registration/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/candidate-app/registration/+page.md:5
+    [`candidate.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/extensions/users-permissions/controllers/candidate.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/extensions/users-permissions/controllers/candidate.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/candidate-app/registration/+page.md:7
+    [`schema.json`](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/extensions/users-permissions/content-types/user/schema.json)
+    → Not a tracked file or directory: backend/vaa-strapi/src/extensions/users-permissions/content-types/user/schema.json
+  [github-path] apps/docs/src/routes/(content)/developers-guide/candidate-app/registration/+page.md:11
+    [`authenticationStore.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/utils/authenticationStore.ts)
+    → Not a tracked file or directory: apps/frontend/src/lib/utils/authenticationStore.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/candidate-app/registration/+page.md:15
+    [email-templates](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/config/email-templates)
+    → Not a tracked file or directory: backend/vaa-strapi/config/email-templates
+
+apps/docs/src/routes/(content)/developers-guide/configuration/app-customization/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-customization/+page.md:14
+    [app-customization route](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/api/app-customization/routes/app-customization.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/api/app-customization/routes/app-customization.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-customization/+page.md:15
+    [strapiDataProvider.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/strapi/dataProvider/strapiDataProvider.ts)
+    → Not a tracked file or directory: apps/frontend/src/lib/api/adapters/strapi/dataProvider/strapiDataProvider.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-customization/+page.md:16
+    [app-customization route](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/api/app-customization/routes/app-customization.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/api/app-customization/routes/app-customization.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-customization/+page.md:17
+    [strapiData.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/strapi/strapiData.type.ts)
+    → Not a tracked file or directory: apps/frontend/src/lib/api/adapters/strapi/strapiData.type.ts
+
+apps/docs/src/routes/(content)/developers-guide/configuration/app-settings/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-settings/+page.md:15
+    [`settings` store](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/stores/stores.ts)
+    → Not a tracked file or directory: apps/frontend/src/lib/stores/stores.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-settings/+page.md:31
+    [`app-settings` route controller](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/api/app-setting/controllers/app-setting.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/api/app-setting/controllers/app-setting.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-settings/+page.md:31
+    [`cardContents`](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/functions/utils/appSettings.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/functions/utils/appSettings.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-settings/+page.md:32
+    [strapiDataProvider.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/strapi/dataProvider/strapiDataProvider.ts)
+    → Not a tracked file or directory: apps/frontend/src/lib/api/adapters/strapi/dataProvider/strapiDataProvider.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-settings/+page.md:34
+    [strapiData.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/strapi/strapiData.type.ts)
+    → Not a tracked file or directory: apps/frontend/src/lib/api/adapters/strapi/strapiData.type.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-settings/+page.md:35
+    [strapiDataProvider.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/strapi/dataProvider/strapiDataProvider.ts)
+    → Not a tracked file or directory: apps/frontend/src/lib/api/adapters/strapi/dataProvider/strapiDataProvider.ts
+  [github-path] apps/docs/src/routes/(content)/developers-guide/configuration/app-settings/+page.md:36
+    [loadDefaultAppSettings](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/functions/loadDefaultAppSettings.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/src/functions/loadDefaultAppSettings.ts
+
+apps/docs/src/routes/(content)/developers-guide/contributing/code-style-guide/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/contributing/code-style-guide/+page.md:233
+    [`IconBase`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/icon/base/IconBase.svelte)
+    → Not a tracked file or directory: apps/frontend/src/lib/components/icon/base/IconBase.svelte
+  [github-path] apps/docs/src/routes/(content)/developers-guide/contributing/code-style-guide/+page.md:233
+    [type definition](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/icon/base/IconBase.type.ts)
+    → Not a tracked file or directory: apps/frontend/src/lib/components/icon/base/IconBase.type.ts
+
+apps/docs/src/routes/(content)/developers-guide/deployment/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/deployment/+page.md:32
+    [Strapi plugin config](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/config/plugins.ts)
+    → Not a tracked file or directory: backend/vaa-strapi/config/plugins.ts
+
+apps/docs/src/routes/(content)/developers-guide/development/running-the-development-environment/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/development/running-the-development-environment/+page.md:37
+    [docker-compose.dev.yml](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/docker-compose.dev.yml)
+    → Not a tracked file or directory: backend/vaa-strapi/docker-compose.dev.yml
+
+apps/docs/src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/entityCard/EntityCardAction/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/entityCard/EntityCardAction/+page.md:27
+    [apps/frontend/src/lib/dynamic-components/entityCard/EntityCardAction.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityCard/EntityCardAction.svelte)
+    → Not a tracked file or directory: apps/frontend/src/lib/dynamic-components/entityCard/EntityCardAction.svelte
+  [github-path] apps/docs/src/routes/(content)/developers-guide/frontend/components/generated/dynamic-components/entityCard/EntityCardAction/+page.md:29
+    [apps/frontend/src/lib/dynamic-components/entityCard/EntityCardAction.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityCard/EntityCardAction.type.ts)
+    → Not a tracked file or directory: apps/frontend/src/lib/dynamic-components/entityCard/EntityCardAction.type.ts
+
+apps/docs/src/routes/(content)/developers-guide/frontend/data-api-and-adapters/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/frontend/data-api-and-adapters/+page.md:28
+    [strapi/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/strapi)
+    → Not a tracked file or directory: apps/frontend/src/lib/api/adapters/strapi
+  [github-path] apps/docs/src/routes/(content)/developers-guide/frontend/data-api-and-adapters/+page.md:35
+    [data](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/data)
+    → Not a tracked file or directory: apps/frontend/data
+  [github-path] apps/docs/src/routes/(content)/developers-guide/frontend/data-api-and-adapters/+page.md:46
+    [data/](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/data)
+    → Not a tracked file or directory: apps/frontend/data
+
+apps/docs/src/routes/(content)/developers-guide/localization/locale-resolution/+page.md:
+  [github-path] apps/docs/src/routes/(content)/developers-guide/localization/locale-resolution/+page.md:25
+    [`+layout.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/routes/[[lang=locale]]/+layout.ts)
+    → Not a tracked file or directory: apps/frontend/src/routes/[[lang=locale]]/+layout.ts
+
+Findings by class:
+  github-path: 28
+Total findings: 28
+exit=1

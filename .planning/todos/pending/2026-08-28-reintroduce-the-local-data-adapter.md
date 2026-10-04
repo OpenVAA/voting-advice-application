@@ -86,3 +86,22 @@ Phase 157 dispositioned this as a todo rather than fixing it in place (decision 
 because it is a feature restoration with an open design question, not the small
 documentation and typing corrections that phase was scoped to. The README half of the
 same review comment WAS fixed in 157.
+
+## Note (2026-10-02, Phase 167)
+
+The `/api/cache` proxy was removed in Phase 167 (commit `837b895c4`), together with `cachifyUrl`, the `CACHE_*` and `PUBLIC_CACHE_ENABLED` settings and the `flat-cache` dependency. Any cache for static-data deployments should be designed together with the local adapter rather than restored from the removed route. This todo stays open.
+
+## Note (2026-10-02, Phase 168 docs rewrite: 168-05 F1, 168-07 F4)
+
+The docs writers confirmed the shape at HEAD and found one more piece. The `apiRoute` client adapters exist but are unwired:
+`ApiRouteDataProvider` and `ApiRouteDataFeedbackWriter` (`apps/frontend/src/lib/api/adapters/apiRoute/`) are constructed nowhere outside two
+ESLint-guard fixtures. `createDataProvider` and `createFeedbackWriter` always return the Supabase adapters
+(`apps/frontend/src/lib/api/dataProvider.ts`: `export function createDataProvider(source: AdapterSource): SupabaseDataProvider {`). So
+setting `staticSettings.dataAdapter.type` to `'local'` switches the **server-side** adapter behind `/api/data/[collection]` and `/api/feedback`,
+and nothing in the app calls those routes. Restoring the local mode therefore means wiring the `apiRoute` client adapters as well as the
+server one. The `staticSettings.type.ts` comment that implies otherwise is listed in
+`2026-10-02-readme-comment-and-skill-drift-found-by-docs-rewrite.md` (item 6).
+
+The docs now say there is no static mode at HEAD. Architecture and Data API and adapters describe the unwired adapters, and
+Publishers' Guide › hosting no longer offers "a static website with no separate database" (168-07 F4). Update those pages if this todo
+restores the mode.

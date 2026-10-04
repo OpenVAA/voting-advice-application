@@ -124,3 +124,22 @@ Phase 162 closes and these two phases open v2.16.** § 6.2 depends on § 6.1, an
 **One piece could be pulled forward independently:** fact 18's missing
 `/candidate/complete-registration` route. It is a live defect on the e-mail path, it does not depend
 on grants, and it is a single route file.
+
+## Note (2026-10-02, Phase 168 docs rewrite: 168-03 F2/F3, 168-06 F3/F4)
+
+The Phase 168 docs writers re-read the invitation path at HEAD and found the same defect plus one adjacent gap. Both were read, not
+run.
+
+- **Fact 18 still stands** (168-03 F3, 168-06 F3). `apps/supabase/supabase/functions/invite-candidate/index.ts` still redirects to
+  `/candidate/complete-registration`, and there is still no route there (`find apps/frontend/src/routes -name 'complete-registration*'`
+  prints nothing). The auth callback sends `invite` links to `CandAppSetPassword` instead (`route: 'CandAppSetPassword'`). The
+  Pre-registration and invitation docs page states the path as the code has it and says no page exists there. A second reason the
+  invite email may not land: with the default templates and PKCE, the verify redirect delivers `?code=` to the callback, which ignores
+  it. That is measured for the recovery mail in `2026-09-02-forgot-password-pkce-code-not-exchanged.md`, and UNCONFIRMED for invites.
+- **Neither invitation sender has a UI caller** (168-03 F2, 168-06 F4). `invite-candidate` is invoked only by
+  `SupabaseDataWriter._preregister`, reached through `preregisterWithApiToken` (`universalDataWriter.ts`: `return this._preregister(opts);`).
+  No route or component calls it: `git grep -n preregisterWithApiToken -- apps` lists the type, the base class, the writer's unit tests
+  and two docs pages. `SupabaseAdminWriter.sendEmail` (the `send-email` function) has no caller either:
+  `git grep -n "\.sendEmail(" -- apps/frontend/src ':!*.test.ts'` is empty. The docs say invitations are sent by calling the function
+  directly. Whether these are dormant by design or unfinished wiring is UNCONFIRMED. The method 1 (email invite) UI this refactor
+  designs is where they would be wired.
