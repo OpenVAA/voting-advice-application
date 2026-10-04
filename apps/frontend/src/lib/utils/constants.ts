@@ -1,8 +1,6 @@
 import { env } from '$env/dynamic/public';
 
 export const constants = {
-  PUBLIC_BROWSER_BACKEND_URL: env.PUBLIC_BROWSER_BACKEND_URL ?? '',
-  PUBLIC_SERVER_BACKEND_URL: env.PUBLIC_SERVER_BACKEND_URL ?? '',
   PUBLIC_BROWSER_FRONTEND_URL: env.PUBLIC_BROWSER_FRONTEND_URL ?? '',
   PUBLIC_SERVER_FRONTEND_URL: env.PUBLIC_SERVER_FRONTEND_URL ?? '',
   PUBLIC_IDENTITY_PROVIDER_CLIENT_ID: env.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID ?? '',
@@ -12,7 +10,6 @@ export const constants = {
   PUBLIC_DEBUG: env.PUBLIC_DEBUG?.toLowerCase() === 'true',
   // A raw passthrough, deliberately NOT the coercion shape used above and below. `resolveLogLevel` owns every bit of normalisation because an unset value and a wrong value must stay distinguishable, and a `?.toLowerCase() === '…'` here would map both onto one result before the resolver ever saw them.
   PUBLIC_LOG_LEVEL: env.PUBLIC_LOG_LEVEL ?? '',
-  PUBLIC_CACHE_ENABLED: env.PUBLIC_CACHE_ENABLED?.toLowerCase() === 'true',
   PUBLIC_SUPABASE_URL: env.PUBLIC_SUPABASE_URL ?? '',
   PUBLIC_SUPABASE_ANON_KEY: env.PUBLIC_SUPABASE_ANON_KEY ?? '',
   // Deliberately the same flat `?? ''` shape as its neighbours, with no throw here. Every module that imports `constants` would throw at import time if the check lived on this line, including server modules that never touch the Supabase adapter. The fail-fast belongs at the one place the value is actually resolved, `supabaseAdapterMixin`, and it lives there.

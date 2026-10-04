@@ -1,5 +1,9 @@
-import { default as sharedConfig } from '@openvaa/shared-config/eslint';
-import prettier from 'eslint-config-prettier';
+import { default as sharedConfig, tsParser } from '@openvaa/shared-config/eslint';
 import svelte from 'eslint-plugin-svelte';
 
-export default [prettier, ...svelte.configs.prettier, ...sharedConfig];
+export default [
+  { ignores: ['.svelte-kit'] },
+  ...sharedConfig,
+  ...svelte.configs.prettier,
+  { files: ['**/*.svelte'], languageOptions: { parserOptions: { parser: tsParser } } }
+];

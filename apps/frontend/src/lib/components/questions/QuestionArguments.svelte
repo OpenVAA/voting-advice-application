@@ -1,17 +1,15 @@
 <!--
-@component Display the pros and cons arguments related to a question.
+@component Display the pro and con arguments related to a question, pros first.
 
 ### Properties
 
-- `info`: The info content to show as a plain or HTML string.
-- `onCollapse`: A callback triggered when the info content is collapsed. Mostly used for tracking.
-- `onExpand`: A callback triggered when the info content is expanded.  Mostly used for tracking.
-- Any valid properties of an `<Expander>` component
+- `question`: The question whose arguments to display.
+- Any valid properties of a `<div>` element
 
 ### Usage
 
 ```tsx
-<QuestionBasicInfo {info}/>
+<QuestionArguments {question}/>
 ```
 -->
 
@@ -32,22 +30,25 @@
   const args = $derived(getCustomData(question)?.arguments);
 
   const TITLE_KEYS: Record<ArgumentType, TranslationKey> = {
-    [ARGUMENT_TYPE.BooleanCons]: 'questions.arguments.pro',
-    [ARGUMENT_TYPE.BooleanPros]: 'questions.arguments.con',
+    [ARGUMENT_TYPE.BooleanCons]: 'questions.arguments.con',
+    [ARGUMENT_TYPE.BooleanPros]: 'questions.arguments.pro',
     [ARGUMENT_TYPE.CategoricalPros]: 'questions.arguments.proCategory',
-    [ARGUMENT_TYPE.LikertCons]: 'questions.arguments.pro',
-    [ARGUMENT_TYPE.LikertPros]: 'questions.arguments.con'
+    [ARGUMENT_TYPE.LikertCons]: 'questions.arguments.con',
+    [ARGUMENT_TYPE.LikertPros]: 'questions.arguments.pro'
   };
 
   /**
-   * Sort arguments to show cons before pros.
+   * Whether the argument holds counterarguments.
+   */
+  function isCon(argument: QuestionArguments): boolean {
+    return argument.type === ARGUMENT_TYPE.BooleanCons || argument.type === ARGUMENT_TYPE.LikertCons;
+  }
+
+  /**
+   * Sort arguments to show pros before cons, keeping the authored order of arguments on the same side.
    */
   function sortArguments(args: Array<QuestionArguments>): Array<QuestionArguments> {
-    return [...args].sort((a, b) => {
-      if (a.type === ARGUMENT_TYPE.BooleanCons || a.type === ARGUMENT_TYPE.LikertCons) return 1;
-      if (b.type === ARGUMENT_TYPE.BooleanCons || b.type === ARGUMENT_TYPE.LikertCons) return -1;
-      return 0;
-    });
+    return [...args].sort((a, b) => Number(isCon(a)) - Number(isCon(b)));
   }
 </script>
 

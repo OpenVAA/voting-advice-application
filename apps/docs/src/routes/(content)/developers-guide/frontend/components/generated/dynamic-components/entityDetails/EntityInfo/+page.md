@@ -25,6 +25,5 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
 
 ## Source
 
-[apps/frontend/src/lib/dynamic-components/entityDetails/EntityInfo.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/EntityInfo.svelte)
-
-[apps/frontend/src/lib/dynamic-components/entityDetails/EntityInfo.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/EntityInfo.type.ts)
+- Component: [apps/frontend/src/lib/dynamic-components/entityDetails/EntityInfo.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/EntityInfo.svelte)
+- Types: [apps/frontend/src/lib/dynamic-components/entityDetails/EntityInfo.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/entityDetails/EntityInfo.type.ts)

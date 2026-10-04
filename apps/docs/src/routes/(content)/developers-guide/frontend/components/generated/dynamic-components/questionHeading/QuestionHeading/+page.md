@@ -25,6 +25,5 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 
 ## Source
 
-[apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte)
-
-[apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.type.ts)
+- Component: [apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.svelte)
+- Types: [apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/questionHeading/QuestionHeading.type.ts)

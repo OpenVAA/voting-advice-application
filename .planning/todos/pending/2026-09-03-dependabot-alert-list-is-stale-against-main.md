@@ -40,3 +40,28 @@ The one-command reproduction is in `163-05-SUMMARY.md` § "The Dependabot discre
 ## Not in scope here
 
 This todo is about reconciling two counts. The question of whether the 70 accepted findings should be REDUCED (upgrading `@sveltejs/kit` past the adapter-node BODY_SIZE_LIMIT bypass, or the four critical test-toolchain rows) is a separate piece of work; those rows carry their rationale in `security/audit-baseline.json` and stay visible at every ship review by design.
+
+## Post-Phase-169 numbers (added 2026-10-03, Phase 169 plan 13; D-30)
+
+Measured on `fix/888-review-findings` at `9e3301a35` + the baseline rewrite (`ab0857938`), 2026-10-03T19:00Z:
+
+| Reading | Before Phase 169 (this todo, 2026-09-03) | After Phase 169 |
+|---|---|---|
+| `yarn audit:deps` (high+) | 70 accepted (64 high / 6 critical) | **0 accepted, 0 NEW**, exit 0 — every accepted row was fixed in the tree, and `security/audit-baseline.json` now has `accepted: []` |
+| `yarn npm audit --severity moderate` | 69 moderate | 1 line, a deprecation notice (`whatwg-encoding` 3.1.1 via `cheerio` → `encoding-sniffer`), no moderate advisory |
+| `yarn npm audit --severity low` | 14 low | 2 low: `cookie` 0.6.0 (GHSA-pxg6-pf52-xh8x, via `@sveltejs/kit` 2.70.3; leaves with Kit 3) and `esbuild` 0.27.7 (GHSA-g7r4-m6w7-qqqr, Windows dev server only, via `tsup` 8.5.1) |
+
+Details per row: `169-EVIDENCE.md` § 6 (the 68 dropped baseline rows, each checked against GitHub's range and the
+resolved version) and § 8 (the moderate/low list).
+
+**The Deno-import blind spot.** `yarn audit:deps` reads `yarn.lock`; the Supabase Edge Functions import with Deno
+`npm:` specifiers that no manifest declares, so the gate cannot see them. On 2026-10-03 `send-email` still runs
+`npm:nodemailer@6.9.10` (6 high advisories, held by the age rule until 2026-10-04T07:51Z, todo
+`2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md`) while the gate exits 0. Dependabot will not see it either
+(no manifest). Structural fix: `2026-10-03-deno-edge-imports-invisible-to-audit-deps.md`.
+
+**What this changes for the reconciliation.** After v2.15 merges, the expectation above becomes: the high+ set
+Dependabot reports should converge on **zero** for this lockfile (plus whatever is published in the interim), and any
+high+ alert on a package that IS in `yarn.lock` at a version inside its range is a gate-blindness finding. Widening
+Dependabot to the monorepo is `2026-10-03-widen-dependabot-after-v2-15-merge.md`. This todo stays pending until then.
+

@@ -83,7 +83,7 @@ function loadJsonTemplate(absPath: string): Template {
   try {
     raw = JSON.parse(readFileSync(absPath, 'utf8'));
   } catch (err) {
-    throw new Error(`Failed to parse JSON template at ${absPath}: ${(err as Error).message}`);
+    throw new Error(`Failed to parse JSON template at ${absPath}: ${(err as Error).message}`, { cause: err });
   }
   return validateTemplate(raw);
 }
@@ -98,7 +98,9 @@ async function loadModuleTemplate(absPath: string): Promise<Template> {
   try {
     mod = await import(url);
   } catch (err) {
-    throw new Error(`Failed to load template module at ${absPath}: ${(err as Error).message}`);
+    throw new Error(`Failed to load template module at ${absPath}: ${(err as Error).message}`, {
+      cause: err
+    });
   }
   const candidate = mod.default ?? mod.template;
   if (candidate === undefined) {

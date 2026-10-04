@@ -8,6 +8,7 @@
  *   - `TOPO_ORDER` — generator execution order (questions before candidates, for the answer-emitter seam).
  *   - `Writer` — env-enforced writer with routing.
  *   - `SupabaseAdminClient` — bulk-write base class. Consumed by the tests/subclass.
+ *   - `createServiceRoleClient(url, key, options?)` — the one guarded supabase-js service-role client construction; refuses a non-local host unless opted out. The `SupabaseAdminClient` constructor and the E2E specs that need a raw client use it.
  *   - `TEST_PROJECT_ID` — bootstrap project UUID from seed.sql.
  *   - `E2E_PROJECT_ID` — the fixed project the E2E suite owns; deliberately not the bootstrap project.
  *   - `resolveE2eProjectId()` — reads the `E2E_PROJECT_ID` override, falling back to that constant; throws on a value colliding with the bootstrap project or on a non-canonical uuid.
@@ -76,7 +77,13 @@ export { latentAnswerEmitter } from './emitters/latent/latentEmitter';
 export { fanOutLocales, LOCALES } from './locales';
 export { runPipeline, TOPO_ORDER } from './pipeline';
 export { resolveAppSettingsExternalIds, settingsContainsExternalIdRefs } from './resolveAppSettingsExternalIds';
-export { E2E_PROJECT_ID, resolveE2eProjectId, SupabaseAdminClient, TEST_PROJECT_ID } from './supabaseAdminClient';
+export {
+  createServiceRoleClient,
+  E2E_PROJECT_ID,
+  resolveE2eProjectId,
+  SupabaseAdminClient,
+  TEST_PROJECT_ID
+} from './supabaseAdminClient';
 export { LINK_SENTINELS } from './template/linkSentinels';
 export {
   COLLECTION_NON_COLUMNS,

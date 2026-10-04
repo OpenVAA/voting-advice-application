@@ -14,13 +14,14 @@ See `MultilingualTextPart.type.ts`.
 
 ## Source
 
-[apps/frontend/src/lib/components/input/parts/MultilingualTextPart.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/parts/MultilingualTextPart.svelte)
+- Component: [apps/frontend/src/lib/components/input/parts/MultilingualTextPart.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/parts/MultilingualTextPart.svelte)
+- Types: [apps/frontend/src/lib/components/input/parts/MultilingualTextPart.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/parts/MultilingualTextPart.type.ts)
 
-[apps/frontend/src/lib/components/input/parts/MultilingualTextPart.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/parts/MultilingualTextPart.type.ts)
+## Directory README
 
-## Additional Documentation
+From the README in [apps/frontend/src/lib/components/input/parts](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/frontend/src/lib/components/input/parts):
 
-# `Input` parts
+## `Input` parts
 
 The four components here are the extracted complex markup branches of `Input.svelte`, one per branch:
 `MultilingualTextPart` (per-locale text fields and textareas), `SelectMultiplePart` (the options

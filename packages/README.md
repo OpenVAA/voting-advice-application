@@ -11,7 +11,7 @@ The OpenVAA monorepo contains four canonical packages that share a single, byte-
 3. [`@openvaa/matching`](./matching/)
 4. [`@openvaa/filters`](./filters/)
 
-All four are `type: module`, build with [`tsup`](https://tsup.egoist.dev/) + `tsc --emitDeclarationOnly`, lint with `eslint --flag v10_config_lookup_from_file src/`, and extend [`@openvaa/shared-config/ts`](./shared-config/) for TypeScript configuration.
+All four are `type: module`, build with [`tsup`](https://tsup.egoist.dev/) + `tsc --emitDeclarationOnly`, lint with `eslint src/`, and extend [`@openvaa/shared-config/ts`](./shared-config/) for TypeScript configuration.
 
 ## Paradigm summary
 

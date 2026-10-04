@@ -44,7 +44,7 @@ Shows a FAQ and other support content for the candidate application.
       {faq.answer}
     </Expander>
   {:else}
-    <p class="mt-lg text-center text-secondary">
+    <p class="mt-lg text-secondary text-center">
       {t('candidateApp.help.noFAQ')}
     </p>
   {/each}

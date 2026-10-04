@@ -7,8 +7,9 @@ The logo is rendered as a `<svg>` element, and you can also pass any valid attri
 
 - `title`: The `<title>` of the SVG logo. Functions much the same way as the `alt` attribute of an `<img>`. Default: `'OpenVAA'`
 - `size`: The size of the logo as one of the predefined sizes 'sm', 'md' or 'lg'. For arbitrary values, you can supply a `class` property, such as `h-[3.15rem] w-[3.15rem]`. Default: `'md'`
-- `color`: The color of the logo as one of the predefined colours. For arbitrary values, you can supply a `class` property, such as `fill-[#123456]`. Default: `'neutral'`
-  
+- `color`: The color of the logo as one of the predefined colours. For arbitrary values, you can supply a `class` property, such as `fill-[#123456]`. Default: `'primary'`
+- Any valid attributes of a `<svg>` element.
+
 ### Usage
 
 ```tsx
@@ -20,50 +21,58 @@ The logo is rendered as a `<svg>` element, and you can also pass any valid attri
 <script lang="ts">
   import type { OpenVAALogoProps } from './OpenVAALogo.type';
 
-  type $$Props = OpenVAALogoProps;
-  export let title: $$Props['title'] = 'OpenVAA';
-  export let color: $$Props['color'] = 'primary';
-  export let size: $$Props['size'] = 'md';
+  let {
+    title = 'OpenVAA',
+    color = 'primary',
+    size = 'md',
+    class: className,
+    ...restProps
+  }: OpenVAALogoProps = $props();
 
   // Create class names
-  let classes: string;
-
-  $: {
+  const classes = $derived.by(() => {
+    let c: string;
     // Predefined sizes
     switch (size) {
       case 'xs':
-        classes = 'h-14 pt-1';
+        c = 'h-14 pt-1';
         break;
       case 'sm':
-        classes = 'h-20 pt-2';
+        c = 'h-20 pt-2';
         break;
       case 'lg':
-        classes = 'h-32 pt-6';
+        c = 'h-32 pt-6';
         break;
       default:
-        classes = 'h-28 pt-4';
+        c = 'h-28 pt-4';
     }
 
     // Set fill color
     switch (color) {
       case 'primary':
-        classes += ' fill-primary inline';
+        c += ' fill-primary inline';
         break;
       case 'secondary':
-        classes += ' fill-secondary inline';
+        c += ' fill-secondary inline';
         break;
       case 'neutral':
-        classes += ' fill-neutral inline';
+        c += ' fill-neutral inline';
         break;
       default:
     }
     if (color != null) {
-      classes += ` fill-${color} inline`;
+      c += ` fill-${color} inline`;
     }
-  }
+    return c;
+  });
 </script>
 
-<svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 458.05 91.74" class={classes}>
+<svg
+  role="img"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 458.05 91.74"
+  {...restProps}
+  class={[classes, className]}>
   {#if title}
     <title>{title}</title>
   {/if}

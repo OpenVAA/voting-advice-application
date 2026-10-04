@@ -1,9 +1,9 @@
 <script lang="ts">
   import './layout.css';
-  import Header from '$lib/components/Header.svelte';
   import Footer from '$lib/components/Footer.svelte';
-  import { DRAWER_ID } from '$lib/consts';
+  import Header from '$lib/components/Header.svelte';
   import Navigation from '$lib/components/Navigation.svelte';
+  import { DRAWER_ID } from '$lib/consts';
 
   const { children } = $props();
   let checked = $state(false);

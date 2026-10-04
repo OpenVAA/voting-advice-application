@@ -1,18 +1,22 @@
 import fs from 'fs';
 import { readdir } from 'fs/promises';
 import path, { resolve } from 'path';
+import { fileURLToPath } from 'url';
 
 /**
- * Export current translations to a TSV file where you can easily reorganise translations under new keys and into new files as well as edit translations for all languages. Import the TSV back to generate the JSON translation files.
+ * Export the Paraglide message catalogs (`apps/frontend/messages/{locale}/*.json`) to a TSV file where you can easily reorganise translations under new keys and into new files as well as edit translations for all locales. Import the TSV back to generate message files in the same format.
+ *
+ * ### Message format
+ *
+ * Each message file holds a single top-level key equal to its namespace, the filename without `.json`, so `messages/en/adminApp.common.json` is `{ "adminApp.common": { … } }`. The keys in the TSV are the full dotted paths including that namespace. Inlang variant messages (arrays, or objects carrying `declarations`, `selectors` or `match`) are single leaves: their whole JSON value is one cell.
  *
  * ### NB
  *
  * `replaceKeys` will only replace old translation keys with new ones in Svelte files in the frontend src folder. This could be easily extended to also cover keys used in the e2e tests in /tests.
- * You should not use escape characters in the translations, because their backslashes will be escaped when translations are imported.
  *
  * ### TSV Format
  *
- * The file must have a header row.
+ * The file must have a header row. Every cell is JSON-encoded; a cell that is not valid JSON is read as plain text with any surrounding double quotes removed.
  * Columns:
  * - `key`: Current translation key
  * - `new_key`: New translation key
@@ -23,22 +27,24 @@ import path, { resolve } from 'path';
  *
  * - Export current translations to a TSV file:
  *   `tsx ./editTranslations.ts --export path/to/file.tsv`
- * - Import translations from a TSV file and output JSON translation files into the `OUTPUT_JSON` folder:
+ * - Import translations from a TSV file and output JSON message files into the `output/import` folder next to this script. Copy the files into `messages/` yourself, and add a `pathPattern` entry to `project.inlang/settings.json` for any new file; the script lists the missing entries.
  *   `tsx ./editTranslations.ts --import path/to/file.tsv`
  * - Import translations from a TSV file and replace old translation keys with new ones in Svelte files in the frontend src folder. Note that the regexes used will not find dynamically constructed keys, and you should thus check the results manually. The script will output a list of all of the old keys that were not replaced even a single time.
  *   `tsx ./editTranslations.ts --replaceKeys path/to/file.tsv`
  */
 
-const TRANSL_DIR = path.join('..', '..', 'src', 'lib', 'i18n', 'translations');
-const OUTPUT_DIR = path.join('.', 'output');
+const TOOL_DIR = path.dirname(fileURLToPath(import.meta.url));
+const FRONTEND_DIR = path.resolve(TOOL_DIR, '..', '..');
+const MESSAGES_DIR = path.join(FRONTEND_DIR, 'messages');
+const INLANG_SETTINGS = path.join(FRONTEND_DIR, 'project.inlang', 'settings.json');
+const OUTPUT_DIR = path.join(TOOL_DIR, 'output');
 const OUTPUT_TRANS = path.join(OUTPUT_DIR, 'translations.tsv');
 const OUTPUT_JSON = path.join(OUTPUT_DIR, 'import');
-const INPUT_DIR = path.join('..', '..', 'src');
+const INPUT_DIR = path.join(FRONTEND_DIR, 'src');
 const COL_SEP = '\t';
 const MISSING_VALUE = 'MISSING';
 const TRANSL_FUNCTION = 't';
 const ENCODING = 'utf8';
-const PRIMARY_LOCALE = 'en';
 
 await main();
 
@@ -84,7 +90,7 @@ async function replaceKeys(file: string): Promise<void> {
 
   /** A map of old key regexes to new keys */
   const replacements: Array<{ regex: RegExp; newKey: string }> = Object.entries(keyPairs).map(([oldKey, newKey]) => ({
-    regex: new RegExp(`(?<=(?:\\$|\\b)${TRANSL_FUNCTION}\\s*\\(\\s*(['"]))${escapeRegExp(oldKey)}(?=\\1)`, 'gm'),
+    regex: new RegExp(`(?<=\\b${TRANSL_FUNCTION}\\s*\\(\\s*(['"]))${escapeRegExp(oldKey)}(?=\\1)`, 'gm'),
     newKey
   }));
 
@@ -114,7 +120,7 @@ async function replaceKeys(file: string): Promise<void> {
 }
 
 /**
- * Import translations and output new json files
+ * Import translations and output new message files, each wrapped in its namespace key.
  */
 function importTranslations(file: string): void {
   console.info(`Importing translations from ${file}`);
@@ -125,9 +131,9 @@ function importTranslations(file: string): void {
 
   for (const locale of locales) {
     for (const [file, keys] of Object.entries(translations)) {
-      const output: Translations = {};
+      const output: MessageTree = {};
       for (const [key, data] of Object.entries(keys)) {
-        let current: Translations = output;
+        let current: MessageTree = output;
         const keyParts = key.split('.');
         const { values } = data;
         for (let i = 0; i < keyParts.length; i++) {
@@ -137,19 +143,20 @@ function importTranslations(file: string): void {
               throw new Error(
                 `Error storing ${file}.${key} for locale ${locale}: does this key have both a value and subkeys?`
               );
-            current[part] = values[locale as keyof typeof values] ?? MISSING_VALUE;
+            current[part] = values[locale] ?? MISSING_VALUE;
             break;
           }
           current[part] ??= {};
-          if (typeof current[part] !== 'object')
+          const next = current[part];
+          if (!isBranch(next))
             throw new Error(
               `Error storing ${file}.${key} for locale ${locale}: does the parent of this key have a value?`
             );
-          current = current[part];
+          current = next;
         }
       }
       const outputPath = path.join(OUTPUT_JSON, locale, `${file}.json`);
-      fileContents[outputPath] = JSON.stringify(output, null, 2);
+      fileContents[outputPath] = `${JSON.stringify({ [file]: output }, null, 2)}\n`;
     }
   }
 
@@ -157,10 +164,15 @@ function importTranslations(file: string): void {
   for (const [outputPath, content] of Object.entries(fileContents)) writeFile(outputPath, content);
   console.info(`Wrote ${Object.keys(fileContents).length} translation files to folder ${OUTPUT_JSON}`);
 
-  // Write the index listing the keys
-  const files = Object.keys(translations).map((f) => `  '${f}',`);
-  const keyList = `export const keys = [\n${files.join('\n')}\n];`;
-  writeFile(path.join(OUTPUT_JSON, 'keysForIndex.ts'), keyList);
+  // List the files Paraglide would not compile until they are added to the inlang settings
+  const listed = new Set(readPathPatterns());
+  const missing = Object.keys(translations)
+    .map((f) => `./messages/{locale}/${f}.json`)
+    .filter((pattern) => !listed.has(pattern));
+  if (missing.length) {
+    console.info(`Add these lines to plugin.inlang.messageFormat.pathPattern in ${INLANG_SETTINGS}:`);
+    for (const pattern of missing) console.info(`  "${pattern}",`);
+  }
 }
 
 /**
@@ -182,20 +194,19 @@ function readTsvTranslations(
   for (const row of tsv.split('\n')) {
     if (row.trim() === '') continue;
     const items = row
+      .replace(/\r/g, '')
       .split(COL_SEP)
-      .map((s) => s.replace(/^"|"$/g, ''))
-      .map((s) => s.replace(/\r/g, ''));
+      .map((s) => decodeCell(s));
+    const [oldKey, newKey, newFileCell] = items.slice(0, 3).map((s) => (typeof s === 'string' ? s : JSON.stringify(s)));
     if (!locales) {
-      if (items[0] !== 'key' || items[1] !== 'new_key' || items[2] !== 'new_file')
+      if (oldKey !== 'key' || newKey !== 'new_key' || newFileCell !== 'new_file')
         throw new Error(`Invalid header row: ${row}`);
-      locales = items.slice(3);
+      locales = items.slice(3).map((s) => String(s));
       continue;
     }
-    const oldKey = items[0];
-    const newKey = items[1];
     if ([oldKey, newKey].some((s) => !s)) throw new Error(`Invalid row: ${row}`);
 
-    const newFile = items[2] || newKey.split('.')[0];
+    const newFile = newFileCell || newKey.split('.')[0];
     if (!newKey.startsWith(`${newFile}.`)) throw new Error(`New_key does not start with new_file: ${row}`);
 
     const subkey = newKey.slice(newFile.length + 1);
@@ -216,21 +227,34 @@ function readTsvTranslations(
 }
 
 /**
+ * Decode a JSON-encoded TSV cell. A string, array or object is returned as is; anything else, including text that is not valid JSON, is returned as plain text with any surrounding double quotes removed.
+ */
+function decodeCell(cell: string): MessageValue {
+  try {
+    const decoded: unknown = JSON.parse(cell);
+    if (typeof decoded === 'string' || (typeof decoded === 'object' && decoded !== null))
+      return decoded as MessageValue;
+  } catch {
+    // Not JSON, so a hand-edited cell
+  }
+  return cell.replace(/^"|"$/g, '');
+}
+
+/**
  * Export current translations into a TSV file with columns for: `key`, `new_key`, `new_file`, and each locale.
  * The `new_key` and `new_file` columns are used when importing the translations back.
  * @param file
  */
 function exportCurrentTranslations(file: string): void {
-  const { filePrefixes, translations } = readAllTranslations();
-  const multiPartPrefixes = filePrefixes.filter((p) => p.includes('.'));
+  const { primaryLocale, filePrefixes, translations } = readAllTranslations();
+  const multiPartPrefixes = filePrefixes.filter((p) => p.includes('.')).sort((a, b) => b.length - a.length);
   const locales = Object.keys(translations);
   const flatTranslations = Object.fromEntries(
     locales.map((l) => [l, Object.fromEntries(flattenKeys(translations[l]))])
   );
   let tsv = ['key', 'new_key', 'new_file', ...locales].map((s) => JSON.stringify(s)).join(COL_SEP) + '\n';
-  const primaryLocale = flatTranslations[PRIMARY_LOCALE];
-  if (!primaryLocale) throw new Error(`Primary locale '${PRIMARY_LOCALE}' not found in flatTranslations`);
-  for (const key in primaryLocale) {
+  const primaryTranslations = flatTranslations[primaryLocale];
+  for (const key in primaryTranslations) {
     tsv +=
       [key, key, findFilePrefix(key), ...locales.map((l) => flatTranslations[l][key] ?? MISSING_VALUE)]
         .map((s) => JSON.stringify(s))
@@ -242,58 +266,98 @@ function exportCurrentTranslations(file: string): void {
   /** Finds the file prefix for the key if the prefix is a multi-part prefix */
   function findFilePrefix(key: string): string {
     for (const prefix of multiPartPrefixes) {
-      if (key.startsWith(prefix)) return prefix;
+      if (key.startsWith(`${prefix}.`)) return prefix;
     }
     return '';
   }
 }
 
 /**
- * Read all translation files and return them in an object with locales as the top keys.
+ * Read all message files and return them in an object with locales as the top keys. Each locale holds the files' namespace keys, so its flattened keys are the full translation keys.
  */
 function readAllTranslations(): {
+  primaryLocale: string;
   filePrefixes: Array<string>;
-  translations: Translations;
+  translations: { [locale: string]: MessageTree };
 } {
+  const primaryLocale = readBaseLocale();
   const filePrefixes = new Array<string>();
-  const translations: Translations = {};
-  const locales = fs.readdirSync(TRANSL_DIR).filter((name) => fs.lstatSync(path.join(TRANSL_DIR, name)).isDirectory());
-  if (!locales.includes(PRIMARY_LOCALE))
-    throw new Error(`Primary locale '${PRIMARY_LOCALE}' not found in translations folder`);
-  for (const locale of locales) {
-    const localeTranslations: Translations = {};
-    const files = fs.readdirSync(path.join(TRANSL_DIR, locale));
+  const translations: { [locale: string]: MessageTree } = {};
+  const locales = fs
+    .readdirSync(MESSAGES_DIR)
+    .filter((name) => fs.lstatSync(path.join(MESSAGES_DIR, name)).isDirectory());
+  if (!locales.includes(primaryLocale))
+    throw new Error(`Base locale '${primaryLocale}' not found in the messages folder ${MESSAGES_DIR}`);
+  for (const locale of [primaryLocale, ...locales.filter((l) => l !== primaryLocale)]) {
+    const localeTranslations: MessageTree = {};
+    const files = fs.readdirSync(path.join(MESSAGES_DIR, locale)).filter((f) => f.endsWith('.json'));
     for (const file of files) {
       const prefix = file.replace(/\.json$/, '');
-      if (locale === PRIMARY_LOCALE) filePrefixes.push(prefix);
-      localeTranslations[prefix] = readJsonTranslations(locale, file);
+      if (locale === primaryLocale) filePrefixes.push(prefix);
+      localeTranslations[prefix] = readMessageFile(locale, file);
     }
     translations[locale] = localeTranslations;
   }
-  return { filePrefixes, translations };
+  return { primaryLocale, filePrefixes, translations };
 }
 
 /**
- * A recursive function which returns sorted array of flattened keys with their associated values.
+ * A recursive function which returns an array of flattened keys with their associated values. Strings, inlang variant arrays and bare variant objects are leaves.
  * @example `{a: 'abc', b: {c: 'def'}}` becomes `[['a', 'abc'], ['b.c', 'def']]`
  */
-function flattenKeys(obj: Translations | string, prefix?: string): Array<[string, string]> {
-  const res = Array<[string, string]>();
+function flattenKeys(obj: MessageTree, prefix?: string): Array<[string, MessageValue]> {
+  const res = Array<[string, MessageValue]>();
   prefix = prefix ? `${prefix}.` : '';
   for (const [key, value] of Object.entries(obj)) {
     const newKey = `${prefix}${key}`;
-    if (typeof value === 'object') res.push(...flattenKeys(value, newKey));
+    if (isBranch(value)) res.push(...flattenKeys(value, newKey));
     else res.push([newKey, value]);
   }
   return res;
 }
 
 /**
- * Reads contents of translation file
+ * Reads a message file and returns the messages inside its namespace key.
+ * @throws If the file does not hold exactly one top-level key equal to its filename without `.json`.
  */
-function readJsonTranslations(locale: string, filename: string): Translations {
-  const fp = path.join(TRANSL_DIR, locale, filename);
-  return JSON.parse(fs.readFileSync(fp, ENCODING).toString());
+function readMessageFile(locale: string, filename: string): MessageTree {
+  const fp = path.join(MESSAGES_DIR, locale, filename);
+  const namespace = filename.replace(/\.json$/, '');
+  const content: unknown = JSON.parse(fs.readFileSync(fp, ENCODING).toString());
+  const topKeys = isBranch(content) ? Object.keys(content) : [];
+  if (topKeys.length !== 1 || topKeys[0] !== namespace)
+    throw new Error(`Message file ${fp} must have exactly one top-level key '${namespace}'`);
+  const messages = (content as MessageTree)[namespace];
+  if (!isBranch(messages)) throw new Error(`The '${namespace}' value in ${fp} must be an object of messages`);
+  return messages;
+}
+
+function readInlangSettings(): { baseLocale?: unknown; 'plugin.inlang.messageFormat'?: { pathPattern?: unknown } } {
+  return JSON.parse(fs.readFileSync(INLANG_SETTINGS, ENCODING));
+}
+
+function readBaseLocale(): string {
+  const { baseLocale } = readInlangSettings();
+  if (typeof baseLocale !== 'string' || !baseLocale) throw new Error(`No baseLocale in ${INLANG_SETTINGS}`);
+  return baseLocale;
+}
+
+function readPathPatterns(): Array<string> {
+  const patterns = readInlangSettings()['plugin.inlang.messageFormat']?.pathPattern;
+  if (typeof patterns === 'string') return [patterns];
+  return Array.isArray(patterns) ? patterns.filter((p): p is string => typeof p === 'string') : [];
+}
+
+/**
+ * True for an object of nested messages, false for a leaf: a string, an inlang variant array or a bare variant object.
+ */
+function isBranch(value: unknown): value is MessageTree {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    !('declarations' in value || 'selectors' in value || 'match' in value)
+  );
 }
 
 /**
@@ -328,8 +392,13 @@ function escapeRegExp(regex: string): string {
   return regex.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }
 
-type Translations = {
-  [key: string]: Translations | string;
+/**
+ * A single message: a plain string, an inlang variant array or a bare variant object.
+ */
+type MessageValue = string | Array<unknown> | { [key: string]: unknown };
+
+type MessageTree = {
+  [key: string]: MessageTree | MessageValue;
 };
 
 type ImportedTranslations = {
@@ -343,9 +412,9 @@ type ImportedTranslations = {
       newKey: string;
       /** The old key with the filename */
       oldKeys: Array<string>;
-      /** The translated strings for each locale */
+      /** The decoded translations for each locale */
       values: {
-        [locale: string]: string;
+        [locale: string]: MessageValue;
       };
     };
   };

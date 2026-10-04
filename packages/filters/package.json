@@ -21,9 +21,9 @@
   },
   "scripts": {
     "build": "tsup && tsc --emitDeclarationOnly --outDir dist",
-    "lint": "eslint --flag v10_config_lookup_from_file src/",
+    "lint": "eslint src/",
     "test:unit": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit --composite false"
   },
   "type": "module",
   "module": "./dist/index.js",
@@ -40,6 +40,7 @@
     "@openvaa/shared-config": "workspace:^",
     "tsup": "catalog:",
     "typescript": "catalog:",
+    "vite": "catalog:",
     "vitest": "catalog:"
   },
   "dependencies": {

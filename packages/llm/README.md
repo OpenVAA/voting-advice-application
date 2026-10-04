@@ -204,7 +204,7 @@ import { calculateLLMCost, getModelPricing } from '@openvaa/llm';
 
 // Get pricing for a model
 const pricing = getModelPricing('openai', 'gpt-4o-mini');
-// { input: 0.15, output: 0.6, cachedInput: 0.075, reasoning: 0 }
+// { input: 0.15, cachedInput: 0.075, output: 0.6 }
 
 // Calculate costs from token usage
 const costs = calculateLLMCost({
@@ -212,6 +212,7 @@ const costs = calculateLLMCost({
   usage: { inputTokens: 1000, outputTokens: 500 },
   useCachedInput: false
 });
+// costs.output includes reasoning tokens (AI SDK 7 counts them inside outputTokens), costs.reasoning reports that part separately, and costs.total is input + output.
 ```
 
 ### Prompt Template Variables

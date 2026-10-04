@@ -2,14 +2,8 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { UniversalAdapter } from './universalAdapter';
 import { isRefusedResponse } from '../utils/isRefusedResponse';
 import { parseResponse } from '../utils/parseResponse';
+import type { Mock } from 'vitest';
 import type * as ParseResponseModule from '../utils/parseResponse';
-
-// Only mock the constants - everything else should use real implementations
-vi.mock('$lib/utils/constants', () => ({
-  constants: {
-    PUBLIC_CACHE_ENABLED: false
-  }
-}));
 
 // The parser is SPIED, not replaced: every case in this file runs the real implementation. The spy exists so the seam pin below can assert the parser was never INVOKED for a refused response, which is a different property from "an error was produced" and is the one that fails if the response check is deleted, moved after the parse, or made conditional.
 vi.mock('../utils/parseResponse', async (importOriginal) => {
@@ -22,10 +16,10 @@ class TestAdapter extends UniversalAdapter {}
 
 describe('UniversalAdapter', () => {
   let adapter: TestAdapter;
-  let mockFetch: ReturnType<typeof vi.fn>;
+  let mockFetch: Mock<typeof fetch>;
 
   beforeEach(() => {
-    mockFetch = vi.fn();
+    mockFetch = vi.fn<typeof fetch>();
     adapter = new TestAdapter({ fetch: mockFetch });
     vi.mocked(parseResponse).mockClear();
   });
@@ -47,7 +41,7 @@ describe('UniversalAdapter', () => {
     });
   });
 
-  describe('fetch (without caching)', () => {
+  describe('fetch', () => {
     test('should make successful fetch request', async () => {
       const mockResponse = {
         ok: true,
@@ -58,6 +52,7 @@ describe('UniversalAdapter', () => {
 
       const result = await adapter.fetch('http://openvaa.org/api');
 
+      expect(mockFetch).toHaveBeenCalledTimes(1);
       expect(mockFetch).toHaveBeenCalledWith('http://openvaa.org/api', {});
       expect(result).toBe(mockResponse);
     });
@@ -122,156 +117,6 @@ describe('UniversalAdapter', () => {
       await expect(adapter.fetch('http://openvaa.org/api')).rejects.toThrow(
         /Could not parse error message from Response/
       );
-    });
-  });
-
-  describe('fetch (with caching enabled)', () => {
-    let originalCacheEnabled: boolean;
-    let adapterWithCache: TestAdapter;
-    let mockFetchForCache: ReturnType<typeof vi.fn>;
-
-    beforeEach(async () => {
-      // Re-mock constants with cache enabled for this suite
-      const constants = await import('$lib/utils/constants');
-      originalCacheEnabled = constants.constants.PUBLIC_CACHE_ENABLED;
-      vi.mocked(constants.constants).PUBLIC_CACHE_ENABLED = true;
-
-      mockFetchForCache = vi.fn();
-      adapterWithCache = new TestAdapter({ fetch: mockFetchForCache });
-    });
-
-    afterEach(() => {
-      // Restore original value
-      import('$lib/utils/constants').then((constants) => {
-        vi.mocked(constants.constants).PUBLIC_CACHE_ENABLED = originalCacheEnabled;
-      });
-    });
-
-    test('should cache GET requests when conditions are met', async () => {
-      const mockResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ data: 'cached' })
-      } as unknown as Response;
-      mockFetchForCache.mockResolvedValue(mockResponse);
-
-      await adapterWithCache.fetch('http://openvaa.org/api');
-
-      const [url] = mockFetchForCache.mock.calls[0];
-      expect(url).toContain('/api/cache?resource=');
-      expect(url).toContain(encodeURIComponent('http://openvaa.org/api'));
-    });
-
-    test('should cache GET requests with explicit GET method', async () => {
-      const mockResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({})
-      } as unknown as Response;
-      mockFetchForCache.mockResolvedValue(mockResponse);
-
-      await adapterWithCache.fetch('http://openvaa.org/api', { method: 'GET' });
-
-      const [url] = mockFetchForCache.mock.calls[0];
-      expect(url).toContain('/api/cache?resource=');
-    });
-
-    test('should NOT cache when disableCache is true', async () => {
-      const mockResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({})
-      } as unknown as Response;
-      mockFetchForCache.mockResolvedValue(mockResponse);
-
-      await adapterWithCache.fetch('http://openvaa.org/api', {}, { disableCache: true });
-
-      const [url] = mockFetchForCache.mock.calls[0];
-      expect(url).toBe('http://openvaa.org/api');
-      expect(url).not.toContain('/api/cache');
-    });
-
-    test('should NOT cache when Authorization header is present', async () => {
-      const mockResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({})
-      } as unknown as Response;
-      mockFetchForCache.mockResolvedValue(mockResponse);
-
-      await adapterWithCache.fetch('http://openvaa.org/api', {
-        headers: { Authorization: 'Bearer token' }
-      });
-
-      const [url] = mockFetchForCache.mock.calls[0];
-      expect(url).toBe('http://openvaa.org/api');
-      expect(url).not.toContain('/api/cache');
-    });
-
-    test('should NOT cache when authToken is provided', async () => {
-      const mockResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({})
-      } as unknown as Response;
-      mockFetchForCache.mockResolvedValue(mockResponse);
-
-      await adapterWithCache.fetch('http://openvaa.org/api', {}, { authToken: 'my-token' });
-
-      const [url] = mockFetchForCache.mock.calls[0];
-      expect(url).toBe('http://openvaa.org/api');
-      expect(url).not.toContain('/api/cache');
-    });
-
-    test('should NOT cache POST requests', async () => {
-      const mockResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({})
-      } as unknown as Response;
-      mockFetchForCache.mockResolvedValue(mockResponse);
-
-      await adapterWithCache.fetch('http://openvaa.org/api', { method: 'POST' });
-
-      const [url] = mockFetchForCache.mock.calls[0];
-      expect(url).toBe('http://openvaa.org/api');
-      expect(url).not.toContain('/api/cache');
-    });
-
-    test('should NOT cache PUT requests', async () => {
-      const mockResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({})
-      } as unknown as Response;
-      mockFetchForCache.mockResolvedValue(mockResponse);
-
-      await adapterWithCache.fetch('http://openvaa.org/api', { method: 'PUT' });
-
-      const [url] = mockFetchForCache.mock.calls[0];
-      expect(url).toBe('http://openvaa.org/api');
-      expect(url).not.toContain('/api/cache');
-    });
-
-    test('should NOT cache DELETE requests', async () => {
-      const mockResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({})
-      } as unknown as Response;
-      mockFetchForCache.mockResolvedValue(mockResponse);
-
-      await adapterWithCache.fetch('http://openvaa.org/api', { method: 'DELETE' });
-
-      const [url] = mockFetchForCache.mock.calls[0];
-      expect(url).toBe('http://openvaa.org/api');
-      expect(url).not.toContain('/api/cache');
-    });
-
-    test('should NOT cache PATCH requests', async () => {
-      const mockResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({})
-      } as unknown as Response;
-      mockFetchForCache.mockResolvedValue(mockResponse);
-
-      await adapterWithCache.fetch('http://openvaa.org/api', { method: 'PATCH' });
-
-      const [url] = mockFetchForCache.mock.calls[0];
-      expect(url).toBe('http://openvaa.org/api');
-      expect(url).not.toContain('/api/cache');
     });
   });
 
@@ -377,7 +222,7 @@ describe('UniversalAdapter', () => {
         init: { headers: { 'X-Custom': 'value' } }
       });
 
-      const callInit = mockFetch.mock.calls[0][1];
+      const callInit = mockFetch.mock.calls[0][1]!;
       expect(callInit.headers).toBeDefined();
     });
   });
@@ -430,7 +275,7 @@ describe('UniversalAdapter', () => {
         body
       });
 
-      const callInit = mockFetch.mock.calls[0][1];
+      const callInit = mockFetch.mock.calls[0][1]!;
       expect(callInit.method).toBe('POST');
       expect(callInit.body).toBe(JSON.stringify(body));
       expect(new Headers(callInit.headers).get('Content-Type')).toBe('application/json');
@@ -446,7 +291,7 @@ describe('UniversalAdapter', () => {
 
       await adapter.post({ url: 'http://openvaa.org/api' });
 
-      const callInit = mockFetch.mock.calls[0][1];
+      const callInit = mockFetch.mock.calls[0][1]!;
       expect(callInit.method).toBe('POST');
       expect(callInit.body).toBeUndefined();
     });
@@ -501,7 +346,7 @@ describe('UniversalAdapter', () => {
 
       await adapter.post({ url: 'http://openvaa.org/api', body });
 
-      const callInit = mockFetch.mock.calls[0][1];
+      const callInit = mockFetch.mock.calls[0][1]!;
       expect(callInit.body).toBe(JSON.stringify(body));
     });
 
@@ -518,7 +363,7 @@ describe('UniversalAdapter', () => {
         init: { headers: { 'X-Custom': 'header' } }
       });
 
-      const callInit = mockFetch.mock.calls[0][1];
+      const callInit = mockFetch.mock.calls[0][1]!;
       expect(callInit.headers).toBeDefined();
     });
   });
@@ -537,7 +382,7 @@ describe('UniversalAdapter', () => {
         body
       });
 
-      const callInit = mockFetch.mock.calls[0][1];
+      const callInit = mockFetch.mock.calls[0][1]!;
       expect(callInit.method).toBe('PUT');
       expect(callInit.body).toBe(JSON.stringify(body));
       expect(result).toEqual({ updated: true });
@@ -659,7 +504,7 @@ describe('UniversalAdapter', () => {
         openRefused = resolve;
       });
 
-      mockFetch.mockImplementation(async (url: string) => {
+      mockFetch.mockImplementation(async (url) => {
         if (String(url).includes('refused')) {
           await refusedGate;
           return refusedResponse;

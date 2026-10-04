@@ -1,9 +1,9 @@
-FROM node:22-alpine AS base
+FROM node:24-alpine AS base
 
 WORKDIR /opt
 
 # Setup env variable for yarn
-ENV YARN_VERSION=4.13.0
+ENV YARN_VERSION=4.18.1
 
 # install and use yarn 4.x
 RUN corepack enable && corepack prepare yarn@${YARN_VERSION}
@@ -16,6 +16,8 @@ COPY .yarn ./.yarn
 # To be able to use --immutable, we need to copy all the packages in the workspace
 COPY apps apps
 COPY packages packages
+# Root lifecycle scripts (the preinstall Node engine guard) run from scripts/ during install
+COPY scripts scripts
 RUN yarn install --immutable
 
 FROM base AS shared

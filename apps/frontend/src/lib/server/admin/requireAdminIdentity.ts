@@ -53,7 +53,7 @@ export async function requireAdminIdentity({
   if ((await getUserData({ fetch, locals }))?.role !== 'admin') return { outcome: 'forbidden' };
 
   // THE ADMIN MUST ADMINISTER THIS DEPLOYMENT'S PROJECT (162-REVIEW WR-03). The normalised role says only that the caller holds an admin-shaped grant SOMEWHERE -- an admin of any project or account in the same Supabase instance passes it. The job endpoints this gate fronts serve an in-memory job store that row-level security never sees (author e-mails, LLM inputs and outputs, abort control) and start LLM spend before any RLS-checked write, so the question has to be asked of `PUBLIC_PROJECT_ID` itself. It is asked of the database's one predicate, through an admin writer built on the request's own client -- so the caller's own verified token, and the adapter's configured project -- rather than re-derived from the claim here. `project.edit_questions` is the permission the admin job features act under. Anything but a literal `true` -- an error, a null, a throw -- denies.
-  let administersProject = false;
+  let administersProject: boolean;
   try {
     administersProject = await createAdminWriter({ fetch, locals }).callerMayOnProject('project.edit_questions');
   } catch {

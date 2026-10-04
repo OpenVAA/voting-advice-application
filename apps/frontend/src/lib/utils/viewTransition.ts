@@ -9,7 +9,7 @@
  * - `startViewTransition` is a thin wrapper around the browser-native
  *   `document.startViewTransition`, using the built-in `lib.dom.d.ts` `ViewTransition` type (TS 5.9.3) so no local interface is hand-rolled and no `any` is needed (CLAUDE.md TS-strict rule).
  *
- * ⚠ DOCUMENT VIEW TRANSITIONS AND MODAL `<dialog>`S DO NOT MIX. A modal dialog lives in the top layer, which a document VT captures as part of the `root` snapshot. Every element with a `view-transition-name` (`persistent-header`, `main-content`, …) becomes its own group painted ABOVE `root` — so for the duration of the transition the page under the dialog is drawn on top of it (spike 031: the header flashes over the backdrop; the results list covers the drawer during a drawer-tab switch). Hence the two rules below: overlay navigations get no document VT at all, and a VT that runs while a modal is open runs with every name stripped.
+ * ⚠ DOCUMENT VIEW TRANSITIONS AND MODAL `<dialog>`S DO NOT MIX. A modal dialog lives in the top layer, which a document VT captures as part of the `root` snapshot. Every element with a `view-transition-name` (`persistent-header`, `main-content`, …) becomes its own group painted ABOVE `root` — so for the duration of the transition the page under the dialog is drawn on top of it: the header flashes over the backdrop, and the results list covers the drawer during a drawer-tab switch (see spike 031). Hence the two rules below: overlay navigations get no document VT at all, and a VT that runs while a modal is open runs with every name stripped.
  */
 
 import { prefersReducedMotion } from './motion';

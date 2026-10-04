@@ -20,7 +20,7 @@ When you edit a `@openvaa/*` package source file (e.g. `packages/data/src/foo.ts
 
 When you edit the root `.env`:
 
-- `vite-plugin-restart` (configured in `apps/frontend/vite.config.ts`) detects the change
+- The `restartOnRootEnv` plugin (`apps/frontend/vite.restartOnRootEnv.ts`, wired in `vite.config.ts`) detects the change
 - The Vite server fully restarts (env snapshot must be re-seeded; HMR is insufficient for env vars)
 
 ### When autoreload misbehaves
@@ -34,8 +34,8 @@ If you see stale module errors after a fresh clone or after a long-running dev s
 
 - `$lib` → `apps/frontend/src/lib`
 - `$types` → `apps/frontend/src/lib/types`
-- `$voter` → `apps/frontend/src/lib/voter`
 - `$candidate` → `apps/frontend/src/lib/candidate`
+- `$layouts` → `apps/frontend/src/lib/layouts`
 
 ## Build
 

@@ -251,9 +251,27 @@ async function expectQuestionAndAdvance({
 }
 
 /**
+ * Wait until the root layout's post-navigation focus reset has landed on the page's focus target (`[data-focus-on-nav] ?? h1`, the selector `focusNavigationTarget` uses).
+ *
+ * A Q→Q navigation swaps the DOM first, so a heading-text wait settles while the View Transition is still running; the reset (`afterNavigate` → rAF) runs only after the transition ends. A click usually waits that window out by itself: Playwright retries it until the element is the hit target, and the transition overlay covers the page. `focus()` and `keyboard.press()` have no such check, so a keyboard step taken in that window races the navigation's end: the reset takes focus back. Call this before any focus or key press that follows a navigation. The reset completes the navigation, so it gets the route-transition budget.
+ */
+async function waitForNavigationFocusReset(page: Page): Promise<void> {
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const target = document.querySelector('[data-focus-on-nav]') ?? document.querySelector('h1');
+          return target !== null && document.activeElement === target;
+        }),
+      { timeout: TIMEOUTS.page }
+    )
+    .toBe(true);
+}
+
+/**
  * Answer a NUMBER-scale opinion question at max and advance.
  *
- * The NumberScaleInput renders a native `<input type=range>` (no question-choice options); a matchable number question carries no radio/checkbox options, so `expectQuestionAndAdvance` cannot drive it. Focus the slider and press End to land the exact max value (the native-range keyboard contract), then click Next explicitly — number inputs never auto-advance.
+ * The NumberScaleInput renders a native `<input type=range>` (no question-choice options); a matchable number question carries no radio/checkbox options, so `expectQuestionAndAdvance` cannot drive it. Focus the slider and press End to land the exact max value (the native-range keyboard contract), then click Next explicitly — number inputs never auto-advance. The key press waits for the navigation's focus reset (see `waitForNavigationFocusReset`), and Next waits until the answer is stored (`question-delete` enabled), so a lost key press fails here rather than as a missing answer several questions later.
  */
 async function expectNumberQuestionAndAdvance({ page, text }: { page: Page; text: RegExp | string }): Promise<void> {
   await expectUrlChange(page, async (capture) => {
@@ -261,8 +279,10 @@ async function expectNumberQuestionAndAdvance({ page, text }: { page: Page; text
     await expect(questionHeading).toHaveText(text, { timeout: TIMEOUTS.element });
     const slider = page.getByTestId(testIds.voter.questions.numberSlider);
     await expect(slider.first()).toBeVisible({ timeout: TIMEOUTS.element });
+    await waitForNavigationFocusReset(page);
     await slider.first().focus();
     await page.keyboard.press('End'); // native range → exact max
+    await expect(page.getByTestId(testIds.shared.questionDelete)).toBeEnabled({ timeout: TIMEOUTS.element });
     const nextButton = page.getByTestId(testIds.voter.questions.nextButton);
     await expect(nextButton).toBeVisible({ timeout: TIMEOUTS.element });
     await capture();
@@ -381,8 +401,8 @@ async function expectElectionOptionAndSelect({ page, text }: { page: Page; text:
   const target = electionAccordion.getByRole('option', { name: text }).first();
   await expect(target).toBeVisible({ timeout: TIMEOUTS.element });
   await target.click({ timeout: TIMEOUTS.click });
-  // We need to wait for the accordion to collapse again to ensure the state has changed
-  await expect(visibleOptions).toHaveCount(1, { timeout: TIMEOUTS.element });
+  // We need to wait for the accordion to collapse again to ensure the state has changed. The collapse lands only once the results subtree has re-rendered for the newly selected election, so it is a route-transition wait, not an element wait: on the slower CI runner it was observed still open with the previous election's list 2 s after the click (169-02 CI run 37111729145, both attempts).
+  await expect(visibleOptions).toHaveCount(1, { timeout: TIMEOUTS.page });
   const resultsList = page.getByTestId(testIds.voter.results.list);
   await expect(resultsList).toBeVisible({ timeout: TIMEOUTS.page });
 }
@@ -714,6 +734,9 @@ test.describe('voter journey', () => {
       const termTrigger = page.getByTestId(testIds.voter.questions.termTrigger);
       await expect(termTrigger.first()).toBeVisible({ timeout: TIMEOUTS.element });
       await expect.soft(termTrigger.first()).toHaveText(/Likert/i, { timeout: TIMEOUTS.element });
+
+      // A trigger focused before the navigation's focus reset loses focus to the heading, and the popup closes with it.
+      await waitForNavigationFocusReset(page);
 
       // The definition popup is mounted only while the trigger is hovered/focused (Term.svelte W3C APG tooltip pattern). Focus reveals it; assert the definition content (seeded title + content joined as "title: content").
       await termTrigger.first().focus();

@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "echo 'Nothing to build.'",
-    "lint": "eslint --flag v10_config_lookup_from_file src/",
+    "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
     "pem-to-jwk": "tsx src/pem-to-jwk.ts",
     "keygen": "tsx src/keygen.ts"

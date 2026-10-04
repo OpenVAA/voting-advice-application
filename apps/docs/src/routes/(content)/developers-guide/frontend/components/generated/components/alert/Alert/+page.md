@@ -45,6 +45,5 @@ Show a non-modal alert or dialog that appears at the bottom of the screen.
 
 ## Source
 
-[apps/frontend/src/lib/components/alert/Alert.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/alert/Alert.svelte)
-
-[apps/frontend/src/lib/components/alert/Alert.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/alert/Alert.type.ts)
+- Component: [apps/frontend/src/lib/components/alert/Alert.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/alert/Alert.svelte)
+- Types: [apps/frontend/src/lib/components/alert/Alert.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/alert/Alert.type.ts)

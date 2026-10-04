@@ -2,8 +2,6 @@
 CREATE TABLE public.organizations (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id uuid NOT NULL REFERENCES public.projects (id) ON DELETE CASCADE,
-  -- The Supabase Auth user who signs in as this organization; edit rights come from `public.grants`, not from this link.
-  auth_user_id uuid REFERENCES auth.users (id) ON DELETE SET NULL,
   -- Localized string `{ "<locale>": string }`.
   name jsonb,
   -- Localized string `{ "<locale>": string }`: the abbreviated name.
@@ -43,8 +41,6 @@ EXECUTE FUNCTION public.enforce_entity_immutability ('name');
 CREATE TABLE public.candidates (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id uuid NOT NULL REFERENCES public.projects (id) ON DELETE CASCADE,
-  -- The Supabase Auth user who signs in as this candidate; the candidate app loads its own row by it, and edit rights come from `public.grants`.
-  auth_user_id uuid REFERENCES auth.users (id) ON DELETE SET NULL,
   first_name text NOT NULL,
   last_name text NOT NULL,
   -- Localized string `{ "<locale>": string }`: the abbreviated name.

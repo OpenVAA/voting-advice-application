@@ -14,14 +14,14 @@ import { beforeAll, describe, expect, it } from 'vitest';
  * Correctness invariants, carried over from `eslint-store-guard.test.ts` because each one is a distinct way this spec could hand back a false PASS:
  *
  * 1. Every probe `filePath` MUST resolve under `apps/frontend/src` (see `SRC` below), or the guard block's `files` scope simply does not apply and every assertion passes vacuously. The paths are VIRTUAL — no file is ever written to any of them.
- * 2. `new ESLint({ flags: ['v10_config_lookup_from_file'] })` is MANDATORY. It loads the real `apps/frontend/eslint.config.mjs` and matches `apps/frontend/package.json`'s lint script exactly; omitting it risks config-resolution drift, and this spec would then measure a different config than the gate does.
+ * 2. `new ESLint()` is constructed WITHOUT a config option. ESLint resolves the configuration nearest each linted file, and for every probe path below that is the real `apps/frontend/eslint.config.mjs` — the same file `apps/frontend/package.json`'s lint script resolves. That lookup is how the frontend config, and so the rules under test, reach this spec. Passing `overrideConfigFile`, `overrideConfig` or `baseConfig` here would replace or extend that resolution, and this spec would then measure a different config than the gate does.
  * 3. Assert on `ruleId`, never on a bare problem count. A violating fixture also trips unrelated rules — `unused-imports/no-unused-imports` is an ERROR in shared-config — so a count assertion would pass for the wrong reason.
  * 4. FOUR bans share `ruleId === 'no-restricted-syntax'` and FOUR share `ruleId === 'no-restricted-imports'`. Assertions therefore disambiguate on the MESSAGE SUBSTRING and NEVER on line or column. Line and column move with any edit; the messages are the contract.
  * 5. The flat-config REPLACE trap gets a standing regression case PER INHERITED BAN, not just for the enum one. `157-14` measured the semantics — `PROBE VERDICT: REPLACE`, per-file, for both rules — and these four cases are what keeps that answer true after a future editor restructures the blocks. Dropping an inherited entry produces ZERO errors on the real tree, so no other gate in this repository would catch it.
  */
 
-// MANDATORY (invariant 2): loads the real apps/frontend/eslint.config.mjs.
-const eslint = new ESLint({ flags: ['v10_config_lookup_from_file'] });
+// Invariant 2: no config option, so ESLint resolves the real apps/frontend/eslint.config.mjs for each probe path.
+const eslint = new ESLint();
 
 // MANDATORY (invariant 1): every probe path resolves under apps/frontend/src, which is what puts the fixture inside the guard block's `files` scope. The paths below are VIRTUAL — no file is ever written to them; they are only passed as `lintText`'s `filePath` option.
 const SRC = path.resolve(__dirname, '../..');

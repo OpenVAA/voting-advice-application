@@ -43,6 +43,5 @@ You should not try to use a variant and customize at the same time.
 
 ## Source
 
-[apps/frontend/src/lib/components/expander/Expander.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/expander/Expander.svelte)
-
-[apps/frontend/src/lib/components/expander/Expander.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/expander/Expander.type.ts)
+- Component: [apps/frontend/src/lib/components/expander/Expander.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/expander/Expander.svelte)
+- Types: [apps/frontend/src/lib/components/expander/Expander.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/expander/Expander.type.ts)

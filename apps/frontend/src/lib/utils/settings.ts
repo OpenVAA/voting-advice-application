@@ -14,8 +14,7 @@ export function mergeAppSettings(
   additional: AppSettings | DynamicSettings
 ): AppSettings {
   const nonNull = Object.fromEntries(Object.entries(additional).filter(([, v]) => v != null)) as
-    | AppSettings
-    | DynamicSettings;
+    AppSettings | DynamicSettings;
   // Pure spread (Pattern 8): never mutate `target`. The previous in-place assign mutated the shared `staticSettings` module reference, polluting every other context that read it.
   return { ...target, ...nonNull };
 }

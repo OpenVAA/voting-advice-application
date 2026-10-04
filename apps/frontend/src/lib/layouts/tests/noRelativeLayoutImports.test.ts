@@ -53,7 +53,8 @@ function collectSourceFiles(root: string): Array<string> {
     throw new Error(
       `noRelativeLayoutImports.test.ts could not read the scan root '${root}'. The frontend source layout moved; ` +
         'update SRC_ROOT in this file. Returning an empty file list instead would make this guard pass vacuously. ' +
-        `Underlying error: ${String(cause)}`
+        `Underlying error: ${String(cause)}`,
+      { cause }
     );
   }
   const files: Array<string> = [];

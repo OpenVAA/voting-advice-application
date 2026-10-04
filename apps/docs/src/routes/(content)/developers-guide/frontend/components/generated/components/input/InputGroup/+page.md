@@ -25,6 +25,5 @@ NB. Only single-row `Input`s are joined and they should not have the `info` prop
 
 ## Source
 
-[apps/frontend/src/lib/components/input/InputGroup.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/InputGroup.svelte)
-
-[apps/frontend/src/lib/components/input/InputGroup.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/InputGroup.type.ts)
+- Component: [apps/frontend/src/lib/components/input/InputGroup.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/InputGroup.svelte)
+- Types: [apps/frontend/src/lib/components/input/InputGroup.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/InputGroup.type.ts)

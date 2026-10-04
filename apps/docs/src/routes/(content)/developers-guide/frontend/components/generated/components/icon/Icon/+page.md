@@ -23,6 +23,5 @@ Use the other properties to set the size and color of the icon. The icon is `ari
 
 ## Source
 
-[apps/frontend/src/lib/components/icon/Icon.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/icon/Icon.svelte)
-
-[apps/frontend/src/lib/components/icon/Icon.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/icon/Icon.type.ts)
+- Component: [apps/frontend/src/lib/components/icon/Icon.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/icon/Icon.svelte)
+- Types: [apps/frontend/src/lib/components/icon/Icon.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/icon/Icon.type.ts)

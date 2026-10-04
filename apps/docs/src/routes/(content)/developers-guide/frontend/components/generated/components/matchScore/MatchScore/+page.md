@@ -17,6 +17,5 @@ Display an entity's match score.
 
 ## Source
 
-[apps/frontend/src/lib/components/matchScore/MatchScore.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/matchScore/MatchScore.svelte)
-
-[apps/frontend/src/lib/components/matchScore/MatchScore.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/matchScore/MatchScore.type.ts)
+- Component: [apps/frontend/src/lib/components/matchScore/MatchScore.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/matchScore/MatchScore.svelte)
+- Types: [apps/frontend/src/lib/components/matchScore/MatchScore.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/matchScore/MatchScore.type.ts)

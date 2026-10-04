@@ -105,8 +105,7 @@ describe('buildMinimal', () => {
     });
 
     const cand = tpl.candidates?.fixed?.[0] as
-      | { answersByExternalId?: Record<string, { value?: unknown }> }
-      | undefined;
+      { answersByExternalId?: Record<string, { value?: unknown }> } | undefined;
     const answersMap = cand?.answersByExternalId ?? {};
     // Map keyed by FULL prefixed external_id (writer protocol):
     expect(answersMap['e2e-ans-qu-opin-l5-1']).toBeDefined();

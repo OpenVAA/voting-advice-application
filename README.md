@@ -13,6 +13,6 @@ OpenVAA was built for two reasons: to offer a transparent alternative for propri
   <ul style="margin: 0;">
     <li><a href="https://openvaa.org/developers-guide/quick-start">Quick start for developers</a></li>
     <li><a href="https://openvaa.org/publishers-guide/intro">Guide for publishers of VAAs</a></li>
-    <li><a href="https://openvaa.org/developers-guide/contributing">Contributing</a></li>
+    <li><a href="https://openvaa.org/developers-guide/contributing/contribute">Contributing</a></li>
   </ul>
 </div>

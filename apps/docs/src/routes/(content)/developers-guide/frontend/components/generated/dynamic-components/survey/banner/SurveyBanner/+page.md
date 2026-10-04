@@ -20,6 +20,5 @@ Accesses `AppContext` to get `appSettings` and `userPreferences`.
 
 ## Source
 
-[apps/frontend/src/lib/dynamic-components/survey/banner/SurveyBanner.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/survey/banner/SurveyBanner.svelte)
-
-[apps/frontend/src/lib/dynamic-components/survey/banner/SurveyBanner.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/survey/banner/SurveyBanner.type.ts)
+- Component: [apps/frontend/src/lib/dynamic-components/survey/banner/SurveyBanner.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/survey/banner/SurveyBanner.svelte)
+- Types: [apps/frontend/src/lib/dynamic-components/survey/banner/SurveyBanner.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/survey/banner/SurveyBanner.type.ts)

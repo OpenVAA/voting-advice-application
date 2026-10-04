@@ -164,7 +164,7 @@ When adding interdependencies:
 
 ### Build System
 
-[Turborepo](https://turbo.build) orchestrates builds from `turbo.json` at the repo root: topological ordering, local caching, parallel execution. The `.turbo/` cache directory must not be committed.
+[Turborepo](https://turbo.build) orchestrates builds from `turbo.json` at the repo root: topological ordering, local caching, parallel execution. The `.turbo/` cache directory must not be committed. `apps/frontend/turbo.json` and `apps/docs/turbo.json` extend the root configuration so that each Vite app's build hashes every git-tracked file of the app (`$TURBO_DEFAULT$`), and the frontend declares its generated `src/lib/paraglide/**` as a build output while excluding it from the inputs. `packages/dev-seed/tests/turboBuildInputsGate.test.ts` asserts both through a turbo dry run.
 
 ### Key Architectural Patterns
 
@@ -217,12 +217,11 @@ The development stack uses Supabase CLI for backend services:
 
 **Styling**: Tailwind CSS + DaisyUI components. Theme colors defined in `packages/app-shared/src/settings/staticSettings.ts`.
 
-**Path aliases** — all four declared in `apps/frontend/svelte.config.js`, and there are only four; everything else under `apps/frontend/src/lib/` is reached through SvelteKit's built-in `$lib`:
+**Path aliases** — all three declared in `apps/frontend/svelte.config.js`, and there are only three; everything else under `apps/frontend/src/lib/` is reached through SvelteKit's built-in `$lib`:
 
 - `$types` -> `apps/frontend/src/lib/types`
 - `$candidate` -> `apps/frontend/src/lib/candidate`
 - `$layouts` -> `apps/frontend/src/lib/layouts`
-- `$voter` -> declared in `svelte.config.js`, but its target directory (src/lib/voter) does not exist and no source file imports the alias. Voter-side code lives under `apps/frontend/src/lib/contexts/voter/` and `apps/frontend/src/routes/(voters)/`.
 
 **Key directories**:
 
@@ -325,7 +324,7 @@ Both invariants were diagnosed in this codebase (spikes 031–034) and landed in
 
 ## Deployment
 
-Frontend ships as a Docker container; the backend is Supabase Cloud, so no backend service is needed on Render. `render.example.yaml` is the reference deployment: the frontend service with its `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` environment variables, the domain, and the cache disk. `docker-compose.dev.yml` is for production build testing only, not development.
+Frontend ships as a Docker container; the backend is Supabase Cloud, so no backend service is needed on Render. `render.example.yaml` is the reference deployment: the frontend service with its `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` environment variables, and the domain. `docker-compose.dev.yml` is for production build testing only, not development.
 
 ## Troubleshooting
 

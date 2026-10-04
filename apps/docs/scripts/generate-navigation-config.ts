@@ -15,8 +15,9 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { discoverRoutes, type RouteInfo, routeToTitle } from './utils/routes';
+import { discoverRoutes, routeToTitle } from './utils/routes';
 import type { Navigation, NavigationItem, NavigationSection } from '../src/lib/navigation.type';
+import type { RouteInfo } from './utils/routes';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

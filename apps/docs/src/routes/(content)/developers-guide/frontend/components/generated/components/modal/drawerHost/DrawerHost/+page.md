@@ -8,7 +8,7 @@ Shows `drawerHost.current` (see `drawerHostState.svelte.ts`) in ONE persistent `
 
 - **open**: `showModal()`, then the panel slides up and the backdrop fades in (CSS transitions, one frame after `showModal`).
 - **payload change while open** (entity A → entity B, or entity → question info): content swaps; the dialog is not reopened, so nothing behind it repaints and no backdrop flash.
-- **close**: panel slides down and backdrop fades out, THEN `dialog.close()` — the out-animation the per-route `Drawer` could not play (its parent `{#if}` removed it instantly).
+- **close**: panel slides down and backdrop fades out, THEN `dialog.close()`, so the out-animation plays in full (under reduced motion the dialog closes at once).
 
 User dismissal (close button, backdrop click, Escape) calls the payload's `onDismiss` — routed openers navigate back, and their unmount closes the host.
 
@@ -22,4 +22,4 @@ The hosted payload is wrapped in `<svelte:boundary>` — the only valid attribut
 
 ## Source
 
-[apps/frontend/src/lib/components/modal/drawerHost/DrawerHost.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/drawerHost/DrawerHost.svelte)
+- Component: [apps/frontend/src/lib/components/modal/drawerHost/DrawerHost.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/drawerHost/DrawerHost.svelte)

@@ -26,6 +26,5 @@ Logo files for use on a light and a dark background can be defined. If the latte
 
 ## Source
 
-[apps/frontend/src/lib/dynamic-components/appLogo/AppLogo.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/appLogo/AppLogo.svelte)
-
-[apps/frontend/src/lib/dynamic-components/appLogo/AppLogo.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/appLogo/AppLogo.type.ts)
+- Component: [apps/frontend/src/lib/dynamic-components/appLogo/AppLogo.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/appLogo/AppLogo.svelte)
+- Types: [apps/frontend/src/lib/dynamic-components/appLogo/AppLogo.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/dynamic-components/appLogo/AppLogo.type.ts)

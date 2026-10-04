@@ -24,7 +24,7 @@ For candidate registration, there are two options.
 
 This is the simpler choice, but you will need to collect a list of the candidates’ emails. Because the electoral authorities do not usually publish such lists at all or early enough, you will usually need to contact the parties standing in the elections to get these lists.
 
-Once you have the lists, the emails can be added to the VAA after which the candidates will be able to enter their data by signing up with their email. They can also be sent reminders to sign up if they haven’t done so.
+Once you have the lists, the candidates can be added to the VAA and sent an invitation email, with which they set a password and log in to enter their data. They can also be sent reminders to sign up if they haven’t done so.
 
 ### 2. Bank-authentication-based preregistration
 

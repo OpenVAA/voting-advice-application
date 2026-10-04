@@ -1,11 +1,11 @@
 <script lang="ts">
   import { page } from '$app/state';
-  import { navigation } from '$lib/navigation.config';
-  import type { NavigationSection } from '$lib/navigation.type';
-  import { getFirstChild } from '$lib/utils/navigation';
   import GithubIcon from '$lib/components/GithubIcon.svelte';
   import { OpenVAALogo } from '$lib/components/openVAALogo';
+  import { navigation } from '$lib/navigation.config';
+  import { getFirstChild } from '$lib/utils/navigation';
   import { DRAWER_ID } from '../consts';
+  import type { NavigationSection } from '$lib/navigation.type';
 
   function isActiveSection(section: NavigationSection): boolean {
     return page.url.pathname.startsWith(section.route);
@@ -28,7 +28,7 @@
             <li>
               <a
                 href={firstChild}
-                class="btn text-lg btn-ghost data-active:font-bold data-active:text-primary"
+                class="btn btn-ghost text-lg data-active:font-bold data-active:text-primary"
                 data-active={isActive || undefined}>
                 {section.title}
               </a>

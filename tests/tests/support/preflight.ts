@@ -112,8 +112,8 @@ function sleep(ms: number): Promise<void> {
  */
 async function pollForLiveness(baseURL: string, deadlineMs: number, pollIntervalMs: number): Promise<LivenessOutcome> {
   const giveUpAt = Date.now() + deadlineMs;
-  let lastStatus: number | null = null;
-  let lastError: string | null = null;
+  let lastStatus: number | null;
+  let lastError: string | null;
 
   for (;;) {
     try {

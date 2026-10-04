@@ -129,6 +129,7 @@ If not provided, the `video` element will be hidden until these properties are p
     skipAmount = $bindable(DEFAULT_SKIP_AMOUNT),
     onTrack = undefined,
     onEnded = undefined,
+    // eslint-disable-next-line no-useless-assignment -- false positive on write-only $bindable prop; remove when https://github.com/sveltejs/eslint-plugin-svelte/issues/1478 is fixed
     mode = $bindable(undefined),
     atEnd = $bindable(undefined),
     ...restProps

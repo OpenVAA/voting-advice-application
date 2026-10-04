@@ -7,7 +7,7 @@ import { defineConfig } from 'vitest/config';
 const here = fileURLToPath(new URL('.', import.meta.url));
 
 export default defineConfig({
-  plugins: [svelte({ hot: !process.env.VITEST })],
+  plugins: [svelte({ compilerOptions: { hmr: !process.env.VITEST } })],
   resolve: {
     // Force svelte to resolve via its browser entrypoint so `mount()` / `unmount()` from `svelte` are available in jsdom-backed unit tests.
     // Without this, vitest picks svelte's `index-server.js` (SSR build) and any test that mounts a component fails with `lifecycle_function_unavailable`.
@@ -26,7 +26,6 @@ export default defineConfig({
       // SvelteKit built-in aliases (not available via @sveltejs/vite-plugin-svelte)
       { find: '$lib', replacement: path.resolve(here, 'src/lib') },
       { find: '$types', replacement: path.resolve(here, 'src/lib/types') },
-      { find: '$voter', replacement: path.resolve(here, 'src/lib/voter') },
       { find: '$candidate', replacement: path.resolve(here, 'src/lib/candidate') },
       { find: '$layouts', replacement: path.resolve(here, 'src/lib/layouts') },
       // SvelteKit env modules stub

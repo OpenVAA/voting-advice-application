@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { navigation } from '$lib/navigation.config';
-  import { getFirstChild } from '$lib/utils/navigation';
   import GithubIcon from '$lib/components/GithubIcon.svelte';
   import { OpenVAALogo } from '$lib/components/openVAALogo';
+  import { navigation } from '$lib/navigation.config';
+  import { getFirstChild } from '$lib/utils/navigation';
 </script>
 
 <footer class="my-lg text-center text-secondary">

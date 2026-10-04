@@ -1,0 +1,1 @@
+No external API integration: this item changes how an existing Postgres trigger (check_feedback_rate_limit) derives its rate-limit key from request headers PostgREST already forwards, plus the matching pgTAP tests and one E2E fixture header; it adopts no new external API, SDK or service surface.

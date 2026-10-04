@@ -7,9 +7,11 @@ describe('prefersReducedMotion', () => {
     vi.restoreAllMocks();
   });
 
+  // jsdom implements no `matchMedia`, so there is no method to spy on: stub the global instead.
   function stubMatchMedia(matches: boolean): void {
-    vi.spyOn(window, 'matchMedia').mockImplementation(
-      (query: string) => ({ matches: matches && query === '(prefers-reduced-motion: reduce)' }) as MediaQueryList
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn((query: string) => ({ matches: matches && query === '(prefers-reduced-motion: reduce)' }) as MediaQueryList)
     );
   }
 

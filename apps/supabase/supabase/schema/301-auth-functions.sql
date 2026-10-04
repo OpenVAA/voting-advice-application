@@ -18,14 +18,15 @@
 -- - private.nomination_exists_in_contest(entity_type, uuid, uuid, uuid, integer) - whether an entity is already nominated at a contest
 -- - private.caller_nominated_in_contest(uuid, uuid, integer, grant_permission) - whether the caller holds a permission on an entity nominated at a contest
 -- - private.caller_unconfirmed_originated_count() - how many unconfirmed parent nominations the caller has originated
+-- - private.caller_entity_ids(uuid, entity_type) - the entities of one type, in one project, the caller holds an editor grant on
 --
 -- The two public-visibility terms are each defined once here and called directly by the eight entity SELECT policies.
 --------------------------------------------------------------------------------
--- The `private` schema: policy-only SECURITY DEFINER helpers
+-- The `private` schema: SECURITY DEFINER helpers for policies and INVOKER functions
 --
 -- Every SECURITY DEFINER function in `public` is published by PostgREST as `/rest/v1/rpc/<name>`, and Supabase's default privileges make it executable by `anon` and `authenticated`. The hierarchy and visibility hops below answer questions row-level security would refuse the caller directly, such as which project an arbitrary entity id belongs to, so published as RPCs they would be cross-tenant oracles.
 --
--- Revoking EXECUTE is not the fix, because a policy expression runs with the querying role's privileges and would fail with `permission denied`. The helpers therefore live in `private`, which is not in PostgREST's exposed schemas (config.toml `[api] schemas`), while the API roles keep USAGE and EXECUTE so policies can call them. Every call site qualifies the name, so no search_path decides which function runs.
+-- Revoking EXECUTE is not the fix, because a policy expression runs with the querying role's privileges and would fail with `permission denied`. The helpers therefore live in `private`, which is not in PostgREST's exposed schemas (config.toml `[api] schemas`), while the API roles keep USAGE and EXECUTE so policies and SECURITY INVOKER functions, which both run as the caller, can call them. Every call site qualifies the name, so no search_path decides which function runs.
 --
 -- What stays in `public`: `user_can` (the Edge Functions call it over RPC) and `user_has_account_grant`, which answer only about the caller's own claim; `grant_role_permissions` (the matrix, no row data); `project_open_for_voters` (the frontend calls it); and the two storage path helpers (caller-scoped or public by definition). 07-rpc-security.test.sql holds a census of every anon- and authenticated-executable SECURITY DEFINER function in `public`, so a new one has to be added there on purpose.
 --------------------------------------------------------------------------------
@@ -695,8 +696,45 @@ SET
     AND NOT n.confirmed;
 $$;
 
--- Policies evaluate as the querying role, so the API roles need EXECUTE on the private helpers; PostgREST cannot reach them because `private` is not an exposed schema. Stated explicitly rather than inherited from PostgreSQL's default PUBLIC grant, so the dependency is visible here.
+--------------------------------------------------------------------------------
+-- caller_entity_ids: which entities of this type, in this project, does the caller edit?
+--
+-- Returns the target ids of the caller's own `(entity, <type>, <id>, editor)` rows in public.grants whose entity lies in p_project_id. get_candidate_user_data calls it to answer "which entity am I". It reads the table rather than the caller's token, so a grant written after the token was issued already counts.
+--
+-- Only the `editor` role is read and `user_can` is not called: user_can answers yes for project, account and global admins, and an entity-scope `admin` grant confers nothing, so neither names an entity the caller is.
+--
+-- SECURITY DEFINER because public.grants is revoked from every API role. The entity's project is probed inline, one EXISTS per entity table, rather than through entity_project_id, because a SECURITY DEFINER function is never inlined and nesting one inside another pays that per-row cost twice.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.caller_entity_ids (
+  p_project_id uuid,
+  p_entity_type public.entity_type
+) RETURNS SETOF uuid LANGUAGE sql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT g.target_id
+  FROM public.grants g
+  WHERE g.user_id = (SELECT auth.uid())
+    AND g.scope = 'entity'
+    AND g.role = 'editor'
+    AND g.target_type = p_entity_type
+    AND CASE p_entity_type
+      WHEN 'candidate' THEN EXISTS (SELECT 1 FROM public.candidates e WHERE e.id = g.target_id AND e.project_id = p_project_id)
+      WHEN 'organization' THEN EXISTS (SELECT 1 FROM public.organizations e WHERE e.id = g.target_id AND e.project_id = p_project_id)
+      WHEN 'faction' THEN EXISTS (SELECT 1 FROM public.factions e WHERE e.id = g.target_id AND e.project_id = p_project_id)
+      WHEN 'alliance' THEN EXISTS (SELECT 1 FROM public.alliances e WHERE e.id = g.target_id AND e.project_id = p_project_id)
+    END;
+$$;
+
+-- Policies and SECURITY INVOKER functions evaluate as the querying role, so the API roles need EXECUTE on the private helpers; PostgREST cannot reach them because `private` is not an exposed schema. Stated explicitly rather than inherited from PostgreSQL's default PUBLIC grant, so the dependency is visible here. The statement reaches only the functions defined before it.
 GRANT
 EXECUTE ON ALL FUNCTIONS IN SCHEMA private TO anon,
 authenticated,
 service_role;
+
+-- The grant above also reaches `private.feedback_client_ip` (107-feedback.sql). No policy calls it; only the SECURITY DEFINER trigger `check_feedback_rate_limit` does, so the API roles get no EXECUTE on it.
+REVOKE
+EXECUTE ON FUNCTION private.feedback_client_ip (json, boolean)
+FROM
+  anon,
+  authenticated,
+  service_role;

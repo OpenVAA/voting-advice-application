@@ -16,6 +16,5 @@ Display an `@openvaa/data: Image` object, automatically switching between dark a
 
 ## Source
 
-[apps/frontend/src/lib/components/image/Image.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/image/Image.svelte)
-
-[apps/frontend/src/lib/components/image/Image.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/image/Image.type.ts)
+- Component: [apps/frontend/src/lib/components/image/Image.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/image/Image.svelte)
+- Types: [apps/frontend/src/lib/components/image/Image.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/image/Image.type.ts)

@@ -19,11 +19,10 @@
  * TWO rules, and only two — BOTH LIVE, neither flag-gated, neither warn-only:
  *
  *   Rule 1 (D-A5) — A literal `\uXXXX` escape inside a comment span. The rule is
- *     comment-SCOPED, never a `git grep`: the tree carries eight non-comment
+ *     comment-SCOPED, never a `git grep`: the scan roots carry six non-comment
  *     occurrences that must not be touched, five of them the import-sort regex strings in
  *     `packages/shared-config/eslint.config.mjs:164,171-174` whose corruption would break
- *     lint repo-wide, plus `apps/frontend/src/lib/components/select/Select.svelte:87` and
- *     `apps/frontend/src/lib/i18n/translations/index.ts:62,63`.
+ *     lint repo-wide, plus `apps/frontend/src/lib/components/select/Select.svelte:87`.
  *   Rule 2 (D-A4) — the forced-line-break predicate: a comment line ending without terminal
  *     punctuation whose next line continues the same span at the same post-marker indent.
  *     Added by plan 152-15, once plan 152-14's sweep had taken the tree to zero for it, and

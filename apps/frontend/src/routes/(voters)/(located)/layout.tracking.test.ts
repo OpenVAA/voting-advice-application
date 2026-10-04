@@ -1,7 +1,7 @@
 /**
  * The `(located)` universal load must not depend on the URL.
  *
- * SvelteKit reruns a load whenever a `url` property it read TRACKED changes. This load deliberately `untrack`s its URL reads — it only needs the selection params and the path for the `next=` redirect target. A single tracked `url.pathname` read made it rerun on every results tab / entity-drawer navigation: it re-streamed the question + nomination data, `+layout.svelte` flipped `ready` to false, `<Loading/>` replaced the whole subtree for a frame, and everything remounted (intro redraw, scroll clamped to 0, list flicker).
+ * SvelteKit reruns a load whenever a `url` property it read TRACKED changes. This load deliberately `untrack`s its URL reads — it only needs the selection params and the path for the `next=` redirect target. A single tracked `url.pathname` read makes it rerun on every results tab / entity-drawer navigation: it re-streams the question + nomination data, `+layout.svelte` flips `ready` to false, `<Loading/>` replaces the whole subtree for a frame, and everything remounts (intro redraw, scroll clamped to 0, list flicker).
  *
  * The load is driven DIRECTLY with a fake event whose `url` records every property read and whether it happened inside the provided `untrack`.
  *

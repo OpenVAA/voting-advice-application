@@ -1,7 +1,0 @@
-{
-  "continue": "Fortsätt ange uppgifter",
-  "ingress": "Är du säker på att du vill logga ut? Du kommer automatiskt att loggas ut om {timeLeft} sekunder.",
-  "itemsLeft": "Det återstår fortfarande {infoQuestionsLeft, plural, =1 {en uppgift} other {# uppgifter}} om grundläggande information och {opinionQuestionsLeft, plural, =1 {en åsikt} other {# åsikter}} att fylla i.",
-  "questionsLeft": "Det återstår fortfarande {opinionQuestionsLeft, plural, =1 {en åsikt} other {# åsikter}} att fylla i.",
-  "title": "Vissa av dina uppgifter saknas fortfarande"
-}

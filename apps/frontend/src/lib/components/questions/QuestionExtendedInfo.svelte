@@ -48,9 +48,9 @@
   <div class="prose">
     {@html sanitizeHtml(info)}
   </div>
-  {#if infoSections?.length}
+  {#if infoSections?.length || args?.length}
     <div class="prose">
-      {#each infoSections as { title, content }, index}
+      {#each infoSections ?? [] as { title, content }, index}
         {#if title}
           <!-- Per-infoSection testid (keyed by index) so the E2E
                expectInfoSections([...]) reader can enumerate sections. -->
@@ -66,7 +66,7 @@
           </div>
         {/if}
       {/each}
-      {#if args}
+      {#if args?.length}
         {@const title = t('questions.arguments.title')}
         <!-- Arguments-block testid (sibling to the per-section infoSection
              testids above) so the E2E expectArguments reader can expand the

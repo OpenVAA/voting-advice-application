@@ -8,7 +8,7 @@ Shows `drawerHost.current` (see `drawerHostState.svelte.ts`) in ONE persistent `
 
 - **open**: `showModal()`, then the panel slides up and the backdrop fades in (CSS transitions, one frame after `showModal`).
 - **payload change while open** (entity A → entity B, or entity → question info): content swaps; the dialog is not reopened, so nothing behind it repaints and no backdrop flash.
-- **close**: panel slides down and backdrop fades out, THEN `dialog.close()` — the out-animation the per-route `Drawer` could not play (its parent `{#if}` removed it instantly).
+- **close**: panel slides down and backdrop fades out, THEN `dialog.close()`, so the out-animation plays in full (under reduced motion the dialog closes at once).
 
 User dismissal (close button, backdrop click, Escape) calls the payload's `onDismiss` — routed openers navigate back, and their unmount closes the host.
 
@@ -65,10 +65,14 @@ The hosted payload is wrapped in `<svelte:boundary>` — the only valid attribut
         shown = next;
         if (!dialog.open) {
           dialog.showModal();
-          // One frame in the closed-state styles first, so the slide-up / fade-in transitions run.
-          requestAnimationFrame(() => requestAnimationFrame(() => (visible = true)));
-          // Focus entry mirrors `ModalContainer`: after `DELAY.sm`, and into the first focusable descendant. The backdrop button is `tabindex="-1"`, so it is skipped and focus lands inside the panel.
           const openedKey = next.key;
+          // One frame in the closed-state styles first, so the slide-up / fade-in transitions run. The reveal is skipped if the drawer was closed or given another payload in the meantime.
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+              if (drawerHost.current?.key === openedKey) visible = true;
+            })
+          );
+          // Focus entry mirrors `ModalContainer`: after `DELAY.sm`, and into the first focusable descendant. The backdrop button is `tabindex="-1"`, so it is skipped and focus lands inside the panel.
           clearTimeout(focusTimer);
           focusTimer = setTimeout(() => {
             // The drawer may have been dismissed or given another payload while the timer ran.
@@ -96,7 +100,8 @@ The hosted payload is wrapped in `<svelte:boundary>` — the only valid attribut
   });
 
   function dismiss(): void {
-    if (!shown) return;
+    // `shown` outlives `drawerHost.current` only through the close animation, so a key mismatch means the drawer is already closing.
+    if (!shown || drawerHost.current?.key !== shown.key) return;
     if (shown.onDismiss) shown.onDismiss();
     else drawerHost.close(shown.key);
   }

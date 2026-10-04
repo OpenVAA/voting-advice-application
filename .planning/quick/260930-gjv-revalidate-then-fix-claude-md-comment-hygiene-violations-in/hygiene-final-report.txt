@@ -1,0 +1,26 @@
+
+Planning-Reference Hygiene Report -- criterion 3
+===============================================
+scope   : apps/ packages/ tests/   (CLAUDE.md, .agents/, .claude/ exempt per D-15)
+mode    : report
+baseline: .planning/quick/260930-gjv-revalidate-then-fix-claude-md-comment-hygiene-violations-in/hygiene-baseline.tsv
+
+  pattern               occ   files    bare  expect     verdict    base    delta
+  -----------------  ------  ------  ------  ---------  -------  ------  -------
+  phase-ref              62      36      50  bare = 0   FAIL         75      -13
+  spike-ref              33      22      16  bare = 0   FAIL         34       -1
+  decision-id-long        0       0       -  occ = 0    OK            0        0
+  decision-id-bare      149      36       -  occ = 0    FAIL        201      -52
+  section-anchor         45      20       -  occ = 0    FAIL         49       -4
+  planning-path          12      12       -  occ = 0    FAIL         14       -2
+  plan-number             1       1       -  occ = 0    FAIL          1        0
+  milestone-ver          14      11       -  -          REPORT       15       -1
+  task-id                94      52       -  occ = 0    FAIL        105      -11
+
+  planning-reference total (8 rows, comparable to the research loop) : 316
+  task-id supplementary (no counterpart in that loop)                : 94
+  union files touched by any row                                     : 147
+
+---
+Gate rows failing: 7  (milestone-ver is report-only and never counted)
+Report mode: no gate applied. Re-run with --assert-clean to fail on the rows above.

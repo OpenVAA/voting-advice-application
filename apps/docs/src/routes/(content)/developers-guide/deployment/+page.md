@@ -1,258 +1,94 @@
-> **Note:** Parts of this page reference the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
-
 # Deployment
 
-The application is fully containerized and the recommended way of deploying it is as Docker containers.
+A production OpenVAA has two parts:
 
-## Costs
+- **The frontend**, a SvelteKit app built into a Node container from [`apps/frontend/Dockerfile`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/Dockerfile). The repository has a [Render](https://render.com/) Blueprint template for it, [`render.example.yaml`](https://github.com/OpenVAA/voting-advice-application/blob/main/render.example.yaml).
+- **The backend**, a hosted [Supabase](https://supabase.com/) project: the database, Auth, Storage and the three Edge Functions.
 
-The hosting costs vary depending on the providers you use and the amount of expected traffic.
+The frontend reads its configuration at run time (see [Environment variables](/developers-guide/configuration/environmental-variables)), so the same image works in any environment once its variables are set.
 
-Recent (2024–2025) realized costs on Render have been:
+## 1. Fork and configure
 
-- Database $19–55/month
-- Backend service $25–85/month – a more performant instance is needed if there are a lot of candidates
-- Frontend service $25–85/month
-- Media CDN on AWS $10–100/month - the higher figure was for a version with 30 videos, the smaller figure is more likely in most cases
-- External analytics server (Umami) $20/month
+Fork the repository and make the changes your instance needs. At least edit the [static settings](/developers-guide/configuration/static-settings) in `packages/app-shared/src/settings/staticSettings.ts`: the locales, colours, font and admin email.
 
-## Setup with Render and AWS
+## 2. Set up the Supabase project
 
-The instructions below detail how the application is deployed using [Render](https://render.com/) and [AWS](https://aws.amazon.com/) for email and media CDN, but the process is essentially the same with other cloud infrastructure providers.
+Create a project in Supabase. The Supabase CLI comes with `yarn install` and runs as `yarn workspace @openvaa/supabase supabase <command>`; Supabase's [deployment guide](https://supabase.com/docs/guides/deployment) explains how to link it to a hosted project and push changes.
 
-### 1. Fork
+1. **Schema.** Push the migrations in [`apps/supabase/supabase/migrations/`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/supabase/supabase/migrations). They are generated from the files in `schema/`; see [Schema and migrations](/developers-guide/backend/intro#schema-and-migrations).
+2. **Storage buckets.** Create the two buckets that `apps/supabase/supabase/config.toml` declares for the local stack: `public-assets` (public) and `private-assets` (private). The migrations create the bucket policies, not the buckets.
+3. **Auth.** Apply on the hosted project what `config.toml` sets locally:
+   - Enable the custom access token hook, `public.custom_access_token_hook` (`[auth.hook.custom_access_token]`). It puts the user's grants into the access token, and the authorisation model depends on it; see [Authentication and authorisation](/developers-guide/backend/authentication).
+   - Set the site URL to the frontend's origin, and allow `<frontend origin>/api/candidate/auth/callback` as a redirect URL.
+   - Configure an SMTP server for Auth email. The local stack delivers mail to its email testing server instead; see [Email](/developers-guide/backend/email).
+4. **API row limit.** Make the API's maximum rows setting equal `dataAdapter.pageSize` in the static settings. Locally both are set to 50000.
+5. **Account and project.** `apps/supabase/supabase/seed.sql` is local-development data. It creates two test users with a known password, so do not run it on a production database. Instead, create one row in `accounts` and one in `projects` in the SQL editor, modelled on the default account and project in `seed.sql`. A project is closed to voters by default (`open_for_voters` is `false`); set it to `true` when the voter app should open. The project's id becomes `PUBLIC_PROJECT_ID`.
+6. **Storage cleanup.** Triggers delete stored files when the rows that own them are deleted or replaced. They read the Storage URL and the service-role key from the `public.storage_config` table, which only `service_role` and `postgres` can read. `seed.sql` fills it with local values; insert the hosted project's `supabase_url` and `service_role_key` instead.
+7. **Feedback rate limit.** Set `behind_cloudflare`; see [below](#feedback-rate-limit-and-cloudflare).
+8. **Edge Functions.** Deploy the three functions in [`apps/supabase/supabase/functions/`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/supabase/supabase/functions) and set their variables as secrets of the project (see Supabase's [Edge Functions guide](https://supabase.com/docs/guides/functions)):
+   - `PUBLIC_PROJECT_ID` and `SITE_URL` (the frontend's origin)
+   - `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM`, and `SMTP_USER` and `SMTP_PASS` for a server that needs a login
+   - for bank authentication: `IDENTITY_PROVIDER_TYPE`, `IDENTITY_PROVIDER_CLIENT_ID`, `IDENTITY_PROVIDER_DECRYPTION_JWKS`, `IDENTITY_PROVIDER_JWKS_URI` and `IDENTITY_PROVIDER_ISSUER`
 
-Fork the repo and make any changes you need to the source code. You’ll most likely need to edit at least:
+   Supabase sets `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` for the functions itself. `identity-callback` is called by the browser without a Supabase session, so it runs without JWT verification (`--no-verify-jwt`), as it does locally. [Edge Functions](/developers-guide/backend/edge-functions) describes each function.
 
-- [StaticSettings](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/staticSettings.ts)
-- For local development, copy `.env.example` to `.env` and edit the variables therein.
+## 3. Deploy the frontend on Render
 
-### 2. Configure AWS
+1. Copy `render.example.yaml` to `render.yaml` and replace its placeholders (`<INSTANCE_NAME>`, `<INSTANCE_BRANCH>`, `<INSTANCE_DOMAIN>`), as its header comment lists. Check the values marked `# Check`, such as the plan and whether to deploy automatically.
+2. Create the service in Render from the Blueprint. It is a Docker web service built from `./apps/frontend/Dockerfile` with the repository root as the build context. The image builds the shared packages and the frontend and runs `node ./apps/frontend/build/index.js` on port 3000.
+3. Set the variables. The template declares:
+   - `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY`, which you enter in Render (`sync: false`)
+   - `PUBLIC_DEBUG` and `PUBLIC_LOG_LEVEL`
+   - `PUBLIC_BROWSER_FRONTEND_URL` and `PUBLIC_SERVER_FRONTEND_URL`
+   - a commented-out environment group, `IDENTITY PROVIDER - PRODUCTION CLIENT`, for pre-registration with bank authentication
 
-The backend uses AWS by default for media storage (S3) and email (SES). If you do not wish to use AWS, you will need to edit the [Strapi plugin config](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/config/plugins.ts).
+   Also add **`PUBLIC_PROJECT_ID`**, which the template does not list: the frontend's Supabase adapter throws without it. For bank authentication, the frontend needs the identity-provider variables listed under [Environment variables](/developers-guide/configuration/environmental-variables#bank-authentication-identity-provider), and for the Admin app's LLM features, `LLM_OPENAI_API_KEY`.
 
-You will need to set the following `env` variables for AWS to work. You can collect the variables in an `.env` file for easier import into Render services, which are set up below.
+   **Never set `SUPABASE_SERVICE_ROLE_KEY` on the frontend service.** The key bypasses row-level security. The frontend never reads it; it belongs only to the Supabase project and to local tooling.
 
-```dotenv
-### These settings correspond to LocalStack system defaults
-### https://docs.localstack.cloud/references/configuration/
-AWS_SES_ACCESS_KEY_ID="test"
-AWS_SES_SECRET_ACCESS_KEY="test"
-AWS_SES_REGION=us-east-1
+4. To use your own domain, list it under `domains` in `render.yaml` (or add it in the service's settings in Render). Then create a `CNAME` record at your DNS provider that points the domain to the service's Render URL, and verify the domain in Render.
 
-## Used for emails sent by Strapi. (`MAIL_FROM_NAME` only affects emails sent by the `users-permissions` plugin.)
-MAIL_FROM="no-reply@openvaa.org"
-MAIL_FROM_NAME="Voting Advice Application"
-MAIL_REPLY_TO="contact@openvaa.org"
+### Upgrading an older Render service
 
-### AWS S3 settings
+Services created from an older version of the template may still mount a persistent disk at `/var/data/cache` and carry variables for a response cache (`CACHE_*`, `PUBLIC_CACHE_*`), for backend URLs (`PUBLIC_*_BACKEND_URL`) and for a backend API token. The current frontend uses none of them. Detach the disk and delete those variables; any left in place have no effect.
 
-AWS_S3_BUCKET=static.openvaa.org
+## Feedback rate limit and Cloudflare
 
-### These settings correspond to LocalStack system defaults
-### https://docs.localstack.cloud/references/configuration/
-AWS_S3_ACCESS_KEY_ID="test"
-AWS_S3_ACCESS_SECRET="test"
-AWS_S3_REGION=us-east-1
+Voter feedback is limited to five submissions per five minutes per client. A Postgres trigger on the `feedback` table picks the client's rate-limit bucket from the request headers. Which header it trusts is a database setting, `private.deployment_settings.behind_cloudflare`, and not an environment variable: the feedback insert goes straight from the browser to the database API, so no process that reads `.env` is on that path.
 
-### The base URL is used to access static content uploaded via Strapi's UI to AWS S3:
-### - on production it uses a dedicated subdomain which is linked to an eponymous AWS S3 bucket via a CNAME DNS record
-### - in development it points directly to LocalStack host and is appended by the S3 bucket name in Strapi's `plugin.ts`
-STATIC_CONTENT_BASE_URL=http://localhost:4566
-STATIC_MEDIA_CONTENT_PATH=public/media
+- When the setting is `true`, the bucket is keyed on `cf-connecting-ip`, which Cloudflare sets to the connecting client.
+- When it is `false`, a client-sent `cf-connecting-ip` is ignored and the bucket is keyed on the last `x-forwarded-for` hop, which the gateway appends from the connection's peer.
+
+The migration ships the setting as `false`. Set it once in the Supabase SQL editor:
+
+```sql
+UPDATE private.deployment_settings
+SET
+  behind_cloudflare = true;
 ```
 
-### 3. Create Render project
+**Precondition:** every request reaches the API through Cloudflare. Hosted Supabase does. A self-hosted gateway qualifies only when its origin accepts connections from Cloudflare alone; otherwise a client can send its own `cf-connecting-ip` and choose its own bucket.
 
-Login to Render or create an account.
+**Hosted Supabase must set it.** On hosted Supabase the last `x-forwarded-for` hop can be a platform-internal address shared by many voters, so with the setting left `false` those voters share one bucket and the sixth submission among them in five minutes is refused.
 
-You can either use the [Render Blueprints](https://render.com/docs/infrastructure-as-code) feature by modifying the [render.example.yaml](https://github.com/OpenVAA/voting-advice-application/blob/main/render.example.yaml) or create the services manually.
+The local development stack turns the setting on in `apps/supabase/supabase/seed.sql`, so that the E2E suite can give each feedback submission its own bucket.
 
-If you choose the blueprints option, you can skip to [Step 9](#9-use-your-own-domain-name-for-the-frontend).
+## Testing a production build locally
 
-Otherwise, create a new project for your app. Next, you’ll need to create three services in it.
+[`docker-compose.dev.yml`](https://github.com/OpenVAA/voting-advice-application/blob/main/docker-compose.dev.yml) at the repository root builds the frontend's production image and runs it against the local Supabase stack. Start the stack first:
 
-### 4. Create Postgres database
-
-Create a new Postgres service.
-
-- Use Postgres version 16.
-- Select an appropriate instance type:
-  - Even Basic-1gb may be enough
-  - Disk size can be the smallest possible, e.g. 1GB, because we’re using AWS for media storage.
-- Select a Database name and Username
-
-Copy the following details from the newly-created instance to your `env` variables.
-
-```dotenv
-DATABASE_HOST=<Hostname, e.g. dpg-123456abcdefg-a>
-DATABASE_PORT=<Port, e.g. 5432>
-DATABASE_NAME=<Database>
-DATABASE_USERNAME=<Username>
-DATABASE_PASSWORD=<Password>
+```bash
+yarn db:start
+docker compose -f docker-compose.dev.yml up --build
 ```
 
-### 5. Create the Backend web service
+The app is then on port 3000. The compose file reaches the local API at `http://host.docker.internal:54321` unless `PUBLIC_SUPABASE_URL` says otherwise, and takes `PUBLIC_SUPABASE_ANON_KEY` from your environment.
 
-Create a new Web Service.
+To build and run the production frontend without Docker, run `yarn build` at the repository root, which builds the shared packages and the frontend, and then start the server with the variables set:
 
-- Select an instance type: Standard (2GB, 1CPU) or higher is safer than Starter, which may crash
-- Link to your repository on Github
-- Select the branch to deploy from
-- Edit settings:
-  - Set `Dockerfile Path` to `./backend/vaa-strapi/Dockerfile`
-  - You may want to turn `Auto-Deploy` off
-  - The other settings can be left to defaults
-
-Set up `env` variables for the backend.
-
-1. Create the following new variables:
-
-```dotenv
-STRAPI_HOST=0.0.0.0
-STRAPI_PORT=1337
-APP_KEYS="<toBeModified1>,<toBeModified2>"
-API_TOKEN_SALT=<tobemodified3>
-## ADMIN_JWT_SECRET and JWT_SECRET have to be different
-ADMIN_JWT_SECRET=<tobemodified4>
-JWT_SECRET=<tobemodified5>
-DATABASE_SCHEMA=public
-DATABASE_SSL_SELF=false
-## Set to true if you want create mock data on an empty database
-GENERATE_MOCK_DATA_ON_INITIALISE=false
-GENERATE_MOCK_DATA_ON_RESTART=false
+```bash
+yarn build
+node apps/frontend/build/index.js
 ```
 
-2. Add the following variables from above:
-
-```dotenv
-DATABASE_HOST
-DATABASE_PORT
-DATABASE_NAME
-DATABASE_USERNAME
-DATABASE_PASSWORD
-```
-
-Copy the following details from the newly-created instance to your `env` variables.
-
-```dotenv
-PUBLIC_BROWSER_BACKEND_URL=<The Service URL>
-PUBLIC_SERVER_BACKEND_URL=<The Service URL>
-```
-
-### 6. Create the Frontend web service
-
-Create a new Web Service.
-
-- Select an instance type: Standard (2GB, 1CPU) or higher is safer than Starter, which may crash
-- Link to your repository on Github (likely the same as for the backend)
-- Select the branch to deploy from (likely the same as for the backend)
-- Edit settings:
-  - Set `Dockerfile Path` to `./frontend/Dockerfile`
-  - You may want to turn `Auto-Deploy` off
-  - The other settings can be left to defaults
-
-1. Create the following new variables:
-
-```dotenv
-PUBLIC_DEBUG=false
-PUBLIC_BROWSER_FRONTEND_URLL=<The Service URL>
-PUBLIC_SERVER_FRONTEND_URLL=<The Service URL>
-```
-
-2. Add the following variables from above:
-
-```dotenv
-PUBLIC_BROWSER_BACKEND_URL
-PUBLIC_SERVER_BACKEND_URL
-```
-
-3. If you're using bank authentication, also add the following variables:
-
-```dotenv
-## Source: https://openvaa.sandbox.signicat.com/auth/open/.well-known/openid-configuration
-## The URL where users are redirected to authenticate with the OpenID Connect provider before obtaining an authorization code.
-PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT=https://openvaa.sandbox.signicat.com/auth/open/connect/authorize
-## The URL used to exchange an authorization code for access, ID, and refresh tokens.
-IDENTITY_PROVIDER_TOKEN_ENDPOINT=https://openvaa.sandbox.signicat.com/auth/open/connect/token
-## The endpoint that provides a JSON Web Key Set (JWKS) used to verify the authenticity of signed tokens from the identity provider.
-IDENTITY_PROVIDER_JWKS_URI=https://openvaa.sandbox.signicat.com/auth/open/.well-known/openid-configuration/jwks
-## Source: https://dashboard.signicat.com/oidc-clients/clientdetails/{client_id}
-PUBLIC_IDENTITY_PROVIDER_CLIENT_ID=client_id
-## Source: https://dashboard.signicat.com/oidc-clients/clientdetails/{client_id}/secrets
-IDENTITY_PROVIDER_CLIENT_SECRET=client_secret
-## Source: https://dashboard.signicat.com/oidc-clients/new-public-key/{client_id}.
-## Select "Encryption", keep the private part of the key pair.
-IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY='{"kty":"RSA","kid":"{key_id}","use":"enc","alg":"RSA-OAEP","e":"{secret}","n":"{secret}","d":"{secret}","p":"{secret}","q":"{secret}","dp":"{secret}","dq":"{secret}","qi":"{secret}"}'
-```
-
-### 7. Create a Strapi Admin
-
-Go to the Strapi admin panel via the backend url and create the new Admin user as prompted.
-
-If using bank authentication, create an API access token for the frontend:
-
-1. In the Admin panel, go to Settings > API Tokens
-2. Create a new token:
-   - Type: Custom
-   - Duration: Unlimited
-   - Permissions (only one):
-     - `Users-permissions.Candidate.preregister`
-3. Copy the token into the `env` variable
-
-```dotenv
-BACKEND_API_TOKEN="<API Token>"
-```
-
-### 8. Fill in further `env` variables
-
-There are still a couple of `env` variables you now have, which need to be added to the services.
-
-1. Backend:
-
-```dotenv
-PUBLIC_FRONTEND_URL
-```
-
-2. If using bank authentication, frontend:
-
-```dotenv
-BACKEND_API_TOKEN
-```
-
-### 9. Use your own domain name for the frontend
-
-1. In Render, go to the Frontend Service.
-   - Go to Settings > Custom Domain > Add Custom domain:
-     - Set the domain name you want to use, e.g. `subdomain.domain.tld`
-     - Write down the Render URL
-2. Go to your DNS provider, e.g, Cloudflare.
-   - Create a new CNAME record in the DNS:
-     - Type: `CNAME`
-     - Name: the `subdomain` you chose above
-     - Target: the Render frontend URL
-3. Go back to Render and verify the domain.
-
-## Manually Creating a Production Build
-
-You can also create production builds of the frontend and backend, but directly using the Docker containers is the recommended approach.
-
-### Build from Dockerimage
-
-Run `docker compose -f docker-compose.dev.yml up --build` in the project root. This builds the frontend
-production image and starts it; the backend is Supabase, so no backend container is built. Start the
-local Supabase services first with `yarn db:start`. The frontend is accessible on port 3000 by default.
-
-### Building the frontend separately
-
-To build the frontend separately for production, run `yarn build` in the `apps/frontend` directory. This will build the frontend into JavaScript
-files contained in the `build` directory. You can then copy the contents of the `build` folder into a Node server along with
-the `package.json` and `yarn.lock` files and can start the frontend by running `node index.js` in the directory. The frontend
-will use port 3000 by default.
-
-Don't forget to run `yarn install --production` before starting the frontend.
-
-### Building the backend separately
-
-To build the backend separately, run `yarn build` and `yarn start` in the `backend/vaa-strapi` directory.
-This will build Strapi and start it in port 1337.
+It also listens on port 3000 by default.

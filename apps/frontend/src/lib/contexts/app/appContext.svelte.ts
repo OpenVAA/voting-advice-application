@@ -97,13 +97,9 @@ export class AppContextProvider implements AppContext {
 
   // Track the previous `data` reference to skip merges when SvelteKit hands us the same loader result on a URL change — without the guard the merge over-fires. Initialized to the init-time DB value so the first post-init run does not re-merge the identical payload already folded into `$state` above.
   #prevAppSettingsData: DynamicSettings | Error | undefined = page.data?.appSettingsData as
-    | DynamicSettings
-    | Error
-    | undefined;
+    DynamicSettings | Error | undefined;
   #prevAppCustomizationData: AppCustomization | Error | undefined = page.data?.appCustomizationData as
-    | AppCustomization
-    | Error
-    | undefined;
+    AppCustomization | Error | undefined;
 
   // Module-local timeouts become private fields.
   #feedbackTimeout: NodeJS.Timeout | undefined;

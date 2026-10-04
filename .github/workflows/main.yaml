@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -76,14 +76,14 @@ jobs:
   # outbound request.
   #
   # Pinning: the Action ref and the image tag spell the same release differently. The git tag is
-  # `v3.97.2` and the ghcr tag is `3.97.2`; `ghcr.io/trufflesecurity/trufflehog:v3.97.2` returns
+  # `v3.97.9` and the ghcr tag is `3.97.9`; `ghcr.io/trufflesecurity/trufflehog:v3.97.9` returns
   # MANIFEST_UNKNOWN, so copying the `v` across breaks `docker run`. Both are pinned, like every other
   # Action in this file, so a recorded run is reproducible against a fixed version.
   secret-scan:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -107,9 +107,9 @@ jobs:
           echo "base=$BASE" >> "$GITHUB_OUTPUT"
 
       - name: "Scan for committed secrets (trufflehog)"
-        uses: trufflesecurity/trufflehog@v3.97.2
+        uses: trufflesecurity/trufflehog@v3.97.9
         with:
-          version: "3.97.2"
+          version: "3.97.9"
           base: ${{ steps.range.outputs.base }}
           head: ${{ github.sha }}
           # No `--results`, no `--only-verified`: both drop unverified findings, which is the only class the
@@ -125,18 +125,19 @@ jobs:
 
     steps:
       - name: "Checkout Frontend source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Setup Yarn 4.13
+      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
+      # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
+      - name: Setup Node.js 24.21.0
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.21.0
+
+      - name: Setup Yarn 4.18
         uses: threeal/setup-yarn-action@v2
         with:
-          version: 4.13
-
-      - name: Setup Node.js 22.22.1
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.22.1
-          cache: "yarn"
+          version: 4.18
 
       - name: "Install all dependencies"
         run: yarn install --frozen-lockfile
@@ -176,13 +177,34 @@ jobs:
       - name: "Build frontend"
         run: yarn workspace @openvaa/frontend build
 
+  docker-image-build:
+    # Builds the `production` target of `apps/frontend/Dockerfile` from the repo root. That is the
+    # image `docker-compose.dev.yml` deploys (`target: production`) and the one `render.example.yaml`
+    # deploys (no target, so the final stage, which is `production`), both with the repo root as the
+    # build context.
+    #
+    # It runs on every change, with no paths-filter and no `if:`. The image copies `apps/`,
+    # `packages/`, `scripts/` and the root manifests, and runs the root lifecycle scripts during its
+    # install. A root lifecycle script that needs a file outside those directories breaks only the
+    # image install, which no other job exercises.
+    #
+    # It builds and never pushes: no registry login, no secrets, no third-party build action.
+    # `packages/dev-seed/tests/ciDockerImageBuildGate.test.ts` asserts these properties.
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@v7
+
+      - name: "Build the production frontend image (no push)"
+        run: docker build --progress=plain --file apps/frontend/Dockerfile --target production --tag openvaa-frontend:ci .
+
   supabase-tests:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - uses: dorny/paths-filter@v3
+      - uses: dorny/paths-filter@v4
         id: changes
         with:
           filters: |
@@ -190,10 +212,10 @@ jobs:
               - 'apps/supabase/**'
               - 'packages/supabase-types/**'
 
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         if: steps.changes.outputs.supabase == 'true'
         with:
-          version: 2.83.0
+          version: 2.118.0
 
       - name: "Start Supabase"
         if: steps.changes.outputs.supabase == 'true'
@@ -240,22 +262,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
-          version: 2.83.0
+          version: 2.118.0
 
-      - name: Setup Yarn 4.13
+      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
+      # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
+      - name: Setup Node.js 24.21.0
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.21.0
+
+      - name: Setup Yarn 4.18
         uses: threeal/setup-yarn-action@v2
         with:
-          version: 4.13
-
-      - name: Setup Node.js 22.22.1
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.22.1
-          cache: "yarn"
+          version: 4.18
 
       - name: "Install all dependencies"
         run: yarn install --frozen-lockfile
@@ -308,18 +331,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Setup Yarn 4.13
+      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
+      # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
+      - name: Setup Node.js 24.21.0
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.21.0
+
+      - name: Setup Yarn 4.18
         uses: threeal/setup-yarn-action@v2
         with:
-          version: 4.13
-
-      - name: Setup Node.js 22.22.1
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.22.1
-          cache: "yarn"
+          version: 4.18
 
       - name: "Install all dependencies"
         run: yarn install --frozen-lockfile
@@ -355,22 +379,23 @@ jobs:
 
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
-          version: 2.83.0
+          version: 2.118.0
 
-      - name: Setup Yarn 4.13
+      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
+      # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
+      - name: Setup Node.js 24.21.0
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.21.0
+
+      - name: Setup Yarn 4.18
         uses: threeal/setup-yarn-action@v2
         with:
-          version: 4.13
-
-      - name: Setup Node.js 22.22.1
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.22.1
-          cache: "yarn"
+          version: 4.18
 
       - name: "Install all dependencies"
         run: yarn install --frozen-lockfile
@@ -442,7 +467,7 @@ jobs:
     #   2. Every step in `supabase-tests` sits behind a `dorny/paths-filter`, so a drift check there
     #      would not run when neither `apps/supabase/**` nor `packages/supabase-types/**` changed.
     #
-    #   3. A bump of the pinned `supabase/setup-cli@v1` version, in this file, can change the
+    #   3. A bump of the CLI `version:` pinned on the `supabase/setup-cli` steps can change the
     #      generator's output with no `apps/supabase/**` or `packages/supabase-types/**` path
     #      changing, which is exactly what a filter would hide.
     #
@@ -452,22 +477,23 @@ jobs:
 
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
-          version: 2.83.0
+          version: 2.118.0
 
-      - name: Setup Yarn 4.13
+      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
+      # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
+      - name: Setup Node.js 24.21.0
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.21.0
+
+      - name: Setup Yarn 4.18
         uses: threeal/setup-yarn-action@v2
         with:
-          version: 4.13
-
-      - name: Setup Node.js 22.22.1
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.22.1
-          cache: "yarn"
+          version: 4.18
 
       - name: "Install all dependencies"
         run: yarn install --frozen-lockfile
@@ -501,25 +527,26 @@ jobs:
 
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: "Configure environment"
         run: cp .env.example .env
 
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
-          version: 2.83.0
+          version: 2.118.0
 
-      - name: Setup Yarn 4.13
+      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
+      # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
+      - name: Setup Node.js 24.21.0
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.21.0
+
+      - name: Setup Yarn 4.18
         uses: threeal/setup-yarn-action@v2
         with:
-          version: 4.13
-
-      - name: Setup Node.js 22.22.1
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.22.1
-          cache: "yarn"
+          version: 4.18
 
       - name: "Install yarn dependencies"
         run: yarn install --frozen-lockfile
@@ -552,7 +579,7 @@ jobs:
         run: tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/ci --no-db-reset --no-watch
 
       - name: "Upload the E2E run directory"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: e2e-run
@@ -583,25 +610,26 @@ jobs:
 
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: "Configure environment"
         run: cp .env.example .env
 
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
         with:
-          version: 2.83.0
+          version: 2.118.0
 
-      - name: Setup Yarn 4.13
+      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
+      # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
+      - name: Setup Node.js 24.21.0
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.21.0
+
+      - name: Setup Yarn 4.18
         uses: threeal/setup-yarn-action@v2
         with:
-          version: 4.13
-
-      - name: Setup Node.js 22.22.1
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.22.1
-          cache: "yarn"
+          version: 4.18
 
       - name: "Install yarn dependencies"
         run: yarn install --frozen-lockfile
@@ -627,7 +655,7 @@ jobs:
         run: PLAYWRIGHT_VISUAL=1 tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/ci-visual --no-db-reset --no-watch --project visual-regression
 
       - name: "Upload the visual run directory"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: e2e-run-visual
@@ -657,20 +685,20 @@ jobs:
   # No install, no Yarn, no cache: the guard imports only Node built-ins, which is what lets it run
   # from `preinstall`.
   #
-  # The out-of-range toolchain floats within its major: every 20.x is outside the declared ">=22",
+  # The out-of-range toolchain floats within its major: every 22.x is outside the declared ">=24.15.0",
   # and a pinned patch would break when it left the runner's version manifest. If the declared range
-  # is ever widened to admit Node 20, the first assertion below goes red on purpose.
+  # is ever widened to admit Node 22, the first assertion below goes red on purpose.
   node-engine-range-negative-control:
     runs-on: ubuntu-latest
 
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: "Setup Node.js 20.x (deliberately out of range)"
-        uses: actions/setup-node@v4
+      - name: "Setup Node.js 22.x (deliberately out of range)"
+        uses: actions/setup-node@v7
         with:
-          node-version: "20.x"
+          node-version: "22.x"
 
       - name: "Assert the node-engine guard REJECTS an out-of-range Node"
         run: |
@@ -689,10 +717,10 @@ jobs:
           esac
           echo "rejected as required under $(node -v): $OUTPUT"
 
-      - name: "Setup Node.js 22.22.1 (in range)"
-        uses: actions/setup-node@v4
+      - name: "Setup Node.js 24.21.0 (in range)"
+        uses: actions/setup-node@v7
         with:
-          node-version: 22.22.1
+          node-version: 24.21.0
 
       - name: "Assert the node-engine guard ACCEPTS an in-range Node"
         run: |

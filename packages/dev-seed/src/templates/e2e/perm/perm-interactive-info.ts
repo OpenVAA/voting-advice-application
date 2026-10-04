@@ -184,7 +184,7 @@ export const permInteractiveInfoTemplate: Template = {
         required: false,
         sort_order: 1
       },
-      // Likert argument carrier. Co-seeds a single infoSection alongside the arguments: the voter questions layout only mounts the interactiveInfo popup button when `(info || infoSections?.length)` is truthy (`questions/+layout.svelte`), and QuestionArguments renders ONLY inside QuestionExtendedInfo's `{#if infoSections?.length}` block (`QuestionExtendedInfo.svelte`). Argument carriers carry no `info`, so a co-seeded infoSection is what makes the popup disclosure (and hence the type-dependent argument layout) reachable. Co-seeding the infoSection keeps the production `{#if infoSections?.length}` gate untouched.
+      // Likert argument carrier. It co-seeds a single infoSection alongside the arguments, so its popup renders an info section and the arguments expander together.
       {
         external_id: 'qu-likert',
         type: 'singleChoiceOrdinal',

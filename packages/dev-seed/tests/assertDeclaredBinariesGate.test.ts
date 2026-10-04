@@ -62,7 +62,7 @@ describe('the declared-binaries guard is wired so it actually runs', () => {
       expect(manifest.engine, `${location} still carries the misspelled \`engine\``).toBeUndefined();
     }
 
-    expect(readManifest('package.json').engines).toEqual({ node: '>=22', yarn: '4.13', npm: 'please-use-yarn' });
+    expect(readManifest('package.json').engines).toEqual({ node: '>=24.15.0', yarn: '4.18', npm: 'please-use-yarn' });
   });
 
   it('leaves `engines.node` as the field a version-file resolver would read', () => {

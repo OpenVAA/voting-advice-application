@@ -3,16 +3,16 @@
  *
  * Read-only LEAF spec on `data-setup-base` (`e2e/base`), under its own `voter-results-redraw` Playwright project. Voter routes are public (no auth) and this spec mutates nothing — no dev-seed, no `app_settings`, no product file, no own setup/teardown.
  *
- * ## Why this file exists rather than a screenshot or a one-off script (D-16)
+ * ## Why this file exists rather than a screenshot or a one-off script
  *
- * Phase 165's criteria 2 and 3 are about what happens DURING a navigation. The visual-regression project cannot see them: its screenshots are taken at rest, and the layering defect this phase fixes exists for roughly 300 ms. The spike's `forensics.mjs` could see them but nothing in CI would ever run it. So the instrument ships here, in the default suite, where a regression reddens a gate instead of waiting to be re-derived.
+ * Scroll survival and the view-transition layering are about what happens DURING a navigation. The visual-regression project cannot see them: its screenshots are taken at rest, and a document View Transition that paints named groups above the top-layer dialog lasts roughly 300 ms. A one-off forensics script could see them, but nothing in CI would run it. So the instrument ships here, in the default suite, where a regression reddens a gate.
  *
  * ## What is asserted, and how each assertion is kept from passing vacuously
  *
- *   - SCROLL SURVIVAL (RNAV-02, D-15) across entity open, entity close and entity-tab switch, each measured FROM A SCROLLED START. Every case reads its baseline AFTER bringing the click target into view and IMMEDIATELY before the click, and hard-asserts that baseline is greater than zero: Playwright scrolls an off-screen element into view before clicking it, and spike 032 measured exactly that turning a baseline of 0 into a post-click 566 — a scroll "regression" that was the harness's own doing. A baseline of 0 would make the equality that follows it vacuous, so a collapsed scrolled start is a FAILURE here, never a quiet pass.
- *   - THE TWO VIEW-TRANSITION INVARIANTS (RNAV-03, D-16): overlay open and overlay close run no document View Transition AT ALL, and any transition that runs while a modal dialog is open carries no named groups. Both are ABSENCE assertions, so each is preceded by a POSITIVE one — a navigation that IS expected to produce a record, shown to produce it — because an absence observed through a dead instrument is not evidence of absence.
- *   - DID-NOT-REMOUNT (RNAV-04, D-18) by DOM NODE IDENTITY: tag a node before the navigation, assert the document still contains that same node after it. That is literally what the claim means, and it needs zero production instrumentation.
- *   - THE DRAWER HOST'S SWAP AND TEARDOWN CONTRACT (RNAV-05, D-12): an entity-to-entity navigation swaps content inside the SAME dialog node rather than reopening, and a dismissal always ends with no open dialog even though the opener is destroyed while the host is still rendering its payload.
+ *   - SCROLL SURVIVAL across entity open, entity close and entity-tab switch, each measured FROM A SCROLLED START. Every case reads its baseline AFTER bringing the click target into view and IMMEDIATELY before the click, and hard-asserts that baseline is greater than zero: Playwright scrolls an off-screen element into view before clicking it, which turns a baseline of 0 into a non-zero post-click offset — a scroll "regression" that is the harness's own doing (see spike 032). A baseline of 0 would make the equality that follows it vacuous, so a collapsed scrolled start is a FAILURE here, never a quiet pass.
+ *   - THE TWO VIEW-TRANSITION INVARIANTS: overlay open and overlay close run no document View Transition AT ALL, and any transition that runs while a modal dialog is open carries no named groups. Both are ABSENCE assertions, so each is preceded by a POSITIVE one — a navigation that IS expected to produce a record, shown to produce it — because an absence observed through a dead instrument is not evidence of absence.
+ *   - DID-NOT-REMOUNT by DOM NODE IDENTITY: tag a node before the navigation, assert the document still contains that same node after it. That is literally what the claim means, and it needs zero production instrumentation.
+ *   - THE DRAWER HOST'S SWAP AND TEARDOWN CONTRACT: an entity-to-entity navigation swaps content inside the SAME dialog node rather than reopening, and a dismissal always ends with no open dialog even though the opener is destroyed while the host is still rendering its payload.
  *
  * ## Skip, not fail — and derived in the page
  *
@@ -57,7 +57,7 @@ async function landOnResults(page: Page): Promise<void> {
 type ScrollReading = {
   /** `window.scrollY`. The results surface scrolls the DOCUMENT — the list container carries `min-h-[120vh]` — so this is the offset under test. */
   y: number;
-  /** `document.documentElement.scrollHeight`, carried so a failed equality can say WHETHER the offset moved on its own or was clamped by the document shrinking under it. Measured, not assumed: an early run of this spec read 1464 → 1187 from a maximum-scroll start, which is the clamp signature rather than a navigation scroll. */
+  /** `document.documentElement.scrollHeight`, carried so a failed equality can say WHETHER the offset moved on its own or was clamped by the document shrinking under it. A lower offset together with a shrunken height from a maximum-scroll start (e.g. 1464 → 1187) is the clamp signature rather than a navigation scroll. */
   height: number;
 };
 
@@ -81,7 +81,7 @@ async function scrollDown(page: Page): Promise<void> {
 async function skipUnlessTransitionsAreObservable(page: Page, log: ViewTransitionLogFixture): Promise<void> {
   const supported = await log.isSupported();
   const reduced = await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
-  // reason: a browser without `document.startViewTransition` has nothing to observe, and a spec that FAILED there would be asserting the browser's feature set rather than the application's behaviour. D-16 asks for a skip, and this one is derived in the page rather than from the runner.
+  // reason: a browser without `document.startViewTransition` has nothing to observe, and a spec that FAILED there would be asserting the browser's feature set rather than the application's behaviour. A skip is the honest outcome, and this one is derived in the page rather than from the runner.
   // eslint-disable-next-line playwright/no-skipped-test
   test.skip(!supported, 'document.startViewTransition is unavailable in this browser — nothing to observe');
   // reason: under `prefers-reduced-motion: reduce` the application's own `shouldAnimate` gate short-circuits before any transition starts, so an empty log is the CORRECT outcome and proves nothing about the two invariants. Skipping is honest; asserting would be theatre.
@@ -92,7 +92,7 @@ async function skipUnlessTransitionsAreObservable(page: Page, log: ViewTransitio
   );
 }
 
-test.describe('voter-results-redraw — scroll survival and node identity (RNAV-02, RNAV-04)', () => {
+test.describe('voter-results-redraw — scroll survival and node identity', () => {
   test('scroll survives entity open, entity close and an entity-tab switch, and neither subtree remounts', async ({
     page,
     resultsPage
@@ -101,16 +101,16 @@ test.describe('voter-results-redraw — scroll survival and node identity (RNAV-
     test.setTimeout(TIMEOUTS.testMax);
     await landOnResults(page);
 
-    // NO ELECTION-CHANGE CASE HERE, AND THAT IS A DECISION RATHER THAN AN OMISSION. D-15 keeps the default scroll-to-top on an election change on purpose: switching election replaces the entire list with different content, and landing mid-list in a list the voter has never seen is disorienting. Adding a fourth case to "complete" the matrix would turn a deliberate behaviour into a failure.
+    // NO ELECTION-CHANGE CASE HERE, AND THAT IS A DECISION RATHER THAN AN OMISSION. An election change keeps the default scroll-to-top on purpose: switching election replaces the entire list with different content, and landing mid-list in a list the voter has never seen is disorienting. Adding a fourth case to "complete" the matrix would turn a deliberate behaviour into a failure.
 
     await test.step('entity OPEN keeps the scroll offset, and the results list node survives', async () => {
       await scrollDown(page);
 
-      // A MID-LIST card, chosen by a caller-supplied indexer so the seed's card names stay out of this lookup. It is far enough down that the explicit scroll-into-view below is doing real work rather than resolving to a no-op — and deliberately NOT the last card, which sits at the document's MAXIMUM scroll offset. At maximum scroll any shrink of the document clamps `scrollY` under the test's feet, and the list container carries `content-visibility: auto`, whose contents the browser is entitled to skip once a modal dialog makes the rest of the document inert. An early run of this spec measured exactly that (1464 → 1187 from a last-card start). That clamp is a property of the browser's layout under a modal, not of the application's `noScroll` handling, so it is recorded in this plan's summary and deferred rather than asserted here; the mid-list start is what keeps this case measuring the thing it names.
+      // A MID-LIST card, chosen by a caller-supplied indexer so the seed's card names stay out of this lookup. It is far enough down that the explicit scroll-into-view below is doing real work rather than resolving to a no-op — and deliberately NOT the last card, which sits at the document's MAXIMUM scroll offset. At maximum scroll any shrink of the document clamps `scrollY` under the test's feet, and the list container carries `content-visibility: auto`, whose contents the browser is entitled to skip once a modal dialog makes the rest of the document inert, so from a last-card start the offset clamps (e.g. 1464 → 1187). That clamp is a property of the browser's layout under a modal, not of the application's `noScroll` handling, so it is not asserted here; the mid-list start is what keeps this case measuring the thing it names.
       const card = await resultsPage.getEntityCard((count) => Math.floor(count / 2));
-      // MEASURED, not assumed: for a card with NO subcards the `entity-card-action` anchor WRAPS the `entity-card` article rather than sitting inside it, so a descendant lookup for the action off the card finds nothing — the first run of this spec timed out on exactly that. The card title is inside the article and inside the anchor, so clicking it navigates through the wrapping link, and it is a small, wholly-visible target whose scroll-into-view cannot be nudged again by the click.
+      // For a card with NO subcards the `entity-card-action` anchor WRAPS the `entity-card` article rather than sitting inside it, so a descendant lookup for the action off the card finds nothing and times out. The card title is inside the article and inside the anchor, so clicking it navigates through the wrapping link, and it is a small, wholly-visible target whose scroll-into-view cannot be nudged again by the click.
       const target = card.getByTestId(testIds.voter.results.cardTitle).first();
-      // Do Playwright's own pre-click auto-scroll EXPLICITLY, so the baseline below is read from the same scroll position the click will act on. Without this the harness scrolls between the read and the click, and the post-click comparison measures the harness rather than the application (spike 032, Investigation Trail item 5).
+      // Do Playwright's own pre-click auto-scroll EXPLICITLY, so the baseline below is read from the same scroll position the click will act on. Without this the harness scrolls between the read and the click, and the post-click comparison measures the harness rather than the application (see spike 032).
       await target.scrollIntoViewIfNeeded();
 
       // The node that must survive an open: `voter-results-list` sits on `EntityListWithControls`, and NOTHING keys on the `entity`/`id` params, so an open must not replace it.
@@ -161,7 +161,7 @@ test.describe('voter-results-redraw — scroll survival and node identity (RNAV-
     });
 
     await test.step('an entity-TAB SWITCH keeps the scroll offset, and the list CONTAINER node survives', async () => {
-      // D-18's target for THIS case is the container, not the list. `voter-results-list` sits on `EntityListWithControls`, which the results layout remounts ON PURPOSE via `{#key `${activeElectionId}:${activeEntityType}`}` so a scope-tuple change discards per-scope filter UI state. Aiming the identity assertion at the list across a tab switch produces a test that fails for a CORRECT reason and then gets "fixed" by weakening it. The container sits above that key, so it is the node whose survival actually means "the subtree did not remount".
+      // The identity target for THIS case is the container, not the list. `voter-results-list` sits on `EntityListWithControls`, which the results page remounts ON PURPOSE via `{#key `${activeElectionId}:${activeEntityType}`}` so a scope-tuple change discards per-scope filter UI state. Aiming the identity assertion at the list across a tab switch produces a test that fails for a CORRECT reason and then gets "fixed" by weakening it. The container sits above that key, so it is the node whose survival actually means "the subtree did not remount".
       const containerNode = await page.getByTestId(testIds.voter.results.listContainer).elementHandle();
 
       // Bring the tab strip into view explicitly, for the same reason the card action was brought into view above: the fixture's click would otherwise auto-scroll between the baseline read and the click.
@@ -188,7 +188,7 @@ test.describe('voter-results-redraw — scroll survival and node identity (RNAV-
   });
 });
 
-test.describe('voter-results-redraw — the two view-transition invariants (RNAV-03)', () => {
+test.describe('voter-results-redraw — the two view-transition invariants', () => {
   test('overlay navigations run no document transition, and any transition under an open dialog carries no named groups', async ({
     page,
     resultsPage,
@@ -247,7 +247,7 @@ test.describe('voter-results-redraw — the two view-transition invariants (RNAV
       const underDialog = (await viewTransitionLog.read()).filter((call) => call.dialogOpen);
       expect(
         underDialog.filter((call) => call.names.length > 0),
-        'a View Transition ran under an open dialog WITH named groups — every named element becomes its own group painted above the top-layer dialog, which is the layering defect this phase fixes'
+        'a View Transition ran under an open dialog WITH named groups — every named element becomes its own group painted above the top-layer dialog, so the page under the dialog is drawn on top of it'
       ).toEqual([]);
       expect(
         underDialog.filter((call) => !call.noNames),
@@ -257,7 +257,7 @@ test.describe('voter-results-redraw — the two view-transition invariants (RNAV
   });
 });
 
-test.describe('voter-results-redraw — the drawer host swap and teardown contract (RNAV-05, D-12)', () => {
+test.describe('voter-results-redraw — the drawer host swap and teardown contract', () => {
   test('an entity-to-entity navigation swaps content in the same dialog node, and a dismissal leaves no open dialog', async ({
     page,
     resultsPage,
@@ -292,7 +292,7 @@ test.describe('voter-results-redraw — the drawer host swap and teardown contra
         'the member card carries the same name as the organization — a swap would be unobservable through the accessible name'
       ).not.toBe(nameBefore);
 
-      // Node identity captured BEFORE the navigation, using the same handle technique D-18 uses for the results list.
+      // Node identity captured BEFORE the navigation, using the same handle technique the scroll-survival test uses for the results list.
       const dialogNode = await dialog.elementHandle();
       await memberTitle.click();
 
@@ -312,30 +312,30 @@ test.describe('voter-results-redraw — the drawer host swap and teardown contra
     });
 
     await test.step('a dismissal always ends with no open dialog, even though the opener is destroyed mid-close', async () => {
-      // This is the assertion spike 034's `PARTIAL` verdict turns on. The host keeps rendering the payload through its out-animation AFTER the opener is destroyed; in the spike the payload read the opener's `entity` prop, got `undefined`, `EntityDetails` threw mid-flush, the host's effect never ran and THE DIALOG STAYED OPEN. D-12's two halves address different links in that chain — the opener-side last-defined-value convention prevents the throw, the host's `<svelte:boundary>` means a future opener that forgets the convention closes badly instead of hanging the whole app. This step proves the OUTCOME; D-12's negative control in 165-06 is what proves the boundary actually fires rather than merely compiling.
+      // This is the assertion the host's teardown safety turns on. The host keeps rendering the payload through its out-animation AFTER the opener is destroyed; a payload that read the opener's `entity` prop would get `undefined`, `EntityDetails` would throw mid-flush, the host's effect would never run and THE DIALOG WOULD STAY OPEN (see spike 034). Two mechanisms address different links in that chain — the opener-side last-defined-value convention prevents the throw, and the host's `<svelte:boundary>` means an opener that forgets the convention closes badly instead of hanging the whole app. This step proves the OUTCOME, not that the boundary fires.
       await page.keyboard.press('Escape');
       // WAITING assertion, deliberately: the out-animation means a one-shot visibility read would sometimes catch the dialog still open and sometimes not, which is precisely the intermittent result the project's no-flaky rule forbids. A closed `<dialog>` is `display: none` and leaves the accessibility tree, so `role=dialog` resolving to zero IS "no open dialog remains".
       await expect(
         dialog,
-        'a dialog is still open after dismissal — this is the hang spike 034 recorded, where a throw raised inside the host’s render flush aborted the close'
+        'a dialog is still open after dismissal — a throw raised inside the host’s render flush aborted the close (see spike 034)'
       ).toHaveCount(0, { timeout: TIMEOUTS.slowPage });
     });
   });
 });
 
-test.describe('voter-results-redraw — every emitted URL shape resolves to the one page node (RNAV-04, D-08, D-09)', () => {
+test.describe('voter-results-redraw — every emitted URL shape resolves to the one page node', () => {
   /**
    * The shapes this describe enumerates, and the one it deliberately does NOT.
    *
-   * D-09 rules backward compatibility a non-goal — no results URL is published anywhere — so the enumerated set is exactly the shapes the APPLICATION ITSELF emits, and nothing else. The cross-type `organizations/candidate/{id}` edge is ABSENT on purpose: `165-01` derived from the live code that no emitter produces it (`EntityCard.svelte`'s `effectiveAction` computes the plural and the singular from the card's own type; its subcards pass no `action` and re-derive the same matching pair; `EntityInfo.svelte`'s parent-nomination link is narrowed to Organization; and `DEFAULT_PARAMS` forces the matching pair for both default routes). See `165-NEGATIVE-CONTROL.md` § 6.
+   * Backward compatibility is a non-goal — no results URL is published anywhere — so the enumerated set is exactly the shapes the APPLICATION ITSELF emits, and nothing else. The cross-type `organizations/candidate/{id}` edge is ABSENT on purpose: no emitter produces it (`EntityCard.svelte`'s `effectiveAction` computes the plural and the singular from the card's own type; its subcards pass no `action` and re-derive the same matching pair; `EntityInfo.svelte`'s parent-nomination link is narrowed to Organization; and `DEFAULT_PARAMS` forces the matching pair for both default routes).
    *
-   * Dropping it from the ENUMERATION is not the same as making it unroutable, and the difference matters: D-09 forbids canonicalisation and redirects, D-10 keeps all four params optional, and the leaf `+page.ts` doc-comment describing the shape stays accurate. That the shape still LOADS is pinned one level down, by `page.guards.test.ts`, precisely so "nothing emits it" cannot drift into "so we may as well reject it".
+   * Dropping it from the ENUMERATION is not the same as making it unroutable, and the difference matters: nothing canonicalises or redirects it, all four params are optional, and the leaf `+page.ts` doc-comment describing the shape stays accurate. That the shape still LOADS is pinned one level down, by `page.guards.test.ts`, precisely so "nothing emits it" cannot drift into "so we may as well reject it".
    *
    * ## Why these shapes are visited directly rather than through a fixture call
    *
    * The property under test IS the URL shape — "this shape resolves to the single page node, and the list appears exactly once". Three of the four shapes cannot be produced by clicking: once the app has landed, its own emitters always carry an election segment, and `buildListRoute` deliberately never re-emits the bare picker shape. A fixture call can only express the shapes the app happens to be on, so a direct visit is the only instrument that can state the shape at all.
    *
-   * What makes the direct visit sound rather than a guess: every shape below is DERIVED from the URL the application itself landed on after the shared journey walk. The election id and the persistent search params are read off `page.url()`, never hardcoded — the suite knows its seed by external_id, not by database id, which is the reason the rest of this file walks instead of deep-linking. The walk also means these visits are WARM: `165-RESEARCH.md` Pitfall 6 records a known dev-server crash on COLD direct entry to `/results` with no session, and staying inside the walked context keeps this describe clear of it.
+   * What makes the direct visit sound rather than a guess: every shape below is DERIVED from the URL the application itself landed on after the shared journey walk. The election id and the persistent search params are read off `page.url()`, never hardcoded — the suite knows its seed by external_id, not by database id, which is the reason the rest of this file walks instead of deep-linking. The walk also means these visits are WARM: COLD direct entry to `/results` with no session is a known dev-server crash, and staying inside the walked context keeps this describe clear of it.
    */
 
   /** The URL shapes, derived at run time from the landed results URL. */
@@ -383,7 +383,7 @@ test.describe('voter-results-redraw — every emitted URL shape resolves to the 
 
     await test.step('the PICKER shape renders the picker instead of the list, and still exactly one container', async () => {
       await page.goto(shapes.picker);
-      // D-08's "a layout whose param is missing and cannot be implied renders the picker instead of its children", at the election-tab level. The base dataset seeds TWO elections and the walk selects both, so no single-election fallback applies and no loader canonicalization fires — this really is the unimplied case. Asserting the picker is VISIBLE first is what makes the zero-list count below a statement about this branch rather than about a page that failed to render at all.
+      // The chooser-instead-of-children rule — a layout whose param is missing and cannot be implied renders the picker instead of its children — at the election-tab level. The base dataset seeds TWO elections and the walk selects both, so no single-election fallback applies and no loader canonicalization fires — this really is the unimplied case. Asserting the picker is VISIBLE first is what makes the zero-list count below a statement about this branch rather than about a page that failed to render at all.
       await expect(page.getByTestId(testIds.voter.results.electionAccordion)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
@@ -401,7 +401,7 @@ test.describe('voter-results-redraw — every emitted URL shape resolves to the 
       await page.goto(shapes.election);
       await expect(list, 'the implied-tab shape rendered no list').toHaveCount(1, { timeout: TIMEOUTS.slowPage });
       await expect(container).toHaveCount(1);
-      // The no-force-fill rule, observed on the address bar: nothing may rewrite this URL to carry a plural. A redirect here is the Post-88-02 navigation loop, which D-08 exists to keep closed.
+      // The no-force-fill rule, observed on the address bar: nothing may rewrite this URL to carry a plural. A redirect here would bounce navigation between the implied and the explicit shape.
       expect(
         new URL(page.url()).pathname,
         'the election-only URL acquired a plural segment — something force-filled the entity tab'
@@ -438,12 +438,12 @@ test.describe('voter-results-redraw — every emitted URL shape resolves to the 
     page,
     resultsPage
   }) => {
-    // THE CASE D-08 EXISTS FOR, and the regression spike 033 measured on the required-param tree: there, a `+page.svelte` at each level meant the implied-tab shape and the explicit-tab shape were served by DIFFERENT component instances in DIFFERENT route files, so the first switch away from the implied tab remounted the list. D-08 keeps one page node under four optional params, so both shapes resolve to the same instance and the switch cannot remount it.
+    // THE CASE THE SINGLE PAGE NODE EXISTS FOR. With a `+page.svelte` at each level, the implied-tab shape and the explicit-tab shape are served by DIFFERENT component instances in DIFFERENT route files, so the first switch away from the implied tab remounts the list (see spike 033). One page node under four optional params means both shapes resolve to the same instance and the switch cannot remount it.
     test.setTimeout(TIMEOUTS.testMax);
     await landOnResults(page);
     const shapes = deriveShapes(page.url());
 
-    // Start from the shape with NO plural segment — the implied-tab state. This is the start condition the regression needs; starting from an explicit tab would measure an explicit → explicit switch, which is not the case spike 033 broke on.
+    // Start from the shape with NO plural segment — the implied-tab state. This is the start condition the regression needs; starting from an explicit tab would measure an explicit → explicit switch, which is not the case a page file at each level would remount on.
     await page.goto(shapes.election);
     await expect(page.getByTestId(testIds.voter.results.list)).toBeVisible({ timeout: TIMEOUTS.slowPage });
     expect(
@@ -451,7 +451,7 @@ test.describe('voter-results-redraw — every emitted URL shape resolves to the 
       'the start shape already carries a plural — this is no longer the implied-tab case'
     ).not.toMatch(/\/(candidates|organizations|alliances)/);
 
-    // D-18's target is the CONTAINER, not the list: `voter-results-list` sits on `EntityListWithControls`, which is remounted ON PURPOSE by `{#key `${activeElectionId}:${activeEntityType}`}` so a scope-tuple change discards per-scope filter UI state. Aiming at the list across a tab switch fails for a correct reason (RESEARCH Pitfall 7). The container sits above that key.
+    // The identity target is the CONTAINER, not the list: `voter-results-list` sits on `EntityListWithControls`, which is remounted ON PURPOSE by `{#key `${activeElectionId}:${activeEntityType}`}` so a scope-tuple change discards per-scope filter UI state. Aiming at the list across a tab switch fails for a correct reason. The container sits above that key.
     const containerNode = await page.getByTestId(testIds.voter.results.listContainer).elementHandle();
 
     // The switch goes through the application's own tab emitter, not a constructed URL — `handleEntityTabChange` is the thing that must not remount anything.
@@ -461,7 +461,7 @@ test.describe('voter-results-redraw — every emitted URL shape resolves to the 
     await expect(page).toHaveURL(/\/results\/[^/]+\/organizations/, { timeout: TIMEOUTS.page });
     expect(
       await page.evaluate((el) => document.contains(el), containerNode),
-      'the list CONTAINER was replaced on the first switch away from the IMPLIED tab — the implied shape and the explicit shape are being served by different component instances, which is exactly the spike-033 remount D-08 is designed to prevent'
+      'the list CONTAINER was replaced on the first switch away from the IMPLIED tab — the implied shape and the explicit shape are being served by different component instances instead of the single page node (see spike 033)'
     ).toBe(true);
     await expect(page.getByTestId(testIds.voter.results.list)).toHaveCount(1);
   });

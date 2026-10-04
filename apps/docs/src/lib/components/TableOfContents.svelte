@@ -25,7 +25,7 @@
     6: 'pl-64'
   };
 
-  let headings = $state<TocItem[]>([]);
+  let headings = $state<Array<TocItem>>([]);
   let activeId = $state<string>('');
 
   const filteredHeadings = $derived(headings.filter((h) => h.level <= maxLevel));

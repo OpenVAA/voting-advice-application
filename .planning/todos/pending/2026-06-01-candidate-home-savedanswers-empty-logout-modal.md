@@ -132,3 +132,34 @@ that flow persists answers in a shape `getCandidateUserData` re-reads.
 fixed, logout will dispatch directly and the assertion passes. A more robust
 assertion (verify logged-out via a protected-route → login redirect, awaiting the
 logout POST) is in git history (this session) if the SPA goto(login) proves racy.
+
+## Annotation 2026-10-02 (Phase 166): the identity lookup the queries above quote no longer exists
+
+The diagnostic queries above match the candidate row on a link column of `candidates`. Phase 166 removed
+that column: the grant is now the only link from an auth user to an entity. Those queries are kept as the
+historical record of the investigation and cannot be run against the current schema.
+
+- `get_candidate_user_data(p_project_id, 'candidate')` now resolves the caller's candidate from their
+  `(entity, candidate, <id>, editor)` grant, through `private.caller_entity_ids` (SECURITY DEFINER, in
+  `apps/supabase/supabase/schema/301-auth-functions.sql`). It takes the project as a required argument,
+  returns no row for a caller who holds no editor grant there, and raises `P0001` /
+  `ERR_ENTITY_IDENTITY_AMBIGUOUS` when the caller edits more than one candidate in that project. It no
+  longer has a `LIMIT 1`.
+- The equivalent service-role query, to compare the RPC's row with what the entity graph shows during a
+  live session:
+
+  ```sql
+  SELECT c.id, c.external_id, c.answers
+  FROM public.candidates c
+  JOIN public.grants g ON g.target_id = c.id
+  WHERE g.user_id = '<session user id>'
+    AND g.scope = 'entity'
+    AND g.target_type = 'candidate'
+    AND g.role = 'editor'
+    AND c.project_id = '<project id>';
+  ```
+
+- The hypothesis disproven above (answers written to a different row than the identity resolves to)
+  cannot pass unnoticed under the new lookup either: `idx_grants_one_candidate_editor` allows one
+  editor per candidate, and the RPC raises rather than picking a row when one user edits two candidates
+  in the project.

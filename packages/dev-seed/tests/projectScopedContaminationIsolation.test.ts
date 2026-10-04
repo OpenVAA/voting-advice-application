@@ -106,7 +106,7 @@ describe('the contamination-isolation tier either RUNS or is provably unavailabl
 
 describe('the harness reads its own project', () => {
   /**
-   * Source-level, because `vitest.workspace.ts` enumerates `packages/**` only and the `tests/` subclass has no vitest project to assert at runtime.
+   * Source-level, because the root `vitest.config.ts` lists only the package-level `vitest.config.ts` files under `packages` in `test.projects` and the `tests/` subclass has no vitest project to assert at runtime.
    *
    * The expression below is the scoping the live assertions in this file exercise through the base class. Losing it would leave the whole harness reading every project's rows again while every assertion in this file still passed, which is exactly the drift this check exists to catch.
    */

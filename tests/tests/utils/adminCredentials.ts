@@ -6,11 +6,11 @@ import { TESTS_DIR } from './testsDir';
  *
  * Used by the `admin-auth-setup` project (tests/tests/setup/admin/admin-auth.setup.ts), the `data-teardown-admin-access` project, and the `admin-access` spec.
  *
- * The values are self-contained literals rather than being derived at module load from a dev-seed template — deriving them threw at import time once the source template was retired, crashing every consumer. The candidate sibling `testCredentials.ts` carries the same posture for the same reason; this module mirrors it rather than inventing a second convention.
+ * The values are self-contained literals rather than being derived at module load from a dev-seed template, so a change to a template can never make this module throw at import time and crash every consumer. The candidate sibling `testCredentials.ts` carries the same posture for the same reason; this module mirrors it rather than inventing a second convention.
  *
  * ## What an admin identity IS in this system, and why the seed cannot express it
  *
- * An Admin App identity is exactly TWO rows: one `auth.users` account, and one `public.grants` row carrying `scope: 'project'`, `role: 'admin'` and `target_id` equal to the project the data is seeded into. There is NO candidate row and NO `auth_user_id` link — the candidate machinery is irrelevant to it.
+ * An Admin App identity is exactly TWO rows: one `auth.users` account, and one `public.grants` row carrying `scope: 'project'`, `role: 'admin'` and `target_id` equal to the project the data is seeded into. There is NO candidate row and NO candidate-editor grant — the candidate machinery is irrelevant to it.
  *
  * The seed structurally CANNOT express this. `packages/dev-seed/src/template/permittedKeys.ts` declares exactly twelve authorable collections — elections, constituency_groups, constituencies, organizations, alliances, factions, candidates, question_categories, questions, nominations, app_settings, feedback — and `grants` is not among them, nor is `auth.users` (which lives in the `auth` schema, outside PostgREST's reach entirely). So minting the identity is a RUNTIME act performed by `SupabaseAdminClient.forceRegisterAdmin`, exactly as candidate registration is. This is not an omission in the dataset and must not be "fixed" by adding a template block: there is no block to add.
  *

@@ -36,6 +36,5 @@ Native `<input type="range">` is chosen deliberately so keyboard-arrow exact-val
 
 ## Source
 
-[apps/frontend/src/lib/components/questions/NumberScaleInput.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/NumberScaleInput.svelte)
-
-[apps/frontend/src/lib/components/questions/NumberScaleInput.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/NumberScaleInput.type.ts)
+- Component: [apps/frontend/src/lib/components/questions/NumberScaleInput.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/NumberScaleInput.svelte)
+- Types: [apps/frontend/src/lib/components/questions/NumberScaleInput.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/NumberScaleInput.type.ts)

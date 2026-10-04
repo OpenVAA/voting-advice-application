@@ -77,7 +77,7 @@ export { COLLECTION_MAP, resolveCollectionName } from './collectionNames';
  *
  * ⚠ **Two measured hazards make hand-writing a camel alias wrong.**
  *   - `sort_order`'s only legal camel form is `order`, never `sortOrder`.
- *   - An identity entry — a column whose camel form equals its snake form — is dropped by any "keys that differ" filter. `answers`, `color`, `image`, `info` and `subtype` are identity entries; `auth_user_id` is not (its camel form differs).
+ *   - An identity entry — a column whose camel form equals its snake form — is dropped by any "keys that differ" filter. `answers`, `color`, `image`, `info` and `subtype` are identity entries; `first_name` is not (its camel form is `firstName`).
  *
  * **No two `COLUMN_MAP` keys may map to one property.** Reversal into `PROPERTY_MAP` is last-wins, so the losing column's camel form would resolve to the other column and be admitted on the wrong tables. `organizationId` resolves to `organization_id`, which admits it on `nominations` and `factions`; `tests/template/permittedKeys.test.ts` asserts both that and the one-key-per-property rule.
  */
@@ -151,7 +151,6 @@ const TABLE_COLUMNS = {
   ],
   organizations: [
     'answers',
-    'auth_user_id',
     'color',
     'confirmed',
     'created_at',
@@ -202,7 +201,6 @@ const TABLE_COLUMNS = {
   ],
   candidates: [
     'answers',
-    'auth_user_id',
     'color',
     'confirmed',
     'created_at',

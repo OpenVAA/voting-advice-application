@@ -15,6 +15,5 @@ Display an `Entity`’s open answer to a question. If the content is empty, noth
 
 ## Source
 
-[apps/frontend/src/lib/components/questions/QuestionOpenAnswer.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionOpenAnswer.svelte)
-
-[apps/frontend/src/lib/components/questions/QuestionOpenAnswer.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionOpenAnswer.type.ts)
+- Component: [apps/frontend/src/lib/components/questions/QuestionOpenAnswer.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionOpenAnswer.svelte)
+- Types: [apps/frontend/src/lib/components/questions/QuestionOpenAnswer.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionOpenAnswer.type.ts)

@@ -19,6 +19,5 @@ Reusable progress bar component for displaying task progress.
 
 ## Source
 
-[apps/frontend/src/lib/components/controller/ProgressBar.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/controller/ProgressBar.svelte)
-
-[apps/frontend/src/lib/components/controller/ProgressBar.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/controller/ProgressBar.type.ts)
+- Component: [apps/frontend/src/lib/components/controller/ProgressBar.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/controller/ProgressBar.svelte)
+- Types: [apps/frontend/src/lib/components/controller/ProgressBar.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/controller/ProgressBar.type.ts)

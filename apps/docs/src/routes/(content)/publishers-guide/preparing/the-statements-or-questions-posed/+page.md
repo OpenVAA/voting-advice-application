@@ -180,7 +180,7 @@ One of the main differences between the interval scales and Likert scales is tha
 
 </ResearchQuote>
 
-There are currently two main answer types available for matching: ordinal responses (e.g. Likert) and categorical responses.
+There are currently two main answer types available for matching: ordinal responses (e.g. Likert) and categorical responses. Yes/no questions and numeric questions with a minimum and a maximum can also be used in matching.
 
 The most common type in VAAs is a 4–7-point Likert answer, ranging from ‘Fully disagree’ to ‘Fully agree’.
 

@@ -42,9 +42,10 @@ port = 54322
 shadow_port = 54320
 # Maximum amount of time to wait for health check when starting the local database.
 health_timeout = "2m"
-# The database major version to use. This has to be the same as your remote database's. Run `SHOW
-# server_version;` on the remote database to check.
-major_version = 15
+# The database major version to use. The local stack runs Postgres 17. The hosted database must run the same
+# major before a migration that relies on it is deployed; until it does, every migration must stay valid on the
+# hosted major. Run `SHOW server_version;` on the hosted database to check it.
+major_version = 17
 
 [db.pooler]
 enabled = false

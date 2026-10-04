@@ -61,6 +61,5 @@ See the `<ModalContainer>` component documentation for more information.
 
 ## Source
 
-[apps/frontend/src/lib/components/modal/Modal.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/Modal.svelte)
-
-[apps/frontend/src/lib/components/modal/Modal.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/Modal.type.ts)
+- Component: [apps/frontend/src/lib/components/modal/Modal.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/Modal.svelte)
+- Types: [apps/frontend/src/lib/components/modal/Modal.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/modal/Modal.type.ts)

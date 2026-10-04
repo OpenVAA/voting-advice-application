@@ -20,6 +20,21 @@ ON CONFLICT (key) DO UPDATE
 SET
   value = EXCLUDED.value;
 
+--------------------------------------------------------------------------------
+-- Feedback rate-limit trust for the local stack
+--
+-- The local CLI stack has no Cloudflare in front. `behind_cloudflare` is set true here so that the E2E `isolateFeedbackRateLimit` fixture, which sends its own `cf-connecting-ip` on each feedback POST, gives every POST its own rate-limit bucket.
+--
+-- The migration default is false. Never apply this seed to a deployment that is not behind Cloudflare: with the value true there, a client picks its own bucket by sending `cf-connecting-ip`.
+--------------------------------------------------------------------------------
+INSERT INTO
+  private.deployment_settings (singleton, behind_cloudflare)
+VALUES
+  (true, true)
+ON CONFLICT (singleton) DO UPDATE
+SET
+  behind_cloudflare = EXCLUDED.behind_cloudflare;
+
 -- Default account for single-tenant deployment
 INSERT INTO
   accounts (id, name)
@@ -32,7 +47,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Default project for single-tenant deployment
 --
--- Created OPEN FOR VOTERS. The column defaults to the closed direction, which is the safe answer for a project nobody has spoken for; this project is the one a `yarn db:reset` stack serves, and every row in it is read anonymously today. Without the value here a reset local stack renders an empty voter application from 162-08 onward, with the cause three plans back. This is a seed-time value and not a migration-time backfill: no database has been published, so there are no deployed rows to transform (D-14, brief section 10.2).
+-- Created OPEN FOR VOTERS. The column defaults to the closed direction, which is the safe answer for a project nobody has spoken for; this project is the one a `yarn db:reset` stack serves, and without the value here that stack renders an empty voter application.
 --
 -- `lock_nominations` is deliberately absent. It ships inert and takes its default; see the column comment in `schema/100-tenancy.sql`.
 INSERT INTO
@@ -161,34 +176,24 @@ VALUES
   )
 ON CONFLICT (id) DO NOTHING;
 
--- Test candidate record linked to the candidate user
+-- Test candidate record, linked to the test candidate user by the editor grant written below
 --
--- Created CONFIRMED. This is the identity every local candidate-app session uses, and the confirmation column defaults to the unconfirmed direction; an unconfirmed seeded candidate disappears from the voter app the moment 162-08 makes the column a term of public read. Seed-time value, not a migration-time backfill, for the same reason as the project above.
+-- Created CONFIRMED. This is the identity every local candidate-app session uses, and the confirmation column defaults to the unconfirmed direction; an unconfirmed candidate is not shown in the voter app.
 INSERT INTO
-  candidates (
-    id,
-    project_id,
-    first_name,
-    last_name,
-    auth_user_id,
-    confirmed
-  )
+  candidates (id, project_id, first_name, last_name, confirmed)
 VALUES
   (
     '00000000-0000-0000-0000-000000000020',
     '00000000-0000-0000-0000-000000000001',
     'Test',
     'Candidate',
-    '00000000-0000-0000-0000-000000000011',
     true
   )
 ON CONFLICT (id) DO NOTHING;
 
--- The authority of a `yarn db:reset` stack, and the reason these two rows are here at all: from 162-06 the JWT carries `grants` and nothing else, so an identity with no grant row can do nothing. Without them a reset stack is an application whose seeded admin and seeded candidate are both locked out — D-19's requirement stated as two rows.
+-- The authority of a `yarn db:reset` stack. The JWT carries `grants` and nothing else, so an identity with no grant row can do nothing: without these two rows the seeded admin and the seeded candidate are both locked out.
 --
--- 162-15 WROTE THEM OUT. Until this commit they were produced by a transitional backfill function reading the retired role table; both are gone, and these are byte-for-byte the rows that function produced, asserted set-equal in both directions to the image captured from it before it was retired.
---
--- Idempotent by construction: arbitrated on grants_user_scope_target_role_key, so re-running the seed inserts nothing a second time. The named constraint is load-bearing — target_type is NULL on the project row, so an unnamed conflict target would match nothing and a second run would add a duplicate.
+-- Arbitrated on grants_user_scope_target_role_key, so re-running the seed inserts nothing a second time. The named constraint is load-bearing: target_type is NULL on the project row, so an unnamed conflict target would match nothing and a second run would add a duplicate.
 INSERT INTO
   public.grants (user_id, scope, target_type, target_id, role)
 VALUES
@@ -200,7 +205,7 @@ VALUES
     '00000000-0000-0000-0000-000000000001',
     'admin'
   ),
-  -- The candidate user, entity-scoped on its own candidate record
+  -- The candidate user, as the editor of its own candidate record; this row is what the candidate app resolves the user's candidate from
   (
     '00000000-0000-0000-0000-000000000011',
     'entity',

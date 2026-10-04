@@ -1,11 +1,12 @@
 // Import mocked functions
+import { createGoogle } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateObject, NoObjectGeneratedError as MockNoObjectGeneratedError, streamText } from 'ai';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { LLMProvider } from '../src/llm-providers/llmProvider';
 import { calculateLLMCost, getModelPricing } from '../src/utils/costCalculation';
-import type { AsyncIterableStream, StreamTextResult, ToolSet } from 'ai';
+import type { AsyncIterableStream, LanguageModelUsage, StreamTextResult, ToolSet } from 'ai';
 import type { ProviderConfig } from '../src/llm-providers/provider.types';
 
 // Mock the AI SDK
@@ -34,6 +35,16 @@ vi.mock('@ai-sdk/openai', () => ({
   }))
 }));
 
+// Mock the Google provider
+vi.mock('@ai-sdk/google', () => ({
+  createGoogle: vi.fn(() => ({
+    languageModel: vi.fn((modelName: string) => ({
+      modelName,
+      provider: 'google'
+    }))
+  }))
+}));
+
 // Mock cost calculation utilities
 vi.mock('../src/utils/costCalculation', () => ({
   calculateLLMCost: vi.fn(() => ({
@@ -52,9 +63,21 @@ vi.mock('../src/utils/costCalculation', () => ({
 const mockGenerateObject = vi.mocked(generateObject);
 const mockStreamText = vi.mocked(streamText);
 const mockCreateOpenAI = vi.mocked(createOpenAI);
+const mockCreateGoogle = vi.mocked(createGoogle);
 const mockCalculateLLMCost = vi.mocked(calculateLLMCost);
 const mockGetModelPricing = vi.mocked(getModelPricing);
 const mockNoObjectGeneratedErrorIsInstance = vi.mocked(MockNoObjectGeneratedError.isInstance);
+
+// A complete token usage record in the shape the AI SDK reports
+function makeUsage(inputTokens: number, outputTokens: number): LanguageModelUsage {
+  return {
+    inputTokens,
+    inputTokenDetails: { noCacheTokens: inputTokens, cacheReadTokens: 0, cacheWriteTokens: 0 },
+    outputTokens,
+    outputTokenDetails: { textTokens: outputTokens, reasoningTokens: 0 },
+    totalTokens: inputTokens + outputTokens
+  };
+}
 
 // Helper function to create mock text streams
 function createMockTextStream(chunks: Array<string>): AsyncIterableStream<string> {
@@ -118,6 +141,15 @@ describe('LLMProvider', () => {
       });
     });
 
+    it('should create an instance with valid Google config', () => {
+      provider = new LLMProvider({ ...mockProviderConfig, provider: 'google' });
+
+      expect(mockCreateGoogle).toHaveBeenCalledWith({
+        apiKey: 'test-api-key'
+      });
+      expect(mockCreateOpenAI).not.toHaveBeenCalled();
+    });
+
     it('should throw error for unsupported provider', () => {
       const invalidConfig = {
         ...mockProviderConfig,
@@ -138,11 +170,7 @@ describe('LLMProvider', () => {
     it('should successfully generate object on first attempt', async () => {
       const mockResult = {
         object: { name: 'Test', value: 42 },
-        usage: {
-          inputTokens: 100,
-          outputTokens: 50,
-          totalTokens: 150
-        },
+        usage: makeUsage(100, 50),
         finishReason: 'stop' as const,
         reasoning: undefined,
         warnings: undefined,
@@ -171,6 +199,7 @@ describe('LLMProvider', () => {
         model: expect.objectContaining({ modelName: 'gpt-4o-mini' }),
         schema,
         messages: options.messages,
+        allowSystemInMessages: false,
         temperature: undefined,
         maxRetries: 3
       });
@@ -195,7 +224,7 @@ describe('LLMProvider', () => {
     it('should pass through temperature and maxRetries options', async () => {
       const mockResult = {
         object: { name: 'Test' },
-        usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+        usage: makeUsage(100, 50),
         finishReason: 'stop' as const,
         reasoning: undefined,
         warnings: undefined,
@@ -221,9 +250,142 @@ describe('LLMProvider', () => {
         model: expect.anything(),
         schema: options.schema,
         messages: options.messages,
+        allowSystemInMessages: false,
         temperature: 0.7,
         maxRetries: 5
       });
+    });
+
+    it('should keep the SDK default and reject system messages unless the caller opts in', async () => {
+      mockGenerateObject.mockResolvedValueOnce({
+        object: { name: 'Test' },
+        usage: makeUsage(100, 50),
+        finishReason: 'stop' as const,
+        reasoning: undefined,
+        warnings: undefined,
+        request: {} as never,
+        response: {} as never,
+        providerMetadata: undefined,
+        toJsonResponse: vi.fn()
+      });
+
+      const messages = [{ role: 'system' as const, content: 'Condense these arguments.' }];
+      await provider.generateObject({
+        modelConfig: { primary: 'gpt-4o-mini' },
+        schema: z.object({ name: z.string() }),
+        messages
+      });
+
+      expect(mockGenerateObject).toHaveBeenCalledWith(
+        expect.objectContaining({ messages, allowSystemInMessages: false })
+      );
+    });
+
+    it('should forward an explicit allowSystemInMessages opt-in from the caller', async () => {
+      mockGenerateObject.mockResolvedValueOnce({
+        object: { name: 'Test' },
+        usage: makeUsage(100, 50),
+        finishReason: 'stop' as const,
+        reasoning: undefined,
+        warnings: undefined,
+        request: {} as never,
+        response: {} as never,
+        providerMetadata: undefined,
+        toJsonResponse: vi.fn()
+      });
+
+      const messages = [{ role: 'system' as const, content: 'Condense these arguments.' }];
+      const result = await provider.generateObject({
+        modelConfig: { primary: 'gpt-4o-mini' },
+        schema: z.object({ name: z.string() }),
+        messages,
+        allowSystemInMessages: true
+      });
+
+      expect(mockGenerateObject).toHaveBeenCalledWith(
+        expect.objectContaining({ messages, allowSystemInMessages: true })
+      );
+      expect(result.object).toEqual({ name: 'Test' });
+    });
+
+    it('should forward instructions to the SDK alongside the messages', async () => {
+      mockGenerateObject.mockResolvedValueOnce({
+        object: { name: 'Test' },
+        usage: makeUsage(100, 50),
+        finishReason: 'stop' as const,
+        reasoning: undefined,
+        warnings: undefined,
+        request: {} as never,
+        response: {} as never,
+        providerMetadata: undefined,
+        toJsonResponse: vi.fn()
+      });
+
+      const messages = [{ role: 'user' as const, content: 'The comments to condense.' }];
+      await provider.generateObject({
+        modelConfig: { primary: 'gpt-4o-mini' },
+        schema: z.object({ name: z.string() }),
+        instructions: 'Condense these arguments.',
+        messages
+      });
+
+      expect(mockGenerateObject).toHaveBeenCalledWith(
+        expect.objectContaining({
+          instructions: 'Condense these arguments.',
+          messages,
+          allowSystemInMessages: false
+        })
+      );
+    });
+
+    it('should forward the deprecated system option as instructions', async () => {
+      mockGenerateObject.mockResolvedValueOnce({
+        object: { name: 'Test' },
+        usage: makeUsage(100, 50),
+        finishReason: 'stop' as const,
+        reasoning: undefined,
+        warnings: undefined,
+        request: {} as never,
+        response: {} as never,
+        providerMetadata: undefined,
+        toJsonResponse: vi.fn()
+      });
+
+      await provider.generateObject({
+        modelConfig: { primary: 'gpt-4o-mini' },
+        schema: z.object({ name: z.string() }),
+        system: 'Condense these arguments.',
+        messages: [{ role: 'user' as const, content: 'The comments to condense.' }]
+      });
+
+      expect(mockGenerateObject).toHaveBeenCalledWith(
+        expect.objectContaining({ instructions: 'Condense these arguments.' })
+      );
+    });
+
+    it('should forward the prompt form instead of replacing it with an empty message list', async () => {
+      mockGenerateObject.mockResolvedValueOnce({
+        object: { name: 'Test' },
+        usage: makeUsage(100, 50),
+        finishReason: 'stop' as const,
+        reasoning: undefined,
+        warnings: undefined,
+        request: {} as never,
+        response: {} as never,
+        providerMetadata: undefined,
+        toJsonResponse: vi.fn()
+      });
+
+      await provider.generateObject({
+        modelConfig: { primary: 'gpt-4o-mini' },
+        schema: z.object({ name: z.string() }),
+        instructions: 'Answer briefly.',
+        prompt: 'What is the capital of France?'
+      });
+
+      const [call] = mockGenerateObject.mock.calls[0];
+      expect(call).toMatchObject({ instructions: 'Answer briefly.', prompt: 'What is the capital of France?' });
+      expect(call).not.toHaveProperty('messages');
     });
 
     it('should retry on validation failures up to validationRetries limit', async () => {
@@ -236,7 +398,7 @@ describe('LLMProvider', () => {
         .mockRejectedValueOnce(validationError)
         .mockResolvedValueOnce({
           object: { name: 'Success' },
-          usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+          usage: makeUsage(100, 50),
           finishReason: 'stop' as const,
           reasoning: undefined,
           warnings: undefined,
@@ -320,11 +482,7 @@ describe('LLMProvider', () => {
     it('should calculate costs correctly', async () => {
       const mockResult = {
         object: { name: 'Test' },
-        usage: {
-          inputTokens: 1000,
-          outputTokens: 500,
-          totalTokens: 1500
-        },
+        usage: makeUsage(1000, 500),
         finishReason: 'stop' as const,
         reasoning: undefined,
         warnings: undefined,
@@ -369,7 +527,7 @@ describe('LLMProvider', () => {
 
       const mockResult = {
         object: { name: 'Test' },
-        usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+        usage: makeUsage(100, 50),
         finishReason: 'stop' as const,
         reasoning: undefined,
         warnings: undefined,
@@ -402,15 +560,36 @@ describe('LLMProvider', () => {
       provider = new LLMProvider(mockProviderConfig);
     });
 
+    it('should pass system instructions as the instructions option', () => {
+      // Only `usage` is read by the provider before it returns the result
+      const minimalStreamResult = { usage: Promise.resolve(makeUsage(10, 5)) } as unknown as ReturnType<
+        typeof streamText
+      >;
+      mockStreamText.mockReturnValueOnce(minimalStreamResult);
+      mockStreamText.mockReturnValueOnce(minimalStreamResult);
+
+      const messages = [{ role: 'user' as const, content: 'Hi' }];
+      provider.streamText({ modelConfig: { primary: 'gpt-4o-mini' }, system: 'Be brief.', messages });
+      provider.streamText({
+        modelConfig: { primary: 'gpt-4o-mini' },
+        system: 'Be brief.',
+        instructions: 'Be very brief.',
+        messages
+      });
+
+      expect(mockStreamText).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({ instructions: 'Be brief.', messages })
+      );
+      expect(mockStreamText).toHaveBeenNthCalledWith(2, expect.objectContaining({ instructions: 'Be very brief.' }));
+      expect(mockStreamText.mock.calls[0][0]).not.toHaveProperty('system');
+    });
+
     it('should successfully stream text', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const mockStreamResult: StreamTextResult<any, any> = {
+      const mockStreamResult: StreamTextResult<any, any, any> = {
         textStream: createMockTextStream(['Hello', ' world']),
-        usage: Promise.resolve({
-          inputTokens: 100,
-          outputTokens: 50,
-          totalTokens: 150
-        }),
+        usage: Promise.resolve(makeUsage(100, 50)),
         text: Promise.resolve('Hello world'),
         finishReason: Promise.resolve('stop' as const),
         content: Promise.resolve([]),
@@ -424,7 +603,7 @@ describe('LLMProvider', () => {
         staticToolResults: Promise.resolve([]),
         dynamicToolResults: Promise.resolve([]),
         toolResults: Promise.resolve([]),
-        totalUsage: Promise.resolve({ inputTokens: 100, outputTokens: 50, totalTokens: 150 }),
+        totalUsage: Promise.resolve(makeUsage(100, 50)),
         warnings: Promise.resolve(undefined),
         providerMetadata: Promise.resolve(undefined),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -436,6 +615,13 @@ describe('LLMProvider', () => {
         fullStream: {} as any,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         experimental_partialOutputStream: {} as any,
+        rawFinishReason: Promise.resolve(undefined),
+        finalStep: Promise.resolve({} as never),
+        responseMessages: Promise.resolve([]),
+        stream: {} as never,
+        partialOutputStream: {} as never,
+        elementStream: {} as never,
+        output: Promise.resolve(undefined),
         consumeStream: vi.fn(),
         toUIMessageStream: vi.fn(),
         pipeUIMessageStreamToResponse: vi.fn(),
@@ -477,9 +663,9 @@ describe('LLMProvider', () => {
 
     it('should pass through optional parameters', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const mockStreamResult: StreamTextResult<any, any> = {
+      const mockStreamResult: StreamTextResult<any, any, any> = {
         textStream: createMockTextStream(['test']),
-        usage: Promise.resolve({ inputTokens: 100, outputTokens: 50, totalTokens: 150 }),
+        usage: Promise.resolve(makeUsage(100, 50)),
         text: Promise.resolve('test'),
         finishReason: Promise.resolve('stop' as const),
         content: Promise.resolve([]),
@@ -493,7 +679,7 @@ describe('LLMProvider', () => {
         staticToolResults: Promise.resolve([]),
         dynamicToolResults: Promise.resolve([]),
         toolResults: Promise.resolve([]),
-        totalUsage: Promise.resolve({ inputTokens: 100, outputTokens: 50, totalTokens: 150 }),
+        totalUsage: Promise.resolve(makeUsage(100, 50)),
         warnings: Promise.resolve(undefined),
         providerMetadata: Promise.resolve(undefined),
         request: Promise.resolve({} as any), // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -501,6 +687,13 @@ describe('LLMProvider', () => {
         steps: Promise.resolve([]),
         fullStream: {} as any, // eslint-disable-line @typescript-eslint/no-explicit-any
         experimental_partialOutputStream: {} as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        rawFinishReason: Promise.resolve(undefined),
+        finalStep: Promise.resolve({} as never),
+        responseMessages: Promise.resolve([]),
+        stream: {} as never,
+        partialOutputStream: {} as never,
+        elementStream: {} as never,
+        output: Promise.resolve(undefined),
         consumeStream: vi.fn(),
         toUIMessageStream: vi.fn(),
         pipeUIMessageStreamToResponse: vi.fn(),
@@ -540,14 +733,10 @@ describe('LLMProvider', () => {
     });
 
     it('should calculate costs asynchronously', async () => {
-      const mockUsage = {
-        inputTokens: 1000,
-        outputTokens: 500,
-        totalTokens: 1500
-      };
+      const mockUsage = makeUsage(1000, 500);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const mockStreamResult: StreamTextResult<any, any> = {
+      const mockStreamResult: StreamTextResult<any, any, any> = {
         textStream: createMockTextStream(['test']),
         usage: Promise.resolve(mockUsage),
         text: Promise.resolve('test'),
@@ -571,6 +760,13 @@ describe('LLMProvider', () => {
         steps: Promise.resolve([]),
         fullStream: {} as any, // eslint-disable-line @typescript-eslint/no-explicit-any
         experimental_partialOutputStream: {} as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        rawFinishReason: Promise.resolve(undefined),
+        finalStep: Promise.resolve({} as never),
+        responseMessages: Promise.resolve([]),
+        stream: {} as never,
+        partialOutputStream: {} as never,
+        elementStream: {} as never,
+        output: Promise.resolve(undefined),
         consumeStream: vi.fn(),
         toUIMessageStream: vi.fn(),
         pipeUIMessageStreamToResponse: vi.fn(),
@@ -615,7 +811,7 @@ describe('LLMProvider', () => {
     it('should use provider and model from config for cost calculation', async () => {
       const mockResult = {
         object: { test: true },
-        usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+        usage: makeUsage(100, 50),
         finishReason: 'stop' as const,
         reasoning: undefined,
         warnings: undefined,
@@ -651,7 +847,7 @@ describe('LLMProvider', () => {
 
       const mockResult = {
         object: { test: true },
-        usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+        usage: makeUsage(100, 50),
         finishReason: 'stop' as const,
         reasoning: undefined,
         warnings: undefined,
@@ -675,6 +871,68 @@ describe('LLMProvider', () => {
         pricing: expect.any(Object),
         usage: expect.any(Object),
         useCachedInput: true
+      });
+    });
+  });
+
+  describe('calculateLLMCost on the SDK usage shape', () => {
+    // AI SDK 7 `LanguageModelUsage`: `outputTokens` is the total output and `outputTokenDetails.reasoningTokens` is a subset of it (text 800k + reasoning 200k = 1M here). `inputTokens` is the total input and `inputTokenDetails.cacheReadTokens` is the cached subset (600k uncached + 400k cached = 1M).
+    const usage: LanguageModelUsage = {
+      inputTokens: 1_000_000,
+      inputTokenDetails: { noCacheTokens: 600_000, cacheReadTokens: 400_000, cacheWriteTokens: 0 },
+      outputTokens: 1_000_000,
+      outputTokenDetails: { textTokens: 800_000, reasoningTokens: 200_000 },
+      totalTokens: 2_000_000
+    };
+
+    async function actualCalculateLLMCost() {
+      const actual = await vi.importActual<{ calculateLLMCost: typeof calculateLLMCost }>(
+        '../src/utils/costCalculation'
+      );
+      return actual.calculateLLMCost;
+    }
+
+    it('should price reasoning as a split of the output, not on top of it', async () => {
+      const calculate = await actualCalculateLLMCost();
+      const pricing = { input: 1, output: 2, cachedInput: 0.5, reasoning: 3 };
+
+      // input: all 1M input tokens at the input rate = 1.0 (no cache split without useCachedInput).
+      // output: 800k text tokens at 2 = 1.6, plus 200k reasoning tokens at 3 = 0.6, so 2.2.
+      // reasoning: the 0.6 already inside output, reported separately and not added again.
+      // total: 1.0 + 2.2 = 3.2.
+      expect(calculate({ pricing, usage })).toEqual({
+        input: expect.closeTo(1),
+        output: expect.closeTo(2.2),
+        reasoning: expect.closeTo(0.6),
+        total: expect.closeTo(3.2)
+      });
+    });
+
+    it('should bill uncached input at the input rate and cached input at the cached rate', async () => {
+      const calculate = await actualCalculateLLMCost();
+      const pricing = { input: 1, output: 2, cachedInput: 0.5, reasoning: 3 };
+
+      // input: 600k uncached tokens at 1 = 0.6, plus 400k cached tokens at 0.5 = 0.2, so 0.8.
+      // output and reasoning as above: 2.2 and 0.6. total: 0.8 + 2.2 = 3.0.
+      expect(calculate({ pricing, usage, useCachedInput: true })).toEqual({
+        input: expect.closeTo(0.8),
+        output: expect.closeTo(2.2),
+        reasoning: expect.closeTo(0.6),
+        total: expect.closeTo(3)
+      });
+    });
+
+    it('should price reasoning at the output rate when the model has no reasoning rate', async () => {
+      const calculate = await actualCalculateLLMCost();
+      const pricing = { input: 1, output: 2 };
+
+      // input: no cachedInput rate, so all 1M input tokens fall back to the input rate = 1.0 even with useCachedInput.
+      // output: all 1M output tokens at 2 = 2.0, of which the 200k reasoning tokens are 0.4. total: 1.0 + 2.0 = 3.0.
+      expect(calculate({ pricing, usage, useCachedInput: true })).toEqual({
+        input: expect.closeTo(1),
+        output: expect.closeTo(2),
+        reasoning: expect.closeTo(0.4),
+        total: expect.closeTo(3)
       });
     });
   });
@@ -729,7 +987,7 @@ describe('LLMProvider', () => {
     it('should track latency for generateObject calls', async () => {
       const mockResult = {
         object: { test: true },
-        usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+        usage: makeUsage(100, 50),
         finishReason: 'stop' as const,
         reasoning: undefined,
         warnings: undefined,
@@ -759,9 +1017,9 @@ describe('LLMProvider', () => {
 
     it('should track latency for streamText calls', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const mockStreamResult: StreamTextResult<any, any> = {
+      const mockStreamResult: StreamTextResult<any, any, any> = {
         textStream: createMockTextStream(['test']),
-        usage: Promise.resolve({ inputTokens: 100, outputTokens: 50, totalTokens: 150 }),
+        usage: Promise.resolve(makeUsage(100, 50)),
         text: Promise.resolve('test'),
         finishReason: Promise.resolve('stop' as const),
         content: Promise.resolve([]),
@@ -775,7 +1033,7 @@ describe('LLMProvider', () => {
         staticToolResults: Promise.resolve([]),
         dynamicToolResults: Promise.resolve([]),
         toolResults: Promise.resolve([]),
-        totalUsage: Promise.resolve({ inputTokens: 100, outputTokens: 50, totalTokens: 150 }),
+        totalUsage: Promise.resolve(makeUsage(100, 50)),
         warnings: Promise.resolve(undefined),
         providerMetadata: Promise.resolve(undefined),
         request: Promise.resolve({} as any), // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -783,6 +1041,13 @@ describe('LLMProvider', () => {
         steps: Promise.resolve([]),
         fullStream: {} as any, // eslint-disable-line @typescript-eslint/no-explicit-any
         experimental_partialOutputStream: {} as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        rawFinishReason: Promise.resolve(undefined),
+        finalStep: Promise.resolve({} as never),
+        responseMessages: Promise.resolve([]),
+        stream: {} as never,
+        partialOutputStream: {} as never,
+        elementStream: {} as never,
+        output: Promise.resolve(undefined),
         consumeStream: vi.fn(),
         toUIMessageStream: vi.fn(),
         pipeUIMessageStreamToResponse: vi.fn(),
@@ -820,7 +1085,7 @@ describe('LLMProvider', () => {
     it('should process single request correctly', async () => {
       const mockResult = {
         object: { name: 'Test' },
-        usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+        usage: makeUsage(100, 50),
         finishReason: 'stop' as const,
         reasoning: undefined,
         warnings: undefined,
@@ -851,7 +1116,7 @@ describe('LLMProvider', () => {
       const mockResults = [
         {
           object: { name: 'Test1' },
-          usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+          usage: makeUsage(100, 50),
           finishReason: 'stop' as const,
           reasoning: undefined,
           warnings: undefined,
@@ -862,7 +1127,7 @@ describe('LLMProvider', () => {
         },
         {
           object: { name: 'Test2' },
-          usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+          usage: makeUsage(100, 50),
           finishReason: 'stop' as const,
           reasoning: undefined,
           warnings: undefined,
@@ -873,7 +1138,7 @@ describe('LLMProvider', () => {
         },
         {
           object: { name: 'Test3' },
-          usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+          usage: makeUsage(100, 50),
           finishReason: 'stop' as const,
           reasoning: undefined,
           warnings: undefined,
@@ -922,7 +1187,7 @@ describe('LLMProvider', () => {
     it('should process requests in batches when exceeding concurrency limit', async () => {
       const mockResults = Array.from({ length: 6 }, (_, i) => ({
         object: { name: `Test${i + 1}` },
-        usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+        usage: makeUsage(100, 50),
         finishReason: 'stop' as const,
         reasoning: undefined,
         warnings: undefined,
@@ -960,7 +1225,7 @@ describe('LLMProvider', () => {
     it('should use default maxConcurrent value of 5', async () => {
       const mockResults = Array.from({ length: 3 }, (_, i) => ({
         object: { name: `Test${i + 1}` },
-        usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+        usage: makeUsage(100, 50),
         finishReason: 'stop' as const,
         reasoning: undefined,
         warnings: undefined,
@@ -989,7 +1254,7 @@ describe('LLMProvider', () => {
     it('should handle mixed success and failure scenarios', async () => {
       const successResult = {
         object: { name: 'Success' },
-        usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+        usage: makeUsage(100, 50),
         finishReason: 'stop' as const,
         reasoning: undefined,
         warnings: undefined,
@@ -1038,7 +1303,7 @@ describe('LLMProvider', () => {
       const validationError = new Error('Validation failed');
       const successResult = {
         object: { name: 'Success' },
-        usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+        usage: makeUsage(100, 50),
         finishReason: 'stop' as const,
         reasoning: undefined,
         warnings: undefined,
@@ -1087,7 +1352,7 @@ describe('LLMProvider', () => {
       const mockResults = [
         {
           object: { id: 1, name: 'First' },
-          usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+          usage: makeUsage(100, 50),
           finishReason: 'stop' as const,
           reasoning: undefined,
           warnings: undefined,
@@ -1098,7 +1363,7 @@ describe('LLMProvider', () => {
         },
         {
           object: { id: 2, name: 'Second' },
-          usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+          usage: makeUsage(100, 50),
           finishReason: 'stop' as const,
           reasoning: undefined,
           warnings: undefined,
@@ -1109,7 +1374,7 @@ describe('LLMProvider', () => {
         },
         {
           object: { id: 3, name: 'Third' },
-          usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+          usage: makeUsage(100, 50),
           finishReason: 'stop' as const,
           reasoning: undefined,
           warnings: undefined,
@@ -1164,11 +1429,7 @@ describe('LLMProvider', () => {
     it('should calculate costs for all parallel requests', async () => {
       const mockResults = Array.from({ length: 3 }, (_, i) => ({
         object: { name: `Test${i + 1}` },
-        usage: {
-          inputTokens: 100 * (i + 1),
-          outputTokens: 50 * (i + 1),
-          totalTokens: 150 * (i + 1)
-        },
+        usage: makeUsage(100 * (i + 1), 50 * (i + 1)),
         finishReason: 'stop' as const,
         reasoning: undefined,
         warnings: undefined,

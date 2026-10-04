@@ -16,16 +16,15 @@ import { beforeAll, describe, expect, it } from 'vitest';
  *
  * 1. Every probe `filePath` MUST resolve under `apps/frontend/src` (see `SRC` below), or
  *    the guard block's `files` scope simply does not apply and every assertion passes vacuously. Stated WITHOUT quoting the glob text: the glob has now been widened twice, and a quoted-and-then-stale glob is exactly how this file's header became a record target in the first place.
- * 2. `new ESLint({ flags: ['v10_config_lookup_from_file'] })` is MANDATORY. It loads the
- *    real `apps/frontend/eslint.config.mjs` and matches `apps/frontend/package.json`'s lint script exactly; omitting it risks config-resolution drift, and the spec would then be measuring a different config than the gate does.
+ * 2. `new ESLint()` is constructed WITHOUT a config option. ESLint resolves the configuration nearest each linted file, and for every probe path below that is the real `apps/frontend/eslint.config.mjs` — the same file `apps/frontend/package.json`'s lint script resolves. That lookup is how the frontend config, and so the rules under test, reach this spec. Passing `overrideConfigFile`, `overrideConfig` or `baseConfig` here would replace or extend that resolution, and this spec would then measure a different config than the gate does.
  * 3. Filter messages by `ruleId` — never by a bare `errorCount`. The violating fixture
- *    also trips an unrelated `import/newline-after-import` rule, so a count assertion would pass for the wrong reason.
+ *    also trips an unrelated `import-x/newline-after-import` rule, so a count assertion would pass for the wrong reason.
  * 4. TWO bans share `ruleId === 'no-restricted-syntax'`: the dynamic
  *    `svelte/store` closure and the inherited TS-enum ban. Assertions therefore disambiguate on the MESSAGE SUBSTRING — 'svelte/store is banned' for the dynamic cases, 'const assertion' for the enum case — and NEVER on line or column. Line and column move with any edit; the messages are the contract.
  */
 
-// MANDATORY (invariant 2): loads the real apps/frontend/eslint.config.mjs.
-const eslint = new ESLint({ flags: ['v10_config_lookup_from_file'] });
+// Invariant 2: no config option, so ESLint resolves the real apps/frontend/eslint.config.mjs for each probe path.
+const eslint = new ESLint();
 
 // MANDATORY (invariant 1): every probe path resolves under apps/frontend/src, which is what puts the fixture inside the guard block's `files` scope. The paths below are VIRTUAL — no file is ever written to them; they are only passed as `lintText`'s `filePath` option.
 // The shipped glob is src/**/*.{ts,js,mjs,cjs,svelte} — recorded here for the reader,

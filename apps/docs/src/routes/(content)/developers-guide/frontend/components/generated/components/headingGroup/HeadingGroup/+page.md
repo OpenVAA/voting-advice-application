@@ -23,6 +23,5 @@ Used to group the page's main headings, such as a pre-heading (kicker) and the m
 
 ## Source
 
-[apps/frontend/src/lib/components/headingGroup/HeadingGroup.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/headingGroup/HeadingGroup.svelte)
-
-[apps/frontend/src/lib/components/headingGroup/HeadingGroup.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/headingGroup/HeadingGroup.type.ts)
+- Component: [apps/frontend/src/lib/components/headingGroup/HeadingGroup.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/headingGroup/HeadingGroup.svelte)
+- Types: [apps/frontend/src/lib/components/headingGroup/HeadingGroup.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/headingGroup/HeadingGroup.type.ts)

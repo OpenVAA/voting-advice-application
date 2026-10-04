@@ -10,7 +10,7 @@
  *     candidates, nominations) — flow through `bulkImport` → `importAnswers`
  *     → `linkJoinTables`, the three-pass sequence.
  *
- * Env enforcement: the constructor reads `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` from `process.env` and THROWS with a descriptive error if either is missing. Env enforcement is intentionally at construction (not at module import) so pure generators remain env-free — `yarn test:unit` can exercise them without an env fixture. Callers that need the write path (the CLI, and the tests/ subclass integration tests) see a loud, actionable error before any admin client is created.
+ * Env enforcement: the constructor reads `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` from `process.env` and THROWS with a descriptive error if either is missing. The admin client it then builds refuses a non-local `SUPABASE_URL` unless `WriterOptions.allowRemote` or `DEV_SEED_ALLOW_REMOTE=1` opts out. Env enforcement is intentionally at construction (not at module import) so pure generators remain env-free — `yarn test:unit` can exercise them without an env fixture. Callers that need the write path (the CLI, and the tests/ subclass integration tests) see a loud, actionable error before any admin client is created.
  *
  * Rollback semantics:
  *   - `bulk_import` runs as a SINGLE PL/pgSQL transaction (SECURITY INVOKER; migration line 2738). A mid-collection FK / constraint violation aborts the RPC and nothing commits — the 10 bulk-import tables roll back atomically.
@@ -39,10 +39,13 @@ const PORTRAITS_DIR = join(dirname(fileURLToPath(import.meta.url)), 'assets', 'p
  *
  *  - `projectId` — defaults to `TEST_PROJECT_ID` (`00000000-0000-0000-0000-000000000001`, the bootstrap project UUID from seed.sql).
  *  - `logger` — sink for writer warnings (currently the feedback-skip notice). Defaults to a no-op so production usage doesn't need to wire one.
+ *  - `allowRemote` — permits a non-local `SUPABASE_URL`. Defaults to refusing one.
  */
 export interface WriterOptions {
   projectId?: string;
   logger?: (msg: string) => void;
+  /** Permit a non-local `SUPABASE_URL` for the service-role client. The seed CLI sets it from `--allow-remote`. */
+  allowRemote?: boolean;
 }
 
 export class Writer {
@@ -52,10 +55,11 @@ export class Writer {
   /**
    * Construct a Writer.
    *
-   * THROWS if `SUPABASE_URL` or `SUPABASE_SERVICE_ROLE_KEY` is missing from `process.env`. Env enforcement at construction means the pure generators stay env-free.
+   * THROWS if `SUPABASE_URL` or `SUPABASE_SERVICE_ROLE_KEY` is missing from `process.env`, or if `SUPABASE_URL` is not local and neither `opts.allowRemote` nor `DEV_SEED_ALLOW_REMOTE=1` opts out. Env enforcement at construction means the pure generators stay env-free.
    *
    * @throws Error when either required env var is missing. Error messages
    *         name the env var and point to `supabase start` / `supabase status`.
+   * @throws Error when `SUPABASE_URL` is not local and no opt-out is set.
    */
   constructor(opts: WriterOptions = {}) {
     // Fail loudly before any admin client is constructed.
@@ -75,7 +79,8 @@ export class Writer {
     this.client = new SupabaseAdminClient(
       process.env.SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY,
-      opts.projectId
+      opts.projectId,
+      { allowRemote: opts.allowRemote }
     );
     this.logger = opts.logger ?? (() => {});
   }
@@ -207,7 +212,8 @@ export class Writer {
     } catch (err) {
       throw new Error(
         `Failed to read portrait assets at ${PORTRAITS_DIR}: ${(err as Error).message}. ` +
-          'Run `yarn workspace @openvaa/dev-seed tsx scripts/download-portraits.ts` to populate the pool.'
+          'Run `yarn workspace @openvaa/dev-seed tsx scripts/download-portraits.ts` to populate the pool.',
+        { cause: err }
       );
     }
     if (portraitFiles.length === 0) {

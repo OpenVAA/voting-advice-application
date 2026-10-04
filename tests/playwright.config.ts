@@ -227,13 +227,15 @@ const BASE_PROJECTS: Array<Project> = [
     : []),
 
   // Performance budgets: page load timing assertions (default-on; disable with PLAYWRIGHT_NO_PERF).
+  //
+  // Tracing is OFF for this project only. Trace recording runs in the browser while the measured window is open, so its cost lands inside `timeToMatches`. Measured on the same results reload, idle dev server, 3 runs each (2026-10-03): Playwright 1.63 traced 584–611 ms, untraced 241–244 ms; Playwright 1.58 traced 213–243 ms. The budget is calibrated on a window that carries no such overhead. A failing run still prints the spec's own `Results performance:` diagnostics (time to matches, fetch count, ttfb).
   ...(process.env.PLAYWRIGHT_NO_PERF
     ? []
     : [
         {
           name: 'performance',
           testDir: './tests/specs/perf',
-          use: { ...devices['Desktop Chrome'] },
+          use: { ...devices['Desktop Chrome'], trace: 'off' },
           dependencies: ['data-setup-base']
         }
       ]),
@@ -426,7 +428,7 @@ const BASE_PROJECTS: Array<Project> = [
     dependencies: ['data-setup-base']
   },
 
-  // voter-results-redraw — LEAF. Read-only navigation-BEHAVIOUR regression on the base dataset (phase 165, D-16/D-18): scroll position survives entity open / close / entity-tab switch measured from a scrolled start, overlay navigations run no document View Transition at all, any transition running under an open modal dialog carries no named groups, and the subtrees that must not remount are proven by DOM node identity. assert-only — it opens and closes the results drawer and switches tabs, and mutates no seed, no app_settings and no product file (no own setup/teardown). `testMatch` is scoped to this spec alone (`voter-results-redraw.spec.ts`); sibling voter-* projects' exact testMatch excludes it.
+  // voter-results-redraw — LEAF. Read-only navigation-BEHAVIOUR regression on the base dataset: scroll position survives entity open / close / entity-tab switch measured from a scrolled start, overlay navigations run no document View Transition at all, any transition running under an open modal dialog carries no named groups, and the subtrees that must not remount are proven by DOM node identity. assert-only — it opens and closes the results drawer and switches tabs, and mutates no seed, no app_settings and no product file (no own setup/teardown). `testMatch` is scoped to this spec alone (`voter-results-redraw.spec.ts`); sibling voter-* projects' exact testMatch excludes it.
   //
   // The block is not optional bookkeeping: see the ORPHAN-PROBE GUARD docblock at the top of this file. A spec file with no project matches no project and runs from NO command while still sitting in `specs/` looking like coverage — which is exactly what happened to four probe files. No `SOFT_ASSERTION_BUDGETS` entry either: this spec is hard-assertions-only by its own rigidity contract.
   {
@@ -1267,7 +1269,7 @@ export default defineConfig({
 
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    /* Collect trace for every test, but KEEP only the failures. See
+    /* In CI, record a trace only when a test is retried, so first attempts run untraced. Playwright 1.63's trace recorder adds ~350 ms to a results render (584–611 ms traced vs 241–244 ms untraced), and on the slower CI runner that cost widens every fixed-window race. A test that fails once still leaves the trace of its retry. Locally there are no retries, so tracing stays on and only failures are kept. See
      * https://playwright.dev/docs/trace-viewer
      *
      * `retain-on-failure` records exactly what `'on'` records — same instrumentation, same runtime cost — and then discards the trace when the test passes. What it buys is disk: a full-suite run under `'on'` deposits 260-340 MB of trace zips that nobody opens, because the run was green.
@@ -1275,7 +1277,7 @@ export default defineConfig({
      *
      * When a passing test's trace IS the evidence — e.g. grepping console messages out of GREEN trace zips — flip this to `'on'` for that investigation and flip it back. That is the rare case; paying 300 MB a run for it is not worth it. Note that browser-side forensics (console / pageerror / requestfailed) are captured independently of this setting by the `forensicCapture` fixture, which
      * attaches its transcripts to the result whether the test passed or not. */
-    trace: 'retain-on-failure',
+    trace: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
 
     baseURL: process.env.FRONTEND_PORT ? `http://localhost:${process.env.FRONTEND_PORT}` : 'http://localhost:5173'
   },
