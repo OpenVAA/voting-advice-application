@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { Snippet } from 'svelte';
+  import './prism-vs.css';
   import PeerNavigation from '$lib/components/PeerNavigation.svelte';
   import TableOfContents from '$lib/components/TableOfContents.svelte';
-  import './prism-vs.css';
+  import type { Snippet } from 'svelte';
 
   interface Props {
     children: Snippet;

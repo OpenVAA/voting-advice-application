@@ -1,8 +1,8 @@
 <script lang="ts">
   import { page } from '$app/state';
-  import { findActiveSection } from '../utils/navigation';
-  import { navigation } from '../navigation.config';
   import NavigationItem from './NavigationItem.svelte';
+  import { navigation } from '../navigation.config';
+  import { findActiveSection } from '../utils/navigation';
 
   type Props = {
     full?: boolean;

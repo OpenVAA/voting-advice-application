@@ -84,11 +84,14 @@ async function moveGenerated(): Promise<void> {
     const srcPath = join(generatedDir, src);
     const destPath = dest;
 
-    // We're currently not generating API docs, so skip if source doesn't exist
-    if (!existsSync(srcPath) && !src.startsWith('api/')) {
+    // A missing source keeps its committed destination
+    if (!existsSync(srcPath)) {
       console.warn(`Warning: Source path not found: ${srcPath}`);
       continue;
     }
+
+    // Clear the destination so pages for deleted sources do not survive
+    await rm(destPath, { recursive: true, force: true });
 
     console.info(`Moving ${src} → ${dest}...`);
     await moveAndTransformDir(srcPath, destPath, srcPath);
