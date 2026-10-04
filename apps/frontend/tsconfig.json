@@ -11,6 +11,8 @@
   "files": [
     "vite.projectIdEnv.ts",
     "vite.projectIdEnv.test.ts",
+    "vite.restartOnRootEnv.ts",
+    "vite.restartOnRootEnv.test.ts",
     "paraglide.options.ts",
     "scripts/compile-paraglide.ts"
   ],
