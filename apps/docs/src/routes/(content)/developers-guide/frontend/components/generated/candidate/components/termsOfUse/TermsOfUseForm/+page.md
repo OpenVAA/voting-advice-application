@@ -22,6 +22,5 @@ Accesses `CandidateContext`.
 
 ## Source
 
-[apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.svelte)
-
-[apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.type.ts)
+- Component: [apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.svelte)
+- Types: [apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/termsOfUse/TermsOfUseForm.type.ts)

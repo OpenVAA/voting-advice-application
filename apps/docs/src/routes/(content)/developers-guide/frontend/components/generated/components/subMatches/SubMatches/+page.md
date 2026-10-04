@@ -16,6 +16,5 @@ Display an entity's sub-matches.
 
 ## Source
 
-[apps/frontend/src/lib/components/subMatches/SubMatches.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/subMatches/SubMatches.svelte)
-
-[apps/frontend/src/lib/components/subMatches/SubMatches.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/subMatches/SubMatches.type.ts)
+- Component: [apps/frontend/src/lib/components/subMatches/SubMatches.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/subMatches/SubMatches.svelte)
+- Types: [apps/frontend/src/lib/components/subMatches/SubMatches.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/subMatches/SubMatches.type.ts)

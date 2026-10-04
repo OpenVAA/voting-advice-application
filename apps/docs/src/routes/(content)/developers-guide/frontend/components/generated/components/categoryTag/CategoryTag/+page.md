@@ -18,6 +18,5 @@ Used to display a question category tag with the category's color.
 
 ## Source
 
-[apps/frontend/src/lib/components/categoryTag/CategoryTag.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/categoryTag/CategoryTag.svelte)
-
-[apps/frontend/src/lib/components/categoryTag/CategoryTag.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/categoryTag/CategoryTag.type.ts)
+- Component: [apps/frontend/src/lib/components/categoryTag/CategoryTag.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/categoryTag/CategoryTag.svelte)
+- Types: [apps/frontend/src/lib/components/categoryTag/CategoryTag.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/categoryTag/CategoryTag.type.ts)

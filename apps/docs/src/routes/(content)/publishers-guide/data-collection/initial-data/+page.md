@@ -1,6 +1,6 @@
 # Initial data
 
-Before publishing the candidate application, you will need to the data below. The developer you’re working with will probably provide you spreadsheet templates to fill.
+Before publishing the candidate application, you will need to provide the data below. The developer you’re working with will probably provide you spreadsheet templates to fill.
 
 - [ ] Details of the election or elections
 - [ ] Details of constituencies for each election

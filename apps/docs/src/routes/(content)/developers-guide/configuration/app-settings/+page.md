@@ -1,37 +1,114 @@
-> **Note:** Parts of this page reference the legacy Strapi backend which has been replaced by Supabase. Content will be updated in a future release.
+# App settings
 
-# App Settings
+> This page is the developers' reference: where app settings come from, every key with its default, and how to add a setting. The [Publishers' Guide](/publishers-guide/app-settings) explains what the settings do in plain language.
 
-> This section deals with adding new App Settings. For information about existing ones, see the [Publishers’ Guide](/publishers-guide/app-settings).
+App settings live in the [`@openvaa/app-shared`](https://github.com/OpenVAA/voting-advice-application/tree/main/packages/app-shared/src/settings) package, in two layers:
 
-App settings are located in [`@openvaa/app-shared`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/) module. Settings are separated into static and dynamic settings.
+- **Static settings** are fixed when the app is built. They are typed by `StaticSettings` and set in [`staticSettings.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/staticSettings.ts). See [Static settings](/developers-guide/configuration/static-settings).
+- **Dynamic settings** can be changed per project while the app runs. They are typed by `DynamicSettings` in [`dynamicSettings.type.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/dynamicSettings.type.ts), and their shipped defaults are in [`dynamicSettings.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/dynamicSettings.ts). The type file documents every key; this page lists them.
 
-Static settings can be changed only by modifying [staticSettings.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/staticSettings.ts).
+## Where the values come from
 
-Dynamic settings can be changed by modifying [dynamicSettings.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/dynamicSettings.ts). In addition, dynamic settings can also be changed in the backend. This has been currently implemented only in Strapi. Settings from `dynamicSettings.ts` are loaded into Strapi if the app settings collection is empty.
+### Stored settings
 
-Because the settings files are imported from the `app-shared` module, make sure to [watch it for changes and reload the frontend](/developers-guide/development/running-the-development-environment) when developing.
+Each project can override the dynamic settings in the `settings` column of its row in the `app_settings` table ([`106-app-settings.sql`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/supabase/supabase/schema/106-app-settings.sql)). The table holds one row per project, and the column defaults to an empty object.
 
-Settings from `dynamicSettings.ts`, `staticSettings.ts` and from the DataProvider are merged together into [`settings` store](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/stores/stores.ts). Settings from `dynamicSettings.ts` are overwritten by dynamic settings from the DataProvider. Settings from `staticSettings.ts` are merged last to prevent overwriting them.
+The Supabase data provider's `getAppSettings` reads the row:
 
-## Adding New Settings
+- **Validation.** The stored value is checked against `StoredSettingsSchema` ([`storedSettings.schema.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/data/schemas/storedSettings.schema.ts)). Every member is optional, and the schema is strict at every level. When the value does not match, the top-level members that fail (for example a whole `results` object with one unknown key in it) are dropped and logged as an error, and the other members are kept.
+- **Notifications.** The `title` and `content` of the two notifications are stored as locale objects and returned as strings in the requested locale.
+- **No row.** Nothing creates a settings row for a project. When there is none, the provider asks `project_open_for_voters`: for an open project it returns no overrides, and for a closed project it returns the default `access` settings with `voterApp` set to `false`, which shows the voter app's maintenance page.
+- **Who can read it.** Anonymous visitors can read the row only while the project is open for voters. Signed-in users with a grant on the project can always read it, which lets them preview a closed project.
 
-In case of static settings:
+`StoredSettingsSchema` also accepts `analytics`, which is a static setting: a project can override it in the same column.
 
-1. Add the type and documentation for the new setting to the `StaticSettings` type in [staticSettings.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/staticSettings.type.ts).
-2. Add the default value for the setting to [staticSettings.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/staticSettings.ts).
+### Merging
 
-In case of dynamic settings:
+The root layout loads the stored settings, and the app context merges the three sources in this order, each over the previous one:
 
-1. Add the type and documentation for the new setting to the `DynamicSettings` type in [dynamicSettings.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/dynamicSettings.type.ts).
-2. Add the default value for the setting to [dynamicSettings.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/dynamicSettings.ts).
-3. Edit the settings components in Strapi:
-   1. If the new setting is a top-level one, create a new component for the setting and add it to the `App Settings` content-type.
-   2. If the new setting is a subsetting of a top-level item, edit that setting.
-4. Possibly update the [`app-settings` route controller](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/api/app-setting/controllers/app-setting.ts) or the utilities it uses, e.g., for [`cardContents`](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/functions/utils/appSettings.ts).
-5. Add the necessary `populate` query params to the `getAppSettings` method in [strapiDataProvider.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/strapi/dataProvider/strapiDataProvider.ts), because components need to be explicitly populated. Note that if the components have subcomponents, you need to explicitly populate all the way down.
-6. If the data type for the setting does not match the one in the `DynamicSettings` type:
-   1. Update the Strapi data types for `StrapiAppSettingsData` in [strapiData.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/strapi/strapiData.type.ts).
-   2. Edit the `getAppSettings` method in [strapiDataProvider.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/api/adapters/strapi/dataProvider/strapiDataProvider.ts) so that it returns the setting in the correct format.
-   3. Edit the [loadDefaultAppSettings](https://github.com/OpenVAA/voting-advice-application/blob/main/backend/vaa-strapi/src/functions/loadDefaultAppSettings.ts) utility so that it converts the default settings to a format suitable for Strapi.
-7. Repeat applicable steps for all other `DataProvider` implementations that support `getAppSettings`.
+1. the static settings,
+2. the dynamic defaults from `dynamicSettings.ts`,
+3. the stored settings.
+
+The merge (`mergeAppSettings` in [`settings.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/utils/settings.ts)) replaces values **by top-level key**, and skips keys whose value is `null` or `undefined`. A stored `results` object therefore replaces the whole default `results` object: store every member of a top-level setting you change, not just the one member.
+
+### Editing the stored settings
+
+The Admin App has no settings editor. Write the `settings` column directly, for example in Supabase Studio, or include an `app_settings` row in a [data import](/developers-guide/backend/data-import-and-deletion). Inserting and updating the row needs the `project.edit_app_settings` permission on the project.
+
+## Keys
+
+The table lists every key path of `DynamicSettings` with its default in `dynamicSettings.ts`. "None" means the default leaves the key unset. For what each key does, see the doc comments in the type file or the [Publishers' Guide](/publishers-guide/app-settings).
+
+| Key path                                          | Default                                    | Type and values                                                     |
+| ------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------------- |
+| `survey.linkTemplate`                             | none (`survey` is unset)                   | string; `{sessionId}` is replaced with the session id               |
+| `survey.showIn`                                   | none                                       | array of `frontpage`, `entityDetails`, `navigation`, `resultsPopup` |
+| `entityDetails.contents.candidate`                | `['info', 'opinions']`                     | array of `info`, `opinions`                                         |
+| `entityDetails.contents.organization`             | `['info', 'children', 'opinions']`         | array of `info`, `opinions`, `children`                             |
+| `entityDetails.contents.alliance`                 | `['info', 'children']`                     | array of `info`, `opinions`, `children`; optional                   |
+| `entityDetails.showMissingElectionSymbol`         | `{ candidate: true, organization: false }` | boolean per entity type                                             |
+| `entityDetails.showMissingAnswers`                | `{ candidate: true, organization: true }`  | boolean per entity type                                             |
+| `header.showFeedback`                             | `true`                                     | boolean                                                             |
+| `header.showHelp`                                 | `true`                                     | boolean                                                             |
+| `headerStyle.dark.bgColor`                        | `'var(--color-base-300)'`                  | CSS colour                                                          |
+| `headerStyle.dark.overImgBgColor`                 | `'transparent'`                            | CSS colour                                                          |
+| `headerStyle.light.bgColor`                       | `'var(--color-base-300)'`                  | CSS colour                                                          |
+| `headerStyle.light.overImgBgColor`                | `'transparent'`                            | CSS colour                                                          |
+| `headerStyle.imgSize`                             | `'cover'`                                  | CSS `background-size`                                               |
+| `headerStyle.imgPosition`                         | `'center'`                                 | CSS `background-position`                                           |
+| `entities.hideIfMissingAnswers.candidate`         | `true`                                     | boolean                                                             |
+| `entities.showAllNominations`                     | `true`                                     | boolean                                                             |
+| `matching.minimumAnswers`                         | `5`                                        | number                                                              |
+| `matching.organizationMatching`                   | `'impute'`                                 | `none`, `answersOnly` or `impute`                                   |
+| `questions.categoryIntros.allowSkip`              | `true`                                     | boolean                                                             |
+| `questions.categoryIntros.show`                   | `true`                                     | boolean                                                             |
+| `questions.interactiveInfo.enabled`               | `false`                                    | boolean                                                             |
+| `questions.questionsIntro.allowCategorySelection` | `true`                                     | boolean                                                             |
+| `questions.questionsIntro.show`                   | `true`                                     | boolean                                                             |
+| `questions.showCategoryTags`                      | `true`                                     | boolean                                                             |
+| `questions.showResultsLink`                       | `true`                                     | boolean                                                             |
+| `results.cardContents.candidate`                  | `['submatches']`                           | array of `submatches` or a question object                          |
+| `results.cardContents.organization`               | `['children']`                             | array of `submatches`, `children` or a question object              |
+| `results.cardContents.alliance`                   | `['children']`                             | array of `submatches`, `children` or a question object; optional    |
+| `results.sections`                                | `['candidate', 'organization']`            | array of `candidate`, `organization`, `alliance`; at least one      |
+| `results.showFeedbackPopup`                       | `180`                                      | seconds                                                             |
+| `results.showSurveyPopup`                         | `500`                                      | seconds                                                             |
+| `elections.disallowSelection`                     | `false`                                    | boolean                                                             |
+| `elections.showElectionTags`                      | `true`                                     | boolean                                                             |
+| `elections.startFromConstituencyGroup`            | none (`undefined`)                         | constituency group id                                               |
+| `access.candidateApp`                             | `true`                                     | boolean                                                             |
+| `access.voterApp`                                 | `true`                                     | boolean                                                             |
+| `access.adminApp`                                 | `true`                                     | boolean                                                             |
+| `access.underMaintenance`                         | `false`                                    | boolean                                                             |
+| `access.answersLocked`                            | `false`                                    | boolean                                                             |
+| `notifications.candidateApp`                      | `null`                                     | a notification, or `null`                                           |
+| `notifications.candidateApp.show`                 | none                                       | boolean                                                             |
+| `notifications.candidateApp.title`                | none                                       | localized string                                                    |
+| `notifications.candidateApp.content`              | none                                       | localized string                                                    |
+| `notifications.candidateApp.icon`                 | none                                       | icon name; `important` when unset or unknown                        |
+| `notifications.voterApp`                          | `null`                                     | a notification, or `null`                                           |
+| `notifications.voterApp.show`                     | none                                       | boolean                                                             |
+| `notifications.voterApp.title`                    | none                                       | localized string                                                    |
+| `notifications.voterApp.content`                  | none                                       | localized string                                                    |
+| `notifications.voterApp.icon`                     | none                                       | icon name                                                           |
+| `candidateApp.questions.hideVideo`                | `false`                                    | boolean                                                             |
+| `candidateApp.questions.hideHero`                 | `false`                                    | boolean                                                             |
+| `preRegistration.enabled`                         | none (`preRegistration` is unset)          | boolean                                                             |
+
+A question object in `results.cardContents` has `question` (the question's id), an optional `hideLabel` and an optional `format`: `default` or `tag`.
+
+## Adding a new setting
+
+For a static setting:
+
+1. Add the type and its documentation to `StaticSettings` in [`staticSettings.type.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/staticSettings.type.ts).
+2. Add the value to [`staticSettings.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/staticSettings.ts).
+
+For a dynamic setting:
+
+1. Add the type and its documentation to `DynamicSettings` in [`dynamicSettings.type.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/dynamicSettings.type.ts).
+2. Add the default to [`dynamicSettings.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/dynamicSettings.ts).
+3. Add the key to `StoredSettingsSchema` in [`storedSettings.schema.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/data/schemas/storedSettings.schema.ts), as an optional member. The schema is strict, so a stored value that carries a key the schema does not know loses the whole top-level setting that contains it.
+
+The frontend imports the settings from the built `@openvaa/app-shared` package, so the package must be rebuilt after a change. `yarn dev` runs a watcher that does this; see [Running the development environment](/developers-guide/development/running-the-development-environment).

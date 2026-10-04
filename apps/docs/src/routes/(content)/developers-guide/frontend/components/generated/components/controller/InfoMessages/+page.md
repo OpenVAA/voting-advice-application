@@ -15,6 +15,5 @@ Reusable component for displaying informational messages with scrolling.
 
 ## Source
 
-[apps/frontend/src/lib/components/controller/InfoMessages.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/controller/InfoMessages.svelte)
-
-[apps/frontend/src/lib/components/controller/InfoMessages.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/controller/InfoMessages.type.ts)
+- Component: [apps/frontend/src/lib/components/controller/InfoMessages.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/controller/InfoMessages.svelte)
+- Types: [apps/frontend/src/lib/components/controller/InfoMessages.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/controller/InfoMessages.type.ts)

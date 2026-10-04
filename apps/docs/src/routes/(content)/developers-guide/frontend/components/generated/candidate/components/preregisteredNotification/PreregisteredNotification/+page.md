@@ -16,6 +16,5 @@ popupQueue.push({
 
 ## Source
 
-[apps/frontend/src/lib/candidate/components/preregisteredNotification/PreregisteredNotification.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/preregisteredNotification/PreregisteredNotification.svelte)
-
-[apps/frontend/src/lib/candidate/components/preregisteredNotification/PreregisteredNotification.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/preregisteredNotification/PreregisteredNotification.type.ts)
+- Component: [apps/frontend/src/lib/candidate/components/preregisteredNotification/PreregisteredNotification.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/preregisteredNotification/PreregisteredNotification.svelte)
+- Types: [apps/frontend/src/lib/candidate/components/preregisteredNotification/PreregisteredNotification.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/preregisteredNotification/PreregisteredNotification.type.ts)

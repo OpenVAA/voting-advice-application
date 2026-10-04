@@ -17,6 +17,5 @@ Display either an image or a initials-based avatar for an entity. The color of t
 
 ## Source
 
-[apps/frontend/src/lib/components/avatar/Avatar.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/avatar/Avatar.svelte)
-
-[apps/frontend/src/lib/components/avatar/Avatar.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/avatar/Avatar.type.ts)
+- Component: [apps/frontend/src/lib/components/avatar/Avatar.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/avatar/Avatar.svelte)
+- Types: [apps/frontend/src/lib/components/avatar/Avatar.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/avatar/Avatar.type.ts)

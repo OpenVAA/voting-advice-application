@@ -1,27 +1,41 @@
-# Monorepo
+# Monorepo and Turborepo
 
-All workspaces share a single `yarn.lock` file located at the project root but contain their own `tsconfig.json` and `package.json` files.
+The repository is a set of Yarn workspaces: the root `package.json` declares `packages/*` and `apps/*` as workspaces. All of them share one `yarn.lock` at the root, and each has its own `package.json` and `tsconfig.json`. [Architecture](/developers-guide/architecture) lists the workspaces and how they depend on each other.
 
-The workspaces can be addressed by yarn from any directory as follows:
+## Running a workspace's scripts
+
+Yarn can run a script of any workspace from any directory:
 
 ```bash
-yarn workspace [module-name] [script-name].
+yarn workspace <workspace-name> <script-name>
 ```
 
-E.g., the `app-shared` module can be built by running:
+For example, to build `@openvaa/app-shared`:
 
 ```bash
 yarn workspace @openvaa/app-shared build
 ```
 
-In order to install dependencies for all modules and build all modules (although, you’d rarely want to this) run:
+The root [`package.json`](https://github.com/OpenVAA/voting-advice-application/blob/main/package.json) holds the scripts for repository-wide tasks, such as the `dev:*` and `db:*` scripts described in [Running the development environment](/developers-guide/development/running-the-development-environment).
 
-```bash
-yarn install
-yarn workspaces foreach -A build
-```
+## Turborepo
 
-When adding interdependencies between the modules, use yarn’s `workspace:` syntax:
+The repository-wide build, lint, type-check and unit-test commands run through [Turborepo](https://turborepo.com), configured in [`turbo.json`](https://github.com/OpenVAA/voting-advice-application/blob/main/turbo.json):
+
+| Root command      | Turborepo task           | Ordering in `turbo.json`                                  |
+| ----------------- | ------------------------ | --------------------------------------------------------- |
+| `yarn build`      | `build`                  | builds a workspace's dependencies first (`^build`)        |
+| `yarn typecheck`  | `typecheck`              | builds the workspace's dependencies first (`^build`)      |
+| `yarn test:unit`  | `test:unit`              | builds the workspace itself first (`build`); never cached |
+| `yarn lint:check` | `lint`, then more checks | lints a workspace's dependencies first (`^lint`)          |
+
+`build` outputs (`build/` and `dist/`) are cached, so a second `yarn build` over unchanged sources is fast. `yarn lint:check` runs `turbo run lint` and then a chain of repository checks, including the type checks.
+
+`yarn watch:shared` runs `turbo watch build` over the packages in `packages/` and rebuilds them when their sources change. `yarn dev` starts it for you.
+
+## Adding a dependency between workspaces
+
+Use Yarn's `workspace:` protocol in the dependent package's `package.json`:
 
 ```json
   "dependencies": {
@@ -29,26 +43,20 @@ When adding interdependencies between the modules, use yarn’s `workspace:` syn
   }
 ```
 
-Also add a reference to the package’s `tsconfig.json` file (see more in [Module resolution](#module-resolution)):
+Also add a reference to the dependency's `tsconfig.json` in the dependent package's `tsconfig.json` (see [Module resolution](#module-resolution)):
 
 ```json
   "references": [{ "path": "../core/tsconfig.json" }]
 ```
 
-The root [`package.json`](https://github.com/OpenVAA/voting-advice-application/blob/main/package.json) contains scipts for many repo-wide tasks.
+## Module resolution
 
-### Module resolution
+### In the IDE
 
-#### IDE
+The IDE resolves imports between workspaces through the TypeScript project references in each `tsconfig.json`. You do not need to build a package for the IDE to resolve its imports in another package, or to see changes you make to its `.ts` sources.
 
-In order to resolve cross `import`s between the monorepo modules Code uses TypeScript references, which are defined in the `tsconfig.json` files of the corresponding modules.
+### At runtime
 
-In other words, you DO NOT have to build the **dependee** modules in order for the IDE to resolve their `import`s within a **dependent** module or to pick up changes you make in the **dependee’s** `.ts` sources.
+Node, Vite and the test runners resolve a workspace through the `exports` field of its `package.json`. For most packages under `packages/` (for example `@openvaa/core`, `@openvaa/data` and `@openvaa/app-shared`) that field points at the built files in `dist/`, so the package must be built before a package that depends on it can run. `yarn build` builds them all; `yarn watch:shared`, which `yarn dev` starts, keeps them built while you work.
 
-#### NPM/Node
-
-When you use Yarn and during runtime NPM/Node module resolution mechanism is used instead. It relies on various pointers defined in `package.json` files of the corresponding modules (e.g. `main`, `module` or `exports`). These pointers usually refer to `build`/`dist` directory containing already transpiled TS sources of a given module (`.js` files). This directory subsequently gets symlinked by `yarn install` in a `node_modules` directory of a **dependent** module.
-
-In other words, you DO have to build the **dependee** modules prior to running a **dependent** module or using Yarn on it, so that NPM/Node can find the transpiled `.js` sources and pick up changes you make in the original `.ts` code.
-
-The `yarn dev` script automatically watches the packages for changes. If there are some, they will be rerebuilt and the frontend restarted to reflect the changes.
+`@openvaa/dev-seed` and `@openvaa/supabase-types` are exceptions: they export their TypeScript sources and have no build step.

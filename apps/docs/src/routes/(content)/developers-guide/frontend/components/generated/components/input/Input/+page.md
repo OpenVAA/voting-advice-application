@@ -58,6 +58,5 @@ Multilingual features are only available if the `locales` store contains more th
 
 ## Source
 
-[apps/frontend/src/lib/components/input/Input.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/Input.svelte)
-
-[apps/frontend/src/lib/components/input/Input.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/Input.type.ts)
+- Component: [apps/frontend/src/lib/components/input/Input.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/Input.svelte)
+- Types: [apps/frontend/src/lib/components/input/Input.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/input/Input.type.ts)

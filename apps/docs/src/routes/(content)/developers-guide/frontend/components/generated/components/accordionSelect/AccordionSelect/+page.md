@@ -20,6 +20,5 @@ If there's only one option, it is automatically selected and no interactions are
 
 ## Source
 
-[apps/frontend/src/lib/components/accordionSelect/AccordionSelect.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/accordionSelect/AccordionSelect.svelte)
-
-[apps/frontend/src/lib/components/accordionSelect/AccordionSelect.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/accordionSelect/AccordionSelect.type.ts)
+- Component: [apps/frontend/src/lib/components/accordionSelect/AccordionSelect.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/accordionSelect/AccordionSelect.svelte)
+- Types: [apps/frontend/src/lib/components/accordionSelect/AccordionSelect.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/accordionSelect/AccordionSelect.type.ts)

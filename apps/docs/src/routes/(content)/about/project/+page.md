@@ -1,6 +1,6 @@
 # The initial OpenVAA project 2023–2025
 
-Between 2023 and 2025 our was on building an open-source platform for VAAs. The project, called likewise OpenVAA, was graciously funded by [Sitra – the Finnish innovation fund](https://www.sitra.fi/en/).
+Between 2023 and 2025 our focus was on building an open-source platform for VAAs. The project, called likewise OpenVAA, was graciously funded by [Sitra – the Finnish innovation fund](https://www.sitra.fi/en/).
 
 The project was accompanied by a research project called **YouthVAA** at the Helsinki University, which studied how VAAs are used and produced a VAA targeted at young, first-time voters. The research project was funded by [Kone Foundation](https://koneensaatio.fi/en/).
 
@@ -8,7 +8,7 @@ The project was accompanied by a research project called **YouthVAA** at the Hel
 
 <p class="ingress">Voting advice applications (VAAs), or election compasses, are outstanding tools for assisting with candidate choice. In the last 25 years, they've become a staple of democracy in Finland and other, mainly European countries. Over two thirds of the electorate make use of them here, and young voters in particular rely on them. For parties and candidates they offer visibility centered on political issues and not constrained by campaign budgets.</p>
 
-For each national election, the largest media outlets publish VAAs that reach millions of electors. In addition to these, some smaller orgnasations release their own VAAs focused on specific viewpoints. All of these applications are, however, strikingly similar both to each other and from one election to the next. Their operational logic has remained mostly unchanged for at least a decade. _Have voting advice applications thus reached the apex of their development?_
+For each national election, the largest media outlets publish VAAs that reach millions of electors. In addition to these, some smaller organisations release their own VAAs focused on specific viewpoints. All of these applications are, however, strikingly similar both to each other and from one election to the next. Their operational logic has remained mostly unchanged for at least a decade. _Have voting advice applications thus reached the apex of their development?_
 
 We believe otherwise. Due to their vast popularity, VAAs have much potential to advance democracy even further: Their functionality and usability could be much improved. There could be greater variety in them, offering diverse user experiences and political perspectives. Most importantly, they could be more transparent; all Finnish VAAs, as well as most of those abroad, are closed systems with no insight to their matching algorithms, for example.
 
@@ -30,7 +30,7 @@ The vision statement for the project is:
 
 ## Publications
 
-Ín the preparatory phase of the project, OpenVAA published reports on VAAs, electoral systems and requirements for VAA development.
+In the preparatory phase of the project, OpenVAA published reports on VAAs, electoral systems and requirements for VAA development.
 
 ### [Principles for the OpenVAA framework](https://docs.google.com/document/d/19pQ6ZEcThT7Hy_Mdds40zBuv6ketp8YozgV-liV48gQ/edit?usp=sharing)
 
@@ -42,7 +42,7 @@ The vision statement for the project is:
 
 ### [Comparison of electoral systems](https://docs.google.com/document/d/1VRDrFgvuKpch9295V8YjzTlA0mLofBuA1Mad5QfLKis/edit?usp=sharing)
 
-12 Jan 2024 v1.0 (Finnish) – The memo compares different electoral systems from the pespective of requirements for the OpenVAA framework.
+12 Jan 2024 v1.0 (Finnish) – The memo compares different electoral systems from the perspective of requirements for the OpenVAA framework.
 
 ### [Current state of VAA technology](https://docs.google.com/document/d/1LpqkvmfL8aDxWGoAEy1Ub6l5OJdxGsVLNjaAWk3CTO8/edit?usp=sharing)
 

@@ -20,6 +20,5 @@ PasswordField is an input box for password that comes with a button to reveal an
 
 ## Source
 
-[apps/frontend/src/lib/candidate/components/passwordField/PasswordField.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/passwordField/PasswordField.svelte)
-
-[apps/frontend/src/lib/candidate/components/passwordField/PasswordField.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/passwordField/PasswordField.type.ts)
+- Component: [apps/frontend/src/lib/candidate/components/passwordField/PasswordField.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/passwordField/PasswordField.svelte)
+- Types: [apps/frontend/src/lib/candidate/components/passwordField/PasswordField.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/candidate/components/passwordField/PasswordField.type.ts)

@@ -20,6 +20,5 @@ The logo is rendered as a `<svg>` element, and you can also pass any valid attri
 
 ## Source
 
-[apps/frontend/src/lib/components/openVAALogo/OpenVAALogo.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/openVAALogo/OpenVAALogo.svelte)
-
-[apps/frontend/src/lib/components/openVAALogo/OpenVAALogo.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/openVAALogo/OpenVAALogo.type.ts)
+- Component: [apps/frontend/src/lib/components/openVAALogo/OpenVAALogo.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/openVAALogo/OpenVAALogo.svelte)
+- Types: [apps/frontend/src/lib/components/openVAALogo/OpenVAALogo.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/openVAALogo/OpenVAALogo.type.ts)

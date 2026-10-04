@@ -20,6 +20,5 @@ Used to display a loading spinner with an optionally visible text label.
 
 ## Source
 
-[apps/frontend/src/lib/components/loading/Loading.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/loading/Loading.svelte)
-
-[apps/frontend/src/lib/components/loading/Loading.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/loading/Loading.type.ts)
+- Component: [apps/frontend/src/lib/components/loading/Loading.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/loading/Loading.svelte)
+- Types: [apps/frontend/src/lib/components/loading/Loading.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/loading/Loading.type.ts)

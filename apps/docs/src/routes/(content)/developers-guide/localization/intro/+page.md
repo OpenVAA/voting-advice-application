@@ -1,14 +1,18 @@
-# Localization
+# Localization overview
 
-Localization uses:
+The frontend is localized with [Paraglide JS](https://inlang.com/m/gerre34r/library-inlang-paraglideJs). In short:
 
-- [`sveltekit-i18n`](https://github.com/sveltekit-i18n/lib)
-- [`@sveltekit-i18n/parser-icu`](https://github.com/sveltekit-i18n/parsers/tree/master/parser-icu) which enables the [ICU message format](https://formatjs.io/docs/intl-messageformat/)
+- **Messages** live in JSON files in [`apps/frontend/messages/<locale>/`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/frontend/messages), one file per namespace. Paraglide compiles them into message functions in `src/lib/paraglide/`. Its Vite plugin does this during `dev` and `build`, and `yarn workspace @openvaa/frontend paraglide:compile` does it without a build. The compiled output is generated and not committed.
+- **Components call `t()`**, the wrapper in [`$lib/i18n`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/frontend/src/lib/i18n), for example `t('results.title.results')` or `t('results.candidate.numShown', { numShown })`. They do not call the Paraglide message functions directly. `t` is a plain function: there is no `$` prefix. The key must be a `TranslationKey`, so a key that does not exist is a type error.
+- **Runtime overrides** come first. A deployment can override any message in its app customization; `t()` checks the overrides for the current locale before it falls back to the compiled message. When neither has the key, `t()` returns the key itself.
+- **The locale comes from the URL.** No route has a locale segment: Paraglide's `url` strategy reads the locale prefix, such as `/fi/`, and the base locale has no prefix.
+- **Data from the database** is stored with all its translations, and the data adapters pick the current locale when they read it.
 
-> When updating to Svelte 5, its built-in localization features can probably be used instead.
+In components, `t`, `translate`, `locale` and `locales` are read from the contexts, for example `getAppContext()`. See [Contexts](/developers-guide/frontend/contexts).
 
-In short:
+## Pages in this section
 
-- The locale is set exclusively by an optional `lang` route parameter at the start of the route.
-- In the frontend, all translations are accessed with the same `$t('foo.bar')` function regardless of source.
-- Localization uses soft locale matching whenever possible, i.e. `en-UK` matches both `en` and `en-US` if an exact match is not available.
+- [Supported locales](/developers-guide/localization/supported-locales): which locales are compiled, which are offered, and how to add one.
+- [Locale resolution](/developers-guide/localization/locale-resolution): how a request gets its locale and how a user switches it.
+- [Translations and overrides](/developers-guide/localization/translations-and-overrides): editing messages, the checks that keep them consistent, and runtime overrides.
+- [Multi-locale data](/developers-guide/localization/storing-multi-locale-data): how translated data is stored and read.

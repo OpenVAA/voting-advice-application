@@ -62,6 +62,5 @@ The same component can also be used to display the answers of the voter and anot
 
 ## Source
 
-[apps/frontend/src/lib/components/questions/QuestionChoices.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionChoices.svelte)
-
-[apps/frontend/src/lib/components/questions/QuestionChoices.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionChoices.type.ts)
+- Component: [apps/frontend/src/lib/components/questions/QuestionChoices.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionChoices.svelte)
+- Types: [apps/frontend/src/lib/components/questions/QuestionChoices.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/questions/QuestionChoices.type.ts)
