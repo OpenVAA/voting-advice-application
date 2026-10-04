@@ -25,11 +25,12 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
     menuId,
     openDrawer,
     isDrawerOpen = false,
-    drawerOpenElement
+    drawerOpenElement = $bindable()
   }: {
     menuId: string;
     openDrawer: () => void;
     isDrawerOpen?: boolean;
+    /** Bindable: the menu button that opens the drawer, so the parent can return focus to it when the drawer closes. */
     drawerOpenElement?: HTMLButtonElement;
   } = $props();
 
