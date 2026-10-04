@@ -51,7 +51,7 @@ $$;
 --
 -- Returns true if p_value matches any choice id, and also when p_valid_choices is NULL or carries no ids (nothing to validate against).
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.is_valid_choice_id (p_value JSONB, p_valid_choices JSONB) RETURNS BOOLEAN LANGUAGE plpgsql IMMUTABLE AS $$
+CREATE OR REPLACE FUNCTION public.is_valid_choice_id (p_value JSONB, p_valid_choices JSONB) RETURNS BOOLEAN LANGUAGE plpgsql STABLE AS $$
 DECLARE
   p_choice_ids JSONB;
 BEGIN

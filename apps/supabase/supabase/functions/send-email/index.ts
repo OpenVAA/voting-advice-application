@@ -1,5 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import nodemailer from 'npm:nodemailer@6.9.10';
+import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
+import nodemailer from 'npm:nodemailer@10.0.11';
 import { callerMayOnProject } from './callerAuthority.ts';
 import { renderTemplate, renderTemplateHtml } from './templateVars.ts';
 import { requireEnv } from './envConfig.ts';

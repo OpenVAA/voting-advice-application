@@ -71,7 +71,7 @@ CREATE TABLE public.nominations (
   ),
   -- An entity is nominated at most once per election, constituency and round under the same parent. A different parent makes a distinct nomination, such as one presidential candidate nominated by three parties.
   --
-  -- `NULLS NOT DISTINCT` is what makes the constraint catch anything: every row has three null entity foreign keys and every top-level nomination a null parent, so a plain UNIQUE would never find two rows equal. It needs PostgreSQL 15, which `supabase/config.toml` declares, and the applied database is checked through `pg_index.indnullsnotdistinct`.
+  -- `NULLS NOT DISTINCT` is what makes the constraint catch anything: every row has three null entity foreign keys and every top-level nomination a null parent, so a plain UNIQUE would never find two rows equal. It needs PostgreSQL 15 or later (`supabase/config.toml` declares 17), and the applied database is checked through `pg_index.indnullsnotdistinct`.
   --
   -- Named so a pgTAP `throws_ok` can match it.
   CONSTRAINT nominations_entity_parent_contest_key UNIQUE NULLS NOT DISTINCT (
