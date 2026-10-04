@@ -5,7 +5,7 @@
  *
  * ## Why it exists
  *
- * The failure is a ~1-in-8 LATENCY signal, not an absence signal (the post-failure page snapshot SHOWS the trigger). Tracing (`trace: 'retain-on-failure'`, see the `use` block in playwright.config.ts) records what the test asserted; it does not record what the page was doing — a late-arriving fetch, a client-side error during the Base-2 → Base-3 hop, or a failed request that stalled the render are all invisible in a trace alone. The ORIGINAL occurrence's evidence is unrecoverable precisely because no such capture existed. This fixture is the fix for the next occurrence.
+ * The failure is a ~1-in-8 LATENCY signal, not an absence signal (the post-failure page snapshot SHOWS the trigger). Tracing (see the `trace` setting in the `use` block of playwright.config.ts) records what the test asserted; it does not record what the page was doing — a late-arriving fetch, a client-side error during the Base-2 → Base-3 hop, or a failed request that stalled the render are all invisible in a trace alone. The ORIGINAL occurrence's evidence is unrecoverable precisely because no such capture existed. This fixture is the fix for the next occurrence.
  *
  * ## Surface
  *  - `ForensicLog`            — the captured transcripts: `consoleLines` and `failedRequests`, both ISO-8601-stamped.

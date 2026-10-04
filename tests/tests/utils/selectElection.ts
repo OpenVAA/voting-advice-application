@@ -25,7 +25,8 @@ export async function selectElectionByName(page: Page, name: RegExp | string): P
   const target = accordion.getByRole('option', { name }).first();
   await expect(target).toBeVisible({ timeout: TIMEOUTS.element });
   await target.click({ timeout: TIMEOUTS.click });
-  await expect(options).toHaveCount(1, { timeout: TIMEOUTS.element });
+  // A route-transition wait, not an element wait: the collapse lands only once the results subtree has re-rendered for the new election (see `expectElectionOptionAndSelect` in voter-journey.spec.ts).
+  await expect(options).toHaveCount(1, { timeout: TIMEOUTS.page });
   await expect(page.getByTestId(testIds.voter.results.list)).toBeVisible({ timeout: TIMEOUTS.page });
   await settleNavigationFocus(page);
 }

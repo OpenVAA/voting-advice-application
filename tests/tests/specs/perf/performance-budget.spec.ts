@@ -24,18 +24,19 @@
  *
  * ## Calibration (measured, not assumed)
  *
- * `TIME_TO_MATCHES_BUDGET_MS = 5000`, from 8 measured runs of the metric below:
+ * `TIME_TO_MATCHES_BUDGET_MS = 8000`, from these measured runs of the metric below:
  *
  * ```
  * idle dev server (workers=1):        296, 500, 502, 508, 522 ms
  * contended (perf + a11y + journey):  821, 1101, 1504 ms
+ * GitHub Actions runner, untraced:    3045 ms (ttfb 290), 4603 ms (ttfb 707)
  * ```
  *
- * Max observed 1504 ms; the environmental spread alone is 5× (296 → 1504), so any non-flaky threshold must clear max-observed by more than that spread's own variance. 5000 ms = 3.3× max observed / 9.6× the idle P90, and additionally absorbs the ~1 s of cold-dev-server SSR inflation measured separately on this machine (ttfb 428 ms on a just-started server vs 30–173 ms warm). It is a regression gate for dev mode, NOT a production target.
+ * Locally the max observed is 1504 ms, and the environmental spread alone is 5× (296 → 1504). The CI runner is several times slower again and has measured 4603 ms. 8000 ms is 1.7× the CI max and 5.3× the local max, and it also absorbs the ~1 s of cold-dev-server SSR inflation measured separately (ttfb 428 ms on a just-started server vs 30–173 ms warm). It is a regression gate for dev mode, NOT a production target.
  *
  * ## Why a warm-up reload
  *
- * Without it, a full-suite run measured `timeToMatches 7536` against this same 5000 ms budget. The spec's own two diagnostics locate the cost:
+ * Without it, a full-suite run measured `timeToMatches 7536` against a 5000 ms budget. The spec's own two diagnostics locate the cost:
  *
  * ```
  * in-suite (failing):  timeToMatches 7536  ttfb 5718  resultsFetches 11
@@ -46,7 +47,7 @@
  *
  * `ttfb` was **76% of the measured window** (server-side), and the load-independent `resultsFetches` guard was **invariant at 11 across all four runs** — so the fetch shape was unchanged and no application regression existed. The cause was Vite's one-time on-demand SSR transform of this route, paid on the first server-rendered request to it: the calibration above assumed `ttfb 428 ms` on a just-started server, and a genuinely cold *route* under full-suite worker contention measured 5718 ms, 13x that allowance.
  *
- * An unmeasured warm-up reload takes that one-time cost OUTSIDE the measured window. **The budget is deliberately NOT raised** — the 5000 ms threshold and its calibration data stand exactly as measured, with no retry, extended timeout or flaky annotation. Raising the threshold would hide the very regressions this spec exists to catch; per "How to update the budgets" below, never raise a budget to make a red test green.
+ * An unmeasured warm-up reload takes that one-time cost OUTSIDE the measured window, so the budget needs no retry, extended timeout or flaky annotation. Raising the threshold to absorb a cold route would hide the very regressions this spec exists to catch; per "How to update the budgets" below, never raise a budget to make a red test green.
  *
  * `RESULTS_FETCH_BUDGET = 13`: the route issued exactly **11** `/rest/v1/` requests in 8/8 runs, invariantly across both idle and contended runs AND across result sets of 6 and 13 cards (so the count is genuinely load-independent, not incidentally stable). +2 slack for a benign reactive re-fetch. An N+1 in the results fetch fails this as `expected 40 to be ≤ 13`.
  *
@@ -72,13 +73,13 @@ import { TIMEOUTS } from '../../helpers';
 import { testIds } from '../../utils/testIds';
 
 /** Wall-clock budget: reload → first match score visible. See calibration above. */
-const TIME_TO_MATCHES_BUDGET_MS = 5000;
+const TIME_TO_MATCHES_BUDGET_MS = 8000;
 
 /** Load-independent budget: `/rest/v1/` requests issued by the results route. */
 const RESULTS_FETCH_BUDGET = 13;
 
 /**
- * Ceiling for the render waits. Deliberately above the budget so an over-budget render still fails as a legible `expected 6234 to be less than 5000` rather than as an opaque locator timeout.
+ * Ceiling for the render waits. Deliberately above the budget so an over-budget render still fails as a legible `expected 9234 to be less than 8000` rather than as an opaque locator timeout.
  */
 const RENDER_WAIT_CEILING_MS = 20_000;
 
