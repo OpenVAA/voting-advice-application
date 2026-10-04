@@ -25,24 +25,16 @@ const { mockServerConstants, mockPublicConstants } = vi.hoisted(() => ({
     IDENTITY_PROVIDER_ISSUER: 'https://test.idura.broker',
     IDENTITY_PROVIDER_TOKEN_ENDPOINT: 'https://test.idura.broker/oauth2/token',
     IDENTITY_PROVIDER_CLIENT_SECRET: '',
-    BACKEND_API_TOKEN: '',
     LOCAL_DATA_DIR: '',
-    CACHE_DIR: '',
-    CACHE_TTL: '',
-    CACHE_LRU_SIZE: '',
-    CACHE_EXPIRATION_INTERVAL: '',
     LLM_OPENAI_API_KEY: ''
   },
   mockPublicConstants: {
     PUBLIC_IDENTITY_PROVIDER_CLIENT_ID: 'test-client-id',
     PUBLIC_IDENTITY_PROVIDER_TYPE: 'idura-ftn',
     PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT: '',
-    PUBLIC_BROWSER_BACKEND_URL: '',
-    PUBLIC_SERVER_BACKEND_URL: '',
     PUBLIC_BROWSER_FRONTEND_URL: '',
     PUBLIC_SERVER_FRONTEND_URL: '',
     PUBLIC_DEBUG: false,
-    PUBLIC_CACHE_ENABLED: false,
     PUBLIC_SUPABASE_URL: 'http://localhost:54321',
     PUBLIC_SUPABASE_ANON_KEY: 'test-anon-key'
   }

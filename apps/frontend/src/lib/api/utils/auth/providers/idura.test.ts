@@ -25,12 +25,7 @@ const { mockConstants, localJwksState } = vi.hoisted(() => ({
     IDENTITY_PROVIDER_ISSUER: 'https://test.idura.broker',
     IDENTITY_PROVIDER_TOKEN_ENDPOINT: 'https://test.idura.broker/oauth2/token',
     IDENTITY_PROVIDER_CLIENT_SECRET: '',
-    BACKEND_API_TOKEN: '',
     LOCAL_DATA_DIR: '',
-    CACHE_DIR: '',
-    CACHE_TTL: '',
-    CACHE_LRU_SIZE: '',
-    CACHE_EXPIRATION_INTERVAL: '',
     LLM_OPENAI_API_KEY: ''
   },
   localJwksState: {

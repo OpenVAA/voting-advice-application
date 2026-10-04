@@ -13,10 +13,6 @@ export type FetchOptions = {
    * Optional authentication token for the request. If provided, it will be included in the `Authorization` header.
    */
   authToken?: string;
-  /**
-   * Whether to disable built-in disk caching for the request. Note that this setting is not reflected in the actual network request.
-   */
-  disableCache?: boolean;
 };
 
 export type GetOptions<TParser extends ResponseParser | undefined = undefined> = CommonGetAndPostOptions<TParser> & {
