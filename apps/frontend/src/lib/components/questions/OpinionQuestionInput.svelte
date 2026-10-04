@@ -47,6 +47,7 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
     answer = undefined,
     otherAnswer = undefined,
     otherLabel = undefined,
+    // eslint-disable-next-line no-useless-assignment -- false positive on write-only $bindable prop; remove when https://github.com/sveltejs/eslint-plugin-svelte/issues/1478 is fixed
     valid = $bindable(true),
     onChange,
     ...restProps

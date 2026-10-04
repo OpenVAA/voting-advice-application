@@ -212,7 +212,8 @@ export class Writer {
     } catch (err) {
       throw new Error(
         `Failed to read portrait assets at ${PORTRAITS_DIR}: ${(err as Error).message}. ` +
-          'Run `yarn workspace @openvaa/dev-seed tsx scripts/download-portraits.ts` to populate the pool.'
+          'Run `yarn workspace @openvaa/dev-seed tsx scripts/download-portraits.ts` to populate the pool.',
+        { cause: err }
       );
     }
     if (portraitFiles.length === 0) {

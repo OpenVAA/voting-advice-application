@@ -19,12 +19,12 @@ This is a preview component for trying out the color contrast utility. For use i
   let bgColor = $state('#d1ebee');
 
   const computed = $derived.by(() => {
-    let parsedColor = '';
+    let parsedColor: string;
     let color = '#000000';
     let contrast = 0;
     let origContrast = 0;
     let origLuminance = 0;
-    let bgLum = 0;
+    let bgLum: number;
     let adjLum = 0;
 
     const rgb = parseColorString(origColor);

@@ -1,19 +1,8 @@
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { FlatCompat } from '@eslint/eslintrc';
-import js from '@eslint/js';
 import { default as sharedConfig } from '@openvaa/shared-config/eslint';
 import tsParser from '@typescript-eslint/parser';
+import svelte from 'eslint-plugin-svelte';
 import globals from 'globals';
 import parser from 'svelte-eslint-parser';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all
-});
 
 /**
  * The adapter-boundary allowlist (REVIEW-ADP-06, Phase 157, decision D-F4).
@@ -185,7 +174,7 @@ const ADAPTER_INIT_DECLARATION_BROAD = [
  */
 export default [
   ...sharedConfig,
-  ...compat.extends('plugin:svelte/prettier'),
+  ...svelte.configs.prettier,
   {
     ignores: [
       'ios/*',

@@ -30,7 +30,7 @@ export function calculateLLMCallCounts(
 
   for (let idx = 0; idx < steps.length; idx++) {
     const step = steps[idx];
-    let llmCallCount = 0;
+    let llmCallCount: number;
 
     switch (step.operation) {
       case CondensationOperations.REFINE: {
