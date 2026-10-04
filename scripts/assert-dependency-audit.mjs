@@ -25,11 +25,12 @@
  *     a red diagnosable from the Actions log alone, without a developer re-running the audit locally
  *     to work out which of the findings were already known.
  *
- *   4 -- An empty instrument is not a clean tree. `yarn npm audit` producing no findings while the
- *     baseline lists N accepted advisories means either the audit did not really run or every
- *     accepted advisory vanished at once; both are reportable events, and neither is a green.
- *     Without this check a network failure that yields empty output reads exactly like a clean bill
- *     of health, which is the silent-green failure shape this whole phase was written against.
+ *   4 -- An empty instrument is not a clean tree. Liveness is read from the audit's own exit
+ *     status, so an empty result is clean only when the audit exited 0, whatever the baseline
+ *     holds. A network failure prints nothing too, and exits non-zero; without the status it would
+ *     read exactly like a clean bill of health. `scripts/lib/audit-run.mjs` holds the
+ *     classification, and it serves both the gate and `--update-baseline`, so a baseline is never
+ *     rewritten from an audit that did not run either.
  *
  * WHY THE SUBTRACTION IS IN THIS SCRIPT RATHER THAN IN THE AUDIT COMMAND'S OWN FLAGS. Yarn offers an
  * advisory-suppression flag and a matching `.yarnrc.yml` setting, and both were considered and
@@ -42,7 +43,8 @@
  *
  * WHY THE AUDIT COMMAND'S EXIT CODE IS NOT THE GATE. `yarn npm audit` exits non-zero whenever ANY
  * report is found, regardless of `--severity` and regardless of the baseline. Its exit code answers
- * "did you find anything at all", which is always yes here. This script decides instead.
+ * "did you find anything at all", which is always yes here. This script decides instead, and reads
+ * the exit status only to tell an empty clean audit from an empty failed one (property 4).
  *
  * Usage:
  *   node scripts/assert-dependency-audit.mjs                     # the gate
@@ -59,14 +61,16 @@
  * Exit codes:
  *   0 - No advisories at or above the threshold outside the accepted baseline.
  *   1 - At least one NEW advisory at or above the threshold. The gate's red.
- *   2 - The gate could not run: the baseline is missing or malformed, or the audit produced no
- *       findings at all while the baseline is non-empty. Never reported as a pass.
+ *   2 - The gate could not run: the baseline is missing or malformed, or the audit printed no
+ *       findings and exited non-zero (or was killed), so it never ran. Never reported as a pass,
+ *       whatever the baseline holds, and in --update-baseline mode the baseline is left untouched.
  */
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { classifyAuditRun } from './lib/audit-run.mjs';
 
 // ---------------------------------------------------------------------------
 // Config
@@ -151,12 +155,22 @@ function readBaseline() {
 // The audit
 // ---------------------------------------------------------------------------
 
+/** The registry the audit queries, for the could-not-run message: the environment override when one is set. */
+function auditRegistryLabel() {
+  return (
+    process.env.YARN_NPM_AUDIT_REGISTRY ||
+    process.env.YARN_NPM_REGISTRY_SERVER ||
+    "Yarn's configured npm registry (npmAuditRegistry / npmRegistryServer)"
+  );
+}
+
 /**
- * Run the audit and return its NDJSON findings. The non-zero exit is EXPECTED and swallowed on purpose: see the docblock, `yarn npm audit` exits non-zero whenever any report is found, so treating its status as the verdict would make the gate red forever from the first commit.
+ * Run the audit and return its NDJSON findings. A non-zero exit WITH findings is expected: see the docblock, `yarn npm audit` exits non-zero whenever any report is found, so its status is not the verdict. The status is kept, though, because it is the only thing that tells an empty clean audit from an empty failed one (property 4).
  */
 function runAudit(threshold) {
   const args = ['npm', 'audit', '--all', '--recursive', '--severity', threshold, '--json'];
   let stdout;
+  let status;
   try {
     stdout = execFileSync('yarn', args, {
       cwd: REPO_ROOT,
@@ -164,16 +178,26 @@ function runAudit(threshold) {
       maxBuffer: 64 * 1024 * 1024,
       stdio: ['ignore', 'pipe', 'inherit']
     });
+    status = 0;
   } catch (error) {
     if (typeof error.stdout !== 'string') {
       cannotRun(`\`yarn ${args.join(' ')}\` could not be run (${error.message}).`);
     }
     stdout = error.stdout;
+    status = error.status;
   }
 
+  const run = classifyAuditRun({ status, stdout });
+  if (run.kind === 'did-not-run') {
+    const how = run.status === null ? 'was killed before it exited' : `exited with status ${run.status}`;
+    cannotRun(
+      `\`yarn ${args.join(' ')}\` printed no findings and ${how}, so the audit did not run against ${auditRegistryLabel()}. A clean audit prints nothing AND exits 0; this is reported rather than passed, whatever ${BASELINE_LABEL} holds, and no baseline is written from it.`
+    );
+  }
+  if (run.kind === 'clean') return [];
+
   const findings = [];
-  for (const line of stdout.split('\n')) {
-    if (line.trim().length === 0) continue;
+  for (const line of run.lines) {
     try {
       const parsed = JSON.parse(line);
       findings.push({
@@ -278,12 +302,6 @@ function main() {
   const baseline = readBaseline();
   const threshold = baseline.threshold;
   const findings = runAudit(threshold);
-
-  if (findings.length === 0 && baseline.accepted.length > 0) {
-    cannotRun(
-      `\`yarn npm audit\` reported 0 findings at ${threshold}+ while ${BASELINE_LABEL} lists ${baseline.accepted.length} accepted advisory(ies). Either the audit did not really run, or every accepted advisory is gone at once. An empty instrument reads exactly like a clean tree, so this is reported rather than passed. If the tree really is clean, regenerate the baseline with --update-baseline.`
-    );
-  }
 
   const acceptedIds = new Set(baseline.accepted.map((row) => row.id));
   const accepted = findings.filter((finding) => acceptedIds.has(finding.id));
