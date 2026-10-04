@@ -54,6 +54,60 @@ describe('createSupabaseCookieAdapter — the payload safety property is pinned,
   });
 });
 
+/**
+ * A `RequestEvent` exposing the cookie jar and `setHeaders`, each a spy.
+ * @returns The stub event and both spies.
+ */
+function eventWithCookieAndHeaderSpies() {
+  const set = vi.fn();
+  const setHeaders = vi.fn();
+  const event = { cookies: { getAll: vi.fn(() => []), set }, setHeaders } as unknown as RequestEvent;
+  return { event, set, setHeaders };
+}
+
+const CACHE_HEADERS = { 'Cache-Control': 'private, no-store', Expires: '0' };
+
+describe('createSupabaseCookieAdapter — the cache headers that come with auth cookies reach the response', () => {
+  it('sets the cookies and forwards every header passed with them', () => {
+    const { event, set, setHeaders } = eventWithCookieAndHeaderSpies();
+
+    createSupabaseCookieAdapter(event).setAll(
+      [{ name: 'sb-127-auth-token', value: 'the-session', options: { sameSite: 'lax' } }],
+      CACHE_HEADERS
+    );
+
+    expect(set).toHaveBeenCalledTimes(1);
+    expect(set.mock.calls[0][2]).toMatchObject({ sameSite: 'lax', httpOnly: false, path: '/' });
+    expect(setHeaders).toHaveBeenCalledTimes(1);
+    expect(setHeaders).toHaveBeenCalledWith(CACHE_HEADERS);
+  });
+
+  it('does not set a header again in the same request, because SvelteKit throws on a repeated header', () => {
+    const { event, set, setHeaders } = eventWithCookieAndHeaderSpies();
+    const adapter = createSupabaseCookieAdapter(event);
+
+    adapter.setAll([{ name: 'sb-127-auth-token', value: 'first', options: {} }], CACHE_HEADERS);
+    adapter.setAll([{ name: 'sb-127-auth-token', value: 'second', options: {} }], {
+      'cache-control': 'private, no-store',
+      EXPIRES: '0'
+    });
+
+    expect(set).toHaveBeenCalledTimes(2);
+    expect(setHeaders).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls `setHeaders` not at all when no headers come with the cookies', () => {
+    const { event, set, setHeaders } = eventWithCookieAndHeaderSpies();
+    const adapter = createSupabaseCookieAdapter(event);
+
+    adapter.setAll([{ name: 'sb-127-auth-token', value: 'the-session', options: {} }]);
+    adapter.setAll([{ name: 'sb-127-auth-token', value: 'the-session', options: {} }], {});
+
+    expect(set).toHaveBeenCalledTimes(2);
+    expect(setHeaders).not.toHaveBeenCalled();
+  });
+});
+
 describe('resolveSupabaseCookiePrefix — the filter is the storage key, not `sb-`', () => {
   it('derives the key `@supabase/supabase-js` computes from the project URL', () => {
     // Transcribed from the installed client: `sb-${hostname.split('.')[0]}-auth-token`.
