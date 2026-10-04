@@ -73,7 +73,8 @@ FRONTEND_PORT="${FRONTEND_PORT:-5173}"
 # Pinned BY DIGEST, never by tag. Two reasons, both load-bearing:
 #   (a) A tag reference can resolve to a different image later, and comparing one run with another rests on "same image, same digest".
 #   (b) On this machine Docker's `desktop` credential helper can wedge, so a pull triggered by a mistyped reference stalls before any network activity in a way that looks like a network problem. The digest guard below refuses to pull.
-PW_IMAGE="${PW_IMAGE:-mcr.microsoft.com/playwright@sha256:6446946a1d9fd62d9ae501312a2d76a43ee688542b21622056a372959b65d63d}"
+# The default is the linux/amd64 digest of mcr.microsoft.com/playwright:v1.63.0-noble, the tag matching the root catalog's `@playwright/test`: the in-container browsers must be the build that runner version drives.
+PW_IMAGE="${PW_IMAGE:-mcr.microsoft.com/playwright@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27}"
 
 RUN_DIR=""
 CONFIG_PATH=""

@@ -21,9 +21,9 @@
   },
   "scripts": {
     "build": "tsup && tsc --emitDeclarationOnly --outDir dist",
-    "lint": "eslint --flag v10_config_lookup_from_file src/",
+    "lint": "eslint src/",
     "test:unit": "vitest run",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit --composite false",
     "generate:test-data-json": "tsx tools/generateTestDataJson.ts"
   },
   "type": "module",
@@ -42,6 +42,7 @@
     "tsup": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
+    "vite": "catalog:",
     "vitest": "catalog:"
   },
   "dependencies": {

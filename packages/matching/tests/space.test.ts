@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest';
+import { expect, test } from 'vitest';
 import { MockQuestion } from './utils';
 import { coordinatesShape, createSubspace, equalShapes, flatten, MatchingSpace, Position, reshape } from '../src/space';
 
@@ -30,16 +30,17 @@ test('MatchingSpace', () => {
   const dimensions = [1, 1, 3];
   const weights = [1, 2, 3];
   const questions = dimensions.map((i) => new MockQuestion(i));
-  describe('MatchingSpace.fromQuestions', () => {
+  // MatchingSpace.fromQuestions
+  {
     const questionWeights = Object.fromEntries(questions.map((q, i) => [q.id, weights[i]]));
-    delete questionWeights[2];
+    delete questionWeights[questions[2].id];
     const expected = [weights[0], weights[1], 1]; // the last should default to one
     expect(MatchingSpace.fromQuestions({ questions }).shape, 'to have correct dimensions').toEqual(dimensions);
     expect(
       MatchingSpace.fromQuestions({ questions, questionWeights }).weights,
       'to have specified weights defaulting to one'
     ).toEqual(expected);
-  });
+  }
   const space = new MatchingSpace({ shape: 3, weights: [1, 1, 1] });
   expect(
     space.isCompatible(new MatchingSpace({ shape: 3, weights: [1, 2, 3] })),

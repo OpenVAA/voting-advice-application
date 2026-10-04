@@ -338,7 +338,7 @@ describe('the two admin form actions refuse an authenticated non-admin THEMSELVE
     fields: Record<string, string>
   ): Promise<{ result: unknown; fetch: ReturnType<typeof vi.fn> }> {
     // URL-encoded rather than `FormData`: jsdom's `Request` does not derive a `Content-Type` boundary header from a `FormData` body, so `request.formData()` rejects it before the action reaches its own first line — which would make the refusal cases below a property of the harness instead of a property of the gate.
-    // reason: serialised with `.toString()` because undici's `Request` validates `init.body` with `instanceof URLSearchParams` against its own realm, which vitest's global does not satisfy on node 22.22.1 (the version CI pins); the serialised form is byte-identical on the wire and the content-type is set explicitly just below, so nothing about this request changes.
+    // reason: serialised with `.toString()` because undici's `Request` validates `init.body` with `instanceof URLSearchParams` against its own realm, which vitest's global does not reliably satisfy across Node releases; the serialised form is byte-identical on the wire and the content-type is set explicitly just below, so nothing about this request changes.
     const body = new URLSearchParams(Object.entries(fields)).toString();
     const fetchSpy = jobStartFetchSpy();
     const result = await action({
@@ -451,7 +451,7 @@ describe('the two admin form actions answer an upstream failure with ONE shape, 
       which === 'argument-condensation'
         ? await import('../../../routes/admin/(protected)/argument-condensation/+page.server')
         : await import('../../../routes/admin/(protected)/question-info/+page.server');
-    // reason: serialised with `.toString()` because undici's `Request` validates `init.body` with `instanceof URLSearchParams` against its own realm and vitest's global comes from a different one, so the object form throws on node 22.22.1 (the version CI pins) while passing on 22.4.0 and 24.x; the wire form is identical and the content-type is set explicitly below rather than inferred from the body type.
+    // reason: serialised with `.toString()` because undici's `Request` validates `init.body` with `instanceof URLSearchParams` against its own realm and vitest's global comes from a different one, so whether the object form throws depends on the Node release; the wire form is identical and the content-type is set explicitly below rather than inferred from the body type.
     const body = new URLSearchParams(Object.entries(fields)).toString();
     return actions.default({
       fetch: refusingFetch(status),

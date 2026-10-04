@@ -13,6 +13,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fetchJwksLeakSafe } from './fetchJwksLeakSafe';
 import { OIDC_FAILURE } from './oidcFailure';
+import type { MockInstance } from 'vitest';
 
 /**
  * Fixture identifiers, deliberately distinctive.
@@ -45,7 +46,7 @@ function joseOptions(): Parameters<typeof fetchJwksLeakSafe>[1] {
   };
 }
 
-let consoleError: ReturnType<typeof vi.spyOn>;
+let consoleError: MockInstance<typeof console.error>;
 
 /** Every string this module wrote to the console during the current test, concatenated. */
 function loggedText(): string {

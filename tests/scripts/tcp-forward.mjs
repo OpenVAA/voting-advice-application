@@ -5,7 +5,7 @@
  *
  * Why this exists at all. Both of the suite's endpoint literals hardcode `localhost`: `tests/playwright.config.ts` derives `baseURL` as `http://localhost:${FRONTEND_PORT}`, and `tests/tests/utils/supabaseAdminClient.ts` defaults `SUPABASE_URL` to `http://localhost:54321`. The candidate `storageState` cookie is minted for the origin `localhost:<port>`. So the container must see the host's services on its OWN loopback, under that name, byte-identically to the host -- and `--network host` is not a reliable answer on macOS Docker Desktop, where it maps to the Linux VM rather than to the macOS host.
  *
- * Why not socat. `socat` is NOT installed in `mcr.microsoft.com/playwright:v1.58.2-noble` (measured: `command -v socat` returns nothing in the pinned image, while `curl`, `npx` and `node` are all present). The earlier prose recipe's forwarding step therefore cannot run as written. Installing socat via `apt-get` is kept as a documented fallback, but it must NEVER be baked into a derived image: a mutated image changes the digest, and same-image/same-digest comparability is the entire reason the original injection is reused rather than rebuilt.
+ * Why not socat. `socat` is NOT installed in `mcr.microsoft.com/playwright:v1.63.0-noble`, the image `visual-container.sh` pins (measured in that image: `command -v socat` finds nothing, while `curl`, `npx` and `node` are all present). Installing socat via `apt-get` is kept as a documented fallback, but it must NEVER be baked into a derived image: a mutated image changes the digest, and same-image/same-digest comparability is the entire reason the original injection is reused rather than rebuilt.
  *
  * Usage:
  *   node tests/scripts/tcp-forward.mjs <listenPort>:<upstreamHost>:<upstreamPort> [...]

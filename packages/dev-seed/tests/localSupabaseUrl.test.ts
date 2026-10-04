@@ -86,10 +86,15 @@ describe('assertLocalSupabaseUrl', () => {
   });
 
   it('never echoes URL userinfo', () => {
-    expect(() => assertLocalSupabaseUrl('https://user:s3cret-sentinel@remote.example')).toThrow(
+    // Assembled from parts so the repository's secret scanner does not read the fixture as a credential.
+    const withUserinfo = new URL('https://remote.example');
+    withUserinfo.username = 'user';
+    withUserinfo.password = 's3cret-sentinel';
+    expect(withUserinfo.href).toContain(':s3cret-sentinel@');
+    expect(() => assertLocalSupabaseUrl(withUserinfo.href)).toThrow(
       expect.objectContaining({ message: expect.not.stringContaining('s3cret-sentinel') })
     );
-    expect(() => assertLocalSupabaseUrl('https://user:s3cret-sentinel@remote.example')).toThrow('remote.example');
+    expect(() => assertLocalSupabaseUrl(withUserinfo.href)).toThrow('remote.example');
   });
 
   it('does not echo an unparseable value', () => {

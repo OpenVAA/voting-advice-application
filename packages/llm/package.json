@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "scripts": {
     "build": "tsup && tsc --emitDeclarationOnly --outDir dist",
-    "lint": "eslint --flag v10_config_lookup_from_file src/",
-    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit --composite false",
     "test:unit": "vitest run",
     "test:watch": "vitest"
   },
@@ -19,16 +19,16 @@
     "@openvaa/shared-config": "workspace:^",
     "tsup": "catalog:",
     "typescript": "catalog:",
+    "vite": "catalog:",
     "vitest": "catalog:"
   },
   "dependencies": {
-    "@ai-sdk/google": "^2.0.20",
-    "@ai-sdk/openai": "^2.0.31",
+    "@ai-sdk/google": "^4.0.82",
+    "@ai-sdk/openai": "^4.0.78",
     "@openvaa/app-shared": "workspace:^",
     "@openvaa/core": "workspace:^",
-    "ai": "^5.0.0",
-    "jsonrepair": "^3.13.0",
-    "openai": "^4.96.0",
+    "ai": "^7.0.116",
+    "js-yaml": "catalog:",
     "zod": "catalog:"
   }
 }

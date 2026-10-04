@@ -32,7 +32,8 @@ vi.mock('../src/supabaseAdminClient', () => {
   const instances: Array<any> = [];
   return {
     TEST_PROJECT_ID: '00000000-0000-0000-0000-000000000001',
-    SupabaseAdminClient: vi.fn().mockImplementation(() => {
+    // A `function` implementation, not an arrow: Writer calls this with `new`, and an arrow function cannot be constructed.
+    SupabaseAdminClient: vi.fn().mockImplementation(function () {
       const callOrder: Array<string> = [];
       const instance = {
         bulkImport: vi.fn().mockImplementation(async (data: Record<string, unknown>) => {
