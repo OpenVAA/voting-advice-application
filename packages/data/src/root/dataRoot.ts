@@ -438,8 +438,7 @@ export class DataRoot extends Updatable {
     constituencyId?: Id;
   }): Array<NominationVariant[TEntity]> {
     const collection = this.children[this.getNominationCollectionName(entityType)] as
-      | MappedCollection<NominationVariant[TEntity]>
-      | undefined;
+      MappedCollection<NominationVariant[TEntity]> | undefined;
     return collection
       ? [...collection.values()].filter(
           (n) =>

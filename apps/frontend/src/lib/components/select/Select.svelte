@@ -325,7 +325,7 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
               </span>
             </li>
           {:else}
-            <li class="pointer-events-none rounded-lg text-secondary">
+            <li class="text-secondary pointer-events-none rounded-lg">
               <span>{t('components.select.noMatchingOptions')}</span>
             </li>
           {/each}
