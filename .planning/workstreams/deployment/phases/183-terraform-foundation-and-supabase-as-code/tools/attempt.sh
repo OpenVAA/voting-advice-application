@@ -42,8 +42,9 @@
 # file that `path` names. Its screen applies five rules, in this order, to each line, and reports the first
 # hit by line number and class:
 #   1 unnamed-line  Every non-empty line is a record line (`OPERATOR_...=` or `PLAN_REVIEWED=`), a named
-#                   result line (`s<step>[a-z]_<field>=`, field of a-z 0-9 _ .), an answer line
-#                   (`answer_<name>=`) or a note (`note: `). Raw output, JSON, a bare value: refused.
+#                   result line (`s<step>[a-z][<n>]_<field>=`, as `s8d1_decision=`; field of a-z 0-9 _ .),
+#                   an answer line (`answer_<name>=`) or a note (`note: `). Raw output, JSON, a bare value:
+#                   refused.
 #   2 secret-name   A name followed by `=` or `:` (optional closing quote and spaces before, optional opening
 #                   quote after) and a value, where the name's last word is a secret word. Names split at
 #                   `_`, `-`, `.` and at lower/digit-to-capital changes; trailing all-digit words are
@@ -62,7 +63,7 @@
 #                   One exemption, ruled by the operator on 2026-10-21 (plan 183-14, attempt 14-2): the
 #                   verdict that `evaluate` in `infra/scripts/account-inventory.sh` prints, `assert: PASS: ...`
 #                   or `assert: FAIL: ...`, reads its `PASS`/`FAIL` as a name. That one token is not judged
-#                   when the WHOLE line is a named result line (`s<step>[a-z]_<field>=`) whose value is exactly
+#                   when the WHOLE line is a named result line (`s<step>[a-z][<n>]_<field>=`) whose value is exactly
 #                   one of the script's seven verdict forms, with a decimal count for each `%d` and, for each
 #                   path prefix, `/` or `/<seg>/.../` with segments of A-Z a-z 0-9 _ . - only. Every other name
 #                   on the line is judged as before (a field named `s5_password=` still refuses), and so are
@@ -282,7 +283,7 @@ sub is_secret_word {
 sub rule1 {
   my $l = shift;
   return 1 if $l =~ /^(?:OPERATOR_[A-Za-z0-9_]+|PLAN_REVIEWED)=/;
-  return 1 if $l =~ /^s[0-9]+[a-z]?_[a-z0-9_.]+=/;
+  return 1 if $l =~ /^s[0-9]+[a-z]?[0-9]*_[a-z0-9_.]+=/;
   return 1 if $l =~ /^answer_[a-z0-9_.]+=/;
   return 1 if $l =~ /^note: /;
   return 0;
@@ -300,7 +301,7 @@ my @verdict_forms = (
   'FAIL: [0-9]+ of [0-9]+ IAM users carry an inline policy or could not be read',
 );
 my $verdict_alternation = join '|', @verdict_forms;
-my $VERDICT = qr{^(s[0-9]+[a-z]?_[a-z0-9_.]+=assert: )(?:$verdict_alternation)\z};
+my $VERDICT = qr{^(s[0-9]+[a-z]?[0-9]*_[a-z0-9_.]+=assert: )(?:$verdict_alternation)\z};
 
 sub rule2 {
   my $l = shift;
@@ -649,6 +650,10 @@ note: sender noreply@staging.openvaa.org, DMARC reports to dmarc_agg@vali.email"
 s6_push=git@github.com:OpenVAA/voting-advice-application.git"
   st_put "pass: S3 object ARN of the state bucket" 0 - "$A
 s2_state_path=arn:aws:s3:::openvaa-tfstate-471112560111/pipeline/staging/aws/terraform.tfstate"
+  st_put "pass: a numbered sub-step, s8d1_decision" 0 - "$A
+s8d1_decision=s3:ListBucket	arn:aws:s3:::openvaa-tfstate-471112560111	allowed"
+  st_put "rule 1: a letter after the sub-step digit, s8d1x_y" 3 unnamed-line "$A
+s8d1x_y=fine"
   st_put "pass: verdict PASS, IAM users" 0 - "$A
 s5b_inv=assert: PASS: 2 IAM users, none with an inline policy"
   st_put "pass: verdict PASS, roles and users under a prefix" 0 - "$A
