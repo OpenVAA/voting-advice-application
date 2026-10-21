@@ -265,7 +265,8 @@ by hand. Run it in one terminal, signed in with the identity of Step 1.
     for o in state_bucket_name registry_url plan_role_arn deploy_role_arn budget_name; do echo "s10_$o=$(terraform output -raw "$o")"; done
     ```
 
-11. Last item, also when you stop early or a command failed:
+11. Last item, also when you stop early or a command failed. Paste the lines of items 3 to 10 first:
+    this item removes the logs they came from, and a line not yet copied cannot be printed again.
 
     ```bash
     rm -f tfplan
@@ -395,10 +396,12 @@ Step 6.
    Q='EvaluationResults[].[EvalActionName,EvalResourceName,EvalDecision]'
    ```
 
-   (a) The plan role, reads of state:
+   (a) The plan role, reads of state, one call per resource. Given two resources in one call, the
+   simulator returns one result per action and not one per resource.
 
    ```bash
-   aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" --action-names s3:GetObject --resource-arns "arn:aws:s3:::$B/hand/staging/supabase/terraform.tfstate" "arn:aws:s3:::$B/$K" --query "$Q" --output text | sed 's/^/s8a_decision=/'
+   aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" --action-names s3:GetObject --resource-arns "arn:aws:s3:::$B/hand/staging/supabase/terraform.tfstate" --query "$Q" --output text | sed 's/^/s8a_decision=/'
+   aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" --action-names s3:GetObject --resource-arns "arn:aws:s3:::$B/$K" --query "$Q" --output text | sed 's/^/s8a_decision=/'
    ```
 
    (b) The plan role, secret reads:
