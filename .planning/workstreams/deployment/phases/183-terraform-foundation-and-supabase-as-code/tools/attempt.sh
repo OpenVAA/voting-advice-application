@@ -59,6 +59,16 @@
 #                   pass without a list because only the last word counts (`BucketKeyEnabled`, `KeyId`,
 #                   `password_min_length`, `refresh_token_rotation_enabled`). A name added later is added
 #                   here with its reason and a self-test case.
+#                   One exemption, ruled by the operator on 2026-10-21 (plan 183-14, attempt 14-2): the
+#                   verdict that `evaluate` in `infra/scripts/account-inventory.sh` prints, `assert: PASS: ...`
+#                   or `assert: FAIL: ...`, reads its `PASS`/`FAIL` as a name. That one token is not judged
+#                   when the WHOLE line is a named result line (`s<step>[a-z]_<field>=`) whose value is exactly
+#                   one of the script's seven verdict forms, with a decimal count for each `%d` and, for each
+#                   path prefix, `/` or `/<seg>/.../` with segments of A-Z a-z 0-9 _ . - only. Every other name
+#                   on the line is judged as before (a field named `s5_password=` still refuses), and so are
+#                   rules 3 to 5. Any other text before, after or inside the verdict (`assert: PASS: hunter2`,
+#                   a lower-case `pass:`, a trailing `password: ...`, a prefix holding `:`) fails the match and
+#                   the line is judged whole. A change to a verdict in that script changes the list here.
 #   3 token-shape   With or without a name: an AWS access key id (AKIA/ASIA + 16); a JSON Web Token (parts
 #                   joined by dots, the first beginning `eyJ`; one dot is enough); `sbp_`/`sb_secret_` + 10;
 #                   `ghp_`/`gho_`/`ghu_`/`ghs_`/`ghr_`/`github_pat_` + 20; a private-key header; a URL with
@@ -278,10 +288,26 @@ sub rule1 {
   return 0;
 }
 
+# The verdict forms of `evaluate` in infra/scripts/account-inventory.sh, as rule 2's one exemption.
+my $IAM_PREFIX = '/(?:[A-Za-z0-9_.\-]+/)*';
+my @verdict_forms = (
+  'PASS: [0-9]+ IAM users, none with an inline policy',
+  "PASS: [0-9]+ roles and users under $IAM_PREFIX, none with an inline policy",
+  'FAIL: the(?: (?:user|role))+ list could not be read, so nothing was judged',
+  'FAIL: nothing examined: the input holds no complete user or role list',
+  "FAIL: nothing examined: no role or user lies under $IAM_PREFIX",
+  "FAIL: [0-9]+ of [0-9]+ roles and users under $IAM_PREFIX carry an inline policy or could not be read",
+  'FAIL: [0-9]+ of [0-9]+ IAM users carry an inline policy or could not be read',
+);
+my $verdict_alternation = join '|', @verdict_forms;
+my $VERDICT = qr{^(s[0-9]+[a-z]?_[a-z0-9_.]+=assert: )(?:$verdict_alternation)\z};
+
 sub rule2 {
   my $l = shift;
+  my $verdict_at = $l =~ $VERDICT ? length($1) : -1;
   while ($l =~ /([A-Za-z0-9_.\-]+)["']?[ \t]*[=:][ \t]*(["']?)/g) {
     my ($name, $q) = ($1, $2);
+    next if $-[1] == $verdict_at;
     my $rest = substr($l, pos($l));
     my $empty = $rest =~ /^\s*$/
       || $rest =~ /^\(sensitive value\)/
@@ -541,6 +567,22 @@ s1_x=bearer=abc"
 s1_x=db_passwords=a,b"
   st_put "rule 2: bypass=1 (refused on purpose)" 3 secret-name "$A
 s1_x=bypass=1"
+  st_put "rule 2: pass: hunter2 on an inventory line" 3 secret-name "$A
+s5b_inv=pass: hunter2"
+  st_put "rule 2: assert: PASS: hunter2 (not a verdict form)" 3 secret-name "$A
+s5b_inv=assert: PASS: hunter2"
+  st_put "rule 2: verdict then password: hunter2" 3 secret-name "$A
+s5b_inv=assert: PASS: 2 IAM users, none with an inline policy password: hunter2"
+  st_put "rule 2: verdict with a lower-case pass:" 3 secret-name "$A
+s5b_inv=assert: pass: 2 IAM users, none with an inline policy"
+  st_put "rule 2: verdict under a field named password" 3 secret-name "$A
+s5_password=assert: PASS: 2 IAM users, none with an inline policy"
+  st_put "rule 2: verdict on an answer line" 3 secret-name "$A
+answer_inv=assert: PASS: 2 IAM users, none with an inline policy"
+  st_put "rule 2: verdict whose prefix holds pass:" 3 secret-name "$A
+s5b_inv=assert: PASS: 2 roles and users under /pass:hunter2/, none with an inline policy"
+  st_put "rule 3: verdict holding an access key id as its prefix" 3 token-shape "$A
+s5b_inv=assert: FAIL: nothing examined: no role or user lies under /AKIAABCDEFGHIJKLMNOP/"
 
   st_put "rule 3: AWS access key id" 3 token-shape "$A
 s1_value=AKIAABCDEFGHIJKLMNOP"
@@ -607,6 +649,20 @@ note: sender noreply@staging.openvaa.org, DMARC reports to dmarc_agg@vali.email"
 s6_push=git@github.com:OpenVAA/voting-advice-application.git"
   st_put "pass: S3 object ARN of the state bucket" 0 - "$A
 s2_state_path=arn:aws:s3:::openvaa-tfstate-471112560111/pipeline/staging/aws/terraform.tfstate"
+  st_put "pass: verdict PASS, IAM users" 0 - "$A
+s5b_inv=assert: PASS: 2 IAM users, none with an inline policy"
+  st_put "pass: verdict PASS, roles and users under a prefix" 0 - "$A
+s5b_inv=assert: PASS: 3 roles and users under /openvaa/, none with an inline policy"
+  st_put "pass: verdict FAIL, offending IAM users" 0 - "$A
+s5b_inv=assert: FAIL: 1 of 2 IAM users carry an inline policy or could not be read"
+  st_put "pass: verdict FAIL, offending under a prefix" 0 - "$A
+s5b_inv=assert: FAIL: 1 of 3 roles and users under /openvaa/ci/ carry an inline policy or could not be read"
+  st_put "pass: verdict FAIL, lists not read" 0 - "$A
+s5b_inv=assert: FAIL: the user role list could not be read, so nothing was judged"
+  st_put "pass: verdict FAIL, no complete list" 0 - "$A
+s5b_inv=assert: FAIL: nothing examined: the input holds no complete user or role list"
+  st_put "pass: verdict FAIL, nothing under the root prefix" 0 - "$A
+s5b_inv=assert: FAIL: nothing examined: no role or user lies under /"
 
   if [ "$ST_FAILS" -eq 0 ]; then
     echo "self-test: all cases passed"
