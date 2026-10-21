@@ -1,30 +1,53 @@
 # 183-15 CI evidence: the `infra-validate` job
 
-Attempt: 15-1 20261021T084738Z.59d6affae
+Attempt: 15-1 20261021T105258Z.18fdcd6ca
 
 ## What would be published
 
-**Status of this manifest: the scans STOPPED Task 1.** Three findings meet the plan's stop rules (two private-key headers and one AWS access key id shape, each new relative to `origin/main`). Nothing has been pushed, and the Task 2 checkpoint has not been raised. Each finding is classified below; whether the stop rules are amended, the files changed, or the publication declined is for the operator to decide.
+**Status of this manifest: ready for the operator's review (Task 2).** Nothing has been pushed. Every scan finding below is on the list the operator accepted on 2026-10-21; no scan stops the task.
+
+Why this is a second attempt. The first attempt of Task 1 (`15-1 20261021T084738Z.59d6affae`, commits `b263b1cd9a18bf6028228b375f87661eec4e2edb` / `514f4a3c6da2e583991feac0b64f2c96ee5810d8`) stopped on three scan findings. On 2026-10-21 the operator ruled (option (a)) that the plan's stop rules accept exactly those classified findings, by path and kind, and the plan was amended in commit `18fdcd6ca3a61738e8103343eace6d773a5dd460`. Every other stop rule is unchanged and nothing built or scanned was narrowed. This attempt rebuilt both commits from the new `HEAD` and reran every scan; the earlier commits are superseded and no confirmation given for them counts.
 
 ### The two commits
 
 | Branch | Commit (full) | Parent |
 |--------|---------------|--------|
-| `ci-evidence/183-infra-validate` (green) | `b263b1cd9a18bf6028228b375f87661eec4e2edb` | `59f8dacdd1e22a9dde7f45b2f5dbf65c174e5677` (`origin/main`) |
-| `ci-evidence/183-infra-validate-red` (red) | `514f4a3c6da2e583991feac0b64f2c96ee5810d8` | `59f8dacdd1e22a9dde7f45b2f5dbf65c174e5677` (`origin/main`) |
+| `ci-evidence/183-infra-validate` (green) | `b0c910e9f350465f83482ef31db3b7f55a4d3bc4` | `59f8dacdd1e22a9dde7f45b2f5dbf65c174e5677` (`origin/main`) |
+| `ci-evidence/183-infra-validate-red` (red) | `a58cb0ad73b659e73da9402d9ba3d1ff2eb94b2d` | `59f8dacdd1e22a9dde7f45b2f5dbf65c174e5677` (`origin/main`) |
 
-- Built from `HEAD` `59d6affaeb5d5e150e634b069623e69d49a370a5` (branch `feat/deployment-terraform-supabase`), with a temporary index: `git read-tree HEAD`, then `.planning` and `.bg-shell` removed from that index.
-- Tracked tree sample before: clean (`git status --porcelain --untracked-files=no` printed nothing). After: clean. `HEAD` before and after: `59d6affaeb5d5e150e634b069623e69d49a370a5`, unchanged.
+- Built from `HEAD` `18fdcd6ca3a61738e8103343eace6d773a5dd460` (branch `feat/deployment-terraform-supabase`), with a temporary index: `git read-tree HEAD`, then `.planning` and `.bg-shell` removed from that index. `origin/main` was fetched first, without a credential, by its HTTPS address.
+- Tracked tree sample before: clean (`git status --porcelain --untracked-files=no` printed nothing). After: clean. `HEAD` before and after: `18fdcd6ca3a61738e8103343eace6d773a5dd460`, unchanged.
 - The green tree holds 3251 files.
-- **The tree is the committed tree of this branch, so a push publishes everything that phases 181 and 182 (and every earlier unmerged phase on this branch) have committed on it, not only the Terraform code of phase 183.** `origin/main` is at 2026-09-03; the list below has 4192 lines (2408 added, 1208 deleted, 184 modified, 392 renamed).
+- **The tree is the committed tree of this branch, so a push publishes everything that phases 181 and 182 (and every earlier unmerged phase on this branch) have committed on it, not only the Terraform code of phase 183.** The list below has 4192 lines (2408 added, 1208 deleted, 184 modified, 392 renamed).
 - `git diff --name-only <green> <red>` lists exactly two files: `infra/envs/example/aws/main.tf` and `infra/envs/example/aws/variables.tf`.
   - `variables.tf`: line 3 `type        = string` becomes `type   =   string`, which `terraform fmt -check` rejects (checked locally with Terraform 1.14.7: exit 3).
   - `main.tf`: an appended `output "evidence_undeclared_variable"` block whose value is `var.not_declared_in_this_root`, which `terraform validate` rejects. It is itself formatted (local `terraform fmt -check` exit 0), so the formatting step fails on `variables.tf` alone.
 - Both commits touch non-Markdown paths relative to `origin/main`, so `paths-ignore` does not swallow the run.
 
+Files that differ from `origin/main` on the green branch, by top-level directory (a rename is counted under its new path; the full list is below):
+
+| Top-level | Total | Added | Modified | Renamed | Deleted |
+|-----------|-------|-------|----------|---------|---------|
+| `(root)` | 19 | 6 | 12 | 0 | 1 |
+| `.agents/` | 1 | 0 | 1 | 0 | 0 |
+| `.changeset/` | 2 | 2 | 0 | 0 | 0 |
+| `.claude/` | 105 | 105 | 0 | 0 | 0 |
+| `.github/` | 10 | 3 | 7 | 0 | 0 |
+| `.husky/` | 1 | 0 | 1 | 0 | 0 |
+| `.yarn/` | 2 | 1 | 0 | 0 | 1 |
+| `apps/` | 1964 | 1576 | 0 | 388 | 0 |
+| `backend/` | 263 | 0 | 0 | 0 | 263 |
+| `docs/` | 192 | 1 | 0 | 0 | 191 |
+| `frontend/` | 740 | 0 | 0 | 0 | 740 |
+| `infra/` | 75 | 75 | 0 | 0 | 0 |
+| `packages/` | 422 | 258 | 159 | 0 | 5 |
+| `scripts/` | 108 | 106 | 0 | 2 | 0 |
+| `security/` | 1 | 1 | 0 | 0 | 0 |
+| `tests/` | 287 | 274 | 4 | 2 | 7 |
+
 ### What the remote holds, and the push command
 
-Read with `git -c credential.helper= ls-remote https://github.com/OpenVAA/voting-advice-application.git refs/heads/ci-evidence/183-infra-validate refs/heads/ci-evidence/183-infra-validate-red` (no credential):
+Read with `git -c credential.helper= ls-remote https://github.com/OpenVAA/voting-advice-application.git refs/heads/ci-evidence/183-infra-validate refs/heads/ci-evidence/183-infra-validate-red` (no credential), exit 0 with no output:
 
 - `ci-evidence/183-infra-validate`: none (the remote does not hold the branch)
 - `ci-evidence/183-infra-validate-red`: none
@@ -37,25 +60,26 @@ git push --force-with-lease=ci-evidence/183-infra-validate: --force-with-lease=c
 
 ### Scan results (whole tree of each commit)
 
-A finding is recorded as a path and a kind, never as a value. The green and red trees gave the same results.
+A finding is recorded as a path and a kind, never as a value. The green and red trees gave the same results. "Accepted" means the finding is on the list of the operator's ruling of 2026-10-21, matched by path and by the kind observed here.
 
-1. **Private-key headers** (`git grep -I -l -e 'BEGIN [A-Z ]*PRIVATE KEY'`): 2 findings. **STOPS.**
-   - `packages/dev-tools/src/pem-to-jwk.ts`: header text inside a regular expression and an error message (lines 61, 62, 67); no key material. Absent from `origin/main`.
-   - `tests/tests/support/mock-oidc-key.pem`: a real private key, the test-only self-signed localhost key of the mock OIDC issuer, named in `.gitignore` as tracked on purpose and listed in `.github/trufflehog-exclude-paths.txt`. Absent from `origin/main`. (`.gitignore` names a second tracked file, `tests/tests/support/mock-oidc-cert.pem`, a certificate, which holds no private-key header.)
+1. **Private-key headers** (`git grep -I -l -e 'BEGIN [A-Z ]*PRIVATE KEY'`): 2 findings, both accepted. No stop.
+   - `packages/dev-tools/src/pem-to-jwk.ts` (grep hits on lines 61 and 67; line 62 holds a third header pattern the grep's character class does not match): header text inside regular expressions and an error message. The file holds no key material (no base64 key-body line). Absent from `origin/main`. Accepted kind: header text in a regex / error message, no key.
+   - `tests/tests/support/mock-oidc-key.pem`: a 28-line `PRIVATE KEY` PEM, the test-only key of the mock OIDC issuer, negated in `.gitignore` (line 17) as tracked on purpose and listed in `.github/trufflehog-exclude-paths.txt` (in the green tree too). Absent from `origin/main`. Accepted kind: test-only mock OIDC key. (`.gitignore` names a second tracked file, `tests/tests/support/mock-oidc-cert.pem`, a certificate, which holds no private-key header.)
 2. **Environment files** (file name starting `.env`, other than `.env.example`, `.env.sample`, `.env.template`): 0 findings.
-3. **AWS access key ids** (`git grep -I -n -E '(AKIA|ASIA)[0-9A-Z]{16}'`): 1 finding. **STOPS.**
-   - `.yarn/releases/yarn-4.18.1.cjs` line 150: a 20-character substring of a base64-encoded WebAssembly blob in the vendored Yarn release, not a key. Absent from `origin/main` (which vendors `yarn-4.6.0.cjs`), and not a test fixture or documentation example; the path is listed in `.github/trufflehog-exclude-paths.txt`.
-4. **Terraform files**: 0 forbidden paths (no `.planning/`, `.tfstate`, `.tfstate.`, `.tfplan`, `.auto.tfvars`, `tfplan`, `backend_override.tf` or `.terraform/`). In the nine `terraform.tfvars` / `example.tfvars` files: 4 assignments whose name holds `token`, none holding a secret value, and 1 address:
-   - `infra/envs/example/supabase/terraform.tfvars` line 16 `enable_access_token_hook` (boolean `true`); line 26 `rate_limit_token_refresh` (a number).
-   - `infra/envs/scratch/supabase/terraform.tfvars` line 12 `enable_access_token_hook` (boolean `true`).
-   - `infra/envs/staging/supabase/terraform.tfvars` line 14 `enable_access_token_hook` (boolean `true`).
+3. **AWS access key ids** (`git grep -I -n -E '(AKIA|ASIA)[0-9A-Z]{16}'`): 1 finding, accepted. No stop.
+   - `.yarn/releases/yarn-4.18.1.cjs` line 150 (a single line of 223 093 bytes): a key-shaped 20-character substring of encoded data in the vendored Yarn release, not a key. Absent from `origin/main` (which vendors `yarn-4.6.0.cjs`); the path matches `^\.yarn/releases/.*\.cjs$` in `.github/trufflehog-exclude-paths.txt`. Accepted kind: key-shaped substring in the vendored Yarn release.
+4. **Terraform files**: 0 forbidden paths (no `.planning/`, `.tfstate`, `.tfstate.`, `.tfplan`, `.auto.tfvars`, `tfplan`, `backend_override.tf` or `.terraform/`). Nine `terraform.tfvars` / `example.tfvars` files, read with `git show`: 4 assignments whose name holds `token`, none of them a secret value (each is a feature flag or a rate number), and 2 addresses, both allowed. No stop; the same classification the first attempt gave, which the operator read.
+   - `infra/envs/example/supabase/terraform.tfvars` line 16 `enable_access_token_hook` (boolean); line 26 `rate_limit_token_refresh` (a number).
+   - `infra/envs/scratch/supabase/terraform.tfvars` line 12 `enable_access_token_hook` (boolean).
+   - `infra/envs/staging/supabase/terraform.tfvars` line 14 `enable_access_token_hook` (boolean).
    - `infra/envs/example/supabase/terraform.tfvars` line 39: an address on `vaa.example.org`, a subdomain of `example.org`.
+   - `infra/envs/staging/dns-mail/terraform.tfvars` line 13: `dmarc_agg@vali.email`, the allowed DMARC report address.
    - `infra/bootstrap/terraform.tfvars` holds no address, so the 183-R2 condition does not arise (plan 183-14's `14-3` attempt does not exist yet).
-5. **The repository's own secret scan**: ran locally before the push. trufflehog **3.95.2** on the workstation; the workflow pins **3.97.9**. Range `origin/main`..green, with `--config=.github/trufflehog-openvaa.yml --exclude-paths=.github/trufflehog-exclude-paths.txt --no-update --fail --github-actions`. trufflehog cannot open a linked worktree (its `.git` is a file), so it ran on a throwaway clone in the session scratch directory holding `origin/main` and the green commit only. **Exit status 183: 0 verified, 2 unverified findings**, both detector `URI`:
+5. **The repository's own scan**: ran locally before the push. trufflehog **3.95.2** on the workstation; the workflow pins **3.97.9**. Range `origin/main`..green, with `--config=.github/trufflehog-openvaa.yml --exclude-paths=.github/trufflehog-exclude-paths.txt --no-update --fail --github-actions`, both files taken from the green tree. trufflehog cannot open a linked worktree (its `.git` is a file), so it ran on a throwaway clone in the session scratch directory holding `origin/main` and the green commit only. **Exit status 183: 0 verified, 2 unverified findings**, both detector `URI`, both accepted:
    - `apps/supabase/supabase/functions/account-access/signInLink.test.ts` line 31
    - `tests/tests/utils/mailedLink.test.ts` line 75
 
-   Both are test inputs of the form `https://user:<dummy>@host` that the code under test must refuse. **CI's `secret-scan` job is expected to fail on the green run for these two lines** (it runs the same detectors over the same range), so the green run's run-level conclusion is expected to be `failure` even if `infra-validate` succeeds; the evidence is read at job level.
+   Both are dummy `user:<dummy>@host` test inputs that the code under test must refuse. No other finding. **CI's `secret-scan` job is expected to conclude `failure` on the green run for these two lines** (it runs the same detectors over the same range), so the green run's run-level conclusion is expected to be `failure` even if `infra-validate` succeeds. That does not affect the evidence, which is read at job level for `infra-validate`.
 
 ### Files that differ from `origin/main` (green branch)
 
