@@ -48,7 +48,10 @@
 # user is printed as user-<n>, n being its position in the order the user list gives, because a user
 # name is often a person's name or address. Run aws iam list-users --query 'Users[].UserName' on your
 # own machine to see which user a line means. A tag is printed by its key alone, except InvokedBy,
-# whose value is one of AWS's own words. Any field that still holds an "@" is printed as "redacted".
+# whose value is one of AWS's own words, and except a key in the shape of an access key id, which the
+# console sets as the key of an access key's description tag: it is printed as access-key-description.
+# Any field that still holds an "@" is printed as "redacted", and any access key id that still reaches
+# a line is printed as "redacted-key-id".
 
 set -euo pipefail
 set -f
@@ -104,7 +107,13 @@ join_list() {
   printf '[%s]' "$out"
 }
 
-# Tag lines "Key<TAB>Value" printed as [Key,InvokedBy=Value]: keys only, except InvokedBy.
+# True when the argument is an access key id: AKIA (long-lived) or ASIA (temporary) and 16 more.
+is_access_key_id() {
+  [[ "$1" =~ ^(AKIA|ASIA)[A-Z0-9]{16}$ ]]
+}
+
+# Tag lines "Key<TAB>Value" printed as [Key,InvokedBy=Value]: keys only, except InvokedBy. A key that
+# is an access key id is printed as access-key-description.
 fmt_tags() {
   local out="" key value item
   while IFS=$'\t' read -r key value; do
@@ -113,6 +122,9 @@ fmt_tags() {
     item="$(redact "$key")"
     item="${item// /_}"
     item="${item//,/_}"
+    if is_access_key_id "$key"; then
+      item="access-key-description"
+    fi
     if [ "$key" = "InvokedBy" ]; then
       case "$value" in
         "" | *[!A-Za-z0-9]*) ;;
@@ -193,10 +205,12 @@ err_code_of() {
   printf '%s' "${code:-Unknown}"
 }
 
-# Second barrier over every printed line: a token holding an "@" becomes "redacted", and anything after
-# an assumed role's name is cut off.
+# Second barrier over every printed line: a token holding an "@" becomes "redacted", an access key id
+# becomes "redacted-key-id", and anything after an assumed role's name is cut off.
 scrub() {
-  sed -E -e 's/[^[:space:]]*@[^[:space:]]*/redacted/g' -e 's#(assumed-role/[^/[:space:]]+)/[^[:space:]]*#\1#g'
+  sed -E -e 's/[^[:space:]]*@[^[:space:]]*/redacted/g' \
+    -e 's/(AKIA|ASIA)[A-Z0-9]{16}/redacted-key-id/g' \
+    -e 's#(assumed-role/[^/[:space:]]+)/[^[:space:]]*#\1#g'
 }
 
 # ---------------------------------------------------------------------------------------------------
@@ -531,8 +545,11 @@ st_present() {
 }
 
 self_test() {
-  local clean inline_user formatted errfile scrubbed tab
+  local clean inline_user formatted errfile scrubbed tab key_id temp_key_id
   tab="$(printf '\t')"
+  # Built from parts so that the source holds no access-key-shaped literal.
+  key_id="AKIA""IOSFODNN7EXAMPLE"
+  temp_key_id="ASIA""IOSFODNN7EXAMPLE"
 
   clean="users examined=2
 user user-1 path=other inline=[] attached=[AdministratorAccess] groups=[] tags=[]
@@ -578,6 +595,8 @@ error roles AccessDenied"
 Contact${tab}teppo@example.org
 cost center${tab}42")"
     fmt_user 3 /openvaa/ "openvaa-staging-smtp" "[]" "[openvaa-ses-send]" "[]" "$(fmt_tags "Project${tab}openvaa")"
+    fmt_user 5 / "media-uploader" "[s3-static-media-access]" "[]" "[]" "$(fmt_tags "${key_id}${tab}media upload key
+${temp_key_id}${tab}session")"
     fmt_user 4 /openvaa/ "svc@example.org" "$(join_list "Inline@example.org")" "[]" "[]" "[]"
     fmt_role /openvaa/ "openvaa-plan" "[]"
     fmt_group "admins" "[]"
@@ -602,9 +621,13 @@ EMAIL_ADDRESS${tab}third@example.org${tab}PENDING"
   st_present "format: a name with an @ under /openvaa/ is redacted" "$formatted" "user redacted path=/openvaa/ inline=[redacted]"
   st_present "format: a domain identity prints by name" "$formatted" "ses-domain eu-north-1 staging.openvaa.org status=SUCCESS"
   st_present "format: address identities print as a count" "$formatted" "ses-address-identities eu-north-1 count=2"
+  st_absent "format: no long-lived access key id reaches the output" "$formatted" "AKIA"
+  st_absent "format: no temporary access key id reaches the output" "$formatted" "ASIA"
+  st_absent "format: an access key's description tag value is not printed" "$formatted" "media upload"
+  st_present "format: a tag keyed by an access key id prints as access-key-description" "$formatted" "user user-5 path=other inline=[s3-static-media-access] attached=[] groups=[] tags=[access-key-description,access-key-description]"
 
   st_judge "format: the formatted lines, users with an inline policy among them, fail the judge" 1 users "" "$formatted
-users examined=4"
+users examined=5"
 
   errfile="${TMPDIR:-/tmp}/openvaa-inventory-selftest.$$"
   printf '%s\n' "An error occurred (AccessDenied) when calling the ListUsers operation: User: arn:aws:sts::471112560111:assumed-role/Admin/matti@example.org is not authorized" > "$errfile"
@@ -619,6 +642,9 @@ users examined=4"
   scrubbed="$(printf '%s\n' "caller principal=assumed-role/Admin/matti@example.org owner=a@b.example" | scrub)"
   st_absent "scrub: no @ survives the second barrier" "$scrubbed" "@"
   st_absent "scrub: no session name survives the second barrier" "$scrubbed" "matti"
+  scrubbed="$(printf '%s\n' "user user-2 path=other inline=[] attached=[] groups=[] tags=[${key_id},${temp_key_id}]" | scrub)"
+  st_absent "scrub: no access key id survives the second barrier" "$scrubbed" "IOSFODNN7EXAMPLE"
+  st_present "scrub: an access key id becomes redacted-key-id" "$scrubbed" "tags=[redacted-key-id,redacted-key-id]"
 
   echo "self-test: $ST_CASES cases, $ST_FAILED failed"
   [ "$ST_FAILED" -eq 0 ]
