@@ -1,0 +1,41 @@
+{
+  "contestantApp.register": {
+    "code": "Rekisteröintikoodi",
+    "codeFormat": "Koodi näyttää tältä: ABCD-EFGH-JKMN. Isoilla ja pienillä kirjaimilla ei ole eroa.",
+    "codeRequired": "Kirjoita rekisteröintikoodisi.",
+    "codeUnconfirmed": "Emme voineet vahvistaa rekisteröintikoodiasi.",
+    "didYouAlreadyRegister": "Oletko jo rekisteröitynyt?",
+    "emailEntry": {
+      "ingress": "Kirjoita sähköpostiosoite, jota haluat käyttää. Lähetämme siihen kirjautumislinkin, ja jatkossa kirjaudut tällä osoitteella.",
+      "mismatch": "Sähköpostiosoitteet eivät täsmää.",
+      "title": "Kirjoita sähköpostiosoitteesi"
+    },
+    "emailInfo": "Kirjoita sähköpostiosoitteesi, niin lähetämme sinulle linkin, jolla voit kirjautua.",
+    "enterCode": "Kirjoita saamasi rekisteröintikoodi.",
+    "modes": {
+      "code": "Rekisteröintikoodilla",
+      "email": "Sähköpostiosoitteellani",
+      "identityProvider": "Pankkitunnuksilla",
+      "legend": "Miten haluat rekisteröityä?",
+      "required": "Valitse, miten haluat rekisteröityä."
+    },
+    "passwordValidation": {
+      "commonPatterns": "Sisältää yleisiä merkkisarjoja",
+      "length": "Vähintään {minPasswordLength} merkkiä",
+      "lowercase": "Pieni kirjain",
+      "number": "Numero",
+      "repetition": "Sisältää merkkien toistoa",
+      "symbol": "Erikoismerkki (kuten !?%#€)",
+      "uppercase": "Iso kirjain",
+      "username": "Vältä nimesi käyttämistä salasanassa"
+    },
+    "register": "Rekisteröidy",
+    "signIn": {
+      "failed": "Kirjautuminen tällä salasanalla ei onnistunut. Yritä uudelleen tai pyydä alta kirjautumislinkki.",
+      "ingress": "Näyttää siltä, että olet jo rekisteröitynyt. Kirjoita salasanasi kirjautuaksesi.",
+      "noPasswordYetInfo": "Lähetämme kirjautumislinkin sähköpostiosoitteeseen, jolla rekisteröidyit.",
+      "title": "Kirjaudu salasanallasi"
+    },
+    "title": "Rekisteröidy"
+  }
+}

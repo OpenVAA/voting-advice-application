@@ -1,0 +1,40 @@
+{
+  "api": {
+    "db_schema": "public,graphql_public",
+    "db_extra_search_path": "public,extensions",
+    "max_rows": 49999
+  },
+  "auth": {
+    "disable_signup": true,
+    "mailer_autoconfirm": false,
+    "external_email_enabled": true,
+    "external_phone_enabled": false,
+    "external_anonymous_users_enabled": false,
+    "security_manual_linking_enabled": false,
+    "jwt_exp": 3600,
+    "refresh_token_rotation_enabled": true,
+    "security_refresh_token_reuse_interval": 10,
+    "password_min_length": 8,
+    "password_required_characters": "",
+    "mailer_secure_email_change_enabled": true,
+    "security_update_password_require_reauthentication": false,
+    "mailer_otp_length": 6,
+    "mailer_otp_exp": 3600,
+    "smtp_max_frequency": 60,
+    "mfa_totp_enroll_enabled": false,
+    "mfa_totp_verify_enabled": false,
+    "mfa_phone_enroll_enabled": false,
+    "mfa_phone_verify_enabled": false,
+    "external_apple_enabled": false,
+    "external_web3_solana_enabled": false
+  },
+  "auth_hook": {
+    "hook_custom_access_token_enabled": true,
+    "hook_custom_access_token_uri": "pg-functions://postgres/public/custom_access_token_hook"
+  },
+  "auth_send_email_hook": {
+    "hook_send_email_enabled": true,
+    "hook_send_email_uri": "pg-functions://postgres/public/send_email_hook"
+  },
+  "redirect_callback_paths": ["/api/auth/callback", "/*/api/auth/callback"]
+}

@@ -1,0 +1,18 @@
+{
+  "contestantApp.login": {
+    "emailRequired": "Ange din e-postadress.",
+    "emailRequiredFirst": "Ange din e-postadress först.",
+    "enterEmailAndPassword": "Ange e-postadressen och lösenordet för att logga in.",
+    "forgotPassword": "Glömt lösenord?",
+    "linkFailed": "Den här länken kan inte längre användas. En länk fungerar en gång, och bara den senaste länken du har bett om fungerar. Be om en ny på samma sätt som förut.",
+    "noPasswordYet": "Jag har inte ställt in något lösenord än",
+    "noPasswordYetInfo": "Vi skickar en länk via e-post som du kan logga in med.",
+    "noProfile": "Ditt användarkonto är inte kopplat till någon profil i den här applikationen. Om du registrerade dig med en annan e-postadress, logga in med den adressen. Kontakta annars supporten.",
+    "passwordRequired": "Ange ditt lösenord.",
+    "signedOut": "Du har loggats ut eftersom uppgifterna om ditt konto inte kunde läsas. Logga in igen. Kontakta supporten om detta upprepas.",
+    "signInWithEmail": "Logga in med e-post",
+    "title": "Registrera dig",
+    "unknownError": "Det uppstod ett fel med dina användardata. Kontakta supporten om problemet kvarstår.",
+    "answersLockedInfo": "Registrering eller redigering av svar är inte längre möjligt, men du kan fortfarande logga in för att se din information."
+  }
+}

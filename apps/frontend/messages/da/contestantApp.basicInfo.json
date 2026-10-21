@@ -1,0 +1,24 @@
+{
+  "contestantApp.basicInfo": {
+    "colorInfo": "Vises bag dit partis forkortelse, når partiet ikke har et logo, og på partisymbolet ved siden af partiets kandidater. Indtast en hex-kode, f.eks. #2546a8, eller brug farvevælgeren, eller lad feltet stå tomt, hvis du ikke ønsker en farve. Farven kan blive justeret automatisk, så den forbliver læsbar; forhåndsvisningen viser resultatet.",
+    "editableInfos": {
+      "description": "Disse oplysninger vises i din profil.",
+      "title": "Din profil"
+    },
+    "error": {
+      "invalidQuestion": "Spørgsmålstype eller svartype er ugyldig for spørgsmål {questionId}"
+    },
+    "instructions": {
+      "candidate": "Udfyld først dine grundlæggende oplysninger, og upload et billede, hvis du ønsker det. Herefter bliver du bedt om at angive dine politiske holdninger.",
+      "organization": "Udfyld først dit partis grundlæggende oplysninger, og upload et logo, hvis du ønsker det. Herefter bliver du bedt om at angive partiets politiske holdninger."
+    },
+    "instructionsNoQuestions": {
+      "candidate": "Udfyld dine grundlæggende oplysninger, og upload et billede, hvis du ønsker det.",
+      "organization": "Udfyld dit partis grundlæggende oplysninger, og upload et logo, hvis du ønsker det."
+    },
+    "logoInfo": "Et kvadratisk billede fungerer bedst: logoet vises i et lille kvadrat, og alt uden for det beskæres.",
+    "requiredInfo": "Du skal udfylde felterne markeret med dette ikon, for at din profil kan blive vist i valgtesten. Du kan dog gemme dine svar og fortsætte senere.",
+    "shortNameInfo": "En kort form af navnet, f.eks. et akronym. Den vises, hvor der er lidt plads, f.eks. ved siden af partiets kandidater. Valgfrit.",
+    "title": "Grundlæggende oplysninger"
+  }
+}

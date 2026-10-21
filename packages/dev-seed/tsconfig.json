@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@openvaa/shared-config/ts",
+  "compilerOptions": {
+    "lib": ["es2022"],
+    "outDir": "./dist",
+    "noEmit": true,
+    "composite": false,
+    "declarationMap": false,
+    "types": ["node"]
+  },
+  "include": ["src/**/*", "tests/**/*", "scripts/**/*"]
+}

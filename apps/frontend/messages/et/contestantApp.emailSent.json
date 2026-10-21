@@ -1,0 +1,33 @@
+{
+  "contestantApp.emailSent": {
+    "askedAgain": "Kui küsisid teist e-kirja vähem kui minut tagasi, ei pruugitud seda kirja saata. Oota, kuni saad uuesti saata, ja vajuta siis nuppu Saada uuesti.",
+    "changeAddress": "Kasuta teist e-posti aadressi",
+    "heroEmoji": "✉️",
+    "intro": {
+      "code": "Saatsime e-kirja aadressile, millega registreerusid. Sisselogimiseks klõpsa kirjas oleval lingil.",
+      "recovery": "Saatsime e-kirja sinu antud aadressile. Sisselogimiseks ja uue parooli määramiseks klõpsa kirjas oleval lingil.",
+      "signIn": "Saatsime e-kirja sinu antud aadressile. Sisselogimiseks klõpsa kirjas oleval lingil."
+    },
+    "newest": "Kui oled küsinud rohkem kui ühe e-kirja, toimib ainult kõige uuemas kirjas olev link.",
+    "notFound": {
+      "withAddress": "Kui sa e-kirja ei leia, kontrolli rämpspostikausta ja seda, et sisestasid oma e-posti aadressi õigesti.",
+      "withoutAddress": "Kui sa e-kirja ei leia, kontrolli rämpspostikausta."
+    },
+    "resend": "Saada uuesti",
+    "resendReady": "Nüüd saad küsida uue e-kirja.",
+    "resendRequested": "Uus e-kiri on küsitud.",
+    "resendWait": [
+      {
+        "declarations": ["input seconds", "local secondsPlural = seconds: plural"],
+        "selectors": ["secondsPlural"],
+        "match": {
+          "secondsPlural=one": "Uut e-kirja saad küsida ühe sekundi pärast.",
+          "secondsPlural=other": "Uut e-kirja saad küsida {seconds} sekundi pärast."
+        }
+      }
+    ],
+    "sentTo": "Saadetud aadressile",
+    "support": "Kui probleem püsib, võta ühendust toega.",
+    "title": "Kontrolli oma e-posti"
+  }
+}

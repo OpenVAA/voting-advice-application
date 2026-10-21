@@ -1,0 +1,9 @@
+{
+  "resource": {
+    "aws_iam_user": {
+      "fixture": {
+        "name": "fixture-json-user"
+      }
+    }
+  }
+}

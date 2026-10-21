@@ -5,10 +5,8 @@ import type { DataObjectData } from './dataObject.type';
  * Furthermore, the values returned can never be `undefined`. In special cases, `null` may be returned, such as for missing `Date`s.
  */
 export type DataAccessor<TData extends DataObjectData, TExclude extends keyof TData = never> = {
-  [TKey in keyof TData as TKey extends IdRef
-    ? never
-    : TKey extends TExclude
-      ? never
-      : TKey]-?: NonNullable<unknown> | null;
+  [
+    TKey in keyof TData as TKey extends IdRef ? never : TKey extends TExclude ? never : TKey
+  ]-?: NonNullable<unknown> | null;
 };
 type IdRef = `${string}Id` | `${string}Ids`;

@@ -1,0 +1,8 @@
+{
+  "contestantApp.entitySelection": {
+    "current": "{entityType} : {name}",
+    "ingress": "Vous pouvez modifier plusieurs profils. Choisissez celui sur lequel vous souhaitez travailler maintenant. Vous pouvez passer à un autre à tout moment depuis le menu.",
+    "switch": "Changer de profil",
+    "title": "Choisissez un profil à modifier"
+  }
+}

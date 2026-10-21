@@ -1,0 +1,71 @@
+<!--@component
+
+# Election selection component
+
+Display the elections to select from, each with a checkbox.
+
+If there's only one option, it is automatically selected and no interactions are allowed.
+
+Each election is a checkbox with the election's name beside it. A name longer than the space beside the checkbox wraps onto further lines instead of widening the selector.
+
+### Properties
+
+- `elections`: The `Election`s to show.
+- `selected`: Bindable value for the `Id`s of the selected elections.
+- `onChange`: Callback triggered when the selection changes.
+- Any valid attributes of a `<div>` element.
+
+### Usage
+
+```tsx
+<ElectionSelector
+  elections={ctx.dataRoot.elections}
+  bind:selected
+  onChange={(ids) => console.info('Selected', ids)} />
+```
+-->
+
+<script lang="ts">
+  import { concatClass, getUUID } from '$lib/utils/components';
+  import type { ElectionSelectorProps } from './ElectionSelector.type';
+
+  let { elections, selected = $bindable([]), onChange, ...restProps }: ElectionSelectorProps = $props();
+
+  const groupName = getUUID();
+
+  // If there's only one option, it is automatically selected. This must run reactively because `elections` may arrive asynchronously after the component mounts: an init-time short-circuit reads an empty `elections` array on first paint and never re-fires when the data resolves.
+  $effect(() => {
+    if (elections.length === 1 && !selected.length) {
+      selected = [elections[0].id];
+      handleChange();
+    }
+  });
+
+  function handleChange(): void {
+    onChange?.(selected);
+  }
+</script>
+
+<div data-testid="election-selector" {...concatClass(restProps, 'grid gap-sm')}>
+  {#each elections as { id, name }}
+    <!-- DaisyUI's `.label` keeps its text on one line; an election's name has to wrap at every width. -->
+    <label
+      class="label gap-sm cursor-pointer justify-start !p-0 whitespace-normal"
+      class:pointer-events-none={elections.length === 1}
+      data-testid="election-selector-option-label">
+      <!-- bind: keep — two-way DOM checkbox group bind:group={selected}; selected is $bindable([]) -->
+      <input
+        bind:group={selected}
+        type="checkbox"
+        class="checkbox"
+        name={groupName}
+        value={id}
+        disabled={elections.length === 1}
+        data-testid="election-selector-option"
+        onchange={handleChange} />
+      <span>
+        {name}
+      </span>
+    </label>
+  {/each}
+</div>

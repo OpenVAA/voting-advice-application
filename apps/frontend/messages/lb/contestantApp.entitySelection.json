@@ -1,0 +1,8 @@
+{
+  "contestantApp.entitySelection": {
+    "current": "{entityType}: {name}",
+    "ingress": "Dir kënnt méi wéi ee Profil änneren. Wielt deen, un deem Dir elo schaffe wëllt. Dir kënnt zu all Moment iwwer de Menü op en anere wiesselen.",
+    "switch": "Profil wiesselen",
+    "title": "Wielt e Profil fir ze änneren"
+  }
+}

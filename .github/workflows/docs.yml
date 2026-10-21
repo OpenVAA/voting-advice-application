@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "docs/**"
+      - "apps/docs/**"
   workflow_dispatch:
 
 permissions:
@@ -20,42 +20,48 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a
+      # Node below engines.node. setup-yarn-action also caches the Yarn cache and install state.
+      - name: Setup Node.js 24.21.0
+        uses: actions/setup-node@v7
         with:
-          node-version: "20"
-          cache: "yarn"
+          node-version: 24.21.0
+
+      - name: Setup Yarn 4.18
+        uses: threeal/setup-yarn-action@v2
+        with:
+          version: 4.18
 
       - name: Install dependencies
-        run: |
-          yarn install --immutable
-          cd docs
-          yarn install --immutable
+        run: yarn install --frozen-lockfile
 
       - name: Build shared packages
-        run: yarn build:shared
+        run: yarn build
 
       - name: Generate documentation
         run: |
-          cd docs
+          cd apps/docs
           yarn generate:docs
 
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v6
 
       - name: Build docs site
         run: |
-          cd docs
+          cd apps/docs
           yarn build
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
-          path: ./docs/build
+          path: ./apps/docs/build
 
   deploy:
     environment:
@@ -66,4 +72,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

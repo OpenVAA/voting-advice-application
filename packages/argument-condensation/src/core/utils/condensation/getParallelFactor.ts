@@ -1,6 +1,5 @@
 // This const has been empirically derived from testing OpenAI's API with 30 Finnish VAA comments per call.
-// The estimate is conviniently conservative for cases where the batch size is < 30. AS of July 2025, batch
-// size is constrained to 30 in the utility function defineCondensationSteps.
+// The estimate is conviniently conservative for cases where the batch size is < 30. AS of July 2025, batch size is constrained to 30 in the utility function defineCondensationSteps.
 import { MODEL_DEFAULTS } from '../../../defaultValues';
 
 /**

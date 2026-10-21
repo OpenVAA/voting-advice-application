@@ -1,0 +1,28 @@
+-- Admin RPC functions
+--
+-- Functions:
+-- - merge_question_custom_data() - shallow JSONB merge on questions.custom_data
+--------------------------------------------------------------------------------
+-- merge_question_custom_data: shallow JSONB merge on questions.custom_data
+--
+-- SECURITY INVOKER: the admin_update_questions RLS policy limits the UPDATE to callers for whom user_can answers true for project.edit_questions on the row's project. A row the policy hides matches nothing, so the function raises the same error as for an unknown id.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.merge_question_custom_data (p_question_id uuid, p_patch jsonb) RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER AS $$
+DECLARE
+  p_updated_data jsonb;
+BEGIN
+  UPDATE public.questions
+  SET custom_data = COALESCE(custom_data, '{}'::jsonb) || p_patch
+  WHERE id = p_question_id
+  RETURNING public.questions.custom_data INTO p_updated_data;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Question not found or access denied: %', p_question_id;
+  END IF;
+
+  RETURN p_updated_data;
+END;
+$$;
+
+GRANT
+EXECUTE ON FUNCTION public.merge_question_custom_data (uuid, jsonb) TO authenticated;

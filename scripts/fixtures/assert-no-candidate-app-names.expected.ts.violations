@@ -1,0 +1,87 @@
+# The exact findings `node scripts/assert-no-candidate-app-names.mjs --self-test` must report against
+# `assert-no-candidate-app-names.input.ts`, in line order, one `path:line: pattern-name` per line. A line
+# that matches two patterns is listed twice. Every code line of the fixture's POSITIVE blocks is here at
+# least once; no line of its NEGATIVE block is here, so a guard that reported an entity-typed form, an
+# exempt name or a form outside a path scope would differ from this file.
+scripts/fixtures/assert-no-candidate-app-names.input.ts:12: CandApp
+scripts/fixtures/assert-no-candidate-app-names.input.ts:13: CandidateApp
+scripts/fixtures/assert-no-candidate-app-names.input.ts:14: candidateApp
+scripts/fixtures/assert-no-candidate-app-names.input.ts:15: candPoster
+scripts/fixtures/assert-no-candidate-app-names.input.ts:16: CandidateUserData
+scripts/fixtures/assert-no-candidate-app-names.input.ts:17: candidateUserData
+scripts/fixtures/assert-no-candidate-app-names.input.ts:18: CandidateContext
+scripts/fixtures/assert-no-candidate-app-names.input.ts:19: candidateContext
+scripts/fixtures/assert-no-candidate-app-names.input.ts:20: candCtx
+scripts/fixtures/assert-no-candidate-app-names.input.ts:21: candCtx
+scripts/fixtures/assert-no-candidate-app-names.input.ts:22: CandidateNav
+scripts/fixtures/assert-no-candidate-app-names.input.ts:23: isCandidateRoute
+scripts/fixtures/assert-no-candidate-app-names.input.ts:24: CANDIDATE_PROT|GATE
+scripts/fixtures/assert-no-candidate-app-names.input.ts:25: CANDIDATE_PROT|GATE
+scripts/fixtures/assert-no-candidate-app-names.input.ts:26: $candidate
+scripts/fixtures/assert-no-candidate-app-names.input.ts:26: candidate/ URL (slashless)
+scripts/fixtures/assert-no-candidate-app-names.input.ts:27: (lib|contexts|navigation)/candidate
+scripts/fixtures/assert-no-candidate-app-names.input.ts:27: /candidate URL
+scripts/fixtures/assert-no-candidate-app-names.input.ts:28: (lib|contexts|navigation)/candidate
+scripts/fixtures/assert-no-candidate-app-names.input.ts:28: /candidate URL
+scripts/fixtures/assert-no-candidate-app-names.input.ts:29: (lib|contexts|navigation)/candidate
+scripts/fixtures/assert-no-candidate-app-names.input.ts:29: /candidate URL
+scripts/fixtures/assert-no-candidate-app-names.input.ts:30: Candidate(Login|Preregistration)Error
+scripts/fixtures/assert-no-candidate-app-names.input.ts:31: CANDIDATE_(LOGIN|PREREGISTRATION)_ERROR
+scripts/fixtures/assert-no-candidate-app-names.input.ts:32: CANDIDATE_(LOGIN|PREREGISTRATION)_ERROR
+scripts/fixtures/assert-no-candidate-app-names.input.ts:33: perm-disable-candidate-app
+scripts/fixtures/assert-no-candidate-app-names.input.ts:33: candidate-app
+scripts/fixtures/assert-no-candidate-app-names.input.ts:34: candidate-app-menu
+scripts/fixtures/assert-no-candidate-app-names.input.ts:34: candidate-app
+scripts/fixtures/assert-no-candidate-app-names.input.ts:35: appType 'candidate'
+scripts/fixtures/assert-no-candidate-app-names.input.ts:36: appType 'candidate'
+scripts/fixtures/assert-no-candidate-app-names.input.ts:37: AppType union 'candidate'
+scripts/fixtures/assert-no-candidate-app-names.input.ts:38: ContestantAppAuth (must never exist)
+scripts/fixtures/assert-no-candidate-app-names.input.ts:40: CANDIDATE (route.ts)
+scripts/fixtures/assert-no-candidate-app-names.input.ts:42: name: 'Candidate App' (appGates.ts)
+scripts/fixtures/assert-no-candidate-app-names.input.ts:42: candidate app (phrase)
+scripts/fixtures/assert-no-candidate-app-names.input.ts:46: api/candidate
+scripts/fixtures/assert-no-candidate-app-names.input.ts:46: /candidate URL
+scripts/fixtures/assert-no-candidate-app-names.input.ts:47: CandAppAuth
+scripts/fixtures/assert-no-candidate-app-names.input.ts:48: routes/candidate
+scripts/fixtures/assert-no-candidate-app-names.input.ts:48: /candidate URL
+scripts/fixtures/assert-no-candidate-app-names.input.ts:49: /candidate URL
+scripts/fixtures/assert-no-candidate-app-names.input.ts:50: /candidate URL
+scripts/fixtures/assert-no-candidate-app-names.input.ts:51: candidate/ URL (slashless)
+scripts/fixtures/assert-no-candidate-app-names.input.ts:52: candidate%2F URL (percent-encoded)
+scripts/fixtures/assert-no-candidate-app-names.input.ts:53: hero-candidate
+scripts/fixtures/assert-no-candidate-app-names.input.ts:54: join(… 'candidate' …)
+scripts/fixtures/assert-no-candidate-app-names.input.ts:55: /candidate URL
+scripts/fixtures/assert-no-candidate-app-names.input.ts:55: relative import '../candidate'
+scripts/fixtures/assert-no-candidate-app-names.input.ts:56: candidate-portal
+scripts/fixtures/assert-no-candidate-app-names.input.ts:59: (fixtures|setup|specs)/candidate
+scripts/fixtures/assert-no-candidate-app-names.input.ts:60: candidate-bank-auth
+scripts/fixtures/assert-no-candidate-app-names.input.ts:61: cold-entry-dataroot-candidate
+scripts/fixtures/assert-no-candidate-app-names.input.ts:62: candidate-journey
+scripts/fixtures/assert-no-candidate-app-names.input.ts:63: candidate-a11y
+scripts/fixtures/assert-no-candidate-app-names.input.ts:64: candidateJourneyConstants
+scripts/fixtures/assert-no-candidate-app-names.input.ts:65: cand-session
+scripts/fixtures/assert-no-candidate-app-names.input.ts:66: candidate-preview
+scripts/fixtures/assert-no-candidate-app-names.input.ts:66: candidate-<stem> test id
+scripts/fixtures/assert-no-candidate-app-names.input.ts:67: candidate-<stem> test id
+scripts/fixtures/assert-no-candidate-app-names.input.ts:68: testIds.candidate
+scripts/fixtures/assert-no-candidate-app-names.input.ts:69: Candidate<Name>Page
+scripts/fixtures/assert-no-candidate-app-names.input.ts:70: Candidate(LogoutButton|PasswordSetter)
+scripts/fixtures/assert-no-candidate-app-names.input.ts:71: CandidateJourney
+scripts/fixtures/assert-no-candidate-app-names.input.ts:72: candidateTest
+scripts/fixtures/assert-no-candidate-app-names.input.ts:73: candidateSession
+scripts/fixtures/assert-no-candidate-app-names.input.ts:74: CANDIDATE_<test constant>
+scripts/fixtures/assert-no-candidate-app-names.input.ts:75: CandidateAxeRoute
+scripts/fixtures/assert-no-candidate-app-names.input.ts:76: candidateA11ySrc
+scripts/fixtures/assert-no-candidate-app-names.input.ts:77: assertCandidate(Reach|AuthNavPresent)
+scripts/fixtures/assert-no-candidate-app-names.input.ts:78: candidateLoad
+scripts/fixtures/assert-no-candidate-app-names.input.ts:79: candidateProjectMatch
+scripts/fixtures/assert-no-candidate-app-names.input.ts:80: cand-nav-menu
+scripts/fixtures/assert-no-candidate-app-names.input.ts:81: notif-cand
+scripts/fixtures/assert-no-candidate-app-names.input.ts:82: candidateHome
+scripts/fixtures/assert-no-candidate-app-names.input.ts:85: candidate-app
+scripts/fixtures/assert-no-candidate-app-names.input.ts:86: candidate app (phrase)
+scripts/fixtures/assert-no-candidate-app-names.input.ts:87: candidate app (phrase)
+scripts/fixtures/assert-no-candidate-app-names.input.ts:88: candidate app (phrase)
+scripts/fixtures/assert-no-candidate-app-names.input.ts:92: candidateApp
+scripts/fixtures/assert-no-candidate-app-names.input.ts:94: candidateUserData
+scripts/fixtures/assert-no-candidate-app-names.input.ts:95: candidate app (phrase)

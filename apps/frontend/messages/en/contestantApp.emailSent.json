@@ -1,0 +1,33 @@
+{
+  "contestantApp.emailSent": {
+    "askedAgain": "If you asked for another email less than a minute ago, this one may not have been sent. Wait until you can send again, then press Send again.",
+    "changeAddress": "Use another email address",
+    "heroEmoji": "✉️",
+    "intro": {
+      "code": "We’ve sent an email to the address you registered with. Click on the link in it to sign in.",
+      "recovery": "We’ve sent an email to the address you provided. Click on the link in it to sign in and set a new password.",
+      "signIn": "We’ve sent an email to the address you provided. Click on the link in it to sign in."
+    },
+    "newest": "If you have asked for more than one email, only the link in the newest one works.",
+    "notFound": {
+      "withAddress": "If you can’t find the email, check your spam folder and that you typed your email address correctly.",
+      "withoutAddress": "If you can’t find the email, check your spam folder."
+    },
+    "resend": "Send again",
+    "resendReady": "You can now ask for a new email.",
+    "resendRequested": "A new email has been requested.",
+    "resendWait": [
+      {
+        "declarations": ["input seconds", "local secondsPlural = seconds: plural"],
+        "selectors": ["secondsPlural"],
+        "match": {
+          "secondsPlural=one": "You can ask for a new email in one second.",
+          "secondsPlural=other": "You can ask for a new email in {seconds} seconds."
+        }
+      }
+    ],
+    "sentTo": "Sent to",
+    "support": "If the problem persists, contact support.",
+    "title": "Check your email"
+  }
+}
