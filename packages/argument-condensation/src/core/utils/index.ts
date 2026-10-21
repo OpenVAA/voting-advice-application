@@ -6,8 +6,7 @@ export * from './condensation/validateInputTokenCount';
 // Progress tracking utilities
 export { calculateStepWeights } from './condensation/calculateLLMCallCounts';
 
-// Prompt utilities
-// createPromptInstance was removed; PromptCall creation is now inline at call sites.
+// Prompt utilities createPromptInstance was removed; PromptCall creation is now inline at call sites.
 export { setPromptVars } from '@openvaa/llm';
 
 // Create batches

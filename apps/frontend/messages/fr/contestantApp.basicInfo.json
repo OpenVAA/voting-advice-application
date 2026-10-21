@@ -1,0 +1,24 @@
+{
+  "contestantApp.basicInfo": {
+    "colorInfo": "Affichée derrière l’abréviation de votre parti lorsqu’il n’a pas de logo, et sur le symbole du parti à côté de ses candidat·es. Saisissez un code hexadécimal, par exemple #2546a8, ou utilisez le sélecteur, ou laissez le champ vide pour n’avoir aucune couleur. La couleur peut être ajustée automatiquement pour rester lisible ; l’aperçu montre le résultat.",
+    "editableInfos": {
+      "description": "Ces informations apparaîtront dans votre profil.",
+      "title": "Votre profil"
+    },
+    "error": {
+      "invalidQuestion": "Le type de question ou le type de réponse n’est pas valide pour la question {questionId}"
+    },
+    "instructions": {
+      "candidate": "Commencez par renseigner vos informations de base et, si vous le souhaitez, téléversez une photo. Vos opinions politiques vous seront ensuite demandées.",
+      "organization": "Commencez par renseigner les informations de base de votre parti et, si vous le souhaitez, téléversez un logo. Les opinions politiques du parti vous seront ensuite demandées."
+    },
+    "instructionsNoQuestions": {
+      "candidate": "Renseignez vos informations de base et, si vous le souhaitez, téléversez une photo.",
+      "organization": "Renseignez les informations de base de votre parti et, si vous le souhaitez, téléversez un logo."
+    },
+    "logoInfo": "Une image carrée convient le mieux : le logo est affiché dans un petit carré, et tout ce qui dépasse est rogné.",
+    "requiredInfo": "Vous devez remplir les champs marqués de cette icône pour que votre profil soit affiché dans la Boussole électorale. Cependant, vous pouvez enregistrer vos réponses jusqu’ici et continuer plus tard.",
+    "shortNameInfo": "Une forme courte du nom, par exemple un sigle. Elle est affichée là où la place manque, par exemple à côté des candidat·es du parti. Facultatif.",
+    "title": "Informations de base"
+  }
+}

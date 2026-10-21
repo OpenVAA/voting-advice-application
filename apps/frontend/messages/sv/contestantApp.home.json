@@ -1,0 +1,52 @@
+{
+  "contestantApp.home": {
+    "basicInfo": {
+      "edit": "Redigera din grundläggande information",
+      "enter": "Ange din grundläggande information",
+      "view": "Visa din grundläggande information"
+    },
+    "ingress": {
+      "noNomination": {
+        "candidate": "För att synas i valkompassen behöver du först en nominering: det val och den valkrets du ställer upp i. Därefter kan du ange din grundläggande information och besvara påståendena om politiska frågor.",
+        "organization": "För att ditt parti ska synas i valkompassen behöver det först en nominering: det val och den valkrets partiet ställer upp i. Därefter kan du ange partiets grundläggande information och besvara påståendena om politiska frågor."
+      },
+      "notDone": {
+        "candidate": "För att synas i valkompassen måste du ange viss grundläggande information om dig själv samt besvara påståenden om politiska frågor.",
+        "organization": "För att ditt parti ska synas i valkompassen måste du ange viss grundläggande information om det samt besvara påståenden om politiska frågor."
+      },
+      "notDoneNoQuestions": {
+        "candidate": "För att synas i valkompassen måste du ange viss grundläggande information om dig själv.",
+        "organization": "För att ditt parti ska synas i valkompassen måste du ange viss grundläggande information om det."
+      },
+      "ready": "Du har fyllt i all information som behövs för valkompassen. Du kan fortfarande redigera dina svar och logga in senare för att göra det."
+    },
+    "nomination": {
+      "enter": "Ange din nominering",
+      "view": "Visa dina nomineringar"
+    },
+    "preview": "Förhandsgranska din profil",
+    "previewTip": "Om du vill se hur väljarna kommer att se din profil kan du förhandsgranska den.",
+    "questions": {
+      "edit": "Redigera dina åsikter",
+      "enter": "Berätta dina åsikter",
+      "view": "Visa dina åsikter"
+    },
+    "ready": "Du är redo att köra!",
+    "tasksLabel": "Dina uppgifter",
+    "taskStatus": {
+      "blocked": "Inte tillgänglig ännu.",
+      "complete": "Klar.",
+      "incomplete": "Inte klar ännu.",
+      "incompleteCount": [
+        {
+          "declarations": ["input count", "local countPlural = count: plural"],
+          "selectors": ["countPlural"],
+          "match": {
+            "countPlural=one": "Inte klar ännu: en punkt återstår.",
+            "countPlural=other": "Inte klar ännu: {count} punkter återstår."
+          }
+        }
+      ]
+    }
+  }
+}

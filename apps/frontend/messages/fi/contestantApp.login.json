@@ -1,0 +1,18 @@
+{
+  "contestantApp.login": {
+    "emailRequired": "Kirjoita sähköpostiosoitteesi.",
+    "emailRequiredFirst": "Kirjoita ensin sähköpostiosoitteesi.",
+    "enterEmailAndPassword": "Syötä sähköpostisi ja salasanasi kirjautuaksesi.",
+    "forgotPassword": "Unohditko salasanan?",
+    "linkFailed": "Tätä linkkiä ei voi enää käyttää. Linkki toimii yhden kerran, ja vain uusin pyytämäsi linkki toimii. Pyydä uusi linkki samalla tavalla kuin aiemmin.",
+    "noPasswordYet": "En ole vielä asettanut salasanaa",
+    "noPasswordYetInfo": "Lähetämme sinulle sähköpostitse linkin, jolla voit kirjautua.",
+    "noProfile": "Käyttäjätiliäsi ei ole yhdistetty yhteenkään profiiliin tässä sovelluksessa. Jos rekisteröidyit toisella sähköpostiosoitteella, kirjaudu sillä osoitteella. Muussa tapauksessa ota yhteyttä tukeen.",
+    "passwordRequired": "Kirjoita salasanasi.",
+    "signedOut": "Sinut on kirjattu ulos, koska käyttäjätilisi tietoja ei voitu lukea. Kirjaudu uudelleen. Jos tämä toistuu, ota yhteyttä tukeen.",
+    "signInWithEmail": "Kirjaudu sähköpostilla",
+    "title": "Kirjaudu",
+    "unknownError": "Käyttäjätietojesi haku ei onnistunut. Ole hyvä ja ota yhteyttä tukeen, jos virhe toistuu.",
+    "answersLockedInfo": "Rekisteröityminen tai vastausten muokkaaminen ei enää ole mahdollista, mutta voit silti kirjautua nähdäksesi omat tietosi."
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "adminApp.notSupported": {
+    "title": "Admin-app ikke understøttet",
+    "content": "Admin-appen understøttes ikke med den aktuelle datatilkobling.",
+    "heroEmoji": "🔧"
+  }
+}

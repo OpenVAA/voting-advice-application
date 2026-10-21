@@ -14,11 +14,9 @@ Even though the examples or input data may be in a different language, the outpu
  * 2. The prompt falls back to English
  * 3. The prompt template includes the {{localizationInstructions}} placeholder
  *
- * This allows us to reuse English prompts for other languages by instructing
- * the LLM to provide its response in the requested language.
+ * This allows us to reuse English prompts for other languages by instructing the LLM to provide its response in the requested language.
  *
- * Generated dynamically from staticSettings.supportedLocales using the same
- * source of truth as SvelteKit locale routes.
+ * Generated dynamically from staticSettings.supportedLocales using the same source of truth as SvelteKit locale routes.
  */
 export const LOCALIZATION_INSTRUCTIONS: Record<string, string> = Object.fromEntries(
   staticSettings.supportedLocales.map((locale) => [

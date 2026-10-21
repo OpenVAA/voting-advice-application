@@ -1,0 +1,60 @@
+<!--
+@component Show the terms of use along with a checkbox for accepting them.
+
+### Dynamic component
+
+Accesses `ContestantContext`.
+
+### Properties
+
+- `termsAccepted`: Bindable: Whether the terms are accepted. Default: `false`
+- Any valid attributes of a `<section>` element
+
+### Usage
+
+```tsx
+<script lang="ts">
+  let termsAccepted: boolean;
+</script>
+<TermsOfUseForm bind:termsAccepted/>
+```
+-->
+
+<script lang="ts">
+  import { Expander } from '$lib/components/expander';
+  import { getComponentContext } from '$lib/contexts/component';
+  import { concatClass } from '$lib/utils/components';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
+  import { TermsOfUse } from '.';
+  import type { TermsOfUseFormProps } from './TermsOfUseForm.type';
+
+  let { termsAccepted = $bindable(false), ...restProps }: TermsOfUseFormProps = $props();
+
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  const { t } = getComponentContext();
+</script>
+
+<section {...concatClass(restProps, 'flex flex-col items-center')}>
+  <div class="mb-lg text-center">
+    {@html sanitizeHtml(t('dynamic.contestantAppPrivacy.consent.ingress'))}
+  </div>
+  <Expander title={t('dynamic.contestantAppPrivacy.consent.title')} contentClass="prose bg-base-100 rounded-lg">
+    <div class="m-lg">
+      <TermsOfUse />
+    </div>
+  </Expander>
+  <!-- DaisyUI's `.label` keeps its text on one line; the consent sentence has to wrap at every width. -->
+  <label class="label mb-md mt-sm gap-sm cursor-pointer justify-start !p-0 whitespace-normal">
+    <!-- bind: keep — two-way DOM checkbox; termsAccepted is $bindable(false). Bind placed AFTER type= for symmetry with QuestionChoices.svelte. -->
+    <input
+      type="checkbox"
+      class="checkbox"
+      name="termsAccepted"
+      bind:checked={termsAccepted}
+      data-testid="terms-checkbox" />
+    <span>{t('dynamic.contestantAppPrivacy.consent.acceptLabel')}</span>
+  </label>
+</section>

@@ -1,0 +1,58 @@
+{
+  "privacy": {
+    "analytics": {
+      "content": {
+        "free": "This application collects usage data without asking you separately. It includes your answers to the questions, the time spent in the application and the results you view. Each event that reveals an answer or a preference is sent on its own, with no identifier shared with any other event, so your answers cannot be joined to each other or to the pages you view. The data is sent through this site’s own server, which passes on neither your network address nor your browser’s identification. Nothing about this is stored on your device.",
+        "gated": "Usage data is collected only if you agree to it. It includes your answers to the questions, the time spent in the application and the results you view. At most, the events of one visit are joined by an identifier that is kept only in the page’s memory and is gone when the page is reloaded or closed. The data is sent through this site’s own server, which passes on neither your network address nor your browser’s identification. Nothing about this is stored on your device except your choice. A choice made in this browser applies to every part of the application opened in it, and you can change it on the privacy page."
+      },
+      "gpc": "If your browser sends the Global Privacy Control signal, nothing is collected, not even the page-view count, and you are not asked. Nothing is stored to remember the signal.",
+      "pageviews": "Page views are counted even when no other usage data is collected: which kind of page was opened, in which language and for how long. This data does not, however, include, for example, which party’s or candidate’s details were viewed. The count has no identifier.",
+      "title": "Analytics"
+    },
+    "cookies": {
+      "content": "The application does not use cookies to store your data. Your answers and preferences are stored in your browser’s local storage for a better user experience, and this stored copy stays on your device. When usage data is collected, your answers may also be sent as part of it, as described under Analytics.",
+      "title": "Cookies"
+    },
+    "dataCollection": {
+      "info": "Usage data is sent through this site’s own server to the analytics service the publisher uses. No cookies are used for it."
+    },
+    "dataConsentInfoButton": "Further information collecting usage data",
+    "dataConsentIntro": {
+      "denied": [
+        {
+          "declarations": [
+            "input consentDate",
+            "local formattedConsentDate = consentDate: datetime year=numeric month=2-digit day=numeric"
+          ],
+          "match": {
+            "formattedConsentDate=*": "You have denied data collection {formattedConsentDate}. You can change your preference below."
+          }
+        }
+      ],
+      "granted": [
+        {
+          "declarations": [
+            "input consentDate",
+            "local formattedConsentDate = consentDate: datetime year=numeric month=2-digit day=numeric"
+          ],
+          "match": {
+            "formattedConsentDate=*": "You have consented to data collection {formattedConsentDate}.  You can change your preference below."
+          }
+        }
+      ],
+      "indetermined": "You can consent to or deny data collection by choosing one of the options below."
+    },
+    "dataConsentLabel": {
+      "denied": "I don’t want to share my data",
+      "granted": "Yes, I agree to share my data"
+    },
+    "title": "Privacy",
+    "trackingOptOut": {
+      "label": "Do not collect usage data about my use of the application"
+    },
+    "usageData": {
+      "content": "Use of the application is measured in the same way in the voter app, the candidate and party app and the admin app. By accepting the terms of use, you allow usage data about your use of the candidate and party app to be collected, unless you tick the box below the terms. Page views are counted without an identifier, as described on the privacy page. Your choice applies to every part of the application opened in this browser, and you can change it later on the privacy page.",
+      "title": "Usage data"
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "contestantApp.register": {
+    "code": "Registreerimiskood",
+    "codeFormat": "Kood näeb välja selline: ABCD-EFGH-JKMN. Suur- ja väiketähti käsitletakse ühtemoodi.",
+    "codeRequired": "Sisesta oma registreerimiskood.",
+    "codeUnconfirmed": "Me ei saanud sinu registreerimiskoodi kinnitada.",
+    "didYouAlreadyRegister": "Oled juba registreerunud?",
+    "emailEntry": {
+      "ingress": "Sisesta e-posti aadress, mida soovid kasutada. Saadame sellele sisselogimislingi ja edaspidi logid sisse selle aadressiga.",
+      "mismatch": "E-posti aadressid ei kattu.",
+      "title": "Sisesta oma e-posti aadress"
+    },
+    "emailInfo": "Sisesta oma e-posti aadress ja me saadame sulle lingi, millega saad sisse logida.",
+    "enterCode": "Sisesta saadud registreerimiskood.",
+    "modes": {
+      "code": "Registreerimiskoodiga",
+      "email": "Oma e-posti aadressiga",
+      "identityProvider": "Pangatunnustega",
+      "legend": "Kuidas soovid registreeruda?",
+      "required": "Vali, kuidas soovid registreeruda."
+    },
+    "passwordValidation": {
+      "commonPatterns": "Sisaldab levinud märgijadasid",
+      "length": "Vähemalt {minPasswordLength} märki",
+      "lowercase": "Väiketäht",
+      "number": "Number",
+      "repetition": "Sisaldab märkide kordumist",
+      "symbol": "Erimärk (nagu !?%#€)",
+      "uppercase": "Suurtäht",
+      "username": "Väldi oma nime kasutamist paroolis"
+    },
+    "register": "Registreeru",
+    "signIn": {
+      "failed": "Selle parooliga ei õnnestunud sind sisse logida. Proovi uuesti või küsi allpool sisselogimislinki.",
+      "ingress": "Näib, et oled juba registreerunud. Sisselogimiseks sisesta oma parool.",
+      "noPasswordYetInfo": "Saadame sisselogimislingi e-posti aadressile, millega registreerusid.",
+      "title": "Logi sisse oma parooliga"
+    },
+    "title": "Registreerumine"
+  }
+}

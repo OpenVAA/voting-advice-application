@@ -13,8 +13,7 @@ import type {
 } from '../../../internal';
 
 /**
- * Nomination variants
- * This file contains type and class mappings for all concrete nomination types, i.e. those that are not abstract base classes.
+ * Nomination variants This file contains type and class mappings for all concrete nomination types, i.e. those that are not abstract base classes.
  * NB. Make sure to update the types below whenever implemeting new nomination variants. The code below could most likely be refactored to get rid of some redundancy.
  */
 

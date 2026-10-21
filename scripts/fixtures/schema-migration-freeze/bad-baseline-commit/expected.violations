@@ -1,0 +1,1 @@
+MALFORMED MANIFEST: manifest.json gives baseline.commit as "0123abc", which is not 40 lower-case hex characters.

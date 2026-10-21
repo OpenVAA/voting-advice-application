@@ -1,0 +1,8 @@
+{
+  "contestantApp.entitySelection": {
+    "current": "{entityType}: {name}",
+    "ingress": "Du kan redigera mer än en profil. Välj den du vill arbeta med nu. Du kan när som helst byta till en annan från menyn.",
+    "switch": "Byt profil",
+    "title": "Välj en profil att redigera"
+  }
+}

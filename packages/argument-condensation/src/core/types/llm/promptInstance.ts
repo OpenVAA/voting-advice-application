@@ -1,27 +1,24 @@
 import type { CondensationOperation } from '../condensation/operation';
 
 /**
- * Represents a single API call. Contains the raw input and output of the call with knowledge of the usage context
+ * Represents a single API call. Contains the raw input and output of the call with knowledge of the usage context.
  *
  * @example
- *
+ * ```ts
  * const promptCall: PromptCall = {
  *   promptTemplateId: '123',
- *   operation: "map",
+ *   operation: 'MAP',
  *   rawInputText: 'The input text for the prompt',
  *   rawOutputText: 'The output text for the prompt',
  *   modelUsed: 'gpt-4o',
  *   timestamp: '2021-01-01T00:00:00.000Z',
  *   metadata: {
- *     tokens: {
- *       input: 100,
- *       output: 200,
- *       total: 300
- *     },
+ *     tokens: { inputTokens: 100, outputTokens: 200, totalTokens: 300 },
  *     latency: 1000,
- *     cost: 0.10
+ *     cost: 0.1
  *   }
  * };
+ * ```
  */
 export interface CondensationPromptCall {
   /** The prompt template this call used */

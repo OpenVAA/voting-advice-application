@@ -75,6 +75,7 @@ export * from './objects/questions/variants/singleChoiceCategoricalQuestion';
 export * from './objects/questions/variants/singleChoiceOrdinalQuestion';
 export * from './objects/questions/variants/textQuestion';
 export * from './objects/questions/variants/variants';
+export * from './objects/election/nominationShape';
 export * from './objects/election/election.type';
 export * from './objects/election/election';
 export * from './objects/constituency/constituency.type';

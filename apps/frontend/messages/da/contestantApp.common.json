@@ -1,0 +1,23 @@
+{
+  "contestantApp.common": {
+    "closedReason": {
+      "noNomination": {
+        "candidate": "Dine grundlæggende oplysninger, dine holdninger og forhåndsvisningen åbnes, når du har en opstilling.",
+        "organization": "De grundlæggende oplysninger, holdningerne og forhåndsvisningen åbnes, når dit parti har en opstilling."
+      },
+      "preview": "Forhåndsvisningen åbnes, når de påkrævede grundlæggende oplysninger er udfyldt, og alle holdningsudsagn er besvaret.",
+      "previewNoQuestions": "Forhåndsvisningen åbnes, når de påkrævede grundlæggende oplysninger er udfyldt."
+    },
+    "contactSupport": "Kontakt support",
+    "continueFilling": "Fortsæt med at udfylde",
+    "editingNotAllowed": "Det er ikke længere muligt at redigere dine svar, men du kan stadig se dem. Kontakt support, hvis der er fejl i dine oplysninger.",
+    "fullyCompleted": "Tillykke! Du har udfyldt alle nødvendige oplysninger til Valgtesten.",
+    "greeting": "Hej, {username}!",
+    "home": "Start",
+    "isHiddenBecauseMissing": "Din profil vises ikke, fordi du ikke har besvaret alle spørgsmålene.",
+    "nominationsNotEditable": "Opstillinger kan ikke længere ændres i denne applikation. Kontakt support, hvis noget er forkert eller mangler.",
+    "nominationsNotEditableAnswersLocked": "Opstillinger kan ikke længere ændres, fordi redigeringen er afsluttet i denne applikation. Kontakt support, hvis noget er forkert eller mangler.",
+    "voterApp": "Valgtest for vælgere",
+    "willBeHiddenIfMissing": "Din profil vil ikke blive vist i applikationen, før du har besvaret alle spørgsmålene."
+  }
+}

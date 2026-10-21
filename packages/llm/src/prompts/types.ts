@@ -45,8 +45,7 @@ export interface LoadPromptOptions {
   /** Variables to embed in the prompt template */
   variables: Record<string, unknown>;
   /** Fallback to localization instruction if the prompt is not available in the requested language.
-   * Not recommended. It's better to use the prompt in the requested language. For simple tasks, this
-   * may be useful. For complex and/or often-used tasks, please create a new prompt in your language.
+   * Not recommended. It's better to use the prompt in the requested language. For simple tasks, this may be useful. For complex and/or often-used tasks, please create a new prompt in your language.
    */
   fallbackLocalization?: boolean;
   /** Whether to throw an error if required variables are missing (default: true) */

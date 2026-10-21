@@ -1,8 +1,0 @@
-{
-  "home": "Etusivu",
-  "description": "Käytä alla olevia työkaluja hallitaksesi vaalikonetta.",
-  "notAccessible": {
-    "content": "Pääsy ylläpitonäkymään on tällä hetkellä poistettu käytöstä.",
-    "title": "Pahoittelut, ylläpitonäkymä ei ole käytettävissä"
-  }
-}

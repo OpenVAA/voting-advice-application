@@ -1,0 +1,52 @@
+{
+  "contestantApp.home": {
+    "basicInfo": {
+      "edit": "Muokkaa perustietojasi",
+      "enter": "Täytä perustietosi",
+      "view": "Tarkastele perustietojasi"
+    },
+    "ingress": {
+      "noNomination": {
+        "candidate": "Näkyäksesi vaalikoneessa tarvitset ensin ehdokkuuden: vaalin ja vaalipiirin, jossa olet ehdolla. Sen jälkeen voit täyttää perustietosi ja vastata mielipidekysymyksiin.",
+        "organization": "Jotta puolueesi näkyisi vaalikoneessa, se tarvitsee ensin ehdokkuuden: vaalin ja vaalipiirin, jossa puolue on ehdolla. Sen jälkeen voit täyttää puolueen perustiedot ja vastata mielipidekysymyksiin."
+      },
+      "notDone": {
+        "candidate": "Näkyäksesi vaalikoneessa sinun on annettava joitakin perustietoja itsestäsi ja vastattava mielipidekysymyksiin.",
+        "organization": "Jotta puolueesi näkyisi vaalikoneessa, sinun on annettava siitä joitakin perustietoja ja vastattava mielipidekysymyksiin."
+      },
+      "notDoneNoQuestions": {
+        "candidate": "Näkyäksesi vaalikoneessa sinun on annettava joitakin perustietoja itsestäsi.",
+        "organization": "Jotta puolueesi näkyisi vaalikoneessa, sinun on annettava siitä joitakin perustietoja."
+      },
+      "ready": "Olet täyttänyt kaikki vaalikoneeseen tarvittavat tiedot. Voit vielä muokata vastauksiasi ja kirjautua sisään myöhemmin sitä varten."
+    },
+    "nomination": {
+      "enter": "Määritä ehdokkuutesi",
+      "view": "Tarkastele ehdokkuuksiasi"
+    },
+    "preview": "Esikatsele profiiliasi",
+    "previewTip": "Jos haluat nähdä, miten äänestäjät näkevät profiilisi, voit esikatsella sitä.",
+    "questions": {
+      "edit": "Muokkaa mielipiteitäsi",
+      "enter": "Kerro mielipiteesi",
+      "view": "Tarkastele mielipiteitäsi"
+    },
+    "ready": "Olet valmis!",
+    "tasksLabel": "Tehtäväsi",
+    "taskStatus": {
+      "blocked": "Ei vielä käytettävissä.",
+      "complete": "Valmis.",
+      "incomplete": "Ei vielä valmis.",
+      "incompleteCount": [
+        {
+          "declarations": ["input count", "local countPlural = count: plural"],
+          "selectors": ["countPlural"],
+          "match": {
+            "countPlural=one": "Ei vielä valmis: yksi kohta jäljellä.",
+            "countPlural=other": "Ei vielä valmis: {count} kohtaa jäljellä."
+          }
+        }
+      ]
+    }
+  }
+}

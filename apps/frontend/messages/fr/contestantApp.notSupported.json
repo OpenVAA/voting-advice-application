@@ -1,0 +1,7 @@
+{
+  "contestantApp.notSupported": {
+    "content": "{contestantAppName} : cette version de la Boussole électorale ne prend pas en charge ce service.",
+    "heroEmoji": "🐣",
+    "title": "{contestantAppName} : non disponible"
+  }
+}

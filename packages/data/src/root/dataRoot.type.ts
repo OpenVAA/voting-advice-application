@@ -85,8 +85,7 @@ export type RootCollections = {
 export type FullVaaData<
   TEntities extends EntityVariantTree | Array<AnyEntityVariantData> = EntityVariantTree | Array<AnyEntityVariantData>,
   TNominations extends NominationVariantTree | Array<AnyNominationVariantPublicData> =
-    | NominationVariantTree
-    | Array<AnyNominationVariantPublicData>
+    NominationVariantTree | Array<AnyNominationVariantPublicData>
 > = {
   elections: Array<ElectionData>;
   constituencies: {

@@ -1,0 +1,7 @@
+{
+  "constituencies": {
+    "multipleGroupsInfo": "Det finns flera grupper av valkretsar i dessa val. Välj din valkrets från en av grupperna.",
+    "selectPrompt": "Välj valkrets",
+    "title": "Välj din valkrets"
+  }
+}

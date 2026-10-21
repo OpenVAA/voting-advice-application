@@ -3,8 +3,7 @@ import type { CondensationOutputType } from '../condensation/condensationType';
 
 /**
  * Prompt IDs for different condensation types and operations.
- * The keys of the inner object are roles for prompts within an operation,
- * e.g., 'map' and 'mapIteration' for the 'map' operation.
+ * The keys of the inner object are roles for prompts within an operation, e.g., 'map' and 'mapIteration' for the 'map' operation.
  */
 export type PromptConfig = {
   [key in CondensationOutputType]?: {
@@ -20,6 +19,7 @@ export type PromptConfig = {
  * Note: llmModel and modelTPMLimit are configured via the LLMProvider instance.
  *
  * @example
+ * ```ts
  * const llmProvider = new LLMProvider({
  *   provider: 'openai',
  *   apiKey: 'your-api-key',
@@ -33,6 +33,7 @@ export type PromptConfig = {
  *   maxCommentsPerGroup: 1000,
  *   createVisualizationData: true
  * };
+ * ```
  */
 export type CondensationAPIOptions = CommonLLMParams & {
   maxCommentsPerGroup: number;

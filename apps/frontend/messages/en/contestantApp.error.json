@@ -1,0 +1,10 @@
+{
+  "contestantApp.error": {
+    "saveFailed": "We’re terribly sorry, there was a problem saving your answers. Please try again and if the problem persists, please contact support.",
+    "registrationLocked": "Unfortunately, registration is no longer possible.",
+    "nameLocked": {
+      "candidate": "Your name could not be saved: an administrator has confirmed your profile, and the name can no longer be changed here. Your other changes were saved. If the name is wrong, please contact support.",
+      "organization": "The name and abbreviation could not be saved: an administrator has confirmed your party, and they can no longer be changed here. Your other changes were saved. If they are wrong, please contact support."
+    }
+  }
+}

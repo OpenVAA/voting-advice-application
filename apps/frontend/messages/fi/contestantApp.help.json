@@ -1,0 +1,8 @@
+{
+  "contestantApp.help": {
+    "ingress": "{contestantAppName}: alla on vastauksia yleisimpiin kysymyksiin palvelun käytöstä. Jos et löydä vastausta pulmaasi alta, voit ottaa yhteyttä tukeen.",
+    "noFAQ": "Kysymyksiä ei vielä ole.",
+    "supportEmailSubject": "Tukipyyntö",
+    "title": "Tuki"
+  }
+}

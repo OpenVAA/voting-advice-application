@@ -1,0 +1,13 @@
+{
+  "baseline": {
+    "name": "initial_schema",
+    "file": "00001_initial_schema.sql",
+    "commit": "81e6a3f225061563939b935e898b9a4965807d22"
+  },
+  "migrations": [
+    {
+      "file": "00001_initial_schema.sql",
+      "sha256": "79bed444da347985daf22d44bccb451c00db2d67236ccd11fa9c2c7fae354ed8"
+    }
+  ]
+}
