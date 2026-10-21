@@ -653,16 +653,12 @@ Return: `answer_outcome=fired`, `answer_outcome=no-alert-can-fire` or `answer_ou
 
 ## Not yet observed
 
-Nobody has applied this root yet. Each statement below is something this runbook relies on and that
+This root was first applied on 2026-10-21. Each statement below is something this runbook relies on and that
 has not been seen. It moves to "Observations", with its date, once the step named beside it has shown
 it.
 
 | Statement                                                                                                                        | Checked by                                                                |
 | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| An untracked `backend_override.tf` holding a local backend overrides the S3 block of `backend.tf`                                | Step 2, item 6                                                            |
-| Terraform holds the state lock while an apply waits at its approval prompt                                                       | Step 6, item 9; if not seen there, Step 7, item 4                         |
-| The plan role's deny shows as an explicit deny in the policy simulator                                                           | Step 5, item 8                                                            |
-| The policy simulator accepts the `--context-entries` form for a list prefix                                                      | Step 5, item 8                                                            |
 | The actual alert of the budget reaches the operator's mailbox, and how long it takes after the spend passes the threshold        | Step 7, item 3                                                            |
 | A forecast alert fires (AWS documents that it needs about five weeks of usage data, so it is not expected in the first month)    | A later stage of the deployment work                                      |
 | AWS accepts a budget limit below 1 USD as a test amount                                                                          | Step 7, item 2                                                            |
@@ -675,6 +671,13 @@ it.
 
 ## Observations
 
-| Date (UTC) | Observation                                                                                                                                                                                                                                                                |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-10-21 | Step 1 inventory run: 2 IAM users found; 1 carried an inline policy (yes), was converted to a managed policy, and the assert mode then exited 0. No GitHub OIDC provider, no hosted zone, no state bucket and no same-named budget, repository or IAM entity were present. |
+| Date (UTC) | Observation                                                                                                                                                                                                                                                                   |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-21 | Step 1 inventory run: 2 IAM users found; 1 carried an inline policy (yes), was converted to a managed policy, and the assert mode then exited 0. No GitHub OIDC provider, no hosted zone, no state bucket and no same-named budget, repository or IAM entity were present.    |
+| 2026-10-21 | Step 2: with Terraform 1.16.5, an untracked `backend_override.tf` holding a local backend overrode the S3 block of `backend.tf`, and the first apply ran on local state and created 23 resources.                                                                             |
+| 2026-10-21 | Step 3: the state was migrated into the bucket and its object was read back encrypted (AES256) and versioned, with 23 managed resources, before the local files were removed; the second plan exited 0 with no changes.                                                       |
+| 2026-10-21 | Step 4: the bucket read back encrypted, versioned, with all four public-access blocks, not public and with a TLS-only statement; the registry has immutable tags; both roles have managed policies only.                                                                      |
+| 2026-10-21 | Step 5: the simulator accepted the `--context-entries` form; it showed an explicit deny for the plan role on a `hand/` state object and on secret reads, and allowed every call the S3 backend makes except the deploy role's list for `env:/`, an implicit deny as expected. |
+| 2026-10-21 | Step 5: given two resources in one call, the simulator returns one result per action rather than one per resource, so item 8(a) makes one call per resource.                                                                                                                  |
+| 2026-10-21 | Step 6: Terraform held the state lock while an apply waited at its approval prompt: a second plan failed on the lock, and the lock object was present, then gone once the prompt was answered `no`.                                                                           |
+| 2026-10-21 | Step 6: the budget read back at the 1 USD test amount, with a computed spend of 6.475 USD.                                                                                                                                                                                    |
