@@ -1,10 +1,12 @@
 # 183-15 CI evidence: the `infra-validate` job
 
 Attempt: 15-1 20261021T105258Z.18fdcd6ca
+Attempt: 15-2 20261021T105655Z.fd7f4c94d
+Attempt: 15-3 20261021T112307Z.fd7f4c94d
 
 ## What would be published
 
-**Status of this manifest: ready for the operator's review (Task 2).** Nothing has been pushed. Every scan finding below is on the list the operator accepted on 2026-10-21; no scan stops the task.
+**Status of this manifest: written before the push, for the operator's review (Task 2).** At the time it was written nothing had been pushed; the operator then pushed exactly these two commits (see "Publication" below). Every scan finding below is on the list the operator accepted on 2026-10-21; no scan stops the task.
 
 Why this is a second attempt. The first attempt of Task 1 (`15-1 20261021T084738Z.59d6affae`, commits `b263b1cd9a18bf6028228b375f87661eec4e2edb` / `514f4a3c6da2e583991feac0b64f2c96ee5810d8`) stopped on three scan findings. On 2026-10-21 the operator ruled (option (a)) that the plan's stop rules accept exactly those classified findings, by path and kind, and the plan was amended in commit `18fdcd6ca3a61738e8103343eace6d773a5dd460`. Every other stop rule is unchanged and nothing built or scanned was narrowed. This attempt rebuilt both commits from the new `HEAD` and reran every scan; the earlier commits are superseded and no confirmation given for them counts.
 
@@ -4290,3 +4292,76 @@ A	infra/envs/example/aws/variables.tf
 ```
 
 `git diff --name-only ci-evidence/183-infra-validate ci-evidence/183-infra-validate-red` lists exactly those two paths.
+
+## Publication (Task 2)
+
+- Checkpoint attempt `15-2 20261021T105655Z.fd7f4c94d`, raised at `HEAD` `fd7f4c94dceb5b1c25be095d0d497b350942e1f9` for green `b0c910e9f350465f83482ef31db3b7f55a4d3bc4` and red `a58cb0ad73b659e73da9402d9ba3d1ff2eb94b2d`.
+- The operator read the manifest above, including the classification of the four `tfvars` assignments whose names hold the word `token` (`enable_access_token_hook`, a boolean; `rate_limit_token_refresh`, a number; no secret value), did not object to it, and ran the push command with its two empty leases. The reply, stored through the helper's screen: `answer_attempt` naming this attempt, `answer_green` and `answer_red` equal to the two commits in full, `s3_push_exit=0`, `s3_logs_removed=yes`. Nothing from the push log was pasted.
+- Answer to follow-up 183-R6: the `ci-evidence/**` push (A-10), not a draft pull request.
+- The executor ran no `git push`. It read the remote afterwards, without a credential, with `git -c credential.helper= ls-remote https://github.com/OpenVAA/voting-advice-application.git refs/heads/ci-evidence/183-infra-validate refs/heads/ci-evidence/183-infra-validate-red` (exit 0):
+
+```
+b0c910e9f350465f83482ef31db3b7f55a4d3bc4	refs/heads/ci-evidence/183-infra-validate
+a58cb0ad73b659e73da9402d9ba3d1ff2eb94b2d	refs/heads/ci-evidence/183-infra-validate-red
+```
+
+Both remote branches point at the commits of this manifest. One push was made; no second push was needed.
+
+## Runs
+
+Read on 2026-10-21T11:23Z from the public REST API with unauthenticated `curl` (no token, no `gh`): `actions/runs?head_sha=<commit>` for each commit, then `actions/runs/<id>/jobs`. Each run's `path` is `.github/workflows/main.yaml`, its `event` is `push`, and its `head_sha` equals the commit the operator confirmed and pushed. The `infra-validate` job of each run had reached `completed` at the first reading, so no polling was needed.
+
+Run observation: seen
+
+### Green: `ci-evidence/183-infra-validate`
+
+- Run: https://github.com/OpenVAA/voting-advice-application/actions/runs/39591102824 (run number 1901)
+- Commit: `b0c910e9f350465f83482ef31db3b7f55a4d3bc4`
+- Date: run created 2026-10-21T11:19:32Z; `infra-validate` started 2026-10-21T11:19:35Z, completed 2026-10-21T11:20:40Z
+- Job: https://github.com/OpenVAA/voting-advice-application/actions/runs/39591102824/job/119191973141
+- **`infra-validate` conclusion: `success`**
+
+| # | Step | Conclusion |
+|---|------|------------|
+| 1 | Set up job | success |
+| 2 | Checkout source code | success |
+| 3 | Setup Terraform 1.16.5 | success |
+| 4 | Check Terraform formatting | success |
+| 5 | Validate every Terraform root | success |
+| 6 | Check the settings types of the Supabase module | success |
+| 12 | Post Checkout source code | success |
+| 13 | Complete job | success |
+
+- `secret-scan` job of this run: `failure` (completed 2026-10-21T11:20:01Z, https://github.com/OpenVAA/voting-advice-application/actions/runs/39591102824/job/119191972936), as expected from the two unverified trufflehog `URI` findings accepted in Task 1. The log was not read (the API serves logs only to a signed-in caller), so the cause of this failure is expected, not observed.
+
+### Red: `ci-evidence/183-infra-validate-red`
+
+- Run: https://github.com/OpenVAA/voting-advice-application/actions/runs/39591102968 (run number 1902)
+- Commit: `a58cb0ad73b659e73da9402d9ba3d1ff2eb94b2d`
+- Date: run created 2026-10-21T11:19:32Z; `infra-validate` started 2026-10-21T11:20:03Z, completed 2026-10-21T11:20:32Z
+- Job: https://github.com/OpenVAA/voting-advice-application/actions/runs/39591102968/job/119191973249
+- **`infra-validate` conclusion: `failure`**
+
+| # | Step | Conclusion |
+|---|------|------------|
+| 1 | Set up job | success |
+| 2 | Checkout source code | success |
+| 3 | Setup Terraform 1.16.5 | success |
+| 4 | Check Terraform formatting | **failure** |
+| 5 | Validate every Terraform root | **failure** |
+| 6 | Check the settings types of the Supabase module | success |
+| 12 | Post Checkout source code | success |
+| 13 | Complete job | success |
+
+- `secret-scan` job of this run: `failure` (completed 2026-10-21T11:20:02Z), the same range of files apart from the two broken ones.
+
+### Run-level conclusions (a note, not the evidence)
+
+At 2026-10-21T11:23Z both runs were still `in_progress` (other jobs, among them `e2e-tests`, `e2e-visual`, `docker-image-build`, `dev-seed-integration` and `frontend-and-shared-module-validation`, had not finished), so neither run had a run-level conclusion. Both runs already held failed jobs other than `infra-validate` (`secret-scan`, and `dependency-audit` in both runs), so each run will conclude `failure` whatever the remaining jobs do. That is why the evidence is read at job and step level: the run-level conclusion says nothing about `infra-validate`.
+
+## What this run showed
+
+- The `infra-validate` job passed on 2026-10-21 in run 39591102824, on the committed tree of this branch without `.planning/`.
+- On the tree broken on purpose, the same job failed on 2026-10-21 in run 39591102968, at both of its checks: the formatting step and the validation step each concluded `failure`, while the settings-types step concluded `success`. The validation step ran after the formatting step had failed, so the two checks are independent.
+- Terraform 1.16.5 in CI accepted the formatting written on the workstation with Terraform 1.14.7: the green run's formatting step concluded `success`.
+- What a lock file without Linux provider hashes does to the job was not tested by these runs.
