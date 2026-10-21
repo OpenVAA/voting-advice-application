@@ -316,7 +316,7 @@ Notes:
   5. The project the operator created is imported into a Supabase root that has its own state file and `prevent_destroy`, and a destroy of that root is refused. The root applies the hosted API and auth settings and a second plan is empty. `supabase config push` is used nowhere. `yarn lint:check` fails when a security-relevant key of `config.toml` and the HCL disagree, seen once (SUPA-11). A job in `main.yaml` that needs no credentials formats and validates the Terraform, and is seen passing in a run.
 
 **Research flag**: Needs `/gsd-plan-phase --research-phase`. Topics from `research/SUMMARY.md`: the exact `supabase_settings` JSON keys, found by importing from a scratch project (F1); the OIDC subject for repositories created after 2026-07-15; legacy against publishable keys (F5), which C5 rules as measure and stay on legacy if they work. Create against import is closed by C2: the operator creates the project and Terraform imports it. Added by rulings after the research: a delegated subzone or the whole zone for `staging.openvaa.org` (reading 4, settled here), and the layout of the IAM policies (F1 note).
-**Plans**: 15/28 plans executed in 15 waves. Waves 1 to 5 run now without the operator and touch no cloud. The first operator checkpoint that can block is plan 183-14: it needs the applying identity (follow-up 183-R1) and Terraform 1.16.5. Plans 21 to 25 (the Supabase chain) depend only on their own predecessors and on plan 16, and may be executed by plan without waiting for plans 18, 19 and 20 of the same wave.
+**Plans**: 16/28 plans executed in 15 waves. Waves 1 to 5 run now without the operator and touch no cloud. The first operator checkpoint that can block is plan 183-14: it needs the applying identity (follow-up 183-R1) and Terraform 1.16.5. Plans 21 to 25 (the Supabase chain) depend only on their own predecessors and on plan 16, and may be executed by plan without waiting for plans 18, 19 and 20 of the same wave.
 
 Plans:
 **Wave 1**
@@ -348,7 +348,7 @@ Plans:
 
 **Wave 7** *(blocked on Wave 6 completion)*
 - [ ] 183-14-PLAN.md — wave 7, needs the operator — Have the operator name the applying identity, install Terraform 1.16.5 and run the read-only account inventory; settle any inline user policy it finds; and adapt the code to what the account already holds.
-- [ ] 183-15-PLAN.md — wave 7, needs the operator — Have the `infra-validate` job seen passing in a real run, and seen failing in a second run of a tree broken on purpose.
+- [x] 183-15-PLAN.md — wave 7, needs the operator — Have the `infra-validate` job seen passing in a real run, and seen failing in a second run of a tree broken on purpose.
 
 **Wave 8** *(blocked on Wave 7 completion)*
 - [ ] 183-16-PLAN.md — wave 8, needs the operator — The operator applies the bootstrap root, migrates its state into the bucket it created, and reads back what criterion 1 and criterion 2 state.
@@ -552,7 +552,7 @@ Phases 181, 182 and 183 can start in any order. From 184 on, the numeric order i
 |-------|----------------|--------|-----------|
 | 181. Deployability and Migration Model | 19/19 | Complete    | 2026-10-21 |
 | 182. Analytics Relay | 31/31 | Complete | 2026-10-20 |
-| 183. Terraform Foundation and Supabase as Code | 15/28 | In Progress | - |
+| 183. Terraform Foundation and Supabase as Code | 16/28 | In Progress | - |
 | 184. Hosted Supabase Measurement and Conformance Probe | 0/TBD | Not started | - |
 | 185. AWS Frontend Stack, First Apply by Hand | 0/TBD | Not started | - |
 | 186. Deployed Smoke Entry | 0/TBD | Not started | - |

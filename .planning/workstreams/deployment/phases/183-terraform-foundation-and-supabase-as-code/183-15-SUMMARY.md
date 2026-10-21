@@ -118,6 +118,7 @@ Apart from this amendment the plan ran as written.
 - **Not tested:** what a lock file without Linux provider hashes does to the job. The evidence file says so.
 - **The two `ci-evidence/183-infra-validate*` branches stay on the remote as the record.** The operator may delete them.
 - The executor ran no `git push` and no `gh` command, and used no credential.
+- SUPA-11 is not checked off in REQUIREMENTS.md. It is listed in the `requirements` of 15 plans of this phase, and several of them (183-21 to 183-25 and 183-27) have not run. `requirements.mark-complete` checked it off anyway, and that one change was reverted. It closes when the phase closes.
 
 ## Known Stubs
 
