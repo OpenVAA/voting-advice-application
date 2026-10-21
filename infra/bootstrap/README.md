@@ -672,5 +672,6 @@ it.
 
 ## Observations
 
-| Date (UTC) | Observation |
-| ---------- | ----------- |
+| Date (UTC) | Observation                                                                                                                                                                                                                                                                |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-21 | Step 1 inventory run: 2 IAM users found; 1 carried an inline policy (yes), was converted to a managed policy, and the assert mode then exited 0. No GitHub OIDC provider, no hosted zone, no state bucket and no same-named budget, repository or IAM entity were present. |
