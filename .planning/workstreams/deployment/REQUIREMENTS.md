@@ -54,7 +54,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
 - [ ] **INFRA-15**: A budget alarm notifies the operator when the account's spend passes a set threshold. [A2]
 - [ ] **INFRA-16**: The operator is notified when a deployment fails or rolls back and when a build fails. Each
       alert is seen firing once. [A2, added]
-- [ ] **INFRA-17**: IAM permissions are granted through customer-managed policies where an AWS-managed policy
+- [x] **INFRA-17**: IAM permissions are granted through customer-managed policies where an AWS-managed policy
       does not fit; no permission depends on an inline user policy. [F1]
 - [ ] **INFRA-18**: A Route 53 hosted zone serves `staging.openvaa.org`, and the records the operator must
       change at the current DNS host are documented. [F1]
@@ -272,7 +272,7 @@ closes; those are not listed against the earlier phase here.
 | INFRA-14 | Phase 185 | Pending |
 | INFRA-15 | Phase 183 | Pending |
 | INFRA-16 | Phase 187 | Pending |
-| INFRA-17 | Phase 183 | Pending |
+| INFRA-17 | Phase 183 | Complete |
 | INFRA-18 | Phase 183 | Pending |
 | INFRA-19 | Phase 187 | Pending |
 | SUPA-01 | Phase 184 | Pending |

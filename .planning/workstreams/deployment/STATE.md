@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 183
 current_phase_name: Terraform Foundation and Supabase as Code
-current_plan: 16
+current_plan: 17
 status: executing
-stopped_at: Completed 183-14-PLAN.md
-last_updated: "2026-10-21T13:18:09.360Z"
+stopped_at: Completed 183-16-PLAN.md
+last_updated: "2026-10-21T19:36:21.086Z"
 last_activity: 2026-10-21
 last_activity_desc: Phase 183 execution started
-state_head: 1d90d8eada7f170458d88e81d309dc05b95e6a40
+state_head: 7178a694a8a4684c241c2cc5f3a490fd05bb713c
 progress:
   total_phases: 10
   completed_phases: 2
   total_plans: 82
-  completed_plans: 71
+  completed_plans: 72
   percent: 20
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; read only from this wor
 Phases 181 and 182 are complete; phase 183 is in progress (15/28 plans).
 
 Phase: 183 (Terraform Foundation and Supabase as Code) — EXECUTING
-Plan: 16 of 28
+Plan: 17 of 28
 Status: Ready to execute
 Last activity: 2026-10-21 — Phase 183 execution started
 
@@ -43,7 +43,7 @@ Progress: [██░░░░░░░░] 20%
 ## Progress
 
 **Phases Complete:** 0 of 9
-**Current Plan:** 16
+**Current Plan:** 17
 
 Phases 181, 182 and 183 do not depend on each other in what they build, but their executors share one checkout, so they are not run at the same moment: whole-repo gates need a tree with no uncommitted tracked change, and phase 182 holds the other two during its cutover span and its E2E windows. Phase 181's freeze (181-17) waits for plan 182-02. 183 needs the operator from plan 183-14 on. From 184 on, the numeric order is the dependency order.
 
@@ -105,6 +105,7 @@ Phases 181, 182 and 183 do not depend on each other in what they build, but thei
 | Phase 181 P19 | 712min | 3 tasks | 1 files |
 | Phase 183 P15 | 2h40m | 3 tasks | 2 files |
 | Phase 183 P14 | about 5 h wall clock (operator waits) | 3 tasks | 5 files |
+| Phase 183 P16 | 6h15m | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -188,6 +189,9 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 183]: INFRA-17 account clause clean 2026-10-21: user-2 inline policy converted to customer-managed, assert mode exit 0
 - [Phase 183]: staging dns-mail sets manage_account_suppression = false: other SES identities in eu-north-1 share the account-level setting
 - [Phase 183]: attempt.sh screen rule 2 exempts exactly the account inventory's seven fixed verdict forms (operator ruling 2026-10-21)
+- [Phase 183]: 183-16: plan amendment ruled by the operator - s0_account, the s6b backend re-check and s9b_state_resources=30 (less 7 data sources = 23 = s3_managed_count) stand for the five unpasted Task 1 lines
+- [Phase 183]: 183-16: simulator step 8(a) runs one call per resource; two resources in one call give one result per action
+- [Phase 183]: 183-16: reply screen accepts numbered sub-steps such as s8d1_; rules 2 to 5 unchanged
 
 ### Pending Todos
 
@@ -235,6 +239,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-10-21T13:18:08.558Z
-**Stopped At:** Completed 183-14-PLAN.md
+Last session: 2026-10-21T19:36:20.180Z
+**Stopped At:** Completed 183-16-PLAN.md
 **Resume File:** None
