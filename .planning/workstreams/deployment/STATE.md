@@ -7,15 +7,15 @@ current_phase_name: Terraform Foundation and Supabase as Code
 current_plan: 20
 status: executing
 stopped_at: Completed 183-19-PLAN.md
-last_updated: "2026-10-22T08:38:15.423Z"
+last_updated: "2026-10-22T16:12:09.272Z"
 last_activity: 2026-10-21
 last_activity_desc: Phase 183 execution started
-state_head: 2a826bd825ea3e439b77d34ed59d333f3334a330
+state_head: cfeb0a1c9661629ef4a19211f487aeafdf4402d9
 progress:
   total_phases: 10
   completed_phases: 2
   total_plans: 82
-  completed_plans: 75
+  completed_plans: 76
   percent: 20
 ---
 
@@ -109,6 +109,7 @@ Phases 181, 182 and 183 do not depend on each other in what they build, but thei
 | Phase 183 P17 | 11h15m | 2 tasks | 5 files |
 | Phase 183 P18 | 61 min | 2 tasks | 2 files |
 | Phase 183 P19 | 30min | 2 tasks | 4 files |
+| Phase 183 P21 | 7h07m | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -200,6 +201,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 183]: 183-18: staging.openvaa.org delegated at Cloudflare (4 NS, 2026-10-22T07:25Z); referral equals the table; first public answer 08:03Z
 - [Phase 183]: 183-19: SES production access in eu-north-1 was already granted (read before filing); by operator ruling no request was filed and no sandbox mailbox verified
 - [Phase 183]: 183-19: scoped SMTP send policy still not observed; phase 184 fallback is the same statement on resource * with the From-address condition kept
+- [Phase 183]: 183-21: three managed keys absent from the throwaway import (password_required_characters, hook_custom_access_token_uri, hook_send_email_uri) are settled: the API returns each name with a null value; the provider stores only non-null keys on import
 
 ### Pending Todos
 
