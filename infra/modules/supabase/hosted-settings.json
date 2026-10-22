@@ -1,7 +1,7 @@
 {
   "api": {
     "db_schema": "public,graphql_public",
-    "db_extra_search_path": "public,extensions",
+    "db_extra_search_path": "public, extensions",
     "max_rows": 50000
   },
   "auth": {
@@ -26,7 +26,9 @@
     "mfa_phone_enroll_enabled": false,
     "mfa_phone_verify_enabled": false,
     "external_apple_enabled": false,
-    "external_web3_solana_enabled": false
+    "external_web3_solana_enabled": false,
+    "oauth_server_enabled": false,
+    "oauth_server_allow_dynamic_registration": false
   },
   "auth_hook": {
     "hook_custom_access_token_enabled": true,
