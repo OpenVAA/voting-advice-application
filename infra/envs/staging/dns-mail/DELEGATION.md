@@ -7,12 +7,17 @@ Observed on 2026-10-11 in public DNS: the parent zone `openvaa.org` was served b
 servers, `dora.ns.cloudflare.com` and `ganz.ns.cloudflare.com`; it had no `DS` and no `DNSKEY` record,
 so it was unsigned; and it answered `NXDOMAIN` for `staging.openvaa.org` and for names under it.
 
-| Type | Name      | Content                           | Entered (UTC) |
-| ---- | --------- | --------------------------------- | ------------- |
-| NS   | `staging` | to be filled when the zone exists |               |
-| NS   | `staging` | to be filled when the zone exists |               |
-| NS   | `staging` | to be filled when the zone exists |               |
-| NS   | `staging` | to be filled when the zone exists |               |
+| Type | Name      | Content                   | Entered (UTC)   |
+| ---- | --------- | ------------------------- | --------------- |
+| NS   | `staging` | `ns-1015.awsdns-62.net`   | not yet entered |
+| NS   | `staging` | `ns-1109.awsdns-10.org`   | not yet entered |
+| NS   | `staging` | `ns-1603.awsdns-08.co.uk` | not yet entered |
+| NS   | `staging` | `ns-34.awsdns-04.com`     | not yet entered |
+
+The four name servers are those of the hosted zone `Z02494181MAM7OCUAIPKC`, read from the root's
+`name_servers` output after the first apply (reported 2026-10-22). They are not yet entered at the
+parent zone. On 2026-10-22T06:56Z the parent zone's name server `dora.ns.cloudflare.com` answered
+`NXDOMAIN` for `staging.openvaa.org` with no referral, and `1.1.1.1` returned no NS records for it.
 
 Public resolvers have not yet been seen answering for `staging.openvaa.org` with these name servers.
 

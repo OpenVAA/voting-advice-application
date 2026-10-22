@@ -388,15 +388,11 @@ Return, for Steps 7 to 9: the `s1_` lines once all three are right; the `s2_` li
 
 ## Not yet observed
 
-Nobody has applied this root yet. Each statement below is something this runbook relies on and that
-has not been seen. It moves to "Observations", with its date, once the step named beside it has shown
-it.
+The root has been applied. Each statement below is something this runbook relies on and that has not
+been seen yet. It moves to "Observations", with its date, once the step named beside it has shown it.
 
 | Statement                                                                                                                                   | Checked by                                                                   |
 | ------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| The DKIM signing zone of this identity, as `SigningHostedZone` reports it, equals the default `dkim.amazonses.com` in the variable file     | Step 2, item 7                                                               |
-| A second plan right after the first apply shows no change                                                                                   | Step 3, item 8                                                               |
-| The SMTP user carries no inline policy and only the customer-managed send policy, and both assert modes of the inventory script pass        | Step 3, item 9                                                               |
 | The Cloudflare dashboard accepts four NS records named `staging` beside the zone's other records                                            | Step 5, item 3                                                               |
 | The referral from the parent zone's name servers names the four name servers of this zone, and a public resolver answers with the same four | Step 6                                                                       |
 | The identity reaches verified for sending, with DKIM `SUCCESS` and the MAIL FROM domain `SUCCESS`                                           | Step 7, item 1                                                               |
@@ -408,5 +404,10 @@ it.
 
 ## Observations
 
-| Date (UTC) | Observation |
-| ---------- | ----------- |
+| Date (UTC) | Observation                                                                                                                                                                                                                                                       |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-22 | Steps 1 to 3: the root was applied, adding the 14 resources the plan announced. The hosted zone `staging.openvaa.org` exists with four Route 53 name servers, written into `DELEGATION.md`, and this root's state object is encrypted (AES256).                   |
+| 2026-10-22 | Step 2, item 7: the DKIM signing zone that `SigningHostedZone` reports for this identity is `dkim.amazonses.com`, the default in the variable file, so no correction and no Step 4 were needed. The three DKIM tokens from Terraform equal the three SES reports. |
+| 2026-10-22 | Step 3, item 8: a second plan right after the first apply exited 0 with `-detailed-exitcode`, so it showed no change.                                                                                                                                             |
+| 2026-10-22 | Step 3, item 9: both assert modes of the inventory script exited 0 with the SMTP user in place. The SMTP user carries no inline policy and has one attached policy, the customer-managed send policy.                                                             |
+| 2026-10-22 | Before Step 5: the parent zone's name server answered `NXDOMAIN` for `staging.openvaa.org` with no referral, and a public resolver returned no NS records for it.                                                                                                 |
