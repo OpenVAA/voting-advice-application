@@ -325,6 +325,13 @@ export AWS_PAGER=""
 L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
 ```
 
+0. It must print `s0_account=471112560111`. Any other account means stop: the shell is signed in
+   elsewhere.
+
+   ```bash
+   echo "s0_account=$(aws sts get-caller-identity --query Account --output text)"
+   ```
+
 1. The identity's three statuses:
 
    ```bash
@@ -342,10 +349,25 @@ L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
 AWS documents that an account in the SES sandbox sends only to verified addresses and domains or to
 the mailbox simulator, at most 200 messages in 24 hours and at most one message a second, that the
 sandbox is per region, and that verifying the domain before requesting production access is a best
-practice. The sandbox is accepted for staging, so nothing waits for the grant.
+practice. Production access is set per account and region, so an account that already sends from
+another identity in this region may have it already. The sandbox is accepted for staging, so nothing
+waits for the grant.
 
-2. File the request, with the complete command. The CLI asks nothing, so the description is given as
-   an argument. Type your own address in place of `<your-address>`.
+2. First read three fields of the account, before anything is filed. The raw answer of `get-account`
+   holds the account's contact addresses, so it goes to the log and only three fields are printed.
+
+   ```bash
+   aws sesv2 get-account --region eu-north-1 --output json > "$L/s2a.json" 2> "$L/s2a.err"; echo "s2a_account_exit=$?"
+   jq -r '"s2a_production=\(.ProductionAccessEnabled)", "s2a_sending=\(.SendingEnabled)", "s2a_max24h=\(.SendQuota.Max24HourSend)"' "$L/s2a.json"
+   ```
+
+   If it prints `s2a_production=true`, the account already has production access in this region. File
+   no request, skip the rest of this step and Step 9, write `answer_skip_steps_2_3=yes` and go on with
+   item 4. A new request would overwrite the account's contact details, and a verified mailbox is
+   needed only in the sandbox.
+
+   Otherwise file the request, with the complete command. The CLI asks nothing, so the description is
+   given as an argument. Type your own address in place of `<your-address>`.
 
    ```bash
    aws sesv2 put-account-details --region eu-north-1 --production-access-enabled --mail-type TRANSACTIONAL --website-url https://openvaa.org --use-case-description 'Sign-in links for invited people and password recovery for a voting advice application. About 100 mails a day, with a peak of 2000 a day. Bounces and complaints go to the account suppression list.' --additional-contact-email-addresses <your-address> --contact-language EN > "$L/s2.log" 2>&1; echo "s2_request_exit=$?"
@@ -365,6 +387,9 @@ practice. The sandbox is accepted for staging, so nothing waits for the grant.
 
 ## Step 9: Your own mailbox, for the sandbox
 
+Only for an account that is still in the sandbox in this region; skip it when item 2 printed
+`s2a_production=true`.
+
 3. Verify your own mailbox by hand, with the CLI, so that no personal address enters Terraform or this
    repository. Type your own address in place of `<your-address>`.
 
@@ -382,32 +407,34 @@ practice. The sandbox is accepted for staging, so nothing waits for the grant.
 
 Do not read the root's SMTP credential outputs and do not send a test mail from your workstation.
 
-Return, for Steps 7 to 9: the `s1_` lines once all three are right; the `s2_` lines and
-`answer_request_filed_utc=`; `s3_mailbox_exit=`, `answer_mailbox_verified=done` and
-`s4_logs_removed=yes`. Do not paste your address.
+Return, for Steps 7 to 9: `s0_account=`; the `s1_` lines once all three are right; the `s2a_` lines;
+then either `answer_skip_steps_2_3=yes`, or the `s2_` lines, `answer_request_filed_utc=`,
+`s3_mailbox_exit=` and `answer_mailbox_verified=done`; and `s4_logs_removed=yes`. Do not paste your
+address.
 
 ## Not yet observed
 
 The root has been applied. Each statement below is something this runbook relies on and that has not
 been seen yet. It moves to "Observations", with its date, once the step named beside it has shown it.
 
-| Statement                                                                                                                                   | Checked by                                                                   |
-| ------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| The Cloudflare dashboard accepts four NS records named `staging` beside the zone's other records                                            | Step 5, item 3                                                               |
-| The referral from the parent zone's name servers names the four name servers of this zone, and a public resolver answers with the same four | Step 6                                                                       |
-| The identity reaches verified for sending, with DKIM `SUCCESS` and the MAIL FROM domain `SUCCESS`                                           | Step 7, item 1                                                               |
-| The production-access request is accepted as filed, and how Support answers it                                                              | Step 8, item 2, and the mail Support sends afterwards                        |
-| `create-email-identity` for a single address sends a verification mail with a link to that address                                          | Step 9, item 3                                                               |
-| SES accepts an SMTP send under the scoped send policy, which allows one From address on this identity only                                  | A later stage of the deployment work, with the first mail the function sends |
-| A received mail passes DKIM, SPF and DMARC, aligned with the From domain                                                                    | A later stage of the deployment work, from the headers of a received mail    |
-| The DMARC record of the staging name takes the place of the organisation's policy for mail from that name                                   | A later stage of the deployment work, from the headers of a received mail    |
+| Statement                                                                                                                               | Checked by                                                                   |
+| --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| For an account still in the sandbox: the production-access request is accepted as filed, and how Support answers it                     | Step 8, item 2, and the mail Support sends afterwards                        |
+| For an account still in the sandbox: `create-email-identity` for a single address sends a verification mail with a link to that address | Step 9, item 3                                                               |
+| SES accepts an SMTP send under the scoped send policy, which allows one From address on this identity only                              | A later stage of the deployment work, with the first mail the function sends |
+| A received mail passes DKIM, SPF and DMARC, aligned with the From domain                                                                | A later stage of the deployment work, from the headers of a received mail    |
+| The DMARC record of the staging name takes the place of the organisation's policy for mail from that name                               | A later stage of the deployment work, from the headers of a received mail    |
 
 ## Observations
 
-| Date (UTC) | Observation                                                                                                                                                                                                                                                       |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-10-22 | Steps 1 to 3: the root was applied, adding the 14 resources the plan announced. The hosted zone `staging.openvaa.org` exists with four Route 53 name servers, written into `DELEGATION.md`, and this root's state object is encrypted (AES256).                   |
-| 2026-10-22 | Step 2, item 7: the DKIM signing zone that `SigningHostedZone` reports for this identity is `dkim.amazonses.com`, the default in the variable file, so no correction and no Step 4 were needed. The three DKIM tokens from Terraform equal the three SES reports. |
-| 2026-10-22 | Step 3, item 8: a second plan right after the first apply exited 0 with `-detailed-exitcode`, so it showed no change.                                                                                                                                             |
-| 2026-10-22 | Step 3, item 9: both assert modes of the inventory script exited 0 with the SMTP user in place. The SMTP user carries no inline policy and has one attached policy, the customer-managed send policy.                                                             |
-| 2026-10-22 | Before Step 5: the parent zone's name server answered `NXDOMAIN` for `staging.openvaa.org` with no referral, and a public resolver returned no NS records for it.                                                                                                 |
+| Date (UTC) | Observation                                                                                                                                                                                                                                                                                     |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-22 | Steps 1 to 3: the root was applied, adding the 14 resources the plan announced. The hosted zone `staging.openvaa.org` exists with four Route 53 name servers, written into `DELEGATION.md`, and this root's state object is encrypted (AES256).                                                 |
+| 2026-10-22 | Step 2, item 7: the DKIM signing zone that `SigningHostedZone` reports for this identity is `dkim.amazonses.com`, the default in the variable file, so no correction and no Step 4 were needed. The three DKIM tokens from Terraform equal the three SES reports.                               |
+| 2026-10-22 | Step 3, item 8: a second plan right after the first apply exited 0 with `-detailed-exitcode`, so it showed no change.                                                                                                                                                                           |
+| 2026-10-22 | Step 3, item 9: both assert modes of the inventory script exited 0 with the SMTP user in place. The SMTP user carries no inline policy and has one attached policy, the customer-managed send policy.                                                                                           |
+| 2026-10-22 | Before Step 5: the parent zone's name server answered `NXDOMAIN` for `staging.openvaa.org` with no referral, and a public resolver returned no NS records for it.                                                                                                                               |
+| 2026-10-22 | Step 5: the Cloudflare dashboard accepted four NS records named `staging` beside the zone's other records, and no record at or under `staging` was there before. The entries and their times are in `DELEGATION.md`.                                                                            |
+| 2026-10-22 | Step 6: both name servers of the parent zone return a referral naming exactly the four name servers of this zone, and a public resolver answers NS and SOA from Route 53.                                                                                                                       |
+| 2026-10-22 | Step 7, item 1: the identity reads verified for sending, with DKIM `SUCCESS` and the MAIL FROM domain `SUCCESS`. A public resolver returns the three DKIM CNAMEs, each ending in `dkim.amazonses.com`, the MX and SPF records of the MAIL FROM domain and the DMARC record with `p=quarantine`. |
+| 2026-10-22 | Step 8, item 2: before anything was filed, the account read showed production access already enabled in `eu-north-1`, with sending enabled and a 24-hour quota of 50000. No production-access request was filed and no mailbox was verified for the sandbox.                                    |

@@ -11,3 +11,21 @@
 - **Still to check:** plans 183-21, 183-23, 183-24, 183-25 and 183-27 also run
   `init -backend=false`. Any of them that runs against a root the operator has already initialised
   (`infra/bootstrap`, `infra/envs/staging/dns-mail`, or a later one) needs the same change.
+
+## SES production access was already granted; no request filed and no sandbox mailbox (found in 183-19, 2026-10-22)
+
+- **What happened:** before step 2 of plan 183-19 filed anything, the operator read the account. It
+  already had production access in `eu-north-1` (`s2a_production=true`, `s2a_max24h=50000.0`), as
+  the 183-14 inventory had shown on 2026-10-21. By the operator's ruling (`answer_skip_steps_2_3=yes`),
+  no production-access request was filed and no mailbox identity was created for the sandbox.
+- **Wording to reconcile:** ROADMAP.md (the phase 183 row of the operator-preconditions table and
+  phase 183's "Operator preconditions") and REQUIREMENTS.md (line 14) say SES production access is
+  "requested". The precondition is met by the existing grant, not by a request. Reword these when
+  the milestone documents are next edited. This plan does not edit them.
+- **Plans that assume a verified operator mailbox:** none found. Plan 183-20's "mailbox" is the
+  budget notification, which AWS Budgets sends and SES does not. Plan 183-28 checks that 183-19's
+  operator commands appear in the runbook word for word, and the amended commands are there.
+- **Phase 184:** the account sends outside the sandbox, so the first mail from the hosted function
+  can go to any recipient, with no verified recipient needed. Whether the scoped send policy is
+  accepted is still not observed. The fallback is the same statement on resource `*` with the
+  From-address condition kept.
