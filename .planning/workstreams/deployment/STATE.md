@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 183
 current_phase_name: Terraform Foundation and Supabase as Code
-current_plan: 18
+current_plan: 19
 status: executing
-stopped_at: Completed 183-17-PLAN.md
-last_updated: "2026-10-22T07:01:04.117Z"
+stopped_at: Completed 183-18-PLAN.md
+last_updated: "2026-10-22T08:06:09.911Z"
 last_activity: 2026-10-21
 last_activity_desc: Phase 183 execution started
-state_head: fb5db2fca0f824dc0f45fd2aa7e1a063319e17fd
+state_head: 7e4e6dcaabd22b59fe6cd1f49ade1e25aa7038db
 progress:
   total_phases: 10
   completed_phases: 2
   total_plans: 82
-  completed_plans: 73
+  completed_plans: 74
   percent: 20
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; read only from this wor
 Phases 181 and 182 are complete; phase 183 is in progress (15/28 plans).
 
 Phase: 183 (Terraform Foundation and Supabase as Code) — EXECUTING
-Plan: 18 of 28
+Plan: 19 of 28
 Status: Ready to execute
 Last activity: 2026-10-21 — Phase 183 execution started
 
@@ -43,7 +43,7 @@ Progress: [██░░░░░░░░] 20%
 ## Progress
 
 **Phases Complete:** 0 of 9
-**Current Plan:** 18
+**Current Plan:** 19
 
 Phases 181, 182 and 183 do not depend on each other in what they build, but their executors share one checkout, so they are not run at the same moment: whole-repo gates need a tree with no uncommitted tracked change, and phase 182 holds the other two during its cutover span and its E2E windows. Phase 181's freeze (181-17) waits for plan 182-02. 183 needs the operator from plan 183-14 on. From 184 on, the numeric order is the dependency order.
 
@@ -107,6 +107,7 @@ Phases 181, 182 and 183 do not depend on each other in what they build, but thei
 | Phase 183 P14 | about 5 h wall clock (operator waits) | 3 tasks | 5 files |
 | Phase 183 P16 | 6h15m | 3 tasks | 4 files |
 | Phase 183 P17 | 11h15m | 2 tasks | 5 files |
+| Phase 183 P18 | 61 min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -195,6 +196,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 183]: 183-16: reply screen accepts numbered sub-steps such as s8d1_; rules 2 to 5 unchanged
 - [Phase 183]: 183-17: SES SigningHostedZone for staging.openvaa.org is dkim.amazonses.com, equal to the variable; no second apply before the delegation
 - [Phase 183]: 183-17: operator AWS profile is openvaa-admin; operator blocks export AWS_PROFILE=openvaa-admin
+- [Phase 183]: 183-18: staging.openvaa.org delegated at Cloudflare (4 NS, 2026-10-22T07:25Z); referral equals the table; first public answer 08:03Z
 
 ### Pending Todos
 
@@ -242,6 +244,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-10-22T07:01:03.235Z
-**Stopped At:** Completed 183-17-PLAN.md
+Last session: 2026-10-22T08:06:09.080Z
+**Stopped At:** Completed 183-18-PLAN.md
 **Resume File:** None
