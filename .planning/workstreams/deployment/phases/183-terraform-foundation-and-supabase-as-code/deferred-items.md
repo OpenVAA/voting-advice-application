@@ -11,6 +11,10 @@
 - **Still to check:** plans 183-21, 183-23, 183-24, 183-25 and 183-27 also run
   `init -backend=false`. Any of them that runs against a root the operator has already initialised
   (`infra/bootstrap`, `infra/envs/staging/dns-mail`, or a later one) needs the same change.
+- **Since 183-23 (2026-10-23):** the operator has initialised `infra/envs/staging/supabase` with its S3
+  backend. 183-23's Task 3 ran init and validate there with a throwaway `TF_DATA_DIR`; its plan text
+  was not changed for this. 183-25 and 183-27 still run `init -backend=false` in that root and need
+  the same.
 
 ## SES production access was already granted; no request filed and no sandbox mailbox (found in 183-19, 2026-10-22)
 
