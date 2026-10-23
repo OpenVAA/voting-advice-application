@@ -387,6 +387,9 @@ text: `terraform.tfstate` and `terraform.tfstate.backup` in `infra/envs/scratch/
 Work in this directory, `infra/envs/staging/supabase`, signed in to AWS, because this root's state is
 in the bucket. The database password of these steps is the persistent project's, not the throwaway's.
 
+The persistent project is `cofbsatfrdysyphajsky` (`openvaa-staging`, in `eu-north-1`). It is imported
+into this root, and its settings are applied.
+
 ### Step 8: Choose the region and create the project
 
 Choose the region before the project exists, and treat the choice as final: a project's region cannot
@@ -417,7 +420,7 @@ cd infra/envs/staging/supabase
 export LC_ALL=C
 export AWS_PAGER=""
 L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
-REF='<the persistent project ref>'
+REF='cofbsatfrdysyphajsky'
 ```
 
 The plan file of this step is kept on purpose, for the apply of Step 11. It holds the project's
@@ -508,7 +511,7 @@ cd infra/envs/staging/supabase
 export LC_ALL=C
 export AWS_PAGER=""
 L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
-REF='<the persistent project ref>'
+REF='cofbsatfrdysyphajsky'
 ```
 
 1. Compare the plan file's checksum with the one the go-ahead names:
@@ -653,7 +656,7 @@ no mail the auth service sends. No step of this runbook applies the SMTP setting
 
 ## Not yet observed
 
-The throwaway root has been applied; the persistent root has not. Each statement below is something this runbook relies on and that
+Both roots have been applied, the throwaway root and the persistent root. Each statement below is something this runbook relies on and that
 has not been seen. It moves to "Observations", with its date, once the step named beside it has shown
 it.
 
@@ -682,3 +685,7 @@ it.
 | 2026-10-23 | The two Management API reads, `/v1/projects/<ref>/config/auth` and `/v1/projects/<ref>/postgrest`, answered with status 200 and a JSON object holding each setting as a top-level field.                                                                                                                                                                                                                             |
 | 2026-10-23 | A destroy plan of the throwaway root exited 1. Its matching lines: `Error: Instance cannot be destroyed`, `Resource module.supabase.supabase_project.this has lifecycle.prevent_destroy` and `error and continue with the plan, either disable lifecycle.prevent_destroy or`.                                                                                                                                        |
 | 2026-10-23 | A plan with `-var enable_access_token_hook=false` exited 2.                                                                                                                                                                                                                                                                                                                                                          |
+| 2026-10-23 | The persistent project `cofbsatfrdysyphajsky` was imported into this root, and its settings were applied (`Apply complete! Resources: 1 added, 0 changed, 0 destroyed.`). The second plan exited 0 with "No changes".                                                                                                                                                                                                |
+| 2026-10-23 | A destroy plan of the persistent root exited 1, with the same three matching lines as on the throwaway root. It names `module.supabase.supabase_project.this` and `lifecycle.prevent_destroy`.                                                                                                                                                                                                                       |
+| 2026-10-23 | Every key the module sends was served by the persistent project as declared: 34 auth settings and 3 API settings, read back one by one, with both hooks on.                                                                                                                                                                                                                                                          |
+| 2026-10-23 | The persistent root's state object `hand/staging/supabase/terraform.tfstate` is in the bucket, encrypted with AES256 and versioned, and holds the project and the settings resource.                                                                                                                                                                                                                                 |
