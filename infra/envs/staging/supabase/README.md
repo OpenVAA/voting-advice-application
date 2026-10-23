@@ -643,30 +643,24 @@ no mail the auth service sends. No step of this runbook applies the SMTP setting
 > state, and without the module's ignore rule the first apply would send the exported value as the new
 > password.
 
-> **A hook switched on before its function exists.** Symptom: the apply of Step 5 or Step 11 fails with
-> an error that names a hook. Both hooks point at database functions that the migrations create. If
-> the project does not have them yet, set the switch of that hook to `false` in the root's
+> **A hook switched on before its function exists.** The hosted API accepts both hooks on a project
+> that does not have their functions yet, so the apply does not fail. Both hooks point at database
+> functions that the migrations create, and the auth service calls them when it issues a token or
+> sends a mail, so apply the migrations before anyone signs in. If the apply of Step 5 or Step 11
+> fails with an error that names a hook, set the switch of that hook to `false` in the root's
 > `terraform.tfvars`, with the comment `# hook off until <reason>`, and start again from a new plan,
 > which is read again before it is applied.
 
 ## Not yet observed
 
-Nobody has applied either root yet. Each statement below is something this runbook relies on and that
+The throwaway root has been applied; the persistent root has not. Each statement below is something this runbook relies on and that
 has not been seen. It moves to "Observations", with its date, once the step named beside it has shown
 it.
 
-| Statement                                                                                                                                                                             | Checked by                                                                   |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Ignoring changes to the database password gives a plan with no change to the project and no password line on an imported project                                                      | Step 3, item 3; Step 9, item 8                                               |
-| The text and the exit status of a refused destroy plan: a status other than 0, and a message that names `prevent_destroy` or says the resource cannot be destroyed                    | Step 7, item 5; Step 13, item 5                                              |
-| The exact string the API returns for the redirect list (`uri_allow_list`) once it holds a value, and whether the second plan is empty with the two schema lists and the redirect list | Step 6, items 3 and 4                                                        |
-| Whether the access-token hook can be switched on before its function exists on the project                                                                                            | Step 5, item 2                                                               |
-| Whether the send-email hook can be switched on before its function exists on the project                                                                                              | Step 5, item 2                                                               |
-| Whether two settings resources work side by side for one project, each keeping only its own keys                                                                                      | A later stage of the deployment work, when the SMTP settings are applied     |
-| The addresses of the two Management API reads, `/v1/projects/<ref>/config/auth` and `/v1/projects/<ref>/postgrest`, and the form of their answers                                     | Step 6, item 4                                                               |
-| Every key the module sends is served as sent                                                                                                                                          | Step 6, item 4; Step 12, item 4                                              |
-| A plan with one variable changed reports a change, with status 2                                                                                                                      | Step 7, item 6                                                               |
-| While the send-email hook is on, the hosted auth service sends no mail of its own                                                                                                     | A later stage of the deployment work, with the first mail the function sends |
+| Statement                                                                                        | Checked by                                                                   |
+| ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| Whether two settings resources work side by side for one project, each keeping only its own keys | A later stage of the deployment work, when the SMTP settings are applied     |
+| While the send-email hook is on, the hosted auth service sends no mail of its own                | A later stage of the deployment work, with the first mail the function sends |
 
 ## Observations
 
@@ -680,3 +674,11 @@ it.
 | 2026-10-22 | The settings import holds only the keys whose value is not null. `password_required_characters`, `hook_custom_access_token_uri` and `hook_send_email_uri` were absent from it; a read of `/v1/projects/<ref>/config/auth` (status 200) returned each of the three names with the value null.                                                                                                                         |
 | 2026-10-22 | A new project holds `oauth_server_enabled` and `oauth_server_allow_dynamic_registration`, both `false`, and no `oauth_server_authorization_path`.                                                                                                                                                                                                                                                                    |
 | 2026-10-22 | The hosted API refused, with status 400, the auth update of a plan whose settings set `oauth_server_enabled` and `oauth_server_allow_dynamic_registration`, both `false`, and not `oauth_server_authorization_path`: "Both OAUTH_SERVER_ENABLED and OAUTH_SERVER_AUTHORIZATION_PATH must be provided together when updating OAuth configuration". The module sends neither key, and the guard does not compare them. |
+| 2026-10-22 | On the imported throwaway project, with the password left out of state on import and its changes ignored, the first plan showed no change to the project and no password line; the plan of the corrected module on 2026-10-23 showed the same.                                                                                                                                                                       |
+| 2026-10-23 | The settings apply on the throwaway project succeeded, and the second plan exited 0 with "No changes", with the two schema lists and the redirect list as sent.                                                                                                                                                                                                                                                      |
+| 2026-10-23 | The API returned the redirect list as sent: the two addresses joined by a comma, with no space and in the order sent.                                                                                                                                                                                                                                                                                                |
+| 2026-10-23 | Every key the module sends was served as sent: 34 auth settings and 3 API settings, read back one by one. `password_required_characters` is served as `""`, not as null.                                                                                                                                                                                                                                             |
+| 2026-10-23 | The hosted API accepted both hooks, the access-token hook and the send-email hook, on a project that does not have their functions, and serves each as on with its address.                                                                                                                                                                                                                                          |
+| 2026-10-23 | The two Management API reads, `/v1/projects/<ref>/config/auth` and `/v1/projects/<ref>/postgrest`, answered with status 200 and a JSON object holding each setting as a top-level field.                                                                                                                                                                                                                             |
+| 2026-10-23 | A destroy plan of the throwaway root exited 1. Its matching lines: `Error: Instance cannot be destroyed`, `Resource module.supabase.supabase_project.this has lifecycle.prevent_destroy` and `error and continue with the plan, either disable lifecycle.prevent_destroy or`.                                                                                                                                        |
+| 2026-10-23 | A plan with `-var enable_access_token_hook=false` exited 2.                                                                                                                                                                                                                                                                                                                                                          |
