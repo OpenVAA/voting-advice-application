@@ -29,3 +29,20 @@
   can go to any recipient, with no verified recipient needed. Whether the scoped send policy is
   accepted is still not observed. The fallback is the same statement on resource `*` with the
   From-address condition kept.
+
+## The OAuth-server switches are no longer sent or compared; phase 184's probe reads them (found in 183-24, 2026-10-22)
+
+- **What happened:** the first apply on the throwaway project failed. The hosted API refused the
+  auth update with status 400: "Both OAUTH_SERVER_ENABLED and OAUTH_SERVER_AUTHORIZATION_PATH must
+  be provided together when updating OAuth configuration". The update held both OAuth-server
+  switches, `false`, and no authorization path.
+- **What 183-24 changed:** in commit `55802a1bc`:
+  - the module no longer sends `oauth_server_enabled` or `oauth_server_allow_dynamic_registration`;
+  - the parity guard puts the two local keys back in "not compared".
+- **What that leaves uncovered:** a plan no longer shows a change to the OAuth-server switches. The
+  guard never read hosted values. So an OAuth server switched on in the dashboard would go unseen.
+  The hosted default is `false`, as the import showed.
+- **Phase 184:** the conformance probe (SUPA-07) reads `oauth_server_enabled` (and
+  `oauth_server_allow_dynamic_registration`) from `/v1/projects/<ref>/config/auth`, fails by name
+  unless both are `false`, and is seen failing once against the throwaway project. A read has no
+  "together" constraint.
