@@ -7,15 +7,15 @@ current_phase_name: Terraform Foundation and Supabase as Code
 current_plan: 20
 status: executing
 stopped_at: Completed 183-19-PLAN.md
-last_updated: "2026-10-23T11:01:01.126Z"
+last_updated: "2026-10-23T11:53:13.400Z"
 last_activity: 2026-10-21
 last_activity_desc: Phase 183 execution started
-state_head: 70dd2508e4a7d580cf082fd349c33b7e3e30e87b
+state_head: 65f552b0d67849869b24e401ec24389d156c53f6
 progress:
   total_phases: 10
   completed_phases: 2
   total_plans: 82
-  completed_plans: 79
+  completed_plans: 80
   percent: 20
 ---
 
@@ -113,6 +113,7 @@ Phases 181, 182 and 183 do not depend on each other in what they build, but thei
 | Phase 183 P22 | 45min | 2 tasks | 2 files |
 | Phase 183 P24 | 13h33m | 2 tasks | 6 files |
 | Phase 183 P23 | 4h20m | 3 tasks | 3 files |
+| Phase 183 P25 | 50min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -210,6 +211,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 183]: 183-24: oauth_server_enabled and oauth_server_allow_dynamic_registration are no longer sent or compared (hosted API 400: OAUTH_SERVER_ENABLED and OAUTH_SERVER_AUTHORIZATION_PATH must be provided together); phase 184 probe reads them
 - [Phase 183]: 183-23: the persistent project cofbsatfrdysyphajsky (openvaa-staging) is in eu-north-1, in the OpenVAA organisation gulgrbzofwnwepdnrgrl, created by hand and imported; its first plan (tfplan sha256 065a419e...43590) creates only supabase_settings.this and was reviewed ok for plan 183-25
 - [Phase 183]: 183-23: the organisation slug is tracked in infra/envs/staging/supabase/terraform.tfvars beside the name and region, because organization_id is a required argument of the project resource
+- [Phase 183]: 183-25: the persistent project cofbsatfrdysyphajsky has its settings applied with both hooks on; phase 184 pushes the migrations before anyone signs in
 
 ### Pending Todos
 

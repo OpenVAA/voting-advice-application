@@ -15,6 +15,8 @@
   backend. 183-23's Task 3 ran init and validate there with a throwaway `TF_DATA_DIR`; its plan text
   was not changed for this. 183-25 and 183-27 still run `init -backend=false` in that root and need
   the same.
+- **Since 183-25 (2026-10-23):** 183-25's verify commands run no init or validate, and no `.tf` file
+  changed in it, so it needed no `TF_DATA_DIR`. 183-27 is the one plan left that needs it.
 
 ## SES production access was already granted; no request filed and no sandbox mailbox (found in 183-19, 2026-10-22)
 
