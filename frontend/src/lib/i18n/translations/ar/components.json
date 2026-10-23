@@ -1,0 +1,76 @@
+{
+  "accordionSelect": {
+    "collapsedAriaInfo": "انقر لعرض جميع الخيارات"
+  },
+  "constituencySelector": {
+    "selectPrompt": "اختر {constituencyGroup}"
+  },
+  "headingGroup": {
+    "roleDescription": "مجموعة عناوين"
+  },
+  "input": {
+    "addImage": "إضافة صورة",
+    "allSelected": "تم اختيار الكل",
+    "changeImage": "تغيير الصورة",
+    "deleteOption": "إلغاء تحديد {option}",
+    "error": {
+      "fileLoadingError": "فشل تحميل الملف.",
+      "invalidFile": "الملف غير صالح.",
+      "invalidUrl": "عنوان URL غير صالح.",
+      "oversizeFile": "الملف كبير جداً. الحجم الأقصى المسموح به هو {maxFilesize} ميغابايت."
+    },
+    "hideTranslations": "إخفاء",
+    "imageInfo": "الحجم الأقصى للصورة هو {maxFilesize} ميغابايت. يُرجى التحلي بالصبر عند الحفظ، إذ قد تستغرق الصورة بعض الوقت للتحميل.",
+    "multilingualInfo": "يمكنك إدخال إجابتك بجميع لغات التطبيق إذا رغبت في ذلك.",
+    "noImage": "لا توجد صورة",
+    "selectAnother": "اختر آخر",
+    "selectFirst": "اختر أولاً",
+    "selectOne": "اختر",
+    "showTranslations": "الترجمات"
+  },
+  "matchScore": {
+    "label": "درجة التطابق",
+    "score": "{score}%"
+  },
+  "passwordInput": {
+    "hidePassword": "إخفاء كلمة المرور",
+    "password": "كلمة المرور",
+    "placeholder": "كلمة المرور",
+    "showPassword": "إظهار كلمة المرور"
+  },
+  "preHeading": {
+    "roleDescription": "عنوان ثانوي"
+  },
+  "preventNavigation": {
+    "unsavedChanges": "لديك تغييرات غير محفوظة. هل أنت متأكد أنك تريد مغادرة هذه الصفحة؟"
+  },
+  "select": {
+    "noMatchingOptions": "لا توجد خيارات مطابقة",
+    "placeholder": "اختر خياراً أدناه"
+  },
+  "video": {
+    "captions": "التعليقات التوضيحية",
+    "error": "عذراً، يبدو أن هناك مشكلة في الفيديو. يمكنك محاولة إعادة تحميل الصفحة أو استخدام الزر أدناه للتبديل إلى عرض نصي.",
+    "hideCaptions": "إخفاء الترجمة",
+    "jumpBack": "الرجوع للخلف",
+    "jumpForward": "التقديم للأمام",
+    "mute": "كتم الصوت",
+    "pause": "إيقاف مؤقت",
+    "play": "تشغيل",
+    "progessbarLabel": "الوقت المتبقي",
+    "replay": "إعادة التشغيل",
+    "showCaptions": "إظهار الترجمة",
+    "showTranscript": "عرض الفيديو كنص",
+    "showVideo": "عرض الفيديو",
+    "subtitles": "الترجمة",
+    "timeLeft": "{minutes, plural, =0 {} one {دقيقة واحدة} two {دقيقتان} few {# دقائق} many {# دقيقةً} other {# دقيقة}} {seconds, plural, =0 {} one {ثانية واحدة} two {ثانيتان} few {# ثوانٍ} many {# ثانيةً} other {# ثانية}} متبقية",
+    "transcript": "نص",
+    "transcriptToggleLabel": "التبديل بين الفيديو والنص",
+    "unmute": "إلغاء كتم الصوت",
+    "unsupportedWarning": "للأسف، متصفحك لا يدعم هذا النوع من مقاطع الفيديو.",
+    "video": "فيديو"
+  },
+  "questionExtendedInfo": {
+    "title": "اعرف المزيد"
+  }
+}

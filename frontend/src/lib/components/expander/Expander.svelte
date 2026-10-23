@@ -106,8 +106,8 @@ You should not try to use a variant and customize at the same time.
       contentClasses += ' !px-0';
       break;
     case 'question-help':
-      titleClasses += ' text-lg font-bold flex flex-row justify-between !text-left';
-      contentClasses += ' !text-left';
+      titleClasses += ' text-lg font-bold flex flex-row justify-between !text-start';
+      contentClasses += ' !text-start';
       break;
   }
 
@@ -134,8 +134,9 @@ You should not try to use a variant and customize at the same time.
   <input type="checkbox" aria-label={$t('common.expandOrCollapse')} on:click={toggleExpanded} checked={expanded} />
   <div class={titleClasses}>
     {title}
-    <div class="not-rotated-icon {expanded ? 'rotated-icon' : ''} ml-md {iconClass}">
-      <Icon name="next" size="sm" color={iconColor} />
+    <div class="not-rotated-icon {expanded ? 'rotated-icon' : ''} ms-md {iconClass}">
+      <!-- The `next` arrow is rotated into a vertical chevron, so it must not be RTL-mirrored. -->
+      <Icon name="next" size="sm" color={iconColor} mirrored={false} />
     </div>
   </div>
   {#if expanded}

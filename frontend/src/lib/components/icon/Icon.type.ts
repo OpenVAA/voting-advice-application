@@ -26,4 +26,9 @@ export type IconProps = SvelteHTMLElements['svg'] & {
    * A custom color string to use for the icon in dark mode, which will override the `color` property.
    */
   customColorDark?: string | null;
+
+  /**
+   * Whether to horizontally mirror the icon under RTL. When `undefined` (the default), directional icons (see `DIRECTIONAL_ICONS`, e.g. `next`/`previous`) mirror automatically. Pass `false` to opt out — e.g. when an arrow is rotated into a vertical chevron — or `true` to force mirroring.
+   */
+  mirrored?: boolean | null;
 };

@@ -104,7 +104,7 @@ Shows the candidate's user settings.
           <label for="language" class={labelClass}>
             {$t('candidateApp.settings.language')}
           </label>
-          <div class="w-6/12 text-right text-secondary">
+          <div class="w-6/12 text-end text-secondary">
             <select
               id="language"
               class="select select-sm w-6/12 text-primary"

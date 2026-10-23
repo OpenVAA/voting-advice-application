@@ -41,7 +41,12 @@ export const staticSettings: StaticSettings = {
   font: {
     name: 'Inter',
     url: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap',
-    style: 'sans'
+    style: 'sans',
+    // Arabic-capable companion for RTL locales. Inter lacks Arabic glyphs, so the browser falls through to this face for Arabic codepoints only (the Google Fonts CSS2 API serves it with per-subset `unicode-range` and `display=swap`, leaving the Latin path untouched).
+    secondary: {
+      name: 'Noto Sans Arabic',
+      url: 'https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap'
+    }
   },
   supportedLocales: [
     {
@@ -60,6 +65,11 @@ export const staticSettings: StaticSettings = {
     {
       code: 'da',
       name: 'Dansk'
+    },
+    {
+      code: 'ar',
+      name: 'العربية',
+      dir: 'rtl'
     }
   ],
   analytics: {

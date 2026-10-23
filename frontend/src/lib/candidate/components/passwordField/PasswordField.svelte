@@ -69,7 +69,7 @@ PasswordField is an input box for password that comes with a button to reveal an
     type="button"
     variant="icon"
     text={passwordRevealed ? $t('components.passwordInput.hidePassword') : $t('components.passwordInput.showPassword')}
-    class="!absolute inset-y-0 right-0"
+    class="!absolute inset-y-0 end-0"
     icon={passwordRevealed ? 'hide' : 'show'}
     on:click={toggleRevealed} />
 </div>

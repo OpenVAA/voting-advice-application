@@ -17,6 +17,7 @@
   import '../../app.css';
   import { staticSettings } from '@openvaa/app-shared';
   import { onDestroy } from 'svelte';
+  import { browser } from '$app/environment';
   import { afterNavigate, beforeNavigate, onNavigate } from '$app/navigation';
   import { updated } from '$app/stores';
   import { isValidResult } from '$lib/api/utils/isValidResult';
@@ -29,6 +30,7 @@
   import { initI18nContext } from '$lib/contexts/i18n';
   import { initLayoutContext } from '$lib/contexts/layout';
   import { FeedbackModal } from '$lib/dynamic-components/feedback/modal';
+  import { dir, locale } from '$lib/i18n';
   import { logDebugError } from '$lib/utils/logger';
   import MaintenancePage from './MaintenancePage.svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
@@ -111,8 +113,18 @@
   // Other global effects
   ////////////////////////////////////////////////////////////////////
 
+  // Keep the document direction and language in sync with the active locale on client-side navigation. The initial values are set server-side via `app.html` (`%dir%`/`%lang%`), but SvelteKit does not re-run that transform when navigating between locales, so we update the root element reactively.
+  $: if (browser) {
+    document.documentElement.dir = $dir;
+    if ($locale) document.documentElement.lang = $locale;
+  }
+
   const fontUrl =
     staticSettings.font?.url ?? 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap';
+  // Optional secondary font (e.g. an Arabic-capable face for RTL locales), loaded alongside the main font. The browser selects it per-glyph via the font stack, so the Latin path is unaffected.
+  const secondaryFontUrl = staticSettings.font?.secondary?.url;
+  const usesGoogleFonts =
+    fontUrl.indexOf('fonts.googleapis') !== -1 || (secondaryFontUrl?.indexOf('fonts.googleapis') ?? -1) !== -1;
 </script>
 
 <svelte:head>
@@ -125,11 +137,14 @@
     name="theme-color"
     content={staticSettings?.colors?.dark?.['base-300'] ?? '#1f2324'}
     media="(prefers-color-scheme: dark)" />
-  {#if fontUrl.indexOf('fonts.googleapis') !== -1}
+  {#if usesGoogleFonts}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true" />
   {/if}
   <link href={fontUrl} rel="stylesheet" />
+  {#if secondaryFontUrl}
+    <link href={secondaryFontUrl} rel="stylesheet" />
+  {/if}
 </svelte:head>
 
 {#if error}

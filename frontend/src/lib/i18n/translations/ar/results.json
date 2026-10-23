@@ -1,0 +1,35 @@
+{
+  "alliance": {
+    "numShown": "{numShown, plural, zero {لا تحالفات} one {تحالف واحد} two {تحالفان} few {# تحالفات} many {# تحالفاً} other {# تحالف}}"
+  },
+  "candidate": {
+    "numShown": "{numShown, plural, zero {لا {candidatePlural}} one {{candidateSingular} واحد} two {{candidatePlural} اثنان} few {# {candidatePlural}} many {# {candidatePlural}} other {# {candidatePlural}}}"
+  },
+  "faction": {
+    "numShown": "{numShown, plural, zero {لا كتل} one {كتلة واحدة} two {كتلتان} few {# كتل} many {# كتلةً} other {# كتلة}}"
+  },
+  "inConstituency": "في الدائرة الانتخابية",
+  "ingress": {
+    "answerMinQuestions": "إذا كنت ترغب في العثور على {candidatePlural} و{partyPlural} الأكثر توافقاً مع آرائك، {questionsLink} أولاً.",
+    "questionsLinkText": "أجب على {numQuestions, plural, one {سؤال واحد على الأقل} two {سؤالين على الأقل} few {# أسئلة على الأقل} many {# سؤالاً على الأقل} other {# سؤال على الأقل}}"
+  },
+  "missingNominations": {
+    "noNominations": {
+      "title": "لا يوجد مرشحون أو أحزاب في دائرتك الانتخابية ممن استجابوا للبوصلة الانتخابية",
+      "content": "يمكنك مراجعة الأسئلة إذا رغبت في ذلك، إلا أن النتائج لا يمكن عرضها."
+    },
+    "someNominations": {
+      "title": "بعض مرشحي الانتخابات أو الأحزاب لم يستجيبوا للبوصلة الانتخابية",
+      "content": "لا تتوفر ردود لجميع الانتخابات في دائرتك الانتخابية من مرشحين أو أحزاب. ستعرض النتائج الانتخابات التي تتوفر لها ردود فقط."
+    },
+    "noNominationsForElection": "غير متاح"
+  },
+  "organization": {
+    "numShown": "{numShown, plural, zero {لا {partyPlural}} one {حزب واحد} two {{partySingular} اثنان} few {# {partyPlural}} many {# {partyPlural}} other {# {partyPlural}}}"
+  },
+  "selectElectionFirst": "اختر انتخابات أولاً",
+  "title": {
+    "browse": "تصفح {candidatePlural} و{partyPlural}",
+    "results": "النتائج"
+  }
+}

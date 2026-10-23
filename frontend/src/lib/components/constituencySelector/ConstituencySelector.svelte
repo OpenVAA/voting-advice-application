@@ -175,7 +175,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
       <div class="mt-md grid gap-md">
         <!-- Show an number in front of heading if multiple selections need be made -->
         {#if sections.length > 1}
-          <h3 class="relative pl-[2rem]">
+          <h3 class="relative ps-[2rem]">
             <span class="circled" class:circled-on-shaded={onShadedBg}>{sectionIndex + 1}</span>
             {applicableElections
               .toReversed()

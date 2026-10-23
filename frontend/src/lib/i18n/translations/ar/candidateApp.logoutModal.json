@@ -1,0 +1,7 @@
+{
+  "continue": "متابعة إدخال البيانات",
+  "ingress": "هل أنت متأكد أنك تريد تسجيل الخروج؟ سيتم تسجيل خروجك تلقائياً بعد {timeLeft} ثانية.",
+  "itemsLeft": "لا يزال {infoQuestionsLeft, plural, one {هناك عنصر واحد} two {هناك عنصران} few {هناك # عناصر} many {هناك # عنصراً} other {هناك # عنصر}} من المعلومات الأساسية و{opinionQuestionsLeft, plural, one {رأي واحد} two {رأيان} few {# آراء} many {# رأياً} other {# رأي}} لم يكتمل.",
+  "questionsLeft": "لا يزال {opinionQuestionsLeft, plural, one {هناك رأي واحد} two {هناك رأيان} few {هناك # آراء} many {هناك # رأياً} other {هناك # رأي}} لم يكتمل.",
+  "title": "بعض بياناتك لا تزال مفقودة"
+}

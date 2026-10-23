@@ -92,7 +92,7 @@ See the `<ModalContainer>` component documentation for more information.
         <slot name="actions" />
       </div>
     {/if}
-    <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2" on:click={() => closeModal?.()}>
+    <button class="btn btn-circle btn-ghost btn-sm absolute end-2 top-2" on:click={() => closeModal?.()}>
       <span aria-hidden="true">✕</span>
       <span class="sr-only">{$t('common.closeDialog')}</span>
     </button>

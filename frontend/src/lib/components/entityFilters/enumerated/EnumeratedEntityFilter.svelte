@@ -138,8 +138,8 @@ Render an enumerated filter for entities that displays a list of values to inclu
       <label class="label cursor-pointer !items-start gap-sm !p-0">
         <!-- Disable the input if there is only one value -->
         <input type="checkbox" class="checkbox" {value} bind:group={selected} {name} disabled={values.length === 1} />
-        <span class="label-text w-full pt-2 text-left">
-          {label} <span class="pl-sm text-secondary">{count}</span>
+        <span class="label-text w-full pt-2 text-start">
+          {label} <span class="ps-sm text-secondary">{count}</span>
         </span>
       </label>
     {/if}
@@ -150,7 +150,7 @@ Render an enumerated filter for entities that displays a list of values to inclu
         <div class="w-[1.5rem]">
           <Icon name={allSelected ? 'uncheckAll' : 'checkAll'} />
         </div>
-        <span class="label-text w-full pt-2 text-left text-primary">
+        <span class="label-text w-full pt-2 text-start text-primary">
           {allSelected ? $t('entityFilters.unselectAll') : $t('entityFilters.selectAll')}
         </span>
       </button>

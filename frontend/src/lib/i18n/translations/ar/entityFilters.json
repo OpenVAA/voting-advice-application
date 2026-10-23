@@ -1,0 +1,18 @@
+{
+  "applyAndClose": "إغلاق الفلاتر",
+  "error": "تعذَّر تحميل الفلتر، نعتذر!",
+  "filterButtonLabel": "فلتر",
+  "filters": "الفلاتر",
+  "missingValue": "لا إجابة",
+  "numeric": {
+    "maxLabel": "الحد الأقصى",
+    "minLabel": "الحد الأدنى"
+  },
+  "reset": "إعادة تعيين الفلاتر",
+  "selectAll": "تحديد الكل",
+  "text": {
+    "ariaLabel": "نص:",
+    "placeholder": "النص المراد البحث عنه"
+  },
+  "unselectAll": "إلغاء تحديد الكل"
+}

@@ -1,0 +1,26 @@
+{
+  "title": "تكثيف الحجج",
+  "description": "تكثيف الحجج وإدارتها لأسئلة الانتخابات.",
+  "jobs": {
+    "noActiveJobs": "لا توجد مهام نشطة",
+    "startProcess": "ابدأ عملية تكثيف الحجج لمشاهدة المراقبة الفورية"
+  },
+  "generate": {
+    "allQuestions": "توليد حجج لجميع أسئلة الرأي",
+    "button": "توليد الحجج",
+    "buttonLoading": "جارٍ التوليد...",
+    "error": "حدث خطأ أثناء توليد الحجج",
+    "mayTakeTime": "قد تستغرق هذه العملية عدة دقائق",
+    "noElectionsAvailable": "لا تتوفر انتخابات حاليًا. يرجى التحقق من إعدادات البيانات.",
+    "noElectionSelected": "يرجى اختيار انتخابات أولًا",
+    "noQuestionsForElection": "لم يتم العثور على أسئلة رأي للانتخابات المختارة.",
+    "noQuestionSelected": "يرجى اختيار سؤال واحد على الأقل",
+    "selectElection": "اختر الانتخابات",
+    "selectElectionPlaceholder": "اختر انتخابات...",
+    "selectedQuestions": "توليد حجج للأسئلة المختارة فقط",
+    "questionType": "اختيار الأسئلة",
+    "selectAll": "اختر الكل",
+    "unselectAll": "إلغاء اختيار الكل",
+    "errorLoadingQuestions": "خطأ في تحميل الأسئلة: {error}"
+  }
+}

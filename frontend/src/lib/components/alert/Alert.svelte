@@ -100,10 +100,10 @@ Show a non-model alert or dialog that appears at the bottom of the screen.
   aria-describedby={contentId}
   {...concatClass(
     $$restProps,
-    'alert fixed z-30 w-full sm:w-auto max-w-2xl justify-items-stretch shadow-xl transition-all sm:!pr-[2rem] ' +
+    'alert fixed z-30 w-full sm:w-auto max-w-2xl justify-items-stretch shadow-xl transition-all sm:!pe-[2rem] ' +
       (icon ? '' : 'sm:grid-cols-[minmax(auto,1fr)_auto] ') +
-      'bottom-0 mx-auto pb-safelgb pl-safelgl rounded-b-none ' +
-      'sm:bottom-safelgb sm:left-safelgl sm:right-safelgr sm:p-lg sm:rounded-b-[var(--rounded-box,1rem)]'
+      'bottom-0 mx-auto pb-safelgb ps-safelgs rounded-b-none ' +
+      'sm:bottom-safelgb sm:start-safelgs sm:end-safelge sm:p-lg sm:rounded-b-[var(--rounded-box,1rem)]'
   )}
   class:vaa-alert-hidden={!isOpen}>
   {#if icon}
@@ -119,7 +119,7 @@ Show a non-model alert or dialog that appears at the bottom of the screen.
       <Button on:click={closeAlert} color="warning" text={$t('common.close')} class="-mt-[1rem] sm:mt-0" />
     {/if}
   </div>
-  <button on:click={closeAlert} class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
+  <button on:click={closeAlert} class="btn btn-circle btn-ghost btn-sm absolute end-2 top-2">
     <span aria-hidden="true">✕</span>
     <span class="sr-only">{$t('common.close')}</span>
   </button>

@@ -54,7 +54,7 @@ Display the question's expandable information content.
           <Expander
             {title}
             titleClass="flex justify-between font-bold"
-            contentClass="!text-left"
+            contentClass="!text-start"
             on:collapse={() => onSectionCollapse?.(title)}
             on:expand={() => onSectionExpand?.(title)}>
             {@html sanitizeHtml(content)}

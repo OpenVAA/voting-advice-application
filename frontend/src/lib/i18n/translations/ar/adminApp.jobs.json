@@ -1,0 +1,45 @@
+{
+  "title": "لوحة تحكم المدير",
+  "emergencyCleanup": "تنظيف طارئ",
+  "features": {
+    "ArgumentCondensation": {
+      "title": "تكثيف الحجج"
+    },
+    "QuestionInfoGeneration": {
+      "title": "توليد معلومات الأسئلة"
+    }
+  },
+  "confirmAbortAll": "هل أنت متأكد من رغبتك في إلغاء جميع المهام الجارية؟",
+  "authRequired": "المصادقة مطلوبة",
+  "abortAllFailed": "فشل التنظيف الطارئ. راجع وحدة التحكم للاطلاع على التفاصيل.",
+  "systemHealth": "صحة النظام",
+  "activeJobs": "المهام النشطة",
+  "successfulJobs": "المهام الناجحة",
+  "failedJobs": "المهام الفاشلة",
+  "abortedJobs": "المهام الملغاة",
+  "abortingInfo": "تم طلب الإلغاء. في انتظار توقف المسار وإعادة تهيئته بأمان.",
+  "abortJob": "إلغاء المهمة",
+  "pastJobs": "المهام السابقة",
+  "hidePastJobs": "إخفاء المهام السابقة",
+  "showPastJobs": "عرض المهام السابقة",
+  "pastJobsDescription": "المهام السابقة",
+  "noActiveJobs": "لا توجد مهام نشطة",
+  "noPastJobs": "لا توجد مهام سابقة",
+  "started": "بدأت",
+  "messages": "الرسائل",
+  "notAvailable": "غير متوفر",
+  "confirmAbortJob": "هل أنت متأكد من رغبتك في إلغاء مهمة {feature}؟",
+  "abortJobFailed": "فشل إلغاء المهمة. راجع وحدة التحكم للاطلاع على التفاصيل.",
+  "alreadyRunning": "مهمة قيد التشغيل بالفعل. يرجى الانتظار حتى تنتهي.",
+  "progress": "التقدم",
+  "warningsAndErrors": "التحذيرات والأخطاء",
+  "noWarningsOrErrors": "لا توجد تحذيرات أو أخطاء",
+  "infoMessages": "رسائل المعلومات",
+  "noInfoMessages": "لا توجد رسائل معلومات",
+  "author": "المؤلف",
+  "duration": "المدة",
+  "aborting": "جارٍ الإلغاء…",
+  "hideMessages": "إخفاء الرسائل",
+  "showMessages": "عرض الرسائل",
+  "id": "المعرّف"
+}

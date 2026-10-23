@@ -1,0 +1,27 @@
+{
+  "additionalActions": "إجراءات إضافية لهذا السؤال",
+  "answers": {
+    "bothHaventAnswered": "لم يجب أنت ولا {entity} على هذا السؤال",
+    "entityHasntAnswered": "لم يجب {entity} على هذا السؤال",
+    "youHaventAnswered": "لم تجب على هذا السؤال",
+    "yourAnswer": "أنت"
+  },
+  "category": {
+    "numQuestions": "{numQuestions, plural, =-1 {} one {سؤال واحد} two {سؤالان} few {# أسئلة} many {# سؤالاً} other {# سؤال}}",
+    "skip": "تخطي هذه الفئة"
+  },
+  "infoDescription": "معلومات خلفية حول السؤال",
+  "intro": {
+    "ingress": {
+      "withCategorySelection": "تنقسم الأسئلة إلى {numCategories} فئات. يمكنك الإجابة على جميعها أو اختيار ما تريد. {minQuestions, plural, =0 {} =1 {} other {غير أنك بحاجة إلى اختيار فئات كافية للحصول على ما لا يقل عن # أسئلة في المجموع.}}",
+      "withoutCategorySelection": "أجب الآن على {numQuestions} سؤالاً حول السياسة والقيم. {numCategories, plural, =0 {} =1 {} other {تنقسم الأسئلة إلى # فئات.}}"
+    },
+    "start": "أجب على {numQuestions} سؤالاً"
+  },
+  "next": "السؤال التالي",
+  "previous": "السابق",
+  "remove": "حذف الإجابة",
+  "skip": "تخطي",
+  "skipToResults": "انتقل إلى النتائج",
+  "title": "الآراء"
+}

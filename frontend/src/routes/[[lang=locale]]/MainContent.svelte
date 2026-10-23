@@ -53,7 +53,7 @@ The layout varies slightly based on the presence of a video player.
 </svelte:head>
 
 <div
-  {...concatClass($$restProps, 'flex flex-grow flex-col items-center gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg')}>
+  {...concatClass($$restProps, 'flex flex-grow flex-col items-center gap-y-lg pb-safelgb ps-safelgs pe-safelge pt-lg')}>
   <!-- Note -->
   {#if $$slots.note}
     <div class={noteClass} role={noteRole}>
@@ -82,7 +82,7 @@ The layout varies slightly based on the presence of a video player.
 
   <!-- Full-width content -->
   {#if $$slots.fullWidth}
-    <div class="-mb-safelgb -ml-safelgl -mr-safelgr flex flex-col items-stretch self-stretch">
+    <div class="-mb-safelgb -ms-safelgs -me-safelge flex flex-col items-stretch self-stretch">
       <slot name="fullWidth" />
     </div>
   {/if}

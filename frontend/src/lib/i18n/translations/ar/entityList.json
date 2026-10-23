@@ -1,0 +1,9 @@
+{
+  "controls": {
+    "noFilterResults": "لم تُسفر الفلاتر عن أي نتائج. يمكنك تجربة تغييرها.",
+    "noSearchResults": "لم يُسفر البحث عن أي نتائج. يمكنك تجربة تغييره.",
+    "searchPlaceholder": "البحث بالاسم",
+    "showingNumResults": "عرض {numShown, plural, one {نتيجة واحدة} two {نتيجتان} few {# نتائج} many {# نتيجةً} other {# نتيجة}}"
+  },
+  "showMore": "عرض المزيد"
+}

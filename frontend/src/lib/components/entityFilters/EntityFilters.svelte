@@ -43,7 +43,7 @@ Show filters for entities. This component and the individual filter components o
     <Expander
       title={filter.name}
       variant="question"
-      titleClass="!text-left"
+      titleClass="!text-start"
       defaultExpanded={filter.active || isFilterType(filter, FILTER_TYPE.TextFilter)}>
       {#if isFilterType(filter, FILTER_TYPE.TextFilter)}
         {#await import('./text') then { TextEntityFilter }}

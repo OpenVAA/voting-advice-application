@@ -47,7 +47,15 @@ Used to display an `Entity` as small tag including an icon.
     name={ICONS[nakedEntity.type]}
     customColor={nakedEntity.color?.normal}
     customColorDark={nakedEntity.color?.dark} />
-  <span>
+  <!--
+    Entity names are author-supplied, so the text keeps `dir="auto"` to render its own script
+    correctly. But the wrapped lines must align toward the adjacent icon, which follows the UI
+    direction — so alignment is gated on the UI direction, not the text's auto direction. A plain
+    `text-start`/`text-end` would resolve against the span's own auto direction and could point a
+    Latin name away from the icon in an RTL UI. `rtl:text-right` keys off the root `dir="rtl"`,
+    pinning the lines to the icon side under RTL while LTR keeps the default start alignment.
+  -->
+  <span dir="auto" class="text-start rtl:text-right">
     {#if variant === 'short'}
       {nakedEntity.shortName}
     {:else if variant === 'full' && nakedEntity.shortName !== nakedEntity.name}
