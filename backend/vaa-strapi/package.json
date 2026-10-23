@@ -37,7 +37,7 @@
     "uuid": "bf2736db-ee20-4091-9e1e-f02ff08da6dd"
   },
   "engine": {
-    "node": "20.18.1",
+    "node": "22.23.4",
     "yarn": "4.6",
     "npm": "please-use-yarn"
   },
