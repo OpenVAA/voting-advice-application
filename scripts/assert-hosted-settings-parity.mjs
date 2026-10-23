@@ -329,22 +329,6 @@ const ROWS = [
     'same',
     'a wallet sign-in switched on is a sign-in path the test suite does not cover'
   ),
-  agree(
-    'auth.oauth_server',
-    'enabled',
-    'auth',
-    'oauth_server_enabled',
-    'same',
-    'an OAuth server switched on issues tokens to third-party clients the test suite does not cover'
-  ),
-  agree(
-    'auth.oauth_server',
-    'allow_dynamic_registration',
-    'auth',
-    'oauth_server_allow_dynamic_registration',
-    'same',
-    'dynamic registration lets any client register itself with the OAuth server'
-  ),
   // hosted may be stricter
   stricter(
     'auth',
@@ -422,6 +406,11 @@ const ROWS = [
   ...none('auth.third_party.auth0', ['enabled'], 'third-party auth is a separate API and a separate resource'),
   ...none('auth.third_party.aws_cognito', ['enabled'], 'third-party auth is a separate API and a separate resource'),
   ...none('auth.third_party.clerk', ['enabled'], 'third-party auth is a separate API and a separate resource'),
+  ...none(
+    'auth.oauth_server',
+    ['enabled', 'allow_dynamic_registration'],
+    'the hosted API refused an auth update holding these two keys without authorization_url_path on 2026-10-22, so the module does not send them'
+  ),
   ...none(
     'auth.oauth_server',
     ['authorization_url_path'],
@@ -1489,9 +1478,7 @@ const CORRECT_SETTINGS = {
     mfa_phone_enroll_enabled: false,
     mfa_phone_verify_enabled: false,
     external_apple_enabled: false,
-    external_web3_solana_enabled: false,
-    oauth_server_enabled: false,
-    oauth_server_allow_dynamic_registration: false
+    external_web3_solana_enabled: false
   },
   auth_hook: {
     hook_custom_access_token_enabled: true,
@@ -1736,14 +1723,6 @@ const CASES = [
     name: 'hosted db_schema with an extra schema',
     edit: editSettings((s) => (s.api.db_schema = 'public,graphql_public,private')),
     expected: ['api/schemas']
-  },
-  {
-    name: 'hosted OAuth server and its dynamic registration switched on',
-    edit: editSettings((s) => {
-      s.auth.oauth_server_enabled = true;
-      s.auth.oauth_server_allow_dynamic_registration = true;
-    }),
-    expected: ['auth.oauth_server/enabled', 'auth.oauth_server/allow_dynamic_registration']
   },
   {
     name: 'hosted hook enabled as the string "true"',
