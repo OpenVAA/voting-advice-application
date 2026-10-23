@@ -46,3 +46,17 @@
   `oauth_server_allow_dynamic_registration`) from `/v1/projects/<ref>/config/auth`, fails by name
   unless both are `false`, and is seen failing once against the throwaway project. A read has no
   "together" constraint.
+
+## Both hooks are accepted before their functions exist; the persistent root applies with them on (found in 183-24, 2026-10-23)
+
+- **What was seen:** the hosted API accepted the access-token hook and the send-email hook on the
+  throwaway project, which has neither `public.custom_access_token_hook` nor
+  `public.send_email_hook`. The read-back serves both as on, each with its address.
+- **What follows for 183-25:** the persistent root applies with `enable_access_token_hook = true` and
+  `enable_send_email_hook = true`. No `hook off until` assignment is needed, and phase 184 does not
+  have to switch either hook on.
+- **What follows for phase 184:** from the persistent apply until the migrations are pushed, the
+  project's hooks point at functions that do not exist yet. How the auth service behaves then, on a
+  token or a mail, was not observed; no sign-in was made. Push the migrations before anyone signs in.
+  The conformance probe (SUPA-07) can check that both functions exist, beside the hook switches it
+  reads.
