@@ -2,6 +2,9 @@ FROM node:22.23.4-alpine AS base
 
 WORKDIR /opt
 
+# Toolchain for native modules without a musl prebuild (sqlite3 falls back to node-gyp)
+RUN apk add --no-cache python3 py3-setuptools make g++
+
 # Setup env variable for yarn
 ENV YARN_VERSION=4.6
 
