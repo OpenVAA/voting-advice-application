@@ -2,28 +2,33 @@
 phase: 183-terraform-foundation-and-supabase-as-code
 plan: 24
 subsystem: infra
-tags: [terraform, supabase, throwaway-apply, hosted-settings, parity-guard]
-status: stopped
+tags: [terraform, supabase, throwaway-apply, hosted-settings, parity-guard, prevent-destroy]
+status: complete
 
 requires:
   - phase: 183-22
-    provides: the review PLAN_REVIEWED=ok for tfplan sha256 35d762b2...
+    provides: the review PLAN_REVIEWED=ok for tfplan sha256 b194262f78c57d4a342c2c07a7716aec964b049c0ab6a2b53ada76bac3fe032e (second attempt)
 provides:
-  - The observation that the hosted API refuses an auth update holding the two OAuth-server switches without the authorization path (status 400, 2026-10-22)
-  - A module and guard that no longer send or compare oauth_server_enabled and oauth_server_allow_dynamic_registration
-affects: [183-22, 183-24, 183-25, 183-27, phase-184]
+  - The throwaway project's settings applied from the HCL, with the second plan empty (status 0)
+  - Every managed key (34 auth, 3 API) seen served as intended
+  - The destroy plan's refusal status (1) and text, as observed
+  - The red control (status 2)
+  - Both hooks seen accepted by the hosted API before their functions exist
+  - The two OAuth-server keys out of the module and the guard, after the hosted API refused them (status 400)
+affects: [183-23, 183-25, 183-27, phase-184]
 
 actuals:
-  tokens: 5300
-  tasks: 1
-  commits: 1
+  tokens: 12950
+  tasks: 2
+  commits: 6
 plan_head_before: 258e9fc5fc59c1e686b9b0d016e32c8361edd769
-plan_head_after: 55802a1bc3380915b55357c7afebc742c21e6171
+plan_head_after: 51d7ff0385100301e1ec7f559cc42a8b87ec7ca3
 
 tech-stack:
   added: []
   patterns:
-    - "A key the hosted API refuses goes back to not compared, with the date and the API's reason, and the plan is reread before any new apply"
+    - "A refused apply ends the plan; the correction is committed, and plans 183-22 and 183-24 run again from their first task with a new checksum and review"
+    - "The read-back compares each intended value, as JSON, with the served named line; a value that is not served is a difference"
 
 key-files:
   created:
@@ -36,97 +41,133 @@ key-files:
     - .planning/workstreams/deployment/phases/183-terraform-foundation-and-supabase-as-code/deferred-items.md
 
 key-decisions:
-  - "Fix A, approved by the operator: oauth_server_enabled and oauth_server_allow_dynamic_registration are removed from hosted-settings.json and the fixture, and the guard puts them back in not compared. The authorization path was not added."
-  - "Phase 184's conformance probe reads the two OAuth-server switches from /config/auth. The module and the guard no longer cover them."
+  - "Fix A (approved by the operator): oauth_server_enabled and oauth_server_allow_dynamic_registration are no longer sent or compared. The hosted API requires OAUTH_SERVER_ENABLED and OAUTH_SERVER_AUTHORIZATION_PATH together (status 400, 2026-10-22). Phase 184's probe reads the two switches."
+  - "Both hooks were accepted before their functions exist, so the persistent root applies with both switches on. No hook off until assignment is needed, and phase 184 pushes the migrations before anyone signs in."
+  - "password_required_characters is served as an empty string, not null, so the second plan empties with it."
 
 requirements-completed: []
 
-duration: 12h31m wall clock (2026-10-22T17:04Z to 2026-10-23T05:35Z), most of it waiting for the operator
+duration: 13h33m wall clock (2026-10-22T17:04Z to 2026-10-23T06:37Z), most of it waiting for the operator and for the rerun of 183-22
 completed: 2026-10-23
 ---
 
-# Phase 183 Plan 24: Throwaway apply Summary (stopped)
+# Phase 183 Plan 24: Throwaway apply Summary
 
-**Plans 183-22 and 183-24 are to be run again from their first task. Wave B may not continue until then.**
+**Wave B may continue. The rehearsal passed on the throwaway project on its second attempt.**
 
-**The apply of the reviewed plan failed.** The hosted API refused the auth update with status 400: "Both OAUTH_SERVER_ENABLED and OAUTH_SERVER_AUTHORIZATION_PATH must be provided together when updating OAuth configuration".
+- **The apply.** The reviewed plan file (SHA-256 `b194262f…032e`) was applied with status 0.
+- **The second plan** exited 0 with no changes.
+- **The read-back.** All 37 managed keys are served as intended.
+- **The destroy plan** exited 1, naming `module.supabase.supabase_project.this` and `prevent_destroy`.
+- **The red control** exited 2.
 
-- **Correction:** commit `55802a1bc`. The module no longer sends the two OAuth-server switches, and the guard no longer compares them.
-- **The hook's outcome for phase 184 is still not observed.** The API stopped at the OAuth check, so it never decided on the access-token hook or the send-email hook. The next apply shows it.
+**The hooks' outcome for phase 184:** the hosted API accepted both hooks before their functions exist. So the persistent root (183-25) applies with both hook switches on, and phase 184 does not switch them on. What phase 184 must do is push the migrations before anyone signs in. How the auth service behaves while the functions are missing was not observed.
+
+**The first attempt (2026-10-22) stopped.** Its apply was refused with status 400 because the module sent the OAuth-server switches without the authorization path. Commit `55802a1bc` removed those keys, and plans 183-22 and 183-24 ran again from their first task.
 
 ## Performance
 
-- **Started:** 2026-10-22T17:04Z
-- **Stopped:** 2026-10-23T05:35Z
-- **Tasks:** 1 of 2 run.
-  - Task 1 (the operator's apply) ended with `answer_applied=error`.
-  - Task 2 ran its stop path only.
-- **Files:** 5 modified, 1 created.
+- **Started:** 2026-10-22T17:04Z (first checkpoint)
+- **Completed:** 2026-10-23T06:37Z
+- **Tasks:** 2 of 2, on the second attempt
+- **Files modified:** 5, and 1 created
 
 ## Accomplishments
 
-- **The apply was tied to the reviewed plan file.** The operator printed checksum `35d762b2…89c8` before applying, which is the checksum the 183-22 review names. `bound 24-1 OPERATOR_APPLIED sha256=<that>` exits 0.
-- **The failure was diagnosed to the key.**
-  - From the provider's source: the provider sends the whole planned `auth` JSON, so both OAuth-server switches (`false`) went out and no authorization path did.
-  - The operator's `s2_oauth_name` lines confirmed that the API's message names `OAUTH_SERVER_AUTHORIZATION_PATH`.
-- **The correction was made and checked.**
-  - The JSON and its fixture lost the two keys.
-  - In the guard, the two local keys went back to "not compared" with the dated reason, and their embedded case was removed. Census: must agree 24, not compared 35. Self-test: 66 cases.
-  - The runbook's OAuth row moved to "Observations".
-  - These checks all pass: the guard, the self-test, the types check, the guard's spec, Prettier, fmt and validate.
-- **The follow-up for phase 184 is in `deferred-items.md`:** the SUPA-07 probe reads `oauth_server_enabled` from `/config/auth`.
+- **The apply was tied to one reviewed plan file, in both attempts.**
+  - Each time, the operator printed the plan file's checksum before applying.
+  - Each time it equalled the checksum of the then-current `PLAN_REVIEWED=ok` line of 22-2.
+  - Task 2's first verify passes on the current attempt: `bound 24-1 OPERATOR_APPLIED=yes sha256=b194262f…`.
+- **Read-back: 37 of 37 equal, 0 different, 0 missing, no extra.**
+  - **Intended values:** the JSON's `api`, `auth`, `auth_hook` and `auth_send_email_hook` groups; `site_url` and `uri_allow_list` from `https://staging.openvaa.org` and the two redirect paths; the six rate limits at the module's defaults.
+  - **Settled:**
+    - `password_required_characters` is served as `""`, not null.
+    - The redirect list comes back exactly as sent: comma-joined, with no space, in the sent order.
+    - The two MFA TOTP switches (`false`) and `mailer_otp_length` (`6`) equal the module.
+- **The refusal is on record verbatim.** It is three lines, `Error: Instance cannot be destroyed` among them, and the status is 1.
+- **The runbook (`a9418645d`):**
+  - Eight statements moved from "Not yet observed" to "Observations", each dated.
+  - Two statements stay unobserved: two settings resources side by side, and no own mail while the send-email hook is on.
+  - The hook trap now says that the apply does not fail, and that the migrations go before any sign-in.
+- **`deferred-items.md` has two phase-184 items:**
+  - the probe reads the OAuth-server switches;
+  - the hooks are on before their functions, so the migrations come before any sign-in.
 
 ## Task Commits
 
-1. **Task 1: the operator applies.** This was a checkpoint, with no commit. The reply is in attempt 24-1 (`20261022T170532Z.258e9fc5f`), under `OPERATOR_APPLIED=error … sha256=35d762b21b217cc2cd232fcdc347e8da13604ed69ec2cb60d4db0da92a1289c8 head=55802a1bc3380915b55357c7afebc742c21e6171`.
-2. **Task 2: the stop path.**
-   - `55802a1bc` fix: the two OAuth-server keys are not sent; the guard and runbook follow.
-   - The docs commit holds the evidence, this SUMMARY and the deferred item.
+**First attempt (stopped, 2026-10-22):**
+
+1. **Task 1** was a checkpoint and has no commit. Its reply is in 24-1 attempt `20261022T170532Z.258e9fc5f`, with `OPERATOR_APPLIED=error`.
+2. **Task 2**, the stop path:
+   - `55802a1bc` fix: the two OAuth-server keys are not sent; the guard and the runbook follow.
+   - `dac5f0465` docs: the stop record.
+
+**Second attempt (passed, 2026-10-23), after the 183-22 rerun (`e1f134337`, `8f89f0e63`, not this plan's):**
+
+1. **Task 1** was a checkpoint and has no commit. Its reply is in 24-1 attempt `20261023T060657Z.8f89f0e63`, with `OPERATOR_APPLIED=yes`.
+2. **Task 2:**
+   - `a9418645d` docs: the runbook's observations and the hook trap.
+   - `51d7ff038` docs: the evidence, with the first attempt kept as history, and the deferred items.
+
+`commits: 6` is measured from the ledger base `258e9fc5f`. Two of the six are the 183-22 rerun's, which landed between this plan's two attempts. Four are this plan's. The final metadata commit adds one more.
+
+## Decisions Made
+
+See `key-decisions` in the frontmatter.
 
 ## Deviations from Plan
 
 ### Auto-fixed Issues
 
-**1. [Rule 1 - Bug] The two OAuth-server keys could not be applied as sent**
-- **Found during:** Task 1, step 2 (the apply).
-- **Issue:** the hosted API requires `oauth_server_enabled` and the authorization path together. The module sent the switch without the path.
-- **Fix:** both switches were removed from the managed set, and the guard does not compare them. This is the plan's own bullet for OAuth keys that are not accepted. The operator approved it as fix A.
-- **Files modified:** `hosted-settings.json`, its fixture, the guard, the runbook.
+**1. [Rule 1 - Bug] The hosted API refused the two OAuth-server keys as sent**
+- **Found during:** Task 1, first attempt, step 2.
+- **Issue:** the response was status 400: "Both OAUTH_SERVER_ENABLED and OAUTH_SERVER_AUTHORIZATION_PATH must be provided together when updating OAuth configuration". The provider sends the whole planned `auth` JSON, so both switches went out with no path.
+- **Fix:** both keys were removed from the JSON and the fixture, and the guard puts them back in "not compared" with the dated reason. Their embedded case was removed. This is the plan's own bullet, approved by the operator as fix A.
+- **Files modified:** `hosted-settings.json`, the fixture, the guard, the runbook.
 - **Commit:** `55802a1bc`
 
-### Process
+**2. [Rule 2 - Correctness] The runbook's hook trap described a failure that does not happen**
+- **Found during:** Task 2, second attempt.
+- **Issue:** the trap said the apply fails when a hook's function is missing. The API accepts the hook.
+- **Fix:** the trap now says the apply succeeds and the migrations must be applied before anyone signs in. The `hook off until` path stays, for a failure that names a hook.
+- **Files modified:** `infra/envs/staging/supabase/README.md`
+- **Commit:** `a9418645d`
 
-- **Two orchestrator-added diagnostics.** While `$L` still held the apply log, the operator ran two read-only filters over it that are not steps of the plan:
-  - `s2_error_detail`: redacted lines of the error;
-  - `s2_oauth_name`: the `OAUTH_SERVER_` names in the log.
-  Both are stored with a `note:` line on their provenance.
+### Process (orchestrator rulings and provenance)
+
+- **Orchestrator-added diagnostics.** In the first attempt, the operator ran `s2_error_detail` (redacted error lines) and `s2_oauth_name` (the `OAUTH_SERVER_` names) over the apply log. In the second, the orchestrator added `s5_refusal_line`, the matching lines of the destroy plan, because step 5 printed only a count and the plan wants the text. Each is stored with a `note:` line.
+- **Orchestrator rulings for the second attempt:** a non-zero `s5` and `s6=2` are expected, so continue to step 7; if `s3` is 2, run step 4 before step 7; on a hook failure, stop with the `s2_error` lines and step 7. None of these branches was taken.
+- **`answer_applied` was relayed as `yes`.** The operator typed `answer_applied=ye`, and the orchestrator read it as `yes`. `s2_apply_exit=0` and the `Apply complete!` line agree, and the reading is recorded in a `note:` line.
 - **`fix=A` is stored as `answer_fix=A`,** because the screen accepts only named and answer lines.
-- **The 24-1 reply was stored after the fix commit,** so its `head=` is `55802a1bc`. The orchestrator asked that the reply not be stored until the fix was approved.
-- **Flags from the checkpoint, for the rerun of this plan:**
-  - The plan's general rule says "a status not 0 means stop", but steps 5 and 6 must be non-zero. The operator should be told that `s5` non-zero and `s6=2` are expected, and to continue to step 7.
-  - Step 5 prints only a count. Task 2, and a must-have, want the refusal text verbatim. The proposed extra line is `grep -i -E 'cannot be destroyed|prevent_destroy' "$L/s5.log" | sed 's/^/s5_refusal_line=/'`, which passes the screen.
-  - The execution rules and T-183-66 still describe a header file. The commands pass the token on curl's standard input.
-- **STATE.md was not changed.** Plan 183-20 is paused, and this plan has stopped, so no plan was advanced and no progress was recorded.
+- **Delivery.** The commands were given in five blocks. The long filters, the addresses, the header `printf` and the step 5 ERE were built in shell variables and checked byte-identical to the plan.
+- **Wording that does not match the commands.** The plan's general "a status not 0 means stop" contradicts steps 5 and 6. Its execution rules and T-183-66 also describe a header file, while the commands pass the token on curl's standard input. The runbook's commands are unaffected. Flagged here for the persistent run of 183-25, which has the same steps.
 
 ## Issues Encountered
 
-- **Possibly half-applied (not observed).** The provider updates the API settings before the auth settings and saves no state on the error. So `max_rows` may already be 50000 on the throwaway project. If it is, the next plan reads that value on refresh and shows only the auth update. No stop rule is affected.
+- **Not observed:** whether `max_rows` reached 50000 in the failed apply of 2026-10-22 or in the second attempt. It is served as 50000.
+- **Plan 183-20** is untouched and still paused. STATE.md's current plan stays at 20.
 
 ## Known Stubs
 
 None.
 
+## Threat Flags
+
+None. No new endpoint, auth path or trust boundary was added. The two Management API reads are the ones the plan names, made by the operator with the token on standard input.
+
 ## Next Phase Readiness
 
-1. **Plan 183-22 runs again from Task 1:** a new plan of the corrected tree, a new checksum, and a new review in 22-2.
-2. **Then plan 183-24 runs again from Task 1,** with a new 24-1 attempt and the new reviewed checksum.
-3. **Plan 183-25 waits for that rehearsal to pass.**
-
-**SUPA-11 stays open** until plan 183-27.
+- **Plan 183-23 can proceed:** the persistent project, its import and its first plan.
+- **Plan 183-25** applies with both hook switches on, and its runbook steps 11 to 13 are those rehearsed here. It carries the same two wording flags as above, and would benefit from the same `s5_refusal_line` capture.
+- **When the rehearsal is no longer needed,** the runbook's last step of the rehearsal applies: delete the throwaway project in the dashboard, and remove the scratch root's local state.
+- **SUPA-11 stays open** until plan 183-27.
 
 ## Self-Check: PASSED
 
-- FOUND: the evidence file `evidence/183-24-throwaway-apply.md`. It holds `Attempt: 24-1 20261022T170532Z.258e9fc5f` and `Attempt: 24-2 20261023T053522Z.55802a1bc`, which match the helper's `id` for both keys.
-- FOUND: commit `55802a1bc` is an ancestor of HEAD.
-- FOUND: `bound 22-2 PLAN_REVIEWED=ok sha256=<X>` exits 0, and `bound 24-1 OPERATOR_APPLIED=error sha256=<X>` exits 0.
-- **The plan's Task 2 verify commands 1 and 2 fail, as the plan intends for a stopped run.** They require `OPERATOR_APPLIED=yes` and the served values. Commands 3 and 4 pass.
+- FOUND: `evidence/183-24-throwaway-apply.md`. Its `Attempt: 24-1 20261023T060657Z.8f89f0e63` and `Attempt: 24-2 20261023T063404Z.8f89f0e63` lines match the helper's `id`.
+- FOUND: commits `55802a1bc`, `dac5f0465`, `a9418645d` and `51d7ff038` are ancestors of HEAD.
+- All four verify commands of Task 2 exit 0:
+  - the bound and named lines;
+  - every JSON key served as in the file;
+  - the guard, self-test, types check, spec and Prettier;
+  - fmt, validate and the `Attempt: 24-2` line.
