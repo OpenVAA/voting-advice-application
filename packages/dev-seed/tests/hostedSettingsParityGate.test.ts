@@ -9,7 +9,16 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -30,7 +39,43 @@ const ROOT_PACKAGE_JSON = JSON.parse(readFileSync(resolve(REPO_ROOT, 'package.js
 
 /** An empty directory standing in for `infra/envs`, so that the guard finds no Supabase root and no origin. */
 const EMPTY_ENVS = mkdtempSync(join(tmpdir(), 'hosted-settings-parity-'));
-afterAll(() => rmSync(EMPTY_ENVS, { recursive: true, force: true }));
+/** The copies of `infra/envs` made by `copyOfEnvs`, removed after the run. */
+const COPIES: Array<string> = [];
+afterAll(() => {
+  for (const dir of [EMPTY_ENVS, ...COPIES]) rmSync(dir, { recursive: true, force: true });
+});
+
+/**
+ * Copy the `.tf` files and the `terraform.tfvars` of every Supabase root under `infra/envs` into a directory of its own, so that a test can edit a root the guard must then refuse. Nothing else is copied: no state, no plan and no `.terraform/`.
+ * @returns The directory, standing in for `infra/envs`.
+ */
+function copyOfEnvs(): string {
+  const dir = mkdtempSync(join(tmpdir(), 'hosted-settings-parity-envs-'));
+  COPIES.push(dir);
+  const envsDir = resolve(REPO_ROOT, 'infra/envs');
+  for (const env of readdirSync(envsDir)) {
+    const root = join(envsDir, env, 'supabase');
+    if (!existsSync(root)) continue;
+    mkdirSync(join(dir, env, 'supabase'), { recursive: true });
+    for (const name of readdirSync(root))
+      if (name.endsWith('.tf') || name === 'terraform.tfvars')
+        copyFileSync(join(root, name), join(dir, env, 'supabase', name));
+  }
+  return dir;
+}
+
+/**
+ * Replace one text in a file, failing when it is not there, so that an edit cannot silently test nothing.
+ * @param file - The file.
+ * @param from - The text to replace.
+ * @param to - Its replacement.
+ */
+function edit(file: string, from: string | RegExp, to: string): void {
+  const text = readFileSync(file, 'utf8');
+  const edited = text.replace(from, to);
+  if (edited === text) throw new Error(`${file} does not hold ${String(from)}`);
+  writeFileSync(file, edited);
+}
 
 /**
  * Run the guard from the repository root.
@@ -101,6 +146,35 @@ describe('the hosted-settings parity guard still has teeth', () => {
     const result = runGuard(['--envs-dir', EMPTY_ENVS]);
     expect(result.status).toBe(1);
     expect(result.stdout).toContain('auth/site_url');
+  });
+
+  it("fails when a root's module call switches the send-email hook off with a literal false", () => {
+    const envs = copyOfEnvs();
+    edit(
+      join(envs, 'staging/supabase/main.tf'),
+      /enable_send_email_hook(\s*)= var\.enable_send_email_hook/,
+      'enable_send_email_hook$1= false'
+    );
+    const result = runGuard(['--envs-dir', envs]);
+    expect(result.status).toBe(1);
+    expect(result.stdout).toMatch(/staging\/supabase\/main\.tf: auth\.hook\.send_email\/enabled: /);
+  });
+
+  it('fails when a root leaves a hook switch out of terraform.tfvars and its own default is false', () => {
+    const envs = copyOfEnvs();
+    edit(join(envs, 'staging/supabase/terraform.tfvars'), /^enable_access_token_hook\s*=.*\n/m, '');
+    edit(
+      join(envs, 'staging/supabase/variables.tf'),
+      'variable "enable_access_token_hook" {\n',
+      'variable "enable_access_token_hook" {\n  default = false\n'
+    );
+    const result = runGuard(['--envs-dir', envs]);
+    expect(result.status).toBe(1);
+    expect(result.stdout).toMatch(/staging\/supabase\/variables\.tf: auth\.hook\.custom_access_token\/enabled: /);
+  });
+
+  it('passes on an unedited copy of the roots, so the two tests above fail on their edit alone', () => {
+    expect(runGuard(['--envs-dir', copyOfEnvs()]).status).toBe(0);
   });
 
   it('reproduces its embedded cases in self-test mode', () => {

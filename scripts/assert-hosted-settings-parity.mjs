@@ -6,8 +6,9 @@
  * What it requires: the security-relevant API and auth settings of a hosted Supabase project, as the Terraform module
  * sends them, are the settings the local stack runs the test suite with, or stricter where stricter is safe. The local
  * side is `apps/supabase/supabase/config.toml`. The hosted side is `infra/modules/supabase/hosted-settings.json`, which
- * the module encodes, plus the origin and the two hook switches that each Supabase root sets in its tracked
- * `infra/envs/<env>/supabase/terraform.tfvars`. The frontend's page size, `dataAdapter.pageSize` in
+ * the module encodes, plus the origin and the two hook switches that each Supabase root `infra/envs/<env>/supabase`
+ * passes to the module, read from its `.tf` files and its tracked `terraform.tfvars`. The frontend's page size,
+ * `dataAdapter.pageSize` in
  * `packages/app-shared/src/settings/staticSettings.ts`, is a third channel for one key.
  *
  * Every live key of the tables `[api]`, `[api.tls]`, `[auth]` and every `[auth.*]` is in exactly one of four classes:
@@ -28,11 +29,16 @@
  * Two rules keep the comparison from passing on nothing. The origin rule fails when no Supabase root yields a
  * `public_origin`: a check that examined nothing does not report success. And the module sends each hook's keys only
  * while that hook's switch is true: the access-token hook's keys while a root's `enable_access_token_hook` is true, the
- * send-email hook's keys while its `enable_send_email_hook` is true, each switch on its own. So a tracked variable file
- * can switch a compared key off. A root that sets a switch to `false` fails unless the assignment carries a trailing
- * comment beginning `hook off until` and giving the reason; such a root passes and is named in the census for that
- * hook. No assignment means the module's default, which must be `true`. A later variable that can switch a compared
- * key off must be given the same rule here: add it to the list of hook switches.
+ * send-email hook's keys while its `enable_send_email_hook` is true, each switch on its own. So a root can switch a
+ * compared key off. The value each switch takes is read from the root's call of the module the way Terraform resolves
+ * it: the call's argument when it is a literal `true` or `false`; when it is `var.<switch>`, the root's
+ * `terraform.tfvars` assignment, and without one the root variable's default; when the call omits the argument, the
+ * module variable's default. Any other argument cannot be read and fails. A `false` written as the call's argument or
+ * in `terraform.tfvars` fails unless it carries a trailing comment beginning `hook off until` and giving the reason;
+ * such a root passes and is named in the census for that hook. A default of `false`, in the root or in the module,
+ * fails with no exception, and so does a value that no tracked file holds. The origin is read from the same call:
+ * `var.public_origin` is the root's `terraform.tfvars` assignment, and a plain string is the origin itself. A later
+ * variable that can switch a compared key off must be given the same rule here: add it to the list of hook switches.
  *
  * While the send-email hook is on, the hosted auth service sends no mail of its own: the hook's function takes every
  * mail and sends none, and the application's own function sends the mails. The hosted SMTP settings and mail rate
@@ -80,10 +86,11 @@
  * header and ending at the next, a key being a `name = value` line with an optional trailing comment. A value is read
  * only when its form can be read exactly: a bare boolean, an integer, a double-quoted string without `#` or `\`, or a
  * one-line array that `JSON.parse` accepts. Any other form, and a key written twice in one table, is a finding. The
- * hosted settings are parsed as JSON. `pageSize` is a line read inside the `dataAdapter` block, and each variable file
- * and the module's `variables.tf` are line reads. The module's `.tf` files are read as text: comments (`#`, `//` and
- * `/* *\/`) are removed outside double-quoted strings, and blocks are found by counting braces outside strings; heredoc
- * strings are not recognised. The files scanned for a second writer are those `git ls-files` lists, so an untracked
+ * hosted settings are parsed as JSON. `pageSize` is a line read inside the `dataAdapter` block, and each
+ * `terraform.tfvars` and every variable default are line reads. The `.tf` files of the module and of each root are read
+ * as text: comments (`#`, `//` and `/* *\/`) are removed outside double-quoted strings, blocks are found by counting
+ * braces outside strings, and a module call's arguments are the lines written directly in its block; heredoc strings
+ * are not recognised. The files scanned for a second writer are those `git ls-files` lists, so an untracked
  * file is never a finding. A channel that cannot be read withholds the verdict.
  *
  * Usage:
@@ -692,24 +699,30 @@ function readPageSize(text) {
 }
 
 /**
- * The default of one hook switch in the module's `variables.tf`.
+ * The default of one boolean variable, read from the first of `files` that declares it.
  *
- * @returns `{ ok: true, value }`, or `{ ok: false, what }`.
+ * @param files - `[{ file, text }]`, the `.tf` files of a module or a root.
+ * @returns `{ declared: false }`; or `{ declared: true, file, ok: true, value }`, where `value` is `true`, `false` or
+ *   `null` for no default; or `{ declared: true, file, ok: false, what }`.
  */
-function readHookDefault(text, variable) {
-  const lines = text.split('\n');
-  const start = lines.findIndex((l) => new RegExp(`^\\s*variable\\s+"${variable}"\\s*\\{`).test(l));
-  if (start === -1) return { ok: false, what: `the module declares no variable ${variable}` };
-  const values = [];
-  for (let i = start + 1; i < lines.length && !/^\}/.test(lines[i]); i += 1) {
-    const m = /^\s*default\s*=\s*(\S+)\s*(?:#.*)?$/.exec(lines[i]);
-    if (m) values.push(m[1]);
+function readBoolDefault(files, variable) {
+  for (const { file, text } of files) {
+    const lines = text.split('\n');
+    const start = lines.findIndex((l) => new RegExp(`^\\s*variable\\s+"?${variable}"?\\s*\\{`).test(l));
+    if (start === -1) continue;
+    const values = [];
+    for (let i = start + 1; i < lines.length && !/^\}/.test(lines[i]); i += 1) {
+      const m = /^\s*default\s*=\s*(\S+)\s*(?:#.*)?$/.exec(lines[i]);
+      if (m) values.push(m[1]);
+    }
+    if (values.length === 0) return { declared: true, file, ok: true, value: null };
+    if (values.length > 1)
+      return { declared: true, file, ok: false, what: `the variable ${variable} has ${values.length} default lines` };
+    if (values[0] !== 'true' && values[0] !== 'false')
+      return { declared: true, file, ok: false, what: `the default ${values[0]} of ${variable} is not a bare boolean` };
+    return { declared: true, file, ok: true, value: values[0] === 'true' };
   }
-  if (values.length !== 1)
-    return { ok: false, what: `the variable ${variable} has ${values.length} default line(s), not one` };
-  if (values[0] !== 'true' && values[0] !== 'false')
-    return { ok: false, what: `the default ${values[0]} is not a bare boolean` };
-  return { ok: true, value: values[0] === 'true' };
+  return { declared: false };
 }
 
 /**
@@ -747,6 +760,181 @@ function readRootVariables(text) {
     hooks[variable] = list.length === 1 ? list[0] : null;
   }
   return { origin: origins.length === 1 ? origins[0] : null, hooks, problems };
+}
+
+/**
+ * The arguments written directly in a block, not in a block or a value nested inside it: one per line whose depth at
+ * its start is the block's own, as `{ name, value, line }`. A value that spans lines is read up to the end of its first
+ * line.
+ *
+ * @param body - A block from `blocksAt`, starting at its opening brace.
+ * @param firstLine - The line number of the opening brace.
+ */
+function topLevelArguments(body, firstLine) {
+  const found = [];
+  let depth = 1;
+  let inString = false;
+  let line = firstLine;
+  let lineDepth = 1;
+  let text = '';
+  const flush = () => {
+    const m = lineDepth === 1 ? /^\s*([A-Za-z0-9_-]+)\s*=\s*(.*?)\s*$/.exec(text) : null;
+    if (m) found.push({ name: m[1], value: m[2], line });
+  };
+  for (let i = 1; i < body.length; i += 1) {
+    const c = body[i];
+    if (c === '\n') {
+      flush();
+      line += 1;
+      lineDepth = depth;
+      inString = false;
+      text = '';
+      continue;
+    }
+    if (inString) {
+      if (c === '\\') {
+        text += c + (body[i + 1] ?? '');
+        i += 1;
+        continue;
+      }
+      if (c === '"') inString = false;
+    } else if (c === '"') inString = true;
+    else if ('{[('.includes(c)) depth += 1;
+    else if ('}])'.includes(c)) {
+      depth -= 1;
+      if (depth === 0) break;
+    }
+    text += c;
+  }
+  flush();
+  return found;
+}
+
+/** A module source that names the Supabase module. */
+const SUPABASE_MODULE_SOURCE = /(?:^|\/)modules\/supabase\/?$/;
+
+/**
+ * The calls of the Supabase module in one root's `.tf` files: every `module` block whose `source` ends in
+ * `modules/supabase`, with its arguments. Each argument carries the trailing comment of its line in the file as
+ * written, since the code it is read from has its comments removed.
+ *
+ * @param tfFiles - `[{ file, text }]`.
+ * @returns `[{ file, label, args: [{ name, value, line, comment }] }]`.
+ */
+function supabaseCalls(tfFiles) {
+  const calls = [];
+  for (const { file, text } of tfFiles) {
+    const raw = text.split('\n');
+    const code = hclCode(text);
+    for (const { match, open, body } of blocksAt(code, '(?<![A-Za-z0-9_.])module\\s+"?([A-Za-z0-9_-]+)"?\\s*\\{')) {
+      if (body === null) continue;
+      const args = topLevelArguments(body, lineAt(code, open)).map((a) => {
+        const after = raw[a.line - 1].slice(raw[a.line - 1].indexOf('=') + 1);
+        return { ...a, comment: /(?:#|\/\/)\s*(.*?)\s*$/.exec(after)?.[1] ?? '' };
+      });
+      const source = /^"([^"]*)"$/.exec(args.find((a) => a.name === 'source')?.value ?? '')?.[1];
+      if (source !== undefined && SUPABASE_MODULE_SOURCE.test(source)) calls.push({ file, label: match[1], args });
+    }
+  }
+  return calls;
+}
+
+/**
+ * The value one hook switch takes in one call of the module, resolved the way Terraform resolves it: the argument of the
+ * module call; when that is `var.<switch>`, the root's `terraform.tfvars` assignment and then the root variable's
+ * default; when the call omits it, the module variable's default.
+ *
+ * @returns `{ on: true }`; `{ off: { file, comment } }`, a `false` held to the hook-off rule; or `{ finding: { file,
+ *   what } }`, a value that is false with no way to exempt it, or that cannot be traced to a tracked file.
+ */
+function resolveSwitch({ variable, call, where, root, tfvarsHook, moduleVariables }) {
+  const args = call.args.filter((a) => a.name === variable);
+  if (args.length > 1)
+    return { finding: { file: call.file, what: `${where} passes ${variable} ${args.length} times to the module` } };
+  if (args.length === 0) {
+    const d = readBoolDefault([moduleVariables], variable);
+    if (!d.declared)
+      return {
+        finding: {
+          file: moduleVariables.file,
+          what: `${where} leaves ${variable} to the module, which declares no such variable`
+        }
+      };
+    if (!d.ok)
+      return { finding: { file: d.file, what: `${where} leaves ${variable} to the module's default, and ${d.what}` } };
+    if (d.value === null)
+      return {
+        finding: {
+          file: d.file,
+          what: `${where} omits ${variable} from its module call, and the module declares no default for it`
+        }
+      };
+    if (!d.value)
+      return {
+        finding: {
+          file: d.file,
+          what: `${where} leaves ${variable} at the module's default, which is false; the default must be true so the compared hook keys are sent`
+        }
+      };
+    return { on: true };
+  }
+  const [arg] = args;
+  if (arg.value === 'true') return { on: true };
+  if (arg.value === 'false') return { off: { file: call.file, comment: arg.comment } };
+  if (arg.value !== `var.${variable}`)
+    return {
+      finding: {
+        file: call.file,
+        what: `${where} passes ${variable} = ${arg.value} to the module; only var.${variable}, true or false can be read, so the value the hook takes cannot be traced`
+      }
+    };
+  const d = readBoolDefault(root.tf, variable);
+  if (!d.declared)
+    return { finding: { file: call.file, what: `${where} passes var.${variable}, which the root does not declare` } };
+  if (tfvarsHook !== null)
+    return tfvarsHook.value ? { on: true } : { off: { file: root.tfvars.file, comment: tfvarsHook.comment } };
+  if (!d.ok)
+    return { finding: { file: d.file, what: `${where} leaves ${variable} out of terraform.tfvars, and ${d.what}` } };
+  if (d.value === null)
+    return {
+      finding: {
+        file: root.tfvars.file,
+        what: `${where} leaves ${variable} out of terraform.tfvars and its variable has no default, so the value the hook takes is in no tracked file`
+      }
+    };
+  if (!d.value)
+    return {
+      finding: {
+        file: d.file,
+        what: `${where} leaves ${variable} out of terraform.tfvars, and the root's default is false; a root switches a hook off only by an assignment in terraform.tfvars that carries the stated comment`
+      }
+    };
+  return { on: true };
+}
+
+/**
+ * The public origin one call of the module sends: the root's `terraform.tfvars` assignment when the call passes
+ * `var.public_origin`, the string itself when it passes a string literal.
+ *
+ * @returns `{ origin: { file, origin } | null }`, or `{ finding: { file, what } }`.
+ */
+function resolveOrigin({ call, where, root, tfvarsOrigin }) {
+  const args = call.args.filter((a) => a.name === 'public_origin');
+  if (args.length !== 1)
+    return {
+      finding: { file: call.file, what: `${where} passes public_origin ${args.length} times to the module, not once` }
+    };
+  const [arg] = args;
+  if (arg.value === 'var.public_origin')
+    return { origin: tfvarsOrigin === null ? null : { file: root.tfvars.file, origin: tfvarsOrigin } };
+  const literal = /^"([^"\\$%]*)"$/.exec(arg.value);
+  if (literal) return { origin: { file: call.file, origin: literal[1] } };
+  return {
+    finding: {
+      file: call.file,
+      what: `${where} passes public_origin = ${arg.value} to the module; only var.public_origin or a plain string can be read, so the origin cannot be checked`
+    }
+  };
 }
 
 // ── Comparing ──
@@ -895,7 +1083,8 @@ function compareRow(row, local, hosted, pageSize) {
  * The findings for one set of inputs.
  *
  * @param inputs - `config`, `settings`, `staticSettings` and `variables` as `{ file, text }`, `envsDir` as a display
- *   name, `roots` as `[{ name, file, text }]`, one per Supabase root's variable file, `module` as
+ *   name, `roots` as `[{ name, dir, tfvars: { file, text }, tf: [{ file, text }] }]`, one per Supabase root with its
+ *   variable file and its `.tf` files, `module` as
  *   `{ dir, files: [{ file, text }], error }`, the module's `.tf` files, and `writers` as `[{ file, text }]`, the files
  *   scanned for a second writer (any outside the scope are skipped).
  * @returns `channelErrors` (when not empty, no comparison was made), `findings` as `{ file, id, what }`, and `census`.
@@ -906,7 +1095,9 @@ function check(inputs) {
     if (typeof inputs[channel].text !== 'string')
       channelErrors.push({ file: inputs[channel].file, what: inputs[channel].error ?? 'could not be read' });
   for (const root of inputs.roots)
-    if (typeof root.text !== 'string') channelErrors.push({ file: root.file, what: root.error ?? 'could not be read' });
+    for (const channel of [root.tfvars, ...root.tf])
+      if (typeof channel.text !== 'string')
+        channelErrors.push({ file: channel.file, what: channel.error ?? 'could not be read' });
   if (inputs.rootsError) channelErrors.push({ file: inputs.envsDir, what: inputs.rootsError });
   if (inputs.module.error) channelErrors.push({ file: inputs.module.dir, what: inputs.module.error });
   else if (inputs.module.files.length === 0) channelErrors.push({ file: inputs.module.dir, what: 'holds no .tf file' });
@@ -979,36 +1170,45 @@ function check(inputs) {
   const pageSize = readPageSize(inputs.staticSettings.text);
   if (!pageSize.ok) report(inputs.staticSettings.file, 'api/max_rows', pageSize.what);
 
-  // The roots: origins and the hook switches.
+  // The roots: the origin and the hook switches of each call of the module, each read the way Terraform resolves it.
   const origins = [];
   const hookOff = Object.fromEntries(HOOK_SWITCHES.map((h) => [h.variable, []]));
-  const hookDefaults = Object.fromEntries(
-    HOOK_SWITCHES.map((h) => [h.variable, readHookDefault(inputs.variables.text, h.variable)])
-  );
   for (const root of inputs.roots) {
-    const vars = readRootVariables(root.text);
-    for (const p of vars.problems) report(root.file, p.id, p.what);
-    if (vars.origin !== null) origins.push({ root: root.name, file: root.file, origin: vars.origin });
-    for (const { variable, id } of HOOK_SWITCHES) {
-      const hook = vars.hooks[variable];
-      const hookDefault = hookDefaults[variable];
-      if (hook === null) {
-        if (!hookDefault.ok)
-          report(inputs.variables.file, id, `${root.name} leaves ${variable} at its default, and ${hookDefault.what}`);
-        else if (!hookDefault.value)
-          report(
-            inputs.variables.file,
-            id,
-            `${root.name} leaves ${variable} at its default, which is false; the default must be true so the compared hook keys are sent`
-          );
-      } else if (!hook.value) {
-        if (HOOK_OFF_REASON.test(hook.comment)) hookOff[variable].push(root.name);
-        else
-          report(
-            root.file,
-            id,
-            `${variable} = false switches the compared hook keys off for this root; it needs a trailing comment '# hook off until <reason>'`
-          );
+    const vars = readRootVariables(root.tfvars.text);
+    for (const p of vars.problems) report(root.tfvars.file, p.id, p.what);
+    const calls = supabaseCalls(root.tf);
+    if (calls.length === 0) {
+      report(
+        root.dir,
+        'root/module-call',
+        `${root.name} holds no module block whose source ends in modules/supabase, so what the root sends cannot be traced`
+      );
+      continue;
+    }
+    for (const call of calls) {
+      const where = calls.length === 1 ? root.name : `${root.name} (module.${call.label})`;
+      const origin = resolveOrigin({ call, where, root, tfvarsOrigin: vars.origin });
+      if (origin.finding) report(origin.finding.file, 'auth/site_url', origin.finding.what);
+      else if (origin.origin !== null) origins.push({ root: where, ...origin.origin });
+      for (const { variable, id } of HOOK_SWITCHES) {
+        const value = resolveSwitch({
+          variable,
+          call,
+          where,
+          root,
+          tfvarsHook: vars.hooks[variable],
+          moduleVariables: inputs.variables
+        });
+        if (value.finding) report(value.finding.file, id, value.finding.what);
+        else if (value.off) {
+          if (HOOK_OFF_REASON.test(value.off.comment)) hookOff[variable].push(where);
+          else
+            report(
+              value.off.file,
+              id,
+              `${variable} = false switches the compared hook keys off for ${where}; it needs a trailing comment '# hook off until <reason>'`
+            );
+        }
       }
     }
   }
@@ -1112,6 +1312,11 @@ function hclCode(text) {
  * @param header - The source of a regular expression that ends with the opening brace.
  */
 function blocks(code, header) {
+  return blocksAt(code, header).map((b) => b.body);
+}
+
+/** As `blocks`, with each block's header match and the offset of its opening brace: `[{ match, open, body }]`. */
+function blocksAt(code, header) {
   const found = [];
   const re = new RegExp(header, 'g');
   for (let m = re.exec(code); m !== null; m = re.exec(code)) {
@@ -1131,7 +1336,7 @@ function blocks(code, header) {
         if (depth === 0) body = code.slice(open, i + 1);
       }
     }
-    found.push(body);
+    found.push({ match: m, open, body });
   }
   return found;
 }
@@ -1643,7 +1848,45 @@ const CORRECT_PACKAGE_JSON = `{
 }
 `;
 
-/** The inputs the self-test edits: two roots, one setting both hook switches and one leaving them at their defaults. */
+/** A root's call of the module that passes the origin and both hook switches through from its variables. */
+const ROOT_MAIN_TF = `provider "supabase" {}
+
+module "supabase" {
+  source = "../../../modules/supabase"
+
+  public_origin            = var.public_origin
+  enable_access_token_hook = var.enable_access_token_hook
+  enable_send_email_hook   = var.enable_send_email_hook
+}
+`;
+
+/** The root variables of that call, the hook switches with no default. */
+const ROOT_VARIABLES_TF = `variable "public_origin" {
+  type = string
+}
+
+variable "enable_access_token_hook" {
+  type     = bool
+  nullable = false
+}
+
+variable "enable_send_email_hook" {
+  type     = bool
+  nullable = false
+}
+`;
+
+/** A root's call of the module that leaves both hook switches to the module's defaults. */
+const ROOT_MAIN_TF_MODULE_DEFAULTS = `module "supabase" {
+  source        = "../../../modules/supabase"
+  public_origin = var.public_origin
+}
+`;
+
+/**
+ * The inputs the self-test edits: two roots, one passing both hook switches through from its terraform.tfvars and one
+ * leaving them to the module's defaults.
+ */
 function correctInputs() {
   return {
     config: { file: 'config.toml', text: CORRECT_CONFIG },
@@ -1668,16 +1911,30 @@ function correctInputs() {
     roots: [
       {
         name: 'staging',
-        file: 'envs/staging/supabase/terraform.tfvars',
-        text:
-          'public_origin            = "https://staging.example.org"\n' +
-          'enable_access_token_hook = true\n' +
-          'enable_send_email_hook   = true\n'
+        dir: 'envs/staging/supabase',
+        tfvars: {
+          file: 'envs/staging/supabase/terraform.tfvars',
+          text:
+            'public_origin            = "https://staging.example.org"\n' +
+            'enable_access_token_hook = true\n' +
+            'enable_send_email_hook   = true\n'
+        },
+        tf: [
+          { file: 'envs/staging/supabase/main.tf', text: ROOT_MAIN_TF },
+          { file: 'envs/staging/supabase/variables.tf', text: ROOT_VARIABLES_TF }
+        ]
       },
       {
         name: 'example',
-        file: 'envs/example/supabase/terraform.tfvars',
-        text: '# A forker\'s root.\npublic_origin = "https://vaa.example.org"\n'
+        dir: 'envs/example/supabase',
+        tfvars: {
+          file: 'envs/example/supabase/terraform.tfvars',
+          text: '# A forker\'s root.\npublic_origin = "https://vaa.example.org"\n'
+        },
+        tf: [
+          { file: 'envs/example/supabase/main.tf', text: ROOT_MAIN_TF_MODULE_DEFAULTS },
+          { file: 'envs/example/supabase/variables.tf', text: 'variable "public_origin" {\n  type = string\n}\n' }
+        ]
       }
     ]
   };
@@ -1695,7 +1952,12 @@ const editConfig = (from, to) => (inputs) => {
   inputs.config.text = inputs.config.text.replace(from, to);
 };
 const editRoot = (index, from, to) => (inputs) => {
-  inputs.roots[index].text = inputs.roots[index].text.replace(from, to);
+  inputs.roots[index].tfvars.text = inputs.roots[index].tfvars.text.replace(from, to);
+};
+/** An edit of one `.tf` file of a root, by its file name. */
+const editRootTf = (index, name, from, to) => (inputs) => {
+  const file = inputs.roots[index].tf.find((f) => f.file.endsWith(`/${name}`));
+  file.text = file.text.replace(from, to);
 };
 const editModule = (name, from, to) => (inputs) => {
   const file = inputs.module.files.find((f) => f.file === `module/${name}`);
@@ -1807,8 +2069,8 @@ const CASES = [
   {
     name: 'no origin at all',
     edit: (i) => {
-      i.roots[0].text = i.roots[0].text.replace(/^public_origin.*\n/m, '');
-      i.roots[1].text = i.roots[1].text.replace(/^public_origin.*\n/m, '');
+      i.roots[0].tfvars.text = i.roots[0].tfvars.text.replace(/^public_origin.*\n/m, '');
+      i.roots[1].tfvars.text = i.roots[1].tfvars.text.replace(/^public_origin.*\n/m, '');
     },
     expected: ['auth/site_url']
   },
@@ -1873,6 +2135,116 @@ const CASES = [
     name: 'a module that declares no send-email hook switch',
     edit: (i) => (i.variables.text = i.variables.text.replace('variable "enable_send_email_hook"', 'variable "other"')),
     expected: ['auth.hook.send_email/enabled']
+  },
+  // The value a root's call of the module sends, resolved the way Terraform resolves it.
+  {
+    name: 'a root that leaves the send-email hook out of terraform.tfvars, with a root default of false',
+    edit: (i) => {
+      editRoot(0, 'enable_send_email_hook   = true\n', '')(i);
+      editRootTf(
+        0,
+        'variables.tf',
+        'variable "enable_send_email_hook" {\n  type     = bool\n',
+        'variable "enable_send_email_hook" {\n  type     = bool\n  default  = false\n'
+      )(i);
+    },
+    expected: ['auth.hook.send_email/enabled'],
+    files: ['envs/staging/supabase/variables.tf']
+  },
+  {
+    name: 'a root that leaves the send-email hook out of terraform.tfvars, with a root default of true (passes)',
+    edit: (i) => {
+      editRoot(0, 'enable_send_email_hook   = true\n', '')(i);
+      editRootTf(
+        0,
+        'variables.tf',
+        'variable "enable_send_email_hook" {\n  type     = bool\n',
+        'variable "enable_send_email_hook" {\n  type     = bool\n  default  = true\n'
+      )(i);
+    },
+    expected: []
+  },
+  {
+    name: 'a root that leaves the access-token hook out of terraform.tfvars, with no root default',
+    edit: editRoot(0, 'enable_access_token_hook = true\n', ''),
+    expected: ['auth.hook.custom_access_token/enabled'],
+    files: ['envs/staging/supabase/terraform.tfvars']
+  },
+  {
+    name: 'a module call passing the send-email hook a literal false',
+    edit: editRootTf(
+      0,
+      'main.tf',
+      'enable_send_email_hook   = var.enable_send_email_hook',
+      'enable_send_email_hook   = false'
+    ),
+    expected: ['auth.hook.send_email/enabled'],
+    files: ['envs/staging/supabase/main.tf']
+  },
+  {
+    name: 'a module call passing a literal false with the stated comment (passes, named in the census)',
+    edit: editRootTf(
+      0,
+      'main.tf',
+      'enable_access_token_hook = var.enable_access_token_hook',
+      'enable_access_token_hook = false # hook off until the function is deployed to this project'
+    ),
+    expected: [],
+    hookOff: { enable_access_token_hook: ['staging'] }
+  },
+  {
+    name: 'a module call passing a literal true over a terraform.tfvars false (passes: the call decides)',
+    edit: (i) => {
+      editRoot(0, 'enable_send_email_hook   = true', 'enable_send_email_hook   = false')(i);
+      editRootTf(
+        0,
+        'main.tf',
+        'enable_send_email_hook   = var.enable_send_email_hook',
+        'enable_send_email_hook   = true'
+      )(i);
+    },
+    expected: []
+  },
+  {
+    name: 'a module call passing a hook switch an expression the guard cannot read',
+    edit: editRootTf(
+      0,
+      'main.tf',
+      'enable_access_token_hook = var.enable_access_token_hook',
+      'enable_access_token_hook = local.hooks_on'
+    ),
+    expected: ['auth.hook.custom_access_token/enabled']
+  },
+  {
+    name: 'a module call passing a hook switch from a variable the root does not declare',
+    edit: editRootTf(0, 'variables.tf', 'variable "enable_access_token_hook"', 'variable "other"'),
+    expected: ['auth.hook.custom_access_token/enabled']
+  },
+  {
+    name: 'a module call passing a literal loopback origin',
+    edit: editRootTf(
+      0,
+      'main.tf',
+      'public_origin            = var.public_origin',
+      'public_origin            = "https://127.0.0.1"'
+    ),
+    expected: ['auth/site_url'],
+    files: ['envs/staging/supabase/main.tf']
+  },
+  {
+    name: 'a module call passing the origin an expression the guard cannot read',
+    edit: editRootTf(
+      0,
+      'main.tf',
+      'public_origin            = var.public_origin',
+      'public_origin            = local.origin'
+    ),
+    expected: ['auth/site_url']
+  },
+  {
+    name: 'a root whose module block calls another module',
+    edit: editRootTf(0, 'main.tf', '"../../../modules/supabase"', '"../../../modules/other"'),
+    expected: ['root/module-call']
   },
   {
     name: 'an unclassified key added under [auth]',
@@ -2148,16 +2520,26 @@ function readRoots(envsDir) {
   }
   const roots = [];
   for (const entry of entries.filter((e) => e.isDirectory()).sort((a, b) => a.name.localeCompare(b.name))) {
-    const file = path.join(envsDir, entry.name, 'supabase', 'terraform.tfvars');
+    const dir = path.join(envsDir, entry.name, 'supabase');
+    const file = path.join(dir, 'terraform.tfvars');
     let exists = false;
     try {
       exists = statSync(file).isFile();
     } catch {
       exists = false;
     }
-    if (exists) roots.push({ name: entry.name, ...readChannel(file) });
+    if (exists) roots.push({ name: entry.name, dir: display(dir), tfvars: readChannel(file), tf: readTfFiles(dir) });
   }
   return { roots, error: null };
+}
+
+/** The `.tf` files of one directory, one level deep, sorted by name. */
+function readTfFiles(dir) {
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((e) => e.isFile() && e.name.endsWith('.tf'))
+    .map((e) => e.name)
+    .sort()
+    .map((name) => readChannel(path.join(dir, name)));
 }
 
 /** The module's `.tf` files, one level deep, by name. */
@@ -2172,12 +2554,7 @@ function readModule(moduleDir) {
       error: `could not be read as a directory (${error.code ?? error.message})`
     };
   }
-  const files = entries
-    .filter((e) => e.isFile() && e.name.endsWith('.tf'))
-    .map((e) => e.name)
-    .sort()
-    .map((name) => readChannel(path.join(moduleDir, name)));
-  return { dir: display(moduleDir), files, error: null };
+  return { dir: display(moduleDir), files: readTfFiles(moduleDir), error: null };
 }
 
 /** The tracked files in the scope of the second-writer scan. A file listed but absent from the tree holds nothing. */
