@@ -88,7 +88,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
       baseline at a cutover commit agreed with the v2.16 session, later changes are append-only numbered
       migrations, the parity guard enforces both, and a drift check after deploy reads its exit status directly.
       [C1]
-- [ ] **SUPA-11**: A guard in `lint:check` fails when the security-relevant keys of the local `config.toml` and
+- [x] **SUPA-11**: A guard in `lint:check` fails when the security-relevant keys of the local `config.toml` and
       the hosted settings in the HCL disagree. [A2]
 - [ ] **SUPA-12**: The hosted project is created by the operator, imported into a long-lived Supabase Terraform
       root with `prevent_destroy`, and kept in a state file separate from the AWS root. A teardown of the AWS
@@ -288,7 +288,7 @@ closes; those are not listed against the earlier phase here.
 | SUPA-08 | Phase 187 | Pending |
 | SUPA-09 | Phase 186 | Pending |
 | SUPA-10 | Phase 181 | Complete |
-| SUPA-11 | Phase 183 | Pending |
+| SUPA-11 | Phase 183 | Complete |
 | SUPA-12 | Phase 185 | Pending |
 | SUPA-13 | Phase 184 | Pending |
 | SUPA-14 | Phase 184 | Pending |
