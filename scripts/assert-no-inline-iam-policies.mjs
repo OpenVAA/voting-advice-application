@@ -12,12 +12,14 @@
  *   aws_iam_policy_attachment — not an inline policy, but banned: the provider's own page for it (terraform-provider-aws v6.68.0, website/docs/r/iam_policy_attachment.html.markdown) warns that it "creates **exclusive** attachments of IAM policies. Across the entire AWS account, all of the users/roles/groups to which a single policy is attached must be declared by a single aws_iam_policy_attachment resource. This means that even any users/roles/groups that have the attached policy via any other mechanism (including other Terraform resources) will have that attached policy revoked by this resource." Use `aws_iam_role_policy_attachment`, `aws_iam_user_policy_attachment` or `aws_iam_group_policy_attachment`.
  *   aws_iam_*_policies_exclusive not empty — the user, role and group exclusive-policies resources attach nothing; they remove every inline policy not named in their `policy_names`. They are allowed only with `policy_names = []`, where they keep the identity free of inline policies on every apply. With a name in the list they protect an inline policy, so they are a finding. The resource's block is read from its `resource` line to its closing brace.
  *   .tf.json file — any file ending in `.tf.json` under the root is a path finding and is not parsed. Terraform reads JSON configuration as readily as HCL, and this guard reads only HCL lines, so a JSON file would be a way around it.
+ *   symbolic link — any symbolic link under the root, to a file or a directory, is a path finding and is not followed. Terraform follows one when it loads a root or a local module, so a link to a file outside the root would bring in configuration this guard never read.
+ *   module source outside the root — a `module` block whose `source` is not a local path (`./` or `../`) that resolves under the root. A module from a registry or a repository can create an inline policy inside itself, and its files are not under the root for this guard to read.
  *
  * What it leaves alone: trust policies (`assume_role_policy`, and the policy documents that feed one) and resource policies such as a bucket policy. Both describe who may reach a resource, not what an identity may do, and are outside the rule. The attachment resources for a single user, role or group, and the managed-policy resource itself, are what the rule asks for.
  *
  * The read is line-oriented and has no comment blanker, so a comment that names a banned form is a finding. Comments under `infra/` say "an inline policy" rather than naming the resource type.
  *
- * What this guard cannot see: a module sourced from outside `infra/` (the layout uses none); anything created through a CloudFormation stack resource, which can create any IAM object; and policies that already exist in an account, which an operator's read-only inventory script covers. Directories named `.terraform` (downloaded providers and modules) are skipped.
+ * What this guard cannot see: anything created through a CloudFormation stack resource, which can create any IAM object; and policies that already exist in an account, which an operator's read-only inventory script covers. Directories named `.terraform` (downloaded providers and modules) are skipped.
  *
  * A check that examined nothing must not report success: a root holding no `.tf` file exits 1.
  *
@@ -67,6 +69,15 @@ const EXCLUSIVE = {
 /** The path finding: a JSON configuration file. */
 const TF_JSON = { name: '.tf.json file', test: (file) => file.endsWith('.tf.json') };
 
+/** The path finding: a symbolic link, which Terraform follows and this guard does not. */
+const SYMLINK = { name: 'symbolic link' };
+
+/** A module block, read as a block: its `source` must be a local path that stays under the root. */
+const MODULE = {
+  name: 'module source outside the root',
+  start: /^\s*module\s+"?[A-Za-z0-9_-]+"?\s*\{/
+};
+
 function fail(message) {
   console.error(`${SELF}: ${message}`);
   console.error(`usage: node ${SELF} [--root <dir>] | --self-test`);
@@ -97,11 +108,15 @@ function display(abs) {
   return rel.startsWith('..') || path.isAbsolute(rel) ? abs : rel.split(path.sep).join('/');
 }
 
-/** Every `.tf` and `.tf.json` file under `dir`, sorted, skipping directories named `.terraform`. Symbolic links are not followed. */
-function walk(dir, out = { tf: [], tfJson: [] }) {
+/**
+ * Every `.tf` and `.tf.json` file under `dir`, sorted, skipping directories named `.terraform`, and every symbolic link,
+ * which is collected and not followed.
+ */
+function walk(dir, out = { tf: [], tfJson: [], links: [] }) {
   for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
     const abs = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
+    if (entry.isSymbolicLink()) out.links.push(abs);
+    else if (entry.isDirectory()) {
       if (entry.name !== '.terraform') walk(abs, out);
     } else if (entry.isFile()) {
       if (TF_JSON.test(entry.name)) out.tfJson.push(abs);
@@ -137,8 +152,20 @@ function exclusiveIsEmpty(block) {
   return assignments.every((m) => /^\[\s*\]/.test(block.slice(m.index + m[0].length)));
 }
 
-/** The findings of one `.tf` file, in line order. */
-function findingsOf(abs) {
+/**
+ * Whether a module block's `source` is a local path (`./` or `../`) that resolves to a directory under the root, so
+ * that the module's own files are among those this guard reads.
+ */
+function moduleIsLocal(block, fileAbs, rootAbs) {
+  if (block === null) return false;
+  const sources = [...block.matchAll(/^\s*source\s*=\s*"([^"]*)"\s*(?:#.*)?$/gm)].map((m) => m[1]);
+  if (sources.length !== 1 || !/^\.\.?\//.test(sources[0])) return false;
+  const rel = path.relative(rootAbs, path.resolve(path.dirname(fileAbs), sources[0]));
+  return rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel));
+}
+
+/** The findings of one `.tf` file under `rootAbs`, in line order. */
+function findingsOf(abs, rootAbs) {
   const shown = display(abs);
   const lines = readFileSync(abs, 'utf8').split('\n');
   const found = [];
@@ -146,6 +173,8 @@ function findingsOf(abs) {
     for (const p of PATTERNS) if (p.re.test(line)) found.push(`${shown}:${i + 1}: ${p.name}`);
     if (EXCLUSIVE.start.test(line) && !exclusiveIsEmpty(blockFrom(lines, i)))
       found.push(`${shown}:${i + 1}: ${EXCLUSIVE.name}`);
+    if (MODULE.start.test(line) && !moduleIsLocal(blockFrom(lines, i), abs, rootAbs))
+      found.push(`${shown}:${i + 1}: ${MODULE.name}`);
   });
   return found;
 }
@@ -159,10 +188,11 @@ function scanRoot(dirAbs) {
     return { error: `cannot read '${display(dirAbs)}'` };
   }
   if (!stat.isDirectory()) return { error: `'${display(dirAbs)}' is not a directory` };
-  const { tf, tfJson } = walk(dirAbs);
+  const { tf, tfJson, links } = walk(dirAbs);
   const findings = [];
+  for (const abs of links) findings.push(`${display(abs)}: path matches ${SYMLINK.name}`);
   for (const abs of tfJson) findings.push(`${display(abs)}: path matches ${TF_JSON.name}`);
-  for (const abs of tf) findings.push(...findingsOf(abs));
+  for (const abs of tf) findings.push(...findingsOf(abs, dirAbs));
   return { findings, read: tf.length };
 }
 

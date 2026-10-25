@@ -87,3 +87,10 @@ resource "aws_iam_role_policies_exclusive" "app" {
   role_name    = aws_iam_role.app.name
   policy_names = []
 }
+
+# A local module under the root: its own files are read with the rest.
+module "child" {
+  source = "./child"
+
+  name = "fixture-child"
+}
