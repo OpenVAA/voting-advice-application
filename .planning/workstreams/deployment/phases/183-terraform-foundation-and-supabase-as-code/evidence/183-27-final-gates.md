@@ -61,7 +61,7 @@ The validation loop ran with `TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cac
 
 Where the CLI's configuration push appears. The parity guard's "one writer" search covers every tracked file under `.github/workflows/`, `infra/` and `scripts/`, plus every tracked `package.json` (203 files on this tree). It excludes only the guard's own source and `scripts/fixtures/hosted-settings-parity/`, and it found none. A wider read-only `git grep -lE 'supabase[[:space:]\\]+config[[:space:]\\]+push'` over every tracked file, with state, plan and `.terraform` paths excluded, lists 17 files, all under `.planning/`, as planning prose. None is under `apps/`, `packages/`, `tests/`, `.github/`, `infra/` or `scripts/`, so nothing invokes it.
 
-Verify re-run. The three verify commands of this task were run again at bcf3483f3d5b145538d6bfe54cfafa89da65f349, whose tree differs from de904bfff only by the Task 1 section of this evidence file, on 2026-10-25 around 08:03Z. All three exited 0. The validation loop again used its own throwaway `TF_DATA_DIR`, removed afterwards. The tree was 0/0 after.
+Verify re-run. The three verify commands of this task were run again at bcf3483f3d5b145538d6bfe54cfafa89da65f349, whose tree differs from de904bfff only by the Task 1 section of this evidence file, on 2026-10-25, ending at 08:02:05Z. All three exited 0. The validation loop again used its own throwaway `TF_DATA_DIR`, removed afterwards. The tree was 0/0 after.
 
 ## Criterion 5, clause by clause
 
