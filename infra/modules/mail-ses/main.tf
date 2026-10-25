@@ -9,6 +9,11 @@ terraform {
   }
 }
 
+# The identity and the derived SMTP password take the provider's region; the feedback host and the
+# SMTP endpoint take var.aws_region. The precondition on the MAIL FROM record fails the plan when the
+# two differ.
+data "aws_region" "current" {}
+
 locals {
   mail_from_domain = "${var.mail_from_label}.${var.domain}"
   record_ttl       = 300
@@ -51,6 +56,13 @@ resource "aws_route53_record" "mail_from_mx" {
   type    = "MX"
   ttl     = local.record_ttl
   records = ["10 feedback-smtp.${var.aws_region}.amazonses.com"]
+
+  lifecycle {
+    precondition {
+      condition     = var.aws_region == data.aws_region.current.region
+      error_message = "aws_region must equal the provider's region, where the identity is created and the SMTP password is valid."
+    }
+  }
 }
 
 resource "aws_route53_record" "mail_from_spf" {
