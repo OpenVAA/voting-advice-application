@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 183
 current_phase_name: Terraform Foundation and Supabase as Code
-current_plan: 20
+current_plan: 21
 status: executing
-stopped_at: Completed 183-19-PLAN.md
-last_updated: "2026-10-23T11:53:13.400Z"
+stopped_at: Completed 183-20-PLAN.md
+last_updated: "2026-10-25T07:54:58.640Z"
 last_activity: 2026-10-21
 last_activity_desc: Phase 183 execution started
-state_head: 65f552b0d67849869b24e401ec24389d156c53f6
+state_head: 3d08b6665c32e18e553290dac310ee3db27f2c05
 progress:
   total_phases: 10
   completed_phases: 2
   total_plans: 82
-  completed_plans: 80
+  completed_plans: 81
   percent: 20
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; read only from this wor
 Phases 181 and 182 are complete; phase 183 is in progress (15/28 plans).
 
 Phase: 183 (Terraform Foundation and Supabase as Code) — EXECUTING
-Plan: 20 of 28
+Plan: 21 of 28
 Status: Ready to execute
 Last activity: 2026-10-21 — Phase 183 execution started
 
@@ -43,7 +43,7 @@ Progress: [██░░░░░░░░] 20%
 ## Progress
 
 **Phases Complete:** 0 of 9
-**Current Plan:** 20
+**Current Plan:** 21
 
 Phases 181, 182 and 183 do not depend on each other in what they build, but their executors share one checkout, so they are not run at the same moment: whole-repo gates need a tree with no uncommitted tracked change, and phase 182 holds the other two during its cutover span and its E2E windows. Phase 181's freeze (181-17) waits for plan 182-02. 183 needs the operator from plan 183-14 on. From 184 on, the numeric order is the dependency order.
 
@@ -114,6 +114,7 @@ Phases 181, 182 and 183 do not depend on each other in what they build, but thei
 | Phase 183 P24 | 13h33m | 2 tasks | 6 files |
 | Phase 183 P23 | 4h20m | 3 tasks | 3 files |
 | Phase 183 P25 | 50min | 2 tasks | 2 files |
+| Phase 183 P20 | 2026-10-22T08:41Z to 2026-10-25 (operator wait); executor about 15 min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -212,6 +213,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 183]: 183-23: the persistent project cofbsatfrdysyphajsky (openvaa-staging) is in eu-north-1, in the OpenVAA organisation gulgrbzofwnwepdnrgrl, created by hand and imported; its first plan (tfplan sha256 065a419e...43590) creates only supabase_settings.this and was reviewed ok for plan 183-25
 - [Phase 183]: 183-23: the organisation slug is tracked in infra/envs/staging/supabase/terraform.tfvars beside the name and region, because organization_id is a required argument of the project resource
 - [Phase 183]: 183-25: the persistent project cofbsatfrdysyphajsky has its settings applied with both hooks on; phase 184 pushes the migrations before anyone signs in
+- [Phase 183]: 183-20: INFRA-15 complete on the operator ruling accept-console-alert (2026-10-23): the actual alert of the 1 USD budget was seen as triggered in the AWS Budgets console and no mail was received (address not confirmed, per operator); outcome recorded as no-mail, mail delivery not observed. The budget was then raised under the ruling to the standing 100 USD with no -var (one replacement; read-back 100 USD monthly cost, ACTUAL 80 and FORECASTED 100; second plan exit 0); the read-back threshold type printed None (UNCONFIRMED why). WINDOWS 289
 
 ### Pending Todos
 
@@ -259,6 +261,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-10-22T08:38:13.463Z
-**Stopped At:** Completed 183-19-PLAN.md
+Last session: 2026-10-25T07:54:58.086Z
+**Stopped At:** Completed 183-20-PLAN.md
 **Resume File:** None

@@ -51,7 +51,10 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
       documented.
 - [ ] **INFRA-14**: A CDN serves the immutable build assets, and rendered HTML is never cached at the edge.
       [A2, added]
-- [ ] **INFRA-15**: A budget alarm notifies the operator when the account's spend passes a set threshold. [A2]
+- [x] **INFRA-15**: A budget alarm notifies the operator when the account's spend passes a set threshold. [A2]
+      [complete 2026-10-25 on the operator's ruling accept-console-alert of 2026-10-23 (plan 183-20): the
+      actual alert was seen as triggered in the AWS Budgets console; no mail was received, so delivery to
+      the operator's mailbox is not observed (WINDOWS 289)]
 - [ ] **INFRA-16**: The operator is notified when a deployment fails or rolls back and when a build fails. Each
       alert is seen firing once. [A2, added]
 - [x] **INFRA-17**: IAM permissions are granted through customer-managed policies where an AWS-managed policy
@@ -270,7 +273,7 @@ closes; those are not listed against the earlier phase here.
 | INFRA-12 | Phase 185 | Pending |
 | INFRA-13 | Phase 185 | Pending |
 | INFRA-14 | Phase 185 | Pending |
-| INFRA-15 | Phase 183 | Pending |
+| INFRA-15 | Phase 183 | Complete |
 | INFRA-16 | Phase 187 | Pending |
 | INFRA-17 | Phase 183 | Complete |
 | INFRA-18 | Phase 183 | Pending |
