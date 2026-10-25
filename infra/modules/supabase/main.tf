@@ -46,9 +46,12 @@ resource "supabase_settings" "this" {
 # sensitive, so a sensitive value inside the main resource's JSON would hide its whole diff; kept
 # apart, the main diff stays readable and the password is masked. Two settings resources for one
 # project are untried: each is expected to pick only its own keys, but that has not been observed.
-# While `smtp` is null the count is zero and nothing about SMTP is sent.
+# Both update the same auth configuration, so this one is applied after the main one and never in
+# parallel with it; whether the first SMTP enablement is accepted with the password arriving second
+# has not been observed either. While `smtp` is null the count is zero and nothing about SMTP is sent.
 resource "supabase_settings" "smtp_secret" {
-  count = var.smtp == null ? 0 : 1
+  count      = var.smtp == null ? 0 : 1
+  depends_on = [supabase_settings.this]
 
   project_ref = supabase_project.this.id
   auth        = jsonencode({ smtp_pass = var.smtp_password })
