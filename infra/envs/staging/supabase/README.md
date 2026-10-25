@@ -14,7 +14,9 @@ The overview of every root, the order of first applies and the rules that hold f
 
 - **The project is created by hand and imported, and Terraform never creates or destroys it**, because
   a project holds the database, the storage and every key, and none of them comes back once it is
-  deleted.
+  deleted. The root's `import` block names the project by `project_ref` in `terraform.tfvars`, so a
+  plan against a state that lacks the project imports it rather than creating one; a plan that still
+  shows the project as a creation is never applied.
 - **A plan that shows a destroy, a replacement or a change of the database password is never
   applied**, because each of them changes what the project holds or how it is reached, and none can be
   undone by applying again.
@@ -429,8 +431,8 @@ settings and the database password in clear text.
    echo "s1_account=$(aws sts get-caller-identity --query Account --output text)"
    ```
 
-2. Add three lines to `terraform.tfvars`: `organization_id`, `project_name` and `region`, with the
-   slug, the name and the region id of the project you created. If the rehearsal recorded that the
+2. Add four lines to `terraform.tfvars`: `project_ref`, `organization_id`, `project_name` and
+   `region`, with the ref, the slug, the name and the region id of the project you created. If the rehearsal recorded that the
    provider reads an organisation id other than the dashboard slug, use the form it recorded. This
    file is tracked and public; it holds no secret. Whoever reads your lines reads this change with
    `git diff`.
@@ -447,6 +449,8 @@ settings and the database password in clear text.
    ```bash
    terraform import -no-color module.supabase.supabase_project.this "$REF" > "$L/s4.log" 2>&1; echo "s4_import_project_exit=$?"
    ```
+
+   The root's `import` block names the same project; once this item has run, it plans nothing.
 
 5. Five named fields of the imported project. Check that the name and the region are the persistent
    project's. If `s5_organization` differs from the value in `terraform.tfvars`, correct the file to
@@ -671,6 +675,7 @@ it.
 | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
 | Whether two settings resources work side by side for one project, each keeping only its own keys | A later stage of the deployment work, when the SMTP settings are applied     |
 | While the send-email hook is on, the hosted auth service sends no mail of its own                | A later stage of the deployment work, with the first mail the function sends |
+| With the project already in state, the root's `import` block plans nothing                       | The next plan of the persistent root, which must still read "No changes"     |
 
 ## Observations
 

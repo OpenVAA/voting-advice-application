@@ -7,6 +7,9 @@
 # user name is the access key id of the SMTP user, half of the mail credential. Because this file sets
 # smtp, a plan without TF_VAR_smtp_user and TF_VAR_smtp_password fails.
 
+# The ref of the project you created by hand. The root imports the project by this ref, so a plan
+# never creates one, and a ref that names no project fails the plan.
+project_ref     = "replace-with-your-project-ref"
 organization_id = "replace-with-your-organisation-slug"
 project_name    = "openvaa-production"
 region          = "eu-north-1"

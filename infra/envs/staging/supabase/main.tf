@@ -1,6 +1,6 @@
 # The persistent staging Supabase project. The project is created by hand and imported into this
-# root; Terraform never creates or deletes it. A plan of this root that shows a destroy or a
-# replacement is never applied. This root is applied by hand from an operator's shell, and its state
+# root; Terraform never creates or deletes it. A plan of this root that shows a creation, a destroy
+# or a replacement of the project is never applied. This root is applied by hand from an operator's shell, and its state
 # key sits under the hand/ prefix, which the pipeline's roles cannot read.
 terraform {
   required_version = ">= 1.10"
@@ -28,6 +28,14 @@ terraform {
 
 # The provider reads SUPABASE_ACCESS_TOKEN from the environment of the operator's shell.
 provider "supabase" {}
+
+# The project already exists and is only ever imported. Against a state that lacks it, this block
+# plans an import instead of a creation, and a ref that names no project fails the plan. Once the
+# project is in state, the block plans nothing.
+import {
+  to = module.supabase.supabase_project.this
+  id = var.project_ref
+}
 
 module "supabase" {
   source = "../../../modules/supabase"

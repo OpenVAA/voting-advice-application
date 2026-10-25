@@ -1,3 +1,9 @@
+variable "project_ref" {
+  description = "Reference of the existing project, as the dashboard shows it. The import block of main.tf imports the project by this ref, so a plan of this root never creates a project."
+  type        = string
+  nullable    = false
+}
+
 variable "organization_id" {
   description = "Slug of the Supabase organisation that owns the project, as an import shows it."
   type        = string

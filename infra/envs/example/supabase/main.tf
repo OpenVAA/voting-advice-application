@@ -1,8 +1,8 @@
 # A template Supabase root that a forker copies to start a deployment of their own. CI validates
 # it; nothing applies it. It has the same wiring as the staging root and differs only in its backend
 # and its variable file. In a deployment, the project is created by hand and imported; a plan that
-# shows a destroy or a replacement is never applied, and the root is applied by hand from an
-# operator's shell with its state key under the hand/ prefix.
+# shows a creation, a destroy or a replacement of the project is never applied, and the root is
+# applied by hand from an operator's shell with its state key under the hand/ prefix.
 terraform {
   required_version = ">= 1.10"
 
@@ -29,6 +29,14 @@ terraform {
 
 # The provider reads SUPABASE_ACCESS_TOKEN from the environment of the operator's shell.
 provider "supabase" {}
+
+# The project already exists and is only ever imported. Against a state that lacks it, this block
+# plans an import instead of a creation, and a ref that names no project fails the plan. Once the
+# project is in state, the block plans nothing.
+import {
+  to = module.supabase.supabase_project.this
+  id = var.project_ref
+}
 
 module "supabase" {
   source = "../../../modules/supabase"
