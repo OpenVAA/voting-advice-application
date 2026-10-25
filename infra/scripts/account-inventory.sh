@@ -5,7 +5,7 @@
 # Usage (from a shell signed in to the account, with the AWS CLI on the PATH):
 #   infra/scripts/account-inventory.sh                                     # the full inventory
 #   infra/scripts/account-inventory.sh --assert-no-inline-user-policies    # exit 1 if any IAM user has an inline policy
-#   infra/scripts/account-inventory.sh --assert-managed-only /openvaa/     # exit 1 if a role or user under the path has one
+#   infra/scripts/account-inventory.sh --assert-no-inline-under /openvaa/  # exit 1 if a role or user under the path has one
 #   infra/scripts/account-inventory.sh --self-test                         # judge canned lines; needs no credentials
 #
 #   (no argument)                       Print, section by section: the caller as account id and role
@@ -19,9 +19,11 @@
 #                                       printed and the status is 1.
 #   --assert-no-inline-user-policies    Read every IAM user. Exit 0 when the user list was read and no
 #                                       user has an inline policy, also when the account has no IAM user.
-#   --assert-managed-only <path-prefix> Read every IAM user and role. Exit 0 when at least one role or
+#   --assert-no-inline-under <prefix>   Read every IAM user and role. Exit 0 when at least one role or
 #                                       user lies under the path and none of them has an inline policy.
 #                                       A user is seen under a path only when it lies under /openvaa/.
+#                                       Attached policies are not judged: a role under the path with an
+#                                       AWS-managed policy attached, such as ReadOnlyAccess, passes.
 #                                       Each assert mode reads the caller first. It exits 1 without
 #                                       reading any list when the caller cannot be read or is not in
 #                                       OPENVAA_ACCOUNT_ID, so a PASS always describes that account.
@@ -77,7 +79,7 @@ ERR_CODE=""
 MUST_FAILED=0
 
 usage_line() {
-  echo "usage: account-inventory.sh [--assert-no-inline-user-policies | --assert-managed-only <path-prefix> | --self-test | -h | --help]" >&2
+  echo "usage: account-inventory.sh [--assert-no-inline-user-policies | --assert-no-inline-under <path-prefix> | --self-test | -h | --help]" >&2
 }
 
 print_header() {
@@ -482,7 +484,7 @@ collect_account() {
 # Judging. Reads inventory lines on standard input. Offending lines go to standard output and the
 # one-line verdict to standard error.
 #   evaluate users            no IAM user has an inline policy, and the user list was read
-#   evaluate managed <prefix> no role or user under the prefix has one, and at least one exists
+#   evaluate under <prefix>   no role or user under the prefix has one, and at least one exists
 # Both also need a caller line in ACCOUNT_ID, and no caller line in any other account.
 # An inline list that could not be read counts as offending: a check that examined nothing does not
 # report success.
@@ -502,11 +504,11 @@ evaluate() {
       if (field_from(2, "account") != account || field_from(2, "match") != "yes") caller_elsewhere = 1
     }
     $1 == "error" && $2 == "users" { unread = unread " user" }
-    $1 == "error" && $2 == "roles" && mode == "managed" { unread = unread " role" }
+    $1 == "error" && $2 == "roles" && mode == "under" { unread = unread " role" }
     $1 == "users" && $2 ~ /^examined=/ { users_read = 1 }
     $1 == "roles" && $2 ~ /^examined=/ { roles_read = 1 }
-    $1 == "user" || ($1 == "role" && mode == "managed") {
-      if (mode == "managed" && index(field("path"), prefix) != 1) next
+    $1 == "user" || ($1 == "role" && mode == "under") {
+      if (mode == "under" && index(field("path"), prefix) != 1) next
       examined++
       if (field("inline") != "[]") { print; offending++ }
     }
@@ -527,20 +529,20 @@ evaluate() {
         printf "assert: FAIL: the%s list could not be read, so nothing was judged\n", unread > "/dev/stderr"
         exit 1
       }
-      if (!users_read || (mode == "managed" && !roles_read)) {
+      if (!users_read || (mode == "under" && !roles_read)) {
         print "assert: FAIL: nothing examined: the input holds no complete user or role list" > "/dev/stderr"
         exit 1
       }
-      if (mode == "managed" && examined == 0) {
+      if (mode == "under" && examined == 0) {
         printf "assert: FAIL: nothing examined: no role or user lies under %s\n", prefix > "/dev/stderr"
         exit 1
       }
       if (offending > 0) {
-        if (mode == "managed") printf "assert: FAIL: %d of %d roles and users under %s carry an inline policy or could not be read\n", offending, examined, prefix > "/dev/stderr"
+        if (mode == "under") printf "assert: FAIL: %d of %d roles and users under %s carry an inline policy or could not be read\n", offending, examined, prefix > "/dev/stderr"
         else printf "assert: FAIL: %d of %d IAM users carry an inline policy or could not be read\n", offending, examined > "/dev/stderr"
         exit 1
       }
-      if (mode == "managed") printf "assert: PASS: %d roles and users under %s, none with an inline policy\n", examined, prefix > "/dev/stderr"
+      if (mode == "under") printf "assert: PASS: %d roles and users under %s, none with an inline policy\n", examined, prefix > "/dev/stderr"
       else printf "assert: PASS: %d IAM users, none with an inline policy\n", examined > "/dev/stderr"
       exit 0
     }'
@@ -623,31 +625,31 @@ ${clean#*$'\n'}"
   st_judge "users: an unreadable caller fails" 1 users "" "error caller AccessDenied
 ${clean#*$'\n'}"
 
-  st_judge "managed: clean roles under the path pass" 0 managed /openvaa/ "$caller_ok
+  st_judge "under: clean roles under the path pass" 0 under /openvaa/ "$caller_ok
 users examined=0
 role openvaa-plan path=/openvaa/ inline=[]
 role openvaa-staging-deploy path=/openvaa/ inline=[]
 role AWSReservedSSO_AdministratorAccess_0a1b path=/aws-reserved/sso.amazonaws.com/ inline=[Legacy]
 roles examined=3"
-  st_judge "managed: a role under the path with an inline policy fails" 1 managed /openvaa/ "$caller_ok
+  st_judge "under: a role under the path with an inline policy fails" 1 under /openvaa/ "$caller_ok
 users examined=0
 role openvaa-plan path=/openvaa/ inline=[Leftover]
 roles examined=1"
-  st_judge "managed: a user under the path with an inline policy fails" 1 managed /openvaa/ "$caller_ok
+  st_judge "under: a user under the path with an inline policy fails" 1 under /openvaa/ "$caller_ok
 users examined=1
 user openvaa-staging-smtp path=/openvaa/ inline=[ses] attached=[] groups=[] tags=[]
 role openvaa-plan path=/openvaa/ inline=[]
 roles examined=1"
-  st_judge "managed: nothing under the path is nothing examined and fails" 1 managed /openvaa/ "$caller_ok
+  st_judge "under: nothing under the path is nothing examined and fails" 1 under /openvaa/ "$caller_ok
 users examined=1
 user user-1 path=other inline=[] attached=[] groups=[] tags=[]
 role SomeRole path=/ inline=[]
 roles examined=1"
-  st_judge "managed: empty input is nothing examined and fails" 1 managed /openvaa/ ""
-  st_judge "managed: an unreadable role list fails" 1 managed /openvaa/ "$caller_ok
+  st_judge "under: empty input is nothing examined and fails" 1 under /openvaa/ ""
+  st_judge "under: an unreadable role list fails" 1 under /openvaa/ "$caller_ok
 users examined=0
 error roles AccessDenied"
-  st_judge "managed: clean roles read in another account fail" 1 managed /openvaa/ "$caller_other
+  st_judge "under: clean roles read in another account fail" 1 under /openvaa/ "$caller_other
 users examined=0
 role openvaa-plan path=/openvaa/ inline=[]
 roles examined=1"
@@ -667,7 +669,7 @@ roles examined=1"
   st_present "collect: a caller in another account sets the must-fail status" "$MUST_FAILED" "1"
   st_absent "collect: a caller in another account reads no list" "$(cat "$WORK/stub-calls")" "list-"
   stub_status=0
-  evaluate managed /openvaa/ < "$WORK/stub-inventory.txt" > /dev/null 2>&1 || stub_status=$?
+  evaluate under /openvaa/ < "$WORK/stub-inventory.txt" > /dev/null 2>&1 || stub_status=$?
   st_present "collect: an assertion in another account exits 1" "$stub_status" "1"
   : > "$WORK/stub-calls"
   collect_all > "$WORK/stub-inventory.txt"
@@ -768,7 +770,7 @@ main() {
       evaluate users < "$WORK/scrubbed.txt" || status=$?
       exit "$status"
       ;;
-    --assert-managed-only)
+    --assert-no-inline-under)
       [ "$#" -eq 2 ] || { usage_line; exit 2; }
       case "$2" in
         /*/ | /) ;;
@@ -777,7 +779,7 @@ main() {
       make_workdir
       collect_in_account collect_users_and_roles > "$WORK/inventory.txt"
       scrub < "$WORK/inventory.txt" > "$WORK/scrubbed.txt"
-      evaluate managed "$2" < "$WORK/scrubbed.txt" || status=$?
+      evaluate under "$2" < "$WORK/scrubbed.txt" || status=$?
       exit "$status"
       ;;
     --self-test)

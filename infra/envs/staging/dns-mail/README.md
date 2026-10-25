@@ -182,13 +182,13 @@ Step 3.
 
 9. The account, now that the SMTP user exists. Each assert mode of the inventory script reads the
    caller first and exits 1 without judging anything when the caller is not in `471112560111`. Both
-   must print 0: no IAM user in the account carries an inline policy, and everything under the path
-   `/openvaa/` has customer-managed policies only. The last two lines read the SMTP user's own policies: no inline
-   policy, and the send policy attached.
+   must print 0: no IAM user in the account carries an inline policy, and no role or user under the
+   path `/openvaa/` carries one. Neither mode judges attached policies. The last two lines read the
+   SMTP user's own policies: no inline policy, and the send policy attached.
 
    ```bash
    ../../../scripts/account-inventory.sh --assert-no-inline-user-policies > "$L/s9a.log" 2>&1; echo "s9_assert_users_exit=$?"
-   ../../../scripts/account-inventory.sh --assert-managed-only /openvaa/ > "$L/s9b.log" 2>&1; echo "s9_assert_managed_exit=$?"
+   ../../../scripts/account-inventory.sh --assert-no-inline-under /openvaa/ > "$L/s9b.log" 2>&1; echo "s9_assert_no_inline_exit=$?"
    echo "s9_smtp_inline_count=$(aws iam list-user-policies --user-name openvaa-staging-ses-smtp --query 'length(PolicyNames)' --output text)"
    echo "s9_smtp_attached=$(aws iam list-attached-user-policies --user-name openvaa-staging-ses-smtp --query 'AttachedPolicies[].PolicyName' --output text)"
    ```

@@ -368,7 +368,8 @@ Step 6.
    ```
 
 7. The registry, the OIDC providers, the inline and attached policies of both roles, and the
-   inventory's assert mode over everything under the path `/openvaa/`:
+   inventory's assert mode that no role or user under the path `/openvaa/` carries an inline policy.
+   That mode does not judge attached policies, which the two `_attached` lines read:
 
    ```bash
    echo "s7_registry=$(aws ecr describe-repositories --region eu-north-1 --repository-names openvaa-frontend --query 'repositories[0].[repositoryName,imageTagMutability]' --output text | tr '\t' ',')"
@@ -377,13 +378,13 @@ Step 6.
    echo "s7_deploy_inline_count=$(aws iam list-role-policies --role-name openvaa-staging-deploy --query 'length(PolicyNames)' --output text)"
    echo "s7_plan_attached=$(aws iam list-attached-role-policies --role-name openvaa-plan --query 'sort(AttachedPolicies[].PolicyName)' --output text | tr '\t' ',')"
    echo "s7_deploy_attached=$(aws iam list-attached-role-policies --role-name openvaa-staging-deploy --query 'sort(AttachedPolicies[].PolicyName)' --output text | tr '\t' ',')"
-   ../scripts/account-inventory.sh --assert-managed-only /openvaa/ > "$L/s7.log" 2>&1; echo "s7_assert_managed_exit=$?"
+   ../scripts/account-inventory.sh --assert-no-inline-under /openvaa/ > "$L/s7.log" 2>&1; echo "s7_assert_no_inline_exit=$?"
    ```
 
    Expected: `s7_registry=openvaa-frontend,IMMUTABLE`, one provider for
    `token.actions.githubusercontent.com`, both inline counts 0,
    `s7_plan_attached=ReadOnlyAccess,openvaa-plan-deny,openvaa-plan-lock`,
-   `s7_deploy_attached=openvaa-ecr-push,openvaa-tfstate-staging-aws` and `s7_assert_managed_exit=0`.
+   `s7_deploy_attached=openvaa-ecr-push,openvaa-tfstate-staging-aws` and `s7_assert_no_inline_exit=0`.
 
 ## Step 5: The policy simulator
 
