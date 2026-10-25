@@ -62,6 +62,10 @@ each take hours. Neither blocks the next apply.
   that uses the AWS-managed `AdministratorAccess` policy, or an IAM user with MFA and managed policies
   only. A "force MFA" policy written inline has to become a customer-managed policy first.
 - For the Supabase roots, a Supabase access token, given per session as their runbooks describe.
+- Before a workflow first assumes the deploy role, the GitHub Environment that role is bound to
+  (`deploy_environment` of `bootstrap`) allows deployments from the default branch only, through a
+  deployment branch policy. The deploy role trusts every job that names that environment, so the
+  branch policy, which is a repository setting and not code, is what keeps other branches out.
 
 ## Rules of every apply
 

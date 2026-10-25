@@ -674,6 +674,7 @@ it.
 | The AWS-managed read-only policy lets a plan of the pipeline root read all it must                                               | A later stage of the deployment work                                      |
 | A refused list call for the prefix `env:/` does not stop a plan or an apply of the pipeline root                                 | A later stage of the deployment work                                      |
 | A workflow can assume the plan role and the deploy role, and a token with a wrong subject is refused                             | A later stage of the deployment work                                      |
+| AWS evaluates the claims `repository_id` and `repository_owner_id` in a trust condition once they are set                        | A later stage of the deployment work                                      |
 | A second push of one image tag to the registry is refused                                                                        | A later stage of the deployment work                                      |
 
 ## Observations
