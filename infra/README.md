@@ -24,9 +24,10 @@ the state bucket and its own tracked `terraform.tfvars`, the public record of it
 | `envs/scratch/supabase` | A throwaway Supabase project, on which every step of the staging Supabase root is rehearsed first                                          | Local state, ignored by Git                                  | The operator, by hand                            | Yes, then removed with the throwaway project |
 
 Every root applied by hand keeps its state under `hand/`, and the one root the pipeline applies keeps
-it under `pipeline/`. The plan role's policy denies it every object under `hand/`, and the deploy
-role's policy allows it only its own key under `pipeline/`, so that neither workflow role can read
-the state of a root applied by hand, which holds secrets in clear text.
+it under `pipeline/`. The plan role's policy denies it every object under `hand/` and every object
+under `env:/`, where the S3 backend keeps the state of a non-default workspace, and the deploy role's
+policy allows it only its own key under `pipeline/`, so that neither workflow role can read the state
+of a root applied by hand, which holds secrets in clear text.
 
 Runbooks: [`bootstrap/README.md`](bootstrap/README.md) for the account-level root, and the
 `README.md` of `envs/staging/dns-mail` and of `envs/staging/supabase` for those roots.
@@ -69,6 +70,9 @@ each take hours. Neither blocks the next apply.
 - A secret arrives as an environment variable of one shell session, `export TF_VAR_<name>=…`, and is
   written to no file, because a file is easily copied, attached or committed.
 - `terraform.tfvars` is tracked and public, so nothing secret and no personal address goes into it.
+- A root uses the default workspace only, and no backend block sets `workspace_key_prefix`, because
+  the plan role's deny on other roots' state covers the `hand/` keys and the backend's default
+  workspace prefix `env:/` and no other key.
 - A plan of a Supabase root that shows a destroy or a replacement is never applied, because the
   project holds the only copy of its data and Terraform must never delete it.
 - A plan file is never uploaded, attached or pasted anywhere, because it holds the planned attribute

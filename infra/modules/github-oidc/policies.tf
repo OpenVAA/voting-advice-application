@@ -92,13 +92,18 @@ resource "aws_iam_policy" "ecr_push" {
 }
 
 # Every hand-applied root keeps its state under one prefix, so a root added later is covered by this
-# deny without an edit.
+# deny without an edit. The S3 backend keeps the state of a non-default workspace under "env:/" (its
+# default workspace key prefix), outside that prefix, so every workspace key is denied as well: the
+# plan role reads only default-workspace state, and of that only what lies outside the hand prefix.
 data "aws_iam_policy_document" "plan_deny" {
   statement {
-    sid       = "DenyHandAppliedState"
-    effect    = "Deny"
-    actions   = ["s3:GetObject", "s3:GetObjectVersion"]
-    resources = ["${var.state_bucket_arn}/${var.hand_state_prefix}*"]
+    sid     = "DenyHandAppliedState"
+    effect  = "Deny"
+    actions = ["s3:GetObject", "s3:GetObjectVersion"]
+    resources = [
+      "${var.state_bucket_arn}/${var.hand_state_prefix}*",
+      "${var.state_bucket_arn}/env:/*",
+    ]
   }
 
   statement {

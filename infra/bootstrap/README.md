@@ -402,6 +402,7 @@ Step 6.
    ```bash
    aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" --action-names s3:GetObject --resource-arns "arn:aws:s3:::$B/hand/staging/supabase/terraform.tfstate" --query "$Q" --output text | sed 's/^/s8a_decision=/'
    aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" --action-names s3:GetObject --resource-arns "arn:aws:s3:::$B/$K" --query "$Q" --output text | sed 's/^/s8a_decision=/'
+   aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" --action-names s3:GetObject --resource-arns "arn:aws:s3:::$B/env:/x/hand/staging/supabase/terraform.tfstate" --query "$Q" --output text | sed 's/^/s8a_decision=/'
    ```
 
    (b) The plan role, secret reads and data reads:
@@ -448,8 +449,8 @@ Step 6.
    aws iam simulate-principal-policy --policy-source-arn "$DEPLOY_ROLE" --action-names s3:GetObject --resource-arns "arn:aws:s3:::$B/hand/staging/supabase/terraform.tfstate" --query "$Q" --output text | sed 's/^/s8h_decision=/'
    ```
 
-   Expected for the plan role: `explicitDeny` for the object under `hand/` and `allowed` for the
-   object under `pipeline/` in (a), `explicitDeny` four times in (b), `allowed` three times in (c), and
+   Expected for the plan role: `explicitDeny` for the object under `hand/`, `allowed` for the
+   object under `pipeline/` and `explicitDeny` for the workspace object under `env:/` in (a), `explicitDeny` four times in (b), `allowed` three times in (c), and
    `allowed` in both lines of (d). Expected for the deploy role: `allowed` twice in (e), `allowed`
    three times in (f), `allowed` in `s8g1_decision` and `implicitDeny` in `s8g2_decision`, and
    `implicitDeny` in (h).
