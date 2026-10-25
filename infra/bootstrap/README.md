@@ -125,7 +125,9 @@ name outside the path `/openvaa/`. Such a user is printed as `user-<n>`; to see 
    sed 's/^/s4_inv=/' "$L/s4.log"
    ```
 
-5. The assert mode, which exits 1 when any IAM user carries an inline policy:
+5. The assert mode, which exits 1 when any IAM user carries an inline policy. Like the inventory of
+   item 4, it reads the caller first and exits 1 without reading any list when the caller is not in
+   `471112560111` (`OPENVAA_ACCOUNT_ID`), so a status of 0 is about that account:
 
    ```bash
    infra/scripts/account-inventory.sh --assert-no-inline-user-policies > "$L/s5.log" 2>&1; echo "s5_assert_users_exit=$?"

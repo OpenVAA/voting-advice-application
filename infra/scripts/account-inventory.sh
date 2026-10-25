@@ -14,12 +14,17 @@
 #                                       not service-linked, with its inline policy names; the OIDC
 #                                       providers; the hosted zones; for four regions the SES account
 #                                       state, the domain identities and a count of address identities;
-#                                       the budgets; the image repositories; the bucket names.
+#                                       the budgets; the image repositories; the bucket names. When the
+#                                       caller is not in OPENVAA_ACCOUNT_ID, only the caller line is
+#                                       printed and the status is 1.
 #   --assert-no-inline-user-policies    Read every IAM user. Exit 0 when the user list was read and no
 #                                       user has an inline policy, also when the account has no IAM user.
 #   --assert-managed-only <path-prefix> Read every IAM user and role. Exit 0 when at least one role or
 #                                       user lies under the path and none of them has an inline policy.
 #                                       A user is seen under a path only when it lies under /openvaa/.
+#                                       Each assert mode reads the caller first. It exits 1 without
+#                                       reading any list when the caller cannot be read or is not in
+#                                       OPENVAA_ACCOUNT_ID, so a PASS always describes that account.
 #   --self-test                         Feed canned lines to the judge and canned values to the line
 #                                       formatting, and fail if a case is judged wrongly or if an address,
 #                                       a session name or a person's user name reaches the output.
@@ -31,9 +36,9 @@
 #
 # Exit codes:
 #   0:  the inventory was printed, the assertion holds, or every self-test case passed
-#   1:  a call that must succeed failed (the caller, the user list or the role list), the assertion
-#       does not hold, a list the assertion needs could not be read, the assertion examined nothing,
-#       or a self-test case failed
+#   1:  a call that must succeed failed (the caller, the user list or the role list), the caller is
+#       not in OPENVAA_ACCOUNT_ID, the assertion does not hold, a list the assertion needs could not
+#       be read, the assertion examined nothing, or a self-test case failed
 #   2:  usage error
 #
 # Every AWS call this script makes is a read: get-, list- and describe- only. It changes nothing.
@@ -242,11 +247,13 @@ section() {
   printf '== %s\n' "$1"
 }
 
+# Sets MUST_FAILED when the caller cannot be read or is not in ACCOUNT_ID.
 collect_caller() {
   local account arn
   if call aws sts get-caller-identity --query '[Account,Arn]' --output text; then
     IFS=$'\t' read -r account arn <<< "$OUT"
     fmt_caller "$account" "$arn"
+    [ "$account" = "$ACCOUNT_ID" ] || MUST_FAILED=1
   else
     echo "error caller $ERR_CODE"
     MUST_FAILED=1
@@ -423,10 +430,26 @@ collect_buckets() {
   echo "buckets count=$count"
 }
 
-collect_all() {
-  local region seen=" "
-  section caller
+# The caller line, then the given collector only when the caller is in ACCOUNT_ID, so no list of
+# another account is read.
+collect_in_account() {
   collect_caller
+  [ "$MUST_FAILED" -eq 0 ] || return 0
+  "$@"
+}
+
+collect_users_and_roles() {
+  collect_users
+  collect_roles
+}
+
+collect_all() {
+  section caller
+  collect_in_account collect_account
+}
+
+collect_account() {
+  local region seen=" "
   section organisation
   collect_organisation
   section account-summary
@@ -460,16 +483,23 @@ collect_all() {
 # one-line verdict to standard error.
 #   evaluate users            no IAM user has an inline policy, and the user list was read
 #   evaluate managed <prefix> no role or user under the prefix has one, and at least one exists
+# Both also need a caller line in ACCOUNT_ID, and no caller line in any other account.
 # An inline list that could not be read counts as offending: a check that examined nothing does not
 # report success.
 # ---------------------------------------------------------------------------------------------------
 
 evaluate() {
   local mode="$1" prefix="${2:-}"
-  awk -v mode="$mode" -v prefix="$prefix" '
-    function field(name,   i) {
-      for (i = 3; i <= NF; i++) if (index($i, name "=") == 1) return substr($i, length(name) + 2)
+  awk -v mode="$mode" -v prefix="$prefix" -v account="$ACCOUNT_ID" '
+    function field_from(start, name,   i) {
+      for (i = start; i <= NF; i++) if (index($i, name "=") == 1) return substr($i, length(name) + 2)
       return "\001missing"
+    }
+    function field(name) { return field_from(3, name) }
+    $1 == "error" && $2 == "caller" { caller_unread = 1 }
+    $1 == "caller" {
+      callers++
+      if (field_from(2, "account") != account || field_from(2, "match") != "yes") caller_elsewhere = 1
     }
     $1 == "error" && $2 == "users" { unread = unread " user" }
     $1 == "error" && $2 == "roles" && mode == "managed" { unread = unread " role" }
@@ -481,6 +511,18 @@ evaluate() {
       if (field("inline") != "[]") { print; offending++ }
     }
     END {
+      if (caller_unread) {
+        print "assert: FAIL: the caller could not be read, so the account is unknown and nothing was judged" > "/dev/stderr"
+        exit 1
+      }
+      if (callers == 0) {
+        print "assert: FAIL: the input holds no caller line, so the account is unknown and nothing was judged" > "/dev/stderr"
+        exit 1
+      }
+      if (caller_elsewhere) {
+        printf "assert: FAIL: the caller is not in account %s, so nothing was judged\n", account > "/dev/stderr"
+        exit 1
+      }
       if (unread != "") {
         printf "assert: FAIL: the%s list could not be read, so nothing was judged\n", unread > "/dev/stderr"
         exit 1
@@ -545,46 +587,101 @@ st_present() {
 }
 
 self_test() {
-  local clean inline_user formatted errfile scrubbed tab key_id temp_key_id
+  local clean inline_user formatted errfile scrubbed tab key_id temp_key_id caller_ok caller_other
+  local stub_status
   tab="$(printf '\t')"
   # Built from parts so that the source holds no access-key-shaped literal.
   key_id="AKIA""IOSFODNN7EXAMPLE"
   temp_key_id="ASIA""IOSFODNN7EXAMPLE"
 
-  clean="users examined=2
+  caller_ok="caller account=$ACCOUNT_ID principal=assumed-role/openvaa-admin expected-account=$ACCOUNT_ID match=yes"
+  caller_other="caller account=111122223333 principal=assumed-role/openvaa-admin expected-account=$ACCOUNT_ID match=no"
+  clean="$caller_ok
+users examined=2
 user user-1 path=other inline=[] attached=[AdministratorAccess] groups=[] tags=[]
 user openvaa-staging-smtp path=/openvaa/ inline=[] attached=[openvaa-ses-send] groups=[] tags=[Project]"
-  inline_user="users examined=2
+  inline_user="$caller_ok
+users examined=2
 user user-1 path=other inline=[] attached=[] groups=[] tags=[]
 user user-2 path=other inline=[AmazonSesSendingAccess] attached=[] groups=[] tags=[InvokedBy=SESConsole]"
 
   st_judge "users: a clean set passes" 0 users "" "$clean"
   st_judge "users: a user with an inline policy fails" 1 users "" "$inline_user"
-  st_judge "users: an account with no IAM user passes once the list was read" 0 users "" "users examined=0"
+  st_judge "users: an account with no IAM user passes once the list was read" 0 users "" "$caller_ok
+users examined=0"
   st_judge "users: empty input is nothing examined and fails" 1 users "" ""
-  st_judge "users: an unreadable user list fails" 1 users "" "error users AccessDenied"
-  st_judge "users: an unreadable inline list fails" 1 users "" "users examined=1
+  st_judge "users: an unreadable user list fails" 1 users "" "$caller_ok
+error users AccessDenied"
+  st_judge "users: an unreadable inline list fails" 1 users "" "$caller_ok
+users examined=1
 user user-1 path=other inline=error(AccessDenied) attached=[] groups=[] tags=[]"
+  st_judge "users: a clean set with no caller line fails" 1 users "" "${clean#*$'\n'}"
+  st_judge "users: a clean set read in another account fails" 1 users "" "$caller_other
+${clean#*$'\n'}"
+  st_judge "users: a caller line naming another account fails even when it claims a match" 1 users "" "caller account=111122223333 principal=user expected-account=111122223333 match=yes
+${clean#*$'\n'}"
+  st_judge "users: an unreadable caller fails" 1 users "" "error caller AccessDenied
+${clean#*$'\n'}"
 
-  st_judge "managed: clean roles under the path pass" 0 managed /openvaa/ "users examined=0
+  st_judge "managed: clean roles under the path pass" 0 managed /openvaa/ "$caller_ok
+users examined=0
 role openvaa-plan path=/openvaa/ inline=[]
 role openvaa-staging-deploy path=/openvaa/ inline=[]
 role AWSReservedSSO_AdministratorAccess_0a1b path=/aws-reserved/sso.amazonaws.com/ inline=[Legacy]
 roles examined=3"
-  st_judge "managed: a role under the path with an inline policy fails" 1 managed /openvaa/ "users examined=0
+  st_judge "managed: a role under the path with an inline policy fails" 1 managed /openvaa/ "$caller_ok
+users examined=0
 role openvaa-plan path=/openvaa/ inline=[Leftover]
 roles examined=1"
-  st_judge "managed: a user under the path with an inline policy fails" 1 managed /openvaa/ "users examined=1
+  st_judge "managed: a user under the path with an inline policy fails" 1 managed /openvaa/ "$caller_ok
+users examined=1
 user openvaa-staging-smtp path=/openvaa/ inline=[ses] attached=[] groups=[] tags=[]
 role openvaa-plan path=/openvaa/ inline=[]
 roles examined=1"
-  st_judge "managed: nothing under the path is nothing examined and fails" 1 managed /openvaa/ "users examined=1
+  st_judge "managed: nothing under the path is nothing examined and fails" 1 managed /openvaa/ "$caller_ok
+users examined=1
 user user-1 path=other inline=[] attached=[] groups=[] tags=[]
 role SomeRole path=/ inline=[]
 roles examined=1"
   st_judge "managed: empty input is nothing examined and fails" 1 managed /openvaa/ ""
-  st_judge "managed: an unreadable role list fails" 1 managed /openvaa/ "users examined=0
+  st_judge "managed: an unreadable role list fails" 1 managed /openvaa/ "$caller_ok
+users examined=0
 error roles AccessDenied"
+  st_judge "managed: clean roles read in another account fail" 1 managed /openvaa/ "$caller_other
+users examined=0
+role openvaa-plan path=/openvaa/ inline=[]
+roles examined=1"
+
+  # The collection path, with the AWS CLI replaced by a stub that records each list it is asked for.
+  make_workdir
+  aws() {
+    case "$1 $2" in
+      "sts get-caller-identity") printf '%s\t%s\n' "$ST_STUB_ACCOUNT" "arn:aws:sts::$ST_STUB_ACCOUNT:assumed-role/openvaa-admin/session" ;;
+      *) printf '%s %s\n' "$1" "$2" >> "$WORK/stub-calls" ;;
+    esac
+  }
+  ST_STUB_ACCOUNT=111122223333
+  MUST_FAILED=0
+  : > "$WORK/stub-calls"
+  collect_in_account collect_users_and_roles > "$WORK/stub-inventory.txt"
+  st_present "collect: a caller in another account sets the must-fail status" "$MUST_FAILED" "1"
+  st_absent "collect: a caller in another account reads no list" "$(cat "$WORK/stub-calls")" "list-"
+  stub_status=0
+  evaluate managed /openvaa/ < "$WORK/stub-inventory.txt" > /dev/null 2>&1 || stub_status=$?
+  st_present "collect: an assertion in another account exits 1" "$stub_status" "1"
+  : > "$WORK/stub-calls"
+  collect_all > "$WORK/stub-inventory.txt"
+  st_absent "collect: an inventory in another account reads nothing past the caller" "$(cat "$WORK/stub-calls")" "list-"
+  ST_STUB_ACCOUNT="$ACCOUNT_ID"
+  MUST_FAILED=0
+  : > "$WORK/stub-calls"
+  collect_in_account collect_users > "$WORK/stub-inventory.txt"
+  st_present "collect: a caller in the account reads the user list" "$(cat "$WORK/stub-calls")" "iam list-users"
+  stub_status=0
+  evaluate users < "$WORK/stub-inventory.txt" > /dev/null 2>&1 || stub_status=$?
+  st_present "collect: an assertion in the account over no user passes" "$stub_status" "0"
+  unset -f aws
+  MUST_FAILED=0
 
   formatted="$(
     fmt_caller 471112560111 "arn:aws:sts::471112560111:assumed-role/AWSReservedSSO_AdministratorAccess_0a1b/matti.meikalainen@example.org"
@@ -666,7 +763,7 @@ main() {
     --assert-no-inline-user-policies)
       [ "$#" -eq 1 ] || { usage_line; exit 2; }
       make_workdir
-      collect_users > "$WORK/inventory.txt"
+      collect_in_account collect_users > "$WORK/inventory.txt"
       scrub < "$WORK/inventory.txt" > "$WORK/scrubbed.txt"
       evaluate users < "$WORK/scrubbed.txt" || status=$?
       exit "$status"
@@ -678,7 +775,7 @@ main() {
         *) echo "account-inventory.sh: the path prefix must begin and end with /" >&2; exit 2 ;;
       esac
       make_workdir
-      { collect_users; collect_roles; } > "$WORK/inventory.txt"
+      collect_in_account collect_users_and_roles > "$WORK/inventory.txt"
       scrub < "$WORK/inventory.txt" > "$WORK/scrubbed.txt"
       evaluate managed "$2" < "$WORK/scrubbed.txt" || status=$?
       exit "$status"

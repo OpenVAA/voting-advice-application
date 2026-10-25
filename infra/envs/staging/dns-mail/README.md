@@ -180,9 +180,10 @@ Step 3.
    terraform plan -input=false -no-color -detailed-exitcode > "$L/s8.log" 2>&1; echo "s8_second_plan_exit=$?"
    ```
 
-9. The account, now that the SMTP user exists. Both assert modes of the inventory script must print 0:
-   no IAM user in the account carries an inline policy, and everything under the path `/openvaa/` has
-   customer-managed policies only. The last two lines read the SMTP user's own policies: no inline
+9. The account, now that the SMTP user exists. Each assert mode of the inventory script reads the
+   caller first and exits 1 without judging anything when the caller is not in `471112560111`. Both
+   must print 0: no IAM user in the account carries an inline policy, and everything under the path
+   `/openvaa/` has customer-managed policies only. The last two lines read the SMTP user's own policies: no inline
    policy, and the send policy attached.
 
    ```bash
