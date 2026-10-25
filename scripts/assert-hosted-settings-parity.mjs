@@ -72,9 +72,12 @@
  *   no type trap            No conditional has an empty object as a branch: Terraform would unify the branches into a
  *                           map of strings, and booleans and numbers would be sent as strings.
  *   one writer              The CLI's command that pushes the local configuration to a hosted project appears in no
- *                           tracked file under `.github/workflows/`, `infra/` or `scripts/`, and in no tracked
- *                           `package.json`. This guard's source and its fixture directory are excluded by path; the
- *                           source builds the command from its words, so it does not hold the command whole.
+ *                           tracked file under `.github/workflows/`, `infra/`, `scripts/`, `apps/supabase/` or
+ *                           `tests/scripts/`, and in no tracked `package.json`. It is matched however it is spelled:
+ *                           with a version pin such as `@latest` on the CLI's name, with flags before or after its
+ *                           middle word, split across a line continuation, or as the words of an array. This guard's
+ *                           source and its fixture directory are excluded by path; the source builds the command from
+ *                           its words, so it does not hold the command whole.
  *
  * The module's code is its `.tf` text with comments removed and strings kept, so a key named in a comment counts as
  * neither present nor misplaced, and a key quoted as a map key counts as written.
@@ -537,10 +540,21 @@ const HCL_OWNED_KEYS = [
 
 /** The words of the CLI's command that would be a second writer of hosted settings; never held whole in this file. */
 const PUSH_WORDS = ['supabase', 'config', 'push'];
-const PUSH_COMMAND = new RegExp(`\\b${PUSH_WORDS.join('[\\s\\\\]+')}\\b`, 'g');
+/** What may stand between two words: blanks, line continuations, and the quotes, commas and brackets of an array. */
+const PUSH_GAP = `[\\s\\\\"',\\[\\]]+`;
+/** A flag between two words, such as a global `--debug` or `--workdir <dir>`, with its value if it takes one. */
+const PUSH_FLAG = `--?[A-Za-z][\\w-]*(?:=[^\\s"',\\]]*|${PUSH_GAP}(?!-)[^\\s"',\\]]+)?`;
+/**
+ * The command, however it is spelled: the CLI name with an optional `@<version>` (as `npx` and `bunx` run it), then the
+ * two words, with any number of flags in either gap.
+ */
+const PUSH_COMMAND = new RegExp(
+  `\\b${PUSH_WORDS[0]}(?:@[^\\s"',\\]]+)?(?:${PUSH_GAP}${PUSH_FLAG})*${PUSH_GAP}${PUSH_WORDS[1]}(?:${PUSH_GAP}${PUSH_FLAG})*${PUSH_GAP}${PUSH_WORDS[2]}\\b`,
+  'g'
+);
 
 /** The tracked files scanned for a second writer, and the paths of this guard excluded from the scan. */
-const WRITER_DIRS = ['.github/workflows/', 'infra/', 'scripts/'];
+const WRITER_DIRS = ['.github/workflows/', 'infra/', 'scripts/', 'apps/supabase/', 'tests/scripts/'];
 const WRITER_SELF_PATHS = [SELF, 'scripts/fixtures/hosted-settings-parity/'];
 const writerInScope = (file) =>
   (WRITER_DIRS.some((d) => file.startsWith(d)) || file === 'package.json' || file.endsWith('/package.json')) &&
@@ -2509,6 +2523,51 @@ const CASES = [
     edit: addWriter('infra/scripts/apply.sh', `#!/usr/bin/env bash\n${pushLine(' \\\n  ')}\n`),
     expected: ['writer/config-push'],
     files: ['infra/scripts/apply.sh']
+  },
+  {
+    name: 'the push command run through npx with a version pin',
+    edit: addWriter('infra/scripts/apply.sh', `npx ${PUSH_WORDS[0]}@latest ${PUSH_WORDS[1]} ${PUSH_WORDS[2]}\n`),
+    expected: ['writer/config-push']
+  },
+  {
+    name: 'the push command run through bunx with an exact version',
+    edit: addWriter('infra/scripts/apply.sh', `bunx ${PUSH_WORDS[0]}@2.40.0 ${PUSH_WORDS[1]} ${PUSH_WORDS[2]}\n`),
+    expected: ['writer/config-push']
+  },
+  {
+    name: 'the push command with a global flag before its middle word',
+    edit: addWriter('scripts/settings.sh', `${PUSH_WORDS[0]} --debug ${PUSH_WORDS[1]} ${PUSH_WORDS[2]}\n`),
+    expected: ['writer/config-push']
+  },
+  {
+    name: 'the push command with a flag and its value before its middle word',
+    edit: addWriter(
+      'scripts/settings.sh',
+      `${PUSH_WORDS[0]} --workdir apps/supabase ${PUSH_WORDS[1]} --debug ${PUSH_WORDS[2]}\n`
+    ),
+    expected: ['writer/config-push']
+  },
+  {
+    name: 'the push command as the words of an exec-form array',
+    edit: addWriter('scripts/settings.mjs', `spawnSync('npx', ["${PUSH_WORDS.join('", "')}"]);\n`),
+    expected: ['writer/config-push']
+  },
+  {
+    name: 'the push command in a script under apps/supabase/',
+    edit: addWriter('apps/supabase/scripts/sync.sh', `${pushLine()}\n`),
+    expected: ['writer/config-push'],
+    files: ['apps/supabase/scripts/sync.sh']
+  },
+  {
+    name: 'the push command in a script under tests/scripts/',
+    edit: addWriter('tests/scripts/reset.sh', `${pushLine()}\n`),
+    expected: ['writer/config-push'],
+    files: ['tests/scripts/reset.sh']
+  },
+  {
+    name: 'another command of the CLI that pushes the database, not the settings (passes)',
+    edit: addWriter('apps/supabase/scripts/migrate.sh', `npx ${PUSH_WORDS[0]}@latest db ${PUSH_WORDS[2]} --local\n`),
+    expected: []
   },
   {
     name: "the guard's own source and fixture directory holding the push command (excluded by path)",
