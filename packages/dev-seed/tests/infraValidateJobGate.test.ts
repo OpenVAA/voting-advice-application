@@ -5,10 +5,10 @@
  *
  * The job's actions are pinned by commit SHA because a tag can be moved to other code. The job names the roots it must have validated, so an empty or short glob fails instead of passing on nothing; this spec keeps those names in the job.
  *
- * The state keys are read from the backend blocks on disk. Two roots sharing a key would overwrite each other's state, and a key outside the `hand/` and `pipeline/` prefixes would fall outside the deny statements that keep the pipeline away from the hand-applied state. The bootstrap root builds the deploy role's state access from its `pipeline_state_key` variable, and the pipeline root writes to its backend key; a difference would otherwise show only as a refused request in a workflow.
+ * The state keys are read from the backend blocks on disk, in whichever `.tf` file of a root they sit, and every root must yield one, so a root whose backend the reader missed fails by name instead of dropping out. Two roots sharing a key would overwrite each other's state, and a key outside the `hand/` and `pipeline/` prefixes would fall outside the deny statements that keep the pipeline away from the hand-applied state. The bootstrap root builds the deploy role's state access from its `pipeline_state_key` variable, and the pipeline root writes to its backend key; a difference would otherwise show only as a refused request in a workflow.
  */
 
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -115,44 +115,70 @@ const USES = JOB_BLOCK.split('\n')
   .filter((line) => /^(-\s+)?uses:/.test(line))
   .map((line) => line.replace(/^(-\s+)?uses:\s*/, ''));
 
+/** The roots that keep their state in a local backend on purpose, and so have no S3 key. */
+const LOCAL_BACKEND_ROOTS = ['infra/envs/scratch/supabase'];
+
+/** One backend block of a root: the file it is in, its type, and its key when it is an S3 backend. */
+type Backend = { file: string; type: string; key?: string };
+
 /**
- * Read the S3 backend key of one Terraform file.
- * @param relativePath - The file, relative to the repository root.
- * @returns The key, or `undefined` when the file declares no S3 backend.
+ * Read the backend blocks of one root from all of its `.tf` files, wherever in them the block sits.
+ * @param files - The root's `.tf` files, each as its name and text.
+ * @returns One entry per backend block.
  */
-function s3BackendKey(relativePath: string): string | undefined {
-  const text = readFileSync(resolve(REPO_ROOT, relativePath), 'utf8')
-    .split('\n')
-    .filter((line) => !/^\s*(#|\/\/)/.test(line))
-    .join('\n');
-  const block = /backend\s+"s3"\s*\{([^}]*)\}/.exec(text);
-  if (!block) return undefined;
-  const key = /^\s*key\s*=\s*"([^"]*)"/m.exec(block[1]);
-  if (!key) throw new Error(`${relativePath} declares an S3 backend whose key could not be read`);
-  return key[1];
+function rootBackends(files: Array<{ file: string; text: string }>): Array<Backend> {
+  const found: Array<Backend> = [];
+  for (const { file, text } of files) {
+    const code = text
+      .split('\n')
+      .filter((line) => !/^\s*(#|\/\/)/.test(line))
+      .join('\n');
+    for (const block of code.matchAll(/backend\s+"([^"]*)"\s*\{([^}]*)\}/g)) {
+      if (block[1] !== 's3') {
+        found.push({ file, type: block[1] });
+        continue;
+      }
+      const key = /^\s*key\s*=\s*"([^"]*)"/m.exec(block[2]);
+      if (!key) throw new Error(`${file} declares an S3 backend whose key could not be read`);
+      found.push({ file, type: 's3', key: key[1] });
+    }
+  }
+  return found;
 }
 
 /**
- * Collect the S3 backend key of the bootstrap root and of every root directly under `infra/envs/<env>/`. A root with another backend, such as a local one, has no key and is skipped.
- * @returns One entry per root with an S3 backend.
+ * Every Terraform root the job validates: the bootstrap root and every directory directly under `infra/envs/<env>/` that holds a `.tf` file, each with the backends read from all of its `.tf` files.
+ * @returns One entry per root.
  */
-function backendKeys(): Array<{ root: string; key: string }> {
-  const files = ['infra/bootstrap/backend.tf'];
+function roots(): Array<{ root: string; backends: Array<Backend> }> {
+  const dirs = ['infra/bootstrap'];
   const envsDir = resolve(REPO_ROOT, 'infra/envs');
   for (const env of readdirSync(envsDir, { withFileTypes: true })) {
     if (!env.isDirectory()) continue;
-    for (const root of readdirSync(resolve(envsDir, env.name), { withFileTypes: true })) {
-      if (!root.isDirectory()) continue;
-      const file = `infra/envs/${env.name}/${root.name}/main.tf`;
-      if (existsSync(resolve(REPO_ROOT, file))) files.push(file);
-    }
+    for (const root of readdirSync(resolve(envsDir, env.name), { withFileTypes: true }))
+      if (root.isDirectory()) dirs.push(`infra/envs/${env.name}/${root.name}`);
   }
-  const keys: Array<{ root: string; key: string }> = [];
-  for (const file of files) {
-    const key = s3BackendKey(file);
-    if (key !== undefined) keys.push({ root: dirname(file), key });
-  }
-  return keys;
+  return dirs
+    .map((root) => {
+      const names = readdirSync(resolve(REPO_ROOT, root)).filter((name) => name.endsWith('.tf'));
+      const files = names.map((name) => ({
+        file: `${root}/${name}`,
+        text: readFileSync(resolve(REPO_ROOT, root, name), 'utf8')
+      }));
+      return { root, files };
+    })
+    .filter(({ files }) => files.length > 0)
+    .map(({ root, files }) => ({ root, backends: rootBackends(files) }));
+}
+
+/**
+ * The S3 state key of every root that has one.
+ * @returns One entry per root with an S3 backend.
+ */
+function backendKeys(): Array<{ root: string; key: string }> {
+  return roots().flatMap(({ root, backends }) =>
+    backends.flatMap(({ key }) => (key === undefined ? [] : [{ root, key }]))
+  );
 }
 
 describe('the infra-validate job is read whole', () => {
@@ -312,6 +338,34 @@ describe('the job-shape readers catch what they exist to catch', () => {
 });
 
 describe('the state keys of the Terraform roots stay apart', () => {
+  it('reads one backend in every root, an S3 one unless the root is allowed a local one', () => {
+    // A root whose backend the reader missed, wherever the block sits, would drop out of every check below.
+    for (const { root, backends } of roots()) {
+      expect(backends, root).toHaveLength(1);
+      if (LOCAL_BACKEND_ROOTS.includes(root)) expect(backends[0].type, root).toBe('local');
+      else expect(backends[0].type, root).toBe('s3');
+    }
+  });
+
+  it('yields an S3 key for every root the job must validate, except the allowed local ones', () => {
+    const withKey = new Set(backendKeys().map(({ root }) => root));
+    for (const root of REQUIRED_ROOTS) expect(withKey.has(root), root).toBe(true);
+    for (const root of LOCAL_BACKEND_ROOTS) expect(roots().map((r) => r.root)).toContain(root);
+  });
+
+  it('reads a backend from backend.tf as readily as from main.tf', () => {
+    // Red control on made-up files: the layout of infra/bootstrap, where the backend has a file of its own.
+    const backends = rootBackends([
+      { file: 'main.tf', text: 'provider "aws" {}\n' },
+      {
+        file: 'backend.tf',
+        text: 'terraform {\n  # backend "s3" { key = "not/this" }\n  backend "s3" {\n    key = "hand/x/terraform.tfstate"\n  }\n}\n'
+      }
+    ]);
+    expect(backends).toEqual([{ file: 'backend.tf', type: 's3', key: 'hand/x/terraform.tfstate' }]);
+    expect(rootBackends([{ file: 'main.tf', text: 'terraform {}\n' }])).toEqual([]);
+  });
+
   it('gives no two roots the same state key', () => {
     const keys = backendKeys().map(({ key }) => key);
     expect(keys.length).toBeGreaterThan(0);
@@ -333,6 +387,6 @@ describe('the state keys of the Terraform roots stay apart', () => {
     const tfvars = readFileSync(resolve(REPO_ROOT, 'infra/bootstrap/terraform.tfvars'), 'utf8');
     const declared = /^\s*pipeline_state_key\s*=\s*"([^"]*)"/m.exec(tfvars)?.[1];
     expect(declared, 'pipeline_state_key is missing from infra/bootstrap/terraform.tfvars').toBeTruthy();
-    expect(s3BackendKey('infra/envs/staging/aws/main.tf')).toBe(declared);
+    expect(backendKeys().find(({ root }) => root === 'infra/envs/staging/aws')?.key).toBe(declared);
   });
 });
