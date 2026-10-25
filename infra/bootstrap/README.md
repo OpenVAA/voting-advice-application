@@ -624,6 +624,9 @@ export TF_VAR_alert_email='<your-address>'
 
    Expected: `s5_budget=100.0,USD,COST,MONTHLY` or the same with another number of zeros, and two
    notification lines, `ACTUAL` at 80 and `FORECASTED` at 100, both `GREATER_THAN` and `PERCENTAGE`.
+   On 2026-10-25 the last field of both notification lines read `None` instead of `PERCENTAGE`,
+   while the configuration sets `PERCENTAGE` and the plan of item 6 showed no change. Read `None`
+   there as the same result, provided item 6 exits 0.
 
 6. Only for the outcome `fired`: a plan with no `-var` must show no change.
 
@@ -644,7 +647,10 @@ it stays at the test amount, so that the alert can still fire. Keep giving
 shows the limit changing to 100, because the tracked `terraform.tfvars` says 100 while the account
 holds the test amount. For `no-alert-can-fire` there is nothing else to do until spend appears; then
 run this step again. For `no-mail`, check the address you exported, your spam folder, and whether the
-spend is of a kind the budget counts; then run this step again.
+spend is of a kind the budget counts; then run this step again. The AWS Budgets console shows whether
+the alert has been triggered, which tells a mail that was not sent from one that was not delivered. On
+2026-10-23 the console showed the actual alert as triggered while no mail arrived, because the
+address had not been confirmed: check that the address you give can receive mail.
 
 Return: `answer_outcome=fired`, `answer_outcome=no-alert-can-fire` or `answer_outcome=no-mail`; the
 `s1_` lines; `answer_test_amount=`, and `s2_test_apply_exit=` if you re-applied; for `fired`, the three
@@ -681,3 +687,6 @@ it.
 | 2026-10-21 | Step 5: given two resources in one call, the simulator returns one result per action rather than one per resource, so item 8(a) makes one call per resource.                                                                                                                  |
 | 2026-10-21 | Step 6: Terraform held the state lock while an apply waited at its approval prompt: a second plan failed on the lock, and the lock object was present, then gone once the prompt was answered `no`.                                                                           |
 | 2026-10-21 | Step 6: the budget read back at the 1 USD test amount, with a computed spend of 6.475 USD.                                                                                                                                                                                    |
+| 2026-10-22 | Step 7, item 1: the budget read back at 1 USD with a computed spend of 6.828 USD, past the 0.80 USD threshold of its actual alert, so no lower test amount was needed.                                                                                                        |
+| 2026-10-23 | Step 7, item 3: the AWS Budgets console showed the actual alert of the 1 USD budget as triggered. No mail reached the operator within two days; the operator gave the reason as an address that had not been confirmed. Delivery to the mailbox was not seen.                 |
+| 2026-10-25 | Step 7, items 4 to 6: the budget was replaced at 100 USD with no `-var` (one resource replaced). It read back as a monthly cost budget of 100 USD with the actual alert above 80 and the forecast alert above 100, and a second plan with no `-var` showed no change.         |
