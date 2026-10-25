@@ -214,6 +214,18 @@ describe('the hosted-settings parity guard still has teeth', () => {
     expect(result.stdout).toContain('auth.external.github/enabled');
   });
 
+  it('fails when a further map is merged into the auth settings the module sends', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'hosted-settings-parity-module-'));
+    COPIES.push(dir);
+    const moduleDir = resolve(REPO_ROOT, 'infra/modules/supabase');
+    for (const name of readdirSync(moduleDir))
+      if (name.endsWith('.tf') || name === 'hosted-settings.json') copyFileSync(join(moduleDir, name), join(dir, name));
+    edit(join(dir, 'settings.tf'), /(local\.auth_smtp,\n)(\s*\))/, '$1    var.extra_auth,\n$2');
+    const result = runGuard(['--module-dir', dir]);
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain('module/local.auth');
+  });
+
   it('reproduces its embedded cases in self-test mode', () => {
     expect(runGuard(['--self-test']).status).toBe(0);
   });

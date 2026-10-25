@@ -66,6 +66,12 @@
  *                           address, the redirect allow list, the seven rate limits and the six SMTP keys) is written in
  *                           the module's code, is absent from the JSON and is a known key; no other known key is written
  *                           there. A misspelled HCL key is then seen as the correct one going missing.
+ *   nothing else merged     `local.auth` is exactly `merge(local.hosted.auth, local.auth_hook,
+ *                           local.auth_send_email_hook, local.auth_rate_limits, local.auth_origin, local.auth_smtp)`, in
+ *                           that order, and `local.api` is exactly `local.hosted.api`, each defined once. No other
+ *                           `merge` is called, no file is read or string decoded besides `hosted-settings.json`, and no
+ *                           variable has a type that holds `map` or `any`: each of these could bring in a key no word
+ *                           of the code names, and so set a compared key with the comparison still green.
  *   the project protected   `main.tf` holds a `supabase_project` resource, and every such block, read by counting
  *                           braces, holds a `lifecycle` block with `prevent_destroy = true` and an `ignore_changes` list
  *                           naming `database_password`.
@@ -538,6 +544,27 @@ const HCL_OWNED_KEYS = [
   'smtp_pass'
 ];
 
+/** The read of the compared file into `local.hosted`, the one file the module may read. */
+const HOSTED_READ =
+  /(?<![A-Za-z0-9_])hosted\s*=\s*jsondecode\(\s*file\(\s*"(?:[^"\n]*\/)?hosted-settings\.json"\s*\)\s*\)/;
+
+/** A call that reads a file or decodes a string, any of which could bring keys into the settings from elsewhere. */
+const OTHER_READ =
+  /(?<![A-Za-z0-9_])(?:jsondecode|yamldecode|csvdecode|base64decode|textdecodebase64|file|filebase64|templatefile|templatestring|fileset)\s*\(/g;
+
+/** The maps `local.auth` merges, in order: the JSON's auth group, the two hook groups, then the four the HCL builds. */
+const AUTH_MERGE = [
+  'local.hosted.auth',
+  'local.auth_hook',
+  'local.auth_send_email_hook',
+  'local.auth_rate_limits',
+  'local.auth_origin',
+  'local.auth_smtp'
+];
+
+/** What `local.api` is: the JSON's api group and nothing else. */
+const API_VALUE = 'local.hosted.api';
+
 /** The words of the CLI's command that would be a second writer of hosted settings; never held whole in this file. */
 const PUSH_WORDS = ['supabase', 'config', 'push'];
 /** What may stand between two words: blanks, line continuations, and the quotes, commas and brackets of an array. */
@@ -818,10 +845,17 @@ function topLevelArguments(body, firstLine) {
   let inString = false;
   let line = firstLine;
   let lineDepth = 1;
+  let lineStart = 1;
   let text = '';
   const flush = () => {
     const m = lineDepth === 1 ? /^\s*([A-Za-z0-9_-]+)\s*=\s*(.*?)\s*$/.exec(text) : null;
-    if (m) found.push({ name: m[1], value: m[2], line });
+    if (m)
+      found.push({
+        name: m[1],
+        value: m[2],
+        line,
+        expression: fullExpression(body, lineStart + text.indexOf('=') + 1)
+      });
   };
   for (let i = 1; i < body.length; i += 1) {
     const c = body[i];
@@ -829,6 +863,7 @@ function topLevelArguments(body, firstLine) {
       flush();
       line += 1;
       lineDepth = depth;
+      lineStart = i + 1;
       inString = false;
       text = '';
       continue;
@@ -850,6 +885,55 @@ function topLevelArguments(body, firstLine) {
   }
   flush();
   return found;
+}
+
+/**
+ * The whole expression that starts at `start`, across lines: up to the first line end, or the block's closing brace,
+ * at which every bracket opened since `start` is closed again.
+ */
+function fullExpression(body, start) {
+  let depth = 0;
+  let inString = false;
+  let i = start;
+  for (; i < body.length; i += 1) {
+    const c = body[i];
+    if (inString) {
+      if (c === '\\') i += 1;
+      else if (c === '"' || c === '\n') inString = false;
+    } else if (c === '"') inString = true;
+    else if ('{[('.includes(c)) depth += 1;
+    else if ('}])'.includes(c)) {
+      if (depth === 0) break;
+      depth -= 1;
+    } else if (c === '\n' && depth === 0) break;
+  }
+  return body.slice(start, i).trim();
+}
+
+/** The arguments of a call written as its whole text, `name(a, b, ...)`, split at its top-level commas; null otherwise. */
+function callArguments(expression, name) {
+  const m = new RegExp(`^${name}\\s*\\(([\\s\\S]*)\\)$`).exec(expression);
+  if (!m) return null;
+  const args = [];
+  let depth = 0;
+  let inString = false;
+  let from = 0;
+  const inner = m[1];
+  for (let i = 0; i < inner.length; i += 1) {
+    const c = inner[i];
+    if (inString) {
+      if (c === '\\') i += 1;
+      else if (c === '"') inString = false;
+    } else if (c === '"') inString = true;
+    else if ('{[('.includes(c)) depth += 1;
+    else if ('}])'.includes(c)) depth -= 1;
+    else if (c === ',' && depth === 0) {
+      args.push(inner.slice(from, i).trim());
+      from = i + 1;
+    }
+  }
+  args.push(inner.slice(from).trim());
+  return args.filter((a) => a !== '');
 }
 
 /** A module source that names the Supabase module. */
@@ -1419,9 +1503,7 @@ function checkModule(module, settings, settingsFile, report) {
   const firstFileWith = (re) => files.find((f) => re.test(f.code))?.file ?? DIR;
 
   // The JSON is encoded: read from its file, every group read, the settings resource taking the two encoded locals.
-  if (
-    !/(?<![A-Za-z0-9_])hosted\s*=\s*jsondecode\(\s*file\(\s*"(?:[^"\n]*\/)?hosted-settings\.json"\s*\)\s*\)/.test(all)
-  )
+  if (!HOSTED_READ.test(all))
     report(
       DIR,
       'module/hosted-settings.json',
@@ -1452,6 +1534,58 @@ function checkModule(module, settings, settingsFile, report) {
         `module/supabase_settings.${attribute}`,
         `no supabase_settings resource takes ${attribute} = jsonencode(local.${attribute}), so the settings built from the JSON are not what is sent`
       );
+
+  // What local.auth and local.api are built from: nothing but the expected maps, and no other file read.
+  const localArguments = files.flatMap((f) =>
+    blocksAt(f.code, '(?<![A-Za-z0-9_])locals\\s*\\{')
+      .filter((b) => b.body !== null)
+      .flatMap((b) => topLevelArguments(b.body, lineAt(f.code, b.open)).map((a) => ({ file: f.file, ...a })))
+  );
+  const oneLine = (expression) => expression.replace(/\s+/g, ' ');
+  const authDefinitions = localArguments.filter((a) => a.name === 'auth');
+  const authIsMerge = authDefinitions.length === 1 && callArguments(authDefinitions[0].expression, 'merge') !== null;
+  if (authDefinitions.length !== 1)
+    report(DIR, 'module/local.auth', `local.auth is defined ${authDefinitions.length} times, not once`);
+  else if ((callArguments(authDefinitions[0].expression, 'merge') ?? []).join(', ') !== AUTH_MERGE.join(', '))
+    report(
+      authDefinitions[0].file,
+      'module/local.auth',
+      `local.auth is ${oneLine(authDefinitions[0].expression)}, not merge(${AUTH_MERGE.join(', ')}) in that order; any other map merged into it could set a compared key, and the comparison would stay green`
+    );
+  const apiDefinitions = localArguments.filter((a) => a.name === 'api');
+  if (apiDefinitions.length !== 1)
+    report(DIR, 'module/local.api', `local.api is defined ${apiDefinitions.length} times, not once`);
+  else if (apiDefinitions[0].expression !== API_VALUE)
+    report(
+      apiDefinitions[0].file,
+      'module/local.api',
+      `local.api is ${oneLine(apiDefinitions[0].expression)}, not ${API_VALUE}; anything else could set a compared key, and the comparison would stay green`
+    );
+  const merges = (all.match(/(?<![A-Za-z0-9_])merge\s*\(/g) ?? []).length - (authIsMerge ? 1 : 0);
+  if (merges > 0)
+    report(
+      firstFileWith(/(?<![A-Za-z0-9_])merge\s*\(/),
+      'module/merge',
+      `the module's code calls merge ${merges} time(s) besides local.auth; a merged map can carry any key into the settings that are sent`
+    );
+  const otherReads = all.replace(HOSTED_READ, '').match(OTHER_READ) ?? [];
+  if (otherReads.length > 0)
+    report(
+      firstFileWith(OTHER_READ),
+      'module/decode',
+      `the module's code reads or decodes a file or a string besides hosted-settings.json (${[...new Set(otherReads.map((r) => r.replace(/\s*\($/, '')))].join(', ')}); a value read that way can carry any key into the settings that are sent`
+    );
+  for (const { file, code } of files)
+    for (const { body, open } of blocksAt(code, '(?<![A-Za-z0-9_])variable\\s+"?([A-Za-z0-9_-]+)"?\\s*\\{')) {
+      if (body === null) continue;
+      const type = topLevelArguments(body, lineAt(code, open)).find((a) => a.name === 'type');
+      if (type !== undefined && /(?<![A-Za-z0-9_])(?:any|map)(?![A-Za-z0-9_])/.test(type.expression))
+        report(
+          file,
+          'module/variable-type',
+          `line ${type.line}: a variable of type ${oneLine(type.expression)} has keys its type does not fix, so it can carry any key into the settings that are sent`
+        );
+    }
 
   // Known keys: each key of a settings group known to the settings attribute it is sent through.
   const jsonOwned = new Set();
@@ -1815,7 +1949,10 @@ resource "supabase_settings" "smtp_secret" {
   count = var.smtp == null ? 0 : 1
 
   project_ref = supabase_project.this.id
-  auth        = jsonencode({ smtp_pass = var.smtp_password })
+  auth = jsonencode({
+    smtp_user = var.smtp_user
+    smtp_pass = var.smtp_password
+  })
 }
 `;
 
@@ -1839,7 +1976,6 @@ locals {
   auth_smtp = var.smtp == null ? null : {
     smtp_host        = var.smtp.host
     smtp_port        = var.smtp.port
-    smtp_user        = var.smtp.user
     smtp_admin_email = var.smtp.admin_email
     smtp_sender_name = var.smtp.sender_name
   }
@@ -1876,11 +2012,16 @@ variable "smtp" {
   type = object({
     host        = string
     port        = string
-    user        = string
     admin_email = string
     sender_name = string
   })
   default = null
+}
+
+variable "smtp_user" {
+  type      = string
+  sensitive = true
+  default   = null
 }
 
 variable "smtp_password" {
@@ -2384,7 +2525,7 @@ const CASES = [
   {
     name: 'the settings file without its read of the auth group (the hook groups still read)',
     edit: editModule('settings.tf', '    local.hosted.auth,\n', '    {},\n'),
-    expected: ['module/local.hosted.auth']
+    expected: ['module/local.hosted.auth', 'module/local.auth']
   },
   {
     name: 'the settings file without its read of the send-email hook group',
@@ -2398,12 +2539,12 @@ const CASES = [
   {
     name: 'the auth group read only in a comment',
     edit: editModule('settings.tf', '    local.hosted.auth,\n', '    # local.hosted.auth,\n'),
-    expected: ['module/local.hosted.auth']
+    expected: ['module/local.hosted.auth', 'module/local.auth']
   },
   {
     name: 'the module reading another file than hosted-settings.json',
     edit: editModule('settings.tf', '/hosted-settings.json")', '/settings.json")'),
-    expected: ['module/hosted-settings.json']
+    expected: ['module/hosted-settings.json', 'module/decode']
   },
   {
     name: 'the settings resource taking another expression than the encoded auth local',
@@ -2442,12 +2583,70 @@ const CASES = [
       '  api = local.hosted.api',
       '  api = merge(local.hosted.api, { "max_rows" = 1000 })'
     ),
-    expected: ['owned/max_rows']
+    expected: ['owned/max_rows', 'module/local.api', 'module/merge']
   },
   {
     name: 'a known key the JSON does not hold, sent from the HCL',
     edit: editModule('settings.tf', '  api = local.hosted.api', '  api = merge(local.hosted.api, { db_pool = 10 })'),
-    expected: ['owned/db_pool']
+    expected: ['owned/db_pool', 'module/local.api', 'module/merge']
+  },
+  // What local.auth and local.api are built from.
+  {
+    name: 'a map(any) variable merged last into local.auth',
+    edit: (i) => {
+      editModule('settings.tf', '    local.auth_smtp,\n  )', '    local.auth_smtp,\n    var.extra_auth,\n  )')(i);
+      editModule(
+        'variables.tf',
+        'variable "smtp" {',
+        'variable "extra_auth" {\n  type    = map(any)\n  default = {}\n}\n\nvariable "smtp" {'
+      )(i);
+    },
+    expected: ['module/local.auth', 'module/variable-type']
+  },
+  {
+    name: 'a second JSON file merged last into local.auth',
+    edit: editModule(
+      'settings.tf',
+      '    local.auth_smtp,\n  )',
+      '    local.auth_smtp,\n    jsondecode(file("${path.module}/extra.json")),\n  )'
+    ),
+    expected: ['module/local.auth', 'module/decode']
+  },
+  {
+    name: 'the maps of local.auth in another order',
+    edit: editModule(
+      'settings.tf',
+      '    local.hosted.auth,\n    local.auth_hook,\n',
+      '    local.auth_hook,\n    local.hosted.auth,\n'
+    ),
+    expected: ['module/local.auth']
+  },
+  {
+    name: 'a map merged into one of the maps local.auth merges',
+    edit: editModule(
+      'settings.tf',
+      '= { for k, v in local.hosted.auth_hook : k => v if var.enable_access_token_hook }',
+      '= merge(var.extra_hook, { for k, v in local.hosted.auth_hook : k => v if var.enable_access_token_hook })'
+    ),
+    expected: ['module/merge']
+  },
+  {
+    name: 'a second file decoded into a local',
+    edit: editModule(
+      'settings.tf',
+      '  api = local.hosted.api',
+      '  api   = local.hosted.api\n  extra = yamldecode(file("${path.module}/extra.yaml"))'
+    ),
+    expected: ['module/decode']
+  },
+  {
+    name: 'local.auth defined twice',
+    edit: editModule(
+      'settings.tf',
+      '  api = local.hosted.api',
+      '  api = local.hosted.api\n}\n\nlocals {\n  auth = local.hosted.auth'
+    ),
+    expected: ['module/local.auth', 'module/merge']
   },
   {
     name: 'an HCL-owned key misspelled',
