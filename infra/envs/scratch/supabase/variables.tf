@@ -25,13 +25,13 @@ variable "public_origin" {
 }
 
 variable "enable_access_token_hook" {
-  description = "Whether the custom access token hook is switched on."
+  description = "Whether the custom access token hook is switched on. Set in terraform.tfvars: there is no default here, so a root that leaves it out fails at plan instead of taking a value no file shows."
   type        = bool
-  default     = true
+  nullable    = false
 }
 
 variable "enable_send_email_hook" {
-  description = "Whether the send-email hook is switched on. While it is on, the auth service sends no mail of its own."
+  description = "Whether the send-email hook is switched on. While it is on, the auth service sends no mail of its own. Set in terraform.tfvars: there is no default here, so a root that leaves it out fails at plan instead of taking a value no file shows."
   type        = bool
-  default     = true
+  nullable    = false
 }

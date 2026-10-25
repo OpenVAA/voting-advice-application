@@ -25,29 +25,30 @@ variable "public_origin" {
 }
 
 variable "enable_access_token_hook" {
-  description = "Whether the custom access token hook is switched on."
+  description = "Whether the custom access token hook is switched on. Set in terraform.tfvars: there is no default here, so a root that leaves it out fails at plan instead of taking a value no file shows."
   type        = bool
-  default     = true
+  nullable    = false
 }
 
 variable "enable_send_email_hook" {
-  description = "Whether the send-email hook is switched on. While it is on, the auth service sends no mail of its own."
+  description = "Whether the send-email hook is switched on. While it is on, the auth service sends no mail of its own. Set in terraform.tfvars: there is no default here, so a root that leaves it out fails at plan instead of taking a value no file shows."
   type        = bool
-  default     = true
+  nullable    = false
 }
 
 variable "auth_rate_limits" {
-  description = "Hosted auth rate limits. Any limit left out takes the module's default."
+  description = "Hosted auth rate limits. Any limit left out, or set to null, takes the module's default: the attributes here carry no default of their own, so the module's are the only ones."
   type = object({
-    rate_limit_otp             = optional(number, 30)
-    rate_limit_verify          = optional(number, 30)
-    rate_limit_token_refresh   = optional(number, 150)
-    rate_limit_anonymous_users = optional(number, 30)
-    rate_limit_sms_sent        = optional(number, 30)
-    rate_limit_web3            = optional(number, 30)
-    rate_limit_email_sent      = optional(number, 100)
+    rate_limit_otp             = optional(number)
+    rate_limit_verify          = optional(number)
+    rate_limit_token_refresh   = optional(number)
+    rate_limit_anonymous_users = optional(number)
+    rate_limit_sms_sent        = optional(number)
+    rate_limit_web3            = optional(number)
+    rate_limit_email_sent      = optional(number)
   })
-  default = {}
+  default  = {}
+  nullable = false
 }
 
 variable "smtp" {

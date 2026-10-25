@@ -611,8 +611,9 @@ four classes:
 disagrees.
 
 Each hook has a switch of its own in every Supabase root's `terraform.tfvars`:
-`enable_access_token_hook` and `enable_send_email_hook`, both `true` by default and in each root. While
-a switch is `false`, that hook's keys are left out of what is sent. The guard fails on a switch set to
+`enable_access_token_hook` and `enable_send_email_hook`, both `true` in each root. A root declares
+them with no default, so a `terraform.tfvars` that leaves one out fails at plan. While a switch is
+`false`, that hook's keys are left out of what is sent. The guard fails on a switch set to
 `false` unless the assignment carries a comment that begins `hook off until` and gives the reason, for
 example `enable_send_email_hook = false # hook off until <reason>`; such a root passes and is named in
 the guard's report.
