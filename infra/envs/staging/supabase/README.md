@@ -299,12 +299,9 @@ REF='<the throwaway project ref>'
    echo "s1_plan_sha256=$(shasum -a 256 tfplan | cut -d' ' -f1)"
    ```
 
-   If they differ, stop here: do not apply, remove the stale plan file, paste the lines, write
+   If they differ, stop here: do not apply, remove the stale plan file with
+   `rm -f tfplan; echo "s2_plan_file_removed=yes"`, paste the lines, write
    `answer_applied=not-applied`, and run the last item of Step 7.
-
-   ```bash
-   rm -f tfplan; echo "s2_plan_file_removed=yes"
-   ```
 
 2. Apply the saved plan, print its summary line, and remove the plan file whether the apply succeeded
    or failed: the file holds the database password and is of no use after this step.
