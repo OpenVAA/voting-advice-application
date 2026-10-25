@@ -71,8 +71,14 @@ variable "smtp" {
 }
 
 variable "smtp_password" {
-  description = "SMTP password, taken from TF_VAR_smtp_password in the operator's shell and never written to a tracked file. Used only when smtp is set; it is sent through a settings resource of its own so that the main auth diff stays readable."
+  description = "SMTP password, taken from TF_VAR_smtp_password in the operator's shell and never written to a tracked file. Used only when smtp is set, and then required: a plan with smtp set and no password fails. It is sent through a settings resource of its own so that the main auth diff stays readable."
   type        = string
   sensitive   = true
   default     = null
+
+  # The plan masks the value, so a missing password would otherwise be sent as null unseen.
+  validation {
+    condition     = var.smtp == null || (var.smtp_password != null && var.smtp_password != "")
+    error_message = "smtp is set, so smtp_password must be set too: export TF_VAR_smtp_password in the shell that plans."
+  }
 }

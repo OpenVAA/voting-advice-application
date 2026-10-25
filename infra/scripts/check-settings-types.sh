@@ -228,7 +228,7 @@ expect_present "$AUTH" "${HOOK_KEYS[@]}"
 
 # --- smtp given -------------------------------------------------------------------------------
 CASE=smtp
-encode_local auth "${BASE_VARS[@]}" -var "smtp=$SMTP_VALUE"
+encode_local auth "${BASE_VARS[@]}" -var "smtp=$SMTP_VALUE" -var "smtp_password=unused-placeholder"
 AUTH="$ENC"
 check_types "$AUTH"
 jq -e --arg k "$MAIL_RATE_KEY" '.[$k] == 100' <<< "$AUTH" > /dev/null || finding "$MAIL_RATE_KEY is not the bare number 100"
