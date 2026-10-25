@@ -9,6 +9,8 @@
  *   aws_iam_user_policy, aws_iam_role_policy, aws_iam_group_policy — the inline policy resource on a user, a role and a group.
  *   inline_policy — the inline policy block of a role, or any other use of the word.
  *   aws_ssoadmin_permission_set_inline_policy — an inline policy on an Identity Center permission set, which lands as an inline policy on the role that set creates in each account.
+ *   awscc_iam_*_policy, awscc_iam_* policies — the same inline policies through the Cloud Control provider: the `awscc_iam_user_policy`, `awscc_iam_role_policy` and `awscc_iam_group_policy` resources, and a `policies` argument in an `awscc_iam_user`, `awscc_iam_role` or `awscc_iam_group` block, which embeds one. The block is read from its `resource` line to its closing brace.
+ *   cloudformation stack — any `aws_cloudformation_stack*` or `awscc_cloudformation_stack*` type. A stack can create any IAM object, an inline policy included, from a template this guard does not read.
  *   aws_iam_policy_attachment — not an inline policy, but banned: the provider's own page for it (terraform-provider-aws v6.68.0, website/docs/r/iam_policy_attachment.html.markdown) warns that it "creates **exclusive** attachments of IAM policies. Across the entire AWS account, all of the users/roles/groups to which a single policy is attached must be declared by a single aws_iam_policy_attachment resource. This means that even any users/roles/groups that have the attached policy via any other mechanism (including other Terraform resources) will have that attached policy revoked by this resource." Use `aws_iam_role_policy_attachment`, `aws_iam_user_policy_attachment` or `aws_iam_group_policy_attachment`.
  *   aws_iam_*_policies_exclusive not empty — the user, role and group exclusive-policies resources attach nothing; they remove every inline policy not named in their `policy_names`. They are allowed only with `policy_names = []`, where they keep the identity free of inline policies on every apply. With a name in the list they protect an inline policy, so they are a finding. The resource's block is read from its `resource` line to its closing brace.
  *   .tf.json file — any file ending in `.tf.json` under the root is a path finding and is not parsed. Terraform reads JSON configuration as readily as HCL, and this guard reads only HCL lines, so a JSON file would be a way around it.
@@ -19,7 +21,9 @@
  *
  * The read is line-oriented and has no comment blanker, so a comment that names a banned form is a finding. Comments under `infra/` say "an inline policy" rather than naming the resource type.
  *
- * What this guard cannot see: anything created through a CloudFormation stack resource, which can create any IAM object; and policies that already exist in an account, which an operator's read-only inventory script covers. Directories named `.terraform` (downloaded providers and modules) are skipped.
+ * A resource block's type label is matched quoted or bare, since HCL accepts both.
+ *
+ * What this guard cannot see: an inline policy written by a provisioner or an external program that calls the IAM API itself, and policies that already exist in an account, which an operator's read-only inventory script covers. Directories named `.terraform` (downloaded providers and modules) are skipped.
  *
  * A check that examined nothing must not report success: a root holding no `.tf` file exits 1.
  *
@@ -57,13 +61,21 @@ const PATTERNS = [
   { name: 'aws_iam_group_policy', re: /\baws_iam_group_policy\b/ },
   { name: 'inline_policy', re: /\binline_policy\b/ },
   { name: 'aws_ssoadmin_permission_set_inline_policy', re: /\baws_ssoadmin_permission_set_inline_policy\b/ },
-  { name: 'aws_iam_policy_attachment', re: /\baws_iam_policy_attachment\b/ }
+  { name: 'aws_iam_policy_attachment', re: /\baws_iam_policy_attachment\b/ },
+  { name: 'awscc_iam_*_policy', re: /\bawscc_iam_(?:user|role|group)_policy\b/ },
+  { name: 'cloudformation stack', re: /\baws(?:cc)?_cloudformation_stack\w*/ }
 ];
 
 /** The exclusive-policies resources, read as a block: allowed only when every `policy_names` in the block is an empty list. */
 const EXCLUSIVE = {
   name: 'aws_iam_*_policies_exclusive not empty',
-  start: /^\s*resource\s+"aws_iam_(?:user|role|group)_policies_exclusive"/
+  start: /^\s*resource\s+"?aws_iam_(?:user|role|group)_policies_exclusive"?\s/
+};
+
+/** The Cloud Control identity resources, read as a block: a `policies` argument in one embeds an inline policy. */
+const AWSCC_POLICIES = {
+  name: 'awscc_iam_* policies',
+  start: /^\s*resource\s+"?awscc_iam_(?:user|role|group)"?\s/
 };
 
 /** The path finding: a JSON configuration file. */
@@ -173,6 +185,8 @@ function findingsOf(abs, rootAbs) {
     for (const p of PATTERNS) if (p.re.test(line)) found.push(`${shown}:${i + 1}: ${p.name}`);
     if (EXCLUSIVE.start.test(line) && !exclusiveIsEmpty(blockFrom(lines, i)))
       found.push(`${shown}:${i + 1}: ${EXCLUSIVE.name}`);
+    if (AWSCC_POLICIES.start.test(line) && /^\s*policies\s*=/m.test(blockFrom(lines, i) ?? 'policies ='))
+      found.push(`${shown}:${i + 1}: ${AWSCC_POLICIES.name}`);
     if (MODULE.start.test(line) && !moduleIsLocal(blockFrom(lines, i), abs, rootAbs))
       found.push(`${shown}:${i + 1}: ${MODULE.name}`);
   });

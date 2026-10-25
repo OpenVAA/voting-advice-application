@@ -60,3 +60,29 @@ module "registry" {
 module "outside" {
   source = "../../elsewhere"
 }
+
+resource aws_iam_group_policies_exclusive bare {
+  group_name   = aws_iam_group.readers.name
+  policy_names = ["kept"]
+}
+
+resource "awscc_iam_role_policy" "cc" {
+  role_name       = "fixture-cc"
+  policy_name     = "fixture-cc"
+  policy_document = jsonencode({ Version = "2012-10-17", Statement = [] })
+}
+
+resource "awscc_iam_role" "cc" {
+  role_name                   = "fixture-cc"
+  assume_role_policy_document = jsonencode({ Version = "2012-10-17", Statement = [] })
+
+  policies = [{
+    policy_name     = "fixture-cc-embedded"
+    policy_document = jsonencode({ Version = "2012-10-17", Statement = [] })
+  }]
+}
+
+resource "aws_cloudformation_stack" "iam" {
+  name          = "fixture-stack"
+  template_body = jsonencode({ Resources = {} })
+}

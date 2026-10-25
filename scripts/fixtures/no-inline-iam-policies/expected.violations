@@ -10,3 +10,7 @@ scripts/fixtures/no-inline-iam-policies/violations/main.tf:43: aws_iam_policy_at
 scripts/fixtures/no-inline-iam-policies/violations/main.tf:49: aws_iam_*_policies_exclusive not empty
 scripts/fixtures/no-inline-iam-policies/violations/main.tf:54: module source outside the root
 scripts/fixtures/no-inline-iam-policies/violations/main.tf:60: module source outside the root
+scripts/fixtures/no-inline-iam-policies/violations/main.tf:64: aws_iam_*_policies_exclusive not empty
+scripts/fixtures/no-inline-iam-policies/violations/main.tf:69: awscc_iam_*_policy
+scripts/fixtures/no-inline-iam-policies/violations/main.tf:75: awscc_iam_* policies
+scripts/fixtures/no-inline-iam-policies/violations/main.tf:85: cloudformation stack

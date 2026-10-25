@@ -34,6 +34,9 @@ const FINDING_NAMES = [
   'aws_iam_policy_attachment',
   'aws_iam_*_policies_exclusive not empty',
   'module source outside the root',
+  'awscc_iam_*_policy',
+  'awscc_iam_* policies',
+  'cloudformation stack',
   'path matches .tf.json file',
   'path matches symbolic link'
 ];
