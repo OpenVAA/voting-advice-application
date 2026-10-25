@@ -64,7 +64,7 @@ variable "smtp" {
 }
 
 variable "smtp_password" {
-  description = "SMTP password, from TF_VAR_smtp_password. Used only when smtp is set."
+  description = "SMTP password, from TF_VAR_smtp_password. Used only when smtp is set, and then required: the module refuses a plan with smtp set and no password."
   type        = string
   sensitive   = true
   default     = null

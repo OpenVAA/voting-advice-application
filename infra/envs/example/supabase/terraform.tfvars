@@ -3,7 +3,8 @@
 #
 # The SMTP password (TF_VAR_smtp_password), the database password (TF_VAR_database_password) and the
 # access token (SUPABASE_ACCESS_TOKEN) are given as environment variables in the operator's shell and
-# are never written to this file.
+# are never written to this file. Because this file sets smtp, a plan without TF_VAR_smtp_password
+# fails.
 
 organization_id = "replace-with-your-organisation-slug"
 project_name    = "openvaa-production"
