@@ -42,6 +42,7 @@ module "supabase" {
   enable_send_email_hook   = var.enable_send_email_hook
   auth_rate_limits         = var.auth_rate_limits
   smtp                     = var.smtp
+  smtp_user                = var.smtp_user
   smtp_password            = var.smtp_password
 }
 

@@ -36,11 +36,11 @@ locals {
     uri_allow_list = join(",", [for p in local.hosted.redirect_callback_paths : "${var.public_origin}${p}"])
   }
 
-  # The SMTP settings without the password, which a settings resource of its own sends.
+  # The SMTP settings without the user name and the password, which a settings resource of its own
+  # sends.
   auth_smtp = var.smtp == null ? null : {
     smtp_host        = var.smtp.host
     smtp_port        = var.smtp.port
-    smtp_user        = var.smtp.user
     smtp_admin_email = var.smtp.admin_email
     smtp_sender_name = var.smtp.sender_name
   }

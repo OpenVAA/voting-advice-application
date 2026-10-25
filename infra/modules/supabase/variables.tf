@@ -59,15 +59,26 @@ variable "auth_rate_limits" {
 }
 
 variable "smtp" {
-  description = "Custom SMTP settings for the auth service's own mail. Null leaves every SMTP setting, and the mail rate limit, out of what is sent. The port is a string because the hosted API takes it as one. The password is the separate smtp_password variable."
+  description = "Custom SMTP settings for the auth service's own mail. Null leaves every SMTP setting, and the mail rate limit, out of what is sent. The port is a string because the hosted API takes it as one. The user name and the password are the separate smtp_user and smtp_password variables."
   type = object({
     host        = string
     port        = string
-    user        = string
     admin_email = string
     sender_name = string
   })
   default = null
+}
+
+variable "smtp_user" {
+  description = "SMTP user name, taken from TF_VAR_smtp_user in the operator's shell and never written to a tracked file. For SES it is the access key id of the SMTP user, half of the mail credential. Used only when smtp is set, and then required. It is sent with the password through the settings resource of its own, so it appears in no plan diff and in no tracked file."
+  type        = string
+  sensitive   = true
+  default     = null
+
+  validation {
+    condition     = var.smtp == null || (var.smtp_user != null && var.smtp_user != "")
+    error_message = "smtp is set, so smtp_user must be set too: export TF_VAR_smtp_user in the shell that plans."
+  }
 }
 
 variable "smtp_password" {

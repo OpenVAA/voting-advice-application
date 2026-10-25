@@ -622,7 +622,11 @@ The send-email hook's function takes every mail the auth service would send and 
 application's own function sends the mails. So while the send-email hook is on, the hosted auth service
 sends no mail of its own, and the SMTP settings and the mail rate limit `rate_limit_email_sent` govern
 no mail the auth service sends. No step of this runbook applies the SMTP settings; the root's
-`terraform.tfvars` gains its `smtp` object in a later stage of the deployment work.
+`terraform.tfvars` gains its `smtp` object in a later stage of the deployment work. That object holds
+no user name and no password: the SMTP user name, which for SES is the access key id of the SMTP user
+and half of the mail credential, is `TF_VAR_smtp_user`, and the password is `TF_VAR_smtp_password`.
+Both are exported in the shell that plans, from the dns-mail root's outputs, and written to no file;
+the module sends them through a settings resource of their own, so no plan diff shows them.
 
 ## Traps
 

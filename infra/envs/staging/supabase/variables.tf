@@ -52,15 +52,21 @@ variable "auth_rate_limits" {
 }
 
 variable "smtp" {
-  description = "Custom SMTP settings for the auth service's own mail. Null leaves every SMTP setting out of what is sent."
+  description = "Custom SMTP settings for the auth service's own mail, without the user name and the password, which are smtp_user and smtp_password. Null leaves every SMTP setting out of what is sent."
   type = object({
     host        = string
     port        = string
-    user        = string
     admin_email = string
     sender_name = string
   })
   default = null
+}
+
+variable "smtp_user" {
+  description = "SMTP user name, from TF_VAR_smtp_user; for SES, the access key id of the SMTP user, which the dns-mail root's smtp_username output holds. Never written to terraform.tfvars. Used only when smtp is set, and then required: the module refuses a plan with smtp set and no user name."
+  type        = string
+  sensitive   = true
+  default     = null
 }
 
 variable "smtp_password" {

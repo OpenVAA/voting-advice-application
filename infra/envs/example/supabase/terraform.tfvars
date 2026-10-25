@@ -1,10 +1,11 @@
 # Production-shaped inputs of a forker's Supabase root, with stand-in values. This file is tracked
 # and public. Replace each stand-in with the value an import of your project shows.
 #
-# The SMTP password (TF_VAR_smtp_password), the database password (TF_VAR_database_password) and the
-# access token (SUPABASE_ACCESS_TOKEN) are given as environment variables in the operator's shell and
-# are never written to this file. Because this file sets smtp, a plan without TF_VAR_smtp_password
-# fails.
+# The SMTP user name (TF_VAR_smtp_user), the SMTP password (TF_VAR_smtp_password), the database
+# password (TF_VAR_database_password) and the access token (SUPABASE_ACCESS_TOKEN) are given as
+# environment variables in the operator's shell and are never written to this file. For SES the SMTP
+# user name is the access key id of the SMTP user, half of the mail credential. Because this file sets
+# smtp, a plan without TF_VAR_smtp_user and TF_VAR_smtp_password fails.
 
 organization_id = "replace-with-your-organisation-slug"
 project_name    = "openvaa-production"
@@ -36,7 +37,6 @@ smtp = {
   # The port that works from the hosted service is measured per deployment and is not known in
   # advance. The hosted API takes it as a string.
   port        = "587"
-  user        = "REPLACE-ME"
   admin_email = "noreply@vaa.example.org"
   sender_name = "OpenVAA"
 }

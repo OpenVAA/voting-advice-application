@@ -21,8 +21,9 @@
 #   hook off      the two access-token hook keys are absent and the send-email hook keys are present
 #   send-email hook off
 #                 the two send-email hook keys are absent and the access-token hook keys are present
-#   smtp given    the mail rate limit is the bare number 100, the SMTP keys are present, and the SMTP
-#                 port is a string
+#   smtp given    the mail rate limit is the bare number 100, the SMTP keys are present except the
+#                 user name and the password, which a settings resource of their own sends, and the
+#                 SMTP port is a string
 #
 # In every case a value that is a quoted true, false or digit string (other than the SMTP port), or
 # an output that holds `tomap(`, is a finding. Both are the signature of a conditional whose other
@@ -96,7 +97,7 @@ BASE_VARS=(
   -var "database_password=unused-placeholder"
   -var "public_origin=$ORIGIN"
 )
-SMTP_VALUE='{host="smtp.example.org",port="587",user="example-user",admin_email="noreply@example.org",sender_name="Example"}'
+SMTP_VALUE='{host="smtp.example.org",port="587",admin_email="noreply@example.org",sender_name="Example"}'
 HOOK_KEYS=(hook_custom_access_token_enabled hook_custom_access_token_uri)
 SEND_EMAIL_HOOK_KEYS=(hook_send_email_enabled hook_send_email_uri)
 RATE_KEYS=(rate_limit_otp rate_limit_verify rate_limit_token_refresh rate_limit_anonymous_users rate_limit_sms_sent rate_limit_web3)
@@ -228,14 +229,14 @@ expect_present "$AUTH" "${HOOK_KEYS[@]}"
 
 # --- smtp given -------------------------------------------------------------------------------
 CASE=smtp
-encode_local auth "${BASE_VARS[@]}" -var "smtp=$SMTP_VALUE" -var "smtp_password=unused-placeholder"
+encode_local auth "${BASE_VARS[@]}" -var "smtp=$SMTP_VALUE" -var "smtp_user=unused-placeholder" -var "smtp_password=unused-placeholder"
 AUTH="$ENC"
 check_types "$AUTH"
 jq -e --arg k "$MAIL_RATE_KEY" '.[$k] == 100' <<< "$AUTH" > /dev/null || finding "$MAIL_RATE_KEY is not the bare number 100"
 expect_type "$AUTH" "$MAIL_RATE_KEY" number
-expect_present "$AUTH" smtp_host smtp_port smtp_user smtp_admin_email smtp_sender_name
+expect_present "$AUTH" smtp_host smtp_port smtp_admin_email smtp_sender_name
 expect_type "$AUTH" smtp_port string
-expect_absent "$AUTH" smtp_pass
+expect_absent "$AUTH" smtp_user smtp_pass
 
 if [ "$FINDINGS" -gt 0 ]; then
   echo "check-settings-types: $FINDINGS finding(s) in $SRC_DIR" >&2
