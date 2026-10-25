@@ -5,111 +5,111 @@ titles: json
 findings:
   - id: CR-01
     severity: critical
-    disposition: open
+    disposition: fixed
     title: "The hook-switch rule reads the wrong default and ignores the root's module call, so a root can switch either hook off with the guard green"
   - id: WR-01
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "The plan role's `ReadOnlyAccess` reads all data in a shared account; the deny list covers only one bucket prefix and two secret APIs"
   - id: WR-02
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "The `hand/` deny is bypassed by any non-default workspace of a hand-applied root"
   - id: WR-03
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "Trust policies pin only `sub`; any pull-request-triggered job in the repo, including the AI-agent workflows, can assume the plan role, and the deploy role depends on an unenforced GitHub setting"
   - id: WR-04
     severity: warning
-    disposition: open
+    disposition: skipped
     title: "The plan role can create and delete the pipeline root's lock object"
   - id: WR-05
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "Nothing enforces that `pipeline_state_key` lies outside the hand prefix"
   - id: WR-06
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "A set `smtp` with an unset `smtp_password` sends `{\"smtp_pass\": null}` to the hosted auth config"
   - id: WR-07
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "The two `supabase_settings` resources write the same auth configuration concurrently, with no ordering"
   - id: WR-08
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "`mail-ses` trusts a separate `aws_region` input instead of the provider's region"
   - id: WR-09
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "The assert modes of account-inventory.sh never check the caller's account, so a PASS can describe another account"
   - id: WR-10
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "\"--assert-managed-only\" and the runbook claim customer-managed policies only, but only inline policies are checked"
   - id: WR-11
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "The dns-mail runbook says the first apply creates the account's suppression setting, but staging switches it off"
   - id: WR-12
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "With `smtp` set and `TF_VAR_smtp_password` forgotten, `smtp_pass: null` is sent silently"
   - id: WR-13
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "The SMTP user name, which the dns-mail runbook treats as half the mail credential, is destined for a tracked public tfvars file"
   - id: WR-14
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "The env roots re-declare the rate-limit defaults, so the module's defaults never apply and the description is false"
   - id: WR-15
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "The scratch rehearsal's Step 5 places an unconditional-looking `rm -f tfplan` block between the checksum and the apply"
   - id: WR-16
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "The supabase provider constraint admits 1.12+, while the runbook's safety reasoning rests on the 1.11.0 source"
   - id: WR-17
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "Nothing in the Supabase roots stops Terraform from creating the project, though every header says it never does"
   - id: WR-18
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "`infra-validate` runs code from the PR with an unscoped `GITHUB_TOKEN` persisted into `.git/config`"
   - id: WR-19
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "The spec's \"holds no credentials\" tests have blind spots a credential can pass through"
   - id: WR-20
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "The state-key tests silently skip any root whose backend lives in `backend.tf`"
   - id: WR-21
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "A Supabase root with no tracked `terraform.tfvars` is skipped without a finding"
   - id: WR-22
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "A quoted or spaced TOML table header after a non-family table is ignored, so new live keys escape classification"
   - id: WR-23
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "The second-writer scan misses common spellings of the push command and directories where a Supabase script would naturally go"
   - id: WR-24
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "\"One owner per key\" does not constrain what is merged into `local.auth` / `local.api`"
   - id: WR-25
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "The IAM guard skips symlinked `.tf` files and directories, and does not enforce the \"no external module\" assumption it relies on"
   - id: WR-26
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "Inline policies through the `awscc` provider are not matched, and the exclusive-resource check needs a quoted type label"
   - id: IN-01
     severity: info
@@ -203,42 +203,42 @@ findings:
     severity: info
     disposition: open
     title: "The validation glob reaches only `infra/envs/<env>/<root>/`, but the comment promises any later root"
-open: 50
+open: 23
 total: 50
-recorded: 2026-10-25T09:24:24.245Z
+recorded: 2026-10-25T13:47:08.229Z
 ---
 
 # Phase 183: Code Review Disposition
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| CR-01 | critical | open | - |
-| WR-01 | warning | open | - |
-| WR-02 | warning | open | - |
-| WR-03 | warning | open | - |
-| WR-04 | warning | open | - |
-| WR-05 | warning | open | - |
-| WR-06 | warning | open | - |
-| WR-07 | warning | open | - |
-| WR-08 | warning | open | - |
-| WR-09 | warning | open | - |
-| WR-10 | warning | open | - |
-| WR-11 | warning | open | - |
-| WR-12 | warning | open | - |
-| WR-13 | warning | open | - |
-| WR-14 | warning | open | - |
-| WR-15 | warning | open | - |
-| WR-16 | warning | open | - |
-| WR-17 | warning | open | - |
-| WR-18 | warning | open | - |
-| WR-19 | warning | open | - |
-| WR-20 | warning | open | - |
-| WR-21 | warning | open | - |
-| WR-22 | warning | open | - |
-| WR-23 | warning | open | - |
-| WR-24 | warning | open | - |
-| WR-25 | warning | open | - |
-| WR-26 | warning | open | - |
+| CR-01 | critical | fixed | 731656d24 |
+| WR-01 | warning | fixed | fixed in part, 2d8a04ac0; needs-operator-apply infra/bootstrap (aws_iam_policy.plan_deny replaced, attachment re-created); open question: keep ReadOnlyAccess, move to ViewOnlyAccess + per-service reads, or deny more reads and bar those resource types from the pipeline root |
+| WR-02 | warning | fixed | ee4ca9130; needs-operator-apply infra/bootstrap (in-place update of aws_iam_policy.plan_deny, adds env:/*) |
+| WR-03 | warning | fixed | fixed in part, 16f90b7e3 (validation + docs, no plan change); needs operator input: numeric github_repository_id / github_repository_owner_id, how to pin the plan trust to a workflow, staging Environment deployment branch policy |
+| WR-04 | warning | skipped | needs operator input: keep decision A-08 (plan role writes/deletes the pipeline lock) or drop plan_lock, require plan -lock=false and update runbook Steps 4 and 5(c) (destroys a policy + attachment in infra/bootstrap) |
+| WR-05 | warning | fixed | 1e5740bcb |
+| WR-06 | warning | fixed | eed525127 (module side) |
+| WR-07 | warning | fixed | f7fc5d26f |
+| WR-08 | warning | fixed | 39dcac2db |
+| WR-09 | warning | fixed | 05070d0b6 |
+| WR-10 | warning | fixed | 70b569de6 (mode renamed --assert-no-inline-under) |
+| WR-11 | warning | fixed | 4ebb01bca |
+| WR-12 | warning | fixed | 1cb145b7a (root side) |
+| WR-13 | warning | fixed | 58be669ad; once staging sets smtp, export TF_VAR_smtp_user as well as TF_VAR_smtp_password |
+| WR-14 | warning | fixed | 1a02b721b (values sent unchanged) |
+| WR-15 | warning | fixed | c1fa7a7f5 |
+| WR-16 | warning | fixed | 97bcae1d3 |
+| WR-17 | warning | fixed | ed7d91c94; needs operator confirmation on infra/envs/staging/supabase: next plan must read No changes with no import line |
+| WR-18 | warning | fixed | 97d9c7c79 |
+| WR-19 | warning | fixed | 77bfe4a71, eda25307f |
+| WR-20 | warning | fixed | d7578a411 |
+| WR-21 | warning | fixed | faa06e482 |
+| WR-22 | warning | fixed | 2068572dc |
+| WR-23 | warning | fixed | a775f8509 |
+| WR-24 | warning | fixed | 3049e7376 |
+| WR-25 | warning | fixed | 520ab4c62 |
+| WR-26 | warning | fixed | 45d9b8d88 |
 | IN-01 | info | open | - |
 | IN-02 | info | open | - |
 | IN-03 | info | open | - |
