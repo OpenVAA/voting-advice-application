@@ -748,7 +748,9 @@ jobs:
   # It holds no credentials on purpose: `init -backend=false` reads no state, and `validate` calls no
   # cloud API. A job that planned would need a role, and this one runs the configuration a pull
   # request brings, so it gets no secret, no identity-token permission and no credential action. It
-  # writes no plan file and uploads nothing.
+  # writes no plan file and uploads nothing. Its GITHUB_TOKEN may only read the repository contents,
+  # whatever the repository's default grant, and checkout does not keep that token in .git/config,
+  # so the script and provider binaries the later steps run cannot read it.
   #
   # Both actions are pinned by commit SHA, with the tag in a trailing comment, because a tag can be
   # moved to other code. `terraform_wrapper: false` keeps the wrapper from hiding exit statuses.
@@ -764,10 +766,14 @@ jobs:
   # failure does not hide a validation failure.
   infra-validate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: "Checkout source code"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: "Setup Terraform 1.16.5"
         uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
