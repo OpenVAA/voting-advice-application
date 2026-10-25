@@ -1,7 +1,7 @@
 /**
  * The shape of the `infra-validate` CI job, and the state keys of the Terraform roots it validates, asserted rather than described.
  *
- * The job formats and validates every Terraform root under `infra/`. It runs on pull requests, so it executes configuration a contributor wrote, and it is safe to do so only because it holds no credentials: `init -backend=false` reads no state and `validate` calls no cloud API. Its `GITHUB_TOKEN` may only read the repository's contents and is not kept in `.git/config` after checkout, since the later steps run a script and provider binaries the pull request controls. A later edit that gave the job a secret, an identity token, a wider token or a credential action would still pass every run while turning the job into a door into the account. Each such absence is its own test below, so a failure names which one entered the job.
+ * The job formats and validates every Terraform root under `infra/`. It runs on pull requests, so it executes configuration a contributor wrote, and it is safe to do so only because it holds no credentials: `init -backend=false` reads no state and `validate` calls no cloud API. Its `GITHUB_TOKEN` may only read the repository's contents and is not kept in `.git/config` after checkout, since the later steps run a script and provider binaries the pull request controls. A later edit that gave the job a secret, an identity token, a wider token or a credential action would still pass every run while turning the job into a door into the account. Each such absence is its own test below, so a failure names which one entered the job. The workflow-level `env:` and `permissions:` reach the job too, so they are held to the same rules, and each reader the tests rely on is run against made-up workflow text that it must flag.
  *
  * The job's actions are pinned by commit SHA because a tag can be moved to other code. The job names the roots it must have validated, so an empty or short glob fails instead of passing on nothing; this spec keeps those names in the job.
  *
@@ -93,6 +93,16 @@ function checkoutsKeepingToken(jobBlock: string): Array<string> {
   });
   return found;
 }
+
+/**
+ * A read of a credential: the `secrets` context in an expression, by property, by index or whole (as in `toJSON(secrets)`), a `secrets:` key passing secrets to a called workflow, or the job's own token as `github.token`.
+ */
+const CREDENTIAL_READ = /\$\{\{[^}]*\bsecrets\b|\bsecrets\s*[.[:]|\bgithub\.token\b/;
+
+/**
+ * A grant a workflow-level `permissions:` block could make that reaches past reading: any write, or an identity token.
+ */
+const WIDE_GRANT = /\bwrite\b|write-all|id-token/;
 
 const WORKFLOW_LINES = uncommented(readFileSync(resolve(REPO_ROOT, '.github/workflows/main.yaml'), 'utf8'));
 
@@ -195,6 +205,17 @@ describe('the infra-validate job pins its actions by commit SHA', () => {
 });
 
 describe('the infra-validate job holds no credentials', () => {
+  it('reads no secret and no token', () => {
+    expect(JOB_BLOCK).not.toMatch(CREDENTIAL_READ);
+  });
+
+  it('inherits no credential from the workflow level', () => {
+    // Workflow-level env reaches every job. Workflow-level permissions are replaced by the job's own block, so this one is
+    // held as well in case that block is ever removed.
+    expect(blockOf(WORKFLOW_LINES, 'env:')).not.toMatch(CREDENTIAL_READ);
+    expect(blockOf(WORKFLOW_LINES, 'permissions:')).not.toMatch(WIDE_GRANT);
+  });
+
   it("grants its token nothing but read access to the repository's contents", () => {
     // A job without its own permissions block gets the repository's default grant, which may be read and write.
     expect(jobPermissions(JOB_BLOCK)).toEqual(['contents: read']);
@@ -203,10 +224,6 @@ describe('the infra-validate job holds no credentials', () => {
   it('keeps the token out of .git/config, so the steps after checkout cannot read it from there', () => {
     expect(JOB_BLOCK).toContain('actions/checkout@');
     expect(checkoutsKeepingToken(JOB_BLOCK)).toEqual([]);
-  });
-
-  it('reads no secret', () => {
-    expect(JOB_BLOCK).not.toMatch(/\bsecrets\./);
   });
 
   it('asks for no identity token', () => {
@@ -243,6 +260,27 @@ describe('the job-shape readers catch what they exist to catch', () => {
   function job(body: string): string {
     return blockOf(uncommented(`jobs:\n  ${JOB_KEY}:\n    runs-on: ubuntu-latest\n${body}`), JOB_HEADER);
   }
+
+  it('flags a secret read by index, a whole secrets context and the job token', () => {
+    for (const read of [
+      "${{ secrets['AWS_KEY'] }}",
+      '${{ toJSON(secrets) }}',
+      '${{ github.token }}',
+      '${{ secrets.X }}'
+    ])
+      expect(job(`    env:\n      X: ${read}\n`), read).toMatch(CREDENTIAL_READ);
+    expect(job('    secrets: inherit\n')).toMatch(CREDENTIAL_READ);
+  });
+
+  it('flags a workflow-level env reading a secret and a workflow-level identity-token grant', () => {
+    const lines = uncommented(
+      "name: x\nenv:\n  KEY: ${{ secrets['AWS_KEY'] }}\npermissions:\n  id-token: write\njobs:\n  a:\n    runs-on: ubuntu-latest\n"
+    );
+    expect(blockOf(lines, 'env:')).toMatch(CREDENTIAL_READ);
+    expect(blockOf(lines, 'permissions:')).toMatch(WIDE_GRANT);
+    expect(blockOf(uncommented('permissions: write-all\njobs:\n'), 'permissions:')).toMatch(WIDE_GRANT);
+    expect(blockOf(uncommented('permissions:\n  contents: read\njobs:\n'), 'permissions:')).not.toMatch(WIDE_GRANT);
+  });
 
   it('reads no permissions block as none, not as the correct one', () => {
     expect(jobPermissions(job('    steps:\n      - run: true\n'))).toEqual(['(none)']);
