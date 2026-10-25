@@ -6,9 +6,11 @@ terraform {
   required_version = ">= 1.10"
 
   required_providers {
+    # Exact: the runbook's stop rules on decoding and import rest on a reading of this version's
+    # source. Raise it together with a new reading of those paths.
     supabase = {
       source  = "supabase/supabase"
-      version = "~> 1.11"
+      version = "= 1.11.0"
     }
   }
 

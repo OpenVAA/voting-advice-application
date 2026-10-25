@@ -625,6 +625,11 @@ no mail the auth service sends. No step of this runbook applies the SMTP setting
 
 ## Traps
 
+Every Supabase root pins the provider at exactly 1.11.0 (`version = "= 1.11.0"`), because the first
+and the third trap below rest on a reading of that version's source. A change of the pin goes together
+with a new reading of the provider's decoding and import paths; `terraform init -upgrade` alone never
+moves it.
+
 > **A misspelled key is accepted and never applied.** Symptom: a setting the read-back of Step 6 or
 > Step 12 does not print, or prints with the platform's value, although the second plan reports no
 > change. The provider's source, read at version 1.11.0, decodes the auth and API settings into a fixed
