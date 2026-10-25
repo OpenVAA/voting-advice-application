@@ -66,14 +66,28 @@ variable "state_bucket_arn" {
 }
 
 variable "pipeline_state_key" {
-  description = "State key of the one root the pipeline applies, for example \"pipeline/staging/aws/terraform.tfstate\". The deploy role reaches this key and its lock object and no other."
+  description = "State key of the one root the pipeline applies, for example \"pipeline/staging/aws/terraform.tfstate\". The deploy role reaches this key and its lock object and no other. It must lie outside hand_state_prefix and outside the workspace prefix \"env:/\"."
   type        = string
+
+  validation {
+    condition = (
+      endswith(var.pipeline_state_key, "/terraform.tfstate")
+      && !startswith(var.pipeline_state_key, var.hand_state_prefix)
+      && !startswith(var.pipeline_state_key, "env:/")
+    )
+    error_message = "pipeline_state_key must name a terraform.tfstate object outside hand_state_prefix and outside \"env:/\", whose state the plan role is denied."
+  }
 }
 
 variable "hand_state_prefix" {
   description = "Key prefix under which every hand-applied root keeps its state. The plan role is denied reading any object under it."
   type        = string
   default     = "hand/"
+
+  validation {
+    condition     = can(regex("^([A-Za-z0-9_-]+/)+$", var.hand_state_prefix))
+    error_message = "hand_state_prefix must be one or more path segments, each followed by a slash, for example \"hand/\"."
+  }
 }
 
 variable "registry_arn" {

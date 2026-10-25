@@ -69,4 +69,9 @@ variable "github_repository_owner_id" {
 variable "pipeline_state_key" {
   description = "State key of the one root the pipeline applies. It must equal the key in that root's backend block, because the deploy role's access to the state bucket is limited to this key."
   type        = string
+
+  validation {
+    condition     = startswith(var.pipeline_state_key, "pipeline/") && endswith(var.pipeline_state_key, "/terraform.tfstate")
+    error_message = "pipeline_state_key must lie under pipeline/ and name a terraform.tfstate object."
+  }
 }
