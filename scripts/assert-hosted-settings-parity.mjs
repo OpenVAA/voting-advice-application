@@ -6,9 +6,9 @@
  * What it requires: the security-relevant API and auth settings of a hosted Supabase project, as the Terraform module
  * sends them, are the settings the local stack runs the test suite with, or stricter where stricter is safe. The local
  * side is `apps/supabase/supabase/config.toml`. The hosted side is `infra/modules/supabase/hosted-settings.json`, which
- * the module encodes, plus the origin and the two hook switches that each Supabase root `infra/envs/<env>/supabase`
- * passes to the module, read from its `.tf` files and its tracked `terraform.tfvars`. The frontend's page size,
- * `dataAdapter.pageSize` in
+ * the module encodes, plus the origin and the two hook switches that each Supabase root passes to the module, read from
+ * its `.tf` files and its tracked `terraform.tfvars`. A Supabase root is a directory `infra/envs/<env>/<root>` that is
+ * named `supabase` or whose `.tf` files call the module. The frontend's page size, `dataAdapter.pageSize` in
  * `packages/app-shared/src/settings/staticSettings.ts`, is a third channel for one key.
  *
  * Every live key of the tables `[api]`, `[api.tls]`, `[auth]` and every `[auth.*]` is in exactly one of four classes:
@@ -27,10 +27,11 @@
  * stale in either direction. A hosted key that no row reads fails for the same reason.
  *
  * Two rules keep the comparison from passing on nothing. The origin rule fails when no Supabase root yields a
- * `public_origin`: a check that examined nothing does not report success. And the module sends each hook's keys only
- * while that hook's switch is true: the access-token hook's keys while a root's `enable_access_token_hook` is true, the
- * send-email hook's keys while its `enable_send_email_hook` is true, each switch on its own. So a root can switch a
- * compared key off. The value each switch takes is read from the root's call of the module the way Terraform resolves
+ * `public_origin`: a check that examined nothing does not report success. So does each root on its own: a Supabase
+ * root with no `terraform.tfvars`, or whose `terraform.tfvars` assigns no `public_origin` it passes on, fails, so that
+ * one good root cannot hide a skipped one. And the module sends each hook's keys only while that hook's switch is
+ * true: the access-token hook's keys while a root's `enable_access_token_hook` is true, the send-email hook's keys
+ * while its `enable_send_email_hook` is true, each switch on its own. So a root can switch a compared key off. The value each switch takes is read from the root's call of the module the way Terraform resolves
  * it: the call's argument when it is a literal `true` or `false`; when it is `var.<switch>`, the root's
  * `terraform.tfvars` assignment, and without one the root variable's default; when the call omits the argument, the
  * module variable's default. Any other argument cannot be read and fails. A `false` written as the call's argument or
@@ -916,7 +917,7 @@ function resolveSwitch({ variable, call, where, root, tfvarsHook, moduleVariable
  * The public origin one call of the module sends: the root's `terraform.tfvars` assignment when the call passes
  * `var.public_origin`, the string itself when it passes a string literal.
  *
- * @returns `{ origin: { file, origin } | null }`, or `{ finding: { file, what } }`.
+ * @returns `{ origin: { file, origin } }`, or `{ finding: { file, what } }`.
  */
 function resolveOrigin({ call, where, root, tfvarsOrigin }) {
   const args = call.args.filter((a) => a.name === 'public_origin');
@@ -925,8 +926,15 @@ function resolveOrigin({ call, where, root, tfvarsOrigin }) {
       finding: { file: call.file, what: `${where} passes public_origin ${args.length} times to the module, not once` }
     };
   const [arg] = args;
-  if (arg.value === 'var.public_origin')
-    return { origin: tfvarsOrigin === null ? null : { file: root.tfvars.file, origin: tfvarsOrigin } };
+  if (arg.value === 'var.public_origin') {
+    if (tfvarsOrigin !== null) return { origin: { file: root.tfvars.file, origin: tfvarsOrigin } };
+    return {
+      finding: {
+        file: root.tfvars.file,
+        what: `${where} passes var.public_origin, and its terraform.tfvars assigns none, so the origin it sends is not checked`
+      }
+    };
+  }
   const literal = /^"([^"\\$%]*)"$/.exec(arg.value);
   if (literal) return { origin: { file: call.file, origin: literal[1] } };
   return {
@@ -1095,7 +1103,7 @@ function check(inputs) {
     if (typeof inputs[channel].text !== 'string')
       channelErrors.push({ file: inputs[channel].file, what: inputs[channel].error ?? 'could not be read' });
   for (const root of inputs.roots)
-    for (const channel of [root.tfvars, ...root.tf])
+    for (const channel of root.tfvars.missing ? root.tf : [root.tfvars, ...root.tf])
       if (typeof channel.text !== 'string')
         channelErrors.push({ file: channel.file, what: channel.error ?? 'could not be read' });
   if (inputs.rootsError) channelErrors.push({ file: inputs.envsDir, what: inputs.rootsError });
@@ -1174,6 +1182,14 @@ function check(inputs) {
   const origins = [];
   const hookOff = Object.fromEntries(HOOK_SWITCHES.map((h) => [h.variable, []]));
   for (const root of inputs.roots) {
+    if (root.tfvars.missing) {
+      report(
+        root.tfvars.file,
+        'root/terraform.tfvars',
+        `${root.name} is a Supabase root with no terraform.tfvars, so the origin and the hook switches it sends are in no tracked file and none of them is checked`
+      );
+      continue;
+    }
     const vars = readRootVariables(root.tfvars.text);
     for (const p of vars.problems) report(root.tfvars.file, p.id, p.what);
     const calls = supabaseCalls(root.tf);
@@ -1189,7 +1205,7 @@ function check(inputs) {
       const where = calls.length === 1 ? root.name : `${root.name} (module.${call.label})`;
       const origin = resolveOrigin({ call, where, root, tfvarsOrigin: vars.origin });
       if (origin.finding) report(origin.finding.file, 'auth/site_url', origin.finding.what);
-      else if (origin.origin !== null) origins.push({ root: where, ...origin.origin });
+      else origins.push({ root: where, ...origin.origin });
       for (const { variable, id } of HOOK_SWITCHES) {
         const value = resolveSwitch({
           variable,
@@ -2072,7 +2088,20 @@ const CASES = [
       i.roots[0].tfvars.text = i.roots[0].tfvars.text.replace(/^public_origin.*\n/m, '');
       i.roots[1].tfvars.text = i.roots[1].tfvars.text.replace(/^public_origin.*\n/m, '');
     },
-    expected: ['auth/site_url']
+    expected: ['auth/site_url', 'auth/site_url', 'auth/site_url'],
+    files: ['envs', 'envs/example/supabase/terraform.tfvars', 'envs/staging/supabase/terraform.tfvars']
+  },
+  {
+    name: 'one root whose terraform.tfvars assigns no public_origin, next to one that does',
+    edit: editRoot(1, /^public_origin.*\n/m, ''),
+    expected: ['auth/site_url'],
+    files: ['envs/example/supabase/terraform.tfvars']
+  },
+  {
+    name: 'a Supabase root with no terraform.tfvars, next to one that has it',
+    edit: (i) => (i.roots[1].tfvars = { file: 'envs/example/supabase/terraform.tfvars', text: '', missing: true }),
+    expected: ['root/terraform.tfvars'],
+    files: ['envs/example/supabase/terraform.tfvars']
   },
   { name: 'no Supabase root at all', edit: (i) => (i.roots = []), expected: ['auth/site_url'] },
   {
@@ -2511,6 +2540,11 @@ function readChannel(absolute) {
   }
 }
 
+/**
+ * The Supabase roots under the environments directory: every directory `<env>/<root>` that is named `supabase` or whose
+ * `.tf` files call the Supabase module. A root without a `terraform.tfvars` is kept, marked missing, so that the check
+ * reports it rather than skipping it.
+ */
 function readRoots(envsDir) {
   let entries;
   try {
@@ -2518,17 +2552,34 @@ function readRoots(envsDir) {
   } catch (error) {
     return { roots: [], error: `could not be read as a directory (${error.code ?? error.message})` };
   }
+  const byName = (a, b) => a.name.localeCompare(b.name);
   const roots = [];
-  for (const entry of entries.filter((e) => e.isDirectory()).sort((a, b) => a.name.localeCompare(b.name))) {
-    const dir = path.join(envsDir, entry.name, 'supabase');
-    const file = path.join(dir, 'terraform.tfvars');
-    let exists = false;
+  for (const env of entries.filter((e) => e.isDirectory()).sort(byName)) {
+    let children;
     try {
-      exists = statSync(file).isFile();
-    } catch {
-      exists = false;
+      children = readdirSync(path.join(envsDir, env.name), { withFileTypes: true });
+    } catch (error) {
+      return { roots, error: `${env.name} could not be read as a directory (${error.code ?? error.message})` };
     }
-    if (exists) roots.push({ name: entry.name, dir: display(dir), tfvars: readChannel(file), tf: readTfFiles(dir) });
+    for (const child of children.filter((e) => e.isDirectory() && e.name !== '.terraform').sort(byName)) {
+      const dir = path.join(envsDir, env.name, child.name);
+      const tf = readTfFiles(dir);
+      const callsModule = supabaseCalls(tf.filter((f) => typeof f.text === 'string')).length > 0;
+      if (child.name !== 'supabase' && !callsModule) continue;
+      const file = path.join(dir, 'terraform.tfvars');
+      let exists = false;
+      try {
+        exists = statSync(file).isFile();
+      } catch {
+        exists = false;
+      }
+      roots.push({
+        name: child.name === 'supabase' ? env.name : `${env.name}/${child.name}`,
+        dir: display(dir),
+        tfvars: exists ? readChannel(file) : { file: display(file), text: '', missing: true },
+        tf
+      });
+    }
   }
   return { roots, error: null };
 }

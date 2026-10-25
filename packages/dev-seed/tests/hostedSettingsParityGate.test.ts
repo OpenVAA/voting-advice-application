@@ -173,7 +173,31 @@ describe('the hosted-settings parity guard still has teeth', () => {
     expect(result.stdout).toMatch(/staging\/supabase\/variables\.tf: auth\.hook\.custom_access_token\/enabled: /);
   });
 
-  it('passes on an unedited copy of the roots, so the two tests above fail on their edit alone', () => {
+  it('fails on a Supabase root with no terraform.tfvars next to the good ones, and names it', () => {
+    const envs = copyOfEnvs();
+    mkdirSync(join(envs, 'prod/supabase'), { recursive: true });
+    copyFileSync(join(envs, 'staging/supabase/main.tf'), join(envs, 'prod/supabase/main.tf'));
+    const result = runGuard(['--envs-dir', envs]);
+    expect(result.status).toBe(1);
+    expect(result.stdout).toMatch(/prod\/supabase\/terraform\.tfvars: root\/terraform\.tfvars: /);
+  });
+
+  it('checks a root that calls the module from a directory not named supabase', () => {
+    const envs = copyOfEnvs();
+    mkdirSync(join(envs, 'prod/app'), { recursive: true });
+    for (const name of ['main.tf', 'variables.tf', 'terraform.tfvars'])
+      copyFileSync(join(envs, 'staging/supabase', name), join(envs, 'prod/app', name));
+    edit(
+      join(envs, 'prod/app/terraform.tfvars'),
+      /^enable_send_email_hook(\s*)= true/m,
+      'enable_send_email_hook$1= false'
+    );
+    const result = runGuard(['--envs-dir', envs]);
+    expect(result.status).toBe(1);
+    expect(result.stdout).toMatch(/prod\/app\/terraform\.tfvars: auth\.hook\.send_email\/enabled: /);
+  });
+
+  it('passes on an unedited copy of the roots, so the tests above fail on their edit alone', () => {
     expect(runGuard(['--envs-dir', copyOfEnvs()]).status).toBe(0);
   });
 
