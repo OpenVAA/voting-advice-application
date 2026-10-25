@@ -84,7 +84,9 @@
  * declared files; an applied project is observed by other means.
  *
  * How it reads (Node built-ins only, no TOML or HCL parser): `config.toml` by lines, a table starting at its `[name]`
- * header and ending at the next, a key being a `name = value` line with an optional trailing comment. A value is read
+ * header and ending at the next, a key being a `name = value` line with an optional trailing comment. A header is read
+ * with spaces around its dots and the quotes around a quoted bare key removed; a header that still cannot be read is a
+ * finding wherever it stands, and the keys under it count as unclassified. A value is read
  * only when its form can be read exactly: a bare boolean, an integer, a double-quoted string without `#` or `\`, or a
  * one-line array that `JSON.parse` accepts. Any other form, and a key written twice in one table, is a finding. The
  * hosted settings are parsed as JSON. `pageSize` is a line read inside the `dataAdapter` block, and each
@@ -550,9 +552,31 @@ const TABLE_HEADER = /^\s*\[\[?\s*([^\]]*?)\s*\]\]?\s*(?:#.*)?$/;
 const TABLE_NAME = /^[A-Za-z0-9_.-]+$/;
 const KEY_LINE = /^\s*([A-Za-z0-9_-]+)\s*=\s*(.*)$/;
 
+/** The table that the keys after a header the line read cannot read are attributed to. It counts as in the family. */
+const UNREADABLE_TABLE = '(unreadable)';
+
 /** Whether a table belongs to the families this guard classifies. */
 function inFamily(table) {
-  return table === 'api' || table === 'api.tls' || table === 'auth' || table.startsWith('auth.');
+  return (
+    table === UNREADABLE_TABLE ||
+    table === 'api' ||
+    table === 'api.tls' ||
+    table === 'auth' ||
+    table.startsWith('auth.')
+  );
+}
+
+/**
+ * The name of a table header in its plain form: each dotted part trimmed, and a part that is a quoted bare key written
+ * without its quotes, so `[auth . external . "github"]` is `auth.external.github`. Returns null when a part is still
+ * not a bare key, such as a quoted part holding a dot or a space.
+ */
+function tableName(header) {
+  const name = header
+    .split('.')
+    .map((part) => part.trim().replace(/^"([A-Za-z0-9_-]+)"$|^'([A-Za-z0-9_-]+)'$/, '$1$2'))
+    .join('.');
+  return TABLE_NAME.test(name) ? name : null;
 }
 
 /**
@@ -625,15 +649,18 @@ function readConfig(text) {
   text.split('\n').forEach((line, index) => {
     const header = TABLE_HEADER.exec(line);
     if (header) {
-      if (TABLE_NAME.test(header[1])) {
-        table = header[1];
+      const name = tableName(header[1]);
+      if (name !== null) {
+        table = name;
         return;
       }
-      if (table !== null && inFamily(table))
-        problems.push({
-          id: `${table}/(line ${index + 1})`,
-          what: `the line '${line.trim()}' is neither a key nor a table header the line read can read`
-        });
+      // Whatever table came before, the keys that follow belong to a table whose name cannot be read, so they are
+      // attributed to one that is in the family and each fails as unclassified.
+      problems.push({
+        id: 'config/table-header',
+        what: `line ${index + 1}: the table header '${line.trim()}' cannot be read, so the keys under it cannot be classified`
+      });
+      table = UNREADABLE_TABLE;
       return;
     }
     if (table === null || !inFamily(table)) return;
@@ -2287,6 +2314,21 @@ const CASES = [
       '[auth.hook.mfa_verification_attempt]\nenabled = true\n\n[auth.web3.solana]'
     ),
     expected: ['auth.hook.mfa_verification_attempt/enabled']
+  },
+  {
+    name: 'a quoted table header after a table outside the family',
+    edit: (i) => (i.config.text += '\n[auth.external."github"]\nenabled = true\n'),
+    expected: ['auth.external.github/enabled']
+  },
+  {
+    name: 'a table header with spaces around its dots after a table outside the family',
+    edit: (i) => (i.config.text += '\n[auth . external . google]\nenabled = true\n'),
+    expected: ['auth.external.google/enabled']
+  },
+  {
+    name: 'a table header the line read cannot read, after a table outside the family',
+    edit: (i) => (i.config.text += '\n[auth.external."git hub"]\nenabled = true\n'),
+    expected: ['config/table-header', '(unreadable)/enabled']
   },
   {
     name: 'a classified key removed',

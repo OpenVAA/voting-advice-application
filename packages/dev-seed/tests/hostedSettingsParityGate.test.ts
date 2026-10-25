@@ -201,6 +201,19 @@ describe('the hosted-settings parity guard still has teeth', () => {
     expect(runGuard(['--envs-dir', copyOfEnvs()]).status).toBe(0);
   });
 
+  it('classifies the keys under a quoted table header that follows a table outside the family', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'hosted-settings-parity-config-'));
+    COPIES.push(dir);
+    const config = join(dir, 'config.toml');
+    writeFileSync(
+      config,
+      `${readFileSync(resolve(REPO_ROOT, 'apps/supabase/supabase/config.toml'), 'utf8')}\n[auth.external."github"]\nenabled = true\n`
+    );
+    const result = runGuard(['--config', config]);
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain('auth.external.github/enabled');
+  });
+
   it('reproduces its embedded cases in self-test mode', () => {
     expect(runGuard(['--self-test']).status).toBe(0);
   });
