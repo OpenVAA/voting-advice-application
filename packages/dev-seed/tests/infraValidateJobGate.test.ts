@@ -236,8 +236,7 @@ describe('the infra-validate job holds no credentials', () => {
   });
 
   it('inherits no credential from the workflow level', () => {
-    // Workflow-level env reaches every job. Workflow-level permissions are replaced by the job's own block, so this one is
-    // held as well in case that block is ever removed.
+    // Workflow-level env reaches every job; workflow-level permissions are held too, in case the job's own block that replaces them is ever removed.
     expect(blockOf(WORKFLOW_LINES, 'env:')).not.toMatch(CREDENTIAL_READ);
     expect(blockOf(WORKFLOW_LINES, 'permissions:')).not.toMatch(WIDE_GRANT);
   });
@@ -276,8 +275,7 @@ describe('the infra-validate job holds no credentials', () => {
 });
 
 describe('the job-shape readers catch what they exist to catch', () => {
-  // Red controls on made-up workflow text: each reader must flag the shape the tests above forbid, so a reader that
-  // stopped matching cannot leave those tests green.
+  // Red controls on made-up workflow text: each reader must flag the shape the tests above forbid, so a reader that stopped matching cannot leave those tests green.
   /**
    * The block of a made-up job named like this one.
    * @param body - The job's lines after `runs-on`.
