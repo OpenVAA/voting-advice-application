@@ -404,10 +404,10 @@ Step 6.
    aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" --action-names s3:GetObject --resource-arns "arn:aws:s3:::$B/$K" --query "$Q" --output text | sed 's/^/s8a_decision=/'
    ```
 
-   (b) The plan role, secret reads:
+   (b) The plan role, secret reads and data reads:
 
    ```bash
-   aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" --action-names secretsmanager:GetSecretValue kms:Decrypt --query "$Q" --output text | sed 's/^/s8b_decision=/'
+   aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" --action-names secretsmanager:GetSecretValue kms:Decrypt dynamodb:GetItem logs:GetLogEvents --query "$Q" --output text | sed 's/^/s8b_decision=/'
    ```
 
    (c) The plan role, the lock object, which the backend reads, writes and deletes:
@@ -449,7 +449,7 @@ Step 6.
    ```
 
    Expected for the plan role: `explicitDeny` for the object under `hand/` and `allowed` for the
-   object under `pipeline/` in (a), `explicitDeny` twice in (b), `allowed` three times in (c), and
+   object under `pipeline/` in (a), `explicitDeny` four times in (b), `allowed` three times in (c), and
    `allowed` in both lines of (d). Expected for the deploy role: `allowed` twice in (e), `allowed`
    three times in (f), `allowed` in `s8g1_decision` and `implicitDeny` in `s8g2_decision`, and
    `implicitDeny` in (h).

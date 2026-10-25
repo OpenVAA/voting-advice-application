@@ -1,7 +1,11 @@
 # One customer-managed policy per concern, all under var.iam_path, each attached to one role by its own
 # role attachment. Two consequences for the roots these roles work on:
-# - The plan role is denied secret reads and decryption, so the root it plans must hold no secret value
-#   that a refresh has to read; such a root refers to a secret by its ARN.
+# - The plan role is denied Secrets Manager reads, KMS decryption, DynamoDB item reads, log event reads
+#   and a few other data reads (the plan_deny document lists them), so the root it plans must hold no
+#   secret value that a refresh has to read, and no DynamoDB table item; such a root refers to a secret
+#   by its ARN. Every other read of the AWS-managed read-only policy stays allowed, data reads included:
+#   S3 objects outside the state bucket's denied keys, SSM String parameters, Lambda function and ECS
+#   task definition environments, and CloudFormation templates.
 # - The deploy role gains further permissions only through this module, which is applied by hand, so the
 #   pipeline can never widen its own access.
 
@@ -107,12 +111,37 @@ data "aws_iam_policy_document" "plan_deny" {
     ]
     resources = ["*"]
   }
+
+  # Reads of stored data that no refresh of a resource or data source makes: table items, log events,
+  # stream records and queue messages.
+  statement {
+    sid    = "DenyDataPlaneReads"
+    effect = "Deny"
+    actions = [
+      "dynamodb:GetItem",
+      "dynamodb:BatchGetItem",
+      "dynamodb:Query",
+      "dynamodb:Scan",
+      "dynamodb:PartiQLSelect",
+      "dynamodb:GetRecords",
+      "logs:GetLogEvents",
+      "logs:FilterLogEvents",
+      "logs:GetLogRecord",
+      "logs:StartQuery",
+      "logs:GetQueryResults",
+      "logs:StartLiveTail",
+      "logs:Unmask",
+      "kinesis:GetRecords",
+      "sqs:ReceiveMessage",
+    ]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_policy" "plan_deny" {
   name        = "${var.name_prefix}-plan-deny"
   path        = var.iam_path
-  description = "Explicit deny for the plan role: the state of hand-applied roots and every secret read."
+  description = "Explicit deny for the plan role: the state of hand-applied roots, Secrets Manager reads, KMS decryption, and DynamoDB, log, stream and queue data reads."
   policy      = data.aws_iam_policy_document.plan_deny.json
 }
 
