@@ -89,9 +89,13 @@ UTC, in the form `date -u +%Y-%m-%dT%H:%MZ` prints.
 
 ## Step 1: First apply
 
-The apply creates the hosted zone, the SES identity with its DKIM, MAIL FROM and DMARC records, the
-account's suppression list setting for the region, and the SMTP user with its access key and its
-customer-managed send policy. Run Steps 1 to 3 in one terminal, signed in with the applying identity.
+The apply creates the hosted zone, the SES identity with its DKIM, MAIL FROM and DMARC records, and
+the SMTP user with its access key and its customer-managed send policy. The account's suppression list
+setting for the region is created only when `manage_account_suppression` is true. Staging sets it to
+false in `terraform.tfvars`, because other identities in the region already share that setting, so the
+plan holds no `aws_sesv2_account_suppression_attributes` resource and the setting stays with its
+existing owner; Step 8 reads it back. Run Steps 1 to 3 in one terminal, signed in with the applying
+identity.
 
 1. The lines that begin the sitting, from the repository root:
 
@@ -354,13 +358,18 @@ practice. Production access is set per account and region, so an account that al
 another identity in this region may have it already. The sandbox is accepted for staging, so nothing
 waits for the grant.
 
-2. First read three fields of the account, before anything is filed. The raw answer of `get-account`
-   holds the account's contact addresses, so it goes to the log and only three fields are printed.
+2. First read four fields of the account, before anything is filed. The raw answer of `get-account`
+   holds the account's contact addresses, so it goes to the log and only four fields are printed.
 
    ```bash
    aws sesv2 get-account --region eu-north-1 --output json > "$L/s2a.json" 2> "$L/s2a.err"; echo "s2a_account_exit=$?"
-   jq -r '"s2a_production=\(.ProductionAccessEnabled)", "s2a_sending=\(.SendingEnabled)", "s2a_max24h=\(.SendQuota.Max24HourSend)"' "$L/s2a.json"
+   jq -r '"s2a_production=\(.ProductionAccessEnabled)", "s2a_sending=\(.SendingEnabled)", "s2a_max24h=\(.SendQuota.Max24HourSend)", "s2a_suppression=\(.SuppressionAttributes.SuppressedReasons // [] | sort | join(","))"' "$L/s2a.json"
    ```
+
+   The request below tells AWS that bounces and complaints go to the account suppression list. This
+   root does not own that setting, so `s2a_suppression` must read `BOUNCE,COMPLAINT` before a request
+   is filed. If it reads anything else, file no request and paste the lines up to it: whoever owns the
+   account-level setting decides it first, or the description is changed to match.
 
    If it prints `s2a_production=true`, the account already has production access in this region. File
    no request, skip the rest of this step and Step 9, write `answer_skip_steps_2_3=yes` and go on with
