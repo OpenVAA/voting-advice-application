@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 184
 current_phase_name: Hosted Supabase Measurement and Conformance Probe
-current_plan: 3
+current_plan: 4
 status: executing
-stopped_at: Completed 184-04-PLAN.md
-last_updated: "2026-10-26T13:05:59.032Z"
+stopped_at: Completed 184-05-PLAN.md
+last_updated: "2026-10-26T13:12:18.015Z"
 last_activity: 2026-10-26
 last_activity_desc: Phase 184 execution started
-state_head: b92cae268edd00e40e490cbdf871b90a600b5b21
+state_head: 9603a84bc2731c5c1c08364a5d5e4e6f30d3bdeb
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 107
-  completed_plans: 84
+  completed_plans: 85
   percent: 30
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 184 (Hosted Supabase Measurement and Conformance Probe) — EXECUTING
-Plan: 3 of 25
+Plan: 4 of 25
 Status: Ready to execute
 Last activity: 2026-10-26 — Phase 184 execution started
 
@@ -43,7 +43,7 @@ Progress: [███░░░░░░░] 30% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 3
+**Current Plan:** 4
 
 From 184 on, the numeric order is the dependency order.
 
@@ -119,6 +119,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 183 P27 | 7min | 2 tasks | 1 files |
 | Phase 184 P01 | 6min | 2 tasks | 8 files |
 | Phase 184 P04 | 14min | 2 tasks | 4 files |
+| Phase 184 P05 | 10 min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -203,6 +204,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 184]: 184-01: probe collect() preflights every requested source before any read; responses grouped by endpoint ({ management: { postgrest: { max_rows } } }); requests are GET with redirect manual and a 30 s timeout; unsafe finding/reason text is withheld, never printed
 - [Phase 184]: 184-04: check-drift --target linked refuses PGHOSTADDR/PGSERVICE and non-exact pooler hosts besides the planned ref/PGHOST/PGUSER/6543 rules; direct host leaves PGUSER free
 - [Phase 184]: 184-04: push-migrations.sh kills a CLI child 10 s after an interrupt (the CLI binary was seen ignoring SIGTERM); a dry run matching neither up-to-date nor a migration list is exit 2, never a push
+- [Phase 184]: 184-05: functions.identity-callback/verify_jwt is a not-compared row of the parity guard (the CLI deploys it from config.toml; the conformance probe compares the served value); every [functions.*] key must be classified or lint:check fails
 
 ### Pending Todos
 
@@ -255,6 +257,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-10-26T13:05:58.109Z
-**Stopped At:** Completed 184-04-PLAN.md
+Last session: 2026-10-26T13:12:17.105Z
+**Stopped At:** Completed 184-05-PLAN.md
 **Resume File:** None
