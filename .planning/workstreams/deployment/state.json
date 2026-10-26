@@ -21,7 +21,7 @@
     {
       "number": "184",
       "name": "Hosted Supabase Measurement and Conformance Probe",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "number": "185",
@@ -54,5 +54,5 @@
     "label": "Advance to the next step",
     "reason": "Phase 5 of 10 · 30% · executing"
   },
-  "updated_at": "2026-10-26T12:51:19.664Z"
+  "updated_at": "2026-10-26T13:05:53.504Z"
 }

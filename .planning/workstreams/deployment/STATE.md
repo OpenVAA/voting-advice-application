@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 184
 current_phase_name: Hosted Supabase Measurement and Conformance Probe
-current_plan: 2
+current_plan: 3
 status: executing
-stopped_at: Completed 184-01-PLAN.md
-last_updated: "2026-10-26T12:51:23.938Z"
+stopped_at: Completed 184-04-PLAN.md
+last_updated: "2026-10-26T13:05:59.032Z"
 last_activity: 2026-10-26
 last_activity_desc: Phase 184 execution started
-state_head: 7e84a319b5877c88c2f73638872655be81e8454c
+state_head: b92cae268edd00e40e490cbdf871b90a600b5b21
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 107
-  completed_plans: 83
+  completed_plans: 84
   percent: 30
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 184 (Hosted Supabase Measurement and Conformance Probe) — EXECUTING
-Plan: 2 of 25
+Plan: 3 of 25
 Status: Ready to execute
 Last activity: 2026-10-26 — Phase 184 execution started
 
@@ -43,7 +43,7 @@ Progress: [███░░░░░░░] 30% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 2
+**Current Plan:** 3
 
 From 184 on, the numeric order is the dependency order.
 
@@ -118,6 +118,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 183 P20 | 2026-10-22T08:41Z to 2026-10-25 (operator wait); executor about 15 min | 2 tasks | 3 files |
 | Phase 183 P27 | 7min | 2 tasks | 1 files |
 | Phase 184 P01 | 6min | 2 tasks | 8 files |
+| Phase 184 P04 | 14min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -200,6 +201,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 183]: Code-review fix pass: CR-01 and 25 of 26 warnings fixed (WR-01 and WR-03 in part), WR-04 deferred; the bootstrap plan-role deny policy re-applied and the staging Supabase plan seen empty (2026-10-26). Operator rulings of 2026-10-26: WR-01 option (a), keep `ReadOnlyAccess` with the current denies; WR-04 deferred, decision A-08 kept; the WR-03 remainder deferred. All three go to phase 184 (SECURITY T-183-09/10/11, AR-183-01/02, TR-183-01/02)
 - [Phase 183]: SUPA-11 observed (183-27): `lint:check` and `format:check` exit 0 on the final tree de904bfff, and criterion 5 clauses C5.1 to C5.6 all read seen. C5.6 rests on the CI run at 18fdcd6ca; later infra edits were validated locally only. Verification 9/9 passed (one override, INFRA-15)
 - [Phase 184]: 184-01: probe collect() preflights every requested source before any read; responses grouped by endpoint ({ management: { postgrest: { max_rows } } }); requests are GET with redirect manual and a 30 s timeout; unsafe finding/reason text is withheld, never printed
+- [Phase 184]: 184-04: check-drift --target linked refuses PGHOSTADDR/PGSERVICE and non-exact pooler hosts besides the planned ref/PGHOST/PGUSER/6543 rules; direct host leaves PGUSER free
+- [Phase 184]: 184-04: push-migrations.sh kills a CLI child 10 s after an interrupt (the CLI binary was seen ignoring SIGTERM); a dry run matching neither up-to-date nor a migration list is exit 2, never a push
 
 ### Pending Todos
 
@@ -252,6 +255,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-10-26T12:51:23.066Z
-**Stopped At:** Completed 184-01-PLAN.md
+Last session: 2026-10-26T13:05:58.109Z
+**Stopped At:** Completed 184-04-PLAN.md
 **Resume File:** None
