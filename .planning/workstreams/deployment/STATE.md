@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 184
 current_phase_name: Hosted Supabase Measurement and Conformance Probe
-current_plan: 7
+current_plan: 8
 status: executing
-stopped_at: Completed 184-07-PLAN.md
-last_updated: "2026-10-26T14:40:02.965Z"
+stopped_at: Completed 184-03-PLAN.md
+last_updated: "2026-10-26T14:57:30.972Z"
 last_activity: 2026-10-26
 last_activity_desc: Phase 184 execution started
-state_head: 3ddc84307cdfdb3e689a3cd1febcd1876f3e6547
+state_head: 972093e8404c2a4be69323f86e0284777acc8721
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 107
-  completed_plans: 88
+  completed_plans: 89
   percent: 30
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 184 (Hosted Supabase Measurement and Conformance Probe) — EXECUTING
-Plan: 7 of 25
+Plan: 8 of 25
 Status: Ready to execute
 Last activity: 2026-10-26 — Phase 184 execution started
 
@@ -43,7 +43,7 @@ Progress: [███░░░░░░░] 30% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 7
+**Current Plan:** 8
 
 From 184 on, the numeric order is the dependency order.
 
@@ -123,6 +123,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 184 P06 | 10min | 2 tasks | 8 files |
 | Phase 184 P02 | 12min | 2 tasks | 5 files |
 | Phase 184 P07 | 12min | 3 tasks | 4 files |
+| Phase 184 P03 | 14min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -214,6 +215,9 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 184]: 184-02: auth.smtp fails on a root without an smtp object, so staging fails it until its smtp object is added; the batched break also plants hook_send_email_enabled false
 - [Phase 184]: PUBLIC_PROJECT_ID is canonical 00000000-0000-0000-0000-000000000001 on both hosted projects (operator ruling 2026-10-26)
 - [Phase 184]: Scratch faults.tf plants batched-break settings faults only via -var fault_set=redirect|all, incl. hook_send_email_enabled=false; revert = fault_set=none + -replace of module settings
+- [Phase 184]: 184-03: storage.buckets reads GET /v1/projects/{ref}/storage/buckets (bucket source ruled management-api by the operator 2026-10-26)
+- [Phase 184]: 184-03: a root without public_project_id reads as null; the probe's public source then stops with COULD NOT RUN public before any request
+- [Phase 184]: 184-03: the probe's catalog source refuses PGHOST of another ref, PGPORT 6543, PGHOSTADDR/PGSERVICE before psql, and a role neither superuser nor rolbypassrls after the catalog query
 
 ### Pending Todos
 
@@ -266,6 +270,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-10-26T14:40:02.003Z
-**Stopped At:** Completed 184-07-PLAN.md
+Last session: 2026-10-26T14:57:30.129Z
+**Stopped At:** Completed 184-03-PLAN.md
 **Resume File:** None
