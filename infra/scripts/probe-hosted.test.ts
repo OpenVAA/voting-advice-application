@@ -46,6 +46,8 @@ function stubJwt(payload: Record<string, unknown>): string {
 const ANON_KEY = stubJwt({ iss: 'supabase', ref: REF, role: 'anon' });
 const SERVICE_ROLE_JWT = stubJwt({ iss: 'supabase', ref: REF, role: 'service_role' });
 const SECRET_KEY = 'sb_secret_stubsecretvaluedonotprint';
+/** A value of the JWT's shape whose payload is not JSON, so its role cannot be read. */
+const UNREADABLE_JWT = `${Buffer.from('{"alg":"HS256"}').toString('base64url')}.bm90LWpzb24.c3R1Yi1zaWc`;
 
 /** The nominations a conforming project serves to the whole read: more than the hosted default page of 1000. */
 const WHOLE_ROWS = 1510;
@@ -383,6 +385,9 @@ describe('readExpected', () => {
           '',
           '[functions.beta]',
           'import_map = "./import_map.json"',
+          '',
+          '[storage.buckets.assets]',
+          'public = true',
           ''
         ].join('\n')
       );
@@ -418,6 +423,32 @@ describe('readExpected', () => {
       expect(() => readExpected({ root })).toThrow(/terraform\.tfvars: .*public_project_id/);
     } finally {
       rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('names the bucket when config.toml sets its public flag to no boolean', () => {
+    const repo = mkdtempSync(join(tmpdir(), 'probe-hosted-repo-'));
+    try {
+      for (const file of [
+        'infra/modules/supabase/hosted-settings.json',
+        'packages/app-shared/src/settings/staticSettings.ts',
+        'apps/supabase/supabase/functions/send-email/index.ts'
+      ]) {
+        mkdirSync(dirname(join(repo, file)), { recursive: true });
+        writeFileSync(join(repo, file), readFileSync(join(REPO_ROOT, file), 'utf8'));
+      }
+      writeFileSync(
+        join(repo, 'apps/supabase/supabase/config.toml'),
+        readFileSync(join(REPO_ROOT, 'apps/supabase/supabase/config.toml'), 'utf8').replace(
+          /(\[storage\.buckets\.private-assets\]\npublic = )false/,
+          '$1"no"'
+        )
+      );
+      expect(() => readExpected({ repoRoot: repo, root: fixtureRoot })).toThrow(
+        /config\.toml: \[storage\.buckets\.private-assets\] sets public/
+      );
+    } finally {
+      rmSync(repo, { recursive: true, force: true });
     }
   });
 
@@ -1112,8 +1143,8 @@ describe('probe-hosted.mjs', () => {
     expectNoSecret(run);
   });
 
-  it('exits 2 with COULD NOT RUN public and no request when SUPABASE_ANON_KEY is a service-role JWT or a secret key', async () => {
-    for (const key of [SERVICE_ROLE_JWT, SECRET_KEY]) {
+  it('exits 2 with COULD NOT RUN public and no request when SUPABASE_ANON_KEY is a service-role JWT, a secret key or an unreadable JWT', async () => {
+    for (const key of [SERVICE_ROLE_JWT, SECRET_KEY, UNREADABLE_JWT]) {
       stub.log = [];
       const run = await runProbe(['--root', fixtureRoot], { ...withToken, SUPABASE_ANON_KEY: key });
       expect(run.code).toBe(2);

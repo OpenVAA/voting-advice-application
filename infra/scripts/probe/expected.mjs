@@ -20,6 +20,10 @@
  *                        `apps/supabase/supabase/functions/` that holds an `index.ts`, with `verify_jwt` of its
  *                        `[functions.<slug>]` table in config.toml, or `true` when the table or the key is absent (the
  *                        platform verifies a JWT unless told not to)
+ *   publicProjectId      `public_project_id` of the root's `terraform.tfvars`, a lower-case canonical uuid, or null
+ *                        when the root sets none: the project whose rows the public read asks for
+ *   projectUrl           `https://<ref>.supabase.co`, the project's own API
+ *   buckets              `[{ id, public }]`, sorted by id: one entry per `[storage.buckets.<id>]` table of config.toml
  *
  * The reading rules are the hosted-settings parity guard's: the JSON is parsed whole, `pageSize` is a line read inside
  * the `dataAdapter` block, a `terraform.tfvars` assignment is a line `name = value` with an optional trailing comment
@@ -359,6 +363,33 @@ export function readFunctions(repoRoot, config) {
   });
 }
 
+const BUCKET_TABLE = /^storage\.buckets\.([A-Za-z0-9_-]+)$/;
+
+/**
+ * The storage buckets config.toml declares: one per `[storage.buckets.<id>]` table, with its `public` flag.
+ *
+ * @returns `[{ id, public }]`, sorted by id.
+ * @throws ProbeInputError when no bucket is declared or a bucket's `public` is not a boolean the line read can read.
+ */
+export function readBuckets(file, text) {
+  const ids = new Set();
+  for (const line of text.split('\n')) {
+    const header = TABLE_HEADER.exec(line);
+    const bucket = header ? BUCKET_TABLE.exec(tableName(header[1])) : null;
+    if (bucket) ids.add(bucket[1]);
+  }
+  if (ids.size === 0) throw new ProbeInputError(file, 'declares no [storage.buckets.<id>] table');
+  const keys = readConfigTables(text, (table) => BUCKET_TABLE.test(table));
+  return [...ids].sort().map((id) => {
+    const value = keys.get(`storage.buckets.${id}/public`);
+    if (typeof value !== 'boolean')
+      throw new ProbeInputError(file, `[storage.buckets.${id}] sets public to no boolean the line read can read`);
+    return { id, public: value };
+  });
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
 const SMTP_ATTRIBUTES = ['host', 'port', 'admin_email', 'sender_name'];
 
 /**
@@ -367,7 +398,7 @@ const SMTP_ATTRIBUTES = ['host', 'port', 'admin_email', 'sender_name'];
  * @param options.repoRoot - The repository root the tracked files are read from. Defaults to this checkout's.
  * @param options.root - The absolute path of the target Terraform root, which holds its `terraform.tfvars`.
  * @returns `{ ref, publicOrigin, hooks, smtp, maxRows, auth, authHook, authSendEmailHook, redirectPaths, api,
- *   oauthServer, functions }`.
+ *   oauthServer, functions, publicProjectId, projectUrl, buckets }`.
  * @throws ProbeInputError naming the file and the value when an input cannot be read.
  */
 export function readExpected({ repoRoot = REPO_ROOT, root }) {
@@ -387,6 +418,9 @@ export function readExpected({ repoRoot = REPO_ROOT, root }) {
     hooks[name] = value;
   }
   const smtp = readTfvarsObject(tfvars.file, tfvars.text, 'smtp', SMTP_ATTRIBUTES);
+  const publicProjectId = readTfvarsString(tfvars.file, tfvars.text, 'public_project_id');
+  if (publicProjectId !== null && !UUID.test(publicProjectId))
+    throw new ProbeInputError(tfvars.file, 'public_project_id is not a lower-case canonical uuid');
 
   const settings = readText(repoRoot, path.join(repoRoot, EXPECTED_PATHS.settings));
   const staticSettings = readText(repoRoot, path.join(repoRoot, EXPECTED_PATHS.staticSettings));
@@ -403,6 +437,9 @@ export function readExpected({ repoRoot = REPO_ROOT, root }) {
     },
     ...readSettingsGroups(settings.file, settings.text),
     oauthServer: readOauthServer(config.file, config.text),
-    functions: readFunctions(repoRoot, config)
+    functions: readFunctions(repoRoot, config),
+    publicProjectId,
+    projectUrl: `https://${ref}.supabase.co`,
+    buckets: readBuckets(config.file, config.text)
   };
 }

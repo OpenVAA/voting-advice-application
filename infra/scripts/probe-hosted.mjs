@@ -8,19 +8,26 @@
  * `terraform.tfvars` (the project ref, the public origin, the two hook switches and the `smtp` object),
  * `infra/modules/supabase/hosted-settings.json`, `dataAdapter.pageSize` in
  * `packages/app-shared/src/settings/staticSettings.ts`, `[auth.oauth_server]` and the `[functions.<slug>]` tables of
- * `apps/supabase/supabase/config.toml`, and the function directories under `apps/supabase/supabase/functions/`. The
- * probe holds no table of expected values of its own.
+ * `apps/supabase/supabase/config.toml`, its `[storage.buckets.<id>]` tables, and the function directories under
+ * `apps/supabase/supabase/functions/`. The probe holds no table of expected values of its own.
  *
  * What it reads: the probe reads a hosted project through three sources, of which this version has one:
  *
  *   management   The Management API, with the access token from `SUPABASE_ACCESS_TOKEN`. Preflight
  *                `GET /v1/projects/{ref}`; the PostgREST settings give `max_rows` and the exposed schemas, the auth
  *                settings give the fields the auth checks compare, and the functions list gives each deployed
- *                function's slug, status and `verify_jwt`. It also reads the key model for the note below.
- *   public API   (not yet present) The project's own API, with the anon key only.
- *   catalog      (not yet present) The database catalog over psql, as a read-only role.
+ *                function's slug, status and `verify_jwt`, and the bucket list each bucket's id and `public` flag. It
+ *                also reads the key model for the note below.
+ *   public       The project's own API at `https://<ref>.supabase.co`, with the key in `SUPABASE_ANON_KEY` only.
+ *                Preflight `GET /auth/v1/settings`; it reads the public auth settings, every nomination of the
+ *                root's `public_project_id` in one read with the total asked for, and the answers of the three
+ *                functions.
+ *   catalog      (not yet present) The database catalog over psql.
  *
- * It never takes, reads or prints the service-role key, and it writes nothing to any project: every request is a GET.
+ * It never takes, reads or prints the service-role key: an anon key that is a secret key or a JWT whose role is
+ * `service_role` is refused before any request. It writes nothing to any project. Every request is a GET but two
+ * POSTs: a `check-code` of a random code to `account-access`, which reads, and an empty object to
+ * `identity-callback`, which without a provider configured refuses before it reads its body.
  * Of each response body it keeps the named fields it compares and drops the rest at once, so a secret served next to a
  * compared field (the PostgREST settings hold the JWT secret, the auth settings the SMTP credentials) is never kept or
  * printed. Of the SMTP user name it keeps only whether one is set, and of each issued key only its type and name.
@@ -48,6 +55,19 @@
  *                           sets and named in sorted order.
  *   functions.verify-jwt    Each of those functions that is deployed serves the `verify_jwt` its
  *                           `[functions.<slug>]` table of config.toml declares, `true` when it declares none.
+ *   auth.public-settings    The anon `/auth/v1/settings` serves `disable_signup` and `mailer_autoconfirm` as the JSON's.
+ *   rows.read-whole         One anon read of the nominations of the root's `public_project_id` returns them all:
+ *                           `Content-Range` is `0-(N-1)/N`, the body holds N rows, and N is more than 1000, the
+ *                           hosted default page. A range that stops short is a truncation; an unsatisfied range with a total of 0 means no row is
+ *                           readable, so the project may be closed for voters or hold no nominations.
+ *   functions.served        `account-access` answers a `check-code` with 200 and a status, and `send-email` answers a
+ *                           GET with 405 and its own method-not-allowed body: each function, not the gateway, answered.
+ *   functions.identity-callback-unverified
+ *                           Called without Authorization, `identity-callback` answers a GET with 405 and its own body,
+ *                           so the gateway demands no JWT, and a POST of `{}` with 500 and `{"error":"Internal server
+ *                           error"}`, so with no provider configured it fails closed.
+ *   storage.buckets         The served bucket ids are exactly the `[storage.buckets.<id>]` tables of config.toml, each
+ *                           with its `public` flag. The bucket list is read from the Management API.
  *
  * Every comparison is aware of the JSON type: a string served for a boolean or a number is a finding.
  *
@@ -65,7 +85,9 @@
  *
  * Environment:
  *   SUPABASE_ACCESS_TOKEN      the Management API access token, sent as a bearer token and never printed
+ *   SUPABASE_ANON_KEY          the project's anon key, never printed; a secret or service-role key is refused
  *   PROBE_MANAGEMENT_API_URL   test seam: the base address of the Management API (default https://api.supabase.com)
+ *   PROBE_PROJECT_URL          test seam: the base address of the project's own API (default https://<ref>.supabase.co)
  *
  * Usage:
  *   node infra/scripts/probe-hosted.mjs --root <dir>

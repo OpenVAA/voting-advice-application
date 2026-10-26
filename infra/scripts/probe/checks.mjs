@@ -183,6 +183,86 @@ function verifyJwtCheck(expected, served) {
   );
 }
 
+/** The hosted API's default page: a read that returns more rows than this shows the page limit was raised. */
+const HOSTED_DEFAULT_PAGE_LIMIT = 1000;
+
+const CONTENT_RANGE = /^(\d+)-(\d+)\/(\d+)$/;
+const UNSATISFIED_RANGE = /^\*\/(\d+)$/;
+
+/** The nominations read against the whole of the project's nominations, which must number more than a default page. */
+function readWholeCheck(served) {
+  const { status, contentRange, rows } = served;
+  if (status !== 200 && status !== 206)
+    return { pass: false, finding: `the nominations read answered ${status}, so no row was read` };
+  const range = typeof contentRange === 'string' ? CONTENT_RANGE.exec(contentRange) : null;
+  const empty = typeof contentRange === 'string' ? UNSATISFIED_RANGE.exec(contentRange) : null;
+  if (empty !== null && Number(empty[1]) === 0)
+    return {
+      pass: false,
+      finding:
+        "no nominations of the root's public_project_id are readable with the anon key (Content-Range */0): the project may be closed for voters, or hold no nominations"
+    };
+  if (range === null)
+    return {
+      pass: false,
+      finding: `the nominations read gave Content-Range ${show(contentRange ?? undefined)}, not a range with the total of rows`
+    };
+  const [first, last, total] = range.slice(1).map(Number);
+  if (first !== 0 || last !== total - 1)
+    return {
+      pass: false,
+      finding: `the nominations read returned rows ${first}-${last} of ${total} (Content-Range ${contentRange}): ${last - first + 1} of ${total} rows, truncated by a page limit`
+    };
+  if (rows !== total)
+    return {
+      pass: false,
+      finding: `the nominations read gave Content-Range ${contentRange}, but its body holds ${rows === null ? 'no array of rows' : `${rows} rows`}`
+    };
+  if (total <= HOSTED_DEFAULT_PAGE_LIMIT)
+    return {
+      pass: false,
+      finding: `the nominations read returned all ${total} rows, but more than ${HOSTED_DEFAULT_PAGE_LIMIT} are needed to show a read past the hosted default page of ${HOSTED_DEFAULT_PAGE_LIMIT}`
+    };
+  return { pass: true };
+}
+
+/** The names the findings give the kinds of body a function's answer can hold. */
+const BODY_NAMES = {
+  'method-not-allowed': 'its own method-not-allowed body',
+  'internal-server-error': 'its own internal-server-error body',
+  'status-object': 'a body with a status',
+  other: 'another body than the function writes',
+  'not-json': 'a body that is not JSON'
+};
+
+/** One call of a function against the status and the kind of body the function itself answers with. */
+function answerClause(call, served, status, kind) {
+  if (served.status === status && served.kind === kind) return null;
+  return `${call} answered ${served.status} with ${BODY_NAMES[served.kind] ?? 'an unknown body'}, expected ${status} with ${BODY_NAMES[kind]}`;
+}
+
+/** A bucket id as a finding may name it. */
+function showBucket(id) {
+  return typeof id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(id) ? id : `a bucket whose id is ${show(id)}`;
+}
+
+/** The served buckets against the tables of config.toml: the same set of ids, each with its `public` flag. */
+function bucketsCheck(expected, served) {
+  if (!Array.isArray(served)) return { pass: false, finding: `the bucket list is ${jsonType(served)}, not an array` };
+  const want = expected.buckets.map((b) => b.id);
+  const servedIds = served.map((b) => b.id);
+  const missing = want.filter((id) => !servedIds.includes(id));
+  const unexpected = [...new Set(servedIds.filter((id) => !want.includes(id)).map(showBucket))].sort();
+  return verdict([
+    missing.length === 0 ? null : `not served: ${missing.join(', ')}`,
+    unexpected.length === 0 ? null : `served but not declared in config.toml: ${unexpected.join(', ')}`,
+    ...expected.buckets.map(({ id, public: isPublic }) => {
+      const entry = served.find((b) => b.id === id);
+      return entry === undefined ? null : compare(`public of ${id}`, entry.public, isPublic, 'config.toml');
+    })
+  ]);
+}
+
 /** The keys of the JSON `auth` group that a check of their own compares. */
 const AUTH_KEYS_CHECKED_ALONE = ['disable_signup', 'mailer_autoconfirm'];
 
@@ -330,6 +410,60 @@ export const CHECKS = [
     source: 'management',
     run(expected, responses) {
       return verifyJwtCheck(expected, responses.management.functions);
+    }
+  },
+  {
+    name: 'auth.public-settings',
+    source: 'public',
+    run(expected, responses) {
+      const served = responses.public.settings;
+      return verdict(AUTH_KEYS_CHECKED_ALONE.map((key) => compare(key, served[key], expected.auth[key], JSON_FILE)));
+    }
+  },
+  {
+    name: 'rows.read-whole',
+    source: 'public',
+    run(expected, responses) {
+      return readWholeCheck(responses.public.rows);
+    }
+  },
+  {
+    name: 'functions.served',
+    source: 'public',
+    run(expected, responses) {
+      const served = responses.public.functions;
+      return verdict([
+        answerClause('account-access', served.accountAccess, 200, 'status-object'),
+        answerClause('send-email', served.sendEmail, 405, 'method-not-allowed')
+      ]);
+    }
+  },
+  {
+    name: 'functions.identity-callback-unverified',
+    source: 'public',
+    run(expected, responses) {
+      const served = responses.public.functions;
+      return verdict([
+        answerClause(
+          'identity-callback, called by GET without Authorization,',
+          served.identityCallbackGet,
+          405,
+          'method-not-allowed'
+        ),
+        answerClause(
+          'identity-callback, called by POST of an empty object without Authorization,',
+          served.identityCallbackPost,
+          500,
+          'internal-server-error'
+        )
+      ]);
+    }
+  },
+  {
+    name: 'storage.buckets',
+    source: 'management',
+    run(expected, responses) {
+      return bucketsCheck(expected, responses.management.buckets);
     }
   }
 ];
