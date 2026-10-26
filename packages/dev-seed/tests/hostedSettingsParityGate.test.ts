@@ -77,13 +77,40 @@ function edit(file: string, from: string | RegExp, to: string): void {
   writeFileSync(file, edited);
 }
 
+/** A proxy on a closed local port, so that a run which wrongly reached a network would fail fast instead of reaching a hosted API. */
+const UNREACHABLE_NETWORK = {
+  HTTPS_PROXY: 'http://127.0.0.1:9',
+  HTTP_PROXY: 'http://127.0.0.1:9',
+  ALL_PROXY: 'http://127.0.0.1:9'
+};
+
 /**
- * Run the guard from the repository root.
+ * Run the guard from the repository root, offline and with no hosted credential.
  * @param args - The guard's arguments.
  * @returns The spawn result, with stdout and stderr as text.
  */
 function runGuard(args: Array<string>): SpawnSyncReturns<string> {
-  return spawnSync(process.execPath, [GUARD_PATH, ...args], { cwd: REPO_ROOT, encoding: 'utf8' });
+  const env: NodeJS.ProcessEnv = { ...process.env, ...UNREACHABLE_NETWORK };
+  delete env.SUPABASE_ACCESS_TOKEN;
+  return spawnSync(process.execPath, [GUARD_PATH, ...args], {
+    cwd: REPO_ROOT,
+    env,
+    encoding: 'utf8',
+    timeout: 15_000
+  });
+}
+
+/**
+ * Copy the repository's `config.toml` into a directory of its own, with a text appended.
+ * @param appended - The text appended to the copy.
+ * @returns The copy's path.
+ */
+function copyOfConfig(appended = ''): string {
+  const dir = mkdtempSync(join(tmpdir(), 'hosted-settings-parity-config-'));
+  COPIES.push(dir);
+  const config = join(dir, 'config.toml');
+  writeFileSync(config, `${readFileSync(resolve(REPO_ROOT, 'apps/supabase/supabase/config.toml'), 'utf8')}${appended}`);
+  return config;
 }
 
 /**
@@ -202,16 +229,19 @@ describe('the hosted-settings parity guard still has teeth', () => {
   });
 
   it('classifies the keys under a quoted table header that follows a table outside the family', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'hosted-settings-parity-config-'));
-    COPIES.push(dir);
-    const config = join(dir, 'config.toml');
-    writeFileSync(
-      config,
-      `${readFileSync(resolve(REPO_ROOT, 'apps/supabase/supabase/config.toml'), 'utf8')}\n[auth.external."github"]\nenabled = true\n`
-    );
-    const result = runGuard(['--config', config]);
+    const result = runGuard(['--config', copyOfConfig('\n[auth.external."github"]\nenabled = true\n')]);
     expect(result.status).toBe(1);
     expect(result.stdout).toContain('auth.external.github/enabled');
+  });
+
+  it('fails on a [functions.*] key that no row classifies, and names it', () => {
+    const result = runGuard(['--config', copyOfConfig('\n[functions.new-function]\nverify_jwt = false\n')]);
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain('functions.new-function/verify_jwt');
+  });
+
+  it('passes on an unedited copy of config.toml, so the test above fails on its added table alone', () => {
+    expect(runGuard(['--config', copyOfConfig()]).status).toBe(0);
   });
 
   it('fails when a further map is merged into the auth settings the module sends', () => {
