@@ -15,6 +15,11 @@
  *   redirectPaths        `redirect_callback_paths` of the JSON
  *   oauthServer          `{ enabled, allow_dynamic_registration }` of `[auth.oauth_server]` in
  *                        `apps/supabase/supabase/config.toml`
+ *   api                  `{ db_schema, db_extra_search_path }` of the JSON's `api` group
+ *   functions            `[{ slug, verifyJwt }]`, sorted by slug: one entry per directory under
+ *                        `apps/supabase/supabase/functions/` that holds an `index.ts`, with `verify_jwt` of its
+ *                        `[functions.<slug>]` table in config.toml, or `true` when the table or the key is absent (the
+ *                        platform verifies a JWT unless told not to)
  *
  * The reading rules are the hosted-settings parity guard's: the JSON is parsed whole, `pageSize` is a line read inside
  * the `dataAdapter` block, a `terraform.tfvars` assignment is a line `name = value` with an optional trailing comment
@@ -26,7 +31,7 @@
  * This module has no side effect on import.
  */
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -34,6 +39,7 @@ export const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url
 
 export const EXPECTED_PATHS = {
   config: 'apps/supabase/supabase/config.toml',
+  functions: 'apps/supabase/supabase/functions',
   settings: 'infra/modules/supabase/hosted-settings.json',
   staticSettings: 'packages/app-shared/src/settings/staticSettings.ts'
 };
@@ -199,9 +205,9 @@ function isScalar(value) {
 }
 
 /**
- * The groups of the hosted settings JSON that the auth checks compare with.
+ * The groups of the hosted settings JSON that the auth and API checks compare with.
  *
- * @returns `{ auth, authHook, authSendEmailHook, redirectPaths }`.
+ * @returns `{ auth, authHook, authSendEmailHook, redirectPaths, api: { db_schema, db_extra_search_path } }`.
  * @throws ProbeInputError when the text is not JSON, a group is missing or not an object of scalar values, or the
  *   redirect paths are not a non-empty array of strings.
  */
@@ -229,6 +235,12 @@ export function readSettingsGroups(file, text) {
   if (!Array.isArray(paths) || paths.length === 0 || !paths.every((p) => typeof p === 'string'))
     throw new ProbeInputError(file, 'redirect_callback_paths is not a non-empty array of strings');
   groups.redirectPaths = paths;
+  const api = isPlainObject(settings.api) ? settings.api : {};
+  groups.api = {};
+  for (const key of ['db_schema', 'db_extra_search_path']) {
+    if (typeof api[key] !== 'string') throw new ProbeInputError(file, `holds no string api.${key}`);
+    groups.api[key] = api[key];
+  }
   return groups;
 }
 
@@ -266,15 +278,18 @@ function scalarValue(raw) {
   return undefined;
 }
 
+/** The value `readConfigTables` records for a key whose value cannot be read, or that is written twice. */
+export const UNREADABLE = Symbol('unreadable');
+
 /**
- * The keys of the `config.toml` tables a predicate selects, by a line read.
+ * The keys of the `config.toml` tables a predicate selects, by a line read. A key whose value is not a boolean, an
+ * integer or a plain quoted string, or that is written twice in one table, is recorded as `UNREADABLE`, so that only a
+ * reader that needs that key fails on it.
  *
  * @param wanted - Whether a table, by its plain name, is read.
- * @returns A map from `<table>/<key>` to the value.
- * @throws ProbeInputError when a line of a selected table is not a key the line read can read, its value is not a
- *   boolean, an integer or a plain quoted string, or a key is written twice in one table.
+ * @returns A map from `<table>/<key>` to the value or `UNREADABLE`.
  */
-export function readConfigTables(file, text, wanted) {
+export function readConfigTables(text, wanted) {
   const keys = new Map();
   let table = null;
   for (const line of text.split('\n')) {
@@ -284,15 +299,12 @@ export function readConfigTables(file, text, wanted) {
       continue;
     }
     if (table === null || !wanted(table)) continue;
-    if (/^\s*(?:#.*)?$/.test(line)) continue;
     const assignment = KEY_LINE.exec(line);
-    if (!assignment) throw new ProbeInputError(file, `a line of [${table}] is not a key the line read can read`);
+    if (!assignment) continue;
     const id = `${table}/${assignment[1]}`;
     const raw = valueText(assignment[2]);
     const value = raw === null ? undefined : scalarValue(raw);
-    if (value === undefined) throw new ProbeInputError(file, `${id} is not a value the line read can read`);
-    if (keys.has(id)) throw new ProbeInputError(file, `${id} is written twice`);
-    keys.set(id, value);
+    keys.set(id, keys.has(id) || value === undefined ? UNREADABLE : value);
   }
   return keys;
 }
@@ -303,14 +315,48 @@ export function readConfigTables(file, text, wanted) {
  * @throws ProbeInputError when either is missing or is not a boolean.
  */
 export function readOauthServer(file, text) {
-  const keys = readConfigTables(file, text, (table) => table === 'auth.oauth_server');
+  const keys = readConfigTables(text, (table) => table === 'auth.oauth_server');
   const flags = {};
   for (const key of ['enabled', 'allow_dynamic_registration']) {
     const value = keys.get(`auth.oauth_server/${key}`);
-    if (typeof value !== 'boolean') throw new ProbeInputError(file, `[auth.oauth_server] sets no boolean ${key}`);
+    if (typeof value !== 'boolean')
+      throw new ProbeInputError(file, `[auth.oauth_server] sets ${key} to no boolean the line read can read, or twice`);
     flags[key] = value;
   }
   return flags;
+}
+
+/**
+ * The functions of the repository: each directory of the functions directory that holds an `index.ts`, with the
+ * `verify_jwt` its `[functions.<slug>]` table of config.toml declares, `true` when the table or the key is absent.
+ *
+ * @returns `[{ slug, verifyJwt }]`, sorted by slug.
+ * @throws ProbeInputError when the directory cannot be read or holds no function, or a declared `verify_jwt` is not a
+ *   boolean.
+ */
+export function readFunctions(repoRoot, config) {
+  const dir = path.join(repoRoot, EXPECTED_PATHS.functions);
+  let entries;
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch (error) {
+    throw new ProbeInputError(display(repoRoot, dir), `could not be read (${error.code ?? error.name})`);
+  }
+  const slugs = entries
+    .filter((entry) => entry.isDirectory() && existsSync(path.join(dir, entry.name, 'index.ts')))
+    .map((entry) => entry.name)
+    .sort();
+  if (slugs.length === 0) throw new ProbeInputError(display(repoRoot, dir), 'holds no directory with an index.ts');
+  const declared = readConfigTables(config.text, (table) => table.startsWith('functions.'));
+  return slugs.map((slug) => {
+    const value = declared.get(`functions.${slug}/verify_jwt`);
+    if (value !== undefined && typeof value !== 'boolean')
+      throw new ProbeInputError(
+        config.file,
+        `[functions.${slug}] sets verify_jwt to no boolean the line read can read, or twice`
+      );
+    return { slug, verifyJwt: value ?? true };
+  });
 }
 
 const SMTP_ATTRIBUTES = ['host', 'port', 'admin_email', 'sender_name'];
@@ -320,7 +366,8 @@ const SMTP_ATTRIBUTES = ['host', 'port', 'admin_email', 'sender_name'];
  *
  * @param options.repoRoot - The repository root the tracked files are read from. Defaults to this checkout's.
  * @param options.root - The absolute path of the target Terraform root, which holds its `terraform.tfvars`.
- * @returns `{ ref, publicOrigin, hooks, smtp, maxRows, auth, authHook, authSendEmailHook, redirectPaths, oauthServer }`.
+ * @returns `{ ref, publicOrigin, hooks, smtp, maxRows, auth, authHook, authSendEmailHook, redirectPaths, api,
+ *   oauthServer, functions }`.
  * @throws ProbeInputError naming the file and the value when an input cannot be read.
  */
 export function readExpected({ repoRoot = REPO_ROOT, root }) {
@@ -355,6 +402,7 @@ export function readExpected({ repoRoot = REPO_ROOT, root }) {
       pageSize: readPageSize(staticSettings.file, staticSettings.text)
     },
     ...readSettingsGroups(settings.file, settings.text),
-    oauthServer: readOauthServer(config.file, config.text)
+    oauthServer: readOauthServer(config.file, config.text),
+    functions: readFunctions(repoRoot, config)
   };
 }

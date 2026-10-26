@@ -7,21 +7,23 @@
  * are read from tracked files only, the same files the hosted-settings parity guard reads: the target root's
  * `terraform.tfvars` (the project ref, the public origin, the two hook switches and the `smtp` object),
  * `infra/modules/supabase/hosted-settings.json`, `dataAdapter.pageSize` in
- * `packages/app-shared/src/settings/staticSettings.ts` and `[auth.oauth_server]` of
- * `apps/supabase/supabase/config.toml`. The probe holds no table of expected values of its own.
+ * `packages/app-shared/src/settings/staticSettings.ts`, `[auth.oauth_server]` and the `[functions.<slug>]` tables of
+ * `apps/supabase/supabase/config.toml`, and the function directories under `apps/supabase/supabase/functions/`. The
+ * probe holds no table of expected values of its own.
  *
  * What it reads: the probe reads a hosted project through three sources, of which this version has one:
  *
  *   management   The Management API, with the access token from `SUPABASE_ACCESS_TOKEN`. Preflight
- *                `GET /v1/projects/{ref}`; the PostgREST settings give `max_rows`, and the auth settings give the
- *                fields the auth checks compare.
+ *                `GET /v1/projects/{ref}`; the PostgREST settings give `max_rows` and the exposed schemas, the auth
+ *                settings give the fields the auth checks compare, and the functions list gives each deployed
+ *                function's slug, status and `verify_jwt`. It also reads the key model for the note below.
  *   public API   (not yet present) The project's own API, with the anon key only.
  *   catalog      (not yet present) The database catalog over psql, as a read-only role.
  *
  * It never takes, reads or prints the service-role key, and it writes nothing to any project: every request is a GET.
  * Of each response body it keeps the named fields it compares and drops the rest at once, so a secret served next to a
  * compared field (the PostgREST settings hold the JWT secret, the auth settings the SMTP credentials) is never kept or
- * printed. Of the SMTP user name it keeps only whether one is set.
+ * printed. Of the SMTP user name it keeps only whether one is set, and of each issued key only its type and name.
  *
  * Checks, in the order they run and print:
  *
@@ -39,8 +41,20 @@
  *   auth.oauth-server       `oauth_server_enabled` and `oauth_server_allow_dynamic_registration` are `enabled` and
  *                           `allow_dynamic_registration` of `[auth.oauth_server]` in config.toml.
  *   auth.other-settings     Every other key of the JSON's `auth` group is served with its JSON value.
+ *   api.schemas             `db_schema` and `db_extra_search_path` are the JSON's.
+ *   functions.deployed      The deployed slugs are exactly the function directories of the repository (a directory
+ *                           under apps/supabase/supabase/functions/ holding an index.ts), each one ACTIVE. A slug
+ *                           beyond them, such as a temporary function left behind, fails it. Slugs are compared as
+ *                           sets and named in sorted order.
+ *   functions.verify-jwt    Each of those functions that is deployed serves the `verify_jwt` its
+ *                           `[functions.<slug>]` table of config.toml declares, `true` when it declares none.
  *
  * Every comparison is aware of the JSON type: a string served for a boolean or a number is a finding.
+ *
+ * After the check lines, one line `NOTE key-model: issued <type/name, ...>; legacy keys <enabled|disabled|endpoint
+ * gone>` reports the key model: the type and name of each issued key, and whether the legacy keys are enabled, where a
+ * 404 from that endpoint means it has been removed. It is not a check, and it never changes the exit status; a read of
+ * the key model that fails is reported in it as not read.
  *
  * Each source answers its preflight before any check that reads it runs. When a source does not answer, or an input
  * file cannot be read, the probe prints one `COULD NOT RUN <source>: <reason>` line, prints no check line and exits 2:
@@ -59,7 +73,8 @@
  *     repository root
  *   node infra/scripts/probe-hosted.mjs --help
  *
- * Check lines go to stdout as `PASS <name>` or `FAIL <name>: <finding>`; the summary goes to stderr.
+ * Check lines go to stdout as `PASS <name>` or `FAIL <name>: <finding>`, followed by the note; the summary goes to
+ * stderr.
  *
  * Exit codes:
  *   0 - every check passed
@@ -68,7 +83,7 @@
  */
 
 import path from 'node:path';
-import { CHECKS, pasteSafe, runChecks } from './probe/checks.mjs';
+import { CHECKS, keyModelNote, pasteSafe, runChecks } from './probe/checks.mjs';
 import { ProbeInputError, readExpected, REPO_ROOT } from './probe/expected.mjs';
 import { collect, SourceError } from './probe/sources.mjs';
 
@@ -129,6 +144,7 @@ async function probe(root) {
   const results = runChecks(expected, responses);
   if (results.length === 0) return couldNotRun('probe', 'no check is registered');
   for (const { name, pass, finding } of results) out(pass ? `PASS ${name}` : `FAIL ${name}: ${finding}`);
+  if (responses.management !== undefined) out(keyModelNote(responses.management.keys));
   const failed = results.filter((r) => !r.pass).length;
   console.error(
     failed === 0

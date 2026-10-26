@@ -9,7 +9,8 @@
  * address, a user name or a credential a finding names the field and never a value. Every comparison is aware of the
  * JSON type: a string `"true"` served for the boolean `true` is a finding.
  *
- * The checks run, and their lines print, in the order of `CHECKS`.
+ * The checks run, and their lines print, in the order of `CHECKS`. `keyModelNote` formats the key model the
+ * management source reads; that note is not a check and never changes a verdict.
  *
  * This module has no side effect on import.
  */
@@ -146,6 +147,42 @@ function smtpCheck(expected, served) {
   ]);
 }
 
+/** A function slug as a finding may name it. */
+function showSlug(slug) {
+  return typeof slug === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(slug) ? slug : `a slug that is ${show(slug)}`;
+}
+
+/** The served functions against the directories of the repository: the same set of slugs, each one ACTIVE. */
+function deployedCheck(expected, served) {
+  if (!Array.isArray(served))
+    return { pass: false, finding: `the functions list is ${jsonType(served)}, not an array` };
+  const want = expected.functions.map((f) => f.slug);
+  const servedSlugs = served.map((entry) => entry.slug);
+  const missing = want.filter((slug) => !servedSlugs.includes(slug));
+  const unexpected = [...new Set(servedSlugs.filter((slug) => !want.includes(slug)).map(showSlug))].sort();
+  const inactive = want.flatMap((slug) => {
+    const entry = served.find((e) => e.slug === slug);
+    return entry === undefined || entry.status === 'ACTIVE' ? [] : [`${slug} is ${show(entry.status)}, not ACTIVE`];
+  });
+  return verdict([
+    missing.length === 0 ? null : `not deployed: ${missing.join(', ')}`,
+    unexpected.length === 0 ? null : `deployed but without a directory in the repository: ${unexpected.join(', ')}`,
+    ...inactive
+  ]);
+}
+
+/** The served `verify_jwt` of each function of the repository that is served, against what config.toml declares. */
+function verifyJwtCheck(expected, served) {
+  if (!Array.isArray(served))
+    return { pass: false, finding: `the functions list is ${jsonType(served)}, not an array` };
+  return verdict(
+    expected.functions.map(({ slug, verifyJwt }) => {
+      const entry = served.find((e) => e.slug === slug);
+      return entry === undefined ? null : compare(`verify_jwt of ${slug}`, entry.verify_jwt, verifyJwt, 'config.toml');
+    })
+  );
+}
+
 /** The keys of the JSON `auth` group that a check of their own compares. */
 const AUTH_KEYS_CHECKED_ALONE = ['disable_signup', 'mailer_autoconfirm'];
 
@@ -270,8 +307,64 @@ export const CHECKS = [
           .map((key) => compare(key, served[key], expected.auth[key], JSON_FILE))
       );
     }
+  },
+  {
+    name: 'api.schemas',
+    source: 'management',
+    run(expected, responses) {
+      const served = responses.management.postgrest;
+      return verdict(
+        ['db_schema', 'db_extra_search_path'].map((key) => compare(key, served[key], expected.api[key], JSON_FILE))
+      );
+    }
+  },
+  {
+    name: 'functions.deployed',
+    source: 'management',
+    run(expected, responses) {
+      return deployedCheck(expected, responses.management.functions);
+    }
+  },
+  {
+    name: 'functions.verify-jwt',
+    source: 'management',
+    run(expected, responses) {
+      return verifyJwtCheck(expected, responses.management.functions);
+    }
   }
 ];
+
+/** A key's type or name as the note names it, in a plain alphabet. */
+function plainLabel(value) {
+  return typeof value === 'string' && /^[A-Za-z0-9_.-]{1,64}$/.test(value) ? value : '(unnamed)';
+}
+
+/** An issued key as the note names it: its type and its name. */
+function keyLabel({ type, name }) {
+  return `${plainLabel(type)}/${plainLabel(name)}`;
+}
+
+const NOTE_WITHHELD = 'NOTE key-model: withheld because it fails the paste screen';
+
+/**
+ * The one line that reports the key model, printed after the check lines.
+ *
+ * @param keys - The key model the management source read: `{ issued, issuedError?, legacy, legacyError? }`.
+ * @returns `NOTE key-model: issued <type/name, ...>; legacy keys <enabled|disabled|endpoint gone>`, with `not read
+ *   (<reason>)` in place of a part whose read failed. A line that fails `pasteSafe` is replaced by a fixed line.
+ */
+export function keyModelNote(keys) {
+  const issued =
+    keys.issued === null
+      ? `issued not read (${keys.issuedError})`
+      : `issued ${keys.issued.length === 0 ? 'none' : keys.issued.map(keyLabel).sort().join(', ')}`;
+  const legacy =
+    keys.legacy === null
+      ? `legacy keys not read (${keys.legacyError})`
+      : `legacy keys ${keys.legacy === 'gone' ? 'endpoint gone' : keys.legacy}`;
+  const line = `NOTE key-model: ${issued}; ${legacy}`;
+  return pasteSafe(line) ? line : NOTE_WITHHELD;
+}
 
 const WITHHELD = 'the finding was withheld because it fails the paste screen';
 

@@ -4,15 +4,20 @@
  *
  *   management   The Management API, with the access token in `SUPABASE_ACCESS_TOKEN` sent as a bearer token.
  *                Preflight: `GET /v1/projects/{ref}` answers 200. Reads:
- *                  `GET /v1/projects/{ref}/postgrest`     `max_rows`
+ *                  `GET /v1/projects/{ref}/postgrest`     `max_rows`, `db_schema`, `db_extra_search_path`
  *                  `GET /v1/projects/{ref}/config/auth`   the fields of `AUTH_FIELDS`, every key of the JSON's `auth`,
  *                                                         `auth_hook` and `auth_send_email_hook` groups, and of the
  *                                                         SMTP user name only whether it is a non-empty string
+ *                  `GET /v1/projects/{ref}/functions`     `slug`, `status` and `verify_jwt` of each function
+ *                The key model is read last, for a note that is not a check: `type` and `name` of each entry of
+ *                `GET /v1/projects/{ref}/api-keys?reveal=false`, and `enabled` of `GET /v1/projects/{ref}/api-keys/legacy`,
+ *                where a 404 means the endpoint is gone. A failure of either read is recorded in the note, never thrown,
+ *                so the key model never changes what the probe reports or how it exits.
  *                The base address is `PROBE_MANAGEMENT_API_URL` when set (a test seam pointed at a local stub) and
  *                `https://api.supabase.com` otherwise.
  *
- * A response body can hold secrets next to the compared fields: the PostgREST settings hold the JWT secret, and the
- * auth settings hold the SMTP credentials. Each body is parsed, the named fields are copied out and the body is dropped
+ * A response body can hold secrets next to the compared fields: the PostgREST settings hold the JWT secret, the auth
+ * settings hold the SMTP credentials, and the key list holds the keys themselves. Each body is parsed, the named fields are copied out and the body is dropped
  * at once; nothing keeps or prints a whole body. A `SourceError` reason names the endpoint path and the status, never a
  * body or a header.
  *
@@ -63,15 +68,41 @@ function failureName(error) {
   return typeof error?.name === 'string' && /^[A-Za-z]+$/.test(error.name) ? error.name : 'network error';
 }
 
+/** The named fields of one JSON object, each of which it must hold. */
+function pick(source, endpoint, object, fields) {
+  const kept = {};
+  for (const field of fields) {
+    if (!Object.hasOwn(object, field)) throw new SourceError(source, `GET ${endpoint} answered 200 without ${field}`);
+    kept[field] = object[field];
+  }
+  return kept;
+}
+
 /**
- * One GET whose answer must be 200. The body is read only when `fields` is given; then it is parsed as a JSON object and
- * only the named fields are returned, with, for each name in `presence`, `<name>_present`: whether the body holds a
- * non-empty string there. The value of a `presence` field is never kept.
+ * One GET whose answer must be 200. The body is read only when `fields` is given; then it is parsed as JSON and only the
+ * named fields are returned:
+ *
+ *   - by default the body is an object, and the result holds its named fields and, for each name in `presence`,
+ *     `<name>_present`: whether the body holds a non-empty string there. The value of a `presence` field is never kept;
+ *   - with `each`, the body is an array of objects, and the result holds the named fields of each.
+ *
+ * `query` is appended to the address and named in no reason. With `notFound`, a 404 returns `null`.
  */
-async function getJson({ source, base, endpoint, headers, fetchImpl, fields, presence = [] }) {
+async function getJson({
+  source,
+  base,
+  endpoint,
+  query = '',
+  headers,
+  fetchImpl,
+  fields,
+  presence = [],
+  each = false,
+  notFound = false
+}) {
   let response;
   try {
-    response = await fetchImpl(`${base}${endpoint}`, {
+    response = await fetchImpl(`${base}${endpoint}${query}`, {
       method: 'GET',
       headers,
       redirect: 'manual',
@@ -79,6 +110,10 @@ async function getJson({ source, base, endpoint, headers, fetchImpl, fields, pre
     });
   } catch (error) {
     throw new SourceError(source, `GET ${endpoint} did not answer (${failureName(error)})`);
+  }
+  if (notFound && response.status === 404) {
+    await response.body?.cancel();
+    return null;
   }
   if (response.status !== 200) {
     await response.body?.cancel();
@@ -94,15 +129,46 @@ async function getJson({ source, base, endpoint, headers, fetchImpl, fields, pre
   } catch {
     throw new SourceError(source, `GET ${endpoint} answered 200 with a body that is not JSON`);
   }
+  if (each) {
+    if (
+      !Array.isArray(body) ||
+      !body.every((entry) => entry !== null && typeof entry === 'object' && !Array.isArray(entry))
+    )
+      throw new SourceError(source, `GET ${endpoint} answered 200 with a body that is not a JSON array of objects`);
+    return body.map((entry) => pick(source, endpoint, entry, fields));
+  }
   if (body === null || typeof body !== 'object' || Array.isArray(body))
     throw new SourceError(source, `GET ${endpoint} answered 200 with a body that is not a JSON object`);
-  const kept = {};
-  for (const field of fields) {
-    if (!Object.hasOwn(body, field)) throw new SourceError(source, `GET ${endpoint} answered 200 without ${field}`);
-    kept[field] = body[field];
-  }
+  const kept = pick(source, endpoint, body, fields);
   for (const field of presence) kept[`${field}_present`] = typeof body[field] === 'string' && body[field] !== '';
   return kept;
+}
+
+/**
+ * The key model: the type and name of each issued key, and whether the legacy keys are enabled. A read that fails is
+ * recorded as `issuedError` or `legacyError` instead of thrown.
+ *
+ * @returns `{ issued: [{ type, name }] | null, issuedError?, legacy: 'enabled' | 'disabled' | 'gone' | null,
+ *   legacyError? }`.
+ */
+async function readKeyModel(get) {
+  const model = { issued: null, legacy: null };
+  try {
+    model.issued = await get('/api-keys', { query: '?reveal=false', fields: ['type', 'name'], each: true });
+  } catch (error) {
+    if (!(error instanceof SourceError)) throw error;
+    model.issuedError = error.reason;
+  }
+  try {
+    const legacy = await get('/api-keys/legacy', { fields: ['enabled'], notFound: true });
+    if (legacy === null) model.legacy = 'gone';
+    else if (typeof legacy.enabled === 'boolean') model.legacy = legacy.enabled ? 'enabled' : 'disabled';
+    else model.legacyError = 'the served enabled is not a boolean';
+  } catch (error) {
+    if (!(error instanceof SourceError)) throw error;
+    model.legacyError = error.reason;
+  }
+  return model;
 }
 
 const SOURCES = {
@@ -140,9 +206,11 @@ const SOURCES = {
           ...options
         });
       }
-      const postgrest = await get('/postgrest', { fields: ['max_rows'] });
+      const postgrest = await get('/postgrest', { fields: ['max_rows', 'db_schema', 'db_extra_search_path'] });
       const auth = await get('/config/auth', { fields: authFields, presence: ['smtp_user'] });
-      return { postgrest, auth };
+      const functions = await get('/functions', { fields: ['slug', 'status', 'verify_jwt'], each: true });
+      const keys = await readKeyModel(get);
+      return { postgrest, auth, functions, keys };
     }
   }
 };
@@ -157,7 +225,7 @@ export const SOURCE_NAMES = Object.keys(SOURCES);
  * @param options.expected - The expected values; `expected.ref` names the project.
  * @param options.env - The environment the token and the test seams are read from.
  * @param options.fetchImpl - The `fetch` to use. Defaults to the global one.
- * @returns `{ management: { postgrest, auth } }`, holding only the sources asked for.
+ * @returns `{ management: { postgrest, auth, functions, keys } }`, holding only the sources asked for.
  * @throws SourceError for the first source that is not configured, fails its preflight or fails a read.
  */
 export async function collect({ sources, expected, env = process.env, fetchImpl = globalThis.fetch }) {
