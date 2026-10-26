@@ -209,7 +209,8 @@ describe('check-drift.sh --target linked refuses a connection that is not the li
   });
 
   it('refuses PGHOSTADDR and PGSERVICE, which can send psql past PGHOST', () => {
-    for (const extra of [{ PGHOSTADDR: '192.0.2.1' }, { PGSERVICE: 'elsewhere' }]) {
+    const extras: Array<Record<string, string>> = [{ PGHOSTADDR: '192.0.2.1' }, { PGSERVICE: 'elsewhere' }];
+    for (const extra of extras) {
       const { status, stderr } = run(linked(workdir(REF)), { ...DIRECT, ...extra });
       expect(status).toBe(2);
       expect(stderr).toContain(Object.keys(extra)[0]);
