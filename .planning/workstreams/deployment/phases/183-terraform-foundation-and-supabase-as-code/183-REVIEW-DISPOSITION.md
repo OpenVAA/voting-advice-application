@@ -21,7 +21,7 @@ findings:
     title: "Trust policies pin only `sub`; any pull-request-triggered job in the repo, including the AI-agent workflows, can assume the plan role, and the deploy role depends on an unenforced GitHub setting"
   - id: WR-04
     severity: warning
-    disposition: skipped
+    disposition: deferred
     title: "The plan role can create and delete the pipeline root's lock object"
   - id: WR-05
     severity: warning
@@ -213,10 +213,10 @@ recorded: 2026-10-25T13:47:08.229Z
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
 | CR-01 | critical | fixed | 731656d24 |
-| WR-01 | warning | fixed | fixed in part, 2d8a04ac0; needs-operator-apply infra/bootstrap (aws_iam_policy.plan_deny replaced, attachment re-created); open question: keep ReadOnlyAccess, move to ViewOnlyAccess + per-service reads, or deny more reads and bar those resource types from the pipeline root |
-| WR-02 | warning | fixed | ee4ca9130; needs-operator-apply infra/bootstrap (in-place update of aws_iam_policy.plan_deny, adds env:/*) |
-| WR-03 | warning | fixed | fixed in part, 16f90b7e3 (validation + docs, no plan change); needs operator input: numeric github_repository_id / github_repository_owner_id, how to pin the plan trust to a workflow, staging Environment deployment branch policy |
-| WR-04 | warning | skipped | needs operator input: keep decision A-08 (plan role writes/deletes the pipeline lock) or drop plan_lock, require plan -lock=false and update runbook Steps 4 and 5(c) (destroys a policy + attachment in infra/bootstrap) |
+| WR-01 | warning | fixed | fixed in part, 2d8a04ac0; applied to infra/bootstrap 2026-10-26 (plan 2 add/2 destroy, apply 0, simulator denies observed, second plan 0; evidence/183-review-fix-applies.md); operator ruling 2026-10-26: option (a), keep ReadOnlyAccess with the current denies; the remaining data reads are deferred to phase 184 |
+| WR-02 | warning | fixed | ee4ca9130; applied to infra/bootstrap 2026-10-26 (the env:/ workspace key reads explicitDeny in the simulator; evidence/183-review-fix-applies.md) |
+| WR-03 | warning | fixed | fixed in part, 16f90b7e3 (validation + docs, no plan change); operator ruling 2026-10-26: the numeric GitHub ids, pinning the plan trust to a workflow and the staging Environment branch policy are deferred to phase 184 |
+| WR-04 | warning | deferred | operator ruling 2026-10-26: keep decision A-08 and accept that a PR job can hold or delete the pipeline lock; revisit in phase 184, once the PR and deploy workflows exist |
 | WR-05 | warning | fixed | 1e5740bcb |
 | WR-06 | warning | fixed | eed525127 (module side) |
 | WR-07 | warning | fixed | f7fc5d26f |
@@ -229,7 +229,7 @@ recorded: 2026-10-25T13:47:08.229Z
 | WR-14 | warning | fixed | 1a02b721b (values sent unchanged) |
 | WR-15 | warning | fixed | c1fa7a7f5 |
 | WR-16 | warning | fixed | 97bcae1d3 |
-| WR-17 | warning | fixed | ed7d91c94; needs operator confirmation on infra/envs/staging/supabase: next plan must read No changes with no import line |
+| WR-17 | warning | fixed | ed7d91c94; confirmed on infra/envs/staging/supabase 2026-10-26: init 0, plan -detailed-exitcode 0, "No changes." with no import line (evidence/183-review-fix-applies.md) |
 | WR-18 | warning | fixed | 97d9c7c79 |
 | WR-19 | warning | fixed | 77bfe4a71, eda25307f |
 | WR-20 | warning | fixed | d7578a411 |

@@ -59,7 +59,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
       alert is seen firing once. [A2, added]
 - [x] **INFRA-17**: IAM permissions are granted through customer-managed policies where an AWS-managed policy
       does not fit; no permission depends on an inline user policy. [F1]
-- [ ] **INFRA-18**: A Route 53 hosted zone serves `staging.openvaa.org`, and the records the operator must
+- [x] **INFRA-18**: A Route 53 hosted zone serves `staging.openvaa.org`, and the records the operator must
       change at the current DNS host are documented. [F1]
 - [ ] **INFRA-19**: An `example` environment that a forker copies is validated and planned in CI and is never
       applied. It carries the production-shaped settings as variables. [A1]
@@ -276,7 +276,7 @@ closes; those are not listed against the earlier phase here.
 | INFRA-15 | Phase 183 | Complete |
 | INFRA-16 | Phase 187 | Pending |
 | INFRA-17 | Phase 183 | Complete |
-| INFRA-18 | Phase 183 | Pending |
+| INFRA-18 | Phase 183 | Complete |
 | INFRA-19 | Phase 187 | Pending |
 | SUPA-01 | Phase 184 | Pending |
 | SUPA-02 | Phase 184 | Pending |
