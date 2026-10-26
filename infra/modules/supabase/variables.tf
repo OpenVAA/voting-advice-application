@@ -93,3 +93,14 @@ variable "smtp_password" {
     error_message = "smtp is set, so smtp_password must be set too: export TF_VAR_smtp_password in the shell that plans."
   }
 }
+
+variable "public_project_id" {
+  description = "Id of the project the bootstrap creates, which the Edge Functions and the frontend are scoped to. It is sent to the functions as PUBLIC_PROJECT_ID. Null leaves the function secrets out: nothing about them is sent."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.public_project_id == null || can(regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", var.public_project_id))
+    error_message = "public_project_id must be a lower-case canonical uuid, such as 00000000-0000-0000-0000-000000000001."
+  }
+}
