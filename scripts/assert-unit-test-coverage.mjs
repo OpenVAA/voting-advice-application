@@ -175,7 +175,10 @@ const TEST_RUNNER = /(^|[\s&|;])vitest(\s|$)/;
  * A suite added under another non-workspace directory gets an entry here and a link in the root
  * `test:unit` script; Check 3 then holds the two together.
  */
-const NON_WORKSPACE_SUITES = [{ config: 'tests/vitest.config.ts', script: 'test:unit:tests' }];
+const NON_WORKSPACE_SUITES = [
+  { config: 'tests/vitest.config.ts', script: 'test:unit:tests' },
+  { config: 'infra/vitest.config.ts', script: 'test:unit:infra' }
+];
 
 /**
  * Directory names the walk never descends into. Excluding `node_modules` is D-09's explicit
