@@ -263,6 +263,36 @@ function bucketsCheck(expected, served) {
   ]);
 }
 
+const ANON_TIMEOUT_ORIGIN = 'the last ALTER ROLE anon of the migrations';
+
+/** The `statement_timeout` of `anon` the catalog serves against the one the migrations set. */
+function anonTimeoutCheck(expected, anonConfig) {
+  const settings = Array.isArray(anonConfig) ? anonConfig : [];
+  const timeouts = settings.filter((e) => typeof e === 'string' && e.startsWith('statement_timeout='));
+  if (timeouts.length === 0)
+    return {
+      pass: false,
+      finding: `the anon role sets no statement_timeout, expected ${show(expected.anonTimeout)} from ${ANON_TIMEOUT_ORIGIN}`
+    };
+  const served = timeouts.at(-1).slice('statement_timeout='.length);
+  if (served === expected.anonTimeout) return { pass: true };
+  return {
+    pass: false,
+    finding: `the anon role's statement_timeout is ${show(served)}, expected ${show(expected.anonTimeout)} from ${ANON_TIMEOUT_ORIGIN}`
+  };
+}
+
+/** The seed check's verdict, naming only its finding classes. */
+function noSeedCheck(seed) {
+  if (seed.clean) return { pass: true };
+  if (seed.classes.length === 0)
+    return { pass: false, finding: 'check-seed reported a finding of no class the probe knows' };
+  return {
+    pass: false,
+    finding: `check-seed reported ${seed.classes.length} finding(s) of the local seed: ${seed.classes.join(', ')}`
+  };
+}
+
 /** The keys of the JSON `auth` group that a check of their own compares. */
 const AUTH_KEYS_CHECKED_ALONE = ['disable_signup', 'mailer_autoconfirm'];
 
@@ -464,6 +494,46 @@ export const CHECKS = [
     source: 'management',
     run(expected, responses) {
       return bucketsCheck(expected, responses.management.buckets);
+    }
+  },
+  {
+    name: 'db.hook-functions',
+    source: 'catalog',
+    run(expected, responses) {
+      const served = responses.catalog.hooks;
+      return verdict(
+        expected.hookFunctions.map((signature) =>
+          served[signature] === true ? null : `${signature} is not in the database`
+        )
+      );
+    }
+  },
+  {
+    name: 'db.anon-timeout',
+    source: 'catalog',
+    run(expected, responses) {
+      return anonTimeoutCheck(expected, responses.catalog.anonConfig);
+    }
+  },
+  {
+    name: 'db.postgres-major',
+    source: 'catalog',
+    run(expected, responses) {
+      return verdict([
+        compare(
+          'the server major version',
+          responses.catalog.major,
+          expected.postgresMajor,
+          'config.toml [db] major_version'
+        )
+      ]);
+    }
+  },
+  {
+    name: 'no-seed',
+    source: 'catalog',
+    run(expected, responses) {
+      return noSeedCheck(responses.catalog.seed);
     }
   }
 ];

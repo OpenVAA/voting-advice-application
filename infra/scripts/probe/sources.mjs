@@ -38,6 +38,18 @@
  *                before it reads its body. The base address is `PROBE_PROJECT_URL` when set (a test seam) and
  *                `https://<ref>.supabase.co` otherwise.
  *
+ *   catalog      The database over psql (`PROBE_PSQL` when set, a test seam, else `psql`), with the connection in the
+ *                PG* variables only: no argument carries an address, and the `SUPABASE_*` variables are not passed
+ *                on. Before psql is called the connection must name the root's project: PGHOST `db.<ref>.supabase.co`,
+ *                or a session pooler host with PGUSER ending in `.<ref>`; PGPORT not 6543; PGHOSTADDR and PGSERVICE
+ *                unset. Preflight: one query (`-X -A -t -v ON_ERROR_STOP=1 -c`) answers a JSON object of the server's
+ *                major version, the `rolconfig` of `anon`, whether each hook function resolves with
+ *                `to_regprocedure`, the current role and its `rolbypassrls`; a role that does not bypass row-level
+ *                security is refused, because the seed check would read no rows under it. Read: `psql -X -f
+ *                infra/scripts/check-seed.sql`, whose status is the verdict: 0 clean, 3 a finding, of whose message
+ *                only the class words `seed user`, `local address` and `demo key` are kept, and any other status
+ *                could not run.
+ *
  * A response body can hold secrets next to the compared fields: the PostgREST settings hold the JWT secret, the auth
  * settings hold the SMTP credentials, and the key list holds the keys themselves. Each body is parsed, the named fields are copied out and the body is dropped
  * at once; nothing keeps or prints a whole body. A `SourceError` reason names the endpoint path and the status, never a
@@ -46,7 +58,9 @@
  * This module has no side effect on import.
  */
 
+import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 
 export const DEFAULT_MANAGEMENT_API_URL = 'https://api.supabase.com';
 
@@ -337,6 +351,135 @@ function anonKey(env) {
   return key;
 }
 
+/** The seed check, run as a script of its own so that its exit status is the verdict. */
+const CHECK_SEED = fileURLToPath(new URL('../check-seed.sql', import.meta.url));
+
+const PSQL_TIMEOUT_MS = 120_000;
+const DEFAULT_CONNECT_TIMEOUT = '15';
+
+/** The finding classes check-seed names, the only words of its message the probe keeps. */
+const SEED_CLASSES = ['seed user', 'local address', 'demo key'];
+
+/**
+ * One psql run, with the connection in the PG* variables of `env` and no address on its command line. The variables
+ * named `SUPABASE_*` are not passed on.
+ *
+ * @returns `{ status, stdout, stderr }`, where `status` is null when psql was stopped by a signal.
+ */
+function runPsql(psql, args, env) {
+  const childEnv = Object.fromEntries(Object.entries(env).filter(([name]) => !name.startsWith('SUPABASE_')));
+  childEnv.PGCONNECT_TIMEOUT ||= DEFAULT_CONNECT_TIMEOUT;
+  return new Promise((resolve, reject) => {
+    let child;
+    try {
+      child = spawn(psql, args, { env: childEnv, stdio: ['ignore', 'pipe', 'pipe'] });
+    } catch (error) {
+      reject(new SourceError('catalog', `psql could not be started (${failureName(error)})`));
+      return;
+    }
+    let stdout = '';
+    let stderr = '';
+    const timer = setTimeout(() => child.kill('SIGTERM'), PSQL_TIMEOUT_MS);
+    child.stdout.on('data', (chunk) => (stdout += chunk));
+    child.stderr.on('data', (chunk) => (stderr += chunk));
+    child.on('error', (error) => {
+      clearTimeout(timer);
+      reject(new SourceError('catalog', `psql could not be started (${failureName(error)})`));
+    });
+    child.on('close', (status) => {
+      clearTimeout(timer);
+      resolve({ status, stdout, stderr });
+    });
+  });
+}
+
+/**
+ * Refuses, before psql is called, a connection that may not reach the root's project: PGHOST must be
+ * `db.<ref>.supabase.co`, or a session pooler host `<name>.pooler.supabase.com` with PGUSER ending in `.<ref>`;
+ * PGPORT must not be 6543, the transaction pooler, which loses a session's settings between transactions; and
+ * neither PGHOSTADDR nor PGSERVICE may be set, since either can send psql to another address than PGHOST.
+ */
+function assertCatalogTarget(env, ref) {
+  for (const name of ['PGHOSTADDR', 'PGSERVICE'])
+    if (env[name])
+      throw new SourceError('catalog', `${name} is set, and it can send psql to another address than PGHOST`);
+  const host = (env.PGHOST ?? '').toLowerCase();
+  if (host === '')
+    throw new SourceError('catalog', `PGHOST is not set; it must be db.${ref}.supabase.co or a session pooler host`);
+  if (host.endsWith('.pooler.supabase.com')) {
+    if (!(env.PGUSER ?? '').endsWith(`.${ref}`))
+      throw new SourceError(
+        'catalog',
+        `PGHOST is a pooler host, but PGUSER does not end in .${ref}, so the connection may reach another project`
+      );
+  } else if (host !== `db.${ref}.supabase.co`)
+    throw new SourceError('catalog', `PGHOST names neither db.${ref}.supabase.co nor a session pooler host`);
+  if ((env.PGPORT ?? '').trim() === '6543')
+    throw new SourceError(
+      'catalog',
+      'PGPORT is 6543, the transaction pooler, which loses the session settings between transactions'
+    );
+}
+
+const SIGNATURE = /^[a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*\(jsonb\)$/;
+
+/**
+ * The one catalog query: a JSON object of the server's major version, the `rolconfig` of `anon`, whether each hook
+ * signature resolves, the current role and whether it bypasses row-level security (a superuser does too).
+ */
+function catalogQuery(signatures) {
+  for (const signature of signatures)
+    if (!SIGNATURE.test(signature)) throw new SourceError('catalog', 'a hook signature is not a plain identifier');
+  const hooks = signatures.map((s) => `'${s}', to_regprocedure('${s}') IS NOT NULL`).join(', ');
+  return [
+    'SELECT json_build_object(',
+    "  'major', current_setting('server_version_num')::int / 10000,",
+    "  'anon_config', (SELECT rolconfig FROM pg_roles WHERE rolname = 'anon'),",
+    `  'hooks', json_build_object(${hooks}),`,
+    "  'role', current_user,",
+    "  'bypassrls', (SELECT rolsuper OR rolbypassrls FROM pg_roles WHERE rolname = current_user)",
+    ')'
+  ].join('\n');
+}
+
+function isCatalogAnswer(value) {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    Number.isInteger(value.major) &&
+    (value.anon_config === null ||
+      (Array.isArray(value.anon_config) && value.anon_config.every((e) => typeof e === 'string'))) &&
+    value.hooks !== null &&
+    typeof value.hooks === 'object' &&
+    Object.values(value.hooks).every((v) => typeof v === 'boolean') &&
+    typeof value.role === 'string' &&
+    typeof value.bypassrls === 'boolean'
+  );
+}
+
+/** A role name as a reason may name it. */
+function plainRole(role) {
+  return /^[A-Za-z0-9_.-]{1,63}$/.test(role) ? role : 'the connecting role';
+}
+
+/**
+ * The seed check's verdict: clean, or the finding classes its message names. Only the class words are kept; every
+ * other word of the message, which names addresses and URLs, is dropped.
+ */
+function seedVerdict({ status, stderr }) {
+  if (status === 0) return { clean: true };
+  if (status === 3 && stderr.includes('check-seed:')) {
+    const classes = [];
+    for (const line of stderr.split('\n')) {
+      const match = /^\s*-\s*([a-z ]+):/.exec(line);
+      if (match && SEED_CLASSES.includes(match[1]) && !classes.includes(match[1])) classes.push(match[1]);
+    }
+    return { clean: false, classes };
+  }
+  if (status === null) throw new SourceError('catalog', 'check-seed was stopped before it finished');
+  throw new SourceError('catalog', `check-seed exited ${status}`);
+}
+
 const SOURCES = {
   management: {
     setup({ expected, env }) {
@@ -453,6 +596,45 @@ const SOURCES = {
         functions: { accountAccess, sendEmail, identityCallbackGet, identityCallbackPost }
       };
     }
+  },
+  catalog: {
+    setup({ expected, env }) {
+      assertCatalogTarget(env, expected.ref);
+      return { psql: env.PROBE_PSQL || 'psql', env, query: catalogQuery(expected.hookFunctions), answer: null };
+    },
+    async preflight(context) {
+      const { status, stdout } = await runPsql(
+        context.psql,
+        ['-X', '-A', '-t', '-v', 'ON_ERROR_STOP=1', '-c', context.query],
+        context.env
+      );
+      if (status !== 0)
+        throw new SourceError(
+          'catalog',
+          status === null
+            ? 'psql was stopped before the catalog query answered'
+            : `psql exited ${status} on the catalog query`
+        );
+      let answer;
+      try {
+        answer = JSON.parse(stdout.trim());
+      } catch {
+        answer = null;
+      }
+      if (!isCatalogAnswer(answer))
+        throw new SourceError('catalog', 'the catalog query answered with no JSON object of the expected shape');
+      if (!answer.bypassrls)
+        throw new SourceError(
+          'catalog',
+          `${plainRole(answer.role)} does not bypass row-level security, so check-seed would read no rows and report false findings`
+        );
+      context.answer = answer;
+    },
+    async read(context) {
+      const seed = seedVerdict(await runPsql(context.psql, ['-X', '-f', CHECK_SEED], context.env));
+      const { major, anon_config: anonConfig, hooks, role, bypassrls } = context.answer;
+      return { major, anonConfig, hooks, role, bypassrls, seed };
+    }
   }
 };
 
@@ -466,8 +648,8 @@ export const SOURCE_NAMES = Object.keys(SOURCES);
  * @param options.expected - The expected values; `expected.ref` names the project.
  * @param options.env - The environment the token and the test seams are read from.
  * @param options.fetchImpl - The `fetch` to use. Defaults to the global one.
- * @returns `{ management: { postgrest, auth, functions, buckets, keys }, public: { settings, rows, functions } }`,
- *   holding only the sources asked for.
+ * @returns `{ management: { postgrest, auth, functions, buckets, keys }, public: { settings, rows, functions },
+ *   catalog: { major, anonConfig, hooks, role, bypassrls, seed } }`, holding only the sources asked for.
  * @throws SourceError for the first source that is not configured, fails its preflight or fails a read.
  */
 export async function collect({ sources, expected, env = process.env, fetchImpl = globalThis.fetch }) {

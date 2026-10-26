@@ -24,6 +24,11 @@
  *                        when the root sets none: the project whose rows the public read asks for
  *   projectUrl           `https://<ref>.supabase.co`, the project's own API
  *   buckets              `[{ id, public }]`, sorted by id: one entry per `[storage.buckets.<id>]` table of config.toml
+ *   anonTimeout          the `statement_timeout` of the last `ALTER ROLE anon SET statement_timeout` among
+ *                        `apps/supabase/supabase/migrations/*.sql`, in filename order
+ *   postgresMajor        `major_version` of the `[db]` table of config.toml
+ *   hookFunctions        the signatures `<schema>.<name>(jsonb)` of the functions the JSON's two hook URIs name,
+ *                        the access-token hook first
  *
  * The reading rules are the hosted-settings parity guard's: the JSON is parsed whole, `pageSize` is a line read inside
  * the `dataAdapter` block, a `terraform.tfvars` assignment is a line `name = value` with an optional trailing comment
@@ -44,6 +49,7 @@ export const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url
 export const EXPECTED_PATHS = {
   config: 'apps/supabase/supabase/config.toml',
   functions: 'apps/supabase/supabase/functions',
+  migrations: 'apps/supabase/supabase/migrations',
   settings: 'infra/modules/supabase/hosted-settings.json',
   staticSettings: 'packages/app-shared/src/settings/staticSettings.ts'
 };
@@ -363,6 +369,66 @@ export function readFunctions(repoRoot, config) {
   });
 }
 
+const ANON_TIMEOUT = /ALTER ROLE anon SET statement_timeout (?:=|TO) '([^']*)'/gi;
+
+/**
+ * The `statement_timeout` the migrations set for `anon`: the value of the last `ALTER ROLE anon SET
+ * statement_timeout = '<value>'` among the migrations, read in filename order with whitespace collapsed, so that a
+ * statement written over several lines is found.
+ *
+ * @throws ProbeInputError when the directory cannot be read or no migration sets it.
+ */
+export function readAnonTimeout(repoRoot) {
+  const dir = path.join(repoRoot, EXPECTED_PATHS.migrations);
+  let files;
+  try {
+    files = readdirSync(dir)
+      .filter((name) => name.endsWith('.sql'))
+      .sort();
+  } catch (error) {
+    throw new ProbeInputError(display(repoRoot, dir), `could not be read (${error.code ?? error.name})`);
+  }
+  let value = null;
+  for (const name of files) {
+    const text = readText(repoRoot, path.join(dir, name)).text.replace(/\s+/g, ' ');
+    for (const match of text.matchAll(ANON_TIMEOUT)) value = match[1];
+  }
+  if (value === null)
+    throw new ProbeInputError(display(repoRoot, dir), 'no migration sets ALTER ROLE anon SET statement_timeout');
+  return value;
+}
+
+/**
+ * `major_version` of the `[db]` table of config.toml.
+ *
+ * @throws ProbeInputError when it is missing or is not an integer the line read can read.
+ */
+export function readPostgresMajor(file, text) {
+  const value = readConfigTables(text, (table) => table === 'db').get('db/major_version');
+  if (!Number.isInteger(value))
+    throw new ProbeInputError(file, '[db] sets major_version to no integer the line read can read, or twice');
+  return value;
+}
+
+const HOOK_URI = /^pg-functions:\/\/postgres\/([^/]+)\/([^/]+)$/;
+const SQL_NAME = /^[a-z_][a-z0-9_]*$/;
+
+/**
+ * The signature `<schema>.<name>(jsonb)` of the database function a hook URI `pg-functions://postgres/<schema>/<name>`
+ * names. The schema and the name are written into SQL, so each must be a plain lower-case identifier.
+ *
+ * @throws ProbeInputError when the URI is not of that form.
+ */
+export function hookSignature(file, field, uri) {
+  const match = typeof uri === 'string' ? HOOK_URI.exec(uri) : null;
+  if (match === null || !SQL_NAME.test(match[1]) || !SQL_NAME.test(match[2]))
+    throw new ProbeInputError(
+      file,
+      `${field} is not pg-functions://postgres/<schema>/<name> with a plain lower-case schema and name`
+    );
+  return `${match[1]}.${match[2]}(jsonb)`;
+}
+
 const BUCKET_TABLE = /^storage\.buckets\.([A-Za-z0-9_-]+)$/;
 
 /**
@@ -398,7 +464,7 @@ const SMTP_ATTRIBUTES = ['host', 'port', 'admin_email', 'sender_name'];
  * @param options.repoRoot - The repository root the tracked files are read from. Defaults to this checkout's.
  * @param options.root - The absolute path of the target Terraform root, which holds its `terraform.tfvars`.
  * @returns `{ ref, publicOrigin, hooks, smtp, maxRows, auth, authHook, authSendEmailHook, redirectPaths, api,
- *   oauthServer, functions, publicProjectId, projectUrl, buckets }`.
+ *   oauthServer, functions, publicProjectId, projectUrl, buckets, anonTimeout, postgresMajor, hookFunctions }`.
  * @throws ProbeInputError naming the file and the value when an input cannot be read.
  */
 export function readExpected({ repoRoot = REPO_ROOT, root }) {
@@ -426,6 +492,8 @@ export function readExpected({ repoRoot = REPO_ROOT, root }) {
   const staticSettings = readText(repoRoot, path.join(repoRoot, EXPECTED_PATHS.staticSettings));
   const config = readText(repoRoot, path.join(repoRoot, EXPECTED_PATHS.config));
 
+  const groups = readSettingsGroups(settings.file, settings.text);
+
   return {
     ref,
     publicOrigin,
@@ -435,11 +503,17 @@ export function readExpected({ repoRoot = REPO_ROOT, root }) {
       json: readMaxRows(settings.file, settings.text),
       pageSize: readPageSize(staticSettings.file, staticSettings.text)
     },
-    ...readSettingsGroups(settings.file, settings.text),
+    ...groups,
     oauthServer: readOauthServer(config.file, config.text),
     functions: readFunctions(repoRoot, config),
     publicProjectId,
     projectUrl: `https://${ref}.supabase.co`,
-    buckets: readBuckets(config.file, config.text)
+    buckets: readBuckets(config.file, config.text),
+    anonTimeout: readAnonTimeout(repoRoot),
+    postgresMajor: readPostgresMajor(config.file, config.text),
+    hookFunctions: [
+      hookSignature(settings.file, 'hook_custom_access_token_uri', groups.authHook.hook_custom_access_token_uri),
+      hookSignature(settings.file, 'hook_send_email_uri', groups.authSendEmailHook.hook_send_email_uri)
+    ]
   };
 }

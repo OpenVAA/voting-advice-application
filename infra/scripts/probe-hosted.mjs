@@ -8,10 +8,11 @@
  * `terraform.tfvars` (the project ref, the public origin, the two hook switches and the `smtp` object),
  * `infra/modules/supabase/hosted-settings.json`, `dataAdapter.pageSize` in
  * `packages/app-shared/src/settings/staticSettings.ts`, `[auth.oauth_server]` and the `[functions.<slug>]` tables of
- * `apps/supabase/supabase/config.toml`, its `[storage.buckets.<id>]` tables, and the function directories under
+ * `apps/supabase/supabase/config.toml`, its `[storage.buckets.<id>]` tables and `[db] major_version`, the last
+ * `ALTER ROLE anon SET statement_timeout` of `apps/supabase/supabase/migrations/`, and the function directories under
  * `apps/supabase/supabase/functions/`. The probe holds no table of expected values of its own.
  *
- * What it reads: the probe reads a hosted project through three sources, of which this version has one:
+ * What it reads: the probe reads a hosted project through three sources:
  *
  *   management   The Management API, with the access token from `SUPABASE_ACCESS_TOKEN`. Preflight
  *                `GET /v1/projects/{ref}`; the PostgREST settings give `max_rows` and the exposed schemas, the auth
@@ -22,7 +23,15 @@
  *                Preflight `GET /auth/v1/settings`; it reads the public auth settings, every nomination of the
  *                root's `public_project_id` in one read with the total asked for, and the answers of the three
  *                functions.
- *   catalog      (not yet present) The database catalog over psql.
+ *   catalog      The database over psql, with the connection in the PG* variables only; no argument carries an
+ *                address. Before psql is called, PGHOST must be `db.<ref>.supabase.co`, or a session pooler host with
+ *                PGUSER ending in `.<ref>`, PGPORT must not be 6543 (the transaction pooler), and PGHOSTADDR and
+ *                PGSERVICE must be unset. Preflight: one catalog query, which also refuses a role that does not
+ *                bypass row-level security, because the seed check would read no rows under it. It gives the server's
+ *                major version, the settings of `anon` and whether each hook function exists; then
+ *                `infra/scripts/check-seed.sql` runs as a subprocess, and of its message only the finding classes
+ *                are kept, never an address or a URL. The seed check reads the stored service-role key inside the
+ *                database to test its issuer; the value never leaves the database.
  *
  * It never takes, reads or prints the service-role key: an anon key that is a secret key or a JWT whose role is
  * `service_role` is refused before any request. It writes nothing to any project. Every request is a GET but two
@@ -68,6 +77,12 @@
  *                           error"}`, so with no provider configured it fails closed.
  *   storage.buckets         The served bucket ids are exactly the `[storage.buckets.<id>]` tables of config.toml, each
  *                           with its `public` flag. The bucket list is read from the Management API.
+ *   db.hook-functions       The functions the JSON's two hook URIs name exist, as `<schema>.<name>(jsonb)`.
+ *   db.anon-timeout         The `statement_timeout` of `anon` is the one the last `ALTER ROLE anon` of the migrations
+ *                           sets.
+ *   db.postgres-major       The server's major version is `[db] major_version` of config.toml.
+ *   no-seed                 `infra/scripts/check-seed.sql` exits 0: no seed user, no local address and no demo key.
+ *                           Its finding classes are named; its exit 2, or any status but 0 and 3, is could-not-run.
  *
  * Every comparison is aware of the JSON type: a string served for a boolean or a number is a finding.
  *
@@ -86,8 +101,11 @@
  * Environment:
  *   SUPABASE_ACCESS_TOKEN      the Management API access token, sent as a bearer token and never printed
  *   SUPABASE_ANON_KEY          the project's anon key, never printed; a secret or service-role key is refused
+ *   PGHOST, PGPORT, PGUSER, PGDATABASE, and PGPASSWORD or a password file
+ *                              the catalog connection, read by psql alone; the password is never on a command line
  *   PROBE_MANAGEMENT_API_URL   test seam: the base address of the Management API (default https://api.supabase.com)
  *   PROBE_PROJECT_URL          test seam: the base address of the project's own API (default https://<ref>.supabase.co)
+ *   PROBE_PSQL                 test seam: the psql binary to run (default psql on PATH)
  *
  * Usage:
  *   node infra/scripts/probe-hosted.mjs --root <dir>
