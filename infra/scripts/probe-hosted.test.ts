@@ -5,7 +5,7 @@
  */
 
 import { spawn } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -28,6 +28,12 @@ const STUB_JWT_SECRET = 'stub-jwt-secret-do-not-print-4f1c9a';
 const STUB_SMTP_PASS = 'stub-smtp-pass-do-not-print-77b2e0';
 const STUB_SMTP_USER = 'STUBSMTPUSERDONOTPRINT';
 const TEST_TOKEN = 'probe-test-value';
+const STUB_KEYS = [
+  { type: 'legacy', name: 'anon', value: 'stub-anon-key-value-do-not-print-91d0' },
+  { type: 'legacy', name: 'service_role', value: 'stub-service-role-value-do-not-print-3e5a' },
+  { type: 'publishable', name: 'default', value: 'sb_publishable_stubvaluedonotprint' },
+  { type: 'secret', name: 'default', value: 'sb_secret_stubvaluedonotprint' }
+];
 
 const FIXTURE_ORIGIN = 'https://probe.example.org';
 const FIXTURE_ADMIN_EMAIL = 'noreply@probe.example.org';
@@ -77,12 +83,16 @@ interface Expected {
   authSendEmailHook: JsonObject;
   redirectPaths: Array<string>;
   oauthServer: { enabled: boolean; allow_dynamic_registration: boolean };
+  api: { db_schema: string; db_extra_search_path: string };
+  functions: Array<{ slug: string; verifyJwt: boolean }>;
 }
 
 interface Responses {
   management: {
     postgrest: JsonObject;
     auth: JsonObject;
+    functions: Array<JsonObject>;
+    keys: JsonObject;
   };
 }
 
@@ -104,7 +114,11 @@ function correctResponses(expected: Expected): Responses {
   const origin = expected.publicOrigin;
   return {
     management: {
-      postgrest: { max_rows: expected.maxRows.json },
+      postgrest: {
+        max_rows: expected.maxRows.json,
+        db_schema: expected.api.db_schema,
+        db_extra_search_path: expected.api.db_extra_search_path
+      },
       auth: {
         ...expected.auth,
         ...expected.authHook,
@@ -118,9 +132,68 @@ function correctResponses(expected: Expected): Responses {
         smtp_user_present: expected.smtp !== null,
         oauth_server_enabled: expected.oauthServer.enabled,
         oauth_server_allow_dynamic_registration: expected.oauthServer.allow_dynamic_registration
-      }
+      },
+      functions: expected.functions.map(({ slug, verifyJwt }) => ({ slug, status: 'ACTIVE', verify_jwt: verifyJwt })),
+      keys: { issued: [], legacy: 'enabled' }
     }
   };
+}
+
+/** `correctResponses` with the given served functions list. */
+function withFunctions(functions: Array<JsonObject>, expected: Expected = fixtureExpected): Responses {
+  const responses = correctResponses(expected);
+  responses.management.functions = functions;
+  return responses;
+}
+
+/** The served functions list of a conforming project, with `change` applied to the entry of one slug. */
+function functionsWith(slug: string, change: JsonObject | null): Array<JsonObject> {
+  return correctResponses(fixtureExpected).management.functions.flatMap((entry) =>
+    entry.slug !== slug ? [entry] : change === null ? [] : [{ ...entry, ...change }]
+  );
+}
+
+/**
+ * Every planted fault of the batched break at once, one per check, with the marker each finding must hold. These are
+ * the faults the live red run plants on the throwaway project.
+ */
+const BATCHED_BREAK: Array<{ check: string; marker: string }> = [
+  { check: 'api.max-rows', marker: '500' },
+  { check: 'auth.access-token-hook', marker: 'hook_custom_access_token_enabled is false' },
+  { check: 'auth.send-email-hook', marker: 'hook_send_email_enabled is false' },
+  { check: 'auth.site-url', marker: 'planted.invalid' },
+  { check: 'auth.redirects', marker: '1 entry' },
+  { check: 'auth.signup-closed', marker: 'disable_signup is false' },
+  { check: 'auth.email-confirm', marker: 'mailer_autoconfirm is true' },
+  { check: 'auth.smtp', marker: '2465' },
+  { check: 'auth.oauth-server', marker: 'oauth_server_enabled is true' },
+  { check: 'auth.other-settings', marker: 'password_min_length is 12' },
+  { check: 'api.schemas', marker: 'db_schema is "public"' },
+  { check: 'functions.deployed', marker: 'send-email' },
+  { check: 'functions.verify-jwt', marker: 'identity-callback' }
+];
+
+function batchedBreak(expected: Expected = fixtureExpected): Responses {
+  const responses = correctResponses(expected);
+  const m = responses.management;
+  m.postgrest = { ...m.postgrest, max_rows: 500, db_schema: 'public' };
+  m.auth = {
+    ...m.auth,
+    hook_custom_access_token_enabled: false,
+    hook_send_email_enabled: false,
+    site_url: 'https://planted.invalid',
+    uri_allow_list: `${expected.publicOrigin}${expected.redirectPaths[0]}`,
+    disable_signup: false,
+    mailer_autoconfirm: true,
+    smtp_port: '2465',
+    oauth_server_enabled: true,
+    oauth_server_allow_dynamic_registration: true,
+    password_min_length: 12
+  };
+  m.functions = m.functions
+    .filter((entry) => entry.slug !== 'send-email')
+    .map((entry) => (entry.slug === 'identity-callback' ? { ...entry, verify_jwt: true } : entry));
+  return responses;
 }
 
 /** `correctResponses` with the given served auth fields replaced. */
@@ -193,6 +266,55 @@ describe('readExpected', () => {
     expect(Object.keys(fixtureExpected.authSendEmailHook)).toEqual(['hook_send_email_enabled', 'hook_send_email_uri']);
     expect(fixtureExpected.redirectPaths.length).toBeGreaterThan(0);
     expect(fixtureExpected.oauthServer).toEqual({ enabled: false, allow_dynamic_registration: false });
+  });
+
+  it('reads the API settings, and the functions from the directories that hold an index.ts', () => {
+    expect(fixtureExpected.api?.db_schema).toBe('public,graphql_public');
+    expect(fixtureExpected.api?.db_extra_search_path).toBe('public, extensions');
+    const slugs = fixtureExpected.functions.map((f) => f.slug);
+    expect(slugs).toEqual([...slugs].sort());
+    expect(slugs).toEqual(expect.arrayContaining(['account-access', 'identity-callback', 'send-email']));
+    expect(fixtureExpected.functions.find((f) => f.slug === 'identity-callback')?.verifyJwt).toBe(false);
+    expect(fixtureExpected.functions.find((f) => f.slug === 'send-email')?.verifyJwt).toBe(true);
+  });
+
+  it('expects a function verified when config.toml has no table or no verify_jwt for it, and skips a directory without index.ts', () => {
+    const repo = mkdtempSync(join(tmpdir(), 'probe-hosted-repo-'));
+    try {
+      for (const file of [
+        'infra/modules/supabase/hosted-settings.json',
+        'packages/app-shared/src/settings/staticSettings.ts'
+      ]) {
+        mkdirSync(dirname(join(repo, file)), { recursive: true });
+        writeFileSync(join(repo, file), readFileSync(join(REPO_ROOT, file), 'utf8'));
+      }
+      const functions = join(repo, 'apps/supabase/supabase/functions');
+      for (const slug of ['zeta', 'alpha', 'beta', '_shared']) mkdirSync(join(functions, slug), { recursive: true });
+      for (const slug of ['zeta', 'alpha', 'beta']) writeFileSync(join(functions, slug, 'index.ts'), '');
+      writeFileSync(
+        join(repo, 'apps/supabase/supabase/config.toml'),
+        [
+          '[auth.oauth_server]',
+          'enabled = false',
+          'allow_dynamic_registration = false',
+          '',
+          '[functions.alpha]',
+          'verify_jwt = false # the function checks its caller itself',
+          '',
+          '[functions.beta]',
+          'import_map = "./import_map.json"',
+          ''
+        ].join('\n')
+      );
+      const expected = readExpected({ repoRoot: repo, root: fixtureRoot }) as Expected;
+      expect(expected.functions).toEqual([
+        { slug: 'alpha', verifyJwt: false },
+        { slug: 'beta', verifyJwt: true },
+        { slug: 'zeta', verifyJwt: true }
+      ]);
+    } finally {
+      rmSync(repo, { recursive: true, force: true });
+    }
   });
 
   it('records a root without an smtp object as null', () => {
@@ -294,8 +416,8 @@ describe('the registry', () => {
     expect(results(correctResponses(fixtureExpected)).map((r) => r.name)).toEqual(CHECKS.map((c) => c.name));
   });
 
-  it('holds the auth checks after api.max-rows, in their order', () => {
-    expect(CHECKS.map((c) => c.name).slice(0, 10)).toEqual([
+  it('holds the thirteen management checks in their order', () => {
+    expect(CHECKS.map((c) => c.name)).toEqual([
       'api.max-rows',
       'auth.access-token-hook',
       'auth.send-email-hook',
@@ -305,7 +427,10 @@ describe('the registry', () => {
       'auth.email-confirm',
       'auth.smtp',
       'auth.oauth-server',
-      'auth.other-settings'
+      'auth.other-settings',
+      'api.schemas',
+      'functions.deployed',
+      'functions.verify-jwt'
     ]);
   });
 
@@ -425,20 +550,99 @@ describe('the auth checks', () => {
   });
 });
 
+describe('the API and function checks', () => {
+  it('fails only api.schemas when the exposed schemas are planted', () => {
+    const responses = correctResponses(fixtureExpected);
+    responses.management.postgrest.db_schema = 'public';
+    expect(failing(responses)).toEqual(['api.schemas']);
+    expect(finding(responses, 'api.schemas')).toContain('db_schema is "public"');
+  });
+
+  it('fails only functions.deployed naming a missing function', () => {
+    const responses = withFunctions(functionsWith('send-email', null));
+    expect(failing(responses)).toEqual(['functions.deployed']);
+    expect(finding(responses, 'functions.deployed')).toContain('send-email');
+  });
+
+  it('fails functions.deployed naming a function the repository does not have', () => {
+    const responses = withFunctions([
+      ...correctResponses(fixtureExpected).management.functions,
+      { slug: 'header-echo', status: 'ACTIVE', verify_jwt: false }
+    ]);
+    expect(failing(responses)).toEqual(['functions.deployed']);
+    expect(finding(responses, 'functions.deployed')).toContain('header-echo');
+  });
+
+  it('fails functions.deployed naming the slug and the status of a function that is not ACTIVE', () => {
+    const responses = withFunctions(functionsWith('account-access', { status: 'REMOVED' }));
+    expect(failing(responses)).toEqual(['functions.deployed']);
+    expect(finding(responses, 'functions.deployed')).toContain('account-access');
+    expect(finding(responses, 'functions.deployed')).toContain('REMOVED');
+  });
+
+  it('fails only functions.deployed for an empty list, naming every function, in sorted order', () => {
+    const responses = withFunctions([]);
+    expect(failing(responses)).toEqual(['functions.deployed']);
+    const slugs = fixtureExpected.functions.map((f) => f.slug);
+    expect(finding(responses, 'functions.deployed')).toContain(slugs.join(', '));
+  });
+
+  it('fails only functions.verify-jwt naming identity-callback when it is served verified', () => {
+    const responses = withFunctions(functionsWith('identity-callback', { verify_jwt: true }));
+    expect(failing(responses)).toEqual(['functions.verify-jwt']);
+    expect(finding(responses, 'functions.verify-jwt')).toContain('identity-callback');
+  });
+
+  it('fails functions.verify-jwt for the flag served as a string', () => {
+    const responses = withFunctions(functionsWith('send-email', { verify_jwt: 'true' }));
+    expect(failing(responses)).toEqual(['functions.verify-jwt']);
+  });
+
+  it('passes the functions served in another order', () => {
+    expect(failing(withFunctions([...correctResponses(fixtureExpected).management.functions].reverse()))).toEqual([]);
+  });
+
+  it('reports missing and unexpected functions in sorted order whatever the served order', () => {
+    const extra = [
+      { slug: 'zz-temp', status: 'ACTIVE', verify_jwt: true },
+      { slug: 'header-echo', status: 'ACTIVE', verify_jwt: true }
+    ];
+    const one = finding(withFunctions(extra), 'functions.deployed');
+    const two = finding(withFunctions([...extra].reverse()), 'functions.deployed');
+    expect(one).toBe(two);
+    expect(one.indexOf('header-echo')).toBeLessThan(one.indexOf('zz-temp'));
+  });
+});
+
+describe('the batched break', () => {
+  it('fails every check, each finding holding its own planted marker', () => {
+    const responses = batchedBreak();
+    expect(failing(responses)).toEqual(CHECKS.map((c) => c.name));
+    expect(BATCHED_BREAK.map((b) => b.check)).toEqual(CHECKS.map((c) => c.name));
+    for (const { check, marker } of BATCHED_BREAK) expect(finding(responses, check), check).toContain(marker);
+  });
+});
+
 // ── The entry against a stub Management API ──
 
 interface StubState {
   preflightStatus: number;
   responses: Responses;
   smtpUser: string;
+  keysStatus: number;
+  legacyStatus: number;
+  legacyEnabled: unknown;
   requests: Array<string>;
   authorizations: Array<string | undefined>;
 }
 
 const stub: StubState = {
   preflightStatus: 200,
-  responses: { management: { postgrest: {}, auth: {} } },
+  responses: { management: { postgrest: {}, auth: {}, functions: [], keys: {} } },
   smtpUser: STUB_SMTP_USER,
+  keysStatus: 200,
+  legacyStatus: 200,
+  legacyEnabled: true,
   requests: [],
   authorizations: []
 };
@@ -469,6 +673,26 @@ function handle(req: IncomingMessage, res: ServerResponse): void {
       jwt_secret: STUB_JWT_SECRET
     });
   if (req.url === `${project}/config/auth`) return send(200, authBody());
+  if (req.url === `${project}/functions`)
+    return send(
+      200,
+      stub.responses.management.functions.map((entry, i) => ({ id: `fn-${i}`, version: 3, name: entry.slug, ...entry }))
+    );
+  if (req.url === `${project}/api-keys?reveal=false`)
+    return send(
+      stub.keysStatus,
+      STUB_KEYS.map(({ type, name, value }) => ({
+        type,
+        name,
+        api_key: value,
+        id: `${name}-id`,
+        prefix: value.slice(0, 4)
+      }))
+    );
+  if (req.url === `${project}/api-keys/legacy`)
+    return stub.legacyStatus === 200
+      ? send(200, { enabled: stub.legacyEnabled })
+      : send(stub.legacyStatus, { message: 'not found' });
   return send(404, { message: 'not found' });
 }
 
@@ -496,7 +720,14 @@ function runProbe(args: Array<string>, env: Record<string, string> = {}): Promis
 const withToken = { SUPABASE_ACCESS_TOKEN: TEST_TOKEN };
 
 function expectNoSecret(run: Run): void {
-  for (const secret of [STUB_JWT_SECRET, STUB_SMTP_PASS, STUB_SMTP_USER, TEST_TOKEN, FIXTURE_ADMIN_EMAIL]) {
+  for (const secret of [
+    STUB_JWT_SECRET,
+    STUB_SMTP_PASS,
+    STUB_SMTP_USER,
+    TEST_TOKEN,
+    FIXTURE_ADMIN_EMAIL,
+    ...STUB_KEYS.map((k) => k.value)
+  ]) {
     expect(run.stdout).not.toContain(secret);
     expect(run.stderr).not.toContain(secret);
   }
@@ -522,6 +753,9 @@ describe('probe-hosted.mjs', () => {
     stub.preflightStatus = 200;
     stub.responses = correctResponses(fixtureExpected);
     stub.smtpUser = STUB_SMTP_USER;
+    stub.keysStatus = 200;
+    stub.legacyStatus = 200;
+    stub.legacyEnabled = true;
     stub.requests = [];
     stub.authorizations = [];
   });
@@ -545,6 +779,15 @@ describe('probe-hosted.mjs', () => {
     expect(run.code).toBe(0);
     expect(checkLines(run.stdout)).toEqual(CHECKS.map((c) => `PASS ${c.name}`));
     expect(stub.requests).toContain(`/v1/projects/${REF}/config/auth`);
+    expect(stub.requests).toContain(`/v1/projects/${REF}/functions`);
+    expect(
+      run.stdout
+        .split('\n')
+        .filter((l) => l !== '')
+        .at(-1)
+    ).toBe(
+      'NOTE key-model: issued legacy/anon, legacy/service_role, publishable/default, secret/default; legacy keys enabled'
+    );
     expect(stub.authorizations.length).toBeGreaterThanOrEqual(3);
     expect(stub.authorizations.every((a) => a === `Bearer ${TEST_TOKEN}`)).toBe(true);
     expectNoSecret(run);
@@ -579,6 +822,55 @@ describe('probe-hosted.mjs', () => {
     expect(run.code).toBe(1);
     expect(checkLines(run.stdout).filter((l) => l.startsWith('FAIL '))).toHaveLength(1);
     expect(run.stdout).toMatch(/^FAIL auth\.smtp: .*smtp_user/m);
+    expectNoSecret(run);
+  });
+
+  it('prints the legacy keys as enabled, disabled or gone, with the exit status the checks give', async () => {
+    const cases: Array<[number, unknown, string]> = [
+      [200, true, 'legacy keys enabled'],
+      [200, false, 'legacy keys disabled'],
+      [404, null, 'legacy keys endpoint gone']
+    ];
+    for (const [status, enabled, text] of cases) {
+      stub.legacyStatus = status;
+      stub.legacyEnabled = enabled;
+      const green = await runProbe(['--root', fixtureRoot], withToken);
+      expect(green.code, text).toBe(0);
+      expect(green.stdout).toMatch(new RegExp(`^NOTE key-model: .*; ${text}$`, 'm'));
+      expect(green.stdout).not.toContain('COULD NOT RUN');
+      expectNoSecret(green);
+      stub.responses.management.postgrest.max_rows = 500;
+      const red = await runProbe(['--root', fixtureRoot], withToken);
+      expect(red.code, text).toBe(1);
+      expect(red.stdout).toMatch(new RegExp(`^NOTE key-model: .*; ${text}$`, 'm'));
+      expectNoSecret(red);
+      stub.responses = correctResponses(fixtureExpected);
+    }
+  });
+
+  it('says the issued keys were not read when that read is refused, with the exit status the checks give', async () => {
+    stub.keysStatus = 403;
+    const run = await runProbe(['--root', fixtureRoot], withToken);
+    expect(run.code).toBe(0);
+    expect(run.stdout).toMatch(
+      /^NOTE key-model: issued not read \(GET \/v1\/projects\/abcdefghijklmnopqrst\/api-keys answered 403\); legacy keys enabled$/m
+    );
+    expectNoSecret(run);
+  });
+
+  it('runs the batched break to exit 1 with thirteen FAIL lines, no COULD NOT RUN and every line paste-safe', async () => {
+    stub.responses = batchedBreak();
+    const run = await runProbe(['--root', fixtureRoot], withToken);
+    expect(run.code).toBe(1);
+    const lines = checkLines(run.stdout);
+    expect(lines).toHaveLength(13);
+    expect(lines.every((l) => l.startsWith('FAIL '))).toBe(true);
+    for (const { check, marker } of BATCHED_BREAK)
+      expect(
+        lines.find((l) => l.startsWith(`FAIL ${check}: `)),
+        check
+      ).toContain(marker);
+    expect(run.stdout).not.toContain('COULD NOT RUN');
     expectNoSecret(run);
   });
 
