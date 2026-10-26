@@ -35,12 +35,29 @@ const STUB_KEYS = [
   { type: 'secret', name: 'default', value: 'sb_secret_stubvaluedonotprint' }
 ];
 
+/** A JWT of the given payload, as the platform's legacy keys are written; the signature is not checked by the probe. */
+function stubJwt(payload: Record<string, unknown>): string {
+  function segment(value: unknown): string {
+    return Buffer.from(JSON.stringify(value)).toString('base64url');
+  }
+  return `${segment({ alg: 'HS256', typ: 'JWT' })}.${segment(payload)}.c3R1Yi1zaWduYXR1cmUtZG8tbm90LXByaW50`;
+}
+
+const ANON_KEY = stubJwt({ iss: 'supabase', ref: REF, role: 'anon' });
+const SERVICE_ROLE_JWT = stubJwt({ iss: 'supabase', ref: REF, role: 'service_role' });
+const SECRET_KEY = 'sb_secret_stubsecretvaluedonotprint';
+
+/** The nominations a conforming project serves to the whole read: more than the hosted default page of 1000. */
+const WHOLE_ROWS = 1510;
+
+const FIXTURE_PROJECT_ID = '00000000-0000-0000-0000-000000000001';
 const FIXTURE_ORIGIN = 'https://probe.example.org';
 const FIXTURE_ADMIN_EMAIL = 'noreply@probe.example.org';
 const FIXTURE_TFVARS = `project_ref              = "${REF}" # the stub's project
 public_origin            = "${FIXTURE_ORIGIN}"
 enable_access_token_hook = true
 enable_send_email_hook   = true
+public_project_id        = "${FIXTURE_PROJECT_ID}"
 
 smtp = {
   host = "email-smtp.eu-north-1.amazonaws.com"
@@ -85,6 +102,15 @@ interface Expected {
   oauthServer: { enabled: boolean; allow_dynamic_registration: boolean };
   api: { db_schema: string; db_extra_search_path: string };
   functions: Array<{ slug: string; verifyJwt: boolean }>;
+  publicProjectId: string | null;
+  projectUrl: string;
+  buckets: Array<{ id: string; public: boolean }>;
+}
+
+/** What a served function answered: its status and which known body it was, never the body itself. */
+interface Answer {
+  status: number;
+  kind: 'method-not-allowed' | 'internal-server-error' | 'status-object' | 'other' | 'not-json';
 }
 
 interface Responses {
@@ -92,7 +118,18 @@ interface Responses {
     postgrest: JsonObject;
     auth: JsonObject;
     functions: Array<JsonObject>;
+    buckets: Array<JsonObject>;
     keys: JsonObject;
+  };
+  public: {
+    settings: JsonObject;
+    rows: { status: number; contentRange: string | null; rows: number | null };
+    functions: {
+      accountAccess: Answer;
+      sendEmail: Answer;
+      identityCallbackGet: Answer;
+      identityCallbackPost: Answer;
+    };
   };
 }
 
@@ -134,9 +171,37 @@ function correctResponses(expected: Expected): Responses {
         oauth_server_allow_dynamic_registration: expected.oauthServer.allow_dynamic_registration
       },
       functions: expected.functions.map(({ slug, verifyJwt }) => ({ slug, status: 'ACTIVE', verify_jwt: verifyJwt })),
+      buckets: expected.buckets.map((bucket) => ({ ...bucket })),
       keys: { issued: [], legacy: 'enabled' }
+    },
+    public: {
+      settings: {
+        disable_signup: expected.auth.disable_signup,
+        mailer_autoconfirm: expected.auth.mailer_autoconfirm
+      },
+      rows: { status: 200, contentRange: `0-${WHOLE_ROWS - 1}/${WHOLE_ROWS}`, rows: WHOLE_ROWS },
+      functions: {
+        accountAccess: { status: 200, kind: 'status-object' },
+        sendEmail: { status: 405, kind: 'method-not-allowed' },
+        identityCallbackGet: { status: 405, kind: 'method-not-allowed' },
+        identityCallbackPost: { status: 500, kind: 'internal-server-error' }
+      }
     }
   };
+}
+
+/** `correctResponses` with the served nominations read replaced. */
+function withRows(rows: Responses['public']['rows']): Responses {
+  const responses = correctResponses(fixtureExpected);
+  responses.public.rows = rows;
+  return responses;
+}
+
+/** `correctResponses` with the given served function answers replaced. */
+function withAnswers(answers: Partial<Responses['public']['functions']>): Responses {
+  const responses = correctResponses(fixtureExpected);
+  responses.public.functions = { ...responses.public.functions, ...answers };
+  return responses;
 }
 
 /** `correctResponses` with the given served functions list. */
@@ -170,7 +235,12 @@ const BATCHED_BREAK: Array<{ check: string; marker: string }> = [
   { check: 'auth.other-settings', marker: 'password_min_length is 12' },
   { check: 'api.schemas', marker: 'db_schema is "public"' },
   { check: 'functions.deployed', marker: 'send-email' },
-  { check: 'functions.verify-jwt', marker: 'identity-callback' }
+  { check: 'functions.verify-jwt', marker: 'identity-callback' },
+  { check: 'auth.public-settings', marker: 'disable_signup is false' },
+  { check: 'rows.read-whole', marker: '0-499/1510' },
+  { check: 'functions.served', marker: 'send-email answered 404' },
+  { check: 'functions.identity-callback-unverified', marker: 'answered 401' },
+  { check: 'storage.buckets', marker: 'private-assets' }
 ];
 
 function batchedBreak(expected: Expected = fixtureExpected): Responses {
@@ -193,6 +263,16 @@ function batchedBreak(expected: Expected = fixtureExpected): Responses {
   m.functions = m.functions
     .filter((entry) => entry.slug !== 'send-email')
     .map((entry) => (entry.slug === 'identity-callback' ? { ...entry, verify_jwt: true } : entry));
+  m.buckets = m.buckets.filter((bucket) => bucket.id !== 'private-assets');
+  const p = responses.public;
+  p.settings = { disable_signup: false, mailer_autoconfirm: true };
+  p.rows = { status: 206, contentRange: `0-499/${WHOLE_ROWS}`, rows: 500 };
+  p.functions = {
+    ...p.functions,
+    sendEmail: { status: 404, kind: 'other' },
+    identityCallbackGet: { status: 401, kind: 'other' },
+    identityCallbackPost: { status: 401, kind: 'other' }
+  };
   return responses;
 }
 
@@ -317,6 +397,30 @@ describe('readExpected', () => {
     }
   });
 
+  it("reads the root's public project id, the project's own address and the buckets of config.toml", () => {
+    expect(fixtureExpected.publicProjectId).toBe(FIXTURE_PROJECT_ID);
+    expect(fixtureExpected.projectUrl).toBe(`https://${REF}.supabase.co`);
+    expect(fixtureExpected.buckets).toEqual([
+      { id: 'private-assets', public: false },
+      { id: 'public-assets', public: true }
+    ]);
+  });
+
+  it('records a root without a public_project_id as null, and refuses one that is not a lower-case uuid', () => {
+    const root = mkdtempSync(join(tmpdir(), 'probe-hosted-'));
+    try {
+      writeFileSync(join(root, 'terraform.tfvars'), FIXTURE_TFVARS.replace(/^public_project_id.*\n/m, ''));
+      expect((readExpected({ root }) as Expected).publicProjectId).toBeNull();
+      writeFileSync(
+        join(root, 'terraform.tfvars'),
+        FIXTURE_TFVARS.replace(FIXTURE_PROJECT_ID, FIXTURE_PROJECT_ID.replace(/1$/, 'A'))
+      );
+      expect(() => readExpected({ root })).toThrow(/terraform\.tfvars: .*public_project_id/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('records a root without an smtp object as null', () => {
     const root = mkdtempSync(join(tmpdir(), 'probe-hosted-'));
     try {
@@ -416,8 +520,8 @@ describe('the registry', () => {
     expect(results(correctResponses(fixtureExpected)).map((r) => r.name)).toEqual(CHECKS.map((c) => c.name));
   });
 
-  it('holds the thirteen management checks in their order', () => {
-    expect(CHECKS.map((c) => c.name)).toEqual([
+  it('holds the management checks, then the public-API checks and the bucket check, in their order', () => {
+    expect(CHECKS.map((c) => c.name).slice(0, 18)).toEqual([
       'api.max-rows',
       'auth.access-token-hook',
       'auth.send-email-hook',
@@ -430,8 +534,16 @@ describe('the registry', () => {
       'auth.other-settings',
       'api.schemas',
       'functions.deployed',
-      'functions.verify-jwt'
+      'functions.verify-jwt',
+      'auth.public-settings',
+      'rows.read-whole',
+      'functions.served',
+      'functions.identity-callback-unverified',
+      'storage.buckets'
     ]);
+    expect(CHECKS.find((c) => c.name === 'storage.buckets')?.source).toBe('management');
+    for (const name of ['auth.public-settings', 'rows.read-whole', 'functions.served'])
+      expect(CHECKS.find((c) => c.name === name)?.source, name).toBe('public');
   });
 
   it('passes every check for the correct responses', () => {
@@ -614,6 +726,107 @@ describe('the API and function checks', () => {
   });
 });
 
+describe('the public-API checks and the bucket check', () => {
+  it('fails only auth.public-settings when sign-up is served open or addresses are confirmed automatically', () => {
+    for (const [fields, marker] of [
+      [{ disable_signup: false }, 'disable_signup is false'],
+      [{ mailer_autoconfirm: true }, 'mailer_autoconfirm is true']
+    ] as Array<[JsonObject, string]>) {
+      const responses = correctResponses(fixtureExpected);
+      responses.public.settings = { ...responses.public.settings, ...fields };
+      expect(failing(responses), marker).toEqual(['auth.public-settings']);
+      expect(finding(responses, 'auth.public-settings')).toContain(marker);
+    }
+  });
+
+  it('fails rows.read-whole for a truncated read, naming the rows returned and the total', () => {
+    const responses = withRows({ status: 206, contentRange: '0-499/1510', rows: 500 });
+    expect(failing(responses)).toEqual(['rows.read-whole']);
+    const text = finding(responses, 'rows.read-whole');
+    expect(text).toContain('500');
+    expect(text).toContain('1510');
+    expect(text).toContain('truncated');
+  });
+
+  it('fails rows.read-whole for */0, saying no rows are readable and the project may be closed', () => {
+    const responses = withRows({ status: 200, contentRange: '*/0', rows: 0 });
+    expect(failing(responses)).toEqual(['rows.read-whole']);
+    const text = finding(responses, 'rows.read-whole');
+    expect(text).toContain('no nominations');
+    expect(text).toContain('closed');
+  });
+
+  it('fails rows.read-whole for a whole read of 900 rows, saying more than 1000 are needed', () => {
+    const responses = withRows({ status: 200, contentRange: '0-899/900', rows: 900 });
+    expect(failing(responses)).toEqual(['rows.read-whole']);
+    expect(finding(responses, 'rows.read-whole')).toContain('more than 1000');
+  });
+
+  it('passes rows.read-whole for a whole read of 1001 rows', () => {
+    expect(failing(withRows({ status: 200, contentRange: '0-1000/1001', rows: 1001 }))).toEqual([]);
+  });
+
+  it('fails rows.read-whole when the body holds fewer rows than the range says, and for a refused read', () => {
+    expect(failing(withRows({ status: 200, contentRange: '0-1509/1510', rows: 1000 }))).toEqual(['rows.read-whole']);
+    const refused = withRows({ status: 401, contentRange: null, rows: null });
+    expect(failing(refused)).toEqual(['rows.read-whole']);
+    expect(finding(refused, 'rows.read-whole')).toContain('401');
+  });
+
+  it('fails only functions.served naming send-email when it answers 404 with a gateway body', () => {
+    const responses = withAnswers({ sendEmail: { status: 404, kind: 'other' } });
+    expect(failing(responses)).toEqual(['functions.served']);
+    expect(finding(responses, 'functions.served')).toContain('send-email answered 404');
+  });
+
+  it('fails only functions.served naming account-access when its answer holds no status', () => {
+    const responses = withAnswers({ accountAccess: { status: 200, kind: 'other' } });
+    expect(failing(responses)).toEqual(['functions.served']);
+    expect(finding(responses, 'functions.served')).toContain('account-access');
+  });
+
+  it('fails only functions.identity-callback-unverified when both calls answer 401', () => {
+    const responses = withAnswers({
+      identityCallbackGet: { status: 401, kind: 'other' },
+      identityCallbackPost: { status: 401, kind: 'other' }
+    });
+    expect(failing(responses)).toEqual(['functions.identity-callback-unverified']);
+    expect(finding(responses, 'functions.identity-callback-unverified')).toContain('answered 401');
+  });
+
+  it('fails functions.identity-callback-unverified when the empty POST is not refused with the fixed body', () => {
+    const responses = withAnswers({ identityCallbackPost: { status: 400, kind: 'other' } });
+    expect(failing(responses)).toEqual(['functions.identity-callback-unverified']);
+    expect(finding(responses, 'functions.identity-callback-unverified')).toContain('400');
+  });
+
+  it('fails only storage.buckets naming private-assets when it is absent', () => {
+    const responses = correctResponses(fixtureExpected);
+    responses.management.buckets = responses.management.buckets.filter((b) => b.id !== 'private-assets');
+    expect(failing(responses)).toEqual(['storage.buckets']);
+    expect(finding(responses, 'storage.buckets')).toContain('private-assets');
+  });
+
+  it('fails only storage.buckets naming public-assets when it is served private', () => {
+    const responses = correctResponses(fixtureExpected);
+    responses.management.buckets = responses.management.buckets.map((b) =>
+      b.id === 'public-assets' ? { ...b, public: false } : b
+    );
+    expect(failing(responses)).toEqual(['storage.buckets']);
+    expect(finding(responses, 'storage.buckets')).toContain('public-assets');
+  });
+
+  it('fails storage.buckets naming a bucket config.toml does not declare, and passes another order', () => {
+    const responses = correctResponses(fixtureExpected);
+    responses.management.buckets = [...responses.management.buckets, { id: 'planted-bucket', public: true }];
+    expect(failing(responses)).toEqual(['storage.buckets']);
+    expect(finding(responses, 'storage.buckets')).toContain('planted-bucket');
+    const reversed = correctResponses(fixtureExpected);
+    reversed.management.buckets.reverse();
+    expect(failing(reversed)).toEqual([]);
+  });
+});
+
 describe('the batched break', () => {
   it('fails every check, each finding holding its own planted marker', () => {
     const responses = batchedBreak();
@@ -625,8 +838,18 @@ describe('the batched break', () => {
 
 // ── The entry against a stub Management API ──
 
+interface StubRequest {
+  method: string;
+  url: string;
+  authorization: string | undefined;
+  apikey: string | undefined;
+  prefer: string | undefined;
+  body: string;
+}
+
 interface StubState {
   preflightStatus: number;
+  publicPreflightStatus: number;
   responses: Responses;
   smtpUser: string;
   keysStatus: number;
@@ -634,20 +857,69 @@ interface StubState {
   legacyEnabled: unknown;
   requests: Array<string>;
   authorizations: Array<string | undefined>;
+  log: Array<StubRequest>;
 }
 
 const stub: StubState = {
   preflightStatus: 200,
-  responses: { management: { postgrest: {}, auth: {}, functions: [], keys: {} } },
+  publicPreflightStatus: 200,
+  responses: {} as Responses,
   smtpUser: STUB_SMTP_USER,
   keysStatus: 200,
   legacyStatus: 200,
   legacyEnabled: true,
   requests: [],
-  authorizations: []
+  authorizations: [],
+  log: []
 };
 let server: Server;
 let stubUrl: string;
+
+/** The prefix under which the stub answers the project's own API, passed to the probe as `PROBE_PROJECT_URL`. */
+const PROJECT_PREFIX = '/project';
+
+/** A body of the given kind, as the function or the gateway writes it. */
+function answerBody(kind: Answer['kind']): string {
+  if (kind === 'method-not-allowed') return JSON.stringify({ error: 'Method not allowed' });
+  if (kind === 'internal-server-error') return JSON.stringify({ error: 'Internal server error' });
+  if (kind === 'status-object') return JSON.stringify({ status: 'unknown' });
+  if (kind === 'not-json') return 'gateway timeout';
+  return JSON.stringify({ code: 'NOT_FOUND', message: 'Requested function was not found' });
+}
+
+/** The project's own API: the auth settings, the nominations read and the three functions. */
+function handlePublic(req: IncomingMessage, res: ServerResponse, path: string): void {
+  const served = stub.responses.public;
+  function answer({ status, kind }: Answer): void {
+    res.writeHead(status, { 'content-type': 'application/json' });
+    res.end(answerBody(kind));
+  }
+  if (req.method === 'GET' && path === '/auth/v1/settings') {
+    res.writeHead(stub.publicPreflightStatus, { 'content-type': 'application/json' });
+    res.end(JSON.stringify({ external: { email: true }, saml_enabled: false, ...served.settings }));
+    return;
+  }
+  if (req.method === 'GET' && path === `/rest/v1/nominations?select=id&project_id=eq.${FIXTURE_PROJECT_ID}`) {
+    const { status, contentRange, rows } = served.rows;
+    const headers: Record<string, string> = { 'content-type': 'application/json' };
+    // PostgREST gives the total only when the count is asked for.
+    if (contentRange !== null)
+      headers['content-range'] = /count=exact/.test(String(req.headers.prefer))
+        ? contentRange
+        : contentRange.replace(/\/\d+$/, '/*');
+    res.writeHead(status, headers);
+    res.end(
+      rows === null ? '{"message":"refused"}' : JSON.stringify(Array.from({ length: rows }, (_, i) => ({ id: i })))
+    );
+    return;
+  }
+  if (req.method === 'POST' && path === '/functions/v1/account-access') return answer(served.functions.accountAccess);
+  if (req.method === 'GET' && path === '/functions/v1/send-email') return answer(served.functions.sendEmail);
+  if (path === '/functions/v1/identity-callback')
+    return answer(req.method === 'GET' ? served.functions.identityCallbackGet : served.functions.identityCallbackPost);
+  res.writeHead(404, { 'content-type': 'application/json' });
+  res.end(JSON.stringify({ message: 'not found' }));
+}
 
 /** The raw bodies the stub serves for `stub.responses`, with the secrets a real body holds next to the compared fields. */
 function authBody(): JsonObject {
@@ -656,6 +928,24 @@ function authBody(): JsonObject {
 }
 
 function handle(req: IncomingMessage, res: ServerResponse): void {
+  let body = '';
+  req.on('data', (chunk) => (body += chunk));
+  req.on('end', () => {
+    stub.log.push({
+      method: req.method ?? '',
+      url: req.url ?? '',
+      authorization: req.headers.authorization,
+      apikey: req.headers.apikey as string | undefined,
+      prefer: req.headers.prefer,
+      body
+    });
+    if ((req.url ?? '').startsWith(`${PROJECT_PREFIX}/`))
+      return handlePublic(req, res, (req.url ?? '').slice(PROJECT_PREFIX.length));
+    handleManagement(req, res);
+  });
+}
+
+function handleManagement(req: IncomingMessage, res: ServerResponse): void {
   stub.requests.push(req.url ?? '');
   stub.authorizations.push(req.headers.authorization);
   function send(status: number, body: unknown): void {
@@ -664,6 +954,17 @@ function handle(req: IncomingMessage, res: ServerResponse): void {
   }
   if (req.method !== 'GET') return send(405, { message: 'method not allowed' });
   const project = `/v1/projects/${REF}`;
+  if (req.url === `${project}/storage/buckets`)
+    return send(
+      200,
+      stub.responses.management.buckets.map((bucket) => ({
+        name: bucket.id,
+        owner: '',
+        created_at: '2026-10-26T00:00:00Z',
+        updated_at: '2026-10-26T00:00:00Z',
+        ...bucket
+      }))
+    );
   if (req.url === project) return send(stub.preflightStatus, { id: REF, status: 'ACTIVE_HEALTHY' });
   if (req.url === `${project}/postgrest`)
     return send(200, {
@@ -705,7 +1006,12 @@ interface Run {
 function runProbe(args: Array<string>, env: Record<string, string> = {}): Promise<Run> {
   return new Promise((resolvePromise, reject) => {
     const child = spawn(process.execPath, [ENTRY, ...args], {
-      env: { PATH: process.env.PATH ?? '', PROBE_MANAGEMENT_API_URL: stubUrl, ...env },
+      env: {
+        PATH: process.env.PATH ?? '',
+        PROBE_MANAGEMENT_API_URL: stubUrl,
+        PROBE_PROJECT_URL: `${stubUrl}${PROJECT_PREFIX}`,
+        ...env
+      },
       stdio: ['ignore', 'pipe', 'pipe']
     });
     let stdout = '';
@@ -717,7 +1023,7 @@ function runProbe(args: Array<string>, env: Record<string, string> = {}): Promis
   });
 }
 
-const withToken = { SUPABASE_ACCESS_TOKEN: TEST_TOKEN };
+const withToken = { SUPABASE_ACCESS_TOKEN: TEST_TOKEN, SUPABASE_ANON_KEY: ANON_KEY };
 
 function expectNoSecret(run: Run): void {
   for (const secret of [
@@ -725,6 +1031,9 @@ function expectNoSecret(run: Run): void {
     STUB_SMTP_PASS,
     STUB_SMTP_USER,
     TEST_TOKEN,
+    ANON_KEY,
+    SERVICE_ROLE_JWT,
+    SECRET_KEY,
     FIXTURE_ADMIN_EMAIL,
     ...STUB_KEYS.map((k) => k.value)
   ]) {
@@ -751,6 +1060,7 @@ describe('probe-hosted.mjs', () => {
 
   beforeEach(() => {
     stub.preflightStatus = 200;
+    stub.publicPreflightStatus = 200;
     stub.responses = correctResponses(fixtureExpected);
     stub.smtpUser = STUB_SMTP_USER;
     stub.keysStatus = 200;
@@ -758,6 +1068,89 @@ describe('probe-hosted.mjs', () => {
     stub.legacyEnabled = true;
     stub.requests = [];
     stub.authorizations = [];
+    stub.log = [];
+  });
+
+  it('reads the public API with the anon key in the shape the frontend sends, and keeps only named facts', async () => {
+    const responses = await collect({
+      sources: ['public'],
+      expected: fixtureExpected,
+      env: { SUPABASE_ANON_KEY: ANON_KEY, PROBE_PROJECT_URL: `${stubUrl}${PROJECT_PREFIX}` }
+    });
+    expect(responses.public).toEqual(correctResponses(fixtureExpected).public);
+    const rows = stub.log.find((r) => r.url.startsWith(`${PROJECT_PREFIX}/rest/v1/nominations`));
+    expect(rows?.prefer).toContain('count=exact');
+    expect(rows?.authorization).toBe(`Bearer ${ANON_KEY}`);
+    expect(stub.log.every((r) => r.apikey === ANON_KEY)).toBe(true);
+    const check = stub.log.find((r) => r.url === `${PROJECT_PREFIX}/functions/v1/account-access`);
+    const sent = JSON.parse(check?.body ?? '{}');
+    expect(sent.operation).toBe('check-code');
+    expect(sent.project_id).toBe(FIXTURE_PROJECT_ID);
+    expect(sent.code).toMatch(/^[A-Za-z0-9_-]{12}$/);
+    const unverified = stub.log.filter((r) => r.url === `${PROJECT_PREFIX}/functions/v1/identity-callback`);
+    expect(unverified.map((r) => r.method).sort()).toEqual(['GET', 'POST']);
+    expect(unverified.every((r) => r.authorization === undefined)).toBe(true);
+    expect(unverified.find((r) => r.method === 'POST')?.body).toBe('{}');
+  });
+
+  it('reads the buckets through the Management API, taking the name when an entry has no id', async () => {
+    stub.responses.management.buckets = [{ name: 'public-assets', public: true }];
+    const responses = await collect({
+      sources: ['management'],
+      expected: fixtureExpected,
+      env: { SUPABASE_ACCESS_TOKEN: TEST_TOKEN, PROBE_MANAGEMENT_API_URL: stubUrl }
+    });
+    expect(responses.management.buckets).toEqual([{ id: 'public-assets', public: true }]);
+  });
+
+  it('exits 1 naming the rows returned and the total for a truncated read through the entry', async () => {
+    stub.responses.public.rows = { status: 206, contentRange: '0-499/1510', rows: 500 };
+    const run = await runProbe(['--root', fixtureRoot], withToken);
+    expect(run.code).toBe(1);
+    expect(checkLines(run.stdout).filter((l) => l.startsWith('FAIL '))).toHaveLength(1);
+    expect(run.stdout).toMatch(/^FAIL rows\.read-whole: .*500.*1510/m);
+    expectNoSecret(run);
+  });
+
+  it('exits 2 with COULD NOT RUN public and no request when SUPABASE_ANON_KEY is a service-role JWT or a secret key', async () => {
+    for (const key of [SERVICE_ROLE_JWT, SECRET_KEY]) {
+      stub.log = [];
+      const run = await runProbe(['--root', fixtureRoot], { ...withToken, SUPABASE_ANON_KEY: key });
+      expect(run.code).toBe(2);
+      expect(run.stdout).toMatch(/^COULD NOT RUN public: .*never takes the service-role key/m);
+      expect(run.stdout).not.toMatch(/^(PASS|FAIL) /m);
+      expect(stub.log).toEqual([]);
+      expectNoSecret(run);
+    }
+  });
+
+  it('exits 2 when SUPABASE_ANON_KEY is not set, before any request', async () => {
+    const run = await runProbe(['--root', fixtureRoot], { SUPABASE_ACCESS_TOKEN: TEST_TOKEN });
+    expect(run.code).toBe(2);
+    expect(run.stdout).toContain('COULD NOT RUN public: SUPABASE_ANON_KEY is not set');
+    expect(stub.log).toEqual([]);
+  });
+
+  it('exits 2 when the root sets no public_project_id, before any request', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'probe-hosted-'));
+    try {
+      writeFileSync(join(root, 'terraform.tfvars'), FIXTURE_TFVARS.replace(/^public_project_id.*\n/m, ''));
+      const run = await runProbe(['--root', root], withToken);
+      expect(run.code).toBe(2);
+      expect(run.stdout).toMatch(/^COULD NOT RUN public: .*public_project_id/m);
+      expect(stub.log).toEqual([]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('exits 2 with COULD NOT RUN public and no check line when the auth settings preflight answers 503', async () => {
+    stub.publicPreflightStatus = 503;
+    const run = await runProbe(['--root', fixtureRoot], withToken);
+    expect(run.code).toBe(2);
+    expect(run.stdout).toMatch(/^COULD NOT RUN public: GET \/auth\/v1\/settings answered 503/m);
+    expect(run.stdout).not.toMatch(/^(PASS|FAIL) /m);
+    expectNoSecret(run);
   });
 
   it('keeps only the named auth fields, reducing the SMTP user name to whether it is set', async () => {
@@ -858,12 +1251,12 @@ describe('probe-hosted.mjs', () => {
     expectNoSecret(run);
   });
 
-  it('runs the batched break to exit 1 with thirteen FAIL lines, no COULD NOT RUN and every line paste-safe', async () => {
+  it('runs the batched break to exit 1 with one FAIL line per check, no COULD NOT RUN and every line paste-safe', async () => {
     stub.responses = batchedBreak();
     const run = await runProbe(['--root', fixtureRoot], withToken);
     expect(run.code).toBe(1);
     const lines = checkLines(run.stdout);
-    expect(lines).toHaveLength(13);
+    expect(lines).toHaveLength(18);
     expect(lines.every((l) => l.startsWith('FAIL '))).toBe(true);
     for (const { check, marker } of BATCHED_BREAK)
       expect(
