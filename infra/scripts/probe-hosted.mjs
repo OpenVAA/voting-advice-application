@@ -5,23 +5,42 @@
  *
  * What it requires: a hosted Supabase project serves the settings the repository declares for it. The expected values
  * are read from tracked files only, the same files the hosted-settings parity guard reads: the target root's
- * `terraform.tfvars` (the project ref), `infra/modules/supabase/hosted-settings.json` and `dataAdapter.pageSize` in
- * `packages/app-shared/src/settings/staticSettings.ts`. The probe holds no table of expected values of its own.
+ * `terraform.tfvars` (the project ref, the public origin, the two hook switches and the `smtp` object),
+ * `infra/modules/supabase/hosted-settings.json`, `dataAdapter.pageSize` in
+ * `packages/app-shared/src/settings/staticSettings.ts` and `[auth.oauth_server]` of
+ * `apps/supabase/supabase/config.toml`. The probe holds no table of expected values of its own.
  *
  * What it reads: the probe reads a hosted project through three sources, of which this version has one:
  *
  *   management   The Management API, with the access token from `SUPABASE_ACCESS_TOKEN`. Preflight
- *                `GET /v1/projects/{ref}`; the PostgREST settings give `max_rows`.
+ *                `GET /v1/projects/{ref}`; the PostgREST settings give `max_rows`, and the auth settings give the
+ *                fields the auth checks compare.
  *   public API   (not yet present) The project's own API, with the anon key only.
  *   catalog      (not yet present) The database catalog over psql, as a read-only role.
  *
  * It never takes, reads or prints the service-role key, and it writes nothing to any project: every request is a GET.
  * Of each response body it keeps the named fields it compares and drops the rest at once, so a secret served next to a
- * compared field (the PostgREST settings hold the JWT secret) is never kept or printed.
+ * compared field (the PostgREST settings hold the JWT secret, the auth settings the SMTP credentials) is never kept or
+ * printed. Of the SMTP user name it keeps only whether one is set.
  *
  * Checks, in the order they run and print:
  *
- *   api.max-rows   The served `max_rows` is a number equal to `api.max_rows` of the JSON and to `pageSize`.
+ *   api.max-rows            The served `max_rows` is a number equal to `api.max_rows` of the JSON and to `pageSize`.
+ *   auth.access-token-hook  With the root's `enable_access_token_hook` on, the hook's enabled flag and URI are the
+ *                           JSON's `auth_hook`; with it off, the flag is false.
+ *   auth.send-email-hook    The same for the send-email hook, `enable_send_email_hook` and `auth_send_email_hook`.
+ *   auth.site-url           `site_url` is the root's `public_origin`.
+ *   auth.redirects          `uri_allow_list` is exactly the string the module builds: the origin followed by each of
+ *                           the JSON's `redirect_callback_paths`, joined by commas, in order and without spaces.
+ *   auth.signup-closed      `disable_signup` is the JSON's.
+ *   auth.email-confirm      `mailer_autoconfirm` is the JSON's.
+ *   auth.smtp               Host, port, sender address and sender name are the root's `smtp` object, and an SMTP
+ *                           user name is set. A root without an `smtp` object fails it.
+ *   auth.oauth-server       `oauth_server_enabled` and `oauth_server_allow_dynamic_registration` are `enabled` and
+ *                           `allow_dynamic_registration` of `[auth.oauth_server]` in config.toml.
+ *   auth.other-settings     Every other key of the JSON's `auth` group is served with its JSON value.
+ *
+ * Every comparison is aware of the JSON type: a string served for a boolean or a number is a finding.
  *
  * Each source answers its preflight before any check that reads it runs. When a source does not answer, or an input
  * file cannot be read, the probe prints one `COULD NOT RUN <source>: <reason>` line, prints no check line and exits 2:

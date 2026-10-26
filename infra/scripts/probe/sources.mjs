@@ -3,13 +3,18 @@
  * source that is down gives one could-not-run line instead of a failing line for every check that reads it.
  *
  *   management   The Management API, with the access token in `SUPABASE_ACCESS_TOKEN` sent as a bearer token.
- *                Preflight: `GET /v1/projects/{ref}` answers 200. Reads: `GET /v1/projects/{ref}/postgrest`, of which
- *                only `max_rows` is kept. The base address is `PROBE_MANAGEMENT_API_URL` when set (a test seam
- *                pointed at a local stub) and `https://api.supabase.com` otherwise.
+ *                Preflight: `GET /v1/projects/{ref}` answers 200. Reads:
+ *                  `GET /v1/projects/{ref}/postgrest`     `max_rows`
+ *                  `GET /v1/projects/{ref}/config/auth`   the fields of `AUTH_FIELDS`, every key of the JSON's `auth`,
+ *                                                         `auth_hook` and `auth_send_email_hook` groups, and of the
+ *                                                         SMTP user name only whether it is a non-empty string
+ *                The base address is `PROBE_MANAGEMENT_API_URL` when set (a test seam pointed at a local stub) and
+ *                `https://api.supabase.com` otherwise.
  *
- * A response body can hold secrets next to the compared fields (the PostgREST settings hold the JWT secret). Each body
- * is parsed, the named fields are copied out and the body is dropped at once; nothing keeps or prints a whole body. A
- * `SourceError` reason names the endpoint path and the status, never a body or a header.
+ * A response body can hold secrets next to the compared fields: the PostgREST settings hold the JWT secret, and the
+ * auth settings hold the SMTP credentials. Each body is parsed, the named fields are copied out and the body is dropped
+ * at once; nothing keeps or prints a whole body. A `SourceError` reason names the endpoint path and the status, never a
+ * body or a header.
  *
  * This module has no side effect on import.
  */
@@ -17,6 +22,24 @@
 export const DEFAULT_MANAGEMENT_API_URL = 'https://api.supabase.com';
 
 const REQUEST_TIMEOUT_MS = 30_000;
+
+/** The fields of the auth settings the checks compare, besides the keys of the JSON groups the module sends. */
+const AUTH_FIELDS = [
+  'site_url',
+  'uri_allow_list',
+  'disable_signup',
+  'mailer_autoconfirm',
+  'hook_custom_access_token_enabled',
+  'hook_custom_access_token_uri',
+  'hook_send_email_enabled',
+  'hook_send_email_uri',
+  'smtp_host',
+  'smtp_port',
+  'smtp_admin_email',
+  'smtp_sender_name',
+  'oauth_server_enabled',
+  'oauth_server_allow_dynamic_registration'
+];
 
 /** A source that did not answer its preflight or one of its reads as expected. */
 export class SourceError extends Error {
@@ -42,9 +65,10 @@ function failureName(error) {
 
 /**
  * One GET whose answer must be 200. The body is read only when `fields` is given; then it is parsed as a JSON object and
- * only the named fields are returned.
+ * only the named fields are returned, with, for each name in `presence`, `<name>_present`: whether the body holds a
+ * non-empty string there. The value of a `presence` field is never kept.
  */
-async function getJson({ source, base, endpoint, headers, fetchImpl, fields }) {
+async function getJson({ source, base, endpoint, headers, fetchImpl, fields, presence = [] }) {
   let response;
   try {
     response = await fetchImpl(`${base}${endpoint}`, {
@@ -77,6 +101,7 @@ async function getJson({ source, base, endpoint, headers, fetchImpl, fields }) {
     if (!Object.hasOwn(body, field)) throw new SourceError(source, `GET ${endpoint} answered 200 without ${field}`);
     kept[field] = body[field];
   }
+  for (const field of presence) kept[`${field}_present`] = typeof body[field] === 'string' && body[field] !== '';
   return kept;
 }
 
@@ -90,22 +115,34 @@ const SOURCES = {
       return {
         base,
         project: `/v1/projects/${expected.ref}`,
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' }
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        authFields: [
+          ...new Set([
+            ...AUTH_FIELDS,
+            ...Object.keys(expected.auth),
+            ...Object.keys(expected.authHook),
+            ...Object.keys(expected.authSendEmailHook)
+          ])
+        ]
       };
     },
     async preflight({ base, project, headers }, fetchImpl) {
       await getJson({ source: 'management', base, endpoint: project, headers, fetchImpl });
     },
-    async read({ base, project, headers }, fetchImpl) {
-      const postgrest = await getJson({
-        source: 'management',
-        base,
-        endpoint: `${project}/postgrest`,
-        headers,
-        fetchImpl,
-        fields: ['max_rows']
-      });
-      return { postgrest };
+    async read({ base, project, headers, authFields }, fetchImpl) {
+      function get(endpoint, options) {
+        return getJson({
+          source: 'management',
+          base,
+          endpoint: `${project}${endpoint}`,
+          headers,
+          fetchImpl,
+          ...options
+        });
+      }
+      const postgrest = await get('/postgrest', { fields: ['max_rows'] });
+      const auth = await get('/config/auth', { fields: authFields, presence: ['smtp_user'] });
+      return { postgrest, auth };
     }
   }
 };
@@ -120,7 +157,7 @@ export const SOURCE_NAMES = Object.keys(SOURCES);
  * @param options.expected - The expected values; `expected.ref` names the project.
  * @param options.env - The environment the token and the test seams are read from.
  * @param options.fetchImpl - The `fetch` to use. Defaults to the global one.
- * @returns `{ management: { postgrest: { max_rows } } }`, holding only the sources asked for.
+ * @returns `{ management: { postgrest, auth } }`, holding only the sources asked for.
  * @throws SourceError for the first source that is not configured, fails its preflight or fails a read.
  */
 export async function collect({ sources, expected, env = process.env, fetchImpl = globalThis.fetch }) {

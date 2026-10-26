@@ -210,7 +210,10 @@ describe('readExpected', () => {
       [FIXTURE_TFVARS.replace(/^public_origin.*\n/m, ''), /terraform\.tfvars: .*public_origin/],
       [FIXTURE_TFVARS.replace(/^enable_access_token_hook.*\n/m, ''), /terraform\.tfvars: .*enable_access_token_hook/],
       [FIXTURE_TFVARS.replace(/^enable_send_email_hook.*\n/m, ''), /terraform\.tfvars: .*enable_send_email_hook/],
-      [FIXTURE_TFVARS.replace(/^enable_send_email_hook.*\n/m, 'enable_send_email_hook = "yes"\n'), /enable_send_email_hook/],
+      [
+        FIXTURE_TFVARS.replace(/^enable_send_email_hook.*\n/m, 'enable_send_email_hook = "yes"\n'),
+        /enable_send_email_hook/
+      ],
       [FIXTURE_TFVARS.replace(/^\s*sender_name.*\n/m, ''), /terraform\.tfvars: .*smtp.*sender_name/]
     ];
     for (const [text, message] of cases) {
