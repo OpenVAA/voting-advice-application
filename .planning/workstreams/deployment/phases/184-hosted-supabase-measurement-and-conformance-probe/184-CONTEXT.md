@@ -171,6 +171,46 @@ project is deleted after this phase (183 D-12). Nothing is seeded per run from C
 - The probe's internal module layout, its check names and the shape of the Vitest fixtures.
 - The exact wording of rows in the "Observed" table and of the evidence files.
 
+### Post-research amendments (2026-10-26)
+
+Research (`184-RESEARCH.md` § Corrections) showed that some factual premises behind the decisions above were
+wrong. The decisions stand, read with these facts. Where a fact leaves a real choice open, it becomes a
+`checkpoint:decision` in the plans, with the recommendation named. These are **not** pre-ruled.
+
+- **D-04:** `identity-callback` already fails closed (`index.ts:157`, catch at `:390-397`). No fix is needed. The
+  probe asserts the refusal.
+- **D-05:** The SES account has production access (183-19), so any recipient works and no sandbox applies. The
+  From address is fixed to `noreply@staging.openvaa.org`. Supabase blocks 25 and 587 for Edge Functions, and
+  `secure: false` cannot speak 465, so in practice only 2587 can deliver. The OBS-05 failed-send observation
+  therefore needs one **deliberate** failing attempt (for example 587) planned on purpose. A delivery that fails on
+  2587 is a stop-and-ask checkpoint.
+- **D-09:** supabase-js already sends `Authorization: Bearer <anon>` by default. The parity guard
+  (`scripts/assert-hosted-settings-parity.mjs:600-608`) covers only `[api]` and `[auth*]`, so it must be widened
+  to `[functions.*]` before it can take the `verify_jwt` row.
+- **D-11:** No first-administrator procedure is written down anywhere (`bootstrap.sql:7` only says it is a
+  separate step). This phase writes it into the staging runbook as it performs it.
+- **D-18:** No dev-seed template puts more than 1000 rows in one table, and dev-seed creates no auth users. Planning
+  adds a minimal template with at least 1001 anon-readable rows. Anon reads also need `open_for_voters = true` on
+  staging's project. Open question: checkpoint (recommended: open staging for voters, which 185's smoke run needs
+  anyway).
+- **D-20:** The README already has a dated table named **"Observations"**, right after "Not yet observed". Reuse
+  it; do not add a third table.
+- **D-23 / scratch root:** There is no scratch Terraform state in this worktree, and the root has no `import`
+  block, so a plan would create a new project. The first scratch sitting must locate the old state or re-import
+  the project.
+- **Linking:** `supabase link` in `apps/supabase` writes `.temp/*-version` files that change the shared local
+  stack's images. Push, drift check and deploys run from a dedicated linked work directory.
+- **Open questions, raised as checkpoints with recommendations:**
+  - **Probe catalog role.** `check-seed.sql` and `storage.buckets` sit behind RLS, so a read-only role sees false
+    findings. Recommended: move the bucket check to the Management API or the public storage API.
+  - **Staging `PUBLIC_PROJECT_ID`.** Not recorded anywhere. Record it from the bootstrap output.
+  - **`open_for_voters`.** See D-18.
+  - **Making the `db.postgres-major` check fail** (a project's major version cannot be planted). Recommended: an
+    uncommitted override of the expected value for the red run.
+  - **Scratch state.** Locate it or re-import.
+  - **D-23's scope.** Remove only the scratch state, or the whole scratch root directory (its `main.tf` header says
+    the root is removed).
+
 </decisions>
 
 <canonical_refs>
