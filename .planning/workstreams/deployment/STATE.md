@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 184
 current_phase_name: Hosted Supabase Measurement and Conformance Probe
-current_plan: 5
+current_plan: 6
 status: executing
-stopped_at: Completed 184-06-PLAN.md
-last_updated: "2026-10-26T13:16:31.304Z"
+stopped_at: Completed 184-02-PLAN.md
+last_updated: "2026-10-26T13:33:55.628Z"
 last_activity: 2026-10-26
 last_activity_desc: Phase 184 execution started
-state_head: 199e501548aba539633fda8e72b77f5c44fcca56
+state_head: f88d6661361df011a6532e9efe331982281a4107
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 107
-  completed_plans: 86
+  completed_plans: 87
   percent: 30
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 184 (Hosted Supabase Measurement and Conformance Probe) — EXECUTING
-Plan: 5 of 25
+Plan: 6 of 25
 Status: Ready to execute
 Last activity: 2026-10-26 — Phase 184 execution started
 
@@ -43,7 +43,7 @@ Progress: [███░░░░░░░] 30% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 5
+**Current Plan:** 6
 
 From 184 on, the numeric order is the dependency order.
 
@@ -121,6 +121,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 184 P04 | 14min | 2 tasks | 4 files |
 | Phase 184 P05 | 10 min | 2 tasks | 2 files |
 | Phase 184 P06 | 10min | 2 tasks | 8 files |
+| Phase 184 P02 | 12min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -207,6 +208,9 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 184]: 184-04: push-migrations.sh kills a CLI child 10 s after an interrupt (the CLI binary was seen ignoring SIGTERM); a dry run matching neither up-to-date nor a migration list is exit 2, never a push
 - [Phase 184]: 184-05: functions.identity-callback/verify_jwt is a not-compared row of the parity guard (the CLI deploys it from config.toml; the conformance probe compares the served value); every [functions.*] key must be classified or lint:check fails
 - [Phase 184]: 184-06: Edge Function secrets are set by one supabase_edge_function_secrets in the Supabase module, gated on public_project_id; SMTP_* derive from the same smtp object/variables as Auth; no IDENTITY_PROVIDER_* or SUPABASE_* secret
+- [Phase 184]: 184-02: probe findings show booleans, numbers and plain-alphabet strings that pass the paste screen; address, user-name and credential fields are named by field only
+- [Phase 184]: 184-02: the NOTE key-model line never changes the exit status; a failed key read prints as not read, a 404 from /api-keys/legacy as endpoint gone
+- [Phase 184]: 184-02: auth.smtp fails on a root without an smtp object, so staging fails it until its smtp object is added; the batched break also plants hook_send_email_enabled false
 
 ### Pending Todos
 
@@ -259,6 +263,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-10-26T13:16:30.370Z
-**Stopped At:** Completed 184-06-PLAN.md
+Last session: 2026-10-26T13:33:54.734Z
+**Stopped At:** Completed 184-02-PLAN.md
 **Resume File:** None
