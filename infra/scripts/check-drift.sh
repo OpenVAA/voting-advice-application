@@ -23,11 +23,11 @@
 #   ```sh
 #   set -a; eval "$(apps/supabase/scripts/isolated-instance.sh env --name probe)"; set +a
 #   infra/scripts/check-drift.sh --workdir "$ISO_WORKDIR" --manifest "$ISO_WORKDIR/migrations.manifest.json"
-#   infra/scripts/check-drift.sh --target linked --out tmp/drift
+#   infra/scripts/check-drift.sh --target linked --workdir <linked work directory> --out tmp/drift
 #   ```
 #
 #   --manifest <path>      OPTIONAL. The migration manifest. Default: apps/supabase/supabase/migrations.manifest.json.
-#   --workdir <dir>        OPTIONAL. The Supabase work directory: the directory that holds supabase/config.toml and supabase/migrations. Default: apps/supabase.
+#   --workdir <dir>        OPTIONAL. The Supabase work directory: the directory that holds supabase/config.toml and supabase/migrations. Default: apps/supabase, which `--target linked` refuses.
 #   --target local|linked  OPTIONAL. Which database the diff compares, passed to the CLI as --local or --linked. Default: local.
 #   --out <dir>            OPTIONAL. Where history.manifest.txt, history.database.txt, schema.diff.sql and schema.diff.log are kept. Created when missing. Default: a temporary directory that is removed when the script exits.
 #   -h, --help             Print this header and exit 0.
@@ -42,7 +42,7 @@
 #   1. `yarn install` has run: the CLI is node_modules/.bin/supabase of the repository root, and `node` is on PATH.
 #   2. `psql` and `pgrep` are on PATH.
 #   3. Docker is running. The diff starts a shadow database in it, published on the shadow_port of the work directory's config.toml and labelled with that file's project id, and removes it before it returns. With the default work directory those are the port and the project id of this checkout's local stack. On an interrupt the script stops the CLI and waits until the shadow database is gone. A script killed outright (SIGKILL) leaves it running, and the next diff fails until that container is removed.
-#   4. The PG* variables (PGHOST, PGPORT, PGUSER, PGDATABASE, and PGPASSWORD or a password file) name the database the target names. For `--target local` the script refuses to run unless PGHOST is a loopback address and PGPORT is the [db] port of the work directory's config.toml, so that the two parts cannot judge two different databases. For `--target linked` it cannot tell, and the caller answers for it.
+#   4. The PG* variables (PGHOST, PGPORT, PGUSER, PGDATABASE, and PGPASSWORD or a password file) name the database the target names. For `--target local` the script refuses to run unless PGHOST is a loopback address and PGPORT is the [db] port of the work directory's config.toml, so that the two parts cannot judge two different databases. For `--target linked` the script refuses to run unless the work directory is not apps/supabase (the shared local stack's work directory, never linked, because a link there changes the images that stack starts), supabase/.temp/project-ref in it holds a project ref of 20 lower-case letters, PGHOST names that project, either directly as db.<ref>.supabase.co or as a session pooler host <name>.pooler.supabase.com with PGUSER ending in .<ref>, PGPORT is not 6543 (the transaction pooler, which loses the session's settings between transactions), and neither PGHOSTADDR nor PGSERVICE is set (either can send psql to another address than PGHOST). These refusals come before the tool and Docker checks, so a wrong target is refused on any host.
 #   5. For `--target linked`: the work directory is linked to the project and the CLI can sign in to its database.
 #
 # Exit codes -- the caller must be able to branch on the status alone:
@@ -228,6 +228,41 @@ fi
 CONFIG="$WORKDIR/supabase/config.toml"
 if [ ! -f "$CONFIG" ] || [ ! -d "$WORKDIR/supabase/migrations" ]; then
   fatal "the work directory holds no supabase/config.toml or no supabase/migrations: $WORKDIR" 2
+fi
+if [ "$TARGET" = "linked" ]; then
+  if [ "$(cd "$WORKDIR" && pwd -P)" = "$(cd "$REPO_ROOT/$DEFAULT_WORKDIR" && pwd -P)" ]; then
+    fatal "--target linked never runs in $DEFAULT_WORKDIR, the shared local stack's work directory, because a link there changes the images that stack starts; give --workdir a linked work directory of its own" 2
+  fi
+  REF_FILE="$WORKDIR/supabase/.temp/project-ref"
+  if [ ! -f "$REF_FILE" ]; then
+    fatal "--target linked needs a linked work directory, and $WORKDIR is not linked: it holds no supabase/.temp/project-ref" 2
+  fi
+  LINKED_REF=""
+  IFS= read -r LINKED_REF <"$REF_FILE" || true
+  if ! [[ "$LINKED_REF" =~ ^[a-z]{20}$ ]]; then
+    fatal "$REF_FILE does not hold a project ref of 20 lower-case letters: '$LINKED_REF'" 2
+  fi
+  for variable in PGHOSTADDR PGSERVICE; do
+    if [ -n "${!variable:-}" ]; then
+      fatal "--target linked compares the project $LINKED_REF, and $variable is set, which can send psql to another address than PGHOST; the two parts would judge two different databases" 2
+    fi
+  done
+  case "${PGHOST:-}" in
+    "db.$LINKED_REF.supabase.co") ;;
+    *.pooler.supabase.com)
+      if ! [[ "$PGHOST" =~ ^[a-z0-9-]+\.pooler\.supabase\.com$ ]]; then
+        fatal "--target linked compares the project $LINKED_REF, and PGHOST '$PGHOST' is not one session pooler host; the two parts would judge two different databases" 2
+      fi
+      case "${PGUSER:-}" in
+        *".$LINKED_REF") ;;
+        *) fatal "--target linked compares the project $LINKED_REF, and the pooler user PGUSER '${PGUSER:-}' does not end in .$LINKED_REF; the two parts would judge two different databases" 2 ;;
+      esac
+      ;;
+    *) fatal "--target linked compares the project $LINKED_REF, and PGHOST '${PGHOST:-}' is neither db.$LINKED_REF.supabase.co nor a session pooler host; the two parts would judge two different databases" 2 ;;
+  esac
+  if [ "${PGPORT:-}" = "6543" ]; then
+    fatal "--target linked reads the history over a session, and PGPORT 6543 is the transaction pooler, which loses the session's settings between transactions; use port 5432. The two parts would judge two different databases" 2
+  fi
 fi
 if [ ! -x "$CLI" ]; then
   fatal "the Supabase CLI is not at $CLI; run yarn install" 2
