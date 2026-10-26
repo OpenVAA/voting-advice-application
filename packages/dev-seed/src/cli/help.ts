@@ -35,6 +35,8 @@ Built-in templates:
   perm-*               Settings/topology-permutation fixtures
                        (see packages/dev-seed/src/templates/index.ts).
   show-feedback-survey Results feedback + survey popup permutation.
+  smoke                1001 candidates + 1001 nominations in one project, no auth
+                       user; for a hosted project (--allow-remote), prefix smoke_.
 
 Custom templates:
   See packages/dev-seed/README.md for a worked authoring example

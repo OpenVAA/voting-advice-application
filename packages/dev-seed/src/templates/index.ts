@@ -41,6 +41,7 @@ import { permPerAppNotificationsTemplate } from './e2e/perm/perm-per-app-notific
 import { permQuestionVideoTemplate } from './e2e/perm/perm-question-video';
 import { permStartfromcgTemplate } from './e2e/perm/perm-startfromcg';
 import { showFeedbackSurveyTemplate } from './e2e/perm/show-feedback-survey';
+import { smokeTemplate } from './smoke';
 import type { Template } from '../template/types';
 import type { Overrides } from '../types';
 
@@ -102,7 +103,10 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   'perm-analytics-tracking': permAnalyticsTrackingTemplate,
 
   // Closed-project perm (162.1 D-21): leaves its project with open_for_voters = false. Distinct externalIdPrefix 'e2e-perm-closed-project-'.
-  'perm-closed-project': permClosedProjectTemplate
+  'perm-closed-project': permClosedProjectTemplate,
+
+  // Hosted-project smoke dataset: 1001 candidates and 1001 nominations in one project, no auth user. Prefix 'smoke_'.
+  smoke: smokeTemplate
 };
 
 /**
@@ -149,3 +153,4 @@ export { permPerAppNotificationsTemplate } from './e2e/perm/perm-per-app-notific
 export { permQuestionVideoTemplate } from './e2e/perm/perm-question-video';
 export { permStartfromcgTemplate } from './e2e/perm/perm-startfromcg';
 export { showFeedbackSurveyTemplate } from './e2e/perm/show-feedback-survey';
+export { smokeTemplate } from './smoke';
