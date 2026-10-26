@@ -19,7 +19,8 @@ The overview of every root, the order of first applies and the rules that hold f
   shows the project as a creation is never applied.
 - **A plan that shows a destroy, a replacement or a change of the database password is never
   applied**, because each of them changes what the project holds or how it is reached, and none can be
-  undone by applying again.
+  undone by applying again. The one exception is a fault step of the throwaway root, which may destroy
+  or replace a settings resource and never a project (see "Fault steps on the throwaway project").
 - **A plan and its apply are two separate steps**: you make the plan, save it, paste its named lines,
   and wait for the go-ahead before you apply that saved file, because only a plan someone has read
   against these rules may be applied.
@@ -53,7 +54,8 @@ nothing from the terminal's scroll-back.
 - If whoever asked you to run a step gave you an attempt id, the first line of your reply is
   `answer_attempt=<that id>`. A reply is recorded only for the attempt it names, so an answer given in
   an earlier sitting cannot stand in for this one.
-- Never paste the access token or the database password, and never an e-mail address.
+- Never paste the access token, the database password or any other secret, and never an e-mail
+  address other than the sender address `noreply@staging.openvaa.org`.
 
 `$L` and any saved plan file (`tfplan`) hold secrets in clear text: resource ids, attribute values, and
 whatever the state or the API returned. Never share, attach or paste either. The last item of each
@@ -104,6 +106,18 @@ Step 10 wait for the go-ahead on that plan file
 Step 11 apply the saved plan
 Step 12 plan again; read back what the project serves
 Step 13 the destroy plan, which must be refused; the state object in the bucket
+
+Deploying to a project: first with R=scratch, then unchanged with R=staging
+Step 14 the linked work directory, outside apps/supabase
+Step 15 the connection psql uses: direct, else the session pooler; never port 6543
+Step 16 the migrations, pushed by the wrapper, and the drift check
+Step 17 the three functions, deployed from the linked work directory
+Step 18 the settings and the function secrets: plan, go-ahead, apply, read-back
+Step 19 the server's logging settings                    <- the bootstrap waits on them
+Step 20 the bootstrap, twice, and the seed check
+Step 21 the first administrator: the user, the grant, the claims of a token
+Step 22 the smoke dataset, once per project
+Step 23 the conformance probe
 ```
 
 The persistent project is created only once the rehearsal has passed: its first plan was read and
@@ -594,6 +608,737 @@ REF='cofbsatfrdysyphajsky'
 Return, for Steps 11 to 13: `answer_applied=`, and the named lines of items 1 to 7. Do not paste the
 token, the password or anything from a log.
 
+## Deploying to a project
+
+Steps 14 to 23 deploy the repository to a project. Each step is run first on the throwaway project,
+with `R=scratch`, and then, unchanged, on the persistent project, with `R=staging`, so that the
+persistent project gets the rehearsed commands and nothing else. The order is the deploy order: the
+migrations, the functions, the settings and the secrets, the rows, and last the check of what the
+project serves. A step that is run again later, in another sitting, is run as written here.
+
+Every command is run from the repository root. In this part every named line begins with the
+number of its step, not of its item: Step 16 prints `s16_` lines whatever item prints them, because
+a sitting often pastes the lines of several steps together. The rules of "What you paste back" hold
+as they are.
+
+You need, besides "Before you start": Docker running (the drift check of Step 16 starts a shadow
+database, and Step 17 bundles the functions), `psql` 15 or later, Node 24 with `yarn install` run,
+and for `R=staging` the AWS CLI, signed in.
+
+### The lines that begin each sitting of this part
+
+Run them in each new terminal, with the root the sitting names:
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+export LC_ALL=C
+R=scratch
+REF=$(sed -n 's/^project_ref *= *"\([a-z]*\)".*/\1/p' \
+  "infra/envs/$R/supabase/terraform.tfvars")
+W=tmp/supabase-linked/$REF
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-184.XXXXXX")
+```
+
+Then the secrets the sitting names, each read without echoing it and exported, never given on a
+command line:
+
+```bash
+printf 'access token: '; read -rs SUPABASE_ACCESS_TOKEN; echo
+export SUPABASE_ACCESS_TOKEN
+printf 'database password: '; read -rs SUPABASE_DB_PASSWORD; echo
+export SUPABASE_DB_PASSWORD PGPASSWORD="$SUPABASE_DB_PASSWORD"
+```
+
+Where a step needs them, also these. The database password of the Terraform root is the same
+project's password.
+
+```bash
+printf 'anon key: '; read -rs SUPABASE_ANON_KEY; echo
+export SUPABASE_ANON_KEY
+printf 'service-role key: '; read -rs SUPABASE_SERVICE_ROLE_KEY
+echo; export SUPABASE_SERVICE_ROLE_KEY
+export TF_VAR_database_password="$SUPABASE_DB_PASSWORD"
+```
+
+The SMTP user name and password come from the outputs of the `staging/dns-mail` root, read into
+the variables and never printed. That root's state is in the bucket, so this needs the AWS CLI
+signed in and the root initialised.
+
+```bash
+D=infra/envs/staging/dns-mail
+TF_VAR_smtp_user=$(terraform -chdir="$D" output -raw \
+  smtp_username)
+TF_VAR_smtp_password=$(terraform -chdir="$D" output -raw \
+  smtp_password)
+export TF_VAR_smtp_user TF_VAR_smtp_password
+test -n "$TF_VAR_smtp_user" && test -n "$TF_VAR_smtp_password" \
+  && echo "smtp_credentials_read=yes"
+```
+
+Each step ends by removing `$L`. A step that follows another in the same sitting begins by making
+it again:
+
+```bash
+test -d "$L" || \
+  L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-184.XXXXXX")
+```
+
+### Step 14: The linked work directory
+
+The CLI is linked to a project in a work directory of its own, `tmp/supabase-linked/<ref>`, whose
+`supabase/` holds symbolic links to the repository's `config.toml`, `migrations` and `functions`.
+**`apps/supabase` is never linked**: a link writes the project's service versions into
+`supabase/.temp`, and the CLI then starts those versions' images for that directory's local stack,
+which in `apps/supabase` is the stack every checkout of this repository shares. Git ignores `tmp/`.
+
+Secrets: `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD`.
+
+1. The work directory and its three links:
+
+   ```bash
+   mkdir -p "$W/supabase"
+   for p in config.toml migrations functions; do
+     ln -sfn "$PWD/apps/supabase/supabase/$p" "$W/supabase/$p"
+   done
+   N=$(find "$W/supabase" -maxdepth 1 -type l | wc -l)
+   echo "s14_links=$((N))"
+   ```
+
+   It must print `s14_links=3`.
+
+2. Link it:
+
+   ```bash
+   node_modules/.bin/supabase link --project-ref "$REF" \
+     --workdir "$W" --agent no --output-format text \
+     > "$L/s14-link.log" 2>&1
+   echo "s14_link_exit=$?"
+   ```
+
+3. The ref the link wrote, and that the shared work directory holds none:
+
+   ```bash
+   echo "s14_linked_ref=$(cat "$W/supabase/.temp/project-ref")"
+   test ! -e apps/supabase/supabase/.temp/project-ref \
+     && echo "s14_shared_dir_linked=no"
+   ```
+
+   `s14_linked_ref=` must be the ref of the root, and `s14_shared_dir_linked=no` must be printed.
+
+4. Last item, also when you stop early or a command failed:
+
+   ```bash
+   test -n "$L" && rm -rf "$L" && echo "s14_logs_removed=yes"
+   ```
+
+The work directory is kept for the steps that follow and for later sittings.
+
+### Step 15: The connection psql uses
+
+The bootstrap, the drift check, the grant and the probe's catalog reads connect through the libpq
+variables. The direct connection is tried first; when it fails, the session pooler on port 5432 is
+used. **Port 6543, the transaction pooler, is never used**: it gives each transaction a backend of
+its own, so a session setting the bootstrap makes before its transaction can be lost before the
+statement it protects. Keep the variables of this step in the shell for the rest of the sitting.
+
+Secrets: `SUPABASE_DB_PASSWORD`, exported also as `PGPASSWORD`.
+
+1. The direct connection:
+
+   ```bash
+   export PGHOST="db.$REF.supabase.co" PGPORT=5432
+   export PGUSER=postgres PGDATABASE=postgres
+   export PGCONNECT_TIMEOUT=10
+   unset PGHOSTADDR PGSERVICE
+   psql -X -At -c 'select 1' > "$L/s15-direct.log" 2>&1
+   echo "s15_direct_exit=$?"
+   ```
+
+2. Only when `s15_direct_exit=` is not 0: the session pooler. Copy its host from the dashboard's
+   Connect dialog, under "Session pooler"; it cannot be built from the region. The user name carries
+   the ref.
+
+   ```bash
+   printf 'session pooler host: '; read -r PGHOST; export PGHOST
+   export PGUSER="postgres.$REF" PGPORT=5432
+   psql -X -At -c 'select 1' > "$L/s15-pooler.log" 2>&1
+   echo "s15_pooler_exit=$?"
+   ```
+
+3. Which connection the variables now give:
+
+   ```bash
+   if psql -X -At -c 'select 1' > /dev/null 2>&1; then
+     case "$PGHOST" in
+       db.*) echo "s15_connection=direct" ;;
+       *) echo "s15_connection=pooler" ;;
+     esac
+   else
+     echo "s15_connection=none"
+   fi
+   ```
+
+   With `s15_connection=none`, stop here.
+
+4. Last item:
+
+   ```bash
+   test -n "$L" && rm -rf "$L" && echo "s15_logs_removed=yes"
+   ```
+
+### Step 16: The migrations
+
+`infra/scripts/push-migrations.sh` refuses a work directory that is not linked to the ref it is
+given, shows what the project lacks, asks you on the terminal to type the ref, pushes, and then runs
+the drift check against the same project. Its status is the drift check's after a push. It needs
+Step 14's work directory, Step 15's variables and Docker.
+
+Secrets: `SUPABASE_DB_PASSWORD`, exported also as `PGPASSWORD`.
+
+1. The push. The pending versions and the question `Type the project ref to push to it:` appear on
+   the terminal; read the versions, then type the ref of the root. Anything else pushes nothing.
+
+   ```bash
+   infra/scripts/push-migrations.sh --ref "$REF" \
+     --workdir "$W" --log-dir "$L/push" > "$L/s16.out"
+   echo "s16_push_exit=$?"
+   sed 's/^/s16_/' "$L/s16.out"
+   ```
+
+   The lines it prints, in this order: `s16_push_connection=direct`, `pooler` or `unknown`, the path
+   the CLI took; one `s16_push_pending=<version>` per migration the project lacks;
+   `s16_push_up_to_date=yes` or `no`; `s16_push_status=<n>` when a push ran; `s16_drift_status=<n>`,
+   followed by the drift check's report. `s16_push_exit=` is 0 when the migrations are in place and
+   there is no drift, 1 on drift after the push, 2 when it refused and pushed nothing, 3 when the dry
+   run or the push failed, 4 when the drift check could not run, and 130 when interrupted.
+
+2. Run item 1 again. It pushes nothing and asks nothing: it must print `s16_push_up_to_date=yes`
+   and `s16_push_exit=0`.
+
+3. Last item:
+
+   ```bash
+   test -n "$L" && rm -rf "$L" && echo "s16_logs_removed=yes"
+   ```
+
+### Step 17: The functions
+
+The three functions are deployed from the linked work directory, so the CLI reads each function's
+`verify_jwt` from `config.toml`. Their secrets are set in Step 18.
+
+Secrets: `SUPABASE_ACCESS_TOKEN`.
+
+1. Deploy all three:
+
+   ```bash
+   node_modules/.bin/supabase functions deploy \
+     --project-ref "$REF" --workdir "$W" \
+     --agent no --output-format text \
+     > "$L/s17-deploy.log" 2>&1
+   echo "s17_deploy_exit=$?"
+   ```
+
+2. The functions the project serves, from the Management API. The token is given to `curl` on its
+   standard input, as a one-line configuration, by a shell builtin, as in Step 6.
+
+   ```bash
+   printf 'header = "Authorization: Bearer %s"\n' \
+       "$SUPABASE_ACCESS_TOKEN" \
+     | curl -sS -K - -o "$L/s17-functions.json" \
+       -w 's17_list_http=%{http_code}\n' \
+       "https://api.supabase.com/v1/projects/$REF/functions"
+   jq -r 'sort_by(.slug)[] | "s17_function=\(.slug)"
+     + " status=\(.status) verify_jwt=\(.verify_jwt)"' \
+     "$L/s17-functions.json"
+   ```
+
+   It prints one `s17_function=<slug> status=<status> verify_jwt=<true|false>` line per function:
+   three lines, each `status=ACTIVE`, with `verify_jwt=false` for `identity-callback` alone.
+
+3. Last item:
+
+   ```bash
+   test -n "$L" && rm -rf "$L" && echo "s17_logs_removed=yes"
+   ```
+
+### Step 18: The settings and the function secrets
+
+The root's settings resources and its function secrets are applied by the protocol of Steps 9 to 12,
+for `R=scratch` and for `R=staging` alike: a saved plan and its named lines, the go-ahead, the apply
+of that file, a second plan, and the read-back. Part A is one sitting, then you wait, and parts B
+and C are the next sitting. The function secrets are `PUBLIC_PROJECT_ID`, `SITE_URL` and, when the
+root sets `smtp`, the five `SMTP_` names; their values go into the plan file and into state, never
+into a paste.
+
+Secrets: `SUPABASE_ACCESS_TOKEN`, `TF_VAR_database_password` and, when the root sets `smtp`,
+`TF_VAR_smtp_user` and `TF_VAR_smtp_password`. For `R=staging`, also `export AWS_PAGER=""`.
+
+**Part A: the plan.** The plan file `tfplan` of this part is kept on purpose, for part B.
+
+1. For `R=staging` only; it must print `s18_account=471112560111`:
+
+   ```bash
+   A=$(aws sts get-caller-identity --query Account \
+     --output text)
+   echo "s18_account=$A"
+   ```
+
+2. Initialise, plan and save the plan:
+
+   ```bash
+   T="infra/envs/$R/supabase"
+   terraform -chdir="$T" init -input=false -no-color \
+     > "$L/s18-init.log" 2>&1
+   echo "s18_init_exit=$?"
+   terraform -chdir="$T" plan -input=false -no-color \
+     -out=tfplan > "$L/s18-plan.log" 2>&1
+   echo "s18_plan_exit=$?"
+   ```
+
+3. The plan file's checksum, the resource headings, the summary line, and any line that names the
+   password, a replacement or a destroy:
+
+   ```bash
+   S=$(shasum -a 256 "$T/tfplan" | cut -d' ' -f1)
+   echo "s18_plan_sha256=$S"
+   grep -n -E -e '^  # |^Plan:|^No changes' \
+     -e 'database_password|must be replaced' \
+     -e 'will be destroyed|forces replacement' \
+     "$L/s18-plan.log" | sed 's/^/s18_plan_line=/'
+   ```
+
+4. Last item of part A. This removes the logs and keeps `tfplan`.
+
+   ```bash
+   test -n "$L" && rm -rf "$L" && echo "s18_logs_removed=yes"
+   ```
+
+Do not apply. Whoever reads the lines reads them against the stop rules of Step 4, with
+`s18_plan_exit=0` in place of the plan status of Step 3, and with these resource headings admitted,
+each as a creation or an update in place: `module.supabase.supabase_settings.this`,
+`module.supabase.supabase_settings.smtp_secret[0]` and
+`module.supabase.supabase_edge_function_secrets.this[0]`. The go-ahead names the SHA-256 and the ref
+it was given for. If the reading says stop, nothing is applied and the plan file is removed with
+`rm -f "infra/envs/$R/supabase/tfplan"`.
+
+**Part B: the apply.** Begin with the lines of a sitting and `T="infra/envs/$R/supabase"`.
+
+5. Compare the checksum with the one the go-ahead names. If they differ, do not apply: remove the
+   plan file, write `answer_applied=not-applied`, and run item 9.
+
+   ```bash
+   S=$(shasum -a 256 "$T/tfplan" | cut -d' ' -f1)
+   echo "s18_plan_sha256=$S"
+   ```
+
+6. Apply the saved plan, and remove the plan file whether the apply succeeded or failed:
+
+   ```bash
+   terraform -chdir="$T" apply -input=false -no-color \
+     tfplan > "$L/s18-apply.log" 2>&1
+   echo "s18_apply_exit=$?"
+   grep -m1 -E '^Apply complete!' "$L/s18-apply.log" \
+     | sed 's/^/s18_apply_line=/'
+   grep -E '^Error: ' "$L/s18-apply.log" \
+     | sed 's/^/s18_error=/'
+   rm -f "$T/tfplan"; echo "s18_plan_file_removed=yes"
+   ```
+
+   If the status is 0, write `answer_applied=yes`; otherwise write `answer_applied=error`, stop here
+   and run item 9. Do not plan or apply again in this step.
+
+7. Plan again. Status 0 means no change.
+
+   ```bash
+   terraform -chdir="$T" plan -input=false -no-color \
+     -detailed-exitcode > "$L/s18-plan2.log" 2>&1
+   echo "s18_second_plan_exit=$?"
+   grep -n -E '^  # |^Plan:|^No changes' \
+     "$L/s18-plan2.log" | sed 's/^/s18_plan2_line=/'
+   ```
+
+**Part C: the read-back.** It can also be run on its own, after the lines of a sitting and
+`T="infra/envs/$R/supabase"`.
+
+8. What the project serves. The auth settings the root manages are printed as in Step 6, without
+   the SMTP fields, which follow on lines of their own: host, port, sender address and sender name,
+   and whether an SMTP user name is set, as `yes` or `no` only. Then the API settings, and the name
+   of each function secret, one `s18_secret_name=` line each. That list holds nothing but secrets,
+   so it is printed by name and never with a value or a digest; it also holds the names the
+   platform sets itself, which begin with `SUPABASE_`. The sender address is the one e-mail
+   address a paste may hold.
+
+   ```bash
+   API="https://api.supabase.com/v1/projects/$REF"
+   get() {
+     printf 'header = "Authorization: Bearer %s"\n' \
+         "$SUPABASE_ACCESS_TOKEN" \
+       | curl -sS -K - -o "$L/s18-$1.json" \
+         -w "s18_${1}_http=%{http_code}\n" "$API/$2"
+   }
+   get auth config/auth
+   get api postgrest
+   get secrets secrets
+   KEYS=$(terraform -chdir="$T" output -json managed_auth_keys)
+   jq -r --argjson k "$KEYS" 'to_entries[]
+     | select(.key as $x | $k | index($x))
+     | select(.key | test("^smtp_") | not)
+     | select(.key | test("(^|_)(secret|secrets|pass)$") | not)
+     | select(.key | test("(^|_)(passwd|password)$") | not)
+     | select(.key | test("(^|_)(key|keys|token|tokens)$") | not)
+     | "s18_auth.\(.key)=\(.value | tojson)"' "$L/s18-auth.json"
+   jq -r '"s18_smtp.host=\(.smtp_host)",
+     "s18_smtp.port=\(.smtp_port)",
+     "s18_smtp.admin_email=\(.smtp_admin_email)",
+     "s18_smtp.sender_name=\(.smtp_sender_name)",
+     "s18_smtp_user_set=\((.smtp_user // "")
+       | if . == "" then "no" else "yes" end)"' \
+     "$L/s18-auth.json"
+   jq -r --slurpfile h infra/modules/supabase/hosted-settings.json \
+     'to_entries[] | select(.key as $x | $h[0].api | has($x))
+     | "s18_api.\(.key)=\(.value | tojson)"' "$L/s18-api.json"
+   jq -r '.[].name' "$L/s18-secrets.json" | sort \
+     | sed 's/^/s18_secret_name=/'
+   ```
+
+   If a status is not 200, paste the `…_http=` line and nothing of that answer.
+
+9. Last item, also when you stop early or a command failed:
+
+   ```bash
+   rm -f "infra/envs/$R/supabase/tfplan"
+   test -n "$L" && rm -rf "$L" && echo "s18_logs_removed=yes"
+   ```
+
+### Step 19: The server's logging settings
+
+The bootstrap sends the service-role key as a bound parameter and keeps it out of the log entry of a
+statement that fails. A server that logs the parameters of a statement that succeeds, or of a slow
+one, logs the key all the same, and the script cannot change that. These seven settings say whether
+the server would. A setting of a module the server has not loaded reads as `(null)`.
+
+Secrets: `SUPABASE_DB_PASSWORD`, exported also as `PGPASSWORD`, with Step 15's variables.
+
+1. The seven settings, one `s19_setting.<name>=` line each:
+
+   ```bash
+   psql -X -At -F '=' > "$L/s19.out" 2>&1 <<'SQL'
+   SELECT 's19_setting.' || s.name,
+     coalesce(current_setting(s.name, true), '(null)')
+   FROM (VALUES ('log_statement'),
+     ('log_parameter_max_length'),
+     ('log_min_duration_statement'),
+     ('pgaudit.log'), ('pgaudit.log_parameter'),
+     ('auto_explain.log_min_duration'),
+     ('auto_explain.log_parameter_max_length')) AS s(name);
+   SQL
+   echo "s19_psql_exit=$?"
+   grep '^s19_setting\.' "$L/s19.out"
+   ```
+
+2. Last item:
+
+   ```bash
+   test -n "$L" && rm -rf "$L" && echo "s19_logs_removed=yes"
+   ```
+
+Whoever reads the lines decides by this table. A row's "Would log" applies only together with its
+partner setting:
+
+| Setting                                 | Safe                                                   | Would log the parameters                                                                |
+| --------------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| `log_statement`                         | `none` or `ddl`; the bootstrap's statements are `mod`  | `mod` or `all`, with `log_parameter_max_length` other than `0`                          |
+| `log_parameter_max_length`              | `0`                                                    | `-1` or more than `0`, with either row above or below                                   |
+| `log_min_duration_statement`            | `-1`                                                   | `0` or more, such as `10s`, with `log_parameter_max_length` other than `0`              |
+| `pgaudit.log`                           | `(null)`, `none`, or classes without `write` and `all` | `write` or `all`, with `pgaudit.log_parameter` `on`                                     |
+| `pgaudit.log_parameter`                 | `off` or `(null)`                                      | `on`, with the row above                                                                |
+| `auto_explain.log_min_duration`         | `-1` or `(null)`                                       | `0` or more, such as `10s`, with `auto_explain.log_parameter_max_length` other than `0` |
+| `auto_explain.log_parameter_max_length` | `0` or `(null)`                                        | `-1` or more than `0`, with the row above                                               |
+
+When no row would log the parameters, Step 20 may run. When one would, the bootstrap waits until
+whoever asked for the step has decided what to do.
+
+### Step 20: The bootstrap
+
+`infra/scripts/bootstrap.sql` writes the rows no migration can hold: the account, the project, its
+settings row, the two rows of `public.storage_config` and the row of
+`private.deployment_settings`. It runs twice, and both runs must leave the same rows. It runs only
+after Step 19's settings were read and found safe, or the decision on them was made.
+
+Secrets: `SUPABASE_DB_PASSWORD` (as `PGPASSWORD`, with Step 15's variables) and
+`SUPABASE_SERVICE_ROLE_KEY`.
+
+1. The environment the script reads. `BOOTSTRAP_BEHIND_CLOUDFLARE` is `true` or `false` as the dated
+   record of the headers that reach a function and a database request, in "Observations", decides;
+   that record is made before this step runs on either project. Every hosted project is opened for
+   voters at its bootstrap. When whoever asked for the step gives a session option, such as
+   `PGOPTIONS='-c statement_timeout=5s'`, export it here as well.
+
+   ```bash
+   PUBLIC_PROJECT_ID=$(sed -n \
+     's/^public_project_id *= *"\([0-9a-f-]*\)".*/\1/p' \
+     "infra/envs/$R/supabase/terraform.tfvars")
+   export PUBLIC_PROJECT_ID
+   export BOOTSTRAP_STORAGE_URL="https://$REF.supabase.co"
+   export BOOTSTRAP_BEHIND_CLOUDFLARE='<true or false>'
+   export BOOTSTRAP_OPEN_FOR_VOTERS=true
+   ```
+
+2. A function that prints the rows the bootstrap writes, as one count line
+   `s20_counts<k>=accounts,projects,app_settings,storage_config,deployment_settings` and the two
+   booleans `s20_open_for_voters<k>=` and `s20_behind_cloudflare<k>=`:
+
+   ```bash
+   s20_rows() {
+     psql -X -At -v k="$1" <<'SQL'
+   \getenv pid PUBLIC_PROJECT_ID
+   SELECT 's20_counts' || :'k' || '=' || concat_ws(',',
+     (SELECT count(*) FROM public.accounts),
+     (SELECT count(*) FROM public.projects),
+     (SELECT count(*) FROM public.app_settings),
+     (SELECT count(*) FROM public.storage_config),
+     (SELECT count(*) FROM private.deployment_settings));
+   SELECT 's20_open_for_voters' || :'k' || '=' || open_for_voters
+   FROM public.projects WHERE id = :'pid'::uuid;
+   SELECT 's20_behind_cloudflare' || :'k' || '=' || behind_cloudflare
+   FROM private.deployment_settings;
+   SQL
+   }
+   ```
+
+3. The first run and its rows:
+
+   ```bash
+   psql -X -f infra/scripts/bootstrap.sql \
+     > "$L/s20-boot1.log" 2>&1
+   echo "s20_boot1_exit=$?"
+   s20_rows 1
+   ```
+
+4. The second run and its rows:
+
+   ```bash
+   psql -X -f infra/scripts/bootstrap.sql \
+     > "$L/s20-boot2.log" 2>&1
+   echo "s20_boot2_exit=$?"
+   s20_rows 2
+   ```
+
+   Both count lines must read `1,1,1,2,1`, and the two pairs of booleans must be equal.
+
+5. The seed check, which fails on anything of the local seed: a seed user, a local address or the
+   demo key. It prints no key.
+
+   ```bash
+   psql -X -f infra/scripts/check-seed.sql \
+     > "$L/s20-check-seed.log" 2>&1
+   echo "s20_check_seed_exit=$?"
+   unset PGOPTIONS
+   ```
+
+6. Last item:
+
+   ```bash
+   test -n "$L" && rm -rf "$L" && echo "s20_logs_removed=yes"
+   ```
+
+### Step 21: The first administrator
+
+The project's first administrator is a user with the project-scope `admin` grant on the project.
+The user is created in the dashboard and the grant is written by
+`infra/scripts/grant-project-admin.sql`; a sign-in then shows the claims the access-token hook puts
+into the token. On the throwaway project the user is a disposable one, with your own address.
+
+Secrets: `SUPABASE_DB_PASSWORD` (as `PGPASSWORD`, with Step 15's variables) and `SUPABASE_ANON_KEY`.
+The address is read into the shell and never pasted; the password is read without echoing it, and
+neither it nor the token is ever printed or pasted.
+
+1. Create the user in the dashboard: Authentication, Users, Add user, create a new user, with the
+   administrator's own address, a password from your password manager, and the address confirmed at
+   creation. **Never "Send invitation"**: the send-email hook takes every mail the auth service
+   would send and sends none, so the invitation never arrives. Answer `answer_admin_created=yes`. If
+   the user already exists, skip this item.
+
+2. The address and the password:
+
+   ```bash
+   printf 'administrator address: '; read -r ADMIN_EMAIL
+   export ADMIN_EMAIL
+   printf 'administrator password: '; read -rs ADMIN_PASSWORD
+   echo; export ADMIN_PASSWORD
+   PUBLIC_PROJECT_ID=$(sed -n \
+     's/^public_project_id *= *"\([0-9a-f-]*\)".*/\1/p' \
+     "infra/envs/$R/supabase/terraform.tfvars")
+   export PUBLIC_PROJECT_ID
+   ```
+
+3. The grant. It prints `grants_on_project=<n>`, here prefixed, and exits 3 with nothing written
+   when no user or more than one user has the address, when the project does not exist, or when a
+   variable is not set, each reason on an `s21_grant_error=` line that names no address. A second run
+   adds nothing.
+
+   ```bash
+   psql -X -f infra/scripts/grant-project-admin.sql \
+     > "$L/s21-grant.out" 2> "$L/s21-grant.err"
+   echo "s21_grant_exit=$?"
+   sed 's/^/s21_/' "$L/s21-grant.out"
+   grep -o 'grant-project-admin: .*' "$L/s21-grant.err" \
+     | sed 's/^/s21_grant_error=/'
+   ```
+
+4. A password sign-in. The body is built by `jq` from the environment and given to `curl` on its
+   standard input; the answer, which holds the token, goes to `$L`. The anon key is the public key
+   every page of the application carries.
+
+   ```bash
+   jq -n '{email: env.ADMIN_EMAIL, password: env.ADMIN_PASSWORD}' \
+     | curl -sS -o "$L/s21-token.json" \
+       -w 's21_signin_http=%{http_code}\n' \
+       -H "apikey: $SUPABASE_ANON_KEY" \
+       -H 'Content-Type: application/json' --data-binary @- \
+       "https://$REF.supabase.co/auth/v1/token?grant_type=password"
+   unset ADMIN_PASSWORD
+   ```
+
+5. The token's claims: the payload is decoded in the shell, and only the claim names and the
+   `grants` array are printed.
+
+   ```bash
+   jq -r '.access_token | split(".")[1]
+     | gsub("-"; "+") | gsub("_"; "/")
+     | . + ("=" * ((4 - length % 4) % 4))
+     | @base64d | fromjson
+     | "s21_claim_names=\(keys | join(","))",
+       "s21_claim_grants=\(.grants | tojson)"' \
+     "$L/s21-token.json"
+   ```
+
+   `s21_claim_grants=` must hold one object with `"scope":"project"`, the project's id and
+   `"role":"admin"`.
+
+6. Last item:
+
+   ```bash
+   test -n "$L" && rm -rf "$L" && echo "s21_logs_removed=yes"
+   ```
+
+### Step 22: The smoke dataset
+
+The `smoke` template of `@openvaa/dev-seed` writes 1001 candidates and 1001 nominations into the
+project, every row's external id beginning `smoke_`, and no auth user. It is seeded once per project:
+the conformance probe reads more than 1000 rows of it in one request. It is removed with
+`yarn db:seed:teardown --prefix smoke_ --allow-remote`, with the same two variables exported.
+
+Secrets: `SUPABASE_SERVICE_ROLE_KEY` and `SUPABASE_ANON_KEY`.
+
+1. The seed. dev-seed reads the repository's `.env` at start, where the local stack's address is,
+   and a variable exported in the shell wins over it; so export both here, or the dataset lands on
+   the local stack.
+
+   ```bash
+   export SUPABASE_URL="https://$REF.supabase.co"
+   export SUPABASE_SERVICE_ROLE_KEY
+   yarn db:seed --template smoke --allow-remote \
+     > "$L/s22-seed.log" 2>&1
+   echo "s22_seed_exit=$?"
+   ```
+
+2. An anonymous read of the project's nominations, which asks for the total and one row:
+
+   ```bash
+   P=$(sed -n 's/^public_project_id *= *"\([0-9a-f-]*\)".*/\1/p' \
+     "infra/envs/$R/supabase/terraform.tfvars")
+   Q="select=id&project_id=eq.$P&limit=1"
+   curl -sS -o /dev/null -D "$L/s22-headers.txt" \
+     -w 's22_read_http=%{http_code}\n' \
+     -H "apikey: $SUPABASE_ANON_KEY" \
+     -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+     -H 'Prefer: count=exact' \
+     "https://$REF.supabase.co/rest/v1/nominations?$Q"
+   tr -d '\r' < "$L/s22-headers.txt" \
+     | sed -n 's/^[Cc]ontent-[Rr]ange: */s22_rows_range=/p'
+   ```
+
+   `s22_rows_range=0-0/<total>` must give a total above 1000. A total of 0 means that no row is
+   readable: the project is closed for voters or holds no nominations.
+
+3. Last item:
+
+   ```bash
+   unset SUPABASE_URL
+   test -n "$L" && rm -rf "$L" && echo "s22_logs_removed=yes"
+   ```
+
+### Step 23: The conformance probe
+
+`infra/scripts/probe-hosted.mjs` compares what the project serves with what the repository declares
+for it, through the Management API, the project's public API with the anon key only, and the
+catalog over psql. It writes nothing to the project and never takes the service-role key. Each line
+it prints is `PASS <check>` or `FAIL <check>: <finding>`, then one `NOTE key-model:` line; a source
+that cannot be read gives one `COULD NOT RUN <source>: <reason>` line and no check line. Its status is
+0 when every check passed, 1 when one failed and 2 when it could not run.
+
+Secrets: `SUPABASE_ACCESS_TOKEN` and `SUPABASE_ANON_KEY`, never `SUPABASE_SERVICE_ROLE_KEY`. The
+catalog connection is Step 15's host and port, with the user and the password of the role ruled for
+the probe: `postgres` (`postgres.<ref>` through the pooler) with the database password, or the role
+named with the ruling. The role must bypass row-level security, or the seed check reads no rows.
+
+1. The probe:
+
+   ```bash
+   node infra/scripts/probe-hosted.mjs \
+     --root "infra/envs/$R/supabase" \
+     > "$L/s23-probe.out" 2> "$L/s23-probe.err"
+   echo "s23_probe_exit=$?"
+   sed 's/^/s23_probe=/' "$L/s23-probe.out"
+   ```
+
+2. Last item:
+
+   ```bash
+   test -n "$L" && rm -rf "$L" && echo "s23_logs_removed=yes"
+   ```
+
+### Fault steps on the throwaway project
+
+The probe's red run, and any trial of a setting, plants a value on the throwaway project through its
+root. These rules hold for every such step:
+
+- **A fault or a trial value is given only on the command line**, with `-var fault_set=redirect` or
+  `-var fault_set=all`, or with a `-var-file` that points into `$L`, and only in the scratch root,
+  `infra/envs/scratch/supabase`. It is never written to a tracked file, and this root never gets one.
+- **The plan is saved, into `$L`, and its named lines are printed** with the step's prefix: each
+  resource heading with its action, and the `Plan:` line.
+- **It is applied in the same step only when those lines equal, exactly, the lines the step gives.**
+  A line more, a line less or another action is a stop: nothing is applied, the plan file goes with
+  `$L`, and the lines are pasted.
+- **A plan that creates, destroys or replaces `supabase_project` is never applied**, whatever the
+  step gives. A settings resource may be destroyed or replaced in a fault step; that is the one
+  exception to the second rule of this root, and it holds in the scratch root only.
+- **The revert** is a plan with `-var fault_set=none -replace=module.supabase.supabase_settings.this`,
+  read and applied the same way. Destroying the fault resource changes nothing on the project; only
+  the replaced module resource sends the correct values again.
+
+For example, with the lines of a sitting and `R=scratch`:
+
+```bash
+T=infra/envs/scratch/supabase
+terraform -chdir="$T" plan -input=false -no-color \
+  -var fault_set=all -out="$L/fault.tfplan" \
+  > "$L/fault-plan.log" 2>&1
+echo "s1_plan_exit=$?"
+grep -E '^  # |^Plan:' "$L/fault-plan.log" \
+  | sed 's/^/s1_plan_line=/'
+```
+
+and only when the step's lines match:
+
+```bash
+terraform -chdir="$T" apply -input=false -no-color \
+  "$L/fault.tfplan" > "$L/fault-apply.log" 2>&1
+echo "s1_apply_exit=$?"
+```
+
 ## Settings and their guard
 
 The hosted values live in [`../../../modules/supabase/hosted-settings.json`](../../../modules/supabase/hosted-settings.json),
@@ -671,11 +1416,23 @@ Both roots have been applied, the throwaway root and the persistent root. Each s
 has not been seen. It moves to "Observations", with its date, once the step named beside it has shown
 it.
 
-| Statement                                                                                        | Checked by                                                                   |
-| ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
-| Whether two settings resources work side by side for one project, each keeping only its own keys | A later stage of the deployment work, when the SMTP settings are applied     |
-| While the send-email hook is on, the hosted auth service sends no mail of its own                | A later stage of the deployment work, with the first mail the function sends |
-| With the project already in state, the root's `import` block plans nothing                       | The next plan of the persistent root, which must still read "No changes"     |
+| Statement                                                                                                              | Checked by                                                                                      |
+| ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Whether two settings resources work side by side for one project, each keeping only its own keys                       | A later stage of the deployment work, when the SMTP settings are applied                        |
+| While the send-email hook is on, the hosted auth service sends no mail of its own                                      | A later stage of the deployment work, with the first mail the function sends                    |
+| With the project already in state, the root's `import` block plans nothing                                             | The next plan of the persistent root, which must still read "No changes"                        |
+| Whether the direct connection to the database works from a workstation                                                 | Step 15 on the throwaway project, then on the persistent project                                |
+| The CLI follows the symbolic links of the linked work directory when it pushes and deploys                             | Steps 16 and 17 on the throwaway project                                                        |
+| The values of the seven logging settings of a hosted project                                                           | Step 19 on each project                                                                         |
+| Which keys a project issues, and whether its legacy keys are enabled                                                   | A read of the key model on the throwaway project; the probe's `NOTE key-model:` line in Step 23 |
+| Which forwarded headers reach a function and a database request, and whether a client-sent `cf-connecting-ip` survives | A header record on the throwaway project, before Step 20                                        |
+| Which redirect addresses the auth service admits and which it refuses                                                  | Reads of the verify endpoint on the throwaway project, after Step 18                            |
+| The `anon` role's statement timeout ends a served request                                                              | A timed request on the throwaway project; Step 23 reads only the setting                        |
+| The drift check's default schema set is clean on a hosted database that holds only the migrations                      | Step 16 on the throwaway project                                                                |
+| The first SMTP enablement is accepted, with the user name and the password sent by a second settings resource          | Step 18 on the throwaway project                                                                |
+| Which SMTP port delivers a mail sent from a function                                                                   | A link mail from `account-access` on the throwaway project, after Step 18                       |
+| What a sign-in does while the access-token hook is on and its function is absent                                       | A sign-in on the throwaway project before Step 16                                               |
+| The first administrator's token carries the claims the access-token hook adds                                          | Step 21 on each project                                                                         |
 
 ## Observations
 
