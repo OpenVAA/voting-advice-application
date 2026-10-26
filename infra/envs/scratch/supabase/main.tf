@@ -1,7 +1,8 @@
 # The throwaway Supabase project. This root uses the same module as the persistent project's root, so
 # an import here rehearses that one: key discovery, the first plan, the settings apply, the second
-# plan and the destroy refusal are all seen here first. Its state is local and ignored by Git. The
-# root is removed once the throwaway project is deleted.
+# plan and the destroy refusal are all seen here first. Its state is local and ignored by Git, and a
+# plan against a state that lacks the project imports it rather than creating one. The root is
+# removed once the throwaway project is deleted.
 terraform {
   required_version = ">= 1.10"
 
@@ -20,6 +21,14 @@ terraform {
 # The provider reads SUPABASE_ACCESS_TOKEN from the environment of the operator's shell.
 provider "supabase" {}
 
+# The project already exists and is only ever imported. Against a state that lacks it, this block
+# plans an import instead of a creation, and a ref that names no project fails the plan. Once the
+# project is in state, the block plans nothing.
+import {
+  to = module.supabase.supabase_project.this
+  id = var.project_ref
+}
+
 module "supabase" {
   source = "../../../modules/supabase"
 
@@ -30,6 +39,11 @@ module "supabase" {
   public_origin            = var.public_origin
   enable_access_token_hook = var.enable_access_token_hook
   enable_send_email_hook   = var.enable_send_email_hook
+  auth_rate_limits         = var.auth_rate_limits
+  smtp                     = var.smtp
+  smtp_user                = var.smtp_user
+  smtp_password            = var.smtp_password
+  public_project_id        = var.public_project_id
 }
 
 output "project_ref" {
@@ -45,4 +59,9 @@ output "managed_auth_keys" {
 output "managed_api_keys" {
   description = "Names of the API settings the module sends, sorted."
   value       = module.supabase.managed_api_keys
+}
+
+output "managed_function_secret_names" {
+  description = "Names of the Edge Function secrets the module sets, sorted; names only."
+  value       = module.supabase.managed_function_secret_names
 }
