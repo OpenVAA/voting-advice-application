@@ -51,6 +51,7 @@ module "supabase" {
   smtp                     = var.smtp
   smtp_user                = var.smtp_user
   smtp_password            = var.smtp_password
+  public_project_id        = var.public_project_id
 }
 
 output "project_ref" {
@@ -66,4 +67,9 @@ output "managed_auth_keys" {
 output "managed_api_keys" {
   description = "Names of the API settings the module sends, sorted."
   value       = module.supabase.managed_api_keys
+}
+
+output "managed_function_secret_names" {
+  description = "Names of the Edge Function secrets the module sets, sorted; names only."
+  value       = module.supabase.managed_function_secret_names
 }

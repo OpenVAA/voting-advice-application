@@ -81,3 +81,9 @@ variable "smtp_password" {
   sensitive   = true
   default     = null
 }
+
+variable "public_project_id" {
+  description = "Id of this deployment's project: the same value as the frontend's PUBLIC_PROJECT_ID and the one the bootstrap creates. It is not a secret. Null leaves the Edge Function secrets out."
+  type        = string
+  default     = null
+}

@@ -43,3 +43,7 @@ smtp = {
   admin_email = "noreply@vaa.example.org"
   sender_name = "OpenVAA"
 }
+
+# The id of the project the bootstrap creates by default. The frontend's PUBLIC_PROJECT_ID must equal
+# it. It is sent to the Edge Functions as PUBLIC_PROJECT_ID, with SITE_URL and the SMTP settings above.
+public_project_id = "00000000-0000-0000-0000-000000000001"
