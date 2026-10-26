@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 184
 current_phase_name: Hosted Supabase Measurement and Conformance Probe
-current_plan: 28
+current_plan: 2
 status: executing
-stopped_at: Phase 184 context gathered
-last_updated: "2026-10-26T12:41:36.893Z"
+stopped_at: Completed 184-01-PLAN.md
+last_updated: "2026-10-26T12:51:23.938Z"
 last_activity: 2026-10-26
-last_activity_desc: Phase 183 complete, transitioned to Phase 184
-state_head: 1a942df2b9eac63c1643441c998ddd0fe08cfe9c
+last_activity_desc: Phase 184 execution started
+state_head: 7e84a319b5877c88c2f73638872655be81e8454c
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 107
-  completed_plans: 82
+  completed_plans: 83
   percent: 30
 ---
 
@@ -33,17 +33,17 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
-Phase: 184 (Hosted Supabase Measurement and Conformance Probe) — READY TO EXECUTE
-Plan: Not started
+Phase: 184 (Hosted Supabase Measurement and Conformance Probe) — EXECUTING
+Plan: 2 of 25
 Status: Ready to execute
-Last activity: 2026-10-26 — Phase 183 complete, transitioned to Phase 184
+Last activity: 2026-10-26 — Phase 184 execution started
 
 Progress: [███░░░░░░░] 30% (3 of 9 roadmap phases, 181.1 inserted besides; 82/82 plans of the planned phases)
 
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** Not started
+**Current Plan:** 2
 
 From 184 on, the numeric order is the dependency order.
 
@@ -117,6 +117,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 183 P25 | 50min | 2 tasks | 2 files |
 | Phase 183 P20 | 2026-10-22T08:41Z to 2026-10-25 (operator wait); executor about 15 min | 2 tasks | 3 files |
 | Phase 183 P27 | 7min | 2 tasks | 1 files |
+| Phase 184 P01 | 6min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -198,6 +199,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 183]: INFRA-15 closed on the operator ruling accept-console-alert (2026-10-23): the alert of the 1 USD test budget was seen triggered in the AWS Budgets console, and no mail arrived; mail delivery is not observed (WINDOWS row 289). The budget stands at 100 USD. SES production access in eu-north-1 was already granted, so no request was filed; staging sets `manage_account_suppression = false` because other identities share the account setting
 - [Phase 183]: Code-review fix pass: CR-01 and 25 of 26 warnings fixed (WR-01 and WR-03 in part), WR-04 deferred; the bootstrap plan-role deny policy re-applied and the staging Supabase plan seen empty (2026-10-26). Operator rulings of 2026-10-26: WR-01 option (a), keep `ReadOnlyAccess` with the current denies; WR-04 deferred, decision A-08 kept; the WR-03 remainder deferred. All three go to phase 184 (SECURITY T-183-09/10/11, AR-183-01/02, TR-183-01/02)
 - [Phase 183]: SUPA-11 observed (183-27): `lint:check` and `format:check` exit 0 on the final tree de904bfff, and criterion 5 clauses C5.1 to C5.6 all read seen. C5.6 rests on the CI run at 18fdcd6ca; later infra edits were validated locally only. Verification 9/9 passed (one override, INFRA-15)
+- [Phase 184]: 184-01: probe collect() preflights every requested source before any read; responses grouped by endpoint ({ management: { postgrest: { max_rows } } }); requests are GET with redirect manual and a 30 s timeout; unsafe finding/reason text is withheld, never printed
 
 ### Pending Todos
 
@@ -250,6 +252,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-10-26T11:04:35.414Z
-**Stopped At:** Phase 184 context gathered
-**Resume File:** .planning/workstreams/deployment/phases/184-hosted-supabase-measurement-and-conformance-probe/184-CONTEXT.md
+Last session: 2026-10-26T12:51:23.066Z
+**Stopped At:** Completed 184-01-PLAN.md
+**Resume File:** None
