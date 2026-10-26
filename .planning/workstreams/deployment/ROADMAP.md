@@ -399,7 +399,71 @@ Notes:
   5. The conformance probe reads what the persistent project serves and passes. Each of its checks is seen failing once, by name, against the throwaway project broken on purpose.
 
 **Research flag**: Needs `/gsd-plan-phase --research-phase`, planned as measurement tasks with recorded outputs. Two topics that `research/SUMMARY.md` lists under 185 are measured here, because this roadmap makes the first push and sends the first Edge Function mail in this phase: `db push` from an IPv4 network, with the pooler as the fallback, and the SES port from an Edge Function (D7; 2587 first by C6). Also measured here: whether the hook can be switched on before its function exists (F2), and the Postgres major version.
-**Plans**: TBD
+**Plans**: 25 plans in 19 waves. Waves 1 to 4 write the code without the operator (the probe, the push wrapper, the drift check's linked guard, the parity guard's `[functions.*]` family, the function secrets in Terraform, the scratch root's fault file, the smoke template, the runbook and the grant script); three of them stop for a ruling first. Waves 5 to 13 are the throwaway's sittings, in order; waves 14 to 17 the persistent project's, the first push behind a one-way gate (plan 184-21); wave 18 deletes the throwaway; wave 19 closes on the repository gates and a full E2E run.
+
+Plans:
+**Wave 1**
+- [ ] 184-01-PLAN.md — wave 1 — The probe end to end for one check (the tracer), and its Vitest suite in `yarn test:unit`.
+- [ ] 184-04-PLAN.md — wave 1 — The push wrapper and the drift check's linked-target guard, each with its offline refusals.
+- [ ] 184-05-PLAN.md — wave 1 — Widen the parity guard to `[functions.*]` and classify `identity-callback`'s JWT setting.
+- [ ] 184-06-PLAN.md — wave 1 — The Edge Function secrets in the Supabase module, wired into the staging and example roots.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 184-02-PLAN.md — wave 2 — The probe's Management API checks: the auth settings, the API settings and the deployed functions.
+- [ ] 184-07-PLAN.md — wave 2, needs the operator — Rule the project id; make the scratch root rehearse staging, with an import block and the batched-break fault file.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 184-03-PLAN.md — wave 3, needs the operator — Rule the bucket source; the probe's public-API and catalog checks and the seed check, twenty-two in all.
+- [ ] 184-08-PLAN.md — wave 3, needs the operator — Rule how staging is opened for voters; the dev-seed `smoke` template with more than 1000 rows and no user.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 184-09-PLAN.md — wave 4 — The first administrator's grant script, the deploy runbook (Steps 14 to 23) and the repository gates after the code.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [ ] 184-10-PLAN.md — wave 5, needs the operator — Throwaway: restore the scratch state, read it before change, make and review its first plan.
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [ ] 184-11-PLAN.md — wave 6, needs the operator — Throwaway: apply SMTP and the function secrets, link, push, and read the pushed database.
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [ ] 184-12-PLAN.md — wave 7, needs the operator — Throwaway: deploy the functions and measure the gateway's call shapes and the keys.
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [ ] 184-13-PLAN.md — wave 8, needs the operator — Throwaway: the header record, the anon timeout, the drift check red and green, the second push.
+- [ ] 184-14-PLAN.md — wave 8, needs the operator — Rule the key model if the legacy keys fail; apply `account-access`'s JWT setting if the gateway requires it.
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [ ] 184-15-PLAN.md — wave 9, needs the operator — Throwaway: the logging gate, two bootstraps, the administrator's claims and the smoke dataset.
+
+**Wave 10** *(blocked on Wave 9 completion)*
+- [ ] 184-16-PLAN.md — wave 10, needs the operator — Throwaway: one mail on 2587 with its authentication results, the redirect cases, a failed send on 587.
+
+**Wave 11** *(blocked on Wave 10 completion)*
+- [ ] 184-17-PLAN.md — wave 11, needs the operator — Rule the probe's catalog role; the probe green on the throwaway before any fault.
+
+**Wave 12** *(blocked on Wave 11 completion)*
+- [ ] 184-18-PLAN.md — wave 12, needs the operator — The batched break: every check of the probe seen failing by its own cause, and both refusals.
+
+**Wave 13** *(blocked on Wave 12 completion)*
+- [ ] 184-19-PLAN.md — wave 13, needs the operator — Revert the break and see the probe green again.
+
+**Wave 14** *(blocked on Wave 13 completion)*
+- [ ] 184-20-PLAN.md — wave 14, needs the operator — Persistent: the measured port and project id in its root, its reads before change, its plan reviewed.
+
+**Wave 15** *(blocked on Wave 14 completion)*
+- [ ] 184-21-PLAN.md — wave 15, needs the operator — Persistent: the one-way gate, then apply, link, push twice and deploy the functions.
+
+**Wave 16** *(blocked on Wave 15 completion)*
+- [ ] 184-22-PLAN.md — wave 16, needs the operator — Persistent: the logging gate, two bootstraps, the first administrator and the smoke dataset.
+
+**Wave 17** *(blocked on Wave 16 completion)*
+- [ ] 184-23-PLAN.md — wave 17, needs the operator — Persistent: the probe green and the settings read back; the FUT-02 todo and the security re-transfer.
+
+**Wave 18** *(blocked on Wave 17 completion)*
+- [ ] 184-24-PLAN.md — wave 18, needs the operator — Delete the throwaway and its local state, and make every text naming the scratch root true.
+
+**Wave 19** *(blocked on Wave 18 completion)*
+- [ ] 184-25-PLAN.md — wave 19 — The repository gates and a full E2E run on the final tree.
 
 Notes:
 
