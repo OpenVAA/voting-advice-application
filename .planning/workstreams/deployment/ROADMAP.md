@@ -74,7 +74,7 @@ This file is the roadmap of the `deployment` workstream (branch `feat/deployment
 
 - [x] **Phase 181: Deployability and Migration Model** - Without any cloud account, the server reports its health and build, refuses to start half-configured, works behind a proxy, and the migration is frozen as a baseline with append-only changes (SUPA-10) (completed 2026-10-21)
 - [x] **Phase 182: Analytics Relay** - Events go through a same-origin relay to a provider chosen by configuration, with no analytics identifier on the device, consent asked by default, and Umami removed (RELAY-01, RELAY-02, RELAY-03, RELAY-05, RELAY-06, RELAY-07, RELAY-08, RELAY-10 to RELAY-21)
-- [ ] **Phase 183: Terraform Foundation and Supabase as Code** - Remote state, access roles, a budget alarm, the staging zone and the mail identity exist in AWS, and the hosted Supabase project is imported into a root of its own with a settings parity guard (INFRA-15, INFRA-17, INFRA-18, SUPA-11)
+- [x] **Phase 183: Terraform Foundation and Supabase as Code** - Remote state, access roles, a budget alarm, the staging zone and the mail identity exist in AWS, and the hosted Supabase project is imported into a root of its own with a settings parity guard (INFRA-15, INFRA-17, INFRA-18, SUPA-11) (completed 2026-10-26)
 - [ ] **Phase 184: Hosted Supabase Measurement and Conformance Probe** - The schema, functions and bootstrap rows are on the hosted project, what it serves is measured and dated, and a probe fails by name when it drifts (SUPA-01 to SUPA-07, SUPA-13, SUPA-14, OBS-01, OBS-02, OBS-03, OBS-05, OBS-07)
 - [ ] **Phase 185: AWS Frontend Stack, First Apply by Hand** - The frontend runs at `https://staging.openvaa.org` from a stack applied by hand, with a failed rollout, a teardown and the frontend-side observations each seen once (INFRA-01 to INFRA-14, SUPA-12, OBS-04, OBS-06, OBS-08, OBS-10)
 - [ ] **Phase 186: Deployed Smoke Entry** - A read-mostly smoke run proves from a workstation that the deployed URL serves the intended build on the dedicated project, and refuses anything else (SUPA-09)
@@ -316,7 +316,7 @@ Notes:
   5. The project the operator created is imported into a Supabase root that has its own state file and `prevent_destroy`, and a destroy of that root is refused. The root applies the hosted API and auth settings and a second plan is empty. `supabase config push` is used nowhere. `yarn lint:check` fails when a security-relevant key of `config.toml` and the HCL disagree, seen once (SUPA-11). A job in `main.yaml` that needs no credentials formats and validates the Terraform, and is seen passing in a run.
 
 **Research flag**: Needs `/gsd-plan-phase --research-phase`. Topics from `research/SUMMARY.md`: the exact `supabase_settings` JSON keys, found by importing from a scratch project (F1); the OIDC subject for repositories created after 2026-07-15; legacy against publishable keys (F5), which C5 rules as measure and stay on legacy if they work. Create against import is closed by C2: the operator creates the project and Terraform imports it. Added by rulings after the research: a delegated subzone or the whole zone for `staging.openvaa.org` (reading 4, settled here), and the layout of the IAM policies (F1 note).
-**Plans**: 28/28 plans executed in 15 waves. Waves 1 to 5 run now without the operator and touch no cloud. The first operator checkpoint that can block is plan 183-14: it needs the applying identity (follow-up 183-R1) and Terraform 1.16.5. Plans 21 to 25 (the Supabase chain) depend only on their own predecessors and on plan 16, and may be executed by plan without waiting for plans 18, 19 and 20 of the same wave.
+**Plans**: 28/28 plans complete in 15 waves. Waves 1 to 5 run now without the operator and touch no cloud. The first operator checkpoint that can block is plan 183-14: it needs the applying identity (follow-up 183-R1) and Terraform 1.16.5. Plans 21 to 25 (the Supabase chain) depend only on their own predecessors and on plan 16, and may be executed by plan without waiting for plans 18, 19 and 20 of the same wave.
 
 Plans:
 **Wave 1**
@@ -552,7 +552,7 @@ Phases 181, 182 and 183 can start in any order. From 184 on, the numeric order i
 |-------|----------------|--------|-----------|
 | 181. Deployability and Migration Model | 19/19 | Complete    | 2026-10-21 |
 | 182. Analytics Relay | 31/31 | Complete | 2026-10-20 |
-| 183. Terraform Foundation and Supabase as Code | 28/28 | In Progress | - |
+| 183. Terraform Foundation and Supabase as Code | 28/28 | Complete    | 2026-10-26 |
 | 184. Hosted Supabase Measurement and Conformance Probe | 0/TBD | Not started | - |
 | 185. AWS Frontend Stack, First Apply by Hand | 0/TBD | Not started | - |
 | 186. Deployed Smoke Entry | 0/TBD | Not started | - |

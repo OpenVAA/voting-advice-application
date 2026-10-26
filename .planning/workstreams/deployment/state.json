@@ -16,7 +16,7 @@
     {
       "number": "183",
       "name": "Terraform Foundation and Supabase as Code",
-      "status": "in_progress"
+      "status": "complete"
     },
     {
       "number": "184",
@@ -51,8 +51,8 @@
   ],
   "next": {
     "command": "/gsd-progress --next",
-    "label": "Advance to the next step",
-    "reason": "Phase 4 of 10 · 20% · executing"
+    "label": "Advance to the next step (plan phase 184)",
+    "reason": "Phase 5 of 10 — needs a plan"
   },
-  "updated_at": "2026-10-25T08:04:35.930Z"
+  "updated_at": "2026-10-26T06:40:58.470Z"
 }
