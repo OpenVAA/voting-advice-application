@@ -11,7 +11,8 @@
  * named `supabase` or whose `.tf` files call the module. The frontend's page size, `dataAdapter.pageSize` in
  * `packages/app-shared/src/settings/staticSettings.ts`, is a third channel for one key.
  *
- * Every live key of the tables `[api]`, `[api.tls]`, `[auth]` and every `[auth.*]` is in exactly one of four classes:
+ * Every live key of the tables `[api]`, `[api.tls]`, `[auth]`, every `[auth.*]` and every `[functions.*]` is in exactly
+ * one of four classes:
  *
  *   must agree              The hosted value equals the local one (some keys are inverted, or a list against a
  *                           comma-separated string). `max_rows` must also equal `pageSize`: three ways.
@@ -167,6 +168,10 @@ const stricter = (table, key, hostedKey, compare, why) => ({
   why
 });
 const none = (table, keys, why) => keys.map((key) => ({ table, key, cls: 'none', why }));
+
+/** Why a function's gateway setting is not compared: the CLI deploys it from config.toml itself. */
+const DEPLOYED_FROM_THIS_FILE =
+  "the CLI's function deploy reads this setting from this file, so the deployed value cannot drift from it; the conformance probe compares the value the project serves";
 
 const ROWS = [
   // must agree
@@ -434,7 +439,8 @@ const ROWS = [
     'auth.oauth_server',
     ['authorization_url_path'],
     'the hosted settings of a new project do not hold this key, and whether the hosted API accepts it has not been observed'
-  )
+  ),
+  ...none('functions.identity-callback', ['verify_jwt'], DEPLOYED_FROM_THIS_FILE)
 ];
 
 /** Local redirect entries that have no hosted counterpart, each with the reason. */
@@ -603,7 +609,8 @@ function inFamily(table) {
     table === 'api' ||
     table === 'api.tls' ||
     table === 'auth' ||
-    table.startsWith('auth.')
+    table.startsWith('auth.') ||
+    table.startsWith('functions.')
   );
 }
 
@@ -1726,7 +1733,7 @@ function censusLine(census) {
   const classes = Object.entries(CLASS_NAMES).map(([cls, name]) => `${name} ${counts[cls]}`);
   if (counts.unclassified > 0) classes.push(`unclassified ${counts.unclassified}`);
   return (
-    `census: ${census.live} live key(s) of [api], [api.tls], [auth] and [auth.*]: ${classes.join(', ')}; ` +
+    `census: ${census.live} live key(s) of [api], [api.tls], [auth], [auth.*] and [functions.*]: ${classes.join(', ')}; ` +
     `${census.origins} origin(s) checked across ${census.roots} Supabase root(s); ` +
     HOOK_SWITCHES.map(({ variable, label }) => {
       const roots = census.hookOff[variable];
@@ -1848,6 +1855,9 @@ allow_dynamic_registration = false
 
 [edge_runtime]
 enabled = true
+
+[functions.identity-callback]
+verify_jwt = false
 `;
 
 const CORRECT_SETTINGS = {
@@ -2494,6 +2504,19 @@ const CASES = [
     name: 'a classified key commented out',
     edit: editConfig('jwt_expiry = 3600', '# jwt_expiry = 3600'),
     expected: ['auth/jwt_expiry']
+  },
+  {
+    name: 'an unclassified [functions.*] table added',
+    edit: editConfig(
+      '[functions.identity-callback]',
+      '[functions.new-function]\nverify_jwt = false\n\n[functions.identity-callback]'
+    ),
+    expected: ['functions.new-function/verify_jwt']
+  },
+  {
+    name: 'a classified [functions.*] table removed',
+    edit: editConfig('[functions.identity-callback]\nverify_jwt = false\n', ''),
+    expected: ['functions.identity-callback/verify_jwt']
   },
   {
     name: 'a quoted value containing #',
