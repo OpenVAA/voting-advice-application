@@ -340,6 +340,11 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 - ✓ Milestone-close green gate (GATE-01) — full E2E suite (incl. a11y-smoke + cold-entry-dataroot) + unit + typecheck + lint all green; **E2E 95/95 to the 3× determinism standard** (fresh server, clean DB); recorded as `116-MILESTONE-CLOSE-ANCHOR.md` — v2.13 (Phase 116)
 - ✓ dataRoot cold-entry reactivity fix (COLD-01/02/03) — eliminated the `$derived(ctx.dataRoot)` intermediate-alias staleness on direct-URL (cold) entry (Svelte 5 referential-equality downstream-skip over the identity-stable `#version`-bridge accessor); 12-site direct-read codemod + CLAUDE.md carve-out + new `cold-entry-dataroot` E2E project + negative control; validated by Spike 024 (4/4) — v2.13 (Phase 117)
 
+- ✓ Budget alarm (INFRA-15) — budget `openvaa-monthly`, 100 USD, alerts at 80 % actual and 100 % forecast; closed on the operator ruling accept-console-alert: the alert was seen triggered in the AWS Budgets console, and mail delivery to the operator is not observed — v2.17 (Phase 183)
+- ✓ Managed IAM policies only (INFRA-17) — every permission the Terraform roots grant comes from an AWS-managed or customer-managed policy; `yarn lint:check` refuses an inline IAM policy (seen red once), and the account inventory's assert modes found no IAM user with an inline policy (2026-10-22) — v2.17 (Phase 183)
+- ✓ Staging zone (INFRA-18) — a Route 53 hosted zone answers `staging.openvaa.org`, delegated from Cloudflare (recorded in `infra/envs/staging/dns-mail/DELEGATION.md`); the SES identity is verified with DKIM, SPF and DMARC published — v2.17 (Phase 183)
+- ✓ Hosted settings parity guard (SUPA-11) — the hosted Supabase project is imported into its own Terraform root (`prevent_destroy`, settings applied, second plan empty), and a `lint:check` guard fails when the security-relevant keys of `config.toml` and the HCL disagree (seen red once per kind of finding) — v2.17 (Phase 183)
+
 ### Active
 
 **Active milestone: v2.16 Contestant App — Registration Modes & Multi-Entity Editing** (started 2026-10-04; see Current Milestone section above). Requirements with REQ-IDs are defined in `.planning/REQUIREMENTS.md`; phases continue from 169 → start at 170. The todo "Generalize candidate app to support parties as first-class registrants" is now in scope.
@@ -557,6 +562,12 @@ Each major initiative is a separate milestone, executed in order:
 | The `user_can` per-row cost is paid deliberately | The converted authority mechanism leaves authenticated entity-reads at 4.47× the pre-phase denominator; the anon half closes at 0.99×. D-35's composition-flattening was tried, measured and reverted (D-36) — no arrangement of the composition removes the residue, because the residue *is* `user_can`. Phase 162.1 reordered the quals to variant B and accepted the remainder | ✓ Good (v2.15, Phases 162 + 162.1) |
 | Results navigation never reruns the `(located)` load; overlays get no document View Transition | One tracked `url.pathname` read defeated the load's `untrack` and remounted the whole results subtree on every tab/drawer navigation; routes reshaped to one innermost page node under two layouts, drawers hoisted to one app-wide `DrawerHost`, names stripped from any VT under an open modal. Both invariants stated in CLAUDE.md and guarded (`layout.tracking.test.ts`, `viewTransition.ts`) | ✓ Good (v2.15, Phase 165.1) |
 
+| v2.17: Terraform applied by hand, the agent holds no credential | Every apply, import and credentialed call is an operator checkpoint through an IAM Identity Center permission set (183-R1); hand-applied roots keep state under `hand/`, the pipeline root under `pipeline/`. Keeps credentials off the agent and out of the planning record | ✓ Good (v2.17, Phase 183) |
+| v2.17: Terraform is the only writer of hosted Supabase settings | `supabase_settings` fed from one tracked `hosted-settings.json` (D-15); `supabase config push` is used nowhere and the parity guard refuses it; the provider is pinned `= 1.11.0`. One writer means a second plan shows drift instead of two tools overwriting each other | ✓ Good (v2.17, Phase 183) |
+| v2.17: The hosted project is created by hand and imported | The persistent project (`openvaa-staging`, eu-north-1) is never created by Terraform: an `import` block and `prevent_destroy` bind it, and every step is rehearsed on a throwaway project first. Both auth hooks are on before their functions exist, so the migrations are pushed before anyone signs in | — Pending (phase 184 push) |
+| v2.17: INFRA-15 accepted on the console alert | The budget mail was not received (the address was unconfirmed); the operator ruled accept-console-alert rather than hold the phase on mail delivery | ⚠️ Revisit (mail delivery not observed) |
+| v2.17: Plan-role limits deferred to phase 184 | Review WR-01 option (a) keeps `ReadOnlyAccess` with explicit denies; WR-04 keeps A-08 (a PR job can hold or delete the pipeline lock); numeric GitHub id claims, a workflow pin and the Environment branch policy wait until the PR and deploy workflows exist | ⚠️ Revisit (phase 184) |
+
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
@@ -575,6 +586,8 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
+
+_Last updated: 2026-10-26 after Phase 183 (Terraform Foundation and Supabase as Code; workstream `deployment`, milestone v2.17) — INFRA-15 (operator override), INFRA-17, INFRA-18 and SUPA-11 moved to Validated, five v2.17 Key Decisions added. Verified 9/9, security `threats_open: 0`. Only additions; the v2.16 sections are untouched._
 
 _Last updated: 2026-10-05 — v2.16 section corrected to the operator's choices in `.planning/v2.16-DISCUSSION-POINTS.md` (decision X3 (a))._
 

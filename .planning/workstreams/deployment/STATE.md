@@ -7,7 +7,7 @@ current_phase_name: Hosted Supabase Measurement and Conformance Probe
 current_plan: 28
 status: planning
 stopped_at: Phase 183 complete, ready to plan Phase 184
-last_updated: "2026-10-26T06:40:58.451Z"
+last_updated: "2026-10-26T06:44:33.000Z"
 last_activity: 2026-10-26
 last_activity_desc: Phase 183 complete, transitioned to Phase 184
 state_head: e85ce9257da727029c1f394c083e35df399ed360
@@ -23,29 +23,29 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (shared with the v2.16 stream; read only from this workstream)
+See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 after Phase 183, by additions only)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 **Milestone value:** A deployer can stand up a tested OpenVAA instance on AWS and Supabase Cloud from the repository, and every statement the project makes about a hosted deployment has been observed on one.
-**Current focus:** Phase 183 — Terraform Foundation and Supabase as Code
+**Current focus:** Phase 184 — Hosted Supabase Measurement and Conformance Probe
 
 ## Current Position
 
-Phases 181 and 182 are complete; phase 183 is in progress (15/28 plans).
+Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 184 — Hosted Supabase Measurement and Conformance Probe
 Plan: Not started
 Status: Ready to plan
 Last activity: 2026-10-26 — Phase 183 complete, transitioned to Phase 184
 
-Progress: [███░░░░░░░] 33%
+Progress: [███░░░░░░░] 33% (3 of 9 roadmap phases, 181.1 inserted besides; 82/82 plans of the planned phases)
 
 ## Progress
 
-**Phases Complete:** 0 of 9
-**Current Plan:** 28
+**Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
+**Current Plan:** Not started
 
-Phases 181, 182 and 183 do not depend on each other in what they build, but their executors share one checkout, so they are not run at the same moment: whole-repo gates need a tree with no uncommitted tracked change, and phase 182 holds the other two during its cutover span and its E2E windows. Phase 181's freeze (181-17) waits for plan 182-02. 183 needs the operator from plan 183-14 on. From 184 on, the numeric order is the dependency order.
+From 184 on, the numeric order is the dependency order.
 
 ## Performance Metrics
 
@@ -190,33 +190,14 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 181.1]: 181.1-04: Supabase agent skills installed per user by the operator at 544bfc56 (diff -r 0 both) after the auto-mode classifier refused the agent's write to $HOME/.claude/skills/ ([Self-Modification]); planned fallback, no workaround
 - [Phase 182]: 182-01: the tracked phase-181 harness is used unchanged; db mode suffices for the pgTAP baseline
 - [Phase 182]: 182-01: plan 182-02 rebuilds the isolated instance p182 with supabase db reset --workdir (HARNESS_RESET=ok); p182 is left running on ports 56200-56209
-- [Phase 183]: 183-13: both new guards seen red through yarn lint:check (exit 1 each) in a throwaway worktree of 46099edc1, which needed yarn install --immutable plus yarn build before the clean run was 0; Task 2 not raised (chain observation made); the three gates are 0 on the finished tree at 5322ab1f6. INFRA-17 and SUPA-11 left open for their account-state and applied-settings clauses
 - [Phase 181]: 181-17: baseline 00001_initial_schema.sql frozen by 12c98aa5c; manifest names parent 81e6a3f22, sha256 79bed444… equals the blob there; guard in lint:check runs frozen mode, schema:regenerate refuses
 - [Phase 181]: 181-18: lint:check seen exit 1 (EDITED FROZEN MIGRATION) on an edited real baseline and exit 0 on an appended 00002 migration in a scratch checkout of 78fa17897; check-drift.sh 0 clean / 1 planted on the real manifest; four local gates 0 on 58cf7a564 (attempt 20261020T185902Z, shared stack running for the dev-seed integration tier). SUPA-10 closes with 181-19
 - [Phase 181]: 181-19: closing E2E gate green on 4c9fba56b (548/0/0) after attempt 1 failed on a root .env missing the three ANALYTICS_* keys; operator added them, tree unchanged
-- [Phase 183]: 183-15: follow-up 183-R6 answered with the ci-evidence/** push (A-10); infra-validate seen success in run 39591102824 and failure at fmt+validate in run 39591102968, read without a credential
-- [Phase 183]: 183-R1 ruled identity-center: Terraform applied by hand through an IAM Identity Center permission set using AWS-managed AdministratorAccess
-- [Phase 183]: 183-R2 ruled per-session and 183-R3 ruled keep (DMARC reports to dmarc_agg@vali.email); credits no; OIDC subjects not immutable
-- [Phase 183]: INFRA-17 account clause clean 2026-10-21: user-2 inline policy converted to customer-managed, assert mode exit 0
-- [Phase 183]: staging dns-mail sets manage_account_suppression = false: other SES identities in eu-north-1 share the account-level setting
-- [Phase 183]: attempt.sh screen rule 2 exempts exactly the account inventory's seven fixed verdict forms (operator ruling 2026-10-21)
-- [Phase 183]: 183-16: plan amendment ruled by the operator - s0_account, the s6b backend re-check and s9b_state_resources=30 (less 7 data sources = 23 = s3_managed_count) stand for the five unpasted Task 1 lines
-- [Phase 183]: 183-16: simulator step 8(a) runs one call per resource; two resources in one call give one result per action
-- [Phase 183]: 183-16: reply screen accepts numbered sub-steps such as s8d1_; rules 2 to 5 unchanged
-- [Phase 183]: 183-17: SES SigningHostedZone for staging.openvaa.org is dkim.amazonses.com, equal to the variable; no second apply before the delegation
-- [Phase 183]: 183-17: operator AWS profile is openvaa-admin; operator blocks export AWS_PROFILE=openvaa-admin
-- [Phase 183]: 183-18: staging.openvaa.org delegated at Cloudflare (4 NS, 2026-10-22T07:25Z); referral equals the table; first public answer 08:03Z
-- [Phase 183]: 183-19: SES production access in eu-north-1 was already granted (read before filing); by operator ruling no request was filed and no sandbox mailbox verified
-- [Phase 183]: 183-19: scoped SMTP send policy still not observed; phase 184 fallback is the same statement on resource * with the From-address condition kept
-- [Phase 183]: 183-21: three managed keys absent from the throwaway import (password_required_characters, hook_custom_access_token_uri, hook_send_email_uri) are settled: the API returns each name with a null value; the provider stores only non-null keys on import
-- [Phase 183]: 183-22: first plan after the throwaway import passed all five stop rules (one in-place update of supabase_settings.this, 0 to destroy, no password line); PLAN_REVIEWED=ok bound to tfplan sha256 35d762b21b217cc2cd232fcdc347e8da13604ed69ec2cb60d4db0da92a1289c8 only; A1 observed, 183-R4 not raised
-- [Phase 183]: 183-24: rehearsal passed on the throwaway project (second attempt): reviewed tfplan sha256 b194262f78c57d4a342c2c07a7716aec964b049c0ab6a2b53ada76bac3fe032e applied (0), second plan 0, 37/37 keys served as intended, destroy plan 1 refused by prevent_destroy, red control 2; both hooks accepted before their functions exist, so 183-25 applies with them on
-- [Phase 183]: 183-24: oauth_server_enabled and oauth_server_allow_dynamic_registration are no longer sent or compared (hosted API 400: OAUTH_SERVER_ENABLED and OAUTH_SERVER_AUTHORIZATION_PATH must be provided together); phase 184 probe reads them
-- [Phase 183]: 183-23: the persistent project cofbsatfrdysyphajsky (openvaa-staging) is in eu-north-1, in the OpenVAA organisation gulgrbzofwnwepdnrgrl, created by hand and imported; its first plan (tfplan sha256 065a419e...43590) creates only supabase_settings.this and was reviewed ok for plan 183-25
-- [Phase 183]: 183-23: the organisation slug is tracked in infra/envs/staging/supabase/terraform.tfvars beside the name and region, because organization_id is a required argument of the project resource
-- [Phase 183]: 183-25: the persistent project cofbsatfrdysyphajsky has its settings applied with both hooks on; phase 184 pushes the migrations before anyone signs in
-- [Phase 183]: 183-20: INFRA-15 complete on the operator ruling accept-console-alert (2026-10-23): the actual alert of the 1 USD budget was seen as triggered in the AWS Budgets console and no mail was received (address not confirmed, per operator); outcome recorded as no-mail, mail delivery not observed. The budget was then raised under the ruling to the standing 100 USD with no -var (one replacement; read-back 100 USD monthly cost, ACTUAL 80 and FORECASTED 100; second plan exit 0); the read-back threshold type printed None (UNCONFIRMED why). WINDOWS 289
-- [Phase 183]: SUPA-11 observed (183-27): lint:check and format:check exit 0 on the final tree de904bfff (0/0) and criterion 5 clauses C5.1-C5.6 all read seen from sources naming their current attempts; C5.6 rests on the 2026-10-21 CI run at 18fdcd6ca, later infra edits validated locally only
+- [Phase 183]: Every apply, import and credentialed call is an operator checkpoint, and the agent holds no credential. Terraform is applied by hand through an IAM Identity Center permission set with AWS-managed AdministratorAccess (183-R1, profile `openvaa-admin`), per session (183-R2). Hand-applied roots keep state under `hand/`, the pipeline root under `pipeline/`. DMARC reports go to dmarc_agg@vali.email (183-R3). The per-plan record is in the 183 SUMMARYs; PROJECT.md Key Decisions holds the summary
+- [Phase 183]: Terraform's `supabase_settings` is the only writer of hosted settings (D-15); `supabase config push` is used nowhere, and the parity guard in `yarn lint:check` refuses it. The provider is pinned `= 1.11.0`. The persistent project `cofbsatfrdysyphajsky` (`openvaa-staging`, eu-north-1, organisation `gulgrbzofwnwepdnrgrl`) was created by hand and imported, keeps `prevent_destroy`, and has its settings applied with both auth hooks on, after the rehearsal on the throwaway project showed both hooks accepted before their functions exist. `oauth_server_enabled` and `oauth_server_allow_dynamic_registration` are no longer sent (hosted API 400)
+- [Phase 183]: INFRA-15 closed on the operator ruling accept-console-alert (2026-10-23): the alert of the 1 USD test budget was seen triggered in the AWS Budgets console, and no mail arrived; mail delivery is not observed (WINDOWS row 289). The budget stands at 100 USD. SES production access in eu-north-1 was already granted, so no request was filed; staging sets `manage_account_suppression = false` because other identities share the account setting
+- [Phase 183]: Code-review fix pass: CR-01 and 25 of 26 warnings fixed (WR-01 and WR-03 in part), WR-04 deferred; the bootstrap plan-role deny policy re-applied and the staging Supabase plan seen empty (2026-10-26). Operator rulings of 2026-10-26: WR-01 option (a), keep `ReadOnlyAccess` with the current denies; WR-04 deferred, decision A-08 kept; the WR-03 remainder deferred. All three go to phase 184 (SECURITY T-183-09/10/11, AR-183-01/02, TR-183-01/02)
+- [Phase 183]: SUPA-11 observed (183-27): `lint:check` and `format:check` exit 0 on the final tree de904bfff, and criterion 5 clauses C5.1 to C5.6 all read seen. C5.6 rests on the CI run at 18fdcd6ca; later infra edits were validated locally only. Verification 9/9 passed (one override, INFRA-15)
 
 ### Pending Todos
 
@@ -236,11 +217,8 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 - Phase 181: the baseline freeze waits for a cutover commit agreed with the v2.16 session (SUPA-10, C1). The rest of the phase does not wait.
 - Phase 182: the legal position needs a qualified reviewer. Six readings of the operator's notes of 2026-10-11 are written into the context files and listed in `v2.17-181-183-DISCUSSION-POINTS.md`; the operator has not yet confirmed them.
 - Phase 181: the freeze also waits for one schema change of phase 182 (ruling 182-12).
-- Phase 183: not yet given by the operator (TBA on 2026-10-11): the identity that applies Terraform by hand (needed before the first apply of wave A), the Supabase organisation and the holder of the access token, the persistent Pro project (wave B), and a mailbox for DMARC reports. The region is `eu-north-1` if the dashboard offers it. The parent DNS zone is at Cloudflare. SES production access is requested at the start of the phase. The DNS delegation for `staging.openvaa.org` is entered at the current DNS host during the phase.
 - Phase 181 is planned (19 plans, 11 waves; four check rounds, no open blocker). Waves 1 to 7 need no operator. Plan 181-16 needs a root `.env` in this worktree and a window on the shared local Supabase stack; it stops the stack and resets the database from this worktree, so the v2.16 session must reset from its own worktree afterwards. Plan 181-17, the freeze, waits for v2.16's phase 177.1, the merge of the two branches' schema, and plan 182-02.
-- Execution rule for phases 181 to 183: three phases' executors share this checkout. Whole-repo gates run only on a tree with no uncommitted tracked change. At a pending operator checkpoint of an E2E gate or of the freeze, nobody commits in this checkout, the orchestrator included, or the operator's answer is void. An operator's reply must carry the attempt id the checkpoint shows.
 - The operator has not yet answered `v2.17-181-183-RESEARCH-FOLLOWUPS.md`; the plans rest on each recommended option and name the follow-up id where an overrule changes them.
-- Phase 183 is planned (28 plans, 15 waves; three check rounds, no open blocker). Waves 1 to 5 need no operator and touch no cloud. Every apply, import and credentialed call is an operator checkpoint; the agent holds no credential. The first checkpoint that can block is 183-14: it needs the applying identity (follow-up 183-R1), Terraform 1.16.5 and `jq` on the operator's workstation. The Supabase chain (183-21 to 183-25) first needs the operator at 183-21 and may run by plan beside the waits of 183-19 and 183-20. Operators paste named lines only; the log directories of the checkpoints hold secrets and are removed by the checkpoint's last step.
 - Phase 182 is planned (31 plans, serial; three check rounds, no open blocker). It has seven operator stops: the one-way decision of 182-02 (a typed reply with the attempt id; no default), the span acknowledgement of 182-15, and five windows on the shared local stack (182-11, 182-23, 182-24, 182-31, 182-28). Each window stops the stack and resets the database from this worktree; the v2.16 session then resets from its own worktree. From the first commit of 182-15 to the closing gates of 182-26 the frontend does not typecheck: phases 181 and 183 run no frontend gate in that span. Two human checks stay open at the end of the phase: the operator's reading of the event classification, and a speaker's reading of the six translated catalogues.
 - Phase 188: not yet given by the operator: a PostHog Cloud EU project, its token and a billing limit.
 - Phases 182 and 185 each close 19 requirements. Expect many plans in each.
@@ -249,6 +227,14 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 - Phase 184, from plan 181-11: before the first run of infra/scripts/bootstrap.sql against the hosted project, read the server's parameter-logging settings with SHOW (log_statement, log_parameter_max_length, log_min_duration_statement, pgaudit.log, pgaudit.log_parameter, auto_explain.log_min_duration, auto_explain.log_parameter_max_length). The script binds the service-role key and keeps it out of the log of a failed statement, but a server that logs the parameters of statements that succeed, or of slow ones, logs the key, and the script cannot change those settings. Locally they are ddl, -1, -1, , off, 10000 and -1. Also unobserved there: that postgres owns the five tables and may read auth.users.
 - Plan 181-12, awaiting a ruling: research assumption A2 is recorded as held, but not by the plan's letter. The plan defines held as zero bytes of standard output from supabase db diff on the clean build; its command gave 114, 122 and 142 bytes, a JSON envelope carrying an empty diff, because the CLI detected an agent caller. Zero bytes was seen only with text output selected (--agent no or --output-format text), which the check now passes. If that reading is not accepted, the schema half of infra/scripts/check-drift.sh has to be the dump comparison the plan names as its fallback, and Tasks 2 and 3 of 181-12 are open. Two more departures in the same plan rest on measurements and are also unruled: the header names four blind spots where the plan orders five (a changed policy expression is reported by the diff), and the plan's control 6 is answered by a refusal before either part runs, with a failing psql shown by an added control.
 - Phase 184, from plan 181-12: infra/scripts/check-drift.sh was never run with --target linked. Before a green there is trusted, see the check red on a planted change on the hosted project, and find out whether supabase db diff with no schema list is empty on a clean hosted database; if it is not, narrow the set in the script with that evidence (--schema public,private,storage was empty locally and misses a schema created by hand). Nothing ties the script's PG* connection to the linked project. A green drift check does not show column privileges, role settings, comments or rows. On this host the diff also left a 51 MB cache file under ~/.supabase/cache/shadow-baseline/, which is still there.
+- [Phase 183] Before anyone signs in on the persistent project `cofbsatfrdysyphajsky`, push the migrations to it (phase 184). Both auth hooks are switched on there, and their database functions may not exist yet.
+- [Phase 183] The SUPA-07 probe of phase 184 should read `oauth_server_enabled` and `oauth_server_allow_dynamic_registration`, which the Supabase module no longer sends or compares.
+- [Phase 183] SMTP is not applied on staging (`smtp` is null). When phase 184 sets it, the planning shell needs `TF_VAR_smtp_user` and `TF_VAR_smtp_password`; the first SMTP enablement is untried.
+- [Phase 183] Operator deferrals to phase 184 (SECURITY T-183-09/10/11): WR-04, decision A-08 kept, so a PR job can hold or delete the pipeline lock; the WR-01 remainder, `ReadOnlyAccess` still reads S3 objects, SSM String parameters, Lambda and ECS environments and CloudFormation templates; the WR-03 remainder, numeric GitHub id claims (confirm AWS support for them first), pinning the plan trust to a workflow, and the staging Environment's deployment branch policy.
+- [Phase 183] No CI run of `infra-validate` exists on the final tree; the last observed runs were at 18fdcd6ca. A `ci-evidence/**` push would observe one.
+- [Phase 183] The CI `secret-scan` job concluded failure on the pushed tree. It is attributed to two accepted dummy URI test inputs, but nobody has read the job log. The `dependency-audit` CI failure is also undiagnosed.
+- [Phase 183] `183-VALIDATION.md` is still draft; the Nyquist audit (`/gsd-validate-phase 183 --ws deployment`) has not run.
+- [Phase 183] 23 info review findings (IN-01 to IN-23) remain open in `183-REVIEW-DISPOSITION.md`. The lock files of the four Supabase-provider directories still record `constraints = "~> 1.11"` while the roots pin `= 1.11.0`.
 
 ### Roadmap Evolution
 
@@ -264,6 +250,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-10-25T08:04:53.871Z
+Last session: 2026-10-26T06:44:33.000Z
 **Stopped At:** Phase 183 complete, ready to plan Phase 184
 **Resume File:** None
