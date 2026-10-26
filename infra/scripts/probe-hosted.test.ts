@@ -107,6 +107,9 @@ interface Expected {
   publicProjectId: string | null;
   projectUrl: string;
   buckets: Array<{ id: string; public: boolean }>;
+  anonTimeout: string;
+  postgresMajor: number;
+  hookFunctions: Array<string>;
 }
 
 /** What a served function answered: its status and which known body it was, never the body itself. */
@@ -133,6 +136,17 @@ interface Responses {
       identityCallbackPost: Answer;
     };
   };
+  catalog: Catalog;
+}
+
+/** What the catalog source keeps: the catalog query's facts and the seed check's finding classes. */
+interface Catalog {
+  major: unknown;
+  anonConfig: Array<string> | null;
+  hooks: Record<string, boolean>;
+  role: string;
+  bypassrls: boolean;
+  seed: { clean: true } | { clean: false; classes: Array<string> };
 }
 
 let fixtureRoot: string;
@@ -188,8 +202,23 @@ function correctResponses(expected: Expected): Responses {
         identityCallbackGet: { status: 405, kind: 'method-not-allowed' },
         identityCallbackPost: { status: 500, kind: 'internal-server-error' }
       }
+    },
+    catalog: {
+      major: expected.postgresMajor,
+      anonConfig: ['search_path=public', `statement_timeout=${expected.anonTimeout}`],
+      hooks: Object.fromEntries(expected.hookFunctions.map((signature) => [signature, true])),
+      role: 'postgres',
+      bypassrls: true,
+      seed: { clean: true }
     }
   };
+}
+
+/** `correctResponses` with the given catalog facts replaced. */
+function withCatalog(fields: Partial<Catalog>): Responses {
+  const responses = correctResponses(fixtureExpected);
+  responses.catalog = { ...responses.catalog, ...fields };
+  return responses;
 }
 
 /** `correctResponses` with the served nominations read replaced. */
@@ -242,7 +271,11 @@ const BATCHED_BREAK: Array<{ check: string; marker: string }> = [
   { check: 'rows.read-whole', marker: '0-499/1510' },
   { check: 'functions.served', marker: 'send-email answered 404' },
   { check: 'functions.identity-callback-unverified', marker: 'answered 401' },
-  { check: 'storage.buckets', marker: 'private-assets' }
+  { check: 'storage.buckets', marker: 'private-assets' },
+  { check: 'db.hook-functions', marker: 'public.custom_access_token_hook(jsonb)' },
+  { check: 'db.anon-timeout', marker: '3s' },
+  { check: 'db.postgres-major', marker: '16' },
+  { check: 'no-seed', marker: 'seed user' }
 ];
 
 function batchedBreak(expected: Expected = fixtureExpected): Responses {
@@ -275,6 +308,14 @@ function batchedBreak(expected: Expected = fixtureExpected): Responses {
     identityCallbackGet: { status: 401, kind: 'other' },
     identityCallbackPost: { status: 401, kind: 'other' }
   };
+  responses.catalog = {
+    ...responses.catalog,
+    // A project's major cannot be broken on purpose; the live red run plants it on the expected side instead.
+    major: 16,
+    anonConfig: ['statement_timeout=3s'],
+    hooks: { ...responses.catalog.hooks, 'public.custom_access_token_hook(jsonb)': false },
+    seed: { clean: false, classes: ['seed user'] }
+  };
   return responses;
 }
 
@@ -300,6 +341,38 @@ function finding(responses: Responses, name: string, expected: Expected = fixtur
   expect(result, name).toBeDefined();
   return result?.finding ?? '';
 }
+
+/** The tracked files `readExpected` reads besides the root and the function directories. */
+const REPO_FILES = [
+  'infra/modules/supabase/hosted-settings.json',
+  'packages/app-shared/src/settings/staticSettings.ts',
+  'apps/supabase/supabase/config.toml',
+  'apps/supabase/supabase/migrations/00001_initial_schema.sql'
+];
+
+/**
+ * Runs `body` against a temporary repository holding copies of `REPO_FILES`, with each entry of `files` written over
+ * them (relative path to content), and removes it afterwards.
+ */
+function withRepo(files: Record<string, string>, body: (repo: string) => void): void {
+  const repo = mkdtempSync(join(tmpdir(), 'probe-hosted-repo-'));
+  try {
+    for (const file of REPO_FILES) {
+      mkdirSync(dirname(join(repo, file)), { recursive: true });
+      writeFileSync(join(repo, file), readFileSync(join(REPO_ROOT, file), 'utf8'));
+    }
+    for (const [file, text] of Object.entries(files)) {
+      mkdirSync(dirname(join(repo, file)), { recursive: true });
+      writeFileSync(join(repo, file), text);
+    }
+    body(repo);
+  } finally {
+    rmSync(repo, { recursive: true, force: true });
+  }
+}
+
+const REAL_CONFIG = readFileSync(join(REPO_ROOT, 'apps/supabase/supabase/config.toml'), 'utf8');
+const SEND_EMAIL_INDEX = { 'apps/supabase/supabase/functions/send-email/index.ts': '' };
 
 // ── readExpected ──
 
@@ -361,15 +434,7 @@ describe('readExpected', () => {
   });
 
   it('expects a function verified when config.toml has no table or no verify_jwt for it, and skips a directory without index.ts', () => {
-    const repo = mkdtempSync(join(tmpdir(), 'probe-hosted-repo-'));
-    try {
-      for (const file of [
-        'infra/modules/supabase/hosted-settings.json',
-        'packages/app-shared/src/settings/staticSettings.ts'
-      ]) {
-        mkdirSync(dirname(join(repo, file)), { recursive: true });
-        writeFileSync(join(repo, file), readFileSync(join(REPO_ROOT, file), 'utf8'));
-      }
+    withRepo({}, (repo) => {
       const functions = join(repo, 'apps/supabase/supabase/functions');
       for (const slug of ['zeta', 'alpha', 'beta', '_shared']) mkdirSync(join(functions, slug), { recursive: true });
       for (const slug of ['zeta', 'alpha', 'beta']) writeFileSync(join(functions, slug, 'index.ts'), '');
@@ -388,6 +453,9 @@ describe('readExpected', () => {
           '',
           '[storage.buckets.assets]',
           'public = true',
+          '',
+          '[db]',
+          'major_version = 17',
           ''
         ].join('\n')
       );
@@ -397,9 +465,7 @@ describe('readExpected', () => {
         { slug: 'beta', verifyJwt: true },
         { slug: 'zeta', verifyJwt: true }
       ]);
-    } finally {
-      rmSync(repo, { recursive: true, force: true });
-    }
+    });
   });
 
   it("reads the root's public project id, the project's own address and the buckets of config.toml", () => {
@@ -427,29 +493,65 @@ describe('readExpected', () => {
   });
 
   it('names the bucket when config.toml sets its public flag to no boolean', () => {
-    const repo = mkdtempSync(join(tmpdir(), 'probe-hosted-repo-'));
-    try {
-      for (const file of [
-        'infra/modules/supabase/hosted-settings.json',
-        'packages/app-shared/src/settings/staticSettings.ts',
-        'apps/supabase/supabase/functions/send-email/index.ts'
-      ]) {
-        mkdirSync(dirname(join(repo, file)), { recursive: true });
-        writeFileSync(join(repo, file), readFileSync(join(REPO_ROOT, file), 'utf8'));
-      }
-      writeFileSync(
-        join(repo, 'apps/supabase/supabase/config.toml'),
-        readFileSync(join(REPO_ROOT, 'apps/supabase/supabase/config.toml'), 'utf8').replace(
-          /(\[storage\.buckets\.private-assets\]\npublic = )false/,
-          '$1"no"'
-        )
-      );
+    const config = REAL_CONFIG.replace(/(\[storage\.buckets\.private-assets\]\npublic = )false/, '$1"no"');
+    withRepo({ ...SEND_EMAIL_INDEX, 'apps/supabase/supabase/config.toml': config }, (repo) => {
       expect(() => readExpected({ repoRoot: repo, root: fixtureRoot })).toThrow(
         /config\.toml: \[storage\.buckets\.private-assets\] sets public/
       );
-    } finally {
-      rmSync(repo, { recursive: true, force: true });
-    }
+    });
+  });
+
+  it("reads the anon timeout, the Postgres major and the hook functions' signatures", () => {
+    expect(fixtureExpected.anonTimeout).toBe('8s');
+    expect(fixtureExpected.postgresMajor).toBe(17);
+    expect(fixtureExpected.hookFunctions).toEqual([
+      'public.custom_access_token_hook(jsonb)',
+      'public.send_email_hook(jsonb)'
+    ]);
+  });
+
+  it('takes the anon timeout of the last ALTER ROLE anon in filename order, written over several lines', () => {
+    withRepo(
+      {
+        ...SEND_EMAIL_INDEX,
+        'apps/supabase/supabase/migrations/00003_later.sql': "ALTER ROLE anon\n  SET statement_timeout\n  = '5s';\n",
+        'apps/supabase/supabase/migrations/00002_middle.sql': "alter role anon set statement_timeout = '4s';\n"
+      },
+      (repo) => {
+        expect((readExpected({ repoRoot: repo, root: fixtureRoot }) as Expected).anonTimeout).toBe('5s');
+      }
+    );
+  });
+
+  it('names the migrations when none sets the anon timeout', () => {
+    withRepo(
+      {
+        ...SEND_EMAIL_INDEX,
+        'apps/supabase/supabase/migrations/00001_initial_schema.sql': 'CREATE TABLE t (id int);\n'
+      },
+      (repo) => {
+        expect(() => readExpected({ repoRoot: repo, root: fixtureRoot })).toThrow(/migrations: .*statement_timeout/);
+      }
+    );
+  });
+
+  it('refuses a hook URI whose schema or function name could not be written into SQL as it is', () => {
+    const settings = readFileSync(join(REPO_ROOT, 'infra/modules/supabase/hosted-settings.json'), 'utf8').replace(
+      'pg-functions://postgres/public/custom_access_token_hook',
+      "pg-functions://postgres/public/hook'); DROP TABLE x; --"
+    );
+    withRepo({ ...SEND_EMAIL_INDEX, 'infra/modules/supabase/hosted-settings.json': settings }, (repo) => {
+      expect(() => readExpected({ repoRoot: repo, root: fixtureRoot })).toThrow(
+        /hosted-settings\.json: .*hook_custom_access_token_uri/
+      );
+    });
+  });
+
+  it('names config.toml when [db] sets no integer major_version', () => {
+    const config = REAL_CONFIG.replace(/^major_version = 17$/m, 'major_version = "seventeen"');
+    withRepo({ ...SEND_EMAIL_INDEX, 'apps/supabase/supabase/config.toml': config }, (repo) => {
+      expect(() => readExpected({ repoRoot: repo, root: fixtureRoot })).toThrow(/config\.toml: .*major_version/);
+    });
   });
 
   it('records a root without an smtp object as null', () => {
@@ -551,8 +653,8 @@ describe('the registry', () => {
     expect(results(correctResponses(fixtureExpected)).map((r) => r.name)).toEqual(CHECKS.map((c) => c.name));
   });
 
-  it('holds the management checks, then the public-API checks and the bucket check, in their order', () => {
-    expect(CHECKS.map((c) => c.name).slice(0, 18)).toEqual([
+  it('holds the twenty-two checks in their order: management, public API, buckets, catalog', () => {
+    expect(CHECKS.map((c) => c.name)).toEqual([
       'api.max-rows',
       'auth.access-token-hook',
       'auth.send-email-hook',
@@ -570,8 +672,14 @@ describe('the registry', () => {
       'rows.read-whole',
       'functions.served',
       'functions.identity-callback-unverified',
-      'storage.buckets'
+      'storage.buckets',
+      'db.hook-functions',
+      'db.anon-timeout',
+      'db.postgres-major',
+      'no-seed'
     ]);
+    for (const name of ['db.hook-functions', 'db.anon-timeout', 'db.postgres-major', 'no-seed'])
+      expect(CHECKS.find((c) => c.name === name)?.source, name).toBe('catalog');
     expect(CHECKS.find((c) => c.name === 'storage.buckets')?.source).toBe('management');
     for (const name of ['auth.public-settings', 'rows.read-whole', 'functions.served'])
       expect(CHECKS.find((c) => c.name === name)?.source, name).toBe('public');
@@ -858,6 +966,48 @@ describe('the public-API checks and the bucket check', () => {
   });
 });
 
+describe('the catalog checks', () => {
+  it('fails only db.hook-functions naming the access-token hook function when it is absent', () => {
+    const responses = withCatalog({
+      hooks: { ...correctResponses(fixtureExpected).catalog.hooks, 'public.custom_access_token_hook(jsonb)': false }
+    });
+    expect(failing(responses)).toEqual(['db.hook-functions']);
+    expect(finding(responses, 'db.hook-functions')).toContain('public.custom_access_token_hook(jsonb)');
+    expect(finding(responses, 'db.hook-functions')).not.toContain('send_email_hook');
+  });
+
+  it('fails only db.anon-timeout naming 3s and 8s when anon has a 3 s timeout', () => {
+    const responses = withCatalog({ anonConfig: ['statement_timeout=3s'] });
+    expect(failing(responses)).toEqual(['db.anon-timeout']);
+    expect(finding(responses, 'db.anon-timeout')).toContain('3s');
+    expect(finding(responses, 'db.anon-timeout')).toContain('8s');
+  });
+
+  it('fails db.anon-timeout when anon sets no timeout at all', () => {
+    for (const anonConfig of [null, ['search_path=public']]) {
+      const responses = withCatalog({ anonConfig });
+      expect(failing(responses)).toEqual(['db.anon-timeout']);
+      expect(finding(responses, 'db.anon-timeout')).toContain('no statement_timeout');
+    }
+  });
+
+  it('fails only db.postgres-major when the server runs 16 against 17 in config.toml', () => {
+    const responses = withCatalog({ major: 16 });
+    expect(failing(responses)).toEqual(['db.postgres-major']);
+    expect(finding(responses, 'db.postgres-major')).toContain('16');
+    expect(finding(responses, 'db.postgres-major')).toContain('17');
+  });
+
+  it('fails only no-seed naming the finding classes and nothing else', () => {
+    const responses = withCatalog({ seed: { clean: false, classes: ['seed user', 'demo key'] } });
+    expect(failing(responses)).toEqual(['no-seed']);
+    const text = finding(responses, 'no-seed');
+    expect(text).toContain('seed user');
+    expect(text).toContain('demo key');
+    expect(text).toContain('2');
+  });
+});
+
 describe('the batched break', () => {
   it('fails every check, each finding holding its own planted marker', () => {
     const responses = batchedBreak();
@@ -1028,6 +1178,89 @@ function handleManagement(req: IncomingMessage, res: ServerResponse): void {
   return send(404, { message: 'not found' });
 }
 
+/**
+ * A stand-in for psql, written into a temporary directory and passed to the probe as `PROBE_PSQL`. It appends its
+ * arguments to the log file `FAKE_PSQL_LOG`; for `-c` it prints `FAKE_PSQL_CATALOG` and exits
+ * `FAKE_PSQL_CATALOG_STATUS`, and for `-f` it writes `FAKE_PSQL_SEED_STDERR` to stderr and exits
+ * `FAKE_PSQL_SEED_STATUS`.
+ */
+const FAKE_PSQL = `#!/usr/bin/env node
+const { appendFileSync } = require('node:fs');
+const args = process.argv.slice(2);
+const env = process.env;
+if (env.FAKE_PSQL_LOG)
+  appendFileSync(
+    env.FAKE_PSQL_LOG,
+    JSON.stringify({ args, inherited: Object.keys(env).filter((name) => name.startsWith('SUPABASE_')) }) + '\\n'
+  );
+if (args.includes('-c')) {
+  process.stdout.write((env.FAKE_PSQL_CATALOG || '') + '\\n');
+  process.exit(Number(env.FAKE_PSQL_CATALOG_STATUS || '0'));
+}
+if (args.includes('-f')) {
+  process.stderr.write(env.FAKE_PSQL_SEED_STDERR || '');
+  process.exit(Number(env.FAKE_PSQL_SEED_STATUS || '0'));
+}
+process.exit(1);
+`;
+
+/** The addresses and the user a seed finding of check-seed names, none of which may reach the probe's output. */
+const SEED_MESSAGE_VALUES = ['planted@openvaa.test', 'openvaa.test', 'http://kong:8000', 'kong'];
+
+/** The stderr check-seed gives through psql for the given finding classes. */
+function seedStderr(classes: Array<string>): string {
+  const lines: Record<string, string> = {
+    'seed user':
+      'seed user: auth.users holds 1 row(s) of the local seed, the first 1 being: planted@openvaa.test (id 00000000-0000-0000-0000-0000000000aa)',
+    'local address':
+      'local address: the supabase_url row of public.storage_config names a local host (http://kong:8000)',
+    'demo key':
+      'demo key: the service_role_key row of public.storage_config holds the public demo key of a local stack (a JWT whose issuer is supabase-demo)'
+  };
+  return [
+    `psql:infra/scripts/check-seed.sql:97: ERROR:  check-seed: ${classes.length} finding(s)`,
+    ...classes.map((c) => `  - ${lines[c]}`),
+    'CONTEXT:  PL/pgSQL function inline_code_block line 96 at RAISE',
+    ''
+  ].join('\n');
+}
+
+/** The environment that makes the fake psql answer as a database holding `catalog`. */
+function catalogEnv(catalog: Catalog): Record<string, string> {
+  return {
+    FAKE_PSQL_CATALOG: JSON.stringify({
+      major: catalog.major,
+      anon_config: catalog.anonConfig,
+      hooks: catalog.hooks,
+      role: catalog.role,
+      bypassrls: catalog.bypassrls
+    }),
+    FAKE_PSQL_SEED_STATUS: catalog.seed.clean ? '0' : '3',
+    FAKE_PSQL_SEED_STDERR: catalog.seed.clean ? '' : seedStderr(catalog.seed.classes)
+  };
+}
+
+let fakeDir: string;
+let fakePsql: string;
+let fakeLog: string;
+
+/** The calls the fake psql received since the log was last emptied. */
+function psqlCalls(): Array<{ args: Array<string>; inherited: Array<string> }> {
+  const text = readFileSync(fakeLog, 'utf8');
+  return text
+    .split('\n')
+    .filter((l) => l !== '')
+    .map((l) => JSON.parse(l));
+}
+
+/** A direct connection to the stub project, in the PG* variables. */
+const PG_DIRECT = {
+  PGHOST: `db.${REF}.supabase.co`,
+  PGPORT: '5432',
+  PGUSER: 'postgres',
+  PGDATABASE: 'postgres'
+};
+
 interface Run {
   code: number | null;
   stdout: string;
@@ -1041,6 +1274,10 @@ function runProbe(args: Array<string>, env: Record<string, string> = {}): Promis
         PATH: process.env.PATH ?? '',
         PROBE_MANAGEMENT_API_URL: stubUrl,
         PROBE_PROJECT_URL: `${stubUrl}${PROJECT_PREFIX}`,
+        PROBE_PSQL: fakePsql,
+        FAKE_PSQL_LOG: fakeLog,
+        ...PG_DIRECT,
+        ...catalogEnv(stub.responses.catalog),
         ...env
       },
       stdio: ['ignore', 'pipe', 'pipe']
@@ -1083,10 +1320,15 @@ describe('probe-hosted.mjs', () => {
     server = createServer(handle);
     await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
     stubUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    fakeDir = mkdtempSync(join(tmpdir(), 'probe-hosted-psql-'));
+    fakePsql = join(fakeDir, 'psql');
+    fakeLog = join(fakeDir, 'calls.log');
+    writeFileSync(fakePsql, FAKE_PSQL, { mode: 0o755 });
   });
 
   afterAll(async () => {
     await new Promise<void>((done) => server.close(() => done()));
+    rmSync(fakeDir, { recursive: true, force: true });
   });
 
   beforeEach(() => {
@@ -1100,6 +1342,95 @@ describe('probe-hosted.mjs', () => {
     stub.requests = [];
     stub.authorizations = [];
     stub.log = [];
+    writeFileSync(fakeLog, '');
+  });
+
+  it('reads the catalog in one psql call and runs check-seed in a second, with no address on any command line', async () => {
+    const run = await runProbe(['--root', fixtureRoot], withToken);
+    expect(run.code).toBe(0);
+    const calls = psqlCalls();
+    expect(calls).toHaveLength(2);
+    const [catalog, seed] = calls;
+    expect(catalog.args.slice(0, 4)).toEqual(['-X', '-A', '-t', '-v']);
+    expect(catalog.args).toContain('ON_ERROR_STOP=1');
+    const query = catalog.args[catalog.args.indexOf('-c') + 1];
+    expect(query).toContain('rolbypassrls');
+    expect(query).toContain("to_regprocedure('public.custom_access_token_hook(jsonb)')");
+    expect(query).toContain("to_regprocedure('public.send_email_hook(jsonb)')");
+    expect(seed.args[0]).toBe('-X');
+    expect(seed.args[seed.args.indexOf('-f') + 1]).toMatch(/infra\/scripts\/check-seed\.sql$/);
+    for (const call of calls) {
+      expect(call.args.join(' ')).not.toContain(PG_DIRECT.PGHOST);
+      expect(call.inherited).toEqual([]);
+    }
+  });
+
+  it('exits 1 with only no-seed failing when check-seed reports a seed user, printing no address or URL', async () => {
+    stub.responses.catalog.seed = { clean: false, classes: ['seed user', 'local address'] };
+    const run = await runProbe(['--root', fixtureRoot], withToken);
+    expect(run.code).toBe(1);
+    const failed = checkLines(run.stdout).filter((l) => l.startsWith('FAIL '));
+    expect(failed).toHaveLength(1);
+    expect(failed[0]).toMatch(/^FAIL no-seed: .*seed user/);
+    expect(failed[0]).toContain('local address');
+    for (const value of SEED_MESSAGE_VALUES) {
+      expect(run.stdout).not.toContain(value);
+      expect(run.stderr).not.toContain(value);
+    }
+    expectNoSecret(run);
+  });
+
+  it('exits 2 with COULD NOT RUN catalog and no check line when check-seed or the catalog query exits 2', async () => {
+    for (const env of [{ FAKE_PSQL_SEED_STATUS: '2' }, { FAKE_PSQL_CATALOG_STATUS: '2' }]) {
+      const run = await runProbe(['--root', fixtureRoot], { ...withToken, ...env });
+      expect(run.code, JSON.stringify(env)).toBe(2);
+      expect(run.stdout).toMatch(/^COULD NOT RUN catalog: /m);
+      expect(run.stdout).not.toMatch(/^(PASS|FAIL) /m);
+      expectNoSecret(run);
+    }
+  });
+
+  it('exits 2 before psql is called or any request is made when the PG* variables name another connection', async () => {
+    const cases: Array<[Record<string, string>, RegExp]> = [
+      [{ PGPORT: '6543' }, /6543/],
+      [{ PGHOST: 'db.zyxwvutsrqponmlkjihg.supabase.co' }, /PGHOST/],
+      [{ PGHOST: 'aws-0-eu-north-1.pooler.supabase.com', PGUSER: 'postgres.zyxwvutsrqponmlkjihg' }, /PGUSER/],
+      [{ PGHOST: 'aws-0-eu-north-1.pooler.supabase.com', PGUSER: 'postgres' }, /PGUSER/],
+      [{ PGHOST: '' }, /PGHOST/],
+      [{ PGHOSTADDR: '192.0.2.1' }, /PGHOSTADDR/],
+      [{ PGSERVICE: 'other' }, /PGSERVICE/]
+    ];
+    for (const [env, reason] of cases) {
+      writeFileSync(fakeLog, '');
+      stub.log = [];
+      const run = await runProbe(['--root', fixtureRoot], { ...withToken, ...env });
+      expect(run.code, JSON.stringify(env)).toBe(2);
+      expect(run.stdout).toMatch(/^COULD NOT RUN catalog: /m);
+      expect(run.stdout, JSON.stringify(env)).toMatch(reason);
+      expect(run.stdout).not.toMatch(/^(PASS|FAIL) /m);
+      expect(psqlCalls()).toEqual([]);
+      expect(stub.log).toEqual([]);
+      expectNoSecret(run);
+    }
+  });
+
+  it('accepts a session pooler host when PGUSER ends in the project ref', async () => {
+    const run = await runProbe(['--root', fixtureRoot], {
+      ...withToken,
+      PGHOST: 'aws-0-eu-north-1.pooler.supabase.com',
+      PGUSER: `postgres.${REF}`
+    });
+    expect(run.code).toBe(0);
+  });
+
+  it('exits 2 naming row-level security when the role does not bypass it', async () => {
+    stub.responses.catalog.bypassrls = false;
+    const run = await runProbe(['--root', fixtureRoot], withToken);
+    expect(run.code).toBe(2);
+    expect(run.stdout).toMatch(/^COULD NOT RUN catalog: .*row-level security/m);
+    expect(run.stdout).not.toMatch(/^(PASS|FAIL) /m);
+    expect(psqlCalls()).toHaveLength(1);
+    expectNoSecret(run);
   });
 
   it('reads the public API with the anon key in the shape the frontend sends, and keeps only named facts', async () => {
@@ -1287,7 +1618,7 @@ describe('probe-hosted.mjs', () => {
     const run = await runProbe(['--root', fixtureRoot], withToken);
     expect(run.code).toBe(1);
     const lines = checkLines(run.stdout);
-    expect(lines).toHaveLength(18);
+    expect(lines).toHaveLength(22);
     expect(lines.every((l) => l.startsWith('FAIL '))).toBe(true);
     for (const { check, marker } of BATCHED_BREAK)
       expect(
