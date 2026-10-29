@@ -131,15 +131,25 @@ describe('Condenser Standalone Test', () => {
     expect(result).toBeDefined();
     expect(result.condensationType).toBe(CONDENSATION_TYPE.LikertPros);
 
-    // Check metrics
+    // Check metrics NOTE: there is deliberately no lower-bound assertion on `processingTimeMs` here. It was wall clock measured over a fully-mocked provider (1.228 ms on the reference machine), so it asserted that time passes, not that the code works. Deleted rather than weakened to `toBeGreaterThanOrEqual(0)` — that is the same decoration wearing a smaller claim.
+    // The call-counter and token-counter assertions below are counters, not wall clock, and stay.
     expect(result.llmMetrics).toBeDefined();
     expect(result.llmMetrics.nLlmCalls).toBeGreaterThan(0);
-    expect(result.llmMetrics.processingTimeMs).toBeGreaterThan(0);
     expect(result.llmMetrics.tokens).toBeDefined();
     expect(result.llmMetrics.tokens.totalTokens).toBeGreaterThan(0);
 
     // Verify LLM provider was called
     expect(input.options.llmProvider.generateObjectParallel).toHaveBeenCalled();
+
+    // The condensed arguments themselves. Every assertion ABOVE this point passes unchanged when `Condenser.run()` returns `{ arguments: [] }` — the result payload was never read. These assertions are placed AFTER the siblings on purpose, so an injected run demonstrably passes them first and reds only here. Note the `data` wrapper: the path is `result.data.arguments`.
+    // Guard the shape before dereferencing it, so an empty or absent array reds as an assertion failure rather than a TypeError inside `.map()`. Do not simplify this back.
+    expect(Array.isArray(result.data.arguments)).toBe(true);
+    expect(result.data.arguments).toHaveLength(2);
+    expect(result.data.arguments.map((argument) => argument.text)).toEqual([
+      'Generated argument from batch',
+      'Another generated argument'
+    ]);
+    expect(result.data.arguments.every((argument) => argument.text.trim().length > 0)).toBe(true);
   }, 30000); // 30 second timeout for the full pipeline
 
   test('It should handle different condensation types', async () => {

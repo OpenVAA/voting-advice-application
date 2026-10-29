@@ -1,0 +1,8 @@
+{
+  "contestantApp.help": {
+    "ingress": "{contestantAppName}: allpool on vastused levinumatele küsimustele teenuse kasutamise kohta. Kui te ei leia oma küsimusele vastust, saate võtta ühendust toega.",
+    "noFAQ": "Küsimusi ei ole veel.",
+    "supportEmailSubject": "Tugisoov",
+    "title": "Tugi"
+  }
+}

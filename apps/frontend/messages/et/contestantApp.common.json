@@ -1,0 +1,24 @@
+{
+  "contestantApp.common": {
+    "closedReason": {
+      "noNomination": {
+        "candidate": "Teie põhiandmed, arvamused ja eelvaade avanevad, kui teil on kandidatuur.",
+        "organization": "Põhiandmed, arvamused ja eelvaade avanevad, kui teie erakonnal on kandidatuur."
+      },
+      "preview": "Eelvaade avaneb, kui nõutavad põhiandmed on täidetud ja kõigile arvamusküsimustele on vastatud.",
+      "previewNoQuestions": "Eelvaade avaneb, kui nõutavad põhiandmed on täidetud."
+    },
+    "contactSupport": "Võtke ühendust toega",
+    "contactSupportLink": "võta ühendust toega",
+    "continueFilling": "Jätka täitmist",
+    "editingNotAllowed": "Vastuste muutmine ei ole enam võimalik, kuid saate neid siiski vaadata. Palun võtke toega ühendust, kui andmetes on vigu.",
+    "fullyCompleted": "Õnnitleme! Olete täitnud kõik valimisnõustaja jaoks vajalikud andmed.",
+    "greeting": "Tere, {username}!",
+    "home": "Algus",
+    "isHiddenBecauseMissing": "Teie profiili ei kuvata valimisnõustajas, kuna te ei vastanud kõigile küsimustele.",
+    "nominationsNotEditable": "Kandidatuure ei saa selles rakenduses enam muuta. Kui midagi on valesti või puudu, võtke palun ühendust toega.",
+    "nominationsNotEditableAnswersLocked": "Kandidatuure ei saa enam muuta, sest muutmine on selles rakenduses lõppenud. Kui midagi on valesti või puudu, võtke palun ühendust toega.",
+    "voterApp": "Valijate valimisnõustaja",
+    "willBeHiddenIfMissing": "Teie andmed ei ilmu valimisnõustajas enne, kui olete vastanud kõigile küsimustele."
+  }
+}

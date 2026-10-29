@@ -1,6 +1,13 @@
 import { defineConfig, devices } from '@playwright/test';
+import type { Project } from '@playwright/test';
 import dotenv from 'dotenv';
+import fs from 'fs';
 import path from 'path';
+import { TIMEOUTS } from './tests/helpers/timeouts';
+import { ADMIN_STORAGE_STATE } from './tests/utils/adminCredentials';
+import { MULTI_ENTITY_STORAGE_STATE, TERMS_PENDING_STORAGE_STATE } from './tests/utils/testCredentials';
+// The runner loads this configuration before it starts a worker, so the run tag this import writes to the environment is the one every worker inherits.
+import './tests/utils/runAddressTag';
 import { TESTS_DIR } from './tests/utils/testsDir';
 
 dotenv.config();
@@ -8,82 +15,1609 @@ dotenv.config();
 export const STORAGE_STATE = path.join(TESTS_DIR, '../playwright/.auth/user.json');
 
 /**
- * See https://playwright.dev/docs/test-configuration.
+ * The ADMIN stored session, distinct from the candidate `STORAGE_STATE` above.
+ *
+ * Re-exported rather than re-spelled: it is declared once in `tests/utils/adminCredentials.ts`, which is also what `admin-auth.setup.ts` writes through, so the project that reads the file and the setup that writes it cannot drift onto two paths. `STORAGE_STATE` above is spelled twice (here and in `setup/shared/auth.setup.ts`) — that is the shape not repeated here.
+ */
+export { ADMIN_STORAGE_STATE };
+
+/**
+ * The `_probes` project's `testMatch` (see the project definition below).
+ * Hoisted so the orphan check can compare the directory against it.
+ */
+const PROBE_TEST_MATCH = /(defaultTemplateResults)\.probe\.spec\.ts$/;
+
+/**
+ * ORPHAN-PROBE GUARD.
+ *
+ * `_probes` is the one project whose `testMatch` enumerates its files by name rather than globbing the directory — deliberately, because each probe must be invocable one-at-a-time. The cost of enumeration is that ADDING a probe file without adding it to the pattern silently produces a test that matches no project and runs from no command, while still sitting in `specs/` looking like coverage.
+ *
+ * A comment asking future authors to keep the list in sync would be the same kind of non-guard this check exists to replace, so the invariant is CHECKED.
+ * Throwing here fails every `playwright test` / `--list` invocation immediately and by name, which is the earliest point at which the mistake is visible.
+ */
+const probesDir = path.join(TESTS_DIR, 'specs/_probes');
+if (fs.existsSync(probesDir)) {
+  const orphans = fs
+    .readdirSync(probesDir)
+    .filter((f) => f.endsWith('.probe.spec.ts'))
+    .filter((f) => !PROBE_TEST_MATCH.test(f));
+  if (orphans.length > 0) {
+    throw new Error(
+      `Orphaned probe spec(s) in tests/specs/_probes — they match NO Playwright project and run ` +
+        `from NO command: ${orphans.join(', ')}. Add each to the \`_probes\` project's testMatch ` +
+        `(PROBE_TEST_MATCH in this file), or delete the file. Leaving it in place implies coverage ` +
+        `that does not exist.`
+    );
+  }
+}
+
+/**
+ * Declared soft-assertion budget per spec file, keyed by path relative to `TESTS_DIR`.
+ * Hoisted so the budget guard below — and every reader — has ONE place to look for the number, which is why the spec's own header names this symbol instead of restating it.
+ *
+ * Scoped deliberately to a single file, `voter-journey.spec.ts`. Adding a file here is a deliberate budget decision for that file, not a quiet widening of this table.
+ */
+const SOFT_ASSERTION_BUDGETS: Record<string, number> = {
+  'specs/voter/voter-journey.spec.ts': 136
+};
+
+/**
+ * SOFT-ASSERTION BUDGET GUARD.
+ *
+ * Soft assertions are budgeted because they do not fail fast. In a long serial walk a growing population silently degrades failure legibility: one genuinely broken card reports alongside — and is buried by — a hundred-odd other checks, so the run stops telling you which failure mattered. A budget is the statement that every soft slot was a deliberate choice rather than a default reached for under time pressure.
+ *
+ * A budget stated only in prose drifts one honest addition at a time, and every one of those additions runs green, because a prose claim cannot fail. A comment asking future authors to keep the number in sync would be the same kind of non-guard this check exists to replace, so the invariant is CHECKED — the identical argument this file already makes for its sibling above.
+ *
+ * The comparison is EQUALITY, not a ceiling: REMOVING a soft assertion without updating the budget throws too, so the declared posture stays honest in both directions and a promotion to a hard `expect()` is recorded rather than absorbed. Counting is by OCCURRENCE — a global regex match over the file contents — not by line, so a line carrying two calls counts as two; `grep -c` semantics would silently undercount it.
+ *
+ * Throwing here fails every `playwright test` / `--list` invocation immediately and by name. `--list` matters specifically: it does not run `globalSetup`, so a check living in a test or in setup would never see it. Config-load code does.
+ */
+for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
+  const specPath = path.join(TESTS_DIR, rel);
+  if (!fs.existsSync(specPath)) {
+    throw new Error(
+      `Soft-assertion budget names a spec that does not exist: ${rel}. Either restore the ` +
+        `file, or drop its entry from SOFT_ASSERTION_BUDGETS in this file. A budget pointing at ` +
+        `nothing is a guard that can never fire.`
+    );
+  }
+  // Strip comments before counting. A naive whole-file regex match counts every textual occurrence including inside comments and string literals — so the remediation instruction below ("state the reason in that spec's header") could itself contain the literal `expect.soft(` token and re-trip this very guard by inflating the count with a comment, not code.
+  const source = fs
+    .readFileSync(specPath, 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '') // block comments
+    .replace(/(^|[^:])\/\/.*$/gm, '$1'); // line comments (":" guard skips URLs like https://)
+  const actual = (source.match(/\bexpect\.soft\s*\(/g) ?? []).length;
+  if (actual !== budget) {
+    throw new Error(
+      `Soft-assertion budget diverged in ${rel} — the declared budget is ${budget} but the file ` +
+        // The count is taken outside comments; string literals are NOT excluded (a claim that they were would itself be an unchecked prose claim).
+        `carries ${actual} (counted outside comments; string literals are NOT excluded). Convert the ` +
+        `new assertion to a hard \`expect()\`, or change the budget in SOFT_ASSERTION_BUDGETS in this ` +
+        `file AND record the reason in that spec's header (prose only — do not restate the number; the ` +
+        `header deliberately does not). A budget edited to match whatever the file happens to contain ` +
+        `is not a budget.`
+    );
+  }
+  // Under-count hole: the count above matches only the literal `expect.soft(` token, so an aliased/destructured soft assertion — e.g.
+  // `const soft = expect.soft; soft(x).toBe(y)` — is invisible to it and the budget would silently over-report headroom, the direction in which an unchecked budget drifts. Reject any bare `expect.soft` reference that is not immediately called, so an alias must be introduced deliberately with a budget-guard-aware follow-up rather than slipping past unseen.
+  if (/\bexpect\s*\.\s*soft\b(?!\s*\()/.test(source)) {
+    throw new Error(
+      `${rel} references \`expect.soft\` without calling it directly (an alias or a destructure). ` +
+        'The budget above counts call sites textually, so an aliased soft assertion is invisible to ' +
+        'it — call `expect.soft(...)` inline, or the budget silently over-reports headroom.'
+    );
+  }
+}
+
+/**
+ * TEARDOWN-PREFIX-UNIQUENESS GUARD.
+ *
+ * `runTeardownAsserted` (`tests/tests/setup/shared/assertTeardown.ts`) turned the before/after row-count accounting into a HARD assertion. That assertion is only valid if each `*.teardown.ts` project owns an `external_id` prefix that no other project can touch concurrently — two data-teardown projects sharing (or substring-overlapping) a prefix race on the same before/after counts, and Playwright does not order data-teardown projects relative to each other unless an explicit `dependencies` edge forces it (most don't — see the perm family's `extraTeardownPrefix`-based cross-chain isolation instead of hard ordering).
+ *
+ * The guard scans every `*.teardown.ts` file's `const PREFIX = '...'` declaration and throws at config-load time if any two are equal OR one is a string-prefix of another, because a `LIKE '<prefix>%'` scan of the shorter prefix also matches the longer one's rows. A shared prefix is otherwise invisible: the two counts race rather than failing on a fixed value. A comment asking future authors to pick a distinct prefix would be the same non-guard this file's other two checks exist to remove.
+ *
+ * Deliberately excludes files with no `const PREFIX = '...'` declaration AND no `runTeardownAsserted(` call (e.g. `contestant-journey.teardown.ts`, which performs no prefix-scoped delete — see `assertTeardown.ts`'s docblock). A file that DOES call `runTeardownAsserted(` but whose `const PREFIX` this guard fails to parse is a completeness failure, not a legitimate exclusion — see the `unparsed` check below (an enumeration guard with no completeness check fails the same way the orphan-probe guard above prevents).
+ *
+ * ENUMERATION SCOPE. Scans all of `TESTS_DIR`, not `TESTS_DIR/setup`, even though all 28 `*.teardown.ts` files live under `setup/` today. The teardown projects' `testMatch` patterns are unanchored regexes (e.g. `/base\.teardown\.ts/`) evaluated against the inherited `testDir` — which is `TESTS_DIR` — so a `*.teardown.ts` added anywhere under it would be PICKED UP AND RUN by Playwright. Scoping the scan to `setup/` would leave exactly that file invisible to the uniqueness check: the same enumeration drift the orphan-probe guard above prevents. Matching the scan to the runner's own scope keeps the two from drifting apart, which a convention ("put teardowns in setup/") would not.
+ */
+const teardownDir = TESTS_DIR;
+// Named precondition, mirroring the ORPHAN-PROBE guard's `fs.existsSync` check above. Without it, a missing/renamed tests directory would die on a raw `readdirSync` ENOENT — the opposite of the "fails immediately and by name" property this guard claims for itself.
+if (!fs.existsSync(teardownDir)) {
+  throw new Error(
+    `Teardown prefix guard: expected directory '${teardownDir}' does not exist. The ` +
+      'teardown-prefix-uniqueness guard cannot enumerate *.teardown.ts ' +
+      'files without it.'
+  );
+}
+const teardownPrefixDeclarations: Array<{ file: string; prefix: string }> = [];
+const unparsedTeardownPrefixFiles: Array<string> = [];
+for (const rel of fs
+  .readdirSync(teardownDir, { recursive: true })
+  .map(String)
+  .filter((f) => f.endsWith('.teardown.ts'))) {
+  const abs = path.join(teardownDir, rel);
+  const source = fs.readFileSync(abs, 'utf8');
+  const match = /^\s*(?:export\s+)?const PREFIX(?:\s*:\s*string)?\s*=\s*['"]([^'"]+)['"]/m.exec(source);
+  if (match) {
+    teardownPrefixDeclarations.push({ file: rel, prefix: match[1] });
+  } else if (source.includes('runTeardownAsserted(')) {
+    unparsedTeardownPrefixFiles.push(rel);
+  }
+}
+if (unparsedTeardownPrefixFiles.length > 0) {
+  throw new Error(
+    "Teardown prefix guard could not parse a `const PREFIX = '...'` declaration in " +
+      `${unparsedTeardownPrefixFiles.join(', ')}, but the file calls runTeardownAsserted — so its ` +
+      'prefix is NOT covered by the uniqueness/overlap check below and a collision could reappear ' +
+      'silently. Make ' +
+      "the declaration match `const PREFIX = '...'` (a plain top-level string literal), or widen the " +
+      'regex above to cover the new shape.'
+  );
+}
+for (let i = 0; i < teardownPrefixDeclarations.length; i++) {
+  for (let j = i + 1; j < teardownPrefixDeclarations.length; j++) {
+    const a = teardownPrefixDeclarations[i];
+    const b = teardownPrefixDeclarations[j];
+    if (a.prefix === b.prefix) {
+      throw new Error(
+        `Teardown prefix collision: '${a.file}' and '${b.file}' both declare PREFIX = '${a.prefix}'. ` +
+          `The two data-teardown projects are not guaranteed to be ordered relative to each other, so ` +
+          `their runTeardownAsserted before/after row counts can race nondeterministically. ` +
+          `Give one of them its own dedicated prefix — and, if it reuses a shared dev-seed ` +
+          `template, its own dedicated template registration too, built from the shared shape by a ` +
+          `factory over the prefix (see packages/dev-seed/src/templates/e2e/perm/notLocated2e2cgShape.ts).`
+      );
+    }
+    if (a.prefix.startsWith(b.prefix) || b.prefix.startsWith(a.prefix)) {
+      const [shorter, longer] = a.prefix.length <= b.prefix.length ? [a, b] : [b, a];
+      throw new Error(
+        `Teardown prefix overlap: '${shorter.file}' declares PREFIX = '${shorter.prefix}', which is a ` +
+          `string-prefix of '${longer.file}'s PREFIX = '${longer.prefix}'. Both are matched by the SAME ` +
+          `\`external_id LIKE '${shorter.prefix}%'\` scan, so the shorter prefix's teardown/count also ` +
+          `touches the longer prefix's rows. Choose non-overlapping prefixes.`
+      );
+    }
+  }
+}
+
+/**
+ * Every project of the gate suite EXCEPT the terminal closed-project trio, which is appended in `defineConfig` below.
+ *
+ * Hoisted out of `defineConfig` so the terminal node can DERIVE its dependency list from this array at config load (see `CLOSED_PROJECT_DEPENDENCIES`) instead of restating it by hand.
+ */
+const BASE_PROJECTS: Array<Project> = [
+  // === Shared base auth setup (DEFAULT-ON) ===
+  //
+  // The specialized projects below depend on `data-setup-base` for their seed.
+  // performance / a11y-smoke / contestant-a11y-scan run by default (opt-OUT via PLAYWRIGHT_NO_*); visual-regression (PLAYWRIGHT_VISUAL) is opt-IN and is excluded from the default run -- see the OPT-IN list in the docblock above and the gate expressions on each project below. The identity-provider projects (`bank-auth`, and `contestant-identity-provider` with its setup and teardown) are declared unconditionally and run by default; `tests/scripts/e2e-run.sh` prepares their environment. `auth-setup` (candidate storageState) also depends on `data-setup-base`, and is declared UNCONDITIONALLY, so the default `yarn test:e2e` DOES run the candidate-login storageState step.
+  //
+  // SOURCE OF TRUTH: the `...(process.env.X ? [...] : [])` gate expression on each project below decides whether it runs, not any prose in this file.
+  // If a comment and a gate disagree, the gate is right and the comment is a bug.
+  //
+  // The registered-base-candidate contract: the candidates table carries no email column, so the seed cannot ship a *registered* candidate. `auth-setup` therefore force-registers base CA-AA-1 itself via SupabaseAdminClient before its UI login — the same mechanism every perm-* setup uses. See tests/tests/utils/testCredentials.ts.
+  //
+  // visual-regression stays opt-in for a snapshot-portability reason, NOT a blocker: its PNG baselines are Linux/x86_64 captures and only reproduce on the CI runner image (re-baseline procedure in the visual spec's docblock).
+  // The CI job that runs it is blocking.
+  //
+  // THREE projects consume the candidate storageState: `visual-regression` (opt-in), and `contestant-a11y-scan` and `contestant-entry-phone` (default-on). The default-on readers are why `auth-setup` is not gated behind PLAYWRIGHT_VISUAL. `performance`, `a11y-smoke` and `bank-auth` still depend on `data-setup-base` directly, not on auth-setup.
+  //
+  // WHY THIS WIRING AND NOT THE TWO THIS FILE ALREADY WARNS ABOUT. Reaching the candidate `(protected)` routes forces a dependency-graph change, and the comment at the `data-setup-identity-provider` project below shows how easily this graph is reasoned about wrongly. So the choice is MEASURED: six candidate wirings were scored against an instrument transcribed from Playwright's own phase assignment and validated at 0 mismatches over 89 projects against a real run. The two rejected shapes:
+  //   · adding `auth-setup` to `a11y-smoke.dependencies` would make the 16 voter a11y tests depend on a candidate login and cost `a11y-smoke` its 1-setup isolation; · appending the scan to the tail of the perm serial chain would enter as the 55th scheduling phase, after 25 `test-` pre-clears, with the last `app_settings` REPLACE being a perm setup rather than `data-setup-base`.
+  // The wiring below puts the scan in the third scheduling phase alongside `contestant-journey` alone — measured, not predicted: 0 mismatches over 91 scheduled projects.
+  //
+  // Auth setup - registers two users on the base dataset, logs each in and saves one storageState file per user (depends on the merged base dataset being seeded): the base candidate's user at `STORAGE_STATE`, and a user who has not accepted the terms of use at `TERMS_PENDING_STORAGE_STATE` (declared in `tests/utils/testCredentials.ts`). Declared UNCONDITIONALLY: the default-on `contestant-a11y-scan` project below consumes both stored sessions, `contestant-entry-phone`, which no variable gates, reads the base candidate's session for the password-reset page, and `contestant-terms-gate-phone`, which no variable gates either, is a second reader of the session of the user who has not accepted.
+  {
+    name: 'auth-setup',
+    // ANCHORED, and it has to be. `testMatch` is an unanchored regex tested against the whole path, so an unanchored `/auth\.setup\.ts/` also matches `setup/admin/admin-auth.setup.ts` — MEASURED, not hypothesised: `--list` then collects the admin setup under BOTH this project and `data-setup-admin-auth`, which would write the admin stored session twice, from two projects, at two different points in the schedule (once here, before the perm chain, and once at the chain's tail). Two projects writing one session file is the race this config's own comments warn about, and it has no symptom until it produces a confident wrong answer. The `[\\/]` prefix is what makes `-auth.setup.ts` stop matching while `shared/auth.setup.ts` still does.
+    testMatch: /[\\/]auth\.setup\.ts$/,
+    dependencies: ['data-setup-base']
+  },
+
+  // === Specialized Projects ===
+  //
+  // performance / a11y-smoke run BY DEFAULT in `yarn test:e2e`; opt OUT of either with the matching PLAYWRIGHT_NO_* env: `PLAYWRIGHT_NO_PERF=1 yarn test:e2e`, `PLAYWRIGHT_NO_A11Y=1 yarn test:e2e`. visual-regression stays OPT-IN (see the notes above): `PLAYWRIGHT_VISUAL=1 npx playwright test -c tests/playwright.config.ts --project=visual-regression`.
+
+  // Visual regression: screenshot comparison for key pages (OPT-IN — see the snapshot-portability note above; the CI job itself is blocking).
+  ...(process.env.PLAYWRIGHT_VISUAL
+    ? [
+        {
+          name: 'visual-regression',
+          testDir: './tests/specs/visual',
+          use: { ...devices['Desktop Chrome'] },
+          dependencies: ['data-setup-base', 'auth-setup']
+        }
+      ]
+    : []),
+
+  // Performance budgets: page load timing assertions (default-on; disable with PLAYWRIGHT_NO_PERF).
+  //
+  // Tracing is OFF for this project only. Trace recording runs in the browser while the measured window is open, so its cost lands inside `timeToMatches`. Measured on the same results reload, idle dev server, 3 runs each (2026-10-03): Playwright 1.63 traced 584–611 ms, untraced 241–244 ms; Playwright 1.58 traced 213–243 ms. The budget is calibrated on a window that carries no such overhead. A failing run still prints the spec's own `Results performance:` diagnostics (time to matches, fetch count, ttfb).
+  ...(process.env.PLAYWRIGHT_NO_PERF
+    ? []
+    : [
+        {
+          name: 'performance',
+          testDir: './tests/specs/perf',
+          use: { ...devices['Desktop Chrome'], trace: 'off' },
+          dependencies: ['data-setup-base']
+        }
+      ]),
+
+  // Accessibility smoke: WCAG 2.1 AA scan via @axe-core/playwright (default-on; disable with PLAYWRIGHT_NO_A11Y).
+  //
+  // The a11y scan family is TWO projects over ONE shared scan core (`tests/tests/utils/axeScan.ts`), split because they need different browser state: `a11y-smoke` runs the public voter routes unauthenticated, while `contestant-a11y-scan` runs the candidate `(protected)` routes with the stored candidate session. One `describe` of its spec swaps in the other session `auth-setup` stores, that of a user who has not accepted the terms of use, to scan the terms-of-use view; the project's own `storageState` stays `STORAGE_STATE`. Two more `describe`s swap in the two sessions `data-setup-entity-selection` stores, that of a user who edits several entities and that of a user who edits none, to scan the profile selection screen, the menu's switch item and the "nothing to edit" view; the dependency on that setup exists for those two files alone, and the scans only read them. A Playwright project selects by directory and filename, so each carries an EXPLICIT `testMatch`.
+  //
+  // The explicit `testMatch` on `a11y-smoke` is not bookkeeping. It declares `testDir: './tests/specs/a11y'` and would otherwise collect the sibling candidate spec and run it WITHOUT the stored session — every candidate route would 307 to the login form, and the scan would report a clean zero about a login page. That is the one direction in which this wiring can be silently wrong AND green.
+  ...(process.env.PLAYWRIGHT_NO_A11Y
+    ? []
+    : [
+        {
+          name: 'a11y-smoke',
+          testDir: './tests/specs/a11y',
+          testMatch: /a11y-smoke\.spec\.ts/,
+          use: { ...devices['Desktop Chrome'] },
+          dependencies: ['data-setup-base']
+        },
+        {
+          name: 'contestant-a11y-scan',
+          testDir: './tests/specs/a11y',
+          testMatch: /contestant-a11y\.spec\.ts/,
+          use: { ...devices['Desktop Chrome'], storageState: STORAGE_STATE },
+          dependencies: [
+            'data-setup-base',
+            'auth-setup',
+            'data-setup-entity-selection',
+            'data-setup-passwordless-session'
+          ]
+        }
+      ]),
+
+  // Bank auth (Idura): the identity-callback Edge Function, called directly.
+  // DEFAULT-ON. Its tests need `identity-callback` served with the identity provider's test environment, which `tests/scripts/e2e-run.sh` serves for every run; against a stack without that environment they fail on their own assertions.
+  {
+    name: 'bank-auth',
+    testDir: './tests/specs/contestant',
+    testMatch: /contestant-bank-auth\.spec\.ts/,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-base']
+  },
+
+  // The identity-provider specs: the provider's flow walked in a browser against the mock issuer, each test with an identity of its own, from the registration screen through the provider and the callback to the view the account lands on.
+  //
+  // DEFAULT-ON. The setup JOINS THE TAIL OF THE PERM SERIAL CHAIN (see `dependencies` below): it seeds its own dataset, under the `e2e-bankauth-idp-` prefix, whose settings REPLACE the stored row whole, and states the candidates' registration row as the identity provider, email and code. `voter-prefs-tracking` is the chain's last leaf, so that REPLACE cannot overlap any other project's. Ordering edges express ORDER, not MUTUAL EXCLUSION, and the `app_settings` JSONB singleton needs the latter — which in this config is spelled "be in the serial chain". The two cheaper-looking alternatives are both measured unsound:
+  //   · `['data-setup-base']` puts this project in the SAME phase as `voter-journey` / `performance` /
+  //     `a11y-smoke` (identical dependency set → identical phase, see
+  //     playwright/lib/runner/tasks.js createPhasesTask), so the REPLACE lands mid-spec in a full run.
+  //   · `['voter-journey', 'contestant-journey']` merely RELOCATES the race: it lands this project in the same phase as `data-setup-perm-1e1cg1co`, the perm chain HEAD, which does the same REPLACE. Do not "fix" it that way.
+  //
+  // An isolated `--project=contestant-identity-provider` run therefore pulls the whole chain transitively and takes full-suite time rather than seconds. `data-setup-base` is ordered before this project transitively, so `base.setup`'s sweep of an orphaned `e2e-bankauth-` dataset from an aborted prior run still runs first.
+  //
+  // The teardown removes the dataset, the entities the application made for the users the specs made, and those users. The spec's browser context ignores HTTPS errors: its authorize leg navigates the browser to the mock issuer at `https://127.0.0.1:9443/oauth2/authorize`, served with a committed self-signed localhost cert, and Chrome would otherwise reject the cert and never follow the issuer's redirect back to `/api/oidc/callback`. TEST-ONLY: the browser context of this project alone. The mock OIDC issuer is spawned in every run via the `webServer` entry below; the dev server trusts its cert through `NODE_EXTRA_CA_CERTS`, which `tests/scripts/e2e-run.sh` sets.
+  {
+    name: 'data-setup-identity-provider',
+    testMatch: /identity-provider\.setup\.ts/,
+    teardown: 'data-teardown-identity-provider',
+    // APPEND TO THE TAIL OF THE PERM SERIAL CHAIN.
+    dependencies: ['voter-prefs-tracking']
+  },
+  {
+    name: 'data-teardown-identity-provider',
+    testMatch: /identity-provider\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix and passes, so a retry would mask the partial delete the assertion exists to catch.
+    retries: 0
+  },
+  {
+    name: 'contestant-identity-provider',
+    testDir: './tests/specs/contestant',
+    testMatch: /contestant-identity-provider\.spec\.ts/,
+    use: {
+      ...devices['Desktop Chrome'],
+      storageState: { cookies: [], origins: [] },
+      ignoreHTTPSErrors: true
+    },
+    dependencies: ['data-setup-identity-provider']
+  },
+
+  // === base / voter-journey chain ===
+  //
+  // Project graph (independent — no cross-chain dependency):
+  //   data-setup-base → voter-journey
+  //   data-setup-base ↦ data-teardown-base (via teardown: key)
+  //
+  // The base chain seeds standalone (no perm dependency). The base setup retains a defensive `extraTeardownPrefix: 'e2e-perm-'` pre-clear (shared/base.setup.ts) — an idempotent wipe of the SEPARATE `e2e-perm-` namespace, never the base `test-` rows — so a perm chain that ran earlier in the same DB session cannot leak rows into the base dataset.
+  {
+    name: 'data-setup-base',
+    testMatch: /base\.setup\.ts/,
+    teardown: 'data-teardown-base'
+    // reason: base seeds with NO perm dependency so opt-in `--project` runs (visual/perf/a11y/bank-auth) pull only base + auth and work standalone.
+    // Cross-namespace isolation for the DEFAULT full-suite run is enforced in the OPPOSITE direction: the perm family depends on the journey leaves (see `data-setup-perm-1e1cg1co` below), so perm runs strictly AFTER base
+    // + journeys and never interleaves with base on the shared single DB / `app_settings` singleton. The base setup's `extraTeardownPrefix: 'e2e-perm-'` pre-clear is a belt-and-braces guard for any residual perm rows from a prior DB session.
+  },
+  {
+    name: 'data-teardown-base',
+    testMatch: /base\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  // `video: 'retain-on-failure'`. This project owns the term-trigger step, whose failure is a LATENCY signal, not an absence signal: the recorded occurrence's own page snapshot showed the trigger present. A trace records what the test asserted; only a video records what the page was DOING across the Base-2 → Base-3 hop while the budget expired. Bounded by construction — this project runs ONE test, and a green run produces zero video bytes.
+  {
+    name: 'voter-journey',
+    testDir: './tests/specs/voter',
+    testMatch: /voter-journey\.spec\.ts/,
+    fullyParallel: false, // single-test serial journey
+    use: { ...devices['Desktop Chrome'], video: 'retain-on-failure' },
+    dependencies: ['data-setup-base']
+  },
+
+  // eperm07-term-trigger — LEAF. Isolated hunt spec for the intermittent term-trigger failure: drives ONLY Base-1 → Base-2 → Base-3 and asserts the in-text <Term> affordance, so the ~1-in-8 event can be forced and observed in seconds instead of in a 648 s full-suite run. Reads the base dataset read-only (no teardown of its own). `video: 'on'` rather than retain-on-failure — this project runs one short test, so keeping the near-miss recordings (a run that passed at 1.9 s of a 2 s budget) is cheap and is exactly the latency evidence the hunt needs. `testMatch` is scoped to the hunt spec; `voter-journey`'s `testMatch` (/voter-journey\.spec\.ts/) does not match this filename, so neither project picks up the other's specs. NOT under `_probes`: that project is excluded from the gate suite by the root `test:e2e` script's `--grep-invert @probe`, which would make this spec invisible to the 16-run determinism gate.
+  {
+    name: 'eperm07-term-trigger',
+    testDir: './tests/specs/voter',
+    testMatch: /eperm07-term-trigger\.spec\.ts/,
+    use: { ...devices['Desktop Chrome'], video: 'on' },
+    dependencies: ['data-setup-base']
+  },
+
+  // voter-pageview-only — LEAF. With `analytics.trackEvents` off, the voter app sends the pageview and nothing else, and shows no consent prompt. Reads the base dataset read-only, whose stored settings leave `trackEvents` at its shipped default, off (no teardown of its own). The settings row is what the spec asserts against, so the project is named in the dependencies of `data-setup-perm-1e1cg1co`, and no perm setup replaces the row while it runs. Needs the server to run with `ANALYTICS_PROVIDER=log`. `testMatch` is scoped to its one spec; sibling voter-* projects' exact testMatch excludes it.
+  {
+    name: 'voter-pageview-only',
+    testDir: './tests/specs/voter',
+    testMatch: /voter-pageview-only\.spec\.ts/,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-base']
+  },
+
+  // cold-entry-dataroot — LEAF. Read-only cold/direct-URL entry regression for the dataRoot #version-bridge alias-indirection staleness. Reads the base dataset read-only (no teardown of its own). `testMatch` is scoped to the cold-entry spec; `voter-journey`'s `testMatch` (/voter-journey\.spec\.ts/) excludes this file, so neither project picks up the other's specs.
+  //
+  // The spec is split across TWO projects on the `@contestant-session` tag. Its voter cases must run UNAUTHENTICATED — that is what makes them a public-route cold entry — while the candidate case cannot reach `/contestant/questions` at all without a stored session. One project cannot be both, and a `test.use({ storageState })` inside the spec would have to spell the session path a third time, which `STORAGE_STATE`'s own declaration comment above rules out. This is the same split, for the same reason, that the a11y family already makes between `a11y-smoke` and `contestant-a11y-scan`. `grep`/`grepInvert` are complementary over the one tag, so every test in the file belongs to exactly one project and none can be silently orphaned.
+  {
+    name: 'cold-entry-dataroot',
+    testDir: './tests/specs/voter',
+    testMatch: /cold-entry-dataroot\.spec\.ts/,
+    grepInvert: /@contestant-session/,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-base']
+  },
+  {
+    name: 'cold-entry-dataroot-contestant',
+    testDir: './tests/specs/voter',
+    testMatch: /cold-entry-dataroot\.spec\.ts/,
+    grep: /@contestant-session/,
+    use: { ...devices['Desktop Chrome'], storageState: STORAGE_STATE },
+    dependencies: ['data-setup-base', 'auth-setup']
+  },
+
+  // voter-dark-mode — LEAF. Read-only dark-scheme regression on the base dataset. Theme is driven via emulateMedia (prefers-color-scheme) — there is NO toggle and NO localStorage write (darkMode.svelte.ts derives from matchMedia only). `testMatch` is scoped to the dark-mode spec; sibling voter-* projects' exact testMatch excludes it.
+  {
+    name: 'voter-dark-mode',
+    testDir: './tests/specs/voter',
+    testMatch: /voter-dark-mode\.spec\.ts/,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-base']
+  },
+
+  // voter-journey-mobile — LEAF. The viewport-agnostic 'max' voter walk under a mobile descriptor. The descriptor lives here at project scope (explicit 390×844 isMobile/hasTouch, matching visual-regression — NOT devices['Pixel 5']); the walk itself is unchanged.
+  // Read-only on the base dataset.
+  {
+    name: 'voter-journey-mobile',
+    testDir: './tests/specs/voter',
+    testMatch: /voter-journey-mobile\.spec\.ts/,
+    use: {
+      ...devices['Desktop Chrome'],
+      viewport: { width: 390, height: 844 },
+      isMobile: true,
+      hasTouch: true
+    },
+    fullyParallel: false,
+    dependencies: ['data-setup-base']
+  },
+
+  // voter-alliance — LEAF. Read-only alliance results-surface DEPTH on the base dataset (Alliance A card, clickable member-org subcards, member-orgs drawer, ['info','children'] tab control). Consumes the shared 'max' voter walk (answeredVoterPage) under a Desktop descriptor; assert-only (no own setup/teardown — Alliance A + members already in e2e/base). `testMatch` is scoped to this spec; sibling voter-* projects' exact testMatch excludes it.
+  {
+    name: 'voter-alliance',
+    testDir: './tests/specs/voter',
+    testMatch: /voter-alliance\.spec\.ts/,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-base']
+  },
+
+  // voter-nominations — LEAF. Read-only render check for the UNSCOPED all-nominations route (dedicated spec, NOT a journey step). assert-only (showAllNominations already true in e2e/base — no own setup/teardown). `testMatch` is scoped to this spec; sibling voter-* projects' exact testMatch excludes it.
+  {
+    name: 'voter-nominations',
+    testDir: './tests/specs/voter',
+    testMatch: /voter-nominations\.spec\.ts/,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-base']
+  },
+
+  // voter-results-redraw — LEAF. Read-only navigation-BEHAVIOUR regression on the base dataset: scroll position survives entity open / close / entity-tab switch measured from a scrolled start, overlay navigations run no document View Transition at all, any transition running under an open modal dialog carries no named groups, and the subtrees that must not remount are proven by DOM node identity. assert-only — it opens and closes the results drawer and switches tabs, and mutates no seed, no app_settings and no product file (no own setup/teardown). `testMatch` is scoped to this spec alone (`voter-results-redraw.spec.ts`); sibling voter-* projects' exact testMatch excludes it.
+  //
+  // The block is not optional bookkeeping: see the ORPHAN-PROBE GUARD docblock at the top of this file. A spec file with no project matches no project and runs from NO command while still sitting in `specs/` looking like coverage — which is exactly what happened to four probe files. No `SOFT_ASSERTION_BUDGETS` entry either: this spec is hard-assertions-only by its own rigidity contract.
+  {
+    name: 'voter-results-redraw',
+    testDir: './tests/specs/voter',
+    testMatch: /voter-results-redraw\.spec\.ts/,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-base']
+  },
+
+  // === _probes (fixtures-first isolation probes) — LEAF, no data-setup ===
+  //
+  // Probe specs live under ./tests/specs/_probes. The one there, `defaultTemplateResults`, measures the `default` template, which no gate project seeds. A probe is DELIBERATELY OUTSIDE the gate suite: it runs ONE-AT-A-TIME, seeded OUT-OF-BAND per its header, as a single-file run (`npx playwright test <probe> --project=_probes`). There is intentionally NO data-setup dependency: the isolation contract lives in the RUN discipline, not in a setup project.
+  //
+  // Because they need out-of-band per-probe seeding, these probes are EXCLUDED from the default green-suite / CI gate: the root `test:e2e` script runs `--grep-invert @probe`. Run them via `yarn test:e2e:probes <probe-file>` (one at a time, after the seed each probe's header names). Every probe test is tagged `@probe` for this filter.
+  //
+  // `testMatch` lists the probe files EXPLICITLY, and every `*.probe.spec.ts` in this directory must appear in it. That is the invariant: a probe file not named here matches NO project and is reachable from NO command.
+  //
+  // The ORPHAN-PROBE GUARD at the top of this file enforces it at config load.
+  {
+    name: '_probes',
+    testDir: './tests/specs/_probes',
+    testMatch: PROBE_TEST_MATCH,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] }
+  },
+
+  // storage-cleanup — LEAF. Proves in COMMITTED state that the storage cleanup triggers actually delete: an old object must stop being served once its row stops referencing it. It owns a dedicated scratch project (`SCRATCH_PROJECT_ID` in the spec), creates and removes only its own rows and objects there, and so cannot touch the E2E project's rows; that is why it has no data-setup dependency and no teardown project. It drives no browser (API-only, hence no `use` block). It POLLS rather than waiting a fixed time, because pg_net sends a trigger's request only after the writing transaction commits, and the worker's delay is not a constant.
+  {
+    name: 'storage-cleanup',
+    testDir: './tests/specs/storage',
+    testMatch: /storage-cleanup\.spec\.ts/,
+    fullyParallel: false
+  },
+
+  // auth-service-contract — LEAF. It talks to the auth service only: the two requests by which an unauthenticated caller could bring a user into existence, each of which the service must refuse, and the admin API to confirm that neither created one. It opens no page, reads no seeded row and stores no session (API-only, hence no `use` block), so it has no data-setup dependency and no teardown project. It stands alone because what it observes is the running service's configuration, which no dataset changes and which the service reads only when the stack starts.
+  {
+    name: 'auth-service-contract',
+    testDir: './tests/specs/auth',
+    testMatch: /public-signup-closed\.spec\.ts/
+  },
+
+  // invitation-contract — LEAF. The server contract of invitations, observed on the running stack with no screen: what the `account-access` Edge Function answers, the mail it sends, the session a mailed token verifies to, and what `claim_invitations` grants and refuses. It opens no page and stores no session (API-only, hence no `use` block). It writes only on the two rows the base dataset reserves for it and on users it creates, and it removes every invitation and user it created, so it has no teardown project. It depends on `data-setup-base` for those two rows and on nothing else: that dependency set places it in the scheduling phase of the other base leaves, which ends before the first setup that clears the base dataset starts. One serial walk, hence `fullyParallel: false`.
+  {
+    name: 'invitation-contract',
+    testDir: './tests/specs/contestant',
+    testMatch: /invitation-contract\.spec\.ts/,
+    fullyParallel: false,
+    dependencies: ['data-setup-base']
+  },
+
+  // invitation-landing — LEAF. Where a claimed invitation lands its user in the browser: a mailed sign-in link through the auth callback into the Contestant App, and the Admin App's login for an invited project admin. It creates and removes its own users, under an address prefix of its own, and writes project-scope grants for them only, through the application's own claim: it seeds no invitation on an entity and writes on no row of the dataset, so it has no teardown project and changes nothing a voter reads. Every test signs in from scratch, hence the empty stored session. It depends on `data-setup-base` for the suite's project and its settings, which places it in the scheduling phase of the other base leaves. `testMatch` names the one spec file: the project shares its `testDir` with `contestant-journey` and `invitation-contract`, each of which matches its own file alone. One serial walk, hence `fullyParallel: false`.
+  {
+    name: 'invitation-landing',
+    testDir: './tests/specs/contestant',
+    testMatch: /invitation-landing\.spec\.ts/,
+    fullyParallel: false,
+    use: {
+      ...devices['Desktop Chrome'],
+      storageState: { cookies: [], origins: [] }
+    },
+    dependencies: ['data-setup-base']
+  },
+
+  // contestant-email-registration — LEAF. An invited candidate with no account, followed to the candidate's home twice, once from the sign-in screen and once from the registration screen's email option: the link asked for, the screen that says an email was sent, the mailed link through the auth callback, the set-password view the protected layout shows a user with no password in place of every page, the terms of use, and the home. Beside the two walks: the oracle of the link request and of the sign-in, the link button, the count and "Send again", a request repeated inside the count, a reload of the "email sent" screen, what the registration screen does not send, and the login screen's entries and notice. It writes one invitation on the candidate the base dataset reserves for registration tests, the user the mailed link creates and the grant that user's claim writes, every address under a prefix of its own. Its own hooks remove all of it and make the candidate unconfirmed again, before the walk, after it and whether or not it passed, and assert that nothing is left, so it has no teardown project; the candidate has no nomination, so nothing it writes is read by a voter. The user signs in from scratch, hence the empty stored session. It depends on `data-setup-base` for the reserved candidate and for the project's settings, which serve candidates and let them register by email. `testMatch` names the one spec file: the project shares its `testDir` with `contestant-journey` and the two invitation projects, each of which matches its own file alone. Its tests share the reserved candidate and run in order, hence `fullyParallel: false`. It is named in the dependencies of `data-setup-perm-1e1cg1co`; the reason is given there.
+  {
+    name: 'contestant-email-registration',
+    testDir: './tests/specs/contestant',
+    testMatch: /contestant-email-registration\.spec\.ts/,
+    fullyParallel: false,
+    use: {
+      ...devices['Desktop Chrome'],
+      storageState: { cookies: [], origins: [] }
+    },
+    dependencies: ['data-setup-base']
+  },
+
+  // contestant-code-registration — LEAF. An organization invited with a registration code, followed from the registration screen to the organization's home: the code checked there, the screen that asks for the address to register it with, the screen that says an email was sent, the mailed link through the auth callback, the set-password view, the terms of use, and the home. Then the same screens for a code that is already used — the password sign-in it leads to, and the link that screen mails to the code's claimant without showing an address — and for a code that names nothing. It writes code invitations on the organization the base dataset reserves for registration tests, the users its link requests and mailed links create and the grants their claims write, every address under a prefix of its own. Its own hooks remove all of it and make the organization unconfirmed again, before the first test, after each and whether or not it passed, and assert that nothing is left, so it has no teardown project; the organization has no nomination, so nothing it writes is read by a voter. It shares no row and no address prefix with `contestant-email-registration`, which writes on the reserved candidate, so the two run side by side. Every visitor starts signed out, hence the empty stored session. It depends on `data-setup-base` for the reserved organization and for the project's settings, which serve organizations and let them register with a code. `testMatch` names the one spec file: the project shares its `testDir` with `contestant-journey`, `contestant-email-registration` and the two invitation projects, each of which matches its own file alone. Its tests run in order in one worker, hence `fullyParallel: false`. It is named in the dependencies of `data-setup-perm-1e1cg1co`; the reason is given there.
+  {
+    name: 'contestant-code-registration',
+    testDir: './tests/specs/contestant',
+    testMatch: /contestant-code-registration\.spec\.ts/,
+    fullyParallel: false,
+    use: {
+      ...devices['Desktop Chrome'],
+      storageState: { cookies: [], origins: [] }
+    },
+    dependencies: ['data-setup-base']
+  },
+
+  // contestant-password-recovery — LEAF. A user who has forgotten their password, followed from the sign-in screen to the home of the candidate they edit: the forgot-password page, the screen that says an email was sent, the mailed recovery link through the auth callback in a browser context that never asked for it, the password-reset page, and the home; then a sign-in that the old password is refused and the new one admitted. Beside it: the same screen for an address nobody holds, which is mailed nothing; an invited address with no account, which is mailed the sign-in link and asked to choose a password; and the password-reset page opened with no session, which ends on the login screen. It writes users made with a password as the editor of the candidate the base dataset reserves for password-recovery tests, one invitation on that candidate with the user its mailed link creates and the grant that user's claim writes, every address under a prefix of its own. Its own hooks remove all of it and make the candidate unconfirmed again, before the first test, after each and whether or not it passed, and assert that nothing is left, so it has no teardown project; the candidate has no nomination, so nothing it writes is read by a voter. It shares no row and no address prefix with `contestant-email-registration` or `contestant-code-registration`, so the three run side by side. Every visitor starts signed out, hence the empty stored session. It depends on `data-setup-base` for the reserved candidate and for the project's settings, which serve candidates and let them register by email. `testMatch` names the one spec file: the project shares its `testDir` with `contestant-journey`, the two registration projects and the two invitation projects, each of which matches its own file alone. Its tests run in order in one worker, hence `fullyParallel: false`. It is named in the dependencies of `data-setup-perm-1e1cg1co`; the reason is given there.
+  {
+    name: 'contestant-password-recovery',
+    testDir: './tests/specs/contestant',
+    testMatch: /contestant-password-recovery\.spec\.ts/,
+    fullyParallel: false,
+    use: {
+      ...devices['Desktop Chrome'],
+      storageState: { cookies: [], origins: [] }
+    },
+    dependencies: ['data-setup-base']
+  },
+
+  // contestant-entry-scan — LEAF. The accessibility scans of the Contestant App's entry screens that a visitor with no session meets: eighteen states of the login screen, the sign-in screen, the registration screen, the two screens a registration code leads to, the screen that says an email was sent, the forgot-password page, the identity provider's error screen in its three classes and the confirm page a mailed sign-in link opens, each scanned in the light theme and in a browser context created dark through the shared scan core; beside them, one test of the menu such a visitor is offered. They are a spec and a project of their own because `contestant-a11y-scan` runs under a stored session and its declarer refuses the login routes. Its own hooks seed one open and one used code invitation, on the two candidates the base dataset reserves for these scans, through the invitation flow's steps; before the first test and after the last they remove every user under the spec's address prefix with their grants and invitations, and every invitation on both candidates, make both unconfirmed again and assert that nothing is left, so it has no teardown project. The codes are held in memory and written to no file, which is also why the spec has no setup project of its own. Neither candidate has a nomination, so nothing it writes is read by a voter. It shares no row and no address prefix with the registration and recovery projects, so they run side by side. Every visitor starts signed out, hence the empty stored session. It depends on `data-setup-base` for the two candidates and for the project's settings, which serve candidates and let them register by email or with a code. `testMatch` names the one spec file: the project shares its `testDir` with the other projects of the directory, each of which matches its own file alone. Its tests run in order in one worker, so that the hooks seed once, hence `fullyParallel: false`. It is named in the dependencies of `data-setup-perm-1e1cg1co`; the reason is given there.
+  {
+    name: 'contestant-entry-scan',
+    testDir: './tests/specs/contestant',
+    testMatch: /contestant-entry-scan\.spec\.ts/,
+    fullyParallel: false,
+    use: {
+      ...devices['Desktop Chrome'],
+      storageState: { cookies: [], origins: [] }
+    },
+    dependencies: ['data-setup-base']
+  },
+
+  // data-setup-passwordless-session — the stored session of a user whose account has no password, at `PASSWORDLESS_STORAGE_STATE` (declared in `tests/utils/testCredentials.ts`). The account is made through the application's own pipeline and never with a password: a project-scope invitation is seeded for the address, a sign-in link is asked for through the `account-access` function and the mailed link is opened as received, so the session meets the set-password view at every protected URL. The promise names no entity, so no dataset row is written on. Two projects read the session, `contestant-a11y-scan` and `contestant-entry-phone`, and both treat it as read-only: no reader saves a password under it or signs it out. It depends on `data-setup-base` for the project and its settings row, which keep the Contestant App on, and `data-teardown-passwordless-session` removes the user and the invitation once both readers are done.
+  {
+    name: 'data-setup-passwordless-session',
+    testMatch: /passwordless-session\.setup\.ts/,
+    teardown: 'data-teardown-passwordless-session',
+    dependencies: ['data-setup-base']
+  },
+  {
+    name: 'data-teardown-passwordless-session',
+    testMatch: /passwordless-session\.teardown\.ts/,
+    // reason: the teardown performs no runTeardownAsserted accounting, so there is nothing for a retry to mask; set to 0 for consistency with every other data-teardown-* project.
+    retries: 0
+  },
+
+  // contestant-terms-gate-phone — LEAF. The terms-of-use view at two phone widths: the document does not overflow sideways, the view's checkbox lies wholly inside the viewport, it can be ticked, and ticking it enables Continue. It reads the stored session of the user who has not accepted the terms of use and never accepts for them: that file is also what the axe scans of the same view load, so the spec presses nothing but the checkbox, signs nobody out and writes nothing, and it has no teardown project. The phone descriptor is set in the spec, one `describe` per width, because there are two widths and a project carries one viewport. `testMatch` names the one spec file: the project shares its `testDir` with `contestant-journey`, `contestant-entity-selection` and the two invitation projects, each of which matches its own file alone. It is named in the dependencies of `data-setup-perm-1e1cg1co`; the reason is given there.
+  {
+    name: 'contestant-terms-gate-phone',
+    testDir: './tests/specs/contestant',
+    testMatch: /contestant-terms-gate-phone\.spec\.ts/,
+    use: { ...devices['Desktop Chrome'], storageState: TERMS_PENDING_STORAGE_STATE },
+    dependencies: ['data-setup-base', 'auth-setup']
+  },
+
+  // contestant-entry-phone — LEAF. The screens of the entry flow at two phone widths, 320 and 390 pixels, in English: the login screen, the sign-in screen, the registration screen with the email and with the code option open, the two screens a registration code leads to, the "email sent" screen with the longest address, the forgot-password page, the identity provider's error screen in its no-retry class, the set-password view and the password-reset page, each asserted to be no wider than its viewport. It runs after `contestant-entry-scan` because it uses that spec's two reserved candidates and its address prefix: that spec's last hook removes everything under them, and this one's own hooks then seed one open and one used code on them and remove everything again, so the two never hold the rows at once. The set-password view is read under the stored session of `data-setup-passwordless-session` and the password-reset page under the base candidate's session of `auth-setup`; neither is changed. The phone descriptor is set in the spec, one `describe` per width and session, because a project carries one viewport. Its tests run in order in one worker, so that the hooks seed once, hence `fullyParallel: false`. It is named in the dependencies of `data-setup-perm-1e1cg1co`; the reason is given there.
+  {
+    name: 'contestant-entry-phone',
+    testDir: './tests/specs/contestant',
+    testMatch: /contestant-entry-phone\.spec\.ts/,
+    fullyParallel: false,
+    use: {
+      ...devices['Desktop Chrome'],
+      storageState: { cookies: [], origins: [] }
+    },
+    dependencies: ['contestant-entry-scan', 'data-setup-passwordless-session', 'auth-setup']
+  },
+
+  // === voter permutations chains ===
+  //
+  //   - perm specs live under tests/tests/specs/perm/; the voter-app project's testDir is `./tests/specs/voter`, so perm specs are categorically outside its discovery surface.
+  //   - perm-* setups chain SEQUENTIALLY within the perm-* family to prevent app_settings singleton clobbering. The FIRST perm setup (data-setup-perm-1e1cg1co) depends on the journey LEAF specs [voter-journey, contestant-journey] so the whole perm family runs strictly AFTER base + both journeys complete. This is the perm→journey direction, so opt-in `--project` runs never pull the perm family.
+  //   - Each chain teardowns ITS OWN test-perm-<short>- prefix.
+  //
+  // Sequential chain across the family:
+  //   data-setup-perm-1e1cg1co (FIRST — after journey leaves) → data-setup-perm-2e-shared → data-setup-perm-2e-asymmetric → data-setup-perm-startfromcg → data-setup-perm-disjoint-1co → data-setup-perm-disable-election-1co → data-setup-perm-disable-election-2co → data-setup-perm-not-located-2e2cg
+
+  // Variant 1: perm-1e1cg1co (1 test) — FIRST in the perm family, serialized AFTER the journey leaves (voter-journey + contestant-journey).
+  //
+  // Depends on the journey LEAF specs so the entire perm family runs strictly AFTER base + both journeys have completed. base + perm share the `app_settings` JSONB singleton AND have mutually-destructive preclears (this setup's `extraTeardownPrefix: 'test-'` deletes base `test-e2e-base-%` rows; base setup's `e2e-perm-` preclear deletes perm rows), so without this serialization edge they would interleave and leak elections across datasets. The perm→journey direction (NOT base→perm) keeps opt-in `--project` runs (visual/perf/a11y/bank-auth) pulling only `data-setup-base` (+ auth-setup), never the perm family — base still seeds standalone.
+  //
+  // `eperm07-term-trigger` is in the anchor too. Several other base leaves sit OUTSIDE it and are fine there because they do not hard-assert settings-dependent UI; this one does, twice — the category-intro page it walks through exists only while `questions.categoryIntros.show` is true, and `voterQuestionsPage.clickStart()` only while `questionsIntro.show` is. A perm setup clobbering the `app_settings` singleton mid-walk would therefore surface inside this suite's permanent regression guard for the shared navigation settle, where it would read as a settle regression rather than as `app_settings` contamination.
+  //
+  // `voter-pageview-only` is in the anchor too. It asserts that only pageviews are sent and that no consent prompt is shown, both of which hold only while the settings row leaves `analytics.trackEvents` off, as `data-setup-base` stores it; a perm setup REPLACEs that row, and the analytics-tracking one turns the setting on. The spec must therefore finish before the first perm setup starts.
+  //
+  // `contestant-a11y-scan` is in the anchor too. It scans authenticated candidate surfaces against the `app_settings` singleton as `data-setup-base` left it, so it must finish before the first perm setup REPLACEs that singleton. Without the edge it would still precede the perm family — but only INCIDENTALLY, because the anchor happens to name `contestant-journey`, which happens to share the scan's phase. Naming the scan directly means a later edit that moves `contestant-journey` cannot silently move the perm family ahead of it.
+  //
+  // The entry is conditional on the same `PLAYWRIGHT_NO_A11Y` opt-out that declares the project: Playwright rejects a dependency on a project that was never declared, so an unconditional entry would make `PLAYWRIGHT_NO_A11Y=1` fail at config load. That interaction is resolved here with the file's own existing opt-out convention rather than a new mechanism.
+  //
+  // `contestant-entity-selection` is in the anchor too. It asserts UI that depends on the served entity types: the base dataset serves candidates and organizations, so its user is listed three entities, in two groups, and reaches an organization's home, while every perm setup REPLACEs the settings row, all but one of them with a row that serves candidates alone, and the head's `test-` pre-clear deletes the rows the user edits. The spec must therefore finish before the first perm setup starts.
+  //
+  // `contestant-terms-gate-phone` is in the anchor too. The view it opens is served only while the Contestant App is on and the row its user edits exists: every perm setup REPLACEs the settings row, and the head's `test-` pre-clear deletes that row. The spec must therefore finish before the first perm setup starts. Its own dependencies place it in a phase that ends before then; naming it here states the order instead of leaving it to follow from another project's edges.
+  //
+  // `contestant-email-registration` is in the anchor too. Its walk needs the candidate the base dataset reserves for it, a settings row that serves candidates and lets them register by email, and the Contestant App on: every perm setup REPLACEs the settings row, and the head's `test-` pre-clear deletes the candidate. The spec must therefore finish before the first perm setup starts. Its own dependencies place it in a phase that ends before then; naming it here states the order instead of leaving it to follow from another project's edges.
+  //
+  // `contestant-code-registration` is in the anchor too. Its tests need the organization the base dataset reserves for it, a settings row that serves organizations and lets them register with a code, and the Contestant App on: every perm setup REPLACEs the settings row, and the head's `test-` pre-clear deletes the organization. The spec must therefore finish before the first perm setup starts. Its own dependencies place it in a phase that ends before then; naming it here states the order instead of leaving it to follow from another project's edges.
+  //
+  // `contestant-password-recovery` is in the anchor too. Its tests need the candidate the base dataset reserves for it, a settings row that serves candidates and honours an email invitation for one, and the Contestant App on: every perm setup REPLACEs the settings row, and the head's `test-` pre-clear deletes the candidate. The spec must therefore finish before the first perm setup starts. Its own dependencies place it in a phase that ends before then; naming it here states the order instead of leaving it to follow from another project's edges.
+  //
+  // `contestant-entry-phone` is in the anchor too. Its screens need the two candidates the base dataset reserves for the entry scans, a settings row that serves candidates, lists the email and the code mode for them and leaves answers unlocked, and the Contestant App on: every perm setup REPLACEs the settings row, and the head's `test-` pre-clear deletes the candidates. The spec must therefore finish before the first perm setup starts. Its own dependencies place it in a phase that ends before then; naming it here states the order instead of leaving it to follow from another project's edges.
+  //
+  // `contestant-entry-scan` is in the anchor too. Its scans need the two candidates the base dataset reserves for them, a settings row that serves candidates, lists the email and the code mode for them and leaves answers unlocked, and the Contestant App on: every perm setup REPLACEs the settings row, and the head's `test-` pre-clear deletes the candidates. The spec must therefore finish before the first perm setup starts. Its own dependencies place it in a phase that ends before then; naming it here states the order instead of leaving it to follow from another project's edges.
+  {
+    name: 'data-setup-perm-1e1cg1co',
+    testMatch: /perm-1e1cg1co\.setup\.ts/,
+    teardown: 'data-teardown-perm-1e1cg1co',
+    dependencies: [
+      'voter-journey',
+      'contestant-journey',
+      'contestant-entity-selection',
+      'contestant-terms-gate-phone',
+      'contestant-email-registration',
+      'contestant-code-registration',
+      'contestant-password-recovery',
+      'contestant-entry-scan',
+      'contestant-entry-phone',
+      'eperm07-term-trigger',
+      'voter-pageview-only',
+      ...(process.env.PLAYWRIGHT_NO_A11Y ? [] : ['contestant-a11y-scan'])
+    ]
+  },
+  {
+    name: 'data-teardown-perm-1e1cg1co',
+    testMatch: /perm-1e1cg1co\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-1e1cg1co',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-1e1cg1co\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-1e1cg1co']
+  },
+
+  // Variant 2: perm-2e-shared (2 tests) — sequential after perm-1e1cg1co
+  {
+    name: 'data-setup-perm-2e-shared',
+    testMatch: /perm-2e-shared\.setup\.ts/,
+    teardown: 'data-teardown-perm-2e-shared',
+    // Depends on the previous chain's SPEC project (not its setup), so the previous chain's spec finishes before this setup seeds. Playwright forbids setups depending on teardown projects directly, so this is the strictest ordering we can declare. Cross-chain row isolation is enforced inside `setupFromTemplate` via `extraTeardownPrefix: 'test-perm-'` (clears the whole family before seeding this template), so we don't depend on the previous chain's teardown actually finishing before this setup runs.
+    dependencies: ['perm-1e1cg1co']
+  },
+  {
+    name: 'data-teardown-perm-2e-shared',
+    testMatch: /perm-2e-shared\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-2e-shared',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-2e-shared\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-2e-shared']
+  },
+
+  // Variant 3: perm-2e-asymmetric (1 test) — sequential after perm-2e-shared
+  {
+    name: 'data-setup-perm-2e-asymmetric',
+    testMatch: /perm-2e-asymmetric\.setup\.ts/,
+    teardown: 'data-teardown-perm-2e-asymmetric',
+    // Depends on previous SPEC — see data-setup-perm-2e-shared comment above (cross-chain isolation enforced via extraTeardownPrefix in setupFromTemplate).
+    dependencies: ['perm-2e-shared']
+  },
+  {
+    name: 'data-teardown-perm-2e-asymmetric',
+    testMatch: /perm-2e-asymmetric\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-2e-asymmetric',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-2e-asymmetric\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-2e-asymmetric']
+  },
+
+  // Variant 4: perm-startfromcg — a voter's walk and a contestant's nomination editor under "start from the constituency"; its setup stores one contestant session. Sequential after perm-2e-asymmetric
+  {
+    name: 'data-setup-perm-startfromcg',
+    testMatch: /perm-startfromcg\.setup\.ts/,
+    teardown: 'data-teardown-perm-startfromcg',
+    // Depends on previous SPEC — see data-setup-perm-2e-shared comment above (cross-chain isolation enforced via extraTeardownPrefix in setupFromTemplate).
+    dependencies: ['perm-2e-asymmetric']
+  },
+  {
+    name: 'data-teardown-perm-startfromcg',
+    testMatch: /perm-startfromcg\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-startfromcg',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-startfromcg\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-startfromcg']
+  },
+
+  // Variant 5: perm-disjoint-1co (2 tests) — sequential after perm-startfromcg
+  {
+    name: 'data-setup-perm-disjoint-1co',
+    testMatch: /perm-disjoint-1co\.setup\.ts/,
+    teardown: 'data-teardown-perm-disjoint-1co',
+    // Depends on previous SPEC — see data-setup-perm-2e-shared comment above (cross-chain isolation enforced via extraTeardownPrefix in setupFromTemplate).
+    dependencies: ['perm-startfromcg']
+  },
+  {
+    name: 'data-teardown-perm-disjoint-1co',
+    testMatch: /perm-disjoint-1co\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-disjoint-1co',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-disjoint-1co\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-disjoint-1co']
+  },
+
+  // Variant 6: perm-disable-election-1co (1 test) — sequential after perm-disjoint-1co
+  {
+    name: 'data-setup-perm-disable-election-1co',
+    testMatch: /perm-disable-election-1co\.setup\.ts/,
+    teardown: 'data-teardown-perm-disable-election-1co',
+    // Depends on previous SPEC — see data-setup-perm-2e-shared comment above (cross-chain isolation enforced via extraTeardownPrefix in setupFromTemplate).
+    dependencies: ['perm-disjoint-1co']
+  },
+  {
+    name: 'data-teardown-perm-disable-election-1co',
+    testMatch: /perm-disable-election-1co\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-disable-election-1co',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-disable-election-1co\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-disable-election-1co']
+  },
+
+  // Variant 7: perm-disable-election-2co (1 test) — sequential after perm-disable-election-1co
+  {
+    name: 'data-setup-perm-disable-election-2co',
+    testMatch: /perm-disable-election-2co\.setup\.ts/,
+    teardown: 'data-teardown-perm-disable-election-2co',
+    // Depends on previous SPEC — see data-setup-perm-2e-shared comment above (cross-chain isolation enforced via extraTeardownPrefix in setupFromTemplate).
+    dependencies: ['perm-disable-election-1co']
+  },
+  {
+    name: 'data-teardown-perm-disable-election-2co',
+    testMatch: /perm-disable-election-2co\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-disable-election-2co',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-disable-election-2co\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-disable-election-2co']
+  },
+
+  // Variant 8: perm-not-located-2e2cg (5 tests) — sequential after perm-disable-election-2co
+  {
+    name: 'data-setup-perm-not-located-2e2cg',
+    testMatch: /perm-not-located-2e2cg\.setup\.ts/,
+    teardown: 'data-teardown-perm-not-located-2e2cg',
+    // Depends on previous SPEC — see data-setup-perm-2e-shared comment above (cross-chain isolation enforced via extraTeardownPrefix in setupFromTemplate).
+    dependencies: ['perm-disable-election-2co']
+  },
+  {
+    name: 'data-teardown-perm-not-located-2e2cg',
+    testMatch: /perm-not-located-2e2cg\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-not-located-2e2cg',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-not-located-2e2cg\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-not-located-2e2cg']
+  },
+
+  // === contestant-journey chain ===
+  //
+  // contestant-journey setup does not re-seed (see tests/tests/setup/contestant/contestant-journey.setup.ts): it consumes the base data already seeded by `data-setup-base` and runs as a PARALLEL LEAF alongside voter-journey, so neither cascade-skips the other on spec failure. Their teardowns are independent: base.teardown owns the 'test-' row prefix; contestant-journey.teardown owns only the auth.users row created by the spec's registration step.
+  //
+  // The setup still guarantees a clean auth.users row for UNREGISTERED_CANDIDATE_EMAIL via idempotent `unregisterCandidate`, so the registration-via-email step lands deterministically.
+  //
+  // Spec project sets `storageState: { cookies: [], origins: [] }` to start UNAUTHENTICATED — required for the registration-via-email flow.
+  {
+    name: 'data-setup-contestant-journey',
+    testMatch: /contestant-journey\.setup\.ts/,
+    teardown: 'data-teardown-contestant-journey',
+    dependencies: ['data-setup-base']
+  },
+  {
+    name: 'data-teardown-contestant-journey',
+    testMatch: /contestant-journey\.teardown\.ts/,
+    // reason: contestant-journey.teardown.ts performs no prefix delete (it only calls unregisterCandidate), so there is no runTeardownAsserted accounting to mask here. Set to 0 anyway for consistency with every other data-teardown-* project, so a future edit that adds a delete + runTeardownAsserted call to this file inherits the non-retrying posture by default rather than needing a new opt-in.
+    retries: 0
+  },
+  {
+    name: 'contestant-journey',
+    testDir: './tests/specs/contestant',
+    testMatch: /contestant-journey\.spec\.ts/,
+    fullyParallel: false, // single-test serial journey
+    use: {
+      ...devices['Desktop Chrome'],
+      storageState: { cookies: [], origins: [] }
+    },
+    dependencies: ['data-setup-contestant-journey']
+  },
+
+  // === contestant-entity-selection chain ===
+  //
+  // The entity-selection setup does not seed (see tests/tests/setup/contestant/entity-selection.setup.ts): it consumes the base data already seeded by `data-setup-base`, registers three users on three unconfirmed rows of it that no other identity edits, and stores two sessions. One edits two candidates and an organization (`MULTI_ENTITY_STORAGE_STATE`); the other has nothing to edit (`NO_ENTITY_STORAGE_STATE`). Its teardown owns only those three auth users; base.teardown owns the 'test-' row prefix.
+  //
+  // Both stored sessions are READ-ONLY for the run: no spec signs either out. The one spec case that signs out signs a third user in through the login form first.
+  //
+  // The spec project also depends on `auth-setup`, because one of its cases reads the base candidate's stored session to show that a user with a single entity never sees the selection screen. Its `testMatch` names the one spec file: the project shares its `testDir` with `contestant-journey` and the bank-auth projects, each of which matches its own file alone.
+  //
+  // The spec saves an answer of one of its own candidates and of nothing else. That row is unconfirmed, so no voter query reads it.
+  {
+    name: 'data-setup-entity-selection',
+    testMatch: /entity-selection\.setup\.ts/,
+    teardown: 'data-teardown-entity-selection',
+    dependencies: ['data-setup-base']
+  },
+  {
+    name: 'data-teardown-entity-selection',
+    testMatch: /entity-selection\.teardown\.ts/,
+    // reason: entity-selection.teardown.ts performs no prefix delete (it only calls unregisterCandidate), so there is no runTeardownAsserted accounting to mask here. Set to 0 anyway for consistency with every other data-teardown-* project, so a future edit that adds a delete + runTeardownAsserted call to this file inherits the non-retrying posture by default rather than needing a new opt-in.
+    retries: 0
+  },
+  {
+    name: 'contestant-entity-selection',
+    testDir: './tests/specs/contestant',
+    testMatch: /contestant-entity-selection\.spec\.ts/,
+    fullyParallel: false, // the cases share one user's rows and one stored session
+    use: { ...devices['Desktop Chrome'], storageState: MULTI_ENTITY_STORAGE_STATE },
+    dependencies: ['data-setup-entity-selection', 'auth-setup']
+  },
+
+  // === settings-permutation chains ===
+  //
+  // Chained sequentially among themselves (perm-access-disable → perm-per-app-notifications) per the perm-* family precedent. The single perm-access-disable node covers the voter-app, contestant-app and maintenance modes, re-seeding the app_settings singleton per access mode in-spec.
+  //
+  // Parallel-safety: each perm template uses a distinct externalIdPrefix ('e2e-perm-access-disable-', 'e2e-perm-notif-'), and each setup passes `extraTeardownPrefix: ['test-', 'e2e-perm-']` to pre-clear any residual rows from prior chains still mid-teardown.
+
+  // perm-access-disable (3 tests: voterApp / contestantApp / underMaintenance) — anchored on perm-not-located-2e2cg so the whole perm family is one linear sequence running strictly after the journeys. Single linear ordering eliminates all cross-chain coexistence on the shared single DB + app_settings singleton.
+  {
+    name: 'data-setup-perm-access-disable',
+    testMatch: /perm-access-disable\.setup\.ts/,
+    teardown: 'data-teardown-perm-access-disable',
+    dependencies: ['perm-not-located-2e2cg']
+  },
+  {
+    name: 'data-teardown-perm-access-disable',
+    testMatch: /perm-access-disable\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-access-disable',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-access-disable\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-access-disable']
+  },
+
+  // perm-per-app-notifications (2 tests) — sequential after perm-access-disable.
+  //
+  // The chain (and the perm family's anchor on the journey leaves) is load-bearing for the FULL `yarn test:e2e` run: every perm setup overwrites the single global `app_settings` row (setupFromTemplate → Writer Pass-5), so a perm setup must never run while a journey or another perm spec is reading it. That ordering is what makes `--project=perm-per-app-notifications` pull in voter-journey + the whole perm chain.
+  //
+  // To verify just these 2 tests in isolation (skips the journeys + perm chain), run the REAL setup project then the spec, both with --no-deps:
+  //   yarn test:e2e --project=data-setup-perm-per-app-notifications --no-deps
+  //   yarn test:e2e --project=perm-per-app-notifications --no-deps
+  // (--no-deps reproduces the exact full-suite setup state without the chain; run `yarn db:reset` afterwards to drop the standalone seed.)
+  {
+    name: 'data-setup-perm-per-app-notifications',
+    testMatch: /perm-per-app-notifications\.setup\.ts/,
+    teardown: 'data-teardown-perm-per-app-notifications',
+    dependencies: ['perm-access-disable']
+  },
+  {
+    name: 'data-teardown-perm-per-app-notifications',
+    testMatch: /perm-per-app-notifications\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-per-app-notifications',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-per-app-notifications\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-per-app-notifications']
+  },
+
+  // perm-missing-nominations (1 test) — sequential after perm-per-app-notifications. app_settings singleton clobbering risk forces sequential chains within the perm family.
+  {
+    name: 'data-setup-perm-missing-nominations',
+    testMatch: /perm-missing-nominations\.setup\.ts/,
+    teardown: 'data-teardown-perm-missing-nominations',
+    dependencies: ['perm-per-app-notifications']
+  },
+  {
+    name: 'data-teardown-perm-missing-nominations',
+    testMatch: /perm-missing-nominations\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-missing-nominations',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-missing-nominations\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-missing-nominations']
+  },
+
+  // perm-localisation-positive (1 test). Operates against the 3-locale staticSettings base (en/fi/sv) directly — no runtime override. Sequential after perm-missing-nominations; app_settings singleton clobbering risk forces sequential chains within the perm family.
+  {
+    name: 'data-setup-perm-localisation-positive',
+    testMatch: /perm-localisation-positive\.setup\.ts/,
+    teardown: 'data-teardown-perm-localisation-positive',
+    dependencies: ['perm-missing-nominations']
+  },
+  {
+    name: 'data-teardown-perm-localisation-positive',
+    testMatch: /perm-localisation-positive\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-localisation-positive',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-localisation-positive\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-localisation-positive']
+  },
+
+  // ===================================================================
+  // Settings-permutation chains anchored on perm-localisation-positive.
+  // app_settings JSONB singleton clobbering forces a sequential chain — no parallel execution within the perm-* family.
+  //
+  // Chain order:
+  //   perm-localisation-positive → perm-answers-locked → perm-hide-hero
+  //     → perm-show-feedback-survey → perm-header-show-help
+  //     → perm-hide-all-nominations → perm-hide-if-missing-answers
+  //     → perm-hide-election-tags → perm-hide-category-tags
+  //     → perm-disable-allow-open → perm-question-video
+  //     → perm-interactive-info → perm-org-matching
+  //     → perm-organization-editing → perm-no-nomination → perm-contestant-nominations
+  //     → voter-prefs-tracking (the tail; admin-access follows it)
+  // ===================================================================
+
+  // perm-answers-locked. Full 3-surface coverage. Setup mints a per-perm storage state via real forceRegister + UI login, consumed by the authenticated sub-tests in perm-answers-locked.spec.ts.
+  {
+    name: 'data-setup-perm-answers-locked',
+    testMatch: /perm-answers-locked\.setup\.ts/,
+    teardown: 'data-teardown-perm-answers-locked',
+    dependencies: ['perm-localisation-positive']
+  },
+  {
+    name: 'data-teardown-perm-answers-locked',
+    testMatch: /perm-answers-locked\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-answers-locked',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-answers-locked\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-answers-locked']
+  },
+
+  // perm-hide-hero. Authenticated candidate via real forceRegister + UI login.
+  {
+    name: 'data-setup-perm-hide-hero',
+    testMatch: /perm-hide-hero\.setup\.ts/,
+    teardown: 'data-teardown-perm-hide-hero',
+    dependencies: ['perm-answers-locked']
+  },
+  {
+    name: 'data-teardown-perm-hide-hero',
+    testMatch: /perm-hide-hero\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-hide-hero',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-hide-hero\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-hide-hero']
+  },
+
+  // perm-show-feedback-survey. Unauthenticated voter intro + Banner header-feedback assertion + feedback-form open, EXTENDED with the results-view feedback/survey popup-coordination assertions (placement, timing/once, no-double-pop, dismiss-persistence) + the survey.showIn[] per-surface audit. Sequential after perm-hide-hero.
+  {
+    name: 'data-setup-perm-show-feedback-survey',
+    testMatch: /perm-show-feedback-survey\.setup\.ts/,
+    teardown: 'data-teardown-perm-show-feedback-survey',
+    dependencies: ['perm-hide-hero']
+  },
+  {
+    name: 'data-teardown-perm-show-feedback-survey',
+    testMatch: /perm-show-feedback-survey\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-show-feedback-survey',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-show-feedback-survey\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-show-feedback-survey']
+  },
+
+  // perm-header-show-help. Unauthenticated voter intro + Banner header-help button + /en/about URL assertion.
+  {
+    name: 'data-setup-perm-header-show-help',
+    testMatch: /perm-header-show-help\.setup\.ts/,
+    teardown: 'data-teardown-perm-header-show-help',
+    dependencies: ['perm-show-feedback-survey']
+  },
+  {
+    name: 'data-teardown-perm-header-show-help',
+    testMatch: /perm-header-show-help\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-header-show-help',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-header-show-help\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-header-show-help']
+  },
+
+  // perm-hide-all-nominations. Unauthenticated; spec asserts on the 307 redirect from /en/nominations to /en.
+  {
+    name: 'data-setup-perm-hide-all-nominations',
+    testMatch: /perm-hide-all-nominations\.setup\.ts/,
+    teardown: 'data-teardown-perm-hide-all-nominations',
+    dependencies: ['perm-header-show-help']
+  },
+  {
+    name: 'data-teardown-perm-hide-all-nominations',
+    testMatch: /perm-hide-all-nominations\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-hide-all-nominations',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-hide-all-nominations\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-hide-all-nominations']
+  },
+
+  // perm-hide-if-missing-answers. Voter walk asserts ONLY on candidate visibility (no org count assertion).
+  {
+    name: 'data-setup-perm-hide-if-missing-answers',
+    testMatch: /perm-hide-if-missing-answers\.setup\.ts/,
+    teardown: 'data-teardown-perm-hide-if-missing-answers',
+    dependencies: ['perm-hide-all-nominations']
+  },
+  {
+    name: 'data-teardown-perm-hide-if-missing-answers',
+    testMatch: /perm-hide-if-missing-answers\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-hide-if-missing-answers',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-hide-if-missing-answers\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-hide-if-missing-answers']
+  },
+
+  // perm-hide-election-tags. Voter walk → /questions asserts absence of the election-tag testid.
+  {
+    name: 'data-setup-perm-hide-election-tags',
+    testMatch: /perm-hide-election-tags\.setup\.ts/,
+    teardown: 'data-teardown-perm-hide-election-tags',
+    dependencies: ['perm-hide-if-missing-answers']
+  },
+  {
+    name: 'data-teardown-perm-hide-election-tags',
+    testMatch: /perm-hide-election-tags\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-hide-election-tags',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-hide-election-tags\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-hide-election-tags']
+  },
+
+  // perm-hide-category-tags. Voter walk → /questions asserts absence of the category-tag testid.
+  {
+    name: 'data-setup-perm-hide-category-tags',
+    testMatch: /perm-hide-category-tags\.setup\.ts/,
+    teardown: 'data-teardown-perm-hide-category-tags',
+    dependencies: ['perm-hide-election-tags']
+  },
+  {
+    name: 'data-teardown-perm-hide-category-tags',
+    testMatch: /perm-hide-category-tags\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-hide-category-tags',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-hide-category-tags\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-hide-category-tags']
+  },
+
+  // perm-disable-allow-open. Two describe blocks: candidate-side authenticated (via storage state minted in setup) + voter-side unauthenticated /results walk.
+  {
+    name: 'data-setup-perm-disable-allow-open',
+    testMatch: /perm-disable-allow-open\.setup\.ts/,
+    teardown: 'data-teardown-perm-disable-allow-open',
+    dependencies: ['perm-hide-category-tags']
+  },
+  {
+    name: 'data-teardown-perm-disable-allow-open',
+    testMatch: /perm-disable-allow-open\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-disable-allow-open',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-disable-allow-open\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-disable-allow-open']
+  },
+
+  // perm-question-video. Voter visibility matrix (video on q1/q3/q5 only, none on q2/q4 or any category intro) + candidate hideVideo slice (authenticated via a storage state minted in setup). Sequential after perm-disable-allow-open.
+  {
+    name: 'data-setup-perm-question-video',
+    testMatch: /perm-question-video\.setup\.ts/,
+    teardown: 'data-teardown-perm-question-video',
+    dependencies: ['perm-disable-allow-open']
+  },
+  {
+    name: 'data-teardown-perm-question-video',
+    testMatch: /perm-question-video\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-question-video',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-question-video\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-question-video']
+  },
+
+  // perm-interactive-info. Voter questions-flow info matrix: popup-modal mode (interactiveInfo.enabled=true, shipped default) vs the static-expander mode (per-question re-seed), plus customData.infoSections and per-type arguments (Likert/Boolean/Categorical). Unauthenticated voter slice → no storage state. Sequential after perm-question-video.
+  {
+    name: 'data-setup-perm-interactive-info',
+    testMatch: /perm-interactive-info\.setup\.ts/,
+    teardown: 'data-teardown-perm-interactive-info',
+    dependencies: ['perm-question-video']
+  },
+  {
+    name: 'data-teardown-perm-interactive-info',
+    testMatch: /perm-interactive-info\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-interactive-info',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-interactive-info\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-interactive-info']
+  },
+
+  // perm-org-matching. Voter results-flow organization-match matrix: matching.organizationMatching none / answersOnly / impute, re-seeded per mode. PRIMARY: exact per-mode org match scores (none → no score; answersOnly → org's own answers only, blanks penalised polar-opposite; impute → member-imputed, differs from answersOnly). SECONDARY: About-page org-matching disclosure per mode. Unauthenticated voter slice → no storage state (the results path answers in-test). Sequential after perm-interactive-info.
+  {
+    name: 'data-setup-perm-org-matching',
+    testMatch: /perm-org-matching\.setup\.ts/,
+    teardown: 'data-teardown-perm-org-matching',
+    dependencies: ['perm-interactive-info']
+  },
+  {
+    name: 'data-teardown-perm-org-matching',
+    testMatch: /perm-org-matching\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-org-matching',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-org-matching\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-org-matching']
+  },
+
+  // perm-organization-editing. An organization's editor and a candidate's editor on their own entity's pages, and an anonymous voter on what those pages publish. One of the two perm datasets whose settings serve both entity types. Its setup seeds a confirmed organization, an unconfirmed organization and an unconfirmed candidate and stores one session for each one's editor; the spec selects a session per describe, so the project carries no `storageState` of its own. The three sessions are this dataset's own and no other project reads them. Sequential after perm-org-matching.
+  {
+    name: 'data-setup-perm-organization-editing',
+    testMatch: /perm-organization-editing\.setup\.ts/,
+    teardown: 'data-teardown-perm-organization-editing',
+    dependencies: ['perm-org-matching']
+  },
+  {
+    name: 'data-teardown-perm-organization-editing',
+    testMatch: /perm-organization-editing\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-organization-editing',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-organization-editing\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-organization-editing']
+  },
+
+  // perm-no-nomination. The editor of a candidate and of an organization on their own entity's pages, with and without a nomination. Its settings serve both entity types. Its setup seeds a candidate and an organization with no nomination row and a candidate with one, and stores one session for each one's editor; the spec selects a session per describe, so the project carries no `storageState` of its own. The three sessions are this dataset's own and no other project reads them. Sequential after perm-organization-editing.
+  {
+    name: 'data-setup-perm-no-nomination',
+    testMatch: /perm-no-nomination\.setup\.ts/,
+    teardown: 'data-teardown-perm-no-nomination',
+    dependencies: ['perm-organization-editing']
+  },
+  {
+    name: 'data-teardown-perm-no-nomination',
+    testMatch: /perm-no-nomination\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-no-nomination',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-no-nomination\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-no-nomination']
+  },
+
+  // perm-contestant-nominations. The editor of a candidate and of a party on the entity's nominations. Its settings serve both entity types. Its setup seeds three elections of three types, a candidate and a party with no nomination row, a candidate and a party with nominations and the parties and alliances a nomination can stand under, and stores one session for each of its four editors; the spec selects a session per describe, so the project carries no `storageState` of its own. The four sessions are this dataset's own and no other project reads them. Sequential after perm-no-nomination.
+  {
+    name: 'data-setup-perm-contestant-nominations',
+    testMatch: /perm-contestant-nominations\.setup\.ts/,
+    teardown: 'data-teardown-perm-contestant-nominations',
+    dependencies: ['perm-no-nomination']
+  },
+  {
+    name: 'data-teardown-perm-contestant-nominations',
+    testMatch: /perm-contestant-nominations\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-contestant-nominations',
+    testDir: './tests/specs/perm',
+    testMatch: /contestant-nominations\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-contestant-nominations']
+  },
+
+  // perm-analytics-tracking. The dataset turns analytics.trackEvents on in the shared app_settings row, so the specs of the `voter-prefs-tracking` project, which read usage events in the default consent mode, must not run while another project writes that row; they are hosted HERE in the perm serial chain rather than as base leaves. Setup depends on the previous perm SPEC (perm-contestant-nominations) to preserve the strict serial chain over the shared app_settings singleton. The setup mints no storage state: the terms-tracking spec registers its two users and stores their sessions itself, and the teardown unregisters them. Sequential after perm-contestant-nominations.
+  {
+    name: 'data-setup-perm-analytics-tracking',
+    testMatch: /perm-analytics-tracking\.setup\.ts/,
+    teardown: 'data-teardown-perm-analytics-tracking',
+    dependencies: ['perm-contestant-nominations']
+  },
+  {
+    name: 'data-teardown-perm-analytics-tracking',
+    testMatch: /perm-analytics-tracking\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  // voter-prefs-tracking — the default consent mode's analytics specs on the tracking dataset: the tracking spec (`voter-prefs-tracking.spec.ts`: the voter app's usage events and the stored preferences) and the privacy journey (`analytics-privacy.spec.ts`: requests and device state across the voter, Contestant and Admin apps, the pageviews of all three, the sends made as a page is left, and that the interface does not wait for the relay), the Global Privacy Control spec (`analytics-gpc.spec.ts`: no prompt, no send and nothing stored under the signal, with a control without it), and the Contestant App's terms-tracking spec (`contestant/contestant-terms-tracking.spec.ts`: the opt-out box of the terms-of-use view, its accessibility, the choice an acceptance stores and what is sent after it, and the consent control of the Contestant privacy page). The name is kept, because other projects depend on it by name. `testDir` is the specs root, because the files live in two directories, and `testMatch` names each file with its directory. The files run one test at a time each (`fullyParallel: false`). The settings row is only read; the terms-tracking spec writes nothing but its own two auth users, their grants and terms-of-use acceptances on the dataset's two member candidates, which no other file of the project reads.
+  {
+    name: 'voter-prefs-tracking',
+    testDir: './tests/specs',
+    testMatch:
+      /[\\/](voter[\\/](voter-prefs-tracking|analytics-privacy|analytics-gpc)|contestant[\\/]contestant-terms-tracking)\.spec\.ts$/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-analytics-tracking']
+  },
+
+  // =========================================================================
+  // ADMIN APP.
+  //
+  // WHY IT JOINS THE TAIL OF THE PERM SERIAL CHAIN. `data-setup-admin-auth` takes the SAME dependency edge `data-setup-identity-provider` takes — `['voter-prefs-tracking']`, the chain's last project — for the same reason: the `app_settings` row is a singleton that several projects replace, and only the serial chain keeps two of them from overlapping, so a fast isolated gate standing alone would not be safe. The concrete hazard for THIS spec is `perm-access-disable`, which re-seeds the singleton per sub-test through `access.underMaintenance: true` — under which `routes/admin/+layout.svelte` renders `MaintenancePage` instead of the admin shell and every assertion below would be about a maintenance page. The accepted cost is that an isolated `--project=admin-access` run pulls the whole chain and takes full-suite time rather than seconds. The measurement behind this is in the planning record (see phase 158).
+  //
+  // THE EXPLICIT `testMatch` IS NOT BOOKKEEPING — it is the same invariant spelled out on `a11y-smoke` above. `admin-access` declares `testDir: './tests/specs/admin'` and would otherwise collect any sibling spec added to that directory later and run it under the ADMIN storageState; and, symmetrically, a project without the stored session would run the admin spec unauthenticated, every admin route would 307 to the login form, and the run would report a confident clean nothing about a login page. That is the one direction in which this wiring can be silently wrong AND green.
+  // =========================================================================
+  {
+    name: 'data-setup-admin-auth',
+    testMatch: /admin-auth\.setup\.ts/,
+    teardown: 'data-teardown-admin-access',
+    dependencies: ['voter-prefs-tracking']
+  },
+  {
+    name: 'data-teardown-admin-access',
+    testMatch: /admin-access\.teardown\.ts/,
+    // reason: mirrors the sibling data-teardown projects — a retry of a state-mutating teardown always observes an already-cleared state and passes, which would mask a partial removal.
+    retries: 0
+  },
+  {
+    name: 'admin-access',
+    testDir: './tests/specs/admin',
+    testMatch: /admin-access\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'], storageState: ADMIN_STORAGE_STATE },
+    dependencies: ['data-setup-admin-auth']
+  }
+];
+
+/**
+ * Leaves of `BASE_PROJECTS` that the terminal closed-project node deliberately does NOT wait for, each with its written reason.
+ *
+ * `_probes` is excluded from every gate run (`test:e2e` and the no-`--project` wrapper run pass `--grep-invert @probe`) and needs out-of-band per-probe seeding. A `--project perm-closed-project` run applies no grep, so depending on it would pull every probe into that run's dependency closure unseeded, where each would fail. It also never runs concurrently with a gate run, so there is nothing to order.
+ */
+const CLOSED_PROJECT_EXCLUDED_LEAVES: Record<string, string> = {
+  _probes: 'excluded from every gate run and seeded out of band; never concurrent with the closed node'
+};
+
+/**
+ * The terminal closed-project node's dependency list: every leaf of `BASE_PROJECTS`, DERIVED here rather than typed by hand.
+ *
+ * A leaf is a project that no other project names in `dependencies` and that is not some project's `teardown`. Conditional projects (`PLAYWRIGHT_NO_PERF`, `PLAYWRIGHT_NO_A11Y`, `PLAYWRIGHT_VISUAL`) are in `BASE_PROJECTS` only when their env gate declared them, so the derived list never names an undeclared project, which Playwright rejects at config load.
+ */
+const closedProjectTeardownNames = new Set(BASE_PROJECTS.map((p) => p.teardown).filter((n): n is string => !!n));
+const closedProjectDependedOnNames = new Set(BASE_PROJECTS.flatMap((p) => p.dependencies ?? []));
+const baseLeafNames = BASE_PROJECTS.map((p) => p.name).filter(
+  (n): n is string => !!n && !closedProjectTeardownNames.has(n) && !closedProjectDependedOnNames.has(n)
+);
+const CLOSED_PROJECT_DEPENDENCIES = baseLeafNames.filter((n) => !(n in CLOSED_PROJECT_EXCLUDED_LEAVES));
+
+/**
+ * TERMINAL-NODE ORDERING GUARD.
+ *
+ * Closing the one project the dev server serves blanks every voter spec that reads it, so the closed-project node must start only after every other spec has finished. The dependency list above is derived, which keeps a leaf added later ordered before the node automatically; this guard catches the two ways the derivation itself could go wrong. An empty list would schedule the node FIRST, concurrently with everything. A list without `admin-access` means the derivation has lost the perm chain's tail (the admin stored session this node's preview test reads also depends on it). An exclusion naming something that is not a leaf is a stale disposition that would silently stop meaning anything.
+ */
+if (CLOSED_PROJECT_DEPENDENCIES.length === 0 || !CLOSED_PROJECT_DEPENDENCIES.includes('admin-access')) {
+  throw new Error(
+    'Terminal closed-project node: the derived leaf dependency list is ' +
+      `[${CLOSED_PROJECT_DEPENDENCIES.join(', ')}], which is empty or lacks 'admin-access'. The node closes ` +
+      'the served E2E project and must run after every other leaf; fix the derivation in ' +
+      'this file rather than hand-typing the list.'
+  );
+}
+const staleClosedProjectExclusions = Object.keys(CLOSED_PROJECT_EXCLUDED_LEAVES).filter(
+  (n) => !baseLeafNames.includes(n) && BASE_PROJECTS.some((p) => p.name === n)
+);
+if (staleClosedProjectExclusions.length > 0) {
+  throw new Error(
+    `Terminal closed-project node: CLOSED_PROJECT_EXCLUDED_LEAVES names ${staleClosedProjectExclusions.join(', ')}, ` +
+      'which is not a leaf. Drop the exclusion or restate its reason.'
+  );
+}
+
+// perm-closed-project — TERMINAL NODE.
+//
+// It seeds `perm-closed-project`, whose `openForVoters: false` closes the E2E project, and then drives the application as anon, as a candidate and as an admin grant holder. Closing the one project the dev server serves blanks every concurrent voter spec, which is far more destructive than the `app_settings` singleton the perm chain serializes, so the node runs after EVERY leaf of the suite: its setup's dependencies are `CLOSED_PROJECT_DEPENDENCIES`, derived above rather than listed.
+//
+// The project is reopened in three layers: the spec's `afterAll`, this node's teardown (`ensureProject()`), and the next run's global setup (`ensureProject()` again), so a crashed run cannot leave the next one closed.
+const CLOSED_PROJECT_TRIO: Array<Project> = [
+  {
+    name: 'data-setup-perm-closed-project',
+    testMatch: /perm-closed-project\.setup\.ts/,
+    teardown: 'data-teardown-perm-closed-project',
+    dependencies: CLOSED_PROJECT_DEPENDENCIES
+  },
+  {
+    name: 'data-teardown-perm-closed-project',
+    testMatch: /perm-closed-project\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-closed-project',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-closed-project\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-closed-project']
+  }
+];
+
+/**
+ * The `--project` values of the runner's command line, in both the `--project a b` and the `--project=a` forms.
+ */
+function projectArguments(argv: ReadonlyArray<string>): Array<string> {
+  const values: Array<string> = [];
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg.startsWith('--project=')) {
+      values.push(arg.slice('--project='.length));
+    } else if (arg === '--project') {
+      while (i + 1 < argv.length && !argv[i + 1].startsWith('-')) values.push(argv[++i]);
+    }
+  }
+  return values;
+}
+
+/**
+ * STANDALONE-ANALYTICS GUARD.
+ *
+ * The standalone analytics projects below seed a template whose setup REPLACES the `app_settings` singleton, outside the perm serial chain that otherwise keeps every such replace from overlapping another spec. They are safe only when nothing else runs: a single-project run. So when `PLAYWRIGHT_ANALYTICS_STANDALONE` is set, the command line must name its projects, and none of them by a wildcard; otherwise the run stops here, before any spec, by name.
+ *
+ * Playwright loads this file again in every worker process, whose command line is not the runner's, so the guard applies in the runner only: a worker has `TEST_WORKER_INDEX` set.
+ */
+if (process.env.PLAYWRIGHT_ANALYTICS_STANDALONE && process.env.TEST_WORKER_INDEX === undefined) {
+  const projects = projectArguments(process.argv);
+  if (projects.length === 0 || projects.some((name) => name.includes('*'))) {
+    throw new Error(
+      'PLAYWRIGHT_ANALYTICS_STANDALONE is set, but the command line does not name its projects ' +
+        `(--project: [${projects.join(', ')}]). The standalone analytics projects replace the app_settings ` +
+        'row outside the perm serial chain and may run only as a single-project run, e.g. ' +
+        '`--project analytics-default-standalone`. Unset the variable for a full-suite run.'
+    );
+  }
+}
+
+// Standalone analytics — OPT-IN (PLAYWRIGHT_ANALYTICS_STANDALONE), and refused without `--project` by the guard above.
+//
+// A short stand-alone form of the tail of the perm chain: the same dataset and the same four spec files the `voter-prefs-tracking` project runs (the tracking spec, the analytics privacy journey, the Global Privacy Control spec and the Contestant terms-tracking spec), behind a setup that depends on nothing. The project `analytics-consent-free` runs the consent-free spec behind the same setup. A single-project run therefore seeds one dataset and runs its spec files instead of pulling the whole perm chain, which is what makes it usable for a run repeated until it is understood, and for a run with the dev server in another consent mode.
+//
+// The setup and teardown projects point at the perm pair's own files, so the dataset, its prefix and its teardown accounting are the perm project's. They are kept out of `BASE_PROJECTS`, so the terminal closed-project node never waits for them.
+const ANALYTICS_STANDALONE_PROJECTS: Array<Project> = process.env.PLAYWRIGHT_ANALYTICS_STANDALONE
+  ? [
+      {
+        name: 'data-setup-analytics-standalone',
+        testMatch: /perm-analytics-tracking\.setup\.ts/,
+        teardown: 'data-teardown-analytics-standalone'
+      },
+      {
+        name: 'data-teardown-analytics-standalone',
+        testMatch: /perm-analytics-tracking\.teardown\.ts/,
+        // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+        retries: 0
+      },
+      {
+        name: 'analytics-default-standalone',
+        testDir: './tests/specs',
+        testMatch:
+          /[\\/](voter[\\/](analytics-privacy|voter-prefs-tracking|analytics-gpc)|contestant[\\/]contestant-terms-tracking)\.spec\.ts$/,
+        fullyParallel: false,
+        use: { ...devices['Desktop Chrome'] },
+        dependencies: ['data-setup-analytics-standalone']
+      },
+      // analytics-consent-free — the consent-free spec, on the same dataset and setup. It needs the dev server in consent-free mode, which no other project of any run expects, so it is collected here only and never by the default run. Its first test checks the mode on the privacy page and fails by name without the prefix in the opt-in list of the docblock below.
+      {
+        name: 'analytics-consent-free',
+        testDir: './tests/specs/voter',
+        testMatch: /voter-tracking-consent-free\.spec\.ts$/,
+        fullyParallel: false,
+        use: { ...devices['Desktop Chrome'] },
+        dependencies: ['data-setup-analytics-standalone']
+      }
+    ]
+  : [];
+
+/**
+ * Playwright configuration with project dependencies pattern.
+ *
+ * The suite is:
+ *
+ *   - journey chains: data-setup-base -> voter-journey
+ *     + data-setup-base -> data-setup-contestant-journey -> contestant-journey
+ *     + data-setup-base -> data-setup-entity-selection -> contestant-entity-selection (which also waits for auth-setup)
+ *   - perm-* family: a single sequential chain that runs strictly AFTER the journey leaves — its first setup (data-setup-perm-1e1cg1co) depends on [voter-journey, contestant-journey, contestant-entity-selection] among others, and every later perm setup chains off the previous perm spec. Each perm setup clobbers the app_settings JSONB singleton, so the family runs serially AND must not interleave with the base/journey chains on the shared single DB. The perm→journey dependency direction keeps opt-in --project runs pulling only base, never the perm family. Two links also register three users each and store a session for each user, which no other project reads. perm-organization-editing (after perm-org-matching) edits a confirmed organization, an unconfirmed organization and an unconfirmed candidate under its sessions. perm-no-nomination (after perm-organization-editing) edits a candidate and an organization with no nomination and a candidate with one under its own. A third link registers four users: perm-contestant-nominations (after perm-no-nomination, before the analytics setup) defines, changes and removes the nominations of a candidate and of a party under its sessions.
+ *   - specialized projects that run BY DEFAULT and are opt-OUT via env: performance (disable with PLAYWRIGHT_NO_PERF) and the two-project a11y scan family, a11y-smoke + contestant-a11y-scan (both disabled together with PLAYWRIGHT_NO_A11Y). performance and a11y-smoke depend on `data-setup-base` (e2e/base dataset); contestant-a11y-scan additionally depends on `auth-setup`, because it scans candidate `(protected)` routes, and on `data-setup-entity-selection`, because three of its entries read the two sessions that setup stores.
+ *   - OPT-IN projects (excluded from the default run): · visual-regression (PLAYWRIGHT_VISUAL) — opt-in because its PNG baselines are Linux/x86_64 captures that only reproduce on the CI runner image, not because it is broken: it is a BLOCKING job in .github/workflows/main.yaml.
+ *       · data-setup-analytics-standalone, data-teardown-analytics-standalone, analytics-default-standalone (PLAYWRIGHT_ANALYTICS_STANDALONE) — a short stand-alone form of the tail of the perm chain, for runs that must be repeated quickly and for runs in another consent mode; the config refuses them in a run that does not name its projects.
+ *       · analytics-consent-free (PLAYWRIGHT_ANALYTICS_STANDALONE) — the consent-free spec, run alone with the dev server in consent-free mode, which the wrapper starts from the same environment: `PLAYWRIGHT_ANALYTICS_STANDALONE=1 ANALYTICS_PROVIDER=log ANALYTICS_CONSENT_MODE=free tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/<new run name> --project analytics-consent-free`. The wrapper resets the database first, as it does by default.
+ *   - the identity-provider projects, in the default run: bank-auth (depending on `data-setup-base`) calls `identity-callback` directly; data-setup-identity-provider -> contestant-identity-provider (with data-teardown-identity-provider) walks the browser through the mock OIDC issuer the `webServer` entry spawns, at the tail of the perm chain. `tests/scripts/e2e-run.sh` serves `identity-callback` with the identity provider's test environment, gives the dev server the same environment and restores the shared stack afterwards; a server started without that environment fails these specs.
+ *   - auth-service-contract: an API-only project in the default run, with no dependency and no stored session. It observes the running auth service refuse to create a user for an unauthenticated caller.
+ *   - invitation-contract: an API-only project in the default run, depending on `data-setup-base` and with no stored session. It observes the server contract of invitations on the two rows the base dataset reserves for it.
+ *   - invitation-landing: a browser project in the default run, depending on `data-setup-base` and with no stored session. It shows where a claimed project-scope invitation lands its user, creates and removes its own users, and writes on no row of the dataset.
+ *   - contestant-email-registration: a browser project in the default run, depending on `data-setup-base` and with no stored session. It follows an invited candidate from the sign-in screen through a mailed link, the set-password view and the terms of use to the candidate's home, writes on the one candidate the base dataset reserves for it, removes what it wrote, and finishes before the first perm setup starts.
+ *   - contestant-code-registration: a browser project in the default run, depending on `data-setup-base` and with no stored session. It follows an organization invited with a registration code from the registration screen through a mailed link, the set-password view and the terms of use to the organization's home, and shows what the same screens do with a used code and with a code that names nothing. It writes on the one organization the base dataset reserves for it, removes what it wrote, and finishes before the first perm setup starts.
+ *   - contestant-password-recovery: a browser project in the default run, depending on `data-setup-base` and with no stored session. It follows a user who has forgotten their password from the forgot-password page through a mailed recovery link, opened in a browser context that never asked for it, and the password-reset page to the home of the candidate they edit, and shows what the forgot-password page does with an address nobody holds and with an invited address that has no account. It writes on the one candidate the base dataset reserves for it, removes what it wrote, and finishes before the first perm setup starts.
+ *   - contestant-entry-scan: a browser project in the default run, depending on `data-setup-base` and with no stored session. It scans fourteen states of the entry screens a visitor with no session meets, each in both themes, and asserts the menu such a visitor is offered. It seeds an open and a used code on the two candidates the base dataset reserves for it, removes what it wrote, and finishes before the first perm setup starts.
+ *   - contestant-terms-gate-phone: a browser project in the default run, depending on `data-setup-base` and `auth-setup`. It holds the terms-of-use view to two phone widths under the stored session of the user who has not accepted, which it only reads, and finishes before the first perm setup starts.
+ *
+ * `auth-setup` runs IN THE DEFAULT RUN (the second scheduling phase, measured 5.0 s), because the default-on `contestant-a11y-scan` project consumes the two sessions it stores. The wiring's derivation is recorded at the `contestant-a11y-scan` project below.
+ *
+ * See https://playwright.dev/docs/test-global-setup-teardown
  */
 export default defineConfig({
   testDir: TESTS_DIR,
+  testIgnore: ['**/*.test.ts'],
   outputDir: path.join(TESTS_DIR, '../playwright-results'),
+
+  /* SERVED-APPLICATION GATE.
+   * Asserts that whatever is listening on `use.baseURL` below is THIS checkout's Vite dev server — proven by the served application's own response, not by the listener process — and aborts the run with exit 1 before any spec body if it is not. There is no bypass: `FRONTEND_PORT` moves the target, it does not skip the check.
+   * The path resolves relative to THIS config file's directory; that is not the `webServer.command` cwd gotcha documented further down, which concerns the spawn cwd instead.
+   * `--list` deliberately does not run it, so the "no dropped specs" check stays usable without a dev server (tests/README.md); the orphan-probe guard above
+   * runs at config-load time and covers that path. */
+  globalSetup: './global-setup.ts',
+
+  /* Screenshot baselines stored alongside specs in a git-trackable directory */
+  snapshotPathTemplate: '{testDir}/__screenshots__/{testFileName}/{arg}{ext}',
+
+  /* Per-test timeout — 90s locally and 180s on GitHub Actions, required for full-suite render-pressured fixtures.
+   * Under --workers=1 full-suite contention the answer-loop + post-loop waitForURL can exceed lower budgets, so the per-test wrapper timeout is the binding constraint.
+   * Single source of the ceiling: TIMEOUTS.testMax (tests/tests/helpers/timeouts.ts). */
+  timeout: TIMEOUTS.testMax,
+
   /* Run tests in files in parallel */
   fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
+  /* Fail the build on CI if you accidentally left test.only in the source code.
+   * Also keyed on GITHUB_ACTIONS, because `tests/scripts/e2e-run.sh` unsets `CI` and the CI E2E jobs run through it. */
+  forbidOnly: !!process.env.CI || process.env.GITHUB_ACTIONS === 'true',
   /* Retry tests on CI */
   retries: process.env.CI ? 3 : 0,
   /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI ? 1 : 6,
+
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [['html', { outputFolder: path.join(TESTS_DIR, '../playwright-report') }]],
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
-  use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    // baseURL: 'http://127.0.0.1:3000',
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on',
-
-    baseURL: process.env.FRONTEND_PORT ? `http://localhost:${process.env.FRONTEND_PORT}` : 'http://localhost:5173',
-    storageState: STORAGE_STATE
+  /* Visual-diff budget — the ABSOLUTE cap is the primary knob; the ratio is a small-baseline floor.
+   * `maxDiffPixels: 200` is the operative budget on all four baselines this suite has today.
+   * `maxDiffPixelRatio` is RETAINED, but it is not the budget.
+   * playwright-core's screenshot comparator (`comparators.js`) computes `maxDiffPixels2 = width × height × maxDiffPixelRatio` and then takes `Math.min(maxDiffPixels, maxDiffPixels2)`, so adding an absolute cap is monotonically strictness-INCREASING — it can never loosen a baseline — and `min(cap, 0.01 × area)` is bounded by `cap` however tall a fullPage capture grows. That bound is the point: under the ratio alone, a page that grows longer silently buys itself more tolerance (1280×3684 → a 47,155 px budget), enough for ~19,500 px of visible damage to pass at 41 % of budget (0.41 % of the image).
+   * Derivation of the 200: `cap = max(observed per-baseline run-to-run noise) × 10`, floored at 200, rounded up, and required to stay strictly < 5,000 so it stays ~4× below that ~19,500 px regression. Read the arithmetic honestly: the measured noise was 0 px in all 40 cells (4 baselines × 10 in-container runs at zero tolerance), so `0 × 10 = 0` and THE FLOOR — a constant fixed in advance, not a quantity these runs produced — set this value. What the measurements contribute is the licence to take the floor: a noise floor of exactly 0 gives any positive cap complete headroom, and 200 sits ~83× below the ~16,650 px the same injected regression measures in this suite today.
+   * Where the ratio would bind: only on a capture whose `0.01 × area` falls below the cap, i.e.
+   * under ~20,000 px² of area (~140×140). The smallest baseline here, contestant-preview-mobile at 390×924, has a 3,603.6 px ratio budget — still 18× above the cap — so the ratio is DORMANT on all four baselines today and is kept only as a floor for hypothetical very small captures.
+   * `threshold` is pixelmatch's per-pixel colour tolerance, not part of the budget. */
+  expect: {
+    toHaveScreenshot: {
+      threshold: 0.2,
+      maxDiffPixels: 200,
+      maxDiffPixelRatio: 0.01
+    }
   },
 
-  globalSetup: path.join(TESTS_DIR, './global-setup.ts'),
+  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  use: {
+    /* In CI, record a trace only when a test is retried, so first attempts run untraced. Playwright 1.63's trace recorder adds ~350 ms to a results render (584–611 ms traced vs 241–244 ms untraced), and on the slower CI runner that cost widens every fixed-window race. A test that fails once still leaves the trace of its retry. Locally there are no retries, so tracing stays on and only failures are kept. See
+     * https://playwright.dev/docs/trace-viewer
+     *
+     * `retain-on-failure` records exactly what `'on'` records — same instrumentation, same runtime cost — and then discards the trace when the test passes. What it buys is disk: a full-suite run under `'on'` deposits 260-340 MB of trace zips that nobody opens, because the run was green.
+     * Under `retain-on-failure` a green run deposits ~0 bytes and a red one still hands you the trace for the test that actually failed (local `retries: 0` does not weaken this — the retain fires on the final failed attempt either way).
+     *
+     * When a passing test's trace IS the evidence — e.g. grepping console messages out of GREEN trace zips — flip this to `'on'` for that investigation and flip it back. That is the rare case; paying 300 MB a run for it is not worth it. Note that browser-side forensics (console / pageerror / requestfailed) are captured independently of this setting by the `forensicCapture` fixture, which
+     * attaches its transcripts to the result whether the test passed or not. */
+    trace: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
 
-  // Set global timeout to 100s
-  globalTimeout: 100000,
+    baseURL: process.env.FRONTEND_PORT ? `http://localhost:${process.env.FRONTEND_PORT}` : 'http://localhost:5173'
+  },
 
-  /* Configure projects for major browsers */
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
-    }
+  projects: [...BASE_PROJECTS, ...CLOSED_PROJECT_TRIO, ...ANALYTICS_STANDALONE_PROJECTS],
 
-    /*
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-    */
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
-  ]
-
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://127.0.0.1:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
+  // Mock OIDC issuer for the identity-provider projects, spawned in every run. Playwright manages its lifecycle (start → wait-for-port → teardown). The readiness probe hits the issuer's HTTPS JWKS endpoint; `ignoreHTTPSErrors: true` is required because the issuer's cert is self-signed (CN=127.0.0.1). The issuer is self-contained (needs no app env), so spawning it from the Playwright worker is clean — the dev server's environment that points at it is prepared by `tests/scripts/e2e-run.sh`. `reuseExistingServer` outside CI lets a hand-started issuer be reused during local iteration.
+  webServer: {
+    // Absolute path derived from TESTS_DIR (the `tests/tests` dir). The Playwright `webServer.command` is resolved relative to the config file's directory (`tests/`), so a bare `tests/tests/support/...` relative path would double into `tests/tests/tests/...` and fail to resolve (ERR_MODULE_NOT_FOUND). The absolute entry path makes the spawn cwd-independent.
+    command: `npx tsx ${path.join(TESTS_DIR, 'support/mockOidcIssuerEntry.ts')}`,
+    url: 'https://127.0.0.1:9443/.well-known/openid-configuration/jwks',
+    ignoreHTTPSErrors: true,
+    reuseExistingServer: !process.env.CI,
+    timeout: 30_000
+  }
 });

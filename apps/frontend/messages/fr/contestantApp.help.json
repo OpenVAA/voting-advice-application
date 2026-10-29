@@ -1,0 +1,8 @@
+{
+  "contestantApp.help": {
+    "ingress": "{contestantAppName} : vous trouverez ci-dessous des réponses aux questions les plus fréquentes concernant l’utilisation de ce service. Si vous ne trouvez pas de réponse à votre problème, vous pouvez contacter l’assistance.",
+    "noFAQ": "Il n’y a pas encore de réponses.",
+    "supportEmailSubject": "Demande d’assistance",
+    "title": "Assistance"
+  }
+}

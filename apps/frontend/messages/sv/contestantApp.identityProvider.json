@@ -1,0 +1,40 @@
+{
+  "contestantApp.identityProvider": {
+    "alreadyRegistered": {
+      "none": "Du har redan registrerat dig, men vi har ännu ingen e-postadress till dig.",
+      "pending": "Du har redan registrerat dig. Vi har skickat en bekräftelselänk till adressen nedan. Tills du öppnar länken loggar du in med bank-id.",
+      "proved": "Du har redan registrerat dig. Använd din e-postadress för att logga in nästa gång."
+    },
+    "awaitingConfirmation": "Väntar på bekräftelse",
+    "emailIntro": "Ange den e-postadress du vill logga in med nästa gång. Vi skickar en bekräftelselänk till den. Du kan fortsätta direkt. Tills du öppnar länken loggar du in med bank-id.",
+    "emailInUse": "Den här e-postadressen används redan av ett annat konto. Ange en annan adress, eller logga in med den adressen i stället.",
+    "emailTakenNotice": "Adressen du angav tidigare används nu av ett annat konto, så den kunde inte läggas till ditt. Ange en annan adress.",
+    "error": {
+      "cancelled": {
+        "content": "Du avbröt identifieringen, och ingenting sparades. Du kan identifiera dig igen när du är redo.",
+        "support": "Om du behöver hjälp, {contactSupportLink}.",
+        "title": "Identifieringen avbröts"
+      },
+      "noRetry": {
+        "content": "Vi beklagar, det här är ett problem hos oss, och det hjälper inte att försöka igen. Kontakta supporten.",
+        "title": "Registrering är inte möjlig just nu"
+      },
+      "retry": {
+        "content": "Vi beklagar, identifieringen kunde inte slutföras. Försök igen.",
+        "support": "Om problemet kvarstår, {contactSupportLink}.",
+        "title": "Identifieringen lyckades inte"
+      },
+      "tryAgain": "Försök igen"
+    },
+    "heroEmoji": "👍",
+    "identified": "Du har identifierat dig.",
+    "nameIntro": "Ange ditt partis namn för att fortsätta.",
+    "nameRequired": "Ange ditt partis namn (språk: {language}).",
+    "saveFailed": "Vi kunde inte spara dina uppgifter. Försök igen. Kontakta supporten om problemet kvarstår.",
+    "signInEmail": "Din e-postadress för inloggning",
+    "title": {
+      "alreadyRegistered": "Du har redan registrerat dig",
+      "complete": "Slutför din registrering"
+    }
+  }
+}

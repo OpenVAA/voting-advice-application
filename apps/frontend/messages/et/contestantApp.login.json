@@ -1,0 +1,17 @@
+{
+  "contestantApp.login": {
+    "emailRequired": "Sisestage oma e-posti aadress.",
+    "emailTaken": "Seda e-posti aadressi kasutab nüüd teine konto, seega ei saanud seda teie kontole lisada. Logige sisse pangatunnustega ja sisestage mõni teine aadress.",
+    "enterEmailAndPassword": "Sisselogimiseks sisestage oma e-posti aadress ja salasõna.",
+    "forgotPassword": "Unustasite salasõna?",
+    "linkFailed": "Seda linki ei saa enam kasutada. Link toimib ühe korra ja toimib ainult kõige uuem link, mille olete küsinud. Palun küsige uus link samal viisil nagu enne.",
+    "noPasswordYet": "Ma ei ole veel parooli määranud",
+    "noProfile": "Teie kasutajakonto ei ole selles rakenduses ühegi profiiliga seotud. Kui registreerusite mõne teise e-posti aadressiga, logige sisse selle aadressiga. Vastasel juhul võtke palun ühendust toega.",
+    "passwordRequired": "Sisestage oma parool.",
+    "signedOut": "Teid logiti välja, sest teie konto andmeid ei õnnestunud lugeda. Palun logige uuesti sisse. Kui see kordub, võtke palun ühendust toega.",
+    "signInWithEmail": "Logige sisse e-postiga",
+    "title": "Logige sisse",
+    "unknownError": "Teie kasutajaandmete päring ebaõnnestus. Palun võtke ühendust toega, kui viga kordub.",
+    "answersLockedInfo": "Registreerumine või vastuste muutmine ei ole enam võimalik, kuid saate siiski sisse logida, et oma andmeid vaadata."
+  }
+}

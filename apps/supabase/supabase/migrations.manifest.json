@@ -1,0 +1,85 @@
+{
+  "baseline": {
+    "name": "initial_schema",
+    "file": "00001_initial_schema.sql",
+    "commit": "81e6a3f225061563939b935e898b9a4965807d22"
+  },
+  "migrations": [
+    {
+      "file": "00001_initial_schema.sql",
+      "sha256": "79bed444da347985daf22d44bccb451c00db2d67236ccd11fa9c2c7fae354ed8"
+    },
+    {
+      "file": "00002_claim_excludes_identity_provider_accounts.sql",
+      "sha256": "c37a05b2c35400fdd3eb525ee28daa6ab2d47ffd05529c08b873a34644feac31"
+    },
+    {
+      "file": "00003_address_confirmation_request.sql",
+      "sha256": "3608ddd4b62e83925e7bce5f0f4c09e459a63d94ef18cb593564444a1d7a9843"
+    },
+    {
+      "file": "00004_user_entities_pending_email_taken.sql",
+      "sha256": "1d1fb4e0098d712d60bed198d731b9f1dacee4f421a71f4a445a2be8d795b681"
+    },
+    {
+      "file": "00005_invitation_link_bounds.sql",
+      "sha256": "a9c992a7669e8618e0c4c0472a7aaf92555d5db26241179550ecbef9e5a7fd45"
+    },
+    {
+      "file": "00006_nomination_write_guards.sql",
+      "sha256": "81746c28a9fd9542a7c504808c84cb6118ec067c3df2f5700c3c80834906095c"
+    },
+    {
+      "file": "00007_nomination_write_kept_constituency.sql",
+      "sha256": "1578693cb0434166b3c2c1fde9ed42f524cfbd2c484bc74d74ec7cc5989589dd"
+    },
+    {
+      "file": "00008_bulk_import_key_quoting.sql",
+      "sha256": "ef235038aa978e125494c00cdf4c523b28c5d0daf482740a1a0ec6f0974d7984"
+    },
+    {
+      "file": "00009_contestant_app_public_config_bounded.sql",
+      "sha256": "e2978e7ed65fa24b54e5dbf9282fa3487a7d28a80a7a36dbb1297ad9ef475fac"
+    },
+    {
+      "file": "00010_claim_grant_key_conflict_target.sql",
+      "sha256": "a2076ed37ea5c630f8e2a857f291c3a51521a3dae8b2d145df4b9511ffa359e6"
+    },
+    {
+      "file": "00011_invitation_email_target_open_rows.sql",
+      "sha256": "916560e6e43254df755603741e08f7f95b6fa62994b28f4fd2c709375058d11d"
+    },
+    {
+      "file": "00012_bulk_import_constituency_links.sql",
+      "sha256": "0676f810fb1ebee8f6a99c746a179c726c4a201892bb3810f3c839e3868d5197"
+    },
+    {
+      "file": "00013_nomination_constituency_rule.sql",
+      "sha256": "31be42d9884b8b6de01e70da6be5e0be99b7177883b3801b638d13afb1a7b736"
+    },
+    {
+      "file": "00014_set_entity_nominations_constituency_once.sql",
+      "sha256": "9b6a2ee10191b68ff0d52f3ef1a17afebe98c5180f2e516f484c5c412df20984"
+    },
+    {
+      "file": "00015_answers_lock_entity_rows.sql",
+      "sha256": "9910cff7b88ba3b8400e7107f90df1dabd01faad7e1bbcbe311ebc8063302a57"
+    },
+    {
+      "file": "00016_answers_lock_nominations_storage.sql",
+      "sha256": "d4a4e774688e0ee071e087216e8a9d507e8179557dcbed3d70100903a3c76dd5"
+    },
+    {
+      "file": "00017_user_can_reads_grants.sql",
+      "sha256": "6fda6eedf83d65d5d171abd9aa9d24f1527d0fabaf74e588e6fc1f74e83d439d"
+    },
+    {
+      "file": "00018_identity_entity_find_or_create.sql",
+      "sha256": "eb886bc7f7e419f7c8baa8d4d0c38716611536ac0f393a6c9b45824160c92ddc"
+    },
+    {
+      "file": "00019_address_holds_open_invitation.sql",
+      "sha256": "37e4c1a6de42527cd4578463d24fbfd1e5dd056b46a827393623b9ce85f38ef1"
+    }
+  ]
+}

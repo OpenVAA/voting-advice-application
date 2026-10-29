@@ -1,0 +1,3 @@
+# A changed line ending changes the bytes of a file, and so the sha256 a migration manifest records for it.
+apps/supabase/supabase/migrations/*.sql text eol=lf
+scripts/fixtures/schema-migration-freeze/** text eol=lf

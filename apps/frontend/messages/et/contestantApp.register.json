@@ -1,0 +1,59 @@
+{
+  "contestantApp.register": {
+    "code": "Registreerimiskood",
+    "codeFormat": "Kood näeb välja selline: ABCD-EFGH-JKMN. Suur- ja väiketähti käsitletakse ühtemoodi.",
+    "codeRequired": "Sisesta oma registreerimiskood.",
+    "codeUnconfirmed": "Me ei saanud sinu registreerimiskoodi kinnitada.",
+    "didYouAlreadyRegister": "Oled juba registreerunud?",
+    "emailEntry": {
+      "ingress": "Sisesta e-posti aadress, mida soovid kasutada. Saadame sellele sisselogimislingi ja edaspidi logid sisse selle aadressiga.",
+      "mismatch": "E-posti aadressid ei kattu.",
+      "title": "Sisesta oma e-posti aadress"
+    },
+    "emailInfo": "Sisesta oma e-posti aadress ja me saadame sulle lingi, millega saad sisse logida.",
+    "enterCode": "Sisesta saadud registreerimiskood.",
+    "heroEmoji": "🖋️",
+    "identityProvider": {
+      "intro": {
+        "both": "Tuvasta end pangatunnustega, et registreeruda kandidaadiks või registreerida erakond.",
+        "candidate": "Kandidaadiks registreerumiseks tuvasta end pangatunnustega. Sinu kandidaadiprofiil luuakse tuvastamisel saadud nimega.",
+        "organization": "Erakonna registreerimiseks tuvasta end pangatunnustega ja sisesta seejärel erakonna nimi. Administraator kinnitab erakonna enne, kui seda valijatele näidatakse."
+      },
+      "redirectInfo": "Sind suunatakse pangatuvastuse teenusesse. Kui oled end tuvastanud, tuled tagasi sellesse rakendusse.",
+      "types": {
+        "candidate": "Ennast kandidaadiks",
+        "legend": "Mida soovid registreerida?",
+        "organization": "Erakonna või valimisliidu",
+        "required": "Vali, mida soovid registreerida."
+      }
+    },
+    "modes": {
+      "code": "Registreerimiskoodiga",
+      "email": "Oma e-posti aadressiga",
+      "identityProvider": "Pangatunnustega",
+      "legend": "Kuidas soovid registreeruda?",
+      "required": "Vali, kuidas soovid registreeruda."
+    },
+    "passwordValidation": {
+      "commonPatterns": "Sisaldab levinud märgijadasid",
+      "length": "Vähemalt {minPasswordLength} märki",
+      "lowercase": "Väiketäht",
+      "number": "Number",
+      "repetition": "Sisaldab märkide kordumist",
+      "symbol": "Erimärk (nagu !?%#€)",
+      "uppercase": "Suurtäht",
+      "username": "Väldi oma nime kasutamist paroolis"
+    },
+    "register": "Registreeru",
+    "registeredNotice": {
+      "content": "Palun logi sisse oma e-posti ja parooliga või kontrolli oma e-posti kinnituslingi osas.",
+      "title": "Paistab, et oled juba registreerunud"
+    },
+    "signIn": {
+      "failed": "Selle parooliga ei õnnestunud sind sisse logida. Proovi uuesti või kasuta parooli määramiseks allolevat linki.",
+      "ingress": "Näib, et oled juba registreerunud. Sisselogimiseks sisesta oma parool.",
+      "title": "Logi sisse oma parooliga"
+    },
+    "title": "Registreerumine"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "contestantApp.home": {
+    "basicInfo": {
+      "edit": "Muutke oma põhiandmeid",
+      "enter": "Täitke oma põhiandmed",
+      "view": "Vaadake oma põhiandmeid"
+    },
+    "emailTask": "Kinnitage oma e-posti aadress {email}",
+    "ingress": {
+      "noNomination": {
+        "candidate": "Valimisnõustajas kuvamiseks on teil esmalt vaja kandidatuuri: valimisi ja valimisringkonda, kus te kandideerite. Seejärel saate sisestada oma põhiandmed ja vastata arvamusküsimustele.",
+        "organization": "Selleks et teie erakond oleks valimisnõustajas nähtav, on sellel esmalt vaja kandidatuuri: valimisi ja valimisringkonda, kus erakond kandideerib. Seejärel saate sisestada erakonna põhiandmed ja vastata arvamusküsimustele."
+      },
+      "notDone": {
+        "candidate": "Valimisnõustajas kuvamiseks peate sisestama mõned põhiandmed enda kohta ja vastama arvamusküsimustele.",
+        "organization": "Selleks et teie erakond oleks valimisnõustajas nähtav, peate sisestama selle kohta mõned põhiandmed ja vastama arvamusküsimustele."
+      },
+      "notDoneNoQuestions": {
+        "candidate": "Valimisnõustajas kuvamiseks peate sisestama mõned põhiandmed enda kohta.",
+        "organization": "Selleks et teie erakond oleks valimisnõustajas nähtav, peate sisestama selle kohta mõned põhiandmed."
+      },
+      "ready": "Olete täitnud kõik valimisnõustaja jaoks vajalikud andmed. Saate siiski oma vastuseid muuta ja logida selleks hiljem sisse."
+    },
+    "nomination": {
+      "enter": "Määrake oma kandidatuur",
+      "view": "Vaadake oma kandidatuure"
+    },
+    "preview": "Vaadake oma profiili eelvaadet",
+    "previewTip": "Kui soovite näha, kuidas valijad teie profiili näevad, saate seda eelvaadata.",
+    "questions": {
+      "edit": "Muutke oma arvamusi",
+      "enter": "Avaldage oma arvamused",
+      "view": "Vaadake oma arvamusi"
+    },
+    "ready": "Olete valmis!",
+    "tasksLabel": "Teie ülesanded",
+    "taskStatus": {
+      "blocked": "Pole veel saadaval.",
+      "complete": "Tehtud.",
+      "incomplete": "Veel tegemata.",
+      "incompleteCount": [
+        {
+          "declarations": ["input count", "local countPlural = count: plural"],
+          "selectors": ["countPlural"],
+          "match": {
+            "countPlural=one": "Veel tegemata: jäänud on üks punkt.",
+            "countPlural=other": "Veel tegemata: jäänud on {count} punkti."
+          }
+        }
+      ]
+    }
+  }
+}

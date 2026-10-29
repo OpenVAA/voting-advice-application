@@ -1,0 +1,53 @@
+{
+  "contestantApp.home": {
+    "basicInfo": {
+      "edit": "Modifier vos informations de base",
+      "enter": "Saisir vos informations de base",
+      "view": "Afficher vos informations de base"
+    },
+    "emailTask": "Confirmez votre adresse e-mail {email}",
+    "ingress": {
+      "noNomination": {
+        "candidate": "Pour apparaître dans la Boussole électorale, il vous faut d’abord une candidature : l’élection et la circonscription dans lesquelles vous vous présentez. Vous pourrez ensuite saisir vos informations de base et répondre aux affirmations concernant des enjeux politiques.",
+        "organization": "Pour que votre parti apparaisse dans la Boussole électorale, il lui faut d’abord une candidature : l’élection et la circonscription dans lesquelles il se présente. Vous pourrez ensuite saisir ses informations de base et répondre aux affirmations concernant des enjeux politiques."
+      },
+      "notDone": {
+        "candidate": "Pour apparaître dans la Boussole électorale, vous devez saisir des informations de base vous concernant et répondre à des affirmations concernant des enjeux politiques.",
+        "organization": "Pour que votre parti apparaisse dans la Boussole électorale, vous devez saisir des informations de base le concernant et répondre à des affirmations concernant des enjeux politiques."
+      },
+      "notDoneNoQuestions": {
+        "candidate": "Pour apparaître dans la Boussole électorale, vous devez saisir des informations de base vous concernant.",
+        "organization": "Pour que votre parti apparaisse dans la Boussole électorale, vous devez saisir des informations de base le concernant."
+      },
+      "ready": "Vous avez renseigné toutes les informations nécessaires pour la Boussole électorale. Vous pouvez encore modifier vos réponses et même vous reconnecter plus tard pour le faire."
+    },
+    "nomination": {
+      "enter": "Définir votre candidature",
+      "view": "Afficher vos candidatures"
+    },
+    "preview": "Prévisualiser votre profil",
+    "previewTip": "Si vous souhaitez voir comment les électeur·rice·s verront votre profil, vous pouvez le prévisualiser.",
+    "questions": {
+      "edit": "Modifier vos opinions",
+      "enter": "Indiquer vos opinions",
+      "view": "Afficher vos opinions"
+    },
+    "ready": "Tout est prêt !",
+    "tasksLabel": "Vos tâches",
+    "taskStatus": {
+      "blocked": "Pas encore disponible.",
+      "complete": "Terminé.",
+      "incomplete": "Pas encore terminé.",
+      "incompleteCount": [
+        {
+          "declarations": ["input count", "local countPlural = count: plural"],
+          "selectors": ["countPlural"],
+          "match": {
+            "countPlural=one": "Pas encore terminé : il reste un élément.",
+            "countPlural=other": "Pas encore terminé : il reste {count} éléments."
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "authConfirm": {
+    "cancel": "Ofbriechen",
+    "continue": "Weider",
+    "intro": {
+      "email_change": "Dréckt op Weider, fir Är E-Mail-Adress ze confirméieren an Iech unzemellen.",
+      "magiclink": "Dréckt op Weider, fir Iech unzemellen.",
+      "recovery": "Dréckt op Weider, fir Iech unzemellen an en neit Passwuert ze wielen."
+    },
+    "signedIn": "Dëse Browser ass schonn an engem Kont ugemellt. Wann Dir weidermaacht, gëtt dee Kont fir d’éischt ausgeloggt.",
+    "title": "Vun Ärer E-Mail weidermaachen"
+  }
+}

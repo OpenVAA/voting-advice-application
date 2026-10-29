@@ -1,0 +1,13 @@
+{
+  "contestantApp.error": {
+    "saveFailed": "Vi beklagar, det uppstod ett problem med att spara dina svar. Försök igen och om problemet kvarstår, kontakta supporten.",
+    "nameLocked": {
+      "candidate": "Ditt namn kunde inte sparas: en administratör har bekräftat din profil, och namnet kan inte längre ändras här. Dina övriga ändringar sparades. Om namnet är fel, kontakta supporten.",
+      "organization": "Namnet och förkortningen kunde inte sparas: en administratör har bekräftat ditt parti, och de kan inte längre ändras här. Dina övriga ändringar sparades. Om de är fel, kontakta supporten."
+    },
+    "readFailed": {
+      "content": "Dina uppgifter kunde inte läsas in. Du är fortfarande inloggad, så du kan försöka igen. Om problemet kvarstår, kontakta supporten.",
+      "tryAgain": "Försök igen"
+    }
+  }
+}

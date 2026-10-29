@@ -1,0 +1,12 @@
+{
+  "contestantApp.preview": {
+    "close": "Close preview",
+    "notFound": "Profile not found",
+    "tagLabel": "Beside its candidates, your party is shown as",
+    "tip": {
+      "candidate": "This is a preliminary preview of how your profile will look to voters. The published version may look a bit different. If you’re standing in multiple elections, only answers relevant to the election the voter is interested in will be displayed.",
+      "organization": "This is a preliminary preview of how your party’s profile will look to voters. The published version may look a bit different. If your party is standing in multiple elections, only answers relevant to the election the voter is interested in will be displayed."
+    },
+    "title": "Preview"
+  }
+}

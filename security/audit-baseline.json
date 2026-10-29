@@ -1,0 +1,7 @@
+{
+  "recorded": "2026-10-03",
+  "recordedAtHead": "9e3301a35a3bcf66bb7fa6e4d83c449f8248a9fb",
+  "threshold": "high",
+  "note": "As of 2026-10-03 the audit reports no finding at high or critical severity, so this file accepts none and `accepted` is empty. A row in `accepted` would mean present-but-accepted: the advisory is still in the dependency tree and the gate does not report it, so a non-empty list is never a clean bill of health. A NEW advisory at high or above that is not listed here reddens the build, including a new advisory against a package already listed, because the subtraction in scripts/assert-dependency-audit.mjs is keyed on the advisory ID and never on the package name. A row is added only through a reviewed edit, and its rationale takes exactly one of two forms: `no fixed version published (checked <date>)`, or `held: <reason> (see <decision>), re-check <date or trigger>`. An advisory with a published fix and no recorded hold is fixed in the tree, not accepted here. This gate reads the Yarn lockfile only: the `npm:` imports of the Supabase Edge Functions run under Deno and are invisible to it (see the pending todo on that blind spot).",
+  "accepted": []
+}

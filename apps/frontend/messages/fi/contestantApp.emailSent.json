@@ -1,0 +1,34 @@
+{
+  "contestantApp.emailSent": {
+    "askedAgain": "Jos pyysit toista viestiä alle minuutti sitten, tätä viestiä ei ehkä lähetetty. Odota, kunnes voit lähettää uudelleen, ja paina sitten Lähetä uudelleen.",
+    "changeAddress": "Käytä toista sähköpostiosoitetta",
+    "heroEmoji": "✉️",
+    "intro": {
+      "code": "Olemme lähettäneet sähköpostiviestin osoitteeseen, jolla rekisteröidyit. Klikkaa viestissä olevaa linkkiä kirjautuaksesi.",
+      "recovery": "Olemme lähettäneet sähköpostiviestin antamaasi osoitteeseen. Klikkaa viestissä olevaa linkkiä kirjautuaksesi ja asettaaksesi uuden salasanan.",
+      "recoveryTo": "Olemme lähettäneet sähköpostiviestin osoitteeseen <strong>{email}</strong>. Klikkaa viestissä olevaa linkkiä kirjautuaksesi ja asettaaksesi uuden salasanan.",
+      "signIn": "Olemme lähettäneet sähköpostiviestin antamaasi osoitteeseen. Klikkaa viestissä olevaa linkkiä kirjautuaksesi.",
+      "signInTo": "Olemme lähettäneet sähköpostiviestin osoitteeseen <strong>{email}</strong>. Klikkaa viestissä olevaa linkkiä kirjautuaksesi."
+    },
+    "newest": "Jos olet pyytänyt useamman kuin yhden viestin, vain uusimmassa viestissä oleva linkki toimii.",
+    "notFound": {
+      "withAddress": "Jos et löydä viestiä, tarkista roskapostikansiosi ja että kirjoitit sähköpostiosoitteesi oikein.",
+      "withoutAddress": "Jos et löydä viestiä, tarkista roskapostikansiosi."
+    },
+    "resend": "Lähetä uudelleen",
+    "resendIn": [
+      {
+        "declarations": ["input seconds", "local secondsPlural = seconds: plural"],
+        "selectors": ["secondsPlural"],
+        "match": {
+          "secondsPlural=one": "({seconds} s kuluttua)",
+          "secondsPlural=other": "({seconds} s kuluttua)"
+        }
+      }
+    ],
+    "resendReady": "Voit nyt pyytää uuden viestin.",
+    "resendRequested": "Uutta viestiä on pyydetty.",
+    "support": "Jos sinulla on ongelmia viestin vastaanottamisessa, {contactSupportLink}.",
+    "title": "Tarkista sähköpostisi"
+  }
+}

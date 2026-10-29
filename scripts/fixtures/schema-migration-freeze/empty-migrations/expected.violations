@@ -1,0 +1,1 @@
+MALFORMED MANIFEST: manifest.json does not give migrations as a non-empty array of objects with a string file and a string sha256.

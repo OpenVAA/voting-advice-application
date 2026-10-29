@@ -1,0 +1,51 @@
+/**
+ * Static --help output for `yarn workspace @openvaa/dev-seed seed:teardown`.
+ *
+ * The text documents the `--prefix` override and its `--external-id-prefix` alias, the `--allow-remote` opt-out, the env vars the CLI reads, and the permissive-prefix contract. Listed flags stay in sync with `packages/dev-seed/src/cli/teardown.ts`'s parseArgs options block.
+ */
+
+export const TEARDOWN_USAGE = `Usage: yarn workspace @openvaa/dev-seed seed:teardown [options]
+
+Remove every row whose external_id starts with the configured prefix
+(default 'seed_') from the 10 supported content tables. Bootstrap rows
+in accounts / projects / app_settings / storage_config are preserved.
+
+Also removes candidate portrait files from the public-assets Storage bucket
+(Path 2 explicit cleanup — deterministic, does not rely on the async
+pg_net AFTER-DELETE trigger).
+
+Finally reopens the targeted project to voters (open_for_voters = true),
+which undoes \`--template perm-closed-project\`. The targeted project is the
+default project (00000000-0000-0000-0000-000000000001).
+
+Options:
+      --prefix <str>                external_id prefix to match. Must be at
+                                    least 2 characters to prevent accidental
+                                    mass-delete. [default: seed_]
+      --external-id-prefix <str>    Alias for --prefix, matching the spelling
+                                    \`seed\` uses. Pass one or the other; giving
+                                    both with different values is refused.
+      --allow-remote                Permit a non-local Supabase host for this
+                                    invocation. Without it the service-role
+                                    client only accepts localhost, 127.0.0.0/8,
+                                    [::1], host.docker.internal, kong and
+                                    supabase_kong_<project>.
+  -h, --help                        Show this help and exit.
+
+Environment:
+  SUPABASE_URL                      Supabase instance URL (e.g. http://127.0.0.1:54321)
+                                    Falls back to PUBLIC_SUPABASE_URL when unset.
+  SUPABASE_SERVICE_ROLE_KEY         Service-role key for bypassing RLS
+                                    (from \`yarn db:status\`, never committed).
+  DEV_SEED_ALLOW_REMOTE             Set to 1 (or true) to permit a non-local host,
+                                    like --allow-remote. Set it per invocation,
+                                    never in the repo-root \`.env\`.
+  The repo-root \`.env\` file is auto-loaded at startup, so variables defined there
+  (PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY) take effect without \`export\`.
+
+Permissive by design:
+  seed:teardown trusts the external_id prefix as the contract. It does NOT
+  shape-check individual rows. Users who mix hand-curated data with the same
+  prefix will have it deleted by teardown. Use a distinct prefix for
+  hand-curated data to keep it safe.
+`;

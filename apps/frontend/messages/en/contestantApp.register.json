@@ -1,0 +1,59 @@
+{
+  "contestantApp.register": {
+    "code": "Registration code",
+    "codeFormat": "The code looks like this: ABCD-EFGH-JKMN. Capital and small letters are treated the same.",
+    "codeRequired": "Enter your registration code.",
+    "codeUnconfirmed": "We couldn’t confirm your registration code.",
+    "didYouAlreadyRegister": "Have you already registered?",
+    "emailEntry": {
+      "ingress": "Enter the email address you want to use. We’ll send a sign-in link to it, and it will be the address you sign in with.",
+      "mismatch": "The email addresses don’t match.",
+      "title": "Enter your email address"
+    },
+    "emailInfo": "Enter your email address and we’ll send you a link to sign in with.",
+    "enterCode": "Enter the registration code you have received.",
+    "heroEmoji": "🖋️",
+    "identityProvider": {
+      "intro": {
+        "both": "Identify yourself with Bank ID to register yourself as a candidate or to register a party.",
+        "candidate": "To register as a candidate, identify yourself with Bank ID. Your candidate profile is created with the name in your identification.",
+        "organization": "To register a party, identify yourself with Bank ID and then enter the party’s name. An administrator confirms the party before it is shown to voters."
+      },
+      "redirectInfo": "You will be taken to the Bank ID service. When you have identified yourself, you will come back to this application.",
+      "types": {
+        "candidate": "Myself, as a candidate",
+        "legend": "What would you like to register?",
+        "organization": "A party or constituency association",
+        "required": "Choose what you would like to register."
+      }
+    },
+    "modes": {
+      "code": "With a registration code",
+      "email": "With my email address",
+      "identityProvider": "With a Bank ID",
+      "legend": "How would you like to register?",
+      "required": "Choose how you would like to register."
+    },
+    "passwordValidation": {
+      "commonPatterns": "Contains common sequences or patterns",
+      "length": "At least {minPasswordLength} characters",
+      "lowercase": "Lowercase letter",
+      "number": "Number",
+      "repetition": "Contains character repetition",
+      "symbol": "Symbol (such as !?%#€)",
+      "uppercase": "Uppercase letter",
+      "username": "Avoid using your name in the password"
+    },
+    "register": "Register",
+    "registeredNotice": {
+      "content": "Please login with your email and password instead or check your email for the confirmation link.",
+      "title": "It looks like you are already registered"
+    },
+    "signIn": {
+      "failed": "We couldn’t sign you in with that password. Try again, or use a link below to set a password.",
+      "ingress": "It seems you have already registered. Enter your password to sign in.",
+      "title": "Sign in with your password"
+    },
+    "title": "Registration"
+  }
+}

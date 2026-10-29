@@ -1,0 +1,40 @@
+{
+  "contestantApp.identityProvider": {
+    "alreadyRegistered": {
+      "none": "Olet jo rekisteröitynyt, mutta meillä ei vielä ole sähköpostiosoitettasi.",
+      "pending": "Olet jo rekisteröitynyt. Olemme lähettäneet vahvistuslinkin alla näkyvään osoitteeseen. Kunnes avaat linkin, kirjaudu pankkitunnuksilla.",
+      "proved": "Olet jo rekisteröitynyt. Käytä seuraavalla kerralla kirjautumiseen sähköpostiosoitettasi."
+    },
+    "awaitingConfirmation": "Odottaa vahvistusta",
+    "emailIntro": "Kirjoita sähköpostiosoite, jolla haluat kirjautua seuraavalla kerralla. Lähetämme siihen vahvistuslinkin. Voit jatkaa heti. Kunnes avaat linkin, kirjaudu pankkitunnuksilla.",
+    "emailInUse": "Tämä sähköpostiosoite on jo toisen tilin käytössä. Kirjoita toinen osoite tai kirjaudu sen sijaan sillä osoitteella.",
+    "emailTakenNotice": "Aiemmin antamasi osoite on nyt toisen tilin käytössä, joten sitä ei voitu lisätä tiliisi. Kirjoita toinen osoite.",
+    "error": {
+      "cancelled": {
+        "content": "Peruit tunnistautumisen, eikä mitään tallennettu. Voit tunnistautua uudelleen, kun olet valmis.",
+        "support": "Jos tarvitset apua, {contactSupportLink}.",
+        "title": "Tunnistautuminen peruttiin"
+      },
+      "noRetry": {
+        "content": "Pahoittelemme, kyseessä on ongelma meidän päässämme, eikä uudelleen yrittäminen auta. Ota yhteyttä tukeen.",
+        "title": "Rekisteröityminen ei ole juuri nyt mahdollista"
+      },
+      "retry": {
+        "content": "Pahoittelemme, tunnistautumista ei voitu viedä loppuun. Yritä uudelleen.",
+        "support": "Jos ongelma jatkuu, {contactSupportLink}.",
+        "title": "Tunnistautuminen ei onnistunut"
+      },
+      "tryAgain": "Yritä uudelleen"
+    },
+    "heroEmoji": "👍",
+    "identified": "Olet tunnistautunut.",
+    "nameIntro": "Kirjoita puolueesi nimi jatkaaksesi.",
+    "nameRequired": "Kirjoita puolueesi nimi (kieli: {language}).",
+    "saveFailed": "Tietojasi ei voitu tallentaa. Yritä uudelleen. Jos ongelma jatkuu, ota yhteyttä tukeen.",
+    "signInEmail": "Sähköpostiosoite, jolla kirjaudut",
+    "title": {
+      "alreadyRegistered": "Olet jo rekisteröitynyt",
+      "complete": "Viimeistele rekisteröitymisesi"
+    }
+  }
+}

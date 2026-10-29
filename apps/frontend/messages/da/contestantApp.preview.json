@@ -1,0 +1,12 @@
+{
+  "contestantApp.preview": {
+    "close": "Luk forhåndsvisning",
+    "notFound": "Profilen blev ikke fundet",
+    "tagLabel": "Ved siden af sine kandidater vises dit parti som",
+    "tip": {
+      "candidate": "Dette er en foreløbig forhåndsvisning af, hvordan din profil vil se ud for vælgerne. Den offentliggjorte version kan se lidt anderledes ud. Hvis du er opstillet i flere valg, vises kun svar relevante for vælgerens valg.",
+      "organization": "Dette er en foreløbig forhåndsvisning af, hvordan dit partis profil vil se ud for vælgerne. Den offentliggjorte version kan se lidt anderledes ud. Hvis dit parti er opstillet i flere valg, vises kun svar relevante for vælgerens valg."
+    },
+    "title": "Forhåndsvisning"
+  }
+}

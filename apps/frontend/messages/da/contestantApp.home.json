@@ -1,0 +1,53 @@
+{
+  "contestantApp.home": {
+    "basicInfo": {
+      "edit": "Rediger dine grundlæggende oplysninger",
+      "enter": "Indtast dine grundlæggende oplysninger",
+      "view": "Vis dine grundlæggende oplysninger"
+    },
+    "emailTask": "Bekræft din e-mailadresse {email}",
+    "ingress": {
+      "noNomination": {
+        "candidate": "For at komme med i valgtesten skal du først have en opstilling: det valg og den valgkreds, du stiller op i. Derefter kan du indtaste dine grundlæggende oplysninger og svare på holdningsudsagnene.",
+        "organization": "For at dit parti kan komme med i valgtesten, skal det først have en opstilling: det valg og den valgkreds, partiet stiller op i. Derefter kan du indtaste partiets grundlæggende oplysninger og svare på holdningsudsagnene."
+      },
+      "notDone": {
+        "candidate": "For at komme med valgtesten skal du indtaste nogle grundlæggende oplysninger om dig selv og svare på politiske holdningsudsagn.",
+        "organization": "For at dit parti kan komme med i valgtesten, skal du indtaste nogle grundlæggende oplysninger om det og svare på politiske holdningsudsagn."
+      },
+      "notDoneNoQuestions": {
+        "candidate": "For at komme med i valgtesten skal du indtaste nogle grundlæggende oplysninger om dig selv.",
+        "organization": "For at dit parti kan komme med i valgtesten, skal du indtaste nogle grundlæggende oplysninger om det."
+      },
+      "ready": "Du har indtastet alle de oplysninger, der kræves til Valgtesten. Du kan stadig redigere dine svar og logge ind senere."
+    },
+    "nomination": {
+      "enter": "Angiv din opstilling",
+      "view": "Vis dine opstillinger"
+    },
+    "preview": "Forhåndsvis din profil",
+    "previewTip": "Hvis du vil se, hvordan vælgere ser din profil, kan du forhåndsvise den.",
+    "questions": {
+      "edit": "Rediger dine holdninger",
+      "enter": "Angiv dine holdninger",
+      "view": "Vis dine holdninger"
+    },
+    "ready": "Du er klar!",
+    "tasksLabel": "Dine opgaver",
+    "taskStatus": {
+      "blocked": "Ikke tilgængelig endnu.",
+      "complete": "Fuldført.",
+      "incomplete": "Ikke fuldført endnu.",
+      "incompleteCount": [
+        {
+          "declarations": ["input count", "local countPlural = count: plural"],
+          "selectors": ["countPlural"],
+          "match": {
+            "countPlural=one": "Ikke fuldført endnu: ét punkt mangler.",
+            "countPlural=other": "Ikke fuldført endnu: {count} punkter mangler."
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "contestantApp.nominations": {
+    "add": "Ajouter une candidature",
+    "constituencies": {
+      "ingress": {
+        "candidate": "Sélectionnez la circonscription dans laquelle vous vous présentez.",
+        "organization": "Sélectionnez la circonscription dans laquelle votre parti se présente. Une seule circonscription peut être sélectionnée pour chaque élection ; si votre parti se présente dans plusieurs, veuillez contacter l’assistance."
+      },
+      "noElection": {
+        "candidate": "Aucune élection à laquelle vous pouvez vous présenter n’a lieu dans cette circonscription.",
+        "organization": "Aucune élection à laquelle votre parti peut se présenter n’a lieu dans cette circonscription."
+      },
+      "severalKept": "Vous avez plusieurs candidatures à cette élection. Elles sont conservées telles quelles ; vous pourrez en modifier les détails à l’étape suivante.",
+      "title": {
+        "candidate": "Quelle est votre circonscription ?",
+        "organization": "Quelle est la circonscription de votre parti ?"
+      }
+    },
+    "delete": "Supprimer",
+    "deleteCancel": "Annuler",
+    "deleteConfirm": "Oui, supprimer",
+    "deletePrompt": "Supprimer cette candidature ? Elle est supprimée immédiatement. Si vous l’ajoutez de nouveau, un administrateur doit la confirmer avant que les électeurs ne la voient.",
+    "deleted": "La candidature a été supprimée.",
+    "description": {
+      "candidate": "Voici les circonscriptions où vous êtes candidat·e. Si la liste électorale ou le symbole électoral manquent, ils seront automatiquement ajoutés plus tard lorsque les listes de candidat·es seront confirmées.",
+      "organization": "Voici les circonscriptions où votre parti se présente. Si le symbole électoral manque, il sera ajouté plus tard par l’administrateur."
+    },
+    "descriptionEditable": {
+      "candidate": "Voici vos candidatures. Vous pouvez les modifier, et ajouter votre numéro et votre liste, jusqu’à la clôture des candidatures.",
+      "organization": "Voici les candidatures de votre parti. Vous pouvez les modifier, et ajouter son symbole électoral et son alliance, jusqu’à la clôture des candidatures."
+    },
+    "details": {
+      "changeSelection": "Modifier la sélection",
+      "confirmedNote": "Cette candidature est confirmée. Si vous la modifiez, un administrateur devra la confirmer à nouveau, et les électeur·rice·s ne la verront pas d’ici là.",
+      "ingress": "Vérifiez les détails de chaque candidature. Rien n’est enregistré tant que vous n’avez pas continué.",
+      "keep": "Conserver cette candidature",
+      "newNote": "Cette candidature est nouvelle. Un administrateur doit la confirmer, et les électeur·rice·s ne la verront pas d’ici là.",
+      "previousConstituency": "Auparavant : {constituency}",
+      "remove": "Supprimer cette candidature",
+      "removedConfirmedNote": "Cette candidature est confirmée et sera supprimée lorsque vous continuerez. Une nouvelle candidature devrait être confirmée à nouveau.",
+      "removedNote": "Cette candidature sera supprimée lorsque vous continuerez.",
+      "symbolInfo": {
+        "candidate": "Facultatif. Votre numéro sur le bulletin de vote, si vous en avez un. 50 caractères au maximum.",
+        "organization": "Facultatif. Le symbole ou le numéro de votre parti sur le bulletin de vote, s’il en a un. 50 caractères au maximum."
+      },
+      "title": "Détails des candidatures"
+    },
+    "edit": "Modifier",
+    "elections": {
+      "ingress": {
+        "candidate": "Sélectionnez toutes les élections auxquelles vous vous présentez.",
+        "organization": "Sélectionnez toutes les élections auxquelles votre parti se présente."
+      },
+      "noneSelected": "Sélectionnez au moins une élection pour continuer.",
+      "title": {
+        "candidate": "À quelles élections vous présentez-vous ?",
+        "organization": "À quelles élections votre parti se présente-t-il ?"
+      }
+    },
+    "empty": {
+      "candidate": "Aucune candidature n’a encore été définie pour vous. Veuillez contacter l’assistance pour en faire ajouter une.",
+      "organization": "Aucune candidature n’a encore été définie pour votre parti. Veuillez contacter l’assistance pour en faire ajouter une."
+    },
+    "emptyEditable": {
+      "candidate": "Vous n’avez pas encore défini de candidature. Une candidature indique à quelle élection et dans quelle circonscription vous vous présentez.",
+      "organization": "Aucune candidature n’a encore été définie pour votre parti. Une candidature indique à quelle élection et dans quelle circonscription il se présente."
+    },
+    "emptyNoElection": {
+      "candidate": "Cette application ne comporte aucune élection à laquelle un·e candidat·e peut se présenter. Si vous pensez qu’il s’agit d’une erreur, veuillez contacter l’assistance.",
+      "organization": "Cette application ne comporte aucune élection à laquelle un parti peut se présenter. Si vous pensez qu’il s’agit d’une erreur, veuillez contacter l’assistance."
+    },
+    "error": {
+      "changed": "Vos candidatures ont changé depuis que vous avez ouvert cette page. Elles sont affichées ici telles qu’elles sont maintenant ; veuillez les vérifier et réessayer.",
+      "checkCards": "Certaines candidatures requièrent votre attention. Vérifiez les champs signalés.",
+      "duplicateParent": "Deux candidatures à la même élection et dans la même circonscription ne peuvent pas avoir la même liste.",
+      "hasCandidates": "Une candidature n’a pas pu être supprimée ou déplacée, car des candidat·es y sont rattaché·es. Veuillez contacter l’assistance.",
+      "otherRequired": {
+        "candidate": "Saisissez le nom du parti.",
+        "organization": "Saisissez le nom de l’alliance."
+      },
+      "parentRequired": "Choisissez l’une des options pour continuer.",
+      "saveFailed": "Nous sommes désolé·es, un problème est survenu lors de l’enregistrement de vos candidatures. Veuillez réessayer et, si le problème persiste, contactez l’assistance.",
+      "tooManyPending": "Vous avez ajouté le nombre maximal de candidatures en attente de confirmation. Un administrateur doit en confirmer certaines avant que vous puissiez en ajouter d’autres."
+    },
+    "parent": {
+      "none": {
+        "candidate": "Sans étiquette / sans parti",
+        "organization": "Aucune"
+      },
+      "noOptions": {
+        "candidate": "Aucun parti ne peut encore être sélectionné.",
+        "organization": "Aucune alliance ne peut encore être sélectionnée."
+      },
+      "notNominatedHint": {
+        "candidate": "Pas encore de candidature ici. En le choisissant, vous ajoutez aussi la candidature du parti, qu’un administrateur devra confirmer.",
+        "organization": "Pas encore de candidature ici. En la choisissant, vous ajoutez aussi la candidature de l’alliance, qu’un administrateur devra confirmer."
+      },
+      "other": {
+        "candidate": "Autre",
+        "organization": "Autre"
+      },
+      "otherInfo": {
+        "candidate": "Saisissez le nom de votre parti s’il ne figure pas dans la liste. Un administrateur le vérifiera.",
+        "organization": "Saisissez le nom de l’alliance si elle ne figure pas dans la liste. Un administrateur le vérifiera."
+      },
+      "otherLabel": {
+        "candidate": "Nom du parti",
+        "organization": "Nom de l’alliance"
+      },
+      "unlisted": "Ce choix n’est plus proposé. Vous pouvez le conserver ou en faire un autre."
+    },
+    "requestedParent": "Vous en avez fait la demande. Ce nom ne figure pas encore dans l’application ; un administrateur le vérifiera.",
+    "state": {
+      "label": "Statut",
+      "pending": "En attente de confirmation",
+      "pendingInfo": "Cette candidature n’a pas encore été confirmée ; les électeur·rice·s ne la voient donc pas."
+    },
+    "title": "Candidatures"
+  }
+}

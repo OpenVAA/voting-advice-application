@@ -116,15 +116,12 @@ export interface QuestionInfoData {
   terms?: Array<TermDefinition>;
 }
 
-// We don't really care about adding fields to this type because the typing parametrization
-// clearly differentiates the result from supertype...
+// We don't really care about adding fields to this type because the typing parametrization clearly differentiates the result from supertype...
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface QuestionInfoResult extends LLMPipelineResult<QuestionInfoData> {}
 
 /**
- * Raw information from question info generation. This is not the same as the package's
- * output type QuestionInfoResult. This type is concerned with LLM interaction, whereas
- * QuestionInfoResult is concerned with the package's output type.
+ * Raw information from question info generation. This is not the same as the package's output type QuestionInfoResult. This type is concerned with LLM interaction, whereas QuestionInfoResult is concerned with the package's output type.
  *
  * @example
  * ```ts

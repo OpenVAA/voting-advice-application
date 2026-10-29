@@ -1,0 +1,12 @@
+{
+  "contestantApp.preview": {
+    "close": "Sulje esikatselu",
+    "notFound": "Profiilia ei löytynyt",
+    "tagLabel": "Ehdokkaidensa yhteydessä puolueesi näytetään näin",
+    "tip": {
+      "candidate": "Tämä on alustava esikatselu siitä, miltä profiilisi näyttää äänestäjille. Julkaistun version ulkoasu saattaa olla hieman erilainen. Jos olet ehdolla useissa vaaleissa, näytetään vain ne vastaukset, jotka liittyvät äänestäjän valitsemaan vaaliin.",
+      "organization": "Tämä on alustava esikatselu siitä, miltä puolueesi profiili näyttää äänestäjille. Julkaistun version ulkoasu saattaa olla hieman erilainen. Jos puolueesi on ehdolla useissa vaaleissa, näytetään vain ne vastaukset, jotka liittyvät äänestäjän valitsemaan vaaliin."
+    },
+    "title": "Esikatselu"
+  }
+}

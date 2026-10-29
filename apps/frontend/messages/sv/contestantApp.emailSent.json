@@ -1,0 +1,34 @@
+{
+  "contestantApp.emailSent": {
+    "askedAgain": "Om du bad om ett annat e-postmeddelande för mindre än en minut sedan har det här kanske inte skickats. Vänta tills du kan skicka igen och tryck sedan på Skicka igen.",
+    "changeAddress": "Använd en annan e-postadress",
+    "heroEmoji": "✉️",
+    "intro": {
+      "code": "Vi har skickat ett e-postmeddelande till den adress du registrerade dig med. Klicka på länken i meddelandet för att logga in.",
+      "recovery": "Vi har skickat ett e-postmeddelande till den adress du angav. Klicka på länken i meddelandet för att logga in och ställa in ett nytt lösenord.",
+      "recoveryTo": "Vi har skickat ett e-postmeddelande till <strong>{email}</strong>. Klicka på länken i meddelandet för att logga in och ställa in ett nytt lösenord.",
+      "signIn": "Vi har skickat ett e-postmeddelande till den adress du angav. Klicka på länken i meddelandet för att logga in.",
+      "signInTo": "Vi har skickat ett e-postmeddelande till <strong>{email}</strong>. Klicka på länken i meddelandet för att logga in."
+    },
+    "newest": "Om du har bett om fler än ett e-postmeddelande fungerar bara länken i det senaste.",
+    "notFound": {
+      "withAddress": "Om du inte hittar meddelandet, kontrollera din skräppostmapp och att du skrev din e-postadress rätt.",
+      "withoutAddress": "Om du inte hittar meddelandet, kontrollera din skräppostmapp."
+    },
+    "resend": "Skicka igen",
+    "resendIn": [
+      {
+        "declarations": ["input seconds", "local secondsPlural = seconds: plural"],
+        "selectors": ["secondsPlural"],
+        "match": {
+          "secondsPlural=one": "(om {seconds} s)",
+          "secondsPlural=other": "(om {seconds} s)"
+        }
+      }
+    ],
+    "resendReady": "Du kan nu be om ett nytt e-postmeddelande.",
+    "resendRequested": "Ett nytt e-postmeddelande har begärts.",
+    "support": "Om du har problem med att ta emot e-postmeddelandet, {contactSupportLink}.",
+    "title": "Kontrollera din e-post"
+  }
+}

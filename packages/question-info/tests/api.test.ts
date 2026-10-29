@@ -150,6 +150,12 @@ describe('generateQuestionInfo API', () => {
       expect(results[0].data.infoSections).toHaveLength(1);
       expect(results[0].data.terms).toBeUndefined();
       expect(results[0].success).toBe(true);
+
+      // The prompt travels as a system message, which AI SDK 7 rejects unless each request opts in explicitly.
+      const [{ requests }] = mockLLMProvider.generateObjectParallel.mock.calls[0];
+      expect(requests).toHaveLength(1);
+      expect(requests[0].allowSystemInMessages).toBe(true);
+      expect(requests[0].messages[0].role).toBe('system');
     });
 
     test('should handle single boolean question with terms operation', async () => {

@@ -1,4 +1,12 @@
-import { DataObject, DataTypeError, ensureDate, ENTITY_TYPE, isMissingValue, OBJECT_TYPE } from '../../internal';
+import {
+  DataObject,
+  DataTypeError,
+  DEFAULT_NOMINATION_SHAPE,
+  ensureDate,
+  ENTITY_TYPE,
+  isMissingValue,
+  OBJECT_TYPE
+} from '../../internal';
 import type {
   AllianceNomination,
   AnyQuestionVariant,
@@ -11,6 +19,7 @@ import type {
   EntityType,
   FactionNomination,
   FilterValue,
+  NominationShape,
   NominationVariant,
   OrganizationNomination,
   QuestionCategoryType
@@ -47,6 +56,13 @@ export class Election extends DataObject<ElectionData> implements DataAccessor<E
    */
   get round(): number {
     return this.data.round ?? 1;
+  }
+
+  /**
+   * The nomination shape of the election: which entity types it admits as nominees and which parent each may name. Ask `isNominableInShape` and `allowedParentTypes` with it. @defaultValue `DEFAULT_NOMINATION_SHAPE`, i.e., `organization_list_and_independents`
+   */
+  get nominationShape(): NominationShape {
+    return this.data.nominationShape ?? DEFAULT_NOMINATION_SHAPE;
   }
 
   /**

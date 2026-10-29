@@ -1,0 +1,120 @@
+{
+  "contestantApp.nominations": {
+    "add": "Lisa kandidatuur",
+    "constituencies": {
+      "ingress": {
+        "candidate": "Valige valimisringkond, kus te kandideerite.",
+        "organization": "Valige valimisringkond, kus teie erakond kandideerib. Iga valimiste kohta saab valida ühe valimisringkonna; kui teie erakond kandideerib mitmes, võtke palun ühendust toega."
+      },
+      "noElection": {
+        "candidate": "Selles valimisringkonnas ei toimu valimisi, kus te saaksite kandideerida.",
+        "organization": "Selles valimisringkonnas ei toimu valimisi, kus teie erakond saaks kandideerida."
+      },
+      "severalKept": "Teil on nendel valimistel mitu kandidatuuri. Need jäävad nii, nagu on; nende andmeid saate muuta järgmises sammus.",
+      "title": {
+        "candidate": "Milline on teie valimisringkond?",
+        "organization": "Milline on teie erakonna valimisringkond?"
+      }
+    },
+    "delete": "Kustuta",
+    "deleteCancel": "Tühista",
+    "deleteConfirm": "Jah, kustuta",
+    "deletePrompt": "Kas kustutada see kandidatuur? See kustutatakse kohe. Kui lisate selle uuesti, peab administraator selle kinnitama, enne kui valijad seda näevad.",
+    "deleted": "Kandidatuur kustutati.",
+    "description": {
+      "candidate": "Need on valimisringkonnad, kus olete kandidaat. Kui kandidaatide nimekiri või -number puuduvad, lisatakse need automaatselt, kui valijanimekirjad on kinnitatud.",
+      "organization": "Need on valimisringkonnad, kus teie erakond kandideerib. Kui valimissümbol puudub, lisab administraator selle hiljem."
+    },
+    "descriptionEditable": {
+      "candidate": "Need on teie kandidatuurid. Saate neid muuta ning lisada oma kandidaadinumbri ja nimekirja, kuni kandidatuuride muutmine suletakse.",
+      "organization": "Need on teie erakonna kandidatuurid. Saate neid muuta ning lisada erakonna valimissümboli ja valimisliidu, kuni kandidatuuride muutmine suletakse."
+    },
+    "details": {
+      "changeSelection": "Muuda valikut",
+      "confirmedNote": "See kandidatuur on kinnitatud. Kui te seda muudate, peab administraator selle uuesti kinnitama ja valijad seda seni ei näe.",
+      "ingress": "Kontrollige iga kandidatuuri andmeid. Enne jätkamist ei salvestata midagi.",
+      "keep": "Säilita see kandidatuur",
+      "newNote": "See kandidatuur on uus. Administraator peab selle kinnitama ja valijad seda seni ei näe.",
+      "previousConstituency": "Varem: {constituency}",
+      "remove": "Eemalda see kandidatuur",
+      "removedConfirmedNote": "See kandidatuur on kinnitatud ja eemaldatakse, kui jätkate. Uus kandidatuur tuleks uuesti kinnitada.",
+      "removedNote": "See kandidatuur eemaldatakse, kui jätkate.",
+      "symbolInfo": {
+        "candidate": "Valikuline. Teie number hääletussedelil, kui teil see on. Kuni 50 tähemärki.",
+        "organization": "Valikuline. Teie erakonna sümbol või number hääletussedelil, kui sellel see on. Kuni 50 tähemärki."
+      },
+      "title": "Kandidatuuride andmed"
+    },
+    "edit": "Muuda",
+    "elections": {
+      "ingress": {
+        "candidate": "Valige kõik valimised, kus te kandideerite.",
+        "organization": "Valige kõik valimised, kus teie erakond kandideerib."
+      },
+      "noneSelected": "Jätkamiseks valige vähemalt ühed valimised.",
+      "title": {
+        "candidate": "Millistel valimistel te kandideerite?",
+        "organization": "Millistel valimistel teie erakond kandideerib?"
+      }
+    },
+    "empty": {
+      "candidate": "Teile ei ole veel kandidatuuri määratud. Palun võtke ühendust toega, et see lisataks.",
+      "organization": "Teie erakonnale ei ole veel kandidatuuri määratud. Palun võtke ühendust toega, et see lisataks."
+    },
+    "emptyEditable": {
+      "candidate": "Te ei ole veel kandidatuuri määranud. Kandidatuur näitab, millistel valimistel ja millises valimisringkonnas te kandideerite.",
+      "organization": "Teie erakonnale ei ole veel kandidatuuri määratud. Kandidatuur näitab, millistel valimistel ja millises valimisringkonnas erakond kandideerib."
+    },
+    "emptyNoElection": {
+      "candidate": "Selles rakenduses ei ole valimisi, kus kandidaadile saaks kandidatuuri määrata. Kui arvate, et see on viga, võtke palun ühendust toega.",
+      "organization": "Selles rakenduses ei ole valimisi, kus erakonnale saaks kandidatuuri määrata. Kui arvate, et see on viga, võtke palun ühendust toega."
+    },
+    "error": {
+      "changed": "Teie kandidatuurid on pärast selle lehe avamist muutunud. Need on siin näidatud praegusel kujul; palun kontrollige neid ja proovige uuesti.",
+      "checkCards": "Mõni kandidatuur vajab teie tähelepanu. Kontrollige märgitud välju.",
+      "duplicateParent": "Kahel samade valimiste ja sama valimisringkonna kandidatuuril ei saa olla sama nimekiri.",
+      "hasCandidates": "Kandidatuuri ei saanud eemaldada ega teisaldada, sest selle all on kandidaate. Palun võtke ühendust toega.",
+      "otherRequired": {
+        "candidate": "Sisestage erakonna nimi.",
+        "organization": "Sisestage valimisliidu nimi."
+      },
+      "parentRequired": "Jätkamiseks valige üks valikutest.",
+      "saveFailed": "Vabandust! Teie kandidatuuride salvestamine ebaõnnestus. Palun proovige uuesti ja kui probleem jätkub, võtke ühendust toega.",
+      "tooManyPending": "Olete lisanud suurima lubatud arvu kinnitamist ootavaid kandidatuure. Administraator peab osa neist kinnitama, enne kui saate uusi lisada."
+    },
+    "parent": {
+      "none": {
+        "candidate": "Sõltumatu / erakonnata",
+        "organization": "Puudub"
+      },
+      "noOptions": {
+        "candidate": "Ühtegi erakonda ei ole veel võimalik valida.",
+        "organization": "Ühtegi valimisliitu ei ole veel võimalik valida."
+      },
+      "notNominatedHint": {
+        "candidate": "Siin veel kandidatuuri ei ole. Selle valimisel lisatakse ka erakonna kandidatuur, mille peab kinnitama administraator.",
+        "organization": "Siin veel kandidatuuri ei ole. Selle valimisel lisatakse ka valimisliidu kandidatuur, mille peab kinnitama administraator."
+      },
+      "other": {
+        "candidate": "Muu",
+        "organization": "Muu"
+      },
+      "otherInfo": {
+        "candidate": "Sisestage oma erakonna nimi, kui seda nimekirjas ei ole. Administraator kontrollib selle üle.",
+        "organization": "Sisestage valimisliidu nimi, kui seda nimekirjas ei ole. Administraator kontrollib selle üle."
+      },
+      "otherLabel": {
+        "candidate": "Erakonna nimi",
+        "organization": "Valimisliidu nimi"
+      },
+      "unlisted": "Ei ole enam valitav. Saate selle alles jätta või valida teise."
+    },
+    "requestedParent": "Teie soovitud. Seda ei ole veel rakenduses; administraator kontrollib selle üle.",
+    "state": {
+      "label": "Olek",
+      "pending": "Ootab kinnitamist",
+      "pendingInfo": "Seda kandidatuuri ei ole veel kinnitatud, seega valijad seda ei näe."
+    },
+    "title": "Kandidatuurid"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "contestantApp.register": {
+    "code": "Registreringskode",
+    "codeFormat": "Koden ser sådan ud: ABCD-EFGH-JKMN. Store og små bogstaver behandles ens.",
+    "codeRequired": "Indtast din registreringskode.",
+    "codeUnconfirmed": "Vi kunne ikke bekræfte din registreringskode.",
+    "didYouAlreadyRegister": "Har du allerede registreret dig?",
+    "emailEntry": {
+      "ingress": "Indtast den e-mailadresse, du vil bruge. Vi sender et loginlink til den, og det er den adresse, du fremover logger ind med.",
+      "mismatch": "E-mailadresserne matcher ikke.",
+      "title": "Indtast din e-mailadresse"
+    },
+    "emailInfo": "Indtast din e-mailadresse, så sender vi dig et link, du kan logge ind med.",
+    "enterCode": "Indtast den registreringskode, du har modtaget.",
+    "heroEmoji": "🖋️",
+    "identityProvider": {
+      "intro": {
+        "both": "Identificer dig med BankID for at registrere dig som kandidat eller for at registrere et parti.",
+        "candidate": "For at registrere dig som kandidat skal du identificere dig med BankID. Din kandidatprofil oprettes med navnet fra din identifikation.",
+        "organization": "For at registrere et parti skal du identificere dig med BankID og derefter indtaste partiets navn. En administrator bekræfter partiet, før det vises for vælgerne."
+      },
+      "redirectInfo": "Du bliver sendt videre til BankID-tjenesten. Når du har identificeret dig, kommer du tilbage til denne applikation.",
+      "types": {
+        "candidate": "Mig selv som kandidat",
+        "legend": "Hvad vil du registrere?",
+        "organization": "Et parti eller en vælgerforening",
+        "required": "Vælg, hvad du vil registrere."
+      }
+    },
+    "modes": {
+      "code": "Med en registreringskode",
+      "email": "Med min e-mailadresse",
+      "identityProvider": "Med BankID",
+      "legend": "Hvordan vil du registrere dig?",
+      "required": "Vælg, hvordan du vil registrere dig."
+    },
+    "passwordValidation": {
+      "commonPatterns": "Indeholder almindelige mønstre eller sekvenser",
+      "length": "Mindst {minPasswordLength} tegn",
+      "lowercase": "Lille bogstav",
+      "number": "Tal",
+      "repetition": "Indeholder gentagne tegn",
+      "symbol": "Symbol (såsom !?%#€)",
+      "uppercase": "Stort bogstav",
+      "username": "Undgå at bruge dit navn i adgangskoden"
+    },
+    "register": "Registrér",
+    "registeredNotice": {
+      "content": "Log ind med din e-mail og adgangskode, eller tjek din e-mail for bekræftelseslinket.",
+      "title": "Det ser ud til, at du allerede er registreret"
+    },
+    "signIn": {
+      "failed": "Vi kunne ikke logge dig ind med den adgangskode. Prøv igen, eller brug et link nedenfor til at vælge en adgangskode.",
+      "ingress": "Det ser ud til, at du allerede har registreret dig. Indtast din adgangskode for at logge ind.",
+      "title": "Log ind med din adgangskode"
+    },
+    "title": "Registrering"
+  }
+}

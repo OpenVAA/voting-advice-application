@@ -1,0 +1,17 @@
+{
+  "contestantApp.login": {
+    "emailRequired": "Gitt Är E-Mail-Adress an.",
+    "emailTaken": "Dës E-Mail-Adress gëtt elo vun engem anere Kont benotzt, dofir konnt se net zu Ärem Kont bäigefüügt ginn. Mellt Iech mat engem Bank ID un a gitt eng aner Adress an.",
+    "enterEmailAndPassword": "Gitt Är E-Mail an Äert Passwuert an, fir Iech unzemellen.",
+    "forgotPassword": "Passwuert vergiess?",
+    "linkFailed": "Dëse Link kann net méi benotzt ginn. E Link funktionéiert eemol, an nëmmen deen neiste Link, deen Dir ugefrot hutt, funktionéiert. Frot wgl. en neien un, op déiselwecht Manéier wéi virdrun.",
+    "noPasswordYet": "Ech hunn nach kee Passwuert gesat",
+    "noProfile": "Äre Benotzerkont ass an dëser Applikatioun mat kengem Profil verbonnen. Wann Dir Iech mat enger anerer E-Mail-Adress registréiert hutt, mellt Iech mat där Adress un. Soss kontaktéiert wgl. de Support.",
+    "passwordRequired": "Gitt Äert Passwuert an.",
+    "signedOut": "Dir gouft ausgeloggt, well d’Informatioune vun Ärem Kont net gelies konnte ginn. Mellt Iech wgl. nach eng Kéier un. Wann dat ëmmer erëm geschitt, kontaktéiert wgl. de Support.",
+    "signInWithEmail": "Mat E-Mail umellen",
+    "title": "Umellen",
+    "unknownError": "Et gouf en Efeeler mat Ären Benotzerdate. Kontaktéiert de Support, wann de Problem bestoe bleift.",
+    "answersLockedInfo": "Umeldung oder d’Äntwerten änneren ass net méi méiglech, mee Dir kënnt Iech nach umellen, fir Är Informatiounen ze gesinn."
+  }
+}

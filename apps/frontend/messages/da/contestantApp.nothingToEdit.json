@@ -1,0 +1,10 @@
+{
+  "contestantApp.nothingToEdit": {
+    "content": "Din brugerkonto er ikke knyttet til nogen profil i denne applikation, så der er ikke noget, du kan redigere.",
+    "nextSteps": "Hvis du har registreret dig med en anden e-mailadresse, skal du logge ud og logge ind med den adresse. Ellers kan du kontakte support og oplyse adressen, der vises ovenfor.",
+    "nextStepsNoAddress": "Kontakt support, og fortæl, at du har registreret dig med BankID.",
+    "settings": "Kontoindstillinger",
+    "signedInAs": "Logget ind som",
+    "title": "Intet at redigere her"
+  }
+}

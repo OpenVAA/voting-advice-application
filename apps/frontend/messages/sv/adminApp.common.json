@@ -1,0 +1,10 @@
+{
+  "adminApp.common": {
+    "home": "Hemsida",
+    "description": "Använd verktygen nedan för att hantera valrådgivningsapplikationen.",
+    "notAccessible": {
+      "content": "Åtkomst till administrationsvyn är för närvarande inaktiverad.",
+      "title": "Förlåt, administrationsvyn är inte tillgänglig"
+    }
+  }
+}

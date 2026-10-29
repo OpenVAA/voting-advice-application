@@ -1,0 +1,34 @@
+{
+  "contestantApp.emailSent": {
+    "askedAgain": "Si vous avez demandé un autre e-mail il y a moins d’une minute, celui-ci n’a peut-être pas été envoyé. Attendez de pouvoir renvoyer, puis appuyez sur Renvoyer.",
+    "changeAddress": "Utiliser une autre adresse e-mail",
+    "heroEmoji": "✉️",
+    "intro": {
+      "code": "Nous avons envoyé un e-mail à l’adresse avec laquelle vous vous êtes inscrit·e. Cliquez sur le lien que contient cet e-mail pour vous connecter.",
+      "recovery": "Nous avons envoyé un e-mail à l’adresse que vous avez indiquée. Cliquez sur le lien que contient cet e-mail pour vous connecter et définir un nouveau mot de passe.",
+      "recoveryTo": "Nous avons envoyé un e-mail à <strong>{email}</strong>. Cliquez sur le lien que contient cet e-mail pour vous connecter et définir un nouveau mot de passe.",
+      "signIn": "Nous avons envoyé un e-mail à l’adresse que vous avez indiquée. Cliquez sur le lien que contient cet e-mail pour vous connecter.",
+      "signInTo": "Nous avons envoyé un e-mail à <strong>{email}</strong>. Cliquez sur le lien que contient cet e-mail pour vous connecter."
+    },
+    "newest": "Si vous avez demandé plusieurs e-mails, seul le lien du plus récent fonctionne.",
+    "notFound": {
+      "withAddress": "Si vous ne trouvez pas l’e-mail, vérifiez votre dossier de courrier indésirable et que vous avez saisi correctement votre adresse e-mail.",
+      "withoutAddress": "Si vous ne trouvez pas l’e-mail, vérifiez votre dossier de courrier indésirable."
+    },
+    "resend": "Renvoyer",
+    "resendIn": [
+      {
+        "declarations": ["input seconds", "local secondsPlural = seconds: plural"],
+        "selectors": ["secondsPlural"],
+        "match": {
+          "secondsPlural=one": "(dans {seconds} s)",
+          "secondsPlural=other": "(dans {seconds} s)"
+        }
+      }
+    ],
+    "resendReady": "Vous pouvez maintenant demander un nouvel e-mail.",
+    "resendRequested": "Un nouvel e-mail a été demandé.",
+    "support": "Si vous avez des difficultés à recevoir l’e-mail, {contactSupportLink}.",
+    "title": "Consultez vos e-mails"
+  }
+}

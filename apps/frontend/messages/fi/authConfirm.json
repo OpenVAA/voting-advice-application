@@ -1,0 +1,13 @@
+{
+  "authConfirm": {
+    "cancel": "Peruuta",
+    "continue": "Jatka",
+    "intro": {
+      "email_change": "Paina Jatka vahvistaaksesi sähköpostiosoitteesi ja kirjautuaksesi sisään.",
+      "magiclink": "Kirjaudu sisään painamalla Jatka.",
+      "recovery": "Paina Jatka kirjautuaksesi sisään ja asettaaksesi uuden salasanan."
+    },
+    "signedIn": "Tällä selaimella on jo kirjauduttu sisään tilille. Jos jatkat, se tili kirjataan ensin ulos.",
+    "title": "Jatka sähköpostistasi"
+  }
+}

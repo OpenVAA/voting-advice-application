@@ -1,0 +1,34 @@
+{
+  "contestantApp.emailSent": {
+    "askedAgain": "Hvis du bad om en anden e-mail for mindre end et minut siden, er denne måske ikke blevet sendt. Vent, til du kan sende igen, og tryk derefter på Send igen.",
+    "changeAddress": "Brug en anden e-mailadresse",
+    "heroEmoji": "✉️",
+    "intro": {
+      "code": "Vi har sendt en e-mail til den adresse, du registrerede dig med. Klik på linket i e-mailen for at logge ind.",
+      "recovery": "Vi har sendt en e-mail til den adresse, du angav. Klik på linket i e-mailen for at logge ind og vælge en ny adgangskode.",
+      "recoveryTo": "Vi har sendt en e-mail til <strong>{email}</strong>. Klik på linket i e-mailen for at logge ind og vælge en ny adgangskode.",
+      "signIn": "Vi har sendt en e-mail til den adresse, du angav. Klik på linket i e-mailen for at logge ind.",
+      "signInTo": "Vi har sendt en e-mail til <strong>{email}</strong>. Klik på linket i e-mailen for at logge ind."
+    },
+    "newest": "Hvis du har bedt om mere end én e-mail, virker kun linket i den nyeste.",
+    "notFound": {
+      "withAddress": "Hvis du ikke kan finde e-mailen, så tjek din spammappe, og at du har skrevet din e-mailadresse korrekt.",
+      "withoutAddress": "Hvis du ikke kan finde e-mailen, så tjek din spammappe."
+    },
+    "resend": "Send igen",
+    "resendIn": [
+      {
+        "declarations": ["input seconds", "local secondsPlural = seconds: plural"],
+        "selectors": ["secondsPlural"],
+        "match": {
+          "secondsPlural=one": "(om {seconds} s)",
+          "secondsPlural=other": "(om {seconds} s)"
+        }
+      }
+    ],
+    "resendReady": "Du kan nu bede om en ny e-mail.",
+    "resendRequested": "Der er bedt om en ny e-mail.",
+    "support": "Hvis du har problemer med at modtage e-mailen, {contactSupportLink}.",
+    "title": "Tjek din e-mail"
+  }
+}

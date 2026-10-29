@@ -1,0 +1,13 @@
+{
+  "contestantApp.error": {
+    "saveFailed": "Nous sommes désolé·es, un problème est survenu lors de l’enregistrement de vos réponses. Veuillez réessayer et, si le problème persiste, contactez l’assistance.",
+    "nameLocked": {
+      "candidate": "Votre nom n’a pas pu être enregistré : un administrateur a confirmé votre profil, et le nom ne peut plus être modifié ici. Vos autres modifications ont été enregistrées. Si le nom est incorrect, veuillez contacter l’assistance.",
+      "organization": "Le nom et l’abréviation n’ont pas pu être enregistrés : un administrateur a confirmé votre parti, et ils ne peuvent plus être modifiés ici. Vos autres modifications ont été enregistrées. S’ils sont incorrects, veuillez contacter l’assistance."
+    },
+    "readFailed": {
+      "content": "Vos données n’ont pas pu être chargées. Vous êtes toujours connecté·e, vous pouvez donc réessayer. Si le problème persiste, contactez l’assistance.",
+      "tryAgain": "Réessayer"
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "contestantApp.home": {
+    "basicInfo": {
+      "edit": "Edit your basic information",
+      "enter": "Enter your basic information",
+      "view": "View your basic information"
+    },
+    "emailTask": "Confirm your email address {email}",
+    "ingress": {
+      "noNomination": {
+        "candidate": "To appear in the Election Compass, you first need a nomination: the election and constituency you are standing in. After that you can enter your basic information and answer the opinion statements.",
+        "organization": "For your party to appear in the Election Compass, it first needs a nomination: the election and constituency it is standing in. After that you can enter its basic information and answer the opinion statements."
+      },
+      "notDone": {
+        "candidate": "In order to appear in the Election Compass, you have to enter some basic information about yourself as well as answer opinion statements concerning political issues.",
+        "organization": "In order for your party to appear in the Election Compass, you have to enter some basic information about it as well as answer opinion statements concerning political issues."
+      },
+      "notDoneNoQuestions": {
+        "candidate": "In order to appear in the Election Compass, you have to enter some basic information about yourself.",
+        "organization": "In order for your party to appear in the Election Compass, you have to enter some basic information about it."
+      },
+      "ready": "You have filled all of the information needed for the Election Compass. You can still edit your answers and even log in later to do that."
+    },
+    "nomination": {
+      "enter": "Define your nomination",
+      "view": "View your nominations"
+    },
+    "preview": "Preview your profile",
+    "previewTip": "If you want to see how the voters will see your profile, you can preview it.",
+    "questions": {
+      "edit": "Edit your opinions",
+      "enter": "Tell your opinions",
+      "view": "View your opinions"
+    },
+    "ready": "You’re Ready to Roll!",
+    "tasksLabel": "Your tasks",
+    "taskStatus": {
+      "blocked": "Not available yet.",
+      "complete": "Completed.",
+      "incomplete": "Not completed yet.",
+      "incompleteCount": [
+        {
+          "declarations": ["input count", "local countPlural = count: plural"],
+          "selectors": ["countPlural"],
+          "match": {
+            "countPlural=one": "Not completed yet: one item left.",
+            "countPlural=other": "Not completed yet: {count} items left."
+          }
+        }
+      ]
+    }
+  }
+}

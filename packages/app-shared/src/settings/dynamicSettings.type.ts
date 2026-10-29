@@ -1,6 +1,7 @@
 import type { Id } from '@openvaa/core';
 import type { ENTITY_TYPE, EntityType } from '@openvaa/data';
 import type { LocalizedString } from '../data/localized.type';
+import type { RegistrationModeMatrix, ServedEntityType } from './contestantAppConfig';
 
 /**
  * These settings can be set either by editing the `dynamicSettings.ts` file or overwritten with settings loaded by the `DataProvider`.
@@ -11,7 +12,7 @@ export type DynamicSettings = {
    */
   survey?: {
     /**
-     * The link to the survey. This is passed to the translation function, which will replace `{sessionId}` with the URL-encoded session id if available or an empty string otherwise.
+     * The link to the survey. This is passed to the translation function, which replaces `{sessionId}` with the in-memory visit id when this visitor's usage events carry it, and with nothing otherwise.
      */
     linkTemplate: string;
     /**
@@ -34,7 +35,11 @@ export type DynamicSettings = {
       /**
        * The content tabs to show for parties.
        */
-      [ENTITY_TYPE.Organization]: Array<EntityDetailsContent | OrganizationDetailsContent>;
+      [ENTITY_TYPE.Organization]: Array<EntityDetailsContent | ParentEntityDetailsContent>;
+      /**
+       * The content tabs to show for alliances. Alliances have no own answers, so 'opinions' is typically omitted by default; the broader union allows future opt-in without a type-rename.
+       */
+      [ENTITY_TYPE.Alliance]?: Array<EntityDetailsContent | ParentEntityDetailsContent>;
     };
     /**
      * Whether to show a marker for missing election symbol in entity details, e.g. 'Election Symbol: --', or hide missing items completely. The marker, if shown, is defined in the translations.
@@ -102,13 +107,17 @@ export type DynamicSettings = {
    */
   entities: {
     /**
-     * Settings controlling whether entites with missing answers should be shown. This is currently only supported for candidates.
+     * Settings controlling whether entites with missing answers should be shown. Each served entity type has a key of its own, and each key decides for its own type alone.
      */
     hideIfMissingAnswers: {
       /**
        * Whether to hide candidates with missing answers in the app.
        */
       [ENTITY_TYPE.Candidate]: boolean;
+      /**
+       * Whether to hide organizations that lack an answer to an opinion question addressed to organizations.
+       */
+      [ENTITY_TYPE.Organization]: boolean;
     };
     /**
      * Whether to show the `/nominations` route on which all nominations in the app are shown.
@@ -207,9 +216,28 @@ export type DynamicSettings = {
          */
         | 'submatches'
         /**
-         * List party's the top 3 candidates within it's card. Only applies to the results list.
+         * List the parent entity's children (CandidateNominations) within its card.
+         * Only applies to the results list. Named 'children' rather than 'candidates' so that parent-entity children are named uniformly across entity types.
          */
-        | 'candidates'
+        | 'children'
+        /**
+         * Show the entity's answer to a specific question. Only applies to the results list.
+         */
+        | QuestionInCardContent
+      >;
+      /**
+       * The additional contents of alliance cards. NB. the order of the items has currently no effect.
+       */
+      [ENTITY_TYPE.Alliance]?: Array<
+        /**
+         * Show the matching scores for each question category.
+         */
+        | 'submatches'
+        /**
+         * List the parent entity's children (OrganizationNominations) within its card.
+         * An alliance's children are its member organization-nominations.
+         */
+        | 'children'
         /**
          * Show the entity's answer to a specific question. Only applies to the results list.
          */
@@ -219,13 +247,13 @@ export type DynamicSettings = {
     /**
      * Which entity types to show in the results view. There must be at least one.
      */
-    sections: Array<typeof ENTITY_TYPE.Candidate | typeof ENTITY_TYPE.Organization>;
+    sections: Array<typeof ENTITY_TYPE.Candidate | typeof ENTITY_TYPE.Organization | typeof ENTITY_TYPE.Alliance>;
     /**
-     * If defined, a feedback popup will be shown on the next page load, when the user has reached the results section and the number of seconds given by this value has passed. The popup will not be shown, if the user has already given some feedback.
+     * The delay in seconds after which a feedback popup will be shown on the next page load, when the user has reached the results section. The popup will not be shown, if the user has already given some feedback. A value of `0` disables the popup; a stored value that leaves this member out keeps the shipped default.
      */
     showFeedbackPopup?: number;
     /**
-     * The delay in seconds after which a survey popup will be shown on the next page load, when the user has reached the results section. The popup will only be shown if the relevant `analytics.survey` settings are defined and if the user has not already opened the survey.
+     * The delay in seconds after which a survey popup will be shown on the next page load, when the user has reached the results section. The popup will only be shown if the relevant `analytics.survey` settings are defined and if the user has not already opened the survey. A value of `0` disables the popup; a stored value that leaves this member out keeps the shipped default.
      */
     showSurveyPopup?: number;
   };
@@ -251,9 +279,9 @@ export type DynamicSettings = {
    */
   access: {
     /**
-     * If `true`, the Candidate App can be accessed.
+     * If `true`, the Contestant App can be accessed.
      */
-    candidateApp: boolean;
+    contestantApp: boolean;
     /**
      * If `true`, the Voter App can be accessed.
      */
@@ -270,37 +298,58 @@ export type DynamicSettings = {
      * If `true`, candidates can no longer edit their answers.
      */
     answersLocked?: boolean;
+    /**
+     * If `true`, an entity's own users can no longer add or change that entity's nominations. A project admin still can. The database enforces the lock from this same stored key, so the app only reads it to say so.
+     */
+    nominationsLocked?: boolean;
   };
   /**
    * Settings related to important notifications shown to users.
    */
   notifications: {
     /**
-     * The notification shown to users of the Candidate App.
+     * The notification shown to users of the Contestant App.
      */
-    candidateApp?: NotificationData | null;
+    contestantApp?: NotificationData | null;
     /**
      * The notification shown to users of the Voter App.
      */
     voterApp?: NotificationData | null;
   };
   /**
-   * Settings related to the Candidate App.
+   * Settings related to the Contestant App.
    */
-  candidateApp: {
+  contestantApp: {
     /**
-     * Settings related to the question view in the Candidate App.
+     * Settings related to the question view in the Contestant App.
      */
     questions: {
       /**
-       * Whether to hide possible video content for questions in the Candidate App.
+       * Whether to hide possible video content for questions in the Contestant App.
        */
       hideVideo: boolean;
       /**
-       * Whether to hide possible hero content for questions in the Candidate App.
+       * Whether to hide possible hero content for questions in the Contestant App.
        */
       hideHero: boolean;
     };
+    /**
+     * The entity types the Contestant App serves: `candidate`, `organization` or both, and never none. The app's name follows this list. A type named twice counts once, and the list is stored in the order `candidate`, `organization` whatever order it is written in. Read it with `getServedEntityTypes`.
+     */
+    entityTypes: Array<ServedEntityType>;
+    /**
+     * The registration modes allowed for each entity type: any of `identity_provider`, `email` and `code`. An empty row allows no registration for that type, and with every row empty the app offers sign-in only. A mode named twice counts once, and each row is stored in the order `identity_provider`, `email`, `code`. A row for a type that `entityTypes` does not list is stored and ignored when read. Read it with `getEffectiveRegistrationModes` and `isRegistrationModeAllowed`. Allowing `identity_provider` also needs the identity provider's environment variables.
+     */
+    registrationModes: RegistrationModeMatrix;
+  };
+  /**
+   * Settings related to usage analytics.
+   */
+  analytics: {
+    /**
+     * Whether usage events other than the identifier-free page-view count are collected. The analytics provider, the consent mode and the visit-id mode are deployment configuration of the server and are not settings.
+     */
+    trackEvents: boolean;
   };
 };
 
@@ -354,13 +403,14 @@ export type EntityDetailsContent =
   | 'opinions';
 
 /**
- * The possible content tabs to show for `Organization`s.
+ * The possible content tabs to show for parent entities (Organization, Alliance).
+ * The "children" of an Organization are its CandidateNominations; the "children" of an Alliance are its OrganizationNominations. Single shared opt-in keeps the type surface symmetric across parent entity types.
  */
-export type OrganizationDetailsContent =
+export type ParentEntityDetailsContent =
   /**
-   * The party’s candidates.
+   * The parent entity's children (CandidateNominations for Organization, OrganizationNominations for Alliance).
    */
-  'candidates';
+  'children';
 
 /**
  * The data for a notification to be shown to users.
@@ -379,8 +429,7 @@ export type NotificationData = {
    */
   content: LocalizedString;
   /**
-   * The `Icon.name` to display in the notification. @default important
-   * NB. The proper type is not accessible to `app-shared`.
+   * The `Icon.name` to display in the notification. @default important NB. The proper type is not accessible to `app-shared`.
    */
   icon?: string;
 };

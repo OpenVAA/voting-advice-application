@@ -8,9 +8,9 @@ import type { SubMatch } from './subMatch';
  * The class for an entity's matching result
  */
 export class Match<
-    TTarget extends HasAnswers = HasAnswers,
-    TGroup extends MatchableQuestionGroup = MatchableQuestionGroup
-  >
+  TTarget extends HasAnswers = HasAnswers,
+  TGroup extends MatchableQuestionGroup = MatchableQuestionGroup
+>
   extends MatchBase
   implements MatchedEntity
 {

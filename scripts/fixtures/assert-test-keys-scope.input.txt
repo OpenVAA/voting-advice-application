@@ -1,0 +1,41 @@
+# Fixture INPUT for `node scripts/assert-test-keys-scope.mjs --self-test`.
+#
+# NOT read by anything else. Its sibling `assert-test-keys-scope.expected.violations` is the exact list of
+# findings the guard must report against this file. A placeholder in double braces is replaced by the needle the
+# guard derives from the committed test keys and the mock issuer, so this file names no key itself.
+#
+# A line `# @as <path>` makes the guard treat the lines after it as if they sat in that path.
+#
+# POSITIVE: every line below a directive in this block holds a needle and must be reported.
+# @as .env.example
+IDENTITY_PROVIDER_ISSUER={{issuer}}
+IDURA_SIGNING_KEY_KID={{kid:1}}
+# @as apps/supabase/supabase/functions/.env.example
+IDENTITY_PROVIDER_DECRYPTION_JWKS=[{"kty":"RSA","kid":"{{kid:0}}","n":"{{modulus:0}}tail"}]
+# @as apps/supabase/supabase/config.toml
+issuer = "env(IDENTITY_PROVIDER_ISSUER)" # {{issuer}}
+# @as .github/workflows/main.yaml
+          IDURA_SIGNING_JWKS: '[{"n":"{{modulus:1}}"}]'
+# @as infra/aws/identity-provider.tf
+  jwks = "{\"keys\":[{\"kid\":\"{{kid:1}}\",\"n\":\"{{modulus:1}}\"}]}"
+# @as docker-compose.dev.yml
+      - IDENTITY_PROVIDER_ISSUER={{issuer}}
+# @as render.example.yaml
+      value: {{issuer}}/.well-known/openid-configuration/jwks
+#
+# NEGATIVE: no line below may be reported.
+# @as .env.example
+IDENTITY_PROVIDER_ISSUER=<active-provider-issuer>
+IDURA_SIGNING_KEY_KID=openvaa-signing-1
+IDENTITY_PROVIDER_ISSUER=https://127.0.0.1:9444
+# @as tests/tests/utils/testKeys.ts
+  kid: '{{kid:0}}',
+  n: '{{modulus:0}}',
+# @as tests/IDURA-TEST-RUNBOOK.md
+IDENTITY_PROVIDER_ISSUER={{issuer}}
+# @as .planning/phases/179-identity-provider-registration-coverage-close/179-bankauth.sh
+IDENTITY_PROVIDER_ISSUER={{issuer}}
+# @as .yarn/releases/yarn.cjs
+{{kid:0}}
+# @as scripts/assert-test-keys-scope.mjs
+{{issuer}}

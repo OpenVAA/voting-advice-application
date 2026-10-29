@@ -6,9 +6,7 @@
 export const CONDENSATION_TYPE = {
   LikertPros: 'likertPros',
   LikertCons: 'likertCons',
-  // TODO: (Optional): Add support for categorical cons
-  // CONS would imply that there is a negative category, which is not the case for categorical data
-  // In theory we could go through all other categories' comments and scour them for cons about this specific category
+  // TODO: (Optional): Add support for categorical cons CONS would imply that there is a negative category, which is not the case for categorical data In theory we could go through all other categories' comments and scour them for cons about this specific category
   CategoricalPros: 'categoricalPros',
   BooleanPros: 'booleanPros',
   BooleanCons: 'booleanCons'

@@ -1,0 +1,10 @@
+{
+  "contestantApp.nothingToEdit": {
+    "content": "Teie kasutajakonto ei ole selles rakenduses ühegi profiiliga seotud, seega pole teil siin midagi muuta.",
+    "nextSteps": "Kui registreerusite mõne teise e-posti aadressiga, logige välja ja logige sisse selle aadressiga. Vastasel juhul võtke ühendust toega ja öelge neile ülal näidatud aadress.",
+    "nextStepsNoAddress": "Võtke ühendust toega ja öelge neile, et registreerusite pangatunnustega.",
+    "settings": "Konto seaded",
+    "signedInAs": "Sisse logitud kasutajana",
+    "title": "Siin pole midagi muuta"
+  }
+}

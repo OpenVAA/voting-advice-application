@@ -1,0 +1,120 @@
+{
+  "contestantApp.nominations": {
+    "add": "Lisää ehdokkuus",
+    "constituencies": {
+      "ingress": {
+        "candidate": "Valitse vaalipiiri, jossa olet ehdolla.",
+        "organization": "Valitse vaalipiiri, jossa puolueesi on ehdolla. Kuhunkin vaaliin voi valita yhden vaalipiirin; jos puolueesi on ehdolla useammassa, ota yhteyttä tukeen."
+      },
+      "noElection": {
+        "candidate": "Tässä vaalipiirissä ei järjestetä vaalia, jossa voit olla ehdolla.",
+        "organization": "Tässä vaalipiirissä ei järjestetä vaalia, jossa puolueesi voi olla ehdolla."
+      },
+      "severalKept": "Sinulla on tässä vaalissa useita ehdokkuuksia. Ne säilytetään sellaisinaan; voit muuttaa niiden tietoja seuraavassa vaiheessa.",
+      "title": {
+        "candidate": "Mikä on vaalipiirisi?",
+        "organization": "Mikä on puolueesi vaalipiiri?"
+      }
+    },
+    "delete": "Poista",
+    "deleteCancel": "Peruuta",
+    "deleteConfirm": "Kyllä, poista",
+    "deletePrompt": "Poistetaanko tämä ehdokkuus? Se poistetaan heti. Jos lisäät sen uudelleen, ylläpitäjän on vahvistettava se ennen kuin äänestäjät näkevät sen.",
+    "deleted": "Ehdokkuus poistettiin.",
+    "description": {
+      "candidate": "Nämä ovat vaalipiirit, joissa olet ehdolla. Jos ehdokaslista tai -numero puuttuvat, ne täytetään automaattisesti, kun vaaliluettelot on vahvistettu.",
+      "organization": "Nämä ovat vaalipiirit, joissa puolueesi on ehdolla. Jos vaalisymboli puuttuu, ylläpitäjä lisää sen myöhemmin."
+    },
+    "descriptionEditable": {
+      "candidate": "Nämä ovat ehdokkuutesi. Voit muuttaa niitä sekä lisätä ehdokasnumerosi ja vaalilistasi, kunnes ehdokkuuksien muokkaus suljetaan.",
+      "organization": "Nämä ovat puolueesi ehdokkuudet. Voit muuttaa niitä sekä lisätä puolueen vaalisymbolin ja vaaliliiton, kunnes ehdokkuuksien muokkaus suljetaan."
+    },
+    "details": {
+      "changeSelection": "Muuta valintaa",
+      "confirmedNote": "Tämä ehdokkuus on vahvistettu. Jos muutat sitä, ylläpitäjän on vahvistettava se uudelleen, eivätkä äänestäjät näe sitä ennen sitä.",
+      "ingress": "Tarkista kunkin ehdokkuuden tiedot. Mitään ei tallenneta ennen kuin jatkat.",
+      "keep": "Säilytä tämä ehdokkuus",
+      "newNote": "Tämä ehdokkuus on uusi. Ylläpitäjän on vahvistettava se, eivätkä äänestäjät näe sitä ennen sitä.",
+      "previousConstituency": "Aiemmin: {constituency}",
+      "remove": "Poista tämä ehdokkuus",
+      "removedConfirmedNote": "Tämä ehdokkuus on vahvistettu, ja se poistetaan, kun jatkat. Uusi ehdokkuus pitäisi vahvistaa uudelleen.",
+      "removedNote": "Tämä ehdokkuus poistetaan, kun jatkat.",
+      "symbolInfo": {
+        "candidate": "Vapaaehtoinen. Numerosi äänestyslipussa, jos sinulla on sellainen. Enintään 50 merkkiä.",
+        "organization": "Vapaaehtoinen. Puolueesi tunnus tai numero äänestyslipussa, jos sillä on sellainen. Enintään 50 merkkiä."
+      },
+      "title": "Ehdokkuuksien tiedot"
+    },
+    "edit": "Muokkaa",
+    "elections": {
+      "ingress": {
+        "candidate": "Valitse kaikki vaalit, joissa olet ehdolla.",
+        "organization": "Valitse kaikki vaalit, joissa puolueesi on ehdolla."
+      },
+      "noneSelected": "Valitse vähintään yksi vaali jatkaaksesi.",
+      "title": {
+        "candidate": "Missä vaaleissa olet ehdolla?",
+        "organization": "Missä vaaleissa puolueesi on ehdolla?"
+      }
+    },
+    "empty": {
+      "candidate": "Sinulle ei ole vielä määritetty ehdokkuutta. Ota yhteyttä tukeen, jotta ehdokkuus voidaan lisätä.",
+      "organization": "Puolueellesi ei ole vielä määritetty ehdokkuutta. Ota yhteyttä tukeen, jotta ehdokkuus voidaan lisätä."
+    },
+    "emptyEditable": {
+      "candidate": "Et ole vielä määrittänyt ehdokkuutta. Ehdokkuus kertoo, missä vaalissa ja missä vaalipiirissä olet ehdolla.",
+      "organization": "Puolueellesi ei ole vielä määritetty ehdokkuutta. Ehdokkuus kertoo, missä vaalissa ja missä vaalipiirissä puolue on ehdolla."
+    },
+    "emptyNoElection": {
+      "candidate": "Tässä sovelluksessa ei ole vaalia, johon ehdokkaalle voidaan määrittää ehdokkuus. Jos pidät tätä virheenä, ota yhteyttä tukeen.",
+      "organization": "Tässä sovelluksessa ei ole vaalia, johon puolueelle voidaan määrittää ehdokkuus. Jos pidät tätä virheenä, ota yhteyttä tukeen."
+    },
+    "error": {
+      "changed": "Ehdokkuutesi ovat muuttuneet sen jälkeen, kun avasit tämän sivun. Ne näytetään tässä sellaisina kuin ne nyt ovat; tarkista ne ja yritä uudelleen.",
+      "checkCards": "Jotkin ehdokkuudet vaativat huomiotasi. Tarkista merkityt kentät.",
+      "duplicateParent": "Kahdella saman vaalin ja saman vaalipiirin ehdokkuudella ei voi olla samaa vaalilistaa.",
+      "hasCandidates": "Ehdokkuutta ei voitu poistaa tai siirtää, koska sen alle on merkitty ehdokkaita. Ota yhteyttä tukeen.",
+      "otherRequired": {
+        "candidate": "Kirjoita puolueen nimi.",
+        "organization": "Kirjoita vaaliliiton nimi."
+      },
+      "parentRequired": "Valitse yksi vaihtoehdoista jatkaaksesi.",
+      "saveFailed": "Anteeksi! Ehdokkuuksiesi tallentaminen ei onnistunut. Yritä uudelleen ja jos ongelma jatkuu, ota yhteyttä tukeen.",
+      "tooManyPending": "Olet lisännyt enimmäismäärän ehdokkuuksia, jotka odottavat vahvistusta. Ylläpitäjän on vahvistettava osa niistä, ennen kuin voit lisätä uusia."
+    },
+    "parent": {
+      "none": {
+        "candidate": "Sitoutumaton / ei puoluetta",
+        "organization": "Ei vaaliliittoa"
+      },
+      "noOptions": {
+        "candidate": "Yhtään puoluetta ei ole vielä valittavissa.",
+        "organization": "Yhtään vaaliliittoa ei ole vielä valittavissa."
+      },
+      "notNominatedHint": {
+        "candidate": "Ei vielä ehdolla täällä. Jos valitset sen, myös puolueelle lisätään ehdokkuus, joka ylläpitäjän on vahvistettava.",
+        "organization": "Ei vielä ehdolla täällä. Jos valitset sen, myös vaaliliitolle lisätään ehdokkuus, joka ylläpitäjän on vahvistettava."
+      },
+      "other": {
+        "candidate": "Muu",
+        "organization": "Muu"
+      },
+      "otherInfo": {
+        "candidate": "Kirjoita puolueesi nimi, jos se ei ole luettelossa. Ylläpitäjä tarkistaa sen.",
+        "organization": "Kirjoita vaaliliiton nimi, jos se ei ole luettelossa. Ylläpitäjä tarkistaa sen."
+      },
+      "otherLabel": {
+        "candidate": "Puolueen nimi",
+        "organization": "Vaaliliiton nimi"
+      },
+      "unlisted": "Ei enää valittavissa. Voit säilyttää sen tai valita toisen."
+    },
+    "requestedParent": "Sinun pyytämäsi. Sitä ei ole vielä sovelluksessa; ylläpitäjä tarkistaa sen.",
+    "state": {
+      "label": "Tila",
+      "pending": "Odottaa vahvistusta",
+      "pendingInfo": "Tätä ehdokkuutta ei ole vielä vahvistettu, joten äänestäjät eivät näe sitä."
+    },
+    "title": "Ehdokkuudet"
+  }
+}

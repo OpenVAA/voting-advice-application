@@ -1,0 +1,10 @@
+{
+  "entityDetails": {
+    "links": "Linken",
+    "tabs": {
+      "children": "Memberen",
+      "info": "Kommentaren",
+      "opinions": "Positiounen"
+    }
+  }
+}

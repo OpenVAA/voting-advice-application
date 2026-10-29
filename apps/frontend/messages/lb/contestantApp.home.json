@@ -1,0 +1,53 @@
+{
+  "contestantApp.home": {
+    "basicInfo": {
+      "edit": "Är Basisinformatioune änneren",
+      "enter": "Är Basisinformatioune aginn",
+      "view": "Är Basisinformatioune weisen"
+    },
+    "emailTask": "Bestätegt Är E-Mail-Adress {email}",
+    "ingress": {
+      "noNomination": {
+        "candidate": "Fir am Wal-Kompass opzedauchen, braucht Dir als éischt eng Nominatioun: d’Wahl an de Walbezierk, an deenen Dir kandidéiert. Duerno kënnt Dir Är Basisinformatiounen aginn an d’Aussoe zu politesche Themen beäntwerten.",
+        "organization": "Fir datt Är Partei am Wal-Kompass opdaucht, brauch si als éischt eng Nominatioun: d’Wahl an de Walbezierk, an deenen d’Partei untrëtt. Duerno kënnt Dir d’Basisinformatioune vun der Partei aginn an d’Aussoe zu politesche Themen beäntwerten."
+      },
+      "notDone": {
+        "candidate": "Fir am Wal-Kompass opzezäichen, musst Dir e puer Basisinformatioune vun Iech aginn an Aussoe zu politesche Themen beäntwerten.",
+        "organization": "Fir datt Är Partei am Wal-Kompass opdaucht, musst Dir e puer Basisinformatiounen iwwer d’Partei aginn an Aussoe zu politesche Themen beäntwerten."
+      },
+      "notDoneNoQuestions": {
+        "candidate": "Fir am Wal-Kompass opzezäichen, musst Dir e puer Basisinformatioune vun Iech aginn.",
+        "organization": "Fir datt Är Partei am Wal-Kompass opdaucht, musst Dir e puer Basisinformatiounen iwwer d’Partei aginn."
+      },
+      "ready": "Dir hutt all néideg Informatioune fir de Wal-Kompass ausgefëllt. Dir kënnt Är Äntwerten nach änneren an Iech spéider nach eng Kéier aloggen."
+    },
+    "nomination": {
+      "enter": "Är Nominatioun definéieren",
+      "view": "Är Nominatiounen uweisen"
+    },
+    "preview": "Äre Profil virukucken",
+    "previewTip": "Wann Dir wëllt gesinn, wéi d’Wieler*inne Äre Profil gesinn, kënnt Dir en virukucken.",
+    "questions": {
+      "edit": "Är Meenungen änneren",
+      "enter": "Är Meenungen uginn",
+      "view": "Är Meenungen uweisen"
+    },
+    "ready": "Dir sidd prett!",
+    "tasksLabel": "Är Aufgaben",
+    "taskStatus": {
+      "blocked": "Nach net disponibel.",
+      "complete": "Fäerdeg.",
+      "incomplete": "Nach net fäerdeg.",
+      "incompleteCount": [
+        {
+          "declarations": ["input count", "local countPlural = count: plural"],
+          "selectors": ["countPlural"],
+          "match": {
+            "countPlural=one": "Nach net fäerdeg: eng Positioun bleift iwwreg.",
+            "countPlural=other": "Nach net fäerdeg: {count} Positioune bleiwen iwwreg."
+          }
+        }
+      ]
+    }
+  }
+}
