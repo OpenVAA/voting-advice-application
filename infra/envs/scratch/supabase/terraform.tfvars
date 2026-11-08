@@ -12,7 +12,7 @@
 
 # The ref of the throwaway project. The root imports the project by this ref, so a plan never creates
 # one.
-project_ref     = "suxeqyhafjueinxnojge"
+project_ref     = "begckvkapaopoztbreqc"
 organization_id = "gulgrbzofwnwepdnrgrl"
 project_name    = "openvaa-scratch"
 region          = "eu-north-1"

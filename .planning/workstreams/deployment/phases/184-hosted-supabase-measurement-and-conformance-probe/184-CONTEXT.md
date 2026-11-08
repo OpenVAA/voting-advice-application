@@ -306,3 +306,12 @@ wrong. The decisions stand, read with these facts. Where a fact leaves a real ch
 
 *Phase: 184-hosted-supabase-measurement-and-conformance-probe*
 *Context gathered: 2026-10-26*
+
+### Amendment 2026-11-08: throwaway project recreated
+
+The operator found the original throwaway project (`suxeqyhafjueinxnojge`) already deleted, and created a new
+one, `openvaa-scratch`, ref `begckvkapaopoztbreqc` (eu-north-1, same organization as staging). D-01 stands:
+the new project is the throwaway for every rehearsal step, and D-23 deletes it at the end. It starts blank, so
+the first push applies the whole frozen baseline, as it will on the persistent project. Earlier mentions of the
+old ref in this file, RESEARCH and the discussion documents are history; plans 184-10 to 184-25 and the scratch
+root's `terraform.tfvars` carry the new ref. The persistent project `cofbsatfrdysyphajsky` still exists.
