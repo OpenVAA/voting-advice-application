@@ -41,3 +41,22 @@ The schema in the shared database is therefore the one the other worktree's E2E 
 The turbo summary reported `Cached: 11 cached, 25 total` even though the cache directory was empty. Whether turbo 2.11.4 honours `TURBO_CACHE_DIR` was not checked, so this is UNCONFIRMED. The failing dev-seed task ran live.
 
 **Outcome of attempt 1:** `test:unit` is not green on this tree while the shared stack holds another branch's schema. This record does not yet hold `test:unit exit=0`.
+
+## Attempt 2 (2026-11-08)
+
+- **Commit:** `8319f4540254a73ae8bf81a9703b2e5ec1ce2e59` (HEAD before and after every gate; `git status --porcelain --untracked-files=no` printed 0 lines after each)
+- **Node:** v24.21.0
+- **Runner:** `tmp/184-gates/attempt2/run.sh`, attempt 1's runner with its output directory changed to `tmp/184-gates/attempt2/`: the three gates one after another, in the background, with `TURBO_CACHE_DIR` set to a fresh `mktemp -d` directory. Each status was written to `<gate>.status` by the command after the gate and read from that file, never through a pipe.
+- **Shared stack:** before this attempt the operator chose to reset the shared stack to this branch's schema, and `yarn db:reset` was run from this worktree (exit 0). Before the run `yarn db:status` exited 0, no `e2e-run.sh` or `playwright test` process was running, and `supabase_migrations.schema_migrations` held exactly one version, `00001`; after the run it still held only `00001`.
+
+| Gate | Status | Start (UTC) | End (UTC) | Note |
+| --- | --- | --- | --- | --- |
+| `yarn lint:check` | `lint:check exit=0` | 2026-11-08T19:02:44Z | 2026-11-08T19:03:33Z | It reached the last link: the parity guard printed `every classified key holds` |
+| `yarn format:check` | `format:check exit=0` | 2026-11-08T19:03:33Z | 2026-11-08T19:03:49Z | `All matched files use Prettier code style!` (root and docs) |
+| `yarn test:unit` | `test:unit exit=0` | 2026-11-08T19:03:49Z | 2026-11-08T19:04:31Z | turbo: `Tasks: 25 successful, 25 total`; then `test:unit:tests` (`Test Files 10 passed (10)`, `Tests 189 passed (189)`) and `test:unit:infra` (`Test Files 1 passed (1)`, `Tests 96 passed (96)`) |
+
+`@openvaa/dev-seed#test:unit`, the link that failed in attempt 1: `Test Files 80 passed (80)`, `Tests 1264 passed (1264)`, with `tests/integration/default-template.integration.test.ts` passing its 3 tests against the reset stack. `@openvaa/frontend#test:unit`: `259 passed | 1 skipped (260)` test files; the skipped file is not one this phase touched.
+
+On the turbo summary's `Cached: 11 cached, 25 total`, which attempt 1 left open: the per-task lines show that every `test:unit` task ran as `cache bypass, force executing`, and the 11 hits are all `build` tasks (`replaying logs`). Where turbo found those build entries with an empty `TURBO_CACHE_DIR` was not checked, so it is UNCONFIRMED; no test task's result was replayed.
+
+**Outcome of attempt 2:** all three gates exit 0 at `8319f4540254a73ae8bf81a9703b2e5ec1ce2e59`. Attempt 1's red `test:unit` came from the shared stack holding another branch's schema, and it went away with the reset and no change to any file.
