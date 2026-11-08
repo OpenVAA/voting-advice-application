@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 184
 current_phase_name: Hosted Supabase Measurement and Conformance Probe
-current_plan: 9
+current_plan: 10
 status: executing
-stopped_at: Completed 184-08-PLAN.md
-last_updated: "2026-10-26T15:03:46.698Z"
+stopped_at: Completed 184-09-PLAN.md
+last_updated: "2026-11-08T19:06:39.356Z"
 last_activity: 2026-10-26
 last_activity_desc: Phase 184 execution started
-state_head: 4b0fb272b0c7364b2928b4f0cfc583612b08a3b0
+state_head: 57cafb0b888be56417a4464cf58b7b6f3501f500
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 107
-  completed_plans: 90
+  completed_plans: 91
   percent: 30
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 184 (Hosted Supabase Measurement and Conformance Probe) — EXECUTING
-Plan: 9 of 25
+Plan: 10 of 25
 Status: Ready to execute
 Last activity: 2026-10-26 — Phase 184 execution started
 
@@ -43,7 +43,7 @@ Progress: [███░░░░░░░] 30% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 9
+**Current Plan:** 10
 
 From 184 on, the numeric order is the dependency order.
 
@@ -125,6 +125,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 184 P07 | 12min | 3 tasks | 4 files |
 | Phase 184 P03 | 14min | 3 tasks | 5 files |
 | Phase 184 P08 | 5 min | 2 tasks | 5 files |
+| Phase 184 P09 | 25min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -221,6 +222,10 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 184]: 184-03: the probe's catalog source refuses PGHOST of another ref, PGPORT 6543, PGHOSTADDR/PGSERVICE before psql, and a role neither superuser nor rolbypassrls after the catalog query
 - [Phase 184]: Hosted projects are opened for voters through BOOTSTRAP_OPEN_FOR_VOTERS=true at each hosted bootstrap, not by the smoke template (ruled by the operator, 2026-10-26)
 - [Phase 184]: The smoke template states the perm family's MINIMAL_BASE_APP_SETTINGS: every built-in must state a contestantApp root, and the hosted bootstrap writes an empty settings row
+- [Phase 184]: 184-09: the linked work directory is tmp/supabase-linked/<ref>; apps/supabase is never linked
+- [Phase 184]: 184-09: psql connects direct first, session pooler on 5432 as fallback, never port 6543
+- [Phase 184]: 184-09: a scratch fault plan is applied only when its named lines equal the step's; a project create/destroy/replace is never applied
+- [Phase 184]: 184-09: the first administrator is created in the dashboard with auto-confirm, never by an invitation mail
 
 ### Pending Todos
 
@@ -273,6 +278,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-10-26T15:03:45.818Z
-**Stopped At:** Completed 184-08-PLAN.md
+Last session: 2026-11-08T19:06:38.549Z
+**Stopped At:** Completed 184-09-PLAN.md
 **Resume File:** None
