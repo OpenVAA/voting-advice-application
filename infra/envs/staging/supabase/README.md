@@ -662,9 +662,13 @@ export TF_VAR_database_password="$SUPABASE_DB_PASSWORD"
 
 The SMTP user name and password come from the outputs of the `staging/dns-mail` root, read into
 the variables and never printed. That root's state is in the bucket, so this needs the AWS CLI
-signed in and the root initialised.
+signed in to account `471112560111` and the root initialised. Name the profile explicitly: a
+workstation's default profile may sign in to another account, and Terraform then fails with "No
+valid credential sources found". The account check must print `471112560111`.
 
 ```bash
+export AWS_PROFILE=openvaa-admin
+aws sts get-caller-identity --query Account --output text
 D=infra/envs/staging/dns-mail
 TF_VAR_smtp_user=$(terraform -chdir="$D" output -raw \
   smtp_username)
