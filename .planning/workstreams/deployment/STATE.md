@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 184
 current_phase_name: Hosted Supabase Measurement and Conformance Probe
-current_plan: 10
+current_plan: 11
 status: executing
-stopped_at: Completed 184-09-PLAN.md
-last_updated: "2026-11-08T19:06:39.356Z"
+stopped_at: Completed 184-10-PLAN.md
+last_updated: "2026-11-09T09:32:11.086Z"
 last_activity: 2026-10-26
 last_activity_desc: Phase 184 execution started
-state_head: 57cafb0b888be56417a4464cf58b7b6f3501f500
+state_head: f72003660d40269ac4362a24996fcfc4167f6609
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 107
-  completed_plans: 91
+  completed_plans: 92
   percent: 30
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 184 (Hosted Supabase Measurement and Conformance Probe) — EXECUTING
-Plan: 10 of 25
+Plan: 11 of 25
 Status: Ready to execute
 Last activity: 2026-10-26 — Phase 184 execution started
 
@@ -43,7 +43,7 @@ Progress: [███░░░░░░░] 30% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 10
+**Current Plan:** 11
 
 From 184 on, the numeric order is the dependency order.
 
@@ -126,6 +126,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 184 P03 | 14min | 3 tasks | 5 files |
 | Phase 184 P08 | 5 min | 2 tasks | 5 files |
 | Phase 184 P09 | 25min | 3 tasks | 6 files |
+| Phase 184 P10 | 20min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -226,6 +227,9 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 184]: 184-09: psql connects direct first, session pooler on 5432 as fallback, never port 6543
 - [Phase 184]: 184-09: a scratch fault plan is applied only when its named lines equal the step's; a project create/destroy/replace is never applied
 - [Phase 184]: 184-09: the first administrator is created in the dashboard with auto-confirm, never by an invitation mail
+- [Phase 184]: 184-10: scratch state restored by re-import (reimport, ruled 2026-11-08); first scratch plan sha256 9ea24b40518b08b3487fe531606be51639e054bb489f403a2fdc50bd8bf63e94 reviewed ok
+- [Phase 184]: 184-10: throwaway recreated as begckvkapaopoztbreqc in eu-west-1; the hook-on/function-absent sign-in moves to 184-11 between the settings apply and the push
+- [Phase 184]: 184-10: throwaway logging would log a >10 s statement's parameters via auto_explain (10s, -1); D-10 gate for 184-15
 
 ### Pending Todos
 
@@ -278,6 +282,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-08T19:06:38.549Z
-**Stopped At:** Completed 184-09-PLAN.md
+Last session: 2026-11-09T09:32:10.261Z
+**Stopped At:** Completed 184-10-PLAN.md
 **Resume File:** None
