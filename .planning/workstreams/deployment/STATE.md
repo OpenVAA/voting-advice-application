@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 184
 current_phase_name: Hosted Supabase Measurement and Conformance Probe
-current_plan: 11
+current_plan: 12
 status: executing
-stopped_at: Completed 184-10-PLAN.md
-last_updated: "2026-11-09T09:32:11.086Z"
+stopped_at: Completed 184-11-PLAN.md
+last_updated: "2026-11-10T10:24:10.991Z"
 last_activity: 2026-10-26
 last_activity_desc: Phase 184 execution started
-state_head: f72003660d40269ac4362a24996fcfc4167f6609
+state_head: 2a74a55aece255907a7336290ae1acc674d9ded7
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 107
-  completed_plans: 92
+  completed_plans: 93
   percent: 30
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 184 (Hosted Supabase Measurement and Conformance Probe) — EXECUTING
-Plan: 11 of 25
+Plan: 12 of 25
 Status: Ready to execute
 Last activity: 2026-10-26 — Phase 184 execution started
 
@@ -43,7 +43,7 @@ Progress: [███░░░░░░░] 30% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 11
+**Current Plan:** 12
 
 From 184 on, the numeric order is the dependency order.
 
@@ -127,6 +127,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 184 P08 | 5 min | 2 tasks | 5 files |
 | Phase 184 P09 | 25min | 3 tasks | 6 files |
 | Phase 184 P10 | 20min | 3 tasks | 2 files |
+| Phase 184 P11 | 25 min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -230,6 +231,9 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 184]: 184-10: scratch state restored by re-import (reimport, ruled 2026-11-08); first scratch plan sha256 9ea24b40518b08b3487fe531606be51639e054bb489f403a2fdc50bd8bf63e94 reviewed ok
 - [Phase 184]: 184-10: throwaway recreated as begckvkapaopoztbreqc in eu-west-1; the hook-on/function-absent sign-in moves to 184-11 between the settings apply and the push
 - [Phase 184]: 184-10: throwaway logging would log a >10 s statement's parameters via auto_explain (10s, -1); D-10 gate for 184-15
+- [Phase 184]: 184-11: check-drift.sh keeps the CLI default schema set for --target linked; a clean hosted database gave an empty diff (2026-11-09/10)
+- [Phase 184]: 184-11: sign-in fails with 500 unexpected_failure from a project's first settings apply until its migrations are pushed, while the access-token hook is on
+- [Phase 184]: 184-11: the CLI read-only login role has rolbypassrls=f and cannot count storage.buckets; postgres has rolbypassrls=t (input for 184-17's catalog role)
 
 ### Pending Todos
 
@@ -282,6 +286,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-09T09:32:10.261Z
-**Stopped At:** Completed 184-10-PLAN.md
+Last session: 2026-11-10T10:24:10.131Z
+**Stopped At:** Completed 184-11-PLAN.md
 **Resume File:** None
