@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 184
 current_phase_name: Hosted Supabase Measurement and Conformance Probe
-current_plan: 12
+current_plan: 13
 status: executing
-stopped_at: Completed 184-11-PLAN.md
-last_updated: "2026-11-10T10:24:10.991Z"
+stopped_at: Completed 184-12-PLAN.md
+last_updated: "2026-11-10T13:17:40.026Z"
 last_activity: 2026-10-26
 last_activity_desc: Phase 184 execution started
-state_head: 2a74a55aece255907a7336290ae1acc674d9ded7
+state_head: a59fe3b91031f4c9212d69312889d15e8c70eece
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 107
-  completed_plans: 93
+  completed_plans: 94
   percent: 30
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 184 (Hosted Supabase Measurement and Conformance Probe) — EXECUTING
-Plan: 12 of 25
+Plan: 13 of 25
 Status: Ready to execute
 Last activity: 2026-10-26 — Phase 184 execution started
 
@@ -43,7 +43,7 @@ Progress: [███░░░░░░░] 30% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 12
+**Current Plan:** 13
 
 From 184 on, the numeric order is the dependency order.
 
@@ -128,6 +128,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 184 P09 | 25min | 3 tasks | 6 files |
 | Phase 184 P10 | 20min | 3 tasks | 2 files |
 | Phase 184 P11 | 25 min | 3 tasks | 3 files |
+| Phase 184 P12 | 20min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -234,6 +235,9 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 184]: 184-11: check-drift.sh keeps the CLI default schema set for --target linked; a clean hosted database gave an empty diff (2026-11-09/10)
 - [Phase 184]: 184-11: sign-in fails with 500 unexpected_failure from a project's first settings apply until its migrations are pushed, while the access-token hook is on
 - [Phase 184]: 184-11: the CLI read-only login role has rolbypassrls=f and cannot count storage.buckets; postgres has rolbypassrls=t (input for 184-17's catalog role)
+- [Phase 184]: 184-12: D09_TRIGGER=yes — the hosted gateway refuses an apikey-only call to a verify_jwt function (401 UNAUTHORIZED_NO_AUTH_HEADER); 184-14 sets verify_jwt = false for account-access (2026-11-10)
+- [Phase 184]: 184-12: D04_FAILS_CLOSED=yes — served identity-callback answers GET 405 and POST {} 500 with its own fixed bodies (2026-11-10)
+- [Phase 184]: 184-12: D12_LEGACY_ANON=works — legacy anon key works for REST, auth and functions; the publishable key passed the gateway JWT check too; stay on legacy keys (2026-11-10)
 
 ### Pending Todos
 
@@ -286,6 +290,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-10T10:24:10.131Z
-**Stopped At:** Completed 184-11-PLAN.md
+Last session: 2026-11-10T13:17:35.866Z
+**Stopped At:** Completed 184-12-PLAN.md
 **Resume File:** None
