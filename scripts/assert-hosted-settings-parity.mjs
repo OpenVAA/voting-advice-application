@@ -440,7 +440,8 @@ const ROWS = [
     ['authorization_url_path'],
     'the hosted settings of a new project do not hold this key, and whether the hosted API accepts it has not been observed'
   ),
-  ...none('functions.identity-callback', ['verify_jwt'], DEPLOYED_FROM_THIS_FILE)
+  ...none('functions.identity-callback', ['verify_jwt'], DEPLOYED_FROM_THIS_FILE),
+  ...none('functions.account-access', ['verify_jwt'], DEPLOYED_FROM_THIS_FILE)
 ];
 
 /** Local redirect entries that have no hosted counterpart, each with the reason. */
@@ -1857,6 +1858,9 @@ allow_dynamic_registration = false
 enabled = true
 
 [functions.identity-callback]
+verify_jwt = false
+
+[functions.account-access]
 verify_jwt = false
 `;
 

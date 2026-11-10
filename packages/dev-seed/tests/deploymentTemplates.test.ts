@@ -1,5 +1,5 @@
 /**
- * The deployment templates name the variables a production start needs, and `identity-callback` declares its JWT setting.
+ * The deployment templates name the variables a production start needs, and `identity-callback` and `account-access` declare their JWT setting.
  *
  * The production server refuses to start without `PUBLIC_PROJECT_ID` and `ORIGIN`, and it reads `ADDRESS_HEADER` and `XFF_DEPTH` to find the client address behind a proxy. This suite specifies where each of the four is written down:
  *
@@ -7,6 +7,7 @@
  * - `docker-compose.dev.yml` passes all four with a default, so an unset variable never reaches the container as an empty string by accident.
  * - `.env.example` lists the three proxy variables as commented lines only. CI copies that file to `.env` and Compose reads `.env`, so a live `ORIGIN` there would reach the production test image and make it refuse every form post.
  * - `apps/supabase/supabase/config.toml` declares `verify_jwt = false` for `identity-callback`, which verifies the identity provider's token itself.
+ * - `apps/supabase/supabase/config.toml` declares `verify_jwt = false` for `account-access`, which admits an anonymous caller and makes its own checks of every request.
  *
  * It lives in this package because `yarn test:unit` runs per workspace and this package already reads repository-root files from its tests.
  */
@@ -131,6 +132,7 @@ describe('deployment templates', () => {
   describe('apps/supabase/supabase/config.toml', () => {
     const text = read('apps/supabase/supabase/config.toml');
     const section = text.split(/^\[/m).find((candidate) => candidate.startsWith('functions.identity-callback]'));
+    const accountAccess = text.split(/^\[/m).find((candidate) => candidate.startsWith('functions.account-access]'));
 
     it('is read and is not empty', () => {
       expect(text.trim().length).toBeGreaterThan(0);
@@ -142,6 +144,14 @@ describe('deployment templates', () => {
 
     it('assigns verify_jwt = false in the [functions.identity-callback] section', () => {
       expect(capture(section ?? '', /^verify_jwt\s*=\s*(\S+)/gm)).toEqual(['false']);
+    });
+
+    it('declares a [functions.account-access] section', () => {
+      expect(accountAccess).toBeDefined();
+    });
+
+    it('assigns verify_jwt = false in the [functions.account-access] section', () => {
+      expect(capture(accountAccess ?? '', /^verify_jwt\s*=\s*(\S+)/gm)).toEqual(['false']);
     });
   });
 });
