@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 184
 current_phase_name: Hosted Supabase Measurement and Conformance Probe
-current_plan: 14
+current_plan: 15
 status: executing
-stopped_at: Completed 184-13-PLAN.md
-last_updated: "2026-11-10T20:05:00.303Z"
+stopped_at: Completed 184-14-PLAN.md
+last_updated: "2026-11-10T21:42:51.135Z"
 last_activity: 2026-10-26
 last_activity_desc: Phase 184 execution started
-state_head: 70d58c0aaf74a04843c34815fae8e7c951f66342
+state_head: c4802fcf5204f39e4c044c5d0b23acd2b3229e09
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 107
-  completed_plans: 95
+  completed_plans: 96
   percent: 30
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 184 (Hosted Supabase Measurement and Conformance Probe) — EXECUTING
-Plan: 14 of 25
+Plan: 15 of 25
 Status: Ready to execute
 Last activity: 2026-10-26 — Phase 184 execution started
 
@@ -43,7 +43,7 @@ Progress: [███░░░░░░░] 30% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 14
+**Current Plan:** 15
 
 From 184 on, the numeric order is the dependency order.
 
@@ -130,6 +130,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 184 P11 | 25 min | 3 tasks | 3 files |
 | Phase 184 P12 | 20min | 2 tasks | 2 files |
 | Phase 184 P13 | 30 min | 3 tasks | 2 files |
+| Phase 184 P14 | 35 min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -241,6 +242,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 184]: 184-12: D12_LEGACY_ANON=works — legacy anon key works for REST, auth and functions; the publishable key passed the gateway JWT check too; stay on legacy keys (2026-11-10)
 - [Phase 184]: 184-13: BEHIND_CLOUDFLARE=true — Cloudflare refuses a client-sent cf-connecting-ip (403, error code 1000) and it is the connecting client on every served request (2026-11-10)
 - [Phase 184]: 184-13: drift check seen red (exit 1, planted functions) and green (exit 0) on a hosted database; guard refuses port 6543 and another ref (exit 2); anon 9 s RPC cut at about 8 s with 57014 (2026-11-10)
+- [Phase 184]: 184-14: D09_APPLIED=yes — account-access declares verify_jwt = false in config.toml (guard row not compared, spec cases); 184-15 begins with its redeploy and a re-measurement of shapes (a) and (b) (2026-11-10)
+- [Phase 184]: 184-14: D12_RAISED=no, ruled by the operator 2026-11-10 — the deployment stays on the legacy keys; retirement 'early 2027' goes to the FUT-02 todo in 184-23
 
 ### Pending Todos
 
@@ -293,6 +296,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-10T20:04:59.462Z
-**Stopped At:** Completed 184-13-PLAN.md
+Last session: 2026-11-10T21:42:50.318Z
+**Stopped At:** Completed 184-14-PLAN.md
 **Resume File:** None

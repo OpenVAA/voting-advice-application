@@ -399,7 +399,7 @@ Notes:
   5. The conformance probe reads what the persistent project serves and passes. Each of its checks is seen failing once, by name, against the throwaway project broken on purpose.
 
 **Research flag**: Needs `/gsd-plan-phase --research-phase`, planned as measurement tasks with recorded outputs. Two topics that `research/SUMMARY.md` lists under 185 are measured here, because this roadmap makes the first push and sends the first Edge Function mail in this phase: `db push` from an IPv4 network, with the pooler as the fallback, and the SES port from an Edge Function (D7; 2587 first by C6). Also measured here: whether the hook can be switched on before its function exists (F2), and the Postgres major version.
-**Plans**: 13/25 plans executed in 19 waves. Waves 1 to 4 write the code without the operator (the probe, the push wrapper, the drift check's linked guard, the parity guard's `[functions.*]` family, the function secrets in Terraform, the scratch root's fault file, the smoke template, the runbook and the grant script); three of them stop for a ruling first. Waves 5 to 13 are the throwaway's sittings, in order; waves 14 to 17 the persistent project's, the first push behind a one-way gate (plan 184-21); wave 18 deletes the throwaway; wave 19 closes on the repository gates and a full E2E run.
+**Plans**: 14/25 plans executed in 19 waves. Waves 1 to 4 write the code without the operator (the probe, the push wrapper, the drift check's linked guard, the parity guard's `[functions.*]` family, the function secrets in Terraform, the scratch root's fault file, the smoke template, the runbook and the grant script); three of them stop for a ruling first. Waves 5 to 13 are the throwaway's sittings, in order; waves 14 to 17 the persistent project's, the first push behind a one-way gate (plan 184-21); wave 18 deletes the throwaway; wave 19 closes on the repository gates and a full E2E run.
 
 Plans:
 **Wave 1**
@@ -430,7 +430,7 @@ Plans:
 
 **Wave 8** *(blocked on Wave 7 completion)*
 - [x] 184-13-PLAN.md — wave 8, needs the operator — Throwaway: the header record, the anon timeout, the drift check red and green, the second push.
-- [ ] 184-14-PLAN.md — wave 8, needs the operator — Rule the key model if the legacy keys fail; apply `account-access`'s JWT setting if the gateway requires it.
+- [x] 184-14-PLAN.md — wave 8, needs the operator — Rule the key model if the legacy keys fail; apply `account-access`'s JWT setting if the gateway requires it.
 
 **Wave 9** *(blocked on Wave 8 completion)*
 - [ ] 184-15-PLAN.md — wave 9, needs the operator — Throwaway: the logging gate, two bootstraps, the administrator's claims and the smoke dataset.
@@ -617,7 +617,7 @@ Phases 181, 182 and 183 can start in any order. From 184 on, the numeric order i
 | 181. Deployability and Migration Model | 19/19 | Complete    | 2026-10-21 |
 | 182. Analytics Relay | 31/31 | Complete | 2026-10-20 |
 | 183. Terraform Foundation and Supabase as Code | 28/28 | Complete    | 2026-10-26 |
-| 184. Hosted Supabase Measurement and Conformance Probe | 13/25 | In Progress | - |
+| 184. Hosted Supabase Measurement and Conformance Probe | 14/25 | In Progress | - |
 | 185. AWS Frontend Stack, First Apply by Hand | 0/TBD | Not started | - |
 | 186. Deployed Smoke Entry | 0/TBD | Not started | - |
 | 187. Deploy Pipeline | 0/TBD | Not started | - |
