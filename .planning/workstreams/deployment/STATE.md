@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 184
 current_phase_name: Hosted Supabase Measurement and Conformance Probe
-current_plan: 13
+current_plan: 14
 status: executing
-stopped_at: Completed 184-12-PLAN.md
-last_updated: "2026-11-10T13:17:40.026Z"
+stopped_at: Completed 184-13-PLAN.md
+last_updated: "2026-11-10T20:05:00.303Z"
 last_activity: 2026-10-26
 last_activity_desc: Phase 184 execution started
-state_head: a59fe3b91031f4c9212d69312889d15e8c70eece
+state_head: 70d58c0aaf74a04843c34815fae8e7c951f66342
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 107
-  completed_plans: 94
+  completed_plans: 95
   percent: 30
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 184 (Hosted Supabase Measurement and Conformance Probe) — EXECUTING
-Plan: 13 of 25
+Plan: 14 of 25
 Status: Ready to execute
 Last activity: 2026-10-26 — Phase 184 execution started
 
@@ -43,7 +43,7 @@ Progress: [███░░░░░░░] 30% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 13
+**Current Plan:** 14
 
 From 184 on, the numeric order is the dependency order.
 
@@ -129,6 +129,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 184 P10 | 20min | 3 tasks | 2 files |
 | Phase 184 P11 | 25 min | 3 tasks | 3 files |
 | Phase 184 P12 | 20min | 2 tasks | 2 files |
+| Phase 184 P13 | 30 min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -238,6 +239,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 184]: 184-12: D09_TRIGGER=yes — the hosted gateway refuses an apikey-only call to a verify_jwt function (401 UNAUTHORIZED_NO_AUTH_HEADER); 184-14 sets verify_jwt = false for account-access (2026-11-10)
 - [Phase 184]: 184-12: D04_FAILS_CLOSED=yes — served identity-callback answers GET 405 and POST {} 500 with its own fixed bodies (2026-11-10)
 - [Phase 184]: 184-12: D12_LEGACY_ANON=works — legacy anon key works for REST, auth and functions; the publishable key passed the gateway JWT check too; stay on legacy keys (2026-11-10)
+- [Phase 184]: 184-13: BEHIND_CLOUDFLARE=true — Cloudflare refuses a client-sent cf-connecting-ip (403, error code 1000) and it is the connecting client on every served request (2026-11-10)
+- [Phase 184]: 184-13: drift check seen red (exit 1, planted functions) and green (exit 0) on a hosted database; guard refuses port 6543 and another ref (exit 2); anon 9 s RPC cut at about 8 s with 57014 (2026-11-10)
 
 ### Pending Todos
 
@@ -290,6 +293,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-10T13:17:35.866Z
-**Stopped At:** Completed 184-12-PLAN.md
+Last session: 2026-11-10T20:04:59.462Z
+**Stopped At:** Completed 184-13-PLAN.md
 **Resume File:** None
