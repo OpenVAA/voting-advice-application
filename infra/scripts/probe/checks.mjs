@@ -475,13 +475,13 @@ export const CHECKS = [
       const served = responses.public.functions;
       return verdict([
         answerClause(
-          'identity-callback, called by GET without Authorization,',
+          'identity-callback, called by GET with no key,',
           served.identityCallbackGet,
           405,
           'method-not-allowed'
         ),
         answerClause(
-          'identity-callback, called by POST of an empty object without Authorization,',
+          'identity-callback, called by POST of an empty object with no key,',
           served.identityCallbackPost,
           500,
           'internal-server-error'
