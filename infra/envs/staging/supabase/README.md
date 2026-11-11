@@ -857,7 +857,8 @@ Secrets: `SUPABASE_ACCESS_TOKEN`.
    ```
 
    It prints one `s17_function=<slug> status=<status> verify_jwt=<true|false>` line per function:
-   three lines, each `status=ACTIVE`, with `verify_jwt=false` for `identity-callback` alone.
+   three lines, each `status=ACTIVE`, with `verify_jwt=false` for `account-access` and
+   `identity-callback` and `verify_jwt=true` for `send-email`.
 
 3. Last item:
 
@@ -1075,8 +1076,7 @@ Secrets: `SUPABASE_DB_PASSWORD` (as `PGPASSWORD`, with Step 15's variables) and
 1. The environment the script reads. `BOOTSTRAP_BEHIND_CLOUDFLARE` is `true` or `false` as the dated
    record of the headers that reach a function and a database request, in "Observations", decides;
    that record is made before this step runs on either project. Every hosted project is opened for
-   voters at its bootstrap. When whoever asked for the step gives a session option, such as
-   `PGOPTIONS='-c statement_timeout=5s'`, export it here as well.
+   voters at its bootstrap.
 
    ```bash
    PUBLIC_PROJECT_ID=$(sed -n \
@@ -1087,6 +1087,33 @@ Secrets: `SUPABASE_DB_PASSWORD` (as `PGPASSWORD`, with Step 15's variables) and
    export BOOTSTRAP_BEHIND_CLOUDFLARE='<true or false>'
    export BOOTSTRAP_OPEN_FOR_VOTERS=true
    ```
+
+   When whoever asked for the step gives a session statement timeout, such as `5s`, set `T` to it
+   below; otherwise leave `T` empty. The timeout is set inside the bootstrap's own session, by a
+   wrapper that runs the script only when the session reports the timeout. **`PGOPTIONS` does not
+   do it:** the session pooler drops a startup option, and the session keeps the server's
+   default.
+
+   ```bash
+   T=''
+   B=infra/scripts/bootstrap.sql
+   if [ -n "$T" ]; then
+     B="$L/s20-boot.sql"
+     printf '%s\n' '\set ON_ERROR_STOP on' \
+       "SET statement_timeout = '$T';" \
+       "SELECT 's20_session_timeout=' ||" \
+       "  current_setting('statement_timeout');" \
+       "SELECT current_setting('statement_timeout')" \
+       "  = '$T' AS timeout_ok \gset" \
+       '\if :timeout_ok' '\i infra/scripts/bootstrap.sql' \
+       '\else' "SELECT 's20_timeout_guard=stopped';" \
+       'SELECT 1/0;' '\endif' > "$B"
+   fi
+   ```
+
+   With a timeout, each run below also prints `s20_boot<k>_session_timeout=`, which must be the
+   value of `T`; a run whose session did not take it prints `s20_timeout_guard=stopped` in its log,
+   exits 3 and writes nothing.
 
 2. A function that prints the rows the bootstrap writes, as one count line
    `s20_counts<k>=accounts,projects,app_settings,storage_config,deployment_settings` and the two
@@ -1113,18 +1140,20 @@ Secrets: `SUPABASE_DB_PASSWORD` (as `PGPASSWORD`, with Step 15's variables) and
 3. The first run and its rows:
 
    ```bash
-   psql -X -f infra/scripts/bootstrap.sql \
-     > "$L/s20-boot1.log" 2>&1
+   psql -X -At -f "$B" > "$L/s20-boot1.log" 2>&1
    echo "s20_boot1_exit=$?"
+   sed -n 's/^s20_session_timeout=/s20_boot1_session_timeout=/p' \
+     "$L/s20-boot1.log"
    s20_rows 1
    ```
 
 4. The second run and its rows:
 
    ```bash
-   psql -X -f infra/scripts/bootstrap.sql \
-     > "$L/s20-boot2.log" 2>&1
+   psql -X -At -f "$B" > "$L/s20-boot2.log" 2>&1
    echo "s20_boot2_exit=$?"
+   sed -n 's/^s20_session_timeout=/s20_boot2_session_timeout=/p' \
+     "$L/s20-boot2.log"
    s20_rows 2
    ```
 
@@ -1137,7 +1166,6 @@ Secrets: `SUPABASE_DB_PASSWORD` (as `PGPASSWORD`, with Step 15's variables) and
    psql -X -f infra/scripts/check-seed.sql \
      > "$L/s20-check-seed.log" 2>&1
    echo "s20_check_seed_exit=$?"
-   unset PGOPTIONS
    ```
 
 6. Last item:
@@ -1230,7 +1258,8 @@ neither it nor the token is ever printed or pasted.
 
 The `smoke` template of `@openvaa/dev-seed` writes 1001 candidates and 1001 nominations into the
 project, every row's external id beginning `smoke_`, and no auth user. It is seeded once per project:
-the conformance probe reads more than 1000 rows of it in one request. It is removed with
+the conformance probe reads more than 1000 rows of it in one request. The seed takes about 15
+minutes, nearly all of it the candidates' portrait uploads, at about two a second. It is removed with
 `yarn db:seed:teardown --prefix smoke_ --allow-remote`, with the same two variables exported.
 
 Secrets: `SUPABASE_SERVICE_ROLE_KEY` and `SUPABASE_ANON_KEY`.
@@ -1428,7 +1457,7 @@ it.
 | The values of the seven logging settings of the persistent project                               | Step 19 on the persistent project                                            |
 | Which redirect addresses the auth service admits and which it refuses                            | Reads of the verify endpoint on the throwaway project, after Step 18         |
 | Which SMTP port delivers a mail sent from a function                                             | A link mail from `account-access` on the throwaway project, after Step 18    |
-| The first administrator's token carries the claims the access-token hook adds                    | Step 21 on each project                                                      |
+| The first administrator's token carries the claims the access-token hook adds                    | Step 21 on the persistent project                                            |
 
 ## Observations
 
@@ -1482,3 +1511,9 @@ it.
 | 2026-11-10    | The `anon` role's statement timeout ends a served request: an anonymous RPC that sleeps 9 s answered status 500 with SQLSTATE `57014` after about 8 s, and one that sleeps 7 s completed with status 204.                                                                                                                                                                                                                                                                                                                                                                                        |
 | 2026-11-10    | On a hosted database, the drift check exited 1 while two temporary functions existed, with a diff naming them and nothing else, and 0 after they were dropped. Its guard refused port 6543 and a host of another project with exit 2, before connecting.                                                                                                                                                                                                                                                                                                                                         |
 | 2026-11-10    | A second run of the push wrapper on a project holding every migration printed `push_up_to_date=yes`, pushed nothing, asked nothing and exited 0.                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 2026-11-11    | After `account-access` was deployed with `verify_jwt` false from the linked `config.toml`, the Management API lists it so, and a `check-code` POST with the legacy anon key in `apikey` alone, with no `Authorization` header, reached the function: status 200 and its own `{"status":"unknown"}`. With the key also as the Bearer header it answered the same.                                                                                                                                                                                                                                 |
+| 2026-11-11    | Through the session pooler, a statement timeout given as a startup option (`PGOPTIONS='-c statement_timeout=5s'`) did not reach the session: `show statement_timeout` returned `2min`. A `SET statement_timeout` in the same session took effect, and both bootstrap runs below ran under `5s`.                                                                                                                                                                                                                                                                                                  |
+| 2026-11-11    | On the throwaway project the bootstrap ran twice, each with status 0, and both runs left the same rows: one account, one project, one settings row, the two `storage_config` rows and one `deployment_settings` row (`1,1,1,2,1`), with `open_for_voters` and `behind_cloudflare` the same after each. The seed check that followed exited 0.                                                                                                                                                                                                                                                    |
+| 2026-11-11    | The throwaway project was bootstrapped with `behind_cloudflare` true and opened for voters; both values were read back from the database after each run.                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| 2026-11-11    | On the throwaway project the first administrator, given the project-scope `admin` grant by `grant-project-admin.sql` (`grants_on_project=1`), signed in with a password (status 200, publishable key). The token's `grants` claim holds exactly one object, `{"role":"admin","scope":"project","target_id":"00000000-0000-0000-0000-000000000001","target_type":null}`, the claim the access-token hook adds; the other claims are the auth service's own.                                                                                                                                       |
+| 2026-11-11    | The `smoke` dataset was seeded on the throwaway project with the legacy service-role key (status 0, about 15 minutes), and an anonymous read of its nominations with the publishable key answered status 206 with `Content-Range: 0-0/1001`: 1001 rows readable without a session.                                                                                                                                                                                                                                                                                                               |
