@@ -131,7 +131,7 @@ Each is run on a real project, recorded with its date, and acted on.
       `account-access` works or is changed.
 - [ ] **OBS-04**: The forwarded headers that reach an Edge Function, a PostgREST trigger and the frontend
       container are recorded.
-- [ ] **OBS-05**: Both refusing branches of `account-access`, and the release of a slot after a failed send, are
+- [x] **OBS-05**: Both refusing branches of `account-access`, and the release of a slot after a failed send, are
       seen on a served function.
 - [ ] **OBS-06**: One invitation mail through real SMTP arrives with the correct origin and signs in. A manual
       observation, not a pipeline gate (E2).
@@ -306,7 +306,7 @@ closes; those are not listed against the earlier phase here.
 | OBS-02 | Phase 184 | Pending |
 | OBS-03 | Phase 184 | Pending |
 | OBS-04 | Phase 185 | Pending |
-| OBS-05 | Phase 184 | Pending |
+| OBS-05 | Phase 184 | Complete |
 | OBS-06 | Phase 185 | Pending |
 | OBS-07 | Phase 184 | Pending |
 | OBS-08 | Phase 185 | Pending |

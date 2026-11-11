@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 184
 current_phase_name: Hosted Supabase Measurement and Conformance Probe
-current_plan: 18
+current_plan: 19
 status: executing
-stopped_at: Completed 184-17-PLAN.md
-last_updated: "2026-11-11T10:11:22.351Z"
+stopped_at: Completed 184-18-PLAN.md
+last_updated: "2026-11-11T12:33:04.404Z"
 last_activity: 2026-10-26
 last_activity_desc: Phase 184 execution started
-state_head: 24cce02ba781b3dc9091b958774570959284e36f
+state_head: 19a2d09e8db3e89424b80fa189cb7c8bbca8c1f4
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 107
-  completed_plans: 99
+  completed_plans: 100
   percent: 30
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 184 (Hosted Supabase Measurement and Conformance Probe) — EXECUTING
-Plan: 18 of 25
+Plan: 19 of 25
 Status: Ready to execute
 Last activity: 2026-10-26 — Phase 184 execution started
 
@@ -43,7 +43,7 @@ Progress: [███░░░░░░░] 30% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 18
+**Current Plan:** 19
 
 From 184 on, the numeric order is the dependency order.
 
@@ -134,6 +134,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 184 P15 | 23h | 3 tasks | 2 files |
 | Phase 184 P16 | 70min | 3 tasks | 3 files |
 | Phase 184 P17 | 4min | 3 tasks | 2 files |
+| Phase 184 P18 | 2h10m | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -254,6 +255,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 184]: SMTP_PORT_DELIVERS=2587 (184-16): DKIM, SPF and DMARC pass on the served account-access mail; 184-20 writes 2587 into the staging root
 - [Phase 184]: 184-17: CATALOG_ROLE=postgres (operator, 2026-11-11): the only role 184-11 measured to bypass RLS, so the only one the probe's catalog preflight accepts
 - [Phase 184]: 184-17: no-seed covers seed.sql residue only (openvaa.test or fixed-id users, local storage_config address, demo key); no probe check detects dev-seed content rows, which D-18 intends on the persistent project
+- [Phase 184]: 184-18: MAJOR_RED=expectation-override and item 2 rule module-refresh, ruled by the operator 2026-11-11; red run 21/22, functions.identity-callback-unverified not seen failing, SUPA-07 open
 
 ### Pending Todos
 
@@ -291,6 +293,7 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 - [Phase 183] The CI `secret-scan` job concluded failure on the pushed tree. It is attributed to two accepted dummy URI test inputs, but nobody has read the job log. The `dependency-audit` CI failure is also undiagnosed.
 - [Phase 183] `183-VALIDATION.md` is still draft; the Nyquist audit (`/gsd-validate-phase 183 --ws deployment`) has not run.
 - [Phase 183] 23 info review findings (IN-01 to IN-23) remain open in `183-REVIEW-DISPOSITION.md`. The lock files of the four Supabase-provider directories still record `constraints = "~> 1.11"` while the roots pin `= 1.11.0`.
+- 184-18: functions.identity-callback-unverified passed with verify_jwt PATCHed true on the broken throwaway; measure the apikey-only GET with the legacy anon and publishable keys before 184-19 reverts the break (cause UNCONFIRMED)
 
 ### Roadmap Evolution
 
@@ -306,6 +309,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-11T10:11:21.444Z
-**Stopped At:** Completed 184-17-PLAN.md
+Last session: 2026-11-11T12:33:03.543Z
+**Stopped At:** Completed 184-18-PLAN.md
 **Resume File:** None
