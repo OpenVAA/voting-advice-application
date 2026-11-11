@@ -1,22 +1,26 @@
-# 184-16: the throwaway's mail on 2587, its authentication, the redirect cases, the auth service's silence and the 587 trial
+# 184-16: the throwaway's mail on 2587, its authentication, the redirect cases, the auth service's silence, the 587 trial and the failed send on 2465
 
 Attempt: 184-16-1 20261111T085840Z.73bbc7b47
 Attempt: 184-16-3 20261111T094545Z.73bbc7b47
+Attempt: 184-16-4 20261111T095209Z.69051638e
+Attempt: 184-16-5 20261111T095854Z.69051638e
 
 SMTP_PORT_DELIVERS=2587
 MAIL_STOP=not-raised
-SLOT_RELEASE_SHOWN=no
+SLOT_PROOF=port-2465 (ruled by the operator on 2026-11-11)
+SLOT_RELEASE_SHOWN=yes
 PORT_587_SEND=delivered
+PORT_2465_SEND=failed ETIMEDOUT
 
 - **Project:** the throwaway `begckvkapaopoztbreqc` (`eu-west-1`), root `infra/envs/scratch/supabase`, linked work directory `tmp/supabase-linked/begckvkapaopoztbreqc`. Nothing in this plan touched the persistent project.
 - **Who ran the sitting:** the orchestrator, under the operator's authorisation of 2026-11-10, with the throwaway's credentials read from the operator's keychain. The operator watched the mailbox and read the function's logs in the dashboard. The executor wrote nine scripts and a mail parser in the session scratchpad (`184-16/`), held no credential and ran nothing hosted.
-- **When (UTC):** **2026-11-11**, from 08:59:52Z to 09:27:44Z. Every observation below falls in that window unless another time is given.
-- **How the record was written:** from the attempt file of `184-16-1`, stored under `OPERATOR_REPLY=received attempt=20261111T085840Z.73bbc7b47 plan=184-16 task=1 head=73bbc7b47140a0e9f3773c192ac420d0fb15a556`. The screen accepted it on the first `put`. The orchestrator relayed the lines on several lines each; they are stored one named line per field, with the prose as `note:` lines.
+- **When (UTC):** **2026-11-11**, in two sittings: the first from 08:59:52Z to 09:27:44Z (§ 1 to 8), and the rerun for the failed send from 09:53:08Z to 09:55:05Z (§ 9 and 10). Every observation falls in one of those windows unless another time is given.
+- **How the record was written:** from the attempt files. `184-16-1` (the first sitting) is stored under `OPERATOR_REPLY=received attempt=20261111T085840Z.73bbc7b47 plan=184-16 task=1 head=73bbc7b47140a0e9f3773c192ac420d0fb15a556`, and `184-16-4` (the rerun) under `OPERATOR_REPLY=received attempt=20261111T095209Z.69051638e plan=184-16 task=1 head=69051638e4b8016cf3a0a14809ef6d79b154db4f`. The screen accepted each on the first `put`. The orchestrator relayed the lines on several lines each; they are stored one named line per field, with the prose as `note:` lines.
 - **What is kept out:** no key, token, password, sign-in link, mail body, IP, or address other than the sender. The log directory, which held the saved mail, was removed (`s8_logs_removed=yes`).
 
 ## Outcome in one paragraph
 
-The served `account-access` mailed a sign-in link through SES on port 2587, and it arrived with DKIM, SPF and DMARC all `pass`. The redirect cases, and the auth service's silence while the send-email hook is on, are recorded. The deliberate failed send on port 587 **did not fail**: with port 587 served and the function redeployed, the second link was mailed and arrived (`s6_witness=sent`, a throttle row taken, no slot line in the logs). So **no failed send and no slot release were shown on the served function** (`SLOT_RELEASE_SHOWN=no`). Port 2587 was restored, and the plan after the restore is empty. The open item goes to the operator as a decision (see "Open item").
+The served `account-access` mailed a sign-in link through SES on port 2587, and it arrived with DKIM, SPF and DMARC all `pass`. The redirect cases, and the auth service's silence while the send-email hook is on, are recorded. The deliberate failed send planned on port 587 **did not fail**: with port 587 served and the function redeployed, the link was mailed and arrived (§ 6). The operator then ruled `SLOT_PROOF=port-2465` (2026-11-11). On port 2465, which the transport cannot speak, the send failed with `ETIMEDOUT`. Its slot was given back (`not-sent` witness, zero throttle rows, the slot line in the function's logs), and no mail arrived (§ 9). Because the same apply-and-redeploy sequence made the worker use 2465, the 587 send also went out over 587, so the premise that the platform blocks 587 from Edge Functions is contradicted (§ 10). Port 2587 was restored both times. After the second restore, a plan made straight after the apply still showed a change; a replan about a minute later read "No changes" (§ 9).
 
 ## 1. Starting state (script 01, 08:59:52Z)
 
@@ -98,8 +102,8 @@ s6_plan_line=Plan: 0 to add, 2 to change, 0 to destroy.
 
 **What this shows and what it does not.**
 - **Shown:** with port 587 served in the auth settings and in the function secrets, and `account-access` redeployed (version 3), a link request was mailed and the mail arrived. The worker that served it was booted at 09:24:54Z, after both the apply and the redeploy.
-- **Not shown:** that this worker connected on 587. No log line names the port, and the secret's served value was not read. The premise that the platform blocks outgoing port 587 from Edge Functions is contradicted by this send, or at least untested, but not disproved beyond doubt.
-- **Not demonstrated:** a failed send, the slot given back, or a `not-sent` witness on the served function. The truth "one deliberate send on port 587 failed, its slot was given back" is **not met**.
+- **Not shown by this trial alone:** that this worker connected on 587. No log line names the port, and the secret's served value was not read. The 2465 rerun settles it (§ 10).
+- **Not demonstrated here:** a failed send, the slot given back, or a `not-sent` witness. The plan's truth as worded ("one deliberate send on port 587 failed") is **not met**; its purpose, a failed send that gives its slot back, is met on 2465 instead (§ 9).
 
 ## 7. The restore of 2587 (script 08, 09:27:23Z)
 
@@ -116,6 +120,48 @@ s6_plan_line=Plan: 0 to add, 2 to change, 0 to destroy.
 - **Superseded?** 07's later request minted a newer magic-link token for the same user, which probably replaces the older one (UNCONFIRMED).
 - **No other copy:** this record holds no part of the link.
 
-## Open item: the failed-send proof and the 587 premise
+## 9. The failed send on port 2465 (OBS-05, rerun, 2026-11-11)
 
-The plan's Task 3 check requires `s6_witness=not-sent`, `s6_throttle_rows=0` and `answer_slot_log_seen=yes`. With the reply above it exits non-zero, at `missing: ^s6_witness=not-sent$`. This file does not paper over that. OBS-05's failed-send half (a failed send on a served function that gives its slot back) stays open, and the operator is asked to rule on how to show it (`SLOT_PROOF=` and its date, written here once ruled).
+**The ruling.** `SLOT_PROOF=port-2465`, ruled by the operator on 2026-11-11, from three options: `port-2465` (recommended), `closed-port` and `defer`. The reason: the transport is built with `secure: false`, which waits for a plain greeting, while SES on 2465 expects TLS first, so a send there fails by construction.
+
+**Starting state (01, 09:53:08Z).** The served port was 2587 and `account-access` was at version 4. The direct connection exited 2 and the pooler 0. `s0_throttle_rows=1`, the slot left by the 09:24 send.
+
+**The trial (06, 09:53:15Z).**
+- The plan exited 0 with exactly the rule's lines (the two in-place updates and `Plan: 0 to add, 2 to change, 0 to destroy.`), so `s6_plan_matches_rule=yes`.
+- Applied: `s6_apply_exit=0`, `Apply complete! Resources: 0 added, 2 changed, 0 destroyed.`
+- The served auth port then read `2465`. `account-access` was redeployed alone (`s6_redeploy_exit=0`) and listed `ACTIVE`, `verify_jwt=false`, version 5.
+
+**The send (07, 09:53:34Z).**
+- 07 first checked that the served port was 2465 (`s6_trial_port_served=yes`), cleared the link throttle rows, and opened a witness. The request answered `s6_http=200`, `s6_answer=accepted`.
+- **The send failed:**
+  - the witness read `not-sent` after 10 s;
+  - `s6_throttle_rows=0`, so the slot was given back;
+  - no mail arrived (`answer_third_mail_arrived=no`).
+- **The function's log line,** read by the operator in the dashboard: `account-access: a link could not be issued or mailed; its slot is given back {"name":"Error","code":"ETIMEDOUT"}` (`answer_slot_log_seen=yes`, `answer_failure_name=Error ETIMEDOUT`).
+
+**The restore (08, 09:54:06Z).**
+- The restore plan exited 0 with the rule's lines (`s7_plan_matches_rule=yes`), and the apply exited 0 with `Apply complete! Resources: 0 added, 2 changed, 0 destroyed.`
+- **A change still showed straight after the apply:**
+  - the served auth port read `2465`;
+  - the second plan exited **2**, with `# module.supabase.supabase_settings.this will be updated in-place` and `Plan: 0 to add, 1 to change, 0 to destroy.`
+  - `account-access` was redeployed (`s7_redeploy_exit=0`), version 6.
+- **What the orchestrator did next:**
+  - it did not apply that plan;
+  - at 09:54:26Z it read the auth config through the Management API, which gave `smtp_port` 2587;
+  - at 09:55:05Z it made a read-only replan (`08b-replan.sh`), which exited 0 with "No changes. Your infrastructure matches the configuration.", the served port reading `2587`.
+- **Why (UNCONFIRMED, seen once):** the auth settings write took effect after a delay, so the read and plan made straight after the apply saw the old value. The restore of 09:27 did not show this.
+- **The project ends clean on 2587.** The log folder was removed (`s8_logs_removed=yes`).
+
+## 10. What the two trials show together (D-05 amendment, corrects the research's premise)
+
+- **The redeployed worker reads the changed port.** The same sequence (apply the port change to the auth settings and the function secrets, then redeploy `account-access` alone) made the next send fail with `ETIMEDOUT` on 2465. So the worker serving that send used the new `SMTP_PORT`.
+- **Port 587 is open from a hosted Edge Function.** The 09:24 send ran under the same sequence with 587, and SES accepted and delivered it, so that send went out over 587. The research premise "587 and 25 are blocked [CITED: functions/limits]" is contradicted for 587 on 2026-11-11 (25 was not tried). Pitfall 4's other half, that 465 and 2465 cannot work with `secure: false`, is confirmed for 2465.
+- **Which port to use:** `SMTP_PORT_DELIVERS=2587` stands, because that port was measured and used for the first mail. 587 delivered as well.
+
+## Task 3's verify, against the two attempts
+
+Task 3's first automated verify reads `184-16-1` only, so it exits 1 at `missing: ^s6_witness=not-sent$`. That attempt is the 587 trial, which did not fail. The same checks were run with each field taken from the attempt that measured it:
+- the redirect cases, the mail answer and the three authentication results, from `184-16-1`;
+- the failed send, the slot release and the logs-removed line, from `184-16-4`: `s6_apply_exit=0`, `s6_witness=not-sent`, `s6_throttle_rows=0`, `answer_slot_log_seen=yes`, `s7_apply_exit=0` and `s8_logs_removed=yes`.
+
+Every one of those passes. `s7_second_plan_exit=0` is in `184-16-1` but not in `184-16-4`: there the second plan exited 2 and a replan exited 0 (`s7_replan_exit=0`), as § 9 records. The second verify (the port line, this attempt, no address, Prettier) passes as written.
