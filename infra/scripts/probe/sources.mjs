@@ -21,8 +21,8 @@
  *   public       The project's own API, with the key in `SUPABASE_ANON_KEY` only. Before any request the key is
  *                inspected: an unset key, a secret key (`sb_secret_`) and a JWT whose role is `service_role` are
  *                refused, because the probe never takes the service-role key. Preflight: `GET /auth/v1/settings`
- *                with the `apikey` header answers 200. Each read sends `apikey` and, except where stated,
- *                `Authorization: Bearer <anon key>`, the call shape of the frontend:
+ *                with the `apikey` header answers 200. Each read sends `apikey` and
+ *                `Authorization: Bearer <anon key>`, the call shape of the frontend, except where stated:
  *                  `GET /auth/v1/settings`                `disable_signup`, `mailer_autoconfirm`
  *                  `GET /rest/v1/nominations?select=id&project_id=eq.<public_project_id>` with
  *                                                         `Prefer: count=exact`: the status, the `Content-Range`
@@ -30,8 +30,9 @@
  *                  `POST /functions/v1/account-access`    a `check-code` of a random code: the status and the kind
  *                                                         of body
  *                  `GET /functions/v1/send-email`         the status and the kind of body
- *                  `GET` and `POST {}` of `/functions/v1/identity-callback`, without `Authorization`: the status
- *                                                         and the kind of body of each
+ *                  `GET` and `POST {}` of `/functions/v1/identity-callback`, with no `apikey` and no
+ *                                                         `Authorization`, as the identity provider's browser redirect
+ *                                                         arrives: the status and the kind of body of each
  *                A kind of body is one of the two fixed bodies the functions write, a JSON object with a `status`
  *                member, other JSON, or not JSON (`bodyKind`); no body of this source is kept. Neither POST
  *                writes: a `check-code` reads, and `identity-callback` without a provider configured refuses
@@ -543,8 +544,9 @@ const SOURCES = {
       await getJson({ source: 'public', base, endpoint: '/auth/v1/settings', headers, fetchImpl });
     },
     async read({ base, key, projectId }, fetchImpl) {
-      const unverified = { apikey: key, Accept: 'application/json' };
-      const headers = { ...unverified, Authorization: `Bearer ${key}` };
+      // A publishable key in `apikey` passes the gateway's JWT check, so the identity-callback calls carry no key.
+      const unverified = { Accept: 'application/json' };
+      const headers = { apikey: key, Accept: 'application/json', Authorization: `Bearer ${key}` };
       const json = { 'Content-Type': 'application/json' };
       const settings = await getJson({
         source: 'public',

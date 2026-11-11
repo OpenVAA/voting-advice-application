@@ -72,8 +72,9 @@
  *   functions.served        `account-access` answers a `check-code` with 200 and a status, and `send-email` answers a
  *                           GET with 405 and its own method-not-allowed body: each function, not the gateway, answered.
  *   functions.identity-callback-unverified
- *                           Called without Authorization, `identity-callback` answers a GET with 405 and its own body,
- *                           so the gateway demands no JWT, and a POST of `{}` with 500 and `{"error":"Internal server
+ *                           Called with no `apikey` and no `Authorization`, as the identity provider's browser
+ *                           redirect arrives, `identity-callback` answers a GET with 405 and its own body, so the
+ *                           gateway demands no JWT, and a POST of `{}` with 500 and `{"error":"Internal server
  *                           error"}`, so with no provider configured it fails closed.
  *   storage.buckets         The served bucket ids are exactly the `[storage.buckets.<id>]` tables of config.toml, each
  *                           with its `public` flag. The bucket list is read from the Management API.

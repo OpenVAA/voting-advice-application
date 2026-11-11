@@ -1443,7 +1443,8 @@ describe('probe-hosted.mjs', () => {
     const rows = stub.log.find((r) => r.url.startsWith(`${PROJECT_PREFIX}/rest/v1/nominations`));
     expect(rows?.prefer).toContain('count=exact');
     expect(rows?.authorization).toBe(`Bearer ${ANON_KEY}`);
-    expect(stub.log.every((r) => r.apikey === ANON_KEY)).toBe(true);
+    const keyed = stub.log.filter((r) => r.url !== `${PROJECT_PREFIX}/functions/v1/identity-callback`);
+    expect(keyed.every((r) => r.apikey === ANON_KEY)).toBe(true);
     const check = stub.log.find((r) => r.url === `${PROJECT_PREFIX}/functions/v1/account-access`);
     const sent = JSON.parse(check?.body ?? '{}');
     expect(sent.operation).toBe('check-code');
@@ -1451,7 +1452,7 @@ describe('probe-hosted.mjs', () => {
     expect(sent.code).toMatch(/^[A-Za-z0-9_-]{12}$/);
     const unverified = stub.log.filter((r) => r.url === `${PROJECT_PREFIX}/functions/v1/identity-callback`);
     expect(unverified.map((r) => r.method).sort()).toEqual(['GET', 'POST']);
-    expect(unverified.every((r) => r.authorization === undefined)).toBe(true);
+    expect(unverified.every((r) => r.authorization === undefined && r.apikey === undefined)).toBe(true);
     expect(unverified.find((r) => r.method === 'POST')?.body).toBe('{}');
   });
 
