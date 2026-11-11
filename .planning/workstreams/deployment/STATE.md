@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 184
 current_phase_name: Hosted Supabase Measurement and Conformance Probe
-current_plan: 17
+current_plan: 18
 status: executing
-stopped_at: Completed 184-16-PLAN.md
-last_updated: "2026-11-11T10:02:44.228Z"
+stopped_at: Completed 184-17-PLAN.md
+last_updated: "2026-11-11T10:11:22.351Z"
 last_activity: 2026-10-26
 last_activity_desc: Phase 184 execution started
-state_head: 155e67361005fc6d81a3e2d3bff798f4a453a9ad
+state_head: 24cce02ba781b3dc9091b958774570959284e36f
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 107
-  completed_plans: 98
+  completed_plans: 99
   percent: 30
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 184 (Hosted Supabase Measurement and Conformance Probe) — EXECUTING
-Plan: 17 of 25
+Plan: 18 of 25
 Status: Ready to execute
 Last activity: 2026-10-26 — Phase 184 execution started
 
@@ -43,7 +43,7 @@ Progress: [███░░░░░░░] 30% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 17
+**Current Plan:** 18
 
 From 184 on, the numeric order is the dependency order.
 
@@ -133,6 +133,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 184 P14 | 35 min | 2 tasks | 4 files |
 | Phase 184 P15 | 23h | 3 tasks | 2 files |
 | Phase 184 P16 | 70min | 3 tasks | 3 files |
+| Phase 184 P17 | 4min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -251,6 +252,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 184]: 184-15: SUPA-06 twice-run equality seen on the throwaway (1,1,1,2,1 both runs); the admin token carries the hook's grants claim; 1001 nominations read anonymously
 - [Phase 184]: SLOT_PROOF=port-2465 (operator, 2026-11-11): the OBS-05 failed send was made on 2465 after the planned 587 send was delivered; 587 is open from a hosted Edge Function
 - [Phase 184]: SMTP_PORT_DELIVERS=2587 (184-16): DKIM, SPF and DMARC pass on the served account-access mail; 184-20 writes 2587 into the staging root
+- [Phase 184]: 184-17: CATALOG_ROLE=postgres (operator, 2026-11-11): the only role 184-11 measured to bypass RLS, so the only one the probe's catalog preflight accepts
+- [Phase 184]: 184-17: no-seed covers seed.sql residue only (openvaa.test or fixed-id users, local storage_config address, demo key); no probe check detects dev-seed content rows, which D-18 intends on the persistent project
 
 ### Pending Todos
 
@@ -303,6 +306,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-11T10:02:42.827Z
-**Stopped At:** Completed 184-16-PLAN.md
+Last session: 2026-11-11T10:11:21.444Z
+**Stopped At:** Completed 184-17-PLAN.md
 **Resume File:** None
