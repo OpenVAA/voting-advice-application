@@ -150,12 +150,16 @@ Totals: 70 threats (1 critical, 30 high, 36 medium, 3 low). 66 closed with the m
 | AR-183-02 | T-183-11 | The plan role can write and delete the pipeline lock, so a PR job can hold or delete it. Decision A-08 is kept; revisit in phase 184 once the PR and deploy workflows exist | Operator ruling WR-04 (`183-REVIEW-DISPOSITION.md`) | 2026-10-26 |
 | AR-183-03 | T-183-48 | The budget alert was seen as triggered in the AWS Budgets console at the 1 USD test amount, but its mail was never received (the recipient address had not been confirmed). The forecast alert has not been seen. Delivery to the mailbox is unobserved | Operator ruling `accept-console-alert` (`evidence/183-20-budget-alert.md`) | 2026-10-23 |
 
+*Re-transfer, 2026-11-11 (UTC): AR-183-01 and AR-183-02, with TR-183-01 and TR-183-02, are carried to phase 187, where the workflows exist and the fix can be seen working, by decision D-21 of phase 184 (recorded in `184-CONTEXT.md`).*
+
 ### Transferred Risks
 
 | Risk ID | Threat Ref | Rationale | Transferred To | Authority | Date |
 |---------|------------|-----------|----------------|-----------|------|
-| TR-183-01 | T-183-09 | The plan role trusts any job whose token subject is `repo:OpenVAA/voting-advice-application:pull_request`, including workflows that hold `id-token: write`; the deploy role trusts any branch's job that names `environment: staging`. Pinning the plan trust to a workflow and the staging Environment's deployment branch policy are deferred. No workflow assumes either role today; the branch-policy prerequisite is in `infra/README.md` § Prerequisites | Phase 184 | Operator ruling WR-03 (`183-REVIEW-DISPOSITION.md`) | 2026-10-26 |
-| TR-183-02 | T-183-10 | The name-based subject stays per decision A-09. The `repository_id` / `repository_owner_id` conditions exist and are validated but unset, until AWS is confirmed to evaluate those claims (a row in the bootstrap runbook's "Not yet observed" table) | Phase 184 | Operator ruling WR-03 and decision A-09 | 2026-10-26 |
+| TR-183-01 | T-183-09 | The plan role trusts any job whose token subject is `repo:OpenVAA/voting-advice-application:pull_request`, including workflows that hold `id-token: write`; the deploy role trusts any branch's job that names `environment: staging`. Pinning the plan trust to a workflow and the staging Environment's deployment branch policy are deferred. No workflow assumes either role today; the branch-policy prerequisite is in `infra/README.md` § Prerequisites | Phase 187 | Operator ruling WR-03 (`183-REVIEW-DISPOSITION.md`) | 2026-10-26 |
+| TR-183-02 | T-183-10 | The name-based subject stays per decision A-09. The `repository_id` / `repository_owner_id` conditions exist and are validated but unset, until AWS is confirmed to evaluate those claims (a row in the bootstrap runbook's "Not yet observed" table) | Phase 187 | Operator ruling WR-03 and decision A-09 | 2026-10-26 |
+
+*Re-transfer, 2026-11-11 (UTC): TR-183-01 and TR-183-02, with AR-183-01 and AR-183-02, are carried to phase 187, where the workflows exist and the fix can be seen working, by decision D-21 of phase 184 (recorded in `184-CONTEXT.md`). The "Transferred To" of both rows was Phase 184 until this date.*
 
 *Accepted risks do not resurface in future audit runs.*
 
