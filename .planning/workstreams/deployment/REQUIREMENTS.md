@@ -78,7 +78,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
 - [ ] **SUPA-06**: An idempotent bootstrap creates the rows a project needs (one account, one project, the
       `storage_config` row, `behind_cloudflare`) and commits no secret. `seed.sql` never reaches a hosted
       database, and a check after deploy fails if a seed user or a local URL is present.
-- [ ] **SUPA-07**: A conformance probe reads what the hosted project serves and fails by name. Each of its checks
+- [x] **SUPA-07**: A conformance probe reads what the hosted project serves and fails by name. Each of its checks
       is seen failing once against a deliberately broken throwaway project.
 - [ ] **SUPA-08**: The access token, database password and service-role key exist only in the pipeline's
       environment and in Terraform state. The state bucket is encrypted, versioned and closed to the public, and
@@ -284,7 +284,7 @@ closes; those are not listed against the earlier phase here.
 | SUPA-04 | Phase 184 | Pending |
 | SUPA-05 | Phase 184 | Pending |
 | SUPA-06 | Phase 184 | Pending |
-| SUPA-07 | Phase 184 | Pending |
+| SUPA-07 | Phase 184 | Complete |
 | SUPA-08 | Phase 187 | Pending |
 | SUPA-09 | Phase 186 | Pending |
 | SUPA-10 | Phase 181 | Complete |
