@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 184
 current_phase_name: Hosted Supabase Measurement and Conformance Probe
-current_plan: 15
+current_plan: 16
 status: executing
-stopped_at: Completed 184-14-PLAN.md
-last_updated: "2026-11-10T21:42:51.135Z"
+stopped_at: Completed 184-15-PLAN.md
+last_updated: "2026-11-11T08:39:24.811Z"
 last_activity: 2026-10-26
 last_activity_desc: Phase 184 execution started
-state_head: c4802fcf5204f39e4c044c5d0b23acd2b3229e09
+state_head: a9130421af5ad8fe70369305169aaf4901de2521
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 107
-  completed_plans: 96
+  completed_plans: 97
   percent: 30
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 184 (Hosted Supabase Measurement and Conformance Probe) — EXECUTING
-Plan: 15 of 25
+Plan: 16 of 25
 Status: Ready to execute
 Last activity: 2026-10-26 — Phase 184 execution started
 
@@ -43,7 +43,7 @@ Progress: [███░░░░░░░] 30% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 15
+**Current Plan:** 16
 
 From 184 on, the numeric order is the dependency order.
 
@@ -131,6 +131,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 184 P12 | 20min | 2 tasks | 2 files |
 | Phase 184 P13 | 30 min | 3 tasks | 2 files |
 | Phase 184 P14 | 35 min | 2 tasks | 4 files |
+| Phase 184 P15 | 23h | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -244,6 +245,9 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 184]: 184-13: drift check seen red (exit 1, planted functions) and green (exit 0) on a hosted database; guard refuses port 6543 and another ref (exit 2); anon 9 s RPC cut at about 8 s with 57014 (2026-11-10)
 - [Phase 184]: 184-14: D09_APPLIED=yes — account-access declares verify_jwt = false in config.toml (guard row not compared, spec cases); 184-15 begins with its redeploy and a re-measurement of shapes (a) and (b) (2026-11-10)
 - [Phase 184]: 184-14: D12_RAISED=no, ruled by the operator 2026-11-10 — the deployment stays on the legacy keys; retirement 'early 2027' goes to the FUT-02 todo in 184-23
+- [Phase 184]: 184-15: LOGGING_GATE=session-timeout (operator, 2026-11-10); the timeout is set by an in-session SET, because the session pooler drops PGOPTIONS (show statement_timeout read 2min)
+- [Phase 184]: 184-15: D12_SERVICE_ROLE=works on the throwaway (bootstrap stored key and dev-seed writes); 184-14's key-model checkpoint is not raised again
+- [Phase 184]: 184-15: SUPA-06 twice-run equality seen on the throwaway (1,1,1,2,1 both runs); the admin token carries the hook's grants claim; 1001 nominations read anonymously
 
 ### Pending Todos
 
@@ -296,6 +300,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-10T21:42:50.318Z
-**Stopped At:** Completed 184-14-PLAN.md
+Last session: 2026-11-11T08:39:23.947Z
+**Stopped At:** Completed 184-15-PLAN.md
 **Resume File:** None
