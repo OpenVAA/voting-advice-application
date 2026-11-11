@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 184
 current_phase_name: Hosted Supabase Measurement and Conformance Probe
-current_plan: 20
+current_plan: 21
 status: executing
-stopped_at: Completed 184-19-PLAN.md
-last_updated: "2026-11-11T13:05:06.536Z"
+stopped_at: Completed 184-20-PLAN.md
+last_updated: "2026-11-11T16:18:00.886Z"
 last_activity: 2026-10-26
 last_activity_desc: Phase 184 execution started
-state_head: 3e67c51728eebc7037505a3c2185cc48e01a4ccc
+state_head: f296576d9087af13ac05584be381bfcadaa9f69b
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 107
-  completed_plans: 101
+  completed_plans: 102
   percent: 30
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 184 (Hosted Supabase Measurement and Conformance Probe) — EXECUTING
-Plan: 20 of 25
+Plan: 21 of 25
 Status: Ready to execute
 Last activity: 2026-10-26 — Phase 184 execution started
 
@@ -43,7 +43,7 @@ Progress: [███░░░░░░░] 30% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 20
+**Current Plan:** 21
 
 From 184 on, the numeric order is the dependency order.
 
@@ -136,6 +136,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 184 P17 | 4min | 3 tasks | 2 files |
 | Phase 184 P18 | 2h10m | 3 tasks | 4 files |
 | Phase 184 P19 | 70 min | 2 tasks | 3 files |
+| Phase 184 P20 | 50 min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -260,6 +261,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 184]: 184-18: CHECK_KEY=no-key, ruled by the operator 2026-11-11: functions.identity-callback-unverified calls carry no apikey and no Authorization (a publishable key in apikey passes the gateway's JWT check); the rerun on the broken throwaway failed it with 401, so every check of the probe has been seen failing (SUPA-07)
 - [Phase 184]: 184-19: the OAuth server flags are reverted by a Management API update of /config/auth (both false, with the authorization path), because the module sends neither flag
 - [Phase 184]: 184-19: a bucket fault's revert restores the bucket's storage.objects policies from the migration and is checked with the drift check; the probe reads no storage policy (deferred: a probe check of them)
+- [Phase 184]: 184-20: staging plan PLAN_REVIEWED=ok (sha256 caeebee2...dc13): settings update in place, smtp_secret[0] and function secrets created, Plan: 2 to add, 1 to change, 0 to destroy; tfplan kept for 184-21
+- [Phase 184]: 184-20: persistent project uses the session pooler (direct host not resolved); host from GET /config/database/pooler, shard aws-0, eu-north-1; logging settings identical to the throwaway's
 
 ### Pending Todos
 
@@ -312,6 +315,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-11T13:05:05.668Z
-**Stopped At:** Completed 184-19-PLAN.md
+Last session: 2026-11-11T16:18:00.008Z
+**Stopped At:** Completed 184-20-PLAN.md
 **Resume File:** None
