@@ -93,7 +93,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
 - [ ] **SUPA-12**: The hosted project is created by the operator, imported into a long-lived Supabase Terraform
       root with `prevent_destroy`, and kept in a state file separate from the AWS root. A teardown of the AWS
       root leaves the database untouched. [C2, C3]
-- [ ] **SUPA-13**: The key model a new project issues is measured and recorded. The deployment stays on legacy
+- [x] **SUPA-13**: The key model a new project issues is measured and recorded. The deployment stays on legacy
       keys if they work; the migration to publishable keys is filed to run right after both streams merge. [C5]
 - [ ] **SUPA-14**: Mail is sent through SES from a verified domain identity with DKIM, SPF and DMARC. The port
       that works from a hosted Edge Function is measured and used. [C6]
@@ -124,7 +124,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
 
 Each is run on a real project, recorded with its date, and acted on.
 
-- [ ] **OBS-01**: The served auth settings and the dashboard's names for the two switches are recorded.
+- [x] **OBS-01**: The served auth settings and the dashboard's names for the two switches are recorded.
 - [ ] **OBS-02**: The redirect allowlist's behaviour is recorded: the single-segment pattern, the site URL's
       host on other ports, and what `/auth/v1/verify` returns when admitted and when refused.
 - [ ] **OBS-03**: Whether the hosted gateway accepts a call with the anon key and no user token is recorded, and
@@ -290,7 +290,7 @@ closes; those are not listed against the earlier phase here.
 | SUPA-10 | Phase 181 | Complete |
 | SUPA-11 | Phase 183 | Complete |
 | SUPA-12 | Phase 185 | Pending |
-| SUPA-13 | Phase 184 | Pending |
+| SUPA-13 | Phase 184 | Complete |
 | SUPA-14 | Phase 184 | Pending |
 | PIPE-01 | Phase 187 | Pending |
 | PIPE-02 | Phase 187 | Pending |
@@ -302,7 +302,7 @@ closes; those are not listed against the earlier phase here.
 | PIPE-08 | Phase 187 | Pending |
 | PIPE-09 | Phase 187 | Pending |
 | PIPE-10 | Phase 187 | Pending |
-| OBS-01 | Phase 184 | Pending |
+| OBS-01 | Phase 184 | Complete |
 | OBS-02 | Phase 184 | Pending |
 | OBS-03 | Phase 184 | Pending |
 | OBS-04 | Phase 185 | Pending |
