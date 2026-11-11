@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 184
 current_phase_name: Hosted Supabase Measurement and Conformance Probe
-current_plan: 22
+current_plan: 23
 status: executing
-stopped_at: Completed 184-21-PLAN.md
-last_updated: "2026-11-11T20:52:04.705Z"
+stopped_at: Completed 184-22-PLAN.md
+last_updated: "2026-11-11T21:10:47.125Z"
 last_activity: 2026-10-26
 last_activity_desc: Phase 184 execution started
-state_head: 04f81900a3c6bb6b563705692979fb7a710c9e19
+state_head: 09e3f89f1a7a3c8b16020aa431da6a90123c7338
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 107
-  completed_plans: 103
+  completed_plans: 104
   percent: 30
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 184 (Hosted Supabase Measurement and Conformance Probe) — EXECUTING
-Plan: 22 of 25
+Plan: 23 of 25
 Status: Ready to execute
 Last activity: 2026-10-26 — Phase 184 execution started
 
@@ -43,7 +43,7 @@ Progress: [███░░░░░░░] 30% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 22
+**Current Plan:** 23
 
 From 184 on, the numeric order is the dependency order.
 
@@ -138,6 +138,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 184 P19 | 70 min | 2 tasks | 3 files |
 | Phase 184 P20 | 50 min | 3 tasks | 3 files |
 | Phase 184 P21 | 4h30m | 3 tasks | 2 files |
+| Phase 184 P22 | 15 min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -265,6 +266,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 184]: 184-20: staging plan PLAN_REVIEWED=ok (sha256 caeebee2...dc13): settings update in place, smtp_secret[0] and function secrets created, Plan: 2 to add, 1 to change, 0 to destroy; tfplan kept for 184-21
 - [Phase 184]: 184-20: persistent project uses the session pooler (direct host not resolved); host from GET /config/database/pooler, shard aws-0, eu-north-1; logging settings identical to the throwaway's
 - [Phase 184]: 184-21: D01_GATE=proceed (operator, 2026-11-11); staging plan applied, baseline 00001 pushed with drift CLEAN, second push up to date, three functions ACTIVE on cofbsatfrdysyphajsky
+- [Phase 184]: 184-22: LOGGING_GATE=session-timeout for the persistent project, applied by the orchestrator on 2026-11-11 under the operator's instruction to continue; values identical to the throwaway's, which the operator ruled session-timeout
+- [Phase 184]: 184-22: the persistent project's first administrator was created through the Auth Admin API (email_confirm true) instead of the dashboard because the operator was away; same effect, recorded as a deviation from Step 21 item 1
 
 ### Pending Todos
 
@@ -317,6 +320,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-11T20:52:03.854Z
-**Stopped At:** Completed 184-21-PLAN.md
+Last session: 2026-11-11T21:10:46.290Z
+**Stopped At:** Completed 184-22-PLAN.md
 **Resume File:** None

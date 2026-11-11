@@ -67,7 +67,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
 ### SUPA — Supabase project provisioning
 
 - [x] **SUPA-01**: One command applies the schema migrations to the linked project and can be repeated safely.
-- [ ] **SUPA-02**: Hosted auth settings are applied from the repository by Terraform as the only writer:
+- [x] **SUPA-02**: Hosted auth settings are applied from the repository by Terraform as the only writer:
       access-token hook on, site URL, the two redirect entries, public sign-up off, email confirmation on, SMTP.
       `supabase config push` is not used (C4).
 - [ ] **SUPA-03**: Hosted API settings are applied from the repository, with maximum rows equal to
@@ -75,7 +75,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
 - [x] **SUPA-04**: The two storage buckets are created reproducibly by the migration.
 - [ ] **SUPA-05**: The three Edge Functions are deployed and their secrets set from the operator's environment.
       `identity-callback`'s JWT setting is declared in `config.toml`.
-- [ ] **SUPA-06**: An idempotent bootstrap creates the rows a project needs (one account, one project, the
+- [x] **SUPA-06**: An idempotent bootstrap creates the rows a project needs (one account, one project, the
       `storage_config` row, `behind_cloudflare`) and commits no secret. `seed.sql` never reaches a hosted
       database, and a check after deploy fails if a seed user or a local URL is present.
 - [x] **SUPA-07**: A conformance probe reads what the hosted project serves and fails by name. Each of its checks
@@ -279,11 +279,11 @@ closes; those are not listed against the earlier phase here.
 | INFRA-18 | Phase 183 | Complete |
 | INFRA-19 | Phase 187 | Pending |
 | SUPA-01 | Phase 184 | Complete |
-| SUPA-02 | Phase 184 | Pending |
+| SUPA-02 | Phase 184 | Complete |
 | SUPA-03 | Phase 184 | Pending |
 | SUPA-04 | Phase 184 | Complete |
 | SUPA-05 | Phase 184 | Pending |
-| SUPA-06 | Phase 184 | Pending |
+| SUPA-06 | Phase 184 | Complete |
 | SUPA-07 | Phase 184 | Complete |
 | SUPA-08 | Phase 187 | Pending |
 | SUPA-09 | Phase 186 | Pending |
