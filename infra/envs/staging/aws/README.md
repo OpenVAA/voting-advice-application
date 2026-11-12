@@ -560,10 +560,12 @@ B=deploy-evidence/185-image
 
    `s4_planning_paths` must be 0. Otherwise stop: nothing is pushed.
 
-4. Push it and see `origin` list it. On the first build the branch does not exist yet:
+4. Push it and see `origin` list it. The braces in `${SHA}:refs` are needed: zsh reads the `:r` of
+   `$SHA:refs` as a modifier and drops it, and the push then names no ref git knows. On the first
+   build the branch does not exist yet:
 
    ```bash
-   git push --quiet origin "$SHA:refs/heads/$B" \
+   git push --quiet origin "${SHA}:refs/heads/$B" \
      > "$L/s4-push.log" 2>&1
    echo "s4_push_exit=$?"
    ```
@@ -577,7 +579,7 @@ B=deploy-evidence/185-image
    echo "s4_tip_exit=$?"
    OLD=$(cut -f1 "$L/s4-tip.txt")
    git push --quiet --force-with-lease="$B:$OLD" origin \
-     "$SHA:refs/heads/$B" > "$L/s4-push.log" 2>&1
+     "${SHA}:refs/heads/$B" > "$L/s4-push.log" 2>&1
    echo "s4_push_exit=$?"
    ```
 
