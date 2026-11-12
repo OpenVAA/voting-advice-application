@@ -51,3 +51,25 @@ Run 2 then repeated all three gates on the fix commit.
 The root vitest runs print only their summary in a non-interactive shell. So the infra suite's file names were read from one more run on the same commit, `yarn test:unit:infra --reporter=verbose` (exit 0, `tmp/185-gates/run2/infra-verbose.log`): `scripts/build-push-image.test.ts` 3 tests, `scripts/request-loop.test.ts` 3 tests, `scripts/probe-hosted.test.ts` 96 tests, all passed, 102 in total, matching the gate's count.
 
 **Outcome of the repository gates:** all three exit 0 at `633d091518b01f4f29415175e02ed75dbe429e6f`.
+
+## The validation job's commands
+
+The commands of the `infra-validate` job in `.github/workflows/main.yaml` were run at HEAD `15f1cbc0949225cf62fa5a4a657995f8089c874e`, which was the same before and after; `git status --short` was empty afterwards. Outside `.planning/`, that commit's tree is identical to `633d091518b01f4f29415175e02ed75dbe429e6f`'s (`git diff --stat 633d09151 15f1cbc09 -- . ':(exclude).planning'` is empty). So these records and the three above describe one code tree. The script was `infra-validate-185-10.sh` in the session scratchpad, with its logs in `tmp/185-gates/infra/`. Terraform v1.16.5, the job's pinned version, with `TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"`.
+
+```
+infra_fmt exit=0
+infra_validate exit=0 (8 roots)
+infra_module_tests exit=0 (1 module)
+settings_types exit=0
+```
+
+| Record | Command | Result | Log |
+| --- | --- | --- | --- |
+| `infra_fmt exit=0` | `terraform fmt -check -recursive -diff infra` | no file listed, no diff | `tmp/185-gates/infra/fmt.log` (empty) |
+| `infra_validate exit=0` | for `infra/bootstrap` and every `infra/envs/*/*/`: `init -backend=false -input=false -lockfile=readonly`, then `validate -no-color`, then the job's check that the seven required roots are among those validated | `validated 8 roots: infra/bootstrap infra/envs/example/aws infra/envs/example/dns-mail infra/envs/example/supabase infra/envs/scratch/supabase infra/envs/staging/aws infra/envs/staging/dns-mail infra/envs/staging/supabase` | `tmp/185-gates/infra/validate.log` |
+| `infra_module_tests exit=0` | for every `infra/modules/*/tests/`: `init -backend=false -input=false`, then `test -no-color` in the module | `tested 1 modules: infra/modules/frontend-service`; `Success! 32 passed, 0 failed.` | `tmp/185-gates/infra/module-tests.log` |
+| `settings_types exit=0` | `bash infra/scripts/check-settings-types.sh` | `check-settings-types: four cases hold in …/infra/modules/supabase (types kept, JSON groups encoded)` | `tmp/185-gates/infra/settings-types.log` |
+
+One difference from CI: each root and the module ran with its own fresh `TF_DATA_DIR` under a `mktemp -d` directory, rather than in the checkout's `.terraform/`. `infra/bootstrap`, `infra/envs/staging/dns-mail` and `infra/envs/staging/supabase` hold the operator's real backend records in their checkout `.terraform/`, and a fresh data directory is what a fresh CI checkout has. `-lockfile=readonly` still read each root's tracked `.terraform.lock.hcl`, and no lock file changed. The commands were otherwise the job's own.
+
+**Outcome:** seven gate records at exit 0, on one code tree. CI's validation job would pass on it.
