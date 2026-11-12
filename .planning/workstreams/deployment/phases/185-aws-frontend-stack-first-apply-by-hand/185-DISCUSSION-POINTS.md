@@ -55,7 +55,7 @@ Not asked here, because a ruling already settles them:
 
 - [ ] ★ RECOMMENDED — **The agent runs the commands in your SSO session; you approve each change.** Every command sets `AWS_PROFILE=openvaa-admin` and checks the account first. The agent runs reads, `plan`, image builds and pushes, and HTTP observations freely. Every `apply`, `destroy` and `put-parameter` is a checkpoint: the agent shows the saved plan's summary, you answer "approved", and the agent applies that saved plan file. Secret values are typed by you only (C-03). When the SSO session expires, the agent stops at a checkpoint and asks you to sign in again.
 - [ ] As in 183 and 184: the agent writes command blocks and you paste and run every one of them, including plans. This keeps D-10 unchanged, but it means about 40 round-trips, and the observations (request loops during the rollout) depend on what you paste back.
-- [ ] The agent runs everything, applies included, with no per-apply approval. Fastest, but an unreviewed destroy or replace in this account is not covered by any guard. The only guards are `allowed_account_ids` and the separate roots.
+- [x] The agent runs everything, applies included, with no per-apply approval. Fastest, but an unreviewed destroy or replace in this account is not covered by any guard. The only guards are `allowed_account_ids` and the separate roots.
 
 ### A-02 — The state key and the "never by hand" line
 
@@ -178,7 +178,7 @@ The root may not hold a value that its plan must read back (A-08). Staging's tas
 
 - [ ] ★ RECOMMENDED — 30 days, a variable. The group goes with the destroy, so the logs that are evidence (D-01, D-02) are copied into `185-*/evidence/` before the destroy runs.
 - [ ] 14 days. Cheaper, but a gap of two weeks between phases loses the record.
-- [ ] 90 days. No need yet.
+- [x] 90 days. No need yet.
 
 ---
 
