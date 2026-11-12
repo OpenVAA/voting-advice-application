@@ -1,0 +1,23 @@
+{
+  "contestantApp.common": {
+    "closedReason": {
+      "noNomination": {
+        "candidate": "Your basic information, your opinions and the preview open once you have a nomination.",
+        "organization": "The basic information, the opinions and the preview open once your party has a nomination."
+      },
+      "preview": "The preview opens once the required basic information is filled in and every opinion question is answered.",
+      "previewNoQuestions": "The preview opens once the required basic information is filled in."
+    },
+    "contactSupport": "Contact support",
+    "continueFilling": "Continue filling",
+    "editingNotAllowed": "Editing of your answers is no longer possible, but you can still view them. Please contact support if there are some errors in the data.",
+    "fullyCompleted": "Congratulations! You have filled all of the information needed for the Election Compass.",
+    "greeting": "Hello, {username}!",
+    "home": "Start",
+    "isHiddenBecauseMissing": "Your profile won’t be shown because you didn’t answer all of the questions.",
+    "nominationsNotEditable": "Nominations can no longer be changed in this application. If something is wrong or missing, please contact support.",
+    "nominationsNotEditableAnswersLocked": "Nominations can no longer be changed, because editing has ended in this application. If something is wrong or missing, please contact support.",
+    "voterApp": "Election Compass for voters",
+    "willBeHiddenIfMissing": "Your profile won’t be shown in the application before you have answered all of the questions."
+  }
+}

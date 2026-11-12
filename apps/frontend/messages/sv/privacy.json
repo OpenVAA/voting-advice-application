@@ -1,0 +1,58 @@
+{
+  "privacy": {
+    "analytics": {
+      "content": {
+        "free": "Den här applikationen samlar in användningsdata utan att fråga dig separat. Den omfattar dina svar på frågorna, tiden du tillbringar i applikationen och de resultat du tittar på. Varje händelse som avslöjar ett svar eller en preferens skickas för sig, utan någon identifierare som delas med någon annan händelse, så dina svar kan inte kopplas till varandra eller till de sidor du tittar på. Uppgifterna skickas via webbplatsens egen server, som varken vidarebefordrar din nätverksadress eller din webbläsares identifiering. Inget om detta lagras på din enhet.",
+        "gated": "Användningsdata samlas in endast om du samtycker till det. Den omfattar dina svar på frågorna, tiden du tillbringar i applikationen och de resultat du tittar på. Händelserna under ett besök kopplas som mest ihop med en identifierare som bara finns i sidans minne och försvinner när sidan laddas om eller stängs. Uppgifterna skickas via webbplatsens egen server, som varken vidarebefordrar din nätverksadress eller din webbläsares identifiering. Inget om detta lagras på din enhet utom ditt val. Ett val som görs i den här webbläsaren gäller alla delar av applikationen som öppnas i den, och du kan ändra det på integritetssidan."
+      },
+      "gpc": "Om din webbläsare skickar signalen Global Privacy Control samlas ingenting in, inte ens antalet sidvisningar, och du tillfrågas inte. Ingenting lagras för att komma ihåg signalen.",
+      "pageviews": "Sidvisningar räknas även när inga andra användningsdata samlas in: vilken typ av sida som öppnades, på vilket språk och hur länge. Uppgifterna omfattar dock inte till exempel vilket partis eller vilken kandidats uppgifter som har visats. Räkningen har ingen identifierare.",
+      "title": "Analytics"
+    },
+    "cookies": {
+      "content": "Applikationen använder inga cookies för att lagra dina uppgifter. Dina svar och preferenser lagras i din webbläsares lokala lagring (local storage) för en bättre användarupplevelse, och den lagrade kopian stannar på din enhet. När användningsdata samlas in kan även dina svar skickas som en del av den, så som beskrivs under Analytics.",
+      "title": "Kakor"
+    },
+    "dataCollection": {
+      "info": "Användningsdata skickas via webbplatsens egen server till den analystjänst som utgivaren använder. Inga cookies används för detta."
+    },
+    "dataConsentInfoButton": "Ytterligare information om insamling av användningsdata",
+    "dataConsentIntro": {
+      "denied": [
+        {
+          "declarations": [
+            "input consentDate",
+            "local formattedConsentDate = consentDate: datetime year=numeric month=2-digit day=numeric"
+          ],
+          "match": {
+            "formattedConsentDate=*": "Du har nekat datainsamling {formattedConsentDate}. Du kan ändra dina inställningar nedan."
+          }
+        }
+      ],
+      "granted": [
+        {
+          "declarations": [
+            "input consentDate",
+            "local formattedConsentDate = consentDate: datetime year=numeric month=2-digit day=numeric"
+          ],
+          "match": {
+            "formattedConsentDate=*": "Du har samtyckt till datainsamling {formattedConsentDate}. Du kan ändra dina inställningar nedan."
+          }
+        }
+      ],
+      "indetermined": "Du kan samtycka till eller neka datainsamling genom att välja ett av alternativen nedan."
+    },
+    "dataConsentLabel": {
+      "denied": "Jag vill inte dela mina data",
+      "granted": "Ja, mina data kan samlas in"
+    },
+    "title": "Integritet",
+    "trackingOptOut": {
+      "label": "Samla inte in användningsdata om hur jag använder applikationen"
+    },
+    "usageData": {
+      "content": "Användningen av applikationen mäts på samma sätt i väljarappen, kandidat- och partiappen och administrationsvyn. Genom att godkänna användarvillkoren tillåter du att användningsdata om din användning av kandidat- och partiappen samlas in, om du inte kryssar i rutan under villkoren. Sidvisningar räknas utan identifierare, så som beskrivs på integritetssidan. Ditt val gäller alla delar av applikationen som öppnas i den här webbläsaren, och du kan ändra det senare på integritetssidan.",
+      "title": "Användningsdata"
+    }
+  }
+}

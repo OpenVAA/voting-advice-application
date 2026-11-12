@@ -1,0 +1,19 @@
+{
+  "adminApp.login": {
+    "title": "Administraatori sisselogimine",
+    "appTitle": "Valimiskompass",
+    "appSubtitle": "Haldus",
+    "instructions": "Sisesta oma sisselogimisandmed.",
+    "email": "E-post",
+    "password": "Parool",
+    "button": "Logi sisse",
+    "forgotPassword": "Unustasid parooli?",
+    "errors": {
+      "invalidCredentials": "Vale e-post või parool",
+      "genericError": "Sisselogimisel tekkis viga. Palun proovi uuesti.",
+      "unauthorized": "Sellesse piirkonda pääsemiseks vajate administraatori õigusi",
+      "sessionExpired": "Teie seanss on aegunud, palun logige uuesti sisse",
+      "unknown": "Tekkis tundmatu viga"
+    }
+  }
+}

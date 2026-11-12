@@ -1,0 +1,7 @@
+{
+  "adminApp.notSupported": {
+    "title": "Ylläpitosovellusta ei tueta",
+    "content": "Ylläpitosovellusta ei tueta nykyisellä data-adapterilla.",
+    "heroEmoji": "🔧"
+  }
+}

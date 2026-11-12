@@ -26,7 +26,7 @@ test('Should have constituencyGroups', () => {
   root.elections!.forEach((obj) => {
     const objData = data.elections.find((d) => d.id === obj.id);
     expect(objData).toBeDefined();
-    expect(obj.constituencyGroups.map((g) => g.id)).toEqual(expect.arrayContaining(groupIds[obj.id]));
+    expect(obj.constituencyGroups.map((g) => g.id)).toEqual(groupIds[obj.id]);
   });
 });
 
@@ -91,6 +91,28 @@ test('Should have correct number of nominations for the second round of election
   }
 });
 
+test('Should default nominationShape to organization_list_and_independents when the data states none', () => {
+  const election = getTestDataRoot().elections![0];
+  expect(election.data.nominationShape).toBeUndefined();
+  expect(election.nominationShape).toBe('organization_list_and_independents');
+  election.data.nominationShape = null;
+  expect(election.nominationShape).toBe('organization_list_and_independents');
+});
+
+test('Should return the nominationShape the data states', () => {
+  const election = getTestDataRoot().elections![0];
+  const shapes = [
+    'organization_only',
+    'candidate_only',
+    'organization_list',
+    'organization_list_and_independents'
+  ] as const;
+  for (const shape of shapes) {
+    election.data.nominationShape = shape;
+    expect(election.nominationShape).toBe(shape);
+  }
+});
+
 describe('getApplicableConstituency', () => {
   const election = root.elections![0];
   const constituencies = election.constituencyGroups[0].constituencies;
@@ -118,6 +140,6 @@ describe('GetQuestions', () => {
     // Opinion questions are from 8 to 13, but 8 and 10 are for election-2 only.
     // Question-10 has a constituency filter 'constituency-1-1' but it should not be included because of the election filter
     const ids = [9, 11, 12, 13].map((i) => `question-${i}`);
-    expect(questions?.map((q) => q.id)).toEqual(expect.arrayContaining(ids));
+    expect(questions?.map((q) => q.id)).toEqual(ids);
   });
 });

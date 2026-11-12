@@ -14,13 +14,9 @@ import type { SupportedQuestion } from '../../types/condensation/supportedQuesti
 
 /**
  * Transforms and groups candidate comments for argument condensation.
- * This function uses the question's built-in `normalizeValue()` method
- * to systematically group comments for all question types. Also slices
- * the correct number of comments according to the `maxCommentsPerGroup`
- * option if there are more comments than necessary.
+ * This function uses the question's built-in `normalizeValue()` method to systematically group comments for all question types. Also slices the correct number of comments according to the `maxCommentsPerGroup` option if there are more comments than necessary.
  *
- * The classification logic is based on the [-0.5, 0.5] coordinate space
- * returned by `normalizeValue()`:
+ * The classification logic is based on the [-0.5, 0.5] coordinate space returned by `normalizeValue()`:
  * - Pro-arguments: normalized value > 0
  * - Con-arguments: normalized value < 0
  * - Neutral-arguments (ignored): normalized value = 0
@@ -118,8 +114,7 @@ export function getAndSliceComments({
         const categoricalQuestion = question as SingleChoiceCategoricalQuestion;
         const choiceId = answer.value as Id;
 
-        // For categorical questions, use function ensureValue to validate the choice
-        // The actual grouping is done by the choiceId from the answer's value
+        // For categorical questions, use function ensureValue to validate the choice The actual grouping is done by the choiceId from the answer's value
         try {
           if (isMissingValue(categoricalQuestion.ensureValue(choiceId))) {
             continue;

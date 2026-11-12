@@ -1,0 +1,18 @@
+{
+  "contestantApp.login": {
+    "emailRequired": "Enter your email address.",
+    "emailRequiredFirst": "Enter your email address first.",
+    "enterEmailAndPassword": "Enter your email and password to sign in.",
+    "forgotPassword": "Forgot Password?",
+    "linkFailed": "This link can no longer be used. A link works once, and only the newest one you asked for works. Please ask for a new one in the same way as before.",
+    "noPasswordYet": "I have not set a password yet",
+    "noPasswordYetInfo": "We’ll email you a link to sign in with.",
+    "noProfile": "Your user account is not connected to any profile in this application. If you registered with another email address, sign in with that address. Otherwise, please contact support.",
+    "passwordRequired": "Enter your password.",
+    "signedOut": "You have been signed out, because your account’s information could not be read. Please sign in again. If this keeps happening, please contact support.",
+    "signInWithEmail": "Sign in with email",
+    "title": "Sign in",
+    "unknownError": "There was an error with your user data. Please contact support if the issue persists.",
+    "answersLockedInfo": "Registration or editing answers is no longer possible, but you can still sign in to view your information."
+  }
+}

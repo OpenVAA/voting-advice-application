@@ -1,0 +1,20 @@
+{
+  "entityList": {
+    "controls": {
+      "noFilterResults": "Suodattimilla ei löytynyt yhtään tulosta. Koeta muuttaa niitä.",
+      "noSearchResults": "Haulla ei löytynyt yhtään tulosta. Koeta muuttaa sitä.",
+      "searchPlaceholder": "Etsi nimellä",
+      "showingNumResults": [
+        {
+          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
+          "selectors": ["numShownPlural"],
+          "match": {
+            "numShownPlural=one": "Näytetään 1 tulos",
+            "numShownPlural=other": "Näytetään {numShown} tulosta"
+          }
+        }
+      ]
+    },
+    "showMore": "Näytä lisää"
+  }
+}
