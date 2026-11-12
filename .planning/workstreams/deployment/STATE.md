@@ -2,21 +2,21 @@
 gsd_state_version: "1.0"
 milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
-current_phase: 184
-current_phase_name: Hosted Supabase Measurement and Conformance Probe
+current_phase: 185
+current_phase_name: AWS Frontend Stack, First Apply by Hand
 current_plan: 25
-status: verifying
-stopped_at: Completed 184-25-PLAN.md
-last_updated: "2026-11-12T06:45:03.359Z"
-last_activity: 2026-10-26
-last_activity_desc: Phase 184 execution started
-state_head: 62896cfdaac06eec34c49c7f32cbde6b3fb622e6
+status: planning
+stopped_at: Phase 184 complete, ready to plan Phase 185
+last_updated: "2026-11-12T07:23:39.132Z"
+last_activity: 2026-11-12
+last_activity_desc: Phase 184 complete, transitioned to Phase 185
+state_head: e308b04af858d24c83b946c7ac46df476f0649f2
 progress:
   total_phases: 10
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 107
   completed_plans: 107
-  percent: 30
+  percent: 40
 ---
 
 # Project State
@@ -33,12 +33,12 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
-Phase: 184 (Hosted Supabase Measurement and Conformance Probe) — EXECUTING
-Plan: 25 of 25
-Status: Phase complete — ready for verification
-Last activity: 2026-10-26 — Phase 184 execution started
+Phase: 185 — AWS Frontend Stack, First Apply by Hand
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-11-12 — Phase 184 complete, transitioned to Phase 185
 
-Progress: [███░░░░░░░] 30% (3 of 9 roadmap phases, 181.1 inserted besides; 82/82 plans of the planned phases)
+Progress: [████░░░░░░] 40% (3 of 9 roadmap phases, 181.1 inserted besides; 82/82 plans of the planned phases)
 
 ## Progress
 
@@ -50,7 +50,7 @@ From 184 on, the numeric order is the dependency order.
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 51
+- Total plans completed: 76
 - Average duration: 14 min
 - Total execution time: 0.2 hours
 
@@ -61,6 +61,7 @@ From 184 on, the numeric order is the dependency order.
 | 181.1 | 4 | - | - |
 | 181 | 19 | - | - |
 | 183 | 28 | - | - |
+| 184 | 25 | - | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -327,5 +328,5 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 ## Session Continuity
 
 Last session: 2026-11-12T06:45:02.475Z
-**Stopped At:** Completed 184-25-PLAN.md
+**Stopped At:** Phase 184 complete, ready to plan Phase 185
 **Resume File:** None

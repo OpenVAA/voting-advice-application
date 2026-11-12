@@ -75,7 +75,7 @@ This file is the roadmap of the `deployment` workstream (branch `feat/deployment
 - [x] **Phase 181: Deployability and Migration Model** - Without any cloud account, the server reports its health and build, refuses to start half-configured, works behind a proxy, and the migration is frozen as a baseline with append-only changes (SUPA-10) (completed 2026-10-21)
 - [x] **Phase 182: Analytics Relay** - Events go through a same-origin relay to a provider chosen by configuration, with no analytics identifier on the device, consent asked by default, and Umami removed (RELAY-01, RELAY-02, RELAY-03, RELAY-05, RELAY-06, RELAY-07, RELAY-08, RELAY-10 to RELAY-21)
 - [x] **Phase 183: Terraform Foundation and Supabase as Code** - Remote state, access roles, a budget alarm, the staging zone and the mail identity exist in AWS, and the hosted Supabase project is imported into a root of its own with a settings parity guard (INFRA-15, INFRA-17, INFRA-18, SUPA-11) (completed 2026-10-26)
-- [ ] **Phase 184: Hosted Supabase Measurement and Conformance Probe** - The schema, functions and bootstrap rows are on the hosted project, what it serves is measured and dated, and a probe fails by name when it drifts (SUPA-01 to SUPA-07, SUPA-13, SUPA-14, OBS-01, OBS-02, OBS-03, OBS-05, OBS-07)
+- [x] **Phase 184: Hosted Supabase Measurement and Conformance Probe** - The schema, functions and bootstrap rows are on the hosted project, what it serves is measured and dated, and a probe fails by name when it drifts (SUPA-01 to SUPA-07, SUPA-13, SUPA-14, OBS-01, OBS-02, OBS-03, OBS-05, OBS-07) (completed 2026-11-12)
 - [ ] **Phase 185: AWS Frontend Stack, First Apply by Hand** - The frontend runs at `https://staging.openvaa.org` from a stack applied by hand, with a failed rollout, a teardown and the frontend-side observations each seen once (INFRA-01 to INFRA-14, SUPA-12, OBS-04, OBS-06, OBS-08, OBS-10)
 - [ ] **Phase 186: Deployed Smoke Entry** - A read-mostly smoke run proves from a workstation that the deployed URL serves the intended build on the dedicated project, and refuses anything else (SUPA-09)
 - [ ] **Phase 187: Deploy Pipeline** - GitHub Actions deploys staging without stored keys, behind a gate and in a fixed order, and the run goes red when the build, the rollout or the smoke run fails (PIPE-01 to PIPE-10, INFRA-16, INFRA-19, SUPA-08)
@@ -399,7 +399,7 @@ Notes:
   5. The conformance probe reads what the persistent project serves and passes. Each of its checks is seen failing once, by name, against the throwaway project broken on purpose.
 
 **Research flag**: Needs `/gsd-plan-phase --research-phase`, planned as measurement tasks with recorded outputs. Two topics that `research/SUMMARY.md` lists under 185 are measured here, because this roadmap makes the first push and sends the first Edge Function mail in this phase: `db push` from an IPv4 network, with the pooler as the fallback, and the SES port from an Edge Function (D7; 2587 first by C6). Also measured here: whether the hook can be switched on before its function exists (F2), and the Postgres major version.
-**Plans**: 25/25 plans executed in 19 waves. Waves 1 to 4 write the code without the operator (the probe, the push wrapper, the drift check's linked guard, the parity guard's `[functions.*]` family, the function secrets in Terraform, the scratch root's fault file, the smoke template, the runbook and the grant script); three of them stop for a ruling first. Waves 5 to 13 are the throwaway's sittings, in order; waves 14 to 17 the persistent project's, the first push behind a one-way gate (plan 184-21); wave 18 deletes the throwaway; wave 19 closes on the repository gates and a full E2E run.
+**Plans**: 25/25 plans complete in 19 waves. Waves 1 to 4 write the code without the operator (the probe, the push wrapper, the drift check's linked guard, the parity guard's `[functions.*]` family, the function secrets in Terraform, the scratch root's fault file, the smoke template, the runbook and the grant script); three of them stop for a ruling first. Waves 5 to 13 are the throwaway's sittings, in order; waves 14 to 17 the persistent project's, the first push behind a one-way gate (plan 184-21); wave 18 deletes the throwaway; wave 19 closes on the repository gates and a full E2E run.
 
 Plans:
 **Wave 1**
@@ -617,7 +617,7 @@ Phases 181, 182 and 183 can start in any order. From 184 on, the numeric order i
 | 181. Deployability and Migration Model | 19/19 | Complete    | 2026-10-21 |
 | 182. Analytics Relay | 31/31 | Complete | 2026-10-20 |
 | 183. Terraform Foundation and Supabase as Code | 28/28 | Complete    | 2026-10-26 |
-| 184. Hosted Supabase Measurement and Conformance Probe | 25/25 | In Progress | - |
+| 184. Hosted Supabase Measurement and Conformance Probe | 25/25 | Complete    | 2026-11-12 |
 | 185. AWS Frontend Stack, First Apply by Hand | 0/TBD | Not started | - |
 | 186. Deployed Smoke Entry | 0/TBD | Not started | - |
 | 187. Deploy Pipeline | 0/TBD | Not started | - |
