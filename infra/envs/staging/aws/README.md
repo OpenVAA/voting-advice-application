@@ -56,7 +56,9 @@ The overview of every root, the order of first applies and the rules that hold f
 - **`environment_overrides`, `omit_environment`, `debug_ingress_cidrs` and `scheduled_floor_changes`
   are given on the command line, for one observation, and the next apply without them removes them
   again**, because `terraform.tfvars` is the record of the stack as it runs, and a value written there
-  for one observation would become part of that record.
+  for one observation would become part of that record. The floor raised for a known peak is the one
+  exception: it is part of how the stack runs that day, so "Election day" writes its two entries in
+  `terraform.tfvars`.
 - **The evidence logs are copied out before a destroy**, because the log group goes with the destroy
   and its lines cannot be read afterwards.
 
@@ -205,7 +207,8 @@ Step 17 the re-apply from the same commit
 Step 18 the cost, by tag, against the priced inventory
 ```
 
-Steps 1 to 6 bring the stack up and are written below. Steps 7 to 18 are not written yet.
+Steps 1 to 6 bring the stack up. Steps 7 and 8 read the running stack and change nothing; Steps 9 to
+12 each change it for an observation and change it back. Steps 13 to 18 are not written yet.
 
 ## Up to the first apply
 
@@ -920,6 +923,1494 @@ T=infra/envs/staging/aws
 
 Return: `answer_subscription_confirmed=`, `answer_cost_tags_activated=`, their times, and every `s6_`
 line. Never paste the alert address.
+
+## The running stack
+
+Steps 7 and 8 read the stack the first apply brought up and change nothing. Steps 9 to 12 each make one
+observation that needs the stack changed, with `-var` for one apply, and end with the apply that
+changes it back and a plan that shows no change. They run in this order, because each change of the
+task's environment is a new revision and a rollout, and Step 10 needs a completed rollout to roll back
+to.
+
+Each apply of Steps 9 to 12 is made from a saved plan that has been read against the step's stop rule.
+The plan lines print each planned change as `<actions> <address>`; the address of a temporary ingress
+rule carries the workstation's address as its key, and is printed as `[<address>]`.
+
+### Step 7: What the stack serves
+
+Nothing in this step changes anything. It reads the two certificates, the redirect to HTTPS, a voter
+page rendered from the hosted project's data, the origin check of a form post, the edge cache's
+pattern and the load balancer's health check, all through the public name.
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+export LC_ALL=C AWS_PAGER="" AWS_PROFILE=openvaa-admin \
+  AWS_REGION=eu-north-1 \
+  TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-aws.XXXXXX")
+ACCOUNT=$(aws sts get-caller-identity --query Account \
+  --output text 2> "$L/account.err")
+echo "s7_account_read_exit=$?"
+test "$ACCOUNT" = 471112560111; echo "s7_account_match_exit=$?"
+T=infra/envs/staging/aws
+U=https://staging.openvaa.org
+```
+
+1. The outputs the step reads, and a helper that prints the value of one response header from a file
+   of headers:
+
+   ```bash
+   terraform -chdir="$T" init -input=false -no-color \
+     -lockfile=readonly > "$L/s7-init.log" 2>&1
+   echo "s7_init_exit=$?"
+   out() { terraform -chdir="$T" output -raw "$1" 2>> "$L/out.err"; }
+   VIEWER=$(out viewer_certificate_arn)
+   ORIGIN_CERT=$(out origin_certificate_arn)
+   DIST=$(out distribution_id)
+   C=$(out cluster_name)
+   S=$(out service_name)
+   SB=$(sed -n 's/^ *PUBLIC_SUPABASE_URL *= *"\(.*\)"/\1/p' \
+     "$T/terraform.tfvars")
+   hdr() { awk -v n="$2:" 'tolower($1) == n { sub(/\r$/, "");
+     sub(/^[^:]*: */, ""); print; exit }' "$1"; }
+   test -n "$DIST" && test -n "$SB"; echo "s7_outputs_read_exit=$?"
+   ```
+
+2. The two certificates, the viewer's in `us-east-1` and the origin's in this root's region:
+
+   ```bash
+   aws acm describe-certificate --region us-east-1 \
+     --certificate-arn "$VIEWER" \
+     > "$L/s7-viewer.json" 2> "$L/s7-viewer.err"
+   echo "s7_viewer_cert_read_exit=$?"
+   aws acm describe-certificate --certificate-arn "$ORIGIN_CERT" \
+     > "$L/s7-origin.json" 2> "$L/s7-origin.err"
+   echo "s7_origin_cert_read_exit=$?"
+   for c in viewer origin; do
+     jq -r --arg c "$c" '.Certificate
+       | "s7_\($c)_cert=\(.Status)"
+         + " method=\(.DomainValidationOptions[0].ValidationMethod)"
+         + " region=\(.CertificateArn | split(":")[3])"' \
+       "$L/s7-$c.json"
+   done
+   ```
+
+   Expected: `s7_viewer_cert=ISSUED method=DNS region=us-east-1` and
+   `s7_origin_cert=ISSUED method=DNS region=eu-north-1`.
+
+3. Plain HTTP is redirected, and the HTTPS chain verifies. `curl` verifies the chain against the
+   system's trust store unless it is told not to, and exits 60 when the chain does not verify:
+
+   ```bash
+   curl -sS --max-time 20 -o /dev/null \
+     -w 's7_http_redirect=%{http_code} location=%{redirect_url}\n' \
+     http://staging.openvaa.org/ 2> "$L/s7-http.err"
+   echo "s7_http_curl_exit=$?"
+   curl -sS --max-time 20 -o /dev/null \
+     -w 's7_tls_verify_result=%{ssl_verify_result}\n' \
+     "$U/" 2> "$L/s7-tls.err"
+   echo "s7_tls_curl_exit=$?"
+   ```
+
+   Expected: `s7_http_redirect=301 location=https://staging.openvaa.org/`,
+   `s7_tls_verify_result=0` and `s7_tls_curl_exit=0`.
+
+4. The front page and the questions page, each followed through its redirects. A page rendered on the
+   server carries the project id on its `<body>`, and inlines each response its server-side load
+   fetched as a `data-sveltekit-fetched` script whose `data-url` is the address fetched; an inlined
+   fetch of the Supabase REST host shows that the task read the hosted project with the key from the
+   parameter store. The six statements are those of the smoke dataset:
+
+   ```bash
+   curl -sS --max-time 30 -L -o "$L/s7-home.html" \
+     -w '%{http_code} %{url_effective}' "$U/" \
+     > "$L/s7-home.w" 2> "$L/s7-home.err"
+   echo "s7_home_curl_exit=$?"
+   curl -sS --max-time 30 -L -o "$L/s7-questions.html" \
+     -w '%{http_code} %{url_effective}' "$U/questions" \
+     > "$L/s7-questions.w" 2> "$L/s7-questions.err"
+   echo "s7_questions_curl_exit=$?"
+   for f in home questions; do
+     echo "s7_${f}=$(cat "$L/s7-$f.w")"
+     echo "s7_${f}_project_id=$(grep -o -m1 \
+       'data-project-id="[^"]*"' "$L/s7-$f.html" | cut -d'"' -f2)"
+     echo "s7_${f}_supabase_fetches=$(grep -o -F \
+       "data-sveltekit-fetched data-url=\"$SB/rest/v1/" \
+       "$L/s7-$f.html" | wc -l | tr -d ' ')"
+   done
+   printf '%s\n' \
+     'Public transport should be free of charge in cities.' \
+     'The state should raise taxes on high incomes.' \
+     'Nuclear power should be expanded.' \
+     'Municipalities should get more decision-making power.' \
+     'Defence spending should be increased.' \
+     'Immigration for work should be made easier.' \
+     > "$L/s7-statements.txt"
+   grep -o -F -f "$L/s7-statements.txt" "$L/s7-questions.html" \
+     | sort -u | sed 's/^/s7_statement_seen=/'
+   ```
+
+   Expected: `s7_home=` and `s7_questions=` each `200` and an address on `https://staging.openvaa.org`;
+   both `_project_id=00000000-0000-0000-0000-000000000001`; at least one `_supabase_fetches=` above 0;
+   and at least one `s7_statement_seen=` line, such as
+   `s7_statement_seen=Defence spending should be increased.`
+
+5. The origin check of a form post, as `infra/local/check-proxy-topology.sh` makes it locally: a post
+   to the contestant login with the public origin in its `Origin` header is not refused, and the same
+   post from another origin is answered 403. The `Accept` header is a browser's native form
+   submission's, because SvelteKit answers a form post that prefers JSON with status 200 whatever the
+   action did. The form names no account:
+
+   ```bash
+   curl -sS --max-time 20 -L -o /dev/null -w '%{url_effective}' \
+     "$U/contestant/login" > "$L/s7-login.url" 2> "$L/s7-login.err"
+   echo "s7_login_curl_exit=$?"
+   LP=$(sed "s|^$U||; s|?.*||" "$L/s7-login.url")
+   echo "s7_login_path=$LP"
+   A='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+   F='email=nobody%40example.test&password=not-a-password'
+   curl -sS --max-time 20 -o /dev/null \
+     -w 's7_form_post_own_origin=%{http_code}\n' \
+     -H "$A" -H "Origin: $U" --data "$F" "$U$LP" \
+     2> "$L/s7-post-own.err"
+   echo "s7_form_post_own_origin_curl_exit=$?"
+   curl -sS --max-time 20 -o "$L/s7-post-foreign.txt" \
+     -w 's7_form_post_foreign_origin=%{http_code}\n' \
+     -H "$A" -H 'Origin: http://attacker.example' \
+     --data "$F" "$U$LP" 2> "$L/s7-post-foreign.err"
+   echo "s7_form_post_foreign_origin_curl_exit=$?"
+   echo "s7_cross_site_text=$(grep -c -F \
+     'Cross-site POST form submissions are forbidden' \
+     "$L/s7-post-foreign.txt")"
+   ```
+
+   Expected: `s7_login_path=` a path of the Contestant App, `s7_form_post_own_origin=` any status
+   other than 403, `s7_form_post_foreign_origin=403` and `s7_cross_site_text=1`.
+
+6. The edge cache. A page is never served from the edge: both requests for it miss, and neither
+   answer carries `age`, which the edge adds to an answer it held. A file under `/_app/immutable/`,
+   taken from the page, is held: the second of two requests for it is a hit. The distribution's error
+   responses are read back too, each held for 0 seconds:
+
+   ```bash
+   P=$(cut -d' ' -f2 "$L/s7-home.w")
+   for i in 1 2; do
+     curl -sS --max-time 20 -o "$L/s7-page.html" \
+       -D "$L/s7-page-$i.txt" "$P" 2> "$L/s7-page-$i.err"
+     echo "s7_page_${i}_curl_exit=$?"
+     AGE=$(hdr "$L/s7-page-$i.txt" age)
+     echo "s7_page_${i}=$(hdr "$L/s7-page-$i.txt" x-cache)" \
+       "age=${AGE:-absent}"
+   done
+   echo "s7_page_cache_control=$(hdr "$L/s7-page-1.txt" \
+     cache-control)"
+   ASSET=$(grep -o -m1 '/_app/immutable/[A-Za-z0-9._/-]*\.js' \
+     "$L/s7-page.html" | head -1)
+   echo "s7_asset=$ASSET"
+   for i in 1 2; do
+     curl -sS --max-time 20 -o /dev/null \
+       -D "$L/s7-asset-$i.txt" "$U$ASSET" 2> "$L/s7-asset-$i.err"
+     echo "s7_asset_${i}_curl_exit=$?"
+     echo "s7_asset_${i}=$(hdr "$L/s7-asset-$i.txt" x-cache)"
+   done
+   echo "s7_asset_cache_control=$(hdr "$L/s7-asset-1.txt" \
+     cache-control)"
+   aws cloudfront get-distribution-config --id "$DIST" \
+     > "$L/s7-distribution.json" 2> "$L/s7-distribution.err"
+   echo "s7_distribution_config_exit=$?"
+   jq -r '.DistributionConfig.CustomErrorResponses
+     | "s7_error_responses=\(.Quantity) min_ttls=\([.Items[]
+       | .ErrorCachingMinTTL | tostring] | unique | join(","))"' \
+     "$L/s7-distribution.json"
+   ```
+
+   Expected: `s7_page_1=` and `s7_page_2=` each `Miss from cloudfront age=absent` or
+   `RefreshHit from cloudfront age=absent`; `s7_asset=` a path under `/_app/immutable/`;
+   `s7_asset_2=Hit from cloudfront`; `s7_asset_cache_control=` naming `immutable`; and
+   `s7_error_responses=11 min_ttls=0`.
+
+7. The load balancer's health check and the service's grace period, and the state of the target:
+
+   ```bash
+   aws ecs describe-services --cluster "$C" --services "$S" \
+     > "$L/s7-service.json" 2> "$L/s7-service.err"
+   echo "s7_service_read_exit=$?"
+   TG=$(jq -r '.services[0].loadBalancers[0].targetGroupArn' \
+     "$L/s7-service.json")
+   jq -r '.services[0]
+     | "s7_grace_period=\(.healthCheckGracePeriodSeconds)"' \
+     "$L/s7-service.json"
+   aws elbv2 describe-target-groups --target-group-arns "$TG" \
+     > "$L/s7-target-group.json" 2> "$L/s7-target-group.err"
+   echo "s7_target_group_read_exit=$?"
+   jq -r '.TargetGroups[0]
+     | "s7_health_check_path=\(.HealthCheckPath)"' \
+     "$L/s7-target-group.json"
+   aws elbv2 describe-target-health --target-group-arn "$TG" \
+     > "$L/s7-target-health.json" 2> "$L/s7-target-health.err"
+   echo "s7_target_health_read_exit=$?"
+   jq -r '.TargetHealthDescriptions[]
+     | "s7_target_state=\(.TargetHealth.State)"' \
+     "$L/s7-target-health.json"
+   ```
+
+   Expected: `s7_grace_period=60`, `s7_health_check_path=/api/health` and one
+   `s7_target_state=healthy`.
+
+8. Last item, also when you stop early or a command failed:
+
+   ```bash
+   test -n "$L" && rm -rf "$L" && echo "s7_logs_removed=yes"
+   ```
+
+Return: every `s7_` line, in order, and every status 0.
+
+### Step 8: The network, the tags and the regions
+
+Nothing in this step changes anything. The task's public address and the load balancer's address are
+read into variables and used, and never printed.
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+export LC_ALL=C AWS_PAGER="" AWS_PROFILE=openvaa-admin \
+  AWS_REGION=eu-north-1 \
+  TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-aws.XXXXXX")
+ACCOUNT=$(aws sts get-caller-identity --query Account \
+  --output text 2> "$L/account.err")
+echo "s8_account_read_exit=$?"
+test "$ACCOUNT" = 471112560111; echo "s8_account_match_exit=$?"
+T=infra/envs/staging/aws
+```
+
+1. The outputs the step reads:
+
+   ```bash
+   terraform -chdir="$T" init -input=false -no-color \
+     -lockfile=readonly > "$L/s8-init.log" 2>&1
+   echo "s8_init_exit=$?"
+   out() { terraform -chdir="$T" output -raw "$1" 2>> "$L/out.err"; }
+   VPC=$(out vpc_id)
+   LB_SG=$(out load_balancer_security_group_id)
+   TASK_SG=$(out task_security_group_id)
+   LB_DNS=$(out load_balancer_dns_name)
+   C=$(out cluster_name)
+   S=$(out service_name)
+   G=$(out log_group_name)
+   test -n "$VPC" && test -n "$G"; echo "s8_outputs_read_exit=$?"
+   command -v dig > /dev/null; echo "s8_has_dig_exit=$?"
+   yn() { if test -n "$1"; then echo "$2"; else echo "$3"; fi; }
+   ```
+
+2. The ingress rules of both groups, by the role of their source, never by address; the NAT
+   gateways of the network, which must be none; and its default route:
+
+   ```bash
+   N=com.amazonaws.global.cloudfront.origin-facing
+   PL=$(aws ec2 describe-managed-prefix-lists \
+     --filters "Name=prefix-list-name,Values=$N" \
+     --query 'PrefixLists[0].PrefixListId' --output text \
+     2> "$L/s8-prefix-list.err")
+   echo "s8_prefix_list_read_exit=$?"
+   ingress() {
+     aws ec2 describe-security-group-rules \
+       --filters "Name=group-id,Values=$2" \
+       > "$L/s8-$1-sg.json" 2> "$L/s8-$1-sg.err"
+     echo "s8_$1_sg_read_exit=$?"
+     jq -r --arg p "s8_$1_sg_ingress" --arg lb "$LB_SG" \
+       --arg pl "$PL" '[.SecurityGroupRules[]
+       | select(.IsEgress | not)]
+       | "\($p)=\(length)", (.[] | "\($p)_rule=from=" + (
+         if .ReferencedGroupInfo.GroupId == $lb
+         then "load-balancer-sg"
+         elif .PrefixListId == $pl then "cloudfront-prefix-list"
+         elif .CidrIpv4 then "single-address"
+         else "other" end) + " port=\(.FromPort)")' \
+       "$L/s8-$1-sg.json"
+   }
+   ingress task "$TASK_SG"
+   ingress lb "$LB_SG"
+   aws ec2 describe-nat-gateways --filter "Name=vpc-id,Values=$VPC" \
+     > "$L/s8-nat.json" 2> "$L/s8-nat.err"
+   echo "s8_nat_read_exit=$?"
+   jq -r '"s8_nat_gateways=\([.NatGateways[]
+     | select(.State != "deleted")] | length)"' "$L/s8-nat.json"
+   aws ec2 describe-route-tables \
+     --filters "Name=vpc-id,Values=$VPC" \
+     > "$L/s8-routes.json" 2> "$L/s8-routes.err"
+   echo "s8_routes_read_exit=$?"
+   jq -r '[.RouteTables[].Routes[]
+     | select(.DestinationCidrBlock == "0.0.0.0/0")]
+     | "s8_default_routes=\(length)",
+       (.[] | "s8_default_route=" + (if (.GatewayId // "")
+         | startswith("igw-") then "internet-gateway"
+         else "other" end))' "$L/s8-routes.json"
+   ```
+
+   Expected: `s8_task_sg_ingress=1` with `s8_task_sg_ingress_rule=from=load-balancer-sg port=3000`;
+   `s8_lb_sg_ingress=1` with `s8_lb_sg_ingress_rule=from=cloudfront-prefix-list port=443`;
+   `s8_nat_gateways=0`; and `s8_default_routes=1` with `s8_default_route=internet-gateway`.
+
+3. The running task, its public address, and two direct requests from the workstation: one to the
+   task's address on 3000 and one to the load balancer's address on 443. Neither group admits the
+   workstation, so neither request gets an answer, and `curl` gives up after 10 seconds with status 28
+   and HTTP status `000`:
+
+   ```bash
+   aws ecs list-tasks --cluster "$C" --service-name "$S" \
+     --desired-status RUNNING \
+     > "$L/s8-tasks.json" 2> "$L/s8-tasks.err"
+   echo "s8_list_tasks_exit=$?"
+   TASK=$(jq -r '.taskArns[0]' "$L/s8-tasks.json")
+   aws ecs describe-tasks --cluster "$C" --tasks "$TASK" \
+     --include TAGS > "$L/s8-task.json" 2> "$L/s8-task.err"
+   echo "s8_describe_task_exit=$?"
+   ENI=$(jq -r '.tasks[0].attachments[].details[]
+     | select(.name == "networkInterfaceId") | .value' \
+     "$L/s8-task.json")
+   aws ec2 describe-network-interfaces \
+     --network-interface-ids "$ENI" \
+     > "$L/s8-eni.json" 2> "$L/s8-eni.err"
+   echo "s8_eni_read_exit=$?"
+   TIP=$(jq -r '.NetworkInterfaces[0].Association.PublicIp
+     // empty' "$L/s8-eni.json")
+   echo "s8_task_public_address=$(yn "$TIP" present absent)"
+   LB_IP=$(dig +short "$LB_DNS" A | head -1)
+   echo "s8_lb_address=$(yn "$LB_IP" resolved none)"
+   O=origin.staging.openvaa.org
+   curl -sS --max-time 10 -o /dev/null -w '%{http_code}' \
+     "http://$TIP:3000/api/health" \
+     > "$L/s8-direct-task.txt" 2> "$L/s8-direct-task.err"
+   echo "s8_direct_to_task_curl_exit=$?"
+   echo "s8_direct_to_task_http=$(cat "$L/s8-direct-task.txt")"
+   curl -sS --max-time 10 -o /dev/null -w '%{http_code}' \
+     --resolve "$O:443:$LB_IP" "https://$O/api/health" \
+     > "$L/s8-direct-lb.txt" 2> "$L/s8-direct-lb.err"
+   echo "s8_direct_to_lb_curl_exit=$?"
+   echo "s8_direct_to_lb_http=$(cat "$L/s8-direct-lb.txt")"
+   ```
+
+   Expected: `s8_task_public_address=present`, `s8_lb_address=resolved`, both `_curl_exit=28` and
+   both `_http=000`. The `.err` files name the addresses and are never pasted.
+
+4. The tags of every resource in the state. A resource that can carry tags has `tags_all`, the
+   provider's default tags merged with its own; each must carry the four default tags. The state is
+   read as JSON into `$L` and only addresses, counts and resource types are printed:
+
+   ```bash
+   terraform -chdir="$T" show -json \
+     > "$L/s8-state.json" 2> "$L/s8-show.err"
+   echo "s8_show_exit=$?"
+   jq -r 'def mods: ., (.child_modules[]? | mods);
+     [.values.root_module | mods | .resources[]?
+       | select(.mode == "managed")] as $r
+     | [$r[] | select(.values | has("tags_all"))] as $t
+     | [$t[] | select(.values.tags_all as $g
+         | [$g.Project, $g.Environment, $g.Root, $g.ManagedBy]
+         != ["openvaa", "staging", "aws", "terraform"])] as $u
+     | "s8_managed=\($r | length)", "s8_taggable=\($t | length)",
+       "s8_untagged=\($u | length)",
+       ($u[] | "s8_untagged_address=\(.address)"),
+       "s8_untaggable_types=\([$r[]
+         | select(.values | has("tags_all") | not) | .type]
+         | unique | join(","))"' "$L/s8-state.json"
+   ```
+
+   Expected: `s8_untagged=0` and no `s8_untagged_address=` line. `s8_untaggable_types=` names the
+   types that carry no tags at all, such as the records, the validations and the policy attachments.
+
+5. The running task's tags, which it gets from the service:
+
+   ```bash
+   jq -r '.tasks[0] | "s8_task_tag_root=\([.tags[]?
+     | select(.key == "Root") | .value] | join(","))",
+     "s8_task_tag_keys=\([.tags[]?.key] | sort | join(","))"' \
+     "$L/s8-task.json"
+   ```
+
+   Expected: `s8_task_tag_root=aws`, and `s8_task_tag_keys=` holding `Environment`, `ManagedBy`,
+   `Project` and `Root` beside the tags ECS manages itself.
+
+6. The region of every ARN in the state:
+
+   ```bash
+   jq -r 'def mods: ., (.child_modules[]? | mods);
+     [.values.root_module | mods | .resources[]?
+       | select(.mode == "managed")
+       | select((.values.arn | type) == "string")]
+     | "s8_arns=\(length)",
+       (.[] | (.values.arn | split(":")[3]) as $g
+         | select($g != "eu-north-1")
+         | "s8_arn_outside_home=\(.address) "
+           + (if $g == "" then "global" else $g end))' \
+     "$L/s8-state.json"
+   ```
+
+   Expected: two `s8_arn_outside_home=` lines, `module.frontend.aws_acm_certificate.viewer us-east-1`
+   and `module.frontend.aws_cloudfront_distribution.this global`, and no other.
+
+7. The log group's retention, and the running task's stream in it. The log driver names each stream
+   `frontend/frontend/<task id>`:
+
+   ```bash
+   aws logs describe-log-groups --log-group-name-prefix "$G" \
+     > "$L/s8-log-group.json" 2> "$L/s8-log-group.err"
+   echo "s8_log_group_read_exit=$?"
+   jq -r --arg g "$G" '.logGroups[] | select(.logGroupName == $g)
+     | "s8_log_retention_days=\(.retentionInDays)"' \
+     "$L/s8-log-group.json"
+   aws logs describe-log-streams --log-group-name "$G" \
+     --log-stream-name-prefix "frontend/frontend/${TASK##*/}" \
+     > "$L/s8-streams.json" 2> "$L/s8-streams.err"
+   echo "s8_log_streams_read_exit=$?"
+   jq -r '"s8_task_log_streams=\(.logStreams | length)"' \
+     "$L/s8-streams.json"
+   ```
+
+   Expected: `s8_log_retention_days=90` and `s8_task_log_streams=1`.
+
+8. The state object, and its lock. Two plans are started five seconds apart; the second must fail on
+   the lock the first holds, and the first must complete:
+
+   ```bash
+   aws s3api head-object --bucket openvaa-tfstate-471112560111 \
+     --key pipeline/staging/aws/terraform.tfstate \
+     > "$L/s8-state-object.json" 2> "$L/s8-state-object.err"
+   echo "s8_state_head_exit=$?"
+   jq -r '"s8_state_sse=\(.ServerSideEncryption)",
+     "s8_state_versioned=\(if .VersionId then "yes" else "no" end)"' \
+     "$L/s8-state-object.json"
+   ( terraform -chdir="$T" plan -input=false -no-color \
+       -lock-timeout=0s > "$L/s8-lock-first.log" 2>&1
+     echo "s8_lock_first_plan_exit=$?" > "$L/s8-lock-first.status" ) &
+   sleep 5
+   terraform -chdir="$T" plan -input=false -no-color \
+     -lock-timeout=0s > "$L/s8-lock-second.log" 2>&1
+   echo "s8_lock_second_plan_exit=$?"
+   echo "s8_lock_second_refusals=$(grep -c \
+     'Error acquiring the state lock' "$L/s8-lock-second.log")"
+   until test -s "$L/s8-lock-first.status"; do sleep 5; done
+   cat "$L/s8-lock-first.status"
+   ```
+
+   Expected: `s8_state_sse=AES256`, `s8_state_versioned=yes`, `s8_lock_second_plan_exit=1`,
+   `s8_lock_second_refusals=1` and `s8_lock_first_plan_exit=0`. If both plans read 0, the second ran
+   before the first had taken the lock or after it had let it go, which shows nothing: run this item
+   again.
+
+9. Last item, also when you stop early or a command failed:
+
+   ```bash
+   unset TIP LB_IP
+   test -n "$L" && rm -rf "$L" && echo "s8_logs_removed=yes"
+   ```
+
+Return: every `s8_` line, in order.
+
+### Step 9: The forwarded headers, the proxy depth and the origin locks
+
+This step switches on `/api/diagnostics` and opens the load balancer to the workstation's address
+alone, for one apply each way. With diagnostics on, the route reports the forwarding headers that reach
+the container, and the client address the server resolved from them; the record shows by role, never
+by value, how many proxies append to `x-forwarded-for`, which is what `XFF_DEPTH` must equal. The
+`/32` lets the workstation reach the load balancer directly, which is the only way to see its listener
+refuse a request without the origin secret. The step ends with both switched off again.
+
+The workstation's address is read from `https://checkip.amazonaws.com` into a variable and is never
+printed. Every request of this step to the public name is made over IPv4 (`curl -4`), because the
+distribution also answers over IPv6, and a viewer address of the other family would not match.
+
+Run the step in one sitting: later items use the variables earlier items set.
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+export LC_ALL=C AWS_PAGER="" AWS_PROFILE=openvaa-admin \
+  AWS_REGION=eu-north-1 \
+  TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-aws.XXXXXX")
+ACCOUNT=$(aws sts get-caller-identity --query Account \
+  --output text 2> "$L/account.err")
+echo "s9_account_read_exit=$?"
+test "$ACCOUNT" = 471112560111; echo "s9_account_match_exit=$?"
+T=infra/envs/staging/aws
+U=https://staging.openvaa.org
+O=origin.staging.openvaa.org
+```
+
+1. The outputs, the depth this root sets, and the workstation's address:
+
+   ```bash
+   terraform -chdir="$T" init -input=false -no-color \
+     -lockfile=readonly > "$L/s9-init.log" 2>&1
+   echo "s9_init_exit=$?"
+   out() { terraform -chdir="$T" output -raw "$1" 2>> "$L/out.err"; }
+   LB_DNS=$(out load_balancer_dns_name)
+   LB_SG=$(out load_balancer_security_group_id)
+   test -n "$LB_SG"; echo "s9_outputs_read_exit=$?"
+   D=$(sed -n 's/^ *XFF_DEPTH *= *"\([0-9]*\)".*/\1/p' \
+     "$T/terraform.tfvars")
+   echo "s9_tfvars_xff_depth=$D"
+   command -v dig > /dev/null; echo "s9_has_dig_exit=$?"
+   WS=$(curl -4 -sS --max-time 10 https://checkip.amazonaws.com \
+     2> "$L/s9-checkip.err" | tr -d '[:space:]')
+   export WS
+   case "$WS" in
+     "" | *[!0-9.]*) echo "s9_workstation_address_read=no" ;;
+     *) echo "s9_workstation_address_read=yes" ;;
+   esac
+   changes() {
+     jq -r --arg p "$1" '.resource_changes[]
+       | select(.change.actions != ["no-op"])
+       | select(.change.actions != ["read"])
+       | "\($p)=\(.change.actions | join("-")) " + (.address
+         | sub("\\[\"[0-9.]+/32-[0-9]+\"\\]"; "[<address>]"))' "$2"
+   }
+   ```
+
+   Expected: `s9_tfvars_xff_depth=2` and `s9_workstation_address_read=yes`. The function `changes`
+   prints each planned change of a saved plan, as Steps 9 to 12 read them.
+
+2. The plan with diagnostics on and the `/32`, read against the stop rule, then applied. The apply
+   waits for the new task to be serving:
+
+   ```bash
+   terraform -chdir="$T" plan -input=false -no-color \
+     -out="$L/tfplan" \
+     -var 'environment_overrides={DEPLOYMENT_DIAGNOSTICS="true"}' \
+     -var "debug_ingress_cidrs=[\"$WS/32\"]" \
+     > "$L/s9-plan.log" 2>&1
+   echo "s9_plan_exit=$?"
+   grep -m1 -E '^(Plan:|No changes)' "$L/s9-plan.log" \
+     | sed 's/^/s9_plan_line=/'
+   terraform -chdir="$T" show -json "$L/tfplan" \
+     > "$L/s9-plan.json" 2> "$L/s9-show.err"
+   echo "s9_show_exit=$?"
+   changes s9_change "$L/s9-plan.json"
+   ```
+
+   > **Apply only when `s9_plan_exit=0`, `s9_plan_line` reads
+   > `Plan: 3 to add, 1 to change, 1 to destroy.`, and the `s9_change=` lines are exactly these
+   > four:** `delete-create` of `module.frontend.aws_ecs_task_definition.app`, `update` of
+   > `module.frontend.aws_ecs_service.app`, and `create` of
+   > `module.frontend.aws_vpc_security_group_ingress_rule.load_balancer_debug[<address>]` twice, for
+   > 443 and 80. Otherwise do not apply: run item 7, paste the lines and stop.
+
+   ```bash
+   ( terraform -chdir="$T" apply -input=false -no-color \
+       "$L/tfplan" > "$L/s9-on-apply.log" 2>&1
+     echo "s9_on_apply_exit=$?" > "$L/s9-on-apply.status" ) &
+   until test -s "$L/s9-on-apply.status"; do sleep 30; done
+   cat "$L/s9-on-apply.status"
+   rm -f "$L/tfplan"; echo "s9_plan_file_removed=yes"
+   ```
+
+3. The header record. `/api/diagnostics` is called through the CDN, once plainly and once with a
+   client-sent `X-Forwarded-For: 203.0.113.99`, an address of a documentation range. Each body is saved
+   in `$L` and read by role: each entry of `x-forwarded-for` is printed as `spoof`, `viewer` (the
+   workstation) or `edge`; `viewer_depth` is the viewer entry's position counted from the right, which
+   is the depth that resolves it:
+
+   ```bash
+   curl -4 -sS --max-time 20 -o "$L/s9-plain.json" \
+     -w 's9_plain_http=%{http_code}\n' "$U/api/diagnostics" \
+     2> "$L/s9-plain.err"
+   echo "s9_plain_curl_exit=$?"
+   curl -4 -sS --max-time 20 -o "$L/s9-spoofed.json" \
+     -H 'X-Forwarded-For: 203.0.113.99' \
+     -w 's9_spoofed_http=%{http_code}\n' "$U/api/diagnostics" \
+     2> "$L/s9-spoofed.err"
+   echo "s9_spoofed_curl_exit=$?"
+   for f in plain spoofed; do
+     jq -r --arg f "$f" '
+       (.headers["x-forwarded-for"] // "" | split(",")
+         | map(gsub("^ +| +$"; ""))) as $e
+       | ($e | index(env.WS)) as $v
+       | .headers as $h
+       | "s9_\($f)_xff_entries=\($e | length)",
+         "s9_\($f)_entry_roles=\($e | map(if . == "203.0.113.99"
+           then "spoof" elif . == env.WS then "viewer"
+           else "edge" end) | join(","))",
+         "s9_\($f)_viewer_depth=\(if $v == null then "none"
+           else ($e | length) - $v end)",
+         "s9_\($f)_client_address_is_viewer="
+           + (if .clientAddress == env.WS then "yes" else "no" end),
+         "s9_\($f)_client_address_error=\(.clientAddressError)",
+         "s9_\($f)_viewer_address_header_is_viewer=" + (if
+           ($h["cloudfront-viewer-address"] // "")
+           | startswith(env.WS + ":") then "yes" else "no" end),
+         "s9_\($f)_amz_cf_id="
+           + (if $h["x-amz-cf-id"] then "present" else "absent" end),
+         "s9_\($f)_x_forwarded_proto=\($h["x-forwarded-proto"]
+           // "absent")",
+         "s9_\($f)_via=" + (if $h.via then "present" else "absent" end)
+       ' "$L/s9-$f.json"
+   done
+   ```
+
+   Expected: both `_http=200`; `s9_plain_entry_roles=viewer,edge` and
+   `s9_spoofed_entry_roles=spoof,viewer,edge`, the client-sent entry first; both `_viewer_depth=2`;
+   both `_client_address_is_viewer=yes`; both `_client_address_error=null`; and
+   `_x_forwarded_proto=https`. The lines on `cloudfront-viewer-address`, `x-amz-cf-id` and `via` are
+   recorded as they read.
+
+4. The verdict on the depth:
+
+   ```bash
+   jq -rn --arg d "$D" --slurpfile p "$L/s9-plain.json" \
+     --slurpfile s "$L/s9-spoofed.json" '
+     if $p[0].clientAddress == env.WS
+       and $s[0].clientAddress == env.WS
+     then "s9_depth_verdict=\($d)-confirmed"
+     else "s9_depth_verdict=record-differs" end'
+   ```
+
+   `s9_depth_verdict=2-confirmed` means the depth this root sets resolves the workstation with and
+   without a spoofed entry. **`s9_depth_verdict=record-differs` means the record wins**: set
+   `XFF_DEPTH` in `terraform.tfvars` to `s9_plain_viewer_depth`, with a comment naming the date of the
+   record, commit that change, and go on with item 5, whose plan then carries the new depth. Then run
+   this step again from item 2, whose verdict must read `<new depth>-confirmed`, and record the change
+   of depth with the observation.
+
+5. Both origin locks, with the load balancer reached directly through the `/32`. The listener answers
+   403 to a request without the origin header and to one with a wrong value, and forwards one with the
+   value CloudFront sends. That value is read from the sensitive output into a variable and handed to
+   `curl` as a configuration on a file descriptor, so it appears on no command line. Port 80 of the
+   load balancer only redirects to HTTPS:
+
+   ```bash
+   HN=$(terraform -chdir="$T" output -raw origin_verify_header_name)
+   HV=$(terraform -chdir="$T" output -raw origin_verify_header_value)
+   LB_IP=$(dig +short "$LB_DNS" A | head -1)
+   test -n "$HV" && test -n "$LB_IP"; echo "s9_lock_inputs_exit=$?"
+   curl -sS --max-time 10 --resolve "$O:443:$LB_IP" -o /dev/null \
+     -w 's9_lock_no_header=%{http_code}\n' "https://$O/api/health" \
+     2> "$L/s9-lock.err"
+   curl -sS --max-time 10 --resolve "$O:443:$LB_IP" -o /dev/null \
+     -w 's9_lock_wrong_header=%{http_code}\n' \
+     -H "$HN: not-the-secret" "https://$O/api/health" \
+     2>> "$L/s9-lock.err"
+   curl -sS --max-time 10 --resolve "$O:443:$LB_IP" -o /dev/null \
+     -w 's9_lock_right_header=%{http_code}\n' \
+     -K <(printf 'header = "%s: %s"\n' "$HN" "$HV") \
+     "https://$O/api/health" 2>> "$L/s9-lock.err"
+   unset HV
+   curl -sS --max-time 10 --resolve "$O:80:$LB_IP" -o /dev/null \
+     -w 's9_lb_http=%{http_code} location=%{redirect_url}\n' \
+     "http://$O/" 2>> "$L/s9-lock.err"
+   aws ec2 describe-security-group-rules \
+     --filters "Name=group-id,Values=$LB_SG" \
+     > "$L/s9-lb-sg.json" 2> "$L/s9-lb-sg.err"
+   echo "s9_lb_sg_read_exit=$?"
+   jq -r '"s9_lb_sg_ingress_during=\([.SecurityGroupRules[]
+     | select(.IsEgress | not)] | length)"' "$L/s9-lb-sg.json"
+   ```
+
+   Expected: `s9_lock_no_header=403`, `s9_lock_wrong_header=403`, `s9_lock_right_header=200`,
+   `s9_lb_http=301 location=https://origin.staging.openvaa.org:443/` and
+   `s9_lb_sg_ingress_during=3`: the prefix list and the `/32` on 443 and 80.
+
+6. The plan with neither variable, read against the stop rule, then applied, and the stack read back
+   in its plain shape:
+
+   ```bash
+   terraform -chdir="$T" plan -input=false -no-color \
+     -out="$L/tfplan" > "$L/s9-off-plan.log" 2>&1
+   echo "s9_off_plan_exit=$?"
+   grep -m1 -E '^(Plan:|No changes)' "$L/s9-off-plan.log" \
+     | sed 's/^/s9_off_plan_line=/'
+   terraform -chdir="$T" show -json "$L/tfplan" \
+     > "$L/s9-off-plan.json" 2> "$L/s9-off-show.err"
+   echo "s9_off_show_exit=$?"
+   changes s9_off_change "$L/s9-off-plan.json"
+   ```
+
+   > **Apply only when `s9_off_plan_exit=0`, `s9_off_plan_line` reads
+   > `Plan: 1 to add, 1 to change, 3 to destroy.`, and the `s9_off_change=` lines are the task
+   > definition's `delete-create`, the service's `update` and the two debug rules' `delete`.** Otherwise do not apply: run item 7, paste
+   > the lines and stop. The stack then still has diagnostics on and the `/32` open, which the operator
+   > must know.
+
+   ```bash
+   ( terraform -chdir="$T" apply -input=false -no-color \
+       "$L/tfplan" > "$L/s9-off-apply.log" 2>&1
+     echo "s9_off_apply_exit=$?" > "$L/s9-off-apply.status" ) &
+   until test -s "$L/s9-off-apply.status"; do sleep 30; done
+   cat "$L/s9-off-apply.status"
+   rm -f "$L/tfplan"; echo "s9_plan_file_removed=yes"
+   curl -4 -sS --max-time 20 -o /dev/null \
+     -w 's9_diagnostics_after=%{http_code}\n' \
+     "$U/api/diagnostics" 2> "$L/s9-after.err"
+   curl -sS --max-time 10 --resolve "$O:443:$LB_IP" -o /dev/null \
+     -w 's9_direct_after_http=%{http_code}\n' \
+     "https://$O/api/health" 2>> "$L/s9-after.err"
+   echo "s9_direct_after_curl_exit=$?"
+   aws ec2 describe-security-group-rules \
+     --filters "Name=group-id,Values=$LB_SG" \
+     > "$L/s9-lb-sg-after.json" 2> "$L/s9-lb-sg-after.err"
+   echo "s9_lb_sg_after_read_exit=$?"
+   jq -r '"s9_lb_sg_ingress_after=\([.SecurityGroupRules[]
+     | select(.IsEgress | not)] | length)"' \
+     "$L/s9-lb-sg-after.json"
+   terraform -chdir="$T" plan -input=false -no-color \
+     -detailed-exitcode > "$L/s9-plan-after.log" 2>&1
+   echo "s9_plan_after_exit=$?"
+   ```
+
+   Expected: `s9_off_apply_exit=0`, `s9_diagnostics_after=404`, `s9_direct_after_http=000` with
+   `s9_direct_after_curl_exit=28`, `s9_lb_sg_ingress_after=1`, and `s9_plan_after_exit=0`.
+
+7. Last item, also when you stop early or a command failed:
+
+   ```bash
+   unset WS HV LB_IP
+   rm -f "$L/tfplan"
+   test -n "$L" && rm -rf "$L" && echo "s9_logs_removed=yes"
+   ```
+
+Return: every `s9_` line, in order. The bodies in `$L` hold the workstation's address and are never
+pasted.
+
+### Step 10: A rollout that fails, its rollback and its alert
+
+A revision of the running image without `ORIGIN` starts tasks that refuse to start: the server's
+start-up check throws `Required environment variables are not set: ORIGIN` before it listens, and the
+task exits. The service's circuit breaker counts the tasks that fail to start and rolls the service
+back to its last completed deployment by itself, while the old task keeps serving. The rollback
+publishes `SERVICE_DEPLOYMENT_FAILED`, which the alert rule mails to the operator. The fault is never
+made by changing the health check, which would fail the serving task too.
+
+`infra/scripts/request-loop.sh` requests the health route through the public name once a second from
+before the fault's apply until the rollback is complete, and counts the answers that were not 2xx.
+
+Before the step, the service's last deployment must be completed, or the circuit breaker has nothing
+to roll back to; item 1 reads it. Run the step in one sitting: it takes up to 40 minutes.
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+export LC_ALL=C AWS_PAGER="" AWS_PROFILE=openvaa-admin \
+  AWS_REGION=eu-north-1 \
+  TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-aws.XXXXXX")
+ACCOUNT=$(aws sts get-caller-identity --query Account \
+  --output text 2> "$L/account.err")
+echo "s10_account_read_exit=$?"
+test "$ACCOUNT" = 471112560111; echo "s10_account_match_exit=$?"
+T=infra/envs/staging/aws
+```
+
+1. The outputs, the service before the fault, and its running task:
+
+   ```bash
+   terraform -chdir="$T" init -input=false -no-color \
+     -lockfile=readonly > "$L/s10-init.log" 2>&1
+   echo "s10_init_exit=$?"
+   out() { terraform -chdir="$T" output -raw "$1" 2>> "$L/out.err"; }
+   C=$(out cluster_name)
+   S=$(out service_name)
+   G=$(out log_group_name)
+   test -n "$G"; echo "s10_outputs_read_exit=$?"
+   changes() {
+     jq -r --arg p "$1" '.resource_changes[]
+       | select(.change.actions != ["no-op"])
+       | select(.change.actions != ["read"])
+       | "\($p)=\(.change.actions | join("-")) \(.address)"' "$2"
+   }
+   aws ecs describe-services --cluster "$C" --services "$S" \
+     > "$L/s10-before.json" 2> "$L/s10-before.err"
+   echo "s10_service_read_exit=$?"
+   jq -r '.services[0] | (.deployments[]
+     | "s10_deployment_before=\(.status) \(.rolloutState)"),
+     "s10_running_before=\(.runningCount)"' "$L/s10-before.json"
+   OLD_TD=$(jq -r '.services[0].taskDefinition' "$L/s10-before.json")
+   TG=$(jq -r '.services[0].loadBalancers[0].targetGroupArn' \
+     "$L/s10-before.json")
+   echo "s10_old_revision=${OLD_TD##*:}"
+   aws ecs list-tasks --cluster "$C" --service-name "$S" \
+     --desired-status RUNNING \
+     > "$L/s10-tasks.json" 2> "$L/s10-tasks.err"
+   echo "s10_list_tasks_exit=$?"
+   OLD=$(jq -r '.taskArns[0]' "$L/s10-tasks.json")
+   aws ecs describe-tasks --cluster "$C" --tasks "$OLD" \
+     > "$L/s10-old.json" 2> "$L/s10-old.err"
+   echo "s10_old_task_read_exit=$?"
+   OLD_IP=$(jq -r '.tasks[0].attachments[].details[]
+     | select(.name == "privateIPv4Address") | .value' \
+     "$L/s10-old.json")
+   START=$(jq -n 'now | floor')
+   ```
+
+   Expected: exactly one line `s10_deployment_before=PRIMARY COMPLETED` and `s10_running_before=1`.
+   Otherwise stop here and run item 10.
+
+2. Start the request loop in the background:
+
+   ```bash
+   ( infra/scripts/request-loop.sh \
+       --url https://staging.openvaa.org/api/health \
+       --until "$L/stop" --out "$L/loop.csv" \
+       > "$L/s10-loop.txt" 2> "$L/s10-loop.err"
+     echo "s10_loop_exit=$?" > "$L/s10-loop.status" ) &
+   sleep 5; echo "s10_loop_lines=$(wc -l < "$L/loop.csv" | tr -d ' ')"
+   ```
+
+   `s10_loop_lines` must be above 0.
+
+3. The plan with `ORIGIN` left out, read against the stop rule:
+
+   ```bash
+   terraform -chdir="$T" plan -input=false -no-color \
+     -out="$L/tfplan" -var 'omit_environment=["ORIGIN"]' \
+     > "$L/s10-plan.log" 2>&1
+   echo "s10_plan_exit=$?"
+   grep -m1 -E '^(Plan:|No changes)' "$L/s10-plan.log" \
+     | sed 's/^/s10_plan_line=/'
+   terraform -chdir="$T" show -json "$L/tfplan" \
+     > "$L/s10-plan.json" 2> "$L/s10-show.err"
+   echo "s10_show_exit=$?"
+   changes s10_change "$L/s10-plan.json"
+   ```
+
+   > **Apply only when `s10_plan_exit=0`, `s10_plan_line` reads
+   > `Plan: 1 to add, 1 to change, 1 to destroy.`, and the `s10_change=` lines are the task
+   > definition's `delete-create` and the service's `update` alone.** Otherwise do not apply: `touch "$L/stop"`, run item 10, paste the
+   > lines and stop.
+
+4. The apply, in the background, and the deployments read every 30 seconds for up to 30 minutes. The
+   apply waits for a steady state, which a failing rollout never reaches, so its status is read later
+   and recorded whatever it is. Each read writes one line of `<time>,<deployments>,<old target>`,
+   each deployment as `<status>:<rollout state>:<revision>:<failed tasks>`, and the old task's target
+   state:
+
+   ```bash
+   ( terraform -chdir="$T" apply -input=false -no-color \
+       "$L/tfplan" > "$L/s10-apply.log" 2>&1
+     echo "s10_fault_apply_exit=$?" > "$L/s10-apply.status" ) &
+   echo "s10_fault_apply_started_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+   : > "$L/s10-poll.csv"; : > "$L/s10-failed.txt"
+   for i in $(seq 1 60); do
+     sleep 30
+     aws ecs describe-services --cluster "$C" --services "$S" \
+       > "$L/s10-poll.json" 2>> "$L/s10-poll.err"
+     aws elbv2 describe-target-health --target-group-arn "$TG" \
+       > "$L/s10-health.json" 2>> "$L/s10-poll.err"
+     jq -r --arg ip "$OLD_IP" --slurpfile h "$L/s10-health.json" '
+       .services[0] | [(now | todate),
+         (.deployments | map("\(.status):\(.rolloutState):"
+           + "\(.taskDefinition | split(":") | last)"
+           + ":\(.failedTasks)") | join(" ")),
+         ([$h[0].TargetHealthDescriptions[]
+           | select(.Target.Id == $ip) | .TargetHealth.State]
+           | join(""))] | join(",")' \
+       "$L/s10-poll.json" >> "$L/s10-poll.csv"
+     jq -r '.services[0].deployments[]
+       | select(.rolloutState == "FAILED")
+       | "\(.taskDefinition)\t\(.rolloutStateReason)"' \
+       "$L/s10-poll.json" >> "$L/s10-failed.txt"
+     jq -e --arg old "$OLD_TD" '.services[0].deployments
+       | length == 1 and .[0].taskDefinition == $old
+         and .[0].rolloutState == "COMPLETED"' \
+       "$L/s10-poll.json" > /dev/null \
+       && test -s "$L/s10-failed.txt" && break
+   done
+   echo "s10_poll_reads=$i"
+   sed 's/^/s10_poll=/' "$L/s10-poll.csv"
+   cut -f2 "$L/s10-failed.txt" | sort -u \
+     | sed 's/^/s10_rollout_state_reason=/'
+   NEW_TD=$(cut -f1 "$L/s10-failed.txt" | sort -u | head -1)
+   echo "s10_failed_revision=${NEW_TD##*:}"
+   jq -r --arg old "$OLD_TD" '.services[0].deployments
+     | "s10_rollback=" + (if length == 1
+       and .[0].taskDefinition == $old
+       and .[0].rolloutState == "COMPLETED" then "yes" else "no" end)' \
+     "$L/s10-poll.json"
+   echo "s10_old_target_not_healthy_reads=$(awk -F, \
+     '$3 != "healthy" { n++ } END { print n + 0 }' "$L/s10-poll.csv")"
+   jq -r '.services[0].events[:20][]
+     | select(.message | test("circuit breaker|roll"; "i"))
+     | "s10_event=\(.createdAt) \(.message)"' "$L/s10-poll.json"
+   ```
+
+   Expected: `s10_rollback=yes`, a `s10_rollout_state_reason=` naming the circuit breaker, a
+   `s10_failed_revision=` one above `s10_old_revision`, and `s10_old_target_not_healthy_reads=0`.
+   **With `s10_rollback=no` after 60 reads, the circuit breaker did not trip within 30 minutes: do not
+   change the fault and do not apply anything. Run items 6, 8 and 10, paste the lines and stop for a
+   decision**, because the stack now runs a failing deployment beside the old task.
+
+5. The failed tasks: their stop reasons, their exit codes, and the start-up line in each one's own
+   stream. A server log record is printed over several lines, and the log driver stores each line as
+   an event of its own, so the search matches the message line alone. The lines printed here are the
+   copy of the log lines: paste them at once, because the log group goes with a destroy:
+
+   ```bash
+   aws ecs list-tasks --cluster "$C" --service-name "$S" \
+     --desired-status STOPPED \
+     > "$L/s10-stopped.json" 2> "$L/s10-stopped.err"
+   echo "s10_list_stopped_exit=$?"
+   jq -r '.taskArns[]' "$L/s10-stopped.json" > "$L/s10-stopped.txt"
+   xargs aws ecs describe-tasks --cluster "$C" --tasks \
+     < "$L/s10-stopped.txt" \
+     > "$L/s10-stopped-tasks.json" 2> "$L/s10-stopped-tasks.err"
+   echo "s10_describe_stopped_exit=$?"
+   jq -r --arg td "$NEW_TD" '[.tasks[]
+     | select(.taskDefinitionArn == $td)]
+     | "s10_failed_tasks=\(length)",
+       (map(.stoppedReason) | unique[]
+         | "s10_failed_task_reason=\(.)"),
+       (map(.containers[0].exitCode | tostring) | unique[]
+         | "s10_failed_task_exit=\(.)")' \
+     "$L/s10-stopped-tasks.json"
+   jq -r --arg td "$NEW_TD" '.tasks[]
+     | select(.taskDefinitionArn == $td)
+     | .taskArn | split("/") | last' "$L/s10-stopped-tasks.json" \
+     | sort -u > "$L/s10-failed-ids.txt"
+   aws logs filter-log-events --log-group-name "$G" \
+     --start-time "$((START * 1000))" \
+     --filter-pattern '"Required environment variables are not set: ORIGIN"' \
+     > "$L/s10-startup.json" 2> "$L/s10-startup.err"
+   echo "s10_startup_read_exit=$?"
+   jq -r '.events[] | "s10_startup_line=\(.logStreamName
+     | split("/") | last) \(.timestamp / 1000 | floor | todate) "
+     + (.message | gsub("^\\s+|\\s+$"; ""))' "$L/s10-startup.json"
+   jq -r '.events[].logStreamName | split("/") | last' \
+     "$L/s10-startup.json" | sort -u > "$L/s10-line-ids.txt"
+   echo "s10_failed_task_streams_with_line=$(comm -12 \
+     "$L/s10-failed-ids.txt" "$L/s10-line-ids.txt" \
+     | wc -l | tr -d ' ')"
+   ```
+
+   Expected: `s10_failed_tasks=` at least 3, a `s10_failed_task_exit=` other than 0, at least one
+   `s10_startup_line=` whose text ends `Required environment variables are not set: ORIGIN`, and
+   `s10_failed_task_streams_with_line=` equal to `s10_failed_tasks`.
+
+6. The apply's status, whatever it is, and the titles of its errors:
+
+   ```bash
+   until test -s "$L/s10-apply.status"; do sleep 30; done
+   cat "$L/s10-apply.status"
+   grep -E '^Error: ' "$L/s10-apply.log" | sed 's/^/s10_apply_error=/'
+   rm -f "$L/tfplan"; echo "s10_plan_file_removed=yes"
+   ```
+
+   A status other than 0 is expected and recorded: the service did not reach a steady state on the
+   new revision.
+
+7. The alert: how often the rule fired and invoked its target, and how many notifications the topic
+   delivered, from the fault's apply until now. The metrics arrive a few minutes late, so read them
+   no earlier than five minutes after the rollback, and a 0 read sooner is read again:
+
+   ```bash
+   FROM=$(jq -nr --argjson t "$START" '$t | todate')
+   TO=$(jq -nr 'now | todate')
+   metric() {
+     aws cloudwatch get-metric-statistics --namespace "$1" \
+       --metric-name "$2" --dimensions "Name=$3,Value=$4" \
+       --start-time "$FROM" --end-time "$TO" --period 300 \
+       --statistics Sum > "$L/s10-$2.json" 2> "$L/s10-$2.err"
+     echo "s10_$2_read_exit=$?"
+     jq -r --arg m "$2" '"s10_\($m)=\([.Datapoints[].Sum]
+       | add // 0 | floor)"' "$L/s10-$2.json"
+   }
+   R=openvaa-staging-frontend-deployment-failed
+   metric AWS/Events TriggeredRules RuleName "$R"
+   metric AWS/Events Invocations RuleName "$R"
+   metric AWS/SNS NumberOfNotificationsDelivered TopicName \
+     openvaa-staging-frontend-deployments
+   ```
+
+   Expected: `s10_TriggeredRules=`, `s10_Invocations=` and `s10_NumberOfNotificationsDelivered=` each
+   at least 1.
+
+8. Stop the loop and read its count:
+
+   ```bash
+   touch "$L/stop"
+   until test -s "$L/s10-loop.status"; do sleep 5; done
+   cat "$L/s10-loop.status"
+   sed 's/^/s10_loop_/' "$L/s10-loop.txt"
+   ```
+
+   Expected: `s10_loop_exit=0` and `s10_loop_requests=<n> non_2xx=0`.
+
+9. **The operator's:** the alert mail. In the alert mailbox, find the mail from AWS Notifications sent
+   after `s10_fault_apply_started_utc`, and check that its body names `SERVICE_DEPLOYMENT_FAILED` and
+   the service `openvaa-staging-frontend`. Answer `answer_alert_mail=arrived` and
+   `answer_alert_mail_utc=<the time it was sent, UTC>`, or `answer_alert_mail=absent` if none has come
+   within half an hour of the rollback. Never paste the mail or its address.
+
+10. Last item, also when you stop early or a command failed. It stops the loop if it still runs:
+
+    ```bash
+    touch "$L/stop" 2> /dev/null; sleep 2
+    rm -f "$L/tfplan"
+    test -n "$L" && rm -rf "$L" && echo "s10_logs_removed=yes"
+    ```
+
+Return: every `s10_` line, in order, and the two `answer_alert_mail` lines. The service now runs the
+old revision while the state names the failed one; Step 11 is the next step and puts them together.
+
+### Step 11: The restore and the stop signal
+
+A plain apply puts `ORIGIN` back. Its rollout starts a new task, waits for it to serve, then
+deregisters the old task, waits out the deregistration delay and signals it with `SIGTERM`. The server
+drains what it holds and writes one record, `The server is exiting after its stop.`, with the signal's
+name, before it exits. The task stays listed with its stop reason and exit code for about an hour.
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+export LC_ALL=C AWS_PAGER="" AWS_PROFILE=openvaa-admin \
+  AWS_REGION=eu-north-1 \
+  TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-aws.XXXXXX")
+ACCOUNT=$(aws sts get-caller-identity --query Account \
+  --output text 2> "$L/account.err")
+echo "s11_account_read_exit=$?"
+test "$ACCOUNT" = 471112560111; echo "s11_account_match_exit=$?"
+T=infra/envs/staging/aws
+```
+
+1. The outputs and the task that is serving now, which the restore will stop:
+
+   ```bash
+   terraform -chdir="$T" init -input=false -no-color \
+     -lockfile=readonly > "$L/s11-init.log" 2>&1
+   echo "s11_init_exit=$?"
+   out() { terraform -chdir="$T" output -raw "$1" 2>> "$L/out.err"; }
+   C=$(out cluster_name)
+   S=$(out service_name)
+   G=$(out log_group_name)
+   test -n "$G"; echo "s11_outputs_read_exit=$?"
+   changes() {
+     jq -r --arg p "$1" '.resource_changes[]
+       | select(.change.actions != ["no-op"])
+       | select(.change.actions != ["read"])
+       | "\($p)=\(.change.actions | join("-")) \(.address)"' "$2"
+   }
+   aws ecs list-tasks --cluster "$C" --service-name "$S" \
+     --desired-status RUNNING \
+     > "$L/s11-tasks.json" 2> "$L/s11-tasks.err"
+   echo "s11_list_tasks_exit=$?"
+   jq -r '"s11_running_before=\(.taskArns | length)"' \
+     "$L/s11-tasks.json"
+   OLD=$(jq -r '.taskArns[0]' "$L/s11-tasks.json")
+   ```
+
+   Expected: `s11_running_before=1`.
+
+2. Start the request loop in the background:
+
+   ```bash
+   ( infra/scripts/request-loop.sh \
+       --url https://staging.openvaa.org/api/health \
+       --until "$L/stop" --out "$L/loop.csv" \
+       > "$L/s11-loop.txt" 2> "$L/s11-loop.err"
+     echo "s11_loop_exit=$?" > "$L/s11-loop.status" ) &
+   sleep 5; echo "s11_loop_lines=$(wc -l < "$L/loop.csv" | tr -d ' ')"
+   ```
+
+3. The plain plan, read against the stop rule:
+
+   ```bash
+   terraform -chdir="$T" plan -input=false -no-color \
+     -out="$L/tfplan" > "$L/s11-plan.log" 2>&1
+   echo "s11_plan_exit=$?"
+   grep -m1 -E '^(Plan:|No changes)' "$L/s11-plan.log" \
+     | sed 's/^/s11_plan_line=/'
+   terraform -chdir="$T" show -json "$L/tfplan" \
+     > "$L/s11-plan.json" 2> "$L/s11-show.err"
+   echo "s11_show_exit=$?"
+   changes s11_change "$L/s11-plan.json"
+   ```
+
+   > **Apply only when `s11_plan_exit=0`, `s11_plan_line` reads
+   > `Plan: 1 to add, 1 to change, 1 to destroy.`, and the `s11_change=` lines are the task
+   > definition's `delete-create` and the service's `update` alone.** Otherwise do not apply: run item 8, paste the lines and stop.
+
+4. The apply, which must exit 0:
+
+   ```bash
+   ( terraform -chdir="$T" apply -input=false -no-color \
+       "$L/tfplan" > "$L/s11-apply.log" 2>&1
+     echo "s11_restore_apply_exit=$?" > "$L/s11-apply.status" ) &
+   until test -s "$L/s11-apply.status"; do sleep 30; done
+   cat "$L/s11-apply.status"
+   grep -E '^Error: ' "$L/s11-apply.log" | sed 's/^/s11_apply_error=/'
+   rm -f "$L/tfplan"; echo "s11_plan_file_removed=yes"
+   ```
+
+5. The task the restore stopped: its status, its stop reason and its container's exit code, and the
+   stop record in its own stream. The record is stored as one event per line, so the message line and
+   the signal line are searched for separately, each in that stream alone. The lines printed here are
+   the copy of the log lines: paste them at once:
+
+   ```bash
+   aws ecs describe-tasks --cluster "$C" --tasks "$OLD" \
+     > "$L/s11-old.json" 2> "$L/s11-old.err"
+   echo "s11_old_task_read_exit=$?"
+   jq -r '.tasks[0] | "s11_stopped_task_status=\(.lastStatus)",
+     "s11_stopped_task_reason=\(.stoppedReason)",
+     "s11_stopped_task_exit=\(.containers[0].exitCode)"' \
+     "$L/s11-old.json"
+   OS="frontend/frontend/${OLD##*/}"
+   aws logs filter-log-events --log-group-name "$G" \
+     --log-stream-names "$OS" \
+     --filter-pattern '"The server is exiting after its stop."' \
+     > "$L/s11-stop-message.json" 2> "$L/s11-stop-message.err"
+   echo "s11_stop_message_read_exit=$?"
+   aws logs filter-log-events --log-group-name "$G" \
+     --log-stream-names "$OS" \
+     --filter-pattern "\"signal: 'SIGTERM'\"" \
+     > "$L/s11-stop-signal.json" 2> "$L/s11-stop-signal.err"
+   echo "s11_stop_signal_read_exit=$?"
+   for f in message signal; do
+     jq -r --arg f "$f" '"s11_stop_\($f)_events=\(.events | length)",
+       (.events[] | "s11_stop_\($f)_line=\(.logStreamName
+         | split("/") | last) \(.timestamp / 1000 | floor | todate) "
+         + (.message | gsub("^\\s+|\\s+$"; "")))' \
+       "$L/s11-stop-$f.json"
+   done
+   ```
+
+   Expected: `s11_stopped_task_status=STOPPED`, `s11_stopped_task_exit=0`,
+   `s11_stop_message_events=1` with a line ending `msg: 'The server is exiting after its stop.',`, and
+   `s11_stop_signal_events=1` with a line ending `signal: 'SIGTERM',`, both in the stream of the
+   stopped task and in the same second.
+
+6. Stop the loop and read its count:
+
+   ```bash
+   touch "$L/stop"
+   until test -s "$L/s11-loop.status"; do sleep 5; done
+   cat "$L/s11-loop.status"
+   sed 's/^/s11_loop_/' "$L/s11-loop.txt"
+   ```
+
+   Expected: `s11_loop_exit=0` and `s11_loop_requests=<n> non_2xx=0`.
+
+7. Plan again. It must exit 0, which means no change:
+
+   ```bash
+   terraform -chdir="$T" plan -input=false -no-color \
+     -detailed-exitcode > "$L/s11-second.log" 2>&1
+   echo "s11_plan_after_exit=$?"
+   grep -E '^  # ' "$L/s11-second.log" | sed 's/^/s11_second_change=/'
+   ```
+
+8. Last item, also when you stop early or a command failed:
+
+   ```bash
+   touch "$L/stop" 2> /dev/null; sleep 2
+   rm -f "$L/tfplan"
+   test -n "$L" && rm -rf "$L" && echo "s11_logs_removed=yes"
+   ```
+
+Return: every `s11_` line, in order.
+
+### Step 12: The floor raised ahead of time and lowered again
+
+Two scheduled actions, given on the command line for one apply: the first raises the scalable
+target's floor to 2 six minutes ahead, the second lowers it to 1 ten minutes later, both with the
+ceiling 2. The raise makes the service start a second task. The lowering only lowers the floor; the
+count comes down when target tracking scales in, which it does slowly, so the step waits up to 30
+minutes after the lowering. The scale-in stops a task, which writes the stop record a second time.
+The root gives the actions no time zone, so their times are read in UTC.
+
+No apply is made between the two actions: inside that window the scalable target's floor is the
+raised one, a plan shows it as a change, and an apply would put it back. This step is the rehearsal of
+"Election day".
+
+Run the step in one sitting: it takes up to 50 minutes.
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+export LC_ALL=C AWS_PAGER="" AWS_PROFILE=openvaa-admin \
+  AWS_REGION=eu-north-1 \
+  TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-aws.XXXXXX")
+ACCOUNT=$(aws sts get-caller-identity --query Account \
+  --output text 2> "$L/account.err")
+echo "s12_account_read_exit=$?"
+test "$ACCOUNT" = 471112560111; echo "s12_account_match_exit=$?"
+T=infra/envs/staging/aws
+```
+
+1. The outputs, and the tasks that run now:
+
+   ```bash
+   terraform -chdir="$T" init -input=false -no-color \
+     -lockfile=readonly > "$L/s12-init.log" 2>&1
+   echo "s12_init_exit=$?"
+   out() { terraform -chdir="$T" output -raw "$1" 2>> "$L/out.err"; }
+   C=$(out cluster_name)
+   S=$(out service_name)
+   G=$(out log_group_name)
+   test -n "$G"; echo "s12_outputs_read_exit=$?"
+   RID="service/$C/$S"
+   changes() {
+     jq -r --arg p "$1" '.resource_changes[]
+       | select(.change.actions != ["no-op"])
+       | select(.change.actions != ["read"])
+       | "\($p)=\(.change.actions | join("-")) \(.address)"' "$2"
+   }
+   running() {
+     aws ecs list-tasks --cluster "$C" --service-name "$S" \
+       --desired-status RUNNING --query 'taskArns[]' \
+       --output text 2>> "$L/s12-running.err" | tr '\t' '\n'
+   }
+   running > "$L/s12-seen.txt"
+   echo "s12_running_before=$(grep -c . "$L/s12-seen.txt")"
+   ```
+
+   Expected: `s12_running_before=1`.
+
+2. The two times, six and sixteen minutes ahead on the minute, and the plan with the pair:
+
+   ```bash
+   NOW=$(jq -n 'now | floor')
+   E1=$((NOW - NOW % 60 + 360)); E2=$((E1 + 600))
+   T1=$(jq -nr --argjson t "$E1" '$t | strftime("%Y-%m-%dT%H:%M:%S")')
+   T2=$(jq -nr --argjson t "$E2" '$t | strftime("%Y-%m-%dT%H:%M:%S")')
+   echo "s12_raise_utc=${T1}Z"; echo "s12_lower_utc=${T2}Z"
+   R1="{name=\"raise\",schedule=\"at($T1)\",min_capacity=2,max_capacity=2}"
+   R2="{name=\"lower\",schedule=\"at($T2)\",min_capacity=1,max_capacity=2}"
+   terraform -chdir="$T" plan -input=false -no-color \
+     -out="$L/tfplan" -var "scheduled_floor_changes=[$R1,$R2]" \
+     > "$L/s12-plan.log" 2>&1
+   echo "s12_plan_exit=$?"
+   grep -m1 -E '^(Plan:|No changes)' "$L/s12-plan.log" \
+     | sed 's/^/s12_plan_line=/'
+   terraform -chdir="$T" show -json "$L/tfplan" \
+     > "$L/s12-plan.json" 2> "$L/s12-show.err"
+   echo "s12_show_exit=$?"
+   changes s12_change "$L/s12-plan.json"
+   ```
+
+3. Read the plan against the stop rule, and check that the raise is still at least two minutes ahead:
+
+   > **Apply only when `s12_plan_exit=0`, `s12_plan_line` reads
+   > `Plan: 2 to add, 0 to change, 0 to destroy.`, the `s12_change=` lines are `create` of
+   > `module.frontend.aws_appautoscaling_scheduled_action.floor["raise"]` and of `…floor["lower"]`
+   > alone, and `s12_margin_exit=0`.** With any other plan, do not apply: run item 8, paste the lines
+   > and stop. With only the margin short, run item 8 and start the step again, for new times.
+
+   ```bash
+   test $((E1 - $(jq -n 'now | floor'))) -ge 120
+   echo "s12_margin_exit=$?"
+   terraform -chdir="$T" apply -input=false -no-color \
+     "$L/tfplan" > "$L/s12-apply.log" 2>&1
+   echo "s12_pair_apply_exit=$?"
+   rm -f "$L/tfplan"; echo "s12_plan_file_removed=yes"
+   aws application-autoscaling describe-scheduled-actions \
+     --service-namespace ecs --resource-id "$RID" \
+     > "$L/s12-actions.json" 2> "$L/s12-actions.err"
+   echo "s12_actions_read_exit=$?"
+   jq -r '"s12_scheduled_actions=\(.ScheduledActions | length)"' \
+     "$L/s12-actions.json"
+   ```
+
+   Expected: `s12_pair_apply_exit=0` and `s12_scheduled_actions=2`.
+
+4. The count, read every minute until it has reached 2 and, after the lowering, come back to 1, or
+   until 30 minutes after the lowering. Each read writes a line of
+   `<time>,<running>,<desired>,<floor>,<ceiling>`, and every task seen running is kept:
+
+   ```bash
+   : > "$L/s12-counts.csv"
+   while [ "$(jq -n 'now | floor')" -le $((E2 + 1800)) ]; do
+     aws ecs describe-services --cluster "$C" --services "$S" \
+       > "$L/s12-service.json" 2>> "$L/s12-poll.err"
+     aws application-autoscaling describe-scalable-targets \
+       --service-namespace ecs --resource-ids "$RID" \
+       > "$L/s12-target.json" 2>> "$L/s12-poll.err"
+     jq -rn --slurpfile s "$L/s12-service.json" \
+       --slurpfile t "$L/s12-target.json" '
+       [(now | todate), ($s[0].services[0].runningCount // -1),
+         ($s[0].services[0].desiredCount // -1),
+         ($t[0].ScalableTargets[0].MinCapacity // -1),
+         ($t[0].ScalableTargets[0].MaxCapacity // -1)]
+       | map(tostring) | join(",")' >> "$L/s12-counts.csv"
+     running >> "$L/s12-seen.txt"
+     if [ "$(jq -n 'now | floor')" -gt "$E2" ] \
+       && grep -q '^[^,]*,2,' "$L/s12-counts.csv" \
+       && tail -1 "$L/s12-counts.csv" | grep -q ',1,1,1,2$'; then
+       break
+     fi
+     sleep 60
+   done
+   sed 's/^/s12_count=/' "$L/s12-counts.csv"
+   jq -rRs --arg t "${T2}Z" '
+     [split("\n")[] | select(length > 0) | split(",")
+       | map(tonumber? // .)
+       | {u: .[0], r: .[1], d: .[2], min: .[3], max: .[4]}] as $c
+     | ($c | map(select(.r == 2)) | .[0].u) as $two
+     | ($c | map(select(.u >= $t and .r == 1 and .d == 1))
+       | .[0].u) as $one
+     | "s12_max_running=\($c | map(.r) | max)",
+       "s12_desired_below_floor_reads=\($c
+         | map(select(.d < .min)) | length)",
+       "s12_count_two_utc=\($two // "none")",
+       "s12_count_one_utc=\($one // "none")",
+       "s12_scale_in_minutes=" + (if $one then ((($one | fromdate)
+         - ($t | fromdate)) / 60 | floor | tostring) else "none" end)' \
+     "$L/s12-counts.csv"
+   ```
+
+   Expected: `s12_max_running=2`, `s12_desired_below_floor_reads=0`, a `s12_count_two_utc=` after
+   `s12_raise_utc`, and a `s12_count_one_utc=` after `s12_lower_utc`. `s12_scale_in_minutes` is a
+   measurement, recorded as it reads. The running count lags the desired one for the minute or two a
+   task takes to start, so the floor is judged on the desired count.
+
+5. The scaling activities, as Application Auto Scaling describes them:
+
+   ```bash
+   aws application-autoscaling describe-scaling-activities \
+     --service-namespace ecs --resource-id "$RID" --max-items 10 \
+     > "$L/s12-activities.json" 2> "$L/s12-activities.err"
+   echo "s12_activities_read_exit=$?"
+   jq -r '.ScalingActivities[]
+     | "s12_activity=\(.StartTime) \(.StatusCode) \(.Description)"' \
+     "$L/s12-activities.json"
+   ```
+
+6. The task the scale-in stopped, and the stop record in its own stream, searched for as in Step 11.
+   The lines printed here are the copy of the log lines: paste them at once:
+
+   ```bash
+   running | sort -u > "$L/s12-now.txt"
+   sort -u "$L/s12-seen.txt" | sed '/^$/d' \
+     | comm -23 - "$L/s12-now.txt" > "$L/s12-gone.txt"
+   echo "s12_tasks_stopped=$(grep -c . "$L/s12-gone.txt")"
+   GONE=$(head -1 "$L/s12-gone.txt")
+   aws ecs describe-tasks --cluster "$C" --tasks "$GONE" \
+     > "$L/s12-gone.json" 2> "$L/s12-gone.err"
+   echo "s12_gone_task_read_exit=$?"
+   jq -r '.tasks[0] | "s12_stopped_task_reason=\(.stoppedReason)",
+     "s12_stopped_task_exit=\(.containers[0].exitCode)"' \
+     "$L/s12-gone.json"
+   GS="frontend/frontend/${GONE##*/}"
+   aws logs filter-log-events --log-group-name "$G" \
+     --log-stream-names "$GS" \
+     --filter-pattern '"The server is exiting after its stop."' \
+     > "$L/s12-stop-message.json" 2> "$L/s12-stop-message.err"
+   echo "s12_stop_message_read_exit=$?"
+   aws logs filter-log-events --log-group-name "$G" \
+     --log-stream-names "$GS" \
+     --filter-pattern "\"signal: 'SIGTERM'\"" \
+     > "$L/s12-stop-signal.json" 2> "$L/s12-stop-signal.err"
+   echo "s12_stop_signal_read_exit=$?"
+   for f in message signal; do
+     jq -r --arg f "$f" '"s12_stop_\($f)_events=\(.events | length)",
+       (.events[] | "s12_stop_\($f)_line=\(.logStreamName
+         | split("/") | last) \(.timestamp / 1000 | floor | todate) "
+         + (.message | gsub("^\\s+|\\s+$"; "")))' \
+       "$L/s12-stop-$f.json"
+   done
+   ```
+
+   Expected: `s12_tasks_stopped=1`, a `s12_stopped_task_reason=` naming a scaling activity,
+   `s12_stopped_task_exit=0`, and one event of each kind, the signal line ending `signal: 'SIGTERM',`.
+
+7. The pair removed: the plan without the variable, read against the stop rule, applied, and the
+   stack read back:
+
+   ```bash
+   terraform -chdir="$T" plan -input=false -no-color \
+     -out="$L/tfplan" > "$L/s12-off-plan.log" 2>&1
+   echo "s12_off_plan_exit=$?"
+   grep -m1 -E '^(Plan:|No changes)' "$L/s12-off-plan.log" \
+     | sed 's/^/s12_off_plan_line=/'
+   terraform -chdir="$T" show -json "$L/tfplan" \
+     > "$L/s12-off-plan.json" 2> "$L/s12-off-show.err"
+   echo "s12_off_show_exit=$?"
+   changes s12_off_change "$L/s12-off-plan.json"
+   ```
+
+   > **Apply only when `s12_off_plan_exit=0`, `s12_off_plan_line` reads
+   > `Plan: 0 to add, 0 to change, 2 to destroy.`, and the `s12_off_change=` lines are `delete` of
+   > the two scheduled actions alone.** A change of the scalable target means the lowering has not run yet: wait for it and plan
+   > again. Otherwise do not apply: run item 8, paste the lines and stop.
+
+   ```bash
+   terraform -chdir="$T" apply -input=false -no-color \
+     "$L/tfplan" > "$L/s12-off-apply.log" 2>&1
+   echo "s12_pair_remove_apply_exit=$?"
+   rm -f "$L/tfplan"; echo "s12_plan_file_removed=yes"
+   aws application-autoscaling describe-scheduled-actions \
+     --service-namespace ecs --resource-id "$RID" \
+     > "$L/s12-actions-after.json" 2> "$L/s12-actions-after.err"
+   echo "s12_actions_after_read_exit=$?"
+   jq -r '"s12_scheduled_actions_after=\(.ScheduledActions
+     | length)"' "$L/s12-actions-after.json"
+   aws application-autoscaling describe-scalable-targets \
+     --service-namespace ecs --resource-ids "$RID" \
+     > "$L/s12-target-after.json" 2> "$L/s12-target-after.err"
+   echo "s12_target_after_read_exit=$?"
+   jq -r '.ScalableTargets[0]
+     | "s12_target_bounds_after=\(.MinCapacity),\(.MaxCapacity)"' \
+     "$L/s12-target-after.json"
+   terraform -chdir="$T" plan -input=false -no-color \
+     -detailed-exitcode > "$L/s12-plan-after.log" 2>&1
+   echo "s12_plan_after_exit=$?"
+   ```
+
+   Expected: `s12_pair_remove_apply_exit=0`, `s12_scheduled_actions_after=0`,
+   `s12_target_bounds_after=1,2` and `s12_plan_after_exit=0`.
+
+8. Last item, also when you stop early or a command failed:
+
+   ```bash
+   rm -f "$L/tfplan"
+   test -n "$L" && rm -rf "$L" && echo "s12_logs_removed=yes"
+   ```
+
+Return: every `s12_` line, in order.
+
+## Election day
+
+On a day whose peak is known in advance, such as an election day, the floor is raised before the
+peak by a scheduled action, so that the tasks are running when the voters arrive rather than when the
+target tracking notices them. Step 12 is the rehearsal of this section.
+
+Unlike the observations, the two entries are written in `terraform.tfvars`, because that file is the
+record of how the stack runs, and on that day it runs with a raised floor. The root gives the actions
+no time zone, so the module reads every schedule in UTC: convert the peak's local times, in the
+election's time zone, to UTC before writing them.
+
+1. Write the two entries in `terraform.tfvars`, with the times of the peak. The raising entry sets the
+   floor for the peak and a ceiling no lower than it; the lowering entry returns to `task_floor` and
+   `task_ceiling`. The numbers below are an example:
+
+   ```hcl
+   scheduled_floor_changes = [
+     {
+       name         = "election-day-raise"
+       schedule     = "at(2027-04-11T05:00:00)"
+       min_capacity = 4
+       max_capacity = 6
+     },
+     {
+       name         = "election-day-lower"
+       schedule     = "at(2027-04-11T20:00:00)"
+       min_capacity = 1
+       max_capacity = 2
+     },
+   ]
+   ```
+
+2. Plan and apply once, well before the raise, with the protocol of Step 12, items 2 and 3: the plan
+   must read `Plan: 2 to add, 0 to change, 0 to destroy.` and create the two scheduled actions alone.
+   Commit the change of `terraform.tfvars`.
+3. **No apply is made between the two actions.** Inside that window the scalable target's bounds are
+   the raising entry's, a plan shows them as a change, and an apply would put back `task_floor` and
+   `task_ceiling` in the middle of the peak.
+4. After the lowering has run and the count is back at the floor, remove both entries from
+   `terraform.tfvars`, plan, which must read `Plan: 0 to add, 0 to change, 2 to destroy.` and delete
+   the two scheduled actions alone, apply once, and commit the change.
 
 ## Not yet observed
 
