@@ -1,0 +1,574 @@
+# Offline tests of the module's logic. Both AWS providers are mocks, so no run reads or changes an
+# account; the random provider is the real one, which needs no credential.
+
+# The mocks' generated values are random strings. The provider checks some of the arguments that
+# receive them, so the resources whose ARNs feed such an argument get ARNs of the right form.
+mock_provider "aws" {
+  mock_resource "aws_lb" {
+    defaults = {
+      arn     = "arn:aws:elasticloadbalancing:eu-north-1:000000000000:loadbalancer/app/openvaa-test/0000000000000000"
+      zone_id = "Z00000000000000000000"
+    }
+  }
+
+  mock_resource "aws_lb_target_group" {
+    defaults = {
+      arn = "arn:aws:elasticloadbalancing:eu-north-1:000000000000:targetgroup/openvaa-test-frontend/0000000000000000"
+    }
+  }
+
+  mock_resource "aws_lb_listener" {
+    defaults = {
+      arn = "arn:aws:elasticloadbalancing:eu-north-1:000000000000:listener/app/openvaa-test/0000000000000000/0000000000000000"
+    }
+  }
+
+  mock_resource "aws_ecs_cluster" {
+    defaults = {
+      arn = "arn:aws:ecs:eu-north-1:000000000000:cluster/openvaa-test"
+      id  = "arn:aws:ecs:eu-north-1:000000000000:cluster/openvaa-test"
+    }
+  }
+
+  mock_resource "aws_ecs_task_definition" {
+    defaults = {
+      arn = "arn:aws:ecs:eu-north-1:000000000000:task-definition/openvaa-test-frontend:1"
+    }
+  }
+
+  # A mock certificate has no validation options, so it gets the one its domain would have.
+  mock_resource "aws_acm_certificate" {
+    defaults = {
+      arn = "arn:aws:acm:eu-north-1:000000000000:certificate/00000000-0000-0000-0000-000000000000"
+      domain_validation_options = [
+        {
+          domain_name           = "origin.test.example.org"
+          resource_record_name  = "_0000.origin.test.example.org."
+          resource_record_type  = "CNAME"
+          resource_record_value = "_0000.acm-validations.aws."
+        },
+      ]
+    }
+  }
+
+  mock_resource "aws_acm_certificate_validation" {
+    defaults = {
+      certificate_arn = "arn:aws:acm:eu-north-1:000000000000:certificate/00000000-0000-0000-0000-000000000000"
+    }
+  }
+
+  mock_data "aws_route53_zone" {
+    defaults = {
+      zone_id = "Z00000000000000000001"
+    }
+  }
+}
+
+mock_provider "aws" {
+  alias = "us_east_1"
+}
+
+override_data {
+  target = data.aws_availability_zones.available
+  values = {
+    names = ["eu-north-1a", "eu-north-1b"]
+  }
+}
+
+variables {
+  name_prefix        = "openvaa"
+  environment        = "test"
+  domain             = "test.example.org"
+  aws_account_id     = "000000000000"
+  aws_region         = "eu-north-1"
+  registry_url       = "000000000000.dkr.ecr.eu-north-1.amazonaws.com/openvaa-frontend"
+  image_tag          = "0000000000000000000000000000000000000000"
+  execution_role_arn = "arn:aws:iam::000000000000:role/openvaa/openvaa-test-frontend-execution"
+  parameter_path     = "/openvaa/test/frontend"
+  environment_values = {
+    PUBLIC_SUPABASE_URL     = "https://example.supabase.co"
+    PUBLIC_PROJECT_ID       = "00000000-0000-0000-0000-000000000001"
+    ORIGIN                  = "https://test.example.org"
+    ADDRESS_HEADER          = "x-forwarded-for"
+    XFF_DEPTH               = "2"
+    KEEP_ALIVE_TIMEOUT      = "65"
+    HEADERS_TIMEOUT         = "66"
+    SHUTDOWN_TIMEOUT        = "25"
+    PUBLIC_LOG_LEVEL        = "warn"
+    ANALYTICS_PROVIDER      = "none"
+    ANALYTICS_CONSENT_MODE  = "gated"
+    ANALYTICS_VISIT_ID_MODE = "memory"
+    ANALYTICS_POSTHOG_HOST  = "https://eu.i.posthog.com"
+    DEPLOYMENT_DIAGNOSTICS  = "false"
+  }
+}
+
+run "environment_split" {
+  command = apply
+
+  assert {
+    condition = (
+      sort([for e in jsondecode(aws_ecs_task_definition.app.container_definitions)[0].environment : e.name])
+      == sort([for v in jsondecode(file("${path.module}/task-environment.json")).variables : v.name if v.source == "value"])
+    )
+    error_message = "The container's environment must hold exactly the list's value entries."
+  }
+
+  assert {
+    condition = (
+      sort([for s in jsondecode(aws_ecs_task_definition.app.container_definitions)[0].secrets : s.name])
+      == tolist(["ANALYTICS_POSTHOG_KEY", "PUBLIC_SUPABASE_ANON_KEY"])
+    )
+    error_message = "The container's secrets must be exactly the anon key and the PostHog key."
+  }
+
+  assert {
+    condition = one([
+      for s in jsondecode(aws_ecs_task_definition.app.container_definitions)[0].secrets : s.valueFrom
+      if s.name == "ANALYTICS_POSTHOG_KEY"
+    ]) == "arn:aws:ssm:eu-north-1:000000000000:parameter/openvaa/test/frontend/ANALYTICS_POSTHOG_KEY"
+    error_message = "A parameter's ARN must be built from the region, the account and the parameter path."
+  }
+
+  assert {
+    condition = one([
+      for e in jsondecode(aws_ecs_task_definition.app.container_definitions)[0].environment : e.value
+      if e.name == "XFF_DEPTH"
+    ]) == "2"
+    error_message = "A value entry must carry the value the root gives it."
+  }
+
+  assert {
+    condition     = jsondecode(aws_ecs_task_definition.app.container_definitions)[0].image == "000000000000.dkr.ecr.eu-north-1.amazonaws.com/openvaa-frontend:0000000000000000000000000000000000000000"
+    error_message = "The image must be the repository URL and the commit tag."
+  }
+
+  assert {
+    condition     = length(output.task_environment_names) == 16
+    error_message = "With nothing omitted, the task must receive every entry of the list."
+  }
+}
+
+run "omit_removes_an_entry" {
+  command = apply
+
+  variables {
+    omit_environment = ["ORIGIN"]
+  }
+
+  assert {
+    condition     = !contains([for e in jsondecode(aws_ecs_task_definition.app.container_definitions)[0].environment : e.name], "ORIGIN")
+    error_message = "An omitted name must not reach the container's environment."
+  }
+
+  assert {
+    condition     = !contains(output.task_environment_names, "ORIGIN") && length(output.task_environment_names) == 15
+    error_message = "An omitted name must be the only one missing from the task's names."
+  }
+}
+
+run "omit_removes_a_parameter" {
+  command = apply
+
+  variables {
+    omit_environment = ["ANALYTICS_POSTHOG_KEY"]
+  }
+
+  assert {
+    condition     = [for s in jsondecode(aws_ecs_task_definition.app.container_definitions)[0].secrets : s.name] == ["PUBLIC_SUPABASE_ANON_KEY"]
+    error_message = "An omitted parameter must not reach the container's secrets."
+  }
+}
+
+run "override_wins" {
+  command = apply
+
+  variables {
+    environment_overrides = {
+      DEPLOYMENT_DIAGNOSTICS = "true"
+    }
+  }
+
+  assert {
+    condition = one([
+      for e in jsondecode(aws_ecs_task_definition.app.container_definitions)[0].environment : e.value
+      if e.name == "DEPLOYMENT_DIAGNOSTICS"
+    ]) == "true"
+    error_message = "An override must replace the value of the same name."
+  }
+}
+
+run "missing_value_fails" {
+  command = plan
+
+  variables {
+    environment_values = {
+      PUBLIC_SUPABASE_URL = "https://example.supabase.co"
+    }
+  }
+
+  expect_failures = [aws_ecs_task_definition.app]
+}
+
+run "unknown_key_fails" {
+  command = plan
+
+  variables {
+    environment_overrides = {
+      PUBLIC_SUPABASE_ANON_KEY = "not-a-value-entry"
+    }
+  }
+
+  expect_failures = [aws_ecs_task_definition.app]
+}
+
+run "unknown_omitted_name_fails" {
+  command = plan
+
+  variables {
+    omit_environment = ["NOT_IN_THE_LIST"]
+  }
+
+  expect_failures = [aws_ecs_task_definition.app]
+}
+
+run "omitted_value_needs_no_value" {
+  command = plan
+
+  variables {
+    omit_environment = ["ORIGIN"]
+    environment_values = {
+      PUBLIC_SUPABASE_URL     = "https://example.supabase.co"
+      PUBLIC_PROJECT_ID       = "00000000-0000-0000-0000-000000000001"
+      ADDRESS_HEADER          = "x-forwarded-for"
+      XFF_DEPTH               = "2"
+      KEEP_ALIVE_TIMEOUT      = "65"
+      HEADERS_TIMEOUT         = "66"
+      SHUTDOWN_TIMEOUT        = "25"
+      PUBLIC_LOG_LEVEL        = "warn"
+      ANALYTICS_PROVIDER      = "none"
+      ANALYTICS_CONSENT_MODE  = "gated"
+      ANALYTICS_VISIT_ID_MODE = "memory"
+      ANALYTICS_POSTHOG_HOST  = "https://eu.i.posthog.com"
+      DEPLOYMENT_DIAGNOSTICS  = "false"
+    }
+  }
+
+  assert {
+    condition     = !contains([for e in jsondecode(aws_ecs_task_definition.app.container_definitions)[0].environment : e.name], "ORIGIN")
+    error_message = "An omitted value entry needs no value and must not reach the container."
+  }
+}
+
+run "image_tag_refuses_a_name" {
+  command = plan
+
+  variables {
+    image_tag = "latest"
+  }
+
+  expect_failures = [var.image_tag]
+}
+
+run "image_tag_refuses_empty" {
+  command = plan
+
+  variables {
+    image_tag = ""
+  }
+
+  expect_failures = [var.image_tag]
+}
+
+run "image_tag_refuses_upper_case" {
+  command = plan
+
+  variables {
+    image_tag = "ABCDEF0000000000000000000000000000000000"
+  }
+
+  expect_failures = [var.image_tag]
+}
+
+run "debug_ingress_refuses_a_range" {
+  command = plan
+
+  variables {
+    debug_ingress_cidrs = ["10.0.0.0/8"]
+  }
+
+  expect_failures = [var.debug_ingress_cidrs]
+}
+
+run "debug_ingress_refuses_ipv6" {
+  command = plan
+
+  variables {
+    debug_ingress_cidrs = ["2001:db8::1/128"]
+  }
+
+  expect_failures = [var.debug_ingress_cidrs]
+}
+
+run "execution_role_arn_refuses_another_arn" {
+  command = plan
+
+  variables {
+    execution_role_arn = "arn:aws:s3:::bucket"
+  }
+
+  expect_failures = [var.execution_role_arn]
+}
+
+run "parameter_path_refuses_a_trailing_slash" {
+  command = plan
+
+  variables {
+    parameter_path = "/openvaa/test/frontend/"
+  }
+
+  expect_failures = [var.parameter_path]
+}
+
+run "log_retention_refuses_an_unoffered_value" {
+  command = plan
+
+  variables {
+    log_retention_days = 100
+  }
+
+  expect_failures = [var.log_retention_days]
+}
+
+run "stop_timeout_refuses_above_fargate" {
+  command = plan
+
+  variables {
+    stop_timeout_seconds = 121
+  }
+
+  expect_failures = [var.stop_timeout_seconds]
+}
+
+run "task_floor_refuses_zero" {
+  command = plan
+
+  variables {
+    task_floor = 0
+  }
+
+  expect_failures = [var.task_floor]
+}
+
+run "one_debug_address_opens_two_rules" {
+  command = apply
+
+  variables {
+    debug_ingress_cidrs = ["203.0.113.7/32"]
+  }
+
+  assert {
+    condition     = length(aws_vpc_security_group_ingress_rule.load_balancer_debug) == 2
+    error_message = "One debug address must give one rule on 443 and one on 80."
+  }
+
+  assert {
+    condition = sort([for r in aws_vpc_security_group_ingress_rule.load_balancer_debug : tostring(r.from_port)]) == tolist(["443", "80"]) && alltrue([
+      for r in aws_vpc_security_group_ingress_rule.load_balancer_debug :
+      r.cidr_ipv4 == "203.0.113.7/32" && r.to_port == r.from_port && r.security_group_id == aws_security_group.load_balancer.id
+    ])
+    error_message = "The debug rules must admit that one address, on 443 and 80, to the load balancer's group only."
+  }
+}
+
+run "security_groups" {
+  command = apply
+
+  assert {
+    condition     = length(aws_vpc_security_group_ingress_rule.load_balancer_debug) == 0
+    error_message = "With no debug address there must be no debug rule."
+  }
+
+  assert {
+    condition = (
+      aws_vpc_security_group_ingress_rule.load_balancer_from_cloudfront.prefix_list_id == data.aws_ec2_managed_prefix_list.cloudfront.id
+      && aws_vpc_security_group_ingress_rule.load_balancer_from_cloudfront.from_port == 443
+      && aws_vpc_security_group_ingress_rule.load_balancer_from_cloudfront.to_port == 443
+      && aws_vpc_security_group_ingress_rule.load_balancer_from_cloudfront.security_group_id == aws_security_group.load_balancer.id
+    )
+    error_message = "The load balancer must admit 443 from the CloudFront prefix list."
+  }
+
+  assert {
+    condition     = data.aws_ec2_managed_prefix_list.cloudfront.name == "com.amazonaws.global.cloudfront.origin-facing"
+    error_message = "The prefix list must be CloudFront's origin-facing list."
+  }
+
+  assert {
+    condition = (
+      aws_vpc_security_group_ingress_rule.task_from_load_balancer.security_group_id == aws_security_group.task.id
+      && aws_vpc_security_group_ingress_rule.task_from_load_balancer.referenced_security_group_id == aws_security_group.load_balancer.id
+      && aws_vpc_security_group_ingress_rule.task_from_load_balancer.from_port == 3000
+      && aws_vpc_security_group_ingress_rule.task_from_load_balancer.to_port == 3000
+      && aws_vpc_security_group_ingress_rule.task_from_load_balancer.cidr_ipv4 == null
+    )
+    error_message = "The task's only ingress must be 3000 from the load balancer's group."
+  }
+
+  assert {
+    condition = (
+      aws_vpc_security_group_egress_rule.load_balancer_to_task.referenced_security_group_id == aws_security_group.task.id
+      && aws_vpc_security_group_egress_rule.load_balancer_to_task.from_port == 3000
+      && aws_vpc_security_group_egress_rule.task_https.security_group_id == aws_security_group.task.id
+      && aws_vpc_security_group_egress_rule.task_https.from_port == 443
+      && aws_vpc_security_group_egress_rule.task_https.to_port == 443
+      && aws_vpc_security_group_egress_rule.task_https.cidr_ipv4 == "0.0.0.0/0"
+    )
+    error_message = "The load balancer must send 3000 to the task's group, and the task must send 443 out."
+  }
+}
+
+run "network" {
+  command = apply
+
+  assert {
+    condition     = [for s in aws_subnet.public : s.availability_zone] == ["eu-north-1a", "eu-north-1b"]
+    error_message = "The two subnets must be in the first two available zones."
+  }
+
+  assert {
+    condition     = [for s in aws_subnet.public : s.cidr_block] == ["10.40.0.0/24", "10.40.1.0/24"]
+    error_message = "The subnets must be the first two /24 blocks of the network."
+  }
+
+  assert {
+    condition     = length(aws_lb.this.subnets) == 2 && aws_lb.this.load_balancer_type == "application"
+    error_message = "The load balancer must be an application load balancer across both subnets."
+  }
+
+  assert {
+    condition     = aws_lb.this.drop_invalid_header_fields && aws_lb.this.idle_timeout == 60 && !aws_lb.this.enable_deletion_protection
+    error_message = "The load balancer must drop invalid header fields, keep idle connections 60 seconds and be deletable."
+  }
+}
+
+run "service" {
+  command = apply
+
+  assert {
+    condition = (
+      aws_ecs_service.app.deployment_circuit_breaker[0].enable
+      && aws_ecs_service.app.deployment_circuit_breaker[0].rollback
+    )
+    error_message = "The service must roll back a rollout the circuit breaker stops."
+  }
+
+  assert {
+    condition     = aws_ecs_service.app.network_configuration[0].assign_public_ip
+    error_message = "With no NAT gateway the task must have a public address."
+  }
+
+  assert {
+    condition     = aws_ecs_service.app.propagate_tags == "SERVICE" && aws_ecs_service.app.enable_ecs_managed_tags
+    error_message = "The service's tags must reach its tasks."
+  }
+
+  assert {
+    condition = (
+      aws_ecs_service.app.deployment_minimum_healthy_percent == 100
+      && aws_ecs_service.app.deployment_maximum_percent == 200
+      && aws_ecs_service.app.health_check_grace_period_seconds == 60
+      && aws_ecs_service.app.wait_for_steady_state
+      && aws_ecs_service.app.desired_count == 1
+      && aws_ecs_service.app.launch_type == "FARGATE"
+    )
+    error_message = "The service must start new tasks before stopping old ones, wait for steady state and start with the floor."
+  }
+
+  assert {
+    condition     = aws_lb_target_group.app.health_check[0].path == "/api/health" && aws_lb_target_group.app.deregistration_delay == "30"
+    error_message = "The target group must check /api/health and drain for 30 seconds."
+  }
+
+  assert {
+    condition     = aws_lb_target_group.app.target_type == "ip" && aws_lb_target_group.app.port == 3000
+    error_message = "The target group must address the tasks by IP on 3000."
+  }
+
+  assert {
+    condition     = jsondecode(aws_ecs_task_definition.app.container_definitions)[0].stopTimeout == 30
+    error_message = "The container must have 30 seconds between the stop signal and the kill."
+  }
+
+  assert {
+    condition = (
+      strcontains(join(" ", jsondecode(aws_ecs_task_definition.app.container_definitions)[0].healthCheck.command), "http://127.0.0.1:3000/api/health")
+      && jsondecode(aws_ecs_task_definition.app.container_definitions)[0].healthCheck.startPeriod == 60
+    )
+    error_message = "The container's own health check must fetch /api/health, with the grace period as its start period."
+  }
+
+  assert {
+    condition = (
+      aws_ecs_task_definition.app.cpu == "512"
+      && aws_ecs_task_definition.app.memory == "1024"
+      && aws_ecs_task_definition.app.runtime_platform[0].cpu_architecture == "ARM64"
+      && aws_ecs_task_definition.app.task_role_arn == null
+    )
+    error_message = "The task must be 512 CPU and 1024 MiB on ARM64, with no task role."
+  }
+
+  assert {
+    condition     = aws_cloudwatch_log_group.app.name == "/openvaa/test/frontend" && aws_cloudwatch_log_group.app.retention_in_days == 90
+    error_message = "The log group must be /openvaa/<environment>/frontend and keep 90 days."
+  }
+}
+
+run "listeners" {
+  command = apply
+
+  assert {
+    condition = (
+      aws_lb_listener.https.default_action[0].type == "fixed-response"
+      && aws_lb_listener.https.default_action[0].fixed_response[0].status_code == "403"
+      && aws_lb_listener.https.port == 443
+    )
+    error_message = "The 443 listener must answer 403 by default."
+  }
+
+  assert {
+    condition = (
+      length(aws_lb_listener_rule.from_cloudfront.condition) == 1
+      && one(aws_lb_listener_rule.from_cloudfront.condition).http_header[0].http_header_name == "x-origin-verify"
+      && nonsensitive(one(aws_lb_listener_rule.from_cloudfront.condition).http_header[0].values == toset([random_password.origin_verify.result]))
+      && aws_lb_listener_rule.from_cloudfront.action[0].type == "forward"
+    )
+    error_message = "Only a request carrying the origin secret in x-origin-verify must be forwarded."
+  }
+
+  assert {
+    condition     = nonsensitive(can(regex("^[A-Za-z0-9]{48}$", random_password.origin_verify.result)))
+    error_message = "The origin secret must be 48 letters and digits."
+  }
+
+  assert {
+    condition = (
+      aws_lb_listener.http.port == 80
+      && aws_lb_listener.http.default_action[0].type == "redirect"
+      && aws_lb_listener.http.default_action[0].redirect[0].protocol == "HTTPS"
+      && aws_lb_listener.http.default_action[0].redirect[0].port == "443"
+      && aws_lb_listener.http.default_action[0].redirect[0].status_code == "HTTP_301"
+    )
+    error_message = "The 80 listener must redirect to HTTPS with a 301."
+  }
+
+  assert {
+    condition     = aws_acm_certificate.origin.domain_name == "origin.test.example.org" && aws_route53_record.origin.name == "origin.test.example.org"
+    error_message = "The certificate and the record must be for origin.<domain>."
+  }
+
+  assert {
+    condition     = length(aws_route53_record.origin_validation) == 1
+    error_message = "The certificate must have one validation record."
+  }
+}
