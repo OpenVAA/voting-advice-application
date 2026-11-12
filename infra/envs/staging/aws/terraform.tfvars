@@ -41,3 +41,6 @@ environment_values = {
   ANALYTICS_POSTHOG_HOST  = "https://eu.i.posthog.com"
   DEPLOYMENT_DIAGNOSTICS  = "false"
 }
+
+# The commit the pushed image was built from.
+image_tag = "712947a1bd44a735f66ee8f51610f4748d76cd30"
