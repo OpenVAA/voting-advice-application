@@ -1,5 +1,5 @@
 /**
- * Specification for the frontend task's environment list, `infra/modules/frontend-service/task-environment.json`: one entry per variable, each with a unique name, a source of `value` (set by the root) or `parameter` (read from the parameter store), a boolean `required` and a non-empty description. Its required entries are exactly `REQUIRED_ENV`, it holds every name of `ANALYTICS_ENV`, and every name it holds appears in the root `.env.example`, on a live or a commented line. No name contains `SERVICE_ROLE`, because the service-role key must reach the task in no form, and every name ending in `KEY`, `SECRET`, `PASSWORD` or `TOKEN` has source `parameter`, so no secret is ever a tracked value. Every problem found names the variable it concerns.
+ * Specification for the frontend task's environment list, `infra/modules/frontend-service/task-environment.json`: one entry per variable, each with a unique name, a source of `value` (set by the root) or `parameter` (read from the parameter store), a boolean `required` and a non-empty description. Its required entries are exactly `REQUIRED_ENV`, it holds every name of `ANALYTICS_ENV`, and every name it holds appears in the root `.env.example`, on a live or a commented line. No name contains `SERVICE_ROLE`, because the service-role key must reach the task in no form, and every name ending in `KEY`, `SECRET`, `PASSWORD` or `TOKEN` has source `parameter`, so no secret is ever a tracked value. Every name it holds is listed in backticks in the environment section of the staging AWS root's runbook, `infra/envs/staging/aws/README.md`. The `environment_values` block of every AWS root's `terraform.tfvars` sets every `value` name, sets no `parameter` name, and sets no name the list does not hold. Every problem found names the variable or the file it concerns.
  *
  * @vitest-environment node
  */
@@ -99,15 +99,57 @@ function envExampleLists(envExample: string, name: string): boolean {
   });
 }
 
+/** The start of the heading that begins the runbook's environment section. */
+const RUNBOOK_SECTION_START = '## The task';
+
+/**
+ * The names the runbook's environment section lists: every text in backticks from the line that begins with {@link RUNBOOK_SECTION_START} up to the next line that begins with `## `.
+ *
+ * @param runbook - The runbook's text.
+ * @returns The names, or `undefined` when the runbook has no such section.
+ */
+function runbookEnvironmentNames(runbook: string): Set<string> | undefined {
+  const lines = runbook.split('\n');
+  const start = lines.findIndex((line) => line.startsWith(RUNBOOK_SECTION_START));
+  if (start < 0) return undefined;
+  const rest = lines.slice(start + 1);
+  const end = rest.findIndex((line) => line.startsWith('## '));
+  const section = (end < 0 ? rest : rest.slice(0, end)).join('\n');
+  return new Set(Array.from(section.matchAll(/`([^`\n]+)`/g), (match) => match[1]));
+}
+
+/**
+ * The names a root's variable file sets in `environment_values`: every `NAME =` line between the line `environment_values = {` and the next line that begins with `}`. Comment lines are skipped.
+ *
+ * @param text - The variable file's text.
+ * @returns The names, or `undefined` when the file has no such block.
+ */
+function tfvarsEnvironmentNames(text: string): Set<string> | undefined {
+  const lines = text.split('\n');
+  const start = lines.findIndex((line) => /^environment_values\s*=\s*\{\s*$/.test(line));
+  if (start < 0) return undefined;
+  const rest = lines.slice(start + 1);
+  const end = rest.findIndex((line) => line.startsWith('}'));
+  if (end < 0) return undefined;
+  return new Set(
+    rest.slice(0, end).flatMap((line) => {
+      const match = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=/.exec(line);
+      return match ? [match[1]] : [];
+    })
+  );
+}
+
 /**
  * List every way the task's environment list breaks its contract. It reads nothing but its arguments.
  *
- * @param input - The list, the env example text and the name sets, see {@link TaskEnvironmentInput}.
- * @returns One string per problem, each naming the variable it concerns, or an empty array when the list is sound.
+ * @param input - The list, the env example, runbook and variable file texts, and the name sets, see {@link TaskEnvironmentInput}.
+ * @returns One string per problem, each naming the variable or the file it concerns, or an empty array when the list is sound.
  */
 function taskEnvironmentProblems({
   spec,
   envExample,
+  runbook,
+  tfvars,
   requiredNames,
   analyticsNames
 }: TaskEnvironmentInput): Array<string> {
@@ -116,6 +158,11 @@ function taskEnvironmentProblems({
   const entries: ReadonlyArray<unknown> = spec.variables;
   const seen = new Set<string>();
   const requiredInList = new Set<string>();
+  const valueNames: Array<string> = [];
+  const parameterNames: Array<string> = [];
+  const runbookNames = runbookEnvironmentNames(runbook);
+  if (runbookNames === undefined)
+    problems.push(`the runbook has no section whose heading begins with \`${RUNBOOK_SECTION_START}\``);
 
   entries.forEach((entry, index) => {
     if (!isRecord(entry) || typeof entry.name !== 'string' || entry.name.trim() === '') {
@@ -135,7 +182,28 @@ function taskEnvironmentProblems({
     if (SECRET_SUFFIXES.some((suffix) => name.endsWith(suffix)) && source !== 'parameter')
       problems.push(`${name}: is a secret, so its source must be parameter`);
     if (!envExampleLists(envExample, name)) problems.push(`${name}: is not listed in .env.example`);
+    if (runbookNames !== undefined && !runbookNames.has(name))
+      problems.push(`${name}: is not listed in the runbook's environment section`);
+    if (source === 'value') valueNames.push(name);
+    if (source === 'parameter') parameterNames.push(name);
   });
+
+  for (const { path, text } of tfvars) {
+    const setNames = tfvarsEnvironmentNames(text);
+    if (setNames === undefined) {
+      problems.push(`${path}: has no environment_values block closed by a line that begins with }`);
+      continue;
+    }
+    for (const name of valueNames) {
+      if (!setNames.has(name)) problems.push(`${name}: has source value but no value in ${path}`);
+    }
+    for (const name of parameterNames) {
+      if (setNames.has(name)) problems.push(`${name}: has source parameter but a value in ${path}`);
+    }
+    for (const name of setNames) {
+      if (!seen.has(name)) problems.push(`${name}: is set in ${path} but is not in the list`);
+    }
+  }
 
   for (const name of requiredNames) {
     if (!seen.has(name)) problems.push(`${name}: is required by the start-up check but missing from the list`);
