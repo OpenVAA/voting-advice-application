@@ -30,7 +30,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
       redirected to HTTPS.
 - [ ] **INFRA-04**: A health endpoint answers without calling Supabase, and the load balancer's health check
       uses it with a start-up grace period.
-- [ ] **INFRA-05**: Runtime configuration reaches the task as environment, with secrets from a secret store. It
+- [x] **INFRA-05**: Runtime configuration reaches the task as environment, with secrets from a secret store. It
       includes `PUBLIC_PROJECT_ID`. The service-role key never reaches the frontend task. A start with a required
       variable unset fails and names the variable.
 - [ ] **INFRA-06**: The Node server is configured for its proxy (public origin, protocol and host headers,
@@ -43,7 +43,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
       its requests. `SIGTERM` is shown to reach the Node process.
 - [ ] **INFRA-10**: State is remote and locked; each environment has its own variables and outputs; the AWS stack
       can be destroyed cleanly.
-- [ ] **INFRA-11**: Roles are least-privilege and only the load balancer reaches the tasks. Tasks run in public
+- [x] **INFRA-11**: Roles are least-privilege and only the load balancer reaches the tasks. Tasks run in public
       subnets with no NAT gateway (D2).
 - [ ] **INFRA-12**: The stack is in `eu-north-1` by default, and the Supabase project's region is stated beside
       it.
@@ -263,13 +263,13 @@ closes; those are not listed against the earlier phase here.
 | INFRA-02 | Phase 185 | Pending |
 | INFRA-03 | Phase 185 | Pending |
 | INFRA-04 | Phase 185 | Pending |
-| INFRA-05 | Phase 185 | Pending |
+| INFRA-05 | Phase 185 | Complete |
 | INFRA-06 | Phase 185 | Pending |
 | INFRA-07 | Phase 185 | Pending |
 | INFRA-08 | Phase 185 | Pending |
 | INFRA-09 | Phase 185 | Pending |
 | INFRA-10 | Phase 185 | Pending |
-| INFRA-11 | Phase 185 | Pending |
+| INFRA-11 | Phase 185 | Complete |
 | INFRA-12 | Phase 185 | Pending |
 | INFRA-13 | Phase 185 | Pending |
 | INFRA-14 | Phase 185 | Pending |
