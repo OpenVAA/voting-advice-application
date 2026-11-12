@@ -1,10 +1,11 @@
 # Bootstrap root: runbook
 
 This root holds what every other root rests on: the bucket all Terraform state lives in, the image
-registry, the monthly cost budget, and the GitHub OIDC provider with the plan role and the deploy role
-that workflows assume. It is applied by hand, by an operator signed in with administrator rights,
-and never by a workflow. Its first apply runs with local state, because the bucket its backend names
-does not exist yet; the state is then migrated into that bucket.
+registry, the monthly cost budget, the GitHub OIDC provider with the plan role and the deploy role
+that workflows assume, and the execution role of the frontend's ECS task. It is applied by hand, by an
+operator signed in with administrator rights, and never by a workflow. Its first apply runs with local
+state, because the bucket its backend names does not exist yet; the state is then migrated into that
+bucket.
 
 The overview of every root, the order of first applies and the rules that hold for every apply are in
 [`../README.md`](../README.md).
@@ -26,9 +27,12 @@ Step 5  policy simulator: the plan role's deny, the pipeline allow, every call t
 Step 6  the state lock, seen with two terminals; the spend the budget computed
    |
 Step 7  the budget alert: a test amount that can fire, the wait for the mail, the raise to 100 USD
+
+Step 8  the frontend execution role: one additive apply, once the frontend's parameters exist
 ```
 
-Steps 3 to 6 are one sitting. Step 7 can take a day or more and runs alongside the other roots.
+Steps 3 to 6 are one sitting. Step 7 can take a day or more and runs alongside the other roots. Step 8
+is one sitting of its own.
 
 ## What you paste back
 
@@ -661,6 +665,86 @@ Return: `answer_outcome=fired`, `answer_outcome=no-alert-can-fire` or `answer_ou
 `answer_mail_` lines, the `s4_` lines with `answer_lock_branch=`, the `s5_` lines and
 `s6_second_plan_exit=`; and in every outcome `s7_logs_removed=yes`. Do not paste your address.
 
+## Step 8: The frontend execution role
+
+This step adds the execution role of the frontend's ECS task to this root: the identity the ECS agent
+uses to pull the image, write the container's logs and read the task's parameters. It comes from the
+`frontend_task_role` module and creates five resources: the role, the resource that keeps it free of
+an inline policy, the policy that reads the parameters, and the two attachments. The role reads the
+parameters under `/openvaa/<frontend_environment>/frontend/` only, and decrypts them with the SSM key
+only through SSM. The apply only adds; nothing this root already holds changes.
+
+**Precondition: the frontend's parameters exist.** Create them first, from the staging AWS root's
+runbook (`infra/envs/staging/aws/README.md`), its parameter step. The policy names the AWS-managed
+key `alias/aws/ssm`, which AWS creates only when a SecureString parameter first uses it; before then
+the plan of item 2 fails on reading that key.
+
+Run the step in one sitting. Every named line it prints begins `s8_`. Begin with these lines, from the
+repository root, signed in. Leave the export of the address out if your shell profile already exports
+`TF_VAR_alert_email`, or if you track the address.
+
+```bash
+cd infra/bootstrap
+export LC_ALL=C
+export AWS_PAGER=""
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-bootstrap.XXXXXX")
+export TF_VAR_alert_email='<your-address>'
+```
+
+1. Initialise, which installs the new module. The lock file is read, never changed:
+
+   ```bash
+   terraform init -input=false -no-color -lockfile=readonly > "$L/s8-init.log" 2>&1; echo "s8_init_exit=$?"
+   ```
+
+2. Plan, print the plan's summary line, and print every planned address with its action. The
+   addresses are read from the saved plan as JSON, so no attribute value is printed. Status 2 means
+   changes, which is expected here; 0 means no change and 1 an error.
+
+   ```bash
+   terraform plan -input=false -no-color -out=tfplan -detailed-exitcode > "$L/s8-plan.log" 2>&1; echo "s8_plan_exit=$?"
+   grep -m1 -E '^(Plan:|No changes)' "$L/s8-plan.log" | sed 's/^/s8_plan_line=/'
+   terraform show -json tfplan > "$L/s8-plan.json" 2> "$L/s8-show.err"; echo "s8_show_exit=$?"
+   jq -r '.resource_changes[] | select(.change.actions != ["no-op"]) | "s8_planned=\(.change.actions | join("-")) \(.address)"' "$L/s8-plan.json"
+   ```
+
+3. Read the lines of item 2 against the stop rule.
+
+   > **Apply only when `s8_plan_exit=2`, `s8_plan_line` reads
+   > `Plan: 5 to add, 0 to change, 0 to destroy.`, and there are five `s8_planned=` lines, each
+   > `s8_planned=create module.frontend_task_role.<resource>`.** Any other line means the plan touches
+   > something this step does not add: a role, a policy, the bucket or the budget. Then do not apply.
+   > Remove the saved plan with `rm -f tfplan`, run item 7, paste the lines and stop.
+
+4. Apply the saved plan:
+
+   ```bash
+   terraform apply -input=false -no-color tfplan > "$L/s8-apply.log" 2>&1; echo "s8_apply_exit=$?"
+   grep -m1 -E '^Apply complete!' "$L/s8-apply.log" | sed 's/^/s8_apply_line=/'
+   ```
+
+5. Plan again. It must exit 0, which means no change:
+
+   ```bash
+   terraform plan -input=false -no-color -detailed-exitcode > "$L/s8-second.log" 2>&1; echo "s8_second_plan_exit=$?"
+   ```
+
+6. The role's ARN, which the staging AWS root takes as `execution_role_arn`. It is not a secret:
+
+   ```bash
+   echo "s8_role_arn=$(terraform output -raw frontend_execution_role_arn)"
+   ```
+
+7. Last item, also when you stop early or a command failed. Paste the lines of items 1 to 6 first:
+   this item removes the logs they came from.
+
+   ```bash
+   rm -f tfplan
+   test -n "$L" && rm -rf "$L" && echo "s8_logs_removed=yes"
+   ```
+
+Return: every `s8_` line, in order. Do not paste your address.
+
 ## Not yet observed
 
 This root was first applied on 2026-10-21. Each statement below is something this runbook relies on and that
@@ -679,6 +763,8 @@ it.
 | A workflow can assume the plan role and the deploy role, and a token with a wrong subject is refused                             | A later stage of the deployment work                                      |
 | AWS evaluates the claims `repository_id` and `repository_owner_id` in a trust condition once they are set                        | A later stage of the deployment work                                      |
 | A second push of one image tag to the registry is refused                                                                        | A later stage of the deployment work                                      |
+| A plan of Step 8 creates only under `module.frontend_task_role`                                                                  | Step 8, items 2 and 3                                                     |
+| The policy simulator allows the execution role to read only its own parameter path                                               | The staging AWS root's runbook, its read-back of the role                 |
 
 ## Observations
 

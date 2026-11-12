@@ -45,3 +45,8 @@ output "budget_name" {
   description = "Name of the monthly cost budget."
   value       = module.budget.budget_name
 }
+
+output "frontend_execution_role_arn" {
+  description = "ARN of the frontend task's execution role, the value the staging AWS root takes as execution_role_arn. Not a secret."
+  value       = module.frontend_task_role.execution_role_arn
+}

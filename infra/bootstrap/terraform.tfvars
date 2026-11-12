@@ -19,3 +19,7 @@ deploy_subjects    = ["repo:OpenVAA/voting-advice-application:environment:stagin
 
 # Must equal the backend key of infra/envs/staging/aws: the deploy role may reach this key only.
 pipeline_state_key = "pipeline/staging/aws/terraform.tfstate"
+
+# The environment whose frontend task uses the execution role. The role reads the parameters under
+# /openvaa/staging/frontend/ and nothing else.
+frontend_environment = "staging"

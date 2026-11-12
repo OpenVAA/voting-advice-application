@@ -13,6 +13,10 @@ registry_name     = "openvaa-frontend"
 
 budget_limit_usd = 100
 
+# Names the environment of the template AWS root, infra/envs/example/aws. The execution role reads that
+# environment's frontend parameters, under /openvaa/example/frontend/, and nothing else.
+frontend_environment = "example"
+
 # GitHub issues the OIDC subject in one of two forms. A repository created before 2026-07-15 keeps
 # the name-based form, repo:OWNER/REPO:..., until it is renamed, transferred or opted in to the new
 # form. A fork is a new repository, so it gets the id-bearing form shown here, with the numeric ids
