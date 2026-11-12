@@ -323,8 +323,8 @@ last command of the pipe. The CLI refuses a whole request read as `--cli-input-j
 
 2. The PostHog project key. If there is no PostHog project yet, type a stand-in such as `stand-in`:
    the task receives the parameter but reads it only once `ANALYTICS_PROVIDER` is `posthog`, and ECS
-   starts no task whose parameter is missing. Answer `answer_posthog_key=real` or
-   `answer_posthog_key=stand-in`.
+   starts no task whose parameter is missing. Answer `answer_posthog_kind=real` or
+   `answer_posthog_kind=stand-in`.
 
    ```bash
    printf 'PostHog key: '; read -rs PARAMETER_VALUE; echo
@@ -359,14 +359,16 @@ last command of the pipe. The CLI refuses a whole request read as `--cli-input-j
    echo "s2_describe_exit=$?"
    jq -r '.Parameters[] | "s2_parameter=\(.Name) \(.Type) \(.KeyId)"' \
      "$L/s2-describe.json"
-   for n in PUBLIC_SUPABASE_ANON_KEY ANALYTICS_POSTHOG_KEY; do
+   for x in anon:PUBLIC_SUPABASE_ANON_KEY \
+     posthog:ANALYTICS_POSTHOG_KEY; do
+     l=${x%%:*} n=${x#*:}
      aws ssm list-tags-for-resource --resource-type Parameter \
-       --resource-id "$P/$n" > "$L/s2-tags-$n.json" \
-       2> "$L/s2-tags-$n.err"
-     echo "s2_tags_${n}_exit=$?"
-     jq -r --arg n "$n" \
-       '"s2_tag_keys_\($n)=\([.TagList[].Key] | sort | join(","))"' \
-       "$L/s2-tags-$n.json"
+       --resource-id "$P/$n" > "$L/s2-tags-$l.json" \
+       2> "$L/s2-tags-$l.err"
+     echo "s2_tags_${l}_exit=$?"
+     jq -r --arg l "$l" \
+       '"s2_tag_names_\($l)=\([.TagList[].Key] | sort | join(","))"' \
+       "$L/s2-tags-$l.json"
    done
    aws kms describe-key --key-id alias/aws/ssm \
      > "$L/s2-key.json" 2> "$L/s2-key.err"
@@ -375,7 +377,7 @@ last command of the pipe. The CLI refuses a whole request read as `--cli-input-j
 
    Expected: two `s2_parameter=` lines, `/openvaa/staging/frontend/ANALYTICS_POSTHOG_KEY` and
    `/openvaa/staging/frontend/PUBLIC_SUPABASE_ANON_KEY`, each `SecureString alias/aws/ssm`; both
-   `s2_tag_keys_` lines `Environment,Project`; and `s2_ssm_key_exit=0`.
+   `s2_tag_names_` lines `Environment,Project`; and `s2_ssm_key_exit=0`.
 
 4. Last item, also when you stop early or a command failed:
 
@@ -384,7 +386,7 @@ last command of the pipe. The CLI refuses a whole request read as `--cli-input-j
    test -n "$L" && rm -rf "$L" && echo "s2_logs_removed=yes"
    ```
 
-Return: every `s2_` line and `answer_posthog_key=`. Never paste either value.
+Return: every `s2_` line and `answer_posthog_kind=`. Never paste either value.
 
 ### Step 3: The execution role
 
