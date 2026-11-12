@@ -4,13 +4,13 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 185
 current_phase_name: AWS Frontend Stack, First Apply by Hand
-current_plan: 25
+current_plan: 1
 status: executing
 stopped_at: Phase 185 context gathered
-last_updated: "2026-11-12T11:58:10.795Z"
+last_updated: "2026-11-12T13:05:05.987Z"
 last_activity: 2026-11-12
-last_activity_desc: Phase 184 complete, transitioned to Phase 185
-state_head: 1b2ad98c03ad48810a1f0e27159c56d8095b1f06
+last_activity_desc: Phase 185 execution started
+state_head: ee336dea37f567074f95338bcc5166b3a5ea4d5d
 progress:
   total_phases: 10
   completed_phases: 4
@@ -27,23 +27,23 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 **Milestone value:** A deployer can stand up a tested OpenVAA instance on AWS and Supabase Cloud from the repository, and every statement the project makes about a hosted deployment has been observed on one.
-**Current focus:** Phase 184 — Hosted Supabase Measurement and Conformance Probe
+**Current focus:** Phase 185 — AWS Frontend Stack, First Apply by Hand
 
 ## Current Position
 
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
-Phase: 185 (AWS Frontend Stack, First Apply by Hand) — READY TO EXECUTE
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-11-12 — Phase 184 complete, transitioned to Phase 185
+Phase: 185 (AWS Frontend Stack, First Apply by Hand) — EXECUTING
+Plan: 1 of 22
+Status: Executing Phase 185
+Last activity: 2026-11-12 — Phase 185 execution started
 
 Progress: [████░░░░░░] 40% (3 of 9 roadmap phases, 181.1 inserted besides; 82/82 plans of the planned phases)
 
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 25
+**Current Plan:** 1
 
 From 184 on, the numeric order is the dependency order.
 
