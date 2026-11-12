@@ -115,6 +115,20 @@ const USES = JOB_BLOCK.split('\n')
   .filter((line) => /^(-\s+)?uses:/.test(line))
   .map((line) => line.replace(/^(-\s+)?uses:\s*/, ''));
 
+/**
+ * The steps of a job, in order, each as the value of its `- name:` line and its own lines up to the next step.
+ * @param jobBlock - A job's block from `blockOf`.
+ * @returns One entry per named step.
+ */
+function jobSteps(jobBlock: string): Array<{ name: string; block: string }> {
+  const lines = jobBlock.split('\n');
+  const starts = lines.flatMap((line, i) => (/^\s*-\s+name:/.test(line) ? [i] : []));
+  return starts.map((start, n) => ({
+    name: lines[start].replace(/^\s*-\s+name:\s*/, '').replace(/^"(.*)"$/, '$1'),
+    block: lines.slice(start, starts[n + 1] ?? lines.length).join('\n')
+  }));
+}
+
 /** The roots that keep their state in a local backend on purpose, and so have no S3 key. */
 const LOCAL_BACKEND_ROOTS = ['infra/envs/scratch/supabase'];
 
@@ -209,9 +223,19 @@ describe('the infra-validate job checks what it claims to check', () => {
     expect(JOB_BLOCK).toContain('validate');
   });
 
-  it('runs the validation and type-check steps even after an earlier step failed', () => {
-    // Without this a formatting failure would hide a validation failure in the same run.
-    expect(JOB_BLOCK.match(/if: \$\{\{ !cancelled\(\) \}\}/g) ?? []).toHaveLength(2);
+  it('runs every check after the formatting check even when an earlier step failed', () => {
+    // Without this a formatting failure would hide a validation, module test or type-check failure in the same run.
+    const steps = jobSteps(JOB_BLOCK);
+    const formatting = steps.findIndex(({ block }) => block.includes('terraform fmt -check'));
+    expect(formatting).toBeGreaterThan(-1);
+    const later = steps.slice(formatting + 1);
+    expect(later.map(({ name }) => name)).toEqual([
+      'Validate every Terraform root',
+      'Test every Terraform module that has tests',
+      'Check the settings types of the Supabase module'
+    ]);
+    for (const { name, block } of later) expect(block, name).toMatch(/^\s*if: \$\{\{ !cancelled\(\) \}\}\s*$/m);
+    expect(JOB_BLOCK.match(/if: \$\{\{ !cancelled\(\) \}\}/g) ?? []).toHaveLength(later.length);
   });
 
   it('names every required root, so an empty or short glob cannot pass', () => {
