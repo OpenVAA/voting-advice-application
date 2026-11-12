@@ -5,16 +5,16 @@ milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytic
 current_phase: 185
 current_phase_name: AWS Frontend Stack, First Apply by Hand
 current_plan: 25
-status: planning
+status: executing
 stopped_at: Phase 185 context gathered
-last_updated: "2026-11-12T09:42:55.042Z"
+last_updated: "2026-11-12T11:58:10.795Z"
 last_activity: 2026-11-12
 last_activity_desc: Phase 184 complete, transitioned to Phase 185
-state_head: 1de2b10de199d56241d804b5515627427508f6b7
+state_head: 1b2ad98c03ad48810a1f0e27159c56d8095b1f06
 progress:
   total_phases: 10
   completed_phases: 4
-  total_plans: 107
+  total_plans: 129
   completed_plans: 107
   percent: 40
 ---
@@ -33,9 +33,9 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
-Phase: 185 — AWS Frontend Stack, First Apply by Hand
+Phase: 185 (AWS Frontend Stack, First Apply by Hand) — READY TO EXECUTE
 Plan: Not started
-Status: Ready to plan
+Status: Ready to execute
 Last activity: 2026-11-12 — Phase 184 complete, transitioned to Phase 185
 
 Progress: [████░░░░░░] 40% (3 of 9 roadmap phases, 181.1 inserted besides; 82/82 plans of the planned phases)

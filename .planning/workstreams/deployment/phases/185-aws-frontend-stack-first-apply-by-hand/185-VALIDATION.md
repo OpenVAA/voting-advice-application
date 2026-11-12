@@ -49,6 +49,20 @@ Filled in by the planner/executor against the plans. Seed rows from research:
 | INFRA-10 / INFRA-19 | `fmt` + `validate` of both aws roots, lock files with linux hashes | static | `terraform fmt -check -recursive infra` + per root `init -backend=false -lockfile=readonly` + `validate` | ✅ | ⬜ pending |
 | Regression | App unchanged for users | E2E | `tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/185-final --no-db-reset` | ✅ | ⬜ pending |
 
+Plan-to-check map (planner, 2026-11-12):
+
+| Plan / Task | Requirement | Automated check |
+|-------------|-------------|-----------------|
+| 185-01 T2–T3 | INFRA-11, INFRA-05 | bootstrap + module `init -backend=false -lockfile=readonly` + `validate`; `node scripts/assert-no-inline-iam-policies.mjs` and `--self-test` |
+| 185-02 T1–T2 | INFRA-05, OBS-08 | `yarn workspace @openvaa/frontend test:unit src/lib/server/startup/taskEnvironment.test.ts`; red runs with `TASK_ENVIRONMENT_SPEC` |
+| 185-03 T1–T3 | INFRA-09, OBS-04 | `yarn workspace @openvaa/frontend test:unit src/lib/server/shutdown/shutdownLog.test.ts`, `... src/routes/api/diagnostics`; built-server record; `e2e-run.sh --project voter-journey` + `e2e-spec-verdict.mjs --no-flaky` |
+| 185-04, 185-06 | INFRA-02..14 (code) | `terraform -chdir=infra/modules/frontend-service test` (mock providers) + root `validate` |
+| 185-05 T1–T2 | INFRA-01, INFRA-09 | `node_modules/.bin/vitest run --config infra/vitest.config.ts build-push-image` / `request-loop` |
+| 185-07 T2 | INFRA-10 | CI-equivalent loop: `fmt -check -recursive`, every root `validate`, every module `test` |
+| 185-08 T3 | OBS-08 | the guard over the runbook table and both AWS roots' tfvars |
+| 185-10, 185-21 | all code | `yarn lint:check`, `yarn format:check`, `yarn test:unit`; 185-21 adds the full E2E run |
+| 185-11..185-20, 185-22 | hosted behaviours | record-line greps over `evidence/185-NN-*.md` (manual-only by design, each with its exit status) |
+
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
 ---

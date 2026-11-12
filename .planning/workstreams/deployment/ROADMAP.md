@@ -487,7 +487,66 @@ Notes:
   5. State is remote and locked, and staging has its own variables and outputs. A destroy of the AWS root, run once on purpose, removes the stack cleanly and leaves the hosted project, its data and its settings untouched, and the stack is then applied again. Every resource carries the cost tags, and a monthly estimate measured on the applied stack is recorded.
 
 **Research flag**: Needs `/gsd-plan-phase --research-phase`. Topic from `research/SUMMARY.md`: ACM and DNS staging. It was written for a zone outside Route 53, and F1 moves the zone to Route 53 in phase 183, so what remains is the order of the staged apply (registry, image, DNS and certificate, compute). Added by ruling A2 after the research, and so not researched: the CDN (INFRA-14). Where it sits can change the proxy depth of INFRA-06, the region of the certificate against the default of INFRA-12, the header record of OBS-04 and the scope of the WAF variable of RELAY-09. The header observations are made with the CDN in place.
-**Plans**: TBD
+**Plans**: 22 plans in 18 waves. Waves 1 to 7 write and gate the code without AWS (the first stops once for the operator's rulings on the execution role's home, the push and the alert address); waves 8 to 17 are the hosted sittings in order, the agent applying `envs/staging/aws` under D-01; wave 18 closes on the repository gates and a full E2E run beside the cost read.
+
+Plans:
+**Wave 1**
+- [ ] 185-01-PLAN.md — wave 1, needs the operator — Rule the execution role's home, the push and the alert address; the role module called from bootstrap, with its runbook step.
+- [ ] 185-02-PLAN.md — wave 1 — The task's environment list and its guard against `REQUIRED_ENV`, the analytics names and `.env.example`.
+- [ ] 185-03-PLAN.md — wave 1 — The stop line and the diagnostics allow-list, seen on the production build, and the voter-journey E2E project.
+- [ ] 185-05-PLAN.md — wave 1 — The build-and-push script and the request loop, each with a self-test in the infra suite.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 185-04-PLAN.md — wave 2 — The module's origin half (network, load balancer, service) with offline tests, called from the staging root.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 185-06-PLAN.md — wave 3 — The CDN, scaling and the deployment alert in the module and the staging root.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 185-07-PLAN.md — wave 4 — The example root with stand-ins, and the CI job running the module tests.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [ ] 185-08-PLAN.md — wave 5 — The AWS runbook's frame and Steps 1 to 6, `infra/README.md` corrected, the guard widened.
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [ ] 185-09-PLAN.md — wave 6 — The runbook's Steps 7 to 18 and the election-day section.
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [ ] 185-10-PLAN.md — wave 7 — The repository gates and the CI validation commands on the finished code.
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [ ] 185-11-PLAN.md — wave 8, needs the operator — The two parameters and the execution role on AWS, read back.
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [ ] 185-12-PLAN.md — wave 9 — The image from a pushed source-only commit, and the refused second push.
+
+**Wave 10** *(blocked on Wave 9 completion)*
+- [ ] 185-13-PLAN.md — wave 10, needs the operator — One plan and one apply; the subscription confirmed and the cost tags activated.
+
+**Wave 11** *(blocked on Wave 10 completion)*
+- [ ] 185-14-PLAN.md — wave 11 — What the stack serves: certificates, redirects, OBS-08, form post, caching, network, tags, logs, state.
+
+**Wave 12** *(blocked on Wave 11 completion)*
+- [ ] 185-15-PLAN.md — wave 12 — The header record and the depth, both origin locks refusing, diagnostics off again.
+
+**Wave 13** *(blocked on Wave 12 completion)*
+- [ ] 185-16-PLAN.md — wave 13, needs the operator — The failed rollout and its rollback, the alert mail, the restore and SIGTERM.
+
+**Wave 14** *(blocked on Wave 13 completion)*
+- [ ] 185-17-PLAN.md — wave 14 — The scheduled floor raised and lowered, and removed.
+
+**Wave 15** *(blocked on Wave 14 completion)*
+- [ ] 185-18-PLAN.md — wave 15, needs the operator — The feedback limit from two networks and the invitation mail (OBS-10, OBS-06).
+
+**Wave 16** *(blocked on Wave 15 completion)*
+- [ ] 185-19-PLAN.md — wave 16, needs the operator — Cleanup, the plans before, the log copy, the destroy and the sweep in both regions.
+
+**Wave 17** *(blocked on Wave 16 completion)*
+- [ ] 185-20-PLAN.md — wave 17, needs the operator — The Supabase plan and probe after the destroy, and the re-apply.
+
+**Wave 18** *(blocked on Wave 17 completion)*
+- [ ] 185-21-PLAN.md — wave 18 — The repository gates and a full E2E run on the final tree.
+- [ ] 185-22-PLAN.md — wave 18, needs the operator — The priced inventory and the measured monthly cost, or its dated follow-up.
 
 Notes:
 
@@ -618,7 +677,7 @@ Phases 181, 182 and 183 can start in any order. From 184 on, the numeric order i
 | 182. Analytics Relay | 31/31 | Complete | 2026-10-20 |
 | 183. Terraform Foundation and Supabase as Code | 28/28 | Complete    | 2026-10-26 |
 | 184. Hosted Supabase Measurement and Conformance Probe | 25/25 | Complete    | 2026-11-12 |
-| 185. AWS Frontend Stack, First Apply by Hand | 0/TBD | Not started | - |
+| 185. AWS Frontend Stack, First Apply by Hand | 0/22 | Planned | - |
 | 186. Deployed Smoke Entry | 0/TBD | Not started | - |
 | 187. Deploy Pipeline | 0/TBD | Not started | - |
 | 188. Relay on the Deployed Stack, and the Per-Caller Limit | 0/TBD | Not started | - |
