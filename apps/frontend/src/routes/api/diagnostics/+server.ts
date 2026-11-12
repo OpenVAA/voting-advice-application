@@ -10,7 +10,9 @@ const FORWARDING_HEADERS: ReadonlyArray<string> = [
   'x-forwarded-port',
   'x-forwarded-host',
   'forwarded',
-  'via'
+  'via',
+  'cloudfront-viewer-address',
+  'x-amz-cf-id'
 ];
 
 /** The body `GET /api/diagnostics` answers with when it is enabled. */
