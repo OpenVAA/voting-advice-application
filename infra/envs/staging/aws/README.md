@@ -300,22 +300,22 @@ T=infra/envs/staging/aws
 P=/openvaa/staging/frontend
 ```
 
-Each value is read without echoing it and exported for one command. `jq` builds the request from the
-environment and hands it to the CLI on standard input, so the value reaches no command line and no
-file. The status line is the CLI's own: it is the last command of the pipe, and if `jq` failed the CLI
-would receive no input and fail too.
+Each value is read without echoing it. The shell's `printf` builtin writes it, with no trailing
+newline, to the CLI's standard input, and `--value file:///dev/stdin` reads it from there. So the
+value reaches no command line and no file. The status line is the CLI's own, because the CLI is the
+last command of the pipe. The CLI refuses a whole request read as `--cli-input-json` from a pipe
+(`Invalid JSON received`), so only the value travels that way.
 
 1. The Supabase project's anon key, as the Supabase dashboard shows it under the project's API keys:
 
    ```bash
    printf 'anon key: '; read -rs PARAMETER_VALUE; echo
-   export PARAMETER_VALUE
-   jq -n --arg name "$P/PUBLIC_SUPABASE_ANON_KEY" \
-     '{Name: $name, Type: "SecureString",
-       Value: env.PARAMETER_VALUE,
-       Tags: [{Key: "Project", Value: "openvaa"},
-         {Key: "Environment", Value: "staging"}]}' \
-     | aws ssm put-parameter --cli-input-json file:///dev/stdin \
+   printf '%s' "$PARAMETER_VALUE" \
+     | aws ssm put-parameter \
+       --name "$P/PUBLIC_SUPABASE_ANON_KEY" \
+       --type SecureString --value file:///dev/stdin \
+       --tags Key=Project,Value=openvaa \
+         Key=Environment,Value=staging \
        > "$L/s2-anon.json" 2> "$L/s2-anon.err"
    echo "s2_anon_put_exit=$?"
    unset PARAMETER_VALUE
@@ -328,26 +328,26 @@ would receive no input and fail too.
 
    ```bash
    printf 'PostHog key: '; read -rs PARAMETER_VALUE; echo
-   export PARAMETER_VALUE
-   jq -n --arg name "$P/ANALYTICS_POSTHOG_KEY" \
-     '{Name: $name, Type: "SecureString",
-       Value: env.PARAMETER_VALUE,
-       Tags: [{Key: "Project", Value: "openvaa"},
-         {Key: "Environment", Value: "staging"}]}' \
-     | aws ssm put-parameter --cli-input-json file:///dev/stdin \
+   printf '%s' "$PARAMETER_VALUE" \
+     | aws ssm put-parameter \
+       --name "$P/ANALYTICS_POSTHOG_KEY" \
+       --type SecureString --value file:///dev/stdin \
+       --tags Key=Project,Value=openvaa \
+         Key=Environment,Value=staging \
        > "$L/s2-posthog.json" 2> "$L/s2-posthog.err"
    echo "s2_posthog_put_exit=$?"
    unset PARAMETER_VALUE
    ```
 
    A parameter that already exists is refused with `ParameterAlreadyExists` and keeps its value. To
-   replace a value, run the same command with `Overwrite: true` in place of the `Tags` member: AWS
+   replace a value, run the same command with `--overwrite` in place of the two `--tags` lines. AWS
    refuses tags on an overwrite, and the parameter keeps the tags it has. Print the error's code alone,
    never its message:
 
    ```bash
    grep -ho -E 'ParameterAlreadyExists|AccessDenied[A-Za-z]*' \
-     "$L/s2-anon.err" "$L/s2-posthog.err" | sed 's/^/s2_put_error=/'
+     "$L/s2-anon.err" "$L/s2-posthog.err" \
+     | sed 's/^/s2_put_error=/'
    ```
 
 3. Read both back: name, type and key, then the tag keys, never a value:
@@ -3496,7 +3496,7 @@ it.
 | Statement                                                                                                                                                                                                 | Checked by                                          |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
 | With the key variables unset, `AWS_PROFILE=openvaa-admin` is what both the AWS CLI and Terraform's provider sign in with                                                                                  | Step 1, the lines that begin it, and Step 5, item 2 |
-| The AWS CLI reads `--cli-input-json` from `file:///dev/stdin`, so a parameter's value reaches it from the environment through `jq` and never on a command line                                            | Step 2, items 1 and 2                               |
+| The AWS CLI reads a parameter's value from `--value file:///dev/stdin`, so the value reaches it from the shell's `printf` builtin and never on a command line                                             | Step 2, items 1 and 2                               |
 | A SecureString created without a key id uses `alias/aws/ssm`, and AWS creates that key with the first such parameter                                                                                      | Step 2, item 3                                      |
 | The two parameters carry the tags `Project` and `Environment` and no `Root` tag, so the destroy check does not list them                                                                                  | Step 2, item 3, and Step 16                         |
 | The policy simulator allows the execution role `ssm:GetParameters` under `/openvaa/staging/frontend/` and denies it under another path                                                                    | Step 3, item 4                                      |
@@ -3560,5 +3560,6 @@ it.
 
 ## Observations
 
-| Date (UTC) | Observation |
-| ---------- | ----------- |
+| Date (UTC) | Observation                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-11-12 | AWS CLI 2.34.7 refuses a whole request read as `--cli-input-json file:///dev/stdin` from a pipe, with `Error parsing parameter 'cli-input-json': Invalid JSON received` and exit 252, before any call is made; seen in Step 2 and reproduced offline. With `--value file:///dev/stdin` the same CLI sends the exact value, with no trailing newline, and both tags (seen offline with a stand-in value and an unreachable endpoint). |
