@@ -5,17 +5,17 @@ milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytic
 current_phase: 184
 current_phase_name: Hosted Supabase Measurement and Conformance Probe
 current_plan: 25
-status: executing
-stopped_at: Completed 184-24-PLAN.md
-last_updated: "2026-11-12T06:14:30.000Z"
+status: verifying
+stopped_at: Completed 184-25-PLAN.md
+last_updated: "2026-11-12T06:45:03.359Z"
 last_activity: 2026-10-26
 last_activity_desc: Phase 184 execution started
-state_head: 97f8bd72eac02658b637251ecb615dc76ef82094
+state_head: 62896cfdaac06eec34c49c7f32cbde6b3fb622e6
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 107
-  completed_plans: 106
+  completed_plans: 107
   percent: 30
 ---
 
@@ -35,7 +35,7 @@ Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan y
 
 Phase: 184 (Hosted Supabase Measurement and Conformance Probe) — EXECUTING
 Plan: 25 of 25
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-10-26 — Phase 184 execution started
 
 Progress: [███░░░░░░░] 30% (3 of 9 roadmap phases, 181.1 inserted besides; 82/82 plans of the planned phases)
@@ -141,6 +141,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 184 P22 | 15 min | 3 tasks | 2 files |
 | Phase 184 P23 | 25min | 3 tasks | 4 files |
 | Phase 184 P24 | about 30 min of work (11 h wall, waiting for the operator) | 3 tasks | 6 files |
+| Phase 184 P25 | about 25 min of gates (orchestrator) and 10 min of recording | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -272,6 +273,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 184]: 184-22: the persistent project's first administrator was created through the Auth Admin API (email_confirm true) instead of the dashboard because the operator was away; same effect, recorded as a deviation from Step 21 item 1
 - [Phase 184]: 184-23: the persistent project's conformance probe passed (22 PASS, exit 0) and its 39 auth and 3 API settings are served as declared; FUT-02 holds both projects' key model, legacy keys retiring early 2027
 - [Phase 184]: 184-24: SCRATCH_SCOPE=keep-root (2026-11-11, the plan's auto-selected recommended option, applied by the orchestrator while the operator was away); the throwaway begckvkapaopoztbreqc was deleted by the operator (reported 2026-11-12T06:10Z), Management API 404, local state removed
+- [Phase 184]: 184-25: the phase closes green on dccdf490842d: lint, format and unit exit 0 (infra 96/96) and the full E2E suite 548/548 in tests/e2e-runs/184-25-20261112T062610Z; the two red first runs were the -gsd worktree's hold on the shared stack (its 00001-00010 schema, and its functions mounted in the edge runtime), cleared by db:reset and by db:stop plus db:start from -infra
 
 ### Pending Todos
 
@@ -324,6 +326,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-12T06:14:29.097Z
-**Stopped At:** Completed 184-24-PLAN.md
+Last session: 2026-11-12T06:45:02.475Z
+**Stopped At:** Completed 184-25-PLAN.md
 **Resume File:** None

@@ -73,7 +73,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
 - [ ] **SUPA-03**: Hosted API settings are applied from the repository, with maximum rows equal to
       `dataAdapter.pageSize`.
 - [x] **SUPA-04**: The two storage buckets are created reproducibly by the migration.
-- [ ] **SUPA-05**: The three Edge Functions are deployed and their secrets set from the operator's environment.
+- [x] **SUPA-05**: The three Edge Functions are deployed and their secrets set from the operator's environment.
       `identity-callback`'s JWT setting is declared in `config.toml`.
 - [x] **SUPA-06**: An idempotent bootstrap creates the rows a project needs (one account, one project, the
       `storage_config` row, `behind_cloudflare`) and commits no secret. `seed.sql` never reaches a hosted
@@ -135,7 +135,7 @@ Each is run on a real project, recorded with its date, and acted on.
       seen on a served function.
 - [ ] **OBS-06**: One invitation mail through real SMTP arrives with the correct origin and signs in. A manual
       observation, not a pipeline gate (E2).
-- [ ] **OBS-07**: A read of more than 1000 rows is not truncated, and `anon` runs with an 8 s statement timeout.
+- [x] **OBS-07**: A read of more than 1000 rows is not truncated, and `anon` runs with an 8 s statement timeout.
 - [ ] **OBS-08**: A frontend started from the template's variables alone reads from Supabase.
 - [ ] **OBS-09**: The per-caller limit on the anonymous invitation operations is decided after OBS-04: built in
       this milestone if the measurement supports a design, otherwise deferred with the measurement and a date
@@ -282,7 +282,7 @@ closes; those are not listed against the earlier phase here.
 | SUPA-02 | Phase 184 | Complete |
 | SUPA-03 | Phase 184 | Pending |
 | SUPA-04 | Phase 184 | Complete |
-| SUPA-05 | Phase 184 | Pending |
+| SUPA-05 | Phase 184 | Complete |
 | SUPA-06 | Phase 184 | Complete |
 | SUPA-07 | Phase 184 | Complete |
 | SUPA-08 | Phase 187 | Pending |
@@ -308,7 +308,7 @@ closes; those are not listed against the earlier phase here.
 | OBS-04 | Phase 185 | Pending |
 | OBS-05 | Phase 184 | Complete |
 | OBS-06 | Phase 185 | Pending |
-| OBS-07 | Phase 184 | Pending |
+| OBS-07 | Phase 184 | Complete |
 | OBS-08 | Phase 185 | Pending |
 | OBS-09 | Phase 188 | Pending |
 | OBS-10 | Phase 185 | Pending |
