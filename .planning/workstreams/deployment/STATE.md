@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 184
 current_phase_name: Hosted Supabase Measurement and Conformance Probe
-current_plan: 24
+current_plan: 25
 status: executing
-stopped_at: Completed 184-23-PLAN.md
-last_updated: "2026-11-11T21:22:21.678Z"
+stopped_at: Completed 184-24-PLAN.md
+last_updated: "2026-11-12T06:14:30.000Z"
 last_activity: 2026-10-26
 last_activity_desc: Phase 184 execution started
-state_head: 5dc0a4786b529b854247244e89f92374119cb995
+state_head: 97f8bd72eac02658b637251ecb615dc76ef82094
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 107
-  completed_plans: 105
+  completed_plans: 106
   percent: 30
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 184 (Hosted Supabase Measurement and Conformance Probe) — EXECUTING
-Plan: 24 of 25
+Plan: 25 of 25
 Status: Ready to execute
 Last activity: 2026-10-26 — Phase 184 execution started
 
@@ -43,7 +43,7 @@ Progress: [███░░░░░░░] 30% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 24
+**Current Plan:** 25
 
 From 184 on, the numeric order is the dependency order.
 
@@ -140,6 +140,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 184 P21 | 4h30m | 3 tasks | 2 files |
 | Phase 184 P22 | 15 min | 3 tasks | 2 files |
 | Phase 184 P23 | 25min | 3 tasks | 4 files |
+| Phase 184 P24 | about 30 min of work (11 h wall, waiting for the operator) | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -270,6 +271,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 184]: 184-22: LOGGING_GATE=session-timeout for the persistent project, applied by the orchestrator on 2026-11-11 under the operator's instruction to continue; values identical to the throwaway's, which the operator ruled session-timeout
 - [Phase 184]: 184-22: the persistent project's first administrator was created through the Auth Admin API (email_confirm true) instead of the dashboard because the operator was away; same effect, recorded as a deviation from Step 21 item 1
 - [Phase 184]: 184-23: the persistent project's conformance probe passed (22 PASS, exit 0) and its 39 auth and 3 API settings are served as declared; FUT-02 holds both projects' key model, legacy keys retiring early 2027
+- [Phase 184]: 184-24: SCRATCH_SCOPE=keep-root (2026-11-11, the plan's auto-selected recommended option, applied by the orchestrator while the operator was away); the throwaway begckvkapaopoztbreqc was deleted by the operator (reported 2026-11-12T06:10Z), Management API 404, local state removed
 
 ### Pending Todos
 
@@ -322,6 +324,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-11T21:22:20.825Z
-**Stopped At:** Completed 184-23-PLAN.md
+Last session: 2026-11-12T06:14:29.097Z
+**Stopped At:** Completed 184-24-PLAN.md
 **Resume File:** None
