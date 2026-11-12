@@ -1,8 +1,10 @@
-# The throwaway Supabase project. This root uses the same module as the persistent project's root, so
-# an import here rehearses that one: key discovery, the first plan, the settings apply, the second
-# plan and the destroy refusal are all seen here first. Its state is local and ignored by Git, and a
-# plan against a state that lacks the project imports it rather than creating one. The root is
-# removed once the throwaway project is deleted.
+# The rehearsal root of the staging Supabase root, on a throwaway project. It uses the same module as
+# the persistent project's root, so an import here rehearses that one: key discovery, the first plan,
+# the settings apply, the second plan and the destroy refusal are all seen here first. Each rehearsal
+# creates a new throwaway project by hand and writes its ref, organisation, name and region into
+# terraform.tfvars. The state is local and ignored by Git, and a plan against a state that lacks the
+# project imports it rather than creating one. When the rehearsal ends, the operator deletes the
+# project in the dashboard and removes this root's state, which holds its settings in clear text.
 terraform {
   required_version = ">= 1.10"
 

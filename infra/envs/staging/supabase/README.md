@@ -393,7 +393,10 @@ token, the password or anything from a log.
 
 **When the rehearsal is over** and its results are on record, delete the throwaway project in the
 dashboard, then remove the scratch root's local state, which holds the project's settings in clear
-text: `terraform.tfstate` and `terraform.tfstate.backup` in `infra/envs/scratch/supabase`.
+text: `terraform.tfstate`, `terraform.tfstate.backup`, any `tfplan` and the `.terraform` directory in
+`infra/envs/scratch/supabase`, and the project's linked work directory `tmp/supabase-linked/<ref>`
+(Step 14). The root's tracked files stay for the next rehearsal, which writes the new throwaway's
+ref, organisation, name and region into its `terraform.tfvars`.
 
 ## The persistent project
 
@@ -1563,3 +1566,4 @@ statement added later moves there in the same way once the step named beside it 
 | 2026-11-11    | The `smoke` dataset was seeded once on the persistent project with the legacy service-role key (status 0, about 5 minutes, against about 15 on the throwaway project), and an anonymous read of its nominations with the publishable key answered status 206 with `Content-Range: 0-0/1001`: 1001 rows readable without a session.                                                                                                                                                                                                                                                                                           |
 | 2026-11-11    | The conformance probe (Step 23) passed every check on the persistent project: status 0, twenty-two `PASS` lines, no `FAIL` and no `COULD NOT RUN`, with the publishable key, the catalog role `postgres` through the session pooler and no service-role key. Its note named the legacy anon and service-role keys, the default publishable and secret keys, and the legacy keys enabled.                                                                                                                                                                                                                                     |
 | 2026-11-11    | The persistent project served every managed setting as declared, read back key by key as in Step 12 (both reads status 200): the 39 auth settings `managed_auth_keys` names, the SMTP host, port `2587`, sender address and sender name included, and the 3 API settings. `smtp_user` is not in `managed_auth_keys`, since its own settings resource sends it, and the project holds one.                                                                                                                                                                                                                                    |
+| 2026-11-12    | After its red and green probe runs and its header record, the throwaway project `begckvkapaopoztbreqc` was deleted by the operator in the dashboard, and the Management API then answered 404 for its ref. Its local state was removed with it: the scratch root's state files and `.terraform` directory, and its linked work directory. The scratch root's tracked files were kept for a later rehearsal.                                                                                                                                                                                                                  |

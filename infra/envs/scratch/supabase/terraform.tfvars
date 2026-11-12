@@ -1,10 +1,12 @@
 # Non-secret inputs of the throwaway project's root. This file is tracked and public.
 #
-# The organisation, the project name and the region are the values the provider read when the project
-# was imported, by the plan of 2026-11-08 (UTC). The provider refuses a changed organisation or region
-# at apply, so these stay the read values. The recreated throwaway is in eu-west-1, while the
-# persistent project is in eu-north-1. The organisation id it read equals the slug in the dashboard's
-# address.
+# The ref, the organisation, the project name and the region name the last throwaway project, which
+# was deleted on 2026-11-12 (UTC) together with this root's state. A plan against them fails at its
+# import, because the ref names no project. The next rehearsal replaces all four with the new
+# throwaway's values. Take the organisation, the name and the region from what the provider reads at
+# import: it refuses a changed organisation or region at apply. The organisation id it reads equals
+# the slug in the dashboard's address. The last throwaway was in eu-west-1, while the persistent
+# project is in eu-north-1.
 #
 # The access token (SUPABASE_ACCESS_TOKEN), the database password (TF_VAR_database_password), the
 # SMTP user name (TF_VAR_smtp_user) and the SMTP password (TF_VAR_smtp_password) are given as
