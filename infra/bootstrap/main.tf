@@ -28,10 +28,11 @@ provider "aws" {
 }
 
 # The account-level root. It holds what every other root rests on: the bucket their state lives in,
-# the image registry, the monthly cost budget, and the OIDC trust with the two roles GitHub Actions
-# assumes. Every IAM resource of this layer comes from the github_oidc module, and this root is
-# applied by hand only, so no workflow role can create or change IAM. The root declares no resource
-# of its own and reads no other root's state.
+# the image registry, the monthly cost budget, the OIDC trust with the two roles GitHub Actions
+# assumes, and the execution role of the frontend's ECS task. Every IAM resource of this layer comes
+# from the github_oidc and frontend_task_role modules, and this root is applied by hand only, so no
+# workflow role can create or change IAM. The root declares no resource of its own and reads no other
+# root's state.
 
 module "state_bucket" {
   source = "../modules/state-bucket"
@@ -66,4 +67,14 @@ module "github_oidc" {
   pipeline_state_key         = var.pipeline_state_key
   state_bucket_arn           = module.state_bucket.bucket_arn
   registry_arn               = module.registry.repository_arn
+}
+
+module "frontend_task_role" {
+  source = "../modules/frontend-task-role"
+
+  name_prefix    = var.name_prefix
+  iam_path       = var.iam_path
+  environment    = var.frontend_environment
+  aws_account_id = var.aws_account_id
+  aws_region     = var.aws_region
 }

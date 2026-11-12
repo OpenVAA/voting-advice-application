@@ -39,6 +39,11 @@ variable "alert_email" {
   sensitive   = true
 }
 
+variable "frontend_environment" {
+  description = "Name of the environment whose frontend task uses the execution role this root creates. The role reads that task's parameters under /openvaa/<environment>/frontend only."
+  type        = string
+}
+
 variable "deploy_environment" {
   description = "Name of the GitHub Environment the deploy role is bound to."
   type        = string
