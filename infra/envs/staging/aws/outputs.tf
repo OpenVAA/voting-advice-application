@@ -66,3 +66,28 @@ output "origin_verify_header_value" {
   value       = module.frontend.origin_verify_header_value
   sensitive   = true
 }
+
+output "url" {
+  description = "The site's public address."
+  value       = module.frontend.url
+}
+
+output "distribution_id" {
+  description = "Id of the CloudFront distribution."
+  value       = module.frontend.distribution_id
+}
+
+output "distribution_domain_name" {
+  description = "CloudFront's own name for the distribution, the target of the site's records."
+  value       = module.frontend.distribution_domain_name
+}
+
+output "viewer_certificate_arn" {
+  description = "ARN of the viewer certificate, in us-east-1."
+  value       = module.frontend.viewer_certificate_arn
+}
+
+output "origin_certificate_arn" {
+  description = "ARN of the load balancer's certificate, in the root's region."
+  value       = module.frontend.origin_certificate_arn
+}

@@ -177,3 +177,14 @@ variable "vpc_cidr" {
     error_message = "vpc_cidr must be an address block with a prefix of /24 or shorter, so that two subnets eight bits longer fit in it."
   }
 }
+
+variable "price_class" {
+  description = "The CDN's price class, which sets the edge locations it serves from."
+  type        = string
+  default     = "PriceClass_100"
+
+  validation {
+    condition     = contains(["PriceClass_100", "PriceClass_200", "PriceClass_All"], var.price_class)
+    error_message = "price_class must be PriceClass_100, PriceClass_200 or PriceClass_All."
+  }
+}

@@ -63,3 +63,28 @@ output "origin_verify_header_value" {
   value       = random_password.origin_verify.result
   sensitive   = true
 }
+
+output "url" {
+  description = "The site's public address."
+  value       = "https://${var.domain}"
+}
+
+output "distribution_id" {
+  description = "Id of the CloudFront distribution."
+  value       = aws_cloudfront_distribution.this.id
+}
+
+output "distribution_domain_name" {
+  description = "CloudFront's own name for the distribution, the target of the site's records."
+  value       = aws_cloudfront_distribution.this.domain_name
+}
+
+output "viewer_certificate_arn" {
+  description = "ARN of the viewer certificate, in us-east-1."
+  value       = aws_acm_certificate_validation.viewer.certificate_arn
+}
+
+output "origin_certificate_arn" {
+  description = "ARN of the load balancer's certificate, in the root's region."
+  value       = aws_acm_certificate_validation.origin.certificate_arn
+}

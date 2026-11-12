@@ -66,6 +66,26 @@ mock_provider "aws" {
 
 mock_provider "aws" {
   alias = "us_east_1"
+
+  mock_resource "aws_acm_certificate" {
+    defaults = {
+      arn = "arn:aws:acm:us-east-1:000000000000:certificate/00000000-0000-0000-0000-000000000001"
+      domain_validation_options = [
+        {
+          domain_name           = "test.example.org"
+          resource_record_name  = "_0001.test.example.org."
+          resource_record_type  = "CNAME"
+          resource_record_value = "_0001.acm-validations.aws."
+        },
+      ]
+    }
+  }
+
+  mock_resource "aws_acm_certificate_validation" {
+    defaults = {
+      certificate_arn = "arn:aws:acm:us-east-1:000000000000:certificate/00000000-0000-0000-0000-000000000001"
+    }
+  }
 }
 
 override_data {
@@ -571,4 +591,93 @@ run "listeners" {
     condition     = length(aws_route53_record.origin_validation) == 1
     error_message = "The certificate must have one validation record."
   }
+}
+
+run "cdn" {
+  command = apply
+
+  assert {
+    condition = (
+      length(aws_cloudfront_distribution.this.ordered_cache_behavior) == 1
+      && aws_cloudfront_distribution.this.ordered_cache_behavior[0].path_pattern == "/_app/immutable/*"
+      && aws_cloudfront_distribution.this.ordered_cache_behavior[0].cache_policy_id == data.aws_cloudfront_cache_policy.optimized.id
+      && aws_cloudfront_distribution.this.ordered_cache_behavior[0].viewer_protocol_policy == "redirect-to-https"
+      && data.aws_cloudfront_cache_policy.optimized.name == "Managed-CachingOptimized"
+    )
+    error_message = "Only /_app/immutable/* may be cached, with the managed CachingOptimized policy."
+  }
+
+  assert {
+    condition = (
+      aws_cloudfront_distribution.this.default_cache_behavior[0].cache_policy_id == data.aws_cloudfront_cache_policy.disabled.id
+      && aws_cloudfront_distribution.this.default_cache_behavior[0].origin_request_policy_id == data.aws_cloudfront_origin_request_policy.all_viewer_except_host.id
+      && data.aws_cloudfront_cache_policy.disabled.name == "Managed-CachingDisabled"
+      && data.aws_cloudfront_origin_request_policy.all_viewer_except_host.name == "Managed-AllViewerExceptHostHeader"
+    )
+    error_message = "The default behaviour must cache nothing and forward everything but the viewer's Host."
+  }
+
+  assert {
+    condition = (
+      aws_cloudfront_distribution.this.default_cache_behavior[0].allowed_methods == toset(["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"])
+      && aws_cloudfront_distribution.this.default_cache_behavior[0].viewer_protocol_policy == "redirect-to-https"
+    )
+    error_message = "The default behaviour must allow all seven methods and redirect HTTP to HTTPS."
+  }
+
+  assert {
+    condition = (
+      length(aws_cloudfront_distribution.this.origin) == 1
+      && one(aws_cloudfront_distribution.this.origin).domain_name == "origin.test.example.org"
+      && one(aws_cloudfront_distribution.this.origin).custom_origin_config[0].origin_protocol_policy == "https-only"
+      && [for h in one(aws_cloudfront_distribution.this.origin).custom_header : h.name] == ["x-origin-verify"]
+      && nonsensitive(alltrue([for h in one(aws_cloudfront_distribution.this.origin).custom_header : h.value == random_password.origin_verify.result]))
+    )
+    error_message = "The only origin must be origin.<domain> over HTTPS, carrying the origin secret in x-origin-verify."
+  }
+
+  assert {
+    condition = (
+      length(aws_cloudfront_distribution.this.custom_error_response) == 11
+      && alltrue([for r in aws_cloudfront_distribution.this.custom_error_response : r.error_caching_min_ttl == 0])
+      && sort([for r in aws_cloudfront_distribution.this.custom_error_response : tostring(r.error_code)]) == sort(["400", "403", "404", "405", "414", "416", "500", "501", "502", "503", "504"])
+    )
+    error_message = "Every error response must have an error-caching minimum TTL of 0."
+  }
+
+  assert {
+    condition = (
+      aws_cloudfront_distribution.this.aliases == toset(["test.example.org"])
+      && aws_cloudfront_distribution.this.price_class == "PriceClass_100"
+      && aws_cloudfront_distribution.this.viewer_certificate[0].acm_certificate_arn == aws_acm_certificate_validation.viewer.certificate_arn
+      && aws_cloudfront_distribution.this.viewer_certificate[0].ssl_support_method == "sni-only"
+      && aws_acm_certificate.viewer.domain_name == "test.example.org"
+      && length(aws_route53_record.viewer_validation) == 1
+    )
+    error_message = "The distribution must serve <domain> with the validated viewer certificate for <domain>."
+  }
+
+  assert {
+    condition = (
+      length(aws_route53_record.apex) == 2
+      && sort([for r in aws_route53_record.apex : r.type]) == tolist(["A", "AAAA"])
+      && alltrue([for r in aws_route53_record.apex : r.name == "test.example.org" && one(r.alias).name == aws_cloudfront_distribution.this.domain_name])
+    )
+    error_message = "<domain> must be an A and an AAAA alias to the distribution."
+  }
+
+  assert {
+    condition     = output.url == "https://test.example.org"
+    error_message = "The site's address must be https://<domain>."
+  }
+}
+
+run "price_class_refuses_an_unknown_class" {
+  command = plan
+
+  variables {
+    price_class = "PriceClass_50"
+  }
+
+  expect_failures = [var.price_class]
 }
