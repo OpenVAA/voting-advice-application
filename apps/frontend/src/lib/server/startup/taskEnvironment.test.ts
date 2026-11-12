@@ -38,12 +38,33 @@ const ANALYTICS_NAMES: ReadonlyArray<string> = [
   'ANALYTICS_POSTHOG_HOST'
 ];
 
-/** What {@link taskEnvironmentProblems} checks: the parsed list, the text of `.env.example`, and the name sets the list must agree with. */
+/** The runbook whose environment section lists every name of the list, relative to the repository root. */
+const RUNBOOK_PATH = 'infra/envs/staging/aws/README.md';
+
+/** The variable file of every AWS root, each of which sets every `value` entry of the list, relative to the repository root. */
+const AWS_ROOT_TFVARS_PATHS: ReadonlyArray<string> = [
+  'infra/envs/staging/aws/terraform.tfvars',
+  'infra/envs/example/aws/terraform.tfvars'
+];
+
+/** One root's variable file: where it is, so a problem can name it, and its text. */
+type TfvarsFile = {
+  /** The file's path, as a problem names it. */
+  path: string;
+  /** The file's text. */
+  text: string;
+};
+
+/** What {@link taskEnvironmentProblems} checks: the parsed list, the texts it must agree with, and the name sets the list must agree with. */
 type TaskEnvironmentInput = {
   /** The parsed list, `unknown` because it comes from a JSON file. */
   spec: unknown;
   /** The text of the env example file. */
   envExample: string;
+  /** The text of the runbook whose environment section lists every name. */
+  runbook: string;
+  /** The variable file of every AWS root. */
+  tfvars: ReadonlyArray<TfvarsFile>;
   /** The names the start-up check refuses to start without. */
   requiredNames: ReadonlyArray<string>;
   /** The names the analytics configuration is read from. */
@@ -165,19 +186,96 @@ const SOUND_ENV_EXAMPLE = SOUND_ENTRIES.map(({ name }, index) => (index % 2 === 
 );
 
 /**
- * Check a fixture list against the fixture env example and the local name sets.
+ * Build a fixture runbook whose environment section lists the given names in a table, between other sections that list none.
+ *
+ * @param names - The names the section lists.
+ * @returns The runbook text.
+ */
+function runbookListing(names: ReadonlyArray<string>): string {
+  return [
+    '# A fixture runbook',
+    '',
+    "## The task's environment",
+    '',
+    '| Name | Source |',
+    '| ---- | ------ |',
+    ...names.map((name) => `| \`${name}\` | value |`),
+    '',
+    '## Flow overview',
+    ''
+  ].join('\n');
+}
+
+/**
+ * Build a fixture variable file whose `environment_values` block sets the given names, with a comment line inside the block.
+ *
+ * @param names - The names the block sets.
+ * @returns The variable file's text.
+ */
+function tfvarsSetting(names: ReadonlyArray<string>): string {
+  return [
+    'aws_region = "eu-north-1"',
+    '',
+    'environment_values = {',
+    '  # A comment inside the block.',
+    ...names.map((name) => `  ${name} = "x"`),
+    '}',
+    ''
+  ].join('\n');
+}
+
+/**
+ * The texts a sound fixture list agrees with: a runbook that lists every entry, and two root variable files that each set every `value` entry.
+ *
+ * @param entries - The fixture entries.
+ * @returns The runbook text and the two variable files.
+ */
+function soundTexts(entries: ReadonlyArray<FixtureEntry>): Pick<TaskEnvironmentInput, 'runbook' | 'tfvars'> {
+  const valueNames = entries.filter(({ source }) => source === 'value').map(({ name }) => name);
+  return {
+    runbook: runbookListing(entries.map(({ name }) => name)),
+    tfvars: AWS_ROOT_TFVARS_PATHS.map((path) => ({ path, text: tfvarsSetting(valueNames) }))
+  };
+}
+
+/**
+ * Check a fixture list against the fixture env example, the fixture runbook and variable files, and the local name sets.
  *
  * @param entries - The fixture entries.
  * @param envExample - The env example text, {@link SOUND_ENV_EXAMPLE} by default.
+ * @param texts - A runbook or variable files to use instead of the sound ones {@link soundTexts} builds from the entries.
  * @returns The problems found.
  */
-function fixtureProblems(entries: ReadonlyArray<FixtureEntry>, envExample: string = SOUND_ENV_EXAMPLE): Array<string> {
+function fixtureProblems(
+  entries: ReadonlyArray<FixtureEntry>,
+  envExample: string = SOUND_ENV_EXAMPLE,
+  texts: Partial<Pick<TaskEnvironmentInput, 'runbook' | 'tfvars'>> = {}
+): Array<string> {
   return taskEnvironmentProblems({
     spec: { variables: entries },
     envExample,
+    ...soundTexts(entries),
+    ...texts,
     requiredNames: REQUIRED_NAMES,
     analyticsNames: ANALYTICS_NAMES
   });
+}
+
+/** The names of the sound fixture list's `value` entries. */
+const SOUND_VALUE_NAMES = SOUND_ENTRIES.filter(({ source }) => source === 'value').map(({ name }) => name);
+
+/**
+ * Two fixture variable files: the first as given, the second sound.
+ *
+ * @param text - The first file's text.
+ * @returns The two files.
+ */
+function tfvarsWithFirst(text: string): Array<TfvarsFile> {
+  const [first, second] = AWS_ROOT_TFVARS_PATHS;
+  return [
+    { path: first, text },
+    { path: second, text: tfvarsSetting(SOUND_VALUE_NAMES) }
+  ];
 }
 
 describe('taskEnvironmentProblems', () => {
@@ -273,6 +371,7 @@ describe('taskEnvironmentProblems', () => {
         ]
       },
       envExample: SOUND_ENV_EXAMPLE,
+      ...soundTexts(SOUND_ENTRIES),
       requiredNames: REQUIRED_NAMES,
       analyticsNames: ANALYTICS_NAMES
     });
@@ -288,8 +387,75 @@ describe('taskEnvironmentProblems', () => {
   });
 });
 
+describe('taskEnvironmentProblems against the runbook and the AWS roots', () => {
+  it("names a variable the runbook's environment section does not list", () => {
+    const runbook = runbookListing(
+      SOUND_ENTRIES.map(({ name }) => name).filter((name) => name !== 'ANALYTICS_CONSENT_MODE')
+    );
+    const problems = fixtureProblems(SOUND_ENTRIES, SOUND_ENV_EXAMPLE, { runbook });
+    expect(problems).toEqual([expect.stringContaining('ANALYTICS_CONSENT_MODE')]);
+    expect(problems[0]).toContain('runbook');
+  });
+
+  it('counts a name as listed only in backticks inside the section that begins with ## The task', () => {
+    const others = SOUND_ENTRIES.map(({ name }) => name).filter((name) => name !== 'ORIGIN');
+    const runbook = [
+      '# A fixture runbook',
+      '',
+      'The lines before the section name `ORIGIN`.',
+      '',
+      runbookListing(others)
+        .replace('# A fixture runbook\n', '')
+        .replace('| Name | Source |', 'ORIGIN is named here without backticks.\n\n| Name | Source |'),
+      'The section after it names `ORIGIN` too.'
+    ].join('\n');
+    const problems = fixtureProblems(SOUND_ENTRIES, SOUND_ENV_EXAMPLE, { runbook });
+    expect(problems).toEqual([expect.stringContaining('ORIGIN')]);
+  });
+
+  it('reports a runbook without the environment section', () => {
+    const problems = fixtureProblems(SOUND_ENTRIES, SOUND_ENV_EXAMPLE, {
+      runbook: '# A runbook\n\n## Flow overview\n'
+    });
+    expect(problems).toEqual([expect.stringContaining('## The task')]);
+  });
+
+  it("names a value variable an AWS root's variable file does not set, and the file", () => {
+    const tfvars = tfvarsWithFirst(tfvarsSetting(SOUND_VALUE_NAMES.filter((name) => name !== 'ORIGIN')));
+    const problems = fixtureProblems(SOUND_ENTRIES, SOUND_ENV_EXAMPLE, { tfvars });
+    expect(problems).toEqual([expect.stringContaining('ORIGIN')]);
+    expect(problems[0]).toContain(AWS_ROOT_TFVARS_PATHS[0]);
+  });
+
+  it("names a parameter variable an AWS root's variable file sets", () => {
+    const tfvars = tfvarsWithFirst(tfvarsSetting([...SOUND_VALUE_NAMES, 'ANALYTICS_POSTHOG_KEY']));
+    const problems = fixtureProblems(SOUND_ENTRIES, SOUND_ENV_EXAMPLE, { tfvars });
+    expect(problems).toEqual([expect.stringContaining('ANALYTICS_POSTHOG_KEY')]);
+    expect(problems[0]).toContain(AWS_ROOT_TFVARS_PATHS[0]);
+  });
+
+  it("names a name an AWS root's variable file sets that the list does not hold", () => {
+    const tfvars = tfvarsWithFirst(tfvarsSetting([...SOUND_VALUE_NAMES, 'NOT_IN_THE_LIST']));
+    const problems = fixtureProblems(SOUND_ENTRIES, SOUND_ENV_EXAMPLE, { tfvars });
+    expect(problems).toEqual([expect.stringContaining('NOT_IN_THE_LIST')]);
+  });
+
+  it('reads the keys of the block only, up to the first line that begins with a closing brace', () => {
+    const text = `${tfvarsSetting(SOUND_VALUE_NAMES.filter((name) => name !== 'ORIGIN'))}ORIGIN = "x"\n`;
+    const problems = fixtureProblems(SOUND_ENTRIES, SOUND_ENV_EXAMPLE, { tfvars: tfvarsWithFirst(text) });
+    expect(problems).toEqual([expect.stringContaining('ORIGIN')]);
+  });
+
+  it('reports a variable file without an environment_values block', () => {
+    const problems = fixtureProblems(SOUND_ENTRIES, SOUND_ENV_EXAMPLE, {
+      tfvars: tfvarsWithFirst('aws_region = "eu-north-1"\n')
+    });
+    expect(problems).toEqual([expect.stringContaining(AWS_ROOT_TFVARS_PATHS[0])]);
+  });
+});
+
 /**
- * Check an arbitrary parsed value as the list, against the sound fixture env example.
+ * Check an arbitrary parsed value as the list, against the sound fixture env example, runbook and variable files.
  *
  * @param spec - The parsed value.
  * @returns The problems found.
@@ -298,6 +464,7 @@ function fixtureProblemsOf(spec: unknown): Array<string> {
   return taskEnvironmentProblems({
     spec,
     envExample: SOUND_ENV_EXAMPLE,
+    ...soundTexts(SOUND_ENTRIES),
     requiredNames: REQUIRED_NAMES,
     analyticsNames: ANALYTICS_NAMES
   });
@@ -309,11 +476,13 @@ describe('the task environment list in the repository', () => {
     process.env.TASK_ENVIRONMENT_SPEC ?? `${REPOSITORY_ROOT}infra/modules/frontend-service/task-environment.json`;
   const envExamplePath = `${REPOSITORY_ROOT}.env.example`;
 
-  it('agrees with REQUIRED_ENV, ANALYTICS_ENV and .env.example', () => {
+  it("agrees with REQUIRED_ENV, ANALYTICS_ENV, .env.example, the runbook and every AWS root's variable file", () => {
     expect(existsSync(specPath), `the list is expected at ${specPath}`).toBe(true);
     const problems = taskEnvironmentProblems({
       spec: JSON.parse(readFileSync(specPath, 'utf8')),
       envExample: readFileSync(envExamplePath, 'utf8'),
+      runbook: readFileSync(`${REPOSITORY_ROOT}${RUNBOOK_PATH}`, 'utf8'),
+      tfvars: AWS_ROOT_TFVARS_PATHS.map((path) => ({ path, text: readFileSync(`${REPOSITORY_ROOT}${path}`, 'utf8') })),
       requiredNames: REQUIRED_ENV,
       analyticsNames: Object.values(ANALYTICS_ENV)
     });
