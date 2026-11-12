@@ -92,10 +92,17 @@ item before you leave the terminal.
 - **The confirmation of the alert's subscription**, from the mail AWS sends to that address (Step 6).
 - **The activation of the cost-allocation tags** `Project`, `Environment` and `Root` in Billing (Step
   6).
+- **For Step 10, the alert mail**: whether it reached the alert mailbox, and when.
+- **For Step 13, a phone that can leave Wi-Fi**, and the inserts from the workstation, in one sitting
+  of five minutes.
+- **For Step 14, the first administrator's address and password**, typed at prompts, **a second
+  mailbox of the operator's own**, and the sign-in link of its mail, followed in a browser.
 - **For Steps 15 and 16, the Supabase session secrets**: the access token and the database password,
   given for one shell session as
   [`../supabase/README.md`](../supabase/README.md) describes, because a plan of the Supabase root
-  needs them, and the SMTP pair, read from the `dns-mail` root's outputs in the same shell.
+  needs them, and the SMTP pair, read from the `dns-mail` root's outputs in the same shell. The same
+  session runs Step 15's cleanup over `psql` and, with the anon key, Step 16's conformance probe.
+- **For Step 17, the confirmation of the new subscription**, which the re-created topic sends.
 
 ## Before you start
 
@@ -208,7 +215,10 @@ Step 18 the cost, by tag, against the priced inventory
 ```
 
 Steps 1 to 6 bring the stack up. Steps 7 and 8 read the running stack and change nothing; Steps 9 to
-12 each change it for an observation and change it back. Steps 13 to 18 are not written yet.
+12 each change it for an observation and change it back. Steps 13 and 14 follow two paths from the
+stack's pages to the hosted project, Steps 15 to 17 destroy the root and apply it again, and Step 18
+reads the cost of the stack the re-apply brought up. "Election day", after Step 18, is not a step of
+this order: it is how the floor is raised for a known peak.
 
 ## Up to the first apply
 
@@ -2370,6 +2380,1071 @@ T=infra/envs/staging/aws
 
 Return: every `s12_` line, in order.
 
+## The hosted project, through the stack
+
+Steps 13 and 14 observe two paths that run from the stack's pages to the hosted Supabase project, and
+need the operator: a second network, and a mailbox. They write a few rows and one user to the
+persistent project, the only change this runbook makes there, and Step 15 removes them before the
+destroy. They are best run in one sitting of the operator's, Step 13 first.
+
+### Step 13: The feedback limit, by client
+
+The voter app's feedback form writes straight from the browser to the Supabase REST API, with the
+anon key every page carries, as an insert into `public.feedback`. No route of this stack is on that
+path, so the limit is the database's own: a trigger admits five inserts per client in a window of five
+minutes and refuses the sixth with SQLSTATE `P0001`, which the REST API answers with status 400. On
+hosted Supabase the client is the address Cloudflare, in front of the project, gives the connecting
+client, so two clients on different networks have a bucket each.
+
+Items 1 and 2 are run from the workstation. Items 3 to 5 are the operator's, with a phone that can
+leave Wi-Fi, and start no earlier than five minutes after item 2, so that the workstation's window has
+ended. Every insert carries the description `limit-check <time>`, by which Step 15 removes it. The
+workstation's inserts are made over IPv4 (`curl -4`), so that all of them come from one address.
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+export LC_ALL=C AWS_PAGER="" AWS_PROFILE=openvaa-admin \
+  AWS_REGION=eu-north-1 \
+  TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-aws.XXXXXX")
+ACCOUNT=$(aws sts get-caller-identity --query Account \
+  --output text 2> "$L/account.err")
+echo "s13_account_read_exit=$?"
+test "$ACCOUNT" = 471112560111; echo "s13_account_match_exit=$?"
+T=infra/envs/staging/aws
+U=https://staging.openvaa.org
+```
+
+1. The page, the anon key it carries, and the insert the browser makes. The key is read from the page
+   into a variable, never printed, and handed to `curl` as a configuration on a file descriptor:
+
+   ```bash
+   SB=$(sed -n 's/^ *PUBLIC_SUPABASE_URL *= *"\(.*\)"/\1/p' \
+     "$T/terraform.tfvars")
+   P=$(sed -n 's/^ *PUBLIC_PROJECT_ID *= *"\(.*\)"/\1/p' \
+     "$T/terraform.tfvars")
+   curl -sS --max-time 20 -L -o "$L/s13-page.html" \
+     -w 's13_page_http=%{http_code}\n' "$U/" 2> "$L/s13-page.err"
+   echo "s13_page_curl_exit=$?"
+   K=$(sed -nE 's/.*PUBLIC_SUPABASE_ANON_KEY"?:"([^"]+)".*/\1/p' \
+     "$L/s13-page.html" | head -1)
+   test -n "$K"; echo "s13_anon_key_found_exit=$?"
+   keys() {
+     printf 'header = "apikey: %s"\n' "$K"
+     printf 'header = "Authorization: Bearer %s"\n' "$K"
+   }
+   fb() {
+     jq -n --arg p "$P" --arg u "$U/" \
+       --arg d "limit-check $(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+       '{project_id: $p, description: $d, url: $u,
+         date: (now | todate)}' \
+       | curl -4 -sS --max-time 20 -o "$L/s13-answer.json" \
+         -w '%{http_code}' -K <(keys) \
+         -H 'Content-Type: application/json' -H "Origin: $U" \
+         --data-binary @- "$SB/rest/v1/feedback" \
+         2>> "$L/s13-curl.err"
+   }
+   ```
+
+   Expected: `s13_page_http=200` and both statuses 0.
+
+2. One insert:
+
+   ```bash
+   CODE=$(fb); echo "s13_probe_insert_curl_exit=$?"
+   echo "s13_probe_insert_http=$CODE"
+   echo "s13_probe_insert_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+   ```
+
+   Expected: `s13_probe_insert_http=201`. Item 3 starts no earlier than five minutes after
+   `s13_probe_insert_utc`.
+
+3. **The operator's:** inserts from the workstation until the first refusal, at most seven, each
+   status printed:
+
+   ```bash
+   echo "s13_block_started_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+   for i in 1 2 3 4 5 6 7; do
+     CODE=$(fb); X=$?
+     echo "s13_insert_${i}_http=$CODE"
+     echo "s13_insert_${i}_curl_exit=$X"
+     test "$CODE" = 201 || break
+   done
+   jq -r '"s13_refusal_code=\(.code)"' "$L/s13-answer.json"
+   ```
+
+   Expected: `s13_insert_1_http=` to `s13_insert_5_http=` each `201`, `s13_insert_6_http=400` and
+   `s13_refusal_code=P0001`. If the first insert is already refused, a window opened by an earlier
+   insert from this network has not ended: wait five minutes and run this item again.
+
+4. **The operator's:** within five minutes of `s13_block_started_utc`, on the phone with Wi-Fi off, so
+   that it reaches the internet through the mobile network, open `https://staging.openvaa.org`, open
+   the feedback form from the menu, write `limit-check phone` and the time as the text, and send it.
+   The form thanks you when the feedback was stored and says it failed when it was refused. Answer
+   `answer_phone_feedback=accepted` or `answer_phone_feedback=refused`, and
+   `answer_phone_feedback_utc=<time>`.
+
+5. **The operator's:** one more insert from the workstation, still within the five minutes:
+
+   ```bash
+   CODE=$(fb); echo "s13_after_phone_curl_exit=$?"
+   echo "s13_after_phone_http=$CODE"
+   jq -r '"s13_after_phone_code=\(.code)"' "$L/s13-answer.json"
+   echo "s13_after_phone_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+   ```
+
+   Expected: `s13_after_phone_http=400` and `s13_after_phone_code=P0001`, with
+   `s13_after_phone_utc` less than five minutes after `s13_block_started_utc`: the phone's insert was
+   admitted while the workstation's bucket was full, so the two clients were counted apart.
+
+6. Last item, also when you stop early or a command failed:
+
+   ```bash
+   unset K
+   test -n "$L" && rm -rf "$L" && echo "s13_logs_removed=yes"
+   ```
+
+Return: every `s13_` line and the two `answer_phone_feedback` lines.
+
+### Step 14: One invitation mail, followed to a signed-in recipient
+
+The operator's step, except item 1. The first administrator signs in at the staging URL through the
+Admin App's login form, which shows the sign-in working through both proxies and how its answer,
+which sets the auth cookies, is cached. The administrator then creates one email invitation for a
+smoke candidate, addressed to a second mailbox of the operator's own, with `p_confirm_entity` false,
+so that whether the candidate is confirmed, and so what voters see, does not change. Creating an
+invitation sends nothing. The operator asks for a sign-in link on the Contestant App's sign-in screen
+at the staging URL; the mail carries a link whose origin is the hosted project's `SITE_URL`,
+`https://staging.openvaa.org`, and following it signs the recipient in and claims the invitation.
+
+The second mailbox must be able to receive the project's mail: while the mail identity is in the
+sandbox, it must be verified first, as [`../dns-mail/README.md`](../dns-mail/README.md) Step 9
+describes. No address, password, token, or link query goes into a pasted line.
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+export LC_ALL=C AWS_PAGER="" AWS_PROFILE=openvaa-admin \
+  AWS_REGION=eu-north-1 \
+  TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-aws.XXXXXX")
+ACCOUNT=$(aws sts get-caller-identity --query Account \
+  --output text 2> "$L/account.err")
+echo "s14_account_read_exit=$?"
+test "$ACCOUNT" = 471112560111; echo "s14_account_match_exit=$?"
+T=infra/envs/staging/aws
+U=https://staging.openvaa.org
+```
+
+1. The project's registration modes for candidates, and one smoke candidate's id, both read
+   anonymously, as any visitor can:
+
+   ```bash
+   SB=$(sed -n 's/^ *PUBLIC_SUPABASE_URL *= *"\(.*\)"/\1/p' \
+     "$T/terraform.tfvars")
+   P=$(sed -n 's/^ *PUBLIC_PROJECT_ID *= *"\(.*\)"/\1/p' \
+     "$T/terraform.tfvars")
+   curl -sS --max-time 20 -L -o "$L/s14-page.html" "$U/" \
+     2> "$L/s14-page.err"
+   echo "s14_page_curl_exit=$?"
+   K=$(sed -nE 's/.*PUBLIC_SUPABASE_ANON_KEY"?:"([^"]+)".*/\1/p' \
+     "$L/s14-page.html" | head -1)
+   test -n "$K"; echo "s14_anon_key_found_exit=$?"
+   keys() {
+     printf 'header = "apikey: %s"\n' "$K"
+     printf 'header = "Authorization: Bearer %s"\n' "$K"
+   }
+   jq -n --arg p "$P" '{p_project_id: $p}' \
+     | curl -sS --max-time 20 -o "$L/s14-config.json" \
+       -w 's14_config_http=%{http_code}\n' -K <(keys) \
+       -H 'Content-Type: application/json' --data-binary @- \
+       "$SB/rest/v1/rpc/contestant_app_public_config" \
+       2> "$L/s14-config.err"
+   jq -r '.contestantApp.registrationModes.candidate // []
+     | "s14_candidate_modes=\(join(","))"' "$L/s14-config.json"
+   Q="select=id&project_id=eq.$P&external_id=like.smoke_*"
+   curl -sS --max-time 20 -o "$L/s14-candidate.json" \
+     -w 's14_candidate_http=%{http_code}\n' -K <(keys) \
+     "$SB/rest/v1/candidates?$Q&order=external_id&limit=1" \
+     2> "$L/s14-candidate.err"
+   CAND=$(jq -r '.[0].id // empty' "$L/s14-candidate.json")
+   echo "s14_candidate=$CAND"
+   ```
+
+   Expected: `s14_candidate_modes=` listing `email`, and `s14_candidate=` an id. Without `email` the
+   project honours no email invitation for a candidate: stop here.
+
+2. **The operator's:** the first administrator's sign-in through the Admin App's login form at the
+   staging URL. The address and the password are read at prompts, the password without echoing it,
+   and reach `curl` from the environment through `jq`, on standard input. Only the status, the
+   redirect's path, two headers and the names of the cookies the answer sets are printed:
+
+   ```bash
+   printf 'administrator address: '; read -r ADMIN_EMAIL
+   export ADMIN_EMAIL
+   printf 'administrator password: '; read -rs ADMIN_PASSWORD
+   echo; export ADMIN_PASSWORD
+   hdr() { awk -v n="$2:" 'tolower($1) == n { sub(/\r$/, "");
+     sub(/^[^:]*: */, ""); print; exit }' "$1"; }
+   curl -sS --max-time 20 -L -o /dev/null -w '%{url_effective}' \
+     "$U/admin/login" > "$L/s14-login.url" 2> "$L/s14-login.err"
+   echo "s14_login_page_curl_exit=$?"
+   LP=$(sed "s|^$U||; s|?.*||" "$L/s14-login.url")
+   echo "s14_login_path=$LP"
+   A='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+   jq -rn '"email=\(env.ADMIN_EMAIL | @uri)"
+     + "&password=\(env.ADMIN_PASSWORD | @uri)"' \
+     | curl -sS --max-time 20 -o /dev/null -D "$L/s14-signin.txt" \
+       -w 's14_admin_signin_http=%{http_code}\n' \
+       -H "$A" -H "Origin: $U" --data-binary @- "$U$LP" \
+       2> "$L/s14-signin.err"
+   echo "s14_admin_signin_curl_exit=$?"
+   echo "s14_signin_location=$(hdr "$L/s14-signin.txt" location \
+     | sed 's/?.*//')"
+   echo "s14_signin_cache_control=$(hdr "$L/s14-signin.txt" \
+     cache-control)"
+   echo "s14_signin_x_cache=$(hdr "$L/s14-signin.txt" x-cache)"
+   echo "s14_signin_cookie_names=$(sed -n \
+     's/^[Ss]et-[Cc]ookie: *\([^=]*\)=.*/\1/p' "$L/s14-signin.txt" \
+     | sort -u | paste -sd, -)"
+   ```
+
+   Expected: `s14_admin_signin_http=303`, `s14_signin_location=` a path of the Admin App,
+   `s14_signin_cookie_names=` naming the auth cookies, and `s14_signin_x_cache=Miss from cloudfront`.
+   `s14_signin_cache_control=` is recorded as it reads.
+
+3. **The operator's:** the administrator's access token, by the password sign-in of
+   [`../supabase/README.md`](../supabase/README.md) Step 21. The answer, which holds the token, stays
+   in `$L`:
+
+   ```bash
+   jq -n '{email: env.ADMIN_EMAIL, password: env.ADMIN_PASSWORD}' \
+     | curl -sS --max-time 20 -o "$L/s14-token.json" \
+       -w 's14_token_http=%{http_code}\n' -K <(keys) \
+       -H 'Content-Type: application/json' --data-binary @- \
+       "$SB/auth/v1/token?grant_type=password" 2> "$L/s14-token.err"
+   unset ADMIN_PASSWORD
+   TOKEN=$(jq -r '.access_token // empty' "$L/s14-token.json")
+   test -n "$TOKEN"; echo "s14_token_read_exit=$?"
+   ```
+
+   Expected: `s14_token_http=200` and `s14_token_read_exit=0`.
+
+4. **The operator's:** the invitation, created with the administrator's own session through
+   `create_invitations`: one entity-scope `editor` item for the candidate of item 1, to the second
+   mailbox, read at a prompt, and `p_confirm_entity` false. Its id is printed, and its address never:
+
+   ```bash
+   printf 'second mailbox: '; read -r INVITEE_EMAIL
+   export INVITEE_EMAIL
+   auth() {
+     printf 'header = "apikey: %s"\n' "$K"
+     printf 'header = "Authorization: Bearer %s"\n' "$TOKEN"
+   }
+   jq -n --arg p "$P" --arg c "$CAND" '{p_project_id: $p,
+     p_confirm_entity: false, p_invitations: [{scope: "entity",
+       role: "editor", target_type: "candidate", target_id: $c,
+       email: env.INVITEE_EMAIL}]}' \
+     | curl -sS --max-time 20 -o "$L/s14-invite.json" \
+       -w 's14_invite_http=%{http_code}\n' -K <(auth) \
+       -H 'Content-Type: application/json' --data-binary @- \
+       "$SB/rest/v1/rpc/create_invitations" 2> "$L/s14-invite.err"
+   jq -r 'if type == "array" then (.[0]
+     | "s14_invitation_id=\(.id)",
+       "s14_entity_confirmed=\(.entity_confirmed)",
+       "s14_invitation_code="
+         + (if .code then "present" else "none" end))
+     else "s14_invite_error_code=\(.code)" end' "$L/s14-invite.json"
+   unset TOKEN INVITEE_EMAIL
+   ```
+
+   Expected: `s14_invite_http=200`, `s14_invitation_id=` an id, which Step 15 needs, and
+   `s14_invitation_code=none`, because an email invitation has no code. `s14_entity_confirmed=` is
+   recorded as it reads; the call did not change it.
+
+5. **The operator's**, in a browser:
+   1. Open `https://staging.openvaa.org/contestant/login/email`, the Contestant App's sign-in screen,
+      and ask for a sign-in link by email for the second mailbox.
+   2. In the second mailbox, find the mail and look at its link without opening it: its origin must be
+      `https://staging.openvaa.org` and its path `/<locale>/api/auth/callback`. Copy neither the link
+      nor its query.
+   3. Follow the link. A signed-in screen follows: the screen that asks a user with no password to set
+      one, or the Contestant App's home.
+
+   Answer `answer_mail_arrived=yes|no` with `answer_mail_utc=<time>`,
+   `answer_link_origin=<scheme and host>`, `answer_link_path=<the path, without the query>`,
+   `answer_signed_in=yes|no` and `answer_landing_screen=set-password|home|other`.
+
+6. Last item, also when you stop early or a command failed:
+
+   ```bash
+   unset ADMIN_EMAIL ADMIN_PASSWORD INVITEE_EMAIL TOKEN K
+   test -n "$L" && rm -rf "$L" && echo "s14_logs_removed=yes"
+   ```
+
+Return: every `s14_` line and the `answer_` lines of item 5. Keep `s14_invitation_id=` for Step 15.
+
+## The destroy, the re-apply and the cost
+
+Steps 15 and 16 destroy this root once, on purpose, and show that nothing it made is left in either
+region while everything outside it is where it was. Step 17 applies it again from the same commit,
+and Step 18 reads its cost over full days of that second stack.
+
+### Step 15: Before the destroy
+
+Three things come before the destroy: a last copy of the evidence log lines, because the log group
+goes with the destroy; the removal of what Steps 13 and 14 wrote to the persistent project, the
+feedback rows marked `limit-check`, the invitation and its recipient's user; and a plan of each of
+the two long-lived roots beside this one, `dns-mail` and `supabase`, which must show no change. Those
+plans are read only and are never applied. **Step 16 runs only when every item here reads as
+expected.**
+
+Items 1 to 3 are run from the workstation with the lines below. Items 4 and 5 are the operator's, in
+a terminal of their own.
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+export LC_ALL=C AWS_PAGER="" AWS_PROFILE=openvaa-admin \
+  AWS_REGION=eu-north-1 \
+  TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-aws.XXXXXX")
+ACCOUNT=$(aws sts get-caller-identity --query Account \
+  --output text 2> "$L/account.err")
+echo "s15_account_read_exit=$?"
+test "$ACCOUNT" = 471112560111; echo "s15_account_match_exit=$?"
+T=infra/envs/staging/aws
+```
+
+1. The last copy of the log lines: every start-up refusal, every stop message and every stop signal
+   the log group holds. Each is matched by its own line, because the log driver stores each line of a
+   record as an event of its own. The `s15_log_line=` lines are the copy: paste every one:
+
+   ```bash
+   terraform -chdir="$T" init -input=false -no-color \
+     -lockfile=readonly > "$L/s15-init.log" 2>&1
+   echo "s15_init_exit=$?"
+   G=$(terraform -chdir="$T" output -raw log_group_name)
+   copy() {
+     aws logs filter-log-events --log-group-name "$G" \
+       --filter-pattern "$2" > "$L/s15-$1.json" 2> "$L/s15-$1.err"
+     echo "s15_$1_read_exit=$?"
+     jq -r --arg k "$1" '"s15_\($k)_events=\(.events | length)",
+       (.events[] | "s15_log_line=\($k) \(.logStreamName
+         | split("/") | last) \(.timestamp / 1000 | floor | todate) "
+         + (.message | gsub("^\\s+|\\s+$"; "")))' "$L/s15-$1.json"
+   }
+   copy startup '"Required environment variables are not set"'
+   copy stop '"The server is exiting after its stop."'
+   copy signal "\"signal: 'SIGTERM'\""
+   ```
+
+   Expected: `s15_startup_events=` at least the failed tasks of Step 10, `s15_stop_events=` at least
+   2, from Steps 11 and 12, and `s15_signal_events=` equal to `s15_stop_events`.
+
+2. The plan of `dns-mail`, which holds the zone this root writes records into:
+
+   ```bash
+   D=infra/envs/staging/dns-mail
+   terraform -chdir="$D" init -input=false -no-color \
+     -lockfile=readonly > "$L/s15-dns-mail-init.log" 2>&1
+   echo "s15_dns_mail_init_exit=$?"
+   terraform -chdir="$D" plan -input=false -no-color \
+     -detailed-exitcode > "$L/s15-dns-mail.log" 2>&1
+   echo "s15_dns_mail_plan_exit=$?"
+   grep -m1 -E '^(Plan:|No changes)' "$L/s15-dns-mail.log" \
+     | sed 's/^/s15_dns_mail_plan_line=/'
+   ```
+
+   Expected: `s15_dns_mail_plan_exit=0`. This plan is never applied.
+
+3. The resources tagged `Root=aws`, counted in both regions and by type, for comparison with Step 16:
+
+   ```bash
+   tagged() {
+     n=$1_tagged_$(printf %s "$2" | tr - _)
+     aws resourcegroupstaggingapi get-resources --region "$2" \
+       --tag-filters Key=Root,Values=aws \
+       > "$L/$n.json" 2> "$L/$n.err"
+     echo "${n}_read_exit=$?"
+     jq -r --arg n "$n" '.ResourceTagMappingList
+       | "\($n)=\(length)", (map(.ResourceARN | split(":")
+         | "\(.[2]):\(.[5] | split("/")[0])") | group_by(.)[]
+         | "\($n)_type=\(.[0]) \(length)")' "$L/$n.json"
+   }
+   tagged s15 eu-north-1
+   tagged s15 us-east-1
+   ```
+
+   Expected: both counts above 0, and `us-east-1` holding at least the viewer certificate.
+
+4. **The operator's:** the cleanup of the persistent project, as `postgres`. In a terminal of your own,
+   run "The lines that begin each sitting of this part" of
+   [`../supabase/README.md`](../supabase/README.md) with `R=staging`, giving `SUPABASE_ACCESS_TOKEN`,
+   `SUPABASE_DB_PASSWORD`, `TF_VAR_database_password` and the SMTP pair as that section shows, and
+   then items 1 to 3 of its Step 15, the connection `psql` uses. Those lines make their own `$L`. The
+   user is deleted by its address, and only when it holds no grant beyond an entity's; its grant goes
+   with it:
+
+   ```bash
+   printf 'invitation id: '; read -r INVITATION_ID
+   printf 'second mailbox: '; read -r INVITEE_EMAIL
+   export INVITATION_ID INVITEE_EMAIL
+   psql -X -q -At -v ON_ERROR_STOP=1 \
+     > "$L/s15-cleanup.out" 2> "$L/s15-cleanup.err" <<'SQL'
+   \getenv invitee INVITEE_EMAIL
+   \getenv inv INVITATION_ID
+   begin;
+   with d as (
+     delete from auth.users u
+     where lower(u.email) = lower(:'invitee')
+       and not exists (
+         select 1 from public.grants g
+         where g.user_id = u.id and g.scope <> 'entity')
+     returning 1)
+   select 's15_invitee_users_deleted=' || count(*) from d;
+   with d as (
+     delete from public.invitations where id = :'inv' returning 1)
+   select 's15_invitation_rows_deleted=' || count(*) from d;
+   with d as (
+     delete from public.feedback
+     where project_id = '00000000-0000-0000-0000-000000000001'
+       and description like 'limit-check %'
+     returning 1)
+   select 's15_limit_check_rows_deleted=' || count(*) from d;
+   commit;
+   select 's15_invitee_users_after=' || count(*) from auth.users
+     where lower(email) = lower(:'invitee');
+   select 's15_invitation_rows_after=' || count(*)
+     from public.invitations where id = :'inv';
+   select 's15_limit_check_rows_after=' || count(*)
+     from public.feedback where description like 'limit-check %';
+   SQL
+   echo "s15_cleanup_exit=$?"
+   cat "$L/s15-cleanup.out"
+   unset INVITEE_EMAIL
+   ```
+
+   Expected: `s15_cleanup_exit=0`, `s15_invitee_users_deleted=1`, `s15_invitation_rows_deleted=1`,
+   `s15_limit_check_rows_deleted=` the inserts Step 13 admitted, and the three `_after=` counts 0. A
+   `s15_invitee_users_deleted=0` with `s15_invitee_users_after=1` means the address holds a grant
+   beyond an entity's, so it is not the invitee's: stop and check the address.
+
+5. **The operator's:** the plan of the `supabase` root, in the same terminal:
+
+   ```bash
+   S=infra/envs/staging/supabase
+   terraform -chdir="$S" init -input=false -no-color \
+     -lockfile=readonly > "$L/s15-supabase-init.log" 2>&1
+   echo "s15_supabase_init_exit=$?"
+   terraform -chdir="$S" plan -input=false -no-color \
+     -detailed-exitcode > "$L/s15-supabase.log" 2>&1
+   echo "s15_supabase_plan_exit=$?"
+   grep -m1 -E '^(Plan:|No changes)' "$L/s15-supabase.log" \
+     | sed 's/^/s15_supabase_plan_line=/'
+   test -n "$L" && rm -rf "$L" && echo "s15_operator_logs_removed=yes"
+   ```
+
+   Expected: `s15_supabase_plan_exit=0`. This plan is never applied. With any other status, the
+   destroy does not run.
+
+6. Last item on the workstation, also when you stop early or a command failed:
+
+   ```bash
+   test -n "$L" && rm -rf "$L" && echo "s15_logs_removed=yes"
+   ```
+
+Return: every `s15_` line. The destroy runs only when the three `_after=` counts are 0 and both
+`_plan_exit=` lines are 0.
+
+### Step 16: The destroy
+
+The root is destroyed once, by applying a saved destroy plan whose count equals the managed resources
+the state holds, which is what `terraform destroy` does after its prompt. Then the Resource Groups
+Tagging API is asked, in both regions, for anything tagged `Root=aws`. It is regional, and the viewer
+certificate is in `us-east-1`, so one region alone would miss it. A task definition revision that
+Terraform replaced or destroyed is deregistered, not deleted: it stays in the account as `INACTIVE`
+with its tags. So the family's `INACTIVE` revisions are listed and deleted first. A stopped task keeps
+its tags for about an hour after it stops, so the search is read again until both regions list
+nothing. Last, what lives outside this root is read, and must all still be there.
+
+Run the step only after Step 15's lines read as expected, and in one sitting: it takes up to two
+hours, most of it waiting for stopped tasks to age out.
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+export LC_ALL=C AWS_PAGER="" AWS_PROFILE=openvaa-admin \
+  AWS_REGION=eu-north-1 \
+  TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-aws.XXXXXX")
+ACCOUNT=$(aws sts get-caller-identity --query Account \
+  --output text 2> "$L/account.err")
+echo "s16_account_read_exit=$?"
+test "$ACCOUNT" = 471112560111; echo "s16_account_match_exit=$?"
+T=infra/envs/staging/aws
+```
+
+1. What the destroy plan needs, and the image's digest before it:
+
+   ```bash
+   terraform -chdir="$T" init -input=false -no-color \
+     -lockfile=readonly > "$L/s16-init.log" 2>&1
+   echo "s16_init_exit=$?"
+   test -n "${TF_VAR_alert_email:-}"; echo "s16_alert_email_set_exit=$?"
+   TAG=$(sed -n 's/^image_tag *= *"\([0-9a-f]*\)".*/\1/p' \
+     "$T/terraform.tfvars")
+   RU=$(sed -n 's/^registry_url *= *"\(.*\)"/\1/p' "$T/terraform.tfvars")
+   aws ecr describe-images --repository-name "${RU#*/}" \
+     --image-ids imageTag="$TAG" \
+     > "$L/s16-image-before.json" 2> "$L/s16-image-before.err"
+   echo "s16_image_before_exit=$?"
+   ```
+
+2. The managed resources in the state, counted without the data sources, and the destroy plan,
+   saved. Its summary line must name exactly that count:
+
+   ```bash
+   terraform -chdir="$T" state list \
+     > "$L/s16-state.txt" 2> "$L/s16-state.err"
+   echo "s16_state_list_exit=$?"
+   M=$(awk '!/^data\./ && !/\.data\./' "$L/s16-state.txt" \
+     | wc -l | tr -d ' ')
+   echo "s16_state_managed_count=$M"
+   terraform -chdir="$T" plan -destroy -input=false -no-color \
+     -out="$L/tfdestroy" > "$L/s16-plan.log" 2>&1
+   echo "s16_destroy_plan_exit=$?"
+   LINE=$(grep -m1 -E '^(Plan:|No changes)' "$L/s16-plan.log")
+   echo "s16_destroy_plan_line=$LINE"
+   N=$(printf '%s\n' "$LINE" | sed -n \
+     's/^Plan: 0 to add, 0 to change, \([0-9]*\) to destroy\.$/\1/p')
+   echo "s16_destroy_plan_count=${N:-none}"
+   test "$N" = "$M"; echo "s16_destroy_plan_matches_state_exit=$?"
+   ```
+
+   > **Apply only when `s16_destroy_plan_exit=0`, `s16_destroy_plan_line` reads
+   > `Plan: 0 to add, 0 to change, N to destroy.`, and `s16_destroy_plan_matches_state_exit=0`.** A
+   > count other than the state's means the plan would leave something behind or reach beyond this
+   > root. Then do not apply: run item 8, paste the lines and stop.
+
+3. Apply the saved destroy plan in the background, and read its status:
+
+   ```bash
+   ( terraform -chdir="$T" apply -input=false -no-color \
+       "$L/tfdestroy" > "$L/s16-destroy.log" 2>&1
+     echo "s16_destroy_exit=$?" > "$L/s16-destroy.status" ) &
+   until test -s "$L/s16-destroy.status"; do sleep 30; done
+   cat "$L/s16-destroy.status"
+   grep -m1 -E 'complete! Resources:' "$L/s16-destroy.log" \
+     | sed 's/^/s16_destroy_line=/'
+   grep -E '^Error: ' "$L/s16-destroy.log" | sed 's/^/s16_error=/'
+   rm -f "$L/tfdestroy"; echo "s16_plan_file_removed=yes"
+   ```
+
+   Expected: `s16_destroy_exit=0`. If the destroy failed, run item 8 and stop: do not destroy again in
+   this step.
+
+4. The first search in both regions, which classifies what is left, then the family's task
+   definitions, listed by state and the `INACTIVE` ones deleted:
+
+   ```bash
+   tagged() {
+     n=$1_tagged_$(printf %s "$2" | tr - _)
+     aws resourcegroupstaggingapi get-resources --region "$2" \
+       --tag-filters Key=Root,Values=aws \
+       > "$L/$n.json" 2> "$L/$n.err"
+     echo "${n}_read_exit=$?"
+     jq -r --arg n "$n" '.ResourceTagMappingList
+       | "\($n)=\(length)", (map(.ResourceARN | split(":")
+         | "\(.[2]):\(.[5] | split("/")[0])") | group_by(.)[]
+         | "\($n)_type=\(.[0]) \(length)")' "$L/$n.json"
+   }
+   tagged s16_first eu-north-1
+   tagged s16_first us-east-1
+   F=openvaa-staging-frontend
+   for st in ACTIVE INACTIVE; do
+     aws ecs list-task-definitions --family-prefix "$F" \
+       --status "$st" --query 'taskDefinitionArns[]' --output text \
+       2> "$L/s16-list-$st.err" | tr '\t' '\n' | sed '/^$/d' \
+       > "$L/s16-$st.txt"
+     echo "s16_task_definitions_$st=$(grep -c . "$L/s16-$st.txt")"
+   done
+   if test -s "$L/s16-INACTIVE.txt"; then
+     xargs -n 10 aws ecs delete-task-definitions \
+       --task-definitions < "$L/s16-INACTIVE.txt" \
+       > "$L/s16-delete.json" 2> "$L/s16-delete.err"
+     echo "s16_delete_task_definitions_exit=$?"
+     jq -rs '"s16_deleted_task_definitions=\(map(.taskDefinitions
+       | length) | add)", "s16_delete_failures=\(map(.failures
+       | length) | add)"' "$L/s16-delete.json"
+   fi
+   ```
+
+   Expected: `s16_task_definitions_ACTIVE=0`, `s16_delete_task_definitions_exit=0`,
+   `s16_deleted_task_definitions=` equal to `s16_task_definitions_INACTIVE`, and
+   `s16_delete_failures=0`. The `s16_first_tagged_..._type=` lines say what the first search found,
+   by service and resource type.
+
+5. The search again, every 10 minutes for up to 100 minutes, until both regions list nothing:
+
+   ```bash
+   for i in $(seq 1 11); do
+     tagged s16_sweep eu-north-1 > "$L/s16-sweep-eu.txt"
+     tagged s16_sweep us-east-1 > "$L/s16-sweep-us.txt"
+     grep -qx 's16_sweep_tagged_eu_north_1=0' "$L/s16-sweep-eu.txt" \
+       && grep -qx 's16_sweep_tagged_us_east_1=0' \
+         "$L/s16-sweep-us.txt" && break
+     sleep 600
+   done
+   echo "s16_sweep_reads=$i"
+   cat "$L/s16-sweep-eu.txt" "$L/s16-sweep-us.txt"
+   ```
+
+   Expected: `s16_sweep_tagged_eu_north_1=0` and `s16_sweep_tagged_us_east_1=0`, both read, with no
+   `_type=` line. Anything still listed after the last read is named by its type line: paste it and
+   stop.
+
+6. What survives, each read: the image under its tag with an unchanged digest, the two parameters by
+   name, the delegated zone, the execution role, and the plan of `dns-mail`, which must still show no
+   change:
+
+   ```bash
+   aws ecr describe-images --repository-name "${RU#*/}" \
+     --image-ids imageTag="$TAG" \
+     > "$L/s16-image-after.json" 2> "$L/s16-image-after.err"
+   echo "s16_image_after_exit=$?"
+   test "$(jq -r '.imageDetails[0].imageDigest' \
+     "$L/s16-image-after.json")" = "$(jq -r \
+     '.imageDetails[0].imageDigest' "$L/s16-image-before.json")"
+   echo "s16_image_digest_unchanged_exit=$?"
+   aws ssm describe-parameters --parameter-filters \
+     "Key=Path,Option=OneLevel,Values=/openvaa/staging/frontend" \
+     > "$L/s16-parameters.json" 2> "$L/s16-parameters.err"
+   echo "s16_parameters_read_exit=$?"
+   jq -r '"s16_parameters=\(.Parameters | length)"' \
+     "$L/s16-parameters.json"
+   aws route53 list-hosted-zones-by-name \
+     --dns-name staging.openvaa.org --max-items 1 \
+     > "$L/s16-zone.json" 2> "$L/s16-zone.err"
+   echo "s16_zone_read_exit=$?"
+   jq -r '"s16_zone=" + (if .HostedZones[0].Name
+     == "staging.openvaa.org." then "present" else "absent" end)' \
+     "$L/s16-zone.json"
+   aws iam get-role --role-name openvaa-staging-frontend-execution \
+     > "$L/s16-role.json" 2> "$L/s16-role.err"
+   echo "s16_execution_role_exit=$?"
+   D=infra/envs/staging/dns-mail
+   terraform -chdir="$D" init -input=false -no-color \
+     -lockfile=readonly > "$L/s16-dns-mail-init.log" 2>&1
+   echo "s16_dns_mail_init_exit=$?"
+   terraform -chdir="$D" plan -input=false -no-color \
+     -detailed-exitcode > "$L/s16-dns-mail.log" 2>&1
+   echo "s16_dns_mail_plan_after_exit=$?"
+   ```
+
+   Expected: `s16_image_digest_unchanged_exit=0`, `s16_parameters=2`, `s16_zone=present`,
+   `s16_execution_role_exit=0` and `s16_dns_mail_plan_after_exit=0`.
+
+7. **The operator's:** the `supabase` root's plan and the conformance probe, which show that the
+   destroy left the hosted project, its data and its settings alone. In a terminal of your own, run
+   "The lines that begin each sitting of this part" of [`../supabase/README.md`](../supabase/README.md)
+   with `R=staging`, giving `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_ANON_KEY`,
+   `TF_VAR_database_password` and the SMTP pair, and items 1 to 3 of its Step 15. Then:
+
+   ```bash
+   S=infra/envs/staging/supabase
+   terraform -chdir="$S" init -input=false -no-color \
+     -lockfile=readonly > "$L/s16-supabase-init.log" 2>&1
+   echo "s16_supabase_init_exit=$?"
+   terraform -chdir="$S" plan -input=false -no-color \
+     -detailed-exitcode > "$L/s16-supabase.log" 2>&1
+   echo "s16_supabase_plan_after_exit=$?"
+   grep -m1 -E '^(Plan:|No changes)' "$L/s16-supabase.log" \
+     | sed 's/^/s16_supabase_plan_after_line=/'
+   ```
+
+   Then run item 1 of that runbook's Step 23, the conformance probe, as written, and its last item.
+   Expected: `s16_supabase_plan_after_exit=0`, and `s23_probe_exit=0` with no `FAIL` and no
+   `COULD NOT RUN` among the `s23_probe=` lines. The plan is never applied.
+
+8. Last item on the workstation, also when you stop early or a command failed:
+
+   ```bash
+   rm -f "$L/tfdestroy"
+   test -n "$L" && rm -rf "$L" && echo "s16_logs_removed=yes"
+   ```
+
+Return: every `s16_` line and the operator's `s16_` and `s23_` lines.
+
+### Step 17: The re-apply
+
+The root is applied again from the same image and the same tag, with one plan and one apply, as Step
+5 did: the image is still in the registry under its tag, `image_tag` in this root's variable file is
+unchanged, and the files of the root are as committed. The stack must come back serving the same
+build. The re-created topic gets a new subscription, which stays pending until the operator confirms
+it again.
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+export LC_ALL=C AWS_PAGER="" AWS_PROFILE=openvaa-admin \
+  AWS_REGION=eu-north-1 \
+  TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-aws.XXXXXX")
+ACCOUNT=$(aws sts get-caller-identity --query Account \
+  --output text 2> "$L/account.err")
+echo "s17_account_read_exit=$?"
+test "$ACCOUNT" = 471112560111; echo "s17_account_match_exit=$?"
+T=infra/envs/staging/aws
+U=https://staging.openvaa.org
+TAG=$(sed -n 's/^image_tag *= *"\([0-9a-f]*\)".*/\1/p' \
+  "$T/terraform.tfvars")
+```
+
+1. The same tag, the image under it, a clean tree for the root and its module, and the alert address:
+
+   ```bash
+   echo "s17_image_tag_length=${#TAG}"
+   echo "s17_head=$(git rev-parse HEAD)"
+   git status --porcelain -- infra/envs/staging/aws \
+     infra/modules/frontend-service > "$L/s17-status.txt"
+   echo "s17_dirty_lines=$(wc -l < "$L/s17-status.txt" | tr -d ' ')"
+   RU=$(sed -n 's/^registry_url *= *"\(.*\)"/\1/p' "$T/terraform.tfvars")
+   aws ecr describe-images --repository-name "${RU#*/}" \
+     --image-ids imageTag="$TAG" \
+     > "$L/s17-image.json" 2> "$L/s17-image.err"
+   echo "s17_image_exit=$?"
+   test -n "${TF_VAR_alert_email:-}"; echo "s17_alert_email_set_exit=$?"
+   ```
+
+   Expected: `s17_image_tag_length=40`, `s17_dirty_lines=0`, `s17_image_exit=0` and
+   `s17_alert_email_set_exit=0`.
+
+2. Initialise, plan, and print the plan's summary line, the count of planned actions by kind and the
+   count of planned addresses outside the module, as Step 5 does:
+
+   ```bash
+   terraform -chdir="$T" init -input=false -no-color \
+     -lockfile=readonly > "$L/s17-init.log" 2>&1
+   echo "s17_init_exit=$?"
+   terraform -chdir="$T" plan -input=false -no-color \
+     -out="$L/tfplan" > "$L/s17-plan.log" 2>&1
+   echo "s17_plan_exit=$?"
+   grep -m1 -E '^(Plan:|No changes)' "$L/s17-plan.log" \
+     | sed 's/^/s17_plan_line=/'
+   terraform -chdir="$T" show -json "$L/tfplan" \
+     > "$L/s17-plan.json" 2> "$L/s17-show.err"
+   echo "s17_show_exit=$?"
+   jq -r '[.resource_changes[] | .change.actions | join("-")]
+     | group_by(.) | .[] | "s17_planned_\(.[0])=\(length)"' \
+     "$L/s17-plan.json"
+   jq -r '[.resource_changes[]
+     | select(.address | startswith("module.frontend.") | not)]
+     | "s17_outside_module=\(length)"' "$L/s17-plan.json"
+   ```
+
+   > **Apply only when `s17_plan_exit=0`, `s17_plan_line` reads
+   > `Plan: <n> to add, 0 to change, 0 to destroy.`, every `s17_planned_` line is
+   > `s17_planned_create=` or `s17_planned_read=`, and `s17_outside_module=0`.** Otherwise do not
+   > apply: run item 7, paste the lines and stop.
+
+3. Apply the saved plan in the background, and note when it completed. That time is where the cost
+   window of Step 18 begins:
+
+   ```bash
+   ( terraform -chdir="$T" apply -input=false -no-color \
+       "$L/tfplan" > "$L/s17-apply.log" 2>&1
+     echo "s17_apply_exit=$?" > "$L/s17-apply.status" ) &
+   until test -s "$L/s17-apply.status"; do sleep 30; done
+   cat "$L/s17-apply.status"
+   echo "s17_apply_completed_utc=$(date -u +%Y-%m-%dT%H:%MZ)"
+   grep -m1 -E '^Apply complete!' "$L/s17-apply.log" \
+     | sed 's/^/s17_apply_line=/'
+   grep -E '^Error: ' "$L/s17-apply.log" | sed 's/^/s17_error=/'
+   rm -f "$L/tfplan"; echo "s17_plan_file_removed=yes"
+   ```
+
+4. Plan again. It must exit 0, which means no change:
+
+   ```bash
+   terraform -chdir="$T" plan -input=false -no-color \
+     -detailed-exitcode > "$L/s17-second.log" 2>&1
+   echo "s17_second_plan_exit=$?"
+   grep -E '^  # ' "$L/s17-second.log" | sed 's/^/s17_second_change=/'
+   ```
+
+5. The site through the CDN: the health answer from the same build, and the questions page with the
+   project id and a statement of the smoke dataset, as Step 7 item 4 reads them. A `curl` status of 6
+   means the name did not resolve yet, as in Step 5: wait a few minutes and run this item again:
+
+   ```bash
+   curl -sS --max-time 20 -o "$L/s17-health.json" \
+     -w 's17_health_http=%{http_code}\n' "$U/api/health" \
+     2> "$L/s17-health.err"
+   echo "s17_health_curl_exit=$?"
+   test "$(jq -r .build "$L/s17-health.json")" = "$TAG"
+   echo "s17_health_build_matches_exit=$?"
+   curl -sS --max-time 30 -L -o "$L/s17-questions.html" \
+     -w 's17_questions_http=%{http_code}\n' "$U/questions" \
+     2> "$L/s17-questions.err"
+   echo "s17_questions_curl_exit=$?"
+   echo "s17_questions_project_id=$(grep -o -m1 \
+     'data-project-id="[^"]*"' "$L/s17-questions.html" \
+     | cut -d'"' -f2)"
+   echo "s17_defence_statement_seen=$(grep -c -F \
+     'Defence spending should be increased.' "$L/s17-questions.html")"
+   ```
+
+   Expected: `s17_health_http=200`, `s17_health_build_matches_exit=0`, `s17_questions_http=200`,
+   `s17_questions_project_id=00000000-0000-0000-0000-000000000001` and
+   `s17_defence_statement_seen=` above 0.
+
+6. The re-created log group's retention, and the new subscription's state. **The operator's:** AWS
+   mails a new confirmation to the alert address; follow its link, answer
+   `answer_subscription_confirmed=yes` with `answer_subscription_confirmed_utc=<time>`, and then run
+   the reads below again:
+
+   ```bash
+   G=$(terraform -chdir="$T" output -raw log_group_name)
+   aws logs describe-log-groups --log-group-name-prefix "$G" \
+     > "$L/s17-log-group.json" 2> "$L/s17-log-group.err"
+   echo "s17_log_group_read_exit=$?"
+   jq -r --arg g "$G" '.logGroups[] | select(.logGroupName == $g)
+     | "s17_log_retention_days=\(.retentionInDays)"' \
+     "$L/s17-log-group.json"
+   TOPIC=$(terraform -chdir="$T" output -raw \
+     deployment_alert_topic_arn 2> "$L/s17-output.err")
+   aws sns list-subscriptions-by-topic --topic-arn "$TOPIC" \
+     > "$L/s17-subscriptions.json" 2> "$L/s17-subscriptions.err"
+   echo "s17_subscriptions_exit=$?"
+   jq -r '.Subscriptions[] | "s17_subscription=\(.Protocol) " + (
+     if .SubscriptionArn == "PendingConfirmation"
+     then "pending" else "confirmed" end)' \
+     "$L/s17-subscriptions.json"
+   ```
+
+   Expected: `s17_log_retention_days=90`; `s17_subscription=email pending` before the confirmation and
+   `s17_subscription=email confirmed` after it.
+
+7. Last item, also when you stop early or a command failed:
+
+   ```bash
+   rm -f "$L/tfplan"
+   test -n "$L" && rm -rf "$L" && echo "s17_logs_removed=yes"
+   ```
+
+Return: every `s17_` line, in order, and the two `answer_subscription_confirmed` lines.
+`s17_apply_completed_utc=` is the start of the stack whose cost Step 18 measures.
+
+### Step 18: The cost
+
+The stack's cost is measured from Cost Explorer, filtered by the cost-allocation tag `Root` = `aws`,
+which the three roots' tags tell apart: they share `Project` and `Environment`. It is read over a
+window of full UTC days that begins on the day after Step 17's apply, so that no day of it holds the
+destroyed interval of Step 16 or a day the stack ran only part of. The days before the window are
+listed apart and never counted. Cost Explorer's data lags about a day, so the window ends two days
+before the read: a window of seven days can be read on the re-apply's date plus nine days, and not
+before. A shorter window is not a measurement, and its figure is not written as one.
+
+Beside the measurement, the step prices the stack's inventory from the AWS price list: what the
+stack's resources cost at list price for a month, with the usage it assumes stated. Both figures are
+recorded with their dates.
+
+Cost Explorer's API and the price list's are both served from `us-east-1`.
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+export LC_ALL=C AWS_PAGER="" AWS_PROFILE=openvaa-admin \
+  AWS_REGION=eu-north-1 \
+  TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-aws.XXXXXX")
+ACCOUNT=$(aws sts get-caller-identity --query Account \
+  --output text 2> "$L/account.err")
+echo "s18_account_read_exit=$?"
+test "$ACCOUNT" = 471112560111; echo "s18_account_match_exit=$?"
+T=infra/envs/staging/aws
+```
+
+1. The cost-allocation tags, which must be active:
+
+   ```bash
+   aws ce list-cost-allocation-tags --region us-east-1 \
+     --tag-keys Project Environment Root \
+     > "$L/s18-tags.json" 2> "$L/s18-tags.err"
+   echo "s18_cost_tags_exit=$?"
+   jq -r '.CostAllocationTags[]
+     | "s18_cost_tag=\(.TagKey) \(.Status)"' "$L/s18-tags.json"
+   ```
+
+   Expected: three `s18_cost_tag=` lines, each `Active`.
+
+2. The window. Type the date of `s17_apply_completed_utc` and the date of Step 5's apply, both as
+   `YYYY-MM-DD`:
+
+   ```bash
+   printf 're-apply date (UTC, YYYY-MM-DD): '; read -r RD
+   printf 'first apply date (UTC, YYYY-MM-DD): '; read -r FD
+   day() { jq -nr --arg d "$1" --argjson n "$2" \
+     '($d + "T00:00:00Z" | fromdate) + $n * 86400
+       | strftime("%Y-%m-%d")'; }
+   W=$(day "$RD" 1)
+   X=$(jq -nr '(now | floor) - 86400 | strftime("%Y-%m-%d")')
+   DAYS=$(jq -nr --arg a "$W" --arg b "$X" \
+     '(($b + "T00:00:00Z" | fromdate)
+       - ($a + "T00:00:00Z" | fromdate)) / 86400 | floor')
+   echo "s18_read_utc=$(date -u +%Y-%m-%dT%H:%MZ)"
+   echo "s18_window_start=$W"
+   echo "s18_window_end_exclusive=$X"
+   echo "s18_window_days=$DAYS"
+   echo "s18_seven_days_readable_from=$(day "$RD" 9)"
+   ```
+
+   **Go on only when `s18_window_days` is at least 7.** Otherwise run item 7 and run the step again on
+   or after `s18_seven_days_readable_from`.
+
+3. The daily cost by the tag over the window, its sum, its daily mean, and the mean times 30.4 as the
+   month:
+
+   ```bash
+   TF='{"Tags":{"Key":"Root","Values":["aws"],"MatchOptions":["EQUALS"]}}'
+   aws ce get-cost-and-usage --region us-east-1 \
+     --time-period "Start=$W,End=$X" --granularity DAILY \
+     --metrics UnblendedCost --filter "$TF" \
+     > "$L/s18-daily.json" 2> "$L/s18-daily.err"
+   echo "s18_daily_exit=$?"
+   jq -r 'def r: . * 100 | round / 100;
+     [.ResultsByTime[] | {d: .TimePeriod.Start,
+       a: (.Total.UnblendedCost.Amount | tonumber)}] as $c
+     | ($c[] | "s18_day=\(.d) \(.a | r)"),
+       "s18_window_sum_usd=\($c | map(.a) | add | r)",
+       "s18_daily_mean_usd=\($c | map(.a) | add / length | r)",
+       "s18_month_usd=\($c | map(.a) | add / length * 30.4 | r)"' \
+     "$L/s18-daily.json"
+   ```
+
+   Expected: one `s18_day=` line per day of the window, and `s18_month_usd=`, the measured monthly
+   cost.
+
+4. The days before the window, from the first apply up to the window's first day, listed and never
+   summed: they hold the first stack, the destroyed interval and the re-apply's own day:
+
+   ```bash
+   aws ce get-cost-and-usage --region us-east-1 \
+     --time-period "Start=$FD,End=$W" --granularity DAILY \
+     --metrics UnblendedCost --filter "$TF" \
+     > "$L/s18-before.json" 2> "$L/s18-before.err"
+   echo "s18_before_exit=$?"
+   jq -r '.ResultsByTime[] | "s18_before_day=\(.TimePeriod.Start) "
+     + (.Total.UnblendedCost.Amount | tonumber * 100 | round / 100
+       | tostring)' "$L/s18-before.json"
+   ```
+
+5. The same window by service and usage type: once filtered by the tag, and once for the whole account
+   with only the public IPv4 lines printed, because an address's charge may carry no tag:
+
+   ```bash
+   aws ce get-cost-and-usage --region us-east-1 \
+     --time-period "Start=$W,End=$X" --granularity DAILY \
+     --metrics UnblendedCost --filter "$TF" \
+     --group-by Type=DIMENSION,Key=SERVICE \
+       Type=DIMENSION,Key=USAGE_TYPE \
+     > "$L/s18-tagged-usage.json" 2> "$L/s18-tagged-usage.err"
+   echo "s18_tagged_usage_exit=$?"
+   aws ce get-cost-and-usage --region us-east-1 \
+     --time-period "Start=$W,End=$X" --granularity DAILY \
+     --metrics UnblendedCost \
+     --group-by Type=DIMENSION,Key=USAGE_TYPE \
+     > "$L/s18-all-usage.json" 2> "$L/s18-all-usage.err"
+   echo "s18_all_usage_exit=$?"
+   jq -r '[.ResultsByTime[].Groups[]
+     | {k: (.Keys | join(" / ")),
+       a: (.Metrics.UnblendedCost.Amount | tonumber)}]
+     | group_by(.k)[] | "s18_tagged_usage=\(.[0].k) "
+       + (map(.a) | add * 10000 | round / 10000 | tostring)' \
+     "$L/s18-tagged-usage.json"
+   jq -r '[.ResultsByTime[].Groups[]
+     | select(.Keys[0] | test("PublicIPv4"))
+     | {k: .Keys[0], a: (.Metrics.UnblendedCost.Amount | tonumber)}]
+     | group_by(.k)[] | "s18_account_ipv4_usage=\(.[0].k) "
+       + (map(.a) | add * 10000 | round / 10000 | tostring)' \
+     "$L/s18-all-usage.json"
+   ```
+
+   A `s18_account_ipv4_usage=` line with no `s18_tagged_usage=` line of the same usage type is a
+   charge of this stack's addresses that the tag does not carry; the figure of item 3 leaves it out,
+   and the record names it beside that figure.
+
+6. The priced inventory. Each usage type's on-demand price, its first tier where it is tiered, is
+   read from the price list with the list's publication date. The month assumes one task of 0.5 vCPU
+   and 1 GB, one load balancer at one capacity unit, three public IPv4 addresses (the task's and the
+   load balancer's two), all for 729.6 hours (30.4 days), and the log and CDN volumes set in the first
+   lines below. CloudFront's free tier is not subtracted, so the CDN's lines are an upper bound:
+
+   ```bash
+   LOG_GB=1 CDN_GB=1 CDN_REQUESTS=100000
+   : > "$L/s18-prices.txt"
+   price() {
+     U1="Type=TERM_MATCH,Field=usagetype,Value=$2"
+     if test -n "${3:-}"; then
+       F1="Type=TERM_MATCH,Field=productFamily,Value=$3"
+       aws pricing get-products --region us-east-1 \
+         --service-code "$1" --filters "$U1" "$F1" \
+         > "$L/s18-price.json" 2>> "$L/s18-price.err"
+     else
+       aws pricing get-products --region us-east-1 \
+         --service-code "$1" --filters "$U1" \
+         > "$L/s18-price.json" 2>> "$L/s18-price.err"
+     fi
+     echo "s18_price_read=$2 exit=$?"
+     jq -r --arg u "$2" '[.PriceList[] | fromjson
+       | .publicationDate as $d | .terms.OnDemand[]
+       | .priceDimensions[] | select((.beginRange // "0") == "0")
+       | "s18_price=\($u) \(.pricePerUnit.USD) per \(.unit)"
+         + " published \($d)"] | .[0] // "s18_price=\($u) none"' \
+       "$L/s18-price.json" | tee -a "$L/s18-prices.txt"
+   }
+   price AmazonECS EUN1-Fargate-ARM-vCPU-Hours:perCPU
+   price AmazonECS EUN1-Fargate-ARM-GB-Hours
+   price AWSELB EUN1-LoadBalancerUsage 'Load Balancer-Application'
+   price AWSELB EUN1-LCUUsage 'Load Balancer-Application'
+   price AmazonVPC EUN1-PublicIPv4:InUseAddress
+   price AmazonCloudWatch EUN1-DataProcessing-Bytes
+   price AmazonCloudFront EU-DataTransfer-Out-Bytes
+   price AmazonCloudFront EU-Requests-Tier2-HTTPS
+   awk -v h=729.6 -v lg="$LOG_GB" -v cg="$CDN_GB" \
+     -v cr="$CDN_REQUESTS" '{ sub(/^s18_price=/, ""); p[$1] = $2 }
+     END {
+       m = 0.5 * h * p["EUN1-Fargate-ARM-vCPU-Hours:perCPU"]
+       m += 1 * h * p["EUN1-Fargate-ARM-GB-Hours"]
+       m += h * p["EUN1-LoadBalancerUsage"]
+       m += 1 * h * p["EUN1-LCUUsage"]
+       m += 3 * h * p["EUN1-PublicIPv4:InUseAddress"]
+       m += lg * p["EUN1-DataProcessing-Bytes"]
+       m += cg * p["EU-DataTransfer-Out-Bytes"]
+       m += cr * p["EU-Requests-Tier2-HTTPS"]
+       printf "s18_inventory_usd_month=%.2f\n", m
+     }' "$L/s18-prices.txt"
+   echo "s18_inventory_assumptions=task 0.5vCPU/1GB, 1 LCU," \
+     "3 IPv4, logs ${LOG_GB}GB, CDN ${CDN_GB}GB ${CDN_REQUESTS}req"
+   ```
+
+   Expected: one `s18_price=` line per usage type, none of them `none`, and
+   `s18_inventory_usd_month=`, the priced figure. A `none` line means the usage type has another name
+   in the price list: the figure leaves that line out, which the record says.
+
+7. Last item, also when you stop early or a command failed:
+
+   ```bash
+   test -n "$L" && rm -rf "$L" && echo "s18_logs_removed=yes"
+   ```
+
+Return: every `s18_` line, in order. The record gives the measured month (`s18_month_usd=`, over
+`s18_window_start` and `s18_window_days`, read on `s18_read_utc`) and the priced month
+(`s18_inventory_usd_month=`, with the prices' publication dates and the assumptions) side by side,
+each with its date, and never one in place of the other.
+
 ## Election day
 
 On a day whose peak is known in advance, such as an election day, the floor is raised before the
@@ -2418,25 +3493,70 @@ This root has not been applied yet. Each statement below is something this runbo
 has not been seen. It moves to "Observations", with its date, once the step named beside it has shown
 it.
 
-| Statement                                                                                                                                                                                          | Checked by                                          |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| With the key variables unset, `AWS_PROFILE=openvaa-admin` is what both the AWS CLI and Terraform's provider sign in with                                                                           | Step 1, the lines that begin it, and Step 5, item 2 |
-| The AWS CLI reads `--cli-input-json` from `file:///dev/stdin`, so a parameter's value reaches it from the environment through `jq` and never on a command line                                     | Step 2, items 1 and 2                               |
-| A SecureString created without a key id uses `alias/aws/ssm`, and AWS creates that key with the first such parameter                                                                               | Step 2, item 3                                      |
-| The two parameters carry the tags `Project` and `Environment` and no `Root` tag, so the destroy check does not list them                                                                           | Step 2, item 3, and Step 16                         |
-| The policy simulator allows the execution role `ssm:GetParameters` under `/openvaa/staging/frontend/` and denies it under another path                                                             | Step 3, item 4                                      |
-| A commit built through a temporary index from the tree of `HEAD` without `.planning`, with `origin/main` as its parent, can be pushed to a new branch and is then listed by `git ls-remote origin` | Step 4, items 2 to 4                                |
-| The image built natively on an arm64 workstation is pushed as one arm64 image manifest, not an index                                                                                               | Step 4, item 6                                      |
-| The image, started with only the four required variables, answers `/api/health` with its commit id as `build`                                                                                      | Step 4, item 7                                      |
-| The registry refuses a different image pushed under an existing tag, and the tag keeps its digest                                                                                                  | Step 4, items 8 and 9                               |
-| The build script, run again for a tag the registry holds, prints `tag_exists=yes` and exits 3                                                                                                      | Step 4, item 9                                      |
-| The first plan of this root creates only, and only under `module.frontend`                                                                                                                         | Step 5, item 3                                      |
-| One apply brings up the whole stack, the certificates' validation waiting inside it                                                                                                                | Step 5, item 5                                      |
-| A second plan right after the first apply shows no change                                                                                                                                          | Step 5, item 6                                      |
-| The state object is encrypted and versioned in the bucket                                                                                                                                          | Step 5, item 7                                      |
-| `https://staging.openvaa.org/api/health` answers 200 through CloudFront with the image's commit id                                                                                                 | Step 5, item 7                                      |
-| The subscription's confirmation mail reaches the alert address, and the subscription then reads confirmed                                                                                          | Step 6, items 1 and 3                               |
-| Billing offers `Project`, `Environment` and `Root` for activation, and Cost Explorer then lists each as `Active`                                                                                   | Step 6, items 2 and 3                               |
+| Statement                                                                                                                                                                                                 | Checked by                                          |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| With the key variables unset, `AWS_PROFILE=openvaa-admin` is what both the AWS CLI and Terraform's provider sign in with                                                                                  | Step 1, the lines that begin it, and Step 5, item 2 |
+| The AWS CLI reads `--cli-input-json` from `file:///dev/stdin`, so a parameter's value reaches it from the environment through `jq` and never on a command line                                            | Step 2, items 1 and 2                               |
+| A SecureString created without a key id uses `alias/aws/ssm`, and AWS creates that key with the first such parameter                                                                                      | Step 2, item 3                                      |
+| The two parameters carry the tags `Project` and `Environment` and no `Root` tag, so the destroy check does not list them                                                                                  | Step 2, item 3, and Step 16                         |
+| The policy simulator allows the execution role `ssm:GetParameters` under `/openvaa/staging/frontend/` and denies it under another path                                                                    | Step 3, item 4                                      |
+| A commit built through a temporary index from the tree of `HEAD` without `.planning`, with `origin/main` as its parent, can be pushed to a new branch and is then listed by `git ls-remote origin`        | Step 4, items 2 to 4                                |
+| The image built natively on an arm64 workstation is pushed as one arm64 image manifest, not an index                                                                                                      | Step 4, item 6                                      |
+| The image, started with only the four required variables, answers `/api/health` with its commit id as `build`                                                                                             | Step 4, item 7                                      |
+| The registry refuses a different image pushed under an existing tag, and the tag keeps its digest                                                                                                         | Step 4, items 8 and 9                               |
+| The build script, run again for a tag the registry holds, prints `tag_exists=yes` and exits 3                                                                                                             | Step 4, item 9                                      |
+| The first plan of this root creates only, and only under `module.frontend`                                                                                                                                | Step 5, item 3                                      |
+| One apply brings up the whole stack, the certificates' validation waiting inside it                                                                                                                       | Step 5, item 5                                      |
+| A second plan right after the first apply shows no change                                                                                                                                                 | Step 5, item 6                                      |
+| The state object is encrypted and versioned in the bucket                                                                                                                                                 | Step 5, item 7                                      |
+| `https://staging.openvaa.org/api/health` answers 200 through CloudFront with the image's commit id                                                                                                        | Step 5, item 7                                      |
+| The subscription's confirmation mail reaches the alert address, and the subscription then reads confirmed                                                                                                 | Step 6, items 1 and 3                               |
+| Billing offers `Project`, `Environment` and `Root` for activation, and Cost Explorer then lists each as `Active`                                                                                          | Step 6, items 2 and 3                               |
+| Both certificates read `ISSUED` with DNS validation, the viewer's in `us-east-1` and the origin's in `eu-north-1`                                                                                         | Step 7, item 2                                      |
+| CloudFront answers `http://staging.openvaa.org/` with a 301 to HTTPS, and the HTTPS chain verifies without `-k`                                                                                           | Step 7, item 3                                      |
+| A voter page rendered by the task carries the canonical project id and inlines at least one fetch of the Supabase REST host, so the task reads the hosted project with the key from the parameter store   | Step 7, item 4                                      |
+| Through CloudFront and the load balancer, a form post with the public origin passes SvelteKit's origin check, and one with a foreign origin is refused with 403 and the cross-site text                   | Step 7, item 5                                      |
+| A page is never served from the edge (`Miss` or `RefreshHit`, no `age`), a file under `/_app/immutable/` is (`Hit` on the second request), and every error response is held for 0 seconds                 | Step 7, item 6                                      |
+| The target group checks `/api/health`, the service's grace period is 60 seconds, and the target is healthy                                                                                                | Step 7, item 7                                      |
+| Only the load balancer's group reaches the task, on 3000; only the CloudFront prefix list reaches the load balancer, on 443; the network has no NAT gateway and its default route is the internet gateway | Step 8, item 2                                      |
+| From the workstation, neither the task's public address on 3000 nor the load balancer on 443 answers within 10 seconds                                                                                    | Step 8, item 3                                      |
+| Every resource of the state that carries `tags_all` carries the four default tags, and the running task carries `Root=aws` through the service's propagated tags                                          | Step 8, items 4 and 5                               |
+| Every ARN of the state is in `eu-north-1` except the viewer certificate's, in `us-east-1`, and the distribution's, which is global                                                                        | Step 8, item 6                                      |
+| The log group keeps 90 days and holds a stream named `frontend/frontend/<task id>` for the running task                                                                                                   | Step 8, item 7                                      |
+| A second plan started beside a first fails on the state lock in the bucket, and the first completes                                                                                                       | Step 8, item 8                                      |
+| `checkip.amazonaws.com`, asked over IPv4, names the address CloudFront sees the workstation by                                                                                                            | Step 9, item 3                                      |
+| Behind CloudFront and the load balancer, `x-forwarded-for` reaches the container as the viewer and then the edge, a client-sent entry stays first, and depth 2 resolves the viewer with and without it    | Step 9, items 3 and 4                               |
+| Under the managed origin request policy, `cloudfront-viewer-address`, `x-amz-cf-id` and `via` reach the container                                                                                         | Step 9, item 3                                      |
+| The listener answers 403 without the origin header and with a wrong value, forwards the right one, and port 80 redirects to HTTPS                                                                         | Step 9, item 5                                      |
+| After the apply without the two variables, `/api/diagnostics` answers 404 through the CDN, the load balancer's group holds one ingress rule, and a direct request gets no answer                          | Step 9, item 6                                      |
+| A task that exits at start, before it listens, trips the deployment circuit breaker, and ECS rolls the service back within 30 minutes                                                                     | Step 10, item 4                                     |
+| The rollback runs the revision that the fault's apply deregistered, and the old task keeps serving: the request loop counts no answer that is not 2xx                                                     | Step 10, items 4 and 8                              |
+| Each failed task's own stream holds the start-up line naming `ORIGIN`, although the task exits before it listens                                                                                          | Step 10, item 5                                     |
+| The rule fires on `SERVICE_DEPLOYMENT_FAILED`, the topic delivers, and the mail reaches the confirmed address                                                                                             | Step 10, items 7 and 9                              |
+| The log driver stores each line of a multi-line record as an event of its own, so the message line and the signal line are found apart                                                                    | Step 11, item 5                                     |
+| A rollout deregisters the old task, then signals it with `SIGTERM`; the server writes its stop record with `signal: 'SIGTERM'` in that task's stream, and the task exits 0, with no failed request        | Step 11, items 5 and 6                              |
+| An `at()` action read in UTC raises the floor at its time, and the service starts a second task without passing the ceiling                                                                               | Step 12, item 4                                     |
+| Target tracking scales in from 2 to 1 within 30 minutes of the lowering at idle CPU, and the task it stops writes the stop record                                                                         | Step 12, items 4 and 6                              |
+| After the pair is removed, the scalable target reads 1 and 2 again and a plan shows no change                                                                                                             | Step 12, item 7                                     |
+| Every page carries the anon key in its inlined public environment                                                                                                                                         | Step 13, item 1                                     |
+| Hosted Supabase keys the feedback limit on the workstation's address: five inserts are admitted and the sixth is refused with 400 and `P0001`                                                             | Step 13, item 3                                     |
+| A phone on another network is admitted inside the same five minutes while the workstation stays refused, so the two clients have a bucket each                                                            | Step 13, items 4 and 5                              |
+| The persistent project lists `email` among the candidates' registration modes, and a smoke candidate's id can be read anonymously                                                                         | Step 14, item 1                                     |
+| The Admin App's login form signs the first administrator in through CloudFront with 303 and the auth cookies, and the answer is not taken from the edge                                                   | Step 14, item 2                                     |
+| `create_invitations`, called with the administrator's own session, creates an email invitation for an entity with `p_confirm_entity` false                                                                | Step 14, item 4                                     |
+| The sign-in link's mail reaches the second mailbox with the origin `https://staging.openvaa.org` and the path `/<locale>/api/auth/callback`, and following it shows a signed-in screen                    | Step 14, item 5                                     |
+| `postgres`, over the connection `psql` uses, can delete a user of `auth.users`, its grant going with it, and a claimed invitation by id                                                                   | Step 15, item 4                                     |
+| With the stack running, the plans of `dns-mail` and `supabase` show no change                                                                                                                             | Step 15, items 2 and 5                              |
+| The destroy plan's count equals the managed resources of the state, and its apply exits 0                                                                                                                 | Step 16, items 2 and 3                              |
+| The Tagging API lists the `INACTIVE` task definitions after the destroy, `delete-task-definitions` removes them, and stopped tasks age out of the list                                                    | Step 16, items 4 and 5                              |
+| After the destroy, the Tagging API lists nothing tagged `Root=aws` in `eu-north-1` or in `us-east-1`                                                                                                      | Step 16, item 5                                     |
+| The image keeps its digest, the two parameters, the zone and the execution role survive the destroy, and the `dns-mail` plan still shows no change                                                        | Step 16, item 6                                     |
+| After the destroy, the `supabase` plan shows no change and the conformance probe passes                                                                                                                   | Step 16, item 7                                     |
+| A re-apply from the same tag plans only creates, applies, shows no change in a second plan, and serves the same build and the voter page                                                                  | Step 17, items 2 to 5                               |
+| The re-created log group keeps 90 days, and the new subscription is pending until the operator confirms it                                                                                                | Step 17, item 6                                     |
+| Cost Explorer filtered by `Root=aws` gives the stack's daily cost, Fargate included through the tasks' propagated tags                                                                                    | Step 18, item 3                                     |
+| The public IPv4 charges either carry the tag or show in the account's usage types alone                                                                                                                   | Step 18, item 5                                     |
+| The price list holds one on-demand price, first tier, for each usage type Step 18 names                                                                                                                   | Step 18, item 6                                     |
 
 ## Observations
 
