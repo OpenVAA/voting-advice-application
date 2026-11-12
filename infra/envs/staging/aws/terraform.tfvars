@@ -3,7 +3,8 @@
 # The two values the task reads from the parameter store, the Supabase anon key and the PostHog key,
 # are named in the module's task-environment.json and created by the operator under parameter_path,
 # never here. environment_overrides, omit_environment and debug_ingress_cidrs are given on the
-# command line for one observation and never in this file.
+# command line for one observation and never in this file. alert_email is given as
+# TF_VAR_alert_email from the operator's shell.
 aws_account_id = "471112560111"
 aws_region     = "eu-north-1"
 environment    = "staging"
@@ -17,6 +18,7 @@ parameter_path     = "/openvaa/staging/frontend"
 task_cpu           = 512
 task_memory        = 1024
 task_floor         = 1
+task_ceiling       = 2
 log_retention_days = 90
 
 # One line per entry of task-environment.json whose source is "value".

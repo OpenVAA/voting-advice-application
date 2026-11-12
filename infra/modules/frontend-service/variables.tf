@@ -188,3 +188,66 @@ variable "price_class" {
     error_message = "price_class must be PriceClass_100, PriceClass_200 or PriceClass_All."
   }
 }
+
+variable "task_ceiling" {
+  description = "Most tasks the service's scaling may run. Not below task_floor."
+  type        = number
+  default     = 2
+
+  validation {
+    condition     = var.task_ceiling >= var.task_floor && floor(var.task_ceiling) == var.task_ceiling
+    error_message = "task_ceiling must be a whole number no lower than task_floor."
+  }
+}
+
+variable "cpu_target_percent" {
+  description = "The tasks' average CPU, in percent, that target tracking holds the service at."
+  type        = number
+  default     = 60
+
+  validation {
+    condition     = var.cpu_target_percent > 0 && var.cpu_target_percent <= 100
+    error_message = "cpu_target_percent must be above 0 and at most 100."
+  }
+}
+
+variable "scheduled_floor_changes" {
+  description = "Timed changes of the scaling bounds, one scheduled action each. name keys the action, schedule is an at(), cron() or rate() expression read in schedule_timezone, and min_capacity and max_capacity are the bounds from that time on."
+  type = list(object({
+    name         = string
+    schedule     = string
+    min_capacity = number
+    max_capacity = number
+  }))
+  default = []
+
+  validation {
+    condition     = alltrue([for c in var.scheduled_floor_changes : c.min_capacity >= 1 && c.min_capacity <= c.max_capacity])
+    error_message = "Every scheduled change must have 1 <= min_capacity <= max_capacity."
+  }
+
+  validation {
+    condition = (
+      length(distinct([for c in var.scheduled_floor_changes : c.name])) == length(var.scheduled_floor_changes)
+      && alltrue([for c in var.scheduled_floor_changes : can(regex("^[A-Za-z0-9-]+$", c.name))])
+    )
+    error_message = "Every scheduled change must have a name of its own, of letters, digits and hyphens."
+  }
+}
+
+variable "schedule_timezone" {
+  description = "Time zone the schedules of scheduled_floor_changes are read in, as an IANA name."
+  type        = string
+  default     = "UTC"
+}
+
+variable "alert_email" {
+  description = "Address the deployment alert is mailed to. Its owner confirms the subscription before any alert arrives."
+  type        = string
+  sensitive   = true
+
+  validation {
+    condition     = can(regex("^[^@[:space:]]+@[^@[:space:]]+\\.[^@[:space:]]+$", var.alert_email))
+    error_message = "alert_email must be an email address."
+  }
+}

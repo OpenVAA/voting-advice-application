@@ -91,3 +91,8 @@ output "origin_certificate_arn" {
   description = "ARN of the load balancer's certificate, in the root's region."
   value       = module.frontend.origin_certificate_arn
 }
+
+output "deployment_alert_topic_arn" {
+  description = "ARN of the topic a failed rollout of the service is published to."
+  value       = module.frontend.deployment_alert_topic_arn
+}

@@ -85,3 +85,25 @@ variable "debug_ingress_cidrs" {
   type        = list(string)
   default     = []
 }
+
+variable "task_ceiling" {
+  description = "Most tasks the service's scaling may run."
+  type        = number
+}
+
+variable "scheduled_floor_changes" {
+  description = "Timed changes of the scaling bounds, one scheduled action each. Given on the command line for a timed observation, or written in terraform.tfvars ahead of a known peak."
+  type = list(object({
+    name         = string
+    schedule     = string
+    min_capacity = number
+    max_capacity = number
+  }))
+  default = []
+}
+
+variable "alert_email" {
+  description = "Address the deployment alert is mailed to. Given as TF_VAR_alert_email, and never in terraform.tfvars unless it is a role address that may be public."
+  type        = string
+  sensitive   = true
+}

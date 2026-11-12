@@ -67,21 +67,24 @@ module "frontend" {
     aws.us_east_1 = aws.us_east_1
   }
 
-  name_prefix           = var.name_prefix
-  environment           = var.environment
-  domain                = var.domain
-  aws_account_id        = var.aws_account_id
-  aws_region            = var.aws_region
-  registry_url          = var.registry_url
-  image_tag             = var.image_tag
-  execution_role_arn    = var.execution_role_arn
-  parameter_path        = var.parameter_path
-  environment_values    = var.environment_values
-  environment_overrides = var.environment_overrides
-  omit_environment      = var.omit_environment
-  task_cpu              = var.task_cpu
-  task_memory           = var.task_memory
-  task_floor            = var.task_floor
-  log_retention_days    = var.log_retention_days
-  debug_ingress_cidrs   = var.debug_ingress_cidrs
+  name_prefix             = var.name_prefix
+  environment             = var.environment
+  domain                  = var.domain
+  aws_account_id          = var.aws_account_id
+  aws_region              = var.aws_region
+  registry_url            = var.registry_url
+  image_tag               = var.image_tag
+  execution_role_arn      = var.execution_role_arn
+  parameter_path          = var.parameter_path
+  environment_values      = var.environment_values
+  environment_overrides   = var.environment_overrides
+  omit_environment        = var.omit_environment
+  task_cpu                = var.task_cpu
+  task_memory             = var.task_memory
+  task_floor              = var.task_floor
+  task_ceiling            = var.task_ceiling
+  scheduled_floor_changes = var.scheduled_floor_changes
+  log_retention_days      = var.log_retention_days
+  debug_ingress_cidrs     = var.debug_ingress_cidrs
+  alert_email             = var.alert_email
 }

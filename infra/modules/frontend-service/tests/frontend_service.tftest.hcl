@@ -57,6 +57,24 @@ mock_provider "aws" {
     }
   }
 
+  mock_resource "aws_ecs_service" {
+    defaults = {
+      id = "arn:aws:ecs:eu-north-1:000000000000:service/openvaa-test/openvaa-test-frontend"
+    }
+  }
+
+  mock_resource "aws_sns_topic" {
+    defaults = {
+      arn = "arn:aws:sns:eu-north-1:000000000000:openvaa-test-frontend-deployments"
+    }
+  }
+
+  mock_resource "aws_cloudwatch_event_rule" {
+    defaults = {
+      arn = "arn:aws:events:eu-north-1:000000000000:rule/openvaa-test-frontend-deployment-failed"
+    }
+  }
+
   mock_data "aws_route53_zone" {
     defaults = {
       zone_id = "Z00000000000000000001"
@@ -105,6 +123,7 @@ variables {
   image_tag          = "0000000000000000000000000000000000000000"
   execution_role_arn = "arn:aws:iam::000000000000:role/openvaa/openvaa-test-frontend-execution"
   parameter_path     = "/openvaa/test/frontend"
+  alert_email        = "alerts@example.org"
   environment_values = {
     PUBLIC_SUPABASE_URL     = "https://example.supabase.co"
     PUBLIC_PROJECT_ID       = "00000000-0000-0000-0000-000000000001"
@@ -680,4 +699,149 @@ run "price_class_refuses_an_unknown_class" {
   }
 
   expect_failures = [var.price_class]
+}
+
+run "scaling" {
+  command = apply
+
+  assert {
+    condition = (
+      aws_appautoscaling_target.service.min_capacity == 1
+      && aws_appautoscaling_target.service.max_capacity == 2
+      && aws_appautoscaling_target.service.resource_id == "service/openvaa-test/openvaa-test-frontend"
+      && aws_appautoscaling_target.service.scalable_dimension == "ecs:service:DesiredCount"
+      && aws_appautoscaling_target.service.service_namespace == "ecs"
+    )
+    error_message = "The service must be held between the floor and the ceiling."
+  }
+
+  assert {
+    condition = (
+      aws_appautoscaling_policy.cpu.policy_type == "TargetTrackingScaling"
+      && aws_appautoscaling_policy.cpu.target_tracking_scaling_policy_configuration[0].predefined_metric_specification[0].predefined_metric_type == "ECSServiceAverageCPUUtilization"
+      && aws_appautoscaling_policy.cpu.target_tracking_scaling_policy_configuration[0].target_value == 60
+    )
+    error_message = "Target tracking must hold the tasks' average CPU at 60 %."
+  }
+
+  assert {
+    condition     = length(aws_appautoscaling_scheduled_action.floor) == 0
+    error_message = "With no scheduled change there must be no scheduled action."
+  }
+}
+
+run "two_scheduled_changes_make_two_actions" {
+  command = apply
+
+  variables {
+    schedule_timezone = "Europe/Helsinki"
+    scheduled_floor_changes = [
+      { name = "raise", schedule = "at(2030-01-01T08:00:00)", min_capacity = 2, max_capacity = 2 },
+      { name = "lower", schedule = "at(2030-01-01T09:00:00)", min_capacity = 1, max_capacity = 2 },
+    ]
+  }
+
+  assert {
+    condition     = length(aws_appautoscaling_scheduled_action.floor) == 2
+    error_message = "Two scheduled changes must give two scheduled actions."
+  }
+
+  assert {
+    condition = (
+      aws_appautoscaling_scheduled_action.floor["raise"].scalable_target_action[0].min_capacity == "2"
+      && aws_appautoscaling_scheduled_action.floor["lower"].scalable_target_action[0].min_capacity == "1"
+      && aws_appautoscaling_scheduled_action.floor["raise"].schedule == "at(2030-01-01T08:00:00)"
+      && alltrue([for a in aws_appautoscaling_scheduled_action.floor : a.timezone == "Europe/Helsinki" && a.resource_id == aws_appautoscaling_target.service.resource_id])
+    )
+    error_message = "Each scheduled action must carry its change's schedule and bounds, in the given time zone, on the service."
+  }
+}
+
+run "deployment_alert" {
+  command = apply
+
+  assert {
+    condition = (
+      jsondecode(aws_cloudwatch_event_rule.deployment_failed.event_pattern).detail.eventName == ["SERVICE_DEPLOYMENT_FAILED"]
+      && jsondecode(aws_cloudwatch_event_rule.deployment_failed.event_pattern).resources == [aws_ecs_service.app.id]
+      && jsondecode(aws_cloudwatch_event_rule.deployment_failed.event_pattern)["detail-type"] == ["ECS Deployment State Change"]
+      && jsondecode(aws_cloudwatch_event_rule.deployment_failed.event_pattern).source == ["aws.ecs"]
+    )
+    error_message = "The rule must match a failed deployment of this service alone."
+  }
+
+  assert {
+    condition = (
+      aws_cloudwatch_event_target.deployment_failed.arn == aws_sns_topic.deployments.arn
+      && aws_cloudwatch_event_target.deployment_failed.rule == aws_cloudwatch_event_rule.deployment_failed.name
+      && aws_sns_topic.deployments.kms_master_key_id == null
+    )
+    error_message = "The rule must publish to the unencrypted deployments topic."
+  }
+
+  assert {
+    condition = (
+      length(jsondecode(aws_sns_topic_policy.deployments.policy).Statement) == 1
+      && jsondecode(aws_sns_topic_policy.deployments.policy).Statement[0].Principal == { Service = "events.amazonaws.com" }
+      && jsondecode(aws_sns_topic_policy.deployments.policy).Statement[0].Action == "sns:Publish"
+      && jsondecode(aws_sns_topic_policy.deployments.policy).Statement[0].Condition.ArnEquals["aws:SourceArn"] == aws_cloudwatch_event_rule.deployment_failed.arn
+      && aws_sns_topic_policy.deployments.arn == aws_sns_topic.deployments.arn
+    )
+    error_message = "Only the deployment rule may publish to the topic."
+  }
+
+  assert {
+    condition = (
+      aws_sns_topic_subscription.operator.protocol == "email"
+      && aws_sns_topic_subscription.operator.topic_arn == aws_sns_topic.deployments.arn
+      && nonsensitive(aws_sns_topic_subscription.operator.endpoint == "alerts@example.org")
+    )
+    error_message = "The topic must mail alert_email."
+  }
+}
+
+run "task_ceiling_refuses_below_the_floor" {
+  command = plan
+
+  variables {
+    task_floor   = 2
+    task_ceiling = 1
+  }
+
+  expect_failures = [var.task_ceiling]
+}
+
+run "scheduled_change_refuses_min_above_max" {
+  command = plan
+
+  variables {
+    scheduled_floor_changes = [
+      { name = "raise", schedule = "at(2030-01-01T08:00:00)", min_capacity = 3, max_capacity = 2 },
+    ]
+  }
+
+  expect_failures = [var.scheduled_floor_changes]
+}
+
+run "scheduled_change_refuses_a_repeated_name" {
+  command = plan
+
+  variables {
+    scheduled_floor_changes = [
+      { name = "raise", schedule = "at(2030-01-01T08:00:00)", min_capacity = 2, max_capacity = 2 },
+      { name = "raise", schedule = "at(2030-01-01T09:00:00)", min_capacity = 1, max_capacity = 2 },
+    ]
+  }
+
+  expect_failures = [var.scheduled_floor_changes]
+}
+
+run "alert_email_refuses_a_non_address" {
+  command = plan
+
+  variables {
+    alert_email = "operator"
+  }
+
+  expect_failures = [var.alert_email]
 }
