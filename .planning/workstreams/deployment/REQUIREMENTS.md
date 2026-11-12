@@ -70,7 +70,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
 - [x] **SUPA-02**: Hosted auth settings are applied from the repository by Terraform as the only writer:
       access-token hook on, site URL, the two redirect entries, public sign-up off, email confirmation on, SMTP.
       `supabase config push` is not used (C4).
-- [ ] **SUPA-03**: Hosted API settings are applied from the repository, with maximum rows equal to
+- [x] **SUPA-03**: Hosted API settings are applied from the repository, with maximum rows equal to
       `dataAdapter.pageSize`.
 - [x] **SUPA-04**: The two storage buckets are created reproducibly by the migration.
 - [x] **SUPA-05**: The three Edge Functions are deployed and their secrets set from the operator's environment.
@@ -95,7 +95,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
       root leaves the database untouched. [C2, C3]
 - [x] **SUPA-13**: The key model a new project issues is measured and recorded. The deployment stays on legacy
       keys if they work; the migration to publishable keys is filed to run right after both streams merge. [C5]
-- [ ] **SUPA-14**: Mail is sent through SES from a verified domain identity with DKIM, SPF and DMARC. The port
+- [x] **SUPA-14**: Mail is sent through SES from a verified domain identity with DKIM, SPF and DMARC. The port
       that works from a hosted Edge Function is measured and used. [C6]
 
 ### PIPE — Deploy pipeline
@@ -125,9 +125,9 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
 Each is run on a real project, recorded with its date, and acted on.
 
 - [x] **OBS-01**: The served auth settings and the dashboard's names for the two switches are recorded.
-- [ ] **OBS-02**: The redirect allowlist's behaviour is recorded: the single-segment pattern, the site URL's
+- [x] **OBS-02**: The redirect allowlist's behaviour is recorded: the single-segment pattern, the site URL's
       host on other ports, and what `/auth/v1/verify` returns when admitted and when refused.
-- [ ] **OBS-03**: Whether the hosted gateway accepts a call with the anon key and no user token is recorded, and
+- [x] **OBS-03**: Whether the hosted gateway accepts a call with the anon key and no user token is recorded, and
       `account-access` works or is changed.
 - [ ] **OBS-04**: The forwarded headers that reach an Edge Function, a PostgREST trigger and the frontend
       container are recorded.
@@ -280,7 +280,7 @@ closes; those are not listed against the earlier phase here.
 | INFRA-19 | Phase 187 | Pending |
 | SUPA-01 | Phase 184 | Complete |
 | SUPA-02 | Phase 184 | Complete |
-| SUPA-03 | Phase 184 | Pending |
+| SUPA-03 | Phase 184 | Complete |
 | SUPA-04 | Phase 184 | Complete |
 | SUPA-05 | Phase 184 | Complete |
 | SUPA-06 | Phase 184 | Complete |
@@ -291,7 +291,7 @@ closes; those are not listed against the earlier phase here.
 | SUPA-11 | Phase 183 | Complete |
 | SUPA-12 | Phase 185 | Pending |
 | SUPA-13 | Phase 184 | Complete |
-| SUPA-14 | Phase 184 | Pending |
+| SUPA-14 | Phase 184 | Complete |
 | PIPE-01 | Phase 187 | Pending |
 | PIPE-02 | Phase 187 | Pending |
 | PIPE-03 | Phase 187 | Pending |
@@ -303,8 +303,8 @@ closes; those are not listed against the earlier phase here.
 | PIPE-09 | Phase 187 | Pending |
 | PIPE-10 | Phase 187 | Pending |
 | OBS-01 | Phase 184 | Complete |
-| OBS-02 | Phase 184 | Pending |
-| OBS-03 | Phase 184 | Pending |
+| OBS-02 | Phase 184 | Complete |
+| OBS-03 | Phase 184 | Complete |
 | OBS-04 | Phase 185 | Pending |
 | OBS-05 | Phase 184 | Complete |
 | OBS-06 | Phase 185 | Pending |
