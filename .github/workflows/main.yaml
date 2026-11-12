@@ -816,6 +816,26 @@ jobs:
           done
           echo "validated ${#validated[@]} roots: ${validated[*]}"
 
+      - name: "Test every Terraform module that has tests"
+        if: ${{ !cancelled() }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          tested=()
+          for tests in infra/modules/*/tests/; do
+            module="${tests%/tests/}"
+            echo "::group::$module"
+            terraform -chdir="$module" init -backend=false -input=false
+            terraform -chdir="$module" test -no-color
+            echo "::endgroup::"
+            tested+=("$module")
+          done
+          if [ "${#tested[@]}" -eq 0 ]; then
+            echo "::error::No module under infra/modules has a tests directory, so no module test ran."
+            exit 1
+          fi
+          echo "tested ${#tested[@]} modules: ${tested[*]}"
+
       - name: "Check the settings types of the Supabase module"
         if: ${{ !cancelled() }}
         run: bash infra/scripts/check-settings-types.sh
