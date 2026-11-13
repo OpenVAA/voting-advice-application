@@ -5,42 +5,57 @@ policies, its database functions and RPCs, three Edge Functions, and a pgTAP tes
 
 Run every command below from the repository root unless stated otherwise.
 
-## Two SQL directories: one you edit, one that is generated
+## Two SQL directories: the current schema and the migrations
 
-The schema is **declarative**. You edit `supabase/schema/`; `supabase/migrations/` is generated
-from it. Read this before editing either.
+`supabase/schema/` is the schema as it is now, edited by hand. `supabase/migrations/` is what a
+database is built from, and its files are never edited. Read this before changing either.
 
-| Directory              | Applied by the CLI? | What it is                                                                                                                                                                                |
-| ---------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `supabase/schema/`     | **No**              | **The source.** Hand-edited, organised by concern. `config.toml` sets `[db.migrations] schema_paths = []`, so the CLI never reads it.                                                     |
-| `supabase/migrations/` | **Yes**             | **Generated.** Exactly one file, `00001_initial_schema.sql`, byte-identical to `cat schema/*.sql` in filename order. `supabase db reset` applies it and nothing else. Never hand-edit it. |
+| Directory              | Applied by the CLI? | What it is                                                                                                                                                                                                                                                                                                            |
+| ---------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `supabase/schema/`     | **No**              | **The current view of the schema.** Hand-edited, organised by concern. `config.toml` sets `[db.migrations] schema_paths = []`, so the CLI never reads it.                                                                                                                                                             |
+| `supabase/migrations/` | **Yes**             | **What a database is built from.** The frozen baseline `00001_initial_schema.sql`, then one appended migration per schema change, named by the next five-digit version, an underscore and a name, for example `00002_add_example.sql`. `supabase db reset` and `supabase db push` apply these files in version order. |
 
-**Changing the schema is two steps in one commit.** Edit the `schema/` file that owns the concern,
-then run `yarn schema:regenerate` to fold the change into `migrations/00001_initial_schema.sql`.
+`supabase/migrations.manifest.json` lists every migration in version order with the sha256 of its
+bytes; the baseline's entry is the first. A listed migration is never edited: `supabase db push`
+skips every version a database has already recorded, so an edit made after a migration was applied
+never reaches that database, and nothing says so.
 
-**A gate verifies that the generated file is current.** `yarn assert:schema-migration-parity`
-(link 12 of `yarn lint:check`) fails when the concatenation and the migration differ by a single
-byte, and fails when a **second** `.sql` file appears under `supabase/migrations/`. The second
-conjunct is what keeps the schema single-source: a numbered migration beside the generated one
-would reinstate exactly the two-copy divergence this arrangement removes.
+**A schema change is one commit with three parts.**
+
+1. Edit the `schema/` file that owns the concern.
+2. Write the same change as a new migration, `supabase/migrations/<version>_<name>.sql`. The version
+   is the next five-digit number after the highest in the manifest; the name is lower-case letters,
+   digits and underscores. A file that `supabase migration new` names with a timestamp is renamed to
+   the next number.
+3. Add the migration's line, with its sha256 from `shasum -a 256 <file>`, to the end of
+   `supabase/migrations.manifest.json`.
+
+Then run `yarn check:schema-equivalence`. It builds one database from `schema/` and one from
+`migrations/`, each in an isolated instance, and fails when the two differ. It needs Docker and is
+not part of `yarn lint:check`.
+
+**A gate keeps the migrations frozen.** `yarn assert:schema-migration-parity`, a link of
+`yarn lint:check`, fails when a listed migration's bytes change, when a migration has no manifest
+line, and when versions repeat, go down or leave a gap. `yarn schema:regenerate` writes nothing: it
+refuses and prints the three steps above with the next file name.
 
 **Two obligations that no tool can enforce for you.**
 
-- **Review the regenerated diff, in the same commit as the `schema/` edit that caused it.** The
-  regeneration is a keystroke and the gate only checks that it ran — reading what it produced is
-  yours. A policy or grant that changed unintentionally shows up nowhere else.
+- **Read the migration you wrote, in the same commit as the `schema/` edit.** The equivalence check
+  proves that the two directories build the same database, not that it is the database you meant. A
+  policy or grant that changed unintentionally shows up nowhere else.
 - **Run `yarn db:types` after any schema change**, so `packages/supabase-types/` matches the
   applied schema. Commit its output with the same change.
 
-The gate proves the two files are textually **equal**. It does not prove either is **correct**, and
-it does not prove the **applied** database matches — a database not reset since the edit still
-carries the old schema. See the script header, `scripts/assert-schema-migration-parity.mjs`, for
-the full limits.
+The gate proves that the listed migrations are unchanged and that the sequence is whole. It does not
+compare `schema/` with the migrations, it does not prove either is **correct**, and it does not prove
+that a database has **applied** them — a database not reset since the change still carries the old
+schema. See the script header, `scripts/assert-schema-migration-parity.mjs`, for the full limits.
 
-Migrations `00002`–`00008` were folded into the generated `00001` and removed in phase 162, on the
-operator's ruling that no Supabase database has been published and there is therefore no deployed
-applied-history to protect; git history retains every one of them, so a `00002` reference in an old
-commit resolves with `git show <sha>:<path>`.
+The two storage buckets, `public-assets` and `private-assets`, are created by the migration. A
+deployment's own rows — its account, its project and that project's settings, the storage
+configuration and the deployment settings — are written by `infra/scripts/bootstrap.sql`, not by a
+migration.
 
 `schema/` files are numbered by concern, not by date:
 
@@ -49,10 +64,51 @@ commit resolves with `git show <sha>:<path>`.
 | `000`–`011` | enum types, utility functions, validation functions                                                                |
 | `100`–`108` | content tables — tenancy, elections, entities, questions, nominations, answers, app settings, feedback, admin jobs |
 | `200`       | indexes                                                                                                            |
-| `300`–`303` | auth tables, auth functions, RLS policies, column grants                                                           |
+| `300`–`305` | auth tables, auth functions, RLS policies, column grants, terms-of-use acceptances, invitations                    |
 | `400`       | storage buckets, storage RLS, storage cleanup triggers                                                             |
-| `500`–`504` | external-id handling, bulk operations, email helpers, entity RPCs, admin RPCs                                      |
+| `500`–`506` | external-id handling, bulk operations, email helpers, entity RPCs, admin RPCs, question RPCs, invitation RPCs      |
 | `900`       | pgTAP test helpers                                                                                                 |
+
+## What the database holds true of an entity and a question
+
+Three rules live in trigger functions in `schema/011-validation-functions.sql`, because neither a
+column grant nor a policy can state them:
+
+- **A confirmed entity's names are frozen for its own editor.** `enforce_entity_immutability()` is
+  registered on all four entity tables with the columns it protects: `first_name`, `last_name` and
+  `short_name` on `candidates`, and `name` and `short_name` on `organizations`, `factions` and
+  `alliances`. Once the row is confirmed, a change to any of them by the `authenticated` role needs
+  `entity.edit_immutable`; a change to `confirmed` itself needs `entity.confirm`. Held by
+  `19-entity-immutability.test.sql`.
+- **A question's entity types are a list of entity types.** `validate_entity_type_list()` binds
+  `entity_type` on `questions` and `question_categories` to null or a JSON array whose members name
+  values of the `entity_type` enum, for every writer. `bulk_import` carries the key on those two
+  tables and skips it on `nominations`, where the column is generated. Held by
+  `40-entity-type-list.test.sql`.
+- **An entity's colour is a colour.** `validate_entity_color()` binds `color` on the four entity
+  tables to null or an object whose only members are `normal` and `dark`, each absent, null or `#`
+  followed by three or six hexadecimal digits, for every writer. The frontend writes the stored value
+  into a `style` attribute. Held by `41-entity-color.test.sql`.
+
+A fourth rule is a stored setting. Nomination editing by an entity's own users is locked by the app
+setting `access.nominationsLocked` in the project's row of `app_settings`:
+`private.project_nominations_locked(project_id)` in `schema/301-auth-functions.sql` reads it, and
+the four `entity_*` nomination policies ask it: the two inserts, the update and the delete. Only the
+JSON boolean `true` locks; a project without a settings row or without the key is unlocked, and an
+id that names no project is locked. Whoever holds `project.edit_app_settings` sets it, project
+editors included.
+
+A nomination is also held to the type of its election, by two more trigger functions of that file.
+`elections.election_type` is one of four values of the enum `nomination_shape`, and
+`nomination_shape_rule(shape, entity_type)` is the one statement in SQL of which entity types each
+admits. `validate_nomination()` refuses, for every writer, a row its election's type does not admit.
+`validate_nomination_parent_required()`, the function of the constraint trigger
+`nominations_parent_required`, refuses at the end of the transaction a candidate's nomination in a
+closed-list election (`organization_list`) that has neither a parent nomination nor a requested
+party name. Held by `08-triggers.test.sql`. An entity's editor writes its nominations through
+`set_entity_nominations` and reads the entities it may stand under through
+`get_nomination_parent_options`, both in `schema/503-entity-rpcs.sql` and held by
+`43-set-entity-nominations.test.sql` and `44-nomination-parent-options.test.sql`.
 
 ## Why answers are a JSONB column
 
@@ -91,7 +147,7 @@ binding constraint at that scale. And the comparison deliberately favoured relat
 calls: it was to win anything inside 20%, with JSONB needing a clear margin to be preferred.
 
 **What was chosen.** JSONB, on the strength of the bulk read and the full-form save — the two
-patterns the voter and candidate apps actually run on every page. The two columns are declared in
+patterns the voter and contestant apps actually run on every page. The two columns are declared in
 `schema/102-entities.sql`; everything that keeps them honest lives in `schema/105-answers.sql`: the
 smart validation trigger that re-validates only changed keys, the question-delete cascade that
 removes orphaned keys, and the type-change guard.
@@ -122,7 +178,8 @@ yarn db:start                 # start the local stack
 yarn db:reset                 # drop and recreate from migrations/, then seed.sql
 yarn db:reset-with-data       # the above, then the default dev-seed template
 yarn db:types                 # regenerate packages/supabase-types from the live schema
-yarn schema:regenerate        # fold schema/*.sql into migrations/00001_initial_schema.sql
+yarn check:schema-equivalence # build a database from schema/ and one from migrations/, and compare them (Docker)
+yarn schema:regenerate        # writes nothing: prints the three steps of a schema change
 yarn db:lint:sql              # supabase db lint + scripts/lint-schema.mjs (see below)
 yarn db:status                # service status and local URLs
 ```
@@ -170,12 +227,56 @@ stack with `yarn db:stop` — that is much cheaper than maintaining a divergent 
 that the root project documentation names `54321`, `54322`, `54323` and `54324` as the ones to keep
 free; the other six matter only once you use the feature behind them.
 
+## Local auth and Edge runtime configuration
+
+These keys of `supabase/config.toml` decide who can create an account on the local stack, what the
+auth service requires and sends, and how the Edge Functions are run:
+
+| Table                    | Key                       | Value                                                    | Effect                                                                                   |
+| ------------------------ | ------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `[auth]`                 | `enable_signup`           | `false`                                                  | no unauthenticated caller can create a user; users are created by the service role only  |
+| `[auth]`                 | `minimum_password_length` | `8`                                                      | a password shorter than the Contestant App's rule asks for cannot be set                 |
+| `[auth.email]`           | `enable_confirmations`    | `true`                                                   | an address is confirmed only by a mailed link, or by the service role vouching for it    |
+| `[auth.email]`           | `otp_expiry`              | `3600`                                                   | a mailed sign-in or recovery link can be used for an hour                                |
+| `[auth.hook.send_email]` | `enabled`, `uri`          | `true`, `pg-functions://postgres/public/send_email_hook` | the auth service sends no mail of its own; `account-access` sends the application's      |
+| `[edge_runtime]`         | `policy`                  | `"per_worker"`                                           | a worker serves more than one request, and a function may answer before its work is done |
+
+`[auth.email] enable_signup` stays `true`: it switches on the email provider itself, which password
+sign-in needs. `yarn assert:auth-signup-closed` (a link of `yarn lint:check`) fails when any of the
+seven auth keys above holds another value.
+
+**The auth container and the Edge runtime read `config.toml` and the functions' environment file
+only when the stack starts.** A stack started before a pull that changes any of them keeps running
+with the values it started with, so after such a pull run `yarn db:stop` and then `yarn db:start`
+once. `yarn db:reset` does not serve a changed `[auth]` key or hook: only the restart does. The E2E
+project `auth-service-contract` is red on a stack that still allows public sign-up.
+
+The functions' environment file is `supabase/functions/.env`, created from the tracked template
+`supabase/functions/.env.example`. Its `SITE_URL` is `http://localhost:5173`, as the template has
+it: the origin of the links the functions mail and redirect to.
+
+**Judge a change to a function's source after a restart.** Under `policy = "per_worker"` the Edge
+runtime keeps serving the code a worker loaded, and whether it reloads an edited file is not
+settled: one measurement saw a call straight after an edit and a call ten seconds later both
+answered from the old code, and another saw an edited source served before any restart. Do not
+rely on either. After editing anything under `supabase/functions/`, or
+`config.toml`, or the functions' environment file, run `yarn db:stop` and then `yarn db:start`
+before judging the change. A function directory that is added or deleted is served, or stops being
+served, at the same restart.
+
 ## Tests
 
 ```bash
-cd apps/supabase && npx supabase test db     # 11 pgTAP files
+cd apps/supabase && npx supabase test db     # pgTAP, every file under supabase/tests/database/
 yarn workspace @openvaa/supabase test:unit   # vitest, Edge Function pure helpers
+yarn workspace @openvaa/supabase typecheck   # deno check over every non-test Edge Function module; part of `yarn typecheck`
 ```
+
+The invitation model is held by `39-invitations.test.sql`: the table and its policies, the code,
+seeding, the claim, who may be mailed, the limits and what each function exposes. Its schema is in
+`supabase/schema/305-invitations.sql` (the table, its policies and the code functions) and
+`supabase/schema/506-invitation-rpcs.sql` (seeding, the claim and the service-role functions behind
+`account-access`).
 
 The pgTAP files under `supabase/tests/database/` follow one pattern, and new files must
 keep to it: wrap the file in `BEGIN;` / `ROLLBACK;`, declare `SELECT plan(n)` (or
@@ -210,23 +311,95 @@ automated gate** and is checked by review.
 
 Three functions under `supabase/functions/`:
 
-- **`invite-candidate`** — admin-gated. Creates a candidate row, sends an invite email and
-  assigns the `candidate` role.
+- **`account-access`** — **anonymous** for four operations. The endpoint of the invitation model:
+  it answers whether an invitation code can be used (`check-code`), mails a sign-in link to an
+  address the database returns for the request (`request-link`), mails a recovery link to an
+  account that holds any global grant, an account grant on the project's account, or a grant on
+  the project or one of its entities, or the sign-in mail to an address that has only an
+  invitation (`request-recovery`, decided by `recovery_link_request`), and signs in the user who
+  claimed a code (`code-sign-in`). The two mail requests answer before any work and share one mail
+  slot per address. `confirm-address`, with the caller's own access token, proves an address for
+  an account an identity provider created: it takes the account's and the address's slot, answers
+  `sent`, `in-use` or `refused`, and mails a `type=email_change` link. It takes its project from
+  the request body and refuses a project the account registered no entity in; neither slot is per
+  project. Reads `SITE_URL`, `SMTP_HOST`, `SMTP_PORT` and `SMTP_FROM`.
+- **`identity-callback`** — **server-only**. Refuses every caller without the frontend server's
+  `x-identity-callback-secret`; accepts a bank-authentication `id_token` with the request's
+  `project_id` and entity type, verifies it against the provider's JWKS, decides the type by the
+  project's registration matrix, and finds or creates the matching auth user (by invite, no
+  password), its candidate or party and the editor grant between them. Reads the
+  `IDENTITY_PROVIDER_*` variables and `IDENTITY_CALLBACK_SERVER_SECRET`.
 - **`send-email`** — admin-gated. Resolves per-recipient template variables via the
-  `resolve_email_variables` RPC and sends through SMTP.
-- **`identity-callback`** — **public**. Accepts a bank-authentication `id_token` (JWE or
-  JWS) from the identity provider, verifies it against the provider's JWKS, and finds or
-  creates the matching auth user.
+  `resolve_email_variables` RPC and sends through SMTP. Reads `PUBLIC_PROJECT_ID`, `SMTP_HOST`,
+  `SMTP_PORT` and `SMTP_FROM`.
 
-The two admin-gated functions verify the caller before creating a `service_role` client:
-first `auth.getUser()` against the caller's token, then an authority check against the
-`grants` claim the Custom Access Token Hook adds. `identity-callback` has no such
-check by design — it is the unauthenticated leg of the login flow, and its trust anchor is
-the JWKS signature check, with the audience and issuer checks applied when configured.
+`send-email` verifies the caller before creating a `service_role` client: first
+`auth.getUser()` against the caller's token, then `public.user_can` asked through the caller's
+own token (`callerAuthority.ts`). `identity-callback` checks the server's credential;
+`account-access` has no caller check by design except for `confirm-address`.
+`identity-callback` is reached only through the frontend server, and its trust anchor is the
+server's credential together with the JWKS signature check with the audience and the issuer
+bound. `account-access` decides no authority itself: service-role database functions in
+`supabase/schema/506-invitation-rpcs.sql` decide whom a mail may go to and what a code answers,
+and it issues a link only when the served auth settings refuse public sign-up and the redirect
+allowlist admits the callback URL.
+
+An invitation is a row of `public.invitations` that promises one grant
+(`supabase/schema/305-invitations.sql`). `create_invitations` creates invitations and sends
+nothing; its required `p_confirm_entity` states whether the invited entities are confirmed, and an
+entity-scope item for a candidate or an organization may state the entity's nominations, written as
+the caller through the private functions `set_entity_nominations` asks
+(`supabase/schema/503-entity-rpcs.sql`). No account and no grant exists until the invited person
+asks `account-access` for a link and signs in, and `claim_invitations` then writes the promised
+grants for the caller's own confirmed address. An open invitation for a candidate or an
+organization is honoured only under a registration mode the project's settings allow for that
+type: `private.invitation_mode_allowed` asks `private.registration_mode_allowed`
+(`301-auth-functions.sql`), and the functions that read an open invitation treat a refused row as
+absent.
+
+The functions this schema adds for the sign-in flow, by file:
+
+- `301-auth-functions.sql`: `public.send_email_hook`, the no-op mail hook, executable by
+  `supabase_auth_admin` alone; `private.caller_password_set`, whether the caller's account holds a
+  password, read by `get_user_entities` as its `password_set`; `private.user_password_set`, the same
+  for any account, executable by no API role; `private.registration_mode_allowed_in` and
+  `private.registration_mode_allowed`, the registration-mode rule.
+- `506-invitation-rpcs.sql`: `public.recovery_link_request`, the service role's; and
+  `private.invitation_mode_allowed` and `private.email_holds_grant_in_project`, which no API role
+  can execute.
 
 When calling an RPC from a function, the argument names must match the SQL parameter names
 exactly, `p_` prefixes included. PostgREST resolves overloads by argument name and returns
 `PGRST202` when they do not match.
+
+### Editor setup
+
+To get Deno's diagnostics in VS Code for the Edge Functions, and only there, add these settings to
+your own `.vscode/settings.json`. That file is not tracked: `.vscode/*` is ignored, and nothing
+under `.vscode/` is committed.
+
+```json
+{
+  "deno.enablePaths": ["apps/supabase/supabase/functions"],
+  "deno.path": "node_modules/.bin/deno",
+  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" }
+}
+```
+
+- `deno.enablePaths` turns the Deno extension on for the functions tree alone. Every other file of
+  the repository stays with the TypeScript language server.
+- `deno.path` is optional. It points the extension at the repository's pinned Deno, which
+  `yarn install` links at `node_modules/.bin/deno`. That the extension accepts this relative path
+  has not been verified.
+- Never set `deno.enable`, and never add a `deno.json` at the repository root. Either one turns Deno
+  on for the rest of the repository's TypeScript, and Deno then flags those files.
+- Prettier formats this tree, as it formats the rest of the repository. Keep Prettier the default
+  formatter for TypeScript (`editor.defaultFormatter`): `deno fmt` disagrees with Prettier on nearly
+  every file of the tree and is not used.
+
+`apps/supabase/supabase/functions/deno.json` configures both `deno check`
+(`yarn workspace @openvaa/supabase typecheck`) and the extension. It holds no import map and no
+formatter settings.
 
 ## Type generation
 

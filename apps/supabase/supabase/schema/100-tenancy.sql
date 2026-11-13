@@ -20,7 +20,7 @@ CREATE TABLE public.projects (
   name text NOT NULL,
   -- The locale code a localized string falls back to when it has no entry for the requested locale.
   default_locale text NOT NULL DEFAULT 'en',
-  -- Whether voters can read the project: an anonymous reader sees a row only when this is true, its nomination is confirmed and every entity that nomination links is confirmed. Defaults to false so a new project is not public; seed.sql and SupabaseAdminClient.ensureProject set it to true.
+  -- Whether voters can read the project: an anonymous reader sees a row only when this is true, its nomination is confirmed and every entity that nomination links is confirmed. Defaults to false so a new project is not public. seed.sql sets it to true on the local stack's project, and SupabaseAdminClient.ensureProject on the project it ensures. A deployment's project row, this column included, is written by the bootstrap script `infra/scripts/bootstrap.sql`.
   open_for_voters boolean NOT NULL DEFAULT false,
   -- When true, entity users cannot insert or update their own nominations; the admin nomination policies ignore it.
   lock_nominations boolean NOT NULL DEFAULT false,

@@ -438,7 +438,7 @@ CREATE POLICY "admin_delete_election_constituency_groups" ON public.election_con
 -- =====================================================================
 -- THE FOUR ENTITY TABLES -- organizations, candidates, factions, alliances -- ONE SHAPE, FIVE POLICIES EACH
 -- =====================================================================
--- The twenty policies below are four copies of one shape, differing only in the table name and the entity-type literal. 18-entity-policies.test.sql asserts this structurally: each policy family's four expressions are one string once those two are normalised away, and for SELECT also the two terms-of-use conjuncts that only candidates carry.
+-- The twenty policies below are four copies of one shape, differing only in the table name and the entity-type literal. 18-entity-policies.test.sql asserts this structurally: each policy family's four expressions are one string once those two are normalised away.
 --
 -- Permissions used on the entity tables:
 -- - project.read_entities: the SELECT policies' project disjunct, held by the root, account and project admins and by project editors.
@@ -450,7 +450,7 @@ CREATE POLICY "admin_delete_election_constituency_groups" ON public.election_con
 --
 -- A parent entity's reach to its child nominee is not a row disjunct and must not become one: a SELECT policy returns every column, `answers` included. That reach is served by public.get_entity_basic_data (503-entity-rpcs.sql), which is gated on `nomination.read` and returns an allow-listed projection; 18-entity-policies.test.sql asserts the parent cannot SELECT the child's row.
 --
--- Row state (`confirmed`, open for voters, the terms-of-use timestamps) appears only in the public disjunct, never beside a grant, because user_can answers whether a role may apply a permission, not whether the row's state admits it. An entity grantee therefore reads and edits its own unconfirmed row, which the sign-up flow needs; name immutability on a confirmed entity is enforced by a trigger.
+-- Row state (`confirmed`, open for voters) appears only in the public disjunct, never beside a grant, because user_can answers whether a role may apply a permission, not whether the row's state admits it. An entity grantee therefore reads and edits its own unconfirmed row, which the sign-up flow needs; name immutability on a confirmed entity is enforced by a trigger.
 --
 -- The public disjunct is assembled inline in all eight entity SELECT policies rather than composed into one function: a SECURITY DEFINER function cannot be inlined by the planner, so a composing function adds a per-row call and is several times slower. The two sub-rules keep a single definition each; 25-matrix-conformance.test.sql holds the eight assemblies identical, and 16-anon-visibility.test.sql holds the behavioural guards for the open-for-voters conjunct.
 --
@@ -580,7 +580,7 @@ ALTER TABLE public.candidates ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "candidates_deny_all" ON public.candidates;
 
--- Anon: five conjuncts, each load-bearing and each flipped alone against an otherwise-visible row in 16-anon-visibility.test.sql. The project is open for voters; the candidate is confirmed; a confirmed nomination links it in this project, so confirming a nomination alone cannot publish a placeholder identity; terms of use were accepted (`IS NOT NULL`) and not future-dated (`< now()`, which also guards against clock skew).
+-- Anon: three conjuncts, the same three as every other entity table, each load-bearing and each flipped alone against an otherwise-visible row in 16-anon-visibility.test.sql. The project is open for voters; the candidate is confirmed; a confirmed nomination links it in this project, so confirming a nomination alone cannot publish a placeholder identity.
 --
 -- Both helpers are SECURITY DEFINER because the inline lookups fail: anon cannot see `projects` rows under that table's own row-level security, and an inline entity/nomination lookup raises `infinite recursion detected in policy for relation "candidates"`.
 CREATE POLICY "anon_select_candidates" ON public.candidates FOR
@@ -645,6 +645,8 @@ WITH
 -- The `'entity'` scope literal is the whole safety argument: written `'project'`, it would let any entity editor in the project rewrite every candidate in it. 18-entity-policies.test.sql asserts that same-type, same-project denial.
 --
 -- Structural columns (project_id, external_id, ...) are protected by this table's column grants in 303-column-grants.sql, because row-level security cannot admit a row while withholding a column.
+--
+-- The entity's own editor updates no row while its project's answers are locked (`private.project_answers_locked`, the app setting `access.answersLocked`), and a project grant holder writes through the project-scope policies, which do not read the lock. The self-update policies of the other three entity tables carry the same conjunct.
 CREATE POLICY "entity_update_own_candidates" ON public.candidates
 FOR UPDATE
   TO authenticated USING (
@@ -997,7 +999,7 @@ SELECT
     )
   );
 
--- Authenticated read: the same two-term disjunction as question_categories. `get_questions` (505-question-rpcs.sql) is SECURITY INVOKER, so this policy and the category one gate the whole question surface of the voter and candidate apps, and a predicate one term too narrow renders no questions rather than raising an error.
+-- Authenticated read: the same two-term disjunction as question_categories. `get_questions` (505-question-rpcs.sql) is SECURITY INVOKER, so this policy and the category one gate the whole question surface of the voter and contestant apps, and a predicate one term too narrow renders no questions rather than raising an error.
 CREATE POLICY "authenticated_select_questions" ON public.questions FOR
 SELECT
   TO authenticated USING (
@@ -1053,7 +1055,7 @@ ALTER TABLE public.nominations ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "nominations_deny_all" ON public.nominations;
 
--- Anon: the project is open for voters, the nomination is confirmed, and every entity it links is anon-readable in full, terms of use included, so this policy and the entity policies give one answer.
+-- Anon: the project is open for voters, the nomination is confirmed, and every entity it links is anon-readable, so this policy and the entity policies give one answer.
 CREATE POLICY "anon_select_nominations" ON public.nominations FOR
 SELECT
   TO anon USING (
@@ -1118,7 +1120,7 @@ WITH
     )
   );
 
--- Entity insert of its own nomination: `nomination.edit` on the row's entity, nominations unlocked, created unconfirmed for an admin to confirm, and the row's entity and election both in the row's project, so a grantee cannot insert into another project's contest. `validate_nomination` checks the constituency's project.
+-- Entity insert of its own nomination: `nomination.edit` on the row's entity, nominations and answers unlocked, created unconfirmed for an admin to confirm, and the row's entity and election both in the row's project, so a grantee cannot insert into another project's contest. `validate_nomination` checks the constituency's project.
 --
 -- `NOT confirmed` is backed by the INSERT column grant in 303-column-grants.sql, which omits the column so the default `false` applies. The two fail differently, the grant at privilege level and this policy on the row, and 23-nominations-write.test.sql asserts them separately.
 CREATE POLICY "entity_insert_nominations" ON public.nominations FOR INSERT TO authenticated
@@ -1161,15 +1163,15 @@ WITH
     ) = project_id
   );
 
--- Entity insert of a parent organization nomination: a child nominee whose party has no nomination at their contest may create one, unconfirmed, for an admin to resolve. `nomination.create_parent` is a separate permission from `nomination.edit`, so the capability can be revoked and tested on its own instead of widening `nomination.edit` beyond the caller's own row.
+-- Entity insert of a parent's nomination: a child nominee whose parent has no nomination at their contest may create one, unconfirmed, for an admin to resolve. A candidate's editor and a faction's editor create an organization's nomination, and an organization's editor creates an alliance's. `nomination.create_parent` is a separate permission from `nomination.edit`, so the capability can be revoked and tested on its own instead of widening `nomination.edit` beyond the caller's own row.
 --
--- This deliberately admits rows that are not the caller's own, so each guard is load-bearing: without any one of them an authenticated candidate could write rows into the public nomination table, and an over-permissive policy fails no read test. 23-nominations-write.test.sql asserts each guard.
--- - Guard 1: the row is an organization nomination; one non-null test suffices because the table's CHECK requires exactly one entity foreign key.
+-- This deliberately admits rows that are not the caller's own, so each guard is load-bearing: without any one of them an authenticated entity editor could write rows into the public nomination table, and an over-permissive policy fails no read test. 23-nominations-write.test.sql asserts each guard.
+-- - Guard 1: the row nominates an organization or an alliance. A candidate's row and a faction's row are never admitted here.
 -- - Guard 2: it is created unconfirmed; the column grant is the second line of defence.
--- - Guard 3: no nomination exists for that organization at that election, constituency and round. The unique key includes the parent, so it does not see an organization already nominated under an alliance; the key only settles concurrent inserts.
--- - Guard 4: the project's nominations are not locked.
--- - Guard 5: the caller already holds a nomination at that contest whose entity grants `nomination.create_parent`.
--- - Cap: the caller may have originated at most 10 unconfirmed parent nominations, so a candidate cannot create placeholders for unrelated parties at will. `enforce_nomination_confirmation` raises the error that names the limit, because a policy refusal names only the policy.
+-- - Guard 3: no nomination exists for the row's own entity at that election, constituency and round. It is asked with the row's generated `entity_type` and its organization or alliance id, so an alliance's row is checked as an organization's is. The unique key includes the parent, so it does not see an organization already nominated under an alliance; the key only settles concurrent inserts.
+-- - Guard 4: the project's nominations are not locked, and its answers are not locked.
+-- - Guard 5, the pairing: the caller already holds a nomination at that contest whose entity grants `nomination.create_parent` and is of a type that stands under the row's entity: a candidate or a faction for an organization's row, an organization for an alliance's. Without the types, a candidate's editor could create an alliance's row and an organization's editor another organization's. A faction's nomination always stands under its own organization's, so the organization's row a faction's editor can create is another organization's. The types are chosen by whether the row is an alliance's and by nothing else, so this guard does not silently do guard 1's job and mask guard 1's removal.
+-- - Cap: the caller may have originated at most 10 unconfirmed organization and alliance nominations, so an editor cannot create placeholders for unrelated parties and alliances at will. `enforce_nomination_confirmation` raises the error that names the limit, because a policy refusal names only the policy.
 -- - Project agreement: the row's entity belongs to the row's project. Its argument is the coalesced entity rather than `organization_id`, so it does not silently do guard 1's job and mask guard 1's removal. It is scoped to this policy rather than the table because 07-rpc-security.test.sql inserts such a row deliberately as a negative control.
 --
 -- Every lookup is a SECURITY DEFINER helper: three guards read `public.nominations` from a policy on `public.nominations`, and the inline form raises `infinite recursion detected in policy for relation "nominations"`.
@@ -1236,9 +1238,9 @@ WITH
     )
   );
 
--- Entity update of its own nomination: `nomination.edit` on the row's entity, with the four entity foreign keys coalesced (the table's CHECK makes exactly one non-null) and the row's generated `entity_type` naming the type, and the project's nominations unlocked. 23-nominations-write.test.sql asserts each conjunct in both directions.
+-- Entity update of its own nomination: `nomination.edit` on the row's entity, with the four entity foreign keys coalesced (the table's CHECK makes exactly one non-null) and the row's generated `entity_type` naming the type, and the project's nominations and answers unlocked. 23-nominations-write.test.sql asserts each conjunct in both directions, and 55-answers-lock.test.sql the answers lock.
 --
--- The lock is a conjunct rather than a permission because user_can answers whether a role may apply a permission, not whether the object's state admits it. It is read through a SECURITY DEFINER helper because an inline sub-select over public.projects raises `infinite recursion detected in policy for relation`.
+-- Each lock is a conjunct rather than a permission because user_can answers whether a role may apply a permission, not whether the object's state admits it. Each is read through a SECURITY DEFINER helper because an inline sub-select over public.projects raises `infinite recursion detected in policy for relation`.
 --
 -- WITH CHECK also requires the entity and the election to be in the row's project: `election_id` is in the UPDATE column grant, so a nomination could otherwise be moved into another project's election.
 --
@@ -1358,7 +1360,7 @@ WITH
     )
   );
 
--- Update: `project.edit_app_settings`. Settings permissions split along whether a policy reads the value: `project.edit_project_settings` governs `projects` and is admin-only, while this permission governs `app_settings` and project editors hold it too.
+-- Update: `project.edit_app_settings`. The settings permissions split by table: `project.edit_project_settings` governs `projects` and is admin-only, while this permission governs `app_settings` and project editors hold it too. One key of `app_settings.settings` is read by a policy: `access.nominationsLocked` is the nominations lock, a conjunct of the entity-user policies on `nominations`. Whoever holds this permission, project editors among them, may therefore lock and unlock nominations.
 --
 -- The two permissions have the same holders except the project editor, so only an editor tells them apart; 22-content-policies.test.sql creates one for that reason.
 CREATE POLICY "admin_update_app_settings" ON public.app_settings
@@ -1407,7 +1409,7 @@ CREATE POLICY "anon_insert_feedback" ON public.feedback FOR INSERT TO anon
 WITH
   CHECK (true);
 
--- Authenticated: insert only (candidate app also submits feedback; rate-limit trigger + CHECK constraint gate the insert regardless of role)
+-- Authenticated: insert only (contestant app also submits feedback; rate-limit trigger + CHECK constraint gate the insert regardless of role)
 CREATE POLICY "authenticated_insert_feedback" ON public.feedback FOR INSERT TO authenticated
 WITH
   CHECK (true);

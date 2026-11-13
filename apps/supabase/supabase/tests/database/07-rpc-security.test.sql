@@ -6,7 +6,8 @@
 -- - resolve_email_variables is SECURITY DEFINER (can read auth.users)
 -- - resolve_email_variables is executable by service_role only (anon and authenticated refused)
 -- - resolve_email_variables resolves entity variables only for the project it was asked for, and refuses the call outright when the project is omitted
--- - the SECURITY DEFINER functions in `public` that anon and authenticated can execute are pinned by census
+-- - the SECURITY DEFINER functions in `public` that anon and authenticated can execute are pinned by census, and so are those the service role alone can execute
+-- - the auth service's hooks are pinned by census, and the mail hook is executable by supabase_auth_admin and by no API role
 -- - get_nominations partitions its result by the required p_project_id rather than merely filtering it, including when two projects share an external_id, and refuses the call outright when the project is omitted
 -- - get_questions does the same on both halves of its jsonb payload, categories and questions alike
 --
@@ -351,7 +352,7 @@ SELECT
 -- =====================================================================
 -- Section 8c: the SECURITY DEFINER surface PostgREST publishes
 --
--- Every SECURITY DEFINER function in `public` that an API role can EXECUTE is an `/rest/v1/rpc/<name>` endpoint that runs with owner rights, so a policy-only hierarchy or visibility helper there would be a cross-tenant oracle; those helpers live in `private`, which PostgREST does not expose. These censuses pin the public surface, so a new definer function in `public` fails here and has to be added on purpose. Trigger functions are excluded (they cannot be called as RPCs), as are the `test_*` fixtures 00-helpers.test.sql installs.
+-- Every SECURITY DEFINER function in `public` that an API role can EXECUTE is an `/rest/v1/rpc/<name>` endpoint that runs with owner rights, so a policy-only hierarchy or visibility helper there would be a cross-tenant oracle; those helpers live in `private`, which PostgREST does not expose. These censuses pin the public surface, so a new definer function in `public` fails here and has to be added on purpose: one an API role can execute fails the first two, and one revoked from both API roles and left to the service role fails the third. Trigger functions are excluded (they cannot be called as RPCs), as are the `test_*` fixtures 00-helpers.test.sql installs.
 -- =====================================================================
 SELECT
   is (

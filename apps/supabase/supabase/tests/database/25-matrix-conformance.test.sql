@@ -179,10 +179,10 @@ VALUES
 -- =====================================================================
 -- Derived at run time, so a change that leaves a member unread reddens here, and so does one that starts enforcing a member the list below says no policy enforces.
 --
+-- The other two grant-administration members, account.manage_admins and project.manage_editors, are not on the list: the three policies of public.invitations read them, as the authority to promise a project admin's and a project editor's grant.
+--
 -- The unenforced list, with the reason no policy reads each member:
---   - account.manage_admins: grant administration; public.grants carries no user-facing policy at all.
---   - project.manage_editors: the same.
---   - entity.invite_children: the same, at entity scope (000-enums.sql names it as project.manage_editors' entity-scope equivalent).
+--   - entity.invite_children: grant administration at entity scope (000-enums.sql names it as project.manage_editors' entity-scope equivalent). public.grants carries no user-facing policy at all, and no policy of public.invitations asks it.
 --   - entity.edit_immutable: enforced by the trigger enforce_entity_immutability (OLD vs NEW).
 --   - entity.confirm: the same trigger, plus 303-column-grants.sql.
 --   - nomination.confirm: enforced by the trigger enforce_nomination_confirmation.
@@ -233,7 +233,7 @@ SELECT
   );
 
 -- =====================================================================
--- Section 2: the twenty-three outcome vectors
+-- Section 2: the twenty-three outcome vectors, and one member probed a second time at a caller's own organization
 -- =====================================================================
 -- Nine positions plus the unmapped shape, measured through each identity's real session claim:
 --   - 1 RootAdmin, 2 AccountAdmin, 3 ProjectAdmin, 4 ProjectEditor, 5 Candidate, 6 OrganizationEditor, 7 FactionEditor, 8 AllianceEditor, 9 an authenticated caller holding no grant, X the unmapped shape.

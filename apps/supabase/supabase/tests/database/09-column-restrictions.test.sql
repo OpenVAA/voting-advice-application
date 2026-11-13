@@ -9,7 +9,7 @@
 --
 -- The confirmation column is granted on all four entity tables and guarded by a trigger instead: rule 1 of `enforce_entity_immutability()` refuses any change to it by an authenticated caller who does not hold `entity.confirm` on the row. A column grant cannot tell a candidate from a project administrator of the same role, so the check lives in the trigger, and each confirmation assertion is paired with an SQLSTATE assertion showing that the statement reached it.
 --
--- The name columns are granted too, and their freeze once confirmed is the trigger's rule 2. Section 2 unconfirms and re-confirms its own row so that its two grant assertions measure the grant.
+-- The name columns and `short_name` are granted too, and their freeze once confirmed is the trigger's rule 2. Section 2 unconfirms and re-confirms its own row so that its two grant assertions measure the grant; the allow assertions on confirmed rows in sections 4 and 6 write columns the trigger does not freeze.
 --
 -- Depends on: 00-helpers.test.sql (set_test_user, create_test_data, test_id, etc.), 303-column-grants.sql (column-level REVOKE/GRANT) and 011-validation-functions.sql (enforce_entity_immutability).
 BEGIN;

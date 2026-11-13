@@ -17,7 +17,7 @@ const INDEX_SOURCE = readFileSync(new URL('./index.ts', import.meta.url), 'utf8'
  * The arm is located by the log prefix rather than by line number, so ordinary edits above it do not move the assertion off its target.
  */
 
-/** The verification arm: from its `catch` through the response it returns. */
+/** The verification arm: from its `catch` through the answer it returns. */
 function verificationFailureArm(): string {
   // Quote-agnostic: the line is a template literal today and was a single-quoted string before the fix, so the anchor deliberately starts INSIDE the string rather than at its opening delimiter.
   const anchor = INDEX_SOURCE.indexOf('[identity-callback] token verification failed');
@@ -25,7 +25,7 @@ function verificationFailureArm(): string {
     anchor,
     'the verification-failure log line was not found by its prefix — if it was renamed, re-anchor this spec rather than deleting it'
   ).toBeGreaterThan(-1);
-  // Back up to the enclosing `catch`, forward to the end of the returned Response.
+  // Back up to the enclosing `catch`, forward to the end of the returned answer.
   const start = INDEX_SOURCE.lastIndexOf('catch', anchor);
   const end = INDEX_SOURCE.indexOf('});', INDEX_SOURCE.indexOf('return new Response', anchor));
 
