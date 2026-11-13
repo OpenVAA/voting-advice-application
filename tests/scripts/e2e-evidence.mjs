@@ -53,9 +53,56 @@ function readOr(name, fallback) {
   }
 }
 
+/** The marker `e2e-run.sh` writes when it ends a run as void; its `key=value` lines record the gap the heartbeat measured. */
+const VOID_MARKER = 'VOID-host-suspend.txt';
+const voidText = readOr(VOID_MARKER, '');
+const voidFields = Object.fromEntries(
+  voidText
+    .split('\n')
+    .map((line) => /^(\w+)=(.*)$/.exec(line))
+    .filter(Boolean)
+    .map((m) => [m[1], m[2]])
+);
+const voidRun =
+  voidText === ''
+    ? null
+    : {
+        reason: 'the host was suspended during the run',
+        marker: VOID_MARKER,
+        gapMs: Number(voidFields.gap_ms ?? Number.NaN),
+        lastBeatBeforeGapUtc: voidFields.last_beat_before_gap_utc ?? '',
+        firstBeatAfterGapUtc: voidFields.first_beat_after_gap_utc ?? ''
+      };
+
+/** The wrapper's own exit status, and what status 9 means. */
+const WRAPPER_STATUS_9 =
+  "the identity provider's environment could not be prepared, or the shared stack could not be restored afterwards; not evidence of a green suite";
+const wrapperExitText = readOr('wrapper-exit', '');
+const wrapperExit = /^\d+$/.test(wrapperExitText) ? Number(wrapperExitText) : null;
+
+/** The last non-empty line of a wrapper record, or null when the record is absent. */
+function lastLine(name) {
+  const text = readOr(name, '');
+  if (text === '') return null;
+  return (
+    text
+      .split('\n')
+      .filter((line) => line.trim() !== '')
+      .at(-1) ?? null
+  );
+}
+const identityProvider = {
+  prepare: lastLine('idp-env.txt'),
+  restore: lastLine('restore.txt')
+};
+
 const resultsPath = path.join(dir, 'results.json');
 if (!fs.existsSync(resultsPath)) {
-  console.error(`e2e-evidence.mjs: ${resultsPath} is missing -- there is no run to summarise`);
+  console.error(
+    voidRun
+      ? `e2e-evidence.mjs: ${resultsPath} is missing -- the run is VOID (${voidRun.reason}; see ${VOID_MARKER}), so there are no counts to summarise`
+      : `e2e-evidence.mjs: ${resultsPath} is missing -- there is no run to summarise`
+  );
   process.exit(3);
 }
 const report = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
@@ -107,6 +154,9 @@ const stats = report.stats ?? {};
 const wallClockMs = Math.round(stats.duration ?? 0);
 const summary = {
   runDir: path.relative(repoRoot, dir),
+  void: voidRun,
+  wrapperExit,
+  identityProvider,
   counts,
   playwrightStats: {
     expected: stats.expected ?? 0,
@@ -148,10 +198,16 @@ const provenance = [
   `playwright-exit: ${readOr('exit', '(not recorded)')}`,
   `ended-utc:      ${readOr('ended', '(not recorded)')}`,
   `preflight-ok:   ${readOr('preflight-successes', '(not recorded)')}`,
-  `preflight-fail: ${readOr('preflight-failures', '(not recorded)')}`
+  `preflight-fail: ${readOr('preflight-failures', '(not recorded)')}`,
+  `void:           ${voidRun ? `YES -- ${voidRun.reason}, gap ${voidRun.gapMs} ms (${VOID_MARKER}); the counts are not a verdict` : 'no'}`,
+  `wrapper-exit:   ${wrapperExit === null ? '(not recorded)' : wrapperExit === 9 ? `9 -- ${WRAPPER_STATUS_9}` : wrapperExit}`,
+  `idp-prepare:    ${identityProvider.prepare ?? '(not recorded)'}`,
+  `restore:        ${identityProvider.restore ?? '(not recorded)'}`
 ].join('\n');
 fs.writeFileSync(path.join(dir, 'provenance.txt'), `${provenance}\n`);
 
 console.info(
-  `e2e-evidence.mjs: ${summary.runDir} -- total ${counts.total}, passed ${counts.passed}, failed ${counts.failed}, flaky ${counts.flaky}, skipped ${counts.skipped}, didNotRun ${counts.didNotRun}`
+  `e2e-evidence.mjs: ${summary.runDir} -- total ${counts.total}, passed ${counts.passed}, failed ${counts.failed}, flaky ${counts.flaky}, skipped ${counts.skipped}, didNotRun ${counts.didNotRun}${
+    voidRun ? ` -- VOID: ${voidRun.reason} (gap ${voidRun.gapMs} ms); these counts are not a verdict` : ''
+  }${wrapperExit === 9 ? ` -- wrapper status 9: ${WRAPPER_STATUS_9}` : ''}`
 );

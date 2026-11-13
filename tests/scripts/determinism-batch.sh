@@ -31,7 +31,7 @@
 #   3. Pins git HEAD once, and ABORTS any iteration that observes a different HEAD
 #   4. Loops SERIALLY -- one run at a time, never two suites concurrently -- delegating every per-run step (database reset, readiness poll, dev-server spawn and teardown, Playwright invocation, preflight capture) to tests/scripts/e2e-run.sh
 #   5. Derives each ledger row MECHANICALLY from that run's results.json and the wrapper's artifact files -- nothing is transcribed from human-readable console output
-#   6. Enforces the validity rules AS CODE: preflight failures 0 AND at least one preflight SUCCESS line, executed count equals the expected constant, failed and did-not-run 0, wrapper exit 0. An invalid run ABORTS the batch; it is recorded with its reason, never skipped and never renumbered
+#   6. Enforces the validity rules AS CODE: preflight failures 0 AND at least one preflight SUCCESS line, executed count equals the expected constant, failed and did-not-run 0, wrapper exit 0. An invalid run ABORTS the batch; it is recorded with its reason, never skipped and never renumbered. A run the wrapper ended as VOID (its exit 8: the host was suspended while it ran) is recorded as VOID and stops the batch too, under an exit status of its own: it says nothing about the tree, and a count of consecutive runs cannot step over it
 #   7. Measures run 1's directory and projects the total BEFORE committing to the rest, then prunes each valid run to its machine-readable and text evidence
 #   8. Regenerates the markdown ledger after every iteration, so an interrupted batch still leaves a complete, honest record on disk
 #   9. Stamps the ledger from an EXIT trap if the batch dies unexpectedly, so an INCOMPLETE ledger can never read as "No run in this batch was aborted"
@@ -44,6 +44,7 @@
 #   3:  CI is present in the environment
 #   4:  git HEAD changed mid-batch, or the projected artifact volume does not fit on disk
 #   5:  a run was INVALID (the batch stopped at that run; the ledger names it)
+#   6:  a run was VOID: the host was suspended during it (the batch stopped at that run; the ledger names it). Not a failure of the tree -- the batch is made again, not diagnosed
 #   130:  the batch was interrupted (recorded as a discard, never as a pass)
 
 set -euo pipefail
@@ -59,6 +60,10 @@ EXPECTED_EXECUTED=165
 
 # The step whose outcome the batch is about: the in-text term trigger step of the voter journey (tests/tests/specs/voter/voter-journey.spec.ts).
 EPERM07_STEP_PREFIX='customData.terms: in-text affordance'
+
+# The status tests/scripts/e2e-run.sh exits with when it ends a run as void because the host was suspended, and the marker it writes into the run directory. Both mirror that script's exit-code table.
+WRAPPER_EXIT_VOID=8
+VOID_MARKER='VOID-host-suspend.txt'
 
 RUNS=16
 PROJECT=""
@@ -453,7 +458,12 @@ while [ "$i" -le "$RUNS" ]; do
   # --- the validity rules, as code ------------------------------------------------------
   VERDICT="VALID"
   REASON=""
-  if [ "$RUN_STATUS" != "0" ]; then
+  if [ "$RUN_STATUS" = "$WRAPPER_EXIT_VOID" ]; then
+    # Decided before every other rule: the counts of a void run are not evidence, so none of them is read as a failure.
+    VERDICT="VOID"
+    VOID_GAP_MS="$(sed -n 's/^gap_ms=//p' "$RUN_DIR/$VOID_MARKER" 2> /dev/null || true)"
+    REASON="the host was suspended during the run (gap ${VOID_GAP_MS:-not recorded} ms, \`$VOID_MARKER\`) -- the run is VOID, which is evidence about the tree in neither direction; the batch is made again"
+  elif [ "$RUN_STATUS" != "0" ]; then
     VERDICT="INVALID"
     REASON="the single-run wrapper exited $RUN_STATUS (see its exit-code table; 130 means the run was interrupted)"
   elif [ "$PREFLIGHT_FAILS" != "0" ]; then
@@ -483,6 +493,11 @@ while [ "$i" -le "$RUNS" ]; do
     "$RUN_LABEL" "$START_TS" "$END_TS" "$WALL" "$RUN_HEAD" "$RUN_STATUS" \
     "$PREFLIGHT_FAILS" "$PREFLIGHT_OKS" "$EXECUTED" "$PASSED" "$FAILED" "$FLAKY" "$DIDNOTRUN" \
     "$EPERM" "$VERDICT" "${RUN_DIR#"$REPO_ROOT"/}" >> "$ROWS_FILE"
+
+  if [ "$VERDICT" = "VOID" ]; then
+    record_abort "$RUN_LABEL" "$REASON (full artifact set retained at \`${RUN_DIR#"$REPO_ROOT"/}\`)"
+    exit 6
+  fi
 
   if [ "$VERDICT" != "VALID" ]; then
     # Everything is retained for a run that is not valid: the video, the console and failed-request transcripts, the dev-server log and the trace all exist for exactly this moment.

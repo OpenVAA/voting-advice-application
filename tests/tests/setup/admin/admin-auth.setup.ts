@@ -42,7 +42,7 @@ setup('mint + authenticate as project admin', async ({ page }) => {
 
   await emailInput.waitFor({ state: 'visible', timeout: 30000 });
   await emailInput.fill(TEST_ADMIN_EMAIL);
-  await page.getByTestId(testIds.candidate.password.field).fill(TEST_ADMIN_PASSWORD);
+  await page.getByTestId(testIds.contestant.password.field).fill(TEST_ADMIN_PASSWORD);
   await submitButton.click();
 
   // The login action answers 303 to the admin home; wait for the address to leave the login page.

@@ -28,7 +28,7 @@
 import { expect, test } from '@playwright/test';
 import { walkUntilQuestionsIntro } from '../../fixtures/voter/voter-journey.fixture';
 import { TIMEOUTS } from '../../helpers';
-import { buildRoute } from '../../utils/buildRoute';
+import { buildEntityLessRoute } from '../../utils/contestantEntityUrl';
 import { testIds } from '../../utils/testIds';
 
 test.describe('cold-entry-dataroot', () => {
@@ -77,12 +77,12 @@ test.describe('cold-entry-dataroot', () => {
   });
 });
 
-test.describe('cold-entry-dataroot candidate @cand-session', () => {
-  test('cold direct-URL entry to /candidate/questions renders the question overview', async ({ page }) => {
+test.describe('cold-entry-dataroot candidate @contestant-session', () => {
+  test('cold direct-URL entry to /contestant/questions renders the question overview', async ({ page }) => {
     // COLD: bare hard navigation, carrying only the stored session. No login walk, no in-app navigation.
-    await page.goto(buildRoute({ route: 'CandAppQuestions', locale: 'en' }));
+    await page.goto(buildEntityLessRoute({ route: 'ContestantAppQuestions', locale: 'en' }));
 
-    // The overview list is built from `candCtx.opinionQuestionCategories`, the shared rollup, so it is empty for exactly as long as the candidate context's view of the data root is stale.
-    await expect(page.getByTestId(testIds.candidate.questions.list)).toBeVisible({ timeout: TIMEOUTS.testMax });
+    // The overview list is built from `contestantCtx.opinionQuestionCategories`, the shared rollup, so it is empty for exactly as long as the candidate context's view of the data root is stale.
+    await expect(page.getByTestId(testIds.contestant.questions.list)).toBeVisible({ timeout: TIMEOUTS.testMax });
   });
 });
