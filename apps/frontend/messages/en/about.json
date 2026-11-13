@@ -11,8 +11,8 @@
           "selectors": ["partyMatchingMethod"],
           "match": {
             "partyMatchingMethod=answersOnly": "<p>The party results have been calculated based on the answers provided by the parties.</p> ",
-            "partyMatchingMethod=imputed": "<p>The party results have been calculated based on their provided answers or, if a party has not answered the questions, from the mode or median of its candidates' responses in the constituency.</p> ",
-            "partyMatchingMethod=other": "<p>The party results have been calculated based on their provided answers or, if a party has not answered the questions, based on the responses of its candidates in the constituency.</p> <p>Note that a party's candidates may disagree with their party on certain issues, so this calculated stance may not fully represent the party's official position.</p>"
+            "partyMatchingMethod=impute": "<p>The party results have been calculated based on their provided answers or, if a party has not answered the questions, from the mode or median of its candidates' responses in the constituency.</p> ",
+            "partyMatchingMethod=*": "<p>The party results have been calculated based on their provided answers or, if a party has not answered the questions, based on the responses of its candidates in the constituency.</p> <p>Note that a party's candidates may disagree with their party on certain issues, so this calculated stance may not fully represent the party's official position.</p>"
           }
         }
       ],

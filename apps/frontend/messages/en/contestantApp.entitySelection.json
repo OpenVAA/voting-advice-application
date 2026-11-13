@@ -1,0 +1,8 @@
+{
+  "contestantApp.entitySelection": {
+    "current": "{entityType}: {name}",
+    "ingress": "You can edit more than one profile. Choose the one you want to work on now. You can switch to another one at any time from the menu.",
+    "switch": "Switch profile",
+    "title": "Choose a Profile to Edit"
+  }
+}

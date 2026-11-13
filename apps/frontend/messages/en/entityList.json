@@ -6,11 +6,11 @@
       "searchPlaceholder": "Search by name",
       "showingNumResults": [
         {
-          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
-          "selectors": ["numShownPlural"],
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
           "match": {
-            "numShownPlural=one": "Showing 1 result",
-            "numShownPlural=other": "Showing {numShown} results"
+            "numShown=1": "Showing 1 result",
+            "numShown=*": "Showing {numShown} results"
           }
         }
       ]

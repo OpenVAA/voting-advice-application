@@ -14,9 +14,11 @@
       "addImage": "Add an image",
       "allSelected": "All selected",
       "changeImage": "Change the image",
+      "colorPicker": "Colour picker",
       "deleteOption": "Deselect {option}",
       "error": {
         "fileLoadingError": "Failed to load the file.",
+        "invalidColor": "The colour is not valid. Enter a hex code such as #2546a8.",
         "invalidEmail": "The email address is not valid.",
         "invalidFile": "The file is invalid.",
         "invalidUrl": "The URL is not valid.",
@@ -25,7 +27,9 @@
       "hideTranslations": "Hide",
       "imageInfo": "The maximum size is for the image is {maxFilesize} MB. Please be patient when saving, the image may take a while to load.",
       "multilingualInfo": "You can enter your answer in all the languages of the application if you wish.",
+      "noColor": "No colour",
       "noImage": "No image",
+      "requiredLocaleInfo": "Required language: {language}. The other languages are optional.",
       "selectAnother": "Select another",
       "selectFirst": "Select first",
       "selectOne": "Select",
@@ -42,7 +46,6 @@
       "remove": "Remove item"
     },
     "passwordInput": {
-      "hidePassword": "Hide password",
       "password": "Password",
       "placeholder": "Password",
       "showPassword": "Reveal password"
@@ -72,28 +75,6 @@
       "showTranscript": "Show video as text",
       "showVideo": "Show video",
       "subtitles": "Subtitles",
-      "timeLeft": [
-        {
-          "declarations": [
-            "input minutes",
-            "local minutesPlural = minutes: plural",
-            "input seconds",
-            "local secondsPlural = seconds: plural"
-          ],
-          "selectors": ["minutesPlural", "secondsPlural"],
-          "match": {
-            "minutesPlural=zero secondsPlural=zero": "  left",
-            "minutesPlural=zero secondsPlural=one": " one second left",
-            "minutesPlural=zero secondsPlural=other": " {seconds} seconds left",
-            "minutesPlural=one secondsPlural=zero": "one minutes  left",
-            "minutesPlural=one secondsPlural=one": "one minutes one second left",
-            "minutesPlural=one secondsPlural=other": "one minutes {seconds} seconds left",
-            "minutesPlural=other secondsPlural=zero": "{minutes} minutes  left",
-            "minutesPlural=other secondsPlural=one": "{minutes} minutes one second left",
-            "minutesPlural=other secondsPlural=other": "{minutes} minutes {seconds} seconds left"
-          }
-        }
-      ],
       "transcript": "Text",
       "transcriptToggleLabel": "Switch between video and text",
       "unmute": "Unmute",
