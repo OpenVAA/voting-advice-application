@@ -24,6 +24,7 @@
   import { Layout, MaintenancePage } from '$layouts/main';
   import { DrawerHost } from '$lib/components/modal/drawerHost';
   import { Notification } from '$lib/components/notification';
+  import { shouldShowVoterPrompt } from '$lib/contexts/app/tracking/gates';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { initVoterContext } from '$lib/contexts/voter';
   import { DataConsentPopup } from '$lib/dynamic-components/dataConsent/popup';
@@ -36,7 +37,7 @@
 
   // appSettings is a reactive accessor — read via `ctx.appSettings`; destructuring it captures one value at init and stops updating.
   const ctx = initVoterContext();
-  const { appType, popupQueue, userPreferences, t } = ctx;
+  const { appType, popupQueue, t } = ctx;
   const appSettings = $derived(ctx.appSettings);
   appType.set('voter');
 
@@ -71,13 +72,8 @@
         props: { data: appSettings.notifications.voterApp }
       });
     }
-    // Ask for event tracking consent if we have no explicit answer
-    if (
-      appSettings.analytics?.platform &&
-      appSettings.analytics?.trackEvents &&
-      (!userPreferences.current.dataCollection?.consent ||
-        userPreferences.current.dataCollection?.consent === 'indetermined')
-    )
+    // Ask for event tracking consent when the gate says the voter has a choice to make and has not made it
+    if (shouldShowVoterPrompt({ ...ctx.analyticsGate.current, voterAppAccessible: appSettings.access.voterApp }))
       popupQueue.push({ component: DataConsentPopup });
   });
 
