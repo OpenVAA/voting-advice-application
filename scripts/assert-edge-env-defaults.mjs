@@ -3,31 +3,23 @@
 /**
  * EDGE-FUNCTION ENVIRONMENT-DEFAULT GUARD (phase 155, requirement REVIEW-EDGE-02).
  *
- * The incident this file exists for: seven environment reads across the three Edge Functions
- * silently substituted a value for missing configuration. Two of them were not merely untidy.
- * `invite-candidate` fell back from `SITE_URL` to the Supabase API host, so an operator who
- * never set `SITE_URL` sent candidates invite links addressed at the API origin instead of the
- * site origin — a link the recipient cannot use, produced by a deployment that reported no
- * error at all. `identity-callback` fell back from `DEFAULT_PROJECT_ID` to a hard-coded seed
- * project id, so self-registered candidates were written into a default tenant rather than the
- * intended one. In both cases the misconfiguration became a wrong RESULT rather than a loud
- * failure, and nothing in the tree would have said so.
+ * The class this file closes: an environment read in an Edge Function that silently substitutes
+ * a value for missing configuration. Two instances show what the class costs. A function that
+ * falls back from `SITE_URL` to the Supabase API host mails links addressed at the API origin
+ * instead of the site origin — a link the recipient cannot use, produced by a deployment that
+ * reports no error at all. A function that falls back from a project id variable to a hard-coded
+ * seed project id writes self-registered candidates into a default tenant rather than the
+ * intended one. In both cases the misconfiguration becomes a wrong RESULT rather than a loud
+ * failure, and nothing else in the tree says so.
  *
- * Phase 155 fixed all seven. Decision D-D2 explicitly REJECTED fixing them without a guard, on
- * the grounds that the next Edge Function reopens the class: this file is what closes the class
- * rather than its instances.
+ * Removing the instances without a guard leaves the class open to the next Edge Function
+ * (decision D-D2): this file is what closes the class rather than its instances.
  *
- * THREE checks, each a distinct way the tree could silently regress:
+ * TWO checks, each a distinct way the tree could silently regress:
  *
  *   Check 1 (REVIEW-EDGE-02) — no environment read anywhere under the functions tree is
  *     followed by a defaulting operator. This is the class D-D2 names.
- *   Check 2 — the modules that exist as verbatim copies across function directories stay
- *     byte-identical. Supabase treats each top-level function directory as its own deployment
- *     unit and this repository has no shared-module directory for Edge Functions, so
- *     `envConfig.ts` exists in triplicate, and `jwtSegment.ts` and `callerAuthority.ts` (the
- *     `user_can` gate, 162-REVIEW CR-05/WR-09) in duplicate.
- *     Drift between them means one function keeps a fix and another quietly does not.
- *   Check 3 — every module that has a test beside it stays reachable from vitest, meaning no
+ *   Check 2 — every module that has a test beside it stays reachable from vitest, meaning no
  *     remote-URL import and no reference to the Deno global. That property is the ONLY reason
  *     vitest can import these files at all (`claimConfig.ts` was created to establish it and
  *     says so in its own docstring). Losing it turns a passing test file into an unresolvable
@@ -36,8 +28,9 @@
  * WHY THIS TREE NEEDS A GUARD OF ITS OWN. `turbo run lint --dry` reports the supabase workspace
  * as having no `lint` task, and there is no ESLint configuration anywhere under it, so an ESLint
  * rule would mean first standing up an entire lint surface for a Deno codebase with URL imports.
- * Besides Prettier and the vitest files added by this phase, this guard is the only automated
- * check that reaches `apps/supabase/supabase/functions` at all.
+ * `deno check`, run by `yarn typecheck`, reaches the tree for types, and Prettier and the vitest
+ * files beside the modules reach it too, but none of them reads it for an environment default or
+ * for what keeps a module importable by vitest.
  *
  * This is a deliberate regular-expression read rather than an abstract-syntax parse, for the
  * reason the sibling guards give: these are hand-authored source files, the pattern is a
@@ -45,9 +38,9 @@
  * Node built-ins only, no build step, no dependency.
  *
  * NO OPT-OUT, BY CONSTRUCTION. There is no flag, no ignore file, no per-path exception roster
- * and no warn-only tier. The two exclusions that exist are NAMED CONSTANTS in this file
- * (`NOT_DUPLICATED` and the `*.test.ts` rule in check 2), each with its reason written beside
- * it, following `scripts/assert-unit-test-coverage.mjs:47-53`: "an opt-out that can be flipped
+ * and no warn-only tier. The one exclusion that exists is the `*.test.ts` skip of check 2, written
+ * in this file: a test file is the vitest side of that contract, not a module held to it. This
+ * follows `scripts/assert-unit-test-coverage.mjs:47-53`: "an opt-out that can be flipped
  * when the guard is inconvenient makes its green meaningless … Excusing a workspace requires
  * editing this file, which is then reviewed as the decision it is."
  *
@@ -67,7 +60,7 @@
  *   node scripts/assert-edge-env-defaults.mjs
  *
  * Exit codes:
- *   0 - all three checks clean
+ *   0 - both checks clean
  *   1 - at least one violation, or a named precondition failure (a file or directory this guard
  *       could not read). An input this guard cannot read is a property it cannot verify, and is
  *       never read as "everything is accounted for" — this fails closed.
@@ -294,7 +287,7 @@ function main() {
     }
   }
 
-  // --- Check 3: modules with a test beside them stay reachable from vitest ---
+  // --- Check 2: modules with a test beside them stay reachable from vitest ---
   const present = new Set(files);
   for (const rel of files) {
     if (rel.endsWith('.test.ts')) continue;
