@@ -42,11 +42,14 @@
  * Rigidity contract: every assertion is HARD — no expect.soft, no try/catch wrapping expect(), no .catch fallbacks.
  */
 
-import { expect, test } from '../../fixtures/candidate/perm-l10n';
-import { toCallbackUrl } from '../../fixtures/shared/emailBucket.fixture';
+import { expect, test } from '../../fixtures/contestant/perm-l10n';
 import { answerAndAdvanceToResults, walkUntilQuestionsIntro } from '../../fixtures/voter/voter-journey.fixture';
-import { PASSWORD_1, REGISTRATION_EMAIL_SUBJECT_REGEX } from '../../utils/candidateJourneyConstants';
+import { contestantUrlRe } from '../../utils/contestantEntityUrl';
+import { PASSWORD_1 } from '../../utils/contestantJourneyConstants';
+import { SIGN_IN_LINK_EMAIL_SUBJECT } from '../../utils/invitationConstants';
+import { assertSignInLinkShape, openMailedLink, runOriginFromEnv, toRunOrigin } from '../../utils/mailedLink';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
+import { L10N_POSITIVE_CANDIDATE_EMAIL } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
@@ -58,7 +61,7 @@ const L10N_SLOW_PAGE = 15_000;
 const L10N_TEST_MAX = 180_000;
 
 // Per-perm recipient prevents Inbucket cross-perm pollution.
-const RECIPIENT_EMAIL = 'candidate-l10n-pos-aa@test.openvaa.local';
+const RECIPIENT_EMAIL = L10N_POSITIVE_CANDIDATE_EMAIL;
 // Candidate row external_id (BARE form) — writer prepends the perm prefix at seed time so the row's actual external_id is `e2e-perm-l10n-pos-ca-1-1a`.
 const CANDIDATE_EXTERNAL_ID = 'e2e-perm-l10n-pos-ca-1-1a';
 
@@ -101,11 +104,11 @@ test.describe('perm-localisation-positive', () => {
   test('localisation walk across en/fi/sv with voter-side cross-check', async ({
     page,
     emailBucket,
-    candidatePasswordSetter,
-    candidateProfilePage,
-    candidateQuestionsOverviewPage,
-    candidateQuestionPage,
-    candidateLogoutButton,
+    contestantSetPasswordGate,
+    contestantProfilePage,
+    contestantQuestionsOverviewPage,
+    contestantQuestionPage,
+    contestantLogoutButton,
     langSelector,
     multilingualTextField,
     voterNav,
@@ -166,33 +169,43 @@ test.describe('perm-localisation-positive', () => {
     // Users of earlier runs hold addresses of their own: the setup and the teardown remove them by the address's stable beginning.
     await client.unregisterCandidate(RECIPIENT_EMAIL);
 
-    await client.sendEmail({
-      candidateExternalId: CANDIDATE_EXTERNAL_ID,
+    // Returns once the link request has handed its mail over; the invited address has its auth user by then.
+    await client.inviteByEmail({
+      entityType: 'candidate',
+      externalId: CANDIDATE_EXTERNAL_ID,
       email: RECIPIENT_EMAIL,
-      subject: 'Registration',
-      content: 'Click here to register: {LINK}'
+      locale: 'en',
+      confirmEntity: true
     });
+    // This spec is about localisation, so the invited user's acceptance of the terms of use is recorded through the admin client rather than through the gate.
+    await client.acceptTermsOfUse(RECIPIENT_EMAIL);
 
-    await emailBucket.expectEmail(REGISTRATION_EMAIL_SUBJECT_REGEX);
-    const links = await emailBucket.getLinksInEmail(REGISTRATION_EMAIL_SUBJECT_REGEX);
-    expect(links.length, 'registration email should contain at least one link').toBeGreaterThan(0);
-    const registrationCallbackUrl = toCallbackUrl(links[0]);
+    const links = await emailBucket.getLinksInEmail(SIGN_IN_LINK_EMAIL_SUBJECT);
+    // Asserted as a number: the link holds the sign-in token, which must not reach the report.
+    const linkCount = links.length;
+    expect(linkCount, 'the sign-in mail holds exactly one link').toBe(1);
+    // The link is opened as received: its path, parameters and type are asserted, and only its origin is replaced by the run's.
+    assertSignInLinkShape(links[0], { locale: 'en' });
+    const registrationUrl = toRunOrigin(links[0], runOriginFromEnv());
 
-    // ============== Step 4: navigate callback + set initial password ======
+    // ============== Step 4: open the mailed link + set initial password ======
 
-    // reason: OIDC/Inbucket registration-callback URL — an external auth-callback goto, not a named voter-page navigation; no voter goToPage applies.
-    await page.goto(registrationCallbackUrl);
-    await candidatePasswordSetter.setPassword(PASSWORD_1);
-    // The password setter automatically logins
-    await candidatePasswordSetter.expectNotVisible();
+    // The mailed sign-in link, opened as received and confirmed on the confirm page.
+    await openMailedLink(page, registrationUrl);
+    // The link was asked for in English, so the view is titled as the English catalogue has it.
+    await contestantSetPasswordGate.expectShown();
+    await contestantSetPasswordGate.expectTitle('en');
+    await contestantSetPasswordGate.setPassword(PASSWORD_1);
+    // The rerun load reads the stored password and removes the view; the user stays signed in.
+    await contestantSetPasswordGate.expectGone();
 
     // ============== Step 5: profile q1 — English answer + Finnish authoring Navigate to the EDITABLE info-question section (NOT the locked section — that one uses a route-level disableMultilingual prop, a different mechanism).
 
     // reason: candidate-route navigation — out of voter-fixture scope.
-    await page.goto('/en/candidate/profile');
-    await candidateProfilePage.expectQuestionsVisible([/\[Q1\]/, /\[Q2\]/]);
+    await page.goto('/en/contestant/profile');
+    await contestantProfilePage.expectQuestionsVisible([/\[Q1\]/, /\[Q2\]/]);
 
-    const q1Scope = candidateProfilePage.getQuestion(/\[Q1\]/);
+    const q1Scope = contestantProfilePage.getQuestion(/\[Q1\]/);
 
     // Assert the default-locale (English) input value shows '[en-answer-q1]'.
     // The Input renders one editable textbox for the default locale; assert that textbox carries the seeded English answer.
@@ -208,29 +221,29 @@ test.describe('perm-localisation-positive', () => {
 
     // ============== Step 6: profile q2 — no translation options =========== q2 carries customData.disableMultilingual=true so even with locales.length > 1 the toggle is fully absent.
 
-    const q2Scope = candidateProfilePage.getQuestion(/\[Q2\]/);
+    const q2Scope = contestantProfilePage.getQuestion(/\[Q2\]/);
     await multilingualTextField.expectTranslationOptions(q2Scope, false);
 
     // ============== Step 7: save profile ================================= The candidate already has all required answers seeded; submitting navigates away from /profile (per profile/+page.svelte:104-116 canSubmit branch).
 
-    await candidateProfilePage.submit();
-    await candidateProfilePage.expectSubmitMessage();
+    await contestantProfilePage.submit();
+    await contestantProfilePage.expectSubmitMessage();
 
     // ============== Step 8: opinion-editor q3 + q4 — comment multilingual Navigate to the questions overview → open q3.
     //
     // The seeded candidate already carries answers to BOTH opinion questions (q3 value '3' + comment '[en-answer-q3]', q4 value '3'), so the overview renders the COMPLETED ("full") variant — NOT the empty state. The `contestant-questions-start` button only exists in the empty branch (questions/+page.svelte:86-99), so it never appears here. Instead the opinion category renders inside a collapsed Expander (defaultExpanded gates on there being unanswered questions in the category — there are none). Expand the category, then open q3 via its per-card edit action.
 
-    await candidateQuestionsOverviewPage.goToPage();
-    const opinionCategory = candidateQuestionsOverviewPage.getCategoryExpander(/\[QC-OPIN\]/);
+    await contestantQuestionsOverviewPage.goToPage();
+    const opinionCategory = contestantQuestionsOverviewPage.getCategoryExpander(/\[QC-OPIN\]/);
     await opinionCategory.click();
     await opinionCategory.expectExpanded(true);
-    await candidateQuestionsOverviewPage.clickEditQuestion(/\[Q3\]/);
-    await candidateQuestionPage.expectQuestionText(/\[Q3\]/);
+    await contestantQuestionsOverviewPage.clickEditQuestion(/\[Q3\]/);
+    await contestantQuestionPage.expectQuestionText(/\[Q3\]/);
 
     // q3 — comment carries '[en-answer-q3]' (seeded), translation-options visible. Author Finnish via setLocaleValue.
     //
-    // Scope note: `candidate-questions-comment` is forwarded by Input.svelte onto the open-answer <textarea> ITSELF (restProps spread, not a wrapper) — so the testid element IS the textbox, and the multilingual toggle + per-locale fields are SIBLINGS, not descendants. Assert the seeded value directly on the textarea, but scope the multilingual fixture to <main> (the only textbox inside <main> is this comment; the hidden feedback-widget textarea lives outside <main>), which contains the toggle and the per-locale fields the fixture needs.
-    const q3Comment = page.getByTestId(testIds.candidate.questions.commentInput);
+    // Scope note: `contestant-questions-comment` is forwarded by Input.svelte onto the open-answer <textarea> ITSELF (restProps spread, not a wrapper) — so the testid element IS the textbox, and the multilingual toggle + per-locale fields are SIBLINGS, not descendants. Assert the seeded value directly on the textarea, but scope the multilingual fixture to <main> (the only textbox inside <main> is this comment; the hidden feedback-widget textarea lives outside <main>), which contains the toggle and the per-locale fields the fixture needs.
+    const q3Comment = page.getByTestId(testIds.contestant.questions.commentInput);
     const commentMultilingualScope = page.getByRole('main');
     await expect(q3Comment).toBeVisible();
     await expect(q3Comment).toHaveValue(/\[en-answer-q3\]/);
@@ -240,36 +253,36 @@ test.describe('perm-localisation-positive', () => {
     await multilingualTextField.closeTranslations(commentMultilingualScope);
     await multilingualTextField.expectLocaleHidden(commentMultilingualScope, 'fi');
 
-    // Save q3. NOTE: because the seeded candidate has ALREADY answered every opinion question, `unansweredOpinionQuestions` is empty, so the editor's save action routes back to the questions OVERVIEW (submitRoute = CandAppQuestions) rather than advancing linearly to the next question (questions/[questionId]/+page.svelte:121-136). Reach q4 the same way as q3: from the overview's expanded opinion category.
-    await candidateQuestionPage.expectContinueEnabled();
-    await candidateQuestionPage.clickContinue();
+    // Save q3. NOTE: the seeded candidate has ALREADY answered every opinion question, so the save is an edit with no question left unanswered, and it leads back to the questions OVERVIEW rather than on to another question. Reach q4 the same way as q3: from the overview's expanded opinion category.
+    await contestantQuestionPage.expectContinueEnabled();
+    await contestantQuestionPage.clickContinue();
 
-    await page.waitForURL(/\/candidate\/questions(\/?$|\?)/, { timeout: L10N_SLOW_PAGE });
-    const opinionCategoryQ4 = candidateQuestionsOverviewPage.getCategoryExpander(/\[QC-OPIN\]/);
+    await page.waitForURL(contestantUrlRe('/questions'), { timeout: L10N_SLOW_PAGE });
+    const opinionCategoryQ4 = contestantQuestionsOverviewPage.getCategoryExpander(/\[QC-OPIN\]/);
     await opinionCategoryQ4.click();
     await opinionCategoryQ4.expectExpanded(true);
-    await candidateQuestionsOverviewPage.clickEditQuestion(/\[Q4\]/);
-    await candidateQuestionPage.expectQuestionText(/\[Q4\]/);
+    await contestantQuestionsOverviewPage.clickEditQuestion(/\[Q4\]/);
+    await contestantQuestionPage.expectQuestionText(/\[Q4\]/);
 
     // q4 — customData.disableMultilingual=true → comment has NO toggle.
     // Same scoping rationale as q3: assert the comment field exists, then assert NO multilingual toggle anywhere in <main> (disableMultilingual suppresses it).
-    const q4Comment = page.getByTestId(testIds.candidate.questions.commentInput);
+    const q4Comment = page.getByTestId(testIds.contestant.questions.commentInput);
     await expect(q4Comment).toBeVisible();
     await multilingualTextField.expectTranslationOptions(page.getByRole('main'), false);
 
     // Leave q4 — the seeded answer is already persisted and q4 has no Finnish authoring to commit (disableMultilingual). The save button routes back to the overview; clicking it simply navigates away without mutation.
-    await candidateQuestionPage.expectContinueEnabled();
-    await candidateQuestionPage.clickContinue();
+    await contestantQuestionPage.expectContinueEnabled();
+    await contestantQuestionPage.clickContinue();
 
     // ============== Step 9: logout ======================================= Navigate to candidate home first; LogoutButton is in the home nav.
     // Since all required answers are seeded + persisted, logout is direct (no confirmation dialog).
 
     // reason: candidate-route navigation — out of voter-fixture scope.
-    await page.goto('/en/candidate');
-    await expect(page.getByTestId(testIds.candidate.home.statusMessage)).toBeVisible({
+    await page.goto('/en/contestant');
+    await expect(page.getByTestId(testIds.contestant.home.statusMessage)).toBeVisible({
       timeout: L10N_SLOW_PAGE
     });
-    await candidateLogoutButton.clickWithoutDialog();
+    await contestantLogoutButton.clickWithoutDialog();
 
     // ============== Step 10: voter cross-check ================= Open candidate-details on results, assert English answers; switch to Finnish, assert Finnish answers reflect.
 

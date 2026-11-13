@@ -6,6 +6,7 @@
  * Pure transform — owns no key material; callers pass the fixed test keys.
  */
 import * as jose from 'jose';
+import { MOCK_AUDIENCE, MOCK_ISSUER } from '../support/mockOidcIssuer';
 import type { JWK } from 'jose';
 
 /**
@@ -15,9 +16,13 @@ import type { JWK } from 'jose';
  *
  * The values are read through getters because the mock issuer module imports this one: a getter reads the binding when it is used, not while the two modules are still loading.
  */
-export const DEFAULT_TOKEN_OPTS: { issuer: string; audience: string } = {
-  issuer: 'https://test-idp.example.com',
-  audience: 'test-client-id'
+export const DEFAULT_TOKEN_OPTS: { readonly issuer: string; readonly audience: string } = {
+  get issuer(): string {
+    return MOCK_ISSUER;
+  },
+  get audience(): string {
+    return MOCK_AUDIENCE;
+  }
 };
 
 /**

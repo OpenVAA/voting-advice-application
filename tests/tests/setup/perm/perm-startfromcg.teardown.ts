@@ -6,7 +6,10 @@
  * `runTeardown` deletes the seeded rows and not the auth user, so the user is unregistered here by its address; a user left behind would hold a real editor grant under a known password.
  */
 
-import { test as teardown } from '@playwright/test';
+import { expect, test as teardown } from '@playwright/test';
+import fs from 'fs';
+import { clearWrittenNominations } from '../../fixtures/contestant/perm-startfromcg';
+import { CANDIDATE_EDITOR_EMAIL, CANDIDATE_STORAGE_STATE, START_FROM_CG_PREFIX } from '../../utils/permStartFromCgData';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { runTeardownAsserted } from '../shared/assertTeardown';
 
@@ -14,6 +17,14 @@ import { runTeardownAsserted } from '../shared/assertTeardown';
 const PREFIX = 'e2e-perm-startfromcg-';
 
 teardown('delete perm-startfromcg dataset', async () => {
+  expect(PREFIX, 'the prefix deleted here is the one the dataset is seeded under').toBe(START_FROM_CG_PREFIX);
+
+  await clearWrittenNominations();
+
   const client = new SupabaseAdminClient();
+  await client.unregisterCandidate(CANDIDATE_EDITOR_EMAIL);
+
   await runTeardownAsserted(PREFIX, client);
+
+  if (fs.existsSync(CANDIDATE_STORAGE_STATE)) fs.unlinkSync(CANDIDATE_STORAGE_STATE);
 });

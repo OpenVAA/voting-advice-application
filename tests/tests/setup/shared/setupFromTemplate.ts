@@ -147,7 +147,7 @@ export async function setupFromTemplate(
   fanOutLocales(rows, template!, seed);
   const writer = new Writer({ projectId });
   // The third argument carries the template's openForVoters; the closed-project E2E node (perm-closed-project) depends on it to close the project.
-  await writer.write(rows, prefix, { openForVoters: template!.openForVoters });
+  await writer.write(rows, prefix, { openForVoters: template!.openForVoters, templateName });
 
   // 3. Authoritative app_settings REPLACE + EXACT post-seed assertion.
   //

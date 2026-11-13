@@ -9,9 +9,12 @@
  *   yarn test:unit:tests mailedLink
  */
 
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  // `include` is read against this directory whichever directory the run is started from.
+  root: fileURLToPath(new URL('.', import.meta.url)),
   test: {
     globals: true,
     environment: 'node',

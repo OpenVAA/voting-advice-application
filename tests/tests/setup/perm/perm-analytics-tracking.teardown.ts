@@ -8,13 +8,35 @@
  * Idempotent: `unregisterCandidate` is a no-op when no auth user holds the address, as when the spec did not run.
  */
 
-import { test as teardown } from '@playwright/test';
+import { expect, test as teardown } from '@playwright/test';
+import fs from 'fs';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
+import {
+  ANALYTICS_TERMS_GRANTING_EMAIL,
+  ANALYTICS_TERMS_GRANTING_STORAGE_STATE,
+  ANALYTICS_TERMS_REFUSING_EMAIL,
+  ANALYTICS_TERMS_REFUSING_STORAGE_STATE
+} from '../../utils/testCredentials';
 import { runTeardownAsserted } from '../shared/assertTeardown';
 
 const PREFIX = 'e2e-perm-analytics-';
 
 teardown('delete perm-analytics-tracking dataset', async () => {
   const client = new SupabaseAdminClient();
+
+  await client.unregisterCandidate(ANALYTICS_TERMS_GRANTING_EMAIL);
+  await client.unregisterCandidate(ANALYTICS_TERMS_REFUSING_EMAIL);
+  expect(
+    await client.hasAuthUser(ANALYTICS_TERMS_GRANTING_EMAIL),
+    `an auth user still holds ${ANALYTICS_TERMS_GRANTING_EMAIL} after the teardown unregistered it`
+  ).toBe(false);
+  expect(
+    await client.hasAuthUser(ANALYTICS_TERMS_REFUSING_EMAIL),
+    `an auth user still holds ${ANALYTICS_TERMS_REFUSING_EMAIL} after the teardown unregistered it`
+  ).toBe(false);
+
   await runTeardownAsserted(PREFIX, client);
+
+  fs.rmSync(ANALYTICS_TERMS_GRANTING_STORAGE_STATE, { force: true });
+  fs.rmSync(ANALYTICS_TERMS_REFUSING_STORAGE_STATE, { force: true });
 });

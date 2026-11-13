@@ -19,9 +19,10 @@
 
 import { expect, test } from '@playwright/test';
 import path from 'path';
-import { createCandidateQuestionsOverviewPage } from '../../fixtures/candidate/candidateQuestionsOverviewPage.fixture';
+import { createContestantQuestionsOverviewPage } from '../../fixtures/contestant/contestantQuestionsOverviewPage.fixture';
 import { createVideoReader } from '../../fixtures/shared/video.fixture';
 import { walkUntilQuestionsIntro } from '../../fixtures/voter/voter-journey.fixture';
+import { COMMON_PHONE, phoneUse } from '../../utils/phoneViewports';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 import { TESTS_DIR } from '../../utils/testsDir';
@@ -87,7 +88,7 @@ test.describe('perm-question-video (voter visibility matrix — unauthenticated)
 // A SCOPED mobile-viewport sub-test — `test.use` is INSIDE its own describe so the 390×844 isMobile/hasTouch descriptor NEVER leaks to the sibling unauthenticated/authenticated slices above (a file-scope test.use would flip the whole spec to mobile). Asserts the per-question Video media still renders on the q1 question at the mobile viewport, reusing the voter visibility assertion adapted to mobile.
 test.describe('mobile viewport smoke', () => {
   test.describe.configure({ mode: 'serial' });
-  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  test.use(phoneUse(COMMON_PHONE));
 
   test('q1 question video renders on mobile', async ({ page }) => {
     const video = createVideoReader(page);
@@ -123,42 +124,42 @@ test.describe('perm-question-video (candidate hideVideo slice — authenticated)
     // Restore the default posture so the perm-singleton is not left mutated for any downstream consumer of this seed.
     if (client) {
       await client.updateAppSettings({
-        candidateApp: { questions: { hideVideo: false } }
+        contestantApp: { questions: { hideVideo: false } }
       });
     }
   });
 
   test('hideVideo=false: candidate editor shows q1 video, hides q2 video', async ({ page }) => {
-    const questionsOverview = createCandidateQuestionsOverviewPage(page);
+    const questionsOverview = createContestantQuestionsOverviewPage(page);
     const video = createVideoReader(page);
 
     // q1 carries customData.video — the candidate editor shows it (hideVideo=false).
     await questionsOverview.goToPage();
     await questionsOverview.goToQuestion(/\[QU1-VIDEO\]/);
-    await expect(page.getByTestId(testIds.candidate.questions.answerInput)).toBeVisible();
+    await expect(page.getByTestId(testIds.contestant.questions.answerInput)).toBeVisible();
     await video.expectVideo(true);
 
     // q2 carries no video — the Video element is hidden (no content).
     await questionsOverview.goToPage();
     await questionsOverview.goToQuestion(/\[QU2-NOVIDEO\]/);
-    await expect(page.getByTestId(testIds.candidate.questions.answerInput)).toBeVisible();
+    await expect(page.getByTestId(testIds.contestant.questions.answerInput)).toBeVisible();
     await video.expectVideo(false);
   });
 
-  test('hideVideo=true (re-seeded): q1 video suppressed for the candidate app', async ({ page }) => {
-    // Perm-singleton re-seed: flip candidateApp.questions.hideVideo to true.
+  test('hideVideo=true (re-seeded): q1 video suppressed for the contestant app', async ({ page }) => {
+    // Perm-singleton re-seed: flip contestantApp.questions.hideVideo to true.
     client = new SupabaseAdminClient();
     await client.updateAppSettings({
-      candidateApp: { questions: { hideVideo: true } }
+      contestantApp: { questions: { hideVideo: true } }
     });
 
-    const questionsOverview = createCandidateQuestionsOverviewPage(page);
+    const questionsOverview = createContestantQuestionsOverviewPage(page);
     const video = createVideoReader(page);
 
     // q1 still carries customData.video, but hideVideo=true suppresses the Video surface in the candidate editor. Voters still see it (the voter slice runs under the default hideVideo=false posture).
     await questionsOverview.goToPage();
     await questionsOverview.goToQuestion(/\[QU1-VIDEO\]/);
-    await expect(page.getByTestId(testIds.candidate.questions.answerInput)).toBeVisible();
+    await expect(page.getByTestId(testIds.contestant.questions.answerInput)).toBeVisible();
     await video.expectVideo(false);
   });
 });
