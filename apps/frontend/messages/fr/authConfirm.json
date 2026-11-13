@@ -1,0 +1,13 @@
+{
+  "authConfirm": {
+    "cancel": "Annuler",
+    "continue": "Continuer",
+    "intro": {
+      "email_change": "Appuyez sur Continuer pour confirmer votre adresse e-mail et vous connecter.",
+      "magiclink": "Appuyez sur Continuer pour vous connecter.",
+      "recovery": "Appuyez sur Continuer pour vous connecter et choisir un nouveau mot de passe."
+    },
+    "signedIn": "Ce navigateur est déjà connecté à un compte. Si vous continuez, ce compte sera d’abord déconnecté.",
+    "title": "Continuer depuis votre e-mail"
+  }
+}

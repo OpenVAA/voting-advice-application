@@ -1,0 +1,120 @@
+{
+  "contestantApp.nominations": {
+    "add": "Lägg till en nominering",
+    "constituencies": {
+      "ingress": {
+        "candidate": "Välj den valkrets du ställer upp i.",
+        "organization": "Välj den valkrets ditt parti ställer upp i. En valkrets kan väljas för varje val; kontakta supporten om ditt parti ställer upp i flera."
+      },
+      "noElection": {
+        "candidate": "Inget val som du kan nomineras i hålls i den här valkretsen.",
+        "organization": "Inget val som ditt parti kan nomineras i hålls i den här valkretsen."
+      },
+      "severalKept": "Du har flera nomineringar i det här valet. De behålls som de är; du kan ändra deras uppgifter i nästa steg.",
+      "title": {
+        "candidate": "Vilken är din valkrets?",
+        "organization": "Vilken är ditt partis valkrets?"
+      }
+    },
+    "delete": "Ta bort",
+    "deleteCancel": "Avbryt",
+    "deleteConfirm": "Ja, ta bort",
+    "deletePrompt": "Ta bort den här nomineringen? Den tas bort direkt. Om du lägger till den igen måste en administratör bekräfta den innan väljarna ser den.",
+    "deleted": "Nomineringen togs bort.",
+    "description": {
+      "candidate": "Detta är de valkretsar där du är nominerad. Om vallistan eller valsymbolen saknas kommer de att läggas till automatiskt när kandidatlistorna bekräftas.",
+      "organization": "Detta är de valkretsar där ditt parti är nominerat. Om valsymbolen saknas läggs den till senare av administratören."
+    },
+    "descriptionEditable": {
+      "candidate": "Detta är dina nomineringar. Du kan ändra dem och lägga till ditt valnummer och din lista tills nomineringarna stängs.",
+      "organization": "Detta är ditt partis nomineringar. Du kan ändra dem och lägga till partiets valsymbol och valallians tills nomineringarna stängs."
+    },
+    "details": {
+      "changeSelection": "Ändra urvalet",
+      "confirmedNote": "Den här nomineringen är bekräftad. Om du ändrar den måste en administratör bekräfta den igen, och väljarna ser den inte förrän dess.",
+      "ingress": "Kontrollera uppgifterna för varje nominering. Ingenting sparas förrän du fortsätter.",
+      "keep": "Behåll den här nomineringen",
+      "newNote": "Den här nomineringen är ny. En administratör måste bekräfta den, och väljarna ser den inte förrän dess.",
+      "previousConstituency": "Tidigare: {constituency}",
+      "remove": "Ta bort den här nomineringen",
+      "removedConfirmedNote": "Den här nomineringen är bekräftad och tas bort när du fortsätter. En ny nominering skulle behöva bekräftas på nytt.",
+      "removedNote": "Den här nomineringen tas bort när du fortsätter.",
+      "symbolInfo": {
+        "candidate": "Valfritt. Ditt nummer på valsedeln, om du har ett. Högst 50 tecken.",
+        "organization": "Valfritt. Ditt partis symbol eller nummer på valsedeln, om det har någon. Högst 50 tecken."
+      },
+      "title": "Nomineringsuppgifter"
+    },
+    "edit": "Redigera",
+    "elections": {
+      "ingress": {
+        "candidate": "Välj alla val du ställer upp i.",
+        "organization": "Välj alla val ditt parti ställer upp i."
+      },
+      "noneSelected": "Välj minst ett val för att fortsätta.",
+      "title": {
+        "candidate": "Vilka val ställer du upp i?",
+        "organization": "Vilka val ställer ditt parti upp i?"
+      }
+    },
+    "empty": {
+      "candidate": "Ingen nominering har ännu angetts för dig. Kontakta supporten för att få en tillagd.",
+      "organization": "Ingen nominering har ännu angetts för ditt parti. Kontakta supporten för att få en tillagd."
+    },
+    "emptyEditable": {
+      "candidate": "Du har inte angett någon nominering ännu. En nominering anger i vilket val och i vilken valkrets du ställer upp.",
+      "organization": "Ingen nominering har ännu angetts för ditt parti. En nominering anger i vilket val och i vilken valkrets partiet ställer upp."
+    },
+    "emptyNoElection": {
+      "candidate": "Det finns inget val i den här applikationen där en kandidat kan nomineras. Kontakta supporten om du tror att detta är ett misstag.",
+      "organization": "Det finns inget val i den här applikationen där ett parti kan nomineras. Kontakta supporten om du tror att detta är ett misstag."
+    },
+    "error": {
+      "changed": "Dina nomineringar har ändrats sedan du öppnade den här sidan. De visas här som de är nu; kontrollera dem och försök igen.",
+      "checkCards": "Några nomineringar behöver din uppmärksamhet. Kontrollera de markerade fälten.",
+      "duplicateParent": "Två nomineringar i samma val och valkrets kan inte ha samma lista.",
+      "hasCandidates": "En nominering kunde inte tas bort eller flyttas eftersom kandidater är uppförda under den. Kontakta supporten.",
+      "otherRequired": {
+        "candidate": "Ange partiets namn.",
+        "organization": "Ange valalliansens namn."
+      },
+      "parentRequired": "Välj ett av alternativen för att fortsätta.",
+      "saveFailed": "Vi beklagar, det uppstod ett problem med att spara dina nomineringar. Försök igen och om problemet kvarstår, kontakta supporten.",
+      "tooManyPending": "Du har lagt till det högsta antalet nomineringar som väntar på bekräftelse. En administratör måste bekräfta några av dem innan du kan lägga till fler."
+    },
+    "parent": {
+      "none": {
+        "candidate": "Oberoende / inget parti",
+        "organization": "Ingen"
+      },
+      "noOptions": {
+        "candidate": "Inget parti kan väljas ännu.",
+        "organization": "Ingen valallians kan väljas ännu."
+      },
+      "notNominatedHint": {
+        "candidate": "Inte nominerat här ännu. Om du väljer det läggs även partiets nominering till, och den måste bekräftas av en administratör.",
+        "organization": "Inte nominerad här ännu. Om du väljer den läggs även valalliansens nominering till, och den måste bekräftas av en administratör."
+      },
+      "other": {
+        "candidate": "Annat",
+        "organization": "Annan"
+      },
+      "otherInfo": {
+        "candidate": "Ange namnet på ditt parti om det inte finns i listan. En administratör kommer att kontrollera det.",
+        "organization": "Ange valalliansens namn om den inte finns i listan. En administratör kommer att kontrollera det."
+      },
+      "otherLabel": {
+        "candidate": "Partiets namn",
+        "organization": "Valalliansens namn"
+      },
+      "unlisted": "Kan inte längre väljas. Du kan behålla ditt val eller göra ett annat."
+    },
+    "requestedParent": "Du har begärt detta. Det finns inte i applikationen ännu; en administratör kommer att kontrollera det.",
+    "state": {
+      "label": "Status",
+      "pending": "Väntar på bekräftelse",
+      "pendingInfo": "Den här nomineringen har inte bekräftats ännu, så väljarna ser den inte."
+    },
+    "title": "Nomineringslistor"
+  }
+}

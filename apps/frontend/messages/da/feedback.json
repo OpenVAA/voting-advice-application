@@ -15,11 +15,11 @@
       "label": "Samlet vurdering af appen",
       "valueLabel": [
         {
-          "declarations": ["input rating", "input ratingMax", "local ratingPlural = rating: plural"],
-          "selectors": ["ratingPlural"],
+          "declarations": ["input rating", "input ratingMax"],
+          "selectors": ["rating"],
           "match": {
-            "ratingPlural=zero": "Ingen vurdering",
-            "ratingPlural=other": "Vurdering {rating} ud af {ratingMax}"
+            "rating=0": "Ingen vurdering",
+            "rating=*": "Vurdering {rating} ud af {ratingMax}"
           }
         }
       ]

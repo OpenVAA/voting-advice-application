@@ -1,0 +1,8 @@
+{
+  "contestantApp.help": {
+    "ingress": "{contestantAppName}: hei drënner fannt Dir Äntwerte op déi heefegst Froen iwwer d’Benotzung vun dësem Service. Wann Dir keng Äntwert op Äre Problem fannt, kënnt Dir de Support kontaktéieren.",
+    "noFAQ": "Et ginn nach keng Äntwerten.",
+    "supportEmailSubject": "Support-Ufro",
+    "title": "Support"
+  }
+}

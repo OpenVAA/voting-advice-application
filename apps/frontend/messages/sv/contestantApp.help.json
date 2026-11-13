@@ -1,0 +1,8 @@
+{
+  "contestantApp.help": {
+    "ingress": "{contestantAppName}: nedan finns svar på de vanligaste frågorna om hur tjänsten används. Om du inte hittar svar på din fråga nedan kan du kontakta supporten.",
+    "noFAQ": "Det finns inga svar ännu.",
+    "supportEmailSubject": "Supportförfrågan",
+    "title": "Support"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "contestantApp.identityProvider": {
+    "alreadyRegistered": {
+      "none": "Oled juba registreerunud, kuid meil pole veel sinu e-posti aadressi.",
+      "pending": "Oled juba registreerunud. Saatsime kinnituslingi allolevale aadressile. Kuni sa pole linki avanud, logi sisse pangatunnustega.",
+      "proved": "Oled juba registreerunud. Kasuta järgmisel korral sisselogimiseks oma e-posti aadressi."
+    },
+    "awaitingConfirmation": "Ootab kinnitamist",
+    "emailIntro": "Sisesta e-posti aadress, millega soovid järgmisel korral sisse logida. Saadame sellele kinnituslingi. Saad kohe jätkata. Kuni sa pole linki avanud, logi sisse pangatunnustega.",
+    "emailInUse": "Seda e-posti aadressi kasutab juba teine konto. Sisesta mõni teine aadress või logi selle asemel sisse selle aadressiga.",
+    "emailTakenNotice": "Varem sisestatud aadressi kasutab nüüd teine konto, seega ei saanud seda sinu kontole lisada. Sisesta mõni teine aadress.",
+    "error": {
+      "cancelled": {
+        "content": "Katkestasid tuvastamise ja midagi ei salvestatud. Saad end uuesti tuvastada, kui oled valmis.",
+        "support": "Kui vajad abi, {contactSupportLink}.",
+        "title": "Tuvastamine katkestati"
+      },
+      "noRetry": {
+        "content": "Vabandame, tegemist on probleemiga meie poolel ja uuesti proovimine ei aita. Palun võta ühendust toega.",
+        "title": "Registreerumine ei ole praegu võimalik"
+      },
+      "retry": {
+        "content": "Vabandame, tuvastamist ei õnnestunud lõpule viia. Proovi uuesti.",
+        "support": "Kui probleem püsib, {contactSupportLink}.",
+        "title": "Tuvastamine ei õnnestunud"
+      },
+      "tryAgain": "Proovi uuesti"
+    },
+    "heroEmoji": "👍",
+    "identified": "Oled end tuvastanud.",
+    "nameIntro": "Jätkamiseks sisesta oma erakonna nimi.",
+    "nameRequired": "Sisesta oma erakonna nimi (keel: {language}).",
+    "saveFailed": "Sinu andmeid ei õnnestunud salvestada. Proovi uuesti. Kui probleem püsib, võta palun ühendust toega.",
+    "signInEmail": "Sinu sisselogimise e-posti aadress",
+    "title": {
+      "alreadyRegistered": "Oled juba registreerunud",
+      "complete": "Lõpeta oma registreerumine"
+    }
+  }
+}

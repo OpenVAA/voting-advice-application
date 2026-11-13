@@ -6,11 +6,11 @@
       "searchPlaceholder": "Etsi nimellä",
       "showingNumResults": [
         {
-          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
-          "selectors": ["numShownPlural"],
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
           "match": {
-            "numShownPlural=one": "Näytetään 1 tulos",
-            "numShownPlural=other": "Näytetään {numShown} tulosta"
+            "numShown=1": "Näytetään 1 tulos",
+            "numShown=*": "Näytetään {numShown} tulosta"
           }
         }
       ]

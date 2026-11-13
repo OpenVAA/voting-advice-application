@@ -1,0 +1,40 @@
+{
+  "contestantApp.identityProvider": {
+    "alreadyRegistered": {
+      "none": "Dir sidd schonn ageschriwwen, mee mir hunn nach keng E-Mail-Adress vun Iech.",
+      "pending": "Dir sidd schonn ageschriwwen. Mir hunn e Bestätegungslink un d’Adress hei drënner geschéckt. Bis Dir de Link opgemaach hutt, mellt Iech mat engem Bank ID un.",
+      "proved": "Dir sidd schonn ageschriwwen. Benotzt wgl. déi nächste Kéier Är E-Mail-Adress, fir Iech unzemellen."
+    },
+    "awaitingConfirmation": "Waart op Bestätegung",
+    "emailIntro": "Gitt d’E-Mail-Adress an, mat där Dir Iech déi nächste Kéier umelle wëllt. Mir schécken e Bestätegungslink dohin. Dir kënnt direkt weidermaachen. Bis Dir de Link opgemaach hutt, mellt Iech mat engem Bank ID un.",
+    "emailInUse": "Dës E-Mail-Adress gëtt schonn vun engem anere Kont benotzt. Gitt eng aner Adress an, oder mellt Iech amplaz mat där Adress un.",
+    "emailTakenNotice": "D’Adress, déi Dir virdrun aginn hutt, gëtt elo vun engem anere Kont benotzt, dofir konnt se net zu Ärem Kont bäigefüügt ginn. Gitt eng aner Adress an.",
+    "error": {
+      "cancelled": {
+        "content": "Dir hutt d’Identifikatioun ofgebrach, an näischt gouf gespäichert. Dir kënnt Iech nees identifizéieren, wann Dir prett sidd.",
+        "support": "Wann Dir Hëllef braucht, {contactSupportLink}.",
+        "title": "Identifikatioun ofgebrach"
+      },
+      "noRetry": {
+        "content": "Et deet eis leed, dat ass e Problem bei eis, an et nach eng Kéier ze probéieren hëlleft net. Kontaktéiert wgl. de Support.",
+        "title": "D’Aschreiwung ass grad net méiglech"
+      },
+      "retry": {
+        "content": "Et deet eis leed, d’Identifikatioun konnt net ofgeschloss ginn. Probéiert wgl. nach eng Kéier.",
+        "support": "Wann de Problem bestoe bleift, {contactSupportLink}.",
+        "title": "D’Identifikatioun huet net geklappt"
+      },
+      "tryAgain": "Nach eng Kéier probéieren"
+    },
+    "heroEmoji": "👍",
+    "identified": "Dir hutt Iech identifizéiert.",
+    "nameIntro": "Gitt den Numm vun Ärer Partei an, fir weiderzemaachen.",
+    "nameRequired": "Gitt den Numm vun Ärer Partei an (Sprooch: {language}).",
+    "saveFailed": "Mir konnten Är Donnéeën net späicheren. Probéiert wgl. nach eng Kéier. Wann de Problem bestoe bleift, kontaktéiert wgl. de Support.",
+    "signInEmail": "Är E-Mail-Adress fir d’Umeldung",
+    "title": {
+      "alreadyRegistered": "Dir sidd schonn ageschriwwen",
+      "complete": "Schléisst Är Aschreiwung of"
+    }
+  }
+}

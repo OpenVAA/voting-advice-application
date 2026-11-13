@@ -1,0 +1,7 @@
+{
+  "contestantApp.notSupported": {
+    "content": "{contestantAppName}: denne version af Valgtesten understøtter ikke tjenesten.",
+    "heroEmoji": "🐣",
+    "title": "{contestantAppName}: ikke tilgængeligt"
+  }
+}

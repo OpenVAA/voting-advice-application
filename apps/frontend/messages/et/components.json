@@ -1,8 +1,8 @@
 {
   "components": {
     "accordionSelect": {
-      "collapsedAriaInfo": "Puudutage kõigi valikute kuvamiseks",
-      "listboxAriaLabel": "Valige suvand"
+      "collapsedAriaInfo": "Puuduta kõigi valikute kuvamiseks",
+      "listboxAriaLabel": "Vali suvand"
     },
     "constituencySelector": {
       "selectPrompt": "Vali {constituencyGroup}"
@@ -14,18 +14,22 @@
       "addImage": "Lisa pilt",
       "allSelected": "Kõik valitud",
       "changeImage": "Vaheta pilt",
+      "colorPicker": "Värvivalija",
       "deleteOption": "Eemalda valik: {option}",
       "error": {
         "fileLoadingError": "Faili laadimine ebaõnnestus.",
+        "invalidColor": "Värv ei kehti. Sisesta hex-kood, näiteks #2546a8.",
         "invalidEmail": "E-posti aadress ei kehti.",
         "invalidFile": "Fail on sobimatu.",
         "invalidUrl": "Veebiaadress ei ole kehtiv.",
         "oversizeFile": "Fail on liiga suur. Maksimaalne suurus on {maxFilesize} MB."
       },
       "hideTranslations": "Peida",
-      "imageInfo": "Pildi maksimaalne suurus on {maxFilesize} MB. Palun olge kannatlik salvestamisel, sest pildi laadimine võib veidi aega võtta.",
-      "multilingualInfo": "Soovi korral saate sisestada oma vastuse kõigis rakenduse keeltes.",
+      "imageInfo": "Pildi maksimaalne suurus on {maxFilesize} MB. Palun ole kannatlik salvestamisel, sest pildi laadimine võib veidi aega võtta.",
+      "multilingualInfo": "Soovi korral saad sisestada oma vastuse kõigis rakenduse keeltes.",
+      "noColor": "Värv puudub",
       "noImage": "Pilt puudub",
+      "requiredLocaleInfo": "Nõutav keel: {language}. Teised keeled on valikulised.",
       "selectAnother": "Vali veel",
       "selectFirst": "Vali esimene",
       "selectOne": "Vali",
@@ -42,7 +46,6 @@
       "remove": "Eemalda kirje"
     },
     "passwordInput": {
-      "hidePassword": "Peida parool",
       "password": "Parool",
       "placeholder": "Parool",
       "showPassword": "Näita parool"
@@ -51,15 +54,15 @@
       "roleDescription": "Pealkirja eelrida"
     },
     "preventNavigation": {
-      "unsavedChanges": "Teil on salvestamata muudatusi. Kas olete kindel, et soovite sellelt lehelt lahkuda?"
+      "unsavedChanges": "Sul on salvestamata muudatusi. Kas oled kindel, et soovid sellelt lehelt lahkuda?"
     },
     "select": {
-      "noMatchingOptions": "Teie otsingule vastavaid valikuid ei leitud",
-      "placeholder": "Valige allpool olev valik"
+      "noMatchingOptions": "Sinu otsingule vastavaid valikuid ei leitud",
+      "placeholder": "Vali allpool olev valik"
     },
     "video": {
       "captions": "Subtiitrid",
-      "error": "Vabandust, video laadimisel näib olevat raskusi. Võite proovida lehte uuesti laadida või kasutada allpool olevat nuppu tekstivaatele lülitumiseks.",
+      "error": "Vabandust, video laadimisel näib olevat raskusi. Võid proovida lehte uuesti laadida või kasutada allpool olevat nuppu tekstivaatele lülitumiseks.",
       "hideCaptions": "Peida subtiitrid",
       "jumpBack": "Hüppa tagasi",
       "jumpForward": "Hüppa edasi",
@@ -72,32 +75,10 @@
       "showTranscript": "Näita video tekstina",
       "showVideo": "Näita video",
       "subtitles": "Subtiitrid",
-      "timeLeft": [
-        {
-          "declarations": [
-            "input minutes",
-            "local minutesPlural = minutes: plural",
-            "input seconds",
-            "local secondsPlural = seconds: plural"
-          ],
-          "selectors": ["minutesPlural", "secondsPlural"],
-          "match": {
-            "minutesPlural=zero secondsPlural=zero": "  jäänud",
-            "minutesPlural=zero secondsPlural=one": " üks sekund jäänud",
-            "minutesPlural=zero secondsPlural=other": " {seconds} sekundit jäänud",
-            "minutesPlural=one secondsPlural=zero": "üks minut  jäänud",
-            "minutesPlural=one secondsPlural=one": "üks minut üks sekund jäänud",
-            "minutesPlural=one secondsPlural=other": "üks minut {seconds} sekundit jäänud",
-            "minutesPlural=other secondsPlural=zero": "{minutes} minutit  jäänud",
-            "minutesPlural=other secondsPlural=one": "{minutes} minutit üks sekund jäänud",
-            "minutesPlural=other secondsPlural=other": "{minutes} minutit {seconds} sekundit jäänud"
-          }
-        }
-      ],
       "transcript": "Tekst",
       "transcriptToggleLabel": "Lülita teksti- ja videovaate vahel",
       "unmute": "Heli sisse",
-      "unsupportedWarning": "Kahjuks ei toeta teie brauser seda tüüpi videot.",
+      "unsupportedWarning": "Kahjuks ei toeta sinu brauser seda tüüpi videot.",
       "video": "Video"
     },
     "questionExtendedInfo": {

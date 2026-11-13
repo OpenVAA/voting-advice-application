@@ -7,7 +7,7 @@
     "emailIntro": "Om du vill kan du också nå oss via e-post på",
     "error": {
       "emailIntro": "Vi ber dig att skicka din feedback via e-post genom att klicka på knappen nedan. All feedback du redan skrivit inkluderas automatiskt i e-postmeddelandet.",
-      "emailSubject": "Feedack",
+      "emailSubject": "Respons",
       "message": "Vi är oerhört ledsna, det uppstod ett fel när din feedback skickades."
     },
     "popupTitle": "Vad tycker du om valkompassen?",
@@ -15,16 +15,16 @@
       "label": "Totalt betyg för appen",
       "valueLabel": [
         {
-          "declarations": ["input rating", "input ratingMax", "local ratingPlural = rating: plural"],
-          "selectors": ["ratingPlural"],
+          "declarations": ["input rating", "input ratingMax"],
+          "selectors": ["rating"],
           "match": {
-            "ratingPlural=zero": "Inget betyg",
-            "ratingPlural=other": "Betyg {rating} av {ratingMax}"
+            "rating=0": "Inget betyg",
+            "rating=*": "Betyg {rating} av {ratingMax}"
           }
         }
       ]
     },
-    "send": "SV Send feedback",
+    "send": "Skicka feedback",
     "sending": "Skickas…",
     "thanks": "Tack för din feedback!",
     "title": "Feedback"

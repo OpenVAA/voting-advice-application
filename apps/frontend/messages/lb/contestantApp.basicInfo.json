@@ -1,0 +1,26 @@
+{
+  "contestantApp.basicInfo": {
+    "colorInfo": "Gëtt hannert der Ofkierzung vun Ärer Partei ugewisen, wann d’Partei kee Logo huet, an um Parteisymbol nieft de Kandidat*inne vun der Partei. Gitt en Hex-Code an, z. B. #2546a8, oder benotzt d’Faarfauswiel, oder loosst d’Feld eidel, wann Dir keng Faarf wëllt. D’Faarf kann automatesch ugepasst ginn, fir datt se liesbar bleift; d’Virukuck weist d’Resultat.",
+    "editableInfos": {
+      "description": "Dës Informatiounen erschéngen an Ärem Profil.",
+      "title": "Äre Profil"
+    },
+    "error": {
+      "invalidQuestion": "De Froen- oder Äntwerttyp ass net valabel fir d’Fro {questionId}"
+    },
+    "instructions": {
+      "candidate": "Fänkt als éischt mat Ären Basisinformatiounen un an, wann Dir wëllt, lued eng Foto erop. Duerno gi politesch Meenungen nogefrot.",
+      "organization": "Fëllt als éischt d’Basisinformatioune vun Ärer Partei aus an, wann Dir wëllt, lued e Logo erop. Duerno ginn d’politesch Meenunge vun der Partei nogefrot."
+    },
+    "instructionsNoQuestions": {
+      "candidate": "Fëllt Är Basisinformatiounen aus an, wann Dir wëllt, lued eng Foto erop.",
+      "organization": "Fëllt d’Basisinformatioune vun Ärer Partei aus an, wann Dir wëllt, lued e Logo erop."
+    },
+    "logoInfo": "E quadratescht Bild passt am beschten: de Logo gëtt an engem klenge Quadrat ugewisen, an alles, wat doriwwer erausgeet, gëtt ofgeschnidden.",
+    "removeImage": "Portrait ewechhuelen",
+    "removeLogo": "Logo ewechhuelen",
+    "requiredInfo": "Dir musst d’Felder mat dësem Symbol ausfëllen, fir datt Äre Profil am Wal-Kompass ugewise gëtt. Dir kënnt Är Äntwerten awer späicheren an spéider weiderféieren.",
+    "shortNameInfo": "Eng kuerz Form vum Numm, z. B. en Akronym. Si gëtt do ugewisen, wou wéineg Plaz ass, z. B. nieft de Kandidat*inne vun der Partei. Optional.",
+    "title": "Basisinformatiounen"
+  }
+}

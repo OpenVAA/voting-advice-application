@@ -13,7 +13,8 @@
       "genericError": "Der opstod en fejl under loginforsøget. Prøv igen.",
       "unauthorized": "Du skal have administratorrettigheder for at tilgå dette område",
       "sessionExpired": "Din session er udløbet, log ind igen",
-      "unknown": "Der opstod en ukendt fejl"
+      "unknown": "Der opstod en ukendt fejl",
+      "linkFailed": "Dette link kan ikke længere bruges. Et link virker én gang, og kun det nyeste link, du har bedt om, virker. Bed om et nyt på samme måde som før."
     }
   }
 }

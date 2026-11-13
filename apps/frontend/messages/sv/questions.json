@@ -16,11 +16,12 @@
     "category": {
       "numQuestions": [
         {
-          "declarations": ["input numQuestions", "local numQuestionsPlural = numQuestions: plural"],
-          "selectors": ["numQuestionsPlural"],
+          "declarations": ["input numQuestions"],
+          "selectors": ["numQuestions"],
           "match": {
-            "numQuestionsPlural=other": "{numQuestions} frågor",
-            "numQuestionsPlural=one": "1 fråga"
+            "numQuestions=-1": "",
+            "numQuestions=1": "1 fråga",
+            "numQuestions=*": "{numQuestions} frågor"
           }
         }
       ],
@@ -31,31 +32,23 @@
       "ingress": {
         "withCategorySelection": [
           {
-            "declarations": [
-              "input minQuestions",
-              "input numCategories",
-              "local minQuestionsPlural = minQuestions: plural"
-            ],
-            "selectors": ["minQuestionsPlural"],
+            "declarations": ["input minQuestions", "input numCategories"],
+            "selectors": ["minQuestions"],
             "match": {
-              "minQuestionsPlural=zero": "Frågorna är indelade i {numCategories} kategorier. Du kan svarar på dem alla eller välja de du vill ha. ",
-              "minQuestionsPlural=one": "Frågorna är indelade i {numCategories} kategorier. Du kan svarar på dem alla eller välja de du vill ha. ",
-              "minQuestionsPlural=other": "Frågorna är indelade i {numCategories} kategorier. Du kan svarar på dem alla eller välja de du vill ha. Välj dock tillräckligt många kategorier för att få minst {minQuestions} frågor totalt."
+              "minQuestions=0": "Frågorna är indelade i {numCategories} kategorier. Du kan svarar på dem alla eller välja de du vill ha. ",
+              "minQuestions=1": "Frågorna är indelade i {numCategories} kategorier. Du kan svarar på dem alla eller välja de du vill ha. ",
+              "minQuestions=*": "Frågorna är indelade i {numCategories} kategorier. Du kan svarar på dem alla eller välja de du vill ha. Välj dock tillräckligt många kategorier för att få minst {minQuestions} frågor totalt."
             }
           }
         ],
         "withoutCategorySelection": [
           {
-            "declarations": [
-              "input numCategories",
-              "input numQuestions",
-              "local numCategoriesPlural = numCategories: plural"
-            ],
-            "selectors": ["numCategoriesPlural"],
+            "declarations": ["input numCategories", "input numQuestions"],
+            "selectors": ["numCategories"],
             "match": {
-              "numCategoriesPlural=zero": "Svara sedan på {numQuestions} frågor om politik och värderingar. ",
-              "numCategoriesPlural=one": "Svara sedan på {numQuestions} frågor om politik och värderingar. ",
-              "numCategoriesPlural=other": "Svara sedan på {numQuestions} frågor om politik och värderingar. Frågorna är indelade i {numCategories} kategorier."
+              "numCategories=0": "Svara sedan på {numQuestions} frågor om politik och värderingar. ",
+              "numCategories=1": "Svara sedan på {numQuestions} frågor om politik och värderingar. ",
+              "numCategories=*": "Svara sedan på {numQuestions} frågor om politik och värderingar. Frågorna är indelade i {numCategories} kategorier."
             }
           }
         ]
@@ -68,8 +61,8 @@
           "declarations": ["input count", "local countPlural = count: plural"],
           "selectors": ["countPlural"],
           "match": {
-            "countPlural=other": "Välj {count} alternativ.",
-            "countPlural=one": "Välj 1 alternativ."
+            "countPlural=one": "Välj 1 alternativ.",
+            "countPlural=*": "Välj {count} alternativ."
           }
         }
       ],

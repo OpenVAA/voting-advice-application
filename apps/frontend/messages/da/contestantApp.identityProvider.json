@@ -1,0 +1,40 @@
+{
+  "contestantApp.identityProvider": {
+    "alreadyRegistered": {
+      "none": "Du har allerede registreret dig, men vi har endnu ikke en e-mailadresse til dig.",
+      "pending": "Du har allerede registreret dig. Vi har sendt et bekræftelseslink til adressen nedenfor. Indtil du åbner linket, skal du logge ind med BankID.",
+      "proved": "Du har allerede registreret dig. Brug din e-mailadresse til at logge ind næste gang."
+    },
+    "awaitingConfirmation": "Afventer bekræftelse",
+    "emailIntro": "Indtast den e-mailadresse, du vil logge ind med næste gang. Vi sender et bekræftelseslink til den. Du kan fortsætte med det samme. Indtil du åbner linket, skal du logge ind med BankID.",
+    "emailInUse": "Denne e-mailadresse bruges allerede af en anden konto. Indtast en anden adresse, eller log i stedet ind med den adresse.",
+    "emailTakenNotice": "Adressen, du indtastede tidligere, bruges nu af en anden konto, så den kunne ikke føjes til din. Indtast en anden adresse.",
+    "error": {
+      "cancelled": {
+        "content": "Du afbrød identifikationen, og intet blev gemt. Du kan identificere dig igen, når du er klar.",
+        "support": "Hvis du har brug for hjælp, {contactSupportLink}.",
+        "title": "Identifikationen blev afbrudt"
+      },
+      "noRetry": {
+        "content": "Vi beklager, det er et problem hos os, og det hjælper ikke at prøve igen. Kontakt support.",
+        "title": "Registrering er ikke mulig lige nu"
+      },
+      "retry": {
+        "content": "Vi beklager, identifikationen kunne ikke gennemføres. Prøv igen.",
+        "support": "Hvis problemet fortsætter, {contactSupportLink}.",
+        "title": "Identifikationen lykkedes ikke"
+      },
+      "tryAgain": "Prøv igen"
+    },
+    "heroEmoji": "👍",
+    "identified": "Du har identificeret dig.",
+    "nameIntro": "Indtast dit partis navn for at fortsætte.",
+    "nameRequired": "Indtast dit partis navn (sprog: {language}).",
+    "saveFailed": "Vi kunne ikke gemme dine oplysninger. Prøv igen. Kontakt support, hvis problemet fortsætter.",
+    "signInEmail": "Din e-mailadresse til login",
+    "title": {
+      "alreadyRegistered": "Du har allerede registreret dig",
+      "complete": "Fuldfør din registrering"
+    }
+  }
+}

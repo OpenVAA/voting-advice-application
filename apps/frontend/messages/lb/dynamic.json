@@ -4,19 +4,39 @@
       "heroEmoji": "⚙️"
     },
     "appName": "Wal-Kompass",
-    "candidateAppBasicInfo": {
-      "immutableData": {
-        "title": "Perséinlech Donnéeën",
-        "ingress": "Ären Numm an nach aner Informatiounen goufen virausgefëllt oder ginn nogereecht, wann d’Kandidatelëschten confirméiert sinn. Dir kënnt dës Donnéeën net selwer änneren; bei Feeler kontaktéiert wgl. de Kandidat*inne‑Support.",
-        "emptyPlaceholder": "Op Basis vun der Kandidatelëscht"
+    "contestantAppBasicInfo": {
+      "identity": {
+        "title": {
+          "candidate": "Perséinlech Donnéeën",
+          "organization": "Donnéeë vun der Partei"
+        },
+        "name": {
+          "locked": {
+            "candidate": "Ären Numm gouf vum Administrateur festgeluecht oder aus Ärer Identifikatioun iwwerholl, an Dir kënnt en hei net änneren. Wann e falsch ass, kontaktéiert wgl. de Support.",
+            "organization": "Den Numm an d’Ofkierzung vun Ärer Partei goufe vum Administrateur confirméiert, an Dir kënnt se hei net änneren. Wa se falsch sinn, kontaktéiert wgl. de Support."
+          },
+          "editable": {
+            "candidate": "Dir kënnt Ären Numm änneren, bis en Administrateur Äre Profil confirméiert huet.",
+            "organization": "Dir kënnt den Numm an d’Ofkierzung vun Ärer Partei änneren, bis en Administrateur Är Partei confirméiert huet."
+          }
+        },
+        "lockedInfo": "E puer aner Informatioune goufe fir Iech ausgefëllt oder gi vum Administrateur nogereecht. Dir kënnt se net selwer änneren; bei Feeler kontaktéiert wgl. de Support.",
+        "emptyPlaceholder": {
+          "candidate": "Op Basis vun der Kandidatelëscht",
+          "organization": "Vum Administrateur festgeluecht"
+        }
       }
     },
-    "candidateAppName": "Wal-Kompass fir Kandidat*inne",
-    "candidateAppNotAccessible": {
-      "content": "De Wal-Kompass fir Kandidat*inne ass nach net verëffentlecht. Kommt wgl. op dës Adress zréck, wann en disponibel ass.",
-      "title": "Entschëllegt, de Wal-Kompass fir Kandidat*inne ass nach net disponibel"
+    "contestantAppName": {
+      "candidate": "Kandidat*inne-Applikatioun",
+      "candidateAndOrganization": "Kandidat*innen- a Parteien-Applikatioun",
+      "organization": "Parteien-Applikatioun"
     },
-    "candidateAppPrivacy": {
+    "contestantAppNotAccessible": {
+      "content": "{contestantAppName}: dëse Service ass nach net verëffentlecht. Kommt wgl. op dës Adress zréck, wann en disponibel ass.",
+      "title": "{contestantAppName}: nach net disponibel"
+    },
+    "contestantAppPrivacy": {
       "heroEmoji": "🛡️",
       "consent": {
         "acceptLabel": "Ech sinn domat averstanen, datt meng Donnéeë no de Notzungsbedingunge gespäichert a benotzt ginn.",
@@ -25,7 +45,7 @@
         "title": "Notzungsbedingungen"
       },
       "registryStatement": {
-        "content": "<h3>1. Dateschutzverantwortlechen</h3><p>DATA_CONTROLLER</p><h3>2. Kontaktpersoun fir de Register</h3><p>DATA_CONTACT_PERSON, <a href=\"mailto:first.last@openvaa.org\">first.last@openvaa.org</a>.</p><h3>3. Numm vum Register</h3><p>{appName} – Informatiounssystem fir Kandidat*inne.</p><h3>4. Rechtsgrond an Zweck vun der Veraarbechtung vu perséinlechen Donnéeën</h3><p>De Rechtsgrond no der EU‑Dateschutz‑Veruerdnung (DSGVO) ass d’Zoustëmmung vun der betraffener Persoun. De Zweck ass d’Benotzung an engem Wal‑Kompass.</p><h3>5. Inhalt vum Register</h3><p>Am Register ginn dës Donnéeë gespäichert: Numm, politesche Hannergrond, E‑Mail‑Adress, Gebuertsdatum, Websäit‑URLen, Social‑Media‑URLen, aner fräiwëlleg Äntwerten op Froen aus dem Wal‑Kompass, souwéi Informatiounen aus ëffentleche Walregisteren.</p><p>DATA_STORAGE_TERM_EG_5_YRS</p><p>Fir d’Funktiounéiere vum Service noutwendeg Cookië ginn op Basis vum berechtegte Interessi veraarbecht, z. B. fir d'Sécherheet ze garantéieren.</p><h3>6. Reegelméisseg Quelle vun den Donnéeën</h3><p>D’Donnéeë kommen iwwer e Formulaire vun de Kandidat*inne, bei der Bank‑Authentifikatioun an aus ëffentleche Walregisteren.</p><h3>7. Reegelméisseg Weiderginn vun Donnéeën a Transfere baussent der EU oder dem EWR</h3><p>D’Donnéeë ginn net reegelméisseg un Drëttpersoune weiderginn; nom Enn vun der Publikatioun vum Wal‑Kompass kënne se fir Fuerschung an d’Weiderentwécklung vum Wal‑Kompass benotzt ginn.</p><h3>8. Grondsätz vum Dateschutz</h3><p>De Register gëtt mat Sorgfalt veraarbecht, an d’Donnéeë si géint Onbefugte geschützt. Beim Späichere vun Donnéeën op Internet‑Servere ginn adequat physesch a digital Sécherheetsmoossnamen ëmgesat. De Dateschutzverantwortlechen stellt sécher, datt gespäichert Donnéeën, Server‑Accèsrechter an aner sensibel Informatioune vertraulech behandelt ginn an nëmme vu Mataarbechter gesi ginn, deenen hir Aufgab et verlaangt.</p><h3>9. Recht op Informatioun an op Berichtung</h3><p>All Persoun am Register huet d’Recht, hir gespäichert Donnéeën anzekucken an d’Berichtegung vu feeler- oder onvollstännegen Donnéeën ze verlaangen. Dofir ass eng Ufro per E‑Mail un de Verantwørte schécken. Falls noutwendeg, kann eng Identitéitskontroll gefrot ginn. D’Äntwert geschitt bannent de Frëschte vum DSGVO.</p><h3>10. Aner Rechter am Zesummenhang mat der Veraarbechtung</h3><p>Persounen am Register hunn d’Recht, d’Läschung hirer Donnéeën ze verlaangen (‚Recht op Vergiessen‘). Si hunn och aner Rechter no DSGVO, z. B. d’Aschränkung vun der Veraarbechtung an e puer Situatiounen. D’Ufroe ginn per E‑Mail un de Verantwørte geschéckt; eng Identitéitskontroll ka verlaangt ginn. Geäntwert gëtt bannent de gesetzleche Frëschten.</p>",
+        "content": "<h3>1. Dateschutzverantwortlechen</h3><p>DATA_CONTROLLER</p><h3>2. Kontaktpersoun fir de Register</h3><p>DATA_CONTACT_PERSON, <a href=\"mailto:first.last@openvaa.org\">first.last@openvaa.org</a>.</p><h3>3. Numm vum Register</h3><p>{appName} – Informatiounssystem fir Kandidat*innen a Parteien.</p><h3>4. Rechtsgrond an Zweck vun der Veraarbechtung vu perséinlechen Donnéeën</h3><p>De Rechtsgrond no der EU‑Dateschutz‑Veruerdnung (DSGVO) ass d’Zoustëmmung vun der betraffener Persoun. De Zweck ass d’Benotzung an engem Wal‑Kompass.</p><h3>5. Inhalt vum Register</h3><p>Am Register ginn dës Donnéeën iwwer d’Benotzer vum Service an iwwer d’Kandidat*innen a Parteien, déi si vertrieden, gespäichert: Numm, politesche Hannergrond, E‑Mail‑Adress, Websäit‑URLen, Social‑Media‑URLen, aner fräiwëlleg Äntwerten op Froen aus dem Wal‑Kompass, souwéi Informatiounen aus ëffentleche Walregisteren. Fir eng Persoun, déi sech iwwer eng Bank oder en aneren Identifikatiounsservice identifizéiert huet, gëtt och de Gebuertsdatum oder déi national Identifikatiounsnummer am Register gespäichert. Dës Identifikatiounsdonnéeë ginn net un d’Ëffentlechkeet weiderginn. Si ginn nëmme benotzt, fir den Alter vun der Persoun um Waldatum auszerechnen a fir hir Nominatioun ze verifizéieren.</p><p>DATA_STORAGE_TERM_EG_5_YRS</p><p>Fir d’Funktiounéiere vum Service noutwendeg Cookië ginn op Basis vum berechtegte Interessi veraarbecht, z. B. fir d'Sécherheet ze garantéieren.</p><h3>6. Reegelméisseg Quelle vun den Donnéeën</h3><p>D’Donnéeë kommen iwwer e Formulaire vun de Benotzer vum Service, vum Identifikatiounsservice, wann e Benotzer sech iwwer een identifizéiert, an aus ëffentleche Walregisteren.</p><h3>7. Reegelméisseg Weiderginn vun Donnéeën a Transfere baussent der EU oder dem EWR</h3><p>D’Donnéeë ginn net reegelméisseg un Drëttpersoune weiderginn; nom Enn vun der Publikatioun vum Wal‑Kompass kënne se fir Fuerschung an d’Weiderentwécklung vum Wal‑Kompass benotzt ginn.</p><h3>8. Grondsätz vum Dateschutz</h3><p>De Register gëtt mat Sorgfalt veraarbecht, an d’Donnéeë si géint Onbefugte geschützt. Beim Späichere vun Donnéeën op Internet‑Servere ginn adequat physesch a digital Sécherheetsmoossnamen ëmgesat. De Dateschutzverantwortlechen stellt sécher, datt gespäichert Donnéeën, Server‑Accèsrechter an aner sensibel Informatioune vertraulech behandelt ginn an nëmme vu Mataarbechter gesi ginn, deenen hir Aufgab et verlaangt.</p><h3>9. Recht op Informatioun an op Berichtung</h3><p>All Persoun am Register huet d’Recht, hir gespäichert Donnéeën anzekucken an d’Berichtegung vu feeler- oder onvollstännegen Donnéeën ze verlaangen. Dofir ass eng Ufro per E‑Mail un de Verantwørte schécken. Falls noutwendeg, kann eng Identitéitskontroll gefrot ginn. D’Äntwert geschitt bannent de Frëschte vum DSGVO.</p><h3>10. Aner Rechter am Zesummenhang mat der Veraarbechtung</h3><p>Persounen am Register hunn d’Recht, d’Läschung hirer Donnéeën ze verlaangen (‚Recht op Vergiessen‘). Si hunn och aner Rechter no DSGVO, z. B. d’Aschränkung vun der Veraarbechtung an e puer Situatiounen. D’Ufroe ginn per E‑Mail un de Verantwørte geschéckt; eng Identitéitskontroll ka verlaangt ginn. Geäntwert gëtt bannent de gesetzleche Frëschten.</p>",
         "title": "Register‑ a Dateschutz‑Erklärung"
       },
       "otherTermsOfUse": {

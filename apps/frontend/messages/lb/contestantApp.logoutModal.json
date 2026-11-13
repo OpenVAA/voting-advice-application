@@ -1,0 +1,29 @@
+{
+  "contestantApp.logoutModal": {
+    "continue": "Daten weider aginn",
+    "ingress": "Sidd Dir sécher, datt Dir Iech auslogge wëllt? Dir gitt automatesch no {timeLeft} Sekonnen ausgeloggt.",
+    "itemsLeft": [
+      {
+        "declarations": ["input infoQuestionsLeft", "input opinionQuestionsLeft"],
+        "selectors": ["infoQuestionsLeft", "opinionQuestionsLeft"],
+        "match": {
+          "infoQuestionsLeft=1, opinionQuestionsLeft=1": "Et si nach eng Positioun bei de Basisdaten an eng Meenung auszefëllen.",
+          "infoQuestionsLeft=1, opinionQuestionsLeft=*": "Et si nach eng Positioun bei de Basisdaten an {opinionQuestionsLeft} Meenungen auszefëllen.",
+          "infoQuestionsLeft=*, opinionQuestionsLeft=1": "Et si nach {infoQuestionsLeft} Positiounen bei de Basisdaten an eng Meenung auszefëllen.",
+          "infoQuestionsLeft=*, opinionQuestionsLeft=*": "Et si nach {infoQuestionsLeft} Positiounen bei de Basisdaten an {opinionQuestionsLeft} Meenungen auszefëllen."
+        }
+      }
+    ],
+    "questionsLeft": [
+      {
+        "declarations": ["input opinionQuestionsLeft"],
+        "selectors": ["opinionQuestionsLeft"],
+        "match": {
+          "opinionQuestionsLeft=1": "Et si nach eng Meenung auszefëllen.",
+          "opinionQuestionsLeft=*": "Et si nach {opinionQuestionsLeft} Meenungen auszefëllen."
+        }
+      }
+    ],
+    "title": "E puer vun Ären Donnéeë feelen nach"
+  }
+}

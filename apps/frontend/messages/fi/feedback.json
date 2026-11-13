@@ -15,11 +15,11 @@
       "label": "Yleisarvio vaalikoneesta",
       "valueLabel": [
         {
-          "declarations": ["input rating", "input ratingMax", "local ratingPlural = rating: plural"],
-          "selectors": ["ratingPlural"],
+          "declarations": ["input rating", "input ratingMax"],
+          "selectors": ["rating"],
           "match": {
-            "ratingPlural=zero": "Ei arviota",
-            "ratingPlural=other": "Arvio {rating} maksimista {ratingMax}"
+            "rating=0": "Ei arviota",
+            "rating=*": "Arvio {rating} maksimista {ratingMax}"
           }
         }
       ]

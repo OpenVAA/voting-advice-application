@@ -1,41 +1,41 @@
 {
   "adminApp.questionInfo": {
-    "title": "Question Info",
-    "description": "Generate contextual information for VAA questions including term definitions and informational sections to help voters better understand the questions.",
-    "selectElection": "Select Election",
-    "selectQuestions": "Select Questions",
-    "noQuestions": "No opinion questions found for this election",
+    "title": "Informatiounen iwwer d’Froen",
+    "description": "Generéiert Kontextinformatiounen zu de Froe vum Wal-Kompass, dorënner Begrëffsdefinitiounen an Informatiounssektiounen, fir de Wieler*innen ze hëllefen, d’Froe besser ze verstoen.",
+    "selectElection": "Wahl auswielen",
+    "selectQuestions": "Froen auswielen",
+    "noQuestions": "Fir dës Wahl goufe keng Aussoe fonnt",
     "generate": {
-      "button": "Generate Question Info",
-      "buttonLoading": "Generating...",
-      "allQuestions": "All opinion questions",
-      "selectedQuestions": "Selected questions"
+      "button": "Informatiounen iwwer d’Froe generéieren",
+      "buttonLoading": "Gëtt generéiert…",
+      "allQuestions": "All d’Aussoen",
+      "selectedQuestions": "Ausgewielte Froen"
     },
     "options": {
-      "heading": "Generation Options",
-      "whatToGenerate": "What to generate:",
-      "terms": "Term Definitions",
-      "infoSections": "Info Sections"
+      "heading": "Optioune fir d’Generéierung",
+      "whatToGenerate": "Wat soll generéiert ginn:",
+      "terms": "Begrëffsdefinitiounen",
+      "infoSections": "Informatiounssektiounen"
     },
     "sectionTopics": {
-      "label": "Section Topics (optional)",
-      "help": "Comma-separated list of topics for info sections. Leave empty to use defaults.",
-      "placeholder": "Background, Current situation, Key stakeholders"
+      "label": "Theme vun de Sektiounen (optional)",
+      "help": "Lëscht vun Theme fir d’Informatiounssektiounen, mat Komma getrennt. Loosst d’Feld eidel, fir d’Standardthemen ze benotzen.",
+      "placeholder": "Hannergrond, Aktuell Situatioun, Wichteg Akteuren"
     },
     "customInstructions": {
-      "label": "Custom Instructions (optional)",
-      "help": "Additional guidance for the LLM about how to generate the content.",
-      "placeholder": "Focus on local governance and municipal policy aspects"
+      "label": "Eegen Instruktiounen (optional)",
+      "help": "Zousätzlech Uweisunge fir de LLM, wéi den Inhalt generéiert soll ginn.",
+      "placeholder": "De Fokus op d’lokal Gouvernance an op Aspekter vun der Gemengepolitik leeën"
     },
     "questionContext": {
-      "label": "Question Context (optional)",
-      "help": "Context about the election or topic area to help the LLM generate more relevant content.",
-      "placeholder": "Finnish municipal elections 2025"
+      "label": "Kontext vun de Froen (optional)",
+      "help": "Kontext iwwer d’Wahl oder d’Themegebitt, fir dem LLM ze hëllefen, méi relevanten Inhalt ze generéieren.",
+      "placeholder": "Finnesch Gemengewahlen 2025"
     },
     "validation": {
-      "noElection": "Please select an election",
-      "noQuestions": "Please select at least one question",
-      "noOperations": "Please select at least one generation option"
+      "noElection": "Wielt wgl. eng Wahl aus",
+      "noQuestions": "Wielt wgl. op d’mannst eng Fro aus",
+      "noOperations": "Wielt wgl. op d’mannst eng Optioun fir d’Generéierung aus"
     }
   }
 }

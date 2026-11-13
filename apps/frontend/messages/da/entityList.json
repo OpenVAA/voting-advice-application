@@ -6,11 +6,11 @@
       "searchPlaceholder": "Søg efter navn",
       "showingNumResults": [
         {
-          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
-          "selectors": ["numShownPlural"],
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
           "match": {
-            "numShownPlural=one": "Viser 1 resultat",
-            "numShownPlural=other": "Viser {numShown} resultater"
+            "numShown=1": "Viser 1 resultat",
+            "numShown=*": "Viser {numShown} resultater"
           }
         }
       ]

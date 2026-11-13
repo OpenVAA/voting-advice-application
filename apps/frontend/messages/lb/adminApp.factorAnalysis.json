@@ -1,22 +1,22 @@
 {
   "adminApp.factorAnalysis": {
-    "title": "Factor Analysis",
-    "description": "Analyze and manage factors for the election questions.",
+    "title": "Faktoranalys",
+    "description": "Analyséiert a verwalt d’Faktore vun de Wahlfroen.",
     "compute": {
-      "title": "Compute factors",
-      "description": "Compute the latent factors from the answers given by candidates and parties.",
-      "selectElections": "Select the elections for which to compute the factors.",
-      "button": "Compute factors",
-      "buttonLoading": "Computing factors...",
-      "mayTakeTime": "This may take some time.",
-      "noElections": "No elections available",
-      "candidates": "candidates",
+      "title": "Faktore berechnen",
+      "description": "Berechent déi latent Faktoren aus den Äntwerte vun de Kandidat*innen an de Parteien.",
+      "selectElections": "Wielt d’Wahlen, fir déi d’Faktore berechent solle ginn.",
+      "button": "Faktore berechnen",
+      "buttonLoading": "Faktore gi berechent…",
+      "mayTakeTime": "Dat kann eng Zäit daueren.",
+      "noElections": "Keng Wahlen disponibel",
+      "candidates": "Kandidat*innen",
       "parties": {
-        "some": "and {count} parties",
-        "none": "and no parties"
+        "some": "an {count} Parteien",
+        "none": "a keng Parteien"
       },
-      "haveAnswered": "have answered",
-      "error": "Failed to compute factors"
+      "haveAnswered": "hu geäntwert",
+      "error": "D’Faktore konnten net berechent ginn"
     }
   }
 }

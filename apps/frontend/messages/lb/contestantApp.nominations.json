@@ -1,0 +1,120 @@
+{
+  "contestantApp.nominations": {
+    "add": "Eng Nominatioun derbäisetzen",
+    "constituencies": {
+      "ingress": {
+        "candidate": "Wielt de Walbezierk aus, an deem Dir kandidéiert.",
+        "organization": "Wielt de Walbezierk aus, an deem Är Partei kandidéiert. Fir all Wahl kann ee Walbezierk ausgewielt ginn; wann Är Partei a méi wéi engem kandidéiert, kontaktéiert wgl. de Support."
+      },
+      "noElection": {
+        "candidate": "An dësem Walbezierk fënnt keng Wahl statt, bei där Dir nominéiert kënnt ginn.",
+        "organization": "An dësem Walbezierk fënnt keng Wahl statt, bei där Är Partei nominéiert ka ginn."
+      },
+      "severalKept": "Dir hutt e puer Nominatioune bei dëser Wahl. Si bleiwen, wéi se sinn; hir Detailer kënnt Dir am nächste Schrëtt änneren.",
+      "title": {
+        "candidate": "Wat ass Äre Walbezierk?",
+        "organization": "Wat ass de Walbezierk vun Ärer Partei?"
+      }
+    },
+    "delete": "Läschen",
+    "deleteCancel": "Ofbriechen",
+    "deleteConfirm": "Jo, läschen",
+    "deletePrompt": "Dës Nominatioun läschen? Si gëtt direkt geläscht. Wann Dir se nach eng Kéier derbäisetzt, muss en Administrateur se confirméieren, ier d’Wieler se gesinn.",
+    "deleted": "D’Nominatioun gouf geläscht.",
+    "description": {
+      "candidate": "Dëst sinn d’Walbezierker, an deenen Dir nominéiert sidd. Wa d’Wahllëscht oder d’Wahlsymbol feelen, ginn se automatesch nogereecht, wann d’Kandidatelëschte confirméiert sinn.",
+      "organization": "Dëst sinn d’Walbezierker, an deenen Är Partei nominéiert ass. Wann d’Wahlsymbol feelt, gëtt et méi spéit vum Administrateur nogereecht."
+    },
+    "descriptionEditable": {
+      "candidate": "Dëst sinn Är Nominatiounen. Dir kënnt se änneren an Är Walnummer an Är Lëscht derbäisetzen, bis d’Nominatiounen zougemaach ginn.",
+      "organization": "Dëst sinn d’Nominatioune vun Ärer Partei. Dir kënnt se änneren an hiert Wahlsymbol an hir Allianz derbäisetzen, bis d’Nominatiounen zougemaach ginn."
+    },
+    "details": {
+      "changeSelection": "Auswiel änneren",
+      "confirmedNote": "Dës Nominatioun ass confirméiert. Wann Dir se ännert, muss en Administrateur se nach eng Kéier confirméieren, an d’Wieler*inne gesinn se bis dohin net.",
+      "ingress": "Kontrolléiert d’Detailer vun all Nominatioun. Näischt gëtt gespäichert, éier Dir weidergitt.",
+      "keep": "Dës Nominatioun behalen",
+      "newNote": "Dës Nominatioun ass nei. En Administrateur muss se confirméieren, an d’Wieler*inne gesinn se bis dohin net.",
+      "previousConstituency": "Virdrun: {constituency}",
+      "remove": "Dës Nominatioun ewechhuelen",
+      "removedConfirmedNote": "Dës Nominatioun ass confirméiert a gëtt ewechgeholl, wann Dir weidergitt. Eng nei Nominatioun misst nach eng Kéier confirméiert ginn.",
+      "removedNote": "Dës Nominatioun gëtt ewechgeholl, wann Dir weidergitt.",
+      "symbolInfo": {
+        "candidate": "Fakultativ. Är Nummer um Wahlziedel, wann Dir eng hutt. Maximal 50 Zeechen.",
+        "organization": "Fakultativ. D’Symbol oder d’Nummer vun Ärer Partei um Wahlziedel, wann si eent huet. Maximal 50 Zeechen."
+      },
+      "title": "Detailer vun den Nominatiounen"
+    },
+    "edit": "Änneren",
+    "elections": {
+      "ingress": {
+        "candidate": "Wielt all d’Wahlen aus, bei deenen Dir kandidéiert.",
+        "organization": "Wielt all d’Wahlen aus, bei deenen Är Partei kandidéiert."
+      },
+      "noneSelected": "Wielt op d’mannst eng Wahl aus, fir weiderzegoen.",
+      "title": {
+        "candidate": "Fir wéi eng Wahlen trëtt Dir un?",
+        "organization": "Fir wéi eng Wahlen trëtt Är Partei un?"
+      }
+    },
+    "empty": {
+      "candidate": "Fir Iech gouf nach keng Nominatioun definéiert. Kontaktéiert wgl. de Support, fir eng derbäisetzen ze loossen.",
+      "organization": "Fir Är Partei gouf nach keng Nominatioun definéiert. Kontaktéiert wgl. de Support, fir eng derbäisetzen ze loossen."
+    },
+    "emptyEditable": {
+      "candidate": "Dir hutt nach keng Nominatioun definéiert. Eng Nominatioun seet, bei wéi enger Wahl an a wéi engem Walbezierk Dir kandidéiert.",
+      "organization": "Fir Är Partei gouf nach keng Nominatioun definéiert. Eng Nominatioun seet, bei wéi enger Wahl an a wéi engem Walbezierk si kandidéiert."
+    },
+    "emptyNoElection": {
+      "candidate": "An dëser Applikatioun gëtt et keng Wahl, bei där ee*eng Kandidat*in nominéiert ka ginn. Wann Dir mengt, datt dat e Feeler ass, kontaktéiert wgl. de Support.",
+      "organization": "An dëser Applikatioun gëtt et keng Wahl, bei där eng Partei nominéiert ka ginn. Wann Dir mengt, datt dat e Feeler ass, kontaktéiert wgl. de Support."
+    },
+    "error": {
+      "changed": "Är Nominatiounen hu sech geännert, zënter Dir dës Säit opgemaach hutt. Si ginn hei esou ugewisen, wéi se elo sinn; kontrolléiert se wgl. a probéiert nach eng Kéier.",
+      "checkCards": "E puer Nominatioune brauchen Är Opmierksamkeet. Kontrolléiert déi markéiert Felder.",
+      "duplicateParent": "Zwou Nominatioune bei der selwechter Wahl an am selwechte Walbezierk kënnen net déi selwecht Lëscht hunn.",
+      "hasCandidates": "Eng Nominatioun konnt net ewechgeholl oder verréckelt ginn, well Kandidat*innen drënner opgelëscht sinn. Kontaktéiert wgl. de Support.",
+      "otherRequired": {
+        "candidate": "Gitt den Numm vun der Partei an.",
+        "organization": "Gitt den Numm vun der Allianz an."
+      },
+      "parentRequired": "Wielt eng vun den Optiounen aus, fir weiderzegoen.",
+      "saveFailed": "Et deet eis leed, et gouf e Problem beim Späichere vun Ären Nominatiounen. Probéiert nach eng Kéier a kontaktéiert de Support, wann de Problem bestoe bleift.",
+      "tooManyPending": "Dir hutt déi maximal Zuel vun Nominatiounen derbäigesat, déi op Confirmatioun waarden. En Administrateur muss der e puer confirméieren, éier Dir weider derbäisetze kënnt."
+    },
+    "parent": {
+      "none": {
+        "candidate": "Onofhängeg / keng Partei",
+        "organization": "Keng"
+      },
+      "noOptions": {
+        "candidate": "Et kann nach keng Partei ausgewielt ginn.",
+        "organization": "Et kann nach keng Allianz ausgewielt ginn."
+      },
+      "notNominatedHint": {
+        "candidate": "Hei nach net nominéiert. Wann Dir se auswielt, gëtt och d’Nominatioun vun der Partei derbäigesat, déi en Administrateur confirméiere muss.",
+        "organization": "Hei nach net nominéiert. Wann Dir se auswielt, gëtt och d’Nominatioun vun der Allianz derbäigesat, déi en Administrateur confirméiere muss."
+      },
+      "other": {
+        "candidate": "Aner",
+        "organization": "Aner"
+      },
+      "otherInfo": {
+        "candidate": "Gitt den Numm vun Ärer Partei an, wann se net an der Lëscht steet. En Administrateur wäert e kontrolléieren.",
+        "organization": "Gitt den Numm vun der Allianz an, wann se net an der Lëscht steet. En Administrateur wäert e kontrolléieren."
+      },
+      "otherLabel": {
+        "candidate": "Numm vun der Partei",
+        "organization": "Numm vun der Allianz"
+      },
+      "unlisted": "Kann net méi ausgewielt ginn. Dir kënnt dëse Choix behalen oder en aneren treffen."
+    },
+    "requestedParent": "Vun Iech ugefrot. Dësen Numm ass nach net an der Applikatioun; en Administrateur wäert e kontrolléieren.",
+    "state": {
+      "label": "Status",
+      "pending": "Waart op Confirmatioun",
+      "pendingInfo": "Dës Nominatioun gouf nach net confirméiert, dofir gesinn d’Wieler*inne se net."
+    },
+    "title": "Nominatioune"
+  }
+}

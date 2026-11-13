@@ -1,0 +1,59 @@
+{
+  "contestantApp.register": {
+    "code": "Aschreiwungscode",
+    "codeFormat": "De Code gesäit esou aus: ABCD-EFGH-JKMN. Grouss a kleng Buschtawe gi gläich behandelt.",
+    "codeRequired": "Gitt Ären Aschreiwungscode an.",
+    "codeUnconfirmed": "Mir konnten Ären Aschreiwungscode net bestätegen.",
+    "didYouAlreadyRegister": "Sidd Dir scho registréiert?",
+    "emailEntry": {
+      "ingress": "Gitt d’E-Mail-Adress an, déi Dir benotze wëllt. Mir schécken en Umelllink dohin, an et ass d’Adress, mat där Dir Iech an Zukunft umellt.",
+      "mismatch": "D’E-Mail-Adresse stëmmen net iwwereneen.",
+      "title": "Gitt Är E-Mail-Adress an"
+    },
+    "emailInfo": "Gitt Är E-Mail-Adress an, a mir schécken Iech e Link, mat deem Dir Iech umelle kënnt.",
+    "enterCode": "Gitt de Code an, deen Dir kritt hutt.",
+    "heroEmoji": "🖋️",
+    "identityProvider": {
+      "intro": {
+        "both": "Identifizéiert Iech mat engem Bank ID, fir Iech als Kandidat*in anzeschreiwen oder fir eng Partei anzeschreiwen.",
+        "candidate": "Fir Iech als Kandidat*in anzeschreiwen, identifizéiert Iech mat engem Bank ID. Äre Kandidateprofil gëtt mam Numm aus Ärer Identifikatioun erstallt.",
+        "organization": "Fir eng Partei anzeschreiwen, identifizéiert Iech mat engem Bank ID a gitt duerno den Numm vun der Partei an. En Administrateur confirméiert d’Partei, ier se de Wieler gewise gëtt."
+      },
+      "redirectInfo": "Dir gitt op de Bank-ID-Service weidergeleet. Wann Dir Iech identifizéiert hutt, kommt Dir zréck an dës Applikatioun.",
+      "types": {
+        "candidate": "Mech selwer als Kandidat*in",
+        "legend": "Wat wëllt Dir aschreiwen?",
+        "organization": "Eng Partei oder eng Wielervereenegung",
+        "required": "Wielt, wat Dir aschreiwe wëllt."
+      }
+    },
+    "modes": {
+      "code": "Mat engem Aschreiwungscode",
+      "email": "Mat menger E-Mail-Adress",
+      "identityProvider": "Mat engem Bank ID",
+      "legend": "Wéi wëllt Dir Iech aschreiwen?",
+      "required": "Wielt, wéi Dir Iech aschreiwe wëllt."
+    },
+    "passwordValidation": {
+      "commonPatterns": "Enthält heefeg Sequenzen oder Musteren",
+      "length": "Op d’mannst {minPasswordLength} Zeechen",
+      "lowercase": "Kleng Buschtaf",
+      "number": "Zuel",
+      "repetition": "Enthält Widderhuelungen",
+      "symbol": "Symbol (z. B. !?%#€)",
+      "uppercase": "Grouss Buschtaf",
+      "username": "Benotzt net Ären Numm am Passwuert"
+    },
+    "register": "Aschreiwen",
+    "registeredNotice": {
+      "content": "Loggt Iech éischter mat Ärer E-Mail an Ärem Passwuert an oder kuckt an Ärer E-Mail no dem Confirmatiounslink.",
+      "title": "Et gesäit esou aus, wéi wann Dir scho registréiert sidd"
+    },
+    "signIn": {
+      "failed": "Mir konnten Iech mat dësem Passwuert net umellen. Probéiert nach eng Kéier oder benotzt e Link hei drënner, fir e Passwuert festzeleeën.",
+      "ingress": "Et gesäit esou aus, wéi wann Dir scho registréiert wiert. Gitt Äert Passwuert an, fir Iech unzemellen.",
+      "title": "Mellt Iech mat Ärem Passwuert un"
+    },
+    "title": "Aschreiwung"
+  }
+}
