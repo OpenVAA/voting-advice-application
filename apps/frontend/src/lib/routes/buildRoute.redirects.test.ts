@@ -17,7 +17,7 @@ import { safeRedirectTarget } from './loginRedirectTarget';
  *
  * `buildRoute` finishes by handing its result to Paraglide's `localizeHref`, which adds the locale prefix. The unit harness aliases the Paraglide runtime to a stub whose `localizeHref` is the identity function, because the real module is generated at build time and is not in the repository. Every expectation below is therefore the string `buildRoute` itself assembles, BEFORE localization.
  *
- * That boundary is deliberate and is not a gap: the prefixing is Paraglide's behaviour, not this module's, and it is exercised by the browser suite. Measured against the generated runtime, the prefix is added for every non-base locale and omitted for the base locale, which is why the localized candidate home is `/candidate` rather than `/en/candidate` in English. The protected candidate layout has always built its login redirect this same way, so the two now agree.
+ * That boundary is deliberate and is not a gap: the prefixing is Paraglide's behaviour, not this module's, and it is exercised by the browser suite. Measured against the generated runtime, the prefix is added for every non-base locale and omitted for the base locale, which is why the localized candidate home is `/contestant` rather than `/en/contestant` in English. The protected candidate layout has always built its login redirect this same way, so the two now agree.
  */
 
 /**

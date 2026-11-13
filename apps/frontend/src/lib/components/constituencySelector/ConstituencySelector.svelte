@@ -9,7 +9,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
 - `disableSorting`: If `true`, the `Constituency`s are not ordered alphabetically. Default: `false`
 - `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. Default: `false`
 - `selected`: Bindable value for the `Id`s of the selected `Constituency`s organized by `Election`.
-- `useSingleGroup`: If specified, only this group is offered for selection and the `Constituency`s for the `Election`s are implied from this one. Only meaningful when there are multiple `Election`s whose `ConstituencyGroup` hierarchies overlap only partially. To be used when the `elections.startFromConstituencyGroup` setting is set.
+- `useSingleGroup`: If specified, only this group is offered for selection. With several `Election`s the `Constituency` of each is implied from the one picked; with a single `Election` the picked `Constituency` is passed on as it is, whether or not that election is held in it. Only meaningful when there are multiple `Election`s whose `ConstituencyGroup` hierarchies overlap only partially. To be used when the `elections.startFromConstituencyGroup` setting is set.
 - `selectionComplete`: A utility bindable value which is `true` when a selection has been made for each `Election` or for the single group if `useSingleGroup` is set.
 - `onChange`: Callback triggered when the selection changes.
 - Any valid attributes of a `<div>` element

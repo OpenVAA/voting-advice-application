@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 // Own-enumerability spread regression guard for `AppContextProvider`.
 //
 // appContext is spread by ALL THREE downstream orchestrators:
-//   candidateContext.svelte.ts   ...appContext adminContext.svelte.ts       ...appContext voterContext.svelte.ts       ...appContext
+//   contestantContext.svelte.ts   ...appContext adminContext.svelte.ts       ...appContext voterContext.svelte.ts       ...appContext
 //
 // `{ ...instance }` copies only OWN-ENUMERABLE properties. Svelte 5 compiles bare `$state`/`$derived` class fields AND prototype `get` accessors to non-own members, which object spread silently DROPS. This test proves every AppContext member survives `{ ...new AppContextProvider() }` as an own-enumerable property (asserted via `Object.keys`, NOT `in` — `in` would also pass for prototype members, defeating the whole point).
 //
@@ -41,9 +41,9 @@ const { stubs, dataRootHolder, initialDataRoot } = vi.hoisted(() => {
         },
         setDataRoot: (_v: unknown) => {}
       },
-      // tracking producer: own-enumerable handle objects + arrow-field methods.
+      // tracking producer: own-enumerable handle objects + arrow-field methods, the producer's whole surface.
       //
-      // Only the SIX members appContext's selective forward actually takes. The producer's two internal-only handle members — the persistent analytics session id and the tracking-enabled gate — are deliberately absent from this fixture: offering members the context is not allowed to forward would let a re-widened forward pass this guard unnoticed.
+      // The stand-in records what appContext does with it: `startEvent` / `resetAllEvents` / `submitAllEvents` keep a stand-in buffer and a call log, and `gate` reads the projection handle appContext passes in, so a case can check the order of the consent writes and the projection fallback. `surveySessionId` is on the stand-in because the producer has it; appContext must withhold it, which the forward case below asserts.
       tracking: {
         sendTrackingEvent: { current: () => {}, set: (_v: unknown) => {} },
         startPageview: (_href: string) => {},

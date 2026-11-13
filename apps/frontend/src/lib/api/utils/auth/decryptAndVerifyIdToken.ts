@@ -1,7 +1,7 @@
 /**
  * The single decrypt -> verify core for OIDC ID tokens.
  *
- * Both identity providers (`providers/idura.ts`, `providers/signicat.ts`) call this from their `getIdTokenClaims` method; the per-provider claim mapping stays in the providers, each of which declares its own (`SIGNICAT_FTN_AUTH_CONFIG` in `providers/signicat.ts`, `IDURA_FTN_AUTH_CONFIG` in `providers/idura.ts`). This module owns only the parts that are genuinely identical: the lazy env parse, the JWE decrypt, the JWT verify, and the discriminating coded failures -- which are declared once in `./oidcFailure.ts` and referenced from here as `OIDC_FAILURE.*` rather than spelled inline, so the thrower and the two routes that log them cannot drift.
+ * Both identity providers (`providers/idura.ts`, `providers/signicat.ts`) call this from their `getIdTokenClaims` method; the per-provider claim mapping stays in the providers, each of which declares its own (`SIGNICAT_FTN_AUTH_CONFIG` in `providers/signicat.ts`, `IDURA_FTN_AUTH_CONFIG` in `providers/idura.ts`). This module owns only the parts that are genuinely identical: the lazy env parse, the JWE decrypt, the JWT verify, and the discriminating coded failures -- which are declared once in `./oidcFailure.ts` and referenced from here as `OIDC_FAILURE.*` rather than spelled inline, so the thrower and the route that logs them cannot drift.
  *
  * The failure classes are NOT a closed set, and it matters that this is said plainly: jose's own coded errors flow through these throw sites unchanged, because each provider's catch arm forwards `e.code` for any `Error` carrying one. `./oidcFailure.ts` maps both provenances -- ours and jose's -- to a stage and an operator hint.
  *

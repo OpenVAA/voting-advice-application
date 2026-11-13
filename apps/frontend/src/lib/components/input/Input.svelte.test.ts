@@ -8,7 +8,7 @@
  *
  * `mountSubject` below is the ONLY seam that moves as the component is absorbed. Task 1 points it at the standalone component; the extraction re-points it at `Input` with the new multi-text kind. Every `it()` body stays byte-identical across that edit — that is the whole point of routing the mount through one helper.
  *
- * Assertions are on the emitted value observed through the change callback, never on internal state: the emitted value is what the candidate app persists, and a silent change to its shape is the threat this file exists to catch.
+ * Assertions are on the emitted value observed through the change callback, never on internal state: the emitted value is what the contestant app persists, and a silent change to its shape is the threat this file exists to catch.
  */
 
 import { flushSync, mount, unmount } from 'svelte';

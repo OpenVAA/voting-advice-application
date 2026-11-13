@@ -10,7 +10,7 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
 
 ### Settings
 
-- `headerStyle`: affects the background color of the header.
+- `headerStyle`: affects the background color of the header, and the size and position of the image a page sets for it. The image is painted below the top bar, so it never lies under the logo or the menu button.
 -->
 
 <script lang="ts">
