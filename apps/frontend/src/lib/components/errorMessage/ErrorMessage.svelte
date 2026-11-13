@@ -52,7 +52,7 @@
 
 <div data-testid="error-message" {...concatClass(restProps, classes)}>
   {#if inline}
-    <span class="text-error text-center">{emoji} {effectiveMessage}</span>
+    <span class="text-error text-center"><span aria-hidden="true">{emoji}</span> {effectiveMessage}</span>
   {:else}
     {#if emoji}
       <figure role="presentation" class="my-lg">

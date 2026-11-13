@@ -1,6 +1,6 @@
 import { configureLogger } from '@openvaa/app-shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ADMIN_GRANTS, CANDIDATE_GRANTS } from '$lib/auth/roles';
+import { ADMIN_GRANTS, CONTESTANT_GRANTS } from '$lib/auth/roles';
 import { constants } from '$lib/utils/constants';
 import { requireAdminAction } from './requireAdminAction';
 import { requireAdminIdentity } from './requireAdminIdentity';
@@ -44,13 +44,16 @@ function accessTokenFor(shapes: ReadonlyArray<GrantShape>): string {
     JSON.stringify({
       grants: shapes.map((shape) => ({
         scope: shape.scope,
-        target_type: shape.scope === 'entity' ? 'candidate' : null,
+        target_type: shape.scope === 'entity' ? (shape.target_type ?? 'candidate') : null,
         target_id: shape.scope === 'global' ? null : 'proj-1',
         role: shape.role
       }))
     })
   )}.signature`;
 }
+
+/** A stand-in for the client's `rpc`, which a case passes to record the `user_can` calls made on it. */
+type RpcStub = (name: string, args?: unknown) => Promise<{ data: unknown; error: unknown }>;
 
 /**
  * Build the `locals` a server entry point receives, over a client stub whose two auth calls are set independently.
@@ -64,15 +67,24 @@ function localsWith({
   session,
   verifiedUser,
   userCan = { data: true, error: null },
+  passwordFact = { data: { entities: [], password_set: true, pending_email_taken: false }, error: null },
   rpc
 }: {
   session: { user: Record<string, unknown>; access_token: string; expires_at: number } | null;
   verifiedUser: Record<string, unknown> | null;
   userCan?: { data: unknown; error: unknown };
-  rpc?: ReturnType<typeof vi.fn>;
+  passwordFact?: { data: unknown; error: unknown };
+  rpc?: RpcStub;
 }): App.Locals {
-  // Only `auth` and `rpc` are stubbed: that is all the decision reaches, and the adapter-boundary guard bans naming the client's own type outside `src/lib/api/adapters/**`, so the object stays structural and is cast once, at the `App.Locals` boundary below.
+  // The one table read the identity read makes: the caller's terms-of-use acceptance. It answers with no row, the answer for a user who has not accepted, and the decision does not depend on it.
+  const acceptanceRead = {
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    maybeSingle: vi.fn(async () => ({ data: null, error: null }))
+  };
+  // Only `auth`, `rpc` and that one table read are stubbed: that is all the decision reaches, and the adapter-boundary guard bans naming the client's own type outside `src/lib/api/adapters/**`, so the object stays structural and is cast once, at the `App.Locals` boundary below.
   const supabase = {
+    from: vi.fn(() => acceptanceRead),
     auth: {
       getSession: vi.fn(async () => ({ data: { session }, error: null })),
       getUser: vi.fn(async () =>
@@ -81,8 +93,11 @@ function localsWith({
           : { data: { user: null }, error: { message: 'invalid JWT: unable to parse or verify signature' } }
       )
     },
-    // What the database's `user_can` answers for this caller on the deployment's project. Defaults to `true` so the cases about the SESSION and the ROLE keep measuring those; the cases about the project set it explicitly.
-    rpc: rpc ?? vi.fn(async () => userCan)
+    // The two RPCs the decision reaches, answered by name. `get_user_entities` is the identity read's own call, for the caller's password fact; it defaults to the answer for a user who has a password. Every other name is the database's `user_can` for this caller on the deployment's project, which defaults to `true` so the cases about the SESSION and the ROLE keep measuring those; the cases about the project set it explicitly, and a case that passes `rpc` records those calls on it.
+    rpc: vi.fn(async (name: string, args?: unknown) => {
+      if (name === 'get_user_entities') return passwordFact;
+      return rpc ? rpc(name, args) : userCan;
+    })
   };
 
   return {
@@ -109,18 +124,21 @@ function verifiedLocals({
   grants,
   userId = 'user-1',
   userCan,
+  passwordFact,
   rpc
 }: {
   grants: ReadonlyArray<GrantShape>;
   userId?: string;
   userCan?: { data: unknown; error: unknown };
-  rpc?: ReturnType<typeof vi.fn>;
+  passwordFact?: { data: unknown; error: unknown };
+  rpc?: RpcStub;
 }): App.Locals {
   const user = { id: userId, email: `${userId}@example.com`, user_metadata: {} };
   return localsWith({
     session: { user, access_token: accessTokenFor(grants), expires_at: Math.floor(Date.now() / 1000) + 3600 },
     verifiedUser: user,
     userCan,
+    passwordFact,
     rpc
   });
 }
@@ -182,7 +200,7 @@ describe('requireAdminIdentity — the one decision, in its three shapes', () =>
   it('yields the forbidden verdict for a verified identity holding a non-admin grant shape', async () => {
     const verdict = await requireAdminIdentity({
       fetch: globalThis.fetch,
-      locals: verifiedLocals({ grants: [CANDIDATE_GRANTS[0]] })
+      locals: verifiedLocals({ grants: [CONTESTANT_GRANTS[0]] })
     });
 
     expect(verdict).toEqual({ outcome: 'forbidden' });
@@ -214,6 +232,38 @@ describe('requireAdminIdentity — the one decision, in its three shapes', () =>
 
     expect(verdict).toEqual({ outcome: 'allowed' });
   });
+
+  // The coarse role tests the admin shapes first, so an administrator who also edits an entity is still read as one. The entity grant comes first in each token, so the verdict cannot follow from the order of the claims.
+  it.each(CONTESTANT_GRANTS.map((shape) => [shape.target_type, shape] as const))(
+    'yields the allowed verdict for a verified admin who also holds an editor grant on a %s',
+    async (_targetType, entityEditor) => {
+      const verdict = await requireAdminIdentity({
+        fetch: globalThis.fetch,
+        locals: verifiedLocals({ grants: [entityEditor, ADMIN_GRANTS[2]] })
+      });
+
+      expect(verdict).toEqual({ outcome: 'allowed' });
+    }
+  );
+
+  // The identity read makes one more call than the session and the token: the caller's password fact. When that read fails or answers no boolean, the identity read fails whole, so there is no user to decide on.
+  it.each([
+    ['fails', { data: null, error: { message: 'boom' } }],
+    ['answers no boolean', { data: { entities: [] }, error: null }]
+  ])(
+    'yields the forbidden verdict for a verified admin when the read of the password fact %s',
+    async (_label, passwordFact) => {
+      const rpc = vi.fn(async () => ({ data: true, error: null }));
+      const verdict = await requireAdminIdentity({
+        fetch: globalThis.fetch,
+        locals: verifiedLocals({ grants: [ADMIN_GRANTS[0]], passwordFact, rpc })
+      });
+
+      expect(verdict).toEqual({ outcome: 'forbidden' });
+      // The role is never reached, so the project is never asked about.
+      expect(rpc).not.toHaveBeenCalled();
+    }
+  );
 
   it('yields the forbidden verdict for a verified admin of ANOTHER project -- user_can answers false for this deployment', async () => {
     const verdict = await requireAdminIdentity({
@@ -252,7 +302,7 @@ describe('requireAdminIdentity — the one decision, in its three shapes', () =>
     });
     const candidate = requireAdminIdentity({
       fetch: globalThis.fetch,
-      locals: verifiedLocals({ grants: [CANDIDATE_GRANTS[0]], userId: 'cand-1' })
+      locals: verifiedLocals({ grants: [CONTESTANT_GRANTS[0]], userId: 'cand-1' })
     });
 
     expect(await Promise.all([admin, candidate])).toEqual([{ outcome: 'allowed' }, { outcome: 'forbidden' }]);
@@ -273,7 +323,7 @@ describe('requireVerifiedAdmin — the endpoint presentation, unchanged in name,
   it('still answers a verified non-admin with 403 { error: Forbidden }', async () => {
     const denied = await requireVerifiedAdmin({
       fetch: globalThis.fetch,
-      locals: verifiedLocals({ grants: [CANDIDATE_GRANTS[0]] })
+      locals: verifiedLocals({ grants: [CONTESTANT_GRANTS[0]] })
     });
 
     expect(denied?.status).toBe(403);
@@ -304,7 +354,7 @@ describe('requireAdminAction — the form-action presentation, differing from it
   it('refuses a verified non-admin with a 403 action failure naming AUTHORIZATION', async () => {
     const denied = await requireAdminAction({
       fetch: globalThis.fetch,
-      locals: verifiedLocals({ grants: [CANDIDATE_GRANTS[0]] })
+      locals: verifiedLocals({ grants: [CONTESTANT_GRANTS[0]] })
     });
 
     expect(denied?.status).toBe(403);
@@ -356,7 +406,7 @@ describe('the two admin form actions refuse an authenticated non-admin THEMSELVE
 
   it('argument-condensation refuses a verified non-admin with 403 and never reaches the job-start endpoint', async () => {
     const { actions } = await import('../../../routes/admin/(protected)/argument-condensation/+page.server');
-    const { result, fetch } = await post(actions.default, verifiedLocals({ grants: [CANDIDATE_GRANTS[0]] }), {
+    const { result, fetch } = await post(actions.default, verifiedLocals({ grants: [CONTESTANT_GRANTS[0]] }), {
       electionId: 'election-1',
       questionIds: 'q1'
     });
@@ -369,7 +419,7 @@ describe('the two admin form actions refuse an authenticated non-admin THEMSELVE
 
   it('question-info refuses a verified non-admin with 403 and never reaches the job-start endpoint', async () => {
     const { actions } = await import('../../../routes/admin/(protected)/question-info/+page.server');
-    const { result, fetch } = await post(actions.default, verifiedLocals({ grants: [CANDIDATE_GRANTS[0]] }), {
+    const { result, fetch } = await post(actions.default, verifiedLocals({ grants: [CONTESTANT_GRANTS[0]] }), {
       electionId: 'election-1',
       questionIds: 'q1',
       operations: 'terms'

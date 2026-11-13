@@ -78,6 +78,87 @@ function notHidden(q: FakeQuestion): boolean {
 }
 
 describe('rollUpQuestionCategories', () => {
+  test.each([
+    [ENTITY_TYPE.Candidate, ['o-candidate', 'o-any'], ['i-candidate']],
+    [ENTITY_TYPE.Organization, ['o-organization', 'o-any'], ['i-organization']]
+  ] as const)(
+    'returns a question addressed to one entity type for the %s scope alone, and an unscoped question for both',
+    (entityType, expectedOpinion, expectedInfo) => {
+      /** A category whose lookup answers by the scope it is handed, as the data model's does. */
+      function scopedCategory({
+        id,
+        type,
+        questions
+      }: {
+        id: string;
+        type: QuestionCategoryType;
+        questions: Array<FakeQuestion & { addressedTo?: string }>;
+      }): FakeCategory {
+        return {
+          id,
+          type,
+          appliesTo: () => true,
+          getApplicableQuestions: (targets) =>
+            questions.filter((q) => !q.addressedTo || !targets.entityType || q.addressedTo === targets.entityType)
+        };
+      }
+      const opinion = scopedCategory({
+        id: 'opinion-1',
+        type: QUESTION_CATEGORY_TYPE.Opinion,
+        questions: [
+          { ...question({ id: 'o-candidate' }), addressedTo: ENTITY_TYPE.Candidate },
+          { ...question({ id: 'o-organization' }), addressedTo: ENTITY_TYPE.Organization },
+          question({ id: 'o-any' })
+        ]
+      });
+      const info = scopedCategory({
+        id: 'info-1',
+        type: QUESTION_CATEGORY_TYPE.Info,
+        questions: [
+          { ...question({ id: 'i-candidate' }), addressedTo: ENTITY_TYPE.Candidate },
+          { ...question({ id: 'i-organization' }), addressedTo: ENTITY_TYPE.Organization }
+        ]
+      });
+
+      const result = rollUpQuestionCategories({
+        dataRoot: { questionCategories: [opinion, info] },
+        elections: [],
+        constituencies: [],
+        entityType
+      });
+
+      expect(result.opinionQuestions.map((q) => q.id)).toEqual(expectedOpinion);
+      expect(result.infoQuestions.map((q) => q.id)).toEqual(expectedInfo);
+    }
+  );
+
+  test('drops a category that holds no question for the scope, and keeps it for the scope it holds one for', () => {
+    const log = newCallLog();
+    const candidatesOnly: FakeCategory = {
+      ...category({ id: 'opinion-1', type: QUESTION_CATEGORY_TYPE.Opinion, log }),
+      getApplicableQuestions: (targets) =>
+        targets.entityType === ENTITY_TYPE.Candidate ? [question({ id: 'o-candidate' })] : []
+    };
+
+    const forOrganization = rollUpQuestionCategories({
+      dataRoot: { questionCategories: [candidatesOnly] },
+      elections: [],
+      constituencies: [],
+      entityType: ENTITY_TYPE.Organization
+    });
+    const forCandidate = rollUpQuestionCategories({
+      dataRoot: { questionCategories: [candidatesOnly] },
+      elections: [],
+      constituencies: [],
+      entityType: ENTITY_TYPE.Candidate
+    });
+
+    expect(forOrganization.opinionCategories).toEqual([]);
+    expect(forOrganization.opinionQuestions).toEqual([]);
+    expect(forCandidate.opinionCategories).toEqual([candidatesOnly]);
+    expect(forCandidate.opinionQuestions.map((q) => q.id)).toEqual(['o-candidate']);
+  });
+
   test('splits every applicable category into its informational and opinion groups', () => {
     const log = newCallLog();
     const info = category({

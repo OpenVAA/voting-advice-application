@@ -220,6 +220,36 @@ describe('Idura provider', () => {
       expect(payload.state).toBe(result.state);
       expect(payload.nonce).toBe(result.nonce);
     });
+
+    it('asks the provider for the given locale as ui_locales in the signed request object', async () => {
+      const result = await iduraProvider.getAuthorizeUrl({
+        redirectUri: 'http://localhost:5173/callback',
+        locale: 'fi'
+      });
+
+      const payload = jose.decodeJwt(new URL(result.authorizeUrl).searchParams.get('request')!);
+      expect(payload.ui_locales).toBe('fi');
+    });
+
+    it('sends the language subtag alone of a locale with a region', async () => {
+      const result = await iduraProvider.getAuthorizeUrl({
+        redirectUri: 'http://localhost:5173/callback',
+        locale: 'sv-FI'
+      });
+
+      const payload = jose.decodeJwt(new URL(result.authorizeUrl).searchParams.get('request')!);
+      expect(payload.ui_locales).toBe('sv');
+    });
+
+    it('sends no ui_locales when no locale is given', async () => {
+      const result = await iduraProvider.getAuthorizeUrl({
+        redirectUri: 'http://localhost:5173/callback'
+      });
+
+      const url = new URL(result.authorizeUrl);
+      expect(Object.keys(jose.decodeJwt(url.searchParams.get('request')!))).not.toContain('ui_locales');
+      expect(url.searchParams.has('ui_locales')).toBe(false);
+    });
   });
 
   describe('getIdTokenClaims', () => {

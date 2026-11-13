@@ -1,5 +1,6 @@
 import { staticSettings } from '@openvaa/app-shared';
 import { adjustContrast } from './adjustContrast';
+import { HEX_COLOR } from './toHexColor';
 import type { Colors } from '@openvaa/data';
 
 const bg = staticSettings.colors?.light?.['base-300'] ?? 'd1ebee';
@@ -12,17 +13,21 @@ const bgDark = staticSettings.colors?.dark?.['base-300'] ?? '1f2324';
  * @returns An object with the adjusted colors
  */
 export function ensureColors({ normal, dark }: Partial<Colors>): WithRequired<Colors, 'dark'> {
-  if (normal) {
-    normal = adjustContrast(normal, bg) ?? normal;
-  } else {
-    normal = '';
-  }
-  if (dark) {
-    dark = adjustContrast(dark, bgDark) ?? dark;
-  } else if (normal) {
-    dark = adjustContrast(normal, bgDark) ?? '';
-  } else {
-    dark = '';
-  }
-  return { normal, dark };
+  const ensuredNormal = adjustedOrNothing(normal, bg);
+  return {
+    normal: ensuredNormal,
+    dark: adjustedOrNothing(dark, bgDark) || adjustedOrNothing(ensuredNormal, bgDark)
+  };
+}
+
+/**
+ * A colour adjusted for contrast on a background.
+ * @param color - The colour as stored, of whatever type the stored value turned out to have.
+ * @param background - The background the colour is shown on.
+ * @returns The adjusted colour as a hex colour, or the empty string when the value is not a colour the parser reads.
+ */
+function adjustedOrNothing(color: unknown, background: string): string {
+  if (typeof color !== 'string' || color === '') return '';
+  const adjusted = adjustContrast(color, background);
+  return adjusted !== undefined && HEX_COLOR.test(adjusted) ? adjusted : '';
 }

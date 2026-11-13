@@ -52,7 +52,7 @@
         <h3>{text}</h3>
       </HeadingGroup>
 
-      {#if appType.current === 'candidate'}
+      {#if appType.current === 'contestant'}
         {#if answer == null}
           <div class="small-label mb-16 text-center">
             {t('questions.answers.entityHasntAnswered', { entity: shortName })}

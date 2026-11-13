@@ -1,8 +1,9 @@
 import { StoredAnswersSchema, StoredImageSchema } from '@openvaa/app-shared';
+import { z } from 'zod';
 import { parseAbsent, parseMalformed, parseOk, parseWithPartialPreserve } from './parseOutcome';
 import { parseStoredImage } from './storageUrl';
-import type { StoredAnswers, StoredImage } from '@openvaa/app-shared';
-import type { Image } from '@openvaa/data';
+import type { LocalizedString, StoredAnswers, StoredImage } from '@openvaa/app-shared';
+import type { Colors, Image } from '@openvaa/data';
 import type { Json } from '@openvaa/supabase-types';
 import type { ParseOutcome, ParseSource } from './parseOutcome.type';
 
@@ -21,6 +22,33 @@ const IMAGE_PARSE_FAILURE_MESSAGE = 'A stored image did not match its schema.';
  * Same contract as {@link IMAGE_PARSE_FAILURE_MESSAGE}: a constant event name, no interpolation, and no claim that anything was dropped — under **A2** the offending question ids are removed and the rest of the blob survives.
  */
 const ANSWERS_PARSE_FAILURE_MESSAGE = 'Stored answers did not match their schema.';
+
+/**
+ * The event name a localized-string parse failure is reported under. A constant, never an interpolation, under the same contract as {@link IMAGE_PARSE_FAILURE_MESSAGE}.
+ */
+const LOCALIZED_STRING_PARSE_FAILURE_MESSAGE = 'A stored localized string did not match its schema.';
+
+/**
+ * The event name a colour parse failure is reported under. A constant, never an interpolation, under the same contract as {@link IMAGE_PARSE_FAILURE_MESSAGE}.
+ */
+const COLOR_PARSE_FAILURE_MESSAGE = 'A stored colour did not match its schema.';
+
+/**
+ * The stored shape of a localized string: an object holding one text for each locale.
+ */
+const StoredLocalizedStringSchema = z.record(z.string(), z.string());
+
+/**
+ * A hex colour as the database stores one: `#` followed by three or six hexadecimal digits, in either letter case, and nothing before or after.
+ */
+export const STORED_HEX_COLOR = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
+
+const HexColorSchema = z.string().regex(STORED_HEX_COLOR);
+
+/**
+ * The stored shape of an entity's colour: a hex colour for the default theme and one for the dark theme, each absent, a JSON null or a hex colour, as the database's `validate_entity_color` accepts them.
+ */
+const StoredColorSchema = z.object({ normal: HexColorSchema.nullish(), dark: HexColorSchema.nullish() });
 
 /**
  * Validate an `image` JSONB value and derive the application `Image` from it.
@@ -84,6 +112,54 @@ export function parseAnswersColumn(stored: Json | undefined, source: ParseSource
 }
 
 /**
+ * Validate a JSONB value that holds a localized string, such as an entity's `name` or `short_name`, into its stored shape: one text for each locale.
+ *
+ * The same three states as {@link parseImageColumn}: `absent` for a `null`/`undefined` column and no record; `ok` for a value that validated; `malformed` otherwise, with exactly one record at `error` naming the column and the row and never the value. The schema is a record, so a zod issue's first path element is a locale: partial preserve drops the locales whose entry is not text and keeps the rest, while a value that is not an object has nothing to keep.
+ *
+ * It never throws.
+ * @param stored - The unvalidated JSONB value read from the column.
+ * @param source - The column and row the value came from, for the failure record.
+ * @returns The three-state parse outcome carrying the localized string.
+ */
+export function parseLocalizedStringColumn(
+  stored: Json | undefined,
+  source: ParseSource
+): ParseOutcome<LocalizedString> {
+  return parseWithPartialPreserve<LocalizedString>(
+    StoredLocalizedStringSchema,
+    stored,
+    source,
+    LOCALIZED_STRING_PARSE_FAILURE_MESSAGE
+  );
+}
+
+/**
+ * Validate a `color` JSONB value into the application's `Colors`.
+ *
+ * The same three states as {@link parseImageColumn}. A colour for the default theme is what makes a value a colour: a stored object that has none, as the database allows (an empty object, a dark-theme colour alone, a JSON null under `normal`), is `absent` and emits no record. A value whose only defect is its `dark` member keeps its `normal`; a value whose `normal` is no colour is `malformed` with nothing preserved.
+ *
+ * It never throws.
+ * @param stored - The unvalidated JSONB value read from the column.
+ * @param source - The column and row the value came from, for the failure record.
+ * @returns The three-state parse outcome carrying the colours.
+ */
+export function parseColorColumn(stored: Json | undefined, source: ParseSource): ParseOutcome<Colors> {
+  const outcome = parseWithPartialPreserve<z.infer<typeof StoredColorSchema>>(
+    StoredColorSchema,
+    stored,
+    source,
+    COLOR_PARSE_FAILURE_MESSAGE
+  );
+  const normal = outcome.value?.normal;
+  const colors: Colors | undefined =
+    typeof normal === 'string'
+      ? { normal, ...(outcome.value?.dark !== undefined && { dark: outcome.value.dark }) }
+      : undefined;
+  if (outcome.status === 'malformed') return parseMalformed(outcome.issues, colors);
+  return colors ? parseOk(colors) : parseAbsent();
+}
+
+/**
  * Narrow an image parse outcome to what the application data model can hold.
  *
  * `absent` and `malformed` both yield nothing HERE, and that is a deliberate LOCAL decision rather than a lost distinction. `@openvaa/data`'s `*Data.image` field is `Image | undefined` and has no third state to carry, so the honest posture at these sites is the same rendering, reached deliberately.
@@ -109,4 +185,26 @@ export function imageOf(outcome: ParseOutcome<Image>): Image | undefined {
  */
 export function answersOf(outcome: ParseOutcome<StoredAnswers>): StoredAnswers | undefined {
   return outcome.value;
+}
+
+/**
+ * Narrow a localized-string parse outcome to what the consumer can hold: the validated value, or `null` for an absent or malformed column.
+ *
+ * Same contract and same rationale as {@link imageOf}: a deliberate local collapse, greppable by name, taken after the `error` record was emitted.
+ * @param outcome - The outcome from {@link parseLocalizedStringColumn}.
+ * @returns The localized string, or `null`.
+ */
+export function localizedStringOf(outcome: ParseOutcome<LocalizedString>): LocalizedString | null {
+  return outcome.value ?? null;
+}
+
+/**
+ * Narrow a colour parse outcome to what the application data model can hold: the validated colours, or `null` for an absent or malformed column.
+ *
+ * Same contract and same rationale as {@link imageOf}.
+ * @param outcome - The outcome from {@link parseColorColumn}.
+ * @returns The colours, or `null`.
+ */
+export function colorOf(outcome: ParseOutcome<Colors>): Colors | null {
+  return outcome.value ?? null;
 }

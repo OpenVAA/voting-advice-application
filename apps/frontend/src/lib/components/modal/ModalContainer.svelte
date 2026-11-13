@@ -55,6 +55,7 @@
     title,
     autofocusId = undefined,
     closeOnBackdropClick = true,
+    holdOpen = false,
     isOpen = $bindable(false),
     onClose = undefined,
     onOpen = undefined,
@@ -92,10 +93,23 @@
    * @param e - The keyboard event.
    */
   function handleEscape(e: KeyboardEvent) {
-    if (isOpen && e.key == 'Escape') {
+    if (isOpen && !holdOpen && e.key == 'Escape') {
       handleClose();
       e.stopPropagation();
     }
+  }
+
+  /** Close the modal on a close the user asks for, unless it is held open. */
+  function handleUserClose() {
+    if (!holdOpen) handleClose();
+  }
+
+  /**
+   * Refuse the close the platform asks for while the modal is held open.
+   * @param e - The dialog's `cancel` event.
+   */
+  function handleCancel(e: Event) {
+    if (holdOpen) e.preventDefault();
   }
 
   function handleClose(noCallbacks?: boolean) {
@@ -103,6 +117,14 @@
     inTransition = true;
     isOpen = false;
     if (!noCallbacks) onClose?.();
+  }
+
+  function handleNativeClose() {
+    // A `close` queued by an earlier close can arrive after the dialog was opened again.
+    if (!isOpen || modalContainer?.open) return;
+    // A platform may close a dialog whose `cancel` was prevented, as Chromium does on repeated Escapes.
+    if (holdOpen) modalContainer?.showModal();
+    else handleClose();
   }
 
   function handleOpen(noCallbacks?: boolean) {
@@ -134,6 +156,8 @@
 <dialog
   bind:this={modalContainer}
   ontransitionend={handleTransitionEnd}
+  oncancel={handleCancel}
+  onclose={handleNativeClose}
   class:hidden={!isOpen && !inTransition}
   aria-modal="true"
   aria-label={title}
@@ -141,7 +165,7 @@
   {@render children?.()}
   {#if closeOnBackdropClick}
     <div class="modal-backdrop">
-      <button onclick={() => handleClose()} tabindex="-1">{t('common.closeDialog')}</button>
+      <button onclick={handleUserClose} tabindex="-1">{t('common.closeDialog')}</button>
     </div>
   {/if}
 </dialog>

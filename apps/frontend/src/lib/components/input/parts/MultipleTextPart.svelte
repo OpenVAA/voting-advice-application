@@ -43,7 +43,7 @@ See `MultipleTextPart.type.ts`.
     disabled,
     minItems,
     maxItems,
-    mainInputs,
+    describedBy,
     onChange
   }: MultipleTextPartProps = $props();
 
@@ -164,6 +164,20 @@ See `MultipleTextPart.type.ts`.
   }
 
   ////////////////////////////////////////////////////////////////////
+  // Keyboard navigation
+  ////////////////////////////////////////////////////////////////////
+
+  /** The rendered fields, by row and then by locale position. `$state`, because `bind:this` writes its members. */
+  const fields: Array<HTMLElement> = $state([]);
+
+  /**
+   * Move focus to the first row's first field. Does nothing when no field is rendered.
+   */
+  export function focus(): void {
+    fields[0]?.focus();
+  }
+
+  ////////////////////////////////////////////////////////////////////
   // Styling
   ////////////////////////////////////////////////////////////////////
 
@@ -185,6 +199,7 @@ See `MultipleTextPart.type.ts`.
               <!-- svelte-ignore a11y_label_has_associated_control -->
               <label
                 id="{id}-label-{index}-{locale}"
+                lang={locale}
                 class="{inputLabelClass} transition-opacity"
                 class:opacity-0={!isTranslationsVisible}>{t(assertTranslationKey(`lang.${locale}`))}</label>
             {/if}
@@ -192,10 +207,12 @@ See `MultipleTextPart.type.ts`.
               type="text"
               data-testid="multiple-text-row"
               id={multilingual ? `${id}-${index}-${locale}` : `${id}-${index}`}
+              lang={multilingual ? locale : undefined}
               aria-labelledby={multilingual ? `${id}-label ${id}-label-${index}-${locale}` : `${id}-label`}
+              aria-describedby={describedBy}
               disabled={isDisabled}
               class={rowInputClass}
-              bind:this={mainInputs[index * fieldLocales.length + localeIndex]}
+              bind:this={fields[index * fieldLocales.length + localeIndex]}
               value={fieldValue(index, locale)}
               oninput={(e) => handleInput(index, locale, e)} />
             {#if localeIndex === 0}

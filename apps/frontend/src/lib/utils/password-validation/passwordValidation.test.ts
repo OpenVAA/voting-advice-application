@@ -62,7 +62,7 @@ describe('validatePasswordDetails', () => {
     const result = validatePasswordDetails(password, username);
     expect(result.status).toBe(false);
     expect(result.details.length.status).toBe(false);
-    expect(result.details.length.message).toBe('candidateApp.register.passwordValidation.length');
+    expect(result.details.length.message).toBe('contestantApp.register.passwordValidation.length');
   });
   test('Should return false when the password lacks a special character', () => {
     const password = 'ValidPass123';
@@ -102,6 +102,6 @@ describe('validatePasswordDetails', () => {
     const result = validatePasswordDetails('aaaaaaBBB123!');
     expect(result.status).toBe(true);
     expect(result.details.repetition.status).toBe(false);
-    expect(result.details.repetition.message).toBe('candidateApp.register.passwordValidation.repetition');
+    expect(result.details.repetition.message).toBe('contestantApp.register.passwordValidation.repetition');
   });
 });

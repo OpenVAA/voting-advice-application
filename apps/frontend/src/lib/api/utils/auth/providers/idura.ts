@@ -14,6 +14,7 @@ import * as jose from 'jose';
 import { constants } from '$lib/server/constants';
 import { constants as publicConstants } from '$lib/utils/constants';
 import { requireConfigured } from './requireConfigured';
+import { uiLocalesFor } from './uiLocales';
 import { decryptAndVerifyIdToken } from '../decryptAndVerifyIdToken';
 import type {
   AuthConfig,
@@ -64,7 +65,7 @@ export const iduraProvider: IdentityProvider = {
 
   callbackBinding: 'state',
 
-  async getAuthorizeUrl({ redirectUri }: AuthorizeParams): Promise<AuthorizeResult> {
+  async getAuthorizeUrl({ redirectUri, locale }: AuthorizeParams): Promise<AuthorizeResult> {
     const clientId = publicConstants.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID;
 
     // Ordered BEFORE `getSigningKey()` deliberately. Both can fail on missing configuration, and when several variables are unset at once the first error a caller sees should name the plain missing ones rather than the signing key — "Idura signing key not found for kid: " with an empty kid sends you looking at JWKS parsing when the real problem is that no env file was read at all. An empty `IDURA_DOMAIN` would otherwise build `https:///oauth2/authorize` and an empty `clientId` would sign a JAR with `iss: ''`, both of which fail much later and much less legibly.
@@ -77,6 +78,7 @@ export const iduraProvider: IdentityProvider = {
 
     const state = crypto.randomUUID();
     const nonce = crypto.randomUUID();
+    const uiLocales = uiLocalesFor(locale);
 
     // Build signed JAR (RFC 9101) -- all authorization parameters are in the signed JWT
     const requestObject = await new jose.SignJWT({
@@ -88,7 +90,8 @@ export const iduraProvider: IdentityProvider = {
       state,
       nonce,
       iss: clientId,
-      aud: `https://${constants.IDURA_DOMAIN}`
+      aud: `https://${constants.IDURA_DOMAIN}`,
+      ...(uiLocales ? { ui_locales: uiLocales } : {})
     })
       .setProtectedHeader({ alg: 'RS256', kid: signingJwk.kid! })
       .sign(signingKey);
