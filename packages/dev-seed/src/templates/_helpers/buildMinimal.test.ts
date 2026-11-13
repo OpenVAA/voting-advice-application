@@ -55,7 +55,7 @@ describe('buildMinimal', () => {
     >;
     expect(settings.access.answersLocked).toBe(true);
     // Base access flags preserved (deep merge, not shallow):
-    expect(settings.access.candidateApp).toBe(true);
+    expect(settings.access.contestantApp).toBe(true);
     expect(settings.access.voterApp).toBe(true);
     expect(settings.access.adminApp).toBe(true);
     expect(settings.access.underMaintenance).toBe(false);

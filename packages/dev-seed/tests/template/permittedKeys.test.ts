@@ -21,6 +21,8 @@ import { LINK_SENTINELS } from '../../src/template/linkSentinels';
 import type { LinkSentinelRule } from '../../src/template/linkSentinels';
 import {
   COLLECTION_NON_COLUMNS,
+  DENIED_BY_TABLE,
+  deniedKeys,
   NON_COLUMN_FIELDS,
   permittedKeys,
   RELATIONSHIP_REFS,
@@ -35,8 +37,6 @@ const REPO_ROOT = resolve(HERE, '../../../..');
  * The schema file that defines `_bulk_upsert_record`, read as the current definition of the function. Note the doubled `supabase/` segment — `apps/supabase/supabase/schema/…` is the real path.
  */
 const SCHEMA_SQL = resolve(REPO_ROOT, 'apps/supabase/supabase/schema/501-bulk-operations.sql');
-/** The applied migration copy of the same function. */
-const MIGRATION_SQL = resolve(REPO_ROOT, 'apps/supabase/supabase/migrations/00001_initial_schema.sql');
 
 /**
  * Extract the `CASE p_table_name … END CASE;` relationship block verbatim, for parsing into the shape of `RELATIONSHIP_REFS`.
@@ -303,13 +303,6 @@ describe('permittedKeys — source (4): RPC relationship references, parity-test
     expect(fromTs).toEqual(fromSql);
     expect(Object.values(fromSql).reduce((n, refs) => n + Object.keys(refs).length, 0)).toBe(10);
   });
-
-  it('the schema copy and the applied migration copy of the CASE block agree', () => {
-    // Checking that the two `skip_columns` arrays are byte-identical does NOT cover the relationship CASE blocks. This closes that gap.
-    expect(extractCaseBlock(readFileSync(MIGRATION_SQL, 'utf8'))).toEqual(
-      extractCaseBlock(readFileSync(SCHEMA_SQL, 'utf8'))
-    );
-  });
 });
 
 /** Capture a throw's message, or `''` when the call did not throw. */
@@ -321,6 +314,25 @@ function messageOf(fn: () => unknown): string {
   }
   return '';
 }
+
+describe('deniedKeys — entity_type, on the one table where the RPC discards it', () => {
+  it('declares one denied column on one table', () => {
+    expect(DENIED_BY_TABLE).toEqual({ nominations: ['entity_type'] });
+  });
+
+  it('denies both spellings on nominations, where the column is generated', () => {
+    expect([...deniedKeys('nominations')].sort()).toEqual(['entityType', 'entity_type']);
+  });
+
+  it('denies nothing on the two question tables, where the column is a filter list the RPC carries', () => {
+    for (const collection of ['questions', 'question_categories', 'questionCategories']) {
+      expect([...deniedKeys(collection)], collection).toEqual([]);
+      // Permitted and not denied: the key reaches the write under either spelling.
+      expect(permittedKeys(collection).has('entity_type'), collection).toBe(true);
+      expect(permittedKeys(collection).has('entityType'), collection).toBe(true);
+    }
+  });
+});
 
 describe('resolveCollectionName / permittedKeys — canonical keying', () => {
   it('resolves camelCase collection aliases to the snake_case table name', () => {

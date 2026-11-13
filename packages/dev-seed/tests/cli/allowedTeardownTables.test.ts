@@ -16,14 +16,17 @@ import { readFileSync } from 'fs';
 import { describe, expect, it } from 'vitest';
 import { ALLOWED_TEARDOWN_TABLES } from '../../src/cli/teardown';
 
+/** The schema file that defines `bulk_delete`, relative to the repo root. */
+const BULK_OPERATIONS_SCHEMA_FILE = 'apps/supabase/supabase/schema/501-bulk-operations.sql';
+
 // packages/dev-seed/tests/cli/ -> repo root is four levels up.
-const SCHEMA_MIGRATION_PATH = join(
+const BULK_OPERATIONS_SCHEMA_PATH = join(
   dirname(fileURLToPath(import.meta.url)),
   '..',
   '..',
   '..',
   '..',
-  'apps/supabase/supabase/migrations/00001_initial_schema.sql'
+  BULK_OPERATIONS_SCHEMA_FILE
 );
 
 /**
@@ -37,8 +40,8 @@ function parseSqlTextArray(sql: string, declaration: 'allowed_collections' | 'de
   if (!match) {
     throw new Error(
       `allowedTeardownTables.test.ts could not find the \`${declaration} text[] := ARRAY[...]\` ` +
-        'declaration in 00001_initial_schema.sql — the bulk_delete function shape changed; update the ' +
-        'regex in this test.'
+        `declaration in ${BULK_OPERATIONS_SCHEMA_FILE} — the bulk_delete function shape changed; update ` +
+        'the regex in this test.'
     );
   }
   return [...match[1].matchAll(/'([^']+)'/g)].map((m) => m[1]);
@@ -46,7 +49,7 @@ function parseSqlTextArray(sql: string, declaration: 'allowed_collections' | 'de
 
 describe('ALLOWED_TEARDOWN_TABLES completeness (WR-04, IN-01)', () => {
   it('bulk_delete validates and deletes the same set of collections', () => {
-    const sql = readFileSync(SCHEMA_MIGRATION_PATH, 'utf8');
+    const sql = readFileSync(BULK_OPERATIONS_SCHEMA_PATH, 'utf8');
     const allowedCollections = parseSqlTextArray(sql, 'allowed_collections');
     const deleteOrder = parseSqlTextArray(sql, 'delete_order');
 
@@ -63,7 +66,7 @@ describe('ALLOWED_TEARDOWN_TABLES completeness (WR-04, IN-01)', () => {
   });
 
   it('covers every collection bulk_delete both accepts and deletes, except app_settings', () => {
-    const sql = readFileSync(SCHEMA_MIGRATION_PATH, 'utf8');
+    const sql = readFileSync(BULK_OPERATIONS_SCHEMA_PATH, 'utf8');
     const allowedCollections = parseSqlTextArray(sql, 'allowed_collections');
     const deleteOrder = parseSqlTextArray(sql, 'delete_order');
 

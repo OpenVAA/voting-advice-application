@@ -1418,8 +1418,8 @@ describe('the project-scoped query guard sees past the receiver anchor', () => {
     expect(map).toContain('PROJECT_SCOPED_EDGE_FUNCTIONS');
     expect(map.endsWith('}')).toBe(true);
 
-    // The three functions this repository invokes. A function invoked with no entry here is already a violation by the guard's own check; this says the entries that exist name the functions that are actually called, so the map cannot be quietly emptied while every command stays green.
-    for (const fn of ['invite-candidate', 'identity-callback', 'send-email']) {
+    // Every Edge Function this repository serves. A function invoked with no entry here is already a violation by the guard's own check; this says each served function keeps its entry, so the map cannot be quietly emptied while every command stays green.
+    for (const fn of ['identity-callback', 'send-email', 'account-access']) {
       expect(map).toContain(fn);
     }
 

@@ -22,7 +22,12 @@
  * *constructs* the 28 `perm-*` templates' rows programmatically, and those rows are outside the type layer's guarantee altogether. The Pass 0 runtime guard `assertKnownRowProps` is the only cover there. A green gate here means "illegal keys in hand-authored inline literals are a compile error", and no more than that.
  */
 
-import type { CandidatesFixedRow, ElectionsFixedRow, QuestionsFixedRow } from '../../src/template/permittedKeys';
+import type {
+  CandidatesFixedRow,
+  ElectionsFixedRow,
+  QuestionCategoriesFixedRow,
+  QuestionsFixedRow
+} from '../../src/template/permittedKeys';
 
 /**
  * **primary** exemplar — `_constituencies` on an `elections` row.
@@ -79,4 +84,43 @@ export const illegalQuestionsAnswersRow: QuestionsFixedRow = {
 export const legalCandidatesAnswersRow: CandidatesFixedRow = {
   external_id: 'negctl144-ca-2',
   answersByExternalId: { 'negctl144-qu-1': { value: 3 } }
+};
+
+/**
+ * **The entity type filter is a list, held at the TYPE layer.**
+ *
+ * `entity_type` on `questions` and `question_categories` is a JSON column, so the generated insert type admits any JSON value — a bare string included. A bare string never reaches the column: the RPC quotes it as text and the cast to JSON fails, with a syntax error that names neither the key nor the row. The row types narrow the key to an array of entity types, so the mistake is a compile error where it is written.
+ *
+ * Each directive is the control: if the key is ever widened back to the generated type, the error disappears, the directive goes unused, and `TS2578` turns the gate red.
+ */
+export const illegalQuestionsBareTypeRow: QuestionsFixedRow = {
+  external_id: 'negctl144-qu-3',
+  // @ts-expect-error TS2322 — the entity type filter of a `questions` row is an array of entity types, never a bare string.
+  entity_type: 'organization'
+};
+
+export const illegalQuestionCategoriesBareTypeRow: QuestionCategoriesFixedRow = {
+  external_id: 'negctl144-qc-1',
+  // @ts-expect-error TS2322 — the entity type filter of a `question_categories` row is an array of entity types, never a bare string.
+  entity_type: 'organization'
+};
+
+export const illegalQuestionsUnknownTypeRow: QuestionsFixedRow = {
+  external_id: 'negctl144-qu-4',
+  // @ts-expect-error TS2322 — a member of the list is one of the database's entity types.
+  entity_type: ['organisation']
+};
+
+/**
+ * The legality half: a list of entity types, an empty list and null all compile clean on both tables.
+ */
+export const legalQuestionsTypeListRows: Array<QuestionsFixedRow> = [
+  { external_id: 'negctl144-qu-5', entity_type: ['organization', 'alliance'] },
+  { external_id: 'negctl144-qu-6', entity_type: [] },
+  { external_id: 'negctl144-qu-7', entity_type: null }
+];
+
+export const legalQuestionCategoriesTypeListRow: QuestionCategoriesFixedRow = {
+  external_id: 'negctl144-qc-2',
+  entity_type: ['candidate']
 };
