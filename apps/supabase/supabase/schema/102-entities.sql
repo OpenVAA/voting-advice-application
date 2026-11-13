@@ -8,7 +8,7 @@ CREATE TABLE public.organizations (
   short_name jsonb,
   -- Localized string `{ "<locale>": string }`: a longer description.
   info jsonb,
-  -- `Colors` from @openvaa/data: `{ normal, dark? }`, colour strings for the default and dark themes.
+  -- `Colors` from @openvaa/data, as `{ normal?, dark? }`: a hex colour, `#rgb` or `#rrggbb`, for the default theme and for the dark theme (validate_entity_color).
   color jsonb,
   -- `StoredImage` from @openvaa/app-shared: storage paths in the public-assets bucket, not URLs.
   image jsonb,
@@ -47,7 +47,7 @@ CREATE TABLE public.candidates (
   short_name jsonb,
   -- Localized string `{ "<locale>": string }`: a longer description.
   info jsonb,
-  -- `Colors` from @openvaa/data: `{ normal, dark? }`, colour strings for the default and dark themes.
+  -- `Colors` from @openvaa/data, as `{ normal?, dark? }`: a hex colour, `#rgb` or `#rrggbb`, for the default theme and for the dark theme (validate_entity_color).
   color jsonb,
   -- `StoredImage` from @openvaa/app-shared: storage paths in the public-assets bucket, not URLs.
   image jsonb,
@@ -57,7 +57,7 @@ CREATE TABLE public.candidates (
   subtype text,
   -- A free-form JSON object, read by the frontend as `customData`.
   custom_data jsonb,
-  -- Whether the identity has been vouched for: an entity is public only when this is true and it has a confirmed nomination. The identity-callback Edge Function (`candidateRecord.ts`) sets it after a strong identity check. Only a holder of `entity.confirm` on the row may change it, in either direction; the enforce_entity_immutability trigger enforces this, because the column is inside the authenticated UPDATE grant in 303-column-grants.sql.
+  -- Whether the identity has been vouched for: an entity is public only when this is true and it has a confirmed nomination. `public.identity_entity_find_or_create`, which the identity-callback Edge Function calls, sets it on the candidate it creates after a strong identity check. Only a holder of `entity.confirm` on the row may change it, in either direction; the enforce_entity_immutability trigger enforces this, because the column is inside the authenticated UPDATE grant in 303-column-grants.sql.
   confirmed boolean NOT NULL DEFAULT false,
   -- When the candidate accepted the terms of use; null until then. An anonymous reader sees the candidate only once this is set and not in the future.
   terms_of_use_accepted timestamptz,
@@ -91,7 +91,7 @@ CREATE TABLE public.factions (
   short_name jsonb,
   -- Localized string `{ "<locale>": string }`: a longer description.
   info jsonb,
-  -- `Colors` from @openvaa/data: `{ normal, dark? }`, colour strings for the default and dark themes.
+  -- `Colors` from @openvaa/data, as `{ normal?, dark? }`: a hex colour, `#rgb` or `#rrggbb`, for the default theme and for the dark theme (validate_entity_color).
   color jsonb,
   -- `StoredImage` from @openvaa/app-shared: storage paths in the public-assets bucket, not URLs.
   image jsonb,
@@ -128,7 +128,7 @@ CREATE TABLE public.alliances (
   short_name jsonb,
   -- Localized string `{ "<locale>": string }`: a longer description.
   info jsonb,
-  -- `Colors` from @openvaa/data: `{ normal, dark? }`, colour strings for the default and dark themes.
+  -- `Colors` from @openvaa/data, as `{ normal?, dark? }`: a hex colour, `#rgb` or `#rrggbb`, for the default theme and for the dark theme (validate_entity_color).
   color jsonb,
   -- `StoredImage` from @openvaa/app-shared: storage paths in the public-assets bucket, not URLs.
   image jsonb,

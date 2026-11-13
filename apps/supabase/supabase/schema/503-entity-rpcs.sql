@@ -3,8 +3,15 @@
 -- Functions:
 -- - get_nominations() - return nominations with entity data
 -- - get_entity_basic_data() - basic-data projection of an entity the caller holds nomination.read on
--- - get_candidate_user_data() - the caller's own entity row of one type in one project, resolved from their editor grant
+-- - get_user_entities() - every candidate and organization the caller holds an editor grant on in one project, as one object that also says whether the caller's account has a password
+-- - get_entity_user_data() - the editable row of one entity the caller holds an editor grant on, or no row
+-- - get_entity_nominations() - the nominations of one entity the caller holds an editor grant on, each with its parent resolved, or NULL
+-- - get_nomination_parent_options() - the entities one entity the caller holds an editor grant on may name as its parent, or NULL
 -- - upsert_answers() - atomic answer write for a single entity
+-- - private.nomination_list_checked() - whether an argument is a nominations array a writer may take: an array of at most 1000 members
+-- - private.nomination_object_checked() - the shape of one nomination object, refused or answered with its normalised values
+-- - private.parent_nomination_resolved() - a named parent's nomination at a contest, found or created bare, as the caller
+-- - set_entity_nominations() - write the whole set of nominations of one entity the caller holds nomination.edit on, in one transaction
 --------------------------------------------------------------------------------
 -- get_nominations RPC: returns nominations with entity data in a single round trip
 --
@@ -82,8 +89,6 @@ CREATE OR REPLACE FUNCTION public.get_nominations (
     -- nominations.election_round is a scalar integer, so this is an equality rather than the array containment that get_questions uses against the JSONB election_rounds on questions and question categories.
     AND (p_election_round IS NULL OR n.election_round = p_election_round)
     -- SECURITY INVOKER means the LEFT JOINs run with the caller's permissions, so RLS-hidden entity rows return NULL on the entity-side columns. Drop rows where every entity-side join resolved to NULL. With the join predicates above, this filter also drops a nomination whose entity belongs to another project.
-    --
-    -- This filter is defence in depth. `anon_select_nominations` already requires every entity a nomination links to be confirmed, but the terms-of-use clause of `anon_select_candidates` is a candidates-policy term that no nominations predicate restates, so a nomination whose candidate that clause hides is dropped only here.
     AND COALESCE(c.id, o.id, f.id, a.id) IS NOT NULL
   ORDER BY n.sort_order NULLS LAST, n.id;
 $$;
@@ -101,11 +106,11 @@ authenticated;
 --
 -- The entity is named by its type and id together, because the four entity tables have independent primary keys and one uuid can name two entities in two projects. The type selects the one table probed, and the gate asks about that same entity.
 --
--- The projection is an ALLOW-LIST, not `to_jsonb(row) - <deny-list>`: a column added to an entity table later is withheld until someone decides it is basic data. Withheld today: answers, terms_of_use_accepted, custom_data, external_id and the two timestamps.
+-- The projection is an ALLOW-LIST, not `to_jsonb(row) - <deny-list>`: a column added to an entity table later is withheld until someone decides it is basic data. Withheld today: answers, custom_data, external_id and the two timestamps.
 --
 -- Returns NULL -- never raises -- when the caller lacks the permission, when the type is NULL, or when the named table holds no row with that id, so the answer does not distinguish "does not exist" from "not yours".
 --
--- SECURITY DEFINER because the whole point is to return a row the caller's own SELECT policy refuses; search_path is pinned as on every definer function in this schema. EXECUTE is authenticated only: anon carries no grants claim, so user_can would deny it on every call anyway.
+-- SECURITY DEFINER because the whole point is to return a row the caller's own SELECT policy refuses; search_path is pinned as on every definer function in this schema. EXECUTE is authenticated only: anon has no auth.uid(), so user_can reads no grant row for it and would deny it on every call anyway.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.get_entity_basic_data (
   p_entity_type public.entity_type,
@@ -166,13 +171,13 @@ GRANT
 EXECUTE ON FUNCTION public.get_entity_basic_data (public.entity_type, uuid) TO authenticated;
 
 --------------------------------------------------------------------------------
--- get_candidate_user_data: the caller's own entity of one type, in ONE project
+-- get_user_entities: every entity the caller edits in ONE project, as ONE object
 --
--- Returns the row of the entity the caller holds an `(entity, <type>, <id>, editor)` grant on in p_project_id, read from public.grants through private.caller_entity_ids, or no row when they hold none. Project, account and global admins and holders of an entity-scope `admin` grant resolve to no row: only the editor grant makes the caller that entity.
+-- Returns one jsonb object whose `entities` array holds one entry per candidate and per organization of p_project_id the caller holds an `(entity, <type>, <id>, editor)` grant on, read from public.grants through private.caller_entity_ids. Each entry carries what a card shows: `entity_type`, `id`, the names of its type (`first_name` and `last_name` for a candidate, `name` for an organization), `short_name`, `image`, `color` and `confirmed`. Candidates come first, then organizations, each by id.
 --
--- p_project_id is REQUIRED and carries no DEFAULT, because one identity may hold editor grants in several projects and only the project names one of them. It comes first because PostgreSQL forbids a parameter without a default from following one that has a default.
+-- The answer is one object, not a set of rows, so a caller with no entity still gets one row, whose `entities` is an empty array. The top level holds facts about the caller; every fact about an entity sits inside `entities`.
 --
--- Two or more editor grants of the asked type in one project raise P0001 whose hint names the ambiguity, rather than picking one. The message names the entity type and no id, because callers log it.
+-- `password_set` is a fact about the caller: whether the caller's own account holds a password, as private.caller_password_set answers it for `auth.uid()`. It is there whether or not the caller edits anything, and it never says anything about another account, because nothing passed to this function reaches it.
 --
 -- SECURITY INVOKER: the grant lookup is the one definer call on the path, and which rows come back is still decided by the caller's own row-level security.
 --------------------------------------------------------------------------------
@@ -239,6 +244,8 @@ EXECUTE ON FUNCTION public.get_candidate_user_data (uuid, public.entity_type) TO
 -- p_overwrite = true replaces the stored answers with p_answers; otherwise p_answers is merged over them. Either way, keys whose value is JSON null are dropped.
 --
 -- SECURITY INVOKER: the UPDATE is gated by the named table's RLS policies, so a caller can update only the answers of an entity those policies let them edit. An id that matches no row the caller may update raises the not-found exception.
+--
+-- While the entity's project's answers are locked (`private.project_answers_locked`), a caller that does not hold `project.edit_entities` on the project is refused before any table is written, with SQLSTATE 42501 and `upsert_answers: answers are locked in this project`, so the lock is told apart from a row the caller may not write. The entity's project is read as the caller: an entity the caller cannot read is not judged here and meets the not-found exception.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.upsert_answers (
   p_entity_type public.entity_type,

@@ -529,7 +529,7 @@ SELECT
 -- =====================================================================
 -- Section 3: the biconditional, and the recursion asserted absent
 --
--- The biconditional is the mitigation for writing the terms-of-use rule in two expressions (task 2 Q3 = A): it fails when the nomination policy and the candidate policy DISAGREE, not merely when they differ.
+-- The candidate visibility rule is written in two expressions, the candidate policy and the candidate arm of nomination_entities_confirmed. The biconditional holds them to one answer: it fails when the nomination policy and the candidate policy DISAGREE, not merely when they differ.
 -- =====================================================================
 SELECT
   is (
@@ -1005,7 +1005,7 @@ SELECT
 -- =====================================================================
 -- Section 9: the fixture's own natural negative control
 --
--- `candidate_a2` is confirmed, has accepted the terms of use in the past, sits in a project open for voters and is DELIBERATELY UNNOMINATED; `candidate_a` is identical in every other respect and carries `nomination_cand_a`. The pair isolates the nomination conjunct on rows the shared fixture already owns rather than on rows this file manufactures, which is what makes it a control on the real fixture rather than on a private one.
+-- `candidate_a2` is confirmed, sits in a project open for voters and is DELIBERATELY UNNOMINATED; `candidate_a` is identical in every other respect and carries `nomination_cand_a`. The pair isolates the nomination conjunct on rows the shared fixture already owns rather than on rows this file manufactures, which is what makes it a control on the real fixture rather than on a private one.
 -- =====================================================================
 SELECT
   is (

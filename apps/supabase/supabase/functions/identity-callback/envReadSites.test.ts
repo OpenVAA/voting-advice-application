@@ -3,7 +3,7 @@
  *
  * `index.ts` cannot be imported by vitest — it imports `@supabase/supabase-js` and `jose` through `npm:` specifiers, which only Deno resolves. So the property asserted here ("every required variable is read through a guard that names it when unset") is asserted against the module's SOURCE TEXT, the way this repository already gates call shapes it cannot execute (`scripts/assert-project-scoped-queries.mjs`).
  *
- * Why this exists: five of the seven required variables threw `ERR_ENV_UNCONFIGURED` naming the variable, while `IDENTITY_PROVIDER_DECRYPTION_JWKS` and `IDENTITY_PROVIDER_JWKS_URI` were read as `Deno.env.get(...)!` and threw incidentally instead — a `SyntaxError` from `JSON.parse(undefined)` and a `TypeError` from `new URL(undefined)`. Both still failed closed, so this was a diagnostics defect rather than a security one: an operator with a half-configured deployment got an error naming neither the variable nor configuration as the cause. The two reads now go through `requireEnv`, and this file is what stops them drifting back.
+ * Why this exists: a required variable read as `Deno.env.get(...)!` throws incidentally when it is unset -- a `SyntaxError` from `JSON.parse(undefined)`, a `TypeError` from `new URL(undefined)` -- so an operator with a half-configured deployment gets an error naming neither the variable nor configuration as the cause, and the function cannot tell that failure from an outage. Every required read goes through `requireEnv`, and this file is what keeps it so. It also pins the whole set of variables the function reads.
  *
  * The assertions are deliberately about the read site rather than about runtime behaviour, because the runtime behaviour of an unset variable is exactly what cannot be exercised from here.
  */
@@ -58,7 +58,7 @@ describe('identity-callback env read sites', () => {
   });
 
   /**
-   * The catch arm at the bottom of `index.ts` returns a fixed literal precisely so an unauthenticated caller (the endpoint is served `--no-verify-jwt`) cannot learn which variables are unconfigured. Routing two more reads through `requireEnv` increases the number of throws that arm swallows, so the comment naming them has to keep counting correctly — a stale count there is how the next reader concludes the two new throws leak.
+   * The catch arm at the bottom of `index.ts` answers one fixed result precisely so an unauthenticated caller (the endpoint is served `--no-verify-jwt`) cannot learn which variables are unconfigured. The comment there names every `requireEnv` throw it catches, and has to keep counting correctly: a stale count is how the next reader concludes a throw leaks.
    */
   it('keeps the catch arm comment naming every requireEnv throw it swallows', () => {
     for (const name of REQUIRE_ENV_GUARDED) {

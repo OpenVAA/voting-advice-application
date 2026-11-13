@@ -1,6 +1,6 @@
 -- Question categories and questions
 --
--- Includes validation trigger: choice-type questions must have valid choices array.
+-- Includes two validation triggers: choice-type questions must have a valid choices array, and the entity type filter of a question and of a category must be null or an array of entity types.
 CREATE TABLE public.question_categories (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id uuid NOT NULL REFERENCES public.projects (id) ON DELETE CASCADE,

@@ -9,7 +9,7 @@ CREATE TABLE public.app_settings (
   settings jsonb NOT NULL DEFAULT '{}'::jsonb,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  -- `StoredCustomization` from @openvaa/app-shared: localized publisher copy, image paths, translation overrides and the candidate-app FAQ.
+  -- `StoredCustomization` from @openvaa/app-shared: localized publisher copy, image paths, translation overrides and the contestant-app FAQ.
   customization jsonb DEFAULT '{}'::jsonb,
   -- The import key bulk_import matches rows by; unique per project and unchangeable once set (500-external-id.sql).
   external_id text

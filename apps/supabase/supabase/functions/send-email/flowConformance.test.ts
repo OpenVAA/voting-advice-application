@@ -87,7 +87,7 @@ describe('send-email flow conformance', () => {
   });
 
   it('asks the database for the authority decision rather than re-deriving it (SPEC section 9, 162-REVIEW WR-09)', () => {
-    // The gate this replaced read `payload.grants` and matched (scope, role) pairs in TypeScript. Its account arm admitted an account admin of ANY account, and it disagreed with invite-candidate's copy on the ProjectEditor. The decision is now one `user_can` call through the caller's own client, on the project the request names.
+    // The decision is one `user_can` call through the caller's own client, on the project the request names. A gate that reads `payload.grants` and matches (scope, role) pairs in TypeScript is the shape refused here: its account arm admits an account admin of ANY account, because which account owns a project is a reach rule only the database holds.
     //
     // AND THE GATE'S ANSWER IS THE SOLE INPUT TO THE REFUSAL (162-REVIEW CR-02). Asserting the call TEXT is present, and locating the assignment by its `const mayBulkSend = await callerMayOnProject(callerClient` PREFIX, constrains nothing about what else contributes to `mayBulkSend`: `const mayBulkSend = (await callerMayOnProject(...)) || body.debugBypass === true` satisfies both (`await X || Y` parses as `(await X) || Y`, so the prefix still matches), names no retired pattern, and leaves this file green while any authenticated caller posting `{"debugBypass": true}` bulk-sends. The WHOLE assignment statement is therefore bound, terminator included, and the number of assignments to the gate variable is pinned at one so a later re-assignment cannot widen it either.
     expect(INDEX_SOURCE).toContain("callerMayOnProject(callerClient, project_id, 'project.edit_entities')");
