@@ -2164,15 +2164,21 @@ Return: every `s11_` line, in order.
 Two scheduled actions, given on the command line for one apply: the first raises the scalable
 target's floor to 2 six minutes ahead, the second lowers it to 1 ten minutes later, both with the
 ceiling 2. The raise makes the service start a second task. The lowering only lowers the floor; the
-count comes down when target tracking scales in, which it does slowly, so the step waits up to 30
-minutes after the lowering. The scale-in stops a task, which writes the stop record a second time.
+count comes down when target tracking scales in. At idle CPU its low alarm is already in `ALARM`, so
+it scales in within a minute of the lowering (see "Observations"), and the step waits up to 30
+minutes after the lowering only in case the stack is not idle. The scale-in stops a task, which
+writes the stop record a second time.
 The root gives the actions no time zone, so their times are read in UTC.
 
 No apply is made between the two actions: inside that window the scalable target's floor is the
 raised one, a plan shows it as a change, and an apply would put it back. This step is the rehearsal of
 "Election day".
 
-Run the step in one sitting: it takes up to 50 minutes.
+Run the step in one sitting: it takes about 20 minutes at idle, and up to 50. Keep the workstation
+awake for item 4: a sleep, a closed lid included, leaves gaps in the minute reads, and those reads
+are then not a record of the count; take the pair off with item 7 and run the step again with new
+times. On battery, `caffeinate -i` does not stop a lid-closed sleep. Run item 6 as soon as item 4
+ends: a stopped task ages out of `describe-tasks` within about an hour, though its stream stays.
 
 ```bash
 cd "$(git rev-parse --show-toplevel)"
@@ -2270,6 +2276,7 @@ T=infra/envs/staging/aws
 
    ```bash
    : > "$L/s12-counts.csv"
+   caffeinate -i & CAF=$!
    while [ "$(jq -n 'now | floor')" -le $((E2 + 1800)) ]; do
      aws ecs describe-services --cluster "$C" --services "$S" \
        > "$L/s12-service.json" 2>> "$L/s12-poll.err"
@@ -2291,6 +2298,7 @@ T=infra/envs/staging/aws
      fi
      sleep 60
    done
+   kill "$CAF"
    sed 's/^/s12_count=/' "$L/s12-counts.csv"
    jq -rRs --arg t "${T2}Z" '
      [split("\n")[] | select(length > 0) | split(",")
@@ -3536,9 +3544,6 @@ date, once the step named beside it has shown it.
 | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
 | The destroy check does not list the two parameters, which carry no `Root` tag                                                                                                          | Step 16                     |
 | One apply brings up the whole stack, the certificates' validation waiting inside it                                                                                                    | Step 5, item 5, and Step 17 |
-| An `at()` action read in UTC raises the floor at its time, and the service starts a second task without passing the ceiling                                                            | Step 12, item 4             |
-| Target tracking scales in from 2 to 1 within 30 minutes of the lowering at idle CPU, and the task it stops writes the stop record                                                      | Step 12, items 4 and 6      |
-| After the pair is removed, the scalable target reads 1 and 2 again and a plan shows no change                                                                                          | Step 12, item 7             |
 | Every page carries the anon key in its inlined public environment                                                                                                                      | Step 13, item 1             |
 | Hosted Supabase keys the feedback limit on the workstation's address: five inserts are admitted and the sixth is refused with 400 and `P0001`                                          | Step 13, item 3             |
 | A phone on another network is admitted inside the same five minutes while the workstation stays refused, so the two clients have a bucket each                                         | Step 13, items 4 and 5      |
@@ -3601,3 +3606,8 @@ date, once the step named beside it has shown it.
 | 2026-11-13 | Step 10, items 7 and 9: the rule fired once (`TriggeredRules` 1, `Invocations` 1) for the rollback's `SERVICE_DEPLOYMENT_FAILED`, the topic delivered one notification and failed none, and the mail reached the confirmed address; its body is the EventBridge event, naming `SERVICE_DEPLOYMENT_FAILED`, `ERROR`, the service `openvaa-staging-frontend`, the failed deployment and the circuit breaker's reason.                                                                                                                                                                                                                                                                                 |
 | 2026-11-13 | Step 11, items 3 and 4: the plain plan held the task definition's `delete-create` and the service's `update` alone, and its apply exited 0 after about two minutes, returning while the old task was still `STOPPING`. The rollout started the new task, registered its target, then stopped the old task and deregistered its target, with a deregistration delay of 30 seconds.                                                                                                                                                                                                                                                                                                                   |
 | 2026-11-13 | Step 11, items 5 and 6: the stopped task's stream holds the stop record, 12 events, one per line, so the message line `msg: 'The server is exiting after its stop.',` and `signal: 'SIGTERM',` were found by separate searches, in the same second. `SIGTERM` reached Node 35 seconds after the deregistration began, with `inFlightAtSignal` 0 and `drainMs` 1; the task stopped with `ServiceSchedulerInitiated`, `Scaling activity initiated by (deployment ...)` and exit 0. The request loop counted 214 requests with no answer that was not 2xx, and a plan with `-detailed-exitcode` then exited 0.                                                                                         |
+| 2026-11-13 | Step 12, items 2 to 4: the pair's plan read `Plan: 2 to add, 0 to change, 0 to destroy.` with the two scheduled actions' `create` alone, and its apply exited 0. The `at()` actions, read in UTC, raised the floor 0.4 and 42 seconds after their times in two runs. The service started a second task and ran 2 at the next minute read. In 16 minute reads, neither count passed the ceiling 2, and the desired count never fell below the floor in force. The running count lagged the raised floor in one read, 33 seconds after the raise, while the task was starting.                                                                                                                        |
+| 2026-11-13 | Step 12, items 4 and 5: target tracking scaled in from 2 to 1 within a minute of the lowering, not the 15 to 20 minutes expected (research A3). Measured from the lowering to `Setting desired count to 1.`, it took 35 seconds in one run and 2 seconds in the other, and the count read 1 at the first minute read after the lowering's time. The policy's low alarm (`LessThanThreshold` 54, 15 periods of 60 seconds) had been in `ALARM` at idle CPU since the morning, so the count came down as soon as the floor did. The lowering itself ran 15 and 48 seconds after its time.                                                                                                             |
+| 2026-11-13 | Step 12, item 6: the scale-in stopped the raise's task, not the older one, with `ServiceSchedulerInitiated`, `Scaling activity initiated by (deployment ...)` and exit 0. Its own stream holds the stop record with `signal: 'SIGTERM',`, `inFlightAtSignal` 0 and `drainMs` 0, 56 seconds after the deregistration began. This is the stop signal's second record, after Step 11. In the first run the stopped task had already aged out of `describe-tasks` (`MISSING`) about 93 minutes after it stopped, while its stream still held the same record.                                                                                                                                           |
+| 2026-11-13 | Step 12, item 4: a lid-closed sleep of the workstation on battery, from 13:49Z to 15:31Z with two DarkWakes of about a minute, left gaps of 8 and 92 minutes in the minute reads of the first run. The loop woke past its end and stopped. The scaling activities and the service's events, written by AWS, kept the whole run. The pair was taken off with item 7 and the step was run again under `caffeinate -i`, with no gap over 68 seconds.                                                                                                                                                                                                                                                   |
+| 2026-11-13 | Step 12, item 7: the removal's plan read `Plan: 0 to add, 0 to change, 2 to destroy.` with the two scheduled actions' `delete` alone, and its apply exited 0, twice. Afterwards no scheduled action is listed for the service, the scalable target reads 1 and 2, and a plan with `-detailed-exitcode` exits 0.                                                                                                                                                                                                                                                                                                                                                                                     |

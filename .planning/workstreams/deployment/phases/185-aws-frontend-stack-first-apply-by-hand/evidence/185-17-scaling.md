@@ -257,3 +257,49 @@ SCALE_IN_STOP_LINE_SIGNAL=SIGTERM
   This is the second record of the stop signal, after 185-16's Step 11, and the first from a
   scale-in. The signal came 56 seconds after the deregistration began, with nothing in flight, and
   the task stopped with exit 0 34 seconds after the signal.
+
+## Task 2: the pair removed, and the record (Step 12, items 7 and 8)
+
+```
+PAIR_REMOVE_APPLY_EXIT=0
+SCHEDULED_ACTIONS_AFTER=0
+TARGET_BOUNDS_AFTER=1,2
+PLAN_AFTER_EXIT=0
+```
+
+- **Item 7, the plan without the variable (15:54Z).** The lowering had run and the count was back at
+  1, so the plan held no change of the scalable target. It gave `s12_off_plan_exit=0`,
+  `s12_off_plan_line=Plan: 0 to add, 0 to change, 2 to destroy.` and `s12_off_show_exit=0`, with
+  exactly these two changes:
+
+  ```
+  s12_off_change=delete module.frontend.aws_appautoscaling_scheduled_action.floor["lower"]
+  s12_off_change=delete module.frontend.aws_appautoscaling_scheduled_action.floor["raise"]
+  ```
+
+- **The apply and the read-back.** `s12_pair_remove_apply_exit=0`, from 15:54:46Z to 15:54:50Z
+  (`Apply complete! Resources: 0 added, 0 changed, 2 destroyed.`), and `s12_plan_file_removed=yes`.
+  Then:
+
+  ```
+  s12_actions_after_read_exit=0
+  s12_scheduled_actions_after=0
+  s12_target_after_read_exit=0
+  s12_target_bounds_after=1,2
+  s12_plan_after_exit=0
+  ```
+
+  The plan after it read `No changes. Your infrastructure matches the configuration.` The
+  `ecs` namespace as a whole lists no scheduled action in `eu-north-1`
+  (`namespace_actions_read_exit=0`, 0). The service runs one task, desired 1, on revision 5.
+  No apply was made between the raise and the lowering in either run. The only applies were the two
+  pairs and the two removals, each made outside a raise-to-lower window.
+- **The tracked tfvars.** `scheduled_floor_changes` does not appear in
+  `infra/envs/staging/aws/terraform.tfvars` (count 0). The pair was given only as a command-line
+  `-var`, and the file is unchanged.
+- **The runbook.** Three Step 12 rows moved from "Not yet observed" to five dated Observations rows,
+  research A3's scale-in among them. Step 12's introduction no longer says the scale-in is slow, and
+  it now tells the operator to keep the workstation awake and to run item 6 at once. Item 4's loop
+  runs under `caffeinate -i`, killed when the loop ends. `prettier --check` is clean.
+- **Item 8.** `$L`, with every plan, plan JSON, apply log, count file and task list of both runs, was
+  removed (`s12_logs_removed=yes`).
