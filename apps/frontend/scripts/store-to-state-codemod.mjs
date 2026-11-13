@@ -11,7 +11,7 @@
  * `editedAnswersStore` BEFORE `answerStore` is belt-and-braces (the camelCase boundary already protects them, but ordering makes the guarantee structural); `nominationAndQuestionStore` BEFORE `questionStore`; PascalCase `*Impl`/`*Deps`/ `*Api` variants BEFORE their base type names.
  *
  * ── HARD EXCLUSIONS ─────────────────────────────────────────────
- *  (a) STRING-LITERAL GUARD: a candidate occurrence whose match index falls between an opening and a closing single/double quote on the same line is SKIPPED. This protects the two localStorage key literals (`'VoterContext-answerStore'`, `'CandidateContext-candidateUserDataStore-…'`) — renaming them would orphan persisted user data (a behavior change).
+ *  (a) STRING-LITERAL GUARD: a candidate occurrence whose match index falls between an opening and a closing single/double quote on the same line is SKIPPED. This protects a localStorage key literal such as `'VoterContext-answerStore'` — renaming one would orphan persisted user data (a behavior change).
  *  (b) ALLOWLIST OMISSIONS: the table deliberately OMITS the singular server job registry symbol, the server `Job*` domain types, the cookie-jar test mock, and the `*Stored*Value` substring-trap symbols. Because every replacement is `\b`-anchored whole-word, the longer-token `JobStatesProvider`/`jobStates`/`JobStates` rewrites NEVER touch the singular server symbol (no whole-word entry for it exists). The `#store` field and `localStorageState(...)` are likewise untouched (`store` / `localStorageState` are not `*Store` whole-word tokens).
  *
  * ── Idempotency guarantee ───────────────────────────────────────────────────
@@ -32,6 +32,7 @@ import { resolve, relative } from 'node:path';
 
 // ── Ordered allowlist — LONGEST TOKEN FIRST ──────────────────────────────
 // [from, to]. Anchored `\b...\b` whole-word. Order: longer tokens before any shorter token they could contain; `*Impl`/`*Deps`/`*Api` before base names.
+// The `ContestantUserDataStore*` rows match the user-data store's name in the Contestant App's spelling only: a tree whose store name carries another app prefix is left as it is.
 const RENAMES = [
   // -- candidate / admin cluster --
   ['NominationAndQuestionStoreProvider', 'NominationAndQuestionStateProvider'],
