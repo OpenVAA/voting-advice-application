@@ -10,6 +10,7 @@ They contain:
 - `colors`: the main DaisyUI theme colours, set separately for the light and dark themes.
 - `font`: the main font's name, download URL and style (`sans` or `serif`), which decides the fallback fonts.
 - `supportedLocales`: the locales the app supports, with one marked as the default. See [Supported locales](/developers-guide/localization/supported-locales).
-- `analytics`: an optional analytics platform (Umami is the one supported) and whether to track UI events.
+
+Analytics is not a static setting. The analytics provider is chosen by the server environment variable `ANALYTICS_PROVIDER` (`none`, `log` or `posthog`; `none` when unset), next to the other `ANALYTICS_` variables in [`.env.example`](https://github.com/OpenVAA/voting-advice-application/blob/main/.env.example), so changing it needs a restart and no rebuild. Whether usage events other than the page-view count are collected is the dynamic setting `analytics.trackEvents`; see [App settings](/developers-guide/configuration/app-settings).
 
 For every setting and its documentation, see the type, [`staticSettings.type.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/staticSettings.type.ts).

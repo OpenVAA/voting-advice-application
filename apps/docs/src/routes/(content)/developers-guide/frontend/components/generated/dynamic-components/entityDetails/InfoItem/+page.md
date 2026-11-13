@@ -12,7 +12,7 @@ Used to show a label-content pair in a Candidate's basic information.
 ### Usage
 
 ```tsx
-<InfoItem label={t('candidateApp.common.firstNameLabel')}>{candidate.firstName}</InfoItem>
+<InfoItem label={t('contestantApp.common.firstNameLabel')}>{candidate.firstName}</InfoItem>
 ```
 
 ## Source
