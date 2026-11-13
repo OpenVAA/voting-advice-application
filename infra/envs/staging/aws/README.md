@@ -1884,11 +1884,15 @@ T=infra/envs/staging/aws
 5. The failed tasks: their stop reasons, their exit codes, and the start-up line in each one's own
    stream. A server log record is printed over several lines, and the log driver stores each line as
    an event of its own, so the search matches the message line alone. The lines printed here are the
-   copy of the log lines: paste them at once, because the log group goes with a destroy:
+   copy of the log lines: paste them at once, because the log group goes with a destroy.
+
+   The stopped tasks are listed for the whole cluster: filtered by `--service-name`, `list-tasks`
+   with `--desired-status STOPPED` exits 0 and lists none of them. A failed task is one of the failed
+   revision that stopped with `EssentialContainerExited`; the task the rollback stops while it is
+   still pending is of the same revision but never ran, and is counted apart:
 
    ```bash
-   aws ecs list-tasks --cluster "$C" --service-name "$S" \
-     --desired-status STOPPED \
+   aws ecs list-tasks --cluster "$C" --desired-status STOPPED \
      > "$L/s10-stopped.json" 2> "$L/s10-stopped.err"
    echo "s10_list_stopped_exit=$?"
    jq -r '.taskArns[]' "$L/s10-stopped.json" > "$L/s10-stopped.txt"
@@ -1898,14 +1902,17 @@ T=infra/envs/staging/aws
    echo "s10_describe_stopped_exit=$?"
    jq -r --arg td "$NEW_TD" '[.tasks[]
      | select(.taskDefinitionArn == $td)]
-     | "s10_failed_tasks=\(length)",
-       (map(.stoppedReason) | unique[]
-         | "s10_failed_task_reason=\(.)"),
-       (map(.containers[0].exitCode | tostring) | unique[]
-         | "s10_failed_task_exit=\(.)")' \
+     | "s10_new_revision_stopped_tasks=\(length)",
+       ([.[] | select(.stopCode == "EssentialContainerExited")]
+       | "s10_failed_tasks=\(length)",
+         (map(.stoppedReason) | unique[]
+           | "s10_failed_task_reason=\(.)"),
+         (map(.containers[0].exitCode | tostring) | unique[]
+           | "s10_failed_task_exit=\(.)"))' \
      "$L/s10-stopped-tasks.json"
    jq -r --arg td "$NEW_TD" '.tasks[]
-     | select(.taskDefinitionArn == $td)
+     | select(.taskDefinitionArn == $td
+       and .stopCode == "EssentialContainerExited")
      | .taskArn | split("/") | last' "$L/s10-stopped-tasks.json" \
      | sort -u > "$L/s10-failed-ids.txt"
    aws logs filter-log-events --log-group-name "$G" \
@@ -1925,7 +1932,8 @@ T=infra/envs/staging/aws
 
    Expected: `s10_failed_tasks=` at least 3, a `s10_failed_task_exit=` other than 0, at least one
    `s10_startup_line=` whose text ends `Required environment variables are not set: ORIGIN`, and
-   `s10_failed_task_streams_with_line=` equal to `s10_failed_tasks`.
+   `s10_failed_task_streams_with_line=` equal to `s10_failed_tasks`. `s10_new_revision_stopped_tasks=`
+   may be one above `s10_failed_tasks`, for the pending task the rollback stopped.
 
 6. The apply's status, whatever it is, and the titles of its errors:
 
@@ -3524,38 +3532,32 @@ This root was first applied on 2026-11-13, in two applies (see "Observations"). 
 is something this runbook relies on and that has not been seen. It moves to "Observations", with its
 date, once the step named beside it has shown it.
 
-| Statement                                                                                                                                                                                          | Checked by                  |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
-| The destroy check does not list the two parameters, which carry no `Root` tag                                                                                                                      | Step 16                     |
-| One apply brings up the whole stack, the certificates' validation waiting inside it                                                                                                                | Step 5, item 5, and Step 17 |
-| A task that exits at start, before it listens, trips the deployment circuit breaker, and ECS rolls the service back within 30 minutes                                                              | Step 10, item 4             |
-| The rollback runs the revision that the fault's apply deregistered, and the old task keeps serving: the request loop counts no answer that is not 2xx                                              | Step 10, items 4 and 8      |
-| Each failed task's own stream holds the start-up line naming `ORIGIN`, although the task exits before it listens                                                                                   | Step 10, item 5             |
-| The rule fires on `SERVICE_DEPLOYMENT_FAILED`, the topic delivers, and the mail reaches the confirmed address                                                                                      | Step 10, items 7 and 9      |
-| The log driver stores each line of a multi-line record as an event of its own, so the message line and the signal line are found apart                                                             | Step 11, item 5             |
-| A rollout deregisters the old task, then signals it with `SIGTERM`; the server writes its stop record with `signal: 'SIGTERM'` in that task's stream, and the task exits 0, with no failed request | Step 11, items 5 and 6      |
-| An `at()` action read in UTC raises the floor at its time, and the service starts a second task without passing the ceiling                                                                        | Step 12, item 4             |
-| Target tracking scales in from 2 to 1 within 30 minutes of the lowering at idle CPU, and the task it stops writes the stop record                                                                  | Step 12, items 4 and 6      |
-| After the pair is removed, the scalable target reads 1 and 2 again and a plan shows no change                                                                                                      | Step 12, item 7             |
-| Every page carries the anon key in its inlined public environment                                                                                                                                  | Step 13, item 1             |
-| Hosted Supabase keys the feedback limit on the workstation's address: five inserts are admitted and the sixth is refused with 400 and `P0001`                                                      | Step 13, item 3             |
-| A phone on another network is admitted inside the same five minutes while the workstation stays refused, so the two clients have a bucket each                                                     | Step 13, items 4 and 5      |
-| The persistent project lists `email` among the candidates' registration modes, and a smoke candidate's id can be read anonymously                                                                  | Step 14, item 1             |
-| The Admin App's login form signs the first administrator in through CloudFront with 303 and the auth cookies, and the answer is not taken from the edge                                            | Step 14, item 2             |
-| `create_invitations`, called with the administrator's own session, creates an email invitation for an entity with `p_confirm_entity` false                                                         | Step 14, item 4             |
-| The sign-in link's mail reaches the second mailbox with the origin `https://staging.openvaa.org` and the path `/<locale>/api/auth/callback`, and following it shows a signed-in screen             | Step 14, item 5             |
-| `postgres`, over the connection `psql` uses, can delete a user of `auth.users`, its grant going with it, and a claimed invitation by id                                                            | Step 15, item 4             |
-| With the stack running, the plans of `dns-mail` and `supabase` show no change                                                                                                                      | Step 15, items 2 and 5      |
-| The destroy plan's count equals the managed resources of the state, and its apply exits 0                                                                                                          | Step 16, items 2 and 3      |
-| The Tagging API lists the `INACTIVE` task definitions after the destroy, `delete-task-definitions` removes them, and stopped tasks age out of the list                                             | Step 16, items 4 and 5      |
-| After the destroy, the Tagging API lists nothing tagged `Root=aws` in `eu-north-1` or in `us-east-1`                                                                                               | Step 16, item 5             |
-| The image keeps its digest, the two parameters, the zone and the execution role survive the destroy, and the `dns-mail` plan still shows no change                                                 | Step 16, item 6             |
-| After the destroy, the `supabase` plan shows no change and the conformance probe passes                                                                                                            | Step 16, item 7             |
-| A re-apply from the same tag plans only creates, applies, shows no change in a second plan, and serves the same build and the voter page                                                           | Step 17, items 2 to 5       |
-| The re-created log group keeps 90 days, and the new subscription is pending until the operator confirms it                                                                                         | Step 17, item 6             |
-| Cost Explorer filtered by `Root=aws` gives the stack's daily cost, Fargate included through the tasks' propagated tags                                                                             | Step 18, item 3             |
-| The public IPv4 charges either carry the tag or show in the account's usage types alone                                                                                                            | Step 18, item 5             |
-| The price list holds one on-demand price, first tier, for each usage type Step 18 names                                                                                                            | Step 18, item 6             |
+| Statement                                                                                                                                                                              | Checked by                  |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| The destroy check does not list the two parameters, which carry no `Root` tag                                                                                                          | Step 16                     |
+| One apply brings up the whole stack, the certificates' validation waiting inside it                                                                                                    | Step 5, item 5, and Step 17 |
+| An `at()` action read in UTC raises the floor at its time, and the service starts a second task without passing the ceiling                                                            | Step 12, item 4             |
+| Target tracking scales in from 2 to 1 within 30 minutes of the lowering at idle CPU, and the task it stops writes the stop record                                                      | Step 12, items 4 and 6      |
+| After the pair is removed, the scalable target reads 1 and 2 again and a plan shows no change                                                                                          | Step 12, item 7             |
+| Every page carries the anon key in its inlined public environment                                                                                                                      | Step 13, item 1             |
+| Hosted Supabase keys the feedback limit on the workstation's address: five inserts are admitted and the sixth is refused with 400 and `P0001`                                          | Step 13, item 3             |
+| A phone on another network is admitted inside the same five minutes while the workstation stays refused, so the two clients have a bucket each                                         | Step 13, items 4 and 5      |
+| The persistent project lists `email` among the candidates' registration modes, and a smoke candidate's id can be read anonymously                                                      | Step 14, item 1             |
+| The Admin App's login form signs the first administrator in through CloudFront with 303 and the auth cookies, and the answer is not taken from the edge                                | Step 14, item 2             |
+| `create_invitations`, called with the administrator's own session, creates an email invitation for an entity with `p_confirm_entity` false                                             | Step 14, item 4             |
+| The sign-in link's mail reaches the second mailbox with the origin `https://staging.openvaa.org` and the path `/<locale>/api/auth/callback`, and following it shows a signed-in screen | Step 14, item 5             |
+| `postgres`, over the connection `psql` uses, can delete a user of `auth.users`, its grant going with it, and a claimed invitation by id                                                | Step 15, item 4             |
+| With the stack running, the plans of `dns-mail` and `supabase` show no change                                                                                                          | Step 15, items 2 and 5      |
+| The destroy plan's count equals the managed resources of the state, and its apply exits 0                                                                                              | Step 16, items 2 and 3      |
+| The Tagging API lists the `INACTIVE` task definitions after the destroy, `delete-task-definitions` removes them, and stopped tasks age out of the list                                 | Step 16, items 4 and 5      |
+| After the destroy, the Tagging API lists nothing tagged `Root=aws` in `eu-north-1` or in `us-east-1`                                                                                   | Step 16, item 5             |
+| The image keeps its digest, the two parameters, the zone and the execution role survive the destroy, and the `dns-mail` plan still shows no change                                     | Step 16, item 6             |
+| After the destroy, the `supabase` plan shows no change and the conformance probe passes                                                                                                | Step 16, item 7             |
+| A re-apply from the same tag plans only creates, applies, shows no change in a second plan, and serves the same build and the voter page                                               | Step 17, items 2 to 5       |
+| The re-created log group keeps 90 days, and the new subscription is pending until the operator confirms it                                                                             | Step 17, item 6             |
+| Cost Explorer filtered by `Root=aws` gives the stack's daily cost, Fargate included through the tasks' propagated tags                                                                 | Step 18, item 3             |
+| The public IPv4 charges either carry the tag or show in the account's usage types alone                                                                                                | Step 18, item 5             |
+| The price list holds one on-demand price, first tier, for each usage type Step 18 names                                                                                                | Step 18, item 6             |
 
 ## Observations
 
@@ -3593,3 +3595,9 @@ date, once the step named beside it has shown it.
 | 2026-11-13 | Step 9, item 4: `s9_depth_verdict=2-confirmed`. Depth 2 resolves the viewer with and without the spoofed entry, with `clientAddressError` `null` both times, so `XFF_DEPTH` stays `"2"` in `terraform.tfvars`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | 2026-11-13 | Step 9, item 5: reached directly through the `/32`, the listener answered 403 without `x-origin-verify` and with a wrong value, with `server: awselb/2.0` and an empty `text/plain` body, its own fixed response; it forwarded the value CloudFront sends, and `/api/health` answered 200. Port 80 of the load balancer answered 301 with `location` `https://origin.staging.openvaa.org:443/`. The load balancer's group held three ingress rules: the prefix list on 443 and the `/32` on 443 and 80.                                                                                                                                                                                             |
 | 2026-11-13 | Step 9, item 6: the apply without the two variables, one saved plan of the four stop-rule changes, exited 0. `/api/diagnostics` then answered 404 through the CDN, the load balancer's group holds one ingress rule, from the prefix list on 443, a direct request to the load balancer ended after 10 seconds with curl status 28 and HTTP `000`, and a plan with `-detailed-exitcode` exited 0. The apply returned with the old deployment still listed; its target was already deregistered when the 404 was read, and the service was steady 50 seconds later, with five more requests all answering 404.                                                                                       |
+| 2026-11-13 | Step 10, items 3 and 4: the plan with `-var 'omit_environment=["ORIGIN"]'` held the task definition's `delete-create` and the service's `update` alone, and its apply exited 1 after about seven minutes with `Service deployment rolled back because the circuit breaker threshold was exceeded.` Revision 4's tasks failed one by one, and at the third the deployment failed with `ECS deployment circuit breaker: tasks failed to start.`, at 11:35:51Z; the service rolled back to revision 3 and was steady 72 seconds later. Revision 3 was `INACTIVE`, deregistered by the fault apply's destroy, and the rollback ran it all the same.                                                     |
+| 2026-11-13 | Step 10, items 4 and 8: the old task kept serving through the fault: its target read `healthy` in all 13 reads, and the request loop counted 692 requests, from before the apply until after the rollback, with no answer that was not 2xx.                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| 2026-11-13 | Step 10, item 5: each of the three failed tasks stopped with `EssentialContainerExited` and exit 1, and each one's own stream, `frontend/frontend/<task id>`, holds `Error: Required environment variables are not set: ORIGIN`, thrown from `Server.init` before the server listens; one task never had a `startedAt` and its stream holds the line too. A fourth task of the revision was still pending when the rollback stopped it (`ServiceSchedulerInitiated`, no exit code). `list-tasks --service-name` with `--desired-status STOPPED` exited 0 and listed none of these tasks, so item 5 lists the cluster's stopped tasks and filters them by revision and stop code.                    |
+| 2026-11-13 | Step 10, items 7 and 9: the rule fired once (`TriggeredRules` 1, `Invocations` 1) for the rollback's `SERVICE_DEPLOYMENT_FAILED`, the topic delivered one notification and failed none, and the mail reached the confirmed address; its body is the EventBridge event, naming `SERVICE_DEPLOYMENT_FAILED`, `ERROR`, the service `openvaa-staging-frontend`, the failed deployment and the circuit breaker's reason.                                                                                                                                                                                                                                                                                 |
+| 2026-11-13 | Step 11, items 3 and 4: the plain plan held the task definition's `delete-create` and the service's `update` alone, and its apply exited 0 after about two minutes, returning while the old task was still `STOPPING`. The rollout started the new task, registered its target, then stopped the old task and deregistered its target, with a deregistration delay of 30 seconds.                                                                                                                                                                                                                                                                                                                   |
+| 2026-11-13 | Step 11, items 5 and 6: the stopped task's stream holds the stop record, 12 events, one per line, so the message line `msg: 'The server is exiting after its stop.',` and `signal: 'SIGTERM',` were found by separate searches, in the same second. `SIGTERM` reached Node 35 seconds after the deregistration began, with `inFlightAtSignal` 0 and `drainMs` 1; the task stopped with `ServiceSchedulerInitiated`, `Scaling activity initiated by (deployment ...)` and exit 0. The request loop counted 214 requests with no answer that was not 2xx, and a plan with `-detailed-exitcode` then exited 0.                                                                                         |

@@ -93,7 +93,9 @@ LOOP_FAULT=requests=692 non_2xx=0
   "within ~20 min" held with room. The old task's target read `healthy` in all 13 reads, and at
   11:41Z the target group held one target, the old task's, `healthy`. After the rollback the service
   reads one deployment, `PRIMARY:COMPLETED:3`, `runningCount` 1, and its one running task is still
-  `9352238188ab4696b6b13b7e5266d034`.
+  `9352238188ab4696b6b13b7e5266d034`. Revision 3 reads `INACTIVE`, deregistered at 11:29:03Z by the fault
+  apply's destroy of the task definition (`Destroying...` then `Creation complete`), and the
+  rollback ran it all the same.
 - **Item 5, the failed tasks and their start-up lines.** The runbook's `list-tasks --service-name …
   --desired-status STOPPED` exited 0 but listed **no** task, so the runbook's count would read 0
   (`s10_list_stopped_exit=0`, 0 ARNs). Listed for the whole cluster with `--desired-status STOPPED`
@@ -189,3 +191,128 @@ LOOP_FAULT=requests=692 non_2xx=0
   ```
 
   Every one of the 692 answers was 200, from before the fault's apply until after the rollback.
+
+## Task 2: the operator's alert mail (Step 10, item 9)
+
+```
+OPERATOR_REPLY=received attempt=20261113T114336Z.6497623a9 plan=185-16 task=2
+ALERT_MAIL=arrived
+ALERT_MAIL_EVENT_UTC=2026-11-13T11:35:51Z
+ALERT_MAIL_NAMES_EVENT=SERVICE_DEPLOYMENT_FAILED
+ALERT_MAIL_NAMES_SERVICE=openvaa-staging-frontend
+```
+
+- **The reply.** Attempt `20261113T114336Z.6497623a9` (`attempt.sh new 185-16-2`). The operator
+  reported that the mail arrived and pasted its body rather than the reply lines; the body is the
+  EventBridge event and holds no address. The reply was stored as
+  `answer_attempt=20261113T114336Z.6497623a9`, `answer_alert_mail=arrived` and
+  `answer_alert_mail_utc=2026-11-13T11:35:51Z` with `attempt.sh put 185-16-2` (exit 0), the record
+  line above was appended, and `attempt.sh bound 185-16-2 OPERATOR_REPLY plan=185-16 task=2` exits 0.
+- **What the body names.** `detail-type` `ECS Deployment State Change`, `source` `aws.ecs`, `time`
+  `2026-11-13T11:35:51Z`, `eventName` `SERVICE_DEPLOYMENT_FAILED`, `eventType` `ERROR`, the resource
+  `service/openvaa-staging/openvaa-staging-frontend`, `deploymentId`
+  `ecs-svc/6794114764421463087` (the failed deployment of Task 1), and `reason`
+  `ECS deployment circuit breaker: tasks failed to start.`
+- **The time.** The operator gave no separate send time, so `ALERT_MAIL_EVENT_UTC` is the event's
+  time in the body, the same second as the service's `deployment failed` event; it is not the mail's
+  send time.
+
+## Task 3: the restore and the stop signal (Step 11, 13:33 to 13:38)
+
+```
+RESTORE_APPLY_EXIT=0
+STOPPED_TASK_REASON=Scaling activity initiated by (deployment ecs-svc/2903866395985344103)
+STOPPED_TASK_EXIT=0
+STOP_LINE_SIGNAL=SIGTERM
+STOP_LINE_IN_STOPPED_TASK_STREAM=yes
+LOOP_RESTORE=requests=214 non_2xx=0
+ALERT_MAIL=arrived
+PLAN_AFTER_EXIT=0
+```
+
+- **Item 1.** `s11_init_exit=0` (`-lockfile=readonly`), `s11_outputs_read_exit=0`,
+  `s11_list_tasks_exit=0`, `s11_running_before=1`; the serving task, which the restore would stop,
+  was `9352238188ab4696b6b13b7e5266d034`, the same old task Task 1 kept.
+- **Item 2, the loop**, started in the background, first request 13:33:31Z, `s11_loop_lines=9` before
+  the plan was read.
+- **Item 3, the plain plan:** `s11_plan_exit=0`,
+  `s11_plan_line=Plan: 1 to add, 1 to change, 1 to destroy.`, `s11_show_exit=0`, and exactly:
+
+  ```
+  s11_change=update module.frontend.aws_ecs_service.app
+  s11_change=delete-create module.frontend.aws_ecs_task_definition.app
+  ```
+
+  Read from the plan JSON before applying: the container's environment names differ by `ORIGIN`
+  added, `https://staging.openvaa.org`, and nothing removed; the other container differences are the
+  same normalisation as in Task 1; the service changes `task_definition` alone.
+- **Item 4, the apply**, 13:33:55Z to 13:36:08Z: `s11_restore_apply_exit=0`,
+  `Apply complete! Resources: 1 added, 1 changed, 1 destroyed.`, no `Error:` line,
+  `s11_plan_file_removed=yes`. The service's events, in order (target group left out): 13:34:12Z
+  started task `fc5c04833f5d4cb5bddd2cc383a53d39` (revision 5); 13:35:15Z registered 1 target;
+  13:35:37Z `has stopped 1 running tasks: (task 9352238188ab4696b6b13b7e5266d034)`; 13:35:47Z
+  deregistered 1 target and began draining 1 task. The apply returned while the old task was still
+  `STOPPING` and the deployment still `IN_PROGRESS`; the target group's deregistration delay is 30
+  seconds.
+- **Item 5, the stopped task**, read until `STOPPED` (13:36:58Z), `s11_old_task_read_exit=0`:
+
+  ```
+  s11_stopped_task_status=STOPPED
+  s11_stopped_task_reason=Scaling activity initiated by (deployment ecs-svc/2903866395985344103)
+  s11_stopped_task_exit=0
+  ```
+
+  `stopCode` `ServiceSchedulerInitiated`; `stoppingAt` 13:35:37.624Z, `executionStoppedAt`
+  13:36:33.639Z, `stoppedAt` 13:36:56.784Z. The stop record, searched in the stream
+  `frontend/frontend/9352238188ab4696b6b13b7e5266d034` alone (`s11_stop_message_read_exit=0`,
+  `s11_stop_signal_read_exit=0`):
+
+  ```
+  s11_stop_message_events=1
+  s11_stop_message_line=9352238188ab4696b6b13b7e5266d034 2026-11-13T13:36:22Z msg: 'The server is exiting after its stop.',
+  s11_stop_signal_events=1
+  s11_stop_signal_line=9352238188ab4696b6b13b7e5266d034 2026-11-13T13:36:22Z signal: 'SIGTERM',
+  ```
+
+  The whole record in that stream, 12 events, each line of it an event of its own, all at
+  13:36:22Z, with no address and no `@`:
+
+  ```
+  2026-11-13T13:36:22Z {
+  2026-11-13T13:36:22Z   level: 40,
+  2026-11-13T13:36:22Z   time: 1794576982531,
+  2026-11-13T13:36:22Z   msg: 'The server is exiting after its stop.',
+  2026-11-13T13:36:22Z   severityText: 'WARN',
+  2026-11-13T13:36:22Z   attributes: {
+  2026-11-13T13:36:22Z     reason: 'SIGTERM',
+  2026-11-13T13:36:22Z     signal: 'SIGTERM',
+  2026-11-13T13:36:22Z     inFlightAtSignal: 0,
+  2026-11-13T13:36:22Z     drainMs: 1
+  2026-11-13T13:36:22Z   }
+  2026-11-13T13:36:22Z }
+  ```
+
+  The order held: the target was deregistered at 13:35:47Z, and the signal reached Node 35 seconds
+  later, after the 30-second delay, with nothing in flight; the server drained in 1 ms and the
+  container exited 0. The message line and the signal line are separate events, found by separate
+  searches, in the same second and the same stream.
+- **Item 6, the loop**, stopped at 13:37:24Z, after the old task had stopped:
+
+  ```
+  s11_loop_exit=0
+  s11_loop_requests=214 non_2xx=0 first_utc=2026-11-13T13:33:31Z last_utc=2026-11-13T13:37:24Z
+  ```
+
+- **Item 7, the second plan:** `s11_plan_after_exit=0`, no `s11_second_change=` line. The service
+  reads one deployment, `PRIMARY:COMPLETED:5`, `runningCount` 1, and revision 5 carries `ORIGIN`,
+  `DEPLOYMENT_DIAGNOSTICS=false` and `XFF_DEPTH=2`. The apply's destroy deregistered revision 4, the one
+  without `ORIGIN`, which now reads `INACTIVE`.
+- **Item 8.** `$L` and the plan files are removed at the end of this plan (`s11_logs_removed=yes`
+  below).
+
+## The end of the plan (13:39)
+
+`s11_logs_removed=yes`: `$L`, with every plan file, plan JSON, apply log, poll file and loop file of
+both steps, was removed and no longer exists. No background process of this plan is left running.
+The stack is as 185-15 left it except for the task definition's revision: revision 5, with `ORIGIN`,
+`DEPLOYMENT_DIAGNOSTICS=false` and `XFF_DEPTH=2`, one task, and a plan with no change.
