@@ -26,7 +26,7 @@ export const permAccessDisableTemplate: Template = buildMinimal({
   opinionQuestions: 1,
   infoQuestions: 0,
   settingsOverlay: {
-    access: { voterApp: false, candidateApp: true, underMaintenance: false }
+    access: { voterApp: false, contestantApp: true, underMaintenance: false }
   }
 });
 

@@ -47,7 +47,7 @@ export const defaultTemplate: Template = {
         external_id: 'election_default',
         name: { en: 'OpenVAA Demo Parliamentary Election 2026' },
         short_name: { en: 'Demo 2026' },
-        election_type: 'organization_list',
+        election_type: 'organization_list_and_independents',
         election_date: '2026-06-15',
         sort_order: 0,
         multiple_rounds: false,
@@ -215,6 +215,18 @@ export const defaultTemplate: Template = {
             showFeedbackPopup: 180,
             showSurveyPopup: 500,
             sections: ['candidate', 'organization', 'alliance']
+          },
+          // Declares both entity types and every registration mode for both, so the local registration screen offers the identity provider's mode, which is refused at the authorize step when no identity provider is configured.
+          contestantApp: {
+            questions: {
+              hideHero: false,
+              hideVideo: false
+            },
+            entityTypes: ['candidate', 'organization'],
+            registrationModes: {
+              candidate: ['identity_provider', 'email', 'code'],
+              organization: ['identity_provider', 'email', 'code']
+            }
           }
         }
       }

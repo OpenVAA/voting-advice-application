@@ -10,7 +10,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { assertLocalSupabaseUrl } from './localSupabaseUrl';
-import { planLinks } from './template/linkSentinels';
+import { importLinkFor, planLinks } from './template/linkSentinels';
 import {
   ANSWERS_BY_EXTERNAL_ID_KEY,
   COLLECTION_NON_COLUMNS,
@@ -100,6 +100,121 @@ export interface FindDataResult {
   type: 'success' | 'failure';
   data?: Array<Record<string, unknown>>;
   cause?: string;
+}
+
+/** The entity tables an invitation's promise can name. */
+export type InvitationTargetType = 'candidate' | 'organization' | 'faction' | 'alliance';
+
+/** The fields every item of an invitation batch may carry, whatever its scope. */
+interface InvitationSeedCommon {
+  /** The promised role; the SQL function defaults it to `editor`. */
+  role?: 'admin' | 'editor';
+  /** The invited address. An item without one gets a generated code. */
+  email?: string;
+  /** An ISO timestamp after which the invitation cannot be claimed. Absent means it does not expire. */
+  expires_at?: string;
+}
+
+/**
+ * The parent of a nomination an invitation states: none, an organization's or an alliance's nomination in the same contest, a name the invitee asked for, or the stored parent of a nomination named by its `id`.
+ */
+export type InvitationNominationParent =
+  | { kind: 'none' }
+  | { kind: 'entity'; entity_type: 'organization' | 'alliance'; entity_id: string }
+  | { kind: 'other'; name: string }
+  | { kind: 'keep' };
+
+/** A JSON object, the one shape besides null that `create_invitations` takes for a nomination's localized and presentation columns. */
+type InvitationNominationObject = Record<string, unknown>;
+
+/**
+ * One nomination of the invited entity, in the keys `create_invitations` reads. Every id is a uuid of the batch's project.
+ *
+ * An object with an `id` updates that nomination of the invited entity, and a column it does not state keeps its stored value; an object without one creates a nomination. `confirmed` is stated on every object.
+ */
+export interface InvitationNominationSeed {
+  /** A nomination of the invited entity to update; absent creates one. */
+  id?: string;
+  election_id: string;
+  constituency_id: string;
+  /** An integer; absent means the election's current round. */
+  election_round?: number;
+  election_symbol?: string | null;
+  parent: InvitationNominationParent;
+  confirmed: boolean;
+  name?: InvitationNominationObject | null;
+  short_name?: InvitationNominationObject | null;
+  info?: InvitationNominationObject | null;
+  color?: InvitationNominationObject | null;
+  image?: InvitationNominationObject | null;
+  /** An integer or null. */
+  sort_order?: number | null;
+  subtype?: string | null;
+  external_id?: string | null;
+  /** Written over the stored custom data key by key. It may not carry `requestedParentOrganization`, which only a parent of kind `other` sets. */
+  custom_data?: Record<string, unknown>;
+}
+
+/** A promise on one entity, named by exactly one of its row id and its `external_id` in the project. */
+export type EntityInvitationSeedItem = InvitationSeedCommon & {
+  /** `entity` is the SQL function's default scope. */
+  scope?: 'entity';
+} & (
+    | {
+        target_type: 'candidate' | 'organization';
+        /** Nominations of the invited entity, created or updated in the same call and never deleted. Every id in them is a uuid. */
+        nominations?: ReadonlyArray<InvitationNominationSeed>;
+      }
+    | {
+        target_type: 'faction' | 'alliance';
+        /** A faction or an alliance holds no nominations an invitation states. */
+        nominations?: never;
+      }
+  ) &
+  ({ target_id: string; external_id?: never } | { external_id: string; target_id?: never });
+
+/** A promise on the project the batch is seeded in. */
+export type ProjectInvitationSeedItem = InvitationSeedCommon & {
+  scope: 'project';
+  target_type?: never;
+  target_id?: string;
+  external_id?: never;
+};
+
+/** One item of the batch `create_invitations` reads, with the keys it reads them under. */
+export type InvitationSeedItem = EntityInvitationSeedItem | ProjectInvitationSeedItem;
+
+/** One element of the array `create_invitations` returns, in the order of the items. */
+export interface SeededInvitation {
+  id: string;
+  scope: 'project' | 'entity';
+  target_type: InvitationTargetType | null;
+  target_id: string;
+  role: 'admin' | 'editor';
+  /** The invited address, trimmed and lower-cased; null on a code invitation. */
+  email: string | null;
+  expires_at: string | null;
+  /** The generated code as `XXXX-XXXX-XXXX`; null on an email invitation. */
+  code: string | null;
+  /** Whether the invited entity is confirmed after the call; null on a project-scope item. */
+  entity_confirmed: boolean | null;
+  /** What the call did with the item's nominations; present only when the item states them. */
+  nominations?: SeededInvitationNominations;
+}
+
+/** The counts of one item's nominations the call wrote, left as they were, or created as a parent's. */
+export interface SeededInvitationNominations {
+  inserted: number;
+  updated: number;
+  unchanged: number;
+  /** Parent nominations the call created for a stated parent entity that had none in the contest. */
+  parents_created: number;
+}
+
+/** Options of `SupabaseAdminClient.createInvitations`. */
+export interface CreateInvitationsOptions {
+  /** Whether the call confirms each named entity of the batch; `true` when absent. It never unconfirms one. */
+  confirmEntity?: boolean;
 }
 
 /**
@@ -254,6 +369,8 @@ export class SupabaseAdminClient {
         if (isConfirmable && !('confirmed' in stripped)) {
           stripped.confirmed = true;
         }
+        const link = importLinkFor(tableName, record);
+        if (link) stripped[link.key] = link.refs;
         return stripped;
       });
     }
@@ -282,6 +399,35 @@ export class SupabaseAdminClient {
     });
     if (error) throw new Error(`bulkDelete failed: ${error.message}`);
     return result as Record<string, unknown>;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Invitations
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Seed a batch of invitations in this client's project through the `create_invitations` RPC.
+   *
+   * The whole batch is one transaction: a refused item, a duplicate or an unknown `external_id` fails the call and no row of the batch is written. When `confirmEntity` is true, the default, the call confirms each named entity of the batch that has a name; when it is false it confirms none, and it never unconfirms one. An item's nominations are created or updated, never deleted.
+   *
+   * The `code` of a returned element is the only place the plaintext of a generated code exists: the table holds its hash, which no role can read back. A caller that needs the code keeps it from this return value.
+   *
+   * @param items - the invitations to seed, in the keys the SQL function reads.
+   * @param options - `confirmEntity`: whether the call confirms the named entities; `true` when absent.
+   * @returns one element per item, in order.
+   * @throws Error naming the database error's code and nothing else. The database's message and details can quote a row, and a row holds an invitee's address.
+   */
+  async createInvitations(
+    items: ReadonlyArray<InvitationSeedItem>,
+    { confirmEntity = true }: CreateInvitationsOptions = {}
+  ): Promise<Array<SeededInvitation>> {
+    const { data, error } = await this.client.rpc('create_invitations', {
+      p_project_id: this.projectId,
+      p_invitations: items,
+      p_confirm_entity: confirmEntity
+    });
+    if (error) throw new Error(`createInvitations failed with database error ${error.code ?? 'unknown'}`);
+    return (data ?? []) as Array<SeededInvitation>;
   }
 
   // ---------------------------------------------------------------------------
@@ -428,7 +574,7 @@ export class SupabaseAdminClient {
     for (const entry of planLinks(data as Record<string, Array<Record<string, unknown>>>)) {
       switch (entry.kind) {
         case 'join':
-          await this.upsertJoinRows(entry, entry.target);
+          // Written by bulk_import from the item's link key.
           break;
         case 'jsonb':
           await this.updateJsonbRefs(entry, entry.target);
@@ -462,33 +608,6 @@ export class SupabaseAdminClient {
       .single();
     if (error) throw new Error(LINK_LOOKUP_ERRORS[table](externalId, error.message));
     return row.id;
-  }
-
-  /**
-   * The `join` arm: idempotent upserts into a dedicated association table.
-   *
-   * @param entry - The planned link.
-   * @param target - `entry.target`, narrowed to the join variant.
-   */
-  private async upsertJoinRows(
-    entry: Extract<LinkPlanEntry, { kind: 'join' }>,
-    target: Extract<LinkTarget, { kind: 'join' }>
-  ): Promise<void> {
-    // The parent lookup precedes the (possibly empty) reference loop, exactly as the hand-written blocks had it: an empty reference list is a no-op that still fails loudly on a missing parent.
-    //
-    // `entry.collection` needs no cast: the entry is narrowed to the `join` arm, whose collection type is `JoinParentCollection` — the exact domain of `LINK_LOOKUP_ERRORS`.
-    const parentId = await this.resolveExternalId(entry.collection, entry.parentExternalId);
-    for (const refExternalId of entry.refExternalIds) {
-      const childId = await this.resolveExternalId(entry.refTable, refExternalId);
-      // Named and typed, because `upsert` infers its row type from the argument, and from an inline object whose keys are computed strings it infers `string` and rejects the object.
-      const row: Record<string, string> = { [target.parentColumn]: parentId, [target.childColumn]: childId };
-      const { error: insertError } = await this.client
-        .from(target.table)
-        .upsert(row, { onConflict: target.onConflict });
-      if (insertError) {
-        throw new Error(`linkJoinTables: failed to insert ${target.table}: ${insertError.message}`);
-      }
-    }
   }
 
   /**

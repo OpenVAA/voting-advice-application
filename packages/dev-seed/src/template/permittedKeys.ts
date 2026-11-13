@@ -27,7 +27,7 @@
 import { PROPERTY_MAP } from '@openvaa/supabase-types';
 import { resolveCollectionName } from './collectionNames';
 import { LINK_SENTINELS } from './linkSentinels';
-import type { TablesInsert } from '@openvaa/supabase-types';
+import type { Enums, TablesInsert } from '@openvaa/supabase-types';
 import type { SentinelPayload } from './linkSentinels';
 
 // -----------------------------------------------------------------------------
@@ -215,7 +215,6 @@ const TABLE_COLUMNS = {
     'short_name',
     'sort_order',
     'subtype',
-    'terms_of_use_accepted',
     'updated_at'
   ],
   question_categories: [
@@ -299,16 +298,7 @@ const TABLE_COLUMNS = {
  */
 const PASS_THROUGH_COLUMNS = {
   accounts: ['created_at', 'id', 'name', 'updated_at'],
-  projects: [
-    'account_id',
-    'created_at',
-    'default_locale',
-    'id',
-    'lock_nominations',
-    'name',
-    'open_for_voters',
-    'updated_at'
-  ]
+  projects: ['account_id', 'created_at', 'default_locale', 'id', 'name', 'open_for_voters', 'updated_at']
 } as const satisfies { [C in PassThroughCollectionKey]: ReadonlyArray<Extract<keyof TablesInsert<C>, string>> };
 
 /** `true` when `TValue` is exactly `never`; the compile-time completeness probe below. */
@@ -501,11 +491,9 @@ export const SKIP_COLUMNS_SOURCE = 'apps/supabase/supabase/schema/501-bulk-opera
  * `entity_type` is denied on `nominations` alone. Three tables declare a column of that name, and it is two different things. On `nominations` it is generated from whichever entity reference the row carries, so no writer can set it and the RPC skips the key. On `question_categories` and `questions` it is a filter list the RPC carries and the database validates, so there the key is permitted and typed as an {@link EntityTypeList}. The condition in `_bulk_upsert_record` that exempts those two tables from the skip and this map state one rule and change together. On any other table the key is simply unknown, and the allow-list catches it with the allow-list's own message.
  */
 export const DENIED_BY_TABLE = {
-  nominations: ['entity_type'],
-  question_categories: ['entity_type'],
-  questions: ['entity_type']
+  nominations: ['entity_type']
 } as const satisfies {
-  [C in 'nominations' | 'question_categories' | 'questions']: ReadonlyArray<Extract<keyof TablesInsert<C>, string>>;
+  [C in 'nominations']: ReadonlyArray<Extract<keyof TablesInsert<C>, string>>;
 };
 
 /**
@@ -513,7 +501,7 @@ export const DENIED_BY_TABLE = {
  */
 export const SKIP_COLUMNS_NOT_DENIED: Readonly<Record<string, string>> = {
   project_id:
-    'Emitted on every generated row (1,481 of 1,481 measured across the 30 built-ins). ' +
+    'Emitted on every generated row of every built-in. ' +
     'The RPC drops the payload copy and re-supplies its own from p_project_id, so denying it would turn every seed run and every E2E setup red.',
   id:
     'A TablesInsert-legal key that two existing writer.test.ts fixtures supply (accounts and projects pass-through rows). ' +
@@ -762,11 +750,31 @@ type RefKeysFor<TCollection extends CollectionKey> =
   | (TCollection extends keyof typeof RPC_ADJACENT_REFS ? (typeof RPC_ADJACENT_REFS)[TCollection][number] : never);
 
 /**
+ * The entity type filter of a `questions` or `question_categories` row: the entity types whose entities answer it. An empty list, like null, addresses every type.
+ *
+ * Always a list, also for one type. A bare string is not a shorter spelling of a one-member list: the RPC quotes a JSON string as text, the cast to the JSON column fails, and the error names neither the key nor the row.
+ */
+export type EntityTypeList = Array<Enums<'entity_type'>>;
+
+/**
+ * Columns whose authored value is narrower than the generated insert type says, per collection. The generated type of a JSON column is `Json`, which admits every shape the database then refuses.
+ */
+type NarrowedColumns = {
+  question_categories: { entity_type?: EntityTypeList | null };
+  questions: { entity_type?: EntityTypeList | null };
+};
+
+/** The DB columns of `TCollection`, every one optional, with the columns {@link NarrowedColumns} names for it replaced by their narrower types. */
+type ColumnsFor<TCollection extends CollectionKey> = TCollection extends keyof NarrowedColumns
+  ? Omit<Partial<TablesInsert<TCollection>>, keyof NarrowedColumns[TCollection]> & NarrowedColumns[TCollection]
+  : Partial<TablesInsert<TCollection>>;
+
+/**
  * A hand-authored `fixed[]` row for `TCollection`: its DB columns, its sentinel keys, its non-column fields and its RPC relationship references — and nothing else.
  *
  * ⚠ **Excess property checking is a fresh-object-literal rule.** Assigning a row through an intermediate variable bypasses this type's protection entirely. The runtime guard is the only cover there; see `_helpers/buildMinimal.ts`.
  */
-export type FixedRow<TCollection extends CollectionKey> = Partial<TablesInsert<TCollection>> & {
+export type FixedRow<TCollection extends CollectionKey> = ColumnsFor<TCollection> & {
   external_id: string;
 } & Partial<Record<SentinelKeysFor<TCollection>, SentinelValue>> &
   Partial<Record<NonColumnKeysFor<TCollection>, unknown>> &

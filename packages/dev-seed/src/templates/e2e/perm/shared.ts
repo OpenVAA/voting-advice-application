@@ -98,15 +98,27 @@ export const MINIMAL_BASE_APP_SETTINGS = {
     // startFromConstituencyGroup OMITTED — see top-of-file JSONB rationale.
   },
   access: {
-    candidateApp: true,
+    contestantApp: true,
     voterApp: true,
     adminApp: true,
     underMaintenance: false,
     answersLocked: false
   },
-  // Both notifications explicitly OFF. app_settings is applied via merge_jsonb_column (deep merge), and the perm family is one sequential chain sharing the app_settings singleton — so without an explicit `candidateApp: { show: false }` here, the `candidateApp.show: true` set by perm-per-app-notifications BLEEDS into every downstream perm that spreads this base (e.g. perm-localisation-positive), where the modal notification then intercepts clicks on the candidate register flow. Only perm-per-app-notifications overrides this to `show: true`.
-  notifications: { voterApp: { show: false }, candidateApp: { show: false } },
-  analytics: { trackEvents: false }
+  // Both notifications are stated off, so no perm dataset that derives from this base shows a notification modal; only perm-per-app-notifications overrides them. Each perm setup replaces the stored settings row whole with its own template's settings, so nothing carries over from the setup before it.
+  notifications: { voterApp: { show: false }, contestantApp: { show: false } },
+  analytics: { trackEvents: false },
+  // The whole contestant app root: candidates only are served, and the registration matrix is the E2E base dataset's, email or code for candidates and organizations alike. The organizations' row decides nothing while the type is not served.
+  contestantApp: {
+    questions: {
+      hideHero: false,
+      hideVideo: false
+    },
+    entityTypes: ['candidate'],
+    registrationModes: {
+      candidate: ['email', 'code'],
+      organization: ['email', 'code']
+    }
+  }
   // `satisfies Json`, not `as const`: this object is written straight into the `app_settings.settings` JSONB column, whose type is the MUTABLE `Json`.
   // `as const` would make every nested array a readonly tuple, which `Json` rejects.
 } satisfies Json;
@@ -256,7 +268,6 @@ export function buildCandidate({
     external_id: idSuffix,
     first_name: `[CA${orgN}${candLetter}]`,
     last_name: `Candidate ${orgN === 1 ? 'One' : 'Two'} ${candLetter}`,
-    terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
     sort_order: sortOrder,
     organization: { external_id: `${prefix}or-${orgN}` },
     answersByExternalId: answersByExternalId ?? {}

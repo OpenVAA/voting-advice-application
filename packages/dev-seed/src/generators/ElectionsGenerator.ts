@@ -43,8 +43,8 @@ export class ElectionsGenerator {
         project_id: projectId,
         name: { en: faker.lorem.words({ min: 2, max: 4 }) },
         short_name: { en: `E${i + 1}` },
-        // NominationsGenerator's `count` branch emits one candidate-type nomination per candidate with no parent_nomination and no organization ref, which is the candidate-only shape.
-        election_type: 'candidate_only',
+        // The default election type admits every row the generators and a template's `fixed[]` rows can express: the parent-less candidate nominations of NominationsGenerator's `count` branch, and organization, alliance and faction nominations beside them.
+        election_type: 'organization_list_and_independents',
         election_date: faker.date.future({ years: 1, refDate }).toISOString().slice(0, 10),
         sort_order: i,
         multiple_rounds: false,
