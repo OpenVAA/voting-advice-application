@@ -6,14 +6,13 @@ import * as fs from 'fs/promises';
 import { glob } from 'glob';
 import * as path from 'path';
 import { COMPONENT_DIRS, COPY_TARGETS, GENERATED_OUTPUT, GITHUB_BASE, REPO_ROOT } from './docs-scripts.config';
+import { isMainModule } from './utils/cli';
 
-const OUTPUT_DIR = GENERATED_OUTPUT.components;
-const TOC_FILE = path.join(OUTPUT_DIR, 'README.md');
-
-interface ComponentDir {
+export interface ComponentDir {
   dir: string;
   name: string;
   importPrefix: string;
+  categorySubdir: string;
 }
 
 interface ComponentDoc {
@@ -32,12 +31,19 @@ interface ComponentDoc {
  * @param options.outputDir - Where the pages are written.
  * @param options.componentDirs - The component directories to read.
  */
-async function main() {
+export async function generateComponentDocs({
+  outputDir = GENERATED_OUTPUT.components,
+  componentDirs = COMPONENT_DIRS
+}: { outputDir?: string; componentDirs?: ReadonlyArray<ComponentDir> } = {}): Promise<void> {
   console.info('Extracting component documentation...\n');
 
+  const tocFile = path.join(outputDir, 'README.md');
   const allDocs: Array<ComponentDoc> = [];
 
-  for (const componentDir of COMPONENT_DIRS) {
+  // Start from an empty directory, so a page whose component has gone is not moved into the site
+  await fs.rm(outputDir, { recursive: true, force: true });
+
+  for (const componentDir of componentDirs) {
     console.info(`Processing ${componentDir.name}...`);
 
     // Find all Svelte files
@@ -46,6 +52,7 @@ async function main() {
     });
 
     console.info(`  Found ${files.length} Svelte files`);
+    if (files.length === 0) throw new Error(`No component found in ${componentDir.dir}`);
 
     for (const file of files) {
       const docstring = await extractDocstring(file);
@@ -82,20 +89,8 @@ async function main() {
       // Generate markdown
       const markdown = await generateComponentMarkdown(doc);
 
-      // Determine the category subdirectory based on which component dir this is from
-      let categorySubdir: string;
-      if (componentDir.importPrefix === '$lib/components') {
-        categorySubdir = 'components';
-      } else if (componentDir.importPrefix === '$lib/dynamic-components') {
-        categorySubdir = 'dynamic-components';
-      } else if (componentDir.importPrefix === '$candidate/components') {
-        categorySubdir = 'candidate/components';
-      } else {
-        categorySubdir = 'components';
-      }
-
       // Create componentName/+page.md structure for SvelteKit routing
-      const componentDirPath = path.join(OUTPUT_DIR, categorySubdir, path.dirname(relativePath), name);
+      const componentDirPath = path.join(outputDir, componentDir.categorySubdir, path.dirname(relativePath), name);
       const outputPath = path.join(componentDirPath, '+page.md');
 
       await fs.mkdir(componentDirPath, { recursive: true });
@@ -105,13 +100,16 @@ async function main() {
     }
   }
 
+  if (allDocs.length === 0) throw new Error('No component has a @component docstring');
+
   // Generate table of contents
   console.info('\nGenerating table of contents...');
-  const toc = await generateTableOfContents(allDocs);
-  await fs.writeFile(TOC_FILE, toc, 'utf-8');
+  const toc = await generateTableOfContents(allDocs, componentDirs);
+  await fs.mkdir(outputDir, { recursive: true });
+  await fs.writeFile(tocFile, toc, 'utf-8');
 
   console.info(`\n✓ Generated documentation for ${allDocs.length} components`);
-  console.info(`✓ Table of contents: ${TOC_FILE}`);
+  console.info(`✓ Table of contents: ${tocFile}`);
 }
 
 /**
@@ -134,8 +132,8 @@ async function extractDocstring(filePath: string): Promise<string | null> {
 /**
  * Check if a corresponding .type.ts file exists
  */
-async function findTypeFile(svelteFilePath: string): Promise<string | null> {
-  const basePath = svelteFilePath.replace('.svelte', '.type.ts');
+export async function findTypeFile(svelteFilePath: string): Promise<string | null> {
+  const basePath = svelteFilePath.replace(/\.svelte$/, '.type.ts');
   try {
     await fs.access(basePath);
     return basePath;
@@ -224,12 +222,15 @@ function demoteHeadings(markdown: string): string {
 /**
  * Generate table of contents for all components
  */
-async function generateTableOfContents(docs: Array<ComponentDoc>): Promise<string> {
+async function generateTableOfContents(
+  docs: Array<ComponentDoc>,
+  componentDirs: ReadonlyArray<ComponentDir>
+): Promise<string> {
   const lines: Array<string> = [];
 
   lines.push('# Component Documentation\n');
   lines.push('This documentation is automatically generated from the `@component` docstrings in Svelte files.\n');
-  const scannedDirs = COMPONENT_DIRS.map(({ dir }) => `\`${repoRelative(dir)}\``);
+  const scannedDirs = componentDirs.map(({ dir }) => `\`${repoRelative(dir)}\``);
   lines.push(
     `It lists every component with such a docstring in ${scannedDirs.slice(0, -1).join(', ')} and ${scannedDirs.at(-1)}. ` +
       'The pages are regenerated by `yarn workspace @openvaa/docs generate:docs`, so change a docstring rather than a page.\n'
@@ -250,8 +251,8 @@ async function generateTableOfContents(docs: Array<ComponentDoc>): Promise<strin
     byComponentDir.get(dirKey)!.push(doc);
   }
 
-  // Process each COMPONENT_DIR in order
-  for (const componentDir of COMPONENT_DIRS) {
+  // Process each component directory in order
+  for (const componentDir of componentDirs) {
     const components = byComponentDir.get(componentDir.dir);
     if (!components || components.length === 0) continue;
 
@@ -261,21 +262,9 @@ async function generateTableOfContents(docs: Array<ComponentDoc>): Promise<strin
     lines.push(`### ${componentDir.name}\n`);
 
     for (const component of components) {
-      // Determine the category subdirectory based on which component dir this is from
-      let categorySubdir: string;
-      if (component.componentDir.importPrefix === '$lib/components') {
-        categorySubdir = 'components';
-      } else if (component.componentDir.importPrefix === '$lib/dynamic-components') {
-        categorySubdir = 'dynamic-components';
-      } else if (component.componentDir.importPrefix === '$candidate/components') {
-        categorySubdir = 'candidate/components';
-      } else {
-        categorySubdir = 'components';
-      }
-
       // Generate absolute URL for the component page
       const componentPath = path
-        .join(categorySubdir, path.dirname(component.relativePath), component.name)
+        .join(component.componentDir.categorySubdir, path.dirname(component.relativePath), component.name)
         .replace(/\\/g, '/'); // Normalize path separators for URLs
       const absoluteUrl = `${routeRoot}/${componentPath}`;
 
@@ -293,7 +282,9 @@ async function generateTableOfContents(docs: Array<ComponentDoc>): Promise<strin
   return lines.join('\n');
 }
 
-main().catch((error) => {
-  console.error('Error generating component documentation:', error);
-  process.exit(1);
-});
+if (isMainModule(import.meta.url)) {
+  generateComponentDocs().catch((error) => {
+    console.error('Error generating component documentation:', error);
+    process.exit(1);
+  });
+}
