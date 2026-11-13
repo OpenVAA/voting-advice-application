@@ -11,7 +11,7 @@ export type DynamicSettings = {
    */
   survey?: {
     /**
-     * The link to the survey. This is passed to the translation function, which will replace `{sessionId}` with the URL-encoded session id if available or an empty string otherwise.
+     * The link to the survey. This is passed to the translation function, which replaces `{sessionId}` with the in-memory visit id when this visitor's usage events carry it, and with nothing otherwise.
      */
     linkTemplate: string;
     /**
@@ -75,7 +75,7 @@ export type DynamicSettings = {
        */
       bgColor?: string;
       /**
-       * Background color of the header when it’s over an image.
+       * Background color of the header’s top bar on a page that sets a header image. The image is drawn below the top bar, in the header.
        */
       overImgBgColor?: string;
     };
@@ -88,7 +88,7 @@ export type DynamicSettings = {
        */
       bgColor?: string;
       /**
-       * Background color of the header when it’s over an image.
+       * Background color of the header’s top bar on a page that sets a header image. The image is drawn below the top bar, in the header.
        */
       overImgBgColor?: string;
     };
@@ -106,7 +106,7 @@ export type DynamicSettings = {
    */
   entities: {
     /**
-     * Settings controlling whether entites with missing answers should be shown. This is currently only supported for candidates.
+     * Settings controlling whether entites with missing answers should be shown. Each served entity type has a key of its own, and each key decides for its own type alone.
      */
     hideIfMissingAnswers: {
       /**
@@ -244,11 +244,11 @@ export type DynamicSettings = {
      */
     sections: Array<typeof ENTITY_TYPE.Candidate | typeof ENTITY_TYPE.Organization | typeof ENTITY_TYPE.Alliance>;
     /**
-     * If defined, a feedback popup will be shown on the next page load, when the user has reached the results section and the number of seconds given by this value has passed. The popup will not be shown, if the user has already given some feedback.
+     * The delay in seconds after which a feedback popup will be shown on the next page load, when the user has reached the results section. The popup will not be shown, if the user has already given some feedback. A value of `0` disables the popup; a stored value that leaves this member out keeps the shipped default.
      */
     showFeedbackPopup?: number;
     /**
-     * The delay in seconds after which a survey popup will be shown on the next page load, when the user has reached the results section. The popup will only be shown if the relevant `analytics.survey` settings are defined and if the user has not already opened the survey.
+     * The delay in seconds after which a survey popup will be shown on the next page load, when the user has reached the results section. The popup will only be shown if the relevant `analytics.survey` settings are defined and if the user has not already opened the survey. A value of `0` disables the popup; a stored value that leaves this member out keeps the shipped default.
      */
     showSurveyPopup?: number;
   };
@@ -274,7 +274,7 @@ export type DynamicSettings = {
    */
   access: {
     /**
-     * If `true`, the Candidate App can be accessed.
+     * If `true`, the Contestant App can be accessed.
      */
     candidateApp: boolean;
     /**
@@ -299,7 +299,7 @@ export type DynamicSettings = {
    */
   notifications: {
     /**
-     * The notification shown to users of the Candidate App.
+     * The notification shown to users of the Contestant App.
      */
     candidateApp?: NotificationData | null;
     /**
@@ -308,29 +308,29 @@ export type DynamicSettings = {
     voterApp?: NotificationData | null;
   };
   /**
-   * Settings related to the Candidate App.
+   * Settings related to the Contestant App.
    */
   candidateApp: {
     /**
-     * Settings related to the question view in the Candidate App.
+     * Settings related to the question view in the Contestant App.
      */
     questions: {
       /**
-       * Whether to hide possible video content for questions in the Candidate App.
+       * Whether to hide possible video content for questions in the Contestant App.
        */
       hideVideo: boolean;
       /**
-       * Whether to hide possible hero content for questions in the Candidate App.
+       * Whether to hide possible hero content for questions in the Contestant App.
        */
       hideHero: boolean;
     };
   };
   /**
-   * Settings related to Candidate App pre-registration. If enabled, make sure to set the relevant env variables as well. Backend/per-instance controlled (moved from `StaticSettings` to `DynamicSettings`).
+   * Settings related to usage analytics.
    */
   preRegistration?: {
     /**
-     * Whether pre-registration is enabled for the Candidate App.
+     * Whether usage events other than the identifier-free page-view count are collected. The analytics provider, the consent mode and the visit-id mode are deployment configuration of the server and are not settings.
      */
     enabled?: boolean;
   };

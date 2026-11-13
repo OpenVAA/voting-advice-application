@@ -10,7 +10,7 @@ export type DeepPartial<TObject> = {
 /**
  * Deep merge two plain (non-constructed) objects with settings.
  *
- * Hoisted to `@openvaa/app-shared` so both `@openvaa/dev-seed` and the frontend can import a single source of truth. Note that `mergeAppSettings` in `apps/frontend/src/lib/utils/settings.ts` is a separate, SHALLOW merge with different semantics — do not confuse the two.
+ * Lives in `@openvaa/app-shared` so that `@openvaa/dev-seed` and the frontend import a single source of truth. `mergeAppSettings` in `apps/frontend/src/lib/utils/settings.ts` is a separate deep merge with different semantics — do not confuse the two: it skips a nullish member at the root, skips a nested `undefined`, lets a source object replace a `null` in the target, and clones nothing, so it accepts a reactive proxy as its target. This function throws in the last two cases.
  *
  * NB. Does NOT support constructed objects (e.g. `Date`) or arrays containing functions. Arrays are replaced wholesale via `structuredClone` (NOT element-merged).
  *

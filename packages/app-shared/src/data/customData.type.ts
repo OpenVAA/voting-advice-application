@@ -21,7 +21,7 @@ export type CustomData = {
    */
   Question: {
     /**
-     * Whether an open answer can be added in the Candidate App.
+     * Whether an open answer can be added in the Contestant App.
      */
     allowOpen?: boolean;
     /**
@@ -41,7 +41,7 @@ export type CustomData = {
      */
     hero?: HeroContent;
     /**
-     * If `true`, the question will be hidden in the Voter App but still visible in the Candidate App. Default `false`.
+     * If `true`, the question will be hidden in the Voter App but still visible in the Contestant App. Default `false`.
      */
     hidden?: boolean;
     /**
