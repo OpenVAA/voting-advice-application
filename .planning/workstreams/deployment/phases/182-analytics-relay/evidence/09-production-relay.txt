@@ -1,0 +1,98 @@
+ATTEMPT=20261019T114415Z.8b75341d1
+GATE_HEAD=8b75341d1a210bb8bd012b1e222308104d157b43
+GATE_TREE_CLEAN_BEFORE=yes
+BUILD_EXIT=0
+
+Observations, 2026-10-19T11:45:59Z
+Request body (route id read from PAGEVIEW_ROUTES as ROUTE.About):
+    {"routeId":"/(voters)/about","locale":"en","events":[{"name":"pageview","ago":0,"attributes":{"params":{},"duration":5000}},{"name":"menu_open","ago":100,"attributes":{}}]}Oversized body: 40000 bytes.
+Build directory before the first start:
+    2026-10-19T14:45:16 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/apps/frontend/build
+    2026-10-19T14:45:16 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/apps/frontend/build/index.js
+    2026-10-19T14:45:16 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/apps/frontend/build/handler.js
+
+Observation 1: provider log, port 64865
+    $ curl -s -o /dev/null -w %{http_code} -X POST http://127.0.0.1:64865/api/usage -H Content-Type: application/json -H Origin: http://127.0.0.1:64865 -H Sec-Fetch-Site: same-origin -H User-Agent: ua-planted-zz9plural -H X-Forwarded-For: 203.0.113.77 --data-binary @/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/tmp/182-evidence/09-gates.20261019T114415Z.8b75341d1.body.json
+    -> HTTP 204
+Analytics lines on standard output after the flush interval: 2
+    {"level":30,"severityText":"INFO","time":1792410359778,"msg":"pageview","attributes":{"routeId":"/(voters)/about","locale":"en","duration":5000,"params":{},"openvaa.app":"voter"}}
+    {"level":30,"severityText":"INFO","time":1792410359678,"msg":"menu_open","attributes":{"openvaa.app":"voter"}}
+Search of tmp/182-evidence/09-gates.20261019T114415Z.8b75341d1.log.out tmp/182-evidence/09-gates.20261019T114415Z.8b75341d1.log.err for ua-planted-zz9plural and 203.0.113.77: found nothing.
+
+Observation 2: the same server
+    $ curl -s -o /dev/null -w %{http_code} -X POST http://127.0.0.1:64865/api/usage -H Content-Type: application/json -H Origin: http://127.0.0.1:64865 -H Sec-Fetch-Site: same-origin -H User-Agent: ua-planted-zz9plural -H X-Forwarded-For: 203.0.113.77 -H Sec-GPC: 1 --data-binary @/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/tmp/182-evidence/09-gates.20261019T114415Z.8b75341d1.body.json
+    -> HTTP 204
+Sec-GPC: analytics lines before 2, after 2.
+    $ curl -s -o /dev/null -w %{http_code} -X POST http://127.0.0.1:64865/api/usage -H Content-Type: application/json -H Origin: http://127.0.0.1:64865 -H Sec-Fetch-Site: cross-site -H User-Agent: ua-planted-zz9plural -H X-Forwarded-For: 203.0.113.77 --data-binary @/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/tmp/182-evidence/09-gates.20261019T114415Z.8b75341d1.body.json
+    -> HTTP 403
+    $ curl -s -o /dev/null -w %{http_code} -X POST http://127.0.0.1:64865/api/usage -H Content-Type: application/json -H Origin: http://127.0.0.1:64865 -H Sec-Fetch-Site: same-origin -H User-Agent: ua-planted-zz9plural -H X-Forwarded-For: 203.0.113.77 --data-binary @/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/tmp/182-evidence/09-gates.20261019T114415Z.8b75341d1.big.json
+    -> HTTP 413
+    $ curl -s -o /dev/null -w %{http_code} -X POST http://127.0.0.1:64865/api/usage -H Content-Type: text/plain -H Origin: http://127.0.0.1:64865 -H Sec-Fetch-Site: same-origin -H User-Agent: ua-planted-zz9plural -H X-Forwarded-For: 203.0.113.77 --data-binary @/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/tmp/182-evidence/09-gates.20261019T114415Z.8b75341d1.body.json
+    -> HTTP 415
+Analytics lines after the refused requests: 2.
+Search of tmp/182-evidence/09-gates.20261019T114415Z.8b75341d1.log.out tmp/182-evidence/09-gates.20261019T114415Z.8b75341d1.log.err for ua-planted-zz9plural and 203.0.113.77: found nothing.
+Port 64865 is free after the stop.
+Server exit code after SIGTERM: 0
+Standard error of the log server:
+
+Observation 3: provider none, the same build directory, port 64871
+    $ curl -s -o /dev/null -w %{http_code} -X POST http://127.0.0.1:64871/api/usage -H Content-Type: application/json -H Origin: http://127.0.0.1:64871 -H Sec-Fetch-Site: same-origin -H User-Agent: ua-planted-zz9plural -H X-Forwarded-For: 203.0.113.77 --data-binary @/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/tmp/182-evidence/09-gates.20261019T114415Z.8b75341d1.body.json
+    -> HTTP 204
+Analytics lines on standard output: 0
+Search of tmp/182-evidence/09-gates.20261019T114415Z.8b75341d1.none.out tmp/182-evidence/09-gates.20261019T114415Z.8b75341d1.none.err for ua-planted-zz9plural and 203.0.113.77: found nothing.
+Port 64871 is free after the stop.
+Server exit code after SIGTERM: 0
+Build directory after the none start:
+    2026-10-19T14:45:16 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/apps/frontend/build
+    2026-10-19T14:45:16 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/apps/frontend/build/index.js
+    2026-10-19T14:45:16 /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/apps/frontend/build/handler.js
+The build directory was not rebuilt between the log start and the none start.
+
+Observation 4: provider posthog, stand-in on port 64873, server port 64874
+    $ curl -s -o /dev/null -w %{http_code} -X POST http://127.0.0.1:64874/api/usage -H Content-Type: application/json -H Origin: http://127.0.0.1:64874 -H Sec-Fetch-Site: same-origin -H User-Agent: ua-planted-zz9plural -H X-Forwarded-For: 203.0.113.77 --data-binary @/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/tmp/182-evidence/09-gates.20261019T114415Z.8b75341d1.body.json
+    -> HTTP 204
+Stand-in requests after the flush interval: 1
+    POST /batch/
+    headers: {"host":"127.0.0.1:64873","connection":"keep-alive","content-type":"application/json","accept":"*/*","accept-language":"*","sec-fetch-mode":"cors","user-agent":"node","accept-encoding":"gzip, deflate","content-length":"624"}
+    body: {"api_key":"(set)","batch":[{"event":"pageview","timestamp":"2026-10-19T11:46:13.424Z","distinct_id":"44eb2faf-80ca-4436-80bb-b2a728fcedc1","properties":{"routeId":"/(voters)/about","locale":"en","duration":5000,"params":{},"openvaa.app":"voter","distinct_id":"44eb2faf-80ca-4436-80bb-b2a728fcedc1","$process_person_profile":false,"$geoip_disable":true}},{"event":"menu_open","timestamp":"2026-10-19T11:46:13.324Z","distinct_id":"e85b22c7-221c-4cc8-8290-354c4962d0f9","properties":{"openvaa.app":"voter","distinct_id":"e85b22c7-221c-4cc8-8290-354c4962d0f9","$process_person_profile":false,"$geoip_disable":true}}]}
+    item pageview: $process_person_profile=false $geoip_disable=true
+    item menu_open: $process_person_profile=false $geoip_disable=true
+Search of /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/tmp/182-evidence/09-gates.20261019T114415Z.8b75341d1.standin.record tmp/182-evidence/09-gates.20261019T114415Z.8b75341d1.posthog.out tmp/182-evidence/09-gates.20261019T114415Z.8b75341d1.posthog.err for ua-planted-zz9plural and 203.0.113.77: found nothing.
+Shutdown measurement: one more request, then SIGTERM at once.
+    $ curl -s -o /dev/null -w %{http_code} -X POST http://127.0.0.1:64874/api/usage -H Content-Type: application/json -H Origin: http://127.0.0.1:64874 -H Sec-Fetch-Site: same-origin -H User-Agent: ua-planted-zz9plural -H X-Forwarded-For: 203.0.113.77 --data-binary @/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/tmp/182-evidence/09-gates.20261019T114415Z.8b75341d1.body.json
+    -> HTTP 204
+Port 64874 is free after the stop.
+Server exit code after SIGTERM: 0
+The stand-in received the event sent just before SIGTERM (requests 1 -> 2): the shutdown flush delivered it.
+Standard error of the posthog server:
+
+Observation 5: provider posthog with no key, server port 64880
+The server did not start; its process exited with code 1.
+Standard output and standard error of the no-key start:
+    {
+      level: 50,
+      time: 1792410377747,
+      msg: 'The analytics configuration is unusable; no analytics events are sent.',
+      severityText: 'ERROR',
+      attributes: { variable: 'ANALYTICS_POSTHOG_KEY', reason: 'missing' }
+    }
+    file:///Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/apps/frontend/build/server/chunks/entries/hooks.server.js-DUHNJF-3.js:695
+    	if (missing.length > 0) throw new Error(`Required environment variables are not set: ${missing.join(", ")}`);
+    	                              ^
+    
+    Error: Required environment variables are not set: ANALYTICS_POSTHOG_KEY
+        at Object.init (file:///Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/apps/frontend/build/server/chunks/entries/hooks.server.js-DUHNJF-3.js:695:32)
+        at file:///Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/apps/frontend/build/server/chunks/index.js-BO56qpfj.js:3789:35
+        at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+        at async Server.init (file:///Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/apps/frontend/build/server/chunks/index.js-BO56qpfj.js:3771:3)
+        at async file:///Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/apps/frontend/build/server/chunks/handler-D4U-kEVy.js:1264:1
+    
+    Node.js v24.21.0
+
+Listeners on the ports used (64865 64871 64873 64874 64880) after the run:
+Any listener left: no
+
+TYPECHECK_EXIT=0
+LINT_EXIT=0
+GATE_HEAD_AFTER=8b75341d1a210bb8bd012b1e222308104d157b43
+GATE_TREE_CLEAN_AFTER=yes

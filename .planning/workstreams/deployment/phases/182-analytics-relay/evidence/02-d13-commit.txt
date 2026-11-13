@@ -1,0 +1,40 @@
+ATTEMPT=20261019T094916Z.876100781
+D13_BASE_HEAD=876100781401ea19bf0ff6b01168ceb95c1f22f8
+COMMIT_FILES_BEGIN
+apps/supabase/supabase/schema/106-app-settings.sql
+apps/supabase/supabase/migrations/00001_initial_schema.sql
+apps/supabase/supabase/tests/database/38-contestant-app-public-config.test.sql
+apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts
+apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts
+.claude/skills/database/SKILL.md
+.claude/skills/database/schema-reference.md
+.claude/skills/database/rls-policy-map.md
+apps/docs/src/routes/(content)/developers-guide/configuration/app-settings/+page.md
+COMMIT_FILES_END
+TREE_STATUS_OUTPUT (whole tree, before staging):
+     M .claude/skills/database/SKILL.md
+     M .claude/skills/database/rls-policy-map.md
+     M .claude/skills/database/schema-reference.md
+     M apps/docs/src/routes/(content)/developers-guide/configuration/app-settings/+page.md
+     M apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.test.ts
+     M apps/frontend/src/lib/api/adapters/supabase/dataProvider/supabaseDataProvider.ts
+     M apps/supabase/supabase/migrations/00001_initial_schema.sql
+     M apps/supabase/supabase/schema/106-app-settings.sql
+     M apps/supabase/supabase/tests/database/38-contestant-app-public-config.test.sql
+TREE_STATUS_OUTPUT (apps/supabase, before staging):
+     M apps/supabase/supabase/migrations/00001_initial_schema.sql
+     M apps/supabase/supabase/schema/106-app-settings.sql
+     M apps/supabase/supabase/tests/database/38-contestant-app-public-config.test.sql
+COMMIT_TREE_ONLY_OWN_FILES=yes
+D13_COMMIT=87ae648f6f8808240ca939a79e19885332cc72ad
+GATE_HEAD=87ae648f6f8808240ca939a79e19885332cc72ad
+GATE_TREE_CLEAN_BEFORE=yes
+TYPECHECK_EXIT=0
+GATE_HEAD_AFTER=87ae648f6f8808240ca939a79e19885332cc72ad
+GATE_TREE_CLEAN_AFTER=yes
+NOTES:
+    typecheck: yarn workspace @openvaa/frontend typecheck, with a TURBO_CACHE_DIR private to this attempt
+    1792403385547 COMPLETED 2999 FILES 0 ERRORS 0 WARNINGS 0 FILES_WITH_PROBLEMS
+    fast checks before staging: yarn assert:schema-migration-parity 0, yarn assert:comment-hygiene 0, yarn prettier --check on the nine files 0, eslint on the two provider files 0
+    provider test file: red 6 failed / 116 passed before the provider edit, green 122 passed after it
+    perm-closed-project.spec.ts asserts UI behaviour, not the member set of the settings; not edited, not run

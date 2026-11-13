@@ -1,0 +1,17 @@
+ATTEMPT=20261020T061004Z.cb8da595b414
+WINDOW_ATTEMPT=20261020T055034Z.cb8da595b414
+E2E_HEAD=cb8da595b414c15572ad05e23b7658731834727c
+COMMAND=PLAYWRIGHT_ANALYTICS_STANDALONE=1 ANALYTICS_PROVIDER=log ANALYTICS_CONSENT_MODE=free bash tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/182-28-consent-free-20261020T055034Z.cb8da595b414 --project analytics-consent-free
+RUN_DIR=tests/e2e-runs/182-28-consent-free-20261020T055034Z.cb8da595b414
+WRAPPER_EXIT=0
+TOTAL=7
+PASSED=7
+FAILED=0
+FLAKY=0
+SKIPPED=0
+DID_NOT_RUN=0
+VERDICT_EXIT=0
+SCHEMA_PROBE=t
+E2E_HEAD_AFTER=cb8da595b414c15572ad05e23b7658731834727c
+    e2e-evidence.mjs: tests/e2e-runs/182-28-consent-free-20261020T055034Z.cb8da595b414 -- total 7, passed 7, failed 0, flaky 0, skipped 0, didNotRun 0
+    VERDICT OK: 7 tests -- passed 7, failed 0, flaky 0, skipped 0, did not run 0
