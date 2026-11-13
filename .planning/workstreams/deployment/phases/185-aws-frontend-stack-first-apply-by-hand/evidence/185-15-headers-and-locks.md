@@ -93,3 +93,36 @@ ON_APPLY_EXIT=0
   the tfvars are not changed.
 - **The tracer gate.** The Task 1 verify was re-run before Task 2 (auto mode off, `end-of-phase`
   human verification, an automated-only `<verify>`).
+
+## Task 2: both locks refusing, and the load balancer's own redirect (item 5, 11:18 to 11:20)
+
+```
+LOCK2_NO_HEADER=403
+LOCK2_WRONG_HEADER=403
+LOCK2_RIGHT_HEADER=200
+ALB_HTTP_REDIRECT=301 location=https://origin.staging.openvaa.org:443/
+ALB_SG_RULES_DURING=3
+```
+
+- **The inputs.** `origin_verify_header_name` read `x-origin-verify`; `origin_verify_header_value`,
+  the sensitive output, was read into a variable of the same command, handed to `curl` as a
+  configuration on a file descriptor (`-K <(printf ...)`), so it was on no command line, and unset
+  after its one use. The load balancer's name was resolved with `dig` into a variable and used with
+  `curl --resolve origin.staging.openvaa.org:443:<it>`; `s9_lock_inputs_exit=0`. Neither value is
+  printed or written anywhere.
+- **The listener, at 11:18:53Z.** Each curl exit 0.
+  - No `x-origin-verify` header: `s9_lock_no_header=403`.
+  - `x-origin-verify: not-the-secret`: `s9_lock_wrong_header=403`.
+  - The value CloudFront sends: `s9_lock_right_header=200`, the body `status` `ok` and `build`
+    `712947a1bd44a735f66ee8f51610f4748d76cd30`, the image tag.
+  - The 403 is the listener's own: a repeat of the request without the header answered with
+    `server: awselb/2.0`, `content-type: text/plain; charset=utf-8` and an empty body, which is the
+    default action's `fixed_response` (`403`, `text/plain`) in `infra/modules/frontend-service/origin.tf`,
+    not a page of the application.
+- **Port 80.** `http://origin.staging.openvaa.org/` through `--resolve ...:80:`:
+  `s9_lb_http=301 location=https://origin.staging.openvaa.org:443/`.
+- **The load balancer's group during the observation.** `describe-security-group-rules` exit 0:
+  `s9_lb_sg_ingress_during=3`, by the role of their source `cloudfront-prefix-list` on 443 and
+  `single-address` on 443 and on 80.
+- **The service.** `describe-services` exit 0: task definition revision 2, one running task, one
+  deployment, `COMPLETED`. The diagnostics body of Task 1 was therefore served by the new revision.
