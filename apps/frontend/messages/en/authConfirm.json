@@ -1,0 +1,13 @@
+{
+  "authConfirm": {
+    "cancel": "Cancel",
+    "continue": "Continue",
+    "intro": {
+      "email_change": "Press Continue to confirm your email address and sign in.",
+      "magiclink": "Press Continue to sign in.",
+      "recovery": "Press Continue to sign in and set a new password."
+    },
+    "signedIn": "This browser is already signed in to an account. Continuing signs that account out first.",
+    "title": "Continue from your email"
+  }
+}

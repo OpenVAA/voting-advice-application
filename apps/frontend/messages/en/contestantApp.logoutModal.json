@@ -1,0 +1,29 @@
+{
+  "contestantApp.logoutModal": {
+    "continue": "Continue entering data",
+    "ingress": "Are you sure you want to log out? You will be automatically logged out after {timeLeft} seconds.",
+    "itemsLeft": [
+      {
+        "declarations": ["input infoQuestionsLeft", "input opinionQuestionsLeft"],
+        "selectors": ["infoQuestionsLeft", "opinionQuestionsLeft"],
+        "match": {
+          "infoQuestionsLeft=1, opinionQuestionsLeft=1": "There is still one item of basic info and one opinion to fill.",
+          "infoQuestionsLeft=1, opinionQuestionsLeft=*": "There is still one item of basic info and {opinionQuestionsLeft} opinions to fill.",
+          "infoQuestionsLeft=*, opinionQuestionsLeft=1": "There are still {infoQuestionsLeft} items of basic info and one opinion to fill.",
+          "infoQuestionsLeft=*, opinionQuestionsLeft=*": "There are still {infoQuestionsLeft} items of basic info and {opinionQuestionsLeft} opinions to fill."
+        }
+      }
+    ],
+    "questionsLeft": [
+      {
+        "declarations": ["input opinionQuestionsLeft"],
+        "selectors": ["opinionQuestionsLeft"],
+        "match": {
+          "opinionQuestionsLeft=1": "There is still one opinion to fill.",
+          "opinionQuestionsLeft=*": "There are still {opinionQuestionsLeft} opinions to fill."
+        }
+      }
+    ],
+    "title": "Some of Your Data Is Still Missing"
+  }
+}
