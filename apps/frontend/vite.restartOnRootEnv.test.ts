@@ -2,8 +2,8 @@
 
 import { EventEmitter } from 'node:events';
 import { join } from 'node:path';
-import { describe, expect, it, vi } from 'vitest';
-import { restartOnRootEnv } from './vite.restartOnRootEnv';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { RESTART_DEBOUNCE_MS, restartOnRootEnv } from './vite.restartOnRootEnv';
 import type { Plugin, ViteDevServer } from 'vite';
 
 const repoRoot = join('/', 'repo');
@@ -27,6 +27,14 @@ function configure(plugin: Plugin, server: ViteDevServer): void {
 }
 
 describe('restartOnRootEnv', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('is a dev-server-only plugin with a namespaced name', () => {
     const plugin = restartOnRootEnv(repoRoot);
     expect(plugin.name).toBe('openvaa:restart-on-root-env');
@@ -43,6 +51,7 @@ describe('restartOnRootEnv', () => {
     const { server, watcher, restart } = fakeServer();
     configure(restartOnRootEnv(repoRoot), server);
     watcher.emit('change', rootEnv);
+    vi.advanceTimersByTime(RESTART_DEBOUNCE_MS);
     expect(restart).toHaveBeenCalledTimes(1);
   });
 
@@ -50,6 +59,7 @@ describe('restartOnRootEnv', () => {
     const { server, watcher, restart } = fakeServer();
     configure(restartOnRootEnv(repoRoot), server);
     watcher.emit('add', rootEnv);
+    vi.advanceTimersByTime(RESTART_DEBOUNCE_MS);
     expect(restart).toHaveBeenCalledTimes(1);
   });
 
@@ -57,6 +67,27 @@ describe('restartOnRootEnv', () => {
     const { server, watcher, restart } = fakeServer();
     configure(restartOnRootEnv(repoRoot), server);
     watcher.emit('change', `${repoRoot}/apps/../.env`);
+    vi.advanceTimersByTime(RESTART_DEBOUNCE_MS);
+    expect(restart).toHaveBeenCalledTimes(1);
+  });
+
+  it('restarts when the repo-root .env is deleted', () => {
+    const { server, watcher, restart } = fakeServer();
+    configure(restartOnRootEnv(repoRoot), server);
+    watcher.emit('unlink', rootEnv);
+    vi.advanceTimersByTime(RESTART_DEBOUNCE_MS);
+    expect(restart).toHaveBeenCalledTimes(1);
+  });
+
+  it('restarts once for the burst of events a save by rename makes', () => {
+    const { server, watcher, restart } = fakeServer();
+    configure(restartOnRootEnv(repoRoot), server);
+    watcher.emit('unlink', rootEnv);
+    vi.advanceTimersByTime(20);
+    watcher.emit('add', rootEnv);
+    vi.advanceTimersByTime(20);
+    watcher.emit('change', rootEnv);
+    vi.advanceTimersByTime(RESTART_DEBOUNCE_MS);
     expect(restart).toHaveBeenCalledTimes(1);
   });
 
@@ -67,6 +98,8 @@ describe('restartOnRootEnv', () => {
     watcher.emit('change', join(repoRoot, '.env.example'));
     watcher.emit('add', join(repoRoot, '.env.local'));
     watcher.emit('change', join(repoRoot, 'apps', 'frontend', 'src', 'app.html'));
+    watcher.emit('unlink', join(repoRoot, '.env.local'));
+    vi.advanceTimersByTime(RESTART_DEBOUNCE_MS);
     expect(restart).not.toHaveBeenCalled();
   });
 });
