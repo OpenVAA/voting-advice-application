@@ -73,23 +73,6 @@ export function buildRoute(options: RouteOptions, current?: BuildRouteCurrent): 
 }
 
 /**
- * Localize an in-app path that the route map cannot address.
- *
- * `buildRoute` covers every target named by a route key, which is nearly all of them. A caller-supplied return path arriving on a query string has no key by construction, and it still needs the same locale prefix added by the same mechanism, or the app grows a second way of writing a localized URL and the two drift.
- *
- * This does NOT validate `path`. It is the caller's job to establish that the value is a safe in-app path before asking for it to be localized; `safeRedirectTarget` in this module is the house validator for exactly that.
- *
- * The locale is widened here for the same reason `buildRoute` widens it below: the app carries the request locale as a plain string, while Paraglide types it as a closed union generated at build time.
- *
- * @param path - An app path beginning with a separator, already validated by its caller.
- * @param locale - The locale to prefix with. Omit to use the current one.
- * @returns The path carrying whatever prefix Paraglide adds for that locale, which is none for the base locale.
- */
-export function localizeAppPath(path: string, locale?: string): string {
-  return localizeHref(path, locale ? { locale: locale as (typeof paraglideLocales)[number] } : undefined);
-}
-
-/**
  * The current page state `buildRoute` carries route params and persistent search params over from. `page` from `$app/state` satisfies it.
  */
 export interface BuildRouteCurrent {

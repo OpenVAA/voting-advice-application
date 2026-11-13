@@ -1,5 +1,4 @@
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
-import type { DataWriter } from '$lib/api/base/dataWriter.type';
 
 export type AuthContext = {
   /**
@@ -17,20 +16,6 @@ export type AuthContext = {
    * @returns A Promise resolving when logout is complete.
    */
   logout: () => Promise<void>;
-
-  /**
-   * Request a password reset email.
-   * @param email - The user's email.
-   */
-  requestForgotPasswordEmail: (opts: { email: string }) => ReturnType<DataWriter['requestForgotPasswordEmail']>;
-
-  /**
-   * Reset password using a recovery session (after clicking email link).
-   * The code parameter is ignored by Supabase adapter (session is established via auth callback).
-   * @param code - Legacy reset code (ignored -- session is established via auth callback).
-   * @param password - The new password.
-   */
-  resetPassword: (opts: { code: string; password: string }) => ReturnType<DataWriter['resetPassword']>;
 
   /**
    * Change the current user's password.

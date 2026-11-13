@@ -9,8 +9,7 @@ export const API_ROOT = '/api';
  */
 export const UNIVERSAL_API_ROUTES = {
   logout: `${API_ROOT}/auth/logout`,
-  preregister: `${API_ROOT}/candidate/preregister`,
-  token: `${API_ROOT}/oidc/token`,
+  identityProviderRegistration: `${API_ROOT}/contestant/identity-provider`,
 
   // Job management routes for the Admin App
   jobsActive: `${API_ROOT}/admin/jobs/active`,

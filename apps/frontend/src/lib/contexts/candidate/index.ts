@@ -1,5 +1,0 @@
-// Class is type-only to prevent accidental direct construction; use initCandidateContext() / getCandidateContext() for runtime access.
-export type { CandidateContextProvider } from './candidateContext.svelte';
-export { getCandidateContext, initCandidateContext } from './candidateContext.svelte';
-export * from './candidateContext.type';
-export * from './candidateUserDataState.type';

@@ -1,4 +1,4 @@
-import { ADMIN, isCandidateRoute } from './route';
+import { ADMIN, isContestantRoute, ROUTE } from './route';
 import type { Route } from './route';
 
 /**
@@ -74,7 +74,11 @@ export type AppGate = {
   readonly isRoute: (routeId: string) => boolean;
   /** This application's login page, as a key of the `ROUTE` map. It is one of the entry routes. */
   readonly loginRoute: Route;
-  /** Where to send a caller who already has a session and is asking for this application's login page. */
+  /**
+   * The routes a signed-in caller is sent away from, each as a key of the `ROUTE` map: the screens a visitor signs in or registers through. The handler tests whether the request's route id is the id of one of them.
+   */
+  readonly entryRoutes: ReadonlyArray<Route>;
+  /** Where to send a caller who already has a session and is asking for one of this application's entry routes. It carries no parameter. */
   readonly whenAuthenticatedOnLogin: GateRedirect;
   /** Where to send a caller with no session who is asking for a route inside this application's `(protected)` group. */
   readonly whenUnauthenticatedInProtectedGroup: GateRedirect;
@@ -97,19 +101,27 @@ export function isAdminRoute(routeId: string): boolean {
 /**
  * The Contestant App's gate.
  */
-const CANDIDATE_GATE: AppGate = Object.freeze({
-  name: 'Candidate App',
-  isRoute: isCandidateRoute,
-  loginRoute: 'CandAppLogin',
+const CONTESTANT_GATE: AppGate = Object.freeze({
+  name: 'Contestant App',
+  isRoute: isContestantRoute,
+  loginRoute: 'ContestantAppLogin',
+  entryRoutes: Object.freeze([
+    'ContestantAppLogin',
+    'ContestantAppSignIn',
+    'ContestantAppRegister',
+    'ContestantAppRegisterEmail',
+    'ContestantAppRegisterSignIn',
+    'ContestantAppIdentityProviderError'
+  ] satisfies ReadonlyArray<Route>),
   whenAuthenticatedOnLogin: Object.freeze({
     status: 303,
-    route: 'CandAppHome',
+    route: 'ContestantAppHome',
     params: () => ({})
   }),
   whenUnauthenticatedInProtectedGroup: Object.freeze({
     status: 303,
-    route: 'CandAppLogin',
-    // The value is caller-influenced only in the sense that it is the path the caller asked for; it is emitted here and validated by `safeRedirectTarget` in the login action that consumes it, which is the single validation site named in `loginRedirectTarget.ts`.
+    route: 'ContestantAppLogin',
+    // The value is caller-influenced only in the sense that it is the path the caller asked for; it is emitted here and validated by `safeRedirectTarget` where it is consumed.
     params: ({ redirectTo }: GateRedirectContext) => ({ redirectTo })
   })
 });
@@ -123,6 +135,7 @@ const ADMIN_GATE: AppGate = Object.freeze({
   name: 'Admin App',
   isRoute: isAdminRoute,
   loginRoute: 'AdminAppLogin',
+  entryRoutes: Object.freeze(['AdminAppLogin'] satisfies ReadonlyArray<Route>),
   whenAuthenticatedOnLogin: Object.freeze({
     status: 303,
     route: 'AdminAppHome',
@@ -140,7 +153,7 @@ const ADMIN_GATE: AppGate = Object.freeze({
  *
  * The Voter App is deliberately absent. It is public — it has no `(protected)` route group and nothing in it requires a session — so it has no row, and `resolveAppGate` returning `undefined` for a voter route is what keeps the handler from fetching a session on a public page load. `routeConsistency.test.ts` states that exclusion against the route tree on disk, so a voter surface that grew a protected group would fail the unit suite rather than ship ungated.
  */
-export const APP_GATES: ReadonlyArray<AppGate> = Object.freeze([CANDIDATE_GATE, ADMIN_GATE]);
+export const APP_GATES: ReadonlyArray<AppGate> = Object.freeze([CONTESTANT_GATE, ADMIN_GATE]);
 
 /**
  * The gate row that claims `routeId`, or `undefined` when no application does.
@@ -154,4 +167,17 @@ export const APP_GATES: ReadonlyArray<AppGate> = Object.freeze([CANDIDATE_GATE, 
  */
 export function resolveAppGate(routeId: string): AppGate | undefined {
   return APP_GATES.find((gate) => gate.isRoute(routeId));
+}
+
+/**
+ * True when `routeId` is an entry route of the row of the gate table that claims it.
+ *
+ * The two application layouts use it to withdraw the message that a sign-out could not be confirmed: the gate sends a live session away from an entry route, so a request that reaches one found no session. The request hook makes the same test on the row it has already resolved.
+ *
+ * @param routeId - A SvelteKit route id as `page.route.id` gives it, which is `null` on a page with no matched route.
+ * @returns `true` when a row claims the id and lists it among its entry routes.
+ */
+export function isEntryRoute(routeId: string | null | undefined): boolean {
+  if (routeId == null) return false;
+  return resolveAppGate(routeId)?.entryRoutes.some((key) => ROUTE[key] === routeId) ?? false;
 }

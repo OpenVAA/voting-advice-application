@@ -1,10 +1,12 @@
 import type { FeedbackWriter } from '$lib/api/base/feedbackWriter.type';
 import type { ComponentContext } from '../component';
 import type { DataContext } from '../data';
+import type { ReactiveHandle } from '../utils/reactiveHandle.type';
 import type { AppCustomization } from './appCustomization.type';
 import type { RouteBuilder } from './getRoute.svelte';
 import type { PopupState } from './popup';
 import type { TrackingService } from './tracking';
+import type { GateInput } from './tracking/gates';
 import type { UserPreferences } from './userPreferences.type';
 
 /**
@@ -17,6 +19,11 @@ import type { UserPreferences } from './userPreferences.type';
 export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode'> &
   DataContext &
   TrackingService & {
+    /**
+     * The tracking producer's gate input — the analytics projection, the Global Privacy Control signal, the `trackEvents` setting and the stored consent — so that layouts and components evaluate the gate functions of `tracking/gates.ts` against the one input the producer sends under.
+     * A reactive `{ readonly current }` handle: read it as `ctx.analyticsGate.current` inside a tracking scope, never through a destructured copy of `current`.
+     */
+    analyticsGate: ReactiveHandle<GateInput>;
     /**
      * The current locale, exposed as a BARE reactive accessor.
      * Read directly via `ctx.locale`. MUST be read off `ctx` (never destructured) — it is a reactive accessor per CLAUDE.md's Context Destructuring Rule.
@@ -114,4 +121,4 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
 /**
  * The possible types of the application
  */
-export type AppType = 'admin' | 'candidate' | 'voter' | undefined;
+export type AppType = 'admin' | 'contestant' | 'voter' | undefined;
