@@ -80,7 +80,7 @@ export class CleanFixture {
 
   /** An Edge Function dispositioned as needing a project term, invoked with the camelCase spelling of the term. */
   dispositionedInvocationCamelCase(): Promise<unknown> {
-    return this.supabase.functions.invoke('invite-candidate', {
+    return this.supabase.functions.invoke('account-access', {
       body: { firstName: 'Ada', lastName: 'Lovelace', email: 'ada@example.org', projectId: this.projectId }
     });
   }
@@ -101,14 +101,16 @@ export class CleanFixture {
 
   /** A dispositioned Edge Function invoked through the optional-CALL punctuator, carrying the project term its disposition requires. The point of the shape is the PUNCTUATOR rather than the function: both live spellings of the project term are already exercised above, and what is new here is only that the invocation matcher reads this punctuator and still performs a real check behind it. */
   optionalCallDispositionedInvocation(): Promise<unknown> {
-    return this.supabase.functions.invoke?.('invite-candidate', {
+    return this.supabase.functions.invoke?.('account-access', {
       body: { firstName: 'Ada', lastName: 'Lovelace', email: 'ada@example.org', projectId: this.projectId }
     });
   }
 
-  /** An Edge Function that resolves its project from deployment configuration and treats a body project term as a claim it refuses. Its payload carries no project term BY DESIGN, so demanding one here would be a false demand. */
-  deploymentScopedInvocation(): Promise<unknown> {
-    return this.supabase.functions.invoke('identity-callback', { body: { id_token: 'header.payload.signature' } });
+  /** A dispositioned Edge Function invoked with the snake-case spelling of the project term beside other keys, the shape the identity provider's callback sends. */
+  snakeCaseProjectTermInvocation(): Promise<unknown> {
+    return this.supabase.functions.invoke('identity-callback', {
+      body: { id_token: 'header.payload.signature', project_id: this.projectId }
+    });
   }
 
   /** A client call that reaches no table at all. It is the near miss for the invocation and schema-hop rules: both must leave it alone, and it is committed so that stays measured rather than assumed. */
