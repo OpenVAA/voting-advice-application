@@ -1,10 +1,10 @@
 ---
 name: components
-description: 'Frontend Svelte component work in apps/frontend -- the base, dynamic and candidate-app component libraries, plus the Svelte 5 context-reactivity rules that govern how those components read data. Understands the runes-era component API ($props destructured from a co-located .type.ts, $state / $derived, snippets and {@render} -- there is no export-let prop and no slot left in the tree), Tailwind/DaisyUI styling through concatClass, WCAG 2.1 AA patterns and the axe scan that enforces them, and above all the context destructure trap (destructuring a reactive accessor such as opinionQuestions captures an empty array for the life of the component) and the dataRoot #version-bridge carve-out (a $derived read alias over dataRoot goes stale on cold / direct-URL entry). Use this skill rather than data, matching, filters or database whenever the file is a .svelte component or a context consumer under apps/frontend/src/lib: those skills own the package-internal models and the backend, this one owns how a component reads and renders them. Activate when creating, modifying or reviewing a Svelte component, when calling getVoterContext(), getCandidateContext() or getAppContext(), or when debugging a context value that renders empty or goes stale after navigation.'
+description: 'Frontend Svelte component work in apps/frontend -- the base, dynamic and contestant-app component libraries, plus the Svelte 5 context-reactivity rules that govern how those components read data. Understands the runes-era component API ($props destructured from a co-located .type.ts, $state / $derived, snippets and {@render} -- there is no export-let prop and no slot left in the tree), Tailwind/DaisyUI styling through concatClass, WCAG 2.1 AA patterns and the axe scan that enforces them, and above all the context destructure trap (destructuring a reactive accessor such as opinionQuestions captures an empty array for the life of the component) and the dataRoot #version-bridge carve-out (a $derived read alias over dataRoot goes stale on cold / direct-URL entry). Use this skill rather than data, matching, filters or database whenever the file is a .svelte component or a context consumer under apps/frontend/src/lib: those skills own the package-internal models and the backend, this one owns how a component reads and renders them. Activate when creating, modifying or reviewing a Svelte component, when calling getVoterContext(), getContestantContext() or getAppContext(), or when debugging a context value that renders empty or goes stale after navigation.'
 targets:
   - apps/frontend/src/lib/components
   - apps/frontend/src/lib/dynamic-components
-  - apps/frontend/src/lib/candidate/components
+  - apps/frontend/src/lib/contestant/components
 ---
 
 # OpenVAA Component Library Expert
@@ -18,8 +18,8 @@ Three component libraries, all Svelte 5 with `runes: true` forced in
   context reads beyond the component context. Imported as `$lib/components/<dir>`.
 - `apps/frontend/src/lib/dynamic-components` — data-aware components. These read `@openvaa/data`
   objects and the voter/candidate contexts. Imported as `$lib/dynamic-components/<dir>`.
-- `apps/frontend/src/lib/candidate/components` — candidate-app-only components. Imported as
-  `$candidate/components/<dir>`.
+- `apps/frontend/src/lib/contestant/components` — contestant-app-only components. Imported as
+  `$contestant/components/<dir>`.
 
 The split is a dependency rule, not a filing convention: a base component that reaches for a
 `DataRoot` belongs in `dynamic-components`.
@@ -30,8 +30,9 @@ The split is a dependency rule, not a filing convention: a base component that r
    destructuring of `$props()` typed by a co-located type file (`Button.type.ts` beside
    `Button.svelte`); children and named regions are `Snippet` props rendered with `{@render …}`.
    Measured on the three target directories
-   2026-09-27: `export let` 0 files, `$$Props` 0 files, `<slot` 0 files, against 101 files calling
-   `$props()` and 101 co-located `*.type.ts` files. The tree has no pre-runes component left, so a
+   2026-10-16: `export let` 0 files, `$$Props` 0 files, `<slot` 0 files, against 112 files calling
+   `$props()` and 112 co-located `*.type.ts` files (`git grep -l -F '$props()'` over the directories'
+   `*.svelte` files; `git ls-files` of the directories filtered to `*.type.ts`). The tree has no pre-runes component left, so a
    new one written in the old dialect is a lone regression rather than a local convention.
 
 2. **The prop type lives beside the component, not inline.** `Button.svelte` imports
@@ -43,8 +44,9 @@ The split is a dependency rule, not a filing convention: a base component that r
 3. **Forward `class` with `concatClass`, NEVER by overwriting it.** Spread the rest props through
    `concatClass(restProps, classes)` from `apps/frontend/src/lib/utils/components.ts` so a caller's
    `class` is combined with the component's own Tailwind/DaisyUI classes instead of replacing them.
-   60 files in the three directories above depend on this, and 66 across all of
-   `apps/frontend/src` (re-derived 2026-09-13); a component that writes `class={classes}` directly silently
+   70 files in the three directories above depend on this, and 75 across all of
+   `apps/frontend/src` (re-derived 2026-10-16: `git grep -l -F concatClass`, less `components.ts`
+   itself and its test); a component that writes `class={classes}` directly silently
    drops every caller-supplied utility class.
 
    **It MERGES, it no longer merely concatenates (changed 2026-09-22).** `concatClass` is implemented
@@ -77,6 +79,37 @@ The split is a dependency rule, not a filing convention: a base component that r
    exist, because dropping a scan project makes the suite report fewer tests and still zero
    failures — a green that means nothing. Icon-only controls take their `aria-label` and `title`
    from the required `text` prop; do not add an icon-only variant without that path.
+   - **The Contestant App's entry screens are scanned too.** `contestant-entry-scan` scans every
+     signed-out screen of the entry flow in both themes through `declareEntryScans`
+     (`tests/tests/utils/entryAxeScan.ts`, which the wiring gate reads under the same rules as
+     `contestantAxeScan.ts`); `contestant-a11y-scan` scans the set-password view, as it opens and with
+     its confirmation in error, under the stored session of a user with no password, and the reset
+     page; `contestant-entry-phone` measures each entry screen for overflow at 320 and 390 px. A new
+     entry screen gets an entry in the first and two tests in the third.
+   - **`Input` describes its controls programmatically, and a part added to it must do the same.** The
+     info line carries the id `{id}-info` and the inline error `{id}-error`; every control names the
+     ones that are rendered in its `aria-describedby`, after any the caller passed. A kind that renders
+     one control is `aria-required` while `required`, and `aria-invalid` while its error is shown. The
+     `color` kind is a hex text field beside the platform colour picker over a swatch, and its value is
+     lowercase `#rrggbb` or nothing. `requiredLocale`, for the two multilingual text kinds, judges
+     `required` on that locale's entry and shows that locale's field while the translations are hidden.
+     The contract a new part follows is in `apps/frontend/src/lib/components/input/parts/README.md`.
+   - **A label that holds text of any length wraps.** DaisyUI's `label` class forbids a line break,
+     and a label that cannot wrap makes its container, and so the page, wider than a phone viewport
+     (WCAG 1.4.10); where the container is centred, the control at the label's start is pushed beyond
+     the viewport's left edge and cannot be reached at all. Three users of the class carry
+     `whitespace-normal` for that reason: `inputLabelClass` in
+     `apps/frontend/src/lib/components/input/shared.ts`, the option label of `ElectionSelector` and the
+     checkbox label of `TermsOfUseForm`. A new user of the class whose text is not fixed and short
+     needs the same.
+   - **A single choice among entities is `EntitySelector`**
+     (`apps/frontend/src/lib/dynamic-components/entitySelector`): a `<fieldset>` with the role
+     `radiogroup` whose options are entities shown as compact `EntityCard`s, with plain options before
+     and after them. The radios are native and share one name, so the group is one tab stop and the
+     arrow keys move and choose. Each radio is named by its option's name alone, through a label that
+     covers the row; the card is hidden from assistive technology and takes no pointer events, so a
+     press on it reaches the label. axe still evaluates colour contrast inside that hidden card, so an
+     entity's colours must pass in both themes.
 
 7. **Accepted Svelte compiler warnings are annotated, never silently tolerated.** Use
    `// svelte-warning: accepted — <one-sentence-rationale>` immediately above the offending line.
@@ -92,7 +125,8 @@ external references, is in `.claude/skills/components/context-reactivity.md`:
 - **Two property classes.** Contexts expose *stable references* (`t`, `getRoute`, `darkMode`,
   `answers`, `userData`, the lifecycle functions), which are safe to destructure, and *reactive
   accessors* (`appSettings`, `dataRoot`, `locale`, `selectedElections`, `opinionQuestions`,
-  `matches`, and ~20 more), which are not.
+  `matches`, and ~20 more), which are not. The contestant context's task accessors — `taskState`,
+  `tasks`, `nextStep`, `previewOpen` and `nominations` — are reactive accessors too.
 - **NEVER destructure a reactive accessor.** Destructuring invokes the getter once at
   component-init and binds the captured value — usually the initial empty array — as a static local.
   Read `ctx.X` instead, so the getter is re-invoked inside the tracking scope on every read.
