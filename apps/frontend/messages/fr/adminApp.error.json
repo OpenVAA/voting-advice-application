@@ -1,7 +1,7 @@
 {
   "adminApp.error": {
-    "unauthorized": "You are not authorized to access this area",
-    "unauthorizedDescription": "Your account has been authenticated, but you don't have the required admin privileges.",
-    "unauthorizedContact": "This section is reserved for system administrators only. If you believe you should have access, please contact the system administrator."
+    "unauthorized": "Vous n’êtes pas autorisé·e à accéder à cet espace",
+    "unauthorizedDescription": "Votre compte a bien été authentifié, mais vous ne disposez pas des droits d’administration requis.",
+    "unauthorizedContact": "Cette section est réservée aux administrateurs système. Si vous pensez devoir y avoir accès, veuillez contacter l’administrateur système."
   }
 }

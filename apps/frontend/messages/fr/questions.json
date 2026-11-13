@@ -8,19 +8,20 @@
       "yourAnswer": "Vous"
     },
     "arguments": {
-      "con": "Against",
-      "pro": "For",
-      "proCategory": "For {option}",
+      "con": "Contre",
+      "pro": "Pour",
+      "proCategory": "Pour {option}",
       "title": "Arguments"
     },
     "category": {
       "numQuestions": [
         {
-          "declarations": ["input numQuestions", "local numQuestionsPlural = numQuestions: plural"],
-          "selectors": ["numQuestionsPlural"],
+          "declarations": ["input numQuestions"],
+          "selectors": ["numQuestions"],
           "match": {
-            "numQuestionsPlural=other": "{numQuestions} questions",
-            "numQuestionsPlural=one": "1 question"
+            "numQuestions=-1": "",
+            "numQuestions=1": "1 question",
+            "numQuestions=*": "{numQuestions} questions"
           }
         }
       ],
@@ -31,31 +32,23 @@
       "ingress": {
         "withCategorySelection": [
           {
-            "declarations": [
-              "input minQuestions",
-              "input numCategories",
-              "local minQuestionsPlural = minQuestions: plural"
-            ],
-            "selectors": ["minQuestionsPlural"],
+            "declarations": ["input minQuestions", "input numCategories"],
+            "selectors": ["minQuestions"],
             "match": {
-              "minQuestionsPlural=zero": "Les questions sont divisées en {numCategories} catégories. Vous pouvez toutes les parcourir ou ne choisir que celles que vous souhaitez. ",
-              "minQuestionsPlural=one": "Les questions sont divisées en {numCategories} catégories. Vous pouvez toutes les parcourir ou ne choisir que celles que vous souhaitez. ",
-              "minQuestionsPlural=other": "Les questions sont divisées en {numCategories} catégories. Vous pouvez toutes les parcourir ou ne choisir que celles que vous souhaitez. Cependant, sélectionnez assez de catégories pour atteindre au moins {minQuestions} questions au total."
+              "minQuestions=0": "Les questions sont divisées en {numCategories} catégories. Vous pouvez toutes les parcourir ou ne choisir que celles que vous souhaitez. ",
+              "minQuestions=1": "Les questions sont divisées en {numCategories} catégories. Vous pouvez toutes les parcourir ou ne choisir que celles que vous souhaitez. ",
+              "minQuestions=*": "Les questions sont divisées en {numCategories} catégories. Vous pouvez toutes les parcourir ou ne choisir que celles que vous souhaitez. Cependant, sélectionnez assez de catégories pour atteindre au moins {minQuestions} questions au total."
             }
           }
         ],
         "withoutCategorySelection": [
           {
-            "declarations": [
-              "input numCategories",
-              "input numQuestions",
-              "local numCategoriesPlural = numCategories: plural"
-            ],
-            "selectors": ["numCategoriesPlural"],
+            "declarations": ["input numCategories", "input numQuestions"],
+            "selectors": ["numCategories"],
             "match": {
-              "numCategoriesPlural=zero": "Répondez maintenant à {numQuestions} questions sur la politique et les valeurs. ",
-              "numCategoriesPlural=one": "Répondez maintenant à {numQuestions} questions sur la politique et les valeurs. ",
-              "numCategoriesPlural=other": "Répondez maintenant à {numQuestions} questions sur la politique et les valeurs. Les questions sont divisées en {numCategories} catégories."
+              "numCategories=0": "Répondez maintenant à {numQuestions} questions sur la politique et les valeurs. ",
+              "numCategories=1": "Répondez maintenant à {numQuestions} questions sur la politique et les valeurs. ",
+              "numCategories=*": "Répondez maintenant à {numQuestions} questions sur la politique et les valeurs. Les questions sont divisées en {numCategories} catégories."
             }
           }
         ]
@@ -68,8 +61,8 @@
           "declarations": ["input count", "local countPlural = count: plural"],
           "selectors": ["countPlural"],
           "match": {
-            "countPlural=other": "Sélectionnez {count} options.",
-            "countPlural=one": "Sélectionnez 1 option."
+            "countPlural=one": "Sélectionnez 1 option.",
+            "countPlural=*": "Sélectionnez {count} options."
           }
         }
       ],

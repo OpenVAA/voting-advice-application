@@ -16,11 +16,12 @@
     "category": {
       "numQuestions": [
         {
-          "declarations": ["input numQuestions", "local numQuestionsPlural = numQuestions: plural"],
-          "selectors": ["numQuestionsPlural"],
+          "declarations": ["input numQuestions"],
+          "selectors": ["numQuestions"],
           "match": {
-            "numQuestionsPlural=other": "{numQuestions} küsimust",
-            "numQuestionsPlural=one": "1 küsimus"
+            "numQuestions=-1": "",
+            "numQuestions=1": "1 küsimus",
+            "numQuestions=*": "{numQuestions} küsimust"
           }
         }
       ],
@@ -31,31 +32,23 @@
       "ingress": {
         "withCategorySelection": [
           {
-            "declarations": [
-              "input minQuestions",
-              "input numCategories",
-              "local minQuestionsPlural = minQuestions: plural"
-            ],
-            "selectors": ["minQuestionsPlural"],
+            "declarations": ["input minQuestions", "input numCategories"],
+            "selectors": ["minQuestions"],
             "match": {
-              "minQuestionsPlural=zero": "Küsimused on jagatud {numCategories} teemaks. Võid vastata kõigile või valida ainult osa. ",
-              "minQuestionsPlural=one": "Küsimused on jagatud {numCategories} teemaks. Võid vastata kõigile või valida ainult osa. ",
-              "minQuestionsPlural=other": "Küsimused on jagatud {numCategories} teemaks. Võid vastata kõigile või valida ainult osa. Vali siiski piisavalt teemasid, et neis oleks vähemalt {minQuestions} küsimust."
+              "minQuestions=0": "Küsimused on jagatud {numCategories} teemaks. Võid vastata kõigile või valida ainult osa. ",
+              "minQuestions=1": "Küsimused on jagatud {numCategories} teemaks. Võid vastata kõigile või valida ainult osa. ",
+              "minQuestions=*": "Küsimused on jagatud {numCategories} teemaks. Võid vastata kõigile või valida ainult osa. Vali siiski piisavalt teemasid, et neis oleks vähemalt {minQuestions} küsimust."
             }
           }
         ],
         "withoutCategorySelection": [
           {
-            "declarations": [
-              "input numCategories",
-              "input numQuestions",
-              "local numCategoriesPlural = numCategories: plural"
-            ],
-            "selectors": ["numCategoriesPlural"],
+            "declarations": ["input numCategories", "input numQuestions"],
+            "selectors": ["numCategories"],
             "match": {
-              "numCategoriesPlural=zero": "Vasta järgmisena {numQuestions} küsimusele poliitika ja väärtuste kohta. ",
-              "numCategoriesPlural=one": "Vasta järgmisena {numQuestions} küsimusele poliitika ja väärtuste kohta. ",
-              "numCategoriesPlural=other": "Vasta järgmisena {numQuestions} küsimusele poliitika ja väärtuste kohta. Need on jagatud {numCategories} teemaks."
+              "numCategories=0": "Vasta järgmisena {numQuestions} küsimusele poliitika ja väärtuste kohta. ",
+              "numCategories=1": "Vasta järgmisena {numQuestions} küsimusele poliitika ja väärtuste kohta. ",
+              "numCategories=*": "Vasta järgmisena {numQuestions} küsimusele poliitika ja väärtuste kohta. Need on jagatud {numCategories} teemaks."
             }
           }
         ]
@@ -68,8 +61,8 @@
           "declarations": ["input count", "local countPlural = count: plural"],
           "selectors": ["countPlural"],
           "match": {
-            "countPlural=other": "Vali {count} valikut.",
-            "countPlural=one": "Vali 1 valik."
+            "countPlural=one": "Vali 1 valik.",
+            "countPlural=*": "Vali {count} valikut."
           }
         }
       ],

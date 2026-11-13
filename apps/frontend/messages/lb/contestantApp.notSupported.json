@@ -1,0 +1,7 @@
+{
+  "contestantApp.notSupported": {
+    "content": "{contestantAppName}: dës Versioun vum Wal-Kompass ënnerstëtzt dëse Service net.",
+    "heroEmoji": "🐣",
+    "title": "{contestantAppName}: net verfügbar"
+  }
+}

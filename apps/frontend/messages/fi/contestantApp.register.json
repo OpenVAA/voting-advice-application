@@ -1,0 +1,59 @@
+{
+  "contestantApp.register": {
+    "code": "Rekisteröintikoodi",
+    "codeFormat": "Koodi näyttää tältä: ABCD-EFGH-JKMN. Isoilla ja pienillä kirjaimilla ei ole eroa.",
+    "codeRequired": "Kirjoita rekisteröintikoodisi.",
+    "codeUnconfirmed": "Emme voineet vahvistaa rekisteröintikoodiasi.",
+    "didYouAlreadyRegister": "Oletko jo rekisteröitynyt?",
+    "emailEntry": {
+      "ingress": "Kirjoita sähköpostiosoite, jota haluat käyttää. Lähetämme siihen kirjautumislinkin, ja jatkossa kirjaudut tällä osoitteella.",
+      "mismatch": "Sähköpostiosoitteet eivät täsmää.",
+      "title": "Kirjoita sähköpostiosoitteesi"
+    },
+    "emailInfo": "Kirjoita sähköpostiosoitteesi, niin lähetämme sinulle linkin, jolla voit kirjautua.",
+    "enterCode": "Kirjoita saamasi rekisteröintikoodi.",
+    "heroEmoji": "🖋️",
+    "identityProvider": {
+      "intro": {
+        "both": "Tunnistaudu pankkitunnuksilla rekisteröityäksesi ehdokkaaksi tai rekisteröidäksesi puolueen.",
+        "candidate": "Rekisteröityäksesi ehdokkaaksi tunnistaudu pankkitunnuksilla. Ehdokasprofiilisi luodaan tunnistautumisessa saadulla nimellä.",
+        "organization": "Rekisteröidäksesi puolueen tunnistaudu pankkitunnuksilla ja kirjoita sitten puolueen nimi. Ylläpitäjä vahvistaa puolueen ennen kuin se näytetään äänestäjille."
+      },
+      "redirectInfo": "Sinut ohjataan pankkitunnistautumispalveluun. Kun olet tunnistautunut, palaat takaisin tähän sovellukseen.",
+      "types": {
+        "candidate": "Itseni ehdokkaaksi",
+        "legend": "Mitä haluat rekisteröidä?",
+        "organization": "Puolue tai valitsijayhdistys",
+        "required": "Valitse, mitä haluat rekisteröidä."
+      }
+    },
+    "modes": {
+      "code": "Rekisteröintikoodilla",
+      "email": "Sähköpostiosoitteellani",
+      "identityProvider": "Pankkitunnuksilla",
+      "legend": "Miten haluat rekisteröityä?",
+      "required": "Valitse, miten haluat rekisteröityä."
+    },
+    "passwordValidation": {
+      "commonPatterns": "Sisältää yleisiä merkkisarjoja",
+      "length": "Vähintään {minPasswordLength} merkkiä",
+      "lowercase": "Pieni kirjain",
+      "number": "Numero",
+      "repetition": "Sisältää merkkien toistoa",
+      "symbol": "Erikoismerkki (kuten !?%#€)",
+      "uppercase": "Iso kirjain",
+      "username": "Vältä nimesi käyttämistä salasanassa"
+    },
+    "register": "Rekisteröidy",
+    "registeredNotice": {
+      "content": "Kirjaudu sisään sähköpostilla ja salasanalla tai tarkista sähköpostisi vahvistuslinkin varalta.",
+      "title": "Näyttää siltä, että olet jo rekisteröitynyt"
+    },
+    "signIn": {
+      "failed": "Kirjautuminen tällä salasanalla ei onnistunut. Yritä uudelleen tai aseta salasana alla olevan linkin kautta.",
+      "ingress": "Näyttää siltä, että olet jo rekisteröitynyt. Kirjoita salasanasi kirjautuaksesi.",
+      "title": "Kirjaudu salasanallasi"
+    },
+    "title": "Rekisteröidy"
+  }
+}

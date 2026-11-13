@@ -1,0 +1,59 @@
+{
+  "contestantApp.register": {
+    "code": "Code d’inscription",
+    "codeFormat": "Le code se présente ainsi : ABCD-EFGH-JKMN. Les majuscules et les minuscules sont traitées de la même façon.",
+    "codeRequired": "Saisissez votre code d’inscription.",
+    "codeUnconfirmed": "Nous n’avons pas pu confirmer votre code d’inscription.",
+    "didYouAlreadyRegister": "Vous êtes-vous déjà inscrit·e ?",
+    "emailEntry": {
+      "ingress": "Saisissez l’adresse e-mail que vous souhaitez utiliser. Nous y enverrons un lien de connexion, et c’est avec cette adresse que vous vous connecterez.",
+      "mismatch": "Les adresses e-mail ne correspondent pas.",
+      "title": "Saisissez votre adresse e-mail"
+    },
+    "emailInfo": "Saisissez votre adresse e-mail et nous vous enverrons un lien pour vous connecter.",
+    "enterCode": "Saisissez le code d’inscription que vous avez reçu.",
+    "heroEmoji": "🖋️",
+    "identityProvider": {
+      "intro": {
+        "both": "Identifiez-vous avec un Bank ID pour vous inscrire en tant que candidat·e ou pour inscrire un parti.",
+        "candidate": "Pour vous inscrire en tant que candidat·e, identifiez-vous avec un Bank ID. Votre profil de candidat·e est créé avec le nom figurant dans votre identification.",
+        "organization": "Pour inscrire un parti, identifiez-vous avec un Bank ID, puis saisissez le nom du parti. Un administrateur confirme le parti avant qu’il ne soit présenté aux électeurs."
+      },
+      "redirectInfo": "Vous serez redirigé·e vers le service Bank ID. Une fois identifié·e, vous reviendrez dans cette application.",
+      "types": {
+        "candidate": "Moi-même, en tant que candidat·e",
+        "legend": "Que souhaitez-vous inscrire ?",
+        "organization": "Un parti ou une association de circonscription",
+        "required": "Choisissez ce que vous souhaitez inscrire."
+      }
+    },
+    "modes": {
+      "code": "Avec un code d’inscription",
+      "email": "Avec mon adresse e-mail",
+      "identityProvider": "Avec un Bank ID",
+      "legend": "Comment souhaitez-vous vous inscrire ?",
+      "required": "Choisissez comment vous souhaitez vous inscrire."
+    },
+    "passwordValidation": {
+      "commonPatterns": "Contient des séquences ou motifs courants",
+      "length": "Au moins {minPasswordLength} caractères",
+      "lowercase": "Lettre minuscule",
+      "number": "Chiffre",
+      "repetition": "Contient des répétitions de caractères",
+      "symbol": "Symbole (comme !?%#€)",
+      "uppercase": "Lettre majuscule",
+      "username": "Évitez d’utiliser votre nom dans le mot de passe"
+    },
+    "register": "S’inscrire",
+    "registeredNotice": {
+      "content": "Veuillez plutôt vous connecter avec votre e-mail et votre mot de passe ou vérifier votre e-mail pour le lien de confirmation.",
+      "title": "Il semble que vous soyez déjà inscrit·e"
+    },
+    "signIn": {
+      "failed": "Nous n’avons pas pu vous connecter avec ce mot de passe. Réessayez ou utilisez un lien ci-dessous pour définir un mot de passe.",
+      "ingress": "Il semble que vous soyez déjà inscrit·e. Saisissez votre mot de passe pour vous connecter.",
+      "title": "Connectez-vous avec votre mot de passe"
+    },
+    "title": "Inscription"
+  }
+}

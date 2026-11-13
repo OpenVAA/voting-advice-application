@@ -3,12 +3,12 @@
     "alliance": {
       "numShown": [
         {
-          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
-          "selectors": ["numShownPlural"],
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
           "match": {
-            "numShownPlural=zero": "Valimisliite ei ole",
-            "numShownPlural=one": "1 valimisliit",
-            "numShownPlural=other": "{numShown} valimisliitu"
+            "numShown=0": "Valimisliite ei ole",
+            "numShown=1": "1 valimisliit",
+            "numShown=*": "{numShown} valimisliitu"
           }
         }
       ],
@@ -17,22 +17,22 @@
         "candidates": [
           {
             "declarations": ["input numCandidates", "local numCandidatesPlural = numCandidates: plural"],
-            "selectors": ["numCandidatesPlural"],
+            "selectors": ["numCandidates", "numCandidatesPlural"],
             "match": {
-              "numCandidatesPlural=zero": "Ühtegi kandidaati",
-              "numCandidatesPlural=one": "1 kandidaat",
-              "numCandidatesPlural=other": "{numCandidates} kandidaati"
+              "numCandidates=0, numCandidatesPlural=*": "Ühtegi kandidaati",
+              "numCandidates=*, numCandidatesPlural=one": "1 kandidaat",
+              "numCandidates=*, numCandidatesPlural=*": "{numCandidates} kandidaati"
             }
           }
         ],
         "parties": [
           {
             "declarations": ["input numParties", "local numPartiesPlural = numParties: plural"],
-            "selectors": ["numPartiesPlural"],
+            "selectors": ["numParties", "numPartiesPlural"],
             "match": {
-              "numPartiesPlural=zero": "ühestki erakonnast",
-              "numPartiesPlural=one": "1 erakonnast",
-              "numPartiesPlural=other": "{numParties} erakonnast"
+              "numParties=0, numPartiesPlural=*": "ühestki erakonnast",
+              "numParties=*, numPartiesPlural=one": "1 erakonnast",
+              "numParties=*, numPartiesPlural=*": "{numParties} erakonnast"
             }
           }
         ]
@@ -41,12 +41,12 @@
     "candidate": {
       "numShown": [
         {
-          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
-          "selectors": ["numShownPlural"],
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
           "match": {
-            "numShownPlural=zero": "Kandidaate ei ole",
-            "numShownPlural=one": "1 kandidaat",
-            "numShownPlural=other": "{numShown} kandidaati"
+            "numShown=0": "Kandidaate ei ole",
+            "numShown=1": "1 kandidaat",
+            "numShown=*": "{numShown} kandidaati"
           }
         }
       ]
@@ -54,12 +54,12 @@
     "faction": {
       "numShown": [
         {
-          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
-          "selectors": ["numShownPlural"],
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
           "match": {
-            "numShownPlural=zero": "Rühmitusi ei ole",
-            "numShownPlural=one": "1 rühmitus",
-            "numShownPlural=other": "{numShown} rühmitust"
+            "numShown=0": "Rühmitusi ei ole",
+            "numShown=1": "1 rühmitus",
+            "numShown=*": "{numShown} rühmitust"
           }
         }
       ]
@@ -69,11 +69,11 @@
       "answerMinQuestions": "Kui soovid leida sinuga kõige enam nõustuvaid kandidaadid ja erakonnad, {questionsLink} kõigepealt.",
       "questionsLinkText": [
         {
-          "declarations": ["input numQuestions", "local numQuestionsPlural = numQuestions: plural"],
-          "selectors": ["numQuestionsPlural"],
+          "declarations": ["input numQuestions"],
+          "selectors": ["numQuestions"],
           "match": {
-            "numQuestionsPlural=one": "vasta vähemalt ühele küsimusele",
-            "numQuestionsPlural=other": "vasta vähemalt {numQuestions} küsimusele"
+            "numQuestions=1": "vasta vähemalt ühele küsimusele",
+            "numQuestions=*": "vasta vähemalt {numQuestions} küsimusele"
           }
         }
       ]
@@ -92,12 +92,12 @@
     "organization": {
       "numShown": [
         {
-          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
-          "selectors": ["numShownPlural"],
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
           "match": {
-            "numShownPlural=zero": "Erakondi ei ole",
-            "numShownPlural=one": "1 erakond",
-            "numShownPlural=other": "{numShown} erakonda"
+            "numShown=0": "Erakondi ei ole",
+            "numShown=1": "1 erakond",
+            "numShown=*": "{numShown} erakonda"
           }
         }
       ]
