@@ -1,13 +1,11 @@
 /**
  * perm-analytics-tracking minimal-data template.
  *
- * Carries the ANALYTICS OVERLAY that arms the `trackingIntercept` fixture for the `voter-prefs-tracking` spec. That spec requires the `app_settings` singleton to expose:
+ * Carries the ANALYTICS OVERLAY for the `voter-prefs-tracking` spec. It stores this in the `app_settings` singleton:
  *
- *   analytics: { platform: { name: 'umami', code: <dummy>, infoUrl: <test-url> }, trackEvents: true }
+ *   analytics: { trackEvents: true }
  *
- * so the frontend mounts its analytics integration and emits track events the fixture can intercept. Consent is NOT seeded here — it is toggled at runtime inside that spec.
- *
- * SECURITY: `analytics.platform.code` is a DUMMY value ('e2e-dummy-code'), never a real Umami / analytics key. No secrets are committed — the seed only needs the platform OBJECT present + trackEvents on.
+ * so usage events beyond the page-view count are collected for the tracking spec. Consent is NOT seeded here: the spec gives it at run time. Nothing in the template is a secret.
  *
  * Topology: a minimal walkable voter dataset — 1 election, 1 CG with 1 CO, 2 organisations, 2 member candidates (each answering the single opinion question), ONE opinion category with ONE Likert-5 question. This is the smallest shape that lets a voter answer → reach /results, the surface the tracking spec exercises.
  *

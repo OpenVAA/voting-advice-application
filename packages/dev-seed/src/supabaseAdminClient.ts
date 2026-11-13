@@ -5,7 +5,7 @@
  *
  * Env-var handling: the module-level fallbacks below let the tests/ E2E harness construct a client with no arguments. The Writer (packages/dev-seed/src/writer.ts) enforces that `SUPABASE_URL` and the service-role key are present; `createServiceRoleClient`, which this constructor calls, enforces that the URL it hands to `createClient` is local (see `./localSupabaseUrl`). Pure generators never construct this client, so `yarn test:unit` needs no env fixture.
  *
- * Bulk-import routing note: `bulk_import` RPC's `processing_order` accepts exactly 11 of 16 non-system tables. `accounts`, `projects`, `feedback`, `constituency_group_constituencies`, `election_constituency_groups` are NOT in that list. Callers must route those elsewhere (writer strips accounts/projects, feedback via direct upsert, joins via linkJoinTables). This file does not enforce the routing — it is a thin RPC wrapper.
+ * Bulk-import routing note: `bulk_import` RPC's `processing_order` accepts exactly 11 of 16 non-system tables. `accounts`, `projects`, `feedback`, `constituency_group_constituencies`, `election_constituency_groups` are NOT in that list. The two join tables arrive as link keys of `elections` and `constituency_groups` items, which `bulk_import` writes before any nomination and `bulkImport` below sends; callers route the other three elsewhere (writer strips accounts/projects, feedback via direct upsert). This file does not enforce the routing — it is a thin RPC wrapper.
  */
 
 import { createClient } from '@supabase/supabase-js';
@@ -168,7 +168,7 @@ export function createServiceRoleClient(
 /**
  * Admin-client base for the dev-seed package.
  *
- * Narrow bulk-write surface: bulkImport, bulkDelete, importAnswers, linkJoinTables, updateAppSettings. Auth / email / legacy E2E query helpers live in the tests/ subclass.
+ * Narrow bulk-write surface: bulkImport, bulkDelete, createInvitations, importAnswers, linkJoinTables, updateAppSettings. Auth / email / legacy E2E query helpers live in the tests/ subclass.
  *
  * `client` and `projectId` are `protected` (not `private`) so the tests/subclass can reuse the Supabase REST client for its auth helpers without re-creating a second client.
  */
@@ -205,6 +205,8 @@ export class SupabaseAdminClient {
     // Non-column fields to strip (handled separately). `NON_COLUMN_FIELDS` and `COLLECTION_NON_COLUMNS` were declared inline here; they now live in `./template/permittedKeys` with the same contents and a one-line reason beside each entry, so the strip decision and the permission decision are one declaration. The stripping behaviour below is unchanged.
     //
     // ⚠ `elections.constituencyGroups` / `.constituency_groups` and `constituency_groups.constituencies` are stripped here, but `LINK_SENTINELS` is the authority for whether they are PERMITTED. See the note on `COLLECTION_NON_COLUMN_LIST` in `./template/permittedKeys`.
+    //
+    // An election's constituency groups and a constituency group's constituencies, under any key form `LINK_SENTINELS` accepts, are sent as the item's `bulk_import` link key (`importLinkFor`), so `bulk_import` writes both join tables before it writes a nomination.
 
     // The four ENTITY tables plus `nominations`, all of which carry `confirmed boolean NOT NULL DEFAULT false`. Every entity and every nomination is visible today, so a seeded row has to carry the confirmed value or it vanishes from the voter app the moment 162-08 makes the column a term of public read. An explicit value from a template is honoured exactly as the publication default honours one, so a template can still seed an unconfirmed row as a negative control.
     //
@@ -212,11 +214,9 @@ export class SupabaseAdminClient {
     //
     // ⚠ DECLARED AS ITS OWN SET, and as of 162-16 it is the only such set. It once sat beside a sibling set of ten tables that stamped the retired per-row publication column, and the two were kept apart deliberately: a single set governing two columns would have silently written `confirmed` onto six tables that do not have it. That sibling went with its column; this one is the replacement and stands alone.
     //
-    // ⚠ THIS DEFAULT IS NOT SUFFICIENT FOR `candidates`, AND THIS CAUTION MOVED HERE WHEN 162-16 DELETED THE BLOCK THAT USED TO CARRY IT. It satisfies the ENTITY half of section 3.4's conjunction and knows nothing about the terms-of-use clause `anon_select_candidates` adds on top of it. Consequence: a template that relies on this default alone for candidates seeds rows that are confirmed, nominated, in a project open for voters — and still invisible to the voter app's anon client. A defect of that shape can sit under a green suite indefinitely, because every other check in this repository reads as service_role, which bypasses RLS entirely. The default template supplies the missing clause itself, in `./templates/defaults/candidates-override.ts`, and `e2e/base` supplies it per-row in `./templates/e2e/base.ts`.
+    // For `candidates`, as for the other three entity tables, this default is the whole entity-side condition of public read: a row that is confirmed, reached by a confirmed nomination and in a project open for voters is visible to the voter app's anon client. A template that must keep an entity hidden states `confirmed: false` on the row, as `e2e/base` does for its `ca-aa-hidden` and `ca-aa-unregistered` controls.
     //
-    // ⚠ Do NOT "fix" that by stamping `terms_of_use_accepted` here. A default at this layer reaches EVERY template, including `e2e/base`'s deliberately unaccepted `ca-aa-hidden` and `ca-aa-unregistered` rows — an in-repo negative control that gate-suite specs depend on staying hidden.
-    //
-    // ⚠ Standing caution for the next author, carried over unchanged from the deleted block: whether any OTHER table's anon predicate is likewise under-satisfied by this default was NOT AUDITED; the asymmetry is established for `candidates` only. Before trusting this default for a table, read that table's anon policy.
+    // Before adding a table to this set, read that table's anon policy: the default is sufficient only where `confirmed` is the one row-state term the policy reads.
     const CONFIRMABLE_TABLES = new Set(['organizations', 'candidates', 'factions', 'alliances', 'nominations']);
 
     const cleaned: Record<string, Array<unknown>> = {};
@@ -409,7 +409,9 @@ export class SupabaseAdminClient {
   // ---------------------------------------------------------------------------
 
   /**
-   * Populate M:N join tables and JSONB scoping columns after bulk_import.
+   * Populate the JSONB scoping columns of question categories and questions after bulk_import.
+   *
+   * The two constituency join tables are not written here: `bulk_import` writes them from the link keys `bulkImport` sends, before any nomination, and the `join` entries of the plan are passed over.
    *
    * ⚠ **The resolution set is NOT declared here.** It is `LINK_SENTINELS` in `./template/linkSentinels`, and this method ITERATES it via that module's pure `planLinks`. The alternative is four hard-coded blocks kept beside the const; a pair could be permitted without being handled. Now the loop that permits a `(collection, key)` pair is the loop that resolves it, so adding a pair to the const cannot leave it unresolved — and the const cannot grow silently, because `tests/template/linkSentinels.test.ts` holds it to a hand-enumerated expectation.
    *
@@ -418,7 +420,7 @@ export class SupabaseAdminClient {
    * ⚠ **That guarantee covers the collection as well as the target kind, and only because the switch below is on `entry.kind` — a top-level discriminant — so the collection and the target narrow together.**
    * Laundering `entry.collection` through `as` casts instead lets a rule such as `{ collections: ['organizations'], target: { kind: 'join', … } }` compile clean and then die as `TypeError: LINK_LOOKUP_ERRORS[table] is not a function`, MASKING the real lookup failure. The pairing itself is checked at the declaration: `LinkSentinelRule` is a union over the two target kinds.
    *
-   * This method owns only the I/O: `external_id` → UUID lookups, the join-table upsert and the JSONB column update.
+   * This method owns only the I/O: `external_id` → UUID lookups and the JSONB column update.
    *
    * @param data - The same dataset passed to bulkImport
    */

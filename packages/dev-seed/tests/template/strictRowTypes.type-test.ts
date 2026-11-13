@@ -14,7 +14,7 @@
  *
  * ## ⚠ Deleting ANY line of this file turns the type-check gate RED.
  *
- * Each of the two illegal rows below carries a deliberate excess-property error (`TS2353`) suppressed by a directive on the line immediately above it. An **unused** suppression directive is itself a diagnostic — `TS2578` — so removing an offending key to "clean up" does not quietly turn this control into a decoration; it fails the gate. That property was measured rather than assumed: deleting `_constituencies` from the primary exemplar produces the expected `TS2578`, while the present arm reports zero diagnostics — a self-control pair taken on the same tree.
+ * Each illegal row below carries a deliberate compile error — an excess property (`TS2353`) or a wrongly typed value (`TS2322`) — suppressed by a directive on the line immediately above it. An **unused** suppression directive is itself a diagnostic — `TS2578` — so removing an offending key to "clean up" does not quietly turn this control into a decoration; it fails the gate. That property was measured rather than assumed: deleting `_constituencies` from the primary exemplar produces the expected `TS2578`, while the present arm reports zero diagnostics — a self-control pair taken on the same tree.
  *
  * ## ⚠ The reach limitation — what a green gate here does NOT prove
  *

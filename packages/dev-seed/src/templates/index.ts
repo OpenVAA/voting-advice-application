@@ -69,7 +69,7 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   // localisation-positive perm template. Distinct externalIdPrefix 'e2e-perm-l10n-pos-'. Uses the 3-locale staticSettings base (en/fi/sv) directly — no runtime override. Spec exercises the langSelector visible-and-switching surface + Finnish-translation authoring on q1/q3.
   'perm-localisation-positive': permLocalizationPositiveTemplate,
 
-  // 9 settings-permutation templates. Each carries its own distinct externalIdPrefix. Some specs additionally consume the candidateSessionMinter helper to author per-perm Playwright storage-state JSON files.
+  // 9 settings-permutation templates. Each carries its own distinct externalIdPrefix. Some specs additionally consume the contestantSessionMinter helper to author per-perm Playwright storage-state JSON files.
   'perm-answers-locked': permAnswersLockedTemplate,
   'perm-hide-hero': permHideHeroTemplate,
   // renamed from the former perm-header-show-feedback key. Keeps header.showFeedback and extends with the survey/feedback-popup result-view surfaces.
@@ -89,7 +89,7 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   // Consolidated access-gating perm. Covers access.voterApp/candidateApp/underMaintenance via per-mode singleton re-seed. Distinct externalIdPrefix 'e2e-perm-access-disable-'. The old perm-disable-voter-app/candidate-app keys are RETAINED above because setup consumers still resolve them.
   'perm-access-disable': permAccessDisableTemplate,
 
-  // Analytics overlay perm. Seeds the app_settings analytics platform object (dummy umami code) + trackEvents:true so the voter-prefs-tracking spec can arm trackingIntercept.
+  // Analytics overlay perm. Seeds app_settings analytics.trackEvents:true so the voter-prefs-tracking spec sees usage events beyond the page-view count.
   // Distinct externalIdPrefix 'e2e-perm-analytics-'. Consent NOT seeded — toggled at runtime by the spec.
   'perm-analytics-tracking': permAnalyticsTrackingTemplate,
 

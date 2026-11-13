@@ -23,7 +23,7 @@ import type { LinkSentinelRule } from '../../src/template/linkSentinels';
 export const shippedRulesStillSatisfy: ReadonlyArray<LinkSentinelRule> = LINK_SENTINELS;
 
 /**
- * The exemplar: `organizations` is not a table `linkJoinTables` can resolve a join parent UUID for — it is outside `LINK_LOOKUP_ERRORS`' domain — so pairing it with a `join` target must fail HERE.
+ * The exemplar: `organizations` items carry no `bulk_import` link key, so pairing the collection with a `join` target must fail HERE.
  */
 export const illegalJoinRule = {
   // @ts-expect-error TS2322 — 'organizations' is not a JoinParentCollection; a `join` target may only be declared on 'elections' or 'constituency_groups'.
