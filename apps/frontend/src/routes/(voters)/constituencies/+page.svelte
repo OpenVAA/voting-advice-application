@@ -20,7 +20,7 @@ See `+page.ts` for possible redirects.
   import { ConstituencySelector } from '$lib/components/constituencySelector';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
-  import { isVoterAppPath, parseParams } from '$lib/routes';
+  import { isVoterAppPath, mostSpecificConstituency, parseParams, usesSingleConstituencyGroup } from '$lib/routes';
   import { filterPersistent } from '$lib/routes/filterPersistent';
   import type { Id } from '@openvaa/core';
 
@@ -42,12 +42,10 @@ See `+page.ts` for possible redirects.
   /** The selected `constituencyIds` per election */
   let selected = $state<{ [electionId: Id]: Id }>({});
 
-  // `useSingleGroup` MUST be `$derived` AND must safely handle the dataRoot-not-yet-populated state. The original `const` shape captured the empty `getConstituencyGroup(...)` lookup at module init when the root layout's `$effect` had not yet provided constituency data; even making it `$derived` is not enough because `getConstituencyGroup` throws when the id is missing — a synchronous throw in a `$derived` surfaces as a page error and freezes the page on its initial empty template (variant-startfromcg.spec.ts:115 hydration race).
-  const useSingleGroup = $derived.by(() => {
-    const id = appSettings.elections?.startFromConstituencyGroup;
-    if (!id) return undefined;
-    return voterCtx.dataRoot.constituencyGroups.find((g) => g.id === id);
-  });
+  // `useSingleGroup` must be `$derived`, and its lookup must not throw: the constituency data may not be provided yet when this is first read, and a throw in a `$derived` surfaces as a page error.
+  const useSingleGroup = $derived(
+    usesSingleConstituencyGroup({ appSettings, constituencyGroups: voterCtx.dataRoot.constituencyGroups })
+  );
 
   let elections = $derived(useSingleGroup ? voterCtx.dataRoot.elections : voterCtx.selectedElections);
 
@@ -55,20 +53,8 @@ See `+page.ts` for possible redirects.
   $effect(() => {
     if (!voterCtx.selectedConstituencies.length) return;
     for (const election of elections) {
-      const matches = voterCtx.selectedConstituencies.filter((c) =>
-        election.constituencyGroups.some((g) => g.data.constituencyIds.includes(c.id))
-      );
-      if (!matches.length) continue;
-      const best = matches.reduce((a, b) => {
-        const aSize =
-          election.constituencyGroups.find((g) => g.data.constituencyIds.includes(a.id))?.constituencies.length ??
-          Infinity;
-        const bSize =
-          election.constituencyGroups.find((g) => g.data.constituencyIds.includes(b.id))?.constituencies.length ??
-          Infinity;
-        return bSize < aSize ? b : a;
-      });
-      selected[election.id] = best.id;
+      const best = mostSpecificConstituency({ election, constituencies: voterCtx.selectedConstituencies });
+      if (best) selected[election.id] = best.id;
     }
   });
 

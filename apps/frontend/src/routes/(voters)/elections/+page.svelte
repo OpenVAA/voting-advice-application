@@ -19,6 +19,7 @@ See `+page.ts` for possible redirects.
   import { ElectionSelector } from '$lib/components/electionSelector';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
+  import { electionsHeldIn } from '$lib/routes';
   import type { Id } from '@openvaa/core';
 
   ////////////////////////////////////////////////////////////////////
@@ -37,21 +38,12 @@ See `+page.ts` for possible redirects.
 
   let selected: Array<Id> = $state([]);
 
-  let elections = $derived.by(() => {
-    let result = voterCtx.dataRoot.elections;
-    if (appSettings.elections?.startFromConstituencyGroup) {
-      // Only show elections for which a Constituency is available.
-      // `getApplicableConstituency` throws when more than one of the passed constituencies maps to one of the election's groups (e.g. a municipality and its parent region both end up in selectedConstituencies for an election whose cgs include both Regions and Municipalities). Treat that throw as "applicable" — the election clearly matches *something* in the selection — so the multi-cg election still appears in the list (variant-startfromcg.spec.ts:145 hierarchy edge case).
-      result = result.filter((e) => {
-        try {
-          return !!e.getApplicableConstituency(voterCtx.selectedConstituencies);
-        } catch {
-          return true;
-        }
-      });
-    }
-    return result;
-  });
+  // If `startFromConstituencyGroup` is set, only the elections held in the selected constituencies are shown.
+  let elections = $derived(
+    appSettings.elections?.startFromConstituencyGroup
+      ? electionsHeldIn({ elections: voterCtx.dataRoot.elections, constituencies: voterCtx.selectedConstituencies })
+      : voterCtx.dataRoot.elections
+  );
 
   $effect(() => {
     selected = (voterCtx.selectedElections.length ? voterCtx.selectedElections : elections).map((e) => e.id);

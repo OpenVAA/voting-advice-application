@@ -29,6 +29,7 @@
  */
 
 import { SUPABASE_COOKIE_PREFIX } from '$lib/api/dataProvider';
+import { analyticsProjection } from '$lib/server/analytics/env';
 import type { UniversalCookie } from '$lib/api/dataProvider';
 
 export function load({ cookies }) {
@@ -38,5 +39,5 @@ export function load({ cookies }) {
     .filter(({ name }) => name.startsWith(SUPABASE_COOKIE_PREFIX))
     .map(({ name, value }) => ({ name, value }));
 
-  return { supabaseCookies };
+  return { supabaseCookies, analytics: analyticsProjection };
 }

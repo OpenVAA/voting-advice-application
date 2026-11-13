@@ -18,28 +18,22 @@ Read from `ctx.analyticsGate.current`:
 -->
 
 <script lang="ts">
-  import { staticSettings } from '@openvaa/app-shared';
   import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getAppContext } from '$lib/contexts/app';
+  import { relayUsable } from '$lib/contexts/app/tracking/gates';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { DataConsent } from '$lib/dynamic-components/dataConsent';
-  import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
   import { sanitizeHtml } from '$lib/utils/sanitize';
 
   const ctx = getAppContext();
   const { getRoute, t } = ctx;
-  // appSettings is a reactive accessor — read via ctx.X, never destructure.
-  const appSettings = $derived(ctx.appSettings);
-
-  // Construct the analytics link for privacy translations
-  const analyticsLink = staticSettings.analytics?.platform?.infoUrl
-    ? `<a href="${staticSettings.analytics.platform.infoUrl}" target="_blank">${
-        staticSettings.analytics.platform.name.charAt(0).toUpperCase() + staticSettings.analytics.platform.name.slice(1)
-      }</a>`
-    : '';
+  // analyticsGate is a reactive handle — read via ctx.analyticsGate.current, never destructure.
+  const gate = $derived(ctx.analyticsGate.current);
+  // The consent control is offered only when there is a choice to make: in consent-free mode and under Global Privacy Control there is none, and the analytics text says why.
+  const showConsentControl = $derived(gate.trackEvents && gate.projection.consentMode === 'gated' && relayUsable(gate));
 
   const { topBarSettings } = getLayoutContext();
   topBarSettings.use({
@@ -60,7 +54,7 @@ Read from `ctx.analyticsGate.current`:
   {#snippet heading()}
     <HeadingGroup>
       <PreHeading class="text-primary">{t('dynamic.appName')}</PreHeading>
-      <h1>{t('privacy.title')}</h1>
+      <h1 tabindex="-1">{t('privacy.title')}</h1>
     </HeadingGroup>
   {/snippet}
 
@@ -68,21 +62,23 @@ Read from `ctx.analyticsGate.current`:
     <div>
       {@html sanitizeHtml(t('dynamic.privacy.content'))}
     </div>
-    {#if appSettings.analytics?.platform}
+    {#if gate.projection.active}
       <h2 class="mt-lg mb-md">{t('privacy.analytics.title')}</h2>
       <div>
-        {@html sanitizeHtml(
-          t(assertTranslationKey(`privacy.analytics.content.${appSettings.analytics.platform.name}`), {
-            analyticsLink
-          })
-        )}
+        <p>
+          {gate.projection.consentMode === 'gated'
+            ? t('privacy.analytics.content.gated')
+            : t('privacy.analytics.content.free')}
+        </p>
+        <p>{t('privacy.analytics.pageviews')}</p>
+        <p>{t('privacy.analytics.gpc')}</p>
       </div>
     {/if}
     <h2 class="mt-lg mb-md">{t('privacy.cookies.title')}</h2>
     <div>
       {@html sanitizeHtml(t('privacy.cookies.content'))}
     </div>
-    {#if appSettings.analytics.trackEvents}
+    {#if showConsentControl}
       <h2 class="mt-lg mb-md">{t('common.privacy.dataCollection.title')}</h2>
       <DataConsent description="inline" class="bg-base-300 p-lg rounded-lg" />
     {/if}

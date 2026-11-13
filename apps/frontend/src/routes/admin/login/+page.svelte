@@ -27,14 +27,17 @@
   import { page } from '$app/state';
   import { MainContent } from '$layouts/main';
   import { getErrorTranslationKey } from '$lib/admin/utils/loginError';
-  import { PasswordField } from '$lib/candidate/components/passwordField';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeadingGroup } from '$lib/components/headingGroup';
+  import { Input } from '$lib/components/input';
   import { getAdminContext } from '$lib/contexts/admin';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { Footer } from '$lib/dynamic-components/footer';
   import type { LoginError } from '$lib/admin/utils/loginError';
+  import type { PageData } from './$types';
+
+  let { data }: { data: PageData } = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -51,24 +54,36 @@
   // Handle form and error messages
   ////////////////////////////////////////////////////////////////////
 
-  const errorParam = page.url.searchParams.get('errorMessage') as LoginError | null;
   const redirectTo = page.url.searchParams.get('redirectTo');
 
-  let email = $state('');
-  let emailInput = $state<HTMLInputElement | undefined>(undefined);
-  let errorMessage = $state<string | undefined>(undefined);
-  let password = $state('');
-  let status = $state<ActionStatus>('idle');
+  /** The id of the message, which the heading names as its description while it is shown. */
+  const messageId = $props.id();
 
-  if (errorParam) {
-    const errorKey = getErrorTranslationKey(errorParam);
-    if (errorKey) errorMessage = t(errorKey);
-  }
-  // One-shot init-only translation of URL ?error= → status; subsequent errorMessage updates flow through form-action handlers.
+  /** The message key of why the page was opened, the load's reason before the address bar's, read once: later messages come from the form's handler. */
   // svelte-ignore state_referenced_locally
-  if (errorMessage) status = 'error';
+  const reasonKey =
+    getErrorTranslationKey(data.signedOutReason ?? null) ??
+    getErrorTranslationKey(page.url.searchParams.get('errorMessage') as LoginError | null);
+
+  let email = $state('');
+  let errorMessage = $state<string | undefined>(reasonKey ? t(reasonKey) : undefined);
+  let password = $state('');
+  let status = $state<ActionStatus>(reasonKey ? 'error' : 'idle');
 
   let canSubmit = $derived(!!(status !== 'loading' && email && password));
+
+  /** The forgot-password page, with the typed address when there is one. */
+  const forgotPasswordHref = $derived.by(() => {
+    const address = email.trim();
+    return getRoute.current(address ? { route: 'AdminAppForgotPassword', email: address } : 'AdminAppForgotPassword');
+  });
+
+  /**
+   * The email kind of `Input` takes an entry in when it is committed, so every keystroke is written here: it is what enables the sign-in while the address is typed.
+   */
+  function handleEmailInput({ currentTarget }: { currentTarget: EventTarget & HTMLElement }): void {
+    if (currentTarget instanceof HTMLInputElement) email = currentTarget.value;
+  }
 
   ///////////////////////////////////////////////////////////////////
   // Top bar and styling
@@ -83,7 +98,9 @@
 <MainContent title={t('adminApp.login.title')}>
   {#snippet heading()}
     <HeadingGroup>
-      <h1 class="text-primary">{t('adminApp.login.appTitle')}</h1>
+      <h1 class="text-primary" tabindex="-1" aria-describedby={status === 'error' ? messageId : undefined}>
+        {t('adminApp.login.appTitle')}
+      </h1>
       <h2 class="text-base-content">{t('adminApp.login.appSubtitle')}</h2>
     </HeadingGroup>
   {/snippet}
@@ -93,12 +110,12 @@
   <form
     class="flex w-full flex-col flex-nowrap items-center"
     method="POST"
-    action="login"
+    action={getRoute.current('AdminAppLogin')}
     use:enhance={() => {
       status = 'loading';
       return async ({ update, result }) => {
-        await update();
         if (result.type === 'failure') {
+          await update();
           status = 'error';
           errorMessage =
             result.status === 400
@@ -108,28 +125,43 @@
                 : t('error.general');
           return;
         }
+        // One navigation, so a sign-in writes one history entry.
         await applyAction(result);
         status = 'success';
       };
     }}>
     <div class="flex w-full flex-col items-center">
-      <label for="email" class="hidden">{t('common.email')}</label>
       <input hidden name="redirectTo" value={redirectTo} />
-      <input
-        type="email"
-        name="email"
-        id="email"
-        bind:this={emailInput}
-        bind:value={email}
-        class="input mb-md w-full max-w-md"
-        placeholder={t('common.emailPlaceholder')}
-        autocomplete="email"
-        required />
       <div class="mb-md w-full max-w-md">
-        <PasswordField autocomplete="current-password" id="password" bind:password />
+        <Input
+          bind:value={email}
+          type="email"
+          validate={false}
+          id="email"
+          label={t('common.email')}
+          name="email"
+          autocomplete="email"
+          inputmode="email"
+          autocapitalize="none"
+          spellcheck="false"
+          aria-required="true"
+          onShadedBg
+          oninput={handleEmailInput} />
+      </div>
+      <div class="mb-md w-full max-w-md">
+        <Input
+          bind:value={password}
+          type="password"
+          id="password"
+          label={t('common.password')}
+          name="password"
+          autocomplete="current-password"
+          aria-required="true"
+          data-testid="password-field"
+          onShadedBg />
       </div>
       {#if status === 'error'}
-        <ErrorMessage inline message={errorMessage} class="mb-md" />
+        <ErrorMessage id={messageId} inline role="alert" message={errorMessage} class="mb-md" />
       {/if}
       <Button
         type="submit"
@@ -137,6 +169,16 @@
         loading={status === 'loading'}
         text={t('common.login')}
         variant="main" />
+      <div class="mt-md flex flex-col items-center">
+        <Button
+          href={forgotPasswordHref}
+          text={t('contestantApp.login.forgotPassword')}
+          data-testid="admin-login-forgot-password" />
+        <Button
+          href={forgotPasswordHref}
+          text={t('contestantApp.login.noPasswordYet')}
+          data-testid="admin-login-no-password-yet" />
+      </div>
     </div>
 
     <div class="mt-lg">
@@ -144,7 +186,7 @@
         <!-- We call invalidateAll when navigation to the Voter App to remove the Nominations we have added when loading User data -->
         <Button
           onclick={() => goto(getRoute.current('Home'), { invalidateAll: true })}
-          text={t('candidateApp.common.voterApp')} />
+          text={t('contestantApp.common.voterApp')} />
       {/if}
     </div>
   </form>
