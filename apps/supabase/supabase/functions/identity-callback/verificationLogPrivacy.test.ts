@@ -27,7 +27,9 @@ function verificationFailureArm(): string {
   ).toBeGreaterThan(-1);
   // Back up to the enclosing `catch`, forward to the end of the returned answer.
   const start = INDEX_SOURCE.lastIndexOf('catch', anchor);
-  const end = INDEX_SOURCE.indexOf('});', INDEX_SOURCE.indexOf('return new Response', anchor));
+  const returnAt = INDEX_SOURCE.indexOf('return respond(', anchor);
+  expect(returnAt, 'the arm returns no answer through respond').toBeGreaterThan(-1);
+  const end = INDEX_SOURCE.indexOf(';', returnAt) + 1;
 
   // COMMENTS STRIPPED, and this is load-bearing rather than tidiness: the arm's own comment explains the defect by NAMING it, so it contains both the literal `console.error(..., e)` shape and the word `payload`. Asserting over the raw slice made this spec fail against the FIXED code — the prose describing the fix looked like the bug. Only executable text is examined below.
   const arm = INDEX_SOURCE.slice(start, end);
@@ -61,10 +63,17 @@ describe('identity-callback verification-failure logging', () => {
     }
   });
 
-  it('still returns the opaque 401 body, unchanged by this fix', () => {
+  it('answers the one invalid-token result, whichever check failed', () => {
     const arm = verificationFailureArm();
-    // The response contract is the oracle defence and is deliberately untouched: the caller learns only that verification failed, never which check failed.
-    expect(arm).toMatch(/'Token verification failed'/);
-    expect(arm).toMatch(/status:\s*401/);
+    // The closed answer is the oracle defence: the caller learns only that verification failed, never which check failed.
+    expect(arm).toMatch(/return respond\(IDENTITY_CALLBACK_RESULT\.invalid_token\);/);
+    expect(arm).not.toMatch(/new Response\(/);
+  });
+
+  it('rethrows a configuration failure before logging anything, so it is not answered as a bad token', () => {
+    const arm = verificationFailureArm();
+    const rethrowAt = arm.indexOf('if (isConfigurationFailure(e)) throw e;');
+    expect(rethrowAt).toBeGreaterThan(-1);
+    expect(rethrowAt).toBeLessThan(arm.indexOf('console.error('));
   });
 });

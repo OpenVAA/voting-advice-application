@@ -21,7 +21,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (34);
+  plan (113);
 
 -- Create test fixture data
 SELECT
@@ -520,6 +520,1164 @@ SELECT
     'StoredImage "focalPoint.y" must be a number',
     'validate_image: a non-numeric focalPoint.y is rejected by name'
   );
+
+-- =====================================================================
+-- Section 12: the election-type rule -- which entity types an election admits
+--
+-- `public.nomination_shape_rule` states the matrix once. `validate_nomination` refuses, at the statement, a row whose entity type the election's type does not admit: SQLSTATE 23514 and a message that begins `Nomination shape refused: `. Where the matrix answers `parent_required`, the constraint trigger `nominations_parent_required` refuses, at the end of the transaction, a candidate's row that has neither a parent nomination nor `requestedParentOrganization` in its custom data: SQLSTATE 23514 and a message that begins `Nomination parent required: `.
+--
+-- An election that must prove a refusal states its type. The fixture's own election states none and takes the column default, which admits every entity type.
+--
+-- This file never commits, so the deferred rule never fires by itself here. Every assertion that reads it forces it inside the asserted statements, and none leaves the constraint immediate: a refusal is restored by the rolled-back subtransaction of `throws_ok`, and a statement that lives names the constraint and puts it back itself.
+-- =====================================================================
+SELECT
+  reset_role ();
+
+-- Three elections of project A that each state a type, linked to the fixture's constituency group as the fixture's own election is.
+INSERT INTO
+  elections (id, project_id, name, election_type)
+VALUES
+  (
+    'eeeeeeee-eeee-eeee-eeee-000000000401'::uuid,
+    test_id ('project_a'),
+    '{"en":"List election"}'::jsonb,
+    'organization_list'
+  ),
+  (
+    'eeeeeeee-eeee-eeee-eeee-000000000402'::uuid,
+    test_id ('project_a'),
+    '{"en":"Candidates-only election"}'::jsonb,
+    'candidate_only'
+  ),
+  (
+    'eeeeeeee-eeee-eeee-eeee-000000000403'::uuid,
+    test_id ('project_a'),
+    '{"en":"Organizations-only election"}'::jsonb,
+    'organization_only'
+  );
+
+INSERT INTO
+  election_constituency_groups (election_id, constituency_group_id)
+VALUES
+  (
+    'eeeeeeee-eeee-eeee-eeee-000000000401'::uuid,
+    test_id ('constituency_group_a')
+  ),
+  (
+    'eeeeeeee-eeee-eeee-eeee-000000000402'::uuid,
+    test_id ('constituency_group_a')
+  ),
+  (
+    'eeeeeeee-eeee-eeee-eeee-000000000403'::uuid,
+    test_id ('constituency_group_a')
+  );
+
+-- `shape_election` names the election of project A that has the given type.
+CREATE FUNCTION pg_temp.shape_election (p_shape text) RETURNS uuid LANGUAGE sql IMMUTABLE AS $fn$
+  SELECT CASE p_shape
+    WHEN 'organization_list' THEN 'eeeeeeee-eeee-eeee-eeee-000000000401'::uuid
+    WHEN 'organization_list_and_independents' THEN test_id ('election_a')
+    WHEN 'candidate_only' THEN 'eeeeeeee-eeee-eeee-eeee-000000000402'::uuid
+    WHEN 'organization_only' THEN 'eeeeeeee-eeee-eeee-eeee-000000000403'::uuid
+  END;
+$fn$;
+
+-- `nominate` writes the INSERT that nominates one entity of project A in the election of the given type, at the fixture's constituency. The id is named only when one is given, because the INSERT column grant of `authenticated` does not hold it.
+CREATE FUNCTION pg_temp.nominate (
+  p_entity_column text,
+  p_entity_id uuid,
+  p_shape text,
+  p_round integer,
+  p_parent uuid DEFAULT NULL,
+  p_id uuid DEFAULT NULL,
+  p_custom_data jsonb DEFAULT NULL
+) RETURNS text LANGUAGE sql IMMUTABLE AS $fn$
+  SELECT format(
+    'INSERT INTO public.nominations (%sproject_id, %I, election_id, constituency_id, election_round, parent_nomination_id, custom_data) VALUES (%s%L, %L, %L, %L, %s, %L, %L)',
+    CASE WHEN p_id IS NULL THEN '' ELSE 'id, ' END,
+    p_entity_column,
+    CASE WHEN p_id IS NULL THEN '' ELSE quote_literal(p_id) || ', ' END,
+    test_id ('project_a'),
+    p_entity_id,
+    pg_temp.shape_election (p_shape),
+    test_id ('constituency_a'),
+    p_round,
+    p_parent,
+    p_custom_data
+  );
+$fn$;
+
+-- `answer` runs a one-value query and returns the value as text. A query that names a function the database does not have answers a sentinel, so each cell of the grid fails as an assertion of its own instead of aborting the file.
+CREATE FUNCTION pg_temp.answer (p_query text) RETURNS text LANGUAGE plpgsql AS $fn$
+DECLARE
+  v_answer text;
+BEGIN
+  EXECUTE p_query INTO v_answer;
+  RETURN v_answer;
+EXCEPTION WHEN undefined_function THEN
+  RETURN '(no such function)';
+END;
+$fn$;
+
+-- `forced` appends the two statements that fire the pending parent rule and put the constraint back to deferred.
+CREATE FUNCTION pg_temp.forced (p_statements text) RETURNS text LANGUAGE sql IMMUTABLE AS $fn$
+  SELECT p_statements || '; SET CONSTRAINTS public.nominations_parent_required IMMEDIATE; SET CONSTRAINTS public.nominations_parent_required DEFERRED';
+$fn$;
+
+-- `parent_rule_is_deferred` answers whether a lone party-less candidate row in the list election raises nothing at its own statement. The row is deleted in the same block, so the pending rule finds nothing to judge afterwards.
+CREATE FUNCTION pg_temp.parent_rule_is_deferred () RETURNS boolean LANGUAGE plpgsql AS $fn$
+BEGIN
+  BEGIN
+    INSERT INTO public.nominations (project_id, candidate_id, election_id, constituency_id, election_round)
+    VALUES (test_id ('project_a'), test_id ('candidate_a2'), pg_temp.shape_election ('organization_list'), test_id ('constituency_a'), 9);
+    DELETE FROM public.nominations
+    WHERE candidate_id = test_id ('candidate_a2')
+      AND election_id = pg_temp.shape_election ('organization_list')
+      AND election_round = 9;
+  EXCEPTION WHEN check_violation THEN
+    RETURN false;
+  END;
+  RETURN true;
+END;
+$fn$;
+
+-- `parent_rule_probe_while_immediate` is the control of the probe above: it asks the probe with the constraint immediate, and puts the constraint back before it returns. It answers NULL when the database has no such constraint.
+CREATE FUNCTION pg_temp.parent_rule_probe_while_immediate () RETURNS boolean LANGUAGE plpgsql AS $fn$
+DECLARE
+  v_deferred boolean;
+BEGIN
+  SET CONSTRAINTS public.nominations_parent_required IMMEDIATE;
+  v_deferred := pg_temp.parent_rule_is_deferred ();
+  SET CONSTRAINTS public.nominations_parent_required DEFERRED;
+  RETURN v_deferred;
+EXCEPTION WHEN undefined_object THEN
+  RETURN NULL;
+END;
+$fn$;
+
+-- ---------------------------------------------------------------------
+-- 12a: the matrix function, cell by cell
+-- ---------------------------------------------------------------------
+SELECT
+  is (
+    pg_temp.answer (
+      $$SELECT public.nomination_shape_rule('organization_list', 'candidate')$$
+    ),
+    'parent_required',
+    'nomination_shape_rule: organization_list x candidate is parent_required'
+  );
+
+SELECT
+  is (
+    pg_temp.answer (
+      $$SELECT public.nomination_shape_rule('organization_list', 'organization')$$
+    ),
+    'admitted',
+    'nomination_shape_rule: organization_list x organization is admitted'
+  );
+
+SELECT
+  is (
+    pg_temp.answer (
+      $$SELECT public.nomination_shape_rule('organization_list', 'faction')$$
+    ),
+    'admitted',
+    'nomination_shape_rule: organization_list x faction is admitted'
+  );
+
+SELECT
+  is (
+    pg_temp.answer (
+      $$SELECT public.nomination_shape_rule('organization_list', 'alliance')$$
+    ),
+    'admitted',
+    'nomination_shape_rule: organization_list x alliance is admitted'
+  );
+
+SELECT
+  is (
+    pg_temp.answer (
+      $$SELECT public.nomination_shape_rule('organization_list_and_independents', 'candidate')$$
+    ),
+    'admitted',
+    'nomination_shape_rule: organization_list_and_independents x candidate is admitted'
+  );
+
+SELECT
+  is (
+    pg_temp.answer (
+      $$SELECT public.nomination_shape_rule('organization_list_and_independents', 'organization')$$
+    ),
+    'admitted',
+    'nomination_shape_rule: organization_list_and_independents x organization is admitted'
+  );
+
+SELECT
+  is (
+    pg_temp.answer (
+      $$SELECT public.nomination_shape_rule('organization_list_and_independents', 'faction')$$
+    ),
+    'admitted',
+    'nomination_shape_rule: organization_list_and_independents x faction is admitted'
+  );
+
+SELECT
+  is (
+    pg_temp.answer (
+      $$SELECT public.nomination_shape_rule('organization_list_and_independents', 'alliance')$$
+    ),
+    'admitted',
+    'nomination_shape_rule: organization_list_and_independents x alliance is admitted'
+  );
+
+SELECT
+  is (
+    pg_temp.answer (
+      $$SELECT public.nomination_shape_rule('candidate_only', 'candidate')$$
+    ),
+    'admitted',
+    'nomination_shape_rule: candidate_only x candidate is admitted'
+  );
+
+SELECT
+  is (
+    pg_temp.answer (
+      $$SELECT public.nomination_shape_rule('candidate_only', 'organization')$$
+    ),
+    'refused',
+    'nomination_shape_rule: candidate_only x organization is refused'
+  );
+
+SELECT
+  is (
+    pg_temp.answer (
+      $$SELECT public.nomination_shape_rule('candidate_only', 'faction')$$
+    ),
+    'refused',
+    'nomination_shape_rule: candidate_only x faction is refused'
+  );
+
+SELECT
+  is (
+    pg_temp.answer (
+      $$SELECT public.nomination_shape_rule('candidate_only', 'alliance')$$
+    ),
+    'refused',
+    'nomination_shape_rule: candidate_only x alliance is refused'
+  );
+
+SELECT
+  is (
+    pg_temp.answer (
+      $$SELECT public.nomination_shape_rule('organization_only', 'candidate')$$
+    ),
+    'refused',
+    'nomination_shape_rule: organization_only x candidate is refused'
+  );
+
+SELECT
+  is (
+    pg_temp.answer (
+      $$SELECT public.nomination_shape_rule('organization_only', 'organization')$$
+    ),
+    'admitted',
+    'nomination_shape_rule: organization_only x organization is admitted'
+  );
+
+SELECT
+  is (
+    pg_temp.answer (
+      $$SELECT public.nomination_shape_rule('organization_only', 'faction')$$
+    ),
+    'refused',
+    'nomination_shape_rule: organization_only x faction is refused'
+  );
+
+SELECT
+  is (
+    pg_temp.answer (
+      $$SELECT public.nomination_shape_rule('organization_only', 'alliance')$$
+    ),
+    'admitted',
+    'nomination_shape_rule: organization_only x alliance is admitted'
+  );
+
+SELECT
+  is (
+    pg_temp.answer (
+      $$SELECT public.nomination_shape_rule(NULL, 'candidate')$$
+    ),
+    NULL,
+    'nomination_shape_rule: no election type answers NULL'
+  );
+
+SELECT
+  is (
+    pg_temp.answer (
+      $$SELECT public.nomination_shape_rule('organization_list', NULL)$$
+    ),
+    NULL,
+    'nomination_shape_rule: no entity type answers NULL'
+  );
+
+-- The matrix reads no table and no role, and neither does either function that asks it: all three exist, and none names the caller.
+SELECT
+  is (
+    (
+      SELECT
+        ARRAY[
+          count(*),
+          count(*) FILTER (
+            WHERE
+              p.prosrc ~* '(current_user|session_user|current_role|current_setting|auth\.|user_can)'
+          )
+        ]
+      FROM
+        pg_proc p
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+      WHERE
+        n.nspname = 'public'
+        AND p.proname IN (
+          'nomination_shape_rule',
+          'validate_nomination',
+          'validate_nomination_parent_required'
+        )
+    ),
+    ARRAY[3::bigint, 0::bigint],
+    'the matrix function and the two trigger functions exist, and none reads a role, a claim or a grant'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        p.provolatile = 'i'
+        AND NOT p.prosecdef
+        AND array_to_string(p.proconfig, ',') LIKE 'search_path=%'
+      FROM
+        pg_proc p
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+      WHERE
+        n.nspname = 'public'
+        AND p.proname = 'nomination_shape_rule'
+    ),
+    true,
+    'nomination_shape_rule is IMMUTABLE, not SECURITY DEFINER, and pins its search_path'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        t.tgdeferrable
+        AND t.tginitdeferred
+        AND t.tgtype = 21
+      FROM
+        pg_trigger t
+      WHERE
+        t.tgrelid = 'public.nominations'::regclass
+        AND t.tgname = 'nominations_parent_required'
+    ),
+    true,
+    'nominations_parent_required fires AFTER INSERT OR UPDATE for each row, deferrable and initially deferred'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        count(*)::integer
+      FROM
+        pg_trigger t
+        JOIN pg_proc p ON p.oid = t.tgfoid
+      WHERE
+        t.tgrelid = 'public.elections'::regclass
+        AND NOT t.tgisinternal
+        AND p.proname LIKE '%nomination%'
+    ),
+    0,
+    'no trigger on public.elections asks a nomination rule'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        e.election_type::text
+      FROM
+        elections e
+      WHERE
+        e.id = test_id ('election_a')
+    ),
+    'organization_list_and_independents',
+    'the fixture election states no type and takes the default, organization_list_and_independents'
+  );
+
+-- ---------------------------------------------------------------------
+-- 12b: one write per cell, as the owner of the tables
+--
+-- A faction's row names the nomination of its own organization at the same contest wherever that nomination can exist, so the refusal asserted is the election type's and not the hierarchy's. In a candidates-only election no organization nomination can exist, and the faction's row is refused before the hierarchy is asked.
+-- ---------------------------------------------------------------------
+-- organization_list
+SELECT
+  lives_ok (
+    pg_temp.nominate (
+      'alliance_id',
+      test_id ('alliance_a'),
+      'organization_list',
+      1
+    ),
+    'organization_list x alliance: the write is admitted'
+  );
+
+SELECT
+  lives_ok (
+    pg_temp.nominate (
+      'organization_id',
+      test_id ('org_a'),
+      'organization_list',
+      1,
+      NULL,
+      'eeeeeeee-eeee-eeee-eeee-000000000412'
+    ),
+    'organization_list x organization: the write is admitted'
+  );
+
+SELECT
+  lives_ok (
+    pg_temp.nominate (
+      'faction_id',
+      test_id ('faction_a'),
+      'organization_list',
+      1,
+      'eeeeeeee-eeee-eeee-eeee-000000000412'
+    ),
+    'organization_list x faction: the write is admitted under its organization'
+  );
+
+SELECT
+  lives_ok (
+    pg_temp.nominate (
+      'candidate_id',
+      test_id ('candidate_a'),
+      'organization_list',
+      1,
+      'eeeeeeee-eeee-eeee-eeee-000000000412'
+    ),
+    'organization_list x candidate: the write is admitted at the statement'
+  );
+
+-- organization_list_and_independents, at round 2: the fixture holds round 1 of this contest.
+SELECT
+  lives_ok (
+    pg_temp.nominate (
+      'alliance_id',
+      test_id ('alliance_a'),
+      'organization_list_and_independents',
+      2
+    ),
+    'organization_list_and_independents x alliance: the write is admitted'
+  );
+
+SELECT
+  lives_ok (
+    pg_temp.nominate (
+      'organization_id',
+      test_id ('org_a'),
+      'organization_list_and_independents',
+      2,
+      NULL,
+      'eeeeeeee-eeee-eeee-eeee-000000000442'
+    ),
+    'organization_list_and_independents x organization: the write is admitted'
+  );
+
+SELECT
+  lives_ok (
+    pg_temp.nominate (
+      'faction_id',
+      test_id ('faction_a'),
+      'organization_list_and_independents',
+      2,
+      'eeeeeeee-eeee-eeee-eeee-000000000442'
+    ),
+    'organization_list_and_independents x faction: the write is admitted under its organization'
+  );
+
+SELECT
+  lives_ok (
+    pg_temp.nominate (
+      'candidate_id',
+      test_id ('candidate_a'),
+      'organization_list_and_independents',
+      2
+    ),
+    'organization_list_and_independents x candidate: the write is admitted without a parent'
+  );
+
+-- candidate_only
+SELECT
+  lives_ok (
+    pg_temp.nominate (
+      'candidate_id',
+      test_id ('candidate_a'),
+      'candidate_only',
+      1,
+      NULL,
+      'eeeeeeee-eeee-eeee-eeee-000000000421'
+    ),
+    'candidate_only x candidate: the write is admitted'
+  );
+
+SELECT
+  throws_ok (
+    pg_temp.nominate (
+      'organization_id',
+      test_id ('org_a'),
+      'candidate_only',
+      1
+    ),
+    '23514',
+    'Nomination shape refused: an organization cannot be nominated in an election of type candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
+    'candidate_only x organization: the write is refused, 23514, naming the entity type, the election type and the election'
+  );
+
+SELECT
+  throws_ok (
+    pg_temp.nominate (
+      'faction_id',
+      test_id ('faction_a'),
+      'candidate_only',
+      1
+    ),
+    '23514',
+    'Nomination shape refused: a faction cannot be nominated in an election of type candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
+    'candidate_only x faction: the write is refused, 23514, for the election type and not for its missing parent'
+  );
+
+SELECT
+  throws_ok (
+    pg_temp.nominate (
+      'alliance_id',
+      test_id ('alliance_a'),
+      'candidate_only',
+      1
+    ),
+    '23514',
+    'Nomination shape refused: an alliance cannot be nominated in an election of type candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
+    'candidate_only x alliance: the write is refused, 23514, naming the entity type, the election type and the election'
+  );
+
+-- organization_only
+SELECT
+  lives_ok (
+    pg_temp.nominate (
+      'organization_id',
+      test_id ('org_a'),
+      'organization_only',
+      1,
+      NULL,
+      'eeeeeeee-eeee-eeee-eeee-000000000431'
+    ),
+    'organization_only x organization: the write is admitted'
+  );
+
+SELECT
+  lives_ok (
+    pg_temp.nominate (
+      'alliance_id',
+      test_id ('alliance_a'),
+      'organization_only',
+      1
+    ),
+    'organization_only x alliance: the write is admitted'
+  );
+
+SELECT
+  throws_ok (
+    pg_temp.nominate (
+      'candidate_id',
+      test_id ('candidate_a'),
+      'organization_only',
+      1
+    ),
+    '23514',
+    'Nomination shape refused: a candidate cannot be nominated in an election of type organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
+    'organization_only x candidate: the write is refused, 23514, naming the entity type, the election type and the election'
+  );
+
+SELECT
+  throws_ok (
+    pg_temp.nominate (
+      'faction_id',
+      test_id ('faction_a'),
+      'organization_only',
+      1,
+      'eeeeeeee-eeee-eeee-eeee-000000000431'
+    ),
+    '23514',
+    'Nomination shape refused: a faction cannot be nominated in an election of type organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
+    'organization_only x faction: the write is refused, 23514, although its parent is the nomination of its own organization'
+  );
+
+-- An UPDATE is bound as an INSERT is: a stored row cannot be moved into an election whose type refuses it.
+SELECT
+  throws_ok (
+    $$UPDATE public.nominations SET election_id = 'eeeeeeee-eeee-eeee-eeee-000000000403' WHERE id = 'eeeeeeee-eeee-eeee-eeee-000000000421'$$,
+    '23514',
+    'Nomination shape refused: a candidate cannot be nominated in an election of type organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
+    'an UPDATE that moves a candidate nomination into an organization_only election is refused, 23514'
+  );
+
+-- ---------------------------------------------------------------------
+-- 12c: the rule exempts no role
+--
+-- Each refused cell again as a project administrator, the cells an entity's own editor can attempt as that editor, and a refused cell of each kind as the service role. A BEFORE trigger runs ahead of the row-level-security check, so each refusal is the rule's 23514 with the rule's message and never a policy's 42501. One admitted cell per role lives, which shows that the role can write the table at all.
+-- ---------------------------------------------------------------------
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('admin_a'),
+    test_user_grants ('admin_a')
+  );
+
+SELECT
+  throws_ok (
+    pg_temp.nominate (
+      'organization_id',
+      test_id ('org_a'),
+      'candidate_only',
+      1
+    ),
+    '23514',
+    'Nomination shape refused: an organization cannot be nominated in an election of type candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
+    'a project administrator: candidate_only x organization is refused, 23514'
+  );
+
+SELECT
+  throws_ok (
+    pg_temp.nominate (
+      'faction_id',
+      test_id ('faction_a'),
+      'candidate_only',
+      1
+    ),
+    '23514',
+    'Nomination shape refused: a faction cannot be nominated in an election of type candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
+    'a project administrator: candidate_only x faction is refused, 23514'
+  );
+
+SELECT
+  throws_ok (
+    pg_temp.nominate (
+      'alliance_id',
+      test_id ('alliance_a'),
+      'candidate_only',
+      1
+    ),
+    '23514',
+    'Nomination shape refused: an alliance cannot be nominated in an election of type candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
+    'a project administrator: candidate_only x alliance is refused, 23514'
+  );
+
+SELECT
+  throws_ok (
+    pg_temp.nominate (
+      'candidate_id',
+      test_id ('candidate_a2'),
+      'organization_only',
+      1
+    ),
+    '23514',
+    'Nomination shape refused: a candidate cannot be nominated in an election of type organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
+    'a project administrator: organization_only x candidate is refused, 23514'
+  );
+
+SELECT
+  throws_ok (
+    pg_temp.nominate (
+      'faction_id',
+      test_id ('faction_a'),
+      'organization_only',
+      1,
+      'eeeeeeee-eeee-eeee-eeee-000000000431'
+    ),
+    '23514',
+    'Nomination shape refused: a faction cannot be nominated in an election of type organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
+    'a project administrator: organization_only x faction is refused, 23514'
+  );
+
+SELECT
+  lives_ok (
+    pg_temp.nominate (
+      'candidate_id',
+      test_id ('candidate_a'),
+      'candidate_only',
+      2
+    ),
+    'a project administrator: candidate_only x candidate is admitted'
+  );
+
+SELECT
+  throws_ok (
+    $$UPDATE public.nominations SET election_id = 'eeeeeeee-eeee-eeee-eeee-000000000402' WHERE id = 'eeeeeeee-eeee-eeee-eeee-000000000431'$$,
+    '23514',
+    'Nomination shape refused: an organization cannot be nominated in an election of type candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
+    'a project administrator: an UPDATE that moves an organization nomination into a candidate_only election is refused, 23514'
+  );
+
+-- The editor of candidate_a.
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('candidate_a'),
+    test_user_grants ('candidate_a')
+  );
+
+SELECT
+  throws_ok (
+    pg_temp.nominate (
+      'candidate_id',
+      test_id ('candidate_a'),
+      'organization_only',
+      1
+    ),
+    '23514',
+    'Nomination shape refused: a candidate cannot be nominated in an election of type organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
+    'a candidate''s own editor: organization_only x candidate is refused, 23514 and not 42501'
+  );
+
+-- The editor of candidate_a2, which has no nomination in the fixture.
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('candidate_a2'),
+    test_user_grants ('candidate_a2')
+  );
+
+SELECT
+  lives_ok (
+    pg_temp.nominate (
+      'candidate_id',
+      test_id ('candidate_a2'),
+      'candidate_only',
+      1
+    ),
+    'a candidate''s own editor: candidate_only x candidate is admitted'
+  );
+
+SELECT
+  throws_ok (
+    format(
+      $$UPDATE public.nominations SET election_id = 'eeeeeeee-eeee-eeee-eeee-000000000403' WHERE candidate_id = %L AND election_id = 'eeeeeeee-eeee-eeee-eeee-000000000402'$$,
+      test_id ('candidate_a2')
+    ),
+    '23514',
+    'Nomination shape refused: a candidate cannot be nominated in an election of type organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
+    'a candidate''s own editor: an UPDATE that moves its nomination into an organization_only election is refused, 23514'
+  );
+
+SELECT
+  throws_ok (
+    pg_temp.nominate (
+      'candidate_id',
+      test_id ('candidate_a2'),
+      'organization_list',
+      1
+    ) || '; SET CONSTRAINTS ALL IMMEDIATE',
+    '23514',
+    NULL,
+    'a candidate''s own editor: a lone party-less row in an organization_list election is refused when the transaction ends, 23514'
+  );
+
+SELECT
+  throws_like (
+    pg_temp.nominate (
+      'candidate_id',
+      test_id ('candidate_a2'),
+      'organization_list',
+      1
+    ) || '; SET CONSTRAINTS ALL IMMEDIATE',
+    'Nomination parent required: candidate nomination % in election eeeeeeee-eeee-eeee-eeee-000000000401 has neither a parent nomination nor a requested parent organization',
+    'a candidate''s own editor: that refusal names the row and the election'
+  );
+
+-- The editor of org_a.
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('organization_a'),
+    test_user_grants ('organization_a')
+  );
+
+SELECT
+  throws_ok (
+    pg_temp.nominate (
+      'organization_id',
+      test_id ('org_a'),
+      'candidate_only',
+      1
+    ),
+    '23514',
+    'Nomination shape refused: an organization cannot be nominated in an election of type candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
+    'an organization''s own editor: candidate_only x organization is refused, 23514 and not 42501'
+  );
+
+SELECT
+  lives_ok (
+    pg_temp.nominate (
+      'organization_id',
+      test_id ('org_a'),
+      'organization_only',
+      2
+    ),
+    'an organization''s own editor: organization_only x organization is admitted'
+  );
+
+-- The service role: no token, and row-level security bypassed.
+SELECT
+  set_config('request.jwt.claims', '', true);
+
+SELECT
+  set_config('role', 'service_role', true);
+
+SELECT
+  throws_ok (
+    pg_temp.nominate (
+      'candidate_id',
+      test_id ('candidate_a'),
+      'organization_only',
+      1
+    ),
+    '23514',
+    'Nomination shape refused: a candidate cannot be nominated in an election of type organization_only (election eeeeeeee-eeee-eeee-eeee-000000000403)',
+    'the service role: organization_only x candidate is refused, 23514'
+  );
+
+SELECT
+  throws_ok (
+    pg_temp.nominate (
+      'organization_id',
+      test_id ('org_a'),
+      'candidate_only',
+      1
+    ),
+    '23514',
+    'Nomination shape refused: an organization cannot be nominated in an election of type candidate_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
+    'the service role: candidate_only x organization is refused, 23514'
+  );
+
+SELECT
+  lives_ok (
+    pg_temp.nominate (
+      'candidate_id',
+      test_id ('candidate_a'),
+      'candidate_only',
+      3
+    ),
+    'the service role: candidate_only x candidate is admitted'
+  );
+
+SELECT
+  throws_ok (
+    pg_temp.nominate (
+      'candidate_id',
+      test_id ('candidate_a2'),
+      'organization_list',
+      1,
+      NULL,
+      'eeeeeeee-eeee-eeee-eeee-000000000450'
+    ) || '; SET CONSTRAINTS ALL IMMEDIATE',
+    '23514',
+    'Nomination parent required: candidate nomination eeeeeeee-eeee-eeee-eeee-000000000450 in election eeeeeeee-eeee-eeee-eeee-000000000401 has neither a parent nomination nor a requested parent organization',
+    'the service role: a lone party-less row in an organization_list election is refused when the transaction ends, 23514'
+  );
+
+SELECT
+  reset_role ();
+
+-- ---------------------------------------------------------------------
+-- 12d: the parent rule, at the end of the transaction
+--
+-- Every row below is candidate_a2's, in a round of its own. After each assertion that forces the rule the probe is asked, so a statement that left the constraint immediate is named by the assertion directly after it.
+-- ---------------------------------------------------------------------
+SELECT
+  throws_ok (
+    pg_temp.nominate (
+      'candidate_id',
+      test_id ('candidate_a2'),
+      'organization_list',
+      1,
+      NULL,
+      'eeeeeeee-eeee-eeee-eeee-000000000451'
+    ) || '; SET CONSTRAINTS ALL IMMEDIATE',
+    '23514',
+    'Nomination parent required: candidate nomination eeeeeeee-eeee-eeee-eeee-000000000451 in election eeeeeeee-eeee-eeee-eeee-000000000401 has neither a parent nomination nor a requested parent organization',
+    'organization_list: a lone candidate row with no parent is refused when all constraints are set immediate, 23514, naming the row and the election'
+  );
+
+SELECT
+  ok (
+    pg_temp.parent_rule_is_deferred (),
+    'after the refused lone row, a party-less insert raises nothing at its own statement'
+  );
+
+SELECT
+  throws_ok (
+    pg_temp.forced (
+      pg_temp.nominate (
+        'candidate_id',
+        test_id ('candidate_a2'),
+        'organization_list',
+        1,
+        NULL,
+        'eeeeeeee-eeee-eeee-eeee-000000000451'
+      )
+    ),
+    '23514',
+    'Nomination parent required: candidate nomination eeeeeeee-eeee-eeee-eeee-000000000451 in election eeeeeeee-eeee-eeee-eeee-000000000401 has neither a parent nomination nor a requested parent organization',
+    'organization_list: the same lone row is refused when the constraint is forced by name'
+  );
+
+SELECT
+  ok (
+    pg_temp.parent_rule_is_deferred (),
+    'after the lone row refused by name, a party-less insert raises nothing at its own statement'
+  );
+
+-- The candidate's own row, then the parent organization's row, then the repoint.
+SELECT
+  lives_ok (
+    pg_temp.forced (
+      pg_temp.nominate (
+        'candidate_id',
+        test_id ('candidate_a2'),
+        'organization_list',
+        2,
+        NULL,
+        'eeeeeeee-eeee-eeee-eeee-000000000452'
+      ) || '; ' || pg_temp.nominate (
+        'organization_id',
+        test_id ('org_a'),
+        'organization_list',
+        2,
+        NULL,
+        'eeeeeeee-eeee-eeee-eeee-000000000453'
+      ) || $$; UPDATE public.nominations SET parent_nomination_id = 'eeeeeeee-eeee-eeee-eeee-000000000453' WHERE id = 'eeeeeeee-eeee-eeee-eeee-000000000452'$$
+    ),
+    'organization_list: own row, then the parent row, then the repoint, then the forced rule lives'
+  );
+
+SELECT
+  ok (
+    pg_temp.parent_rule_is_deferred (),
+    'after the three-statement order, a party-less insert raises nothing at its own statement'
+  );
+
+SELECT
+  lives_ok (
+    pg_temp.forced (
+      pg_temp.nominate (
+        'candidate_id',
+        test_id ('candidate_a2'),
+        'organization_list',
+        3,
+        NULL,
+        'eeeeeeee-eeee-eeee-eeee-000000000454',
+        '{"requestedParentOrganization": "A party not in the system"}'::jsonb
+      )
+    ),
+    'organization_list: a lone row whose custom data holds requestedParentOrganization lives when the rule is forced'
+  );
+
+SELECT
+  ok (
+    pg_temp.parent_rule_is_deferred (),
+    'after the row with a requested parent organization, a party-less insert raises nothing at its own statement'
+  );
+
+SELECT
+  lives_ok (
+    pg_temp.forced (
+      pg_temp.nominate (
+        'candidate_id',
+        test_id ('candidate_a2'),
+        'organization_list_and_independents',
+        3,
+        NULL,
+        'eeeeeeee-eeee-eeee-eeee-000000000459'
+      )
+    ),
+    'organization_list_and_independents: a lone candidate row with no parent lives when the rule is forced'
+  );
+
+SELECT
+  ok (
+    pg_temp.parent_rule_is_deferred (),
+    'after the party-less row of the default type, a party-less insert raises nothing at its own statement'
+  );
+
+-- A candidate's row under its party's, stored: clearing the parent is an UPDATE the rule judges as it judges an INSERT.
+INSERT INTO
+  nominations (
+    id,
+    project_id,
+    organization_id,
+    election_id,
+    constituency_id,
+    election_round
+  )
+VALUES
+  (
+    'eeeeeeee-eeee-eeee-eeee-000000000455'::uuid,
+    test_id ('project_a'),
+    test_id ('org_a'),
+    'eeeeeeee-eeee-eeee-eeee-000000000401'::uuid,
+    test_id ('constituency_a'),
+    5
+  );
+
+INSERT INTO
+  nominations (
+    id,
+    project_id,
+    candidate_id,
+    election_id,
+    constituency_id,
+    election_round,
+    parent_nomination_id
+  )
+VALUES
+  (
+    'eeeeeeee-eeee-eeee-eeee-000000000456'::uuid,
+    test_id ('project_a'),
+    test_id ('candidate_a2'),
+    'eeeeeeee-eeee-eeee-eeee-000000000401'::uuid,
+    test_id ('constituency_a'),
+    5,
+    'eeeeeeee-eeee-eeee-eeee-000000000455'::uuid
+  );
+
+SELECT
+  throws_ok (
+    $$UPDATE public.nominations SET parent_nomination_id = NULL WHERE id = 'eeeeeeee-eeee-eeee-eeee-000000000456'; SET CONSTRAINTS ALL IMMEDIATE$$,
+    '23514',
+    'Nomination parent required: candidate nomination eeeeeeee-eeee-eeee-eeee-000000000456 in election eeeeeeee-eeee-eeee-eeee-000000000401 has neither a parent nomination nor a requested parent organization',
+    'organization_list: an UPDATE that clears a candidate row''s parent is refused when the rule is forced, 23514'
+  );
+
+SELECT
+  ok (
+    pg_temp.parent_rule_is_deferred (),
+    'after the refused UPDATE, a party-less insert raises nothing at its own statement'
+  );
+
+SELECT
+  lives_ok (
+    pg_temp.forced (
+      pg_temp.nominate (
+        'candidate_id',
+        test_id ('candidate_a2'),
+        'organization_list',
+        6,
+        NULL,
+        'eeeeeeee-eeee-eeee-eeee-000000000457'
+      ) || $$; DELETE FROM public.nominations WHERE id = 'eeeeeeee-eeee-eeee-eeee-000000000457'$$
+    ),
+    'organization_list: a lone row inserted and deleted before the rule is forced raises nothing'
+  );
+
+SELECT
+  ok (
+    pg_temp.parent_rule_is_deferred (),
+    'after the row that was deleted before the rule ran, a party-less insert raises nothing at its own statement'
+  );
+
+-- The constraint is deferred here: the lone insert, alone, raises nothing at its own statement. Its control is the same insert with every constraint immediate, which raises at the insert.
+SELECT
+  lives_ok (
+    pg_temp.nominate (
+      'candidate_id',
+      test_id ('candidate_a2'),
+      'organization_list',
+      7,
+      NULL,
+      'eeeeeeee-eeee-eeee-eeee-000000000458'
+    ),
+    'organization_list: after every forced assertion, a lone party-less insert raises nothing at its own statement'
+  );
+
+DELETE FROM nominations
+WHERE
+  id = 'eeeeeeee-eeee-eeee-eeee-000000000458'::uuid;
+
+SELECT
+  throws_ok (
+    'SET CONSTRAINTS ALL IMMEDIATE; ' || pg_temp.nominate (
+      'candidate_id',
+      test_id ('candidate_a2'),
+      'organization_list',
+      8,
+      NULL,
+      'eeeeeeee-eeee-eeee-eeee-000000000460'
+    ),
+    '23514',
+    'Nomination parent required: candidate nomination eeeeeeee-eeee-eeee-eeee-000000000460 in election eeeeeeee-eeee-eeee-eeee-000000000401 has neither a parent nomination nor a requested parent organization',
+    'organization_list: with every constraint immediate, the same lone insert raises at its own statement'
+  );
+
+SELECT
+  is (
+    pg_temp.parent_rule_probe_while_immediate (),
+    false,
+    'the probe answers false while the constraint is immediate'
+  );
+
+SELECT
+  ok (
+    pg_temp.parent_rule_is_deferred (),
+    'after the two controls, a party-less insert raises nothing at its own statement'
+  );
+
+-- ---------------------------------------------------------------------
+-- 12e: an election's type is changed
+--
+-- Nothing re-checks the nominations an election holds when its type changes. The rule is asked when a nomination is written, so a later write of a row the new type refuses is refused.
+-- ---------------------------------------------------------------------
+SELECT
+  lives_ok (
+    $$UPDATE public.elections SET election_type = 'organization_only' WHERE id = 'eeeeeeee-eeee-eeee-eeee-000000000402'$$,
+    'an election that holds candidate nominations can be changed to organization_only'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        count(*)::integer
+      FROM
+        nominations n
+      WHERE
+        n.id = 'eeeeeeee-eeee-eeee-eeee-000000000421'::uuid
+        AND n.election_id = 'eeeeeeee-eeee-eeee-eeee-000000000402'::uuid
+    ),
+    1,
+    'the candidate nomination the election held is still stored after the change'
+  );
+
+SELECT
+  throws_ok (
+    $$UPDATE public.nominations SET custom_data = '{"note": "edited"}'::jsonb WHERE id = 'eeeeeeee-eeee-eeee-eeee-000000000421'$$,
+    '23514',
+    'Nomination shape refused: a candidate cannot be nominated in an election of type organization_only (election eeeeeeee-eeee-eeee-eeee-000000000402)',
+    'a later write of a stored row that the election''s new type refuses is refused, 23514'
+  );
+
+UPDATE elections
+SET
+  election_type = 'candidate_only'
+WHERE
+  id = 'eeeeeeee-eeee-eeee-eeee-000000000402'::uuid;
 
 -- =====================================================================
 -- Cleanup

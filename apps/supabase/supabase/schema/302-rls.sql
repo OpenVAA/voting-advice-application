@@ -535,6 +535,10 @@ FOR UPDATE
           'organization'::public.entity_type
         )
     )
+    AND NOT (
+      SELECT
+        private.project_answers_locked (project_id)
+    )
   )
 WITH
   CHECK (
@@ -546,6 +550,10 @@ WITH
           'entity.edit_answers',
           'organization'::public.entity_type
         )
+    )
+    AND NOT (
+      SELECT
+        private.project_answers_locked (project_id)
     )
   );
 
@@ -595,8 +603,6 @@ SELECT
       SELECT
         private.entity_has_confirmed_nomination ('candidate'::public.entity_type, id, project_id)
     )
-    AND terms_of_use_accepted IS NOT NULL
-    AND terms_of_use_accepted < now()
   );
 
 -- Disjunct order is deliberate and changes cost, never the answer: project authority first so an admin exits on the first call, then the public assembly, token for token the `anon_select_candidates` qual, so a publicly visible row never pays the entity user_can call, then entity authority. 29-authenticated-disjunct-order.test.sql fails on any other order.
@@ -617,8 +623,6 @@ SELECT
         SELECT
           private.entity_has_confirmed_nomination ('candidate'::public.entity_type, id, project_id)
       )
-      AND terms_of_use_accepted IS NOT NULL
-      AND terms_of_use_accepted < now()
     )
     OR (
       SELECT
@@ -659,6 +663,10 @@ FOR UPDATE
           'candidate'::public.entity_type
         )
     )
+    AND NOT (
+      SELECT
+        private.project_answers_locked (project_id)
+    )
   )
 WITH
   CHECK (
@@ -670,6 +678,10 @@ WITH
           'entity.edit_answers',
           'candidate'::public.entity_type
         )
+    )
+    AND NOT (
+      SELECT
+        private.project_answers_locked (project_id)
     )
   );
 
@@ -769,6 +781,10 @@ FOR UPDATE
           'faction'::public.entity_type
         )
     )
+    AND NOT (
+      SELECT
+        private.project_answers_locked (project_id)
+    )
   )
 WITH
   CHECK (
@@ -780,6 +796,10 @@ WITH
           'entity.edit_answers',
           'faction'::public.entity_type
         )
+    )
+    AND NOT (
+      SELECT
+        private.project_answers_locked (project_id)
     )
   );
 
@@ -879,6 +899,10 @@ FOR UPDATE
           'alliance'::public.entity_type
         )
     )
+    AND NOT (
+      SELECT
+        private.project_answers_locked (project_id)
+    )
   )
 WITH
   CHECK (
@@ -890,6 +914,10 @@ WITH
           'entity.edit_answers',
           'alliance'::public.entity_type
         )
+    )
+    AND NOT (
+      SELECT
+        private.project_answers_locked (project_id)
     )
   );
 
@@ -1144,6 +1172,10 @@ WITH
       SELECT
         private.project_nominations_locked (project_id)
     )
+    AND NOT (
+      SELECT
+        private.project_answers_locked (project_id)
+    )
     AND NOT confirmed
     AND (
       SELECT
@@ -1178,13 +1210,16 @@ WITH
 CREATE POLICY "entity_insert_parent_nominations" ON public.nominations FOR INSERT TO authenticated
 WITH
   CHECK (
-    organization_id IS NOT NULL
+    (
+      organization_id IS NOT NULL
+      OR alliance_id IS NOT NULL
+    )
     AND NOT confirmed
     AND NOT (
       SELECT
         private.nomination_exists_in_contest (
-          'organization'::public.entity_type,
-          organization_id,
+          entity_type,
+          COALESCE(organization_id, alliance_id),
           election_id,
           constituency_id,
           election_round
@@ -1194,13 +1229,21 @@ WITH
       SELECT
         private.project_nominations_locked (project_id)
     )
+    AND NOT (
+      SELECT
+        private.project_answers_locked (project_id)
+    )
     AND (
       SELECT
         private.caller_nominated_in_contest (
           election_id,
           constituency_id,
           election_round,
-          'nomination.create_parent'
+          'nomination.create_parent',
+          CASE
+            WHEN alliance_id IS NOT NULL THEN ARRAY['organization']::public.entity_type[]
+            ELSE ARRAY['candidate', 'faction']::public.entity_type[]
+          END
         )
     )
     AND (
@@ -1266,6 +1309,10 @@ FOR UPDATE
       SELECT
         private.project_nominations_locked (project_id)
     )
+    AND NOT (
+      SELECT
+        private.project_answers_locked (project_id)
+    )
   )
 WITH
   CHECK (
@@ -1286,6 +1333,10 @@ WITH
     AND NOT (
       SELECT
         private.project_nominations_locked (project_id)
+    )
+    AND NOT (
+      SELECT
+        private.project_answers_locked (project_id)
     )
     AND (
       SELECT
@@ -1310,6 +1361,38 @@ CREATE POLICY "admin_delete_nominations" ON public.nominations FOR DELETE TO aut
   (
     SELECT
       user_can ('project', project_id, 'project.edit_nominations')
+  )
+);
+
+-- Entity delete of its own nomination, confirmed or not: the `USING` clause of `entity_update_nominations`.
+-- - `nomination.edit` on the row's entity, with the four entity foreign keys coalesced and the row's generated `entity_type` naming the type. A row the caller created for another entity is not the caller's own: the placeholder parent that `entity_insert_parent_nominations` admits nominates an organization the caller holds no permission on, and who created a row is not asked.
+-- - The project's nominations are not locked, read through `private.project_nominations_locked`, and its answers are not locked, read through `private.project_answers_locked`, as the entity insert and update policies read them.
+--
+-- The foreign key on `parent_nomination_id` is ON DELETE NO ACTION, so it refuses the delete while a nomination is listed under the row, whoever asks.
+--
+-- 23-nominations-write.test.sql asserts each conjunct in both directions.
+CREATE POLICY "entity_delete_nominations" ON public.nominations FOR DELETE TO authenticated USING (
+  (
+    SELECT
+      user_can (
+        'entity',
+        COALESCE(
+          candidate_id,
+          organization_id,
+          faction_id,
+          alliance_id
+        ),
+        'nomination.edit',
+        entity_type
+      )
+  )
+  AND NOT (
+    SELECT
+      private.project_nominations_locked (project_id)
+  )
+  AND NOT (
+    SELECT
+      private.project_answers_locked (project_id)
   )
 );
 

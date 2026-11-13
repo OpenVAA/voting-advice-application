@@ -24,7 +24,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (39);
+  plan (44);
 
 -- Create test fixture data
 SELECT
@@ -374,8 +374,8 @@ SELECT
         AND p.proname NOT LIKE 'test\_%'
         AND has_function_privilege('anon', p.oid, 'EXECUTE')
     ),
-    'project_open_for_voters,storage_path_can,storage_path_is_public,user_can,user_has_account_grant',
-    'census: the SECURITY DEFINER functions in public that anon can execute are exactly the five allow-listed ones'
+    'contestant_app_public_config,project_open_for_voters,storage_path_can,storage_path_is_public,user_can,user_has_account_grant',
+    'census: the SECURITY DEFINER functions in public that anon can execute are exactly the six allow-listed ones'
   );
 
 SELECT
@@ -398,11 +398,129 @@ SELECT
         AND p.proname NOT LIKE 'test\_%'
         AND has_function_privilege('authenticated', p.oid, 'EXECUTE')
     ),
-    'get_entity_basic_data,project_open_for_voters,storage_path_can,storage_path_is_public,user_can,user_has_account_grant',
-    'census: the SECURITY DEFINER functions in public that authenticated can execute are the same five plus get_entity_basic_data'
+    'claim_invitations,contestant_app_public_config,get_entity_basic_data,get_entity_nominations,get_nomination_parent_options,get_user_project_grants,project_open_for_voters,storage_path_can,storage_path_is_public,user_can,user_has_account_grant',
+    'census: the SECURITY DEFINER functions in public that authenticated can execute are the same six plus claim_invitations, get_entity_basic_data, get_entity_nominations, get_nomination_parent_options and get_user_project_grants'
   );
 
--- The ten policy-only helpers live where policies can still reach them: present in `private`, absent from `public`, and executable by both API roles (a policy runs as its caller).
+-- The definer functions that are RPC endpoints for the service role alone: each reads or writes what no API role may, and checks nothing about its caller, so each is safe only while both API roles stay refused.
+SELECT
+  is (
+    (
+      SELECT
+        string_agg(
+          p.proname,
+          ','
+          ORDER BY
+            p.proname
+        )
+      FROM
+        pg_proc p
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+      WHERE
+        n.nspname = 'public'
+        AND p.prosecdef
+        AND p.prorettype <> 'trigger'::regtype
+        AND p.proname NOT LIKE 'test\_%'
+        AND has_function_privilege('service_role', p.oid, 'EXECUTE')
+        AND NOT has_function_privilege('anon', p.oid, 'EXECUTE')
+        AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE')
+    ),
+    'address_confirmation_release,address_confirmation_request,address_holds_open_invitation,delete_storage_object,identity_entity_find_or_create,invitation_code_claimant_email,invitation_code_status,invitation_link_release,invitation_link_request,invitation_link_witness,invitation_link_witness_open,recovery_link_request,resolve_email_variables',
+    'census: the SECURITY DEFINER functions in public that service_role can execute and neither anon nor authenticated can are exactly the thirteen listed'
+  );
+
+-- =====================================================================
+-- Section 8d: the auth service's hooks
+--
+-- A hook is a function of `public` that the auth service calls under its own role, supabase_auth_admin. Neither is a definer function, so the censuses above do not list them. The mail hook takes every mail the auth service would send and sends none; it is called with an event that holds an address and a token, so no API role may execute it. Each assertion reads the function by name from pg_proc, so a missing function fails rather than raises.
+-- =====================================================================
+SELECT
+  is (
+    (
+      SELECT
+        string_agg(
+          p.proname,
+          ','
+          ORDER BY
+            p.proname
+        )
+      FROM
+        pg_proc p
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+      WHERE
+        n.nspname = 'public'
+        AND p.prorettype <> 'trigger'::regtype
+        AND p.proname NOT LIKE 'test\_%'
+        AND has_function_privilege('supabase_auth_admin', p.oid, 'EXECUTE')
+        AND NOT has_function_privilege('anon', p.oid, 'EXECUTE')
+        AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE')
+    ),
+    'custom_access_token_hook,send_email_hook',
+    'census: the functions in public that supabase_auth_admin can execute and neither anon nor authenticated can are exactly the two hooks'
+  );
+
+SELECT
+  ok (
+    COALESCE(
+      (
+        SELECT
+          bool_and(
+            has_function_privilege('supabase_auth_admin', p.oid, 'EXECUTE')
+          )
+        FROM
+          pg_proc p
+          JOIN pg_namespace n ON n.oid = p.pronamespace
+        WHERE
+          n.nspname = 'public'
+          AND p.proname = 'send_email_hook'
+      ),
+      FALSE
+    ),
+    'send_email_hook is executable by supabase_auth_admin'
+  );
+
+SELECT
+  ok (
+    COALESCE(
+      (
+        SELECT
+          bool_and(
+            NOT has_function_privilege('anon', p.oid, 'EXECUTE')
+            AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE')
+          )
+        FROM
+          pg_proc p
+          JOIN pg_namespace n ON n.oid = p.pronamespace
+        WHERE
+          n.nspname = 'public'
+          AND p.proname = 'send_email_hook'
+      ),
+      FALSE
+    ),
+    'send_email_hook is executable by neither anon nor authenticated'
+  );
+
+SELECT
+  ok (
+    COALESCE(
+      (
+        SELECT
+          bool_and(
+            NOT has_function_privilege('service_role', p.oid, 'EXECUTE')
+          )
+        FROM
+          pg_proc p
+          JOIN pg_namespace n ON n.oid = p.pronamespace
+        WHERE
+          n.nspname = 'public'
+          AND p.proname = 'send_email_hook'
+      ),
+      FALSE
+    ),
+    'send_email_hook is not executable by service_role'
+  );
+
+-- The eleven policy-only helpers live where policies can still reach them: present in `private`, absent from `public`, and executable by both API roles (a policy runs as its caller).
 SELECT
   is (
     (
@@ -430,14 +548,15 @@ SELECT
           'entity_has_confirmed_nomination',
           'nomination_entities_confirmed',
           'project_nominations_locked',
+          'project_answers_locked',
           'election_project_id',
           'constituency_group_project_id',
           'caller_unconfirmed_originated_count',
           'caller_nominated_in_contest'
         )
     ),
-    '10/0/10',
-    'the ten policy-only helpers live in private (not public) and stay executable by anon and authenticated for policy evaluation'
+    '11/0/11',
+    'the eleven policy-only helpers live in private (not public) and stay executable by anon and authenticated for policy evaluation'
   );
 
 -- =====================================================================
@@ -464,8 +583,7 @@ WHERE
 
 UPDATE candidates
 SET
-  confirmed = true,
-  terms_of_use_accepted = now() - interval '1 day'
+  confirmed = true
 WHERE
   project_id = test_id ('project_b');
 
