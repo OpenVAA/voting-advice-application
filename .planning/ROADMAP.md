@@ -13,6 +13,7 @@
 - ✅ **v2.13 Context-as-Class Migration** — Phases 106-117 (shipped 2026-06-13)
 - ✅ **v2.14 E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero** — Phases 118-136 (shipped 2026-08-12)
 - 🚧 **v2.15 Trustworthy Foundations — Guards, Seed Data & CI Coverage** — Phases 137-169 (in progress; 165.1 and 166 added 2026-09-22 and 2026-09-24, 167-169 added 2026-10-01)
+- 📋 **v2.16 Contestant App — Registration Modes & Multi-Entity Editing** — Phases 170-179 (planned)
 
 See `.planning/MILESTONES.md` for cumulative history and `.planning/milestones/` for archived roadmaps + requirements.
 
@@ -2144,12 +2145,608 @@ _(**Recounted 2026-09-29** when the two planning records were merged: the phase 
 | 167. Origin/main Vestige Cleanup | 6/6 | Complete    | 2026-10-02 |
 | 168. Docs-Site Rewrite — Strapi to Supabase | 9/9 | Complete    | 2026-10-02 |
 | 169. Dependency Bump to Latest Safe Versions | 13/13 | Complete    | 2026-10-04 |
+| 170. Contestant App Rename — Symbols & Routes | 4/4 | Complete    | 2026-10-07 |
+| 171. Project Settings — Served Entity Types & Registration-Mode Matrix | 4/4 | Complete    | 2026-10-07 |
+| 172. Terms of Use per User and Project | 9/9 | Complete    | 2026-10-07 |
+| 173. Multi-Entity Grants & Entity Selection | 13/13 | Complete    | 2026-10-09 |
+| 174. Invitations — Grants Defined in Advance | 10/10 | Complete    | 2026-10-07 |
+| 174.1. Terms-of-Use Gate — Phone Width & Focus (INSERTED) | 2/2 | Complete | 2026-10-08 |
+| 175. Organization Editing — Profile, Questions & Preview | 13/13 | Complete    | 2026-10-09 |
+| 176. Contestant Home, Task State & Nominations View | 19/19 | Complete    | 2026-10-10 |
+| 177. Define Nominations | 21/21 | Complete; verified 2026-10-11 with no gap, 13 human-verification items accepted by the operator 2026-10-12 | 2026-10-12 |
+| 177.1. Invitations — Entity Confirmation & Nominations Defined in Advance (INSERTED) | 8/8 | In Progress | - |
+| 178. Sign-in, Email & Code Registration | 24/24 | In Progress | - |
+| 179. Identity-Provider Registration & Coverage Close | 24/24 | In Progress | - |
+| 179.1. Review Fixes — Access, Database Rules & Contestant App Behaviour (INSERTED) | 90/90 | Complete; verified 2026-11-11, WR16K UAT 7 passed and 4 deferred to backlog 999.2 to 999.4 | 2026-11-11 |
+| 179.2. Admin App Account Flows — Landing, Set Password & Recovery (INSERTED) | 4/4 | Complete; verified 2026-11-12 after the review fixes, full run 729/729 | 2026-11-12 |
+| 180. Edge Functions — Typecheck & Shared Modules | 3/3 | Complete; verified 2026-11-13, UAT 3 passed and 1 deferred (WR-01), full run 180-final-r2 729/729 | 2026-11-13 |
 
 **Shipped milestones:**
 
 | Milestone | Phases | Plans | Status | Shipped |
 |-----------|--------|-------|--------|---------|
 | v2.14 E2E Coverage Expansion + Svelte 5 Idiom Polish + svelte-check Zero | 118-136 | 101/101 | ✅ Shipped | 2026-08-12 |
+
+## 📋 v2.16 Contestant App — Registration Modes & Multi-Entity Editing
+
+**Phases 170-179 — planned.** Numbering continues from v2.15 (last phase 169) and does not reset.
+
+_Two parser constraints shape this section. The heading above carries the version and the name only: the milestone name is read from it, so a status or a phase range appended to it would become part of the name. And the section sits after `## Progress` rather than before it: a milestone's window runs from its heading to the next milestone heading or the end of the file, and a window that contained the Progress table would count that table's v2.15 "Complete" rows as this milestone's completed phases._
+
+**Milestone goal:** A candidate or an organization (party) user can register by any mode the project allows, land in one Contestant app that serves both entity types, and — when they hold grants on several entities — choose which one to edit. 47 requirements (NAME 3 · SET 3 · INV 5 · TOU 3 · REG 14 · ENT 3 · NOM 8 · TASK 1 · GEN 3 · FIX 1 · E2E 3) across 10 phases. `CAND-APP-PLAN.md` at the repo root defines the nomenclature and the screens A–L that the criteria below cite by letter.
+
+**Standing rules — inherited by every phase below** (`REQUIREMENTS.md` § Standing rules). The cardinal rule: no failing E2E test, no exemptions, and a "did not run" counts as a failure — so E2E-03 is a closing criterion of every phase, whichever phase the traceability table names. Every user-facing string ships in all seven locales (`da, en, et, fi, fr, lb, sv`). Every new or changed screen meets WCAG 2.1 AA and is reached by the axe scan. A criterion that says "user" or "entity" holds for candidates and for organizations unless it names one. Nothing is deployed, so the schema, the settings shape, the routes and the renamed symbols change in place.
+
+**Sequencing logic:**
+
+- **170 first, always.** The rename precedes every feature phase, so that nothing new is written against a name about to change. It changes no behaviour — with one knowing exception, the merged logout handler (170-A5 (b)) — and closes on a full green E2E run.
+- **171-174 are the groundwork, each ahead of the flows that read it.** The settings (171) come before anything that asks which entity types are served and which modes are allowed. Terms of use leave the entity (172) before one user may edit several entities (173). The grant constraints are settled (173) before the invitations that write grants (174).
+- **173 carries its own flow.** Entity selection (H) lands with the multi-grant data layer rather than after it, because the selected-entity encoding shapes both the user-data read and every protected route: one decision, one phase.
+- **175 before 176-177.** The home screen, the task state and the nomination screens are built once for both entity types, not for candidates and then retrofitted.
+- **177.1 after 177 and before 178** (inserted 2026-10-07): it extends `create_invitations` with the nominations an invited entity gets, so it follows the phase that settles the nomination shape rules and the parent-nomination creation, and it precedes the registration flows that are built on invitations.
+- **176 before 177, and both before registration.** A freshly registered entity has no nomination. It has to reach a home screen that treats that as a normal state (176) and offers a way to define one (177) before any registration flow ends there.
+- **180 last** (added 2026-10-07): the Edge Function typecheck and the `_shared/` move touch every function, so they follow the last phase that edits one (179) and run on a quiet tree.
+- **178 before 179.** The identity-provider success screen reuses 178's email-entry component, and a returning identity-provider user is sent to the emailed sign-in path that 178 builds.
+- **179.1 and 179.2 after 179 and before 180** (inserted 2026-10-23 from `.planning/REVIEW-DECISIONS-166-179.md`): both edit Edge Functions (`account-access`, `identity-callback`) and the auth callback, so they come before 180's typecheck and `_shared/` move. 179.1 before 179.2: the confirm page of A3 changes the auth callback whose landing A2 then extends, and 179.2 reuses whatever 179.1 moves out of the entity tree (C5).
+- **174.1 sits between 174 and 175** (inserted 2026-10-07): the terms-of-use gate is fixed at phone width before any phase adds a screen behind it. It depends on nothing 174 builds; it waits only so that a frontend change does not land in the middle of 174's evidence.
+- **171 and 172 are independent of each other, and so are 174 and 175.** Everywhere else the numeric order is the dependency order.
+- **Hand-overs settled in the discussion (2026-10-05).**
+  - _Schema edits are serial._ 171, 172, 173, 174, 175, 176, 177 and 177.1 each edit `schema/*.sql` and regenerate the single migration file (176 was missing from this list until 2026-10-07: it adds the nominations RPC of 176-B2); where two are independent in content, whichever runs second regenerates. 172 → 173 run strictly in order.
+  - _Gate order:_ F → email (179-B4) → G → H → home → the per-page nomination gate (176-D1). 172 builds the ordered gate list holding G only, 178 prepends F, 173 makes H a route at the app root.
+  - _Names 170 leaves alone:_ `get_candidate_user_data` (deleted by 173 for entity-neutral names, 173-A3) and `invite-candidate` (deleted by 174, 174-C5); each of those phases removes its exemption from the 170 search gate.
+  - _One nominations lock:_ the app setting `access.nominationsLocked`, moved out of `projects.lock_nominations` (175-B5 (b) + note, 177-B5 (b)). 175 introduces it and its frontend accessor; 176 and 177 reuse it.
+  - _E2E base dataset (X1 (a)):_ candidate-only in 171; 173 widens it to both entity types, with `organization: []`, and re-baselines whatever the "Candidate and party app" name changes.
+  - _Identity-provider registration never claims an invitation in v2.16 (X2 (a)):_ a person an admin seeded who registers through the provider becomes a duplicate that the admin resolves by hand. Phase 174 files the todo.
+  - _Registration routes (operator note, 2026-10-05):_ the one surviving registration tree is `register/`, with the identity-provider flow as a subroute inside it; no `preregister/` route survives. Exact route names are settled in the Phase 178 plan.
+- **No milestone-close gate phase.** E2E-03 binds every phase and is mapped to 179 for traceability only. E2E-01 and E2E-02 are mapped to 179 because it delivers the last registration mode and the last surface they name; the parts of them that earlier phases can deliver are criteria of those phases (173, 177, 178).
+
+**Design questions — settled 2026-10-05** (`REQUIREMENTS.md` § Design questions; decision ids from `.planning/v2.16-DISCUSSION-POINTS.md`). The operator settled all four in one pass; each phase's CONTEXT.md is the full record.
+
+- Settings shape — Phase 171 — JSON in `app_settings.settings`, deduplicated at parse, as `contestantApp.entityTypes` and `contestantApp.registrationModes` inside the existing `contestantApp` root (171-A1 ★, 171-A3 (b))
+- Where per-user-and-project terms-of-use acceptance lives — Phase 172 — a dedicated table, `public.terms_of_use_acceptances` (172-A1 ★)
+- Selected entity encoding — Phase 173 — a route parameter, `[entityType]/[entityId]` (173-B1 ★)
+- Invitation mechanism — Phase 174 — a `public.invitations` table claimed through `claim_invitations` after an emailed-link sign-in, promising a general grant spec `(scope, target_type, target_id, role)` or a child table of grants per invitation (174-A1 ★, 174-A3 (c))
+- When an entity's name is editable — Phase 175 — while the entity is unconfirmed, for every entity type and every name field; the nominations lock affects nominations only (operator decisions B1–B3 (a), 2026-10-07; GEN-03, Phase 175 criterion 4, and the same clause in REG-07 and Phase 179 criterion 2)
+
+The identity-provider write is settled, not open: the user and the entity are created together at the callback, so the entity type is chosen in the mode selector before the provider's flow (REG-06, Phase 179).
+
+**UI hint.** Phases 173 and 175-179 add or reshape screens and carry the hint. Phases 170, 171, 172 and 174 add no new visual surface: a rename, a setting-driven label and entry point, a re-pointed existing gate, and a schema-and-write-path phase.
+
+- [x] **Phase 170: Contestant App Rename — Symbols & Routes** - Every `candidateApp`-type symbol becomes `contestantApp` and the routes move from `candidate/` to `contestant/` (the auth callback and logout to the neutral `api/auth/`), with no behaviour change beyond the merged duplicate logout, closing on a full green E2E run (NAME-01, NAME-02)
+- [x] **Phase 171: Project Settings — Served Entity Types & Registration-Mode Matrix** - A project declares which entity types the app serves and which registration modes each may use; the app's name and the login screen's registration entry point obey the declaration (SET-01, SET-02, SET-03, NAME-03)
+- [x] **Phase 172: Terms of Use per User and Project** - Acceptance is recorded per user and project and gated in the layout, and stops deciding which entities are public (TOU-01, TOU-02, TOU-03, REG-12)
+- [x] **Phase 173: Multi-Entity Grants & Entity Selection** - One user may hold editor grants on several entities of either served type, chooses which to edit and can switch; the user-data read and the data writer serve every served type (ENT-01, ENT-02, ENT-03, GEN-02)
+- [x] **Phase 174: Invitations — Grants Defined in Advance** - An admin seeds an entity with an email or a code and the grant its user will receive; claiming writes exactly that grant, duplicates are refused and a used code is kept (INV-01, INV-02, INV-03, INV-04, INV-05)
+- [x] **Phase 174.1: Terms-of-Use Gate — Phone Width & Focus (INSERTED)** - The terms-of-use gate view fits a phone viewport with its checkbox reachable, focus lands on the page that replaces the gate, and one E2E check holds the gate at phone width (defect fix on the Phase 172 gate view, the surface of REG-12; completes no requirement)
+- [x] **Phase 175: Organization Editing — Profile, Questions & Preview** - An organization user edits the profile, answers questions and previews the public appearance as a candidate can, with name and abbreviation as multilingual fields (GEN-01, GEN-03)
+- [x] **Phase 176: Contestant Home, Task State & Nominations View** - Home lists the selected entity's tasks starting with "Define nomination", an entity without a nomination is no longer an error, nominations get their own view, and one derived state drives every Continue (NOM-01, NOM-02, NOM-07, TASK-01)
+- [x] **Phase 177: Define Nominations** - The user picks election and constituency pairs as a voter does, sets a symbol and a parent party or alliance per pair, and the nominations are written on Continue (NOM-03, NOM-04, NOM-05, NOM-06, NOM-08)
+- [x] **Phase 177.1: Invitations — Entity Confirmation & Nominations Defined in Advance (INSERTED)** - `create_invitations` takes a required `p_confirm_entity` and lets each invitation state its nominations under a `nominations` key, so an admin states whether the invited entity is confirmed and which nominations it gets; parent-nomination creation is one utility shared with self-nomination; the E2E journey drops its hiding wrapper (extends INV-01, INV-05; E2E-03) (completed 2026-10-18)
+- [ ] **Phase 178: Sign-in, Email & Code Registration** - The login screen, the mode selector, the email and code modes, the "email sent" screen and the set-password gate, over shared autofill-ready components; the in-app password reset completes (REG-01, REG-02, REG-03, REG-09, REG-10, REG-11, REG-13, FIX-01)
+- [ ] **Phase 179: Identity-Provider Registration & Coverage Close** - Registration with the identity provider for both entity types, with its success and error screens; with it every registration mode and every new surface has E2E coverage (REG-04, REG-05, REG-06, REG-07, REG-08, REG-14, E2E-01, E2E-02, E2E-03)
+- [x] **Phase 179.1: Review Fixes — Access, Database Rules & Contestant App Behaviour (INSERTED)** - The review decisions of 2026-10-23 that change code in the database, the Edge Functions and the Contestant App: re-invitable claimed addresses, a confirm step before a mailed link signs in, write policies that read the `grants` table, the answers lock enforced on nominations, the constituency rule in `validate_nomination`, serialised identity-provider find-or-create, and the smaller items (REVIEW-DECISIONS A1, A3, A7, B2–B5, C4, C5, D1, D3–D5, E4, E5, plus the Phase 179 UAT gaps; records A5, A6, A8, B1, C1–C3, D2, E3, E6; no v2.16 requirement; E2E-03) (completed 2026-11-11)
+- [x] **Phase 179.2: Admin App Account Flows — Landing, Set Password & Recovery (INSERTED)** - An invitee holding only admin grants lands in the Admin App, which has its own set-password gate, and global and account grant holders can recover their password; built from components shared with the Contestant App (REVIEW-DECISIONS A2, A4; no v2.16 requirement; E2E-03) (completed 2026-11-12)
+- [x] **Phase 180: Edge Functions — Typecheck & Shared Modules** - The Edge Functions are type-checked by a pinned Deno in `yarn typecheck` without Deno reaching the repository's other TypeScript, and the byte-identical module copies become one `functions/_shared/` directory; built from spikes 037–040 (no v2.16 requirement; E2E-03) (completed 2026-11-13)
+
+### Phase 170: Contestant App Rename — Symbols & Routes
+
+**Goal**: The candidate app is the Contestant app everywhere in the code and in its URLs, with its behaviour unchanged, so that every later phase builds on the new names.
+**Depends on**: Nothing (first phase of v2.16; starts from the v2.15 tree)
+**Requirements**: NAME-01, NAME-02
+**Success Criteria** (what must be TRUE):
+  1. Every page of the app is served under `contestant/` — sign-in, registration, the protected pages — and its own API route (`preregister`) under `api/contestant/`. The auth callback and logout routes, which the Admin app shares, are served at the neutral `api/auth/{callback,logout}`, the duplicate logout handler merged into that one. No `candidate/` URL of the app resolves any longer. (amended 2026-10-05, 170-A5 (b))
+  2. Every link that leaves the system targets the new routes: the sign-in and password-reset emails and the Edge Function redirects target `contestant/` URLs or the neutral `api/auth/callback`, and the auth redirect allowlist admits the neutral callback and no `candidate/` URL. The identity-provider return stays at `/api/oidc/callback`, which carries no app name; what changes is where the flow lands afterwards (`contestant/preregister/…`) and the `identity-callback` redirect (`/contestant`). The invitation link's target is renamed to `/contestant/complete-registration` and has no page yet; Phases 174 and 178 give it one or remove its source. (amended 2026-10-05, 170-A5 (b), 170-A10)
+  3. No `candidateApp`-type name is left for later work to build on: a repository search for the old app-level identifiers, contexts, route constants, message namespaces and test fixtures finds none outside the planning record and two named exemptions — `get_candidate_user_data` (removed by Phase 173) and `invite-candidate` (removed by Phase 174) — and the docs site describes the `contestant/` routes and the neutral `api/auth/` endpoints. The app's default login poster is renamed to `hero-contestant.png` (operator, 2026-10-05).
+  4. Nothing else changed, with one knowing exception: the two logout handlers, which are not identical, are merged into `api/auth/logout`. Every other user-facing text and behaviour is as it was before the rename, and the full E2E suite, the unit suites, the type and lint checks and the production build are green on the renamed tree (E2E-03). (amended 2026-10-05, 170-A5 (b))
+
+**Discussion settled** (2026-10-05; full record in the phase's CONTEXT.md): where the rename stops. A name that says which app is renamed; `candidate` as an entity type is not. Renamed: the `$candidate` alias and `lib/candidate/` → `$contestant` and `lib/contestant/`, `CandidateNav` → `ContestantNav` (170-A1); the context, its directory, the `candCtx` locals and the storage keys (170-A2); `candidateUserDataState` / `CandidateUserData`, their entity-naming members left for Phase 173 (170-A3); the route constants to `ContestantApp*` (170-A4); every app-level stored settings and customization key (170-A6); the 17 message namespaces and the four `dynamic.candidateApp*` groups (170-A7); the test names, projects, tag and test ids (170-A11); the docs section (170-A12) and the prose phrase "Candidate App" (170-A13). API routes: the auth pair moves to the neutral `api/auth/{callback,logout}` with the duplicate logout merged, and only `preregister` moves to `api/contestant/` (170-A5 (b), overruling the ★). Left alone as named exemptions in the search gate: `get_candidate_user_data`, removed by Phase 173 (170-A8), and `invite-candidate`, removed by Phase 174 (170-A9); the invitation redirect is renamed to `/contestant/complete-registration` and left dangling for Phase 174 (170-A10). Mechanism: a scripted codemod over one ordered mapping table (170-B1), four plans each closing green (170-C1), and a standing `lint:check` script as the "search finds none" gate (170-C2).
+**Plans:** 4/4 plans executed
+
+Plans:
+**Wave 1**
+- [x] 170-01-PLAN.md — Tooling (codemod, mapping table, search gate in report mode, drivers, baseline) and the symbol rename with no URL change
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 170-02-PLAN.md — URLs: the logout merge, route trees to contestant/, api/contestant/ and api/auth/, outbound links, the allowlist with its live probe, bank-auth once
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 170-03-PLAN.md — Test naming: directories, files, projects, tag, test ids and baselines; the in-container visual run
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 170-04-PLAN.md — Docs, prose, agent docs and SQL comments; the search gate wired into lint:check; the closing run with bank-auth 3×
+
+### Phase 171: Project Settings — Served Entity Types & Registration-Mode Matrix
+
+**Goal**: A project declares which entity types its Contestant app serves and how a user of each type may register, and the app already obeys both declarations where it can today — in what it calls itself and in what the login screen offers.
+**Depends on**: Phase 170
+**Requirements**: SET-01, SET-02, SET-03, NAME-03
+**Success Criteria** (what must be TRUE):
+  1. A project's settings name the entity types its Contestant app serves — `candidate`, `organization` or both — and the app names itself accordingly in all seven locales: "Candidate and party app", "Candidate app" or "Party app". Changing the setting changes the name, with no code change (SET-01, NAME-03).
+  2. A project's settings state, for each served entity type, which of `identity_provider`, `email` and `code` may be used to register. One empty cell, an empty row and a wholly empty matrix are each accepted and read back as declared, and naming a type or a mode twice has the same effect as naming it once (SET-02).
+  3. With no registration mode allowed for any served entity type, the login screen offers sign-in only and shows no registration entry point; with at least one allowed, the entry point is offered (SET-03). In this phase that means today's two entries, each gated on its own mode — the pre-registration entry on `candidate × identity_provider`, the registration-code entry on any served type allowing `code`. A project allowing only `email` has no on-screen entry until Phase 178 builds one: accepted residue. (amended 2026-10-05, 171-C1)
+  4. A freshly seeded project (`yarn db:reset-with-data`) and every E2E dataset declare both settings explicitly, so that development data and the suite run against a known configuration, and the full E2E suite is green at close (E2E-03). The `default` template declares both types and every mode; the suite's base datasets declare `['candidate']` with `candidate: ['email', 'code']` and `organization: []`, and Phase 173 widens them to both types. (amended 2026-10-05, 171-E1, X1 (a))
+
+**Discussion settled** (2026-10-05; full record in the phase's CONTEXT.md): _Settings shape_ — JSON inside `app_settings.settings`, typed by `DynamicSettings`, validated by `StoredSettingsSchema` and deduplicated at parse into canonical order (171-A1 ★, 171-A4). The two settings sit inside the existing root as `contestantApp.entityTypes` and `contestantApp.registrationModes` (171-A3 (b), overruling the ★); a stored `contestantApp` root replaces the shipped one whole, so every writer restates the whole root — `questions` included — or the merge becomes deep in this phase. The matrix is a map from entity type to a list of modes (171-A2). Unset, a project serves `['candidate']` with every registration row empty (171-A5); an empty served list is invalid (171-A7); a row for an unserved type is stored and ignored on read (171-A6). A narrow anon-callable `SECURITY DEFINER` function returns the Contestant app's public configuration for a project that is closed for voters (171-B1). The rules live as pure functions in `@openvaa/app-shared` (171-B2). `preRegistration.enabled` is removed; every reader asks the matrix for `candidate × identity_provider` (171-B3). Both legacy registration trees are guarded on the server by their mode (171-C2). The three names are the literal terms, as overridable defaults under `dynamic.contestantAppName` (171-D1, 171-D2).
+**Plans:** 4/4 plans executed
+
+Plans:
+**Wave 1**
+- [x] 171-01-PLAN.md — Model: the two settings in type, defaults and strict schema with dedup at parse, the accessors, the deep settings merge, and removal of the pre-registration switch from its readers and writer
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 171-02-PLAN.md — Database read: the anon-callable `contestant_app_public_config` function, both censuses, the schema push, and the provider's closed-project branch
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 171-03-PLAN.md — Frontend: three app names in seven locales with their readers and sentences, the gated login screen and navigation, and the registration-code guard
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 171-04-PLAN.md — Seeds, E2E proof on the closed-project node, docs, and the closing gate run with the opt-in bank-auth projects
+
+### Phase 172: Terms of Use per User and Project
+
+**Goal**: Accepting the terms of use is something a user does once per project, recorded against the user rather than the candidate, and it no longer decides which entities voters can see.
+**Depends on**: Phase 170
+**Requirements**: TOU-01, TOU-02, TOU-03, REG-12
+**Success Criteria** (what must be TRUE):
+  1. A signed-in user who has not accepted the terms of use for the project is stopped at the acceptance screen (G) before any protected page, by the layout rather than by each page. After accepting they are not asked again in that project, including after signing out and in again (REG-12).
+  2. The acceptance belongs to the user and the project: no entity carries a terms-of-use field any longer, and accepting in one project does not count in another (TOU-01).
+  3. An entity whose editor has not accepted the terms of use is exactly as visible to voters as one whose editor has — its public data, its images and the RPC results are the same in both cases — because no RLS policy, storage policy or RPC conditions on acceptance (TOU-02).
+  4. `.planning/todos/pending/` holds one todo for the Admin-app rule — an entity whose primary editor has not accepted the terms of use cannot be confirmed, or is confirmed with a warning — merged into an existing todo if one already covers it (TOU-03).
+  5. The acceptance screen is reached by the axe scan, and the full E2E suite is green at close (E2E-03).
+
+**Discussion settled** (2026-10-05; full record in the phase's CONTEXT.md): _Where per-user-and-project terms-of-use acceptance lives_ — a dedicated table, `public.terms_of_use_acceptances (user_id, project_id, accepted_at)`, primary key `(user_id, project_id)` (172-A1 ★), written by RLS self-insert (172-B1) and read separately from the entity read (172-B2). The gate stays an in-layout replacement (172-C1), is decided on user-level data above the entity load (172-C2), and is the first entry of an ordered gate list that Phases 178 and 173 extend (172-C3). Consequence of criterion 3, accepted: confirmed means public, registered or not, so an invited, never-signed-in entity with a confirmed nomination is visible to voters (172-D2); the two E2E candidates the conjunct hid today are seeded `confirmed: false` (172-D1, 172-D2).
+**Standing todos in scope**: `2026-08-27-147-tou-gate-modal-unscanned.md`.
+**Plans:** 9/9 plans executed
+
+Plans:
+**Wave 1**
+- [x] 172-01-PLAN.md — Name reconciliation with Phase 170, phase gate helpers and green baseline; the `terms_of_use_acceptances` table, its RLS and grants, and its pgTAP file
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 172-02-PLAN.md — E2E fixtures first: `forceRegister` records acceptance by default with an opt-out; the email-flow localisation spec records its own
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 172-03-PLAN.md — The scoped ignore-duplicates upsert, the writer's acceptance read on `BasicUserData`, and `acceptTermsOfUse()` on writer and context
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 172-04-PLAN.md — The gate above the entity load as an ordered gate list with an extracted view; stage-1 close (gates + full E2E, column still present)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [x] 172-05-PLAN.md — The frontend loses the entity-level field: state store, entity types, `updateEntityProperties` image-only
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [x] 172-06-PLAN.md — TOU-02: the acceptance conjunct leaves the four visibility sites; the two E2E control rows seeded unconfirmed; pgTAP trio; templates stop stating the column
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [x] 172-07-PLAN.md — The column, its grant and the RPC column are dropped with every writer of them; inverse pgTAP census; stage-2 close
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [x] 172-08-PLAN.md — Second stored session and two axe scans of the acceptance view (light and dark); comment-only sweep of the E2E tree
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [x] 172-09-PLAN.md — Skill files and docs, the TOU-F01 todo, the axe todo closed, and the D-21 closing gate on one HEAD
+
+### Phase 173: Multi-Entity Grants & Entity Selection
+
+**Goal**: One user can hold editor grants on several entities of either served type in a project, and chooses — and can later change — which one they are editing.
+**Depends on**: Phase 171, Phase 172 (the served entity types are declared, and acceptance no longer lives on the entity)
+**Requirements**: ENT-01, ENT-02, ENT-03, GEN-02
+**Success Criteria** (what must be TRUE):
+  1. A user can hold editor grants on more than one entity in a project — two candidates, or a candidate and an organization — and sign in normally: the single-entity assumptions — the user-data RPC `get_candidate_user_data` raising `ERR_ENTITY_IDENTITY_AMBIGUOUS`, and the candidate-only sign-in gate in the frontend — no longer stand in the way. `idx_grants_one_candidate_editor` is kept: it limits a candidate to one editor, not a user to one candidate (ENT-03). (amended 2026-10-05, 173-A1)
+  2. A user holding grants on several entities is shown the entity-selection screen (H), a list of entity cards with one card per entity they may edit, and picks one; a user holding exactly one grant never sees the screen and lands on that entity's home (ENT-01). A signed-in user with no editable entity is not signed out: they see a "nothing to edit — contact support" screen with the support block and Logout. (amended 2026-10-05, 173-B5 (b))
+  3. The user can switch to another of their entities at any time without signing out, and after the switch every page shows and saves the newly selected entity's data, never the previous one's (ENT-02).
+  4. Selecting an organization loads that organization's own data, and saving for it succeeds as it does for a candidate: the user-data read and the data writer serve every entity type the project's Contestant app serves, and the writer no longer throws for a non-candidate entity (GEN-02).
+  5. An E2E spec covers a user with several grants choosing and switching entities, and the full E2E suite is green at close (E2E-02 in part, E2E-03). The multi-grant user lives on the suite's base dataset, which this phase widens to serve both entity types, with `organization: []`, re-baselining whatever the "Candidate and party app" name changes. (amended 2026-10-05, X1 (a), 173-E1)
+
+**Discussion settled** (2026-10-05; full record in the phase's CONTEXT.md): _Selected entity encoding_ — a route parameter, `contestant/(protected)/[entityType]/[entityId]/…` (173-B1 ★); `contestant/` is H and redirects a single-entity user to their entity (173-B2); the selection is not remembered across sign-ins (173-B3), and a URL naming an entity the user may not edit redirects to the app root (173-B4). Two entity-neutral RPCs replace `get_candidate_user_data`, which is deleted: `get_user_entities` (the list) and `get_entity_user_data` (the one-entity read) (173-A2, 173-A3). `idx_grants_one_candidate_editor` is kept (173-A1). A signed-in user with no editable entity gets a "nothing to edit — contact support" screen (173-B5 (b), overruling the ★). The route move is isolated as its own plan (173-F1).
+**Plans:** 13/13 plans executed
+
+Plans:
+**Wave 1**
+- [x] 173-01-PLAN.md — Preflight: halt unless Phases 171 and 172 have executed, re-measure every assumed fact into 173-NAME-MAP.md, the three gate drivers, and a green baseline of the gate set and the full E2E suite
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 173-02-PLAN.md — Schema [BLOCKING]: get_user_entities and get_entity_user_data replace get_candidate_user_data and its raise; migration, types and satellites regenerated; the adapter's interim reader; 36-entity-identity rewritten; nine pgTAP write-refusal cases across row update, upsert_answers and storage upload; the name-gate exemption deleted and its lookbehind amended; stage-1 close
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 173-03-PLAN.md — Writer and types on one generic entity path; the entity union replaces the candidate member; the load applies the served filter once; the gated adapter-level integration test with an organization save and six refused writes
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 173-04-PLAN.md — Drafts keyed by entity: handle swap on init, image reset, leaveEntity, logout sweep; stage 2 closes on typecheck, lint, unit and svelte-check, with its E2E proof at 173-05
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [x] 173-05-PLAN.md — Route prep with no URL change: three param matchers, the entry gate admits organization editors, admin-first coarse role, the role sign-out removed, the user-level context accessors; its full E2E run is also the boundary proof of 173-04
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [x] 173-06-PLAN.md — E2E harness prep: the tests' route builder refuses an unfilled param, one helper holds the contestant entity URL shape, every URL assertion re-pointed; closes on typecheck, lint, unit and the helpers' own tests, with its E2E proof at 173-07
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [x] 173-07-PLAN.md — The load split in place under a transitional (entity) route group: the sign-out helper, user-level and entity-level loads and layouts, a tracking guard on each, one rule for "home"; its full E2E run, compared per project with the baseline, is also the boundary proof of 173-06
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [x] 173-08-PLAN.md — The route-parameter move: [entityType=servedEntityType]/[entityId=uuid], the root's redirect and the entity-less resolver each with a tracking guard, the D-10 refusal, menu gating; stage-3 close
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [x] 173-09-PLAN.md — Parts: three additive EntityCard props, the ContactSupport and NothingToEdit components, eight strings in seven locales, the test ids; closes on typecheck, lint, unit, svelte-check and the docs links, with its E2E proof at 173-10
+
+**Wave 10** *(blocked on Wave 9 completion)*
+- [x] 173-10-PLAN.md — The root's three outcomes: screen H, the "nothing to edit" view, the retired userNoCandidate code, the menu's entity title and switch item; stage-4 close, whose full E2E run is also the boundary proof of 173-09
+
+**Wave 11** *(blocked on Wave 10 completion)*
+- [x] 173-11-PLAN.md — Seed side: e2e/base serves both entity types, the app name re-baselined, three dedicated unconfirmed rows for the selection spec
+
+**Wave 12** *(blocked on Wave 11 completion)*
+- [x] 173-12-PLAN.md — grantEntity, the multi-grant, zero-entity and logout identities with their setup project, page fixtures, and the selection-and-switch spec
+
+**Wave 13** *(blocked on Wave 12 completion)*
+- [x] 173-13-PLAN.md — Axe scans of H, the "nothing to edit" view and the multi-entity menu in both themes; docs and skills; todos for Phases 174 and 179; the D-24 closing gate on one tree
+
+**UI hint**: yes
+
+### Phase 174: Invitations — Grants Defined in Advance
+
+**Goal**: An admin can attach an email or a registration code to an entity ahead of time, and the person who later proves that email or code receives exactly the grant the invitation defined — no more, and nobody else.
+**Depends on**: Phase 173 (the grant constraints an invitation writes against)
+**Requirements**: INV-01, INV-02, INV-03, INV-04, INV-05
+**Success Criteria** (what must be TRUE):
+  1. Through an admin-callable write path — no Admin-app screen is in scope — an admin seeds an invitation for a candidate or an organization with either an email or a registration code, stating the grant its user will receive; a caller without admin authority over the project is refused (INV-01).
+  2. A duplicate invitation is refused, and the first is left unchanged: a second invitation in the project carrying the same email for the same grant target `(scope, target type, target id)`, whatever role it promises, or carrying a code the project already holds, whatever its target (INV-02). (amended 2026-10-06, 174-A3 (c), 174-B3)
+  3. A user who proves the invitation's email or code ends up holding exactly the grants the invitation defines; a user who proves neither gets none of them, and an invitation cannot be claimed into another user's account (INV-03).
+  4. A code that has been used is still on record: presenting it again is answered as already used, leading to password sign-in, rather than as an unknown code or an error, and it grants nothing a second time (INV-04).
+  5. An entity seeded with a name and an email or a registration code is confirmed from the moment it is seeded; one seeded without either stays unconfirmed, and so invisible to voters, until an admin confirms it (INV-05).
+  6. The full E2E suite is green at close (E2E-03), the existing invitation and registration specs included, re-pointed at the new model wherever it replaces the old path.
+
+**Discussion settled** (2026-10-05; full record in the phase's CONTEXT.md): _Invitation mechanism_ — the recommendation on record is accepted: a `public.invitations` table, claimed by one `SECURITY DEFINER` function, `claim_invitations`, after a GoTrue emailed-link sign-in; no auth user and no grant exists until the claim (174-A1 ★, 174-D1). What an invitation promises is a general grant spec `(scope, target_type, target_id, role)`, or a child table of grants per invitation (174-A3 (c), overruling the ★); the plan picks between the two shapes, and because such an invitation can promise project or account authority, the seeding path must itself enforce who may promise which grant. A code is stored as a `sha256` hash, server-generated and returned once (174-B1, 174-B2); a used code is kept and answers `used`, leading to a server-side password sign-in (174-D4). Seeding is a SQL RPC, `create_invitations` (174-C1), targets an existing entity (174-C2), confirms a named target in the same transaction (174-C3) and sends no mail (174-C4). A sign-in link is issued only for an address with an open invitation or an existing grant, by one anon-callable Edge Function that always answers the same (174-D2), built with `auth.admin.generateLink` and carrying a `token_hash` to the app's callback (174-D7). `invite-candidate` is deleted (174-C5). This phase builds the model, both of its ends and the endpoints, and wires the claim plus a session refresh into the existing auth callback and login action; it builds no new screen — the screens that drive a claim are Phase 178 (174-A2).
+**Todos to file in this phase**: identity-provider registration never claims an invitation, so a seeded person who registers through the provider becomes a duplicate the admin resolves by hand (X2 (a)); announcing invitations by mail (174-C4).
+**Plans:** 10 plans
+
+Plans:
+**Wave 1**
+- [x] 174-01-PLAN.md — Halt unless Phases 172 and 173 executed; name and fact map; five drivers with the hygiene verdict; green baseline
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 174-02-PLAN.md — `public.invitations`, the authority map in its policies, the server-generated code and two ratified lists; then `create_invitations` and INV-05; pgTAP
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 174-03-PLAN.md — Auth configuration: public sign-up off, confirmations on; per-worker edge policy; gate, E2E assertion, docs; one operator checkpoint for the function environment; default suite and both bank-auth projects (not autonomous)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 174-04-PLAN.md — Service-only helpers (code check, link eligibility, slot release, claimant look-up, throttle, completion witness); `claim_invitations` with `password_set`; pgTAP; census
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [x] 174-05-PLAN.md — Edge Function `account-access`: measured runtime facts, pure modules, link-issue order with slot release, three operations, seven-locale mail; live run of the contract
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [x] 174-06-PLAN.md — E2E fixtures first, then the server-contract spec with no screen; negatives asserted after a completion witness; invitation cleanup
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [x] 174-07-PLAN.md — Remove `invite-candidate`, its client contract, gate entries, name-gate exemption, docs and skill mentions; closes on gate rows
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [x] 174-08-PLAN.md — Wiring: four writer methods; session → claim → refresh → gates in the callback and both login actions; code-login helper; full run, also 174-07's boundary proof
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [x] 174-09-PLAN.md — Re-point the journey and the localisation spec at the mailed link; landing spec; remove the old E2E helper and the callback's `invite` arm
+
+**Wave 10** *(blocked on Wave 9 completion)*
+- [x] 174-10-PLAN.md — Docs with every residual by mechanism, skills, todos, obligations; closing gate on one tree
+
+### Phase 174.1: Terms-of-Use Gate — Phone Width & Focus (INSERTED)
+
+**Goal**: A user on a phone can accept the terms of use and enter the Contestant app, and a keyboard or screen-reader user is not left on the page body after accepting.
+**Depends on**: Phase 172 (the gate view), Phase 174 (runs after it: 174 is a schema-and-write-path phase that touches none of these files, and 175 onward add screens behind this gate)
+**Requirements**: none — a defect fix on the gate view, which is REG-12's surface (corrected 2026-10-08: this line named TOU-02, which is the removal of the acceptance condition from visibility rules and is not touched here). The phase completes no requirement; E2E-03 binds it as it binds every phase and is discharged at Phase 179
+**Success Criteria** (what must be TRUE):
+  1. At 320px and at 390px wide the terms-of-use gate view has no horizontal overflow, and its checkbox is inside the viewport and can be ticked; the cause of the measured 576px width is named, and fixed in the component that forces it. The registration page's use of the same form is checked for the same defect.
+  2. After the user accepts and continues, keyboard focus is on the navigation target of the page that replaces the gate, in each of the three outcomes (the selection screen, the "nothing to edit" view, an entity page), not on `<body>`.
+  3. One E2E check runs the gate at a phone width and fails on the overflow as it stood before the fix; it is part of the default suite.
+  4. At 1280px nothing changes except that the consent sentence wraps inside its column where it is wider than the column (in English it is, by a fraction of a pixel, so it wraps to two lines and the content above it moves up by about 8px; in Finnish nothing moves). The full E2E suite is green at close (E2E-03). (amended 2026-10-07 by the operator, after the research measured that the fix — letting the consent label wrap — cannot leave the English 1280px view pixel-identical; the criterion read "The view at 1280px is unchanged")
+
+**Inserted 2026-10-07** by operator decisions D1 (a) and D2 (a) (`.planning/v2.16-OPERATOR-DECISIONS-2026-10-07.md`): both defects, plus one E2E check of the gate at phone width, after Phase 174 and before Phase 175. Found by a browser probe in Phase 173 on the view Phase 172 built: at 390px the document is 483px wide and the checkbox's left edge is at x = −93, which scrolling cannot reach. The cause is not diagnosed. Source and measurements: `.planning/todos/pending/2026-10-06-173-terms-of-use-view-phone-overflow-and-focus.md`.
+**UI hint**: yes — an existing screen at a new width; no new visual surface
+**Plans:** 2 plans
+
+Plans:
+
+**Wave 1**
+- [x] 174.1-01-PLAN.md — The phone-width check red on the unfixed tree, then the one-class label fix; the focus cases red, then the protected layout's focus request
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 174.1-02-PLAN.md — Browser reads of the fixed tree (locales, widths, 1280px, both focus paths), the closing gate with one full default E2E run, todos
+
+### Phase 175: Organization Editing — Profile, Questions & Preview
+
+**Goal**: An organization user can do in the Contestant app what a candidate can: edit the organization's profile, answer its questions and preview how it appears to voters.
+**Depends on**: Phase 171, Phase 173 (the project serves organizations, and the app loads and saves a selected entity of any served type)
+**Requirements**: GEN-01, GEN-03
+**Success Criteria** (what must be TRUE):
+  1. An organization user signs in, lands on the organization's pages, and edits and saves its profile; the saved values are what a reload shows and what the voter app displays (GEN-01).
+  2. The organization user answers the questions addressed to organizations, with the same editing, saving and progress behaviour a candidate has (GEN-01).
+  3. The preview shows the organization as voters will see it — its own details and answers, presented as an organization rather than as a candidate (GEN-01).
+  4. The organization's profile shows its name and its abbreviation (short name) as multilingual fields, one value per supported locale; they are editable while the organization is unconfirmed and answers are not locked (`access.answersLocked`), and read-only once it is confirmed, whatever the nominations lock says (GEN-03). The same rule holds for every entity type and every name field — first name, last name, name, short name — and the app applies it to a candidate's first and last name as it does to the organization's fields. An organization created through the identity provider is unconfirmed; an organization seeded as confirmed — which is what the seed writer and the docs do for a named entity invited by a code or an email, and from Phase 177.1 what the caller states on each call — has both fields locked for its user from the first sign-in, and only an admin changes them. The database freezes `short_name` on confirmation together with `name`, on all four entity tables, and `entity.edit_immutable` lets an admin correct either. (amended 2026-10-07, operator decisions B1 (a), B2 (a), B3 (a), settling the 175-B2 and 175-B3 notes; the clause read "editable while nominations are unlocked") (amended 2026-10-08, operator decisions C1 (a), C2 (a), C3 (a), F1 (a); the clauses read "they are editable while the organization is unconfirmed and read-only once it is confirmed" and "one seeded by a code or an email invitation is confirmed from seeding, so its user sees both fields locked from the first sign-in and only an admin changes them"; the candidate clause and "on all four entity tables" are new)
+  5. The candidate journey is unchanged, and the full E2E suite, with organization-editing coverage added, is green at close (E2E-03).
+
+**Discussion settled** (2026-10-05; full record in the phase's CONTEXT.md): one route tree and one page component per route, with a per-type descriptor module for what differs (175-A1). The organization profile has the name, the short name, a logo image, the info questions that apply to organizations, and a colour field; a colour is passed through the ensure-contrast util when it is read in (175-B1 (b) + note, overruling the ★). The nominations lock moves out of `projects.lock_nominations` into the app settings as `access.nominationsLocked`, promoted to a full column only if RPCs or indices need it; the database enforcement follows it there, and this phase adds the frontend accessor that 176 and 177 reuse (175-B5 (b) + note, 177-B5 (b)). The name is required in the project's default locale only (175-B6), and name edits are staged and saved with the image and the info answers (175-B7). An organization with no opinion questions gets no questions entry (175-C1). Entity-type-specific text gets one message key per type (175-E1). A schema change the roadmap did not list: `bulk_import` carries `entity_type` on the two question tables, so that the phase's own perm-style E2E dataset — its own template, setup and teardown on the suite's one project — can scope questions by type (175-F1). (amended 2026-10-08, operator decision C8 (a); the clause read "the phase's own perm-style E2E project")
+**Settled 2026-10-07** (operator decisions B1 (a), B2 (a), B3 (a), `.planning/v2.16-OPERATOR-DECISIONS-2026-10-07.md`): 175-B2, 175-B3 and 175-B4 — a name is editable while the entity is unconfirmed, for both entity types. See criterion 4. The ten judgement calls (J1–J10) of the phase's CONTEXT.md were ruled on 2026-10-08, below. (amended 2026-10-08; the sentence read "The phase's CONTEXT.md carries ten judgement calls (J1–J10) marked for operator review.")
+**Settled 2026-10-08** (`.planning/v2.16-OPERATOR-DECISIONS-2026-10-08.md`; every ruling here is the recommended option, none was overruled): B1 (a) — this phase moves the nominations lock and adds the `nominationsLocked` accessor, although none of its own screens reads it. B2 (a) — once the lock is an app setting, project editors may lock and unlock nominations as well as admins. B3 (a) — a project that does not exist is locked; a project with no app-settings row, or a row without the key, or any value other than `true`, is unlocked. B4 (a) — one lock: the column `projects.lock_nominations` is removed and the database enforces the setting. C1 (a) — a name is editable when the entity is unconfirmed and answers are not locked; the page keeps one Save button. C2 (a) — a candidate's first and last name inputs lock on `confirmed`, as the organization's do. C3 (a) — `short_name` is frozen on confirmation on all four entity tables: organizations, candidates, factions, alliances. C4 (a) — the E2E dataset holds two organizations: a confirmed one for answers, image and colour, and an unconfirmed one whose name is edited, then confirmed by the test, then read in the voter app. C5 (a) — the "name required" rule applies only while the name is editable. C6 (a) — the colour field is for organizations only; one colour, the dark-theme colour derived on read; not locked on confirmation, locked with answers like the logo; the preview shows the adjusted colour. C7 (a) — the page learns `confirmed` from the entity list, with no schema change; a save the database refuses after a mid-session confirmation is explained by the page. C8 (a) — the new E2E dataset is its own dataset on the suite's one project. F1 (a) — "confirmed from seeding" is reworded to "an organization seeded as confirmed": from Phase 177.1 the caller of `create_invitations` states it per call, and the seed writer and the docs pass "confirmed" for a named entity unless told otherwise. F2 (a) — Phase 177.1 stays after 177; a spec of this phase that invites an entity the dataset keeps hidden is built on `invitationFlow.whileHiddenFromVoters` and re-pointed there. G7 (a) — the four `ownership_invalid_mutation` warnings from `Input.svelte` on the contestant profile page are investigated before this phase is planned.
+**Plans:** 13 plans in 11 waves (planned 2026-10-08; checked twice — 2 blockers and 10 warnings on the first pass, all revised; the file counts of plans 02, 03, 04, 06 and 08 accepted by the orchestrator)
+
+Plans:
+
+**Wave 1**
+- [x] 175-01-PLAN.md — The phase's gate, E2E and verdict scripts with the checked baseline; the `Input` parts repair
+- [x] 175-02-PLAN.md — Schema I: the nominations lock as the app setting `access.nominationsLocked`; `short_name` frozen on confirmation on four tables
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 175-03-PLAN.md — Schema II: `entity_type` validated on the question tables and carried by `bulk_import`; dev-seed's deny map; the stored-colour check
+- [x] 175-04-PLAN.md — All new copy in seven locales; the name rule, the required-locale helper and the per-type descriptor
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 175-05-PLAN.md — The E2E dataset, its setup and teardown, three sessions and the spec's first tests; the first gate set and full run
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 175-06-PLAN.md — `Input`: the required locale, `lang` on locale fields, programmatic associations, the colour kind
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [x] 175-07-PLAN.md — The writer and the store: raw names on the read, the changed-only update, the refused name, staged properties
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [x] 175-08-PLAN.md — Settings keys, the context (`nominationsLocked`, type scope, `questionsReady`), the voter filter's organization arm, the `ensureColors` reader
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [x] 175-09-PLAN.md — The profile page for both entity types and its three save outcomes
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [x] 175-10-PLAN.md — The questions layout, the neutral no-questions page, the menu and home
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [x] 175-11-PLAN.md — The preview for an organization
+
+**Wave 10** *(blocked on Wave 9 completion)*
+- [x] 175-12-PLAN.md — The rest of the spec: scan helpers, voter-side reads, nine scan entries, phone widths
+
+**Wave 11** *(blocked on Wave 10 completion)*
+- [x] 175-13-PLAN.md — Docs, skills, todos and the closing gate with three isolated runs
+
+**Cross-cutting constraints** (from the plan check): no red E2E test is ever committed — a red control runs on an uncommitted tree through the wrapper; every schema commit carries `[db]`; the baseline commit is the committed file `175-BASE`; commits are made by pathspec. The 30 PROPOSED items of `175-UI-SPEC.md` (U-01 to U-30) are planned at their recommendation; U-05, U-12 and U-30 depart from context decisions D-14, D-05 and D-18 and, with the voter-side U-19, are isolated with a stated fallback.
+**UI hint**: yes
+
+### Phase 176: Contestant Home, Task State & Nominations View
+
+**Goal**: The home screen tells the user of the selected entity exactly what is left to do, starting with its nomination; an entity with no nomination is a normal state rather than an error; and one shared state decides where every Continue leads.
+**Depends on**: Phase 175 (so that the home screen and the task state are built once, for both entity types)
+**Requirements**: NOM-01, NOM-02, NOM-07, TASK-01
+**Success Criteria** (what must be TRUE):
+  1. A user whose entity has no nomination reaches the home screen (I) without an error and sees "Define your nomination" as the first task, marked incomplete; once the entity has a nomination the task shows as complete, and the remaining tasks follow it as before (NOM-01). (amended 2026-10-10, operator decision F9 (a) of `.planning/v2.16-OPERATOR-DECISIONS-2026-10-09.md`: the label as built, after C5 (a); it read "Define nomination")
+  2. The entity's nominations are shown in a dedicated nominations view (J) and no longer on the profile page; when they cannot be edited — nominations are locked (`access.nominationsLocked`) — the view shows a reusable note directing the user to support (NOM-02). (amended 2026-10-05, 175-B5 (b))
+  3. While the entity has no nomination, the profile, the questions and the preview cannot be reached — neither from the home screen nor by entering their URL. The profile and the questions become available as soon as a nomination exists, and the questions do not wait for the profile's basic info; the preview becomes available once, in addition, both the basic info and the opinion questions are filled (NOM-07). (amended 2026-10-08, operator decision D2, EDIT: "No longer gate opinion questions on basic info as they don't depend on it. Both do, however, depend on nominations. Still keep the canonical order for next step at basic info first, and gate preview on both filled."; the clause read "and they become available as soon as a nomination exists")
+  4. Every Continue button leads to the entity's next incomplete task — basic info before the opinion questions — and the home screen's task list and the Continue targets never disagree, because both read one derived state in the contestant context (TASK-01). "Every Continue" is the five buttons that choose a target: the home screen's main action, the profile's save, the questions list's start/continue, the question page's save and the nominations view's own; the nominations view's button is labelled Return where the user cannot add a nomination. (amended 2026-10-08, operator decisions D2 EDIT, D3 (a), D4 (a) + note; the order clause and the second sentence are new)
+  5. The full E2E suite is green at close (E2E-03).
+
+**Discussion settled** (2026-10-05; full record in the phase's CONTEXT.md): the one derived state is an ordered `tasks` list plus a `nextStep`, read through five accessors on the contestant context — `taskState`, `tasks`, `nextStep`, `previewOpen`, `nominations` — over a pure helper (176-A1, 176-A4; amended 2026-10-10 to the tree, operator decision F9 (a); it read "two accessors"); three tasks for both types — nomination, profile, opinion questions — with preview a destination, not a task (176-A2); "Define nomination" is complete with at least one nomination, confirmed or not (176-A3). J is its own page at `…/nominations` (176-B1), fed by one entity-scoped RPC that resolves the parent server-side (176-B2), and shows each nomination's confirmation state (176-B3). The NOM-07 gate is a route group whose server load redirects to home (176-D1, 176-D2). An entity with no nomination while nominations are locked keeps the task incomplete and sees the "not editable" note on J (176-F1).
+**Settled 2026-10-08** (`.planning/v2.16-OPERATOR-DECISIONS-2026-10-08.md`; the recommended option unless marked): B1 (a) — Phase 175 moves the nominations lock and adds the accessor; this phase reads it. C5 (a) — the profile task's "name required" clause applies only while the name is editable. C8 (a) — the phase's E2E dataset is its own dataset on the suite's one project. D1 (a) — the new nominations function becomes the app's one nominations read. D2, operator's EDIT, beating both options — the opinion questions are no longer gated on basic info; the profile and the questions both depend on a nomination; the next step keeps the canonical order, basic info first; the preview is gated on both being filled (criterion 3). Inferred by the orchestrator, not the operator's words: the gates that remain — no nomination, and the preview needing both filled — are server redirects as option (a) had them, and research measures the freshness problem before the plan is fixed. D3 (a) — "every Continue" is the four buttons that choose a target today plus the nominations view's; the terms-of-use Continue and the Return buttons of the preview, settings and help are not among them. D4 (a) + NOTE — the nominations view's Continue is shown and leads to the entity's home when the entity has no nomination, and is relabelled Return if the user cannot add nominations. D5 (a) — in this phase the "not editable" note follows the nominations lock alone; Phase 177 widens it. D6 (a) — the note is used on the nominations view and in place of the four answers-locked warnings, not on the profile's locked-name section, where Phase 175's sentence stands. D7 (a) — a missing default-language name blocks neither the questions nor the preview. D8 (a) — four states of the new screens are scanned, each in both themes, the spec flipping the lock through the admin client between them. D9 (a) — the cause of the "Error formatting nomination" log line is found before the code that logs it is deleted, and the todo closes with the finding. D10 (a) — no entity-name cue is built on the answering pages; the todo stays open. D11 (a) — the place on home for the "email address not confirmed" reminder is left to Phase 179, which then edits the home screen this phase builds.
+**Planning note**: the "Define nomination" task's Edit action opens the editor that Phase 177 delivers; in this phase the task leads to the nominations view, which renders no Edit action yet (176-B4). Later phases route their own Continue buttons through the same state.
+**Standing todos in scope**: `2026-05-31-display-nominating-org-in-candidate-profile-nominations.md`.
+**Plans:** 19 plans in 18 waves (planned 2026-10-09; checked three times — 1 blocker and 7 warnings on the first pass, 1 warning on the second, all revised). Execution starts only when Phase 175 is closed and verified; plan 01 refuses to build before that.
+
+Plans:
+
+**Wave 1**
+- [x] 176-01-PLAN.md — The phase's drivers and baseline; the operator's rulings read; Phase 175's hand-over checked; the "Error formatting nomination" cause confirmed
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 176-02-PLAN.md — The entity-scoped nominations RPC `get_entity_nominations`, pgTAP first
+- [x] 176-03-PLAN.md — The pure task-state modules and their case tables
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 176-04-PLAN.md — All new copy in seven locales; the descriptor's new members
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 176-05-PLAN.md — The one nominations read: parse, type, writer and every reader
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [x] 176-06-PLAN.md — The no-nomination sign-out removed; the context's task state
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [x] 176-07-PLAN.md — The E2E dataset with nomination-less entities, its sessions, state steps and first tests; the first full gate set
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [x] 176-08-PLAN.md — The `(nominated)` route group and its server gate
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [x] 176-09-PLAN.md — The questions open without the profile: the layout loses its redirect and its render condition
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [x] 176-10-PLAN.md — The preview's own server gate
+
+**Wave 10** *(blocked on Wave 9 completion)*
+- [x] 176-11-PLAN.md — `NotEditableNote`; the four answers-locked warnings replaced
+
+**Wave 11** *(blocked on Wave 10 completion)*
+- [x] 176-12-PLAN.md — The nominations view
+
+**Wave 12** *(blocked on Wave 11 completion)*
+- [x] 176-13-PLAN.md — The nominations block leaves the profile
+
+**Wave 13** *(blocked on Wave 12 completion)*
+- [x] 176-14-PLAN.md — Home for an entity with no nomination
+
+**Wave 14** *(blocked on Wave 13 completion)*
+- [x] 176-15-PLAN.md — Home for an entity with a nomination, and the journey
+
+**Wave 15** *(blocked on Wave 14 completion)*
+- [x] 176-16-PLAN.md — The menu and the logout button over the task state
+
+**Wave 16** *(blocked on Wave 15 completion)*
+- [x] 176-17-PLAN.md — The profile's save, the questions list and the question page's save over the task state
+
+**Wave 17** *(blocked on Wave 16 completion)*
+- [x] 176-18-PLAN.md — Seven scan entries, phone widths, the wiring gate
+
+**Wave 18** *(blocked on Wave 17 completion)*
+- [x] 176-19-PLAN.md — Docs, skills, todos, hand-over and the closing gate
+
+**Cross-cutting constraints** (from the plan check): no commit turns a committed E2E test red — a surface is held in the working tree through a green run of the uncommitted tree and committed together with its fixture and specs; a red control runs on an uncommitted tree through the wrapper; every schema commit carries `[db]`; commits are made by pathspec. The 21 PROPOSED items of `176-UI-SPEC.md` are planned at their recommendation; U-01, U-02 and U-08 depart from criterion 4's letter, D-06 and D-17, and the plan order departs from D-21 — all four are put to the operator as C1 to C4 of `.planning/v2.16-OPERATOR-DECISIONS-2026-10-09.md`, which plan 01 reads by a fixed rule before anything is built (a NOTE, two ticks or a tick without an executor-ready fallback halts the phase there).
+**UI hint**: yes
+
+### Phase 177: Define Nominations
+
+**Goal**: The user defines the selected entity's nominations themselves: which elections and constituencies it stands in, under which symbol, and for which party or alliance.
+**Depends on**: Phase 176
+**Requirements**: NOM-03, NOM-04, NOM-05, NOM-06, NOM-08
+**Success Criteria** (what must be TRUE):
+  1. From "Define nomination" the user picks election and constituency pairs with the same selectors, and in the same order, that a voter meets — the `startFromConstituencyGroup` setting honoured — except that only elections whose election type admits the entity's type are offered. A single admissible election is never shown as a choice: the election step is shown only when more than one election is admissible; with one, only the constituency step is shown, and the selection is skipped entirely when that one election has one constituency (NOM-03). (amended 2026-10-05, 177-C2 (b), Additional note 2) (amended 2026-10-08, operator decision E6 (b), overruling the recommended option; the clause read "The selection step is skipped entirely when there is one election with one constituency; otherwise the election choice is offered")
+  2. Each chosen pair is then shown as a card with an election-symbol input and, where the election type allows a parent for this entity's type, a selector of the project's parties or alliances. A candidate in an `organization_list` election cannot continue without a parent, which a listed party or "Other" satisfies; in an `organization_list_and_independents` election — a new election type, and the default — a candidate may instead choose "Independent / no party". An organization may choose any alliance in the project, with "None" selected by default. An entity for which no parent is allowed is not asked for one. The database refuses a nomination the election's shape forbids, whoever writes it (NOM-04). (amended 2026-10-05, 177-A3 (b) + note, 177-A4 (b) + note, 177-A6 (b))
+  3. Choosing "Other" as the parent asks for free text and stores it in `customData.requestedParentOrganization` without linking a parent nomination; choosing a listed party or alliance links it (NOM-05).
+  4. Continuing creates the new nominations and updates the changed ones at once, so the home task turns complete and the nominations view shows them, and Continue leads on to the next incomplete task. An edited nomination is no longer confirmed, and when nominations are locked (`access.nominationsLocked`) the change is refused and the view offers no Edit (NOM-06). (amended 2026-10-05, 177-B5 (b))
+  5. After a nomination changes, the questions the entity is asked follow the new nominations: questions that now apply appear on the home screen as tasks to answer, questions that no longer apply are no longer asked, and the task state and every Continue target reflect the new set at once (NOM-08).
+  6. An E2E spec covers nomination definition, the existing `startFromConstituencyGroup` regression spec (`perm-startfromcg.spec.ts`) is extended to the contestant side rather than paralleled, and the full E2E suite is green at close (E2E-02 in part, E2E-03).
+
+**Discussion settled** (2026-10-05; full record in the phase's CONTEXT.md): the election symbol is opened to the entity user while nominations are unlocked (177-A1). The parent matrix is exposed as `Election.nominationShape` in `@openvaa/data` with one pure function for the allowed parent types (177-A2), and the shape rules are also enforced in `validate_nomination`; a new election type, `organization_list_and_independents`, is added and made the default, and allows parentless candidate nominations (177-A3 (b) + note, overruling the ★). "Independent / no party" is offered only for that new type; "Other" satisfies a required parent; for alliances "None" is the default selection (177-A4 (b) + note). The candidate's selector lists every confirmed organization (177-A5); the organization's lists every alliance in the project, with `entity_insert_parent_nominations` and the organization role extended so that an organization can create the alliance's nomination (177-A6 (b), overruling the ★). One `SECURITY INVOKER` RPC, `set_entity_nominations`, writes the whole set (177-B1); a `SECURITY DEFINER` RPC returns the parent options (177-B2); a pair can be removed through a new `entity_delete_nominations` policy (177-B4). "Locked" is the app setting `access.nominationsLocked` (177-B5 (b), 175-B5 note), and K is not editable when either lock is on (177-B6). The selection step is skipped when there is one election with one constituency (177-C2 (b), overruling the ★). One constituency per election for both entity types (177-C3). Each step is its own route, in a route group — `…/nominations/(edit)/elections` and so on — with the chosen ids in the URL search params (177-C4 + note). A new nomination is for the election's `current_round` (177-C5). The symbol is one optional plain-text field, capped at 50 characters (177-D1 + note).
+**Settled 2026-10-08** (`.planning/v2.16-OPERATOR-DECISIONS-2026-10-08.md`; the recommended option unless marked): B1 (a), B4 (a) — the lock and its accessor come from Phase 175, as one source: the column is gone and the database enforces the setting. B2 (a), B3 (a) — project editors may lock and unlock; a missing project is locked, a missing settings row or key is unlocked. E1 (a) — the database refuses a parentless candidate row in an `organization_list` election unless it carries the "Other" text, and checks "has a parent or the text" at the end of the transaction; whether PostgreSQL's deferred triggers and the SQL linter accept this is a research item, not yet measured. E2 (a) — the election-type rule binds inserts and updates for every role; a faction is admitted where a candidate may have a parent, an alliance wherever an organization may stand; nothing re-checks existing nominations when an admin changes an election's type. E3, no box, NOTE "Change in all templates where it would not cause issues." — the default changes, and every seed template is re-typed to the new default wherever that causes no issue; a census decides which. E4 (a) + NOTE — parent creation is paired (a candidate creates a party's row, an organization an alliance's, never the other way round), the cap of 10 counts alliance rows too, and every alliance is listed, confirmed or not; the phase's research evaluates whether the cap of 10 is needed at all and comes back with a finding. E5 (a) — the user sets the symbol on its own nomination only; the 50-character cap and the trim are applied by the input and again by the write function, with no column constraint. E6 (b), overruling the recommended option — a single admissible election is never shown as a choice (criterion 1). E7 (a) — the editor's steps are in a route group: `…/nominations/elections`, `…/constituencies`, `…/details`, with no `edit` in the URL. E8 (a) — a changed constituency is a delete and an insert. E9 (a) — nothing is preselected in a candidate's party selector, in either list type. E10 (a) — the parent options also return the entity type and the image. E11 (a) + NOTE — the task and the view's Edit open the editor when nominations can be edited, and the task leads to the nominations view when they cannot; the operator's note narrows the first half: the task routes to the editor only when nominations are editable and the entity has none, otherwise to the view, where the user clicks Edit. E12 (a) — four situations no source describes (no admissible election; several nominations in one election; removing the only nomination where the selection step is skipped; a linked party that is no longer listed) get a proposed rule each in this phase's UI spec and come back to the operator there; planning of the screens waits on that round. E13 (a) — an editor URL opened while nominations are locked redirects to the nominations view, which shows the note. E14 (a) — the editor does not honour `elections.disallowSelection`: an entity always chooses the elections it stands in. E15 (a) — the one-constituency-per-election limit is stated in the Publishers' Guide. E16 (a) — the closing gate runs the new nominations spec three times in isolation, as Phases 175 and 176 do. F3 (a) — `set_entity_nominations` and Phase 177.1's `p_nominations` take one shape: a JSONB array of objects, one per nomination, with the same keys.
+**Planning note** (operator's additional notes, 2026-10-05): the election and constituency selection differs from the voter's in one respect — it first filters the elections by the entity's type against each election's `election_type` — and still honours `startFromConstituencyGroup`; however that is computed, the predicates are centralised as far as possible. The party selector and the alliance selector are one reusable component that renders its items as `EntityCard`s, in a compact variant if needed.
+**Todos to file in this phase**: organization multi-constituency selection, noting that it could be enabled for candidates too through a setting (177-C3 note); a check of the whole app for election-round conformity, which has not been tested (177-C5 note); an election-specific setting for the symbol type (177-D1 note); the cap of 10 unconfirmed parent nominations counting an organization's own nominations (177 cross-phase residue) — filed in the light of the research finding on whether the cap is needed at all (operator decision E4 note, 2026-10-08).
+**Standing todos in scope**: `2026-08-28-preregister-election-constituency-selection-harmonisation.md`, `2026-09-24-data-model-vs-db-nomination-constraints.md`.
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 177.1: Invitations — Entity Confirmation & Nominations Defined in Advance (INSERTED)
+
+**Goal**: An admin who seeds an invitation says, in the same call, whether the invited entity is confirmed and which nominations it holds, so that inviting an entity never changes what voters see by side effect.
+**Depends on**: Phase 174 (`create_invitations`, the invitation E2E fixtures), Phase 177 (the nomination shape rules, the parent matrix and the parent-nomination creation that self-nomination uses)
+**Requirements**: none new — extends INV-01 and INV-05; E2E-03 as closing criterion
+**Success Criteria** (what must be TRUE):
+  1. `create_invitations` takes a required `p_confirm_entity`. The invited entity is confirmed only when the caller says so; no call confirms an entity implicitly, and a call that omits the parameter is refused.
+  2. Each entity-scope invitation for a candidate or an organization may state its nominations under a `nominations` key, a JSONB array of objects, one per nomination, with the keys Phase 177's `set_entity_nominations` takes — an election id, a constituency id, an optional election symbol and the `parent` object — plus `confirmed` on every object, an optional `id` of the entity's nomination to update, an optional election round (the election's current round when absent) and the nomination's other writable columns. (amended 2026-10-08, operator decision F3 (a); the format clause is new. Inferred, not the operator's words: where this list names a field `set_entity_nominations` does not take from its caller — `confirmed`, the election round — the shared keys keep one name and the admin-only ones are added to them; the phase's planning confirms it against 177's shape.) The nominations are created or updated, never deleted, in the same transaction as the invitation, pass the same validation as any other nomination write, and a caller without the authority to write them is refused with nothing written. (amended 2026-10-18, Phase 177.1 decisions D-05, D-06, D-08 and fact 12; the clauses read "`create_invitations` takes an optional `p_nominations`" and "an optional parent entity id", and the round was not optional)
+  3. A parent entity id is resolved to the parent's existing nomination in that election and constituency, and one is created when none exists. That resolve-or-create step is one utility function, and the self-nomination path of Phase 177 calls the same one; no second copy of the rule exists.
+  4. The E2E journey invites its candidate through the extended call, with the entity's confirmed state and its nomination stated outright, and runs as the invitation model leaves an invited user. `invitationFlow.whileHiddenFromVoters` is removed, and no spec hides an entity by unconfirming rows around a seeding step.
+  5. Every caller of `create_invitations` — the dev-seed writer (`SupabaseAdminClient.createInvitations`), the E2E admin client and fixture with every spec and setup that seeds through them, the frontend data writer's integration test, pgTAP and the docs — passes the new parameter; the seed writer and the docs pass "confirmed" for a named entity unless told otherwise; and the full E2E suite is green at close (E2E-03). (amended 2026-10-08, operator decision F1 (a); the seed-writer clause is new) (amended 2026-10-18, Phase 177.1 decision D-19 and fact 3; the caller list read "the dev-seed writer, the E2E admin client, pgTAP, the docs")
+
+**Inserted 2026-10-07** at the operator's direction. Source: Phase 174 plan 09 found that `create_invitations` confirms the invited entity, so inviting the journey's "Unregistered Candidate AA", whose nomination the seed already confirms, would make that candidate public in the base dataset (measured in a rolled-back transaction: `anon` reads 0 rows before seeding and 1 after). 174-09 worked around it with a fixture wrapper that unconfirms the nominations, seeds, unconfirms the candidate and restores the nominations; the journey's invited candidate therefore runs unconfirmed, not in the state an invitation produces. Record: `174-09-SUMMARY.md`.
+
+**Settled 2026-10-08** (`.planning/v2.16-OPERATOR-DECISIONS-2026-10-08.md`; every ruling here is the recommended option):
+- F1 (a) — whether the invited entity is confirmed is the admin's choice on each call, through the required `p_confirm_entity`, and not a property of the mode. The seed writer and the docs pass "confirmed" for a named entity unless told otherwise, so what Phases 174, 175 and 179 were planned on stays the normal case. Operator decision B2 (a) of 2026-10-07 is reworded to "an organization seeded as confirmed" has its name locked from the first sign-in. Phase 174's type test and its pgTAP rows gain the parameter. (This was the "to settle" item on how `p_confirm_entity` sits with B1 (a) and B2 (a).)
+- F2 (a) — the phase stays after Phase 177, the roadmap's order: it reuses 177's election-type rules and its create-the-parent's-nomination step. Until it lands, any spec of Phase 175 or 176 that invites an entity the dataset keeps hidden is built on the 174-09 wrapper, `invitationFlow.whileHiddenFromVoters`, and is re-pointed here. (This was the "to settle" item on Phase 175's specs.)
+- F3 (a) — `p_nominations` is a JSONB array of objects, one per nomination, with the same keys as 177's `set_entity_nominations` takes: one shape for both nomination writes, and the form `bulk_import` and `create_invitations` already use. (This was the "to settle" item on the format.)
+
+**To settle when the phase is discussed:**
+- Inside F3 (a), left to the phase's planning: `create_invitations` takes a batch, so whether the nominations are a separate parameter or a key on each invitation.
+- Whether an unconfirmed invited entity with a nomination can use the app at all: 174-09 expected, without running it, that a user whose only nomination is unconfirmed is signed out for having none, since no frontend caller reads unconfirmed nominations. Phase 176 removes the no-nomination sign-out, which may settle it.
+- Whether the parent-nomination utility already exists after Phase 177 (its `set_entity_nominations` and the widened `entity_insert_parent_nominations` policy), or is extracted here.
+
+**UI hint**: no — a schema, RPC and test-fixture phase
+**Plans**: 8/8 plans complete
+**Wave 1**
+- [x] 177.1-01-PLAN.md — the phase's drivers (with the shared-stack refusals), the base commit, the baseline run and the context's facts re-read
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 177.1-02-PLAN.md — the nomination object's validator, the array bound and the resolve-or-create-the-parent step as private INVOKER functions; `set_entity_nominations` re-pointed, file 43 untouched
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 177.1-03-PLAN.md — the invitation's pgTAP committed red: file 39 on the new signature with D-21's scoping, file 47, the cross-project arm
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 177.1-04-PLAN.md — `create_invitations (p_project_id, p_invitations, p_confirm_entity)` with the `nominations` key; the database rows green
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [x] 177.1-05-PLAN.md — every caller passes the confirmation: the seed writer (default `true`), the E2E helpers (required), every spec and setup, the integration test
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [x] 177.1-06-PLAN.md — the journey invites its candidate confirmed with an unconfirmed nomination; the hiding wrapper removed; the contract spec states `true` and `false`
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [x] 177.1-07-PLAN.md — the docs, INV-05, the roadmap's criteria 2 and 5, the todos and the database skill
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [x] 177.1-08-PLAN.md — the closing gate: the review, every gate row, one full run, the journey and the contract spec three times each
+
+### Phase 178: Sign-in, Email & Code Registration
+
+**Goal**: A user reaches a signed-in session through the new entry flow — signing in with email, or registering by email or by code — over shared components, with the set-password step enforced once, in the layout.
+**Depends on**: Phase 171, Phase 174, Phase 176 (the matrix decides what is offered, invitations are what an email or a code is proven against, and the gates and the home screen are where a signed-in user lands)
+**Requirements**: REG-01, REG-02, REG-03, REG-09, REG-10, REG-11, REG-13, FIX-01
+**Success Criteria** (what must be TRUE):
+  1. The login screen (A) offers "Sign in with email" and, only when some registration mode is allowed, "Register". Register opens the mode selector (C), which lists each allowed mode as an expandable option with one Continue button, or shows the single allowed mode directly (REG-01, REG-03).
+  2. Registering by email, and choosing "I have not set a password yet" on the sign-in screen (B) — shown when the email mode or the identity-provider mode is allowed for any served type — both lead to the "email sent" screen (E): a rate-limited resend, a link to support, and the same response whether or not the address is valid, with no backend error surfaced. The emailed link signs the user in, and a user who arrives that way without a password must set one before any other page, enforced by the layout (F) (REG-02, REG-10, REG-11). (amended 2026-10-05, 179-B3)
+  3. Entering a registration code leads, for a valid unused code, to entering and confirming an email (D1) and on to E; for a used code, to password sign-in (D2); and for anything else, to "We couldn't confirm your registration code." (REG-09).
+  4. The sign-in, password and email-entry pieces are the same shared components on the sign-in, code-reuse, email-entry and set-password screens, browser autofill and password managers work on every one of their inputs, and a password-reset link requested from inside the app completes and signs the user in, in whichever browser or device it is opened (REG-13, FIX-01). (amended 2026-10-05, 178-F1)
+  5. The email mode and the code mode each have an E2E spec that follows the real emailed verify redirect rather than a hand-built callback URL, and the full E2E suite is green at close (E2E-01 in part, E2E-03).
+
+**Discussion settled** (2026-10-05; full record in the phase's CONTEXT.md): the phase builds screens over the endpoints Phase 174 delivers — the code check answering `valid`, `used` or `unknown`, the link request, the code sign-in and `claim_invitations` — and no server logic of its own. One route per screen, with the code and the entered address carried in the contestant context and never in the URL (178-A1). F is an in-layout view and comes first: F → G → H → page (178-A2). The server enforces the registration-mode matrix for registration (178-A4). _How the layout knows a password has not been set:_ the database answers, for `auth.uid()` only, whether a password is set, and that fact is bundled into the user-data retrieval RPC rather than served by a helper of its own (178-B1 ★ + note); every signed-in user without a password is asked, whatever brought them, and Phase 179 adds the one exemption (178-B2); after setting it the user stays signed in (178-B3). C is a radio group with one Continue (178-C2). Forgot-password requests its link through the same server endpoint as E (178-C5). The mail texts are per-locale templates stored with the Edge Function (178-E1). FIX-01 is met by no longer producing a PKCE code: the recovery link is issued by the server and carries a `token_hash` to the callback (178-F1). The shared components live in the app's own component library (178-D1).
+**Planning note**: the legacy contents of the `register/` tree — the `checkRegistrationKey` and `register` writer contracts, `CheckRegistrationData`, and the `registrationKey`, `username` and `email` URL parameters — are removed here, and the mode selector C takes the `register` path; for the email and code modes exactly one path exists at close (178-G1). C lists the identity-provider mode when the matrix allows it, and until Phase 179 its Continue opens the existing identity-provider start (178-G2). **Operator note, 2026-10-05; exact route names settled in the Phase 178 plan:** the whole `preregister` route becomes `register`, with the identity-provider flow as a subroute inside it — so the surviving registration tree is `register/`, and no `preregister/` route outlives the milestone.
+**Standing todos in scope**: `2026-09-02-forgot-password-pkce-code-not-exchanged.md`, `2026-06-07-hide-forgot-password-email-input-after-submitting.md`, `2026-09-15-refactor-candidate-and-entity-registration-flow-and-nominati.md`.
+**Plans**: TBD
+- [x] 178-01-PLAN.md
+- [x] 178-02-PLAN.md
+- [x] 178-03-PLAN.md
+- [x] 178-04-PLAN.md
+- [x] 178-05-PLAN.md
+- [x] 178-06-PLAN.md
+- [x] 178-07-PLAN.md
+- [x] 178-08-PLAN.md
+- [x] 178-09-PLAN.md
+- [x] 178-10-PLAN.md
+- [x] 178-11-PLAN.md
+- [x] 178-12-PLAN.md
+- [x] 178-13-PLAN.md
+- [x] 178-14-PLAN.md
+- [x] 178-15-PLAN.md
+- [x] 178-16-PLAN.md
+- [x] 178-17-PLAN.md
+- [x] 178-18-PLAN.md
+- [x] 178-19-PLAN.md
+- [x] 178-20-PLAN.md
+- [x] 178-21-PLAN.md
+- [x] 178-22-PLAN.md
+- [x] 178-23-PLAN.md
+- [x] 178-24-PLAN.md
+
+**UI hint**: yes
+
+### Phase 179: Identity-Provider Registration & Coverage Close
+
+**Goal**: A user can register a candidate or an organization with the identity provider, gives the email they will sign in with, and goes straight to editing; with this the three registration modes are complete and covered end to end.
+**Depends on**: Phase 175, Phase 177, Phase 178 (organizations can be edited, a freshly registered entity can define its nomination, and the mode selector, the email-entry component and the emailed sign-in path exist)
+**Requirements**: REG-04, REG-05, REG-06, REG-07, REG-08, REG-14, E2E-01, E2E-02, E2E-03
+**Success Criteria** (what must be TRUE):
+  1. A new user completes the identity provider's flow (CI), which creates the user and the entity together, arrives on the success screen (CI1), enters and confirms the email they will sign in with, and on Continue goes straight on to the terms of use and to editing, with no wait for an email confirmation and no set-password step. The address is recorded as pending and a confirmation link is sent to it; it becomes the sign-in identifier once that link is opened, and until then the user returns through the identity provider (REG-04). (amended 2026-10-05, 179-B1)
+  2. When the project allows identity-provider registration for more than one entity type, the user chooses the type in the registration-mode selector (C) before the provider's flow, and the entity created is of that type; when it allows exactly one, the user is not asked. A user registering an organization enters its name and abbreviation (short name) on the success screen through multilingual inputs, which are saved to the already-created organization, and is told these can be edited later, until the organization is confirmed (REG-06, REG-07). A self-registered organization is created unconfirmed, with an empty name, and an admin confirms it (179-C1). A name is editable while the entity is unconfirmed, and the nominations lock affects nominations only — see Phase 175 criterion 4. (amended 2026-10-07, operator decision B1 (a); the clause read "unless nominations are locked")
+  3. A user who has already registered and identifies again is told so, is asked to use their email to sign in next time, and continues without entering an email again; a user who identified before but never gave an email is asked for it before reaching the home screen (REG-05). Planned at J1 (2026-10-21, operator ruling 2026-10-21: plan at the ★/proposal; a different answer from the operator becomes a located revision): a pending address counts as given. The gate stops only a user with no address. A user whose address is pending gets CI1's pending variant once — the link is waiting, send again, use a different address — and a reminder on the home screen, and returns through the provider until the link is opened. "Use your email to sign in next time" is said only to a user whose address is confirmed (D-09; plans 179-14, 179-17, 179-18). This closes the open question recorded on 2026-10-05 (179-B1 ★ against 179-B4 ★).
+  4. When identification fails the user sees the error screen (CI2) with the support block and a "Try again" action; the message says truthfully whether retrying can help, and a deliberate cancel is treated as a cancel rather than as a failure, in all seven locales (REG-08).
+  5. The legacy registration flows are gone — the legacy `register/` contents since Phase 178, the legacy `preregister/` chain here: no `preregister/` URL resolves, no code, message catalogue entry or spec refers to the removed routes, constants or contracts, and the flow of screens A–K is the only registration path. The one registration tree is `register/`, with the identity-provider flow as a subroute inside it (operator note, 2026-10-05; exact route names settled in the Phase 178 plan) (REG-14). (amended 2026-10-05, 178-G1, Additional note 1)
+  6. Each registration mode has an E2E spec that follows the real email verify redirect rather than hand-building the callback URL; organization registration, entity selection with several grants and nomination definition each have E2E coverage; and the full E2E suite is green at close, as at the close of every phase before it (E2E-01, E2E-02, E2E-03).
+
+**Settled 2026-10-04 (operator)**: the identity-provider write is not deferred — `identity-callback` creates the user and the entity in one step, the entity type is chosen in the mode selector and carried through the provider round trip, and the organization's name and abbreviation are an update to the created entity. 
+**Discussion settled** (2026-10-05; full record in the phase's CONTEXT.md): the chosen type travels in a short-lived httpOnly cookie set by the authorize endpoint after it has checked the type against the matrix (179-A1); the matrix is enforced in three places, with the Edge Function authoritative (179-A2). The callback route invokes `identity-callback`, establishes the session and redirects to CI1; the `id_token` cookie, `/api/oidc/token` and the `preregister` API route are deleted (179-A3). One identity holds at most one entity per type per project (179-A4). The typed address is pending until proved and never blocks editing (179-B1); an address that belongs to another account is refused with a specific message (179-B2); the emailed sign-in link is offered whenever the email mode or the identity-provider mode is allowed (179-B3); a layout gate ahead of G sends a user with no address, pending or proved, to CI1's email form, so the gate order is F (exempt here) → email → G → H (179-B4). A self-registered organization is created unconfirmed with an empty name, and its name is required in the project's default locale on CI1 (179-C1, 179-C2). CI2 distinguishes three classes — cancelled, may work on retry, will not work on retry — carried as a code from a closed set (179-D2, 179-D3). REG-14's removal is proved by a check in `lint:check` (179-E3). The identity-provider specs join the default suite (179-F1), and a gate script over test tags proves E2E-01 and E2E-02 (179-F3). The milestone audit runs separately, not inside this phase (179-G3). Identity-provider registration never claims an invitation in v2.16 (X2 (a)).
+**Planning note**: the legacy `preregister/` chain is superseded by CI and CI1 here and by Phase 177's nomination editor; one registration path remains at close. **Operator note, 2026-10-05; exact route names settled in the Phase 178 plan:** the whole `preregister` route becomes `register`, with the identity-provider flow as a subroute inside it — so what is deleted here is the legacy chain and the `preregister` name, and the surviving registration tree is `register/`.
+**Standing todos in scope**: `2026-09-21-surface-bank-identification-failure-to-the-user.md`, `2026-09-21-preregister-route-discards-email-and-nominations.md`, `2026-06-03-full-bank-authentication-flow-e2e-spec.md`, `2026-09-02-close-bank-auth-oidc-round-trip-window.md`.
+**Plans**: 24/24 plans executed, 24 serial waves (planned 2026-10-21; the tracer is 179-14; rules in `179-EXECUTION-RULES.md`)
+- [x] 179-01-PLAN.md — instruments: the precondition, the freeze check, the drivers, the baseline
+- [x] 179-02-PLAN.md — Wave-0 probe of the email-change, passwordless and restore recipes (P1–P9)
+- [x] 179-03-PLAN.md — schema: J3 claim exclusion, the confirmation slot, the caller-only taken fact (three appended migrations)
+- [x] 179-04-PLAN.md — harness I: the mock issuer's selector, `email_change` links, one issuer
+- [x] 179-05-PLAN.md — harness II: the identity-provider specs default-on (D-19)
+- [x] 179-06-PLAN.md — CI2, the closed code set, every new string
+- [x] 179-07-PLAN.md — C starts the provider's flow with the type; the type cookie
+- [x] 179-08-PLAN.md — identity-callback pure modules: contract, matrix copy, placeholder
+- [x] 179-09-PLAN.md — identity-callback pure modules: organization, own entity, metadata without claims, credential
+- [x] 179-10-PLAN.md — account-access confirm-address operation and its mail
+- [x] 179-11-PLAN.md — user-level address facts, F's address term, CI1's endpoint
+- [x] 179-12-PLAN.md — CI1's view in every variant
+- [x] 179-13-PLAN.md — identity-callback with the new contract (legacy body still accepted)
+- [x] 179-14-PLAN.md — tracer: a candidate registers with the identity provider end to end
+- [x] 179-15-PLAN.md — identity-callback closed to server callers (J4), strict contract (J5)
+- [x] 179-16-PLAN.md — a party registers; C asks the type when two are allowed
+- [x] 179-17-PLAN.md — returning users: proved, no address, removed grant
+- [x] 179-18-PLAN.md — the pending address: CI1 V4, the home's reminder, settings
+- [x] 179-19-PLAN.md — where the confirmation link lands; the race; sign-in by email
+- [x] 179-20-PLAN.md — refusals end to end: forged type, switched-off mode, two candidates
+- [x] 179-21-PLAN.md — REG-14: the legacy chain removed from the application and the suite
+- [x] 179-22-PLAN.md — REG-14: the lint check and the docs
+- [x] 179-23-PLAN.md — the coverage-tag census and the todos
+- [x] 179-24-PLAN.md — the closing gate
+
+**UI hint**: yes
 
 ## Backlog
 
@@ -2167,6 +2764,373 @@ Work deliberately **not** in v2.15 is tracked as **Future Requirements** in `.pl
 `.planning/todos/pending/`. Neither is backlog *queued for the next milestone* until
 `/gsd-review-backlog` promotes it. Items deliberately queued for a future milestone are listed below.
 
+### Phase 179.1: Review Fixes — Access, Database Rules & Contestant App Behaviour (INSERTED)
+
+**Goal**: The code-changing review decisions of 2026-10-23 for Phases 166–179 are in the tree: an admin can invite an address again after its earlier invitation was claimed, a mailed link signs in only after a confirm click, revoking a grant stops writes at once, the answers lock holds for nominations in the database, the constituency rule covers every nomination write, a concurrent first identity-provider sign-in cannot create two candidates, and the smaller items are done or recorded
+**Depends on**: Phase 179
+**Requirements**: none — review fixes; E2E-03 binds it as it binds every phase
+**Source**: `.planning/REVIEW-DECISIONS-166-179.md` (operator's answers, `d86333a85`); discussion in `.planning/v2.16-179.1-179.2-DISCUSSION-POINTS.md`
+**Precondition**: planning starts only after `/gsd-verify-work 179` (E1), whose findings fold in as items (CONTEXT D-03)
+**Success Criteria** (settled in `179.1-CONTEXT.md`, 2026-10-25):
+  1. A1, A3, A7, B2, B3, B4, B5, C4, C5, D1, D3, D4, D5, E4 and E5 are each done as the decisions document and this phase's CONTEXT.md settle them, each with a test that fails without the change; B2 covers answers, profile and storage writes as well as nominations (D-14)
+  2. A5, A6, A8, B1, C1, C2, C3, D2, E3 and E6 are recorded as decided (owned risks on the docs' auth / security page, todos filed: the hosted IP-budget measurement of A5, the selective answers-lock bypass of B2's note and the election-type rethink of C3's note), with no code change
+  3. The full E2E suite, pgTAP and every gate are green on one tree at close
+
+**Plans:** 90/90 plans complete (50 serial waves and plans 54-69; plans 33-40 close the UAT gaps G-179.1-5 to G-179.1-11, plans 41-42 close the verification's gap CR-01, plans 43-46 carry the operator's rulings of 2026-11-02 and the `Icon` defect, plans 47-50 close the re-verification's gaps CR-02 and WR-09 to WR-13, plans 54-55 carry the operator's rulings of 2026-11-04 on WR-16 and WR-17; plans 56-66 close the 18 gaps of the WR-16 UAT of 2026-11-06 (`179.1-WR16-UAT.md`), with the round's rules in plan 56; plans 67-69 close the re-verification's gap G-179.1-WR16-11C (CR-01) with WR-01 to WR-03 and IN-08 of the review of plans 56-66, with the round's rules in plan 67; plans 70-79 close the seven gaps of the WR16H UAT of 2026-11-08 (`179.1-WR16H-UAT.md`), with the round's rules in plan 70; plans 81-85 close the six gaps of the WR16I UAT of 2026-11-10 (`179.1-WR16I-UAT.md`), with the round's rules in plan 81; plans 86-90 close the eight gaps of the WR16J UAT of 2026-11-11 (`179.1-WR16J-UAT.md`), with the round's rules in plan 86; execution rules in `179.1-EXECUTION-RULES.md`)
+
+Plans:
+- [x] 179.1-80-PLAN.md
+
+**Wave 1**
+- [x] 179.1-01-PLAN.md — The instruments: drivers, base and baseline run, RLS cost "before", negative-control ledger (D-03, D-04, D-12)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 179.1-02-PLAN.md — A1: a claimed invitation no longer blocks a new one (partial unique index) (D-05)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 179.1-03-PLAN.md — B3 prerequisite and B5: `bulk_import` links constituencies before nominations; dev-seed links through it; settings validated (D-26, D-17)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 179.1-04-PLAN.md — B3 and D5: the constituency rule in `validate_nomination`, stated once; the error-order pin (D-18, D-22)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [x] 179.1-05-PLAN.md — B2 database: `project_answers_locked` on entity-scope policies, storage and the two save functions (D-14, D-15, D-28)
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [x] 179.1-06-PLAN.md — B2 frontend: a lock refusal shows the not-editable note; the per-entity exemption todo (D-16)
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [x] 179.1-07-PLAN.md — A7: `user_can` reads the grants table; cost measured; claim rows rewritten (D-11, D-12, D-13)
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [x] 179.1-08-PLAN.md — B4 database: the locked identity find-or-create function (D-19)
+
+**Wave 9** *(blocked on Wave 8 completion)*
+- [x] 179.1-09-PLAN.md — B4 Edge and G-179-5: `identity-callback` calls it; smart name casing (D-19)
+
+**Wave 10** *(blocked on Wave 9 completion)*
+- [x] 179.1-10-PLAN.md — G-179-12: an invited address is refused as in use on CI1
+
+**Wave 11** *(blocked on Wave 10 completion)*
+- [x] 179.1-11-PLAN.md — A3: the confirm page `/auth/confirm`, signed-in rule, 7 locales, scans (D-06..D-09)
+
+**Wave 12** *(blocked on Wave 11 completion)*
+- [x] 179.1-12-PLAN.md — A3: the callback hands every mailed link to the confirm page; specs press Continue (D-08)
+
+**Wave 13** *(blocked on Wave 12 completion)*
+- [x] 179.1-13-PLAN.md — A3: the mails link to the confirm page; allowlists incl. hosted settings (D-08, D-27)
+
+**Wave 14** *(blocked on Wave 13 completion)*
+- [x] 179.1-14-PLAN.md — G-179-6: the already-registered banner (cookie set by the confirm action)
+
+**Wave 15** *(blocked on Wave 14 completion)*
+- [x] 179.1-15-PLAN.md — C4: no read failure signs the user out; the read-failure view (D-20, D-25)
+
+**Wave 16** *(blocked on Wave 15 completion)*
+- [x] 179.1-16-PLAN.md — C5: one settings page at the Contestant App's root (D-21)
+
+**Wave 17** *(blocked on Wave 16 completion)*
+- [x] 179.1-17-PLAN.md — G-179-1: CI2's support link inline; no icon on noRetry
+
+**Wave 18** *(blocked on Wave 17 completion)*
+- [x] 179.1-18-PLAN.md — G-179-14: Check your email view (address, inline support, Send again with its countdown)
+
+**Wave 19** *(blocked on Wave 18 completion)*
+- [x] 179.1-19-PLAN.md — G-179-2: `Radio`, the party wording, the registration hero
+
+**Wave 20** *(blocked on Wave 19 completion)*
+- [x] 179.1-20-PLAN.md — G-179-2: email and code fields on `Input`
+
+**Wave 21** *(blocked on Wave 20 completion)*
+- [x] 179.1-21-PLAN.md — G-179-16: both sign-in links in one component, forgot-password prefill, widths (D-29)
+
+**Wave 22** *(blocked on Wave 21 completion)*
+- [x] 179.1-22-PLAN.md — G-179-7, G-179-8: the home's task list, icons, Switch profile
+
+**Wave 23** *(blocked on Wave 22 completion)*
+- [x] 179.1-23-PLAN.md — G-179-13: closed menu items reveal their reason on click
+
+**Wave 24** *(blocked on Wave 23 completion)*
+- [x] 179.1-24-PLAN.md — G-179-9: nomination form order
+
+**Wave 25** *(blocked on Wave 24 completion)*
+- [x] 179.1-25-PLAN.md — G-179-10: nominations view after add, card Edit/Delete, Add
+
+**Wave 26** *(blocked on Wave 25 completion)*
+- [x] 179.1-26-PLAN.md — D3 and G-179-11: image removal; open answer before the answer (D-22)
+
+**Wave 27** *(blocked on Wave 26 completion)*
+- [x] 179.1-27-PLAN.md — G-179-15, E4, E5: `ui_locales`; key server bound and probed; void-run issuer stop (D-23)
+
+**Wave 28** *(blocked on Wave 27 completion)*
+- [x] 179.1-28-PLAN.md — D1, E5: templates removed; 404 title; app-shared declares core (D-22, D-23)
+
+**Wave 29** *(blocked on Wave 28 completion)*
+- [x] 179.1-29-PLAN.md — D4: docs redirect stubs prerendered to meta refresh (D-22)
+
+**Wave 30** *(blocked on Wave 29 completion)*
+- [x] 179.1-30-PLAN.md — Records and hygiene: docs risks, todos, TOU-F01, E3, eslint labels, WINDOWS rows (D-10, D-24, D-30)
+
+**Wave 31** *(blocked on Wave 30 completion)*
+- [x] 179.1-31-PLAN.md — E4 CI observation on the `ci-evidence/**` channel (operator decides the push) (D-23)
+
+**Wave 32** *(blocked on Wave 31 completion)*
+- [x] 179.1-32-PLAN.md — The close: review, component docs, native-speaker todo, every gate and one full run on one tree (D-04)
+
+**Wave 33** *(blocked on Wave 32 completion; gap closure)*
+- [x] 179.1-33-PLAN.md — G-179.1-6: Log out in the app header of both apps; the logout modal closes on navigation; the preview baselines regenerated
+
+**Wave 34** *(blocked on Wave 33 completion; gap closure)*
+- [x] 179.1-34-PLAN.md — G-179.1-7: the nomination editor's radios are the shared `Radio`, and can be seen
+
+**Wave 35** *(blocked on Wave 34 completion; gap closure)*
+- [x] 179.1-35-PLAN.md — G-179.1-5: the password is a kind of `Input`, and the sign-in form uses it
+
+**Wave 36** *(blocked on Wave 35 completion; gap closure)*
+- [x] 179.1-36-PLAN.md — G-179.1-5: the set-password form uses the kind, and takes the page's shading
+
+**Wave 37** *(blocked on Wave 36 completion; gap closure)*
+- [x] 179.1-37-PLAN.md — G-179.1-5: the admin login uses the kind; `PasswordField` deleted
+
+**Wave 38** *(blocked on Wave 37 completion; gap closure)*
+- [x] 179.1-38-PLAN.md — G-179.1-8: a Trash icon beside the portrait's or logo's thumbnail
+
+**Wave 39** *(blocked on Wave 38 completion; gap closure)*
+- [x] 179.1-39-PLAN.md — G-179.1-9: a disabled Button's icon takes the disabled colour; the callers that change reported
+
+**Wave 40** *(blocked on Wave 39 completion; gap closure)*
+- [x] 179.1-40-PLAN.md — G-179.1-10, G-179.1-11: the confirm page's background, the notice's margin; component docs, gates, the visual project and one full run on one tree
+
+**Wave 41** *(blocked on Wave 40 completion; gap closure)*
+- [x] 179.1-41-PLAN.md — CR-01: Log out with unsaved edits asks before anything is ended, a refusal ends nothing, and no count runs over an edit; the plan's close
+
+**Wave 42** *(blocked on Wave 41 completion; gap closure)*
+- [x] 179.1-42-PLAN.md — CR-01: the review's other findings recorded, the guide and component docs in step; gates, the ledger closed and one full run on one tree
+
+**Wave 43** *(blocked on Wave 42 completion; gap closure)*
+- [x] 179.1-43-PLAN.md — The two logout message keys in seven locales, before any screen reads them
+
+**Wave 44** *(blocked on Wave 43 completion; gap closure)*
+- [x] 179.1-44-PLAN.md — Ruling 1: Log out with unsaved edits opens the modal, whose count ends the session and discards them; one logout that always leaves after a successful sign-out (WR-04 to WR-08); the latest icon wins; the plan's close
+
+**Wave 45** *(blocked on Wave 44 completion; gap closure)*
+- [x] 179.1-45-PLAN.md — Ruling 2: a sign-out that fails is reported, and the page and the edits stay, in both apps; the plan's close
+
+**Wave 46** *(blocked on Wave 45 completion; gap closure)*
+- [x] 179.1-46-PLAN.md — The findings on record, the guide and component docs in step; gates, the ledger closed, one full run on one tree, and the operator's UAT list
+
+**Wave 47** *(blocked on Wave 46 completion; gap closure)*
+- [x] 179.1-47-PLAN.md — CR-02 and WR-09: a navigation with the logout modal open renders the next page, and a close the platform makes counts as Stay; the plan's close
+
+**Wave 48** *(blocked on Wave 47 completion; gap closure)*
+- [x] 179.1-48-PLAN.md — WR-10 and WR-12: the failure message goes when the session is gone, and the modal's dialog is described by what it says; every Log out test records every native dialog; the plan's close
+
+**Wave 49** *(blocked on Wave 48 completion; gap closure)*
+- [x] 179.1-49-PLAN.md — WR-11 and WR-13: the Admin App's failure message stands above the page, from its layout, and its Log out always leaves after a sign-out; the plan's close
+
+**Wave 50** *(blocked on Wave 49 completion; gap closure)*
+- [x] 179.1-50-PLAN.md — The findings on record, two truths true as written, the guide and component docs in step; gates, the ledger closed, one full run on one tree, and the operator's UAT list
+
+**Wave 51** *(blocked on Wave 50 completion; gap closure)*
+- [x] 179.1-51-PLAN.md — WR-10, WR-14 and WR-15: one shared entry-route rule withdraws the failure message, the login route gets a server load, the "email sent" screen leaves the gate's list; the plan's close
+
+**Wave 52** *(blocked on Wave 51 completion; gap closure)*
+- [x] 179.1-52-PLAN.md — The remaining entry routes' server loads with a guard, the Admin App's layout on the shared rule, and the proof in a production build; the plan's close
+
+**Wave 53** *(blocked on Wave 52 completion; gap closure)*
+- [x] 179.1-53-PLAN.md — The accepted risks and corrected records, the guide in step; gates, the ledger closed, one full run on one tree, and the operator's UAT list
+
+**Wave 54** *(blocked on Wave 53 completion; gap closure)*
+- [x] 179.1-54-PLAN.md — WR-16: the Admin App's protected load tells no session from a failed read, and a failed sign-out in either app ends on the existing error page in the reader's language, with no new load and a reload shown to clear the stale tab; red first in a production build and on a dev server; the plan's close
+
+**Wave 55** *(blocked on Wave 54 completion; gap closure)*
+- [x] 179.1-55-PLAN.md — WR-17 accepted on the record with the override on truth 16, the stale tab as AR-179.1-12, T-179.1-130 and T-179.1-134 restated, the docs in step; gates, the ledger closed, one full run on one tree, and the operator's UAT list
+
+**Wave 56** *(blocked on Wave 55 completion; gap closure)*
+- [x] 179.1-56-PLAN.md — the round's one copy checkpoint; the multi-selector separator, ICU exact matches, French `many`, a compiled-message guard, the plugin pinned; `error.403` in fr/lb (G-7D, G-5)
+
+**Wave 57** *(blocked on Wave 56 completion; gap closure)*
+- [x] 179.1-57-PLAN.md — Log out spins and is disabled while a sign-out runs, in both apps; a loading button is named once (G-15, G-7B)
+
+**Wave 58** *(blocked on Wave 57 completion; gap closure)*
+- [x] 179.1-58-PLAN.md — the logout modal over an unsaved edit is named by its warning; the failure alert's own title and one Close (G-7, G-7B)
+
+**Wave 59** *(blocked on Wave 58 completion; gap closure)*
+- [x] 179.1-59-PLAN.md — after a failure, a protected load asks whether a session is left: none goes to login, one shows the error page (G-1, G-3)
+
+**Wave 60** *(blocked on Wave 59 completion; gap closure)*
+- [x] 179.1-60-PLAN.md — a `SIGNED_OUT` listener sends a stale tab to login; stored drafts follow other tabs (G-3, G-11A)
+
+**Wave 61** *(blocked on Wave 60 completion; gap closure)*
+- [x] 179.1-61-PLAN.md — every browser sign-out removes the Contestant App's drafts, in both apps; nothing server-side does (G-11B)
+
+**Wave 62** *(blocked on Wave 61 completion; gap closure)*
+- [x] 179.1-62-PLAN.md — while a sign-out runs, the modal's ✕, Escape and a link's navigation wait for it (G-10)
+
+**Wave 63** *(blocked on Wave 62 completion; gap closure)*
+- [x] 179.1-63-PLAN.md — the count becomes a wall-clock deadline, also enforced by a cookie in `hooks.server.ts` (G-11C)
+
+**Wave 64** *(blocked on Wave 63 completion; gap closure)*
+- [x] 179.1-64-PLAN.md — the Admin App's login form action and email input; password field attributes and focus (G-4, G-7C, G-2, G-8B, G-8C)
+
+**Wave 65** *(blocked on Wave 64 completion; gap closure)*
+- [x] 179.1-65-PLAN.md — typed text at the body's size, app-wide; visual baselines regenerated (G-8A)
+
+**Wave 66** *(blocked on Wave 65 completion; gap closure)*
+- [x] 179.1-66-PLAN.md — IN-21's sentence reworded; the round on record; gates, production drive, ledger closed, `179.1-66-final`, the operator's UAT list (G-6)
+
+**Wave 67** *(blocked on Wave 66 completion; gap closure)*
+- [x] 179.1-67-PLAN.md — the server settles a logout deadline it acted on, so a sign-in after it keeps its session; plan 63's clearing truths pinned; the operator's ruling on WR-01 to WR-03 (G-11C, CR-01)
+
+**Wave 68** *(blocked on Wave 67 completion; gap closure)*
+- [x] 179.1-68-PLAN.md — the browser keeps the deadline as a cookie's expiry, only the tab that held the modal removes its count, every copy removed; the docs say Log out is browser-wide (WR-01, WR-03, IN-08, WR-02 as ruled)
+
+**Wave 69** *(blocked on Wave 68 completion; gap closure)*
+- [x] 179.1-69-PLAN.md — the round on record; gates, production drive, ledger closed, `179.1-69-final`, the operator's UAT list (G-11C)
+
+**Wave 70** *(blocked on Wave 69 completion; gap closure)*
+- [x] 179.1-70-PLAN.md — the round's rules, its one copy and decision checkpoint (C1-C9) and the approved-strings fixture; the About page's party-matching sentence for the default method; the Admin App's login in French and Luxembourgish (WR16H-11, WR16H-9)
+
+**Wave 71** *(blocked on Wave 70 completion; gap closure)*
+- [x] 179.1-71-PLAN.md — a Log out in either app withdraws every logout count before its request; every removal reaches the host's own domain; the auth guide's sentence corrected (WR16H-1 page half, WR16H-2)
+
+**Wave 72** *(blocked on Wave 71 completion; gap closure)*
+- [x] 179.1-72-PLAN.md — every server sign-in withdraws the logout count through one shared helper; `hooks.server.ts` untouched (WR16H-1)
+
+**Wave 73** *(blocked on Wave 72 completion; gap closure)*
+- [x] 179.1-73-PLAN.md — every server sign-out withdraws the logout count through the same helper; the guides say where a count is withdrawn (WR16H-1)
+
+**Wave 74** *(blocked on Wave 73 completion; gap closure)*
+- [x] 179.1-74-PLAN.md — the two approved sentences in seven locales; the Contestant App's login screen says why after the server's count sign-out, announced through the focused heading (WR16H-3)
+
+**Wave 75** *(blocked on Wave 74 completion; gap closure)*
+- [x] 179.1-75-PLAN.md — the Contestant App's login screen says why after a count's end in its own tab and a sign-out in another tab (WR16H-3)
+
+**Wave 76** *(blocked on Wave 75 completion; gap closure)*
+- [x] 179.1-76-PLAN.md — the Admin App's login page says why after a followed sign-out and the server's count sign-out (WR16H-3)
+
+**Wave 77** *(blocked on Wave 76 completion; gap closure)*
+- [x] 179.1-77-PLAN.md — the password toggle keeps keyboard focus and exposes `aria-pressed`; a Back held during a failed sign-out is replayed as a traversal (WR16H-5: WR-06, WR-04)
+
+**Wave 78** *(blocked on Wave 77 completion; gap closure)*
+- [x] 179.1-78-PLAN.md — traced first: the French password label on one line at 390 px and the Admin App's illustration clear of the logo at 320 px, fixed in the shared input row and header (WR16H-10)
+
+**Wave 79** *(blocked on Wave 78 completion; gap closure)*
+- [x] 179.1-79-PLAN.md — the round on record; gates, production drive, ledger closed, `179.1-79-final`, the operator's UAT list (all seven WR16H gaps)
+
+**Wave 80** *(blocked on Wave 79 completion; gap closure; one checkpoint)*
+- [x] 179.1-81-PLAN.md — the round's rules; the untranslated-catalogue guard compares each fr and lb string with an approved allowlist; the nine English values translated at the checkpoint (WR16I-4)
+
+**Wave 81** *(blocked on Wave 80 completion; gap closure)*
+- [x] 179.1-82-PLAN.md — the page's removal of the logout count tested at example.org and app.example.org, red with the Domain= loop removed; overImgBgColor documented as the top bar's colour (WR16I-7, WR16I-3)
+
+**Wave 82** *(blocked on Wave 81 completion; gap closure)*
+- [x] 179.1-83-PLAN.md — a Log out announces itself on a BroadcastChannel; a follower names the other tab only after an announcement within 5 s, otherwise no reason; no new copy (WR16I-1)
+
+**Wave 83** *(blocked on Wave 82 completion; gap closure)*
+- [x] 179.1-84-PLAN.md — `signOutToLogin` on one event withdraws the count after the outcome is known; the identity provider's callback withdraws after `verifyOtp` (WR16I-2, WR16I-5)
+
+**Wave 84** *(blocked on Wave 83 completion; gap closure)*
+- [x] 179.1-85-PLAN.md — the round on record; gates, production drive, ledger closed, the one full run `179.1-85-final` against `179.1-79-final`, the operator's UAT list (all six WR16I gaps)
+
+**Wave 85** *(blocked on Wave 84 completion; gap closure)*
+- [x] 179.1-86-PLAN.md — the round's rules; the accepted risks of plans 70 to 85 in the phase's log; the host removal tests on one shared body; the catalogue walk documented and taking a variant by its shape (WR16J-7, WR16J-5, WR16J-6)
+
+**Wave 86** *(blocked on Wave 85 completion; gap closure; one checkpoint)*
+- [x] 179.1-87-PLAN.md — the untranslated-catalogue guard compares every locale but en, alone and behind a locale tag; the da and sv English values translated and en's `Feedack` fixed at the checkpoint (WR16J-8)
+
+**Wave 87** *(blocked on Wave 86 completion; gap closure)*
+- [x] 179.1-88-PLAN.md — a Log out announces its start and its end; a follower names the other tab while a start is outstanding (30 s cap) or within 5 s of an end; the Admin App's sign-out of a non-administrator announced; "announcement" names the channel message alone (WR16J-1, WR16J-3, WR16J-4)
+
+**Wave 88** *(blocked on Wave 87 completion; gap closure)*
+- [x] 179.1-89-PLAN.md — the confirm page and the three gated sign-ins withdraw the logout count only once the outcome is known; a held session the confirm page cannot sign out ends on the error page; `T-179.1-223` (WR16J-2)
+
+**Wave 89** *(blocked on Wave 88 completion; gap closure)*
+- [x] 179.1-90-PLAN.md — the round on record and the WR16J disposition; gates, production drive, ledger closed, the one full run `179.1-90-final` against `179.1-85-final`, the operator's UAT list (all eight WR16J gaps)
+
+**Cross-cutting constraints:**
+- Each changed test was red without its change (D-04).
+
+### Phase 179.2: Admin App Account Flows — Landing, Set Password & Recovery (INSERTED)
+
+**Goal**: A user who holds only admin grants never meets the Contestant App: an invitee is sent to the Admin App, which asks for a password before any page when none is set, and a holder of a global or account grant can get a recovery mail; the screens and the gate mechanism are the Contestant App's own, shared rather than copied, so the Admin App runs the same flows over its own shorter list of user-task gates
+**Depends on**: Phase 179.1
+**Requirements**: none — review fixes (REVIEW-DECISIONS A2, A4); E2E-03 binds it
+**Source**: `.planning/REVIEW-DECISIONS-166-179.md` A2 and A4 with the operator's notes; discussion in `.planning/v2.16-179.1-179.2-DISCUSSION-POINTS.md`
+**Success Criteria** (settled in `179.2-CONTEXT.md`, 2026-10-25):
+  1. An invited project or account admin who opens the mailed link lands in the Admin App, sets a password there if none is set, and never sees the Contestant App's gates or its empty entity list
+  2. A holder of a global or account admin grant who asks for a recovery mail gets one and resets the password through the Admin App
+  3. The set-password, email-sent and password-reset screens, and the ordered gate list, are shared components used by both apps; E2E specs cover both journeys, the fallback redirect and the mixed-grant user
+  4. The CLAUDE.md Auth sentence (review E2) names both apps' set-password gates and the confirm page
+
+**Plans**: 4/4 plans executed
+
+Plans:
+**Wave 1**
+- [x] 179.2-01-PLAN.md — the shared gate runner and the Admin App's set-password gate (tracer); the six account components moved and the one merged Log out control
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 179.2-02-PLAN.md — the `next` contract end to end (tracer); the Admin App's entry screens from shared screens and one entry-flow holder; recovery by `next`; refused Admin App links land on its login
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [x] 179.2-03-PLAN.md — recovery eligibility for global and account grant holders, migration 00021 (tracer); their recovery journeys
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [x] 179.2-04-PLAN.md — the Contestant App's fallback redirect (tracer); the mixed-grant user in both apps; the CLAUDE.md Auth sentence; every gate and the phase's one full run
+
+**Wave 1**
+- 179.2-01-PLAN.md
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- 179.2-02-PLAN.md
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- 179.2-03-PLAN.md
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- 179.2-04-PLAN.md
+
+**Cross-cutting constraints:** the rules in `179.2-EXECUTION-RULES.md`; each new test red without its change (D-02); within the phase, targeted E2E runs only, and plan 04's one full run judged against `179.1-90-final` with the summed deltas.
+
+### Phase 180: Edge Functions — Typecheck & Shared Modules
+
+**Goal**: The Supabase Edge Functions are under a typecheck that fails the build on a type error, Deno tooling flags nothing outside the functions directory, and each module that the functions share exists once.
+**Depends on**: Phase 179 (last, so that no feature phase is editing a function while its modules move), and Phase 174 (the function set: `account-access`, `identity-callback`, `send-email`)
+**Requirements**: none of v2.16's — a refactor added at the operator's direction; E2E-03 as closing criterion
+**Success Criteria** (what must be TRUE):
+  1. `yarn typecheck` — and so `yarn lint:check` and the CI type-check step — checks every non-test module under `apps/supabase/supabase/functions/` with a Deno pinned to an exact version as a devDependency of `@openvaa/supabase`. A type error planted in a function file turns it red, naming the error; the tree has no baseline type errors (measured 0 on Deno 2.9.6), and the `any` parameters whose stated reason was the missing check (the three `supabaseAdmin: any` in `identity-callback/index.ts`) are typed.
+  2. Deno flags nothing outside the functions directory, on the command line or in an editor: the only Deno config is a scoped `functions/deno.json` with no import map, no `deno.json` exists at the repository root, and `deno.enable` is set nowhere. The recommended editor setting (`deno.enablePaths`) is documented.
+  3. Each module with more than one copy or more than one consuming function exists once under `functions/_shared/` and is imported by relative path: `envConfig.ts` (3 byte-identical copies, 4 importers in 3 functions) and `placeholderAddress.ts` (2 differing copies, 3 importers in 2 functions), each with its test. `callerAuthority.ts` (1 copy, 1 consumer) stays in `send-email/`; `entityGrant.ts` no longer exists. The copy-drift check, whose subject no longer exists, is removed, and the moved modules' docblocks no longer say they are duplicated. (The byte-for-byte conformance test was already removed in `287a2b97d`.)
+  4. Every function still bundles and answers on the restarted local stack, each bundle holds exactly the shared modules its entry point imports and no test file, and the deployed artefact is unaffected by the config file (the bundles are compared with and without it).
+  5. One CI run is observed green with the Deno typecheck in it, the unit suites and every gate script pass, and the full E2E suite and both bank-auth projects are green at close (E2E-03).
+
+**Added 2026-10-07** at the operator's direction, from a spike run separately in the `voting-advice-application-deno-spike` worktree (branch `spike/deno-edge-typecheck`, spikes 037–040, all VALIDATED; wrap-up commit `796e610a7`). The implementation blueprint is `.claude/skills/spike-findings-voting-advice-application-gsd/references/deno-edge-typecheck.md` **on that branch**, with three patch files and a scoped `deno.json` under the skill's `sources/` directory; none of it is on this branch yet, and bringing the skill reference and its sources over is this phase's first step.
+
+**What the spike settled** (read from its reference; not re-measured here): a scoped, import-map-free `functions/deno.json` (`"lock": false`, test files excluded, `no-import-prefix` off); `deno` pinned at `2.9.6` in `apps/supabase/package.json` with the script `cd supabase/functions && deno check .`, picked up by the existing turbo `typecheck` task with no pipeline change; `_shared/` by plain relative imports, with no alias and no workspace package; five baseline type errors fixed in six lines. A root `deno.json` and `"deno.enable": true` each reproduce the earlier whole-repository flagging and are not to be used.
+
+**To settle when the phase is planned:**
+- **The spike was cut before Phase 174 finished.** Its base is 174-06, with four functions and ten module copies. On this branch `invite-candidate` is gone (174-07), `callerAuthority.test.ts` and `envConfig.test.ts` already sit in `send-email/`, and `account-access` has more modules than the spike saw. The three patches will not apply as cut: each change is re-derived from the reference's description, and every count in it (modules checked, type errors, copies, tests) is measured again on this tree. Two of the five baseline errors were in `invite-candidate/index.ts`.
+- `jwtSegment.ts` is imported by nothing but its own test (the spike and 174-07 both found it): whether it survives.
+- The `findExistingCandidate` cast is a placeholder in the spike, not a fix: the recursive `CandidateLookupFilter` type needs reshaping.
+- Whether `deno lint` becomes a gate (five findings at spike time) and whether a `.vscode/settings.json` is committed or the setting is only documented.
+- What the spike did not observe: any CI run, a hosted deploy, the functions served through the CLI's own serve path, VS Code itself (the language server was measured), and the pinned 2.9.6 against the runtime's embedded 2.1.4 beyond identical results on this code.
+- Todos this phase closes: `2026-10-07-174-nothing-type-checks-the-edge-functions.md`, `2026-10-07-174-send-email-jwtsegment-has-no-importer.md`; and it gives Phase 174's one behaviour-unverified truth (the served function on a misconfigured deployment) a type-checked `index.ts`, though not a live run.
+
+**UI hint**: no
+**Plans**: 2/3 plans executed
+
+Plans:
+**Wave 1**
+- [x] 180-01-PLAN.md — the spike reference and sources brought over with this branch's state, indexed and routed (tracer); the A1 amendment checked; the totals check, run checks and deltas table
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [x] 180-02-PLAN.md — all code: the pinned Deno, `deno.json` and `yarn typecheck` with the typed admin client (tracer); `_shared/`, the decoder deleted, the two-check guard, the prose and the editor docs; the planted controls; the D-26 checkpoint; one targeted `perm-closed-project` run
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 180-03-PLAN.md — the bundles with and without the config and the LSP probe (tracer); the CI evidence push on the operator's go; the reconciliation; the D-26 checkpoint; every gate and the phase's one full run
+
+**Criteria amended 2026-11-12** from `180-DISCUSSION-POINTS.md` (decision A1, the operator's untouched return, so the ★ option): criteria 1 and 3 restated to the measured tree (0 baseline type errors; `entityGrant.ts` gone; `callerAuthority.ts` single-consumer; byte-for-byte test already removed in `287a2b97d`). See `180-CONTEXT.md` D-02.
+
 ### Phase 999.1: Command Paradigm — Centralised Command Registry for LLM + Human Invocation (BACKLOG)
 
 **Goal:** [Captured for future planning] Move execution of all application actions into a centralised
@@ -2178,3 +3142,30 @@ through one shared surface rather than being reachable only via bespoke UI event
 Plans:
 
 - [ ] TBD (promote with /gsd-review-backlog when ready)
+
+### Phase 999.2: Follow-up — Phase 179.1 deferred UAT follow-up: Test 12 (BACKLOG)
+
+**Goal:** Resolve the UAT checkpoint deferred during Phase 179.1 verification
+**Source phase:** 179.1
+**Deferred at:** 2026-11-10 during /gsd-verify-work 179.1 session completion
+**Follow-ups:**
+- [ ] Test 12: Screen-reader pass (VoiceOver; NVDA and TalkBack where at hand): the login page after each of the three sign-outs (the sentence as the heading's description), the password toggle (stable name, aria-pressed, keyboard press), the logout modal, the failed sign-out's message, the loading button (deferred 2026-11-10)
+- [ ] WR16K test 1: also truth 20 (the modal's name on open), the other-tab sentence and the confirm page's error page (deferred 2026-11-11)
+
+### Phase 999.3: Follow-up — Phase 179.1 deferred UAT follow-up: Test 13 (BACKLOG)
+
+**Goal:** Resolve the UAT checkpoint deferred during Phase 179.1 verification
+**Source phase:** 179.1
+**Deferred at:** 2026-11-10 during /gsd-verify-work 179.1 session completion
+**Follow-ups:**
+- [ ] Test 13: iOS Safari, Android and other engines: 16 px fields with no zoom on focus, the password field; the back gesture and Escape during a sign-out; a held Back during a failed sign-out in Safari, Firefox and on a phone; the French label and the Admin illustration on a real phone; the login sentences on a phone in dark mode; truth 12 in WebKit (double Log out press, the rejected login navigation's full-load fallback) (deferred 2026-11-10)
+- [ ] WR16J C2: the other-tab sentence ("logged out in another tab or window") in real Safari, Firefox and on a real phone, with a real second tab; passed 2026-11-11 in Playwright Firefox, WebKit, iPhone 13 and Pixel 7 emulation (tests/e2e-runs/179.1-uat-wr16j/run-2) (deferred 2026-11-11)
+
+### Phase 999.4: Follow-up — Phase 179.1 deferred UAT follow-up: Test 14 (BACKLOG)
+
+**Goal:** Resolve the UAT checkpoint deferred during Phase 179.1 verification
+**Source phase:** 179.1
+**Deferred at:** 2026-11-10 during /gsd-verify-work 179.1 session completion
+**Follow-ups:**
+- [ ] Test 14: The logout count on real hardware: a closed browser, device clock skew, a frozen tab, a locked phone, a closed lid, Safari's cap on page-written cookies (T-179.1-166 accepted 2026-11-10 as a design limit) (deferred 2026-11-10)
+- [ ] WR16J C7: a planted `Domain=<host>` copy of either logout-count cookie on a real apex deployment and at a subdomain of it, removed by the modal's Continue, with no copy of either name left in the browser's cookie store (deferred 2026-11-11)
