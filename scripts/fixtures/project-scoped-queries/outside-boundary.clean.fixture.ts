@@ -49,9 +49,9 @@ export function collectRows(rows: Iterable<unknown>): Array<unknown> {
   return Array.from(rows);
 }
 
-/** NOT reported, but EXAMINED: an Edge Function invocation from outside the adapter directory, held to the same written disposition the adapter's invocations are held to. It models the one live invocation out here, whose function resolves its project from deployment configuration and whose payload therefore carries no project term by design. */
-export function deploymentScopedInvocation(locals: RequestLocals, idToken: string): Promise<unknown> {
-  return locals.supabase.functions.invoke('identity-callback', { body: { id_token: idToken } });
+/** NOT reported, but EXAMINED: an Edge Function invocation from outside the adapter directory, held to the same written disposition the adapter's invocations are held to. It models the one live invocation out here, which carries the project its request is for. */
+export function projectTermInvocation(locals: RequestLocals, idToken: string, projectId: string): Promise<unknown> {
+  return locals.supabase.functions.invoke('identity-callback', { body: { id_token: idToken, project_id: projectId } });
 }
 
 /** NOT reported, for the first of the two reasons a shape is not reported out here — it reaches no table. The same bucket as `bucketUpload` above, spelled with the OPTIONAL access operator on both positions. The exclusion is structural, on the shape of the chain, so it has to hold under either spelling of the operator or the widening would have quietly turned a bucket into a table. */
@@ -59,9 +59,13 @@ export function optionalChainedBucketUpload(locals: RequestLocals, file: unknown
   return locals.supabase?.storage?.from('public-assets').upload('a/b/c.jpg', file);
 }
 
-/** NOT reported, for the second reason — it IS examined, and it keeps its disposition's promise. The same deployment-scoped invocation as `deploymentScopedInvocation` above, reached with the OPTIONAL access operator on both positions, so the invocation check is shown to read the optional spelling out here rather than only inside the adapter directory. */
-export function optionalChainedDeploymentScopedInvocation(locals: RequestLocals, idToken: string): Promise<unknown> {
-  return locals.supabase?.functions?.invoke('identity-callback', { body: { id_token: idToken } });
+/** NOT reported, for the second reason — it IS examined, and it keeps its disposition's promise. The same invocation as `projectTermInvocation` above, reached with the OPTIONAL access operator on both positions, so the invocation check is shown to read the optional spelling out here rather than only inside the adapter directory. */
+export function optionalChainedProjectTermInvocation(
+  locals: RequestLocals,
+  idToken: string,
+  projectId: string
+): Promise<unknown> {
+  return locals.supabase?.functions?.invoke('identity-callback', { body: { id_token: idToken, project_id: projectId } });
 }
 
 /** NOT reported, for the first reason — it reaches no table. The adapter's public surface reached with the OPTIONAL access operator, which is the NEAREST MISS the boundary rule has: the receiver names Supabase, so only the method name distinguishes it from a violation, and a matcher one step wider would report it under either spelling of the operator. */
