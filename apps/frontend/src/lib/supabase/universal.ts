@@ -33,7 +33,7 @@ export const SUPABASE_COOKIE_PREFIX = resolveSupabaseCookiePrefix(constants.PUBL
 /**
  * One cookie as it crosses the `+layout.server.ts` → `+layout.ts` payload boundary: a name and a value, never the options.
  *
- * The producer must filter the list to the Supabase auth cookies. Those are written `httpOnly: false` (set in `lib/supabase/server.ts`), so forwarding them discloses nothing client JavaScript could not already read; but `cookies.getAll()` also returns genuinely `httpOnly` cookies, such as `id_token`, `oidc_state`, `oidc_nonce` and the preregister pair, and serialising those into the HTML would defeat the flag. This module never reads the request, so the filtering belongs to the producer, and {@link SUPABASE_COOKIE_PREFIX} keeps that filter narrow.
+ * The producer must filter the list to the Supabase auth cookies. Those are written `httpOnly: false` (set in `lib/supabase/server.ts`), so forwarding them discloses nothing client JavaScript could not already read; but `cookies.getAll()` also returns genuinely `httpOnly` cookies, such as the identity provider's `oidc_state`, `oidc_nonce`, `oidc_code_verifier`, `oidc_entity_type` and `identity_provider_arrival`, and serialising those into the HTML would defeat the flag. This module never reads the request, so the filtering belongs to the producer, and {@link SUPABASE_COOKIE_PREFIX} keeps that filter narrow.
  */
 export type UniversalCookie = { name: string; value: string };
 

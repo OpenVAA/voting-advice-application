@@ -1,6 +1,8 @@
 <!--
 @component The options dropdown and selected-chips region `Input` renders for its `select-multiple` kind. The dropdown offers only the not-yet-selected options; each selected one gets a row with a delete button.
 
+The dropdown names `describedBy` in its `aria-describedby` and is marked `aria-required` when `required`.
+
 Internal to the `input` package — not exported from its barrel. See `./README.md`.
 
 ### Properties
@@ -9,6 +11,9 @@ See `SelectMultiplePart.type.ts`.
 ### Callbacks
 - `onChange`: triggered when an option is selected in the dropdown.
 - `onDeleteOption`: triggered when a selected option's delete button is pressed.
+
+### Bindable functions
+- `focus`: Moves focus to the dropdown.
 -->
 
 <script lang="ts">
@@ -50,7 +55,6 @@ See `SelectMultiplePart.type.ts`.
     <label class={inputLabelClass} for={id}>{label}</label>
     <div class={inputAndIconContainerClass}>
       {#if options?.length}
-        <!-- bind: keep — $state target for bind:this; mainInputs is $state([]) in the owning Input. -->
         <select
           {id}
           {disabled}

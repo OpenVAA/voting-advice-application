@@ -6,7 +6,7 @@ This directory contains context providers for managing application state through
 
 - `DataContext` - Access to the `@openvaa/data` model
 - `VoterContext` - Voter state (answers, results)
-- `CandidateContext` - Candidate authentication and data
+- `ContestantContext` - Candidate authentication and data
 - `AppContext` - Application settings
 - `I18nContext` - Localization
 - `ComponentContext` - Component state

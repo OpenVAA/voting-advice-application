@@ -4,6 +4,8 @@ import type { DataRoot } from '@openvaa/data';
 /**
  * Try to imply the `electionIds` in cases when they need not to be selected.
  * @param selectedConstituencyIds - If specified, only elections applicable to these constituencies will be considered.
+ * @param elections - The elections to consider, each an election of `dataRoot`. Every election of `dataRoot` when absent.
+ * @param honourDisallowSelection - Whether `appSettings.elections.disallowSelection` implies every election considered. `true` when absent; when `false`, only a single election is implied.
  * @returns An array of `Id`s if they can be implied, `undefined` otherwise.
  */
 export function getImpliedElectionIds({
@@ -17,7 +19,7 @@ export function getImpliedElectionIds({
 }): Array<Id> | undefined {
   let elections = dataRoot.elections;
   // Filter to applicable elections.
-  // `getApplicableConstituency` throws when more than one of the passed constituencies match the election's groups (e.g. a municipality and its parent region both end up in selectedConstituencyIds for an election whose cgs include both Regions and Municipalities). Treat that throw as "applicable" — the election clearly matches *something* in the selection — so that variant-startfromcg's hierarchical implied flow (variant-startfromcg.spec.ts:145) doesn't blow up the implied lookup.
+  // `getApplicableConstituency` throws when more than one of the passed constituencies match the election's groups, e.g. a municipality and its parent region for an election whose groups include both regions and municipalities. Such an election matches something in the selection, so the throw is treated as "applicable".
   if (selectedConstituencyIds?.length) {
     const constituencies = selectedConstituencyIds.map((id) => dataRoot.getConstituency(id));
     elections = elections.filter((e) => {

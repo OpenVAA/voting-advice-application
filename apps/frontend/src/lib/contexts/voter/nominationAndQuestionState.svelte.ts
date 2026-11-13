@@ -12,20 +12,18 @@ import type {
 import type { SelectionTree } from './selectionTree.type';
 
 /**
- * Create a reactive value that contains `Nomination`s, info and opinion `Question`s for each `Election` and each `EntityType` included in `entityTypes`. It is used internally by the `VoterContext`.
- *
- * @param dataRoot - A getter returning the data root.
- * @param constituencies - A getter returning the selected constituencies.
- * @param elections - A getter returning the selected elections.
- * @param entityTypes - A getter returning the entity types to include.
- * @param hideIfMissingAnswers - A getter defining which `EntityType`s to hide if any of their opinion question answers are missing.
- * @returns A reactive nomination and question tree value.
+ * What the nomination and question state reads, each through a getter so that a change reaches the tree.
  */
 type NominationAndQuestionStateDeps = {
+  /** The data root. */
   dataRoot: () => DataRoot;
+  /** The selected constituencies. */
   constituencies: () => Array<Constituency> | undefined;
+  /** The selected elections. */
   elections: () => Array<Election> | undefined;
+  /** The entity types to include. Every type is included when the list is empty. */
   entityTypes: () => Array<EntityType>;
+  /** The setting that names, by entity type, whose nominations are hidden while the entity lacks an answer to an opinion question asked of its type. The candidate key also removes such a candidate from its organization and hides an organization left with none. The organization key hides an organization for its own missing answers and decides nothing else. */
   hideIfMissingAnswers: () => AppSettings['entities']['hideIfMissingAnswers'];
 };
 
@@ -114,6 +112,12 @@ class NominationAndQuestionStateImpl {
   }
 }
 
+/**
+ * Create a reactive value that contains `Nomination`s, info and opinion `Question`s for each `Election` and each `EntityType` included in `entityTypes`. A nomination whose entity lacks an answer to an opinion question asked of its type is left out when `hideIfMissingAnswers` holds that type's key. It is used internally by the `VoterContext`.
+ *
+ * @param deps - The getters the tree is derived from: the data root, the selected constituencies and elections, the entity types to include and the `hideIfMissingAnswers` setting.
+ * @returns A reactive nomination and question tree value.
+ */
 export function nominationAndQuestionState(deps: NominationAndQuestionStateDeps): {
   readonly value: NominationAndQuestionTree;
 } {

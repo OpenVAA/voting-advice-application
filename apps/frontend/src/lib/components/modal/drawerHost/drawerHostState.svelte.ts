@@ -3,7 +3,7 @@
  *
  * `DrawerHost.svelte` owns the only `<dialog>`. Each app that offers drawers mounts ONE host in its own root layout, below that app's context init — the voter app does so in `routes/(voters)/+layout.svelte`. Any component inside that app opens it with `drawerHost.open(payload)` and closes it with `drawerHost.close(key)`. Because the host sits below the app's contexts, the payload's component resolves every context it reads (e.g. the voter and filter contexts `EntityDetails` needs) without the opener capturing or re-providing any of them.
  *
- * Enabling drawers in another app (e.g. the candidate app) is a single `<DrawerHost />` in that app's root layout. One module-level state serves every app because only one app's layout is mounted at a time; `register` reports a second concurrent host, and `open` reports a call made where no host is mounted instead of doing nothing silently.
+ * Enabling drawers in another app (e.g. the contestant app) is a single `<DrawerHost />` in that app's root layout. One module-level state serves every app because only one app's layout is mounted at a time; `register` reports a second concurrent host, and `open` reports a call made where no host is mounted instead of doing nothing silently.
  *
  * Client-only by construction: `open` is only ever called from `$effect`s / event handlers, so this module-level singleton is never written during SSR (where it would leak across requests). The `browser` guard in `open` below turns that from a call-site convention into an enforced invariant.
  */
