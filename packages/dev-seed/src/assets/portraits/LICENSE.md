@@ -14,7 +14,7 @@
 - **Allowed:** Local development seeding; CI/CD test environments; contributor screenshots; internal demos of the OpenVAA framework.
 - **NOT recommended:** Redistribution as a standalone image set; production deployment; marketing materials; any use where image licensing matters.
 
-For production deployments of any OpenVAA-based VAA, the deploying party MUST substitute their own licensed candidate portraits — typically supplied by the candidates themselves via the candidate app upload flow (`apps/frontend/src/lib/candidate/.../profile`).
+For production deployments of any OpenVAA-based VAA, the deploying party MUST substitute their own licensed candidate portraits — typically supplied by the candidates themselves via the contestant app upload flow (`apps/frontend/src/lib/contestant/.../profile`).
 
 ## Refreshing the Pool
 

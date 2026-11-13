@@ -51,6 +51,7 @@
  *   - `Fragment<TRow>` — per-entity template-fragment shape.
  *   - `Overrides` — override map shape.
  *   - `FindDataResult` — admin-client query result (consumed by the tests/subclass).
+ *   - `InvitationSeedItem` (`EntityInvitationSeedItem` | `ProjectInvitationSeedItem`), `InvitationTargetType`, `InvitationNominationSeed`, `InvitationNominationParent`, `CreateInvitationsOptions`, `SeededInvitation`, `SeededInvitationNominations` — the argument, option and return shapes of `SupabaseAdminClient.createInvitations`.
  *   - `TableName` — union of the 14 table names in TOPO_ORDER.
  *   - `LatentHooks` — swappable seam on `ctx.latent`.
  *   - `LocaleCode` — union of the `LOCALES` entries.
