@@ -14,7 +14,8 @@
  */
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
+import { isMainModule } from './utils/cli';
 import { discoverRoutes, routeToTitle } from './utils/routes';
 import type { Navigation, NavigationItem, NavigationSection } from '../src/lib/navigation.type';
 import type { RouteInfo } from './utils/routes';
@@ -28,7 +29,7 @@ const CONFIG_FILE = path.join(__dirname, '../src/lib/navigation.config.ts');
 /**
  * Internal working item with status tracking
  */
-type WorkingItem = {
+export type WorkingItem = {
   item: NavigationSection | NavigationItem;
   status: 'existing' | 'new' | 'removed';
   children?: Array<WorkingItem>;
@@ -48,7 +49,7 @@ async function main() {
   const currentNavigation = await loadCurrentConfig();
 
   // 3. Create internal working copy and compare
-  const workingNavigation = compareNavigations(currentNavigation, discoveredNavigation, routes);
+  const workingNavigation = compareNavigations(currentNavigation, discoveredNavigation);
 
   // 4. Generate TypeScript output
   const typescript = generateTypeScript(workingNavigation);
@@ -67,41 +68,28 @@ async function main() {
  * @returns The config's `navigation`, or an empty navigation when the file does not exist.
  * @throws If the file exists but cannot be imported, or exports no `navigation` array, rather than letting the generator overwrite it from the discovered routes alone.
  */
-async function loadCurrentConfig(): Promise<Navigation> {
+export async function loadCurrentConfig(configFile = CONFIG_FILE): Promise<Navigation> {
   try {
-    const configContent = await fs.readFile(CONFIG_FILE, 'utf-8');
-    // Extract the navigation array from the TypeScript file
-    const match = configContent.match(/export const navigation: Navigation = (\[[\s\S]*\]);/);
-    if (!match) {
-      console.warn('Could not parse current navigation config, starting fresh');
-      return [];
-    }
-    // Use eval to parse the TypeScript object literal (safe in this context)
-
-    return eval(`(${match[1]})`);
-  } catch {
-    console.warn('Could not load current navigation config, starting fresh');
+    await fs.access(configFile);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+    console.warn('No current navigation config, starting fresh');
     return [];
   }
+  const { navigation } = (await import(pathToFileURL(configFile).href)) as { navigation?: unknown };
+  if (!Array.isArray(navigation)) throw new Error(`${configFile} exports no navigation array`);
+  return navigation as Navigation;
 }
 
 /**
  * Compare current navigation with discovered routes
  */
-function compareNavigations(current: Navigation, discovered: Navigation, routes: Array<RouteInfo>): Array<WorkingItem> {
+export function compareNavigations(current: Navigation, discovered: Navigation): Array<WorkingItem> {
   const workingNav: Array<WorkingItem> = [];
 
   // Create a map of discovered routes for quick lookup
   const discoveredMap = new Map<string, NavigationSection | NavigationItem>();
   populateDiscoveredMap(discovered, discoveredMap);
-
-  // Create a map of routes with titles
-  const routeTitles = new Map<string, string>();
-  for (const route of routes) {
-    if (route.title) {
-      routeTitles.set(route.route, route.title);
-    }
-  }
 
   // Process each section in current config
   for (const currentSection of current) {
@@ -116,12 +104,7 @@ function compareNavigations(current: Navigation, discovered: Navigation, routes:
       });
     } else {
       // Section still exists, process it
-      const workingSection = compareSection(
-        currentSection,
-        discoveredSection as NavigationSection,
-        discoveredMap,
-        routeTitles
-      );
+      const workingSection = compareSection(currentSection, discoveredSection as NavigationSection);
       workingNav.push(workingSection);
 
       // Remove from map so we can find new items later
@@ -150,12 +133,7 @@ function compareNavigations(current: Navigation, discovered: Navigation, routes:
 /**
  * Compare a section and its children
  */
-function compareSection(
-  current: NavigationSection,
-  discovered: NavigationSection,
-  discoveredMap: Map<string, NavigationSection | NavigationItem>,
-  routeTitles: Map<string, string>
-): WorkingItem {
+function compareSection(current: NavigationSection, discovered: NavigationSection): WorkingItem {
   // Update title unless fixedTitle is true
   const updatedItem: NavigationSection = {
     ...current,
@@ -193,12 +171,7 @@ function compareSection(
       // Child still exists
       if ('children' in currentChild && 'children' in discoveredChild) {
         // Both have children, recurse
-        const workingChild = compareSection(
-          currentChild,
-          discoveredChild as NavigationSection,
-          discoveredMap,
-          routeTitles
-        );
+        const workingChild = compareSection(currentChild, discoveredChild as NavigationSection);
         workingChildren.push(workingChild);
       } else if ('children' in currentChild && !('children' in discoveredChild)) {
         // Current has children but discovered doesn't - mark all as removed
@@ -507,7 +480,7 @@ function buildSubsectionChildren(
 /**
  * Generate TypeScript code for the navigation config
  */
-function generateTypeScript(workingNav: Array<WorkingItem>): string {
+export function generateTypeScript(workingNav: Array<WorkingItem>): string {
   const lines: Array<string> = [];
 
   lines.push(`/**
@@ -548,6 +521,11 @@ function appendWorkingItem(lines: Array<string>, workingItem: WorkingItem, inden
 
   // Serialize the item
   const item = workingItem.item;
+
+  // An item that was a section keeps no children: each of them is recorded as removed
+  if (!('children' in item)) {
+    for (const child of workingItem.children ?? []) appendWorkingItem(lines, child, indent, false);
+  }
   const hasChildren = 'children' in item && workingItem.children && workingItem.children.length > 0;
 
   lines.push(`${indentStr}{`);
@@ -610,7 +588,9 @@ function logChanges(workingNav: Array<WorkingItem>): void {
   }
 }
 
-main().catch((error) => {
-  console.error('Error generating navigation config:', error);
-  process.exit(1);
-});
+if (isMainModule(import.meta.url)) {
+  main().catch((error) => {
+    console.error('Error generating navigation config:', error);
+    process.exit(1);
+  });
+}

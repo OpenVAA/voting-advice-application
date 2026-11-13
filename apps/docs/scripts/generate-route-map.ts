@@ -5,39 +5,35 @@
 import * as fs from 'fs/promises';
 import { glob } from 'glob';
 import * as path from 'path';
-import { GENERATED_OUTPUT, GITHUB_BASE, REPO_ROOT, ROUTES_DIR } from './docs-scripts.config';
-
-const DIRS_ONLY = true;
-const OUTPUT_FILE = path.join(GENERATED_OUTPUT.routes, 'README.md');
-
-interface RouteFile {
-  name: string;
-  fullPath: string;
-}
+import { GENERATED_OUTPUT, REPO_ROOT, ROUTES_DIR } from './docs-scripts.config';
+import { isMainModule } from './utils/cli';
 
 interface RouteNode {
   path: string;
   fullPath: string;
   type: 'page' | 'layout' | 'server' | 'error' | 'group' | 'param' | 'dir';
   children: Array<RouteNode>;
-  files: Array<RouteFile>;
-  readme?: string;
 }
 
 /**
  * Write the route map into the output directory.
  * @param options.outputDir - Where the map's `README.md` is written.
  */
-async function main() {
+export async function generateRouteMap({
+  outputDir = GENERATED_OUTPUT.routes
+}: { outputDir?: string } = {}): Promise<void> {
   console.info('Generating route map...\n');
 
+  const outputFile = path.join(outputDir, 'README.md');
   const tree = await buildRouteTree();
   const markdown = generateMarkdown(tree);
 
-  await fs.mkdir(path.dirname(OUTPUT_FILE), { recursive: true });
-  await fs.writeFile(OUTPUT_FILE, markdown, 'utf-8');
+  // Start from an empty directory, so nothing an earlier run left there is moved into the site
+  await fs.rm(outputDir, { recursive: true, force: true });
+  await fs.mkdir(outputDir, { recursive: true });
+  await fs.writeFile(outputFile, markdown, 'utf-8');
 
-  console.info(`✓ Route map generated: ${OUTPUT_FILE}`);
+  console.info(`✓ Route map generated: ${outputFile}`);
 }
 
 /**
@@ -48,41 +44,18 @@ async function buildRouteTree(): Promise<RouteNode> {
     path: 'routes',
     fullPath: ROUTES_DIR,
     type: 'dir',
-    children: [],
-    files: []
+    children: []
   };
 
   // Every directory that holds a route file
   const files = await glob(`${ROUTES_DIR}/**/*.{svelte,ts,js}`, {
     ignore: ['**/node_modules/**']
   });
-
-  // Group files by directory
-  const dirFiles = new Map<string, Array<RouteFile>>();
-
-  for (const file of files) {
-    const dir = path.dirname(file);
-    if (!dirFiles.has(dir)) {
-      dirFiles.set(dir, []);
-    }
-    if (DIRS_ONLY) continue;
-    dirFiles.get(dir)!.push({
-      name: path.basename(file),
-      fullPath: file
-    });
-  }
-
-  // Build tree
-  const dirs = Array.from(dirFiles.keys()).sort();
+  const dirs = Array.from(new Set(files.map((file) => path.dirname(file)))).sort();
 
   for (const dir of dirs) {
     const relativePath = path.relative(ROUTES_DIR, dir);
-
-    if (relativePath === '') {
-      // Root files
-      root.files = dirFiles.get(dir)!;
-      continue;
-    }
+    if (relativePath === '') continue;
 
     const segments = relativePath.split(path.sep);
     let current = root;
@@ -95,17 +68,13 @@ async function buildRouteTree(): Promise<RouteNode> {
       let child = current.children.find((c) => c.path === name);
 
       if (!child) {
-        const isLast = i === segments.length - 1;
         child = {
           path: name,
           fullPath: path.join(ROUTES_DIR, segments.slice(0, i + 1).join(path.sep)),
           type,
-          children: [],
-          files: isLast ? dirFiles.get(dir)! : []
+          children: []
         };
         current.children.push(child);
-      } else if (i === segments.length - 1) {
-        child.files = dirFiles.get(dir)!;
       }
 
       current = child;
@@ -159,34 +128,11 @@ function generateTreeLines(node: RouteNode, prefix: string, isLast: boolean): Ar
   const connector = isLast ? '└── ' : '├── ';
   const extension = isLast ? '    ' : '│   ';
 
-  // Display directory/route name
-  const displayName = getDisplayName(node);
+  // A route group is shown in its parentheses
+  const displayName = node.type === 'group' ? `(${node.path})` : node.path;
   lines.push(`${prefix}${connector}${displayName}/`);
 
-  // Sort and display files
-  const sortedFiles = [...node.files].sort((a, b) => {
-    // Sort by importance: +page, +layout, +server, +error, others
-    const order = ['+page', '+layout', '+server', '+error'];
-    const aPrefix = order.find((o) => a.name.startsWith(o));
-    const bPrefix = order.find((o) => b.name.startsWith(o));
-
-    if (aPrefix && bPrefix) {
-      return order.indexOf(aPrefix) - order.indexOf(bPrefix);
-    }
-    if (aPrefix) return -1;
-    if (bPrefix) return 1;
-    return a.name.localeCompare(b.name);
-  });
-
   const childPrefix = prefix + extension;
-
-  // Display files before subdirectories
-  sortedFiles.forEach((file, index) => {
-    const isLastFile = index === sortedFiles.length - 1 && node.children.length === 0;
-    const fileConnector = isLastFile ? '└── ' : '├── ';
-    const githubLink = `${GITHUB_BASE}/${file.fullPath}`;
-    lines.push(`${childPrefix}${fileConnector}[${file.name}](${githubLink})`);
-  });
 
   // Sort children
   const sortedChildren = [...node.children].sort((a, b) => {
@@ -209,22 +155,9 @@ function generateTreeLines(node: RouteNode, prefix: string, isLast: boolean): Ar
   return lines;
 }
 
-/**
- * Get display name for a node
- */
-function getDisplayName(node: RouteNode): string {
-  if (node.type === 'group') {
-    return `(${node.path})`;
-  }
-
-  if (node.type === 'param') {
-    return node.path;
-  }
-
-  return node.path;
+if (isMainModule(import.meta.url)) {
+  generateRouteMap().catch((error) => {
+    console.error('Error generating route map:', error);
+    process.exit(1);
+  });
 }
-
-main().catch((error) => {
-  console.error('Error generating route map:', error);
-  process.exit(1);
-});
