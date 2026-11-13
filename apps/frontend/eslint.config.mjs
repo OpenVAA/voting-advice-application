@@ -25,25 +25,31 @@ const ADAPTER_BOUNDARY_ALLOWLIST = [
   'src/lib/api/adminWriter.ts',
   'src/lib/api/feedbackWriter.ts',
 
-  // GROUP 2 of 2, the nine grandfathered sites, each annotated with its Phase-158 disposition. This group shipped at TEN under `157-15`; `157-16` struck the first entry, `src/routes/candidate/preregister/+layout.server.ts`, by deleting its Supabase use rather than its annotation, and that path is now guarded and carries a firing case in `eslint-adapter-boundary-guard.test.ts`. It was the ONLY removable one: the two 158-HARD login files are the heart of Phase 158's login collapse, the 158-MEDIUM pair needs adapter methods that do not exist, the 158-EASY logout pair would create a route cycle, and the remaining three either hand the cookie-capable client to the adapter or declare and populate it. The nine below are a worklist, not an oversight.
-  // 158-MEDIUM: `auth.verifyOtp` then `auth.getUser`, both needing new adapter methods that do not exist on `DataWriter` today.
-  'src/routes/api/candidate/auth/callback/+server.ts',
-  // 158-EASY, with a caveat: `SupabaseDataWriter._logout` already does this, but it `fetch`es THIS route, so moving it creates a cycle Phase 158 must break first.
-  'src/routes/api/candidate/auth/logout/+server.ts',
-  // 158-MOSTLY-PERMANENT: ONE site remains after `157.2-04` — a bare `locals.supabase.auth.signOut()` in `handleError`. The two sites that handed the cookie-capable client to the adapter are gone with the two-step configuration protocol itself (`157.2-08`), so the entry survives on its remaining site rather than on the arithmetic it was written with.
-  'src/routes/candidate/(protected)/+layout.server.ts',
-  // 158-HARD: `signInWithPassword` plus an inline JWT role decode; the heart of Phase 158's three-login-paths-into-one collapse.
-  'src/routes/candidate/login/+page.server.ts',
-  // 158-HARD: identical to the candidate login path, and the file a recorded cookie-loss incident was fixed in.
+  // GROUP 2 of 2, the six grandfathered sites, each annotated with its disposition (see phase 158). None of them can be taken off the list by an edit of its file alone: the Admin App's login file is the heart of the login collapse, the mailed-link module needs adapter methods that do not exist, the logout handler would create a route cycle, and the remaining three either hand the cookie-capable client to the adapter or declare and populate it. The six below are a worklist, not an oversight.
+  // The verification of a mailed link, which the confirm page's action calls: `auth.verifyOtp`, the refresh after the claim and the local sign-out after a failed one, all needing adapter methods that do not exist on `DataWriter` today.
+  'src/lib/server/auth/mailedLink.ts',
+  // ONE site, a bare `locals.supabase.auth.signOut()` on the request's own cookie-bearing client. Every sign-out of the Contestant App's protected loads goes through this helper, so no load of that tree needs an entry of its own.
+  'src/lib/server/contestant/signOutToLogin.ts',
+  // The hardest of the six: the Admin App's login action, which hands `locals.supabase.auth` to the shared password sign-in helper; the heart of the login collapse (see phase 158).
   'src/routes/admin/login/+page.server.ts',
-  // 158-MEDIUM: `functions.invoke('identity-callback')` plus `auth.verifyOtp`; `SupabaseDataWriter._preregister` already establishes the Edge-Function pattern.
-  'src/routes/api/candidate/preregister/+server.ts',
-  // 158-EASY: a bare `auth.signOut()`.
+  // The easiest of the six, with a caveat: the handler signs out the local session, which `SupabaseDataWriter._logout` already does, but that method `fetch`es THIS route to clear the httpOnly cookies, so moving the call into the writer would create a cycle that has to be broken first.
   'src/routes/api/auth/logout/+server.ts',
   // Outside the scope the guard was written for: this file POPULATES `event.locals.supabase`, which is the structural reason the files above can reach Supabase without importing it.
   'src/hooks.server.ts',
-  // 158-OWNED, and unreachable by this guard on purpose: this file DECLARES `supabase` on the global `App.Locals` interface, which is a type declaration rather than an import or a member access, so the guard should not pretend to reach it.
-  'src/app.d.ts'
+  // Unreachable by this guard on purpose: this file DECLARES `supabase` on the global `App.Locals` interface, which is a type declaration rather than an import or a member access, so the guard should not pretend to reach it.
+  'src/app.d.ts',
+
+  // Outside both groups: the form action of the Contestant App's sign-in screen. It hands `locals.supabase.auth`, the auth surface of the request's own cookie-bearing client, to the shared password sign-in helper, exactly as the Admin App's login action listed above does. The session cookies reach the browser only when the sign-in is issued on that client, and `DataWriter` has no method that takes its place.
+  'src/routes/contestant/login/email/+page.server.ts',
+
+  // Outside both groups: the form action of the Contestant App's code sign-in screen. It hands `locals.supabase.auth`, the auth surface of the request's own cookie-bearing client, to the shared code sign-in helper, which refreshes the session on it after the claim and signs it out locally when the grant gate refuses. Those two calls must reach the client the session was established on, and `DataWriter` has no method that takes their place.
+  'src/routes/contestant/register/sign-in/+page.server.ts',
+
+  // Outside both groups: the form action of the confirm page between a mailed link and its verification. When the request holds a session it signs that session out on `locals.supabase`, the request's own cookie-bearing client, before the link is verified on the same client, and `DataWriter` has no method that takes that call's place.
+  'src/routes/auth/confirm/+page.server.ts',
+
+  // Outside both groups: the identity provider's callback. It invokes `identity-callback` and verifies the token the function answers with on `locals.supabase`, the request's own cookie-bearing client, because the session cookies reach the browser only when the session is established on that client, and `DataWriter` has no method that takes either call's place.
+  'src/routes/api/oidc/callback/+server.ts'
 ];
 
 /**
@@ -141,7 +147,7 @@ const ADAPTER_INIT_DECLARATION_SCOPED = [
       `:matches(ClassDeclaration, ClassExpression)[id.name=${ADAPTER_SUFFIXES}]` +
       " > ClassBody > :matches(MethodDefinition, PropertyDefinition)[key.name='init']",
     message:
-      "An `init` member on an adapter class reintroduces the two-step construction protocol `157.2-08` deleted, and with it the window in which a second request rebinds the first request's client. Take the configuration in the constructor instead — `constructor(config: SupabaseAdapterConfig)`. (Form: a member named `init` on a class whose own name ends in an adapter suffix; this clause ships in every zone.)"
+      "An `init` member on an adapter class reintroduces the two-step construction protocol, and with it the window in which a second request rebinds the first request's client. Take the configuration in the constructor instead — `constructor(config: SupabaseAdapterConfig)`. (Form: a member named `init` on a class whose own name ends in an adapter suffix; this clause ships in every zone.)"
   }
 ];
 
@@ -154,7 +160,7 @@ const ADAPTER_INIT_DECLARATION_BROAD = [
   {
     selector: "ClassBody > :matches(MethodDefinition, PropertyDefinition)[key.name='init']",
     message:
-      "An `init` member on an adapter class reintroduces the two-step construction protocol `157.2-08` deleted, and with it the window in which a second request rebinds the first request's client. Take the configuration in the constructor instead — `constructor(config: SupabaseAdapterConfig)`. (Form: any member named `init` in a class body under `src/lib/api/adapters/**`, where every class is an adapter; this clause is confined to the adapter tree because the same selector was measured firing on a live non-adapter store method outside it.)"
+      "An `init` member on an adapter class reintroduces the two-step construction protocol, and with it the window in which a second request rebinds the first request's client. Take the configuration in the constructor instead — `constructor(config: SupabaseAdapterConfig)`. (Form: any member named `init` in a class body under `src/lib/api/adapters/**`, where every class is an adapter; this clause is confined to the adapter tree because the same selector was measured firing on a live non-adapter store method outside it.)"
   }
 ];
 
