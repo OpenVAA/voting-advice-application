@@ -99,3 +99,9 @@ The resume steps ran at 2026-10-04T08:47Z. Full evidence: `169-EVIDENCE.md` § 2
 - **Side finding (not caused by the pin):** the function env's `SMTP_PORT=2500` points at the old Inbucket port. Local
   Mailpit listens on 1025, so a local `send-email` gets `ECONNREFUSED` on any nodemailer version. Logged in the
   phase's `deferred-items.md`.
+
+## Confirmed (2026-10-23, review-fix batch D)
+
+Both mailing functions pin `npm:nodemailer@10.0.11`: `send-email/index.ts` and `account-access/index.ts`, the
+function added after this todo was resolved. `apps/supabase/scripts/edgeFunctionPins.test.ts` holds the two literals
+equal (169 IN-09).

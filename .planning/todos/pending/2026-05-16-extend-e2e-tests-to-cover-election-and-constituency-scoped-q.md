@@ -151,3 +151,7 @@ The disjoint-group shape introduced in Phase 86.1 (NE+SE in
 `test-cg-east-municipalities`, NW+SW in `test-cg-west-municipalities`) is the
 right substrate for this assertion — same-group different-constituency
 filtering is the most subtle case the suite must cover.
+
+## Update 2026-10-11 — two tests read election-scoped questions on the contestant side (Phase 177 close)
+
+The dataset `perm-contestant-nominations` holds an opinion question in a category scoped to its closed-list election, one in a category scoped to its open election and one scoped to no election. Two tests of `contestant-nominations.spec.ts` read them on the contestant side: `follow: after a first save the home, the nominations view and the questions follow without a full page load` (the questions an entity is asked follow the election it has just been nominated in) and `follow: a question that no longer applies is neither asked nor counted, and its answer returns with the nomination`. **Still open:** the voter side, and constituency-scoped questions on either side; no question of that dataset is scoped to a constituency.

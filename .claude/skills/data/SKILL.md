@@ -135,6 +135,7 @@ Use this checklist when reviewing or making changes to `packages/data/`:
 - Entity variants: `packages/data/src/objects/entities/variants/`
 - Question variants: `packages/data/src/objects/questions/variants/`
 - Nomination variants: `packages/data/src/objects/nominations/variants/`
+- The nomination-shape matrix: `packages/data/src/objects/election/nominationShape.ts` (`NOMINATION_SHAPE`, `isNominableInShape`, `allowedParentTypes`), read from an election as `Election.nominationShape`; see object-model.md § _The nomination shape of an election_
 - Question factory: `packages/data/src/objects/questions/variants/variants.ts`
 - Localization: `packages/data/src/i18n/translate.ts`
 - Answer formatters + `DEFAULT_LOCALE`: `packages/data/src/utils/formatAnswer.ts`
@@ -149,6 +150,12 @@ Questions implement `MatchableQuestion` from `@openvaa/core` (provides `id`,
 The matching skill documents how these interfaces are consumed by algorithms. `MISSING_VALUE`,
 `COORDINATE`, `normalizeCoordinate`, and `isMissingValue` are re-exported from `@openvaa/core`
 via `internal.ts` for use within the data package.
+
+The nomination-shape matrix is stated twice: here, for the application, and in the database's
+`public.nomination_shape_rule`, which refuses a write that breaks it (the database skill). The table
+that compares every nomination rule of the two sides, with the test that holds each, is in
+`packages/data/README.md` § _Nomination rules: the data model and the database_. A change to either
+matrix is a change to both, and to the grid each side asserts.
 
 ## Reference Files
 
@@ -185,3 +192,10 @@ so no skill text quoted either misspelling and nothing needed rewriting on that 
 **No content correction was required by this review** -- recorded as a reviewed no-change rather
 than resolved with a content-free touch, because the audit exists to make a human look and this is
 what the look found.
+
+**Updated 2026-10-11** (Phase 177, plan 177-21): the nomination shape. `Election` gained the getter
+`nominationShape`, and the module `packages/data/src/objects/election/nominationShape.ts` states which entity types an
+election admits as nominees and which parent each may name. Key Source Locations and Cross-Package
+Interfaces name the module and where its comparison with the database lives; `object-model.md` gains
+§ _The nomination shape of an election_. Checked against the source on this date: the four members of
+`NOMINATION_SHAPE`, the default, and both functions' answers for each entity type.

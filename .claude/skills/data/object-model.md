@@ -129,6 +129,8 @@ Source: `packages/data/src/objects/questions/category/questionCategoryTypes.ts`
 
 Category filtering uses `appliesTo(filters)` on `QuestionAndCategoryBase`, which checks election, constituency, entityType, and electionRound scoping. Questions inherit their category's filters unless `dontInherit: true`.
 
+The model types `entityType` as a `FilterValue`, one entity type or a list of them. The database is narrower: the `entity_type` column of `questions` and of `question_categories` holds null or a JSON array of entity types, and a trigger refuses a bare string for every writer. Data that is stored or imported, a seed template's row included, therefore states the filter as an array, also for one type: `['organization']`. See the database skill for the trigger.
+
 ## Key Relationships
 
 - **Election -> ConstituencyGroup(s) -> Constituency(ies):** Elections have constituency groups; each group contains constituencies the voter chooses from.
@@ -145,6 +147,24 @@ Category filtering uses `appliesTo(filters)` on `QuestionAndCategoryBase`, which
 - **Entity has Answers:** Record of `Id -> Answer` stored in entity data; accessed via `entity.getAnswer(question)`.
 
 Both selection rules above are voter-facing semantics recorded from the product owner's review of PR #874, not facts read off a source file -- an agent cannot recover them from the class definitions, which is why they are stated here. `@openvaa/data` enforces neither: nothing rejects a conflicting pair of selections. It does supply what a constituency selector needs to honour them -- `ConstituencyGroup.impliedBy()` and `ConstituencyGroup.getImpliedConstituency()` in `packages/data/src/objects/constituency/constituencyGroup.ts`, and `DataRoot.getCombinedElections()` in `packages/data/src/root/dataRoot.ts`, which collapses elections whose constituency groups imply one another so the voter is asked once. The nearest thing to a guard is `Election.getApplicableConstituency()` in `packages/data/src/objects/election/election.ts`, which throws when a voter's selection resolves to more than one constituency for a single election -- a read-site check, not an invariant of the model.
+
+## The nomination shape of an election
+
+`Election.nominationShape` says which entity types the election admits as nominees and which parent each may name. The data's `nominationShape` is optional; the getter answers `DEFAULT_NOMINATION_SHAPE`, `organization_list_and_independents`, where the data states none. The values are those the database stores in `elections.election_type`.
+
+The matrix is `packages/data/src/objects/election/nominationShape.ts`, a pure module that reads no `DataRoot`:
+
+| `NOMINATION_SHAPE` member | Value | Nominees | A candidate's parent |
+| --- | --- | --- | --- |
+| `OrganizationOnly` | `organization_only` | organizations and alliances | — |
+| `CandidateOnly` | `candidate_only` | candidates alone | none is named |
+| `OrganizationList` | `organization_list` | every entity type | an organization, required |
+| `OrganizationListAndIndependents` | `organization_list_and_independents` | every entity type | an organization, optional |
+
+- `isNominableInShape(shape, entityType)` -- whether an entity of that type may be nominated. Asked wherever elections are offered to an entity or counted for it. A shape that is not a member admits nothing.
+- `allowedParentTypes(shape, entityType)` -- `{ types, required }`: the entity types the parent may be and whether one must be named. An organization for a candidate (none in `candidate_only`), an alliance for an organization, never required; an organization for a faction, required; none for an alliance. The answer is the empty one where the entity type is not nominable in the shape. A faction is never among `types`: no screen lets a candidate choose a faction's list, although the database admits a faction's nomination as a candidate's parent.
+
+NEVER re-derive either answer from the shape's name in a page, a load or a component: ask the two functions. The model does not refuse a nomination its election's shape does not admit; the functions tell the application what to offer, and the database is what refuses. `packages/data/README.md` § _Nomination rules: the data model and the database_ compares the two statements rule by rule, and `nominationShape.test.ts` holds one case for each of the sixteen cells.
 
 ## Factory Functions
 

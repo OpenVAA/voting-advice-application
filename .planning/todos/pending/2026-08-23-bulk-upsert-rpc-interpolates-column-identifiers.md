@@ -59,3 +59,11 @@ which is the desired behaviour and a real constraint on the change.
 Wrap `item_key` (and the `update_parts` key halves at `:167`, `:179`, `:183`) in `quote_ident`. Then
 re-run `yarn db:lint:sql` and the dev-seed integration test. Note the existing parity spec asserts the
 two SQL copies agree — update both.
+
+## Update 2026-10-09 — still true at the close of Phase 175, on one more carried key
+
+Read again on the tree at the phase's close: `_bulk_upsert_record` in `apps/supabase/supabase/schema/501-bulk-operations.sql` still appends the item key to its column list as it came (`col_names := array_append(col_names, item_key);`) and builds `update_parts` from the same raw key, while every value goes through `quote_literal`. The line numbers in this file's frontmatter and first section are those of 2026-08-23; find the lines by their text.
+
+Phase 175 plan 03 changed which keys reach that line: `entity_type` is no longer skipped on `question_categories` and `questions`, where `validate_entity_type_list` then checks the value. That adds no new identifier path, since the key is a fixed name, and it was accepted as threat T-175-17 with this todo as its record. The research of Phase 175 describes the same unquoted key as a security review item (`175-RESEARCH.md` § Security Domain, "Outside this phase, seen while reading it").
+
+Unchanged: who can reach it. `bulk_import` is SECURITY INVOKER and executable by `authenticated`; an unknown column name fails in PostgreSQL, and the row-level security of the target table still applies to whatever statement the key produces.

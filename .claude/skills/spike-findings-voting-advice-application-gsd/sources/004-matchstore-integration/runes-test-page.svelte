@@ -6,7 +6,7 @@
 
   Idioms exercised on this page:
     1. Template direct read     — {appSettingsCtx.current.publisher.name}
-    2. .ts $derived alias        — const platform = $derived(appSettingsCtx.current.analytics?.platform)
+    2. .ts $derived alias        — const trackEvents = $derived(appSettingsCtx.current.analytics?.trackEvents)
     3. Non-reactive producer     — untrack(() => dataRootCtx.instance.provideElectionData(snapshot))
 
   Banned idioms (must not appear anywhere on this page or in the contexts):

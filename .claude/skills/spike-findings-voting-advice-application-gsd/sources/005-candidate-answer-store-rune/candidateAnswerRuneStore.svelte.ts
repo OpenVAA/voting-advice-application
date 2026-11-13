@@ -1,7 +1,11 @@
 /**
- * SPIKE 005 — Scoped rune-native rewrite of candidateUserDataStore.
+ * SPIKE 005 — Scoped rune-native rewrite of contestantUserDataState.
  *
- * Production `apps/frontend/src/lib/contexts/candidate/candidateUserDataStore.svelte.ts`
+ * Historical record: the module and its identifiers are cited by their current names; the spike ran
+ * against the same module under its earlier `candidate…Store` names, and the line numbers are those
+ * of that earlier file.
+ *
+ * Production `apps/frontend/src/lib/contexts/contestant/contestantUserDataState.svelte.ts`
  * is ALMOST fully rune-native already — it uses `$state`, `$derived.by`, `$effect`,
  * and getter exports. The ONLY legacy bits are the edited-answers persistence
  * layer (lines 38-42, 130, 138, 144) that bridges through
@@ -24,7 +28,7 @@
 import { runeLocalStorage } from './runePersistedState.svelte';
 import type { Id } from '@openvaa/core';
 
-// Loose shapes for the spike — production uses LocalizedAnswer + CandidateUserData<true>.
+// Loose shapes for the spike — production uses LocalizedAnswer + ContestantUserData<true>.
 // The spike only exercises the answer-merge logic so this minimal shape suffices.
 type AnswerValue = string | number | boolean;
 type EditedAnswers = Record<Id, { value: AnswerValue }>;
@@ -54,7 +58,7 @@ export function candidateAnswerRuneStore(opts: { storageKey?: string } = {}): Ca
   const edited = runeLocalStorage<EditedAnswers>(key, {});
 
   // Composite — merges saved.answers with edited overrides. Exact pattern from
-  // production candidateUserDataStore.svelte.ts:56-77 (without the image/ToS
+  // production contestantUserDataState.svelte.ts:56-77 (without the image/ToS
   // overrides, which are out of scope for the answer-focused spike).
   const current = $derived.by(() => {
     if (!saved) return undefined;

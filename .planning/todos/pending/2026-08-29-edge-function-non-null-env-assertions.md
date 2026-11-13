@@ -88,3 +88,15 @@ pattern differs.
 - `scripts/assert-edge-env-defaults.mjs` — the guard whose check 1 this shape evades
 - `apps/supabase/supabase/functions/identity-callback/envConfig.ts` — `requireEnv`, already imported at every site that needs it
 - Window 161 (`.planning/WINDOWS.md`) — `identity-callback/index.ts:318` is *also* a dead binding, so that one line is best removed rather than converted
+
+## Phase 180 note (2026-11-13)
+
+Measured on `feat/entity-signup-multi-grant` after phase 180. `deno check` now runs over every non-test Edge
+Function module (`yarn typecheck`, 22 modules), but TypeScript accepts a `!` non-null assertion, so the check does
+not flag these sites. `git grep -n -E "Deno\.env\.get\([^)]*\)!" -- apps/supabase/supabase/functions` now gives 14
+lines: 9 in the three `index.ts` files (`account-access/index.ts` 6 lines, `identity-callback/index.ts` 1,
+`send-email/index.ts` 2), holding 14 assertions (all `SUPABASE_URL`, `SUPABASE_ANON_KEY` or
+`SUPABASE_SERVICE_ROLE_KEY`), and 5 in tests that quote the pattern (`account-access/flowConformance.test.ts` 1,
+`identity-callback/envReadSites.test.ts` 4). `envConfig.ts`, with `requireEnv`, now lives once in
+`functions/_shared/`, so the "Related" pointer to `identity-callback/envConfig.ts` above names a path that no
+longer exists. This todo stays open.

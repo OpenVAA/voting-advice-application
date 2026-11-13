@@ -52,3 +52,33 @@ A transactional service-role RPC that inserts the candidate and writes the grant
 remove the case entirely. Phase 166 did not take it because it adds a new function to the exposed `public` schema,
 moves the insert out of `candidateRecord.ts`, and leaves that module's vitest row-shape tests without their
 subject. Revisit if the log line above is ever observed in a deployment.
+
+## Update 2026-10-22 — the organization branch repeats the pattern; re-anchored (Phase 179, decision D-10)
+
+Still open. Phase 179 made the function create organizations as well as candidates, and both branches share one compensating delete. In `apps/supabase/supabase/functions/identity-callback/index.ts` today:
+
+1. **The create branch.** It is taken only when the account's own record (`registered_entities` in `app_metadata`, read by `readRegisteredEntity` and confirmed by `resolveOwnEntity` in `ownEntity.ts`) names no entity of the requested type in the project. It calls `createCandidate` (`candidateRecord.ts`, `confirmed: true`) or `createOrganization` (`organizationRecord.ts`, `confirmed: false`, with no name).
+2. **Two writes inside one `try`.** `writeEntityGrant` writes the editor grant, and `updateUserById` writes the account's `app_metadata` with the record of the new entity (`ERR_RECORD_WRITE_FAILED`). The record write is new: it runs on every branch, and on the create branch a failure in it now triggers the delete too.
+3. **The compensating delete.** In the catch, an entity this request created is deleted, by `deleteCandidate` (`ERR_CANDIDATE_DELETE_FAILED`) or `deleteOrganization` (`ERR_ORGANIZATION_DELETE_FAILED`). A failed delete is only logged, under the fixed message `identity-callback: the entity whose grant or record write failed could not be deleted:`, and the write's error is still thrown.
+
+So the residual case is now wider in one way. A grant that committed, followed by a record write that failed and a delete that failed, leaves an entity that the grant names but the record does not. On the next sign-in `resolveOwnEntity` finds no record for the type and the create branch runs again. A second entity is made, while the first stays reachable from the selection screen through its grant. (Read from the code, not run: `resolveOwnEntity` answers `none` for a missing record before it reads any grant.) `deleteOrganization`'s docblock says the `cleanup_grants_on_delete` trigger removes the grant when the delete succeeds.
+
+**Detecting it** now needs an organization variant beside the query above, and the candidate query also misses an entity that has a grant but no record:
+
+```sql
+SELECT o.id, o.created_at
+FROM public.organizations o
+WHERE o.project_id = '<project id>'
+  AND o.external_id IS NULL
+  AND NOT EXISTS (
+    SELECT 1 FROM public.grants g
+    WHERE g.scope = 'entity'
+      AND g.target_type = 'organization'
+      AND g.target_id = o.id
+      AND g.role = 'editor'
+  );
+```
+
+Read the result against the container log line above, as before. An organization that an administrator created by hand, without an `external_id`, also matches.
+
+**The transactional alternative** would now also have to write the record. The record lives in `auth.users.raw_app_meta_data`, so a `public` RPC would have to write into the `auth` schema, which makes D-09's argument against it stronger.
